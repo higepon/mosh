@@ -1,3 +1,9 @@
+2008-05-14  higepon  <higepon@users.sourceforge.jp>
+
+        * 0.0.2 released.
+
+        * Symbol.h (scheme): OS X build patch by mesa_edw.
+
 2008-05-13  higepon  <higepon@users.sourceforge.jp>
 
         * 0.0.1 released.
