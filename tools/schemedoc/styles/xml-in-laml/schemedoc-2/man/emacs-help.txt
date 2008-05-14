@@ -1,0 +1,77 @@
+LAML SchemeDoc
+--------------
+
+LAML SchemeDoc is able to extract interface documentation from Scheme source files, and to
+present the documentation as HTML files.
+
+The LAML SchemeDoc index facility can generate a browser, for convenient access to a
+number of SchemeDoc manuals.
+
+On a Scheme source file, SchemeDoc can be activated with Scheme > SchemeDoc > Run
+SchemeDoc from the Emacs menu. Alternatively, just use M-x schemedoc on a buffer with a
+scheme file (with extension scm).  The introductory comment of the Scheme source file may
+contain SchemeDoc processing options, roughly corresponding to the attributes of the
+manual-front-matters clause of the SchemeDoc XML language.
+
+The schemedoc Emacs command is usually able to guess whether multi-semicolon or
+documentation-mark documenting commenting style is being used. If not, you can enforce a
+specific documentation commenting style by setting the Emacs Lisp variable
+scheme-documentation-style to either multi-semicolon and documentation-mark (a
+symbol). This can be done via a setq or via the LAML customization facility (M-x
+laml-customize).
+
+Use one of the three menu Insert-... menu items in Scheme > SchemeDoc > for insertion of
+templates at Scheme source top level, at section level, and at definition level.
+
+For better control of SchemeDoc, it is recommended to make an XML-in-LAML script which
+controls SchemeDoc.  From Emacs, this is done by Tools > SchemeDoc > Make SchemeDoc
+Manual... (or M-x make-laml-manual). In a similar way, you can make an index script with
+Tools > SchemeDoc > Make SchemeDoc Index... (or M-x make-laml-manual-index).  The other
+Tools > SchemeDoc menu entries serve as templates of documentation sections and entries.
+
+From a Scheme interpreter, SchemeDoc can be activated by the call (schemedoc "file.scm") .
+The requires, however, that LAML is loaded in Scheme.  See
+http://www.cs.auc.dk/~scheme/index.html#processing for ways to start Scheme with LAML.
+
+
+LAML SchemeDoc commenting conventions - multi-semicolon commenting style:
+
+  Comments with 4, 3, and 2 initial semicolons are processed by SchemeDoc. 
+  Comments with a single semicolon are not documentation comments.
+
+  ;;;; Introduction comment. 4 semicolons. Only one such comments should appear. 
+  ;;;; In the beginning of a file scheme file.
+
+  ;;; Section comment. 3 semicolons. Starts a new section of Scheme definitions. 
+  ;;; The first sentence becomes section title.
+   
+  ;; Interface comment. 2 semicolons.
+  ;; A comment in front of a definition, which is part of the interface of the file. 
+
+
+LAML SchemeDoc commenting conventions - documentation-mark commenting style:
+
+  Comments with 3, 2 or 1 initial exclamation marks after at least a single semicolon.
+
+  ;!!! Introduction comment. 4 semicolons. Only one such comments should appear. 
+  ; In the beginning of a file scheme file.
+
+  ;!! Section comment. 3 semicolons. Starts a new section of Scheme definitions. 
+  ; The first sentence becomes section title.
+   
+  ;! Interface comment. 2 semicolons.
+  ; A comment in front of a definition, which is part of the interface of the file. 
+
+At the end of a documentation comment a number of internal tags can appear, such as .form,
+.parameter.  Use the SchemeDoc templates (available via the Scheme > SchemeDoc menus) to
+insert comments with internal tags. Delete the tags that are not needed.
+
+
+For more information on SchemeDoc see http://www.cs.auc.dk/~normark/schemedoc/index.html
+SchemeDoc is part of the LAML software package, downloadable from
+http://www.cs.auc.dk/~normark/laml/
+
+Kurt Nørmark,
+Aalborg University.
+normark@cs.aau.dk.
+

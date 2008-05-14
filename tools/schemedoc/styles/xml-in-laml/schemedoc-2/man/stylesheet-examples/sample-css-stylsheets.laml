@@ -1,0 +1,55 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "simple-xhtml1.0-transitional-validating")
+(lib-load "xhtml1.0-convenience.scm")
+
+(define current-xml-language 'xhtml10-transitional)
+(define laml-generation-meta (meta 'name "Generator" 'content "LAML"))
+(define meta-props (list 'http-equiv "Content-Type" 'content "text/html; charset=iso-8859-1"))
+(define html-props (list 'xmlns "http://www.w3.org/1999/xhtml"))
+
+; Insert the LAML template "Processing Options" here
+; if you need variations in the LAML processing
+
+(define ttl "A Gallery of CSS Stylesheets for SchemeDoc")
+
+(write-html '(raw prolog)
+ (html html-props
+  (head 
+   (meta meta-props) laml-generation-meta
+   (title ttl))
+  (body 
+    (h1 ttl)
+
+    (h2 "From version 28.00")
+
+    (p "This page shows a gallery of CSS stylesheets for LAML SchemeDoc.
+        You specify the name of the preferred stylesheet (without the extension css) in the" (b (kbd "css-stylesheet")) "attribute of the SchemeDoc" 
+        (a 'href "../schemedoc.html#manual-front-matters" "manual-front-matters element") _ "." 
+        "Click at the images to see the SchemeDoc page in full detail.")
+
+    (p "The pages shown below all use the" (kbd "css-" _ (b "pre") _ "stylesheet") "called" (kbd "normal") _ "." "
+        This is another XML attribute of" (a 'href "../schemedoc.html#manual-front-matters" "manual-front-matters element") _ "." 
+        "The" (kbd "css-prestylesheet") "controls the size of the page (fontsize etc). You can alternatively use
+        " (kbd "small") _ "," (kbd "small-compact") _ "," (kbd "compact") _ "," "or" (kbd "large") _ ".")
+        
+
+    (table 'border "0"
+     (map 
+      (lambda (name)
+        (tr 'valign "top" (td (b (string-append name ".css")))
+     	    (td (a 'href (string-append "html/" name ".html")
+		   (img 'src (string-append "png/" name "-small" ".png") 'alt name))
+		(vertical-space 1))))
+
+      (list "argentina" "brazil" "dark-green" "original" "original-bordered" "fancy")))
+
+    (kn-xml-in-laml 'icon) (br)
+    (font 'size "1" 'color (rgb-color-encoding 255 0 0) (when-generated))
+
+
+  )
+ )
+)
+
+
+(end-laml)

@@ -1,0 +1,29 @@
+<html><head><link href="../../../../css-stylesheets/elucidator/program.css" rel="stylesheet" title="program" type="text/css"/> <title>Source file</title></head><body bgcolor="#ffffff" text="#000000" link="#000000" vlink="#000000"><font size="2"><pre><span class="comment">; !!!
+; .title SchemeDoc Demo 
+; .author Kurt Normark
+; .affiliation Aalborg University, Denmark
+; This is a brief example of a Scheme program with SchemeDoc comments, 
+; using the documentation mark style.</span><br/>
+<span class="comment">; This comment is not extracted.</span><br/>
+<span class="comment">; !! Factorials. 
+; .section-id fac-stuff
+; This section demonstrates a plain function.</span><br/>
+<a name="fac"></a><span class="comment">; ! The factorial function. Also known as n!
+; .parameter n An integer
+; .pre-condition n &gt;= 0
+; .returns n * (n-1) * ... * 1</span><br/><a name="fac"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(fac n)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> n 0) 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX250" title="R5RS Scheme form">*</a> n (<a class="applied-name" href="prog1a-1.html#fac" title="prog1a">fac</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 1)))))
+
+<span class="comment">; !! List selection functions.
+; .section-id list-stuff
+; This section demonstrates two aliased functions.</span><br/>
+<a name="head"></a><span class="comment">; ! An alias of car. 
+; .returns The first component of a cons cell
+; .form (head pair)
+; .parameter pair A cons cell</span><br/><a name="head"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">head</span> <a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a>)
+
+<a name="tail"></a><span class="comment">; ! An alias of cdr.
+; .returns The second component of a cons cell
+; .form (tail pair)
+; .parameter pair A cons cell</span><br/><a name="tail"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">tail</span> <a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX322" title="R5RS Scheme form">cdr</a>)
+</pre></font><div>&nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p></div></body></html>

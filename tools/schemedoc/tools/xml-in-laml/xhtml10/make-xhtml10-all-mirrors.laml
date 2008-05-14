@@ -1,0 +1,62 @@
+; A script that produces mirrors for XHTML 1.0 strict, transitional, and framework
+; based on parsed DTDs.
+
+(load (string-append laml-dir "laml.scm"))
+
+
+; ----------------------------------------------------------------------------------------------------------------
+
+; Make an XHTML mirror. variant is either strict, transitional, or frameset.
+(define (make-xhtml-mirror variant doc-type-declaration-string xml-non-transliteration-elements xml-preformatted-text-elements)
+ (display-message (string-append "Making xhtml10-" variant " " "mirror"))
+ (laml-tool-load "xml-in-laml/xml-in-laml.scm")  ; to reset generation tool for each run
+
+ (set! default-xml-non-transliteration-elements xml-non-transliteration-elements) ; the 2. parameter
+ (set! default-xml-preformatted-text-elements xml-preformatted-text-elements) ; the 3. parameter
+ (set! default-document-type-declaration (string-it doc-type-declaration-string))
+ (set! default-xml-accept-extended-contents? "#t")  ; accept numbers and characters as element contents in XHTML 1.0
+ (set! default-xml-accept-only-string-valued-attributes? "#f")  ; accept numbers and characters as attribute values 
+
+ (set! validation-predicate-names 'normal) 
+
+ (let* (
+        (the-mirror-name (string-append "xhtml10-" variant))
+
+        (parsed-dtd-path
+          (string-append laml-dir "/tools/dtd-parser/dtds/" the-mirror-name ".lsp"))
+
+        (mirror-target-dir 
+           (string-append laml-dir "lib/xml-in-laml/mirrors/"))
+
+        (mirror-destination-file (string-append mirror-target-dir the-mirror-name "-mirror" ".scm"))
+
+        (file-inclusion-abs-path (in-startup-directory "runtime-stuff/xhtml-inclusions.scm"))
+
+      )
+
+  (set! mirror-name the-mirror-name)
+
+  (generate-mirror 
+    parsed-dtd-path mirror-destination-file mirror-name file-inclusion-abs-path)
+
+  (display-message "DONE") (display-message "")
+ )
+)
+
+; ----------------------------------------------------------------------------------------------------------------
+
+(define strict-document-type-declaration 
+ "<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Strict//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\\\">")
+
+(define transitional-document-type-declaration 
+ "<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Transitional//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\\\">")
+
+(define frameset-document-type-declaration 
+ "<!DOCTYPE html PUBLIC \\\"-//W3C//DTD XHTML 1.0 Frameset//EN\\\" \\\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd\\\">")
+
+(define xml-non-transliteration-elements (as-quoted-string (list 'list "script" "style")))
+(define xml-preformatted-text-elements (as-quoted-string (list 'list "pre" "script" "style")))
+
+(make-xhtml-mirror "strict" strict-document-type-declaration xml-non-transliteration-elements xml-preformatted-text-elements)
+(make-xhtml-mirror "transitional" transitional-document-type-declaration xml-non-transliteration-elements xml-preformatted-text-elements)
+(make-xhtml-mirror "frameset" frameset-document-type-declaration xml-non-transliteration-elements xml-preformatted-text-elements)

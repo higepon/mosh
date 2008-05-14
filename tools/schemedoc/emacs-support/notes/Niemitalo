@@ -1,0 +1,84 @@
+Some observations from tosi@ees2.oulu.fi about laml-general.el:
+Not yet corrected or dealt with.
+
+-----------------------------------------------------------------------
+
+`abs' is already a built-in function.
+
+`caaar' ... `cdddr', `acons' and `butlast' are defined in `cl'.
+
+`cddr' ... `cdar' are defined in `subr'.
+
+`file-name-extension' is defined in `files'.
+
+`mapcan' is defined in `cl-extra'.
+
+
+Functions which Emacs defines with different names
+--------------------------------------------------
+
+`ask-user' is somewhat like `y-or-n-p' or `yes-or-no-p'.
+
+`attach-hook' corresponds to `add-hook', which also handles
+buffer-local hooks.
+
+`call-unix-process' corresponds to `shell-command'.
+
+`defvar1' corresponds to `defconst'.
+
+`id-function1' corresponds to `identity'.
+
+`make-unique' corresponds to `make-temp-name'.
+
+`scroll-down-other-window' corresponds to
+`scroll-other-window-down'.
+
+`see-file' corresponds to `find-file-at-point', defined in
+`ffap'.
+
+`skip-through' and `skip-through-reverse' correspond to
+`skip-chars-forward' and `skip-chars-backward', although the
+parameters and return value are different.
+
+`string-to-symbol' corresponds to `intern', unless you want to
+skip spaces.
+
+
+Bugs
+----
+
+`current-file' won't return nil because (file-name-nondirectory
+nil) signals an error.
+
+`defvar1' has a typo: `variable-decumentation' should be
+`variable-documentation'.
+
+`make-unique' has a race condition: another process may create
+the file after the name has been chosen.
+
+`show-info', `put-around-region' and `put-around-word' use &rest
+rather than &optional.  This causes a them to check whether the
+last parameter was given, not whether it is non-nil.
+
+`sub-directories' does not work right if there is a directory
+whose name begins with a space, because that gets sorted before
+"." and "..".
+
+
+Wishlist
+--------
+
+`collect-buffer' could use `get-buffer-create' or
+`append-to-buffer'.
+
+`count-words-buffer' and `count-words-region' could perhaps use
+`shell-command-to-string'.
+
+`current-directory' could use `default-directory', which is a
+variable but sometimes also defined as a function by `dired-x'.
+
+`mail-current-buffer' and `mail-region' could use (compose-mail)
+rather than (mail).  `compose-mail' runs the mail package chosen
+by the user.
+
+`put-in' does not use the local variable `bp'.

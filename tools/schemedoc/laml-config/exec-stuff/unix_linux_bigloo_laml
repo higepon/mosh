@@ -1,0 +1,10 @@
+#!/bin/sh 
+# By Kurt Normark, normark@cs.auc.dk. Adapted to Bigloo by Sven.Hartrumpf@fernuni-hagen.de
+# Copied and modified by the LAML installation process - DO NOT EDIT.
+# Usage: laml file
+# Run MzScheme on file from the current directory
+# File is with extension
+#
+@scheme-exec@ -s -eval '(load (string-append "@laml-dir@" "laml.init"))' -eval "(load \"$PWD/$1\") (exit)" $1 $PWD/
+
+

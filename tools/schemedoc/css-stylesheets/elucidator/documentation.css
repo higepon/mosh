@@ -1,0 +1,146 @@
+DIV.elucidator-abstract{
+  background: rgb(255,255,159);      /* rgb(210,210,210); */
+  margin-bottom: 0.5cm;
+  font-style: italic; 
+}
+
+DIV.elucidator-section{
+  background: rgb(0,204,255);
+  margin-bottom: 0.0cm;
+}
+
+DIV.elucidator-entry{
+  margin-bottom: 1.0cm;
+}
+
+DIV.body-small{
+  font-size: 75%;
+}
+
+DIV.body-grey{
+  background: rgb(200,200,200);
+}
+
+DIV.elucidator-entry-head{
+  background: rgb(0,204,255);
+  margin-bottom: 0.2cm;
+}
+
+/* References */
+
+
+A.program-reference-strong{
+  font-family: Courier;
+  color: rgb(255,0,0);
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.program-reference-weak{
+  font-family: Courier;
+  color: rgb(0,0,255);
+  text-decoration: none;
+  font-size: 90%;
+}
+
+
+A.program-reference-old-strong{
+  font-family: Courier;
+  color: rgb(255,0,0);
+  text-decoration: none;
+  font-size: 90%;
+  background: rgb(200,200,200);
+}
+
+A.program-reference-old-weak{
+  font-family: Courier;
+  color: rgb(0,0,255);
+  text-decoration: none;
+  font-size: 90%;
+  background: rgb(200,200,200);
+}
+
+
+SPAN.none-reference{
+  color: rgb(60,60,60);              /* Grey */
+  font-family: Courier;
+  font-size: 90%;
+}
+
+A.program-file-reference-strong{
+  font-weight: bold;
+  font-family: Courier;
+  color: rgb(255,0,0);
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.program-file-reference-weak{
+  font-weight: bold;
+  font-family: Courier;
+  color: rgb(0,0,255);
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.program-file-reference-old-strong{
+  font-family: Courier;
+  color: rgb(255,0,0);
+  background: rgb(200,200,200);
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.program-file-reference-old-weak{
+  font-family: Courier;
+  color: rgb(0,0,255);
+  background: rgb(200,200,200);
+  text-decoration: none;
+  font-size: 90%;
+} 
+
+
+A.manual-file-reference-strong{
+  font-weight: bold;
+  font-family: Courier;
+  color: rgb(0,145,0);               /* Dark green */
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.manual-file-reference-weak{      /* Identical with manual-file-reference-strong */
+  font-weight: bold;
+  font-family: Courier;
+  color: rgb(0,145,0);               /* Dark green */
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.manual-reference{
+  font-family: Courier;
+  color: rgb(0,145,0);               /* Dark green */
+  text-decoration: none;
+  font-size: 90%;
+}
+
+A.documentation-reference{
+  color: rgb(0,0,0);
+  text-decoration: underline;
+}
+
+
+A.scheme-syntax-name{    
+  font-weight: bold;
+  color: rgb(0,0,0);
+  text-decoration: none;
+}
+
+A.scheme-procedure-name{
+  color: rgb(166,71,0);     /* Brown */
+  text-decoration: none;
+}
+
+A.scheme-misc-name{         /* Not used */
+  color: rgb(0,0,0);
+  text-decoration: none;
+}

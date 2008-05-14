@@ -1,0 +1,42 @@
+SUMMARY OF THE SCHEME ELUCIDATOR EDITOR COMMANDS
+
+          make-elucidator                    Make the directory structure and a skeleton setup file of a new elucidator
+          setup-elucidator                   Opens a documentation bundle in the editor
+C-e C-p   prog-ref                           Inserts a program reference in the documentation
+C-e C-d   doc-ref                            Insert a documentation reference
+C-e p     show-program                       Show and another program file, and define this as the default program file of the editor.
+C-e g     goto                               Goto another place (see below) and push go back information.
+C-e C-h   goto                               Goto another place (same as above)
+C-e C-g   goto-repeated                      Goto next similar place in the documentation 
+C-e C-b   back                               Go back - reverses last goto. Can be applied multiple times.
+C-e r     refresh-elucidator                 Refresh from last elucidation
+C-e C-r   reset-elucidator                   Reset the elucidator
+C-e C-o   elucidate                          Run the Scheme elucidator
+C-e C-u   show-setup                         Show the laml setup file
+C-e C-l   large-documentation-window         Make the documentation larger
+C-e C-s   large-program-window               Make the documentation smaller
+C-e C-x   insert-documentation-section       Insert a section template
+C-e C-c   insert-documentation-entry         Insert an entry template
+C-e ?     elucidator-help                    Displays this helping message
+          elucidator-let-be                  Forces a buffer to be an elucidator buffer
+          elucidator-status                  Gives brief information about buffers in the current elucidator setup
+C-e C-m   elucidator-show-processing         Shows the Scheme/LAML processing output buffer
+          insert-sectional-comment           Prompt for and insert sectional comment. To be applied in a program.
+
+goto  APPLIED IN                             GOES TO
+      documentation, on program-link name    program, definition of name
+      documentation, on documentation-link   documentation, target section of link
+      program, on defined name               documentation, the documentation of name
+      program, on applied applied name       program, definition of name
+
+Variables of interest:
+locate-documentation-exactly:   If true a goto locates the documentation location exactly. If nil, only goto section.
+always-qualify-program-names:   If true always qualify program references with source key. If nil, only if ambiguous.
+
+For more complete information see the editor section of the Elucidator manual WWW page
+in your local LAML directory or follow the URL:
+http://www.cs.auc.dk/~normark/scheme/styles/elucidator/man/elucidator.html#SECTION8
+
+
+
+

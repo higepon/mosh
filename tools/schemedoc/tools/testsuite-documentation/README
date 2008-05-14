@@ -1,0 +1,6 @@
+This directory contains the Scheme program that generates documentation of testsuites.
+
+This scheme program is/can be activated from the Emacs Lisp tool in
+emacs-support/scheme-interpreter-unit-testing/scheme-interpreter-unit-testing.el
+
+KN

@@ -1,0 +1,9 @@
+LAML process one of the LAML scripts in this directory to make global
+change of CSS manual stylesheets in the LAML distribution.
+
+The only effect of executing one of scripts is to write a new
+stylesheet into ../manual-stylesheet.css
+
+
+KN
+

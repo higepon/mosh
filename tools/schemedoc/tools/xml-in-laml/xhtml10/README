@@ -1,0 +1,7 @@
+A common directory for generation of all three xhtml10 mirrors: strict, validating, frameset.
+Also contains manual generation stuff.
+
+The temp is used internally by make-xhtml10-all-mirrors.laml
+
+The script make-xhtml-mirrors-and-manuals.laml both makes the three mirrors and
+the three manuals.

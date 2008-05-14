@@ -1,0 +1,5 @@
+The language independent part of XML-in-LAML, which is common for
+all XML languages in LAML, is in xml-in-laml.scm in this directory.
+
+The mirrors directory contains language dependent mirrors, which
+may or may not load the language independent part.

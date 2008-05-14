@@ -1,0 +1,17 @@
+Files which are used in the LAML configuration process.
+
+The files dot-emacs-contribution.el, laml.el, and
+laml.scm are the sources of
+
+  emacs-support/dot-emacs-contribution.el
+  laml.scm
+  laml.el
+
+in your LAML distribution. In case you need to change
+aspects of theses files, please do so in this directory.
+
+laml.init is an auxiliary file for LAML startup in certain Scheme systems.
+
+The LAML installation process copies them (slightly modified)
+to their destinations.
+

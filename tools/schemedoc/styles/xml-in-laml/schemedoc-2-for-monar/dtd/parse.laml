@@ -1,0 +1,4 @@
+(load (string-append laml-dir "laml.scm"))
+(load (string-append laml-dir "tools/dtd-parser/dtd-parser-4.scm"))
+
+(parse-dtd (in-startup-directory "schemedoc"))

@@ -1,0 +1,91 @@
+ABOUT TESTSUITES AND TESTCASES.
+
+A testsuite - or a testcase repository - consists of a number of testcases. 
+
+The file testcases in the current test directory contains the
+testcases in the current testsuite.
+
+Each testcase is organized as a list structure. A normal, functional
+testcase has the following form:
+
+  (functional-testcase
+    <id>
+    <encoding> 
+    <example-info>
+    <assertion>
+    <expression>
+    <value>
+  )
+
+When the expression <expression> was tested it gave the result
+<value>.  The value of <expression> and <value> fullfil the
+<assertion>.  <id> is a unique id of a testcase.  <encoding> is a list
+of two symbols that tells how <expression> and <value> respectively
+are encoded in the testcase. The encoding raw-text implies no
+encoding. The encocding number-encoded implies that each character in
+the corresponding string (expression or value) is given as a number.
+(The encoding is necessary of underlying technical reasons, which has
+to do with use of the Emacs lisp reader). If number-encoding is used,
+we give the approximative text of the expression and/or the value as
+an Lisp comment.  If <example-info> is a list that can start with the
+symbol use-as-example. Additional optional elements (all strings)
+enumerate function names, for which this testcase should serve as an
+example.  LAML SchemeDoc is able to use the <example-info> of
+testcases to collect examples.  Any other value of <example-info>,
+such as #f or do-not-use-as-expression, will cause this testcase to be
+disregarded as an example in SchemeDoc.
+
+An functional error testcase is structured like this:
+
+  (error-functional-testcase
+    <id>
+    <encoding>
+    <example-info>
+    <expression>
+    <exception>
+  )
+
+When <expression> was evaluted it gave an error.  <id>, <encoding>,
+<example-info>, and <expression> is as above.  However, there is only
+one element in the <encoding> (namely the encoding of expression).
+<exception> is not yet used (but it is intended to give additional
+details about the error).
+
+We do not support imperative (procedural) testcases.
+
+
+As an example the testcase
+
+  (functional-testcase
+    "17900-10366"
+    (raw-text raw-text)
+    (use-as-example)
+    "="
+    "(+ 1 2)"
+    "3"
+  ) 
+
+reflects that (+ 1 2) is considered equal to 3 using the assertion = . Thus:
+
+    (= (+ 1 2) 3)
+
+
+Similarly, the testcase
+
+  (error-functional-testcase
+    "17900-10458"
+    (raw-text)
+    (use-as-example)
+    "(/ 5 0)"
+    error)
+
+reflects that the expression (/ 5 0) gives rise to an error.
+
+
+
+The Emacs command  M-x evaluate-current-testcase, bound to M-C-x and
+available in the Unit Testing menu, can be used on testcases to facilitate
+easy re-evaluation of the expression of the testcase.
+
+
+

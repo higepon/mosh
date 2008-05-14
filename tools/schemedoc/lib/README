@@ -1,0 +1,13 @@
+This directory holds the is the LAML libraries.
+Many styles and tools loads one or more library files.
+
+general.scm is loaded by ../laml.scm. As such it is always loaded.
+
+The compatibility directory contains implementations of the LAML
+compatibility features - non-standard (non R4RS, non R5RS) functions -
+for various constellations of Scheme systems, platforms, and operating
+systems.
+
+
+
+

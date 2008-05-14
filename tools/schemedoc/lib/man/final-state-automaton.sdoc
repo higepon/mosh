@@ -1,0 +1,12 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+
+(manual
+  (manual-front-matters
+    (kn-manual-settings) 
+    'laml-resource "true"
+    'scheme-source-linking "true"
+  )
+
+  (manual-from-scheme-file 'src "../final-state-automaton.scm")
+)

@@ -1,0 +1,59 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+(set! xml-check-language-overlap? #f)
+
+(manual
+  (manual-front-matters
+    (manual-title "Tutorial Manual - An Example")
+    (manual-author "Kurt Nørmark" "normark@cs.auc.dk")
+    (manual-affiliation  
+        "Department of Computer Science" 
+        "Aalborg University" "Denmark")
+    (manual-abstract 
+      (div "This is just an example of a manual"
+            "adapted from an existing LAML example,"
+            "and part of the LAML tutorial."))
+
+    'laml-resource "false"
+    'css-prestylesheet "normal"
+    'css-stylesheet "fancy"
+    'css-stylesheet-copying "true"
+
+  )
+
+  (manual-section 'id "intr"
+      (section-title "Introduction")
+      (section-body 
+       (div "This is an introduction."
+            "Usually it is very brief."))
+  )
+
+  (manual-page 'name "f"
+      (form "(f a b)")
+      (description "Description of f")
+
+      (precondition "What to ensure before f is called")
+      (postcondition "What holds after f is called")
+
+      (parameters
+       (parameter 'name "a" "Explanation of a")
+       (parameter 'name "b" "Explanation of b")
+      )
+      (returns "Description of the value returned by f")
+
+      (internal-references 'category "similar function" 
+                           (name-ref "g"))
+  )
+
+  (manual-page 'name "g"
+      (form "(g)")
+      (description "Description of g")
+      (precondition "What to ensure before g is called")
+      (parameters
+      )
+      (external-reference 'href "../../../tutorial/index.html"
+                          'category "context" "LAML tutorial")
+      (internal-references 'category "similar function" (name-ref "f"))
+  )
+
+)

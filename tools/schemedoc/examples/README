@@ -1,0 +1,11 @@
+This is a collection of different LAML/SchemeDoc examples.
+
+The examples can be reached from the HTML documentation via ../index.html
+(Use the example column of the big table).
+
+You can process these files individually, or (in some distributions)
+via the process-all.laml scripts at different levels.
+
+If the tutorial directory is in your distribution, you should NOT
+change the files in there, because they are used in the LAML tutorial,
+at ../tutorial/index.html.

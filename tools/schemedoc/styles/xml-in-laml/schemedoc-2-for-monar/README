@@ -1,0 +1,33 @@
+Schemedoc-2 represents a restructuring of the software behind SchemeDoc.
+
+SITUATION BEFORE (pre-version 27):
+There were three parts involved:
+
+  1. styles/xml-in-laml/manual/manual.scm:
+     The XML-in-LAML front-end of SchemeDoc.
+
+  2. styles/manual/manual-kernel.scm:
+     The older and original (not XML-in-LAML) backend of SchemeDoc.
+     Kept for backward compatibility
+
+  3. tools/schemedoc/schemedoc.scm:
+     The important piece of software that extracts API information
+     from a Scheme source file.
+
+SITUATION NOW (version 27 and subsequent versions):
+
+  1. styles/xml-in-laml/schemedoc-2/schemedoc.scm
+     Represents both front-end and back-end (1+2 from above).
+     We are not any longer backward compatible with the very early (original) SchemeDoc format.
+     We use the directory name schemedoc-2 to signal the same organization and quality
+     as elucidator-2, and hopefully the forthcoming leno-2.
+
+  2. tools/schemedoc/schemedoc-extractor.scm:
+     The same as 3 from above, just renamed.
+     It is practical to keep this part of the system in a separate library, because
+     the Scheme Elucidator makes use of it.
+
+
+
+
+KN

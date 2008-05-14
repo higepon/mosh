@@ -1,0 +1,4 @@
+(load (string-append laml-dir "laml.scm"))
+
+(laml "make-xhtml10-all-mirrors")
+(laml "make-xhtml10-all-manuals")

@@ -1,0 +1,5 @@
+This directory contains a number of tools for LAML.
+
+A tool is a piece of software that manage or process LAML documents 
+or Scheme programs. Some of the tool bridge the gap between HTML, XML,
+and LAML. Other tools are relative close to being LAML document styles.

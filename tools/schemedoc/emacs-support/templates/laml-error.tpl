@@ -1,0 +1,1 @@
+(define xml-check-error laml-error)  ; display-xml-warning or laml-error

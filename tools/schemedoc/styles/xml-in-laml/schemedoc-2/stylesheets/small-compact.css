@@ -1,0 +1,54 @@
+/* Small Compact size SchemeDoc CSS stylesheet */ 
+/* Fontsize */
+H1.manual-title {font-size: 130%}
+SPAN.manual-author-element {font-size: 70%;}
+SPAN.manual-affiliation-element {font-size: 70%;}
+TD.manual-plain-title  {font-size: 95%}
+TD.manual-plain-entry-kind  {font-size: 70%}
+SPAN.manual-kind-explanation {font-size: 8px}
+TD.manual-plain-form  {font-size: 70%}
+TD.manual-plain-condition  {font-size: 75%}
+TD.manual-plain-description  {font-size: 75%}
+TD.manual-plain-parameter-name  {font-size: 70%}
+TD.manual-plain-parameter-description  {font-size: 75%}
+TD.manual-plain-xml-content-model{font-size: 75%}
+TD.manual-plain-attribute-name  {font-size: 70%}
+TD.manual-plain-attribute-type  {font-size: 75%}
+TD.manual-plain-attribute-description  {font-size: 75%}
+TD.manual-plain-parameter-description  {font-size: 75%}
+TD.manual-plain-example  {font-size: 70%}
+TD.manual-plain-reference-role  {font-size: 75%}
+TD.manual-plain-reference-anchor{font-size: 75%}
+TD.manual-plain-comment{font-size: 75%}
+TD.manual-plain-misc{font-size: 75%}
+TD.manual-plain-custom{font-size: 75%}
+TD.manual-plain-returns{font-size: 75%}
+
+TD.manual-header-title{font-size: 70%}
+TD.manual-header-form{font-size: 70%;}
+TD.manual-header-description{font-size: 70%}
+DIV.manual-source-file-description{font-size: 70%}
+
+DIV.manual-abstract{font-size: 75%}
+
+SPAN.manual-section-number {font-size: 110%}
+SPAN.manual-section-title {font-size: 110%}
+TD.manual-section-description{font-size: 77%}
+
+/* Layout */
+
+TD.manual-plain-entry-kind {width: 13%}
+TD.manual-plain-parameter-name {width: 13%}
+TD.manual-plain-reference-role {width: 16%}
+TD.manual-plain-attribute-name {width: 16%}
+TD.manual-plain-attribute-type {width: 16%}
+
+TD.manual-header-title{width: 20%}
+TD.manual-header-form{width: 40%}
+TD.manual-header-description{width: 40%}
+
+HR.manual-plain-end-of-entry 
+  {
+    margin-top: -50px;
+    margin-bottom: -50px;
+  }

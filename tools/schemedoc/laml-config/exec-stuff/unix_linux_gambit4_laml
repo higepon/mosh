@@ -1,0 +1,18 @@
+#!@scheme-exec@
+;; By Thomas Hafner.
+;; Copied and modified by the LAML installation process - DO NOT EDIT.
+;;
+;; Usage: laml file
+;; File is with extension
+;; Runs LAML on FILE from the current directory
+
+(load (string-append "@laml-dir@" "laml.init"))
+(load (apply
+       (lambda (command laml-input)
+         (set! command-line
+               (lambda ()
+                 `(,command
+                   ,laml-input
+                   ,(current-directory))))
+         laml-input)
+       (command-line)))

@@ -1,0 +1,21 @@
+In this directory you will find the so-called compatibility
+files, which implement non-standard (non R4RS, non R5RS) functions that
+are used in LAML.
+
+Compatibility file naming convention:  <laml-platform>_<operating-system>_<scheme-system>.scm
+
+In case <laml-platform> or <operating-system> is 'star' in the name of
+a compatibility file: The compatibility file is generic for all
+platforms or operating system.
+
+The windows_win2000_mzscheme.scm, windows_nt40_mzscheme.scm, windows_win95_mzscheme.scm, 
+and windows_win98_mzscheme.scm are identical.
+
+
+The sorting directory contains Aubrey Jaffer's sort.scm library, which is
+recommended if your favorite Scheme system does not support a list sorting 
+function. Usage:
+
+1. Include sorting/sort.scm in the compatibility file.
+2. (define sort-list sort:sort)
+

@@ -1,0 +1,13 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+
+(set! delete-comment-file? #f)
+
+(manual
+  (manual-front-matters
+    (kn-manual-settings) 
+    'laml-resource "true"
+  )
+
+  (manual-from-scheme-file 'src "../schemedoc-extractor.scm")
+)

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/>
+      <meta name="Generator" content="LAML"/>
+      <title>Coexisting LAML distributions</title>
+   </head>
+   <body bgcolor="#ffffbf" text="#000000" link="#0000ff" vlink="#0000ff">
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+         <tbody>
+            <tr>
+               <td width="33%" align="left" valign="top">
+                  <font size="2">Generated: June 10, 2005, 09:05:28</font>
+               </td>
+               <td width="34%" align="center" valign="top">
+                  <font size="2"><span>Copyright &copy; 2005, Kurt N&oslash;rmark</span></font>
+               </td>
+               <td width="33%" align="right" valign="top">
+                  <font size="2">
+                     <a href="../index.html" title="The local LAML software home page" target="_top">
+                        <img src="../images/laml-home.gif" alt="The local LAML software home page"
+                             border="0"/>
+                     </a>
+                  </font>
+               </td>
+            </tr>
+         </tbody>
+      </table>
+      <h1>Coexisting LAML distributions</h1>
+      <p>
+         You may have downloaded both SchemeDoc and one of the more comprehensive LAML distributions.
+      </p>
+      <p>The question is now if they can co-exist.</p>
+      <p>
+         The major problem is that the Emacs stuff, as loaded from your
+         <kbd>.emacs</kbd>
+         file (via loading of the file
+         <kbd>emacs-support/laml-emacs-support.el</kbd>
+         ) collide if you load Emacs support from more than one distribution simultaneously.
+      </p>
+      <p>
+         Therefore you should make sure, that only one
+         <kbd>laml-emacs-support.el</kbd>
+         file is loaded in your
+         <kbd>.emacs</kbd>
+         file. This can be done by some simple Emacs Lisp programming.
+      </p>
+   </body>
+</html>

@@ -1,0 +1,51 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-tool-load "xml-in-laml/xml-in-laml.scm")
+
+; ----------------------------------------------------------------------------------------
+; Tool parameters
+
+; The name of the language for which we create a mirror
+(define mirror-name "svg10")
+
+; The full path to the parsed DTD:
+(define parsed-dtd-path
+  (string-append laml-dir "/tools/dtd-parser/dtds/svg10.lsp"))
+
+; The full path of the mirror target directory
+(define mirror-target-dir (string-append laml-dir "lib/xml-in-laml/mirrors/"))
+
+(define validation-predicate-names 'normal)  
+
+(define mirror-name-prefix "")
+
+(set! reserved-scheme-names (cons 'filter reserved-scheme-names))
+
+(set! define-named-mirror-functions? #t)
+
+; End tool parameters
+
+; ----------------------------------------------------------------------------------------
+; Parameters to be part of the generated mirror:
+
+(set! default-document-type-declaration 
+  (string-it "<!DOCTYPE svg PUBLIC \\\"-//W3C//DTD SVG 1.0//EN\\\" \\\"http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd\\\">"))
+
+(set! default-xml-duplicated-attribute-handling "'keep-first")
+(set! default-xml-accept-only-string-valued-attributes? "#f")  ; thus numbers and characters can be passed as attribute values
+(set! default-xml-accept-extended-contents? "#t")  ; extended textual contents NOT accepted
+
+; ----------------------------------------------------------------------------------------
+
+
+(let ((mirror-destination-file (string-append mirror-target-dir mirror-name "-mirror" ".scm")))
+  (generate-mirror parsed-dtd-path mirror-destination-file mirror-name))
+
+
+; ----------------------------------------------------------------------------------------
+; Generating the manual of the SVG1.0 mirror.
+
+(display-message "")
+(display-message "Making the SVG1.0 manual")
+(laml-cd (string-append mirror-target-dir "man/"))
+(laml "svg10-mirror.sdoc")
+(display-message "")

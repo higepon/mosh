@@ -1,0 +1,73 @@
+; Manual of all the xhtml1.0 mirrors directly from the DTD. Place the result in lib/xml-in-laml/mirros/man
+
+(load (string-append laml-dir "laml.scm"))
+
+(laml-error "Use the three scripts in  lib/xml-in-laml/mirrors/man  instead of this script")
+
+(define (make-xhtml-manual variation)
+ (display-message (string-append "Making manual from DTD of xhtml10-" variation))
+ (laml-style "xml-in-laml/schemedoc-2/schemedoc") ;(laml-style "manual/manual")
+ (set! xml-check-language-overlap? #f)
+
+; (set! attribute-width-list (list 150 550 "*"))
+ (let* (
+        (manual-destination-directory (string-append laml-dir "lib/xml-in-laml/mirrors/man/"))
+        (dtd-lsp-file (string-append laml-dir "tools/dtd-parser/dtds/xhtml10-" variation ".lsp"))
+        (doc-list 
+          (map (manual-extend 'description (string-append "A " variation " XHTML mirror function derived from the DTD"))
+            (manual-from-parsed-dtd (file-read dtd-lsp-file) "")))
+
+       )
+   (set-manual-title (string-append "Reference Manual of the XHTML 1.0 " variation " mirror"))
+
+   (set-manual-author "Kurt Nørmark" "normark@cs.auc.dk" "Department of Computer Science" "Aalborg University" "Denmark")
+
+   (set-home-url "http://www.cs.auc.dk/~normark/laml/laml-overview.html")
+
+   (set-manual-name (string-append "xhtml10-" variation "-mirror"))
+
+   (set! end-remark "This documentation has been extracted automatically from the parsed document type definition")
+
+   (set-manual-abstract 
+    (con 
+     (p "This is the reference manual of the XHTML 1.0 " variation " mirror, as derived from the DTD.
+       The XML-in-LAML language name of this XHTML variant is " (b "xhtml10-" _ variation) ". ")
+
+     (p 
+       "The XHMTL mirror documented in this manual comply with the XML-in-LAML framework.
+       The manual only contains information which is present in the DTD: information about attributes
+       and the content model. In contrast to the DTD, however, the information in this manual is fully expanded
+       (without the macros of defined by 'entities').")
+
+     (p "The language map of this mirror is named " (kbd "xhtml10-" _ variation) ". "
+        "The language map returns a mirror function given its name. As an example "
+        (kbd "(xhtml10-" _ variation "'title)") " returns the XHTML 1.0 " variation " mirror function of the " (kbd "title") " element.")
+
+     (p "This mirror validates both the attributes and content composition. It also checks the links in
+         the document when the document is rendered with" 
+        (a 'href "../../../../man/laml.html#write-html" "write-html")_ "," 
+        "and when" (a 'href "../../../../man/laml.html#end-laml" "end-laml") "is called.
+        Link checking depends on the value of the variable" (a 'href "../../man/xml-in-laml.html#xml-link-checking" "xml-link-checking") _ "." )
+
+     (p "For easy and convenient loading of this mirror together with the common" (kbd "xml-in-laml") "library," (kbd "color") _ "," (kbd "time") _ "," "and the textual file reading/writing library
+         you can use:")
+
+     (pre "  (laml-style \"simple-xhtml1.0-" _ variation _ "-validating\")")
+
+   ))
+
+  (set! xml-check-language-overlap? #f)
+
+
+   (make-manual (reverse doc-list) 'manual-from-xml-dtd manual-destination-directory (string-append "lib/xml-in-laml/mirrors/xhtml10-" variation "-mirror.scm"))
+   (display-message "DONE")    (display-message "")
+  )
+)
+
+
+(make-xhtml-manual "strict")
+(make-xhtml-manual "transitional")
+(make-xhtml-manual "frameset")
+
+
+   

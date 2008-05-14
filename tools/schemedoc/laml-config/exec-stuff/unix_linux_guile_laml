@@ -1,0 +1,18 @@
+#!/bin/sh
+# By thi. Modified by normark@cs.aau.dk September 1, 2004
+# Modified January 26, 2006 by normark@cs.aau.dk.
+# Copied and modified by the LAML installation process - DO NOT EDIT.
+# Identical to unix_solaris-7_guile_laml
+#
+# Usage: laml file
+# File is with extension
+# Runs LAML on FILE from the current directory
+#
+if [ x"$1" = x ] ; then
+    echo Usage: $0 file
+    exit 1
+fi
+
+@scheme-exec@ -c "(begin (load (string-append \"@laml-dir@\" \"laml.init\")) (load \"$1\"))" $1 $PWD/
+
+

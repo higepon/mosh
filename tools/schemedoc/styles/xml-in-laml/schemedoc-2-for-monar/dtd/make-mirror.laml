@@ -1,0 +1,27 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-tool-load "xml-in-laml/xml-in-laml.scm")
+
+; ----------------------------------------------------------------------------------------
+; Tool parameters
+
+; The name of the language for which we create a mirror
+(define mirror-name "schemedoc2")
+
+; The full path to the parsed DTD:
+(define parsed-dtd-path
+  (string-append laml-dir "styles/xml-in-laml/schemedoc-2/dtd/schemedoc.lsp"))
+
+; The full path of the mirror target directory
+(define mirror-target-dir (string-append (startup-directory) "../mirror/"))
+
+(define action-elements '(manual))
+
+(define default-xml-represent-white-space "#t")
+
+; End tool parameters
+; ----------------------------------------------------------------------------------------
+
+(let ((mirror-destination-file (string-append mirror-target-dir mirror-name "-mirror" ".scm")))
+  (generate-mirror parsed-dtd-path mirror-destination-file mirror-name))
+
+

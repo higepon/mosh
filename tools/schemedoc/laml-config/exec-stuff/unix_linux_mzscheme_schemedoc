@@ -1,0 +1,16 @@
+#!/bin/sh
+
+string=? ; exec @scheme-exec@ -r $0 $1 $PWD/
+
+(load (string-append "@laml-dir@" "laml.init"))
+(load (string-append laml-dir "laml.scm"))
+(lib-load "xml-in-laml/xml-in-laml.scm")
+
+(let ((scheme-source-file (string-append (file-name-proper (second (laml-canonical-command-line))) ".scm")))
+  (schemedoc scheme-source-file))
+
+
+
+
+
+

@@ -1,0 +1,219 @@
+/* Original SchemeDoc CSS stylesheet */ 
+
+BODY.manual-body
+ {
+ }
+
+H1.manual-title 
+ {
+   color: blue;
+   font-weight: bold;
+ }
+
+SPAN.manual-author-element
+  {
+    padding-right: 0.7cm;
+  }
+
+SPAN.manual-affiliation-element
+  {
+    padding-right: 0.0cm;
+  }
+
+TABLE.manual-table 
+ {
+   margin-bottom: 40px;
+   /* border-style: solid;
+   border-width: 1px; */
+ }
+
+TABLE.manual-table TD
+ {
+   padding-bottom: 6px;
+   vertical-align: top;
+   /* border-style: solid;
+   border-width: 1px; */
+ }
+
+
+TD.manual-plain-end-of-entry
+  {
+    padding-top: 0px;
+  }
+
+HR.manual-plain-end-of-entry 
+  {
+   visibility: hidden;
+  }
+
+
+TD.manual-plain-entry-kind
+ {
+   color: red;
+   font-weight: 600;
+   padding-left: 0.8cm;
+ }
+
+SPAN.manual-kind-explanation
+ {
+   color: black;
+   font-weight: 100;
+ }
+
+TD.manual-plain-title  
+ {
+   color: blue;
+   font-weight: bold;
+   font-family: Courier;
+   background: rgb(230,230,230); 
+   margin-top: 40px;
+ }
+
+TD.manual-plain-title-level-2
+ {
+   color: rgb(100,100,255); 
+   padding-left: 20px;
+   font-weight: bold;
+   font-family: Courier;
+   background: white;
+   margin-top: 40px;
+ }
+
+SPAN.manual-section-title-level-2
+  {
+    color: rgb(100,100,255); 
+    font-weight: bold;
+    font-variant: small-caps;
+    border-left-color: yellow; 
+    padding-left: 20px;
+  }  
+
+
+TD.manual-plain-form
+ {
+   color: black;
+   font-family: Courier;
+ }
+
+TD.manual-plain-condition
+ {
+   color: black;
+ }
+
+TD.manual-plain-description
+ {
+   color: black;
+   font-style: normal;
+ }
+
+TD.manual-plain-parameter-name
+ {
+   color: black;
+   font-family: Courier;
+ }
+
+TD.manual-plain-parameter-description
+ {
+   color: black;
+ }
+
+TD.manual-plain-attribute-name 
+ {
+   color: black;
+   font-family: Courier;
+ }
+
+TD.manual-plain-example
+ {
+   color: black;
+   font-family: Courier;
+ }
+
+TD.manual-plain-reference-role
+ {
+   color: black;
+ }
+
+TD.manual-plain-reference-anchor
+ {
+   color: black;
+ }
+
+
+TD.manual-plain-comment
+ {
+   color: black;
+ }
+
+TD.manual-plain-misc
+ {
+   color: black;
+ }
+
+TD.manual-plain-custom
+ {
+   color: black;
+ }
+
+TD.manual-plain-returns
+ {
+   color: black;
+ }
+
+A.manual-plain-internal-reference
+ {
+   padding-right: 0.5cm;
+ }
+
+TD.manual-header-title
+  {
+
+  }
+
+TD.manual-header-form
+  {
+    font-family: Courier;
+  }
+
+TD.manual-header-description
+  {
+    font-style: normal;
+  }
+
+DIV.manual-abstract
+  {
+    margin-left: 10px;
+    background: rgb(230,230,230);
+  }
+
+TD.manual-section 
+  {
+    background: yellow; 
+  }
+
+TD.manual-section-level-2
+  {
+    background: rgb(255,255,190); 
+  }
+
+SPAN.manual-section-number 
+  {
+    width: 1.0cm;
+    color: blue;
+    font-weight: 800;
+    padding-right: 0.4cm;
+  }
+
+SPAN.manual-section-title
+  {
+    color: blue;
+    font-weight: 800;
+    font-variant: small-caps;
+    border-left-color: yellow; 
+  }  
+
+
+TD.manual-section-description
+  {
+  }
+

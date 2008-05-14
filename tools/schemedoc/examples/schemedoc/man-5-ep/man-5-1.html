@@ -1,0 +1,32 @@
+<html><head><link href="../../../css-stylesheets/elucidator/program.css" rel="stylesheet" title="program" type="text/css" /> <title>Source file</title></head><body bgcolor="#ffffff" text="#000000" link="#000000" vlink="#000000"><font size="2"><pre><a name="point"></a><div class="schemedoc-definition-comment">;; The function point. This function acts as a class.</div><a name="point"></a><span><a href="../man-5.html#point"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(point x y)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">x</span> x) 
+       (<span class="local-name-binding">y</span> y)
+      )
+
+   <div class="schemedoc-section-comment">;;; Accessors</div>
+   <a name="getx"></a><div class="schemedoc-definition-comment">;; The method that accesses x</div>   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(getx)</span> x)
+
+   <a name="gety"></a><div class="schemedoc-definition-comment">;; The method that accesses y</div>   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(gety)</span> y)
+
+   <a name="add"></a><div class="schemedoc-definition-comment">;; Add p to this point</div>   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(add p)</span> 
+    (<a class="applied-name" href="man-5-1.html#point" title="man-5">point</a> 
+     (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> x (send 'getx p))
+     (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> y (send 'gety p))))
+
+   <a name="type-of"></a><div class="schemedoc-definition-comment">;; Return the type of this point</div>   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(type-of)</span> 'point 
+   )
+     
+   <a name="self"></a>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(self message)</span>
+     (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX196" title="R5RS Scheme form">eqv?</a> message 'getx) getx)
+           ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX196" title="R5RS Scheme form">eqv?</a> message 'gety) gety)
+           ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX196" title="R5RS Scheme form">eqv?</a> message 'add)  add)
+           ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX196" title="R5RS Scheme form">eqv?</a> message 'type-of) type-of)
+	   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (error "Undefined message" message))))
+     
+   self))
+
+<a name="fac"></a><div class="schemedoc-definition-comment">;; The factorial functions. Also known as n!
+;; .parameter n An integer
+;; .pre-condition n &gt;= 0
+;; .returns n * (n-1) * ... * 1</div><a name="fac"></a><span><a href="../man-5.html#fac"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(fac n)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> n 0) 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX250" title="R5RS Scheme form">*</a> n (<a class="applied-name" href="man-5-1.html#fac" title="man-5">fac</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 1)))))</pre></font><div>&nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p></div></body></html>

@@ -1,0 +1,238 @@
+<html><head><link href="../../../css-stylesheets/elucidator/program.css" rel="stylesheet" title="program" type="text/css" /> <title>Source file</title></head><body bgcolor="#ffffff" text="#000000" link="#000000" vlink="#000000"><font size="2"><pre><span class="comment">; =&gt;man/color.sdoc</span><br /><span class="comment">; The LAML library and programs written by Kurt Normark, Aalborg University, Denmark.
+; Copyright (C) 1999  Kurt Normark.
+;
+; This program is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 2 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with this program; if not, write to the Free Software
+; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</span><br /><span class="comment">; Experimentally documented with use of documentation-mark style, as a contrast
+; to multi-semicolon style.</span><br />
+<div class="schemedoc-abstract-comment">;;;; 
+;;;;
+;;;; .title Reference Manual of the Color Library
+;;;; A library which contains the basic of handling colors in LAML.
+;;;;
+;;;;
+;;;; The library has encoding functions that convert rgb color lists, such as (rgb-color 255 255 255) 
+;;;; and (255 255 255) to a strings, such as "#ffffff". The primary color encoding function is rgb-color-encoding.
+;;;; The primary color representation function is make-rgb-color, which is accompanied by the color predicate rgb-color?
+;;;; a the color selectors red-of-rgb-color, green-of-rgb-color, and blue-of-rgb-color. &lt;p&gt;
+;;;;
+;;;;
+;;;; Of historical reasons we support two representation of colors. The first - the old representation - is just a list of red, green, 
+;;;; blue numbers (positive integers between 0 and 255), such as (255 0 255).
+;;;; The other is a tagged list of red, green, blue values such as (rgb-color 255 0 255), where rgb-color is the tag symbol. 
+;;;; Please be aware of the two different representations when you use this library.&lt;p&gt;
+;;;;
+;;;;
+;;;; The library also contains a set of color constants, all bound to the old color format (of backward compatibility reasons).</div>
+<div class="schemedoc-section-comment">;;; 
+;;;
+;;; Primary color encoding function.
+;;; The function in this section, rgb-color-encoding, accepts a variety of different color formats as input.
+;;; It returns a string of length seven, such as "#ff00ff". The output format is the primary color representation in most web contexts. 
+;;; .section-id primary-function</div><a name="rgb-color-encoding"></a><div class="schemedoc-definition-comment">;; Return a color encoding (a string of length seven such as "#123456") of color-pars.
+;; The color-pars parameter(s) to this function are very versatile.&lt;p&gt;
+;; If it is a color encoding string already, just return it.&lt;br&gt;
+;; If it is a color value which satisfies the predicate rgb-color?, return the encoding of this value. &lt;br&gt;
+;; If it is a symbol, return the color encoding bound to it. &lt;br&gt;
+;; If it is a string, transform it to a symbol and return the color encoding bound to it. &lt;br&gt;
+;; If it is a list like (list 1 2 3), consider it as a red-green-blue list, and return the color encoding of it. &lt;br&gt;
+;; If it is three individiual parameters, say r, g, and b, return the color encoding of red r, green g, and blue b. &lt;p&gt;
+;; If you care about efficiency, use can consider to use the function rgb-color instead of rgb-color-encoding.
+;; .old-example (rgb-color-encoding "red")
+;; .old-example (rgb-color-encoding 'red)
+;; .old-example (rgb-color-encoding "#ff0000")
+;; .old-example (rgb-color-encoding (make-color 255 0 0))
+;; .old-example (rgb-color-encoding '(255 0 0))
+;; .old-example (rgb-color-encoding (make-rgb-color 255 0 0))
+;; .old-example (rgb-color-encoding 255 0 0)
+;; .returns A string of length 7 of the format "#rrggbb".
+;; .internal-references "more efficient functions" "rgb-color" "rgb-color-list"
+;; .note This function works with both the new and old representation of colors in LAML.</div><a name="rgb-color-encoding"></a><span><a href="../color.html#rgb-color-encoding"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(rgb-color-encoding . color-pars)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="applied-name" href="color-1.html#rgb-color?" title="color">rgb-color?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)))
+         (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">the-color</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)))
+           (<a class="applied-name" href="color-1.html#rgb-color" title="color">rgb-color</a> (<a class="applied-name" href="color-1.html#red-of-rgb-color" title="color">red-of-rgb-color</a> the-color) (<a class="applied-name" href="color-1.html#green-of-rgb-color" title="color">green-of-rgb-color</a> the-color) (<a class="applied-name" href="color-1.html#blue-of-rgb-color" title="color">blue-of-rgb-color</a> the-color))))
+
+       ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 3 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> color-pars)))
+          (<a class="applied-name" href="color-1.html#rgb-color" title="color">rgb-color</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> color-pars) (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> color-pars) (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> color-pars)))
+
+       ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX374" title="R5RS Scheme form">string?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)) 
+             (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 7 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX196" title="R5RS Scheme form">eqv?</a> #\# (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX379" title="R5RS Scheme form">string-ref</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars) 0)))
+          (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))
+
+       ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX374" title="R5RS Scheme form">string?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)) 
+             (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX340" title="R5RS Scheme form">member</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> "red" "green" "blue" "white" "black" "yellow" "purple" "orange" "brown" "maroon" "grey" "silver" 
+                                     "tetal" "aqua" "lime" "olive" "navy" "fuchsia")))
+          (<a class="applied-name" href="color-1.html#rgb-color-list" title="color">rgb-color-list</a> (eval-cur-env (<a class="schemedoc-name" href="../../../lib/man/general.html#as-symbol" title="Manual: general">as-symbol</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)))))
+
+       ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX346" title="R5RS Scheme form">symbol?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)))
+          (<a class="applied-name" href="color-1.html#rgb-color-list" title="color">rgb-color-list</a> (eval-cur-env (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))))
+
+       ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX331" title="R5RS Scheme form">list?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 3 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))) 
+             (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX224" title="R5RS Scheme form">number?</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars))))  
+          (<a class="applied-name" href="color-1.html#rgb-color-list" title="color">rgb-color-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-pars)))
+
+       (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#laml-error" title="Manual: general">laml-error</a> "rgb-color: Cannot determine color" color-pars))))
+      
+
+
+<div class="schemedoc-section-comment">;;; Secondary color encoding functions. 
+;;; The functions in this section only work with the old version of the color representation.
+;;; This is the untagged list representation, such as '(255 0 0). &lt;p&gt;
+;;; For new development, the function
+;;; make-rgb-color should be used together with the color encoding function rgb-color-encoding.</div><a name="rgb"></a><span class="comment">; Return an 'Internet list' encoding the color (list r g b). </span><br /><a name="rgb"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(rgb r g b)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#number-in-base" title="Manual: general">number-in-base</a> r 16) (<a class="schemedoc-name" href="../../../lib/man/general.html#number-in-base" title="Manual: general">number-in-base</a> g 16) (<a class="schemedoc-name" href="../../../lib/man/general.html#number-in-base" title="Manual: general">number-in-base</a> b 16)))
+
+<a name="pad-to-length2"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(pad-to-length2 str)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX236" title="R5RS Scheme form">&lt;</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> str) 2)
+      (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "0" str)
+      str))
+
+
+<a name="rgb-string"></a><span class="comment">; Return an 'Internet color string" encoding the colors r, g, and b.
+; .parameter r The amount of red - a decimal number between 0 and 255. 
+; .parameter g The amount of green - a decimal number between 0 and 255. 
+; .parameter b The amount of blue - a decimal number between 0 and 255. 
+; .returns   A string of length 7 of the form "#rrggbb".</span><br /><a name="rgb-string"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(rgb-string r g b)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">lst3</span> (<a class="applied-name" href="color-1.html#rgb" title="color">rgb</a> r g b))
+         (<span class="local-name-binding">lst3-a</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="applied-name" href="color-1.html#pad-to-length2" title="color">pad-to-length2</a> lst3)))
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX411" title="R5RS Scheme form">apply</a> <a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX320" title="R5RS Scheme form">cons</a> "#" lst3-a))))
+
+<a name="rgb-color"></a><div class="schemedoc-definition-comment">;; Return an 'Internet color string" encoding the colors r, g, and b.
+;; .form (rgb-color r g b)
+;; .parameter r The amount of red - a decimal number between 0 and 255. 
+;; .parameter g The amount of green - a decimal number between 0 and 255. 
+;; .parameter b The amount of blue - a decimal number between 0 and 255. 
+;; .returns   A string of length 7 of the form "#rrggbb".</div><a name="rgb-color"></a><span><a href="../color.html#rgb-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">rgb-color</span> <a class="applied-name" href="color-1.html#rgb-string" title="color">rgb-string</a>)
+
+<a name="rgb-string-list"></a><span class="comment">; A variant of rgb-string, in which the colors are passed as a list of length 3.
+; .parameter color-list A list of length 3. Each element of the list is a decimal integer between 0 and 255.
+; .returns   A string of length 7 of the form "#rrggbb".</span><br /><a name="rgb-string-list"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(rgb-string-list color-list)</span>
+  (<a class="applied-name" href="color-1.html#rgb-string" title="color">rgb-string</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> color-list) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">cadr</a> color-list) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">caddr</a> color-list)))
+
+<a name="rgb-color-list"></a><div class="schemedoc-definition-comment">;; Returns the color encoding of (list r g b) given a list of three color numbers as parameter.
+;; .form (rgb-color-list color-triple-list)
+;; .parameter color-triple-list A list of length 3. Each element of the list is a decimal integer between 0 and 255.
+;; .returns   A string of length 7 of the form "#rrggbb".</div><a name="rgb-color-list"></a><span><a href="../color.html#rgb-color-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">rgb-color-list</span> <a class="applied-name" href="color-1.html#rgb-string-list" title="color">rgb-string-list</a>)
+
+
+<a name="hex-ciffer-&gt;decimal-ciffer"></a><span class="comment">; The hexidecimal ciffer, represented as a character, is translated to
+; a number between 0 and 15. Both lower case and upper case letters between a and f (A and F)
+; can be used to represent the high ciffers.</span><br /><a name="hex-ciffer-&gt;decimal-ciffer"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(hex-ciffer-&gt;decimal-ciffer x)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">n</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX367" title="R5RS Scheme form">char-&gt;integer</a> x)))
+    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> n 48) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX238" title="R5RS Scheme form">&lt;=</a> n 57)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 48))
+          ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> n 97) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX238" title="R5RS Scheme form">&lt;=</a> n 102)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 87)) 
+          ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> n 65) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX238" title="R5RS Scheme form">&lt;=</a> n 70)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 55))
+          (error (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "hex-ciffer-&gt;decimal-ciffer: The ciffer " (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> x) " is not a hexadecimal ciffer")))))
+
+<div class="schemedoc-section-comment">;;; Color constructor, predicate, and selectors.
+;;; The function make-rgb-color is the primary color constructor in LAML-based software.
+;;; The predidate and the selectors only work with make-rgb-color.
+;;; The function make-color is an old version of the constructor. </div>
+<a name="make-rgb-color"></a><div class="schemedoc-definition-comment">;; Make and return a color represented by a red, green and blue constituent.
+;; This is the primary color constructor of LAML-based software.
+;; .parameter r The amount of red - a decimal number between 0 and 255. 
+;; .parameter g The amount of green - a decimal number between 0 and 255. 
+;; .parameter b The amount of blue - a decimal number between 0 and 255. 
+;; .returns A tagged list of color numbers.
+;; .internal-references "conversion function" "rgb-color-encoding"
+;; .old-example (make-rgb-color 255 0 0) =&gt; (rgb-color 255 0 0)
+;; .old-example (rgb-color-encoding (make-rgb-color 255 0 0)) =&gt; "#ff0000"</div><a name="make-rgb-color"></a><span><a href="../color.html#make-rgb-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(make-rgb-color r g b)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> 'rgb-color r g b))
+
+<a name="rgb-color?"></a><div class="schemedoc-definition-comment">;; Is x a LAML color </div><a name="rgb-color?"></a><span><a href="../color.html#rgb-color?"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(rgb-color? x)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX331" title="R5RS Scheme form">list?</a> x) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 4 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> x)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> 'rgb-color (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> x))))
+
+<a name="red-of-rgb-color"></a><div class="schemedoc-definition-comment">;; Return the red constituent of the LAML color.
+;; .form (red-of-rgb-color color)
+;; .parameter color A color constructed with make-rgb-color.
+;; .internal-references "color constructor" "make-rgb-color"</div><a name="red-of-rgb-color"></a><span><a href="../color.html#red-of-rgb-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">red-of-rgb-color</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-selector-function" title="Manual: general">make-selector-function</a> 2 "red-of-rgb-color"))
+
+<a name="green-of-rgb-color"></a><div class="schemedoc-definition-comment">;; Return the green constituent of the color.
+;; .form (green-of-rgb-color color)
+;; .parameter color A color constructed with make-rgb-color.
+;; .internal-references "color constructor" "make-rgb-color"</div><a name="green-of-rgb-color"></a><span><a href="../color.html#green-of-rgb-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">green-of-rgb-color</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-selector-function" title="Manual: general">make-selector-function</a> 3 "green-of-rgb-color"))
+
+<a name="blue-of-rgb-color"></a><div class="schemedoc-definition-comment">;; Return the blue constituent of the color.
+;; .form (blue-of-rgb-color color)
+;; .parameter color A color constructed with make-rgb-color.
+;; .internal-references "color constructor" "make-rgb-color"</div><a name="blue-of-rgb-color"></a><span><a href="../color.html#blue-of-rgb-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">blue-of-rgb-color</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-selector-function" title="Manual: general">make-selector-function</a> 4 "blue-of-rgb-color"))
+
+<a name="make-color"></a><div class="schemedoc-definition-comment">;; Make and return the rgb-list representation of the color with r red, g green, and b blue.
+;; This is an old version of the color contructor.
+;; .misc Deprecated. Use make-rgb-color.</div><a name="make-color"></a><span><a href="../color.html#make-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(make-color r g b)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> r g b))
+
+
+
+<div class="schemedoc-section-comment">;;; 
+;;; Color constants.
+;;; To stay backward compatible with a substantial amount of older LAML software, all color constants
+;;; are bound to the old LAML color representation. Thus, for instance, the value of red is (255 0 0), and not
+;;; (rgb-color 255 0 0). As an important observation, the primary color encoding function, rgb-color-encoding, accepts
+;;; the value of the color constants as input (besides a number of other kinds of input).</div><a name="red"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="red"></a><span><a href="../color.html#red"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">red</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 255 0 0))
+
+<a name="dark-red"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="dark-red"></a><span><a href="../color.html#dark-red"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">dark-red</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 210 0 0))
+
+<a name="green"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="green"></a><span><a href="../color.html#green"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">green</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 255 0))
+
+<a name="green1"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="green1"></a><span><a href="../color.html#green1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">green1</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 202 240 179))
+
+<a name="green2"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="green2"></a><span><a href="../color.html#green2"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">green2</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 182 248 197))
+
+<a name="blue"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="blue"></a><span><a href="../color.html#blue"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">blue</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 0 255))
+
+<a name="white"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="white"></a><span><a href="../color.html#white"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">white</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 255 255 255))
+
+<a name="black"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="black"></a><span><a href="../color.html#black"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">black</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 0 0))
+
+<a name="yellow"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="yellow"></a><span><a href="../color.html#yellow"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">yellow</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 255 255 0))
+
+<a name="purple"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="purple"></a><span><a href="../color.html#purple"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">purple</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 255 0 255))
+
+<a name="light-blue"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="light-blue"></a><span><a href="../color.html#light-blue"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">light-blue</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 255 255))
+
+<a name="blue1"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="blue1"></a><span><a href="../color.html#blue1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">blue1</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 170 241 249))
+
+<a name="blue2"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="blue2"></a><span><a href="../color.html#blue2"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">blue2</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 204 255 255))
+
+<a name="blue3"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="blue3"></a><span><a href="../color.html#blue3"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">blue3</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 198 203 253))
+
+<a name="orange"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="orange"></a><span><a href="../color.html#orange"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">orange</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 211 90 18))
+
+<a name="dark-yellow"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="dark-yellow"></a><span><a href="../color.html#dark-yellow"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">dark-yellow</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 228 211 5))
+
+<a name="grey1"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="grey1"></a><span><a href="../color.html#grey1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">grey1</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 145 145 145))
+
+<a name="grey2"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="grey2"></a><span><a href="../color.html#grey2"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">grey2</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 210 210 210))
+
+<a name="brown"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="brown"></a><span><a href="../color.html#brown"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">brown</span> (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 166 71 0))
+
+<a name="maroon"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="maroon"></a><span><a href="../color.html#maroon"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">maroon</span>   (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 128 0 0))
+
+<a name="grey"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="grey"></a><span><a href="../color.html#grey"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">grey</span>     (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 128 128 128))
+
+<a name="silver"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="silver"></a><span><a href="../color.html#silver"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">silver</span>   (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 192 192 192))
+
+<a name="tetal"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="tetal"></a><span><a href="../color.html#tetal"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">tetal</span>    (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 128 128))
+
+<div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="aqua"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="aqua"></a><span><a href="../color.html#aqua"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">aqua</span>     (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 255 255))
+
+<div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="lime"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="lime"></a><span><a href="../color.html#lime"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">lime</span>     (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 255 0))
+
+<a name="olive"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="olive"></a><span><a href="../color.html#olive"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">olive</span>    (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 128 128 0))
+
+<a name="navy"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="navy"></a><span><a href="../color.html#navy"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">navy</span>     (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 0 0 128))
+
+<a name="fuchsia"></a><div class="schemedoc-definition-comment">;; A color constant. A color is represented as a list of integers of length three (rgb).</div><a name="fuchsia"></a><span><a href="../color.html#fuchsia"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">fuchsia</span>  (<a class="applied-name" href="color-1.html#make-color" title="color">make-color</a> 255 0 255))
+
+</pre></font><div>&nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p></div></body></html>

@@ -1,0 +1,16 @@
+@echo off
+rem  By Kurt Normark, normark@cs.auc.dk.
+rem  Copied and modified by the LAML installation process - DO NOT EDIT.
+rem  This bat file is used from Windows to process an LAML file.
+rem  Does not work for Windows NT and Windows 2000.
+rem  Usage: laml file
+rem  file is with the laml extension.
+rem  Necessary adaptation:
+rem   1. change LAMLDIR to reflect the LAML directory with your LAML installation
+rem   2. Change the path to mzScheme
+set LAMLDIR=@laml-dir@
+set CDIR=
+setenv CDIR %%cwd
+rem echo Output dir is now set to "%CDIR%"
+@command-scheme-exec@ -v -f %LAMLDIR%laml.init -d %1 %1 %CDIR%\
+echo Done

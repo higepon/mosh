@@ -1,0 +1,24 @@
+; Assume that this script is executed with MzScheme 200+
+(load "laml-config-internal.scm")
+
+; Only when using Guile:
+; (define directory-exists? file-exists?)
+
+; (laml-config (file-read "cs-linux-configuration-300"))  ; PLT 350 on Linux
+
+(laml-config (file-read "cs-linux-configuration"))  ; PLT 209 on Linux
+
+; (laml-config (file-read "cs-unix-configuration-linux-guile")) ; Guile on Linux...
+
+; (laml-config (file-read "cs-unix-configuration-solaris-7"))  ; MzScheme-205 on Solaris
+
+; (laml-config (file-read "cs-unix-configuration-solaris-mzscheme-100")) ; MzScheme 101 on Solaris
+
+; (laml-config (file-read "cs-unix-configuration-solaris-7-SCM"))  ; SCM - not in /pack any more...
+
+; Protect laml and absolute-laml to be executable:
+
+(require (lib "process.ss"))
+(system "chmod 755 /user/normark/scheme/bin/laml")
+(system "chmod 755 /user/normark/scheme/bin/schemedoc")
+(system "chmod 755 /user/normark/scheme/bin/absolute-laml")

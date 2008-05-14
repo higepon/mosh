@@ -1,0 +1,21 @@
+The Scheme Elucidator 2.
+
+The Scheme Elucidator 2 is developed on the ground of the
+original Elucidator software, found in ../../elucidator/ .
+
+Major changes:
+
+  - New XML-in-LAML front end
+  - XHTML backend
+  - CSS stylesheet support 
+  - December 2004: Version support.
+
+There is no code overlap between the Scheme Elucidator 2 and the
+original Elucidator.  The orginal Elucidator will not be developed or
+supported any more. However, original Elucdiator software will stay
+intact, as of version 23 of LAML.
+
+elucidator.el
+  Updated for support of Elucidator 2.
+
+KN

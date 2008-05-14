@@ -1,0 +1,51 @@
+The following files are necessary if you use LAML together with the Emacs text editor.
+
+laml-mode.el      An emacs mode for LAML, which identifies laml buffers
+                  with respect to the activation facilities in laml.el (see below).
+
+laml-execute.el   Supports convenient Scheme processng of files with a laml extension.
+                  The main command is laml-process-current-buffer.
+                  In the first section of this file, the functions start-laml-process and
+                  call-laml-process dispatches to different start-process and call-process
+                  activation, depending on the value of the variable scheme-system.
+
+laml-key-menu-bindings.el
+                  Most of the Emacs menu and keybindings for LAML. LENO and Elucidator
+                  keybindings are found in separate files. 
+
+laml-customize.el
+                  The facility for LAML customization.
+
+laml-general.el   Generally useful Emacs lisp functions used for LAML (and beyond).
+
+laml-emacs-support.el
+                  The file to load from your .emacs file.
+                  Loads a number of other elisp files.
+
+
+
+templates         A directory with textual temlates used by laml-template.el
+
+
+
+
+
+The following files are not directly related to LAML:
+
+dired-extensions.el
+                  Extensions to dired that allow us to copy files from on dired directory to another
+                  to copy directories recursively, and to delete directories recursively.
+                  You should be very careful when using these powerful procedures. 
+                  Very few questions are asked!  The work is just done.  
+                  Not really part used in LAML - but distributed here for convenience
+                  and in the hope that others like them.
+
+scheme-interpreter-unit-testing/scheme-interpreter-unit-testing.el
+                  A layer on top of Schemeunit - the Schematics unit testing framework for Scheme.
+                  Relies on some of the other Emacs lisp libaries for LAML.
+
+
+
+
+
+The directory called notes contain various notes about the elisp programs. 

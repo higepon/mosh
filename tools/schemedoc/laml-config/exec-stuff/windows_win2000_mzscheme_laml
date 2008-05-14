@@ -1,0 +1,13 @@
+@echo off
+rem  By Kurt Normark, normark@cs.auc.dk.
+rem  Copied and modified by the LAML installation process - DO NOT EDIT.
+rem  Addapted to Win2000 by Christian Sejberg.
+rem  This bat file is used from Windows to process a LAML file.
+rem  Usage: laml file
+rem  The file is with the laml extension.
+set LAMLDIR=@laml-dir@
+rem set Output dir to current directory
+set CDIR=%cd%\
+rem echo Output dir is now set to "%CDIR%"
+@command-scheme-exec@ -v -f %LAMLDIR%laml.init -d %1 %1 %CDIR%
+echo Done

@@ -1,0 +1,53 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "simple-html4.01-transitional-validating")
+(define language-preference 'english)
+
+(load (in-startup-directory "../tutorial-common.scm"))
+
+(generic-page
+  "SchemeDoc Examples"
+  (con-par
+    (laml-top-banner)
+    (h 1 "Schemedoc Examples")
+    
+    (p "The following examples exist in this directory:")
+
+    (indent-pixels 10
+      (table-3 
+        1
+        (list 200 180 180 180)
+        (list
+          (map b (list "Example"   "Scheme source programs"    "LAML manual source files" "HTML manual files"))
+
+          (list "Program 1"      (a-tag "prog1.scm")     "-"        (a-tag "man/prog1.html"))
+          (list "Program 2"      (a-tag "prog2.scm")     "-"        (a-tag "man/prog2.html"))
+          (list "Program 3"      (a-tag "prog3.scm")     (a-tag "man/prog3.laml")        (a-tag "man/prog3.html"))
+          (list "Program 4"      (a-tag "prog4.scm")     "-"        (a-tag "man/prog4.html"))
+          (list "Program 5"      (a-tag "prog5.scm")     (a-tag "man/prog5.laml")        (a-tag "man/prog5.html"))
+
+          (list "Custom Manual"      "-"     (a-tag "manual-example.laml")        (a-tag "manual-example.html"))
+
+          (list "The XML-in-LAML Bikes manual"      "-"     (span (a-tag "bikes.laml") "," (a-tag "augmented-bikes.laml"))
+                 (a-tag "augmented-bikes.html"))
+          
+        )))
+
+    (p (a 'href (laml-tutorial-url "schemedoc") "The accompanying part of the LAML tutorial"))
+
+    (p "The examples are available in the LAML distribution in 
+        the directory" (kbd "examples/tutorial/schemedoc/") )
+
+    (p (a 'href "../index.html" "Index of tutorial examples."))
+
+    (p (em "If you modify the examples in this directory, or in one of the subdirectories, you may break or destroy
+       your local copy of the LAML tutorial. Therefore you are encouraged to make a copy of the examples
+       before modifying them."))
+
+    (font-size 2 (em "If your browser will not present files with 'laml' or 'scm' extensions 
+                      you should disable any special handling of these extensions on your system.
+                      In that way they are treated as pure text files."))
+  )
+  white black blue blue
+)
+
+(end-laml)

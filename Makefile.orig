@@ -1,0 +1,183 @@
+TARGET  = ./test
+SOURCES = main.cpp read.cpp scheme.cpp Symbol.cpp VM.cpp Port.cpp compiler.cpp Regexp.cpp freeproc.cpp
+INCLUDE = -I .
+
+CFLAGS_COMPILER = -Wall -D MONA_SCHEME -D USE_BOEHM_GC #-D GC_DEBUG -W -Wformat=2 -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Wfloat-equal -Wpointer-arith  
+OBJECTS  = $(SOURCES:.cpp=.o)
+
+ONIG_DIR = ./onig/onig-5.7.0
+INCLUDE += -I ./onig/onig-5.7.0
+
+ONIG_SOURCES = \
+	$(ONIG_DIR)/regcomp.c $(ONIG_DIR)/regenc.c $(ONIG_DIR)/regerror.c $(ONIG_DIR)/regexec.c $(ONIG_DIR)/regext.c \
+	$(ONIG_DIR)/reggnu.c $(ONIG_DIR)/regparse.c $(ONIG_DIR)/regposerr.c $(ONIG_DIR)/regposix.c $(ONIG_DIR)/regsyntax.c \
+	$(ONIG_DIR)/regtrav.c $(ONIG_DIR)/regversion.c $(ONIG_DIR)/st.c $(ONIG_DIR)/enc/ascii.c $(ONIG_DIR)/enc/big5.c \
+	$(ONIG_DIR)/enc/cp1251.c $(ONIG_DIR)/enc/euc_jp.c $(ONIG_DIR)/enc/euc_kr.c $(ONIG_DIR)/enc/euc_tw.c \
+	$(ONIG_DIR)/enc/gb18030.c $(ONIG_DIR)/enc/iso8859_1.c $(ONIG_DIR)/enc/iso8859_10.c $(ONIG_DIR)/enc/iso8859_11.c $(ONIG_DIR)/enc/iso8859_13.c \
+	$(ONIG_DIR)/enc/iso8859_14.c $(ONIG_DIR)/enc/iso8859_15.c $(ONIG_DIR)/enc/iso8859_16.c $(ONIG_DIR)/enc/iso8859_2.c $(ONIG_DIR)/enc/iso8859_3.c \
+	$(ONIG_DIR)/enc/iso8859_4.c $(ONIG_DIR)/enc/iso8859_5.c $(ONIG_DIR)/enc/iso8859_6.c $(ONIG_DIR)/enc/iso8859_7.c $(ONIG_DIR)/enc/iso8859_8.c \
+	$(ONIG_DIR)/enc/iso8859_9.c $(ONIG_DIR)/enc/sjis.c $(ONIG_DIR)/enc/unicode.c $(ONIG_DIR)/enc/utf16_be.c $(ONIG_DIR)/enc/utf16_le.c \
+	$(ONIG_DIR)/enc/utf32_le.c $(ONIG_DIR)/enc/utf8.c $(ONIG_DIR)/enc/utf32_be.c
+
+ONIG_OBJECTS = $(ONIG_SOURCES:.c=.o)
+
+
+BOEHM_GC_CFLAGS = -DPACKAGE_NAME=\"gc\"    \
+-DPACKAGE_TARNAME=\"gc\"                   \
+-DPACKAGE_VERSION=\"7.1alpha3\"            \
+-DPACKAGE_STRING=\"gc\ 7.1alpha3\"         \
+-DPACKAGE_BUGREPORT=\"Hans.Boehm@hp.com\"  \
+-DGC_VERSION_MAJOR=7                       \
+-DGC_VERSION_MINOR=1                       \
+-DGC_ALPHA_VERSION=3                       \
+-DPACKAGE=\"gc\"                           \
+-DVERSION=\"7.1alpha3\"                    \
+-DNO_EXECUTE_PERMISSION=1                  \
+-DALL_INTERIOR_POINTERS=1                  \
+-DATOMIC_UNCOLLECTABLE=1                   \
+-DNO_CLOCK                                 \
+-UMSWIN32
+
+
+
+BOEHM_GC_DIR  = ./gc-7.1alpha3
+GC_CFLAGS     = $(BOEHM_GC_CFLAGS) -I $(BOEHM_GC_DIR)/include -DUSE_BOEHM_GC -DGC_OPERATOR_NEW_ARRAY -DGC_NOT_DLL #-DMONA_GC_DEBUG
+INCLUDE += -I $(BOEHM_GC_DIR)/include
+
+GC_CXX_SOURCES = $(BOEHM_GC_DIR)/gc_cpp.cpp
+GC_C_SOURCES   = $(BOEHM_GC_DIR)/alloc.c \
+$(BOEHM_GC_DIR)/backgraph.c              \
+$(BOEHM_GC_DIR)/blacklst.c               \
+$(BOEHM_GC_DIR)/dbg_mlc.c                \
+$(BOEHM_GC_DIR)/dyn_load.c               \
+$(BOEHM_GC_DIR)/finalize.c               \
+$(BOEHM_GC_DIR)/headers.c                \
+$(BOEHM_GC_DIR)/mach_dep.c               \
+$(BOEHM_GC_DIR)/malloc.c                 \
+$(BOEHM_GC_DIR)/mallocx.c                \
+$(BOEHM_GC_DIR)/mark.c                   \
+$(BOEHM_GC_DIR)/mark_rts.c               \
+$(BOEHM_GC_DIR)/misc.o                   \
+$(BOEHM_GC_DIR)/new_hblk.c               \
+$(BOEHM_GC_DIR)/obj_map.c                \
+$(BOEHM_GC_DIR)/os_dep.c                 \
+$(BOEHM_GC_DIR)/reclaim.c                \
+$(BOEHM_GC_DIR)/allchblk.c
+
+GC_CXX_OBJECTS = $(GC_CXX_SOURCES:.cpp=.o)
+GC_C_OBJECTS   = $(GC_C_SOURCES:.c=.o)
+GC_OBJECTS     = $(GC_C_OBJECTS) $(GC_CXX_OBJECTS)
+
+CFLAGS   = $(CFLAGS_COMPILER) -O2  -fomit-frame-pointer $(GC_CFLAGS) #-O2 -fomit-frame-pointer
+CXXFLAGS = $(CFLAGS)
+
+$(TARGET): ./free-vars-decl.scm ./compiler-vm.scm ./compiler-gauche.scm ./compiler-vm-cpp.scm all-tests.scmc ./compiler-with-library.scmc ./compiler-vm-outer.scm Instruction.h ./cprocedures.cpp ./labels.cpp $(OBJECTS)  $(ONIG_OBJECTS) $(GC_OBJECTS) ./scripts/detect-repeat
+	$(CXX) $(CFLAGS) $(OBJECTS) $(ONIG_OBJECTS) $(GC_OBJECTS) -o $(TARGET)
+
+./scripts/detect-repeat: ./scripts/detect-repeat.cpp DebugInstruction.h
+	$(CXX) -O3 -fomit-frame-pointer  $< -o $@
+
+DebugInstruction.h: instruction.scm
+	./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+
+_dump_insn_target:
+	rm -f VM.o
+	rm -f main.o
+	$(CXX) $(CXXFLAGS) -D DUMP_ALL_INSTRUCTIONS $(INCLUDE) -c VM.cpp -o VM.o 2>/dev/null
+	$(CXX) $(CXXFLAGS) -D DUMP_ALL_INSTRUCTIONS $(INCLUDE) -c main.cpp -o main.o 2>/dev/null
+	$(MAKE) $(TARGET) 2>/dev/null
+	rm -f VM.o
+	rm -f main.o
+
+prof:
+	$(MAKE) _prof
+#	$(TARGET) ./work.scm > prof.out
+#	$(TARGET) test > prof.out
+
+_prof: ./library.scm ./compiler-vm-cpp.scm
+	cat ./library.scm ./compiler-vm-cpp.scm > tmp
+	scripts/gen-profiler.scm tmp > ./compiler-with-library.scm
+	rm -rf tmp
+	$(MAKE) $(TARGET)
+
+labels.cpp: ./instruction.scm
+	./scripts/gen-label.scm $< > $(PWD)/$@
+
+.PHONY: bench
+
+TIME=/usr/bin/time -f "%E real"
+
+bench:
+	./scripts/bench.scm > /dev/null
+
+vbench:
+	./scripts/bench.scm -v > /dev/null
+
+
+compiler.o: compiler.cpp
+	$(CXX) $(CFLAGS_COMPILER) $(INCLUDE) -c $< -o $@
+
+showprof:
+	./test test |grep pass3 | ./scripts/analyze-profile.scm < prof.out
+
+.SUFFIXES: .cpp .o
+.cpp.o:
+	$(CXX) $(CXXFLAGS) $(INCLUDE) -c $< -o $@
+
+.SUFFIXES: .c .o
+.c.o:
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+depend:
+	$(CXX) -MM $(INCLUDE) $(CXXFLAGS) $(SOURCES) > dependencies
+
+compiler.cpp: compiler-with-library.scmc
+	./scripts/gen-pre-compiled-cpp.scm "getCompiler" $(PWD)/$< > $(PWD)/$@ || (rm -f $(PWD)/$@ $(PWD)/$< && false)
+
+all-tests.scmc: all-tests.scm
+	./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
+
+all-tests.scm: ./test-data.scm
+	./scripts/gen-test.scm $< > $@
+
+compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
+	./vm.scm compile-file $(PWD)/$< > $(PWD)/$@ || (rm -f $(PWD)/$@ $(PWD)/$< && false)
+
+./free-vars-decl.scm: ./free-vars.scm
+	./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@ || (rm -f $(PWD)/$@ && false)
+
+./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
+	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+
+./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
+	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+
+./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
+	./scripts/gen-compiler.scm $(PWD)/$< "gauche?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+
+./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
+	./scripts/gen-compiler.scm $(PWD)/$< "vm-cpp?" > $(PWD)/$@ || (rm -f $(PWD)/$@ && false)
+
+./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
+	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+
+Instruction.h: ./instruction.scm
+	./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+
+./cprocedures.cpp: ./free-vars.scm
+	./scripts/gen-cproc.scm > $@
+
+check: $(TARGET)
+	$(TARGET) test
+	./vm.scm
+	./scripts/test-compiler.scm
+
+clean:
+	rm -rf ./free-vars-decl.scm ./compiler-vm.scm ./compiler-gauche.scm ./compiler-vm-cpp.scm ./all-tests.scm labels.cpp \
+	./compiler-with-library.scmc ./compiler-with-library.scm ./Instruction.h ./cprocedures.cpp  $(OBJECTS) $(TARGET) ./all-tests.scmc ./compiler.cpp ./library.cpp \
+	$(ONIG_OBJECTS) compiler-vm-outer.scm $(GC_OBJECTS)
+
+-include dependencies
+
+
+

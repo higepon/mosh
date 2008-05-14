@@ -1,0 +1,49 @@
+<html><head><link href="stylesheets/program.css" rel="stylesheet" title="program" type="text/css" /> <title>Source file</title></head><body bgcolor="#ffffc1" text="#000000" link="#000000" vlink="#000000"><font size="3"><pre><div class="schemedoc-abstract-comment">;;;; .author Kurt Nørmark
+;;;; .title The program prog4
+;;;; .affiliation Department of Computer Science, Aalborg University
+;;;; This is a demo manual, written to show additional aspects of SchemeDoc.
+;;;; These are use of .section-id, cross references among sections, and use of
+;;;; the escape character $$.
+;;;; .source-destination-delta      man/</div>
+<div class="schemedoc-section-comment">;;; The fac and fib functions.
+;;; These functions are found in the source file prog4.scm. 
+;;; The manual stuff for these is done via SchemeDoc.
+;;; See also &lt;a href="#def"&gt; the other section&lt;/a&gt;.
+;;; .section-id abc</div>
+<a name="fac"></a><div class="schemedoc-definition-comment">;; Calculate the factorial of n</div><a name="fac"></a><span><span><a href="prog4-1.html#fac"><img src="./images/small-square.gif" title="Show source file in small font" alt="" border="0" /></a></span> <span><a href="cross-reference-index-f.html#fac" target="control-frame"><img src="./images/small-green-up-triangle.gif" title="In prog4: Link from fac to it&#39;s cross reference table entry" alt="" border="0" /></a></span> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" target="documentation-frame" title="R5RS Scheme form">define</a> <span class="signature">(fac n)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" target="documentation-frame" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" target="documentation-frame" title="R5RS Scheme form">=</a> 0 n) 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX250" target="documentation-frame" title="R5RS Scheme form">*</a> n (<a class="applied-name" href="prog1-1-LARGE.html#fac" title="prog1">fac</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" target="documentation-frame" title="R5RS Scheme form">-</a> n 1)))))
+
+<a name="fib"></a><div class="schemedoc-definition-comment">;; Calculated the fib function.
+;; Notice that this is a very inefficient 
+;; Implementation.</div><a name="fib"></a><span><span><a href="prog4-1.html#fib"><img src="./images/small-square.gif" title="Show source file in small font" alt="" border="0" /></a></span> <span><a href="cross-reference-index-f.html#fib" target="control-frame"><img src="./images/small-green-up-triangle.gif" title="In prog4: Link from fib to it&#39;s cross reference table entry" alt="" border="0" /></a></span> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" target="documentation-frame" title="R5RS Scheme form">define</a> <span class="signature">(fib n)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" target="documentation-frame" title="R5RS Scheme form">cond</a> ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX118" target="documentation-frame" title="R5RS Scheme form">or</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" target="documentation-frame" title="R5RS Scheme form">=</a> n 0) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" target="documentation-frame" title="R5RS Scheme form">=</a> n 1)) 1)
+        (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" target="documentation-frame" title="R5RS Scheme form">else</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" target="documentation-frame" title="R5RS Scheme form">+</a> (<a class="applied-name" href="prog1-1-LARGE.html#fib" title="prog1">fib</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" target="documentation-frame" title="R5RS Scheme form">-</a> n 1)) (<a class="applied-name" href="prog1-1-LARGE.html#fib" title="prog1">fib</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" target="documentation-frame" title="R5RS Scheme form">-</a> n 2))))))
+
+
+<div class="schemedoc-section-comment">;;; A couple of higher order function.
+;;; These functions are useful in many situations. You may also 
+;;; consult &lt;a href="#abc"&gt; the first section&lt;/a&gt;.
+;;; .section-id def</div>
+<a name="negate"></a><div class="schemedoc-definition-comment">;; A higher order functions which negates the predicate p. 
+;; Negate accepts a predicate and returns the negated predicate.&lt;br&gt;
+;; $.parameter In case I need to start this line with a dot, which
+;; is not an internal tag.
+;; .parameter p A predicate</div><a name="negate"></a><span><span><a href="prog4-1.html#negate"><img src="./images/small-square.gif" title="Show source file in small font" alt="" border="0" /></a></span> <span><a href="cross-reference-index-n.html#negate" target="control-frame"><img src="./images/small-green-up-triangle.gif" title="In prog4: Link from negate to it&#39;s cross reference table entry" alt="" border="0" /></a></span> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" target="documentation-frame" title="R5RS Scheme form">define</a> <span class="signature">(negate p)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" target="documentation-frame" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">x</span>) 
+    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" target="documentation-frame" title="R5RS Scheme form">if</a> (p x) #f #t)))
+
+<a name="compose"></a><div class="schemedoc-definition-comment">;; A higher order function that composes two functions.
+;; Returns a function which applies f on g.
+;; Both f and g are supposed to take a single argument.
+;; It is possible to use the escaping character $$ by
+;; escaping it. Thus, to writte dolar twice, you must write
+;; $$$$. 
+;; .internal-references "section" "abc"
+;; .internal-references "section" "SECTION2"
+;; .misc Miscelaneous information
+;; .comment Internal comment
+;; .returns Return value description</div>
+<a name="compose"></a><span><span><a href="prog4-1.html#compose"><img src="./images/small-square.gif" title="Show source file in small font" alt="" border="0" /></a></span> <span><a href="cross-reference-index-c.html#compose" target="control-frame"><img src="./images/small-green-up-triangle.gif" title="In prog4: Link from compose to it&#39;s cross reference table entry" alt="" border="0" /></a></span> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" target="documentation-frame" title="R5RS Scheme form">define</a> <span class="signature">(compose f g)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" target="documentation-frame" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">x</span>)
+    (f (g x))))
+</pre></font><div>&nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p></div></body></html>

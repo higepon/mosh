@@ -1,0 +1,245 @@
+<!--
+   The Scheme Elucidator 2 DTD.
+   Copyright (c) 2004 Kurt Nørmark.
+   All Rights Reserved. 
+-->
+
+<!-- An XHTML crossing is identical with the list of elements within an XHTML transitional div content model. -->
+<!ENTITY % XHTML-crossing "#PCDATA | a | abbr | acronym | address | applet | b | basefont | bdo | big | blockquote | br | button | center | cite | code | del | dfn | dir | div | dl | em | fieldset | font | form | h1 | h2 | h3 | h4 | h5 | h6 | hr | i | iframe | img | input | ins | isindex | kbd | label | map | menu | noframes | noscript | object | ol | p | pre | q | s | samp | script | select | small | span | strike | strong | sub | sup | table | textarea | tt | u | ul | var">
+
+
+<!ENTITY % Boolean "(true | false)">
+    <!-- A Boolean type -->
+
+<!ENTITY % Symbol "CDATA">
+    <!-- a name without spaces -->
+
+<!ENTITY % URI "CDATA">
+    <!-- a Uniform Resource Identifier, see [RFC2396] -->
+
+<!ENTITY % Proper-file-name "CDATA">
+    <!-- the proper name of a file - without initial path and without extension -->
+
+<!ENTITY % File-path "CDATA">
+    <!-- an absolute or relative file path -->
+
+<!ENTITY % Number "CDATA">
+    <!-- one or more digits -->
+
+<!ENTITY % Character "CDATA">
+    <!-- a single character -->
+
+
+<!ELEMENT documentation-from EMPTY>
+<!ATTLIST documentation-from
+  src                                 %File-path;                         #REQUIRED
+>
+
+<!ELEMENT elucidator 
+ (elucidator-front-matters, begin-documentation, ((documentation-intro, (documentation-section | documentation-entry)* ) | documentation-from) , end-documentation)
+>
+
+<!ELEMENT documentation-intro
+  (doc-title, doc-author, doc-affiliation, doc-email, doc-abstract)
+>
+
+<!ELEMENT elucidator-front-matters 
+ (color-scheme?, source-files)
+>
+<!ATTLIST elucidator-front-matters
+  laml-resource                       (true | false)                     "false"
+
+  table-of-contents                   (detailed | shallow)               "detailed"
+  shallow-table-of-contents-columns   %Number;                           "3"
+  detailed-table-of-contents-columns  %Number;                           "2"
+
+  source-marker-presentation          (image | text | colored-text)      "image"
+  source-marker-char                  %Character;                        "@"
+  source-markers-in-program           (show-all | show-documented | ignore)   "show-documented"
+
+  browser-pixel-width                 %Number;                           "1100"
+  control-frame-pixel-height          %Number;                           "130"
+ 
+  home-url                            %URI;                              #IMPLIED
+  next-url                            %URI;                              #IMPLIED
+  previous-url                        %URI;                              #IMPLIED
+
+  scheme-report-version               (r4rs | r5rs | none)               "r5rs"
+  rnrs-url                            %URI;                              #IMPLIED
+
+  cross-reference-index               (per-letter | aggregated | none)   "per-letter"
+  defined-name-index                  (per-letter | aggregated | none)   "per-letter"
+  duplicated-name-index               %Boolean;                          "true"
+  
+  initial-program-frame               (blank | first-source-file)        "first-source-file"
+  large-font-source-file              %Boolean;                          "false"
+  small-font-source-file              %Boolean;                          "true"
+  default-source-file-font-size       (small | large)                    "small"
+  program-menu                        (inline-table |
+                                       separate-frame |
+                                       none)                             "separate-frame"
+  manual-frame-from-program           (documentation-frame | 
+                                       program-frame |
+                                       other)                            "documentation-frame"
+
+  manual-frame-from-documentation     (documentation-frame | 
+                                       program-frame |
+                                       other)                            "program-frame"
+
+  documentation-escape-char           %Character;                        #IMPLIED
+  program-link-prefix-char            %Character;                        #IMPLIED
+  program-link-suffix-char            %Character;                        #IMPLIED  
+  documentation-link-prefix-char      %Character;                        #IMPLIED
+  documentation-link-suffix-char      %Character;                        #IMPLIED  
+  strong-link-char                    %Character;                        #IMPLIED  
+  weak-link-char                      %Character;                        #IMPLIED  
+  none-link-char                      %Character;                        #IMPLIED  
+  default-program-link                (weak | strong | none)             "weak"
+
+  author-mode                         %Boolean;                          "false"
+  processing-mode                     (silent | verbose)                 "verbose"
+
+  warn-if-no-doc-source-marker        %Boolean;                          "false"
+  warn-if-multiple-doc-source-markers     %Boolean;                          "true"
+
+  source-destination-delta            %File-path;                        "html/"
+
+  css-documentation-stylesheet        %Proper-file-name;                 "documentation"
+  css-program-stylesheet              %Proper-file-name;                 "program"
+>
+
+
+<!ELEMENT doc-title (#PCDATA) >
+
+<!ELEMENT doc-author (#PCDATA) >
+
+<!ELEMENT doc-affiliation (#PCDATA) >
+
+<!ELEMENT doc-email (#PCDATA) >
+
+<!ELEMENT doc-abstract ( %XHTML-crossing; )*>
+
+<!ELEMENT color-scheme
+  (color-entry)*
+>
+
+<!ELEMENT color-entry
+  (new-rgb-color | predefined-color)
+>
+<!ATTLIST color-entry
+  group                               CDATA                              #REQUIRED
+>
+  
+<!ELEMENT new-rgb-color EMPTY>
+<!ATTLIST new-rgb-color
+  red                                 %Number;                           #REQUIRED
+  green                               %Number;                           #REQUIRED
+  blue                                %Number;                           #REQUIRED
+>    
+
+<!ELEMENT predefined-color (#PCDATA)>
+
+
+<!ELEMENT source-files
+  (program-source | version-group | manual-source)*
+>
+
+<!ELEMENT program-source (#PCDATA)>
+<!ATTLIST program-source
+  key                                 CDATA                              #IMPLIED
+  file-path                           %File-path;                        #REQUIRED
+  language                            CDATA                              #IMPLIED
+  group                               CDATA                              #IMPLIED
+  process                             %Boolean;                          "true"
+>
+
+<!ELEMENT manual-source (#PCDATA)>
+<!ATTLIST manual-source
+  key                                 CDATA                              #REQUIRED
+  file-path                           %File-path;                        #REQUIRED
+  url                                 %URI;                              #IMPLIED
+>
+
+<!ELEMENT version-group
+  (program-source)+
+>
+
+<!ATTLIST version-group
+  key                                 CDATA                              #REQUIRED
+  group                               CDATA                              #IMPLIED
+>
+
+
+
+
+<!ELEMENT begin-documentation EMPTY >
+
+<!ELEMENT end-documentation EMPTY >
+
+<!ELEMENT documentation-section
+  (section-title , section-body)
+>
+<!ATTLIST documentation-section
+  id                                  %Symbol;                           #REQUIRED
+  program-version                     %Number;                           #IMPLIED
+>
+
+
+<!ELEMENT documentation-entry
+  (entry-title , entry-body)
+>
+<!ATTLIST documentation-entry
+  id                                  %Symbol;                           #REQUIRED
+  program-version                     %Number;                           #IMPLIED
+>
+
+<!ELEMENT section-title (#PCDATA) >
+
+<!ELEMENT entry-title (#PCDATA) >
+
+<!ELEMENT section-body ( %XHTML-crossing;)* >
+<!ATTLIST section-body
+  body-style                          (normal | grey | small | grey-small)           "normal"
+>
+
+<!ELEMENT entry-body ( %XHTML-crossing;)* >
+<!ATTLIST entry-body
+  body-style                          (normal | grey | small)           "normal"
+>
+
+
+<!-- Reference clauses and source markers used in the documentation --> 
+
+<!ELEMENT strong-prog-ref (#PCDATA)>
+<!ATTLIST strong-prog-ref
+   file                               %Symbol;                           #IMPLIED
+   vers                               %Number;                           #IMPLIED
+   name                               %Symbol;                           #IMPLIED
+   file-part                          %Symbol;                           #IMPLIED
+>
+
+<!ELEMENT weak-prog-ref (#PCDATA)>
+<!ATTLIST weak-prog-ref
+   file                               %Symbol;                           #IMPLIED
+   vers                               %Number;                           #IMPLIED
+   name                               %Symbol;                           #IMPLIED
+   file-part                          %Symbol;                           #IMPLIED
+>
+
+<!ELEMENT typographic-prog-ref EMPTY>
+<!ATTLIST typographic-prog-ref
+   name                               %Symbol;                           #REQUIRED
+>
+
+<!ELEMENT doc-ref EMPTY>
+<!ATTLIST doc-ref
+   name                               %Symbol;                           #REQUIRED
+>
+
+<!ELEMENT source-marker EMPTY>
+<!ATTLIST source-marker
+   name                               %Symbol;                           #REQUIRED
+>   
+
+
+

@@ -1,0 +1,30 @@
+In this directory there are different versions
+of the command files, which starts laml. The absolute version,
+absolute-laml takes an absolute path to the directory, in which
+the laml file is located. This is useful for cron jobs, for instance.
+
+Required naming scheme:
+
+  <laml-platform>_<operating-system>_<scheme-system>_absolute-laml
+
+<laml-platform>, <operating-system>, and <scheme-system> as defined in ../configuration.
+
+Notice: In case mzscheme-200 or mzscheme-300 is used in the configuration file,
+<scheme-system> should be given as mzscheme above.
+
+During configuration the appropriate absolute-laml file is
+copied to the LAML bin directory.
+
+Currently, we only support absolute-laml execs with mzscheme on UNIX solaris and Linux platforms.
+
+If - during configuration - an appropriate absolute-laml exec
+file cannot be located, we use <laml-platform>-default-absolute-laml.
+
+In case you port LAML to a new platform you can make
+an appropriate absolute-laml file in this directory, using 
+the naming scheme explained above. It may be helpful to study
+the existing absolute-laml files in this directory in order
+to find good solutions.
+
+
+

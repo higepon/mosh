@@ -1,0 +1,10 @@
+The LAML document styles.
+
+Some styles (simple-...) represent batches of loads. Other styles represents
+a more substantial functionality.
+
+The styles in the xml-in-laml support newer XML in LAML languages, and their
+implementation (transformations to HTML, typically).
+
+
+

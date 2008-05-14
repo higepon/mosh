@@ -1,0 +1,5 @@
+; Parses xhtml1.0 strict.
+; The xhtml1.0 DTD has not been modified at all before processing/parsing.
+
+(load (string-append laml-dir "tools/dtd-parser/dtd-parser-4.scm"))
+(parse-dtd (string-append (startup-directory) "svg11"))

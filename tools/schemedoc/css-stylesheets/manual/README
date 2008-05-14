@@ -1,0 +1,5 @@
+manual-stylesheet.css is the CSS stylesheet which controls the appearance
+of most LAML manuals in this distribution.
+
+Use one of the LAML scripts in the directory change-manual-stylesheet to 
+change this shared style sheet.

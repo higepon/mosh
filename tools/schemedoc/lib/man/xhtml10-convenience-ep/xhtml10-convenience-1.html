@@ -1,0 +1,871 @@
+<html><head><link href="../../../css-stylesheets/elucidator/program.css" rel="stylesheet" title="program" type="text/css" /> <title>Source file</title></head><body bgcolor="#ffffff" text="#000000" link="#000000" vlink="#000000"><font size="2"><pre><span class="comment">; =&gt;man/xhtml10-convenience.sdoc</span><br />
+<span class="comment">; The LAML library and programs are written by Kurt Normark, Aalborg University, Denmark.
+; Copyright (C) 2002  Kurt Normark, normark@s.auc.dk.
+;
+; This program is free software; you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation; either version 2 of the License, or
+; (at your option) any later version.
+;
+; This program is distributed in the hope that it will be useful,
+; but WITHOUT ANY WARRANTY; without even the implied warranty of
+; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+; GNU General Public License for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with this program; if not, write to the Free Software
+; Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA</span><br />
+<div class="schemedoc-abstract-comment">;;;; This library contains a number of convenient functions on top of the XHTML mirrors.
+;;;; The functions in this library are intended to be common for XHTML mirrors in LAML.
+;;;; Notice, however, that some of the functions will only work with HTML1.0 transitional.&lt;p&gt;
+;;;;
+;;;;
+;;;; The collection in this library can be regarded as personal convenience stuff. You can use it
+;;;; if you find it useful - or you can develop your own convenience stuff on top of the XHTML mirror library.&lt;p&gt;
+;;;;
+;;;;
+;;;; The collection also serves as backward compatibility functions in relation to older LAML software. Many
+;;;; functions in this library originally served as ad hoc Scheme markup functions. As of this library, the
+;;;; functions have been reimplemented on top of the XHTML libraries.
+;;;; .title Reference Manual of the XHTML convenience library</div>
+
+<div class="schemedoc-section-comment">;;; Basic HTML extension stuff. 
+;;; In this section we implement mirrors of HTML stuff such as comment and character entities.
+;;; Also there are a number of convenient white space functions (horizontal and vertical).
+;;; As a special, but very useful function, we include an html-protect function which provides for presentation
+;;; of verbatim HTML documents in a browser. There is also some basic javascript support in this section.</div>
+<a name="con"></a><span class="comment">; Backward compatibility only</span><br /><a name="con"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">con</span> <a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a>)
+<span class="comment">; (define con-space list)</span><br />
+<a name="doctype-clause"></a><span class="comment">; The HTML4.01 loose document type clause. Just a backward compatibility alias.</span><br /><a name="doctype-clause"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">doctype-clause</span> <a class="schemedoc-name" href="../../../man/laml.html#document-type-declaration" title="Manual: laml">document-type-declaration</a>)
+
+<a name="character-entity"></a><div class="schemedoc-definition-comment">;; If x is a number return a numbered character entity.
+;; If x is a symbol og string, return a named character entity.</div><a name="character-entity"></a><span><a href="../xhtml10-convenience.html#character-entity"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(character-entity x)</span>
+ (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#char-ref" title="Manual: xml-in-laml">char-ref</a> x))
+
+<a name="copyright"></a><div class="schemedoc-definition-comment">;; The copyright character entity</div><a name="copyright"></a><span><a href="../xhtml10-convenience.html#copyright"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">copyright</span> (<a class="applied-name" href="xhtml10-convenience-1.html#character-entity" title="xhtml10-convenience">character-entity</a> "copy"))
+
+
+<a name="space"></a><div class="schemedoc-definition-comment">;; Return n space special characters (horizontal space)</div><a name="space"></a><span><a href="../xhtml10-convenience.html#space"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(space n)</span>
+  (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> n (<a class="applied-name" href="xhtml10-convenience-1.html#character-entity" title="xhtml10-convenience">character-entity</a> "nbsp")))
+
+<a name="horizontal-space"></a><div class="schemedoc-definition-comment">;; Return n space special characters </div><a name="horizontal-space"></a><span><a href="../xhtml10-convenience.html#horizontal-space"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">horizontal-space</span> <a class="applied-name" href="xhtml10-convenience-1.html#space" title="xhtml10-convenience">space</a>)
+
+<a name="vertical-space"></a><div class="schemedoc-definition-comment">;; Return n vertical spaces, i.e., n instances of the p tag.</div><a name="vertical-space"></a><span><a href="../xhtml10-convenience.html#vertical-space"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(vertical-space n)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> n 0) '()
+      (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX320" title="R5RS Scheme form">cons</a> (<a class="applied-name" href="xhtml10-convenience-1.html#space" title="xhtml10-convenience">space</a> 1) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX320" title="R5RS Scheme form">cons</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#p" title="Manual: xhtml10-transitional-mirror">p</a>) (<a class="applied-name" href="xhtml10-convenience-1.html#vertical-space" title="xhtml10-convenience">vertical-space</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> n 1))))))
+
+<a name="html-protect"></a><div class="schemedoc-definition-comment">;; Protect HTML tags such that an HTML document can be shown verbatim in a browser.
+;; Transliterate angle brackets in str to the particular html character entities.
+;; In normal XML-in-LAML you should not use this function.  Only use in the rare cases where HTML markup is handled as text.
+;; .misc The intended functionality of html-protect is integrated in every XML-in-LAML mirror function due to the use of the standard HTML transformation table.</div><a name="html-protect"></a><span><a href="../xhtml10-convenience.html#html-protect"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(html-protect str)</span>
+ (<a class="schemedoc-name" href="../../../lib/man/general.html#transliterate" title="Manual: general">transliterate</a>
+   (<a class="schemedoc-name" href="../../../lib/man/general.html#transliterate" title="Manual: general">transliterate</a>
+     (<a class="schemedoc-name" href="../../../lib/man/general.html#transliterate" title="Manual: general">transliterate</a> 
+         str #\& "&amp;amp;")  
+     #\> "&amp;gt;")
+    #\< "&amp;lt;"))
+
+<a name="in-danish"></a><div class="schemedoc-definition-comment">;; Translate the Danish letters in str to a string with appropriate use of HTML character entities.</div><a name="in-danish"></a><span><a href="../xhtml10-convenience.html#in-danish"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(in-danish str)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX123" title="R5RS Scheme form">letrec</a> ((<span class="local-name-binding">in-danish-1</span> 
+            (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">str</span> <span class="local-name-binding">letter-numbers</span>)
+              (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> letter-numbers) str)
+		    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (in-danish-1
+			   (<a class="schemedoc-name" href="../../../lib/man/general.html#transliterate" title="Manual: general">transliterate</a> str (<a class="schemedoc-name" href="../../../lib/man/general.html#as-char" title="Manual: general">as-char</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> letter-numbers)) (<a class="applied-name" href="xhtml10-convenience-1.html#character-entity" title="xhtml10-convenience">character-entity</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> letter-numbers)))
+			   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX322" title="R5RS Scheme form">cdr</a> letter-numbers)))))))
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">danish-letter-numbers</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> 230 248 229 198 216 197)))
+    (in-danish-1 str danish-letter-numbers))))
+
+
+<a name="js-call"></a><div class="schemedoc-definition-comment">;; Return a Javascript calling form, given function function-name and parameters.
+;; Returns a string of the form: function-name(parameters).
+;; This function adds commas between the actual Javascript parameters.</div><a name="js-call"></a><span><a href="../xhtml10-convenience.html#js-call"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(js-call function-name parameters)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> function-name 
+                   "(" 
+                      (<a class="schemedoc-name" href="../../../lib/man/general.html#string-merge" title="Manual: general">string-merge</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> parameters)
+                                    (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> parameters) 1) ", "))
+                   ")"))
+
+
+
+<a name="js-string-array"></a><div class="schemedoc-definition-comment">;; Return a manifest javascript array given its elements</div><a name="js-string-array"></a><span><a href="../xhtml10-convenience.html#js-string-array"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(js-string-array elements)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "[" 
+                 (<a class="schemedoc-name" href="../../../lib/man/general.html#string-merge" title="Manual: general">string-merge</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="schemedoc-name" href="../../../lib/man/general.html#string-it-single" title="Manual: general">string-it-single</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> elements))
+                               (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> elements) 1) ","))
+                 "]")
+)
+
+
+
+<span class="comment">; ---------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Convenience variants of the HTML mirror functions. 
+;;; The functions in this section are either quite close to the HTML mirror functions or very simple.</div>
+<a name="a-tag"></a><div class="schemedoc-definition-comment">;; Return an a tag constructructed from the URL and the anchor. 
+;; If no anchor is provided uses the url as anchor text.</div><a name="a-tag"></a><span><a href="../xhtml10-convenience.html#a-tag"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(a-tag url . optional-parameter-list)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">anchor</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list url)))
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a> anchor 'href (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> url))))
+
+<a name="a-tag-target"></a><div class="schemedoc-definition-comment">;; A variant of a tag which supports a target attribute of the a-tag (where in browser to show the result).</div><a name="a-tag-target"></a><span><a href="../xhtml10-convenience.html#a-tag-target"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(a-tag-target url anchor target)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a>
+    anchor
+    'href (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> url)
+    'target (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> target)))
+
+<a name="a-name"></a><div class="schemedoc-definition-comment">;; Name the current place by means of an a tag with name attribute</div><a name="a-name"></a><span><a href="../xhtml10-convenience.html#a-name"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(a-name name)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a> ""
+    'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name)))
+
+<a name="a-self-ref"></a><div class="schemedoc-definition-comment">;; A 'self referential' use of the a (anchor) element. Supply the 'href attribute, which also becomes the textual contents of the a element.</div><a name="a-self-ref"></a><span><a href="../xhtml10-convenience.html#a-self-ref"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">a-self-ref</span> 
+ (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#xml-in-laml-abstraction" title="Manual: xml-in-laml">xml-in-laml-abstraction</a> 
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cont</span> <span class="local-name-binding">attr</span>)
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a> attr (<a class="schemedoc-name" href="../../../lib/man/general.html#defaulted-get-prop" title="Manual: general">defaulted-get-prop</a> 'href attr "???")))))
+
+<a name="mail-link"></a><div class="schemedoc-definition-comment">;; Return a mail link by means of the mailto facility in an a tag.
+;; .form (mail-link email-adr [anchor-name])</div><a name="mail-link"></a><span><a href="../xhtml10-convenience.html#mail-link"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(mail-link email-adr . optional-parameter-list)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">anchor-name</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list email-adr)))
+  (<a class="applied-name" href="xhtml10-convenience-1.html#a-tag" title="xhtml10-convenience">a-tag</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "mailto:" email-adr) anchor-name)))
+
+
+<a name="h"></a><div class="schemedoc-definition-comment">;; Returns h tags, h1 if i=1, h2 if i=2, etc.
+;; If i is higher than 6, use size 6.</div><a name="h"></a><span><a href="../xhtml10-convenience.html#h"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(h i x)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> i 1) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h1" title="Manual: xhtml10-transitional-mirror">h1</a> x))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> i 2) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h2" title="Manual: xhtml10-transitional-mirror">h2</a> x))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> i 3) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h3" title="Manual: xhtml10-transitional-mirror">h3</a> x))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> i 4) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h4" title="Manual: xhtml10-transitional-mirror">h4</a> x))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> i 5) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h5" title="Manual: xhtml10-transitional-mirror">h5</a> x))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> i 6) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#h6" title="Manual: xhtml10-transitional-mirror">h6</a> x))
+  ))
+
+
+<a name="font-1"></a><div class="schemedoc-definition-comment">;; Returns a font tag with size and color attributes.
+;; .parameter size A number between 1 and 6, or the symbol normal (giving size 3).
+;; .parameter color A color as accepted by the function rgb-color-encoding.
+;; .reference "applied function" "rgb-color-encoding" "color.html#rgb-color-encoding"</div><a name="font-1"></a><span><a href="../xhtml10-convenience.html#font-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-1 size color x)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#font" title="Manual: xhtml10-transitional-mirror">font</a>  x 'size (<a class="applied-name" href="xhtml10-convenience-1.html#convert-size" title="xhtml10-convenience">convert-size</a> size) 'color (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> color)))
+
+<a name="convert-size"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(convert-size size)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX346" title="R5RS Scheme form">symbol?</a> size) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> size 'normal)) "3" (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> size)))
+
+<a name="font-size"></a><div class="schemedoc-definition-comment">;; Like font, but only supports size.
+;; size is a number and color is a rgb list of three, decimal integers or
+;; a color symbol.</div><a name="font-size"></a><span><a href="../xhtml10-convenience.html#font-size"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-size size x)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#font" title="Manual: xhtml10-transitional-mirror">font</a>  x 'size (<a class="applied-name" href="xhtml10-convenience-1.html#convert-size" title="xhtml10-convenience">convert-size</a> size)))
+
+<a name="font-color"></a><div class="schemedoc-definition-comment">;; Like font, but only supports color.
+;; color is a rgb list of three, decimal integers</div><a name="font-color"></a><span><a href="../xhtml10-convenience.html#font-color"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-color color x)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#font" title="Manual: xhtml10-transitional-mirror">font</a>  x 'color (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> color)))
+
+
+<a name="html-appender"></a><div class="schemedoc-definition-comment">;; Generate a function which appends element. 
+;; As an example use, (html-appender (p)) is a function of one parameter, which appends a p tag to the argument of the function.</div><a name="html-appender"></a><span><a href="../xhtml10-convenience.html#html-appender"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(html-appender element)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">existing-stuff</span>)
+    (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> existing-stuff <a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#explicit-space" title="Manual: xml-in-laml">explicit-space</a> element)))
+
+<a name="font-rise"></a><div class="schemedoc-definition-comment">;; Return a html fonted version of str. Initial letter is sized base-size+1.
+;; The rest is size base-size.
+;; Returns a list, not an ast. If rendered directly, use render-1.</div><a name="font-rise"></a><span><a href="../xhtml10-convenience.html#font-rise"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-rise str base-size)</span>
+  (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#font-size" title="xhtml10-convenience">font-size</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> base-size 1) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX391" title="R5RS Scheme form">substring</a>  str 0 1)) <a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#explicit-space" title="Manual: xml-in-laml">explicit-space</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#font-size" title="xhtml10-convenience">font-size</a> base-size (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX391" title="R5RS Scheme form">substring</a>  str 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> str)))))
+
+<div class="schemedoc-section-comment">;;; Lists and trees.
+;;; In this section there are various convenient functions which renders lists and trees.</div>
+
+<a name="br-list"></a><div class="schemedoc-definition-comment">;; Return a flat list, separate by breaks. 
+;; The parameter lst is a list of items. 
+;; In this version, returns a list, which cannot be rendered directly. 
+;; However, render-1 works on the result.</div><a name="br-list"></a><span><a href="../xhtml10-convenience.html#br-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(br-list lst)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a>(<span class="local-name-binding">el</span>) (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> el (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#br" title="Manual: xhtml10-transitional-mirror">br</a>))) lst))
+
+<a name="brl"></a><div class="schemedoc-definition-comment">;; A convenient alias for br-list
+;; .form (brl lst)
+;; .internal-references "see also" "br-list"</div><a name="brl"></a><span><a href="../xhtml10-convenience.html#brl"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">brl</span> <a class="applied-name" href="xhtml10-convenience-1.html#br-list" title="xhtml10-convenience">br-list</a>)
+
+
+<a name="definition-list"></a><div class="schemedoc-definition-comment">;; Make a definition list.
+;; lst is a list of lists. Each inner list must be of length two,
+;; dt and dd respectively. I.e. definition terms and the defintion proper, resp.
+;; As a special case supported, the inner list can be of lenght one, in which case
+;; the dd is considered empty.</div><a name="definition-list"></a><span><a href="../xhtml10-convenience.html#definition-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(definition-list lst)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#dl" title="Manual: xhtml10-transitional-mirror">dl</a>
+   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a>(<span class="local-name-binding">el</span>) 
+	  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">dt-data</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> el))
+		(<span class="local-name-binding">dd-data</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> el)) "" (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">cadr</a> el))))
+	    (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#dt" title="Manual: xhtml10-transitional-mirror">dt</a>  dt-data)
+		 (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX200" title="R5RS Scheme form">equal?</a> <a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#dd" title="Manual: xhtml10-transitional-mirror">dd</a> "")
+		     ""
+		   (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#dd" title="Manual: xhtml10-transitional-mirror">dd</a> dd-data)))))
+	lst)))
+
+
+<a name="ul-tree"></a><div class="schemedoc-definition-comment">;; Show tree as an indented, bulleted list.
+;; A tree is a list.
+;; The first element of the list is the root.
+;; The tail of the list is the list of subtrees.
+;; A subtree, which is a leaf, can be given as a string (cdata) or a contents element.
+;; &lt;pre&gt;
+;; Example   (a (b c d) (e (f g) h))
+;;
+;;
+;;               a
+;;             /   \
+;;            b     e
+;;           / \   / \
+;;          c  d  f   h
+;;                |
+;;                g
+;; &lt;/pre&gt;</div><a name="ul-tree"></a><span><a href="../xhtml10-convenience.html#ul-tree"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(ul-tree tree)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX118" title="R5RS Scheme form">or</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#cdata?" title="Manual: xml-in-laml">cdata?</a> tree) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#ast?" title="Manual: xml-in-laml">ast?</a> tree)) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#ul" title="Manual: xhtml10-transitional-mirror">ul</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#li" title="Manual: xhtml10-transitional-mirror">li</a> 'type "disc" tree)))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX319" title="R5RS Scheme form">pair?</a> tree) 
+	 (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#ul" title="Manual: xhtml10-transitional-mirror">ul</a>
+  	    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#li" title="Manual: xhtml10-transitional-mirror">li</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> tree) 'type "disc"
+  	      (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="applied-name" href="xhtml10-convenience-1.html#ul-tree" title="xhtml10-convenience">ul-tree</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX322" title="R5RS Scheme form">cdr</a> tree)))))))
+
+<a name="lis"></a><div class="schemedoc-definition-comment">;; A spacy variant of the HTML li element.</div><a name="lis"></a><span><a href="../xhtml10-convenience.html#lis"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">lis</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#xml-in-laml-abstraction" title="Manual: xml-in-laml">xml-in-laml-abstraction</a> 
+    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cont</span> <span class="local-name-binding">attr</span>)
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#li" title="Manual: xhtml10-transitional-mirror">li</a> cont attr 'css:margin-bottom "3mm"))))
+
+
+<span class="comment">; --------------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Table functions.
+;;; In this section there is a number of table functions which
+;;; maps a list of rows (list of lists) to an HTML table. 
+;;; Older LAML software depends on these. I do not recommend use of these functions in new software. 
+;;; Instead, use the HTML table mirror function directly.</div>
+<a name="table-0"></a><div class="schemedoc-definition-comment">;; Return a table with elements from list-of-list.
+;; The sublists of list represent the rows in the table. The border is an optional parameter.
+;; Corresponds to the old function table in the ad hoc html library. 
+;; .parameter list-of-list the list of table row lists.</div><a name="table-0"></a><span><a href="../xhtml10-convenience.html#table-0"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-0 list-of-list . optional-parameter-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">table-row</span> 
+         (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">lst</span>) (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+			(<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span>)
+			       (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> cell))
+			     lst))))
+	(<span class="local-name-binding">border</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "1")))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> 
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> table-row list-of-list)))
+     'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border))))
+
+
+<a name="table-1"></a><div class="schemedoc-definition-comment">;; A more versatile variant of table-0.
+;; A variant of table-0 which requires border (an integer, 0 if no border),
+;; a list of cell widths, a list of column colors, the table contents (list-of-list - list of rows), and an optional valign parameter.
+;; The valign parameter corresponds to the HTML valign attribute, the possible value of which are
+;; "top", "middle", "bottom", and "baseline" (a string).</div><a name="table-1"></a><span><a href="../xhtml10-convenience.html#table-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-1 border cell-width-list cell-color-list-1 list-of-list . optional-parameter-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">va</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "top"))))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a>
+	(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">row</span>)
+	  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+	   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span> <span class="local-name-binding">width</span> <span class="local-name-binding">color-1</span>)
+		  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> 
+		  cell
+		   'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> width) 'valign va 'bgcolor (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> color-1)
+		   )
+		  )
+		row cell-width-list cell-color-list-1))
+	  )
+	list-of-list
+	)
+       ))
+     'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border))))
+
+
+<a name="table-2"></a><div class="schemedoc-definition-comment">;; A variant of table and table-1 which supports a header row.</div><a name="table-2"></a><span><a href="../xhtml10-convenience.html#table-2"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-2 border cell-width-list cell-color-list-1 header-list list-of-list)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+   (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+     (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX320" title="R5RS Scheme form">cons</a>   <span class="comment">; if con then a strange error - research it and try to catch it in AST composition phase</span><br />      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">h</span>)(<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#th" title="Manual: xhtml10-transitional-mirror">th</a> h)) header-list))
+      (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a>
+       (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">row</span>)
+	 (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+	  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span> <span class="local-name-binding">width</span> <span class="local-name-binding">color-1</span>)
+		 (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> 
+		  cell
+		  'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> width) 'valign "top" 'bgcolor (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> color-1)
+		  )
+		 )
+	       row cell-width-list cell-color-list-1)
+	  ))
+       list-of-list
+       ))))
+  'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border)))
+
+<a name="table-3"></a><div class="schemedoc-definition-comment">;; A transparant variant of table-1 - without specification of a column color list.
+;; The cell color becomes identical with the background.</div><a name="table-3"></a><span><a href="../xhtml10-convenience.html#table-3"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-3 border cell-width-list  list-of-list . optional-parameter-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">va</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "top"))))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a>
+	(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">row</span>)
+	  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+	   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span> <span class="local-name-binding">width</span>)
+		  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> 
+		   cell
+		   'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> width) 'valign va
+		   )
+		  )
+		row cell-width-list))
+	  )
+	list-of-list
+	)
+       ))
+     'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border))))
+
+<a name="table-4"></a><div class="schemedoc-definition-comment">;; A variant of table-1 with a row color list instead of a column color list.
+;; The length of row-color-list must be the number of rows in the table.</div><a name="table-4"></a><span><a href="../xhtml10-convenience.html#table-4"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-4 border cell-width-list row-color-list list-of-list . optional-parameter-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">va</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "top"))))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a>
+	(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">row</span> <span class="local-name-binding">row-color</span>)
+	  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+	   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span> <span class="local-name-binding">width</span>)
+		  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> 
+		   cell
+		   'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> width) 'valign va 'bgcolor (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> row-color)
+		   )
+		  )
+		row cell-width-list)))
+	list-of-list row-color-list
+	)
+       ))
+     'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border))))
+
+<a name="table-5"></a><div class="schemedoc-definition-comment">;; A variant of table-4 that allows individual background coloring of table cells.
+;; The parameter list-of-color-list is a list of row colors, whereas row-color-list in table-4
+;; is a fixed list of colors that apply to a row. Thus, the structure of list-of-color-list
+;; is identical to the structure of list-of-list.
+;; .internal-references "similar function" "table-4"</div><a name="table-5"></a><span><a href="../xhtml10-convenience.html#table-5"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(table-5 border cell-width-list list-of-color-list list-of-list . optional-parameter-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">va</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "top"))))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a>
+	(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">row</span> <span class="local-name-binding">row-color-list</span>)
+	  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+	   (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">cell</span> <span class="local-name-binding">width</span> <span class="local-name-binding">row-color</span>)
+		  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a> 
+		   cell
+		   'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> width) 'valign va 'bgcolor (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> row-color)
+		   )
+		  )
+		row cell-width-list row-color-list)
+	   ))
+	list-of-list list-of-color-list
+	)
+       ))
+     'border (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> border))))
+
+<a name="left-middle-right-banner"></a><div class="schemedoc-definition-comment">;; Return a banner (represented as a table) with left, middle, and right justified contributions.
+;; The optional parameter distribution-percentages gives the relative sizes 
+;; of the left, middle and right fields.
+;; .form (left-middel-right-banner left middle right [distribution-percentages])
+;; .parameter left The left portion of the banner.
+;; .parameter middle The middel portion of the banner.
+;; .parameter right The right portion of the banner.
+;; .parameter distribution-percentages A list of three integers (percent numbers) the sum of which is expected to be 100. Defaults to '(33 34 33).</div><a name="left-middle-right-banner"></a><span><a href="../xhtml10-convenience.html#left-middle-right-banner"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(left-middle-right-banner left middle right . optional-parameter-list)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">distribution-percentages</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list '(33 34 33)))
+        (<span class="local-name-binding">left-percent</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> distribution-percentages)) "%"))
+        (<span class="local-name-binding">middle-percent</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> distribution-percentages)) "%"))
+        (<span class="local-name-binding">right-percent</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> distribution-percentages)) "%"))
+       )
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+   (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+   (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+    (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a>
+       (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="applied-name" href="xhtml10-convenience-1.html#font-size" title="xhtml10-convenience">font-size</a> 2 left))
+       'width left-percent 'align "left" 'valign "top")
+
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a>
+       (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="applied-name" href="xhtml10-convenience-1.html#font-size" title="xhtml10-convenience">font-size</a> 2 middle))
+       'width middle-percent 'align "center" 'valign "top")
+
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a>
+       (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="applied-name" href="xhtml10-convenience-1.html#font-size" title="xhtml10-convenience">font-size</a> 2 right))
+       'width right-percent 'align "right" 'valign "top")
+      )
+     ))))
+   'border "0px" 'cellpadding "0" 'cellspacing "0" 'width "100%")))
+
+
+<a name="left-right-banner"></a><div class="schemedoc-definition-comment">;; Return a banner (represented as a table) with left and right justified contributions.
+;; The optional parameter distribution-percentages gives the relative sizes 
+;; of the left and right fields.
+;; .form (left-right-banner left right [distribution-percentages])
+;; .parameter left The left portion of the banner.
+;; .parameter right The right portion of the banner.
+;; .parameter distribution-percentages A list of three integers (percent numbers) the sum of which is expected to be 100. Defaults to '(50 50).</div><a name="left-right-banner"></a><span><a href="../xhtml10-convenience.html#left-right-banner"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(left-right-banner left right . optional-parameter-list)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">distribution-percentages</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list '(50 50)))
+        (<span class="local-name-binding">left-percent</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> distribution-percentages)) "%"))
+        (<span class="local-name-binding">right-percent</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> distribution-percentages)) "%"))
+       )
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">font-size</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">x</span> <span class="local-name-binding">y</span>) y))) <span class="comment">; local redef to circumvent improper use of font-size</span><br />    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#table" title="Manual: xhtml10-transitional-mirror">table</a>
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tbody" title="Manual: xhtml10-transitional-mirror">tbody</a>
+       (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+        (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#tr" title="Manual: xhtml10-transitional-mirror">tr</a>
+         (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+          (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a>
+           (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (font-size 2 left))
+           'width left-percent 'align "left" 'valign "top")
+
+          (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#td" title="Manual: xhtml10-transitional-mirror">td</a>
+           (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (font-size 2 right))
+           'width right-percent 'align "right" 'valign "top")
+          )
+         ))))
+     'border "0" 'cellpadding "0" 'cellspacing "0" 'width "100%")))) 
+
+
+
+<a name="laml-top-banner"></a><div class="schemedoc-definition-comment">;; Return the standard LAML top banner with time of generation, copyright, and home icon</div><a name="laml-top-banner"></a><span><a href="../xhtml10-convenience.html#laml-top-banner"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(laml-top-banner)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">yr</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> (<a class="schemedoc-name" href="../../../lib/man/time.html#time-decode" title="Manual: time">time-decode</a> (current-time)))))
+  (<a class="applied-name" href="xhtml10-convenience-1.html#left-middle-right-banner" title="xhtml10-convenience">left-middle-right-banner</a>
+     (<a class="schemedoc-name" href="../../../lib/man/time.html#when-generated" title="Manual: time">when-generated</a>)
+     (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#span" title="Manual: xhtml10-transitional-mirror">span</a> "Copyright" <a class="applied-name" href="xhtml10-convenience-1.html#copyright" title="xhtml10-convenience">copyright</a>  (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> yr) <a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#_" title="Manual: xml-in-laml">_</a> ","  "Kurt N&#248;rmark")
+     (<a class="applied-name" href="xhtml10-convenience-1.html#laml-home-button" title="xhtml10-convenience">laml-home-button</a> 0 "laml-home.gif"))))
+
+<a name="mini-menu"></a><div class="schemedoc-definition-comment">;; Makes a horizontal menu in terms of a table with links.
+;; The table is made on the basis of parameter mini-menu-list, which is a list of
+;; menu entries. A menu entry is a list of anchor-text and URL pairs (lists of
+;; two strings). Dark-color must be some dark color.</div><a name="mini-menu"></a><span><a href="../xhtml10-convenience.html#mini-menu"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(mini-menu mini-menu-list dark-color)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX123" title="R5RS Scheme form">letrec</a> ((<span class="local-name-binding">mini-menu-entry</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">e</span>) 
+                             (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">text</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> e))
+                                   (<span class="local-name-binding">url</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">cadr</a> e)))
+                              (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a> (<a class="applied-name" href="xhtml10-convenience-1.html#font-1" title="xhtml10-convenience">font-1</a> 2 <a class="schemedoc-name" href="../../../lib/man/color.html#white" title="Manual: color">white</a> text) 'href url 'css:text-decoration "none")
+                                   ))))
+          (<span class="local-name-binding">lgt</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> mini-menu-list)))
+   (<a class="applied-name" href="xhtml10-convenience-1.html#table-1" title="xhtml10-convenience">table-1</a>
+     1
+     (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> lgt 160)
+     (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> lgt dark-color)
+     (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> mini-menu-entry mini-menu-list)))))
+
+
+<span class="comment">; ---------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; HTML input form functions. 
+;;; A number of convenient functions which supports the work with HTML input forms.</div>
+<a name="form-1"></a><div class="schemedoc-definition-comment">;; Embed x in to form of kind POST, which activates url upon form completion. 
+;; Corresponds to the old function form in the ad hoc html library. </div><a name="form-1"></a><span><a href="../xhtml10-convenience.html#form-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(form-1 cgi-url x)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#form" title="Manual: xhtml10-transitional-mirror">form</a> x 'method "post" 'action cgi-url))
+
+<a name="multipart-form"></a><div class="schemedoc-definition-comment">;; Embed x into a multipart form. Activate cgi-url when the form is submitted.
+;; A multipart form is used for file uploading. Files are written into 
+;; target-directory when uploaded.
+;; The parameter target-directory-url gives the URL of the directory, in which the file is uploaded.
+;; This is used for subsequent WWW retrival of the file.
+;; .reference "accompanying function" "multipart-decode" "encode-decode.html#multipart-decode"</div><a name="multipart-form"></a><span><a href="../xhtml10-convenience.html#multipart-form"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(multipart-form cgi-url target-directory target-directory-url x)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#form" title="Manual: xhtml10-transitional-mirror">form</a> 
+     (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+       (<a class="applied-name" href="xhtml10-convenience-1.html#hidden-line" title="xhtml10-convenience">hidden-line</a> "target-directory!!!" target-directory)
+       (<a class="applied-name" href="xhtml10-convenience-1.html#hidden-line" title="xhtml10-convenience">hidden-line</a> "target-directory-url!!!" target-directory-url)
+       x
+      )
+     'method "post" 'enctype "multipart/form-data" 'action cgi-url))
+
+<a name="checkbox"></a><div class="schemedoc-definition-comment">;; Return an input tag of type checkbox. The name is a string or symbol which identifies the checkbox.
+;; Checked is an optional boolean parameter. If checked is #t, the checkbox will be checked initially.
+;; Returns the string true to the form processing application if checked.</div><a name="checkbox"></a><span><a href="../xhtml10-convenience.html#checkbox"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(checkbox name . checked)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">checked1</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> checked) #f (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> checked))))
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> checked1 
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "checkbox" 'checked "checked" 'value "true" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "checkbox" 'value "true" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name)))))
+
+<a name="radio-button"></a><div class="schemedoc-definition-comment">;; Return an input tag of type radio. 
+;; checked is a boolean parameter, i.e. true or false (in Scheme sense). </div><a name="radio-button"></a><span><a href="../xhtml10-convenience.html#radio-button"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(radio-button value group-name . checked)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">is-checked</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX304" title="R5RS Scheme form">not</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> checked)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX305" title="R5RS Scheme form">boolean?</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> checked)) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> checked))))
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> is-checked
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "radio" 'checked "checked" 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value) 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> group-name))
+    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "radio" 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value) 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> group-name))
+  )))
+
+<a name="text-line"></a><div class="schemedoc-definition-comment">;; Return an input tag of type text. 
+;; The name is a string of symbol which identifies the text line.
+;; Size is the text line width in character positions.
+;; Value is the initial value on the text line.</div><a name="text-line"></a><span><a href="../xhtml10-convenience.html#text-line"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(text-line name size value)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "text" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name) 'size (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> size) 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))
+
+<a name="hidden-line"></a><div class="schemedoc-definition-comment">;; Return an input tag of type hidden. 
+;; The name is a string or symbol which identifies the hidden line.
+;; Value is the string contents of the hidden line.</div><a name="hidden-line"></a><span><a href="../xhtml10-convenience.html#hidden-line"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(hidden-line name value)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "hidden" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name) 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))
+
+<a name="file-upload"></a><div class="schemedoc-definition-comment">;; Return an input tag of type file.
+;; Such an input tag is used for file uploading.
+;; The name of the uploading is name.</div><a name="file-upload"></a><span><a href="../xhtml10-convenience.html#file-upload"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(file-upload name)</span>  
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "file" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name)))
+
+<a name="password-line"></a><div class="schemedoc-definition-comment">;; Return an input tag of type password. 
+;; The name is a string of symbol which identifies the password.
+;; Size is the line width in character positions.
+;; Value is the initial contents of the password field (not very useful...).</div><a name="password-line"></a><span><a href="../xhtml10-convenience.html#password-line"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(password-line name size value)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "password" 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name) 'size (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> size) 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))
+
+<a name="submit"></a><div class="schemedoc-definition-comment">;; Return an input tag of type submit. Renders a button. 
+;; Value is the string label of the button. If the optional parameter name
+;; is given it identifies a particular submit button with a name, value pair in the submitted data.
+;; .form (submit value [name])</div><a name="submit"></a><span><a href="../xhtml10-convenience.html#submit"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(submit value . optional-parameters)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">name</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameters #f)))
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> name
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "submit" 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value) 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name))
+      (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "submit" 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))))
+
+<a name="reset"></a><div class="schemedoc-definition-comment">;; Return an input tag of type reset. 
+;; Value is the string label of the button.</div><a name="reset"></a><span><a href="../xhtml10-convenience.html#reset"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(reset value)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#input" title="Manual: xhtml10-transitional-mirror">input</a> 'type "reset" 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))
+
+<a name="select-1"></a><div class="schemedoc-definition-comment">;; Return a select tag, defining  multiple choice menu. Name is a string or symbol which identifies the selection.
+;; Value-list is a list of the values to be returned upon selection.
+;; Contents-list is the list of contents to be shown in the menu.
+;; Selected-value is an optional value, which is to be selected initially. This value should be a member of value-list.
+;; Corresponds to the old function select in the ad hoc html library. </div><a name="select-1"></a><span><a href="../xhtml10-convenience.html#select-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(select-1 name value-list contents-list . selected-value)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">selected</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> selected-value) "" (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> selected-value)))
+        (<span class="local-name-binding">body</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">value</span> <span class="local-name-binding">contents</span>)
+                           (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX200" title="R5RS Scheme form">equal?</a> selected value)
+                               (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#option" title="Manual: xhtml10-transitional-mirror">option</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> contents) 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value) 'selected "selected") 
+                               (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#option" title="Manual: xhtml10-transitional-mirror">option</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> contents) 'value (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> value)))) 
+			 value-list contents-list))
+       )
+   (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#select" title="Manual: xhtml10-transitional-mirror">select</a> body 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name))))
+
+<a name="textarea-1"></a><div class="schemedoc-definition-comment">;; Return a textarea form. 
+;; Rows is the number of rows of the text area.
+;; Cols is the number of columns measured in characters.
+;; Contents is the initial contents of the text area.
+;; Corresponds to the old function textarea in the ad hoc html library. </div><a name="textarea-1"></a><span><a href="../xhtml10-convenience.html#textarea-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(textarea-1 name rows cols contents)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#textarea" title="Manual: xhtml10-transitional-mirror">textarea</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> contents) 'name (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> name) 'rows (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> rows) 'cols (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> cols)))
+
+
+<span class="comment">; ---------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Multi column lists. 
+;;; The functions in this section return multi-column lists. Given a list of elements the functions
+;;; return a table in which the elements have been arranged in a number of columns. The first function,
+;;; multi-column-list, arranges the elements in row major order. The two last functions arrange the
+;;; the elements in column major order. These are the most advanced functions due to the way tables
+;;; are organized in HTML.</div>
+
+<a name="multi-column-list"></a><div class="schemedoc-definition-comment">;; Return a multi-column list, row major, with columns columns.
+;; Columns (the first parameter) must be at least 2.
+;; The total width (sum of column widths) is given as the last parameter.
+;; Internally, a HTML table with zero border is formed and returned.</div><a name="multi-column-list"></a><span><a href="../xhtml10-convenience.html#multi-column-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(multi-column-list columns elements total-width)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">lgt</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> elements))
+        (<span class="local-name-binding">rem</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX259" title="R5RS Scheme form">remainder</a> lgt columns))
+        (<span class="local-name-binding">elements-2</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> lgt 0) (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> columns " "))     <span class="comment">; ensure that list length is a multiplum of column, and at least column</span><br />                          ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 0 rem) elements)
+                          (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX334" title="R5RS Scheme form">append</a> elements (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> columns rem) " ")))))
+        (<span class="local-name-binding">rows</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#sublist-by-rows" title="Manual: general">sublist-by-rows</a> columns elements-2))
+        (<span class="local-name-binding">column-width</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX258" title="R5RS Scheme form">quotient</a> total-width columns))
+        (<span class="local-name-binding">column-widths</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> columns column-width)))
+    (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 column-widths rows)))
+
+
+<a name="two-column-list"></a><div class="schemedoc-definition-comment">;; Return a two column list, column major.
+;; total-width (sum of column widths) is the width you want the resulting table to have.
+;; Internally, a HTML table with zero border is formed and returned.</div><a name="two-column-list"></a><span><a href="../xhtml10-convenience.html#two-column-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(two-column-list elements total-width)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">lgt</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> elements))
+        (<span class="local-name-binding">rem</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX259" title="R5RS Scheme form">remainder</a> lgt 2))
+ 
+        <span class="comment">; not used any more
+; ensure that list length is a multiplum of column, and at least column</span><br />        (<span class="local-name-binding">elements-2</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> lgt 0) (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> 2 " ")) 
+                          ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX235" title="R5RS Scheme form">=</a> 0 rem) elements)
+                          (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX334" title="R5RS Scheme form">append</a> elements (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> 2 rem) " ")))))
+
+        (<span class="local-name-binding">rows</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#sublist-by-2columns" title="Manual: general">sublist-by-2columns</a> elements " "))
+        (<span class="local-name-binding">column-width</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX258" title="R5RS Scheme form">quotient</a> total-width 2))
+        (<span class="local-name-binding">column-widths</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> 2 column-width)))
+    (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 column-widths rows)))
+
+<a name="n-column-list"></a><div class="schemedoc-definition-comment">;; Return an n column list, column-major, of the element list (second parameter).
+;; This is a generalized version of two-column-list.
+;; total-width (sum of column widths) is the width you want the resulting table to have.
+;; n is the number of columns.
+;; Internally, a HTML table with zero border is formed and returned.</div><a name="n-column-list"></a><span><a href="../xhtml10-convenience.html#n-column-list"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(n-column-list n elements total-width)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">lgt</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> elements))
+        (<span class="local-name-binding">rows</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#sublist-by-columns" title="Manual: general">sublist-by-columns</a> n elements " "))
+        (<span class="local-name-binding">column-width</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX258" title="R5RS Scheme form">quotient</a> total-width n))
+        (<span class="local-name-binding">column-widths</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> n column-width)))
+    (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 column-widths rows)))
+
+
+<div class="schemedoc-section-comment">;;; Images and image file access. 
+;;; The functions in this section determine how images are accessed from this
+;;; and other libraries.</div>
+<a name="kn-internet-image-path"></a><div class="schemedoc-definition-comment">;; The URL where the author of this library keeps a number of images (icons).
+;; This variable is used if image-file-access is the symbol net.</div><a name="kn-internet-image-path"></a><span><a href="../xhtml10-convenience.html#kn-internet-image-path"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">kn-internet-image-path</span> "http://www.cs.auc.dk/~normark/images/")
+
+<a name="image-file-path"></a><div class="schemedoc-definition-comment">;; Determination of the actual file path to images in html files.
+;; This function depends on the variable image-file-access, which MUST be defined external to this library.
+;; The value of image-file-access can be changed via the procedure set-image-file-access!
+;; One of the following symbols apply: local, parent, net, sub-directory, or fixed. Default is local.
+;; local means that images are taken from the current directory.
+;; parent means that images are tagen from ../images.
+;; sub-directory means that images are taken from ./images.
+;; fixed means that images are taken from fixed-image-directory (a variable which must be defined
+;; external to this library).
+;; Finally, net means that images are taken from kn-internet-image-path (a variable).</div><a name="image-file-path"></a><span><a href="../xhtml10-convenience.html#image-file-path"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(image-file-path)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> image-file-access 'local) "")
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> image-file-access 'parent) "../images/")
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> image-file-access 'sub-directory) "./images/")
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> image-file-access 'net) <a class="applied-name" href="xhtml10-convenience-1.html#kn-internet-image-path" title="xhtml10-convenience">kn-internet-image-path</a>)
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> image-file-access 'fixed) fixed-image-directory)
+  ))
+
+<a name="set-image-file-path!"></a><div class="schemedoc-definition-comment">;; Set the image-file-access variable. 
+;; mode is symbol, either local, parent, sub-directory, net, or fixed.
+;; Relative to the hmtl directory, where the target files are written.</div><a name="set-image-file-path!"></a><span><a href="../xhtml10-convenience.html#set-image-file-path!"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(set-image-file-path! mode)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX106" title="R5RS Scheme form">set!</a> image-file-access mode))
+
+<a name="image-file"></a><div class="schemedoc-definition-comment">;; Return the full path/address of the image file named file-name. 
+;; Relies of the setting of the variable image-file-access via the procedure set-image-file-path!
+;; File name must include file extension</div><a name="image-file"></a><span><a href="../xhtml10-convenience.html#image-file"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(image-file file-name)</span>
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="applied-name" href="xhtml10-convenience-1.html#image-file-path" title="xhtml10-convenience">image-file-path</a>) file-name ))
+
+
+<a name="img-0"></a><div class="schemedoc-definition-comment">;; Return an img tag, in which a file on file-name is presented. An optional width parameter is supported. 
+;; Corresponds to the old function img in the ad hoc html library. </div><a name="img-0"></a><span><a href="../xhtml10-convenience.html#img-0"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(img-0 file-name . width)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX304" title="R5RS Scheme form">not</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> width))
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#img" title="Manual: xhtml10-transitional-mirror">img</a> 'alt "" 'src (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> file-name) 'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> width)) 'border "0")
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#img" title="Manual: xhtml10-transitional-mirror">img</a> 'alt "" 'src (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> file-name) 'border "0")))
+
+<a name="img-with-border"></a><div class="schemedoc-definition-comment">;; A variant of img which presents an image with a border</div><a name="img-with-border"></a><span><a href="../xhtml10-convenience.html#img-with-border"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(img-with-border file-name . width)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX304" title="R5RS Scheme form">not</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> width))
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#img" title="Manual: xhtml10-transitional-mirror">img</a> 'src (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> file-name) 'width (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> width)))
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#img" title="Manual: xhtml10-transitional-mirror">img</a> 'src (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> file-name))))
+
+
+<a name="laml-home-button"></a><div class="schemedoc-definition-comment">;; Return an HTML a tag (anchor) which links to the LAML software home page via an small gif icon.
+;; If possible, a relative URL is used as the href attribute.
+;; The parameter extra-level is an extra level to add. Normally, extra-level is 0 (zero).
+;; As an example, extra-level should be 1 in case HTML files are organized
+;; in a sub-directory relative to the laml source file.
+;; Text-or-image is either the symbol 'text or 'image, or a string. If 'text, a textual anchor is used.
+;; if 'image, a small 'laml house' is used as image. If text-or-image is a string it is a name of an image file
+;; in the laml image directory (including file name extension, excluding any file path).
+;; The optional start-dir gives the directory, in which the home button is to be placed; It defaults to (startup-directory).</div><a name="laml-home-button"></a><span><a href="../xhtml10-convenience.html#laml-home-button"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(laml-home-button extra-level text-or-image . start-dir)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">start-dir-1</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> start-dir) (<a class="schemedoc-name" href="../../../man/laml.html#startup-directory" title="Manual: laml">startup-directory</a>) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> start-dir)))
+        (<span class="local-name-binding">url-of-laml</span> (<a class="schemedoc-name" href="../../../man/laml.html#laml-home-url-prefix" title="Manual: laml">laml-home-url-prefix</a> extra-level start-dir-1))
+        (<span class="local-name-binding">help-text</span> 
+           (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX200" title="R5RS Scheme form">equal?</a> url-of-laml <a class="schemedoc-name" href="../../../man/laml.html#laml-absolute-url-prefix" title="Manual: laml">laml-absolute-url-prefix</a>)
+               "The LAML software home page at Aalborg University"
+               "The local LAML software home page"))
+        (<span class="local-name-binding">image-file</span> 
+           (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> text-or-image 'text) "")      <span class="comment">; not defined</span><br />                 ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> text-or-image 'image) "images/blue-house.gif")
+                 ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX374" title="R5RS Scheme form">string?</a> text-or-image) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "images/" text-or-image))
+                 (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> "???")))
+       )
+   (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#a" title="Manual: xhtml10-transitional-mirror">a</a>
+     (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> text-or-image 'text) "LAML home")
+           ((<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX118" title="R5RS Scheme form">or</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> text-or-image 'image) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX374" title="R5RS Scheme form">string?</a> text-or-image))
+                    (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#img" title="Manual: xhtml10-transitional-mirror">img</a> 'src (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> url-of-laml image-file) 'alt help-text 'border "0"))
+           (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> "LAML home"))
+     'href (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> url-of-laml "index.html")
+     'title help-text
+     'target "_top")))
+
+
+<span class="comment">; ---------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Indenting, boxing, and framing.
+;;; Here is a number of functions of indentation and frame making.</div>
+<a name="indent-pixels"></a><div class="schemedoc-definition-comment">;; Indent text with p pixels</div>
+<a name="indent-pixels"></a><span><a href="../xhtml10-convenience.html#indent-pixels"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">indent-pixels</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#xml-in-laml-positional-abstraction" title="Manual: xml-in-laml">xml-in-laml-positional-abstraction</a> 1 0
+    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">p</span> <span class="local-name-binding">c</span> <span class="local-name-binding">a</span>)
+       (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#div" title="Manual: xhtml10-transitional-mirror">div</a> 'css:margin-left (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> p) "px") a c))))
+
+<span class="comment">; (define (indent-pixels p text)
+;   (div 'css:margin-left (string-append (as-string p) "px") text))</span><br />
+<a name="narrow-with-pixels"></a><div class="schemedoc-definition-comment">;; Show text in a column, narrowed from both left and right with p pixels</div><a name="narrow-with-pixels"></a><span><a href="../xhtml10-convenience.html#narrow-with-pixels"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(narrow-with-pixels p text)</span>
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> p "*" p) 
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> "" text ""))))
+
+<a name="frame-1"></a><div class="schemedoc-definition-comment">;; Shown text in a simple frame. 
+;; Has nothing to do with HTML frames.
+;; Corresponds to the old function frame in the ad hoc html library. </div><a name="frame-1"></a><span><a href="../xhtml10-convenience.html#frame-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(frame-1 text)</span> 
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> "*") 
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> text))))
+
+<a name="box"></a><div class="schemedoc-definition-comment">;; Embed text in an invisible (border-less) table with one cell.
+;; The optional parameter, width, can be used to control the width of the table cell (defaults to "*").
+;; .form (box text [width])</div><a name="box"></a><span><a href="../xhtml10-convenience.html#box"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(box text . optional-parameter-list)</span> 
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">width</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#optional-parameter" title="Manual: general">optional-parameter</a> 1 optional-parameter-list "*")))
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> width)
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> text)))))
+
+<a name="narrow"></a><div class="schemedoc-definition-comment">;; Present the contents-list, which is a list of elements, in a narrow
+;; column of width, separated with activations of separator-fn.</div><a name="narrow"></a><span><a href="../xhtml10-convenience.html#narrow"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(narrow separator-fn width . contents-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">separator-list</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> contents-list) 1) (separator-fn))))
+   (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 0 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> width) 
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> 
+      (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#merge-lists-simple" title="Manual: general">merge-lists-simple</a> contents-list separator-list))))))
+
+<a name="color-frame"></a><div class="schemedoc-definition-comment">;; Embed text into a color frame. It is the background which is colored.</div><a name="color-frame"></a><span><a href="../xhtml10-convenience.html#color-frame"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(color-frame text color)</span> 
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-1" title="xhtml10-convenience">table-1</a> 0 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> "*") (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> 1 color)
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> text)) "bottom"))
+
+<a name="color-frame-width"></a><div class="schemedoc-definition-comment">;; As color-frame, but this function supports and extra widht parameter. This is an integer: the with of the frame in pixels.</div><a name="color-frame-width"></a><span><a href="../xhtml10-convenience.html#color-frame-width"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(color-frame-width text color width)</span> 
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-1" title="xhtml10-convenience">table-1</a> 0 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> width) (<a class="schemedoc-name" href="../../../lib/man/general.html#make-list" title="Manual: general">make-list</a> 1 color)
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> text)) "bottom"))
+
+<a name="frame-width"></a><div class="schemedoc-definition-comment">;; Like frame, but with an extra width parameter. This is an integer: the with of the frame in pixels.</div><a name="frame-width"></a><span><a href="../xhtml10-convenience.html#frame-width"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(frame-width text width)</span> 
+  (<a class="applied-name" href="xhtml10-convenience-1.html#table-3" title="xhtml10-convenience">table-3</a> 1 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> width) <span class="comment">; (make-list 1 slide-background-color)</span><br />    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> text))))
+
+<a name="center-frame"></a><div class="schemedoc-definition-comment">;; Embed text into a centered frame</div><a name="center-frame"></a><span><a href="../xhtml10-convenience.html#center-frame"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(center-frame indentation text)</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#center" title="Manual: xhtml10-transitional-mirror">center</a>
+   (<a class="applied-name" href="xhtml10-convenience-1.html#narrow-with-pixels" title="xhtml10-convenience">narrow-with-pixels</a> indentation
+     (<a class="applied-name" href="xhtml10-convenience-1.html#frame-1" title="xhtml10-convenience">frame-1</a> text))))
+
+
+<div class="schemedoc-section-comment">;;; Alphabetical index arrays. 
+;;; The alphabetic index arrays are useful for presentation of alphabets linking to separate pages in a large index.</div>
+<a name="alphabetic-link-array"></a><div class="schemedoc-definition-comment">;; Return an 'array' of letter links to #letter</div><a name="alphabetic-link-array"></a><span><a href="../xhtml10-convenience.html#alphabetic-link-array"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(alphabetic-link-array)</span>
+ (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> 
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">letter</span>)  (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a> (<a class="applied-name" href="xhtml10-convenience-1.html#a-tag" title="xhtml10-convenience">a-tag</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "#" letter) (<a class="schemedoc-name" href="../../../lib/man/general.html#capitalize-string-nd" title="Manual: general">capitalize-string-nd</a> letter))  (<a class="applied-name" href="xhtml10-convenience-1.html#horizontal-space" title="xhtml10-convenience">horizontal-space</a> 1)))
+  (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX332" title="R5RS Scheme form">list</a> "a" "b" "c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" 
+	"p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" "&#230;" "&#248;" "&#229;")))
+
+<a name="alphabetic-link-array-1"></a><div class="schemedoc-definition-comment">;; Return an 'array' of letter links to (string-append target-file-prefix "-" letter ".html") for all letters in alphabet. 
+;; This is a generalized version of alphabetic-link-array.
+;; target-file-prefix is a prefix of the file names, in which the index files are located.
+;; alphabet is a list of letters, for which to generate index links from the alphabet arrays. Some letters
+;; may be missing from the alphabet compared with a complete alphabet.
+;; emphasis-letter is an optional letter which we emphasize in the link array</div><a name="alphabetic-link-array-1"></a><span><a href="../xhtml10-convenience.html#alphabetic-link-array-1"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(alphabetic-link-array-1 target-file-prefix alphabet . emphasis-letter)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">em-let</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX304" title="R5RS Scheme form">not</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> emphasis-letter)) (<a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> emphasis-letter)) #f))
+         (<span class="local-name-binding">alphabet-1</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> <a class="schemedoc-name" href="../../../lib/man/general.html#as-string" title="Manual: general">as-string</a> alphabet)))
+    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX412" title="R5RS Scheme form">map</a> 
+     (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">letter</span>) 
+       (<a class="applied-name" href="xhtml10-convenience-1.html#con" title="xhtml10-convenience">con</a>
+	(<a class="applied-name" href="xhtml10-convenience-1.html#a-tag" title="xhtml10-convenience">a-tag</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> target-file-prefix "-" letter ".html")
+	       (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX117" title="R5RS Scheme form">and</a> em-let (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX200" title="R5RS Scheme form">equal?</a> em-let letter))
+		   (<a class="applied-name" href="xhtml10-convenience-1.html#font-1" title="xhtml10-convenience">font-1</a> 4 <a class="schemedoc-name" href="../../../lib/man/color.html#red" title="Manual: color">red</a> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#b" title="Manual: xhtml10-transitional-mirror">b</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#capitalize-string-nd" title="Manual: general">capitalize-string-nd</a> letter)))
+		   (<a class="schemedoc-name" href="../../../lib/man/general.html#capitalize-string-nd" title="Manual: general">capitalize-string-nd</a> letter)))
+	" "
+       ))
+     alphabet-1)))
+
+<span class="comment">; ---------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Substring Coloring.
+;;; The function colorize-substring in this section is able to colorize specified substrings
+;;; of a given string.</div>
+<a name="colorize-substrings"></a><div class="schemedoc-definition-comment">;; This is an advanced function which make font changes to substrings of str.
+;; Surround substrings of str, as specified by the third parameter, in font tags.
+;; Region-color-list is a list of coloring descriptors.  &lt;p&gt;
+;; Each color descriptor is of the form:
+;; (from-string to-string color face multiplicity). &lt;p&gt;
+;; Face and multiplicity are optional.
+;; From-string and to-strings delimits and identifies a substring of str to colorize etc.
+;; color is a list of three integers: a rgb list.
+;; We support the following face symbols: italic, bold, typewriter, underlined, plain (default bold).
+;; Multiplicity is an integer telling how many times to to attempt the colorization on str (default 1). &lt;p&gt;
+;; NB: In strange situations, the fontification of an early region-color-element may
+;; affect the searching for latter region-color-elements. This is not an error, but a consequence of
+;; the way font tags are puted into str.</div><a name="colorize-substrings"></a><span><a href="../xhtml10-convenience.html#colorize-substrings"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(colorize-substrings str region-color-list)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX106" title="R5RS Scheme form">set!</a> <a class="applied-name" href="xhtml10-convenience-1.html#last-coloring-length" title="xhtml10-convenience">last-coloring-length</a> 0)
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX330" title="R5RS Scheme form">null?</a> region-color-list)
+      str
+      (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">region-color</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> region-color-list))
+             (<span class="local-name-binding">from-str</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> region-color))
+             (<span class="local-name-binding">to-str</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">cadr</a> region-color))
+             (<span class="local-name-binding">color</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">caddr</a> region-color))
+             (<span class="local-name-binding">face</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> region-color) 4) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX325" title="R5RS Scheme form">cadddr</a> region-color) 'bold))
+             (<span class="local-name-binding">multiplicity</span> (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX239" title="R5RS Scheme form">&gt;=</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX333" title="R5RS Scheme form">length</a> region-color) 5) (<a class="schemedoc-name" href="../../../lib/man/general.html#fifth" title="Manual: general">fifth</a> region-color) 1))
+            )
+        (<a class="applied-name" href="xhtml10-convenience-1.html#colorize-substrings" title="xhtml10-convenience">colorize-substrings</a>
+          (<a class="applied-name" href="xhtml10-convenience-1.html#font-substring" title="xhtml10-convenience">font-substring</a> str 0 from-str to-str color face multiplicity)
+          (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX322" title="R5RS Scheme form">cdr</a> region-color-list)))))
+
+<a name="face-start-tag"></a><span class="comment">; Return a face start tag of a given face symbol. 
+; We support the following face symbols: italic, bold, typewriter, underlined, plain</span><br /><a name="face-start-tag"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(face-start-tag face-symbol)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'italic) (start-tag 'i) )
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'bold) (start-tag 'b))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'typerwriter) (start-tag 'kbd))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'underlined) (start-tag 'u))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'plain) "")
+        (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (error "face start tag: Unknown face symbol"))
+  )
+)
+
+<a name="face-end-tag"></a><span class="comment">; Return a face end tag of a given face symbol.</span><br /><a name="face-end-tag"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(face-end-tag face-symbol)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a> ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'italic) (end-tag 'i))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'bold) (end-tag 'b))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'typerwriter) (end-tag 'kbd))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'underlined) (end-tag 'u))
+        ((<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX199" title="R5RS Scheme form">eq?</a> face-symbol 'plain) "")
+        (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> (error "face end tag: Unknown face symbol"))
+  )
+)
+
+
+<a name="last-coloring-length"></a><span class="comment">; holds the length of font text from last substitution</span><br /><a name="last-coloring-length"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">last-coloring-length</span> 0)
+                               
+
+<a name="repeat-colorizing"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(repeat-colorizing str start-index from-str to-str color face n)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX237" title="R5RS Scheme form">&gt;</a> n 0)
+      (<a class="applied-name" href="xhtml10-convenience-1.html#font-substring" title="xhtml10-convenience">font-substring</a> str start-index from-str to-str color face n)
+      str))
+             
+<a name="font-substring"></a><span class="comment">; surround a substring, delimited by from-delimiting-string and to-delimiting-string, by a html font tag
+; with a color attribute.
+; starting looking for delimiting strings at from-index</span><br /><a name="font-substring"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-substring str start-index from-delimiting-string to-delimiting-string color face multiplicity)</span>
+  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">from-index</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#substring-index" title="Manual: general">substring-index</a> str start-index from-delimiting-string)))
+   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> from-index
+       (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">to-index</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#substring-index" title="Manual: general">substring-index</a> str 
+                           (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> from-index (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> from-delimiting-string))  <span class="comment">; addition 10.9.98</span><br />                           to-delimiting-string)))
+          (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> to-index
+              (<a class="applied-name" href="xhtml10-convenience-1.html#repeat-colorizing" title="xhtml10-convenience">repeat-colorizing</a> 
+                 (<a class="applied-name" href="xhtml10-convenience-1.html#font-substring-by-index" title="xhtml10-convenience">font-substring-by-index</a> str from-index (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> to-index (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> to-delimiting-string)) color face)
+                 (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> to-index <a class="applied-name" href="xhtml10-convenience-1.html#last-coloring-length" title="xhtml10-convenience">last-coloring-length</a>) from-delimiting-string to-delimiting-string color face (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX251" title="R5RS Scheme form">-</a> multiplicity 1))
+              (error (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "Substring fonting/colorizing: Cannot find the to delimiting strings: "
+                                       to-delimiting-string " in " (<a class="applied-name" href="xhtml10-convenience-1.html#initial-prefix-of-string" title="xhtml10-convenience">initial-prefix-of-string</a> str 40) ))))
+        (error (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "Substring fonting/colorizing: Cannot find the from delimiting strings: "
+                               from-delimiting-string " in " (<a class="applied-name" href="xhtml10-convenience-1.html#initial-prefix-of-string" title="xhtml10-convenience">initial-prefix-of-string</a> str 40))))))
+
+<a name="initial-prefix-of-string"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(initial-prefix-of-string str n)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">lgt</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> str)))
+   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX103" title="R5RS Scheme form">if</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX237" title="R5RS Scheme form">&gt;</a> lgt n)
+       (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX391" title="R5RS Scheme form">substring</a> str 0 n)
+       str)))   
+
+
+<a name="font-substring-by-index"></a><span class="comment">; to-index is larger than from-index.
+; insert a font tag around index range</span><br /><a name="font-substring-by-index"></a><span></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(font-substring-by-index str from-index to-index color face)</span>
+ (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">pre</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (<a class="applied-name" href="xhtml10-convenience-1.html#face-start-tag" title="xhtml10-convenience">face-start-tag</a> face) (start-tag 'font 'color (<a class="schemedoc-name" href="../../../lib/man/color.html#rgb-color-encoding" title="Manual: color">rgb-color-encoding</a> color))))
+        (<span class="local-name-binding">post</span> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> (end-tag 'font) (<a class="applied-name" href="xhtml10-convenience-1.html#face-end-tag" title="xhtml10-convenience">face-end-tag</a> face)))
+       )
+   (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX106" title="R5RS Scheme form">set!</a> <a class="applied-name" href="xhtml10-convenience-1.html#last-coloring-length" title="xhtml10-convenience">last-coloring-length</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX249" title="R5RS Scheme form">+</a> (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> pre) (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX378" title="R5RS Scheme form">string-length</a> post)))
+   (<a class="schemedoc-name" href="../../../lib/man/general.html#put-around-substring" title="Manual: general">put-around-substring</a>
+      str from-index pre to-index post)))
+
+
+
+<span class="comment">; --------------------------------------------------------------------------------------------------------</span><br /><div class="schemedoc-section-comment">;;; Miscelaneous</div>
+<a name="copyright-owner"></a><div class="schemedoc-definition-comment">;; Embed x into a copyright indication</div><a name="copyright-owner"></a><span><a href="../xhtml10-convenience.html#copyright-owner"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">(copyright-owner x)</span> (<a class="schemedoc-name" href="../../../lib/xml-in-laml/mirrors/man/xhtml10-transitional-mirror.html#span" title="Manual: xhtml10-transitional-mirror">span</a> x " " <a class="applied-name" href="xhtml10-convenience-1.html#copyright" title="xhtml10-convenience">copyright</a>))
+
+<a name="when-modified"></a><div class="schemedoc-definition-comment">;; Return a string that describes the 'last modfied' or 'page created' time.
+;; This abstraction is an XML-in-LAML abstraction which accepts the attributes updated-as-of or new-as-of.
+;; If the updated-as-of attribute is present, the last modfied string is returned.
+;; If the new-as-of attribute is present, the page created string is returned.
+;; Else the empty string is returned
+;; .reference "similar function in time.scm" "when-generated" "time.html#when-generated"
+;; .attribute updated-as-of implied The attribute value is a string of the form "year-month-day"
+;; .attribute new-as-of implied The attribute value is a string of the form "year-month-day"</div><a name="when-modified"></a><span><a href="../xhtml10-convenience.html#when-modified"><img src="../../../images/elucidator/small-prev.gif" title="SchemeDoc Manual entry" alt="" border="0" /></a> <br /></span>(<a class="scheme-syntax-name" href="../../../r5rs/r5rs_7.html#IDX173" title="R5RS Scheme form">define</a> <span class="signature">when-modified</span>
+  (<a class="schemedoc-name" href="../../../lib/xml-in-laml/man/xml-in-laml.html#xml-in-laml-abstraction" title="Manual: xml-in-laml">xml-in-laml-abstraction</a> 
+    (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX98" title="R5RS Scheme form">lambda</a> (<span class="local-name-binding">c</span> <span class="local-name-binding">a</span>)
+      (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX121" title="R5RS Scheme form">let</a> ((<span class="local-name-binding">when-updated</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#defaulted-get-prop" title="Manual: general">defaulted-get-prop</a> 'updated-as-of a #f))
+            (<span class="local-name-binding">when-created</span> (<a class="schemedoc-name" href="../../../lib/man/general.html#defaulted-get-prop" title="Manual: general">defaulted-get-prop</a> 'new-as-of a #f)))
+        (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">cond</a>  (when-updated 
+                  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">updated-date-list</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#year-month-day-decode-string" title="Manual: time">year-month-day-decode-string</a> when-updated))
+                         (<span class="local-name-binding">updated-time</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#time-encode" title="Manual: time">time-encode</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> updated-date-list) (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> updated-date-list) (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> updated-date-list) 0 0 0))
+                         (<span class="local-name-binding">dt</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#date-time" title="Manual: time">date-time</a> updated-time)))
+                    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "Last modified: " (<a class="schemedoc-name" href="../../../lib/man/time.html#weekday" title="Manual: time">weekday</a> updated-time) ", " (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> dt))))
+               (when-created
+                  (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX122" title="R5RS Scheme form">let*</a> ((<span class="local-name-binding">created-date-list</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#year-month-day-decode-string" title="Manual: time">year-month-day-decode-string</a> when-created))
+                         (<span class="local-name-binding">created-time</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#time-encode" title="Manual: time">time-encode</a> (<a class="schemedoc-name" href="../../../lib/man/general.html#first" title="Manual: general">first</a> created-date-list) (<a class="schemedoc-name" href="../../../lib/man/general.html#second" title="Manual: general">second</a> created-date-list) (<a class="schemedoc-name" href="../../../lib/man/general.html#third" title="Manual: general">third</a> created-date-list) 0 0 0))
+                         (<span class="local-name-binding">dt</span> (<a class="schemedoc-name" href="../../../lib/man/time.html#date-time" title="Manual: time">date-time</a> created-time)))
+                    (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX392" title="R5RS Scheme form">string-append</a> "Page created: " (<a class="schemedoc-name" href="../../../lib/man/time.html#weekday" title="Manual: time">weekday</a> created-time) ", " (<a class="scheme-procedure-name" href="../../../r5rs/r5rs_8.html#IDX321" title="R5RS Scheme form">car</a> dt))))
+               (<a class="scheme-syntax-name" href="../../../r5rs/r5rs_6.html#IDX110" title="R5RS Scheme form">else</a> ""))))))
+
+</pre></font><div>&nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p> &nbsp; <p></p></div></body></html>

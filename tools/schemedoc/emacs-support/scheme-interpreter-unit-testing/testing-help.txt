@@ -1,0 +1,82 @@
+UNIT TESTING FROM A SCHEME INTERPRETER.
+
+This facility makes it easy to do Scheme Unit testing from a Scheme
+command interpreter (an *inferior-lisp* buffer) in Emacs with PLT
+(MzScheme). The facility keeps track of your testsuites, and it helps
+you to maintain your testsuites.
+
+The facility interfaces to an existing Scheme Unit Testing framework:
+the Schematics Schemeunit software.  In order to use the facility you
+should therefore first install the Schematics Schemeunit testing
+software, which only works with PLT Scheme. You can get it from
+
+   http://schematics.sourceforge.net/schemeunit.html
+
+The main idea behind this facility is that you connect yourself to one
+of your testsuites. This can be done from the Emacs "Unit Testing"
+menu via the menu entry "Connect to testsuite...". You can also
+initiate a new testsuite by the menu entry "Make new testsuite". You
+will be prompted for a directory and a name of the testsuite.
+
+You can work in the usual way in the Scheme interpreter
+buffer. Whenever you wish to register the last expression and its
+value as test case you apply one of the menu entries "Add a
+testcase". You also just type M-x ok, or use the keyboard shortcut C-t
+C-t for the most typical of these. In this way, you can quickly and
+easily accumulate a number of testcases while you experiment with and
+try out newly developed Scheme functions. By this approach, you can
+with very little extra effort preserve all your testing work. The menu
+command "Run current test suite" turn the testsuite into SchemeUnit
+testfile, and executes it for you.
+
+A testsuite is organized in a test directory that - most important -
+contains the testsuite (a set of testcases) in a particular list
+format.  The test directory also contains a setup and teardown file
+(both Scheme files).  The setup file is loaded when you connect
+yourself to the testsuite. The teardown file is loaded when all the
+testcases in the testsuite are executed.
+
+Given a testsuite, it is possible to derive a Schematic SchemeUnit
+testsuite, and execute it. The Schemeunit test apparatus also executes
+the setup and tear down files. Execution of the current testsuite is
+done by the menu entry "Run current testsuite". You can also run all
+registered testsuites by "Run all testsuites".  The test directory
+contains the automatically generated SchemeUnit test file, which can
+be accessed by the Emacs command "Open current SchemeUnit testsuite".
+
+The "Unit Testing" menu also makes it easy to open the testsuite as
+such, and to open the setup and tear down Scheme files.
+
+The bookkeeping of testsuites offered by this facility can be affected
+by the registering and deregistering commands. It is also possible,
+via the command "Find and register testsuites..." to search
+(recursively) for all testsuites in a given directory. The use of this
+command is very convenient if you obtain directories from other
+sources.
+
+The facilities described above are integreated with LAML SchemeDoc.
+LAML SchemeDoc can apply selected testcases from a testsuite as
+examples, and present these together with other Schemedoc
+information. Only testcases marked as (use-as-example ...)  give rise
+to examples.
+
+As part of the Interactive Scheme Unit testing framework, we have
+extended the command interpreter in Emacs with an infinite history
+facility. Each line of text you enter into the command interpreter is
+saved on a file for future convenience. Thus, if you experiment a lot
+today, you can easily tomorrow turn some of these efforts into
+systematic tests, because all your interactions are preserved.  You
+can access the extended command history file with "Open comint
+history" from the menu. Feel free to prune this file, if you wish.
+
+There is a separate help text about individual test cases. Please
+consult the "Unit Testing" menu of your command interpreter (comint).
+
+I have written a paper about the Interactive Scheme Unit testing facility.
+See
+
+  ... 
+
+Feedback or comments to this facility should be sent to normark@cs.aau.dk.
+
+

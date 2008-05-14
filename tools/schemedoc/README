@@ -1,0 +1,40 @@
+This is the directory where all LAML related software is organized.
+
+In some distributions, only a subset of the LAML software is provided.
+And depending on the distribution, this directory also includes a number
+of HTML documentation files.
+
+Bring index.html up in an Internet browser to get additional information.
+You should also be aware of the LAML tutorial in tutorial/index.html
+
+The file distribution-version.lsp contains a list of (v1 v2 t kind), where
+v1 is the major version number, v2 is the minor version number, t is the 
+time of generation (the number of seconds elapsed since Jan 1, 1970),
+and kind is either the string "full", "slim", or "development".
+Example: (27 0 1113809304 "development").
+The file distribution-version holds the same information on a textually
+aggregated form (mostly for backward compatibility).
+Example: Version 27.0 (April 18, 2005, development)
+
+These programs in the LAML software package are free; you can
+redistribute it and/or modify it under the terms of the GNU General
+Public License as published by the Free Software Foundation; either
+version 2 of the License, or (at your option) any later version.
+
+These programs are distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program (see COPYRIGHTS); if not, write to the Free Software
+Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+
+
+Kurt Nørmark                          Phone:        +45 9635 8080
+Department of Computer Science        Direct phone: +45 9635 8896
+Aalborg University                    Fax:          +45 9815 9889
+Fredrik Bajers Vej 7, Building E      E-mail: normark@cs.auc.dk
+DK-9220 Aalborg Ø                     WWW: http://www.cs.auc.dk/~normark/
+DENMARK                               Office: E4-208.

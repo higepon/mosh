@@ -1,0 +1,10 @@
+If you modify the examples in this directory, or
+in one of the subdirectories, you may break or destroy
+your local copy of the LAML tutorial.
+
+The reason is that the LAML tutorial makes heavy use
+of the examples.
+
+You should consider to make a copy of the examples/tutorial
+(the current directory) before modifying the examples.
+

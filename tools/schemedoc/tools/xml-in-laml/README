@@ -1,0 +1,25 @@
+This directory contains the tool which makes LAML mirrors of XML
+languages. This is xml-in-laml.scm.
+
+In the distribution (full only):
+In subdirectories you find LAML scripts for concrete tool generation 
+together with the runtime parts (content validation predicates).
+
+In general, the tool produces mirrors which are organized in 
+lib/xml-in-laml/mirrors/. There are some exceptions, such as LENO,
+which is kept in an xml-in-laml branch of the styles directory.
+
+In the tools directory (../) you will find specific LAML tools,
+which may have an xml-in-laml subdirectory for xml-in-laml
+compliant tools.
+
+
+
+As other good examples of LAML mirror generation in the full
+distribution, see styles/xml-in-laml/lecture-notes/dtd/,
+styles/xml-in-laml/course-plan/dtd/,
+styles/xml-in-laml/photo-show/dtd/, and
+styles/xml-in-laml/manual/dtd/.
+
+
+KN.

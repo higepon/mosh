@@ -1,0 +1,328 @@
+/* Brazil SchemeDoc CSS stylesheet */ 
+
+BODY.manual-body
+ {
+   background: rgb(255,219,74); 
+   font-family: "arial";
+ }
+
+H1.manual-title 
+ {
+   color: rgb(0,136,71);
+   font-weight: bold;
+ }
+
+SPAN.manual-author-element
+  {
+   padding-right: 0.7cm;
+   color:  rgb(0,136,71);
+  }
+
+SPAN.manual-affiliation-element
+  {
+   padding-right: 0.0cm;
+   color: rgb(0,136,71);
+  }
+
+TABLE.manual-table 
+ {
+   margin-bottom: 40px;
+ }
+
+TABLE.manual-table TD
+ {
+   vertical-align: top;
+   padding-bottom: 6px;
+
+  /*
+   border-style: solid;
+   border-width: 2px;
+   border-color: rgb(255,255,155); 
+  */
+ }
+
+
+TR.manual-plain-end-of-entry
+  {
+  }
+
+
+TD.manual-plain-end-of-entry
+  {
+  }
+
+HR.manual-plain-end-of-entry 
+  {
+   visibility: hidden;
+  }
+
+
+SPAN.manual-top-banner-when-generated
+  {
+    font-style: italic;
+  }
+
+SPAN.manual-top-banner-is-schemedoc
+  {
+    font-style: italic;
+  }	
+
+DIV.manual-source-file-description
+  {
+    color: rgb(110,110,110);
+  }	
+
+DIV.manual-table-of-contents-header
+  {
+    font-style: italic;
+  }	
+
+DIV.manual-alphabetic-index-header
+  {
+    font-style: italic;
+  }	
+
+
+TD.manual-plain-entry-kind
+ {
+   color: rgb(110,110,110);
+   font-weight: 600;
+   padding-left: 0.8cm;
+ }
+
+SPAN.manual-kind-explanation
+ {
+   color: black;
+   font-weight: 100;
+ }
+
+TD.manual-plain-title  
+ {
+   color: rgb(0,136,71);
+   font-weight: bold;
+   font-family: Courier;
+   /* margin-top: 40px; */
+
+ }
+
+TD.manual-plain-title-level-2 
+ {
+   color: rgb(0,136,71);
+   font-weight: bold;
+   font-family: Courier;
+   margin-top: 40px;
+   padding-left: 20px;
+ }
+
+SPAN.manual-section-title-level-2
+  {
+    color:  rgb(255,255,255);
+    font-weight: bold;
+    font-variant: small-caps;
+    padding-left: 20px;
+  }  
+
+TD.manual-plain-form
+ {
+   color: rgb(50,50,50);
+   font-family: Courier;
+   font-weight: bold;
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-condition
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-description
+ {
+   color: rgb(50,50,50);
+   /* font-style: italic; */
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-parameter-name
+ {
+   color: rgb(70,70,70);
+   font-family: Courier;
+   font-weight: bold;
+   background: rgb(255,255,255);
+
+ }
+
+TD.manual-plain-parameter-description
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+
+ }
+
+TD.manual-plain-attribute-name 
+ {
+   color: rgb(50,50,50);
+   font-family: Courier;
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-attribute-type
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-attribute-description
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255); 
+ }
+
+TD.manual-plain-xml-content-model
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+
+TD.manual-plain-example
+ {
+   color: rgb(50,50,50);
+   font-family: Courier;
+   background: rgb(255,255,255); 
+ }
+
+TD.manual-plain-reference-role
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-reference-anchor
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255); 
+ }
+
+
+TD.manual-plain-comment
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+TD.manual-plain-misc
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+   /* font-style: italic; */
+ }
+
+TD.manual-plain-custom
+ {
+   color: rgb(50,50,50);
+   background: rgb(255,255,255);
+ }
+
+
+TD.manual-plain-returns
+ {
+   color: rgb(50,50,50);
+   /* font-style: italic; */
+   background: rgb(255,255,255);
+ }
+
+A.manual-plain-internal-reference
+ {
+
+ }
+
+TABLE.manual-alphabetic-index
+ {
+   border-color: rgb(255,219,74); 
+ }
+
+
+TD.manual-header-title
+  {
+   background: rgb(255,255,255);
+   border-color: rgb(255,219,74); 
+  }
+
+TD.manual-header-form
+  {
+   font-family: Courier;
+   background: rgb(255,255,255);
+   border-color: rgb(255,219,74); 
+  }
+
+TD.manual-header-description
+  {
+   font-style: normal;
+   background: rgb(255,255,255);
+   border-color: rgb(255,219,74); 
+  }
+
+DIV.manual-abstract
+  {
+    margin-left: 10px;
+    background: rgb(255,255,255);
+  }
+
+TD.manual-section 
+  {
+    background: rgb(0,155,82); 
+  }
+
+TD.manual-section-level-2
+  {
+    background: rgb(0,155,82); 
+  }
+
+SPAN.manual-section-number 
+  {
+    width: 1.0cm;
+    color:  rgb(255,255,255);
+    font-weight: 800;
+    padding-right: 0.4cm;
+  }
+
+SPAN.manual-section-title
+  {
+    color:  rgb(255,255,255);
+    font-weight: 800;
+    font-variant: small-caps;
+  }  
+
+TD.manual-section-description
+  {
+   background: rgb(255,219,74); 
+   color:  rgb(0,0,0),
+  }
+
+
+A:link 
+ {
+   text-decoration: underline; 
+   color: rgb(50,50,50);
+ }
+
+A:visited 
+ {
+   text-decoration: underline; 
+   color: black;
+ }
+
+A:active 
+ {
+   text-decoration: underline; 
+   color: black;
+ }
+
+A:hover
+ {
+   text-decoration: underline;
+   /* background: rgb(255,255,100); */
+   background: rgb(134,186,124);
+ }
+

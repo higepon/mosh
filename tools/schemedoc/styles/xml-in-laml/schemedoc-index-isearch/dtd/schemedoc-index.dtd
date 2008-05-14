@@ -1,0 +1,61 @@
+<!--
+   LAML Manual Index.
+
+   Copyright (c) 2004  Kurt Nørmark.
+   All Rights Reserved. 
+-->
+
+<!ENTITY % XHTML-crossing "(#PCDATA | div | span)*">
+    <!-- Possible XHTML elements to be embedded in a course-plan document -->
+
+<!ENTITY % URI "CDATA">
+    <!-- a Uniform Resource Identifier, see [RFC2396] -->
+
+<!ENTITY % File-path "CDATA">
+    <!-- an absolute or relative file path -->
+
+<!ENTITY % Number "CDATA">
+    <!-- one or more digits -->
+
+<!ENTITY % Boolean "(true | false)">
+    <!-- A Boolean value: true or false -->
+
+<!ENTITY % Measure "CDATA">
+    <!-- A length unit, as defined in chapter 6 of CSS level 1 specification -->
+
+<!ELEMENT manual-index
+  (
+    manual-index-front-matters, 
+    manual-index-contributions
+  ) 
+>
+
+<!ELEMENT manual-index-front-matters
+  (manual-index-title)
+>
+<!ATTLIST manual-index-front-matters
+  browser-type                       (one-step | two-steps)    "one-step"
+  left-frame-width                    %Measure;               #IMPLIED
+  top-frame-height                    %Measure;               #IMPLIED
+  initial-manual-frame               (blank | 
+                                      info |
+                                      first-manual-contribution)        "info"  
+  source-destination-delta            %File-path;              "html/"
+  scheme-report-version              (r4rs | r5rs)             "r5rs"
+  scheme-report                      (none | include | merge)  "none"
+>
+
+<!ELEMENT manual-index-title %XHTML-crossing; >
+
+<!ELEMENT manual-index-contributions
+ (manual-index-contribution*)
+
+>
+
+<!ELEMENT manual-index-contribution EMPTY>
+<!ATTLIST manual-index-contribution
+  informative-name          CDATA        #IMPLIED
+  path                      %File-path;  #IMPLIED
+  manual-file-path          %File-path;  #IMPLIED
+  manual-url-path           %URI;        #IMPLIED
+>

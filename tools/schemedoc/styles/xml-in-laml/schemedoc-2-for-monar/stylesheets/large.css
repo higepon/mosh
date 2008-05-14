@@ -1,0 +1,52 @@
+/* Large size SchemeDoc CSS stylesheet */ 
+
+/* Fontsize */
+H1.manual-title {font-size: 200%}
+SPAN.manual-author-element {font-size: 100%;}
+SPAN.manual-affiliation-element {font-size: 100%;}
+TD.manual-plain-title  {font-size: 130%}
+TD.manual-plain-entry-kind  {font-size: 100%}
+SPAN.manual-kind-explanation {font-size: 9px}
+TD.manual-plain-form  {font-size: 100%}
+TD.manual-plain-condition  {font-size: 100%}
+TD.manual-plain-description  {font-size: 100%}
+TD.manual-plain-parameter-name  {font-size: 100%}
+TD.manual-plain-parameter-description  {font-size: 100%}
+TD.manual-plain-attribute-name  {font-size: 100%}
+TD.manual-plain-attribute-type  {font-size: 100%}
+TD.manual-plain-xml-content-model{font-size: 100%}
+TD.manual-plain-attribute-description  {font-size: 80%}
+TD.manual-plain-example  {font-size: 90%}
+TD.manual-plain-reference-role  {font-size: 100%}
+TD.manual-plain-reference-anchor{font-size: 100%}
+TD.manual-plain-comment{font-size: 100%}
+TD.manual-plain-misc{font-size: 100%}
+TD.manual-plain-custom{font-size: 100%}
+TD.manual-plain-returns{font-size: 100%}
+
+TD.manual-header-title{font-size: 85%}
+TD.manual-header-form{font-size: 85%;}
+TD.manual-header-description{font-size: 85%}
+DIV.manual-source-file-description{font-size: 95%}
+
+DIV.manual-abstract{font-size: 100%}
+DIV.manual-abstract KBD {font-size: 80%}
+DIV.manual-abstract PRE {font-size: 80%}
+
+SPAN.manual-section-number {font-size: 180%}
+SPAN.manual-section-title {font-size: 180%}
+TD.manual-section-description{font-size: 100%}
+TD.manual-section-description KBD {font-size: 80%}
+TD.manual-section-description PRE {font-size: 80%}
+
+/* Layout */
+
+TD.manual-plain-entry-kind {width: 25%}
+TD.manual-plain-parameter-name {width: 20%}
+TD.manual-plain-reference-role {width: 20%}
+TD.manual-plain-attribute-name {width: 20%}
+TD.manual-plain-attribute-type {width: 20%}
+
+TD.manual-header-title{width: 20%}
+TD.manual-header-form{width: 40%}
+TD.manual-header-description{width: 40%}

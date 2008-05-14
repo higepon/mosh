@@ -1,0 +1,11 @@
+#!/bin/sh 
+# By Kurt Normark, normark@cs.auc.dk
+# Copied and modified by the LAML installation process - DO NOT EDIT.
+# LAML processing by means of SCM on Unix. A copy of unix_solaris-7_scm_laml
+# Usage: laml file
+# Run SCM on file from the current directory
+# File is with extension
+# Addaptions: Change the path to your scheme exec.
+#             Change the laml-dir to your LAML directory.
+#
+@scheme-exec@ -x -e "(begin (load (string-append \"@laml-dir@\" \"laml.init\")) (define (laml-process file . args) (putprop 'argv '\*environment-variables\* (cons 'laml args)) (load file)))" -c laml-process -- $PWD/$1 $1 $PWD/

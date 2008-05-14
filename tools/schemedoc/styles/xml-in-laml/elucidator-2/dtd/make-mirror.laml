@@ -1,0 +1,31 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-tool-load "xml-in-laml/xml-in-laml.scm")
+
+; ----------------------------------------------------------------------------------------
+; Tool parameters
+
+; The name of the language for which we create a mirror
+(define mirror-name "elucidator2")
+
+; The full path to the parsed DTD:
+(define parsed-dtd-path (in-startup-directory "elucidator.lsp"))
+
+; The full path of the mirror target directory
+(define mirror-target-dir (string-append (startup-directory) "../mirror/"))
+
+(define action-elements '(elucidator-front-matters begin-documentation documentation-intro documentation-section documentation-entry documentation-from end-documentation))
+
+(define default-xml-represent-white-space "#t")
+
+(set! default-xml-preformatted-text-elements "'()")
+
+(set! default-xml-duplicated-attribute-handling "'keep-first")
+  
+
+; End tool parameters
+; ----------------------------------------------------------------------------------------
+
+(let ((mirror-destination-file (string-append mirror-target-dir mirror-name "-mirror" ".scm")))
+  (generate-mirror parsed-dtd-path mirror-destination-file mirror-name))
+
+

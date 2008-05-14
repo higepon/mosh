@@ -1,0 +1,13 @@
+#!/bin/sh 
+# By Kurt Normark, normark@cs.auc.dk
+# Copied and modified by the LAML installation process - DO NOT EDIT.
+# LAML processing by means of SCM on Unix.
+# Usage: absolute-laml file
+# Run SCM on file.laml from the current directory
+# File is without extension
+# Addaptions: Change the path to your scheme exec.
+#             Change the laml-dir to your LAML directory.
+#
+# This command is undefined.
+
+

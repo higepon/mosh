@@ -1,0 +1,14 @@
+TD.testcase-id {font-size: 80%; font-weight: 200; background: rgb(228,228,228);}
+
+TD.testcase-time {font-size: 80%; background: rgb(228,228,228); }
+
+TD.testcase-assertion {font-size: 80%; background: rgb(228,228,228); }
+
+span.testcase-expression {font-family: Courier; font-size: 90%; color: rgb(0,0,255); font-weight: bold; background: rgb(255,255,255); }
+span.testcase-result {font-family: Courier; font-size: 90%; color: rgb(0,0,0); font-weight: bold; background: rgb(255,255,255); }
+
+
+
+
+
+

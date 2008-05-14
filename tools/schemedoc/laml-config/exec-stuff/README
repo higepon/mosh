@@ -1,0 +1,36 @@
+In this directory there are different versions
+of the command files, which starts laml and schemedoc.
+
+Required naming schemes:
+
+  <laml-platform>_<operating-system>_<scheme-system>_laml
+  <laml-platform>_<operating-system>_<scheme-system>_schemedoc
+
+<laml-platform>, <operating-system>, and <scheme-system> as defined in ../configuration.
+
+Notice: In case mzscheme-200 or mzscheme-300 is used in the configuration file,
+<scheme-system> should be given as mzscheme above.
+
+During configuration the appropriate laml, laml.bat, and schemedoc files
+are copied to the LAML bin directory.
+
+If - during configuration - an appropriate laml exec
+file cannot be located, we use <laml-platform>-default-laml or <laml-platform>-default-schemedoc
+Such a file just writes an informative error message.
+
+In case you port LAML to a new platform you are supposed to make
+an appropriate template files in this directory, using 
+the naming scheme explained above. It may be helpful to study
+the existing laml files in this directory in order
+to find good solutions.
+
+Any help filling out "the holes" in this directory is much appreciated.
+
+
+December 2005: The activation of LAML from an operating system command prompt has
+been changed. It is now necessary to use the laml extension, or a similar extension such
+as sdoc. 
+
+
+KN
+

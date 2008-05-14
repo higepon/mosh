@@ -1,0 +1,132 @@
+<!-- This HTML file has been created by texi2html 1.30
+     from ../r4rs.texi on 14 July 1994 -->
+
+<TITLE>Scheme - NOTES</TITLE>
+<P>Go to the <A HREF="r4rs_9.htm">previous</A>, <A HREF="r4rs_11.htm">next</A> section.<P>
+<H1><A NAME="SEC79" HREF="r4rs_toc.htm#SEC79">NOTES</A></H1>
+<H2>Language changes</H2>
+<P>
+This section enumerates the changes that have been made to Scheme since
+the "Revised(3) report" <A HREF="r4rs_13.htm#BIB68">[R3RS]</A> was published.
+<P>
+<UL>
+<LI>Although implementations may extend Scheme, they must offer
+a syntactic mode that adds no reserved words and preempts no lexical conventions
+of Scheme.
+<P>
+<LI>Implementations may report violations of
+implementation restrictions.
+<P>
+<LI>It is no longer specified whether the empty list counts as true
+or as false in conditional expressions.  It should be noted that the
+IEEE standard for Scheme requires the empty list to count as true
+[IEEESCHEME].
+<P>
+<LI>The sets defined by <CODE>boolean?</CODE>, <CODE>pair?</CODE>, <CODE>symbol?</CODE>,
+<CODE>number?</CODE>, <CODE>char?</CODE>, <CODE>string?</CODE>, <CODE>vector?</CODE>,and
+<CODE>procedure?</CODE> are required to be disjoint.
+<A NAME="IDX679"></A>
+<A NAME="IDX680"></A>
+<A NAME="IDX681"></A>
+<A NAME="IDX682"></A>
+<A NAME="IDX683"></A>
+<A NAME="IDX684"></A>
+<A NAME="IDX685"></A>
+<A NAME="IDX678"></A>
+<P>
+<LI>The variables bound by a <CODE>lambda</CODE>, <CODE>let</CODE>, <CODE>letrec</CODE>,
+and <CODE>do</CODE> must not contain duplicates.
+<A NAME="IDX687"></A>
+<A NAME="IDX688"></A>
+<A NAME="IDX689"></A>
+<A NAME="IDX686"></A>
+<P>
+<A NAME="IDX690"></A>
+<LI>Nested <CODE>begin</CODE> expressions containing definitions are treated
+as a sequence of definitions.
+<P>
+<A NAME="IDX691"></A>
+<LI>The <CODE>eqv?</CODE> procedure is no longer required to be true of any
+two empty strings or two empty vectors.
+<P>
+<LI>The syntax of numerical constants has been changed, and the exactness
+implied by each syntax has been specified.
+<P>
+<LI>The semantics of many numerical procedures have been clarified.
+<P>
+<A NAME="IDX692"></A>
+<LI><CODE>Rationalize</CODE> has been restricted to two arguments and its
+specification clarified.
+<P>
+<A NAME="IDX693"></A>
+<A NAME="IDX694"></A>
+<LI>The <CODE>number-&#62;string</CODE> and <CODE>string-&#62;number</CODE> procedures
+have been changed.
+<P>
+<A NAME="IDX695"></A>
+<LI><CODE>Integer-&#62;char</CODE> now requires an exact integer argument.
+<P>
+<A NAME="IDX696"></A>
+<LI>The specification of the <CODE>force</CODE> procedure has been
+weakened.  The previous specification was unimplementable.
+<P>
+<A NAME="IDX697"></A>
+<A NAME="IDX698"></A>
+<LI>Variables removed: <CODE>t</CODE>, <CODE>nil</CODE>.
+<P>
+<A NAME="IDX699"></A>
+<A NAME="IDX700"></A>
+<LI>Procedures removed: <CODE>approximate</CODE>, <CODE>last-pair</CODE>.
+<P>
+<A NAME="IDX701"></A>
+<A NAME="IDX702"></A>
+<LI>Procedures added: <CODE>list?</CODE>, <CODE>peek-char</CODE>.
+<P>
+<A NAME="IDX703"></A>
+<A NAME="IDX704"></A>
+<A NAME="IDX705"></A>
+<LI>Syntaxes made essential: <CODE>case</CODE>, <CODE>and</CODE>, <CODE>or</CODE>,
+<CODE>quasiquote</CODE>.
+<A NAME="IDX706"></A>
+<P>
+<LI>Procedures made essential:
+</UL>
+<P>
+<PRE>
+reverse        char-ci=?        make-string
+max            char-ci&#60;?        string-set!
+min            char-ci&#62;?        string-ci=?
+modulo         char-ci&#60;=?       string-ci&#60;?
+gcd            char-ci&#62;=?       string-ci&#62;?
+lcm            char-alphabetic? string-ci&#60;=?
+floor          char-numeric?    string-ci&#62;=?
+ceiling        char-whitespace? string-append
+truncate       char-lower-case? open-input-file
+round          char-upper-case? open-output-file
+number-&#62;string char-upcase      close-input-port
+string-&#62;number char-downcase    close-output-port
+</PRE>
+<P>
+<UL>
+<LI>Procedures required to accept more general numbers of arguments:
+<CODE>append</CODE>, <CODE>+</CODE>, <CODE>*</CODE>, <CODE>-</CODE> (one argument),
+<A NAME="IDX708"></A>
+<A NAME="IDX709"></A>
+<A NAME="IDX707"></A>
+<CODE>/</CODE> (one argument), <CODE>=</CODE>, <CODE>&#60;</CODE>, <CODE>&#62;</CODE>, <CODE>&#60;=</CODE>, <CODE>&#62;=</CODE>,
+<A NAME="IDX711"></A>
+<A NAME="IDX710"></A>
+<CODE>map</CODE>, <CODE>for-each</CODE>.
+<A NAME="IDX713"></A>
+<A NAME="IDX714"></A>
+<A NAME="IDX715"></A>
+<A NAME="IDX716"></A>
+<A NAME="IDX717"></A>
+<A NAME="IDX712"></A>
+<P>
+<LI>A macro facility has been added as an appendix to this report.
+<P>
+</UL>
+<P>
+<P>Go to the <A HREF="r4rs_9.htm">previous</A>, <A HREF="r4rs_11.htm">next</A> section.<P>
+&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>&nbsp;<p>

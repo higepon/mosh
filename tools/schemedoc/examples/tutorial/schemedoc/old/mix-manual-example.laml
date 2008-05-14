@@ -1,0 +1,64 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "manual/manual")
+
+
+; ::preamble::
+
+(set-manual-title "Tutorial Manual - A Mixed Example")
+
+(set-manual-author "Kurt Nørmark" "normark@cs.auc.dk" "Department of Computer Science" "Aalborg University" "Denmark")
+
+(set-manual-abstract
+  "This is just an example of a manual - adapted from an existing LAML example, and part of the LAML tutorial.
+  The example shows how to mix an LAML manual style document with contributions extracted via SchemeDoc."
+)
+
+(set-manual-name "mix-manual-example")
+
+
+; ::scheme-doc-extraction::
+
+(load (string-append software-directory "tools/schemedoc" "/" "schemedoc.scm"))
+
+(define doc-list 
+  (extract-documentation-from-scheme-file (string-append (startup-directory) "prog4.scm")))
+
+
+; ::the-manual::
+
+(manual-section
+ (section-title "Introduction")
+ (section-body "This is an introduction, authored in a manual section.")
+)
+
+(manual-page 
+ 'f
+ (title "f")
+
+ (form 
+  '(f a b)
+  )
+
+ (description "Description of function f - a function described in a manual-page")
+
+ (parameters
+  (parameter "a" "Explanation of a")
+
+  (parameter "b" "Explanation of g")
+  )
+
+ (pre-condition "What to ensure before f is called")
+
+ (cross-references
+  (internal-references "similar function" "g")
+ )
+
+ (misc "What else to to say about f")
+)
+
+; ::manual-production::
+
+(make-manual (append doc-list manual-page-list) (startup-directory))
+
+
+

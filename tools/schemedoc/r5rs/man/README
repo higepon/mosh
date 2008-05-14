@@ -1,0 +1,8 @@
+This directory contains extracts of R5RS.
+
+The source is r5rs.sdoc.
+
+The derived file r5rs.manlsp is used by the LAML Emacs support to
+provide useful help on R5RS forms.
+
+KN

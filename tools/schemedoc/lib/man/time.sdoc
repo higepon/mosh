@@ -1,0 +1,13 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+
+(manual
+  (manual-front-matters
+    (kn-manual-settings) 
+    'laml-resource "true"
+    'scheme-source-linking "true"
+    'example-repository "../time-test/testcases"
+  )
+
+  (manual-from-scheme-file 'src "../time.scm")
+)

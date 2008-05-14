@@ -1,0 +1,191 @@
+<!--
+   LAML Manual - for Scheme and XML mirrors in Scheme.
+
+   Copyright (c) 2003  Kurt Nørmark.
+   All Rights Reserved. 
+-->
+
+<!ENTITY % XHTML-crossing "(#PCDATA | div | span)*">
+    <!-- Possible XHTML elements to be embedded in a course-plan document -->
+
+<!ENTITY % Symbol "CDATA">
+    <!-- a name without spaces -->
+
+<!ENTITY % Number "CDATA">
+    <!-- one or more digits -->
+
+<!ENTITY % URI "CDATA">
+    <!-- a Uniform Resource Identifier, see [RFC2396] -->
+
+<!ENTITY % Proper-file-name "CDATA">
+    <!-- the proper name of a file - without initial path and without extension -->
+
+<!ENTITY % File-path "CDATA">
+    <!-- an absolute or relative file path -->
+
+<!ENTITY % Boolean "(true | false)">
+    <!-- A Boolean type -->
+
+<!ELEMENT manual
+  (
+    manual-front-matters, 
+    ( 
+      (manual-page | manual-section)* |     
+      manual-from-scheme-files |
+      manual-from-scheme-file |
+      manual-from-xml-dtd |
+      ((manual-page | manual-section)* , merged-manual-from-xml-dtd)
+    )
+  ) 
+>
+
+<!ELEMENT manual-from-scheme-files
+  (manual-from-scheme-file+)
+>
+
+<!ELEMENT manual-front-matters
+  (manual-title?, manual-author?, manual-affiliation?, manual-abstract?, scheme-source-linking-manual*)
+> 
+
+<!ATTLIST manual-front-matters
+  laml-resource                       (true | false)                "false"
+  verbosity-level                     %Number;                      "0"
+  documentation-commenting-style      (multi-semicolon | 
+                                       documentation-mark)          "multi-semicolon"
+  default-attribute-explanation       CDATA                         #IMPLIED
+  source-destination-delta            %File-path;                   #IMPLIED
+
+  css-prestylesheet                   %Proper-file-name;            #IMPLIED
+  css-stylesheet                      %Proper-file-name;            #IMPLIED
+  css-stylesheet-copying              (true | false)                "true"
+
+  make-dtd-manual-template            (true | false)                "false"
+  keep-syntactical-comment-file       (true | false)                "false"
+  manual-destination-name             %Proper-file-name;            #IMPLIED
+  
+  mirror-names-defined                (true | false)                "true"
+  mirror-name-prefix                  CDATA                         ""
+  attribute-sorting                   (as-in-dtd | 
+                                       by-attribute-name)           "as-in-dtd"
+  scheme-source-linking               (true | false)                "false"
+  scheme-report-version               (r4rs | r5rs | none)          "r5rs"
+  rnrs-url                            %URI;                         #IMPLIED
+
+  xml-protected-descriptions          (true | false)                "true"
+
+  example-repository                  %File-path;                   #IMPLIED
+
+  element-cross-reference-url-fn      CDATA                         #IMPLIED
+  element-cross-reference-anchor-text CDATA                         #IMPLIED
+
+>
+
+<!ELEMENT scheme-source-linking-manual (#PCDATA)>
+<!ATTLIST scheme-source-linking-manual
+  key                                 CDATA                              #REQUIRED
+  file-path                           %File-path;                        #REQUIRED
+  url                                 %URI;                              #IMPLIED
+>
+
+
+<!ELEMENT manual-title %XHTML-crossing; >
+
+<!ELEMENT manual-author %XHTML-crossing; >
+
+<!ELEMENT manual-affiliation %XHTML-crossing; >
+
+<!ELEMENT manual-abstract %XHTML-crossing;
+>
+
+<!ELEMENT manual-from-scheme-file EMPTY >
+<!ATTLIST manual-from-scheme-file
+   src                    %File-path;                    #REQUIRED
+>
+
+<!ELEMENT manual-from-xml-dtd EMPTY >
+<!ATTLIST manual-from-xml-dtd
+   src                    %File-path;                    #REQUIRED
+>
+
+<!ELEMENT merged-manual-from-xml-dtd EMPTY >
+<!ATTLIST merged-manual-from-xml-dtd
+   src                    %File-path;                    #REQUIRED
+>
+
+<!ELEMENT manual-page
+  (form | description | example-form | precondition | postcondition | parameters | examples | external-reference | 
+          internal-references | comment | misc | returns | attribute-descriptions)*
+>
+<!ATTLIST manual-page
+   name                    %Symbol;                    #REQUIRED
+>
+
+<!ELEMENT form (#PCDATA)>
+
+<!ELEMENT description %XHTML-crossing;>
+
+<!ELEMENT example-form (#PCDATA)>
+
+<!ELEMENT precondition (#PCDATA)>
+
+<!ELEMENT postcondition (#PCDATA)>
+
+<!ELEMENT parameters 
+  (parameter*)
+>
+
+<!ELEMENT parameter %XHTML-crossing;>
+<!ATTLIST parameter
+  name         CDATA        #REQUIRED
+>
+
+<!ELEMENT examples
+  (example*)
+>
+
+<!ELEMENT example %XHTML-crossing;>
+
+
+
+<!ELEMENT external-reference %XHTML-crossing;>
+<!ATTLIST external-reference
+  href                   %URI;                      #REQUIRED
+  category               CDATA                      #REQUIRED
+>
+
+<!ELEMENT internal-references 
+  (name-ref*)
+>
+<!ATTLIST internal-references
+  category               CDATA                      #REQUIRED
+>
+
+<!ELEMENT name-ref (#PCDATA)> 
+
+<!ELEMENT comment %XHTML-crossing;>
+
+<!ELEMENT misc %XHTML-crossing;>
+
+<!ELEMENT returns %XHTML-crossing;>
+
+<!ELEMENT attribute-descriptions
+  (attribute-description*)
+>
+
+<!ELEMENT attribute-description %XHTML-crossing;>
+<!ATTLIST attribute-description
+  name            CDATA        #REQUIRED
+>
+
+
+<!ELEMENT manual-section
+  (section-title , section-body?)
+>
+<!ATTLIST manual-section
+   id                    %Symbol;                    #REQUIRED
+>
+
+<!ELEMENT section-title %XHTML-crossing; >
+
+<!ELEMENT section-body %XHTML-crossing; >
+

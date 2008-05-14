@@ -1,0 +1,11 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+
+(do-copy-css-stylesheet! 
+  (string-append laml-dir "styles/xml-in-laml/schemedoc-2/stylesheets/" "fancy.css")
+  (string-append laml-dir "styles/xml-in-laml/schemedoc-2/stylesheets/" "normal.css")
+  (string-append laml-dir "css-stylesheets/manual/manual-stylesheet.css"))
+
+(display-message "DONE")
+
+(end-laml)

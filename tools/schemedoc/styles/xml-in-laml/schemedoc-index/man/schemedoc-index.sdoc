@@ -1,0 +1,83 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+(manual
+  (manual-front-matters
+    (manual-title "Reference Manual of the SchemeDoc Index Facility")
+    (manual-author "Kurt Nørmark" "normark@cs.auc.dk")
+    (manual-affiliation "Department of Computer Science" "Aalborg University" "Denmark")
+    (manual-abstract 
+      (div (p "This is the manual of the SchemeDoc Index facility. A SchemeDoc index is a frame-based
+            browser that covers a number of" (a 'href "../../manual/man/manual.html" "SchemeDoc manuals") _ "." "In addition, it is possible
+            to include and integrate an index of the Scheme Report (either R4RS or R5RS).")
+
+           (p "Basically, a SchemeDoc Index just enumerates the SchemeDoc manuals which should be
+               part of the index.")
+
+           (p "The" (a 'href "../../../../laml-browser/html/laml-browser.html" "LAML & Scheme Browser") "and its" 
+                    (a 'href "../../../../laml-browser/laml-browser.laml" "LAML source") "is a good example of a concrete SchemeDoc Index."
+               "There is also an example of a SchemeDoc index and browser" (a 'href "../../../../examples/schemedoc/index.html" "here") _ "."
+              )
+
+           (p "See also the" (a 'href "http://www.cs.auc.dk/~normark/schemedoc/" "LAML SchemeDoc home page") _ ".")  
+           
+
+     ))
+
+    'css-prestylesheet "compact"
+    'css-stylesheet "original"
+    'laml-resource "true"
+  )
+
+  (manual-page 'name "manual-index"
+    (description "The top-level root construct of a SchemeDoc Index.")
+    (attribute-descriptions 
+
+    )
+  )
+
+  (manual-page 'name "manual-index-front-matters"
+    (description "The front matters clause of a Manual Index, which holds a number of overall attributes.")
+    (attribute-descriptions 
+      (attribute-description 'name "browser-type" "A two-steps browser navigates from a manual list via a manual overview list (with a defined name list) to individual SchemeDoc manuals. A one-step browser navigates directly to the SchemeDoc manual from both the manual list and the defined name list.")
+      (attribute-description 'name "left-frame-width" "The width of two left frames in the browser framset. Given in the units allowed by HTML, for instance \"px\" and \"%\".")
+      (attribute-description 'name "top-frame-height" "The height of the top-most, left-most frame in the browser frameset.  Given in the units allowed by HTML, for instance \"px\" and \"%\"")
+      (attribute-description 'name "initial-manual-frame" "Controls the initial content of the manual frame. The value" (string-it "info") "provides an initial page with a few basic informations about SchemeDoc.")
+      (attribute-description 'name "source-destination-delta" "The path from the source directory, which holds the manual-index source file (with extension laml), and the destination directory, which holds the generated HTML files. A typical value is the default value \"html\". The empty string is also acceptable, in which case the source and destination directories are identical. Notice that you are supposed to create the destination directory yourself.")
+      (attribute-description 'name "scheme-report-version" "The version of the Revised Scheme Report to use in this index. Either" (string-it "r4rs") "or" (string-it "r5rs") _ ".")
+      (attribute-description 'name "scheme-report" "How to include Scheme Report information in the browser. The value" (string-it "includes") "gives access to R4RS or R5RS information via a particular menu item. The value" (string-it "merge") "merges the defined names from the manuals with R4RS or R5RS names. The value" (string-it "none") "excludes R4RS/R5RS from this browser.")
+    )
+  )
+
+  (manual-page 'name "manual-index-title"
+    (description "The title of the index")
+    (attribute-descriptions 
+
+    )
+  )
+
+  (manual-page 'name "manual-index-contributions"
+    (description "The construct around the individual manual-index-contribution clauses.")
+    (attribute-descriptions 
+
+    )
+  )
+
+
+  (manual-page 'name "manual-index-contribution"
+    (description (span "Each manual index contribution enumerates a single SchemeDoc manual, which is to be included in the browser.
+                  Normally, a SchemeDoc manual is addressed by a relative path (using the" (kbd "path") "attribute) from the manual index directory to the directory that
+                  holds the SchemeDoc manual. It is, however, also possible to address the" (a 'href "../../manual/man/manual.html#aux" "internal manlsp file") "of the SchemeDoc manual and the
+                  SchemeDoc HTML manual separately (using the" (kbd "manual-file-path") "and" (kbd "manual-url-path") "attributes" _ "). This is only necessary if, for some reason,
+                  the manual HTML file and the internal manlsp file are located in different directories. "))
+    (attribute-descriptions 
+      (attribute-description 'name "informative-name" "An informal, relative short name of this manual contribution. If not supplied, the title of the underlying title is used if available.")
+      (attribute-description 'name "path" "A relative path to a SchemeDoc manual (with or without html/manlsp extension).
+                                           The relative path goes from the directory, that holds the LAML source file of this index.")
+      (attribute-description 'name "manual-file-path" "Outdated. Do not use.")
+      (attribute-description 'name "manual-url-path" "Outdated. Do not use")
+    )
+  )
+
+  (merged-manual-from-xml-dtd 'src "../dtd/schemedoc-index")
+
+)

@@ -1,0 +1,71 @@
+/* Scheme comments marked with an elucidative Sectional name, like ::som-id:: */
+DIV.sectional-comment{   
+  background: rgb(255,255,0);
+  font-weight: bold;
+  margin-bottom: -12px;      /* hold it close to its definition */
+} 
+
+
+
+/* Comments */
+DIV.comment{
+  color: rgb(135,135,135);
+} 
+
+SPAN.comment{
+  color: rgb(135,135,135);
+} 
+
+DIV.schemedoc-definition-comment{
+  color: rgb(135,135,135);
+} 
+
+DIV.schemedoc-section-comment{
+  color: rgb(135,135,135);
+} 
+
+DIV.schemedoc-abstract-comment{
+  color: rgb(135,135,135);
+  font-weight: bold;
+} 
+
+/* End comments */
+
+
+A.applied-name{
+  color: rgb(0,0,190);
+  text-decoration: none;
+}
+
+SPAN.signature{
+  color: rgb(255,0,0);
+  font-weight: bold;
+}
+
+A.scheme-syntax-name{    
+  font-weight: bold;
+  color: rgb(0,0,0);
+  text-decoration: none;
+}
+
+A.scheme-procedure-name{
+  color: rgb(166,71,0);     /* Brown */
+  text-decoration: none;
+}
+
+A.scheme-misc-name{         /* Not used */
+  color: rgb(0,0,0);
+  text-decoration: none;
+}
+
+
+A.schemedoc-name{
+  color: rgb(0,145,0);       /* Dark green */
+  text-decoration: none;
+}
+
+SPAN.local-name-binding{
+}
+ 
+
+

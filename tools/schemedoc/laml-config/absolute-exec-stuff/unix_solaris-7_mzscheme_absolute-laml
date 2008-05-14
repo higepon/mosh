@@ -1,0 +1,12 @@
+#!/bin/sh 
+# By Kurt Normark, normark@cs.auc.dk
+# Copied and modified by the LAML installation process - DO NOT EDIT.
+# Usage: absolute-laml path file, where 
+#   path is an absolute path leading to file,   and
+#   file is a pure file name without initial path but with extension.
+# Runs MzScheme on path file.laml.
+#
+cd $1;
+@scheme-exec@ -v -e '(load (string-append "@laml-dir@" "laml.init"))' -f $1$2 $2 $1
+
+

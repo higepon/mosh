@@ -1,0 +1,61 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "simple-xhtml1.0-transitional-validating")
+(lib-load "xhtml1.0-convenience.scm")
+
+(define laml-generation-meta (meta 'name "Generator" 'content "LAML"))
+(define meta-props (list 'http-equiv "Content-Type" 'content "text/html; charset=iso-8859-1"))
+(define html-props (list 'xmlns "http://www.w3.org/1999/xhtml"))
+
+(set! xml-validate-contents? #t)
+(set! xml-check-attributes? #t)
+
+
+(write-html '(raw prolog)
+ (html html-props
+  (head 
+   (meta meta-props) laml-generation-meta
+   (title "The LAML Manual")
+   (laml-shortcut-icon (laml-home-url-prefix))
+  )
+  (body 
+    (laml-top-banner)
+    (h1 "LAML SchemeDoc and Manuals")
+
+    (p "A LAML manual is described by an XML-in-LAML file. By processing the LAML file a set of HTML files are generated.")
+
+    (p "Below we show four different kinds of LAML manuals, including the interface to SchemeDoc. We also show how
+        we have made the Reference Manual of the LAML Manual facility from its XML DTD.")
+
+    (p "The third column gives access to the internal auxiliary" (kbd "manlsp") "file, which contains a list of association lists.
+        Each association list describes the properties of a single entry (manual page or manual section) in a SchemeDoc manual.")
+
+    (indent-pixels 10
+     (table 'border "1"
+      (tr (td (b "Example")) (td (b "LAML")) (td (b "HTML")) (td (b "Internal manlsp files")))
+      (tr (td "Manual extraction with Schemedoc ") (td (a 'href "man-1.sdoc" "man-1.sdoc"))  (td (a 'href "man-1.html" "man-1.html")) (td (a 'href "man-1.manlsp" "man-1.manlsp")) )
+      (tr (td "Manual - written from scratch ") (td (a 'href "man-2.sdoc" "man-2.sdoc"))  (td (a 'href "man-2.html" "man-2.html")) (td (a 'href "man-2.manlsp" "man-2.manlsp")))
+      (tr (td "An naked XML DTD Manual ") (td (a 'href "man-3.sdoc" "man-3.sdoc"))  (td (a 'href "man-3.html" "man-3.html")) (td (a 'href "man-3.manlsp" "man-3.manlsp")))
+      (tr (td "An augmented XML DTD Manual ") (td (a 'href "man-4.sdoc" "man-4.sdoc"))  (td (a 'href "man-4.html" "man-4.html")) (td (a 'href "man-4.manlsp" "man-4.manlsp")))
+
+      (tr (td "Nested documentation of" (a 'href "point.scm" "point.scm") ) (td (a 'href "man-5.sdoc" "man-5.sdoc"))  (td (a 'href "man-5.html" "man-5.html")) (td (a 'href "man-5.manlsp" "man-5.manlsp")))
+
+      (tr (td "SchemeDoc Manual - a real life XML DTD example ")
+          (td (a 'href "../../styles/xml-in-laml/schemedoc-2/man/schemedoc.sdoc" "schemedoc.sdoc"))
+          (td (a 'href "../../styles/xml-in-laml/schemedoc-2/man/schemedoc.html" "schemedoc.html")) 
+          (td (a 'href "../../styles/xml-in-laml/schemedoc-2/man/schemedoc.manlsp" "schemedoc.manlsp"))         
+      )
+    ))
+
+   (p "A sample" (a 'href "html/browser.html" "SchemeDoc Index Browser") "and its" (a 'href "browser.laml" "LAML source") "that covers man-1, man-2, and man-4.")
+
+   (p (a 'href "../elucidator-2/scheme-documentation-tools/index.html"
+          "Examples related to the paper" (em "Scheme Program Documentation Tools")))
+ 
+   (vertical-space 1) (font 'color "red" 'size "2" (when-generated))
+
+  )
+ )
+)
+
+
+(end-laml)

@@ -1,0 +1,64 @@
+This is the directory with the LAML XML DTD parser. In the distribution
+we only include the newest version of the parser, currently dtd-parser-4.scm.
+
+In the directory  dtds  you will find DTDs for XHTML1.0 (strict, transitional,
+frameset) and SVG. In addition, the LAML scripts that parse theses DTDs are also
+included.
+
+Parsing a DTD:
+  
+    (parse-dtd "<dtd-file-without-extension>")
+
+This will not make any HTML mirror functions, however - just parse the
+DTD to a List structure (a file with lsp extension).
+
+See the reference manual in the ./man directory for additional details 
+(Section 1).
+
+Please see doc/dtd-parser.html for (old) internal documentation of the DTD
+parser. In the LAML distribution, please look this documentation up at
+
+  http://www.cs.auc.dk/~normark/scheme/tools/dtd-parser/doc/html/
+
+KN
+
+
+
+History: 
+
+dtd-parser.scm is the original ad hoc dtd parse, made for html4.0 loose.
+It includes rhs parsing of selected elements.
+
+dtd-parser-1.scm is another version, fully independent of dtd-parser.scm, which
+is made for xhtml1.0 strict. See the first few comment lines of dtd-parser-1.scm
+for an explanation of the differences.
+dtd-parser-1 now also parses right hand sides.
+
+dtd-parser-2.scm is a third version for XML dtd parsing, with full parsing of
+right hand sides.
+
+dtd-parser.scm, dtd-parser-1.scm and dtd-parser-2.scm are obsolute by now. Only
+dtd-parser-3.scm is included in the distribution.
+
+dtd-parser-3.scm is an version adapted for the SVG DTD parsing.
+This version has a much impoved attribute parsing, which conforms to the XML recommendation 
+(to a reasonable degree, at least). 
+
+dtd-parser-4.scm.
+The major improvements in this version is parsing of the 'right hand sides' of the XML productions
+(the content models). The fully automatic validating of XML-in-LAML languages rely on this.
+
+  LAML after version 20.
+  May 27, 2003: 
+
+   * We could not parse attributes like <!ELEMENT title (#PCDATA)>
+     due to missing white space just before '>'. This restriction has now been lifted.
+
+   * We assumed that empty attribute list declarations were given explicitly. 
+     We now insert such empty attribute declarations automatically.
+
+
+
+
+
+

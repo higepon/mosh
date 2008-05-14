@@ -1,0 +1,23 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-2/schemedoc")
+
+(manual
+  (manual-front-matters
+    (manual-title "A sample XML DTD manual")
+    (manual-author "My name")
+    (manual-affiliation "My affiliation")
+    (manual-abstract "This is the XML DTD manual, just extracted from an XML DTD.
+                      All information in this manual stems from the XML DTD. ")
+
+
+    'laml-resource "false"
+    'css-prestylesheet "original"
+    'css-stylesheet "normal"
+
+    'make-dtd-manual-template "false"
+  )
+
+  (manual-from-xml-dtd 'src "../../styles/xml-in-laml/schemedoc-2/dtd/schemedoc")
+
+)
+

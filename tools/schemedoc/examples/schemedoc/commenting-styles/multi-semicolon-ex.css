@@ -1,0 +1,370 @@
+/* Compact size SchemeDoc CSS stylesheet */ 
+/* Fontsize */
+H1.manual-title {font-size: 160%}
+SPAN.manual-author-element {font-size: 90%;}
+SPAN.manual-affiliation-element {font-size: 90%;}
+TD.manual-plain-title  {font-size: 105%}
+TD.manual-plain-entry-kind  {font-size: 90%}
+SPAN.manual-kind-explanation {font-size: 9px}
+TD.manual-plain-form  {font-size: 75%}
+TD.manual-plain-condition  {font-size: 85%}
+TD.manual-plain-description  {font-size: 85%}
+TD.manual-plain-parameter-name  {font-size: 75%}
+TD.manual-plain-parameter-description  {font-size: 85%}
+TD.manual-plain-attribute-name  {font-size: 75%}
+TD.manual-plain-attribute-type  {font-size: 85%}
+TD.manual-plain-attribute-description  {font-size: 85%}
+TD.manual-plain-parameter-description  {font-size: 85%}
+TD.manual-plain-example  {font-size: 75%}
+TD.manual-plain-reference-role  {font-size: 85%}
+TD.manual-plain-reference-anchor{font-size: 85%}
+TD.manual-plain-comment{font-size: 85%}
+TD.manual-plain-misc{font-size: 85%}
+TD.manual-plain-custom{font-size: 85%}
+TD.manual-plain-returns{font-size: 85%}
+
+TD.manual-header-title{font-size: 80%}
+TD.manual-header-form{font-size: 75%;}
+TD.manual-header-description{font-size: 80%}
+DIV.manual-source-file-description{font-size: 85%}
+
+DIV.manual-abstract{font-size: 85%}
+
+SPAN.manual-section-number {font-size: 140%}
+SPAN.manual-section-title {font-size: 140%}
+TD.manual-section-description{font-size: 85%}
+
+/* Layout */
+
+TD.manual-plain-entry-kind {width: 20%}
+TD.manual-plain-parameter-name {width: 20%}
+TD.manual-plain-reference-role {width: 16%}
+TD.manual-plain-attribute-name {width: 16%}
+TD.manual-plain-attribute-type {width: 16%}
+
+TD.manual-header-title{width: 20%}
+TD.manual-header-form{width: 40%}
+TD.manual-header-description{width: 40%}
+
+
+HR.manual-plain-end-of-entry 
+  {
+    margin-top: -50px;
+    margin-bottom: -50px;
+  }
+
+
+
+/* Fancy SchemeDoc CSS stylesheet */ 
+
+BODY.manual-body
+ {
+   background: rgb(255,255,155); 
+ }
+
+H1.manual-title 
+ {
+   color: rgb(120,0,0);
+   font-weight: bold;
+ }
+
+SPAN.manual-author-element
+  {
+   padding-right: 0.7cm;
+   color: rgb(120,0,0);
+  }
+
+SPAN.manual-affiliation-element
+  {
+   padding-right: 0.0cm;
+   color: rgb(120,0,0);
+  }
+
+TABLE.manual-table 
+ {
+   margin-bottom: 40px;
+
+ }
+
+TABLE.manual-table TD
+ {
+   padding-bottom: 6px;
+   vertical-align: top;
+
+   border-style: solid;
+   border-width: 2px;
+   border-color: rgb(255,255,155); 
+ }
+
+
+TD.manual-plain-end-of-entry
+  {
+    padding-top: 0px;
+  }
+
+HR.manual-plain-end-of-entry 
+  {
+   visibility: hidden;
+  }
+
+
+SPAN.manual-top-banner-when-generated
+  {
+    font-style: plain;
+  }
+
+SPAN.manual-top-banner-is-schemedoc
+  {
+    font-style: plain;
+  }	
+
+DIV.manual-source-file-description
+  {
+    color: rgb(0,100,100);
+  }	
+
+DIV.manual-table-of-contents-header
+  {
+    font-style: italic;
+    font-weight: 600;
+    margin-top: 25px;
+  }	
+
+DIV.manual-alphabetic-index-header
+  {
+    font-style: italic;
+    font-weight: 600;
+    margin-top: 25px;
+  }	
+
+DIV.manual-end-remark
+  {
+    font-style: plain;
+    color: red;
+  }	
+
+
+TD.manual-plain-entry-kind
+ {
+   color: rgb(179,0,179);
+   font-weight: 600;
+   padding-left: 0.8cm;
+ }
+
+SPAN.manual-kind-explanation
+ {
+   color: black;
+   font-weight: 100;
+ }
+
+TD.manual-plain-title  
+ {
+   color:  rgb(160,0,0);
+   font-weight: bold;
+   font-family: Courier;
+   background: rgb(230,230,160); 
+   margin-top: 40px;
+ }
+
+TD.manual-plain-title-level-2 
+ {
+   color:  rgb(200,0,0);
+   font-weight: bold;
+   font-family: Courier;
+   background: rgb(255,255,155); 
+   margin-top: 40px;
+   padding-left: 20px;
+ }
+
+SPAN.manual-section-title-level-2
+  {
+    color:  rgb(160,0,0);
+    font-weight: bold;
+    font-variant: small-caps;
+    border-left-color: rgb(255,230,210); 
+    padding-left: 20px;
+  }  
+
+TD.manual-plain-form
+ {
+   color: black;
+   font-family: Courier;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-condition
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-description
+ {
+   color: black;
+   font-style: italic;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-parameter-name
+ {
+   color: black;
+   font-family: Courier;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-parameter-description
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-attribute-name 
+ {
+   color: black;
+   font-family: Courier;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-attribute-type
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-attribute-description
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-example
+ {
+   color: black;
+   font-family: Courier;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-reference-role
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-reference-anchor
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+
+TD.manual-plain-comment
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-misc
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-custom
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+TD.manual-plain-returns
+ {
+   color: black;
+   background: rgb(255,255,210); 
+ }
+
+A.manual-plain-internal-reference
+ {
+   padding-right: 0.5cm;
+ }
+
+
+TD.manual-header-title
+  {
+    background: rgb(255,255,210); 
+  }
+
+TD.manual-header-form
+  {
+    font-family: Courier;
+    background: rgb(255,255,210); 
+  }
+
+TD.manual-header-description
+  {
+    font-style: normal;
+    background: rgb(255,255,210); 
+  }
+
+DIV.manual-abstract
+  {
+    margin-left: 10px;
+    background: rgb(230,230,160); 
+  }
+
+TD.manual-section 
+  {
+    background: rgb(255,168,81);
+  }
+
+TD.manual-section-level-2
+  {
+    background: rgb(255,168,81);
+  }
+
+SPAN.manual-section-number 
+  {
+    width: 1.0cm;
+    color:  rgb(160,0,0);
+    font-weight: 800;
+    padding-right: 0.4cm;
+  }
+
+SPAN.manual-section-title
+  {
+    color:  rgb(160,0,0);
+    font-weight: 800;
+    font-variant: small-caps;
+    border-left-color: rgb(255,168,81);
+  }  
+
+TD.manual-section-description
+  {
+   background: rgb(230,230,160); 
+  }
+
+
+A:link 
+ {
+   text-decoration: underline; 
+   color: black;
+ }
+
+A:visited 
+ {
+   text-decoration: underline; 
+   color: black;
+ }
+
+A:active 
+ {
+   text-decoration: underline; 
+   color: black;
+ }
+
+A:hover
+ {
+   text-decoration: underline;
+   background: rgb(255,216,151);
+ }
+
+
+

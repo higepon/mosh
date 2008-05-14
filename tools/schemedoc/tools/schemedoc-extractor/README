@@ -1,0 +1,9 @@
+This directory contains the documentation extraction part of SchemeDoc.
+
+The SchemeDoc extractor is an important part of SchemeDoc, as present in
+styles/xml-in-laml/schemedoc-2/schemedoc.scm.
+
+The SchemeDoc extractor is also used by the Scheme Elucidator in
+styles/xml-in-laml/elucidator-2/elucidator.scm.
+
+KN

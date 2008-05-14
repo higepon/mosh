@@ -1,0 +1,49 @@
+The file  configuration  is the file to change when you install LAML on your
+computer.
+
+laml-config.scm is the program that performs the installation. As it appears
+if you read that file, laml-config-internal.scm is the program that does the 
+real work.
+
+If you already have a running LAML system on your computer you can reconfigure
+LAML conveniently by processing the script default-config.laml
+
+After installation/reconfiguration of LAML, you should restart Emacs.
+Also, check your .emacs file.  Search for "LAML" or "laml-emacs-support.el"
+
+
+PORTING LAML:
+
+If you intend to port LAML to a new Scheme system, or to another operating
+system or platform, be sure to consult the web page
+
+  info/porting-laml.html
+
+relative to a full LAML distribution, or on this URL
+
+  http://www.cs.auc.dk/~normark/scheme/info/porting-laml.html  
+
+
+
+
+AALBORG UNIVERSITY ONLY:
+
+The accompanying laml file, cs-unix-config.laml is a script I use to
+activate the configuration program on our Unix Solaris machine, and
+cs-linux-configuration is the configuration related to the
+script. You CANNOT use any of these without prior modifications. But
+you can maybe use these files for inspiration.
+
+
+Current configuration file on CS unix at Aalborg University:
+
+   cs-linux-configuration
+
+Accompanying laml script file which does the configuration job:
+
+   cs-unix-config.laml
+
+
+
+Kurt Nørmark.
+

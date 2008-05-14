@@ -1,0 +1,9 @@
+(load (string-append laml-dir "laml.scm"))
+
+(laml "parse")
+(display-message "DTD parsing done")
+(display-message "")
+
+(display-message "Making mirror - please wait...")
+(laml "make-mirror")
+(display-message "DONE. The mirror is in ../mirror/elucidator2-mirror.scm")

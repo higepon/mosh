@@ -1,0 +1,31 @@
+(load (string-append laml-dir "laml.scm"))
+(laml-style "xml-in-laml/schemedoc-index/schemedoc-index")
+
+(manual-index
+  (manual-index-front-matters
+    (manual-index-title "Sample SchemeDoc Index")
+    'browser-type "two-steps"  ; one-step or two-steps
+    'initial-manual-frame "info"
+    'source-destination-delta "html/"
+    'scheme-report-version "r5rs"   ; r4rs or r5rs
+    'scheme-report "include"  ; none, merge or include
+    'left-frame-width "250px"
+    'top-frame-height "200px"
+  )
+
+  (manual-index-contributions
+    (manual-index-contribution 
+       'informative-name "Manual 1"
+       'path "man-1")
+
+    (manual-index-contribution 
+       'informative-name "Manual 2"
+       'path "man-2")
+
+    (manual-index-contribution 
+       'informative-name "Manual 4"
+       'path "man-4")
+
+
+  )
+)

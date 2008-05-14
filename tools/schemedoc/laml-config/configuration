@@ -1,0 +1,145 @@
+;  THIS FILE CONTAINS A LISP ASSOCIATION LIST WITH A LAML CONFIGURATION.
+;  AN ASSOCIATION LIST IS A LIST OF KEY-VALUE PAIRS: (key . value).
+;  EDIT THIS FILE BY CHANGING THE VALUES OF THE KEYS (AT THE
+;  POSITIONS AFTER THE DOTS). THERE ARE ALREADY EXAMPLES OF
+;  VALUES (SUCH AS "c:/programs/laml/") IN THIS FILE.
+;  AFTER YOU HAVE EDITED THIS FILE PLEASE LOAD THE FILE 
+;  laml-config.scm IN YOUR SCHEME SYSTEM. THIS IS THE SCHEME PROGRAM
+;  WHICH PERFORMS THE CONFIGURATIN PROCESS. THE LOADING PROCESS WILL
+;  READ THE CURRENT FILE, configuration, AND IT WILL CONFIGURE LAML 
+;  ON YOUR COMPUTER.
+;
+;  NOTICE THAT THE EXISTING VALUES IN THIS FILE REFLECT A WINDOWS 2000 
+;  OR WINDOWS XP SETUP WITH PLT MZSCHEME (version 200 .. 209).
+
+
+(
+  ; A full and absolute path to the directory in which your 
+  ; LAML or SchmeDoc distribution is located.
+  ; Always use forward slashes in the path.
+  ; The last character should be a '/'.
+
+  (laml-dir . "/home/taro/vm/monar/tools/schemedoc/")        ; <== Edit here
+
+
+  ; Which Scheme system do you use:   mzscheme, mzscheme-200, mzscheme-300, scm, guile, sisc, drscheme, or drscheme-300.
+  ; mzscheme refers to versions smaller than 200 of MzScheme (103, 101, ...).
+  ; mzscheme-200 refers to version 200 - 209. As of April 2005, version 209 is the latest version.
+  ; mzscheme-300 refers to version 300+. 
+  ; drscheme refers to versions smaller than 200 of DrScheme.
+  ; drscheme-300 refers to version 300 or larger of DrScheme.
+  ; The value part of the cons pair should be a symbol or a string.
+
+  (scheme-system . "gosh")                  ; <== Edit here
+
+
+  ; On which platform do you install LAML: windows, unix, or mac.
+  ; If you use linux use unix here.
+  ; If you use max OSX, use unix here too.
+  ; The given value should be a symbol or a string
+
+  (laml-platform . "unix")                   ; <== Edit here
+
+
+  ; Which operating system do you use: win98, win95, nt40, win2000,
+  ; solaris-6, solaris-7, or linux.
+  ; If you use Windows XP or Vista you should write win2000 below.
+  ; If you use solaris in a newer version than 7, you should write solaris-7.
+  ; The value of operating-system should be a symbol or a string.
+
+  (operating-system . "linux")                ; <== Edit here
+
+
+  ; The absolute path to your Scheme interpreter.
+  ; The value must be a string (an absolute file path) or the value #f 
+  ; (#f means boolean false).
+  ; Use forward slashes in the path.
+  ; Do not include any file extension (such as '.exe').
+  ; If your Scheme system is drscheme or drscheme-300 use the value #f.
+
+  (scheme-exec . "/usr/local/bin/gosh")           ; <== Edit here
+
+
+  ; The full path to your emacs init file (.emacs file).
+  ; If you give the path to you emacs init file here, you allow the
+  ; LAML configuration program to change your .emacs file.
+  ; If you do not have an emacs init file, the LAML configuration program
+  ; will make one for you. In case you do NOT want the LAML configuration 
+  ; process to modify your emacs init file, the value of this property should
+  ; be #f (which is Scheme's representation of 'false').
+
+  (emacs-init-file . #f)             ; <== Edit here
+
+
+  ; The full path to you laml init file (such as .laml). 
+  ; Mostly for advanced laml users. 
+  ; The value of laml-init-file must be a string (file path), or the boolean #f.
+  ; The laml init file allows you to customize and extend LAML.
+  ; The laml init file is loaded by the function begin-laml, which always should be
+  ; called when program loading has been completed.
+  ; The laml init file is only loaded if it actually exists.
+  ; If you delete this clause, or if you specify the value #f,
+  ; no laml init file is supported by your installation.
+
+  (laml-init-file . #f)              ; <== Edit here
+
+
+  ; Control of Emacs keybindings.
+  ; Possible values are "original", "hygienic", and "none".
+  ; Some original keybindings may be in conflict with other Emacs key bindings,
+  ; but they are short and convenient.
+  ; Hygienic keybindings all start with C-c, and as such they do not conflict
+  ; with other keybindings. If "none" is specified, no keybindings are will be made.
+  ; Menu bindings will be made even if "none" is specified as the value of 
+  ; emacs-keybindings.
+
+  (emacs-keybindings . "hygienic")           ; <== Edit here
+
+
+  ; Leno is a LAML based system for production of slides and teaching
+  ; material.  If you want Emacs support of LENO, the value of
+  ; leno-emacs-support should be #t.  If not, it should be #f. If you
+  ; select Emacs support for LENO, a number of key bindings and
+  ; menu bindings will be in effect.
+  ; Use the value #f if you install SchemeDoc
+
+  (leno-emacs-support . #f)                  ; <== Edit here
+
+
+  ; LAML SchemeDoc is a tool for comments from Scheme source files.
+  ; If you want Emacs support LAML Schemedoc (including SchemeDoc
+  ; support when you work on Scheme source files in scheme-mode) the value of
+  ; schemedoc-emacs-support should be #t.  If not, it should be #f.
+
+  (schemedoc-emacs-support . #f)            ; <== Edit here
+
+
+  ; The Scheme elucidator is a LAML based system for production of
+  ; elucidative programs (programs with documentation). If you want
+  ; Emacs support of the Scheme Elucidator, the value of
+  ; elucidator-emacs-support should be #t.  If not, it should be #f.
+  ; If you select Emacs support for the elucidator,
+  ; a number of key bindings and menu bindings will be in effect.
+  ; You may use the value #t if you install SchemeDoc, because
+  ; the SchemeDoc distribution includes the Scheme Elucidator.
+
+  (elucidator-emacs-support . #f)            ; <== Edit here
+
+
+  ; The LAML photo show tool supports the generation of HTML
+  ; files that controls the presentation of digital photos. 
+  ; The value #t will give some support of the LAML photo show from Emacs.
+  ; Use the value #f if you install SchemeDoc
+
+  (photoshow-emacs-support . #f)            ; <== Edit here
+
+
+  ; The LAML chords tool supports the generation of HTML
+  ; files for songs with chords.
+  ; The value #t will give provide support of the LAML chords system from Emacs.
+  ; Use the value #f if you install SchemeDoc
+
+  (chords-emacs-support . #f)            ; <== Edit here
+
+
+)

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+      <meta name="Generator" content="LAML" />
+      <title>Notes about LAML with MzScheme 200</title></head>
+   <body bgcolor="#ffffbf" text="#000000" link="#0000ff" vlink="#0000ff">
+      <table border="0px" cellpadding="0" cellspacing="0" width="100%">
+         <tbody>
+            <tr>
+               <td width="33%" align="left" valign="top">
+                  <font size="2">Generated: Tuesday, May 2, 2006, 13:35:16</font></td>
+               <td width="34%" align="center" valign="top">
+                  <font size="2"><span>Copyright &copy; 2006, Kurt N&#248;rmark</span></font></td>
+               <td width="33%" align="right" valign="top">
+                  <font size="2">
+                     <a href="../index.html" title="The local LAML software home page" target="_top">
+                        <img src="../images/laml-home.gif" alt="The local LAML software home page"
+                             border="0" /></a></font></td></tr></tbody></table>
+      <h1>The LAML compatibility functions</h1>
+      <p>
+         It is intended that this page is to be replace by
+         <a href="../lib/compatibility/man/compatibility.html">
+            the corresponding manual page</a>.</p>
+      <p>
+         The LAML software relies on a number of functions, which are non-standard both in R4RS
+         and R5RS. You can think of these as functions that extend R4RS/R5RS a little
+         bit to fill the gap between the LAML code base and the Scheme standard. </p>
+      <p>
+         We support a set of compatibility files for different platforms, operating systems,
+         and Scheme systems in the directory
+         <a href="../lib/compatibility/">lib/compatibility/</a>.
+         The relevant compatibility file is loaded automatically by
+         <kbd>laml.scm</kbd>,
+         based on the
+         <a href="../laml-config/configuration">configuration file</a>
+         that you set up as part of the LAML installation process.</p>
+      <p>The set of LAML compatibility files are:</p>
+      <table border="0">
+         <tbody>
+            <tr>
+               <td width="400" valign="top"><b>(current-time)</b></td>
+               <td width="500" valign="top">
+                  Returns the number of seconds elapsed since January 1, 1970</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(sort-list list leq-fn)</b></td>
+               <td width="500" valign="top">
+                  Returns a sorted copy of list. The sorting is based on
+                  the function leq-fn, which returns if two elements in the list
+                  are considered less than or equal. See note below.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(file-exists? file-path)</b></td>
+               <td width="500" valign="top">
+                  Returns whether a file named file-path exists. file-path is the full and absolute
+                  path to the file. file-path is a text string.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(delete-file file-path)</b></td>
+               <td width="500" valign="top">
+                  Deletes a file. file-path is the full and absolute path to the file. file-path
+                  is a text string.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(directory-exists? dir-path)</b></td>
+               <td width="500" valign="top">
+                  Returns whether the directory dir-path exists. dir-path is the full and absolute
+                  directory path to the directory. As
+                  a convention in LAML, a directory path is always terminated by a forward
+                  slash character: &#39;/&#39;. dir-path is a text string.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(copy-file source destination)</b></td>
+               <td width="500" valign="top">
+                  Copy the source file to destination file. Both source and
+                  destination are supposed to be full and absolute file paths, and both are
+                  text strings.</td></tr>
+            <tr>
+               <td width="400" valign="top">
+                  <b>(make-directory-in-directory in-directory-path new-dir)</b></td>
+               <td width="500" valign="top">
+                  Make a new directory new-dir in an existing directory path. in-directory-path
+                  is a full and absolute directory path (ending in a forward slash), and
+                  new-dir is just a simple directory name (without any slash character).</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(directory-list dir-path)</b></td>
+               <td width="500" valign="top">
+                  Return a list of files and directories in dir-path. dir-path is supposed to
+                  be a full and absolute directory path, which
+                  ends in a forward slash. The resulting list does not include the directories
+                  named &#39;.&#39; and &#39;..&#39;.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(bound? name)</b></td>
+               <td width="500" valign="top">
+                  Return if the name is bound in the current interaction environment.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(eval-cur-env e)</b></td>
+               <td width="500" valign="top">
+                  Evaluates the expression e in the current interaction environment.
+                  <br />
+                  <em>Rationale</em>:
+                  Bridges the differences between R4RS systems (in which 
+                  <kbd>eval</kbd>
+                  is not standardized) and R5RS systems, in which
+                  <kbd>eval</kbd>
+                  takes two parameters.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(error error-message-string)</b></td>
+               <td width="500" valign="top">
+                  Stop program executation and print information about the error, as described
+                  by the string error-message-string.
+                  Most Scheme systems supports this function already.</td></tr></tbody></table>
+      <p>
+         In addition, the following functions are desirable although not used in the central
+         pieces of the LAML software. If you cannot implement them, just relax...</p>
+      <table border="0">
+         <tbody>
+            <tr>
+               <td width="400" valign="top"><b>(getenv name)</b></td>
+               <td width="500" valign="top">
+                  Read and return the value of an environment variable in the operating system.
+                  Used for LAML CGI programming purposes.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(mail receiver title contents)</b></td>
+               <td width="500" valign="top">
+                  Send email to receiver with title and contents.</td></tr>
+            <tr>
+               <td width="400" valign="top"><b>(url-target-exists? url-string)</b></td>
+               <td width="500" valign="top">
+                  <span>
+                     Return if the absolute URL, as represented by
+                     <kbd>url-string</kbd>,
+                     exists. If you
+                     use the value
+                     <kbd>all</kbd>
+                     or
+                     <kbd>absolute</kbd>
+                     of the variable
+                     <a href="../lib/xml-in-laml/man/xml-in-laml.html#xml-link-checking">
+                        xml-link-checking</a>
+                     in
+                     <kbd>lib/xml-in-laml/xml-in-laml.scm</kbd>
+                      you must implement
+                     this function. This provides for checking the existence of the absolute
+                     URLs in your documents. In
+                     other situations, you do not need to implement it. </span></td></tr></tbody></table>
+      <p>
+         The Scheme system compatibility files in 
+         <kbd>lib/compatibility/</kbd>
+          provide implementations of the functions mentioned above. (In case no
+         implementation is possible, we call the error procedure.) In the distribution,
+         there are compatibility files for a number of Scheme systems and operating systems.
+         When you have installed LAML, the appropriate compatibility file will be loaded
+         automatically. </p>
+      <p>
+         <em>A note about <kbd>sort-list</kbd>:</em>
+         If you cannot easily provide an implementation of
+         <kbd>sort-list</kbd>,
+         we provide the file
+         <a href="../lib/compatibility/sorting/sort.scm">
+            <kbd>lib/compatibility/sorting/sort.scm</kbd></a>
+         with Aubrey Jaffer&#39;s sorting functions. You can include this file in the compatibility
+         file and add
+         <kbd>(define sort-list sort:sort)</kbd>.</p>
+      <p>
+         See also advice on
+         <a href="porting-laml.html">how to port LAML to another Scheme System</a>.</p></body></html>

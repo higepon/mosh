@@ -1,0 +1,112 @@
+diff -urN schemedoc.orig/laml-config/laml-config-internal.scm schemedoc/laml-config/laml-config-internal.scm
+--- schemedoc.orig/laml-config/laml-config-internal.scm	2007-06-11 22:15:38.000000000 +0900
++++ schemedoc/laml-config/laml-config-internal.scm	2008-05-01 14:58:42.000000000 +0900
+@@ -20,6 +20,10 @@
+ ;;;; This program assumes the existence of the non-RS4S functions file-exists?, 
+ ;;;; directory-exists? and delete-file.
+ 
++(define directory-exists? file-exists?)
++(define delete-file sys-unlink)
++
++
+ ; --------------------------------------------------------------------------------------------------------
+ 
+ ; Here we define optional-parameter (from laml.scm) because write-text-file uses it:
+@@ -32,12 +36,13 @@
+ ; --------------------------------------------------------------------------------------------------------
+ 
+ (define supported-platforms '(windows unix))
+-(define supported-scheme-systems '(scm mzscheme guile drscheme mzscheme-200 mzscheme-300 sisc bigloo gambit-4 drscheme-300))
++(define supported-scheme-systems '(scm mzscheme guile drscheme mzscheme-200 mzscheme-300 sisc bigloo gambit-4 drscheme-300 gosh))
+                                                                  ; mzscheme really means version 103 or smaller.
+                                                                  ; drscheme similarly means version 103 or smaller. 
+                                                                  ; mzscheme-200 means version 200 - 209
+                                                                  ; mzscheme-300 means version 299, and 300+
+                                                                  ; drscheme-300 means DrScheme 300+
++                                                                 ; gosh         means Gauche
+ 
+ (define supported-operating-systems '(win98 win95 nt40 solaris-6 linux solaris-7 win2000 osx))
+ (define supported-kinds-of-emacs '(gnu-emacs win-emacs)) ; not important any more
+diff -urN schemedoc.orig/lib/compatibility/star_star_gosh.scm schemedoc/lib/compatibility/star_star_gosh.scm
+--- schemedoc.orig/lib/compatibility/star_star_gosh.scm	1970-01-01 09:00:00.000000000 +0900
++++ schemedoc/lib/compatibility/star_star_gosh.scm	2008-05-01 14:50:40.000000000 +0900
+@@ -0,0 +1,48 @@
++(use file.util)
++
++;; Return the current time in seconds
++(define current-time sys-time)
++(define current-seconds sys-time)
++(define (current-process-milliseconds) 0)
++
++;; Sort list using the comparison predicate
++(define (sort-list list com) (sort list com))
++
++; ---------------------------------------------------------------------------------------------------
++
++;; Make a new directory, new-dir, in the directory path (first parameter).
++;; The parameter in-directory-path ends in a slash.
++(define (make-directory-in-directory in-directory-path new-dir)
++  (make-directory* (string-append in-directory-path new-dir)))
++
++(define directory-exists? file-exists?)
++(define delete-file sys-unlink)
++
++; ---------------------------------------------------------------------------------------------------
++
++(define (eval-cur-env e) (eval e (interaction-environment)))
++
++; -----------------------------------------------------------------------------
++
++;;; LAML specific, context definition functions. 
++;;; The functions in this section return and define the activation context of the LAML processor.
++
++
++;; Return the contextual command line information passed to LAML upon activation.
++;; Returns a list of lenght four or #f if no command line activation exists.
++;; The first element must be the symbol laml (a tag).
++;; Element number two must be the laml source file name (without extension and initial path).
++;; Element number three must be a slash terminated, full directory path (with forward slashes), in which the source file resides.
++;; Element number four must be a list of program parameters.
++;; This function must be redefined in Scheme-system/OS/platform dependent compatibility file. 
++(define (laml-canonical-command-line) `(laml "hige" "/tmp/" #f))
++
++(define (fake-startup-parameters source-file startup-dir . optional-parameter-list) '())
++
++(define-syntax load
++  (syntax-rules()
++    ((_ file)
++     (call-with-input-file file load-from-port :encoding 'latin1))))
++
++
++
+diff -urN schemedoc.orig/styles/xml-in-laml/elucidator-2/elucidator.scm schemedoc/styles/xml-in-laml/elucidator-2/elucidator.scm
+--- schemedoc.orig/styles/xml-in-laml/elucidator-2/elucidator.scm	2007-06-11 22:15:41.000000000 +0900
++++ schemedoc/styles/xml-in-laml/elucidator-2/elucidator.scm	2008-05-01 14:59:45.000000000 +0900
+@@ -2387,6 +2387,9 @@
+         ((char? f) (match-char f ip op)
+                    (skip-white-space ip op))
+ 
++        ((and (eq? scheme-system 'gosh) (regexp? f)) (match-regexp f ip op)
++                   (skip-white-space ip op))
++
+         ((boolean? f) (match-boolean f ip op)
+                       (skip-white-space ip op))
+ 
+@@ -3725,6 +3728,10 @@
+   (read ip)
+   (write ch op))
+ 
++(define (match-regexp ch ip op)
++  (read ip)
++  (write ch op))
++
+ (define (match-number n ip op)
+   (read ip)
+   (write n op))
+@@ -5927,4 +5934,4 @@
+         ""
+         sdd)))
+          
+-(end-laml-loading)    
+\ No newline at end of file
++(end-laml-loading)    

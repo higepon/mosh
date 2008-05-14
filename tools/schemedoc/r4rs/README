@@ -1,0 +1,6 @@
+A directory with a HTML version of the R4RS Scheme manual (full distribution only).
+The original version was created by A. Jaffer.
+
+Scheme-knowledge.scm contains a mapping of form names to anchors in the manual.
+This mapping is used for the Scheme browser of the LAML distribution.
+ 
