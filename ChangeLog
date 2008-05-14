@@ -1,5 +1,9 @@
 2008-05-14  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (REPL): Added REPL.
+
+        * freeproc.cpp (scheme::evalEx): Added (eval ...). Currently second argument of eval is ignored.
+
         * 0.0.2 released.
 
         * Symbol.h (scheme): OS X build patch by mesa_edw.

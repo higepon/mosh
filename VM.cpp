@@ -51,7 +51,7 @@ using namespace scheme;
     pc_ = pc;               \
     sp_ = sp;
 
-VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, TextualInputPort& inputPort) :
+VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort) :
     ac_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
@@ -84,6 +84,13 @@ void VM::loadFile(const ucs4string& file)
         const Object compiled = compile(o);
         evaluate(compiled);
     }
+}
+
+// same as (eval ...)
+Object VM::eval(Object obj, Object env)
+{
+    // env is currently ignored
+    return evaluate(compile(obj));
 }
 
 void VM::load(const ucs4string& file)
@@ -1332,6 +1339,7 @@ void VM::showErrorLocation(Object errorMessage)
 void VM::raise(const ucs4char* fmt, Object list)
 {
     Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
+    errorPort_.format(UC("~a"), errorMessage);
     showStackTrace(errorMessage);
     exit(-1);
 }

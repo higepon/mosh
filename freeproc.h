@@ -136,6 +136,7 @@ Object vectorEx(Object args);
 Object regexpReplaceEx(Object args);
 Object regexpReplaceAllEx(Object args);
 Object errorfEx(Object args);
+Object evalEx(Object args);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

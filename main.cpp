@@ -75,6 +75,7 @@ void showUsage()
 int main(int argc, char *argv[])
 {
     int opt;
+    bool isRepl       = false;
     bool isTestOption = false;
     bool isCompileString = false;
 
@@ -102,10 +103,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (optind > argc || (optind == argc && argc == 1)) {
+    if (optind > argc) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
+    } else if (optind == argc &&  argc == 1) {
+        isRepl = true;
     }
 
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -119,7 +122,8 @@ int main(int argc, char *argv[])
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
-    TextualInputPort inPort(TextualInputPort(new FileBinaryInputPort(stdin), transcoder));
+    Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
+
     theVM = new VM(20000, outPort, errorPort, inPort);
 
     // Do not call Symbol::intern before you load precompiled compiler!
@@ -129,7 +133,9 @@ int main(int argc, char *argv[])
     theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc - optind, &argv[optind]));
     theVM->evaluate(compiler);
 
-    if (isTestOption) {
+    if (isRepl) {
+        theVM->callClosureByName(Symbol::intern(UC("REPL")), Object::Nil);
+    } else if (isTestOption) {
         theVM->load(UC("macro.scm"));
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {

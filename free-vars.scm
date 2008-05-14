@@ -97,5 +97,6 @@
     (regexp-replace-all ,regexp-replace-all)
     (source-info ,(lambda (x) #f))
     (errorf ,errorf)
+    (eval ,(lambda a (error "eval not supported")))
     ))
 

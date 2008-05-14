@@ -71,7 +71,7 @@ inline Object L4(Object a, Object b, Object c, Object d) { return Pair::list4(a,
 class VM EXTEND_GC
 {
 public:
-    VM(int stackSize, TextualOutputPort& outPort, TextualOutputPort& errorPort, TextualInputPort& inputPort);
+    VM(int stackSize, TextualOutputPort& outPort, TextualOutputPort& errorPort, Object inputPort);
     ~VM();
 
     void importTopLevel();
@@ -79,6 +79,7 @@ public:
     Object run(Object* code, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
     Object evaluate(Object codeVector);
+    Object eval(Object o, Object env);
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure(Object closure, Object o);
@@ -98,6 +99,8 @@ public:
     void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
 
     Object standardInputPort() const { return stdinPort_; }
+
+    Object currentInputPort() { return inputPort_; }
 
     void defineGlobal(Object id, Object val)
     {
@@ -283,7 +286,7 @@ protected:
     Object notFound_;
     TextualOutputPort& outputPort_;
     TextualOutputPort& errorPort_;
-    TextualInputPort& inputPort_;
+    Object inputPort_;
     Object stdinPort_;
 };
 

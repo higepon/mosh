@@ -704,8 +704,7 @@ Object scheme::formatEx(Object args)
 
 Object scheme::currentInputPortEx(Object args)
 {
-    printf("current-input-port called\n");
-    return Object::UnBound;
+    return theVM->currentInputPort();
 }
 
 Object scheme::currentOutputPortEx(Object args)
@@ -1229,4 +1228,14 @@ Object scheme::regexpReplaceAllEx(Object args)
         VM_RAISE3("regexp-replace (regexp string string) required, but got (~a ~a ~a)\n", reg, str, sub);
     }
     return Object::Undef;
+}
+
+Object scheme::evalEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for eval (required 2, got ~d)\n", Object::makeInt(length));
+    }
+
+    return theVM->eval(args.first(), args.second());
 }

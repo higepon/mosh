@@ -1496,6 +1496,15 @@
 (define-doc (hash-table-keys) ...)
 
 ; ==============================================================================================================================================================
+;;; Eval.
+;;; R6RS library Chapter 16.
+;; <p>Evaluates expression in the specified environment and returns its value.</p>
+;; <p>Note that currently the environment argument is ignored.</p>
+;; .returns result
+;; .form (eval expression environment)
+(define-doc (eval) ...)
+
+; ==============================================================================================================================================================
 ;;; Mutable pairs.
 ;;; R6RS library Chapter 17.
 ;; Stores obj in the car field of pair.
@@ -1939,13 +1948,12 @@
 ;; .example (call-with-output-string (lambda (out) (format out "apple is ~a" "sweet"))) => "apple is sweet"
 (define-doc (format) ...)
 
-
-
-
-
-
-
-
+(define (REPL . x)
+  (define (rec)
+    (display "mosh>")
+    (print (eval (read (current-input-port)) '()))
+    (rec))
+  (rec))
 
 
 
