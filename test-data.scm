@@ -740,6 +740,9 @@ val
           (lambda () 2)))
 (#f (eqv? #f 'nil))
 
+;; expansion of cond
+(#t (define (foo n) (let loop ((n n)) (cond ((null? n)) (else (loop (cdr n)))))) (and (foo '()) (foo '(1 2 3))))
+
 
 ;; ;;; ここより下のテストは mosh では通っていない。
 (3 (digit->integer #\3 10))

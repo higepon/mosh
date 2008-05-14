@@ -1,5 +1,7 @@
 2008-05-14  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (cond->if): Fixed the bug when cond clause like (cond ((3))).
+
         * library.scm (REPL): Added REPL.
 
         * freeproc.cpp (scheme::evalEx): Added (eval ...). Currently second argument of eval is ignored.

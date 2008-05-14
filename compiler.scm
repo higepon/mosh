@@ -739,9 +739,11 @@
                  `(let ((,tmp ,(caar clauses)))
                     (if ,tmp
                         ,tmp
-                        ,(loop (cdar clauses))))))
+                        ,(loop (cdr clauses))))))
               (else
                (make-if (caar clauses) (cdar clauses) (loop (cdr clauses))))))))
+
+;(cond->if '(cond ((null? n)) (else (loop (cdr n)))))
 
 (define (case->cond sexp)
   (define (expand-clauses clauses tmpname)
