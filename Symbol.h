@@ -52,9 +52,9 @@ struct ltstr EXTEND_GC
 };
 
 #ifdef USE_BOEHM_GC
-class gc_map2 : public std::map<const ucs4char*, Object, ltstr, gc_allocator<std::pair<const ucs4char*, Object> > >, public gc { };
+class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocator<std::pair<const ucs4char* const, Object> > >, public gc { };
 #else
-    class gc_map2 : public std::map<const ucs4char*, Object, ltstr, std::allocator<std::pair<const ucs4char*, Object> > > {};
+    class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, std::allocator<std::pair<const ucs4char* const, Object> > > {};
 #endif
 
 
