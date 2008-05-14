@@ -82,8 +82,11 @@ function updateMatchedTable(matched) {
     var table = document.getElementById('matched');
     var tbody = document.createElement("tbody");
     for (var i = 0; i < matched.length; i++) {
-        tbody.appendChild(matched[i]);
-        tbody.appendChild(document.createElement("br"));
+        var tr = document.createElement('tr');
+        var td = document.createElement('td');
+        tr.appendChild(td);
+        td.appendChild(matched[i]);
+        tbody.appendChild(tr);
     }
     table.replaceChild(tbody, table.getElementsByTagName('tbody')[0]);
     cursor = new Cursor(tbody);

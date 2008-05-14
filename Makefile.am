@@ -131,7 +131,7 @@ all-tests.scm: ./test-data.scm
 
 doc:
 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-	@GOSH@ ./scripts/gen-doc-index.scm "index" "doc/"
+	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
 fulltest:
 	./mosh -t
