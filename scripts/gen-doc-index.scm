@@ -9,7 +9,7 @@
   (laml-style "xml-in-laml/schemedoc-index-isearch/schemedoc-index")
   (manual-index
    (manual-index-front-matters
-    (manual-index-title "Monar Manual Index")
+    (manual-index-title "Mosh Manual Index")
     'browser-type "one-step"     ; one-step or two-steps
     'left-frame-width "250px"
     'top-frame-height "200px"

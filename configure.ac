@@ -2,12 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(monar, 0.0.1, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.0.1, higepon@users.sourceforge.jp)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([VM.h])
 AC_CONFIG_HEADER([config.h])
 
-AC_SUBST(MONAR_LIB_PATH, "${datadir}/monar")
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh")
 
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
