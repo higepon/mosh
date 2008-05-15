@@ -1,3 +1,7 @@
+2008-05-15  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass1/sexp->iform): Fixed, (+) => 0, (*) => 1, thx leque.
+
 2008-05-14  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (cond->if): Fixed the bug when cond clause like (cond ((3))).

@@ -288,6 +288,8 @@ protected:
     TextualOutputPort& errorPort_;
     Object inputPort_;
     Object stdinPort_;
+    void* labelStart_;
+    void* labelEnd_;
 };
 
 }; // namespace scheme

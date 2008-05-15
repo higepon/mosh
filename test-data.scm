@@ -744,8 +744,9 @@ val
 (#t (define (foo n) (let loop ((n n)) (cond ((null? n)) (else (loop (cdr n)))))) (and (foo '()) (foo '(1 2 3))))
 
 
-;; ;;; ここより下のテストは mosh では通っていない。
 (3 (digit->integer #\3 10))
+(0 (+))
+(1 (*))
 ;; (10 (digit->integer #\A 16))
 ;; ;(error (cdr 3))
 ;; (#f (digit->integer #\Z 16))

@@ -158,7 +158,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isEqHashTable()) {
         putString(UC("#<eq-hash-table>"));
     } else if (o.isClosure()) {
-        putString(UC("#<clsoure>"));
+        putString(UC("#<closure>"));
     } else if (o.isCProcedure()) {
         putString(UC("#<subr>"));
     } else if (o.isByteVector()) {

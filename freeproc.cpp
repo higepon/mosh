@@ -1165,7 +1165,7 @@ Object scheme::openFileOutputPortEx(Object args)
         VM_RAISE1("open-file-output-port string required, but got ~a\n", file);
     }
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE);
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     Object ret = Object::makeTextualOutputPort(new FileBinaryOutputPort(file.toString()->data()), transcoder);
     return ret;
 }
@@ -1176,7 +1176,7 @@ Object scheme::openFileInputPortEx(Object args)
     if (!file.isString()) {
         VM_RAISE1("open-file-input-port string required, but got ~a\n", file);
     }
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE);
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     return Object::makeTextualInputPort(new FileBinaryInputPort(file.toString()->data()), transcoder);
 }
 

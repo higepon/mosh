@@ -310,6 +310,8 @@ Object VM::run(Object* code, bool returnTable /* = false */)
 #include "labels.cpp"
 
     if (returnTable) {
+        labelStart_ = &&LABEL_HALT;
+        labelEnd_ = &&LABEL_DEFAULT;
         return Object::makeRaw(dispatch_table);
     }
 #endif
@@ -1303,13 +1305,35 @@ Object VM::splitId(Object id)
 
 void VM::showStackTrace(Object errorMessage)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     showErrorLocation(errorMessage);
     while (sp_ >= stack_) {
-        if ((*sp_).val && (*sp_).isClosure()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        printf("sp_=%x\n", sp_);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        printf("sp_.val=%x\n", (*sp_).val);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        printf("%x range %x\n", labelStart_, labelEnd_);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        if ((*sp_).val
+            && !((word)labelStart_ <= (*sp_).val && (*sp_).val <= (word)labelEnd_)
+            && (*sp_).isClosure()) {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             Object src = (*sp_).toClosure()->sourceInfo;
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             if (src.isPair()) {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                errorPort_.format(UC("<~a>"), src.car());
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                errorPort_.format(UC("[~a]"), src);
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+                errorPort_.format(UC("<~a>"), src.car().car());
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
                 errorPort_.format(UC("    ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
             }
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         }
         sp_--;
     }

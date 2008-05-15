@@ -79,6 +79,9 @@ int main(int argc, char *argv[])
     bool isTestOption = false;
     bool isCompileString = false;
 
+    printf("hige=%d\n", Object::False.isPair());
+    exit(-1);
+
     while ((opt = getopt(argc, argv, "htvVc")) != -1) {
         switch (opt) {
         case 'h':
@@ -119,7 +122,7 @@ int main(int argc, char *argv[])
     GC_INIT();
 #endif
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE);
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;

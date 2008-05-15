@@ -378,7 +378,7 @@ public:
     };
     enum ErrorHandlingMode
     {
-        IGNORE,
+        IGNORE_ERROR,
         RAISE,
         REPLACE,
     };

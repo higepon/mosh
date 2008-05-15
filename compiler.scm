@@ -1108,7 +1108,14 @@
   (define (operator-nargs->iform op tag)
     (let* ([args (cdr sexp)]
            [len (length args)])
-      (cond [(= 0 len) (error op " got too few argment")]
+      (cond [(= 0 len)
+             (case op
+               [(+)
+                (sexp->iform 0)]
+               [(*)
+                (sexp->iform 1)]
+               [else
+                (error op " got too few argment")])]
             [(= 1 len) (if (eq? op '-) (sexp->iform (* -1 (car args))) (sexp->iform (car args)))]
             [(= 2 len)
              ($asm tag (list (sexp->iform (first args)) (sexp->iform (second args))))]
