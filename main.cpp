@@ -79,9 +79,6 @@ int main(int argc, char *argv[])
     bool isTestOption = false;
     bool isCompileString = false;
 
-    printf("hige=%d\n", Object::False.isPair());
-    exit(-1);
-
     while ((opt = getopt(argc, argv, "htvVc")) != -1) {
         switch (opt) {
         case 'h':
