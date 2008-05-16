@@ -134,6 +134,13 @@ protected:
 
     Object splitId(Object id);
 
+// (define (stack->pair-args stack sp num-args)
+//   (let loop ([n (- num-args 1)])
+//     (if (>= n 0)
+//         (cons (index stack sp n) (loop (- n 1)) )
+//         '())))
+
+
     Object stackToPairArgs(Object* sp, int nArgs)
     {
         Object args = Object::Nil;
@@ -186,9 +193,10 @@ protected:
         return *(sp - n - 1);
     }
 
+    // あとで
     Object referLocal(int n)
     {
-        return index(fp_, n);
+        return index(fp_ + n + 1, 0);
     }
 
     Object referFree(Object n)

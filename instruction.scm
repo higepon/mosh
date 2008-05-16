@@ -45,7 +45,7 @@
 (define-insn PAIR_P 0)
 (define-insn READ 0)
 (define-insn READ_CHAR 0)
-(define-insn REDUCE 0)
+(define-insn REDUCE 1)
 (define-insn REFER_FREE 1)
 (define-insn REFER_GLOBAL 1)
 (define-insn REFER_LOCAL 1)

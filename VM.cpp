@@ -399,11 +399,11 @@ Object VM::run(Object* code, bool returnTable /* = false */)
                         Object* const sp = unShiftArgs(sp_, 1);
                         indexSet(sp, 0, Object::Nil);
                         sp_ = sp;
-                        fp_ = sp;
+                        fp_ = sp - requiredLength;
                     } else if (extraLength >= 0) {
                         indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
                         Object* const sp = sp_ - extraLength;
-                        fp_ = sp;
+                        fp_ = sp - requiredLength;
                         sp_ = sp;
                     } else {
                         RAISE2("wrong number of arguments for #<closure> (required ~d, got ~d)"
@@ -411,7 +411,7 @@ Object VM::run(Object* code, bool returnTable /* = false */)
                                , operand);
                     }
                 } else if (requiredLength == argLength) {
-                    fp_ = sp_;
+                    fp_ = sp_ - argLength;
                 } else {
                     RAISE2("wrong number of arguments for #<closure> (required ~d, got ~d)"
                            , Object::makeInt(requiredLength)
@@ -512,7 +512,9 @@ Object VM::run(Object* code, bool returnTable /* = false */)
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
             TRACE_INSN1("ASSIGN_LOCAL", "(~d)\n", n);
-            index(fp_, n.toInt()).toBox()->set(ac_);
+//            index(fp_, n.toInt()).toBox()->set(ac_);
+            referLocal(n.toInt()).toBox()->set(ac_);
+//            index(fp_ + , n.toInt()).toBox()->set(ac_);
             NEXT;
         }
         CASE(BOX)
@@ -670,7 +672,7 @@ Object VM::run(Object* code, bool returnTable /* = false */)
         {
             TRACE_INSN0("ENTER");
             const Object n = fetchOperand(); // not used
-            fp_ = sp_;
+            fp_ = sp_ - n.toInt();
             NEXT;
         }
         CASE(PUSH_ENTER)
@@ -678,7 +680,7 @@ Object VM::run(Object* code, bool returnTable /* = false */)
             push(ac_);
             TRACE_INSN0("ENTER");
             const Object n = fetchOperand(); // not used
-            fp_ = sp_;
+            fp_ = sp_ - n.toInt();
             NEXT;
         }
         CASE(EQ)
@@ -963,7 +965,8 @@ Object VM::run(Object* code, bool returnTable /* = false */)
         CASE(REDUCE)
         {
             TRACE_INSN0("REDUCE");
-            sp_ = fp_;
+            const Object n = fetchOperand();
+            sp_ = fp_ + n.toInt();;
             NEXT;
         }
         CASE(REFER_FREE)
