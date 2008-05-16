@@ -732,6 +732,8 @@
                         (index stack sp 3)                 ;; c
                         stack
                         (- sp 4)))))])
+  (define (refer-local n)
+    (index stack fp n))
   (define (apply-body a args-num sp)
     (cond [(procedurep a)
            (check-vm-paranoia (number? args-num))
@@ -913,22 +915,22 @@
                ;;---------------------------- REFER_LOCAL ----------------------
                [(REFER_LOCAL)
                 (check-vm-paranoia (number? (next 1)))
-                (VM codes (skip 1) (index stack fp (next 1)) fp c stack sp)]
+                (VM codes (skip 1) (refer-local (next 1)) fp c stack sp)]
                ;;---------------------------- REFER_LOCAL0 ----------------------
                [(REFER_LOCAL0)
-                (VM codes (skip 0) (index stack fp 0) fp c stack sp)]
+                (VM codes (skip 0) (refer-local 0) fp c stack sp)]
                [(REFER_LOCAL1)
-                (VM codes (skip 0) (index stack fp 1) fp c stack sp)]
+                (VM codes (skip 0) (refer-local 1) fp c stack sp)]
                [(REFER_LOCAL2)
-                (VM codes (skip 0) (index stack fp 2) fp c stack sp)]
+                (VM codes (skip 0) (refer-local 2) fp c stack sp)]
                [(REFER_LOCAL3)
-                (VM codes (skip 0) (index stack fp 3) fp c stack sp)]
+                (VM codes (skip 0) (refer-local 3) fp c stack sp)]
                [(REFER_LOCAL0_EQV_TEST)
-                (if (eqv? (index stack sp 0) (index stack fp 0))
+                (if (eqv? (index stack sp 0) (refer-local 0))
                     (VM codes (skip 1) a fp c stack (- sp 1))
                     (VM codes (skip (next 1)) a fp c stack (- sp 1)))]
                 [(REFER_LOCAL0_PUSH)
-                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
+                 (VM codes (skip 0) a fp c stack (push stack sp (refer-local 0)))]
 
 ;;                 [(REFER_LOCAL0_PUSH_DISPLAY)
 ;;                  (let1 sp (push stack sp (index stack fp 0))
@@ -941,19 +943,19 @@
 ;;                 (VM codes (skip 0) (index stack fp 2) fp c stack sp)]
 ;;                ;;---------------------------- REFER_LOCAL_PUSH -----------------
                [(REFER_LOCAL_PUSH)
-                (VM codes (skip 1) a fp c stack (push stack sp (index stack fp (next 1))))]
+                (VM codes (skip 1) a fp c stack (push stack sp (refer-local (next 1))))]
 ;;                ;;---------------------------- REFER_LOCAL0_PUSH ----------------
 ;;                [(REFER_LOCAL0_PUSH)
 ;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
                [(REFER_LOCAL0_PUSH_CONSTANT)
-                (VM codes (skip 1) (next 1) fp c stack (push stack sp (index stack fp 0)))]
+                (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 0)))]
                [(REFER_LOCAL1_PUSH_CONSTANT)
-                (VM codes (skip 1) (next 1) fp c stack (push stack sp (index stack fp 1)))]
+                (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 1)))]
 ;;                ;;---------------------------- REFER_LOCAL1_PUSH ----------------
                [(REFER_LOCAL1_PUSH)
-                (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 1)))]
+                (VM codes (skip 0) a fp c stack (push stack sp (refer-local 1)))]
                [(REFER_LOCAL2_PUSH)
-                (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 2)))]
+                (VM codes (skip 0) a fp c stack (push stack sp (refer-local 2)))]
 
 ;;                ;;---------------------------- REFER_LOCAL2_PUSH ----------------
 ;;                [(REFER_LOCAL2_PUSH)
@@ -1156,7 +1158,7 @@
 
                ;;---------------------------- ASSIGN_BIND  -----------------------
                [(ASSIGN_LOCAL)
-                (set-box! (index stack fp (next 1)) a)
+                (set-box! (refer-local (next 1)) a)
                 (VM codes (skip 1) a fp c stack sp)]
                ;;---------------------------- ASSIGN_FREE  -----------------------
                [(ASSIGN_FREE)
@@ -1199,7 +1201,7 @@
                [(NUMBER_SUB)   (apply-native-2arg -)]
                [(NUMBER_SUB_PUSH) (apply-native-2arg-push -)]
                [(NUMBER_ADD_PUSH) (apply-native-2arg-push +)]
-               [(REFER_LOCAL0_NUMBER_ADD_PUSH) (apply-native-2arg-push-a + (index stack fp 0))]
+               [(REFER_LOCAL0_NUMBER_ADD_PUSH) (apply-native-2arg-push-a + (refer-local 0))]
                [(NUMBER_MUL)   (apply-native-2arg *)]
                ;;---------------------------- Pair  ------------------------------
                [(PAIR_P)  (apply-native-1arg pair?)]
