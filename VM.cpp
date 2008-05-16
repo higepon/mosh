@@ -722,9 +722,9 @@ Object VM::run(Object* code, bool returnTable /* = false */)
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
             push(cl_);
-            push(Object::makeObjectPointer(fp_));
             const int skipSize = n.toInt();
             push(Object::makeObjectPointer(pc_ + skipSize - 1));
+            push(Object::makeObjectPointer(fp_));
             NEXT;
         }
         CASE(IMPORT)
@@ -782,17 +782,17 @@ Object VM::run(Object* code, bool returnTable /* = false */)
 
             Object* const sp = sp_ - operand.toInt();
 
-            cl_ = index(sp, 0);
-            fp_ = index(sp, 1).toObjectPointer();
+            fp_ = index(sp, 0).toObjectPointer();
+            cl_ = index(sp, 1);
+
             sp_ = sp - 2;
             NEXT;
         }
         CASE(LET_FRAME)
         {
             TRACE_INSN0("LET_FRAME");
-            push(Object::makeObjectPointer(fp_));
             push(cl_);
-
+            push(Object::makeObjectPointer(fp_));
             NEXT;
         }
         CASE(LIBRARY)
@@ -1154,8 +1154,8 @@ Object VM::run(Object* code, bool returnTable /* = false */)
 
             TRACE_INSN1("RETURN", "(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
-            pc_ = index(sp, 0).toObjectPointer();
-            fp_ = index(sp, 1).toObjectPointer();
+            fp_ = index(sp, 0).toObjectPointer();
+            pc_ = index(sp, 1).toObjectPointer();
             cl_ = index(sp, 2);
             sp_ = sp - 3;
             NEXT;
