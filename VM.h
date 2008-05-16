@@ -94,7 +94,6 @@ public:
     TextualOutputPort& getErrorPort() { return errorPort_; }
 
     void showStackTrace(Object errorMessage);
-    void showErrorLocation(Object errorMessage);
 
     void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
 

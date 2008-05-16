@@ -1310,40 +1310,27 @@ Object VM::splitId(Object id)
 
 void VM::showStackTrace(Object errorMessage)
 {
-    showErrorLocation(errorMessage);
-    while (sp_ >= stack_) {
-        if ((*sp_).val
-            && !((word)labelStart_ <= (*sp_).val && (*sp_).val <= (word)labelEnd_)
-            && (*sp_).isClosure()) {
-            Object src = (*sp_).toClosure()->sourceInfo;
-            if (src.isPair()) {
-                errorPort_.format(UC("    ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
-            }
-        }
-        sp_--;
-    }
-}
-
-void VM::showErrorLocation(Object errorMessage)
-{
-    if (cl_.isClosure()) {
-        Object src = cl_.toClosure()->sourceInfo;
-        if (src.isPair()) {
-            errorPort_.format(UC("  Error:\n    ~a:~a: ~a ~a\n"), L4(src.car().car(), src.car().cdr(), errorMessage, src.cdr()));
-            return;
-        }
-    }
-    if (ac_.isPair()) {
-        Object src = ac_.toClosure()->sourceInfo;
-        if (src.isPair()) {
-            errorPort_.format(UC("  Error:\n~a:~a ~a ~a\n"), L4(src.car().car(), src.car().cdr(), errorMessage, src.cdr()));
-            return;
-        }
-    }
-
     errorPort_.format(UC("  Error:\n    ~a\n"), L1(errorMessage));
+    Object* fp = fp_;
+    Object* cl = &cl_;
+    for (;;) {
+        if (!cl->isClosure()) {
+            // this case is very rare and may be bug of VM.
+            fprintf(stderr, "fatal: stack corrupt!\n");
+            exit(-1);
+        }
+        Object src = cl->toClosure()->sourceInfo;
+        if (src.isPair()) {
+            errorPort_.format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
+        }
+        cl = fp - 3;
+        if (fp > stack_) {
+            fp = (fp - 1)->toObjectPointer();
+        } else {
+            break;
+        }
+    }
 }
-
 
 void VM::raise(const ucs4char* fmt, Object list)
 {

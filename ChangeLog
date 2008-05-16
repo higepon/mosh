@@ -1,3 +1,7 @@
+2008-05-17  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp : Changed call frame structure, SEGV with stack trace fixed.
+
 2008-05-15  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass1/sexp->iform): Fixed, (+) => 0, (*) => 1, thx leque.
