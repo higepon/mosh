@@ -621,12 +621,28 @@
           (print (format "    |~d: ~s" n (vector-ref stack n)))
           (loop (+ n 1))))))
 
+;; (define (stack->pair-args stack sp num-args)
+;;   (let loop ([n (- num-args 1)]
+;;              [args '()])
+;;     (if (>= n 0)
+;;         (begin 
+;;           (print "sp=" n " val=" (if (string? (index stack sp n)) (index stack sp n) 'a ))
+;;           (loop (- n 1) (cons (index stack sp n) args)))
+;;         args)))
+
 (define (stack->pair-args stack sp num-args)
-  (let loop ([n 0]
-             [args '()])
-    (if (< n num-args)
-        (loop (+ n 1) (cons (index stack sp n) args))
-        args)))
+  (let loop ([n (- num-args 1)])
+    (if (>= n 0)
+        (cons (index stack sp n) (loop (- n 1)) )
+        '())))
+
+
+;; (define (stack->pair-args stack sp num-args)
+;;   (let loop ([n 0]
+;;              [args '()])
+;;     (if (< n num-args)
+;;         (loop (+ n 1) (cons (index stack sp n) args))
+;;         args)))
 
 (define (shift-args-to-top stack sp depth diff)
 ;  (format #t "sp=~d depth=~d diff=~d\n" sp depth diff)
@@ -690,6 +706,8 @@
 ;;   (else
 ;;    'else))
 
+(define-macro (let-frame-size) 2)
+
 (define (VM codes pc a fp c stack sp)
   (letrec-syntax
       ([skip (syntax-rules ()
@@ -733,7 +751,10 @@
                         stack
                         (- sp 4)))))])
   (define (refer-local n)
-    (index stack fp n))
+;;     (let1 v (index stack (+ fp n 1) 0)
+;;       (print "REFER_LOCAL" n "=" (if (string? v) v 'none)))
+    (index stack (+ fp n 1) 0))
+;    (index stack fp n))
   (define (apply-body a args-num sp)
     (cond [(procedurep a)
            (check-vm-paranoia (number? args-num))
@@ -761,7 +782,7 @@
                                (VM (closure-body-code a)
                                    (closure-body-pc a)
                                    a
-                                   stack-pointer
+                                   (- stack-pointer required-length)
                                    a
                                    stack
                                    stack-pointer
@@ -775,7 +796,7 @@
                                (VM (closure-body-code a)
                                    (closure-body-pc a)
                                    a
-                                   stack-pointer
+                                   (- stack-pointer required-length)
                                    a
                                    stack
                                    stack-pointer
@@ -788,7 +809,7 @@
                            (VM (closure-body-code a)
                                (closure-body-pc a)
                                a
-                               sp
+                               (- sp arg-length)
                                a
                                stack
                                sp
@@ -874,17 +895,19 @@
                 (VM codes (skip 0) a fp c stack (push stack sp a))]
                ;;---------------------------- CONSTANT_PUSH ------------------
                [(CONSTANT_PUSH)
+;                (print "CONSTANT_PUSH:"  (next 1))
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (next 1)))]
                ;;---------------------------- CONSTANT_PUSH ------------------
                [(PUSH_CONSTANT)
+;                (print "PUSH_CONSTANT " (next 1))
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp a))]
                ;;---------------------------- ENTER ------------------------------
                [(ENTER)
-                (VM codes (skip 1) a sp c stack sp)]
+                (VM codes (skip 1) a (- sp (next 1)) c stack sp)]
                ;;---------------------------- ENTER ------------------------------
                [(PUSH_ENTER)
                 (let1 sp (push stack sp a)
-                  (VM codes (skip 1) a sp c stack sp))]
+                  (VM codes (skip 1) a (- sp (next 1)) c stack sp))]
                ;;---------------------------- LEAVE ------------------------------
                ;;
                ;;  Remove "let frame" from stack.
@@ -948,6 +971,7 @@
 ;;                [(REFER_LOCAL0_PUSH)
 ;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
                [(REFER_LOCAL0_PUSH_CONSTANT)
+;                (print "REFER_LOCAL0_PUSH_CONSTANT " (next 1))
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 0)))]
                [(REFER_LOCAL1_PUSH_CONSTANT)
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 1)))]
@@ -992,7 +1016,7 @@
                ;;---------------------------- REDUCE ---------------------------
                ;; reduce sp to fp
                [(REDUCE)
-                (VM codes (skip 0) a fp c stack fp)]
+                (VM codes (skip 1) a fp c stack (+ fp (next 1)))]
                ;;---------------------------- CALL ------------------------------
                [(CALL)
                 (apply-body a (next 1) sp)]
@@ -1417,6 +1441,7 @@
               (set! debug-vm-run-time  (+ debug-vm-run-time  (time-diff t2 tm2 t3 tm3))))))))
     (define (evaluate code)
       (let1 code-c ((if optimize? compile compile-no-optimize) code)
+;      (let1 code-c ((if optimize? compile compile-no-optimize) code)
 ;        (print "====> code-c=>" code-c)
         (set-closure-body-code! vm-outer-closure code-c)
         (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0))))

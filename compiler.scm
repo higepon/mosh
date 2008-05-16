@@ -157,6 +157,14 @@
         (cons (f (car l) i) (iter f (cdr l) (- i 1)))))
   (iter f l (- (length l) 1)))
 
+(define ($map1-with-index f l)
+  (define (iter f l i)
+    (if (null? l)
+        l
+        (cons (f (car l) i) (iter f (cdr l) (+ i 1)))))
+  (iter f l 0))
+
+
 (define ($reverse-append-map1 proc l)
   (let loop ([l l])
     (if (null? l)
@@ -169,6 +177,8 @@
     (if (null? l)
         '()
         (append (proc (car l) i) (loop (cdr l) (- i 1))))))
+
+
 
 (define ($append-map1-with-tail proc l)
   (apply append ($map1-with-tail proc l)))
@@ -2143,6 +2153,10 @@
 (define ($append-map1-with-rindex-sum proc lst)
   (fold (lambda (x y) (cons (+ (car y) (car x)) (append (cdr y) (cdr x)))) '(0 . ()) ($map1-with-rindex proc lst)))
 
+(define ($append-map1-with-index-sum proc lst)
+  (fold (lambda (x y) (cons (+ (car y) (car x)) (append (cdr y) (cdr x)))) '(0 . ()) ($map1-with-index proc lst)))
+
+
 (define-macro (code-stack-sum . code)
   `(+ ,@(map (lambda (x) `(car ,x)) code)))
 
@@ -2157,8 +2171,22 @@
                       (append (pass3/compile-refer x locals frees) '(PUSH)))
                     (reverse frees-here)))
 
+;; (define (pass3/symbol-lookup lvar locals frees return-local return-free)
+;;   (let next-local ([locals locals] [n (- (length locals) 1)])
+;;     (if (null? locals)
+;;         (let next-free ([free frees] [n 0])
+;;           (cond [(null? free)
+;;                  (error "pass3/symbol-lookup bug? Unknown lvar:" lvar)]
+;;                 [(eq? (car free) lvar)
+;;                  (return-free n)]
+;;                 [else
+;;                  (next-free (cdr free) (+ n 1))]))
+;;         (if (eq? (car locals) lvar)
+;;             (return-local n)
+;;             (next-local (cdr locals) (- n 1))))))
+
 (define (pass3/symbol-lookup lvar locals frees return-local return-free)
-  (let next-local ([locals locals] [n (- (length locals) 1)])
+  (let next-local ([locals locals] [n 0])
     (if (null? locals)
         (let next-free ([free frees] [n 0])
           (cond [(null? free)
@@ -2169,7 +2197,9 @@
                  (next-free (cdr free) (+ n 1))]))
         (if (eq? (car locals) lvar)
             (return-local n)
-            (next-local (cdr locals) (- n 1))))))
+            (next-local (cdr locals) (+ n 1))))))
+
+
 
 (define (pass3/compile-refer lvar locals frees)
   (pass3/symbol-lookup lvar locals frees
@@ -2433,7 +2463,7 @@
      (let ([argsc (pass3/compile-args ($call.args iform) locals frees can-frees sets #f)]
            [label ($lambda.body ($call.proc ($call.proc iform)))])
        `(,(code-stack argsc)
-         REDUCE
+         ,@(list 'REDUCE (length ($call.args iform)))
          ,@(code-body argsc)
          SHIFT
          ,(length ($call.args iform))
@@ -2599,11 +2629,11 @@
          [args ($let.inits iform)]
          [init-code ($append-map1 (lambda (x) '(UNDEF PUSH)) args)]
          ;; hoge
-         [assign-code ($append-map1-with-rindex-sum (lambda (x n)
-                                                      (append
-                                                       (pass3 x vars frees-here (set-union can-frees vars) (set-union sets-here (set-intersect sets frees-here)) #f)
-                                                       (list 'ASSIGN_LOCAL n)))
-                                                    args)]
+         [assign-code ($append-map1-with-index-sum (lambda (x n)
+                                                     (append
+                                                      (pass3 x vars frees-here (set-union can-frees vars) (set-union sets-here (set-intersect sets frees-here)) #f)
+                                                      (list 'ASSIGN_LOCAL n)))
+                                                   args)]
          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
 ;;          [assign-code (let loop ([args args]
 ;;                                  [n (- (length args) 1)]
