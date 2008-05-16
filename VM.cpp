@@ -721,9 +721,10 @@ Object VM::run(Object* code, bool returnTable /* = false */)
             const int m = n.toInt();
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
-            push(cl_);
+
             const int skipSize = n.toInt();
             push(Object::makeObjectPointer(pc_ + skipSize - 1));
+            push(cl_);
             push(Object::makeObjectPointer(fp_));
             NEXT;
         }
@@ -1155,8 +1156,8 @@ Object VM::run(Object* code, bool returnTable /* = false */)
             TRACE_INSN1("RETURN", "(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
             fp_ = index(sp, 0).toObjectPointer();
-            pc_ = index(sp, 1).toObjectPointer();
-            cl_ = index(sp, 2);
+            cl_ = index(sp, 1);
+            pc_ = index(sp, 2).toObjectPointer();
             sp_ = sp - 3;
             NEXT;
         }
@@ -1323,7 +1324,7 @@ void VM::showStackTrace(Object errorMessage)
         if (src.isPair()) {
             errorPort_.format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
         }
-        cl = fp - 3;
+        cl = fp - 2;
         if (fp > stack_) {
             fp = (fp - 1)->toObjectPointer();
         } else {
