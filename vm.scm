@@ -880,11 +880,11 @@
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp a))]
                ;;---------------------------- ENTER ------------------------------
                [(ENTER)
-                (VM codes (skip 0) a sp c stack sp)]
+                (VM codes (skip 1) a sp c stack sp)]
                ;;---------------------------- ENTER ------------------------------
                [(PUSH_ENTER)
                 (let1 sp (push stack sp a)
-                  (VM codes (skip 0) a sp c stack sp))]
+                  (VM codes (skip 1) a sp c stack sp))]
                ;;---------------------------- LEAVE ------------------------------
                ;;
                ;;  Remove "let frame" from stack.

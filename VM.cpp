@@ -669,6 +669,7 @@ Object VM::run(Object* code, bool returnTable /* = false */)
         CASE(ENTER)
         {
             TRACE_INSN0("ENTER");
+            const Object n = fetchOperand(); // not used
             fp_ = sp_;
             NEXT;
         }
@@ -676,6 +677,7 @@ Object VM::run(Object* code, bool returnTable /* = false */)
         {
             push(ac_);
             TRACE_INSN0("ENTER");
+            const Object n = fetchOperand(); // not used
             fp_ = sp_;
             NEXT;
         }

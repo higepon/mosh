@@ -2464,7 +2464,7 @@
          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
          ,@(code-body args-code)
          ,@boxes-code
-         ENTER
+         ,@(list 'ENTER (length ($call.args iform)))
          ,label
          ,@(code-body body-code)
          ,@(list 'LEAVE (length ($call.args iform)))))]
@@ -2573,7 +2573,7 @@
           ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
           ,@(code-body args-code)
           ,@boxes-code
-          ENTER
+          ,@(list 'ENTER (length vars))
           ,@(code-body body-code)
           ,@(list 'LEAVE (length vars))))))
 
@@ -2630,7 +2630,7 @@
       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
       ,@init-code
       ,@boxes-code
-      ENTER
+      ,@(list 'ENTER (length vars))
       ,@(code-body assign-code)
       ,@(code-body body-code)
       ,@(list 'LEAVE (length vars)))))
