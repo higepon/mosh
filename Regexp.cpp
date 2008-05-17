@@ -36,6 +36,13 @@ using namespace scheme;
 
 extern VM* theVM;
 
+#if WORDS_BIGENDIAN
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_BE
+#else
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_LE
+#endif
+
+
 Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern)
 {
     const ucs4char* p = pattern_.data();
@@ -43,7 +50,7 @@ Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern)
                      (const uint8_t*)p,
                      (const uint8_t*)(p + pattern_.size()),
                      (ONIG_OPTION_DEFAULT | caseFold ? ONIG_OPTION_IGNORECASE : 0),
-                     ONIG_ENCODING_UTF32_LE,
+                     ONIG_ENCODING,
                      ONIG_SYNTAX_RUBY,
                      &einfo_);
     if (r != ONIG_NORMAL)

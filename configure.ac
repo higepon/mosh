@@ -41,6 +41,7 @@ AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h sys/time.h utmp.h])
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_C_INLINE
+AC_C_BIGENDIAN
 AC_TYPE_INT8_T
 AC_TYPE_SIZE_T
 AC_HEADER_TIME

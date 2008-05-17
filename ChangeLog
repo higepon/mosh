@@ -1,5 +1,7 @@
 2008-05-17  higepon  <higepon@users.sourceforge.jp>
 
+        * Regexp.cpp: Fixed Regexp endian problem by masa_edw.
+
         * VM.cpp : Changed call frame structure, SEGV with stack trace fixed.
 
 2008-05-15  higepon  <higepon@users.sourceforge.jp>
