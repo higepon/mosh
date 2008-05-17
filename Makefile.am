@@ -42,7 +42,7 @@ freeproc.h           \
 Box.h                \
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O2 -fomit-frame-pointer $(mosh_OPTS) -g
+mosh_CFLAGS   = -O2 -fomit-frame-pointer $(mosh_OPTS)
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a
 

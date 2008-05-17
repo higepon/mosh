@@ -1311,10 +1311,11 @@ Object VM::splitId(Object id)
 
 void VM::showStackTrace(Object errorMessage)
 {
+    const int MAX_DEPTH = 20;
     errorPort_.format(UC("  Error:\n    ~a\n"), L1(errorMessage));
     Object* fp = fp_;
     Object* cl = &cl_;
-    for (;;) {
+    for (int i = 0;;) {
         if (!cl->isClosure()) {
             // this case is very rare and may be bug of VM.
             fprintf(stderr, "fatal: stack corrupt!\n");
@@ -1322,8 +1323,18 @@ void VM::showStackTrace(Object errorMessage)
         }
         Object src = cl->toClosure()->sourceInfo;
         if (src.isPair()) {
-            errorPort_.format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
+            if (src.car().isFalse()) {
+                errorPort_.format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
+            } else {
+                errorPort_.format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
+            }
+            i++;
         }
+        if (i > MAX_DEPTH) {
+            errorPort_.display(UC("      ... (more stack dump truncated)\n"));
+            break;
+        }
+
         cl = fp - 2;
         if (fp > stack_) {
             fp = (fp - 1)->toObjectPointer();

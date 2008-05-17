@@ -1,5 +1,7 @@
 2008-05-17  higepon  <higepon@users.sourceforge.jp>
 
+        * VM.cpp (VM::showStackTrace): Fixed SEGV with stack overflow.
+
         * Regexp.cpp: Fixed Regexp endian problem by masa_edw.
 
         * VM.cpp : Changed call frame structure, SEGV with stack trace fixed.
