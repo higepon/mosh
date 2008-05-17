@@ -137,6 +137,9 @@ Object regexpReplaceEx(Object args);
 Object regexpReplaceAllEx(Object args);
 Object errorfEx(Object args);
 Object evalEx(Object args);
+Object raiseEx(Object args);
+Object raiseContinuableEx(Object args);
+Object withExceptionHandlerEx(Object args);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

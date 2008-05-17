@@ -1214,6 +1214,39 @@
 (define-doc (when) ...)
 
 ; ==============================================================================================================================================================
+;;; Exceptions and conditionsI/O.
+;;; R6RS library Chapter 7.
+
+;; Raises a non-continuable exception by invoking the current exception handler on obj.
+;; .form (raise obj)
+(define-doc (raise) ...)
+
+;; Returns the results of invoking thunk. Handler is installed as the current exception handler for the dynamic extent (as determined by dynamic-wind) of the invocation of thunk.
+;; .pre-condition Handler must be a procedure and should accept one argument. Thunk must be a procedure that accepts zero arguments.
+;; .returns the results of invoking thunk.
+;; .form (with-exception-handler handler thunk)
+(define-doc (with-exception-handler) ...)
+
+;; <p>(guard ([variable]    syntax</p>
+;; <p>[cond clause1] [cond clause2] ...)</p>
+;; <p>[body])</p>
+;; <p>=>    auxiliary syntax</p>
+;; <p>else    auxiliary syntax</p>
+;; <p>Semantics: Evaluating a guard form evaluates [body] with an exception handler that binds the raised object to [variable] and within the scope of that binding evaluates the clauses as if they were the clauses of a cond expression. </p>
+;; <p>That implicit cond expression is evaluated with the continuation and dynamic environment of the guard expression. </p>
+;; <p>If every [cond clause]'s [test] evaluates to #f and there is no else clause, then raise is re-invoked on the raised object within the dynamic environment of the original call to raise except that the current exception handler is that of the guard expression.</p>
+;; .form (guard ([variable] [cond clause1] [cond clause2] ...)
+(define-doc (guard) ...)
+
+;; <p>Raises a continuable exception by invoking the current exception handler on obj.</p>
+;; <p>The handler is called with a continuation that is equivalent to the continuation of the call to raise-continuable, with these two exceptions:</p>
+;; <p>(1) the current exception handler is the one that was in place when the handler being called was installed, and (2) if the handler being called returns, then it will again become the current exception handler. </p>
+;;<p>If the handler returns, the values it returns become the values returned by the call to raise-continuable.</p>
+;; .form (raise-continuable obj)
+(define-doc (raise-continuable) ...)
+
+
+; ==============================================================================================================================================================
 ;;; I/O.
 ;;; R6RS library Chapter 8.
 
@@ -1947,14 +1980,4 @@
 ;; .example (format #f "apple is ~a" "sweet") => "apple is sweet"
 ;; .example (call-with-output-string (lambda (out) (format out "apple is ~a" "sweet"))) => "apple is sweet"
 (define-doc (format) ...)
-
-(define (REPL . x)
-  (define (rec)
-    (display "mosh>")
-    (print (eval (read (current-input-port)) '()))
-    (rec))
-  (rec))
-
-
-
 

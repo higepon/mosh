@@ -1239,3 +1239,29 @@ Object scheme::evalEx(Object args)
 
     return theVM->eval(args.first(), args.second());
 }
+
+Object scheme::raiseEx(Object args)
+{
+    theVM->raise(args.first());
+}
+
+Object scheme::raiseContinuableEx(Object args)
+{
+    return theVM->raiseContinuable(args.first());
+}
+
+
+Object scheme::withExceptionHandlerEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for with-exception-handler (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg1.isClosure() && arg2.isClosure()) {
+        return theVM->withExceptionHandler(arg1, arg2);
+    } else {
+        VM_RAISE2("wrong arguments for with-exception-handler required (closure, closure), got (~a ~a)\n", arg1, arg2);
+    }
+}

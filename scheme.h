@@ -47,6 +47,7 @@
 #include <map>
 #include <vector>
 #include "dirent.h"
+#include <setjmp.h>
 #include <sys/time.h>
 #ifdef USE_BOEHM_GC
 #define EXTEND_GC : public gc

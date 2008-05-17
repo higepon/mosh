@@ -37,13 +37,13 @@
 
 namespace scheme {
 
-#define RAISE1(fmt, a)    raise(UC(fmt), L1(a))
-#define RAISE2(fmt, a, b) raise(UC(fmt), L2(a, b))
-#define RAISE3(fmt, a, b, c) raise(UC(fmt), L3(a, b, c))
+#define RAISE1(fmt, a)    raiseFormat(UC(fmt), L1(a))
+#define RAISE2(fmt, a, b) raiseFormat(UC(fmt), L2(a, b))
+#define RAISE3(fmt, a, b, c) raiseFormat(UC(fmt), L3(a, b, c))
 
-#define VM_RAISE1(fmt, a)  { if (theVM != NULL) {theVM->raise(UC(fmt), L1(a));} }
-#define VM_RAISE2(fmt, a, b)  { if (theVM != NULL) {theVM->raise(UC(fmt), L2(a, b));} }
-#define VM_RAISE3(fmt, a, b, c)  { if (theVM != NULL) {theVM->raise(UC(fmt), L3(a, b, c));} }
+#define VM_RAISE1(fmt, a)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L1(a));} }
+#define VM_RAISE2(fmt, a, b)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L2(a, b));} }
+#define VM_RAISE3(fmt, a, b, c)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L3(a, b, c));} }
 
 #define LOG1(fmt, a)       errorPort_.format(UC(fmt), L1(a))
 #define LOG2(fmt, a, b)    errorPort_.format(UC(fmt), L2(a, b))
@@ -76,24 +76,34 @@ public:
 
     void importTopLevel();
 
-    Object run(Object* code, bool returnTable = false);
+    void copyJmpBuf(jmp_buf dst, jmp_buf src)
+    {
+        memcpy(dst, src, sizeof(jmp_buf));
+    }
+
+    Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
     Object evaluate(Object codeVector);
     Object eval(Object o, Object env);
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure(Object closure, Object o);
+    Object callClosure0(Object closure);
     Object applyClosure(Object closure, Object args);
     Object apply(Object proc, Object args);
     void load(const ucs4string& file);
     void loadFile(const ucs4string& file);
+    Object withExceptionHandler(Object handler, Object thunk);
+    void defaultExceptionHandler(Object error);
 
     void initLibraryTable();
-    void raise(const ucs4char* fmt, Object list);
+    void raiseFormat(const ucs4char* fmt, Object list);
+    void raise(Object o);
+    Object raiseContinuable(Object o);
     TextualOutputPort& getOutputPort() { return outputPort_; }
     TextualOutputPort& getErrorPort() { return errorPort_; }
 
-    void showStackTrace(Object errorMessage);
+    void showStackTrace();
 
     void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
 
@@ -230,7 +240,7 @@ protected:
     {
 #ifdef USE_DIRECT_THREADED_CODE
         Object* direct = new(GC) Object[length];
-        void** table = (void**)run(NULL, true).val;
+        void** table = (void**)run(NULL, NULL, true).val;
         for (int i = 0; i < length; i++) {
             // Direct threaded code
             // Be careful on using direct threaded code for following case.
@@ -297,6 +307,9 @@ protected:
     Object stdinPort_;
     void* labelStart_;
     void* labelEnd_;
+    Object errorObj_;
+    Object errorHandler_;
+    jmp_buf returnPoint_;
 };
 
 }; // namespace scheme

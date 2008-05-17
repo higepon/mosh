@@ -43,6 +43,8 @@
     [('lib expect . test)
      (print '(init-library-table))
      (rec expect test)]
+    [('mosh-only expect . test)
+     (rec expect test)]
     [(expect . test)
      (rec expect test)]))
 

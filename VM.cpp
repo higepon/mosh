@@ -37,18 +37,20 @@
 
 using namespace scheme;
 
-#define SAVE_REGISTERS()       \
-    const Object ac = ac_;     \
-    const Object cl = cl_;     \
-    Object* const pc = pc_;    \
-    Object* const fp = fp_;    \
+#define SAVE_REGISTERS()                       \
+    const Object ac = ac_;                     \
+    const Object cl = cl_;                     \
+    const Object errorHandler = errorHandler_; \
+    Object* const pc = pc_;                    \
+    Object* const fp = fp_;                    \
     Object* const sp = sp_;
 
-#define RESTORE_REGISTERS() \
-    ac_ = ac;               \
-    cl_ = cl;               \
-    fp_ = fp;               \
-    pc_ = pc;               \
+#define RESTORE_REGISTERS()       \
+    ac_ = ac;                     \
+    cl_ = cl;                     \
+    errorHandler_ = errorHandler; \
+    fp_ = fp;                     \
+    pc_ = pc;                     \
     sp_ = sp;
 
 VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort) :
@@ -59,7 +61,8 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     outputPort_(outport),
     errorPort_(errorPort),
     inputPort_(inputPort),
-    stdinPort_(Object::makeBinaryInputPort(stdin))
+    stdinPort_(Object::makeBinaryInputPort(stdin)),
+    errorObj_(Object::Nil)
 {
 #ifdef USE_BOEHM_GC
     stack_ = new (GC)Object[stackSize];
@@ -76,13 +79,56 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
 
 VM::~VM() {}
 
+Object VM::raiseContinuable(Object o)
+{
+    return callClosure(errorHandler_, o);
+}
+
+
+Object VM::withExceptionHandler(Object handler, Object thunk)
+{
+    SAVE_REGISTERS();
+    errorHandler_ = handler;
+    jmp_buf org;
+    Object ret;
+    copyJmpBuf(org, returnPoint_);
+    if (setjmp(returnPoint_) != 0) {
+        copyJmpBuf(returnPoint_, org);
+        if (handler.isNil()) {
+            defaultExceptionHandler(errorObj_);
+        } else {
+            ret = callClosure(handler, errorObj_);
+        }
+    } else {
+        ret = callClosure0(thunk);
+        copyJmpBuf(returnPoint_, org);
+    }
+    RESTORE_REGISTERS();
+    return ret;
+}
+
+void VM::defaultExceptionHandler(Object error)
+{
+    errorPort_.format(UC("  Error:\n    ~a\n"), L1(error));
+    showStackTrace();
+}
+
 void VM::loadFile(const ucs4string& file)
 {
-    const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
-    TextualInputPort* p = port.toTextualInputPort();
-    for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
-        const Object compiled = compile(o);
-        evaluate(compiled);
+    jmp_buf org;
+    copyJmpBuf(org, returnPoint_);
+    if (setjmp(returnPoint_) != 0) {
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
+    } else {
+        const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
+        TextualInputPort* p = port.toTextualInputPort();
+        for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
+            const Object compiled = compile(o);
+            evaluate(compiled);
+        }
+        copyJmpBuf(returnPoint_, org);
     }
 }
 
@@ -120,8 +166,6 @@ void VM::initLibraryTable()
     const Object toplevel = Symbol::intern(UC("top level "));
     libraries_.toEqHashTable()->eraseAllExcept(toplevel);
     instances_.toEqHashTable()->eraseAllExcept(toplevel);
-//     nameSpace_.toEqHashTable()->eraseAllExcept(toplevel);
-//     evaluate(getCompiler());
 }
 
 Object VM::evaluate(Object codeVector)
@@ -144,8 +188,29 @@ Object VM::evaluate(Object* code, int codeSize)
     fp_ = 0;
 
     Object* const direct = getDirectThreadedCode(code, codeSize);
-    return run(direct);
+    return run(direct, NULL);
 }
+
+Object VM::callClosure0(Object closure)
+{
+    static Object applyCode[] = {
+        Object::makeRaw(Instruction::FRAME),
+        Object::makeInt(5),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::CALL),
+        Object::makeInt(0),
+        Object::makeRaw(Instruction::HALT),
+    };
+
+    applyCode[3] = closure;
+
+    SAVE_REGISTERS();
+    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+    RESTORE_REGISTERS();
+    return ret;
+}
+
 
 // accept one argument.
 Object VM::callClosure(Object closure, Object arg)
@@ -252,7 +317,7 @@ Object VM::apply(Object proc, Object args)
     closure.toClosure()->pc = code;
     SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(code, length);
-    const Object ret = run(direct);
+    const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
     return ret;
 }
@@ -299,7 +364,7 @@ Object VM::compile(Object code)
 #define INSTRUCTION(insn) Instruction:: ## insn
 #endif
 
-Object VM::run(Object* code, bool returnTable /* = false */)
+Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */)
 {
 #ifdef DUMP_ALL_INSTRUCTIONS
     uint8_t logBuf[2];
@@ -1309,10 +1374,10 @@ Object VM::splitId(Object id)
 }
 
 
-void VM::showStackTrace(Object errorMessage)
+void VM::showStackTrace()
 {
     const int MAX_DEPTH = 20;
-    errorPort_.format(UC("  Error:\n    ~a\n"), L1(errorMessage));
+//    errorPort_.format(UC("  Error:\n    ~a\n"), L1(errorMessage));
     Object* fp = fp_;
     Object* cl = &cl_;
     for (int i = 0;;) {
@@ -1344,10 +1409,14 @@ void VM::showStackTrace(Object errorMessage)
     }
 }
 
-void VM::raise(const ucs4char* fmt, Object list)
+void VM::raise(Object o)
 {
-    Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
-    errorPort_.format(UC("~a"), errorMessage);
-    showStackTrace(errorMessage);
-    exit(-1);
+    errorObj_ = o;
+    longjmp(returnPoint_, -1);
+}
+
+void VM::raiseFormat(const ucs4char* fmt, Object list)
+{
+    const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
+    raise(errorMessage);
 }

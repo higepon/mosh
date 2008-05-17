@@ -42,12 +42,12 @@ freeproc.h           \
 Box.h                \
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O2 -fomit-frame-pointer $(mosh_OPTS)
+mosh_CFLAGS   = -O2 -fomit-frame-pointer $(mosh_OPTS) -g
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a
 
 datadir = @MOSH_LIB_PATH@
-data_DATA = macro.scm all-tests.scm
+data_DATA = macro.scm all-tests.scm repl.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
 noinst_LIBRARIES = libcompiler.a

@@ -1552,6 +1552,8 @@
                              (#t (test* (car lst) (if (eq? (second obj) 'error) *test-error* '()) (raise e))))
                             (evaluate (car lst)))
                      (loop2 (cdr lst))]))]
+                [(eq? 'mosh-only(first obj))
+                     (loop1 (read))]
                 [else
                  (let loop2 ([lst (cdr obj)])
                    (cond

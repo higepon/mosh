@@ -98,5 +98,8 @@
     (source-info ,(lambda (x) #f))
     (errorf ,errorf)
     (eval ,(lambda a (error "eval not supported")))
+    (raise ,(lambda (a) (error a)))
+    (raise-continuable ,(lambda (a) (error a)))
+    (with-exception-handler ,(lambda x (error "with-exception-handler not implemented")))
     ))
 

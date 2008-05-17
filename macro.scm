@@ -10,3 +10,13 @@
            (if ,sym
                (let ((it ,sym)) ,@(cdr cl1))
                (acond ,@(cdr clauses)))))))
+
+; todo check malformed guard
+(define-macro (guard x . body)
+  `(with-exception-handler
+    (lambda (,(car x))
+      (cond ,@(cdr x)
+            (else (raise ,(car x)))))
+    (lambda ()
+      ,@body)))
+

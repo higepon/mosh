@@ -1,5 +1,17 @@
 2008-05-17  higepon  <higepon@users.sourceforge.jp>
 
+        * freeproc.cpp (scheme::raiseContinuableEx): Added (raise-continuable ...).
+
+        * scripts/gen-test.scm (print-test): Added mosh-only syntax, it is used for tests only for mosh.
+
+        * macro.scm (guard): Added guard macro and document.
+
+        * VM.cpp (VM::withExceptionHandler): Added with-exception-handler and document.
+
+        * library.scm (raise): Added (raise ...) document.
+
+        * Added (raise obj) procedure.
+
         * VM.cpp (VM::showStackTrace): Fixed SEGV with stack overflow.
 
         * Regexp.cpp: Fixed Regexp endian problem by masa_edw.
@@ -25,4 +37,3 @@
 2008-05-13  higepon  <higepon@users.sourceforge.jp>
 
         * 0.0.1 released.
-

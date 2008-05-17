@@ -134,7 +134,8 @@ int main(int argc, char *argv[])
     theVM->evaluate(compiler);
 
     if (isRepl) {
-        theVM->callClosureByName(Symbol::intern(UC("REPL")), Object::Nil);
+        theVM->load(UC("macro.scm"));
+        theVM->load(UC("repl.scm"));
     } else if (isTestOption) {
         theVM->load(UC("macro.scm"));
         theVM->load(UC("all-tests.scm"));

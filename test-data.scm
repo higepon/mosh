@@ -747,6 +747,54 @@ val
 (3 (digit->integer #\3 10))
 (0 (+))
 (1 (*))
+
+;; Exceptions
+[mosh-only "no-error"
+  (with-exception-handler
+    (lambda (e)
+      "error")
+    (lambda () "no-error"))]
+[mosh-only "error"
+  (with-exception-handler
+    (lambda (e)
+      e)
+    (lambda () (raise "error") 5))]
+[mosh-only "error-is-string"
+  (guard (con
+          [(string? con)
+           "error-is-string"]
+          [else
+           "error-is-not-string"])
+         (raise "raise"))]
+[mosh-only 3
+  (guard (con
+          [(string? con)
+           "error-is-string"]
+          [else
+           "error-is-not-string"])
+         3)]
+[mosh-only "catched at parent"
+ (guard (e
+         [(symbol? e)
+          "catched at parent"]
+         [else
+          "error"])
+   (guard (con
+           [(string? con)
+            "error-is-string"]) ;; no else clause
+          (raise 'symbol-error)))]
+[mosh-only 7
+  (guard (con
+          [con
+           4]
+          [else
+           "error-is-not-string"])
+         (+ 3 (raise-continuable "warn continuation")))]
+
+
+
+
+
 ;; (10 (digit->integer #\A 16))
 ;; ;(error (cdr 3))
 ;; (#f (digit->integer #\Z 16))
