@@ -1184,10 +1184,10 @@
 ;; .example (assoc (list 'a) '(((a)) ((b)) ((c)))) => ((a))
 (define (assoc obj alist) (generic-assoc equal? obj alist))
 
-(define (for-all proc l . more)
-  (or (null? l)
-      (and (apply proc (car l) (map car more))
-           (apply for-all proc (cdr l) (map cdr more)))))
+;; (define (for-all proc l . more)
+;;   (or (null? l)
+;;       (and (apply proc (car l) (map car more))
+;;            (apply for-all proc (cdr l) (map cdr more)))))
 
 
 ; ==============================================================================================================================================================
