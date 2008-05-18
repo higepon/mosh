@@ -369,3 +369,15 @@ Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transco
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
                                                         reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
 }
+
+Object Object::makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TypedVectorDesc,
+                                                        reinterpret_cast<word>(new TypedVectorDesc(name, supertype, data, fieldMutability)))));
+}
+
+Object Object::makeTypedVector(Object desc, Object fieldsList)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TypedVector,
+                                                        reinterpret_cast<word>(new TypedVector(desc, fieldsList)))));
+}

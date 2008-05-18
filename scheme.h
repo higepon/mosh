@@ -122,6 +122,8 @@ public:
         BinaryOutputPort  = Type<16>::VALUE,
         Codec             = Type<17>::VALUE,
         Transcoder        = Type<18>::VALUE,
+        TypedVectorDesc   = Type<20>::VALUE,
+        TypedVector       = Type<21>::VALUE,
         forbidden_comma
     };
 };
@@ -146,6 +148,8 @@ class BinaryInputPort;
 class BinaryOutputPort;
 class Transcoder;
 class Codec;
+class TypedVectorDesc;
+class TypedVector;
 
 class Object
 {
@@ -370,6 +374,8 @@ public:
     static Object makeValues(Object values);
     static Object makeUTF8Codec();
     static Object makeTranscoder(Codec* codec);
+    static Object makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability);
+    static Object makeTypedVector(Object desc, Object fieldsList);
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
@@ -408,54 +414,10 @@ DECL_ACCESSOR(BinaryInputPort)
 DECL_ACCESSOR(BinaryOutputPort)
 DECL_ACCESSOR(Codec)
 DECL_ACCESSOR(Transcoder)
+DECL_ACCESSOR(TypedVector)
+DECL_ACCESSOR(TypedVectorDesc)
 
-
-//     Vector* toVector() const;
-//     bool isVector() const;
-
-//     ByteVector* toByteVector() const;
-//     bool isByteVector() const;
-
-//     Regexp* toRegexp() const;
-//     bool isRegexp() const;
-
-//     RegMatch* toRegMatch() const;
-//     bool isRegMatch() const;
-
-//     Values* toValues() const;
-//     bool isValues() const;
-
-//     String* toString() const;
-//     bool isString() const;
-
-//     bool isSymbol() const;
-//     bool isBox() const;
-//     bool isStack() const;
-//     bool isInputFilePort() const;
-//     bool isEqHashTable() const;
-//     bool isClosure() const;
-//     bool isCProcedure() const;
-//     bool isTextualInputPort() const;
-//     bool isTextualOutputPort() const;
-//     bool isBinaryInputPort() const;
-//     bool isCodec() const;
-//     bool isTranscoder() const;
-
-
-
-//     InputFilePort* toInputFilePort() const;
-//     Closure* toClosure() const;
-//     EqHashTable* toEqHashTable() const;
-//     CProcedure* toCProcedure() const;
-//     Symbol* toSymbol() const;
-//     Stack* toStack() const;
-//     Box* toBox() const;
-//     TextualInputPort* toTextualInputPort() const;
-//     TextualOutputPort* toTextualOutputPort() const;
-//     BinaryInputPort* toBinaryInputPort() const;
-//     Codec* toCodec() const;
-//     Transcoder* toTranscoder() const;
-     Object* toObjectPointer() const { return reinterpret_cast<Object*>(val); }
+Object* toObjectPointer() const { return reinterpret_cast<Object*>(val); }
 
     bool isPointer() const
     {
@@ -483,7 +445,6 @@ private:
     {
         return (static_cast<word>(val)) & 0x03;
     }
-
 
 
 public:
@@ -533,5 +494,5 @@ namespace scheme {
 #include "Regexp.h"
 #include "Values.h"
 #include "freeproc.h"
-
+#include "TypedVector.h"
 #endif // __SCHEME_SCHEME_H__

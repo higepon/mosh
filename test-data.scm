@@ -790,11 +790,57 @@ val
           [else
            "error-is-not-string"])
          (+ 3 (raise-continuable "warn continuation")))]
-
-
-
-
-
+[mosh-only #t
+  (vector-type?
+   (make-vector-type 'test
+                     #f
+                     '()
+                     '(#f #f)
+                     #f))]
+[mosh-only 1234
+  (vector-type-data
+   (make-vector-type 'test
+                     #f
+                     1234
+                     '(#f #f)
+                     #f))]
+[mosh-only #t
+  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+         [constructor (typed-vector-constructor vt)]
+         [pred?       (vector-type-predicate vt)])
+    (pred? (constructor 3 4)))]
+[mosh-only #t
+  (let* ([parent (make-vector-type 'test-parent #f #f '(#f #f) #f)]
+         [vt (make-vector-type 'test parent #f '(#f #f) #f)]
+         [constructor (typed-vector-constructor vt)]
+         [pred?       (vector-type-predicate parent)])
+    (pred? (constructor 3 4)))]
+[mosh-only 12
+  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+         [get-0 (typed-vector-accessor vt 0)]
+         [get-1 (typed-vector-accessor vt 1)]
+         [constructor (typed-vector-constructor vt)]
+         [v (constructor 3 9)])
+    (+ (get-0 v) (get-1 v)))]
+[mosh-only 16
+  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+         [get-0 (typed-vector-accessor vt 0)]
+         [get-1 (typed-vector-accessor vt 1)]
+         [set-0 (typed-vector-mutator vt 0)]
+         [constructor (typed-vector-constructor vt)]
+         [v (constructor 3 9)])
+    (set-0 v 7)
+    (+ (get-0 v) (get-1 v)))]
+[mosh-only #t
+  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+         [constructor (typed-vector-constructor vt)]
+         [v (constructor 3 9)])
+    (typed-vector? v))]
+[mosh-only #t
+  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+         [constructor (typed-vector-constructor vt)]
+         [v (constructor 3 9)])
+    (eq? vt (typed-vector-type v)))]
 ;; (10 (digit->integer #\A 16))
 ;; ;(error (cdr 3))
 ;; (#f (digit->integer #\Z 16))

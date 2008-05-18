@@ -110,7 +110,6 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
 void VM::defaultExceptionHandler(Object error)
 {
     errorPort_.format(UC("  Error:\n    ~a\n"), L1(error));
-    showStackTrace();
 }
 
 void VM::loadFile(const ucs4string& file)
@@ -375,8 +374,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #include "labels.cpp"
 
     if (returnTable) {
-        labelStart_ = &&LABEL_HALT;
-        labelEnd_ = &&LABEL_DEFAULT;
         return Object::makeRaw(dispatch_table);
     }
 #endif
@@ -1374,10 +1371,11 @@ Object VM::splitId(Object id)
 }
 
 
-void VM::showStackTrace()
+Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;
-//    errorPort_.format(UC("  Error:\n    ~a\n"), L1(errorMessage));
+    Object sport = Object::makeStringOutputPort();
+    TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &cl_;
     for (int i = 0;;) {
@@ -1389,14 +1387,14 @@ void VM::showStackTrace()
         Object src = cl->toClosure()->sourceInfo;
         if (src.isPair()) {
             if (src.car().isFalse()) {
-                errorPort_.format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
+                port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
             } else {
-                errorPort_.format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
+                port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
             }
             i++;
         }
         if (i > MAX_DEPTH) {
-            errorPort_.display(UC("      ... (more stack dump truncated)\n"));
+            port->display(UC("      ... (more stack dump truncated)\n"));
             break;
         }
 
@@ -1407,6 +1405,7 @@ void VM::showStackTrace()
             break;
         }
     }
+    return sysGetOutputStringEx(L1(sport));
 }
 
 void VM::raise(Object o)
@@ -1418,5 +1417,5 @@ void VM::raise(Object o)
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
     const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
-    raise(errorMessage);
+    raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), getStackTrace())));
 }

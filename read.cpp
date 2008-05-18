@@ -986,7 +986,6 @@ static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
 
 #ifdef MONA_SCHEME
 
-    extern VM* theVM;
     if (r.isPair() && line >= 0) {
 //        VM_LOG2("r=~a ~a\n", r, r.toPair()->sourceInfo);
         r = Object::cons(r.car(), r.cdr(), Object::cons(Object::makeString(port->toString()), Object::makeInt(line)));

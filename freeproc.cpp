@@ -1243,6 +1243,7 @@ Object scheme::evalEx(Object args)
 Object scheme::raiseEx(Object args)
 {
     theVM->raise(args.first());
+    return Object::Undef;
 }
 
 Object scheme::raiseContinuableEx(Object args)
@@ -1264,4 +1265,121 @@ Object scheme::withExceptionHandlerEx(Object args)
     } else {
         VM_RAISE2("wrong arguments for with-exception-handler required (closure, closure), got (~a ~a)\n", arg1, arg2);
     }
+    return Object::Undef;
+}
+
+Object scheme::makeVectorTypeEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 5) {
+        VM_RAISE1("wrong number of arguments for make-vector-type (required 5, got ~d)\n", Object::makeInt(length));
+    }
+    const Object name = args.first();
+    const Object supertype = args.second();
+    const Object data = args.third();
+    const Object fieldMutability = args.fourth();
+
+    if (name.isSymbol() && (supertype.isFalse() || supertype.isTypedVectorDesc()) && fieldMutability.isPair()) {
+        return Object::makeTypedVectorDesc(name, supertype, data, fieldMutability);
+    } else {
+        VM_RAISE0("wrong arguments for make-vector-type");
+        return Object::Undef;
+    }
+}
+
+Object scheme::vectorTypePEx(Object args)
+{
+    return Object::makeBool(args.first().isTypedVectorDesc());
+}
+
+Object scheme::vectorTypeDataEx(Object args)
+{
+    const Object vt = args.first();
+    if (vt.isTypedVectorDesc()) {
+        return vt.toTypedVectorDesc()->data;
+    } else {
+        VM_RAISE1("wrong argument for vector-type-data required vector-type, got ~a\n", vt);
+        return Object::Undef;
+    }
+}
+
+Object scheme::vectorTypeInstanceOfPEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for vector-type-instance-of? (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg1.isTypedVector() && arg2.isTypedVectorDesc()) {
+        return arg1.toTypedVector()->instanceOf(arg2);
+    } else {
+        VM_RAISE2("wrong arguments for vector-type-instance-of? required (vector-type-instance, vector-type), got (~a ~a)\n", arg1, arg2);
+        return Object::Undef;
+    }
+}
+
+Object scheme::makeTypedVectorEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for make-typed-vector (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg1.isTypedVectorDesc() && arg2.isPair()) {
+        return Object::makeTypedVector(arg1, arg2);
+    } else {
+        VM_RAISE2("wrong arguments for make-typed-vector required (vector-type-instance, list of args), got (~a ~a)\n", arg1, arg2);
+        return Object::Undef;
+    }
+}
+
+Object scheme::typedVectorGetNthEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for typed-vector-get-nth (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg1.isTypedVector() && arg2.isInt()) {
+        return arg1.toTypedVector()->getNth(arg2);
+    } else {
+        VM_RAISE2("wrong arguments for typed-vector-get-nth required (vector-type-instance, number), got (~a ~a)\n", arg1, arg2);
+        return Object::Undef;
+    }
+}
+
+Object scheme::typedVectorSetNthEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 3) {
+        VM_RAISE1("wrong number of arguments for typed-vector-set-nth (required 3, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    const Object arg3 = args.third();
+    if (arg1.isTypedVector() && arg2.isInt()) {
+        arg1.toTypedVector()->setNth(arg2, arg3);
+    } else {
+        VM_RAISE3("wrong arguments for typed-vector-set-nth required (vector-type-instance, number, any object), got (~a ~a ~a)\n", arg1, arg2, arg3);
+    }
+    return Object::Undef;
+}
+
+Object scheme::typedVectorTypeEx(Object args)
+{
+    const Object vt = args.first();
+    if (vt.isTypedVector()) {
+        return vt.toTypedVector()->desc;
+    } else {
+        VM_RAISE1("wrong arguments for typed-vector-type required vector-type-instance, got ~a", vt);
+        return Object::Undef;
+    }
+}
+
+Object scheme::typedVectorPEx(Object args)
+{
+    return Object::makeBool(args.first().isTypedVector());
 }

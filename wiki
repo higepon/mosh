@@ -366,7 +366,8 @@
                     "<input value='Post Comment' type='submit' class=\"submit\">"
                     "</form>\n"
                     ))
-                  (call-with-string-input-port (read-raw-page comment-page)
+                  (call-with-string-input-port (cgi-escape (read-raw-page comment-page))
+;                  (call-with-string-input-port (read-raw-page comment-page)
                     (lambda (port)
                       (wiki->html get-parameter page-name (wiki-parse (make-reader port)))))))
               (lambda (get-parameter page-name)

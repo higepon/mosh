@@ -37,10 +37,12 @@
 
 namespace scheme {
 
+#define RAISE0(mesg)    raise(msg)
 #define RAISE1(fmt, a)    raiseFormat(UC(fmt), L1(a))
 #define RAISE2(fmt, a, b) raiseFormat(UC(fmt), L2(a, b))
 #define RAISE3(fmt, a, b, c) raiseFormat(UC(fmt), L3(a, b, c))
 
+#define VM_RAISE0(msg )    { if (theVM != NULL) {theVM->raise(Object::makeString(UC(msg)));} }
 #define VM_RAISE1(fmt, a)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L1(a));} }
 #define VM_RAISE2(fmt, a, b)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L2(a, b));} }
 #define VM_RAISE3(fmt, a, b, c)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L3(a, b, c));} }
@@ -103,7 +105,7 @@ public:
     TextualOutputPort& getOutputPort() { return outputPort_; }
     TextualOutputPort& getErrorPort() { return errorPort_; }
 
-    void showStackTrace();
+    Object getStackTrace();
 
     void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
 
@@ -305,8 +307,6 @@ protected:
     TextualOutputPort& errorPort_;
     Object inputPort_;
     Object stdinPort_;
-    void* labelStart_;
-    void* labelEnd_;
     Object errorObj_;
     Object errorHandler_;
     jmp_buf returnPoint_;

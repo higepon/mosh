@@ -1981,3 +1981,25 @@
 ;; .example (call-with-output-string (lambda (out) (format out "apple is ~a" "sweet"))) => "apple is sweet"
 (define-doc (format) ...)
 
+
+
+; vector-type for Record
+(define (vector-type-predicate vt)
+  (lambda (v)
+    (vector-type-instance-of? v vt)))
+
+(define (typed-vector-constructor vt)
+  (lambda args
+    (make-typed-vector vt args)))
+
+(define (typed-vector-accessor vt pos)
+  (lambda (v)
+    (if ((vector-type-predicate vt) v)
+        (typed-vector-get-nth v pos)
+        (errorf "typed-vector-accessor required ~a, but got ~a" vt (typed-vector-type v)))))
+
+(define (typed-vector-mutator vt pos)
+  (lambda (v val)
+    (if ((vector-type-predicate vt) v)
+        (typed-vector-set-nth v pos val)
+        (errorf "typed-vector-mutator required ~a, but got ~a" vt (typed-vector-type v)))))

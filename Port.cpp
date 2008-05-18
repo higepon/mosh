@@ -175,6 +175,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<codec>"));
     } else if (o.isBinaryInputPort()) {
         putString(UC("#<binary input port>"));
+    } else if (o.isTypedVector()) {
+        putString(UC("#<typed-vector>"));
+    } else if (o.isTypedVectorDesc()) {
+        putString(UC("#<vector-type>"));
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -264,6 +268,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<codec>"));
     } else if (o.isBinaryInputPort()) {
         putString(UC("#<binary input port>"));
+    } else if (o.isTypedVector()) {
+        putString(UC("#<typed-vector>"));
+    } else if (o.isTypedVectorDesc()) {
+        putString(UC("#<vector-type>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

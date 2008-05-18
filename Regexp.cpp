@@ -81,13 +81,10 @@ OnigRegion* Regexp::matchInternal(const ucs4string& text)
     if (r >= 0)
     {
         return region;
-    }
-    else if (r == ONIG_MISMATCH)
-    {
+    } else if (r == ONIG_MISMATCH) {
         return NULL;
     }
-    else
-    {
+    else {
         char s[ONIG_MAX_ERROR_MESSAGE_LEN];
         onig_error_code_to_str((uint8_t*)s, r);
         if (NULL != theVM) {
@@ -137,8 +134,7 @@ Object Regexp::replaceAll(Object t, Object subst)
 
 int RegMatch::matchStart(int index)
 {
-    if (index < 0 || index >= region_->num_regs)
-    {
+    if (index < 0 || index >= region_->num_regs) {
         VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
         return -1;
     }
@@ -147,8 +143,7 @@ int RegMatch::matchStart(int index)
 
 int RegMatch::matchEnd(int index)
 {
-    if (index < 0 || index >= region_->num_regs)
-    {
+    if (index < 0 || index >= region_->num_regs) {
         VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
         return -1;
     }
@@ -157,8 +152,7 @@ int RegMatch::matchEnd(int index)
 
 Object RegMatch::matchAfter(int index)
 {
-    if (index < 0 || index >= region_->num_regs)
-    {
+    if (index < 0 || index >= region_->num_regs) {
         VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
         return Object::Undef;
     }

@@ -140,6 +140,15 @@ Object evalEx(Object args);
 Object raiseEx(Object args);
 Object raiseContinuableEx(Object args);
 Object withExceptionHandlerEx(Object args);
+Object makeVectorTypeEx(Object args);
+Object vectorTypePEx(Object args);
+Object vectorTypeDataEx(Object args);
+Object vectorTypeInstanceOfPEx(Object args);
+Object makeTypedVectorEx(Object args);
+Object typedVectorGetNthEx(Object args);
+Object typedVectorSetNthEx(Object args);
+Object typedVectorTypeEx(Object args);
+Object typedVectorPEx(Object args);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__
