@@ -1,5 +1,7 @@
 2008-05-18  higepon  <higepon@users.sourceforge.jp>
 
+        * Added typed-vector for R6RS Record base.
+
         * TypedVector.h : Added.
 
 2008-05-17  higepon  <higepon@users.sourceforge.jp>
