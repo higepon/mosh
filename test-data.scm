@@ -841,6 +841,10 @@ val
          [constructor (typed-vector-constructor vt)]
          [v (constructor 3 9)])
     (eq? vt (typed-vector-type v)))]
+
+;; List utilities
+[mosh-only #f
+  (for-all number? '(3 1 4 1 5 9))]
 ;; (10 (digit->integer #\A 16))
 ;; ;(error (cdr 3))
 ;; (#f (digit->integer #\Z 16))
