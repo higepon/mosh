@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
 
-    theVM = new VM(20000, outPort, errorPort, inPort);
+    theVM = new VM(200000, outPort, errorPort, inPort);
 
     // Do not call Symbol::intern before you load precompiled compiler!
     const Object compiler = getCompiler();

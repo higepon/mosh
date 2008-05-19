@@ -161,6 +161,7 @@
   (lambda (val . args)
     (for-each pretty-print args)
     (error "no matching clause for " val)))
+
 (define match:andmap
   (lambda (f l)
     (if (null? l)
@@ -199,6 +200,7 @@
            procedure?
            vector?)))
 (define match:vector-structures '())
+
 (define match:expanders
   (letrec ((genmatch (lambda (x clauses match-expr)
                        (let* ((length>= (gentemp))

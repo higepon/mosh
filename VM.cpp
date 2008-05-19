@@ -389,7 +389,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         Object::makeRaw(INSTRUCTION(HALT)),
     };
 
-
     Object operand;
 
     pc_ = code;
