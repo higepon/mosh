@@ -59,7 +59,7 @@ libcompiler_a_SOURCES = compiler.cpp
 # generated files should be listed here.
 BUILT_SOURCES  = Instruction.h compiler.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm macro.scm doc
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm macro.scm doc repl.scm
 
 GENERATED = \
 Instruction.h \

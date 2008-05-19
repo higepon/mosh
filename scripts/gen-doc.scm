@@ -11,8 +11,8 @@
     (manual-title "Mosh User's Reference")
     (manual-author "Higepon")
     (manual-abstract (div (p "This is a reference manual of " (a 'href "http://code.google.com/p/mosh-scheme/" "Mosh") ", an R6RS Scheme implementation.")
-                          (p "This manual is for version 0.0.2.")
-                          (p "On version 0.0.2, all procedures defined at top level. This problem will be fixed version 0.0.3 or later.")))
+                          (p "This manual is for version 0.0.3.")
+                          (p "On version 0.0.3, all procedures defined at top level. This problem will be fixed version 0.0.4 or later.")))
     'css-prestylesheet "normal"
     'css-stylesheet "monar"
     'laml-resource "false"
