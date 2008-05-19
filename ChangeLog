@@ -1,3 +1,15 @@
+2008-05-19  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm : Added for-all.
+
+        * library.scm (even?): Added even? defined at Base Library.
+
+        * freeproc.cpp : Added modulo procedure (mod a b).
+
+        * VM.cpp : Added division support for Integer(Fixnum).
+
+        * freeproc.cpp (scheme::applyEx): Fixed apply bug.
+
 2008-05-18  higepon  <higepon@users.sourceforge.jp>
 
         * Added typed-vector for R6RS Record base.

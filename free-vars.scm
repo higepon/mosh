@@ -110,4 +110,6 @@
     (typed-vector-set-nth ,(lambda a (error "typed-vector-set-nth not implemented")))
     (typed-vector? ,(lambda a (error "typed-vector not implemented")))
     (typed-vector-type ,(lambda a (error "typed-vector-type not implemented")))
+    (apply ,apply-proc)
+    (mod ,modulo)
     ))

@@ -92,7 +92,7 @@ compiler.cpp: compiler-with-library.scmc
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
 
-./compiler-with-library.scm: ./compiler-vm-cpp.scm # ./library.scm # マニュアルかき終わったら戻す	
+./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
 	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm

@@ -842,6 +842,25 @@ val
          [v (constructor 3 9)])
     (eq? vt (typed-vector-type v)))]
 
+[6
+  (apply (lambda (a b c) (+ a b c)) 1 2 '(3))]
+[6
+  (apply (lambda (a b c) (+ a b c)) '(1 2 3))]
+[6
+  (apply (lambda (a b c) (+ a b c)) 1 '(2 3))]
+[3 (/ 6 2)]
+[3 (mod 23 10)]
+[#t (even? 2)]
+[#f (even? 3)]
+[#f (for-all even? '(3 1 4 1 5 9))]
+[#f (for-all even? '(3 1 4 1 5 9 . 2))]
+[#t (for-all even? '(2 4 14))]
+;[14 (for-all (lambda (n) (and (even? n) n))
+;             '(2 4 14))]
+[#t (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))]
+[#f (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))]
+
+;
 ;; List utilities
 ;; [mosh-only #f
 ;;   (for-all number? '(3 1 4 1 5 9))]

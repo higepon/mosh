@@ -30,6 +30,29 @@
     (set-closure-body-code! vm-outer-closure code-c)
     (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)))
 
+(define (apply-proc . args)
+  (let* ([proc (first args)]
+         [args (cdr args)]
+         [adjusted_args (append
+                         ($take args (- (length args) 1))
+                         (car ($drop args (- (length args) 1))))])
+     (VM `#(FRAME
+           7
+           CONSTANT
+           ,adjusted_args
+           PUSH
+           CONSTANT
+           ,proc
+           APPLY
+           HALT)
+        0
+        '()
+        0
+        '()
+        (make-vector 1000)
+        0)))
+
+;(define (VM codes pc a fp c stack sp)
 
 (define (init-library-table)
   (set! vm-instances (make-hash-table 'eq?))
@@ -1222,6 +1245,7 @@
                [(NUMBER_GT)    (apply-native-2arg >)]
                [(NUMBER_LT)    (apply-native-2arg <)]
                [(NUMBER_ADD)   (apply-native-2arg +)]
+               [(NUMBER_DIV)   (apply-native-2arg /)]
                [(NUMBER_SUB)   (apply-native-2arg -)]
                [(NUMBER_SUB_PUSH) (apply-native-2arg-push -)]
                [(NUMBER_ADD_PUSH) (apply-native-2arg-push +)]

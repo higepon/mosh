@@ -41,6 +41,7 @@
 (define-insn NUMBER_LE 0)
 (define-insn NUMBER_LT 0)
 (define-insn NUMBER_MUL 0)
+(define-insn NUMBER_DIV 0)
 (define-insn NUMBER_SUB 0)
 (define-insn PAIR_P 0)
 (define-insn READ 0)

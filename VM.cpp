@@ -965,6 +965,16 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             sp_--;
             NEXT;
         }
+        CASE(NUMBER_DIV)
+        {
+            const Object n = index(sp_, 0);
+            if (ac_.toInt() == 0) {
+                RAISE2("Dividing by zero (/ ~d ~d)", n, ac_);
+            }
+            ac_ = Object::makeInt(n.toInt() / ac_.toInt());
+            sp_--;
+            NEXT;
+        }
         CASE(NUMBER_SUB)
         {
             const Object n = index(sp_, 0);

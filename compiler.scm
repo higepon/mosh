@@ -940,6 +940,12 @@
       (cons (car lis)
             (recur (cdr lis) (- k 1))))))
 
+(define ($drop x i)
+  (let loop ((n i) (l x))
+    (if (<= n 0)
+      l
+      (loop (- n 1) (cdr l)))))
+
 (define (pass1/lambda->iform name sexp library lvars)
   (let* ([vars          (second sexp)]
          [body          (cddr sexp)]
@@ -1126,7 +1132,14 @@
                 (sexp->iform 1)]
                [else
                 (error op " got too few argment")])]
-            [(= 1 len) (if (eq? op '-) (sexp->iform (* -1 (car args))) (sexp->iform (car args)))]
+            [(= 1 len)
+             (case op
+               [(-)
+                (sexp->iform (* -1 (car args)))]
+               [(/)
+                (sexp->iform `(/ 1 ,(car args)))]
+               [else
+                (sexp->iform (car args))])]
             [(= 2 len)
              ($asm tag (list (sexp->iform (first args)) (sexp->iform (second args))))]
             [else
@@ -1242,8 +1255,19 @@
       [(call-with-current-continuation)
        ($call-cc (sexp->iform (second sexp)) tail?)]
       ;;---------------------------- apply -------------------------------------
-      [(apply)
-       ($asm 'APPLY (list (sexp->iform (second sexp)) (sexp->iform (third sexp))))]
+;;       [(apply)
+;;        (let* ([proc (second sexp)]
+;;               [args (third sexp)])
+;;          ($asm 'APPLY (list (sexp->iform proc) (sexp->iform args))))]
+;; this is wrong
+;;       [(apply)
+;;        (let* ([proc (second sexp)]
+;;               [args (cddr sexp)]
+;;               [adjusted_args #?= (append
+;;                               ($take args (- (length args) 1))
+;;                               #?= (car ($drop args (- (length args) 1))))])
+;;          ($asm 'APPLY (list (sexp->iform proc) (sexp->iform adjusted_args))))]
+
       ;;---------------------------- quote -------------------------------------
       [(quote)
        ($const (second sexp))]
@@ -1255,6 +1279,7 @@
       [(+)                (operator-nargs->iform '+ 'NUMBER_ADD)]
       [(-)                (operator-nargs->iform '- 'NUMBER_SUB)]
       [(*)                (operator-nargs->iform '* 'NUMBER_MUL)]
+      [(/)                (operator-nargs->iform '* 'NUMBER_DIV)]
       [(append)           (operator-nargs->iform 'append 'APPEND)]
       [(=)                (numcmp->iform '= (cdr sexp) 'NUMBER_EQUAL)]
       [(>=)               (numcmp->iform '>= (cdr sexp) 'NUMBER_GE)]
@@ -2324,6 +2349,7 @@
       [(NUMBER_ADD)        (compile-2arg 'NUMBER_ADD      args )]
       [(NUMBER_SUB)        (compile-2arg 'NUMBER_SUB      args )]
       [(NUMBER_MUL)        (compile-2arg 'NUMBER_MUL      args )]
+      [(NUMBER_DIV)        (compile-2arg 'NUMBER_DIV      args )]
       [(NUMBER_EQUAL)      (compile-2arg 'NUMBER_EQUAL    args )]
       [(NUMBER_GE)         (compile-2arg 'NUMBER_GE       args )]
       [(NUMBER_GT)         (compile-2arg 'NUMBER_GT       args )]

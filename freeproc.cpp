@@ -1383,3 +1383,41 @@ Object scheme::typedVectorPEx(Object args)
 {
     return Object::makeBool(args.first().isTypedVector());
 }
+
+Object scheme::applyEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length < 2) {
+        VM_RAISE1("wrong number of arguments for apply (required at least 2, got ~d)\n", Object::makeInt(length));
+    }
+
+    Object proc = args.first();
+    Object p = args.cdr();
+    Object argsAsList = Object::Nil;
+    for (int i = 0; i < length - 1; i++) {
+        if (i == length - 2) {
+            argsAsList = Pair::appendD(argsAsList, p.car());
+        } else {
+            argsAsList = Pair::appendD(argsAsList, Pair::list1(p.car()));
+        }
+        p = p.cdr();
+    }
+    return theVM->applyClosure(proc, argsAsList);
+}
+
+Object scheme::modEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length < 2) {
+        VM_RAISE1("wrong number of arguments for mod (required 2, got ~d)\n", Object::makeInt(length));
+    }
+
+    Object arg1 = args.first();
+    Object arg2 = args.second();
+    if (arg1.isInt() && arg2.isInt()) {
+        return Object::makeInt(arg1.toInt() % arg2.toInt());
+    } else {
+        VM_RAISE2("wrong arguments for mod required (int int), got (~a ~a)\n", arg1, arg2);
+    }
+    return Object::Undef;
+}

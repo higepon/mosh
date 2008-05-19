@@ -445,7 +445,7 @@
 
 ;; Returns #t if obj is a string, otherwise returns #f.
 ;; .form (string? obj)
-;; .returns #t if obj is a string, otherwise returns #f. 
+;; .returns #t if obj is a string, otherwise returns #f.
 (define-doc (string?) ...)
 
 ;; Returns the number of characters in the given string as an exact integer object.
@@ -802,6 +802,11 @@
 ;; .returns (cdr (cdr (cdr (cdr (cdr p)))))
 (define (cdddddr p) (cdr (cdr (cdr (cdr (cdr p))))))
 
+;; Returns whether x is even.
+;; .returns whether x is even
+(define (even? x)
+  (zero? (mod x 2)))
+
 ;; (define (gen-cxxr n)
 ;;   (define (association lst1 lst2)
 ;;     (fold-right (lambda (x y) (append (map (cut cons x <>) lst2) y)) '() lst1))
@@ -1011,9 +1016,9 @@
 ;; .returns the byte at index k of bytevector, as an octet.
 (define-doc (bytevector-u8-ref) ...)
 
-;; Returns a newly allocated (unless empty) string whose character sequence is encoded by the given bytevector. 
+;; Returns a newly allocated (unless empty) string whose character sequence is encoded by the given bytevector.
 ;; .form (utf8->string bytevector)
-;; .returns A newly allocated (unless empty) string whose character sequence is encoded by the given bytevector. 
+;; .returns A newly allocated (unless empty) string whose character sequence is encoded by the given bytevector.
 (define-doc (utf8->string) ...)
 
 ; ==============================================================================================================================================================
@@ -1184,11 +1189,16 @@
 ;; .example (assoc (list 'a) '(((a)) ((b)) ((c)))) => ((a))
 (define (assoc obj alist) (generic-assoc equal? obj alist))
 
-;; (define (for-all proc l . more)
-;;   (or (null? l)
-;;       (and (apply proc (car l) (map car more))
-;;            (apply for-all proc (cdr l) (map cdr more)))))
 
+;; <p>For natural numbers i = 0, 1, ..., the for-all procedure successively applies proc to arguments xi1 ... xin, where xij is the ith element of listj, until #f is returned.</p>
+;; <p>If proc returns true values for all but the last element of list1, for-all performs a tail call of proc on the kth elements, where k is the length of list1.</p>
+;; <p>If proc returns #f on any set of elements, for-all returns #f after the first such application of proc. If the lists are all empty, for-all returns #t.</p>
+;; .pre-condition The lists should all have the same length, and proc should accept n arguments and return a single value. Proc should not mutate the list arguments.
+; .form (for-all proc list1 list2 ... listn)
+(define (for-all proc l . ls)
+  (or (null? l)
+      (and (apply proc (car l) (map car ls))
+           (apply for-all proc (cdr l) (map cdr ls)))))
 
 ; ==============================================================================================================================================================
 ;;; Control structures.
@@ -1291,7 +1301,7 @@
 ;; .returns bytevector
 (define-doc (get-bytevector-n) ...)
 
-;; Returns the end-of-file object. 
+;; Returns the end-of-file object.
 ;; .form (eof-object)
 ;; .returns the end-of-file object.
 (define-doc (eof-object) ...)
@@ -1339,7 +1349,7 @@
 ;; <p>(close)</p>
 ;; <p>The close procedure (if supplied) should perform any actions that are necessary when the input port is closed.</p>
 ;; .form (make-custom-binary-input-port id read! procedure get-position set-position! close)
-;; .returns A newly created binary input port whose byte source is an arbitrary algorithm represented by the read! procedure. 
+;; .returns A newly created binary input port whose byte source is an arbitrary algorithm represented by the read! procedure.
 (define-doc (make-custom-binary-input-port) ...)
 
 ;; Returns default textual ports for regular error output. Normally, this port is associated with standard error.
@@ -1524,9 +1534,9 @@
 ;; .returns unspecified
 (define-doc (hash-table-set!) ...)
 
-;; Returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned. 
+;; Returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned.
 ;; .form (hashtable-ref hashtable key default)
-;; .returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned. 
+;; .returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned.
 (define-doc (hash-table-ref) ...)
 
 ;; (not implmented) Returns a vector of all keys in hashtable. The order of the vector is unspecified.
