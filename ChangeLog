@@ -1,5 +1,7 @@
 2008-05-19  higepon  <higepon@users.sourceforge.jp>
 
+        * 0.0.3 released.
+
         * library.scm : Added for-all.
 
         * library.scm (even?): Added even? defined at Base Library.

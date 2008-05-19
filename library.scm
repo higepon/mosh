@@ -271,6 +271,16 @@
 ;; .returns The sum of their arguments.
 (define-doc (+) ...)
 
+;; Returns the division of their arguments.
+;; .form (/ z1 ...)
+;; .returns The division of their arguments.
+(define-doc (/) ...)
+
+;; Returns the modulo of their arguments.
+;; .form (mod z1 z2)
+;; .returns The modulo of their arguments.
+(define-doc (mode) ...)
+
 ;; With two or more arguments, this procedures returns the difference of its arguments, associating to the left. With one argument, however, it returns the additive inverse of its argument.
 ;; .form (- z1 z2 ...) (- z)
 ;; .returns With two or more arguments, this procedures returns the difference of its arguments, associating to the left. With one argument, however, it returns the additive inverse of its argument.
