@@ -49,7 +49,7 @@ mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a
 
 datadir = @MOSH_LIB_PATH@
-data_DATA = macro.scm all-tests.scm repl.scm
+data_DATA = all-tests.scm repl.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
 noinst_LIBRARIES = libcompiler.a
@@ -59,7 +59,7 @@ libcompiler_a_SOURCES = compiler.cpp
 # generated files should be listed here.
 BUILT_SOURCES  = Instruction.h compiler.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm macro.scm doc repl.scm
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm
 
 GENERATED = \
 Instruction.h \

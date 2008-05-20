@@ -2935,12 +2935,42 @@
            (cons (car s) (iter (cdr s)))])]))
   (iter sexp))
 
-
+(pre-cond
+ [gauche?
 (define (compile sexp)
   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
-;                  (print (pretty-iform x))
-                  x)
+                                   x)
                 '() *free-lvars* '() '() #f)))))
+
+  ]
+ [vm?
+(define (compile sexp)
+  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+                                   x)
+                '() *free-lvars* '() '() #f)))))
+
+  ]
+ [vm-outer?
+(define (compile sexp)
+  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+                                   x)
+                '() *free-lvars* '() '() #f)))))
+
+  ]
+[vm-cpp?
+(define (compile sexp)
+;  (print ($library.macro top-level-library))
+  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+                                   x)
+                '() *free-lvars* '() '() #f)))))
+
+]
+)
+
+;; (define (compile sexp)
+;;   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+;;                                    x)
+;;                 '() *free-lvars* '() '() #f)))))
 
 (define (compile-no-optimize sexp)
   (pass4 (code-body (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '() *free-lvars* '() '() #f))))

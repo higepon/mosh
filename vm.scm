@@ -1640,20 +1640,21 @@
 ;;               [else
 ;;                (loop (read) (append ret (compile-partial obj)))])))))
 
-(define (compile-file file . for-vm-cpp?)
-  (define (fetch-instructions)
-    (with-input-from-file "./instruction.scm"
-      (lambda ()
-        (let loop ([obj (read)])
-          (cond
-           [(eof-object? obj) '()]
-           [else
-            (match obj
-              [('define-insn name n)
-               (cons (cons name n) (loop (read)))])])))))
+(define (fetch-instructions)
+  (with-input-from-file "./instruction.scm"
+    (lambda ()
+      (let loop ([obj (read)])
+        (cond
+         [(eof-object? obj) '()]
+         [else
+          (match obj
+            [('define-insn name n)
+             (cons (cons name n) (loop (read)))])])))))
+
+(define (insn-sym->insn-num insn-table syms)
   ;; For (PUSH 3) in #(CONSTANT (PUSH 3) ...).
   ;; We convert all instructions as *compiler-insn*.
-  (define (insn-sym->insn-num-direct insn-table syms)
+  (define (insn-sym->insn-num-direct syms)
     (let loop ([syms syms])
       (cond [(null? syms)
              '()]
@@ -1663,46 +1664,67 @@
                          `(*compiler-insn* ,i)
                          (car syms))
                      (loop (cdr syms))))])))
-  (define (insn-sym->insn-num insn-table syms)
-    (let loop ([index 0]
-               [next-insn-index 0]
-               [syms syms])
-      (cond [(null? syms)
-             '()]
-            ;; special case. compiler has list which has instruction like '(0 UNDEF).
-            ;; so we convert it into '(0 (*compiler-insn* n))
-            ;; N.B. we ignore dotted pair.
-            [(list? (car syms))
-             (cons (insn-sym->insn-num-direct insn-table (car syms))
-                   (loop (+ index 1)
-                         next-insn-index
-                         (cdr syms)))]
-            [else
-             (receive (i val) (find-with-index (lambda (insn) (eq? (first insn) (car syms))) insn-table)
-               (cons (if i
-                         (if (= index next-insn-index)
-                             `(*insn* ,i)
-                             `(*compiler-insn* ,i))
-                         (car syms))
-                     (loop (+ index 1) (if (= index next-insn-index)
-                                           (if val (+ next-insn-index (cdr val) 1) (errorf "instruction.scm offset wrong on ~a" (car syms)))
-                                           next-insn-index) (cdr syms))))])))
+  (let loop ([index 0]
+             [next-insn-index 0]
+             [syms syms])
+    (cond [(null? syms)
+           '()]
+          ;; special case. compiler has list which has instruction like '(0 UNDEF).
+          ;; so we convert it into '(0 (*compiler-insn* n))
+          ;; N.B. we ignore dotted pair.
+          [(list? (car syms))
+           (cons (insn-sym->insn-num-direct (car syms))
+                 (loop (+ index 1)
+                       next-insn-index
+                       (cdr syms)))]
+          [else
+           (receive (i val) (find-with-index (lambda (insn) (eq? (first insn) (car syms))) insn-table)
+             (cons (if i
+                       (if (= index next-insn-index)
+                           `(*insn* ,i)
+                           `(*compiler-insn* ,i))
+                       (car syms))
+                   (loop (+ index 1) (if (= index next-insn-index)
+                                         (if val (+ next-insn-index (cdr val) 1) (errorf "instruction.scm offset wrong on ~a" (car syms)))
+                                         next-insn-index) (cdr syms))))])))
+
+; not used but usable.
+(define (acons-diff after before)
+  (append-map (lambda (x) (if (assq (car x) before) '() (list x))) after))
+
+(define (assq-multi alist keys)
+  (append-map (lambda (keys) (list (assq keys alist))) keys))
+
+;; Generate pre-compiled code.
+;; (1)normal form
+;;    normal forms are compiled by (compile-partial ...).
+;;    It compiles form into list of instruction like '(CONST 3 ...), on this phase labels is not fixed up yet.
+;; (2)macro form
+;;    Normally compiled macro forms are stored ($library ...)'s macro.
+;;    ($library ...)'s macro is alist like '((macro-name . compiled-macro-body) (macro-name2 . compiled-macro-body2)).
+;;    Note that macro information is stored in compiler(means dynamic), on the hand pre-compiled-code is static.
+;;    So you should bring this information to VM.
+;;    For this purpose, we generate the code ($library.set-macro! top-level-library macros-alist) and put them on the tail of library.
+;; (3)code size
+;;    If you pre-compile all of the macro that top-level-library has.
+;;    The size of compiler.cpp becomes bigger and difficult to compiler with g++.
+
+(define (compile-file file . for-vm-cpp?)
   (with-input-from-file file
     (lambda ()
       (let loop ([obj (read)]
                  [ret '()])
         (cond [(eof-object? obj)
+               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
+                      [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
+                              (assq-multi ($library.macro top-level-library) allowed-macro))]
+                      [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])
                (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
-                   (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 ret))))
-                   (pass4 ret))]
+                   (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
+                   (pass4 ret)))]
               [else
                (loop (read) (append ret (compile-partial obj)))])))))
 
-;(compile-file "./library.scm" #t)
-
-;; hoge
-
-;(insn-sym->insn-num (fetch-instructions) '(CONSTANT (CONSTANT 3) PUSH CONSTANT PUSH_CONSTANT CONSTANT))
 
 (define (main args)
   (set! *command-line-args* (cdr args))
@@ -1717,7 +1739,7 @@
     (vm-init '())
     (load-file "./library.scm")
     (load-file "./match.scm")
-;    (print top-level-library)
+
     (vm-test)
     (test-end)
 
@@ -1730,7 +1752,13 @@
    [(and (= (length args) 3) (string=? (second args) "compile-file"))
     (load-file "./library.scm")
     (load-file "./match.scm")
-    (write (compile-file (third args) #t))]
+    (write (compile-file (third args) #t))
+;;     (let ([compiled (list->vector (compile-file (third args) #t))]
+;;           [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) `(,(assq 'kar ($library.macro top-level-library))))])
+;;       (write (list->vector (append compiled (vector->list (compile `($library.set-macro! top-level-library (quote ,v)) #t)))))
+        ]
+        
+;    (print (compile `($library.set-macro top-level-library (quote ,($library.macro top-level-library)))))]
 ;    (write `($library.set-macro! top-level-library ,($library.macro top-level-library)))]
    ;;  execute script
    [else

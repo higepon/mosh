@@ -37,7 +37,7 @@
 
 namespace scheme {
 
-#define RAISE0(mesg)    raise(msg)
+#define RAISE0(msg)    raise(msg)
 #define RAISE1(fmt, a)    raiseFormat(UC(fmt), L1(a))
 #define RAISE2(fmt, a, b) raiseFormat(UC(fmt), L2(a, b))
 #define RAISE3(fmt, a, b, c) raiseFormat(UC(fmt), L3(a, b, c))

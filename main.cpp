@@ -66,7 +66,7 @@ void showUsage()
             "  -h       Prints this help.\n"
             "  -t       Executes test.\n"
             "bug report:\n"
-            "  http://code.google.com/p/mosh/\n"
+            "  http://code.google.com/p/mosh-scheme/\n"
             "  higepon@users.sourceforge.jp\n"
         );
     exit(EXIT_FAILURE);
@@ -134,19 +134,14 @@ int main(int argc, char *argv[])
     theVM->evaluate(compiler);
 
     if (isRepl) {
-        theVM->load(UC("macro.scm"));
         theVM->load(UC("repl.scm"));
     } else if (isTestOption) {
-        theVM->load(UC("macro.scm"));
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
         sysDisplayEx(L1(theVM->compile(code)));
     } else {
-        // N.B. macro should be loaded before any evaluation.
-        // macros which are defined at library.scm can not be used, because library.scm is precompiled.
-        theVM->load(UC("macro.scm"));
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     }
 
