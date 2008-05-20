@@ -1717,8 +1717,11 @@
     (vm-init '())
     (load-file "./library.scm")
     (load-file "./match.scm")
+;    (print top-level-library)
     (vm-test)
-    (test-end)]
+    (test-end)
+
+    ]
    ;; compile string
    [(and (= (length args) 3) (string=? (second args) "compile"))
 ;    (pretty-print (list->vector (compile-string (third args))))
@@ -1728,6 +1731,7 @@
     (load-file "./library.scm")
     (load-file "./match.scm")
     (write (compile-file (third args) #t))]
+;    (write `($library.set-macro! top-level-library ,($library.macro top-level-library)))]
    ;;  execute script
    [else
     (vm-init (cdr args))

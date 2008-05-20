@@ -2,3 +2,5 @@
   svn export && make dist && tar && ./configre && make && make check
 2. Modifiy Features
   http://code.google.com/p/mosh-scheme/wiki/Features
+3. upload
+4. post blogs (hatena, cybozu, blogger)
