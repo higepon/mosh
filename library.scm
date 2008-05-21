@@ -2267,7 +2267,7 @@
         [calls (second result)]
         [syms  (cddr result)]
         [table (make-eq-hashtable)])
-    (print "time%       msec      calls   name")
+    (print "time%        msec      calls   name")
     (let loop ([syms syms])
       (cond
        [(null? syms)
@@ -2280,7 +2280,7 @@
     (for-each
      (lambda (x)
        (let1 call-info (assoc (first x) calls)
-         (format #t " ~a   ~a ~a   ~a    ~a\n" (lpad (third x) " " 2) (lpad (* (second x) 10) " " 10) (lpad (cdr call-info) " " 10) (rpad (first x) " " 30))))
+         (format #t " ~a   ~a ~a   ~a    ~a\n" (lpad (third x) " " 3) (lpad (* (second x) 10) " " 10) (lpad (cdr call-info) " " 10) (rpad (first x) " " 30))))
      (sort
       (hash-table-map
        (lambda (key value)
@@ -2290,6 +2290,6 @@
     (let1 seen-syms (vector->list (hash-table-keys table))
     (for-each
      (lambda (p)
-         (format #t "  0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
+         (format #t "   0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
      (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b))))))
-    (format #t "  **  ~d         **   total\n" (lpad (* (* total 10)) " " 10))))
+    (format #t "  **  ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
