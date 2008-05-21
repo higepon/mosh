@@ -623,7 +623,6 @@
       (list 'if (car conditions) (conditions->if (cdr conditions)) #f)))
 
 
-
 ;; (define (letrec->let sexp)
 ;;   (let* ([args (second sexp)]
 ;;          [vars ($map1 first args)]
@@ -810,7 +809,7 @@
          [init-vars ($map1 (lambda (p) (list (first p) (second p))) vars)])
     `(let ,loop ,init-vars
           (if ,(first pred)
-              ,(if (null? (cdr pred)) (if #f #t) (second pred))
+              ,(if (null? (cdr pred)) (quote (if #f #t)) (second pred))
               (begin ,@body (,loop ,@loop-vars))))))
 
 (define (aif->let sexp)

@@ -385,7 +385,7 @@ Object scheme::stringAppendEx(Object args)
     ucs4string ret;
     for (Object s = args; !s.isNil(); s = s.cdr()) {
         if (!s.car().isString()) {
-            VM_RAISE1("string->number string required, but got ~a\n", s.car());
+            VM_RAISE1("string-append string required, but got ~a\n", s.car());
         }
         ret += s.car().toString()->data();
     }

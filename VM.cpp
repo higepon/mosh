@@ -1506,7 +1506,6 @@ Object VM::getProfileResult()
 {
     Object ret = Object::Nil;
     Object ht = nameSpace_.toEqHashTable()->swap();
-    printf("total sample count=%d\n", totalSampleCount_);
     for (int i = 0; i < SAMPLE_NUM; i++) {
         // check global namespace
         const Object o = samples_[i];
@@ -1526,7 +1525,6 @@ Object VM::getProfileResult()
             }
         }
     }
-    
-    LOG1("ret=~a\n", ret);
+
     return Object::cons(Object::makeInt(totalSampleCount_), ret);
 }
