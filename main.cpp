@@ -168,6 +168,8 @@ int main(int argc, char *argv[])
 
     if (isProfiler) {
         Object result = theVM->getProfileResult();
+        static Object proc = Symbol::intern(UC("show-profile"));
+        const Object compiled = theVM->callClosureByName(proc, result);
     }
 
     exit(EXIT_SUCCESS);
