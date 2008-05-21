@@ -38,8 +38,8 @@ class EqHashTable EXTEND_GC
 {
 public:
     EqHashTable() {}
-// todo
-//    EqHashTable(int capacity) {}
+    // todo
+    //    EqHashTable(int capacity) {}
 
     Object ref(Object key, Object defaultVal)
     {
@@ -61,6 +61,27 @@ public:
         const Object o = ref(key, Object::False);
         map_.clear();
         set(key, o);
+    }
+
+    Object swap()
+    {
+        // swap (key, value)
+        Object ht = Object::makeEqHashTable();
+        for (InternalMap::const_iterator it = map_.begin(); it != map_.end(); ++it) {
+            ht.toEqHashTable()->set(it->second, it->first);
+        }
+        return ht;
+    }
+
+    Object keys()
+    {
+        Object ht = Object::makeEqHashTable();
+        Object v = Object::makeVector(map_.size());
+        int i = 0;
+        for (InternalMap::const_iterator it = map_.begin(); it != map_.end(); ++it, i++) {
+            v.toVector()->set(i, it->first);
+        }
+        return v;
     }
 
     ~EqHashTable() {} // not virtual

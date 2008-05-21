@@ -2053,3 +2053,20 @@
     (lambda ()
       ,@body)))
 
+
+;; todo document
+(define (vector-for-each proc v)
+  (let1 len (vector-length v)
+    (let loop ([i 0])
+      (cond
+       [(>= i len) '()]
+       [else
+          (proc (vector-ref v i))
+          (loop (+ i 1))]))))
+
+(define (hash-table-for-each proc ht)
+  (let1 keys (hash-table-keys ht)
+    (vector-for-each
+     (lambda (key)
+       (proc key (hash-table-ref ht key)))
+     keys)))

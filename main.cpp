@@ -64,6 +64,7 @@ void showUsage()
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"
+            "  -p       Execute wit profiler.\n"
             "  -t       Executes test.\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
@@ -72,14 +73,22 @@ void showUsage()
     exit(EXIT_FAILURE);
 }
 
+void signal_handler(int signo)
+{
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    theVM->collectProfile();
+}
+
+
 int main(int argc, char *argv[])
 {
     int opt;
-    bool isRepl       = false;
-    bool isTestOption = false;
+    bool isRepl          = false;
+    bool isTestOption    = false;
     bool isCompileString = false;
+    bool isProfiler      = false;
 
-    while ((opt = getopt(argc, argv, "htvVc")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVc")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -92,6 +101,9 @@ int main(int argc, char *argv[])
             break;
         case 't':
             isTestOption = true;
+            break;
+        case 'p':
+            isProfiler = true;
             break;
         case 'c':
             isCompileString = true;
@@ -131,6 +143,11 @@ int main(int argc, char *argv[])
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
     theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc - optind, &argv[optind]));
+
+    if (isProfiler) {
+        theVM->initProfiler();
+    }
+
     theVM->evaluate(compiler);
 
     if (isRepl) {
@@ -148,6 +165,11 @@ int main(int argc, char *argv[])
 #ifdef DUMP_ALL_INSTRUCTIONS
     fclose(stream);
 #endif
+
+    if (isProfiler) {
+        Object result = theVM->getProfileResult();
+    }
+
     exit(EXIT_SUCCESS);
 }
 

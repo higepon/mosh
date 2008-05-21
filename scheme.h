@@ -49,6 +49,9 @@
 #include "dirent.h"
 #include <setjmp.h>
 #include <sys/time.h>
+#include <stdio.h>
+#include <signal.h>
+
 #ifdef USE_BOEHM_GC
 #define EXTEND_GC : public gc
 #include <gc_cpp.h>

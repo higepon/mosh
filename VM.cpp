@@ -173,12 +173,15 @@ Object VM::evaluate(Object codeVector)
     return evaluate(v->data(), v->length());
 }
 
+#       include "cprocedures.cpp"
+
+
 
 Object VM::evaluate(Object* code, int codeSize)
 {
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
-#       include "cprocedures.cpp"
+
         closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 0, Object::False /* todo */);
     }
     closure.toClosure()->pc = code;
@@ -374,6 +377,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #include "labels.cpp"
 
     if (returnTable) {
+        labelReturn_ = reinterpret_cast<word>(&&LABEL_RETURN); // used for profiler
         return Object::makeRaw(dispatch_table);
     }
 #endif
@@ -1427,4 +1431,102 @@ void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
     const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
     raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), getStackTrace())));
+}
+
+//----------------------------------------------------------------------
+//    Profiler
+//----------------------------------------------------------------------
+extern VM* theVM;
+extern Object stringTosymbolEx(Object args);
+const int VM::SAMPLE_NUM = 5000;
+
+static void signal_handler(int signo)
+{
+    theVM->collectProfile();
+}
+
+void VM::initProfiler()
+{
+#ifdef USE_BOEHM_GC
+    samples_ = new (GC)Object[SAMPLE_NUM];
+#else
+    samples_ = new Object[SAMPLE_NUM];
+#endif
+    totalSampleCount_ = 0;
+    for (int i = 0; i < SAMPLE_NUM; i++) {
+        samples_[i] = Object::Nil;
+    }
+    struct sigaction act;
+    act.sa_handler = &signal_handler; // set signal_handler
+    act.sa_flags = SA_RESTART;        // restart system call after signal handler
+
+    if (sigaction(SIGPROF, &act, NULL) != 0) {
+        VM_RAISE0("Profiler: sigaction failed\n");
+    }
+    startTimer();
+}
+
+void VM::startTimer()
+{
+    const int INTERVAL_USEC = 10 * 1000;
+    struct itimerval tval, oval;
+    tval.it_interval.tv_sec = 0;
+    tval.it_interval.tv_usec = INTERVAL_USEC;
+    tval.it_value.tv_sec = 0;
+    tval.it_value.tv_usec = INTERVAL_USEC;
+    setitimer(ITIMER_PROF, &tval, &oval);
+}
+
+void VM::stopTimer()
+{
+    struct itimerval tval, oval;
+    tval.it_interval.tv_sec = 0;
+    tval.it_interval.tv_usec = 0;
+    tval.it_value.tv_sec = 0;
+    tval.it_value.tv_usec = 0;
+    setitimer(ITIMER_PROF, &tval, &oval);
+}
+
+void VM::collectProfile()
+{
+    static int i = 0;
+    if (i >= SAMPLE_NUM) {
+        printf("stop***********************");
+        stopTimer();
+    } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        samples_[i++] = ac_;
+    } else {
+        samples_[i++] = cl_;
+    }
+    totalSampleCount_++;
+}
+
+Object VM::getProfileResult()
+{
+    Object ret = Object::Nil;
+    Object ht = nameSpace_.toEqHashTable()->swap();
+    printf("total sample count=%d\n", totalSampleCount_);
+    for (int i = 0; i < SAMPLE_NUM; i++) {
+        // check global namespace
+        const Object o = samples_[i];
+        if (o.isClosure()) {
+            const Object name = ht.toEqHashTable()->ref(o, notFound_);
+            if (name != notFound_) {
+                const Object s = splitId(name);
+                ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
+            }
+        // check subroutine written in C++
+        } else if (o.isCProcedure()) {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            for (int k = 0; k < cProcNum; k++) {
+                if (o == cProcs[k]) {
+                    LOG1("freeProc[~d]\n", Object::makeInt(k));
+                }
+            }
+        }
+    }
+    
+    LOG1("ret=~a\n", ret);
+    return Object::cons(Object::makeInt(totalSampleCount_), ret);
 }

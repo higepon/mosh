@@ -83,6 +83,8 @@ public:
         memcpy(dst, src, sizeof(jmp_buf));
     }
 
+    void collectProfile();
+
     Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
     Object evaluate(Object codeVector);
@@ -123,6 +125,13 @@ public:
             RAISE2("~a on library ~a : defined twice\n", e.cdr(), e.car());
         }
     }
+
+    // Profiler
+    void initProfiler();
+    void startTimer();
+    void stopTimer();
+    void collecProfile();
+    Object getProfileResult();
 
 protected:
 
@@ -309,6 +318,10 @@ protected:
     Object stdinPort_;
     Object errorObj_;
     Object errorHandler_;
+    word labelReturn_;           // for profiler
+    static const int SAMPLE_NUM; // for profiler
+    Object* samples_;            // for profiler
+    int totalSampleCount_;       // for profiler
     jmp_buf returnPoint_;
 };
 

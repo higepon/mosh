@@ -49,9 +49,11 @@ Object scheme::currentErrorPortEx(Object args)
 }
 Object scheme::hashTableKeysEx(Object args)
 {
-    printf("hash-table-keys called\n");
-    return Object::UnBound;
-
+    const Object ht = args.first();
+    if (!ht.isEqHashTable()) {
+        VM_RAISE1("hash-table-keys hash-table required, but got ~a\n", ht);
+    }
+    return ht.toEqHashTable()->keys();
 }
 Object scheme::hashTableSetEx(Object args)
 {
