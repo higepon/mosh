@@ -53,7 +53,7 @@ using namespace scheme;
     pc_ = pc;                     \
     sp_ = sp;
 
-VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort) :
+VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
@@ -62,7 +62,8 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     errorPort_(errorPort),
     inputPort_(inputPort),
     stdinPort_(Object::makeBinaryInputPort(stdin)),
-    errorObj_(Object::Nil)
+    errorObj_(Object::Nil),
+    isProfiler_(isProfiler)
 {
 #ifdef USE_BOEHM_GC
     stack_ = new (GC)Object[stackSize];
@@ -447,13 +448,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
                 returnCode[1] = operand;
                 pc_  = returnCode;
+                countCall(ac_);
             } else if (ac_.isClosure()) {
 
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
                     RAISE1("stack over flow sp=~d", Object::makeInt(sp_ - stack_));
                 }
-
+                countCall(ac_);
                 const int argLength = operand.toInt();
                 const int requiredLength = c->argLength;
                 cl_ = ac_;
@@ -1438,7 +1440,7 @@ void VM::raiseFormat(const ucs4char* fmt, Object list)
 //----------------------------------------------------------------------
 extern VM* theVM;
 extern Object stringTosymbolEx(Object args);
-const int VM::SAMPLE_NUM = 5000;
+const int VM::SAMPLE_NUM = 50000;
 
 static void signal_handler(int signo)
 {
@@ -1449,12 +1451,16 @@ void VM::initProfiler()
 {
 #ifdef USE_BOEHM_GC
     samples_ = new (GC)Object[SAMPLE_NUM];
+    callSamples_ = new (GC)Object[SAMPLE_NUM];
 #else
     samples_ = new Object[SAMPLE_NUM];
+    callSamples_ = new Object[SAMPLE_NUM];
 #endif
+    callHash_ = Object::makeEqHashTable();
     totalSampleCount_ = 0;
     for (int i = 0; i < SAMPLE_NUM; i++) {
         samples_[i] = Object::Nil;
+        callSamples_[i] = Object::Nil;
     }
     struct sigaction act;
     act.sa_handler = &signal_handler; // set signal_handler
@@ -1491,15 +1497,72 @@ void VM::collectProfile()
 {
     static int i = 0;
     if (i >= SAMPLE_NUM) {
-        printf("stop***********************");
+        printf("profiler buffer stop***********************");
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         samples_[i++] = ac_;
     } else {
         samples_[i++] = cl_;
     }
     totalSampleCount_++;
+}
+
+Object VM::storeCallSample()
+{
+    EqHashTable* ht = callHash_.toEqHashTable();
+    for (int i = 0; i < SAMPLE_NUM; i++) {
+        const Object proc = callSamples_[i];
+        const Object i = ht->ref(proc, Object::False);
+        if (i.isInt()) {
+            ht->set(proc, Object::makeInt(i.toInt() + 1));
+
+        } else {
+            ht->set(proc, Object::makeInt(1));
+        }
+    }
+}
+
+Object VM::getCallHash()
+{
+    Object ret = Object::Nil;
+    Object ht = nameSpace_.toEqHashTable()->swap();
+    EqHashTable* calls = callHash_.toEqHashTable();
+    Vector* keys  = calls->keys().toVector();
+    for (int i = 0; i < keys->length(); i++) {
+        const Object o = keys->ref(i);
+        const Object name = ht.toEqHashTable()->ref(o, notFound_);
+        if (name != notFound_) {
+            const Object s = splitId(name);
+            ret = Pair::append(ret, L1(L2(s.cdr(), calls->ref(o, notFound_))));
+        }
+
+    }
+    LOG1("<~a>", ret);
+    return ret;
+
+//     for (int i = 0; i < SAMPLE_NUM; i++) {
+//         // check global namespace
+//         const Object o = samples_[i];
+//         if (o.isClosure()) {
+//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
+//             if (name != notFound_) {
+//                 const Object s = splitId(name);
+//                 ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
+//             }
+//         // check subroutine written in C++
+//         } else if (o.isCProcedure()) {
+//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//             for (int k = 0; k < cProcNum; k++) {
+//                 if (o == cProcs[k]) {
+//                     LOG1("freeProc[~d]\n", Object::makeInt(k));
+//                 }
+//             }
+//         }
+//     }
+
+//     return Object::cons(Object::makeInt(totalSampleCount_), ret);
+
+
 }
 
 Object VM::getProfileResult()
@@ -1525,6 +1588,21 @@ Object VM::getProfileResult()
             }
         }
     }
+    
 
-    return Object::cons(Object::makeInt(totalSampleCount_), ret);
+    // call trace
+    Object ret2 = Object::Nil;
+    EqHashTable* calls = callHash_.toEqHashTable();
+    Vector* keys  = calls->keys().toVector();
+    for (int i = 0; i < keys->length(); i++) {
+        const Object o = keys->ref(i);
+        const Object name = ht.toEqHashTable()->ref(o, notFound_);
+        if (name != notFound_) {
+            const Object s = splitId(name);
+            ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
+        }
+
+    }
+
+    return Object::cons(Object::makeInt(totalSampleCount_), Object::cons(ret2, ret));
 }

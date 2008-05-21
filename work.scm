@@ -1,14 +1,12 @@
 
-(define result '(69 generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc append $append-map1-sum))
+(define result '(69 ((generic-assoc . 10000) (hoge . 3) (hige . 13) (append . 100000000) ($append-map1-sum . 2)) generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc append $append-map1-sum))
 
 
 ;;; borrowed from elk
-
 (define (sort obj pred)
   (vector->list (sort! (list->vector obj) pred)))
 
 (define (sort! v pred)
-  (let ((len (vector-length v)))
     (define (internal-sort l r)
       (let ((i l) (j r) (x (vector-ref v (/ (- (+ l r) 1) 2))))
     (let loop ()
@@ -26,6 +24,8 @@
         (internal-sort l j))
     (if (< i r)
         (internal-sort i r))))
+  (let ((len (vector-length v)))
+
     (if (> len 1)
     (internal-sort 0 (- len 1)))
     v))
@@ -50,10 +50,11 @@
 
 ;; result format is '(total-sample-count sym1 sym2 ... symn)
 (define (show-profile result)
-  (let ([total (car result)]
-        [syms  (cdr result)]
+  (let ([total (first result)]
+        [calls (second result)]
+        [syms  (cddr result)]
         [table (make-eq-hashtable)])
-    (print "time%        msec    name")
+    (print "time%       msec      calls   name")
     (let loop ([syms syms])
       (cond
        [(null? syms)
@@ -65,14 +66,26 @@
         (loop (cdr syms))]))
     (for-each
      (lambda (x)
-       (format #t "   ~a  ~a    ~a\n" (lpad (third x) " " 2) (lpad (* (second x) 10) " " 10) (rpad (first x) " " 30)))
+       (let1 call-info (assoc (first x) calls)
+         (format #t " ~a   ~a ~a   ~a    ~a\n" (lpad (third x) " " 2) (lpad (* (second x) 10) " " 10) (lpad (cdr call-info) " " 10) (rpad (first x) " " 30))))
      (sort
       (hash-table-map
        (lambda (key value)
          (list key value (/ (* 100 value) total)))
        table)
       (lambda (x y) (> (third x) (third y)))))
-    (format #t "   ~a  ~d    ~a\n" "**" (lpad (* (* total 10)) " " 10) (rpad "total" " " 30))))
+    (let1 seen-syms (vector->list (hash-table-keys table))
+    (for-each
+     (lambda (p)
+         (format #t "  0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
+     (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (< a b)))))
+    (format #t "  **  ~d         **   total\n" (lpad (* (* total 10)) " " 10))))
 
+
+(define (show-ht ht)
+  (for-each
+   (lambda (x)
+     (format #t "~a ~a\n" (first x) (second x)))
+   ht))
 
 (show-profile result)

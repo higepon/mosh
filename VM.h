@@ -73,7 +73,7 @@ inline Object L4(Object a, Object b, Object c, Object d) { return Pair::list4(a,
 class VM EXTEND_GC
 {
 public:
-    VM(int stackSize, TextualOutputPort& outPort, TextualOutputPort& errorPort, Object inputPort);
+    VM(int stackSize, TextualOutputPort& outPort, TextualOutputPort& errorPort, Object inputPort, bool isProfiler = false);
     ~VM();
 
     void importTopLevel();
@@ -132,6 +132,24 @@ public:
     void stopTimer();
     void collecProfile();
     Object getProfileResult();
+    Object getCallHash();
+    Object storeCallSample();
+    void countCall(Object proc)
+    {
+        if (isProfiler_) {
+            static int i = 0;
+            if (i >= SAMPLE_NUM) {
+                stopTimer();
+                storeCallSample();
+                startTimer();
+                i = 0;
+            }
+            callSamples_[i++] = proc;
+        }
+    }
+
+
+    
 
 protected:
 
@@ -321,7 +339,10 @@ protected:
     word labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler
     Object* samples_;            // for profiler
+    Object* callSamples_;        // for profiler
+    Object callHash_;            // for profiler
     int totalSampleCount_;       // for profiler
+    const bool isProfiler_;            // for profiler
     jmp_buf returnPoint_;
 };
 

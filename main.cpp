@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
 
-    theVM = new VM(200000, outPort, errorPort, inPort);
+    theVM = new VM(200000, outPort, errorPort, inPort, isProfiler);
 
     // Do not call Symbol::intern before you load precompiled compiler!
     const Object compiler = getCompiler();
@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 
     if (isProfiler) {
         Object result = theVM->getProfileResult();
-        static Object proc = Symbol::intern(UC("show-profile"));
+        Object proc = Symbol::intern(UC("show-profile"));
         theVM->callClosureByName(proc, result);
     }
 
