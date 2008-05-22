@@ -47,19 +47,19 @@ Object scheme::currentErrorPortEx(Object args)
     return Object::UnBound;
 
 }
-Object scheme::hashTableKeysEx(Object args)
+Object scheme::hashtableKeysEx(Object args)
 {
     const Object ht = args.first();
     if (!ht.isEqHashTable()) {
-        VM_RAISE1("hash-table-keys hash-table required, but got ~a\n", ht);
+        VM_RAISE1("hashtable-keys hash-table required, but got ~a\n", ht);
     }
     return ht.toEqHashTable()->keys();
 }
-Object scheme::hashTableSetEx(Object args)
+Object scheme::hashtableSetEx(Object args)
 {
     const Object ht = args.first();
     if (!ht.isEqHashTable()) {
-        VM_RAISE1("hash-table-set! hash-table required, but got ~a\n", ht);
+        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", ht);
     }
 
     if (Pair::length(args) == 3) {
@@ -68,16 +68,16 @@ Object scheme::hashTableSetEx(Object args)
         ht.toEqHashTable()->set(key, val);
         return Object::Undef;
     } else {
-        VM_RAISE1("wrong number of arguments for hash-table-set! (required 3, got ~d)\n", Object::makeInt(Pair::length(args)));
+        VM_RAISE1("wrong number of arguments for hashtable-set! (required 3, got ~d)\n", Object::makeInt(Pair::length(args)));
     }
     return Object::UnBound;
 }
 
-Object scheme::hashTableRefEx(Object args)
+Object scheme::hashtableRefEx(Object args)
 {
     const Object ht = args.first();
     if (!ht.isEqHashTable()) {
-        VM_RAISE1("hash-table-get hash-table required, but got ~a\n", ht);
+        VM_RAISE1("hashtable-ref hash-table required, but got ~a\n", ht);
     }
 
     const int length = Pair::length(args);

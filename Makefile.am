@@ -44,7 +44,7 @@ TypedVector.h        \
 TypedVector.cpp      \
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -pg #-fomit-frame-pointer
+mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a
 

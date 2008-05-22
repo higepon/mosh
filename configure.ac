@@ -31,6 +31,16 @@ if test "$GOSH" != "gosh"
     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
 fi
 
+AC_ARG_ENABLE(profiler, [  --disable-profiler trun off profiler [default no]],,disable_profiler=no)
+AC_MSG_CHECKING(whether to enable profiler)
+if test x$disable_profiler = xyes; then
+  AC_MSG_RESULT(yes)
+else
+  AC_MSG_RESULT(no)
+  AC_DEFINE(ENABLE_PROFILER, , enable -p option for profiling)
+fi
+
+
 # Checks for libraries.
 
 # Checks for header files.

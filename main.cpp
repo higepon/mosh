@@ -59,12 +59,14 @@ void showVersion()
 void showUsage()
 {
     fprintf(stderr,
-            "Usage: mosh [-vhV] [file]\n"
+            "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"
-            "  -p       Execute wit profiler.\n"
+#ifdef ENABLE_PROFILER
+            "  -p       Execute with profiler.\n"
+#endif
             "  -t       Executes test.\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
@@ -73,12 +75,12 @@ void showUsage()
     exit(EXIT_FAILURE);
 }
 
+#ifdef ENABLE_PROFILER
 void signal_handler(int signo)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM->collectProfile();
 }
-
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (optind > argc) {
+    if (optind > argc || (isProfiler && optind == argc)) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
@@ -144,9 +146,11 @@ int main(int argc, char *argv[])
     theVM->importTopLevel();
     theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc - optind, &argv[optind]));
 
+#ifdef ENABLE_PROFILER
     if (isProfiler) {
         theVM->initProfiler();
     }
+#endif
 
     theVM->evaluate(compiler);
 
@@ -166,11 +170,12 @@ int main(int argc, char *argv[])
     fclose(stream);
 #endif
 
+#ifdef ENABLE_PROFILER
     if (isProfiler) {
-        Object result = theVM->getProfileResult();
-        Object proc = Symbol::intern(UC("show-profile"));
-        theVM->callClosureByName(proc, result);
+        const Object result = theVM->getProfileResult();
+        theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
+#endif
 
     exit(EXIT_SUCCESS);
 }

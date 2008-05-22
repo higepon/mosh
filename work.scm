@@ -1,5 +1,6 @@
 
-(define result '(69 ((generic-assoc . 10000) (hoge . 3) (hige . 13) (append . 100000000) ($append-map1-sum . 2)) generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc append $append-map1-sum))
+(define result '(69 
+((generic-assoc . 10000) (hoge . 3) (hige . 13) (append . 100000000) ($append-map1-sum . 2)) generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc generic-assoc append $append-map1-sum))
 
 
 ;;; borrowed from elk

@@ -7,7 +7,7 @@
   (define pp print)
   (define open-string-input-port open-input-string)
   (define make-eq-hashtable make-hash-table)
-  (define hash-table-set! hash-table-put!)
+  (define hashtable-set! hash-table-put!)
   (define hash-table-ref hash-table-get)
   (define find10 find)
   (define foldr2 fold-right)
@@ -17,7 +17,7 @@
   (define *command-line-args* '())
   (define (command-line) *command-line-args*)
   (define make-eq-hashtable make-hash-table)
-  (define hash-table-set! hash-table-put!)
+  (define hashtable-set! hash-table-put!)
   (define hash-table-ref hash-table-get)
   (define dd (lambda a '()))
   (define pp (lambda a '()))
@@ -933,11 +933,13 @@
         ($seq iforms tail?))))
 
 (define ($take lis k)
-  (let recur ((lis lis) (k k))
-    (if (zero? k)
-      '()
-      (cons (car lis)
-            (recur (cdr lis) (- k 1))))))
+  (if (< (length lis) k)
+      lis
+      (let recur ((lis lis) (k k))
+        (if (zero? k)
+            '()
+            (cons (car lis)
+                  (recur (cdr lis) (- k 1)))))))
 
 (define ($drop x i)
   (let loop ((n i) (l x))
@@ -1036,7 +1038,7 @@
     ($library.set-export-syms! lib (extract-exports ($library.import-syms lib) ($library.name lib) (third sexp)))
     ;; We compile body at runtime.
     ($library.set-body! lib (cddddr sexp))
-    (hash-table-set! libraries ($library.name lib) lib)
+    (hashtable-set! libraries ($library.name lib) lib)
     lib))
 
 (define (pass1/import->iform sexp library)
@@ -1062,7 +1064,7 @@
       [(only)
        (let1 only-binds (cddr form)
          (acond
-          [(hash-table-ref libraries (library-name (second form)) #f)
+          [(hashtable-ref libraries (library-name (second form)) #f)
            ($library.add-import-syms! library ($filter-map1 (lambda (x)
                                                               (if (memq (car x) only-binds)
                                                                   (copy-identifier x)
@@ -1074,7 +1076,7 @@
       [(except)
        (let1 except-binds (cddr form)
          (acond
-          [(hash-table-ref libraries (library-name (second form)) #f)
+          [(hashtable-ref libraries (library-name (second form)) #f)
            ($library.add-import-syms! library ($filter-map1 (lambda (x)
                                                               (if (memq (car x) except-binds)
                                                                   #f ;; not imported
@@ -1086,7 +1088,7 @@
       [(rename)
        (let1 renames (cddr form)
          (acond
-          [(hash-table-ref libraries (library-name (second form)) #f)
+          [(hashtable-ref libraries (library-name (second form)) #f)
            ($library.add-import-syms! library ($filter-map1 (lambda (x)
                                                               (aif (find10 (lambda (rename) (eq? (first x) (first rename))) renames)
                                                                    (make-identifier (second it) (second x) (third x))
@@ -1098,7 +1100,7 @@
       [(prefix)
        (let1 prefix (symbol->string (third form))
          (acond
-          [(hash-table-ref libraries (library-name (second form)) #f)
+          [(hashtable-ref libraries (library-name (second form)) #f)
            ($library.add-import-syms! library ($filter-map1 (lambda (x) (make-identifier
                                                                          (string->symbol (string-append prefix (symbol->string (first x))))
                                                                          (second x)
@@ -1109,7 +1111,7 @@
            (error "library " (library-name (second form)) " not found")]))]
       [else
        (acond
-        [(hash-table-ref libraries (library-name form) #f)
+        [(hashtable-ref libraries (library-name form) #f)
          ($library.add-import-syms! library ($map1 copy-identifier ($library.export-syms it)))
          ($import-spec ($library.name it) level)]
         [#t
@@ -1196,8 +1198,6 @@
            ; So we use acons instead.
            ($library.set-macro! library (acons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library) ($library.macro library)))
            ($library.set-macro! library (acons (second sexp) (compile-partial (third sexp)) ($library.macro library))))
-;           (hash-table-set! ($library.macro library) (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library))
-;           (hash-table-set! ($library.macro library) (second sexp) (compile-partial (third sexp))))
        ($undef)]
       ;;---------------------------- let ---------------------------------------
       [(let)
@@ -1314,7 +1314,7 @@
           [(and (symbol? proc) (assoc proc ($library.macro library)))
            (sexp->iform (pass1/expand (vm/apply (cdr it) (cdr sexp))))]
           [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
-           (let* ([lib (hash-table-ref libraries (second it) #f)]
+           (let* ([lib (hashtable-ref libraries (second it) #f)]
                   [mac (assoc (third it) ($library.macro lib))])
              (if mac
                  (sexp->iform (pass1/expand (vm/apply (cdr mac) (cdr sexp))))
@@ -1333,11 +1333,11 @@
 ;;       [else
 ;;        (let1 proc (first sexp)
 ;;          (acond
-;;           [(and (symbol? proc) (hash-table-ref ($library.macro library) proc #f))
+;;           [(and (symbol? proc) (hashtable-ref ($library.macro library) proc #f))
 ;;            (sexp->iform (pass1/expand (vm/apply it (cdr sexp))))]
 ;;           [(and (symbol? proc) (find (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
-;;            (let* ([lib (hash-table-ref libraries (second it) #f)]
-;;                   [mac (hash-table-ref ($library.macro lib) (third it) #f)])
+;;            (let* ([lib (hashtable-ref libraries (second it) #f)]
+;;                   [mac (hashtable-ref ($library.macro lib) (third it) #f)])
 ;;              (if mac
 ;;                  (sexp->iform (pass1/expand (vm/apply mac (cdr sexp))))
 ;;                  ($call (sexp->iform proc)
@@ -2694,7 +2694,7 @@
   (define (rec i)
     ($append-map1 (lambda (s)
                     (let* ([libname      ($import-spec.libname s)]
-                           [lib          (hash-table-ref libraries libname)]
+                           [lib          (hashtable-ref libraries libname)]
                            [end-of-frame (make-label)])
                       `(,@(rec ($library.import lib))
                         FRAME  ;; We execute (RETURN 0) in library body

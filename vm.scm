@@ -1217,7 +1217,7 @@
                 (VM codes (skip 1) a fp c stack sp)]
                ;;---------------------------- LIBRARY --------------------------
                [(LIBRARY)
-                (hash-table-set! vm-libraries (next 1) (next 2))
+                (hashtable-set! vm-libraries (next 1) (next 2))
                 (VM codes (skip 2) a fp c stack sp)]
                ;;---------------------------- IMPORT -----------------------------
                [(IMPORT)
@@ -1293,7 +1293,7 @@
 (define (define-global lib-id val)
   (if (hash-table-get vm-name-space lib-id #f)
       '();      (errorf "~a defined twice" lib-id)
-      (hash-table-set! vm-name-space lib-id val)))
+      (hashtable-set! vm-name-space lib-id val)))
 
 (define (refer-global lib-id)
   (aif (hash-table-get vm-name-space lib-id #f)
@@ -1302,13 +1302,13 @@
 
 (define (assign-global lib-id val)
   (aif (hash-table-get vm-name-space lib-id #f)
-       (hash-table-set! vm-name-space lib-id val)
+       (hashtable-set! vm-name-space lib-id val)
        (errorf "can not set! to unbound variable ~a" lib-id)))
 
 (define (vm-import lib)
   (if (fetch-instance lib)
       '() ; already imported
-      (hash-table-set! vm-instances lib (make-hash-table 'eq?))))
+      (hashtable-set! vm-instances lib (make-hash-table 'eq?))))
 
 ;; Store bound variables as (libname . (name . val)).
 ;; Not depend on compiler.

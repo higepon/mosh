@@ -35,6 +35,12 @@
     extern FILE* stream;
 #endif
 
+#ifdef ENABLE_PROFILER
+#define COUNT_CALL(a) countCall(a)
+#else
+#define COUNT_CALL(a) /* */
+#endif
+
 using namespace scheme;
 
 #define SAVE_REGISTERS()                       \
@@ -378,7 +384,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #include "labels.cpp"
 
     if (returnTable) {
+#ifdef ENABLE_PROFILER
         labelReturn_ = reinterpret_cast<word>(&&LABEL_RETURN); // used for profiler
+#endif
         return Object::makeRaw(dispatch_table);
     }
 #endif
@@ -445,17 +453,18 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #ifdef DUMP_ALL_INSTRUCTIONS
                 fwrite(logBuf, 1, 2, stream);
 #endif
+                COUNT_CALL(ac_);
                 ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
                 returnCode[1] = operand;
                 pc_  = returnCode;
-                countCall(ac_);
+
             } else if (ac_.isClosure()) {
 
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
                     RAISE1("stack over flow sp=~d", Object::makeInt(sp_ - stack_));
                 }
-                countCall(ac_);
+                COUNT_CALL(ac_);
                 const int argLength = operand.toInt();
                 const int requiredLength = c->argLength;
                 cl_ = ac_;
@@ -1435,6 +1444,7 @@ void VM::raiseFormat(const ucs4char* fmt, Object list)
     raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), getStackTrace())));
 }
 
+#ifdef ENABLE_PROFILER
 //----------------------------------------------------------------------
 //    Profiler
 //----------------------------------------------------------------------
@@ -1472,6 +1482,11 @@ void VM::initProfiler()
     startTimer();
 }
 
+void VM::stopProfiler()
+{
+    stopTimer();
+}
+
 void VM::startTimer()
 {
     const int INTERVAL_USEC = 10 * 1000;
@@ -1497,7 +1512,7 @@ void VM::collectProfile()
 {
     static int i = 0;
     if (i >= SAMPLE_NUM) {
-        printf("profiler buffer stop***********************");
+        errorPort_.display(UC("buffer full profilerrrr stopped."));
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
         samples_[i++] = ac_;
@@ -1512,61 +1527,31 @@ Object VM::storeCallSample()
     EqHashTable* ht = callHash_.toEqHashTable();
     for (int i = 0; i < SAMPLE_NUM; i++) {
         const Object proc = callSamples_[i];
-        const Object i = ht->ref(proc, Object::False);
-        if (i.isInt()) {
-            ht->set(proc, Object::makeInt(i.toInt() + 1));
-
+        const Object count = ht->ref(proc, Object::False);
+        if (count.isNil()) {
+            continue;
+        } else if (count.isInt()) {
+            ht->set(proc, Object::makeInt(count.toInt() + 1));
         } else {
             ht->set(proc, Object::makeInt(1));
         }
+        callSamples_[i] = Object::Nil;
     }
 }
 
-Object VM::getCallHash()
+Object VM::getCProcedureName(Object proc)
 {
-    Object ret = Object::Nil;
-    Object ht = nameSpace_.toEqHashTable()->swap();
-    EqHashTable* calls = callHash_.toEqHashTable();
-    Vector* keys  = calls->keys().toVector();
-    for (int i = 0; i < keys->length(); i++) {
-        const Object o = keys->ref(i);
-        const Object name = ht.toEqHashTable()->ref(o, notFound_);
-        if (name != notFound_) {
-            const Object s = splitId(name);
-            ret = Pair::append(ret, L1(L2(s.cdr(), calls->ref(o, notFound_))));
+    for (int k = 0; k < cProcNum; k++) {
+        if (proc == cProcs[k]) {
+            return Symbol::intern(cProcNames[k]);
         }
-
     }
-    LOG1("<~a>", ret);
-    return ret;
-
-//     for (int i = 0; i < SAMPLE_NUM; i++) {
-//         // check global namespace
-//         const Object o = samples_[i];
-//         if (o.isClosure()) {
-//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
-//             if (name != notFound_) {
-//                 const Object s = splitId(name);
-//                 ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
-//             }
-//         // check subroutine written in C++
-//         } else if (o.isCProcedure()) {
-//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//             for (int k = 0; k < cProcNum; k++) {
-//                 if (o == cProcs[k]) {
-//                     LOG1("freeProc[~d]\n", Object::makeInt(k));
-//                 }
-//             }
-//         }
-//     }
-
-//     return Object::cons(Object::makeInt(totalSampleCount_), ret);
-
-
+    return Symbol::intern(UC("<unknwon subr>"));
 }
 
 Object VM::getProfileResult()
 {
+    stopProfiler();
     Object ret = Object::Nil;
     Object ht = nameSpace_.toEqHashTable()->swap();
     for (int i = 0; i < SAMPLE_NUM; i++) {
@@ -1578,31 +1563,29 @@ Object VM::getProfileResult()
                 const Object s = splitId(name);
                 ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
             }
-        // check subroutine written in C++
-        } else if (o.isCProcedure()) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            for (int k = 0; k < cProcNum; k++) {
-                if (o == cProcs[k]) {
-                    LOG1("freeProc[~d]\n", Object::makeInt(k));
-                }
-            }
         }
     }
-    
 
+    storeCallSample();
     // call trace
     Object ret2 = Object::Nil;
     EqHashTable* calls = callHash_.toEqHashTable();
     Vector* keys  = calls->keys().toVector();
     for (int i = 0; i < keys->length(); i++) {
         const Object o = keys->ref(i);
-        const Object name = ht.toEqHashTable()->ref(o, notFound_);
-        if (name != notFound_) {
-            const Object s = splitId(name);
-            ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
+        if (o.isCProcedure()) {
+            ret2 = Pair::append(ret2, L1(Object::cons(getCProcedureName(o), calls->ref(o, notFound_))));
+        } else  {
+            const Object name = ht.toEqHashTable()->ref(o, notFound_);
+            if (name != notFound_) {
+                const Object s = splitId(name);
+                ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
+                continue;
+            }
         }
 
     }
-
     return Object::cons(Object::makeInt(totalSampleCount_), Object::cons(ret2, ret));
 }
+
+#endif // ENABLE_PROFILER

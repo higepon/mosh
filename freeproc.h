@@ -38,9 +38,9 @@ namespace scheme {
 
 Object dummy(Object obj);
 Object currentErrorPortEx(Object args);
-Object hashTableKeysEx(Object args);
-Object hashTableSetEx(Object args);
-Object hashTableRefEx(Object args);
+Object hashtableKeysEx(Object args);
+Object hashtableSetEx(Object args);
+Object hashtableRefEx(Object args);
 Object makeEqHashtableEx(Object args);
 Object numberPEx(Object args);
 Object consEx(Object args);

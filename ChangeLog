@@ -1,3 +1,8 @@
+2008-05-22  higepon  <higepon@users.sourceforge.jp>
+
+        * Added profiler.
+          With -p option, you can enable profiler.
+
 2008-05-21  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (vector-for-each): Added (vector-for-each ...), Added (hash-table-for-each ...).
@@ -8,7 +13,6 @@
 
         * vm.scm: Added pre-compiled macro support.
                   Only for top level macro defined at library.scm.
->>>>>>> .r46
 2008-05-19  higepon  <higepon@users.sourceforge.jp>
 
         * 0.0.3 released.

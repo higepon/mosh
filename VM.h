@@ -126,14 +126,16 @@ public:
         }
     }
 
+#ifdef ENABLE_PROFILER
     // Profiler
     void initProfiler();
+    void stopProfiler();
     void startTimer();
     void stopTimer();
     void collecProfile();
     Object getProfileResult();
-    Object getCallHash();
     Object storeCallSample();
+    Object getCProcedureName(Object proc);
     void countCall(Object proc)
     {
         if (isProfiler_) {
@@ -147,9 +149,7 @@ public:
             callSamples_[i++] = proc;
         }
     }
-
-
-    
+#endif
 
 protected:
 
@@ -171,13 +171,6 @@ protected:
     }
 
     Object splitId(Object id);
-
-// (define (stack->pair-args stack sp num-args)
-//   (let loop ([n (- num-args 1)])
-//     (if (>= n 0)
-//         (cons (index stack sp n) (loop (- n 1)) )
-//         '())))
-
 
     Object stackToPairArgs(Object* sp, int nArgs)
     {
@@ -336,13 +329,15 @@ protected:
     Object stdinPort_;
     Object errorObj_;
     Object errorHandler_;
+#ifdef ENABLE_PROFILER
     word labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler
     Object* samples_;            // for profiler
     Object* callSamples_;        // for profiler
     Object callHash_;            // for profiler
     int totalSampleCount_;       // for profiler
-    const bool isProfiler_;            // for profiler
+#endif
+    const bool isProfiler_;      // for profiler
     jmp_buf returnPoint_;
 };
 

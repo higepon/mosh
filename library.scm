@@ -1006,6 +1006,30 @@
 (define (append . ll)
     (foldr1 append2 (cons '() ll)))
 
+;; Applies proc element-wise to the elements of the vectors for its side effects, in order from the first elements to the last. Proc is always called in the same dynamic environment as vector-for-each itself.(todo vector2 ...)
+;; .form (vector-for-each proc vector1 vector2 ...)
+;; .pre-condition The vectors must all have the same length. Proc should accept as many arguments as there are vectors.
+;; .returns unspecified.
+(define (vector-for-each proc v)
+  (let1 len (vector-length v)
+    (let loop ([i 0])
+      (cond
+       [(>= i len) '()]
+       [else
+          (proc (vector-ref v i))
+          (loop (+ i 1))]))))
+
+;; Applies proc element-wise to the elements of the vectors and returns a vector of the results, in order.
+;; .form (vector-map proc vector1 vector2 ...)
+;; .pre-condition The vectors must all have the same length. Proc should accept as many arguments as there are vectors and return a single value.
+;; .returns a vectors
+(define (vector-map proc v)
+  (let1 len (vector-length v)
+    (let loop ([i 0])
+      (if (>= i len)
+          '()
+          (list->vector (cons (proc (vector-ref v i)) (loop (+ i 1))))))))
+
 ; ==============================================================================================================================================================
 ;;; Bytevectors.
 ;;; R6RS library Chapter 2.
@@ -1542,17 +1566,17 @@
 ;; Changes hashtable to associate key with obj, adding a new association or replacing any existing association for key.
 ;; .form (hashtable-set! hashtable key obj)
 ;; .returns unspecified
-(define-doc (hash-table-set!) ...)
+(define-doc (hashtable-set!) ...)
 
 ;; Returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned.
 ;; .form (hashtable-ref hashtable key default)
 ;; .returns the value in hashtable associated with key. If hashtable does not contain an association for key, default is returned.
-(define-doc (hash-table-ref) ...)
+(define-doc (hashtable-ref) ...)
 
 ;; (not implmented) Returns a vector of all keys in hashtable. The order of the vector is unspecified.
 ;; .form (hashtable-keys hashtable)
 ;; .returns A vector of all keys in hashtable. The order of the vector is unspecified.
-(define-doc (hash-table-keys) ...)
+(define-doc (hashtable-keys) ...)
 
 ; ==============================================================================================================================================================
 ;;; Eval.
@@ -2055,167 +2079,25 @@
 
 
 ;; todo document
-(define (vector-for-each proc v)
-  (let1 len (vector-length v)
-    (let loop ([i 0])
-      (cond
-       [(>= i len) '()]
-       [else
-          (proc (vector-ref v i))
-          (loop (+ i 1))]))))
 
-(define (hash-table-for-each proc ht)
-  (let1 keys (hash-table-keys ht)
+(define (hashtable-for-each proc ht)
+  (let1 keys (hashtable-keys ht)
     (vector-for-each
      (lambda (key)
-       (proc key (hash-table-ref ht key)))
+       (proc key (hashtable-ref ht key)))
      keys)))
 
-(define (vector-map proc v)
-  (let1 len (vector-length v)
-    (let loop ([i 0])
-      (if (>= i len)
-          '()
-          (cons (proc (vector-ref v i)) (loop (+ i 1)))))))
 
-(define (hash-table-map proc ht)
-  (let1 keys (hash-table-keys ht)
-    (vector-map
+(define (hashtable-map proc ht)
+  (let1 keys (vector->list (hashtable-keys ht))
+    (map
      (lambda (key)
-       (proc key (hash-table-ref ht key)))
+       (proc key (hashtable-ref ht key)))
      keys)))
 
 
-;; ;;; borrowed from elk
-
-;; (define (sort obj pred)
-;;   (vector->list (sort! (list->vector obj) pred)))
-
-;; (define (sort! v pred)
-;;     (define (internal-sort l r)
-;;       (let ((i l) (j r) (x (vector-ref v (/ (- (+ l r) 1) 2))))
-;;         (let loop ()
-;;           (do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))
-;;           (do () ((not (pred x (vector-ref v j)))) (set! j (- j 1)))
-;;           (if (<= i j)
-;;               (let ((temp (vector-ref v i)))
-;;                 (vector-set! v i (vector-ref v j))
-;;                 (vector-set! v j temp)
-;;                 (set! i (+ 1 i))
-;;                 (set! j (- j 1))))
-;;           (if (<= i j)
-;;               (loop)))
-;;         (if (< l j)
-;;             (internal-sort l j))
-;;         (if (< i r)
-;;             (internal-sort i r))))
-;;   (let ((len (vector-length v)))
-;;     (if (> len 1)
-;;         (internal-sort 0 (- len 1)))
-;;     v))
-
-
-;; ;; result format is '(total-sample-count sym1 sym2 ... symn)
-;; (define (show-profile result)
-;;   (let ([total (car result)]
-;;         [syms  (cdr result)]
-;;         [table (make-eq-hashtable)])
-;;     (let loop ([syms syms])
-;;       (cond
-;;        [(null? syms)
-;;           '()]
-;;        [else
-;;         (aif (hash-table-ref table (car syms) #f)
-;;             (hash-table-set! table (car syms) (+ it 1))
-;;             (hash-table-set! table (car syms) 1))
-;;         (loop (cdr syms))]))
-;;     (sort
-;;     (hash-table-map
-;;      (lambda (key value)
-;;        (list key value (/ (* 100 value) total))
-;;        )
-;;      table)
-;;     (lambda (x y) (> (third x) (third y))))))
-
-
-;; ;(print (show-profile result))
-;; (define (sort obj pred)
-;;   (vector->list (sort! (list->vector obj) pred)))
-
-;; (define (sort! v pred)
-;;   (let ((len (vector-length v)))
-;;     (define (internal-sort l r)
-;;       (let ((i l) (j r) (x (vector-ref v (/ (- (+ l r) 1) 2))))
-;;     (let loop ()
-;;          (do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))
-;;          (do () ((not (pred x (vector-ref v j)))) (set! j (- j 1)))
-;;          (if (<= i j)
-;;          (let ((temp (vector-ref v i)))
-;;            (vector-set! v i (vector-ref v j))
-;;            (vector-set! v j temp)
-;;            (set! i (+ 1 i))
-;;            (set! j (- j 1))))
-;;          (if (<= i j)
-;;          (loop)))
-;;     (if (< l j)
-;;         (internal-sort l j))
-;;     (if (< i r)
-;;         (internal-sort i r))))
-;;     (if (> len 1)
-;;     (internal-sort 0 (- len 1)))
-;;     v))
-
-
-;; (define (lpad str pad n)
-;;   (let1 rest (- n (string-length (format "~a" str)))
-;;     (let loop ([rest rest]
-;;                [ret (format "~a" str)])
-;;       (if (<= rest 0)
-;;           ret
-;;           (loop (- rest 1) (string-append pad ret))))))
-
-;; (define (rpad str pad n)
-;;   (let1 rest (- n (string-length (format "~a" str)))
-;;     (let loop ([rest rest]
-;;                [ret (format "~a" str)])
-;;       (if (<= rest 0)
-;;           ret
-;;           (loop (- rest 1) (string-append ret pad))))))
-
-
-;; ;; result format is '(total-sample-count sym1 sym2 ... symn)
-;; (define (show-profile result)
-;;   (let ([total (car result)]
-;;         [syms  (cdr result)]
-;;         [table (make-eq-hashtable)])
-;;     (print "time%        msec    name")
-;;     (let loop ([syms syms])
-;;       (cond
-;;        [(null? syms)
-;;           '()]
-;;        [else
-;;         (aif (hash-table-ref table (car syms) #f)
-;;             (hash-table-set! table (car syms) (+ it 1))
-;;             (hash-table-set! table (car syms) 1))
-;;         (loop (cdr syms))]))
-;;     (for-each
-;;      (lambda (x)
-;;        (format #t "   ~a  ~a    ~a\n" (lpad (third x) " " 2) (lpad (* (second x) 10) " " 10) (rpad (first x) " " 30)))
-;;      (sort
-;;       (hash-table-map
-;;        (lambda (key value)
-;;          (list key value (/ (* 100 value) total)))
-;;        table)
-;;       (lambda (x y) (> (third x) (third y)))))
-;;     (format #t "   ~a  ~d    ~a\n" "**" (lpad (* (* total 10)) " " 10) (rpad "total" " " 30))))
-
-
-;; (define (show-ht ht)
-;;   (for-each
-;;    (lambda (x)
-;;      (format #t "~a ~a\n" (first x) (second x)))
-;;    ht))
-;;; borrowed from elk
+; From elk start.
+; http://www-rn.informatik.uni-bremen.de/software/elk/dist.html
 (define (sort obj pred)
   (vector->list (sort! (list->vector obj) pred)))
 
@@ -2242,7 +2124,7 @@
     (if (> len 1)
     (internal-sort 0 (- len 1)))
     v))
-
+; From elk end
 
 (define (lpad str pad n)
   (let1 rest (- n (string-length (format "~a" str)))
@@ -2261,7 +2143,9 @@
           (loop (- rest 1) (string-append ret pad))))))
 
 
-;; result format is '(total-sample-count sym1 sym2 ... symn)
+; Result is returned by Object VM::getProfileResult()
+; Format is '(total-sample-count ((proc1 . call-count) (proc2 . call-count) ...) sampled-proc1 sampled-proc2 ...)
+; Example (define result '(69 ((generic-assoc . 10000) (hoge . 3) (hige . 13) (append . 100000000) ($append-map1-sum . 2)) generic-assoc $append-map1-sum))
 (define (show-profile result)
   (let ([total (first result)]
         [calls (second result)]
@@ -2273,23 +2157,23 @@
        [(null? syms)
           '()]
        [else
-        (aif (hash-table-ref table (car syms) #f)
-            (hash-table-set! table (car syms) (+ it 1))
-            (hash-table-set! table (car syms) 1))
+        (aif (hashtable-ref table (car syms) #f)
+            (hashtable-set! table (car syms) (+ it 1))
+            (hashtable-set! table (car syms) 1))
         (loop (cdr syms))]))
     (for-each
      (lambda (x)
        (let1 call-info (assoc (first x) calls)
          (format #t " ~a   ~a ~a   ~a    ~a\n" (lpad (third x) " " 3) (lpad (* (second x) 10) " " 10) (lpad (cdr call-info) " " 10) (rpad (first x) " " 30))))
      (sort
-      (hash-table-map
+      (hashtable-map
        (lambda (key value)
          (list key value (/ (* 100 value) total)))
        table)
       (lambda (x y) (> (third x) (third y)))))
-    (let1 seen-syms (vector->list (hash-table-keys table))
-    (for-each
-     (lambda (p)
-         (format #t "   0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
-     (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b))))))
-    (format #t "  **  ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
+    (let1 seen-syms (vector->list (hashtable-keys table))
+      (for-each
+       (lambda (p)
+         (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
+       ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
+    (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
