@@ -1407,6 +1407,23 @@ Object scheme::applyEx(Object args)
     return theVM->applyClosure(proc, argsAsList);
 }
 
+int scheme::div(int x, int y)
+{
+    const int sign = x * y > 0 ? 1 : -1;
+    if (x < 0) {
+        return sign * ((abs(x) + abs(y)) / abs(y));
+    } else if (y < 0) {
+        return sign * (x / abs(y));
+    } else {
+        return sign * (x / y);
+    }
+}
+
+int scheme::mod(int x, int y)
+{
+    return x - div(x, y) * y;
+}
+
 Object scheme::modEx(Object args)
 {
     const int length = Pair::length(args);
@@ -1417,9 +1434,38 @@ Object scheme::modEx(Object args)
     Object arg1 = args.first();
     Object arg2 = args.second();
     if (arg1.isInt() && arg2.isInt()) {
-        return Object::makeInt(arg1.toInt() % arg2.toInt());
+        const int a = arg1.toInt();
+        const int b = arg2.toInt();
+        if (0 == b) {
+            VM_RAISE2("Dividing by zero (mod ~d ~d)", arg1, arg2);
+            return Object::Undef;
+        }
+        return Object::makeInt(mod(a, b));
     } else {
         VM_RAISE2("wrong arguments for mod required (int int), got (~a ~a)\n", arg1, arg2);
+    }
+    return Object::Undef;
+}
+
+Object scheme::divEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length < 2) {
+        VM_RAISE1("wrong number of arguments for div (required 2, got ~d)\n", Object::makeInt(length));
+    }
+
+    Object arg1 = args.first();
+    Object arg2 = args.second();
+    if (arg1.isInt() && arg2.isInt()) {
+        const int a = arg1.toInt();
+        const int b = arg2.toInt();
+        if (0 == b) {
+            VM_RAISE2("Dividing by zero (div ~d ~d)", arg1, arg2);
+            return Object::Undef;
+        }
+        return Object::makeInt(div(a, b));
+    } else {
+        VM_RAISE2("wrong arguments for div required (number number), got (~a ~a)\n", arg1, arg2);
     }
     return Object::Undef;
 }

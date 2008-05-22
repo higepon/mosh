@@ -1,3 +1,9 @@
+2008-05-23  higepon  <higepon@users.sourceforge.jp>
+
+        * Added div procedure and some tests.
+
+        * Fixed the bug of mod procedure and added some tests. (thx leque)
+
 2008-05-22  higepon  <higepon@users.sourceforge.jp>
 
         * Added (exit) procedure.

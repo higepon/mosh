@@ -863,6 +863,15 @@ val
 [mosh-only 0 (/ 2)]
 [mosh-only 0 (/ 3)]
 ;[mosh-only 0 (/ 0)] -> division by zero
+[mosh-only 3 (mod 123 10)]
+[mosh-only 3 (mod 123 -10)]
+[mosh-only 7 (mod -123 10)]
+[mosh-only 7 (mod -123 -10)]
+[mosh-only 12 (div 123 10)]
+[mosh-only -12(div 123 -10)]
+[mosh-only -13 (div -123 10)]
+[mosh-only 13 (div -123 -10)]
+
 ;
 ;; List utilities
 ;; [mosh-only #f

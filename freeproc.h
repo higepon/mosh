@@ -151,8 +151,11 @@ Object typedVectorTypeEx(Object args);
 Object typedVectorPEx(Object args);
 Object applyEx(Object args);
 Object modEx(Object args);
+Object divEx(Object args);
 Object assqEx(Object args);
 Object exitEx(Object args);
+int mod(int x, int y);
+int div(int x, int y);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__
