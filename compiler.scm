@@ -1600,11 +1600,8 @@
             (dd " ")])
           (loop (+ i 1))))))
 
-(define hogera '())
 
 (define (pass2/optimize-local-ref iform)
-  (if (and (vector? (vector-ref iform 1)) (eq? (vector-ref (vector-ref iform 1) 1) 'n))
-      (set! hogera (vector-ref iform 1)))
   (let* ([lvar     ($local-ref.lvar iform)]
          [init-val ($lvar.init-val lvar)]) ;; init-val = #f if lvar belongs to $LAMBDA.
     ;; if lvar is never set! and initial value is constant.

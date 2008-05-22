@@ -112,4 +112,5 @@
     (typed-vector-type ,(lambda a (error "typed-vector-type not implemented")))
     (apply ,apply-proc)
     (mod ,modulo)
+    (assq ,assq)
     ))

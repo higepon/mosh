@@ -1423,3 +1423,24 @@ Object scheme::modEx(Object args)
     }
     return Object::Undef;
 }
+
+Object scheme::assqEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for assq (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg2.isPair() || arg2.isNil()) {
+        for (Object o = arg2; o != Object::Nil; o = o.cdr()) {
+            if (o.car().car() == arg1) {
+                return o.car();
+            }
+        }
+        return Object::False;
+    } else {
+        VM_RAISE2("wrong arguments for mod required (obj list), got (~a ~a)\n", arg1, arg2);
+    }
+    return Object::Undef;
+}
