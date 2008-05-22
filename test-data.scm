@@ -860,6 +860,9 @@ val
 [#t (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))]
 [#f (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))]
 
+[mosh-only 0 (/ 2)]
+[mosh-only 0 (/ 3)]
+;[mosh-only 0 (/ 0)] -> division by zero
 ;
 ;; List utilities
 ;; [mosh-only #f

@@ -1278,7 +1278,7 @@
       [(+)                (operator-nargs->iform '+ 'NUMBER_ADD)]
       [(-)                (operator-nargs->iform '- 'NUMBER_SUB)]
       [(*)                (operator-nargs->iform '* 'NUMBER_MUL)]
-      [(/)                (operator-nargs->iform '* 'NUMBER_DIV)]
+      [(/)                (operator-nargs->iform '/ 'NUMBER_DIV)]
       [(append)           (operator-nargs->iform 'append 'APPEND)]
       [(=)                (numcmp->iform '= (cdr sexp) 'NUMBER_EQUAL)]
       [(>=)               (numcmp->iform '>= (cdr sexp) 'NUMBER_GE)]
