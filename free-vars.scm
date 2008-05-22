@@ -113,4 +113,5 @@
     (apply ,apply-proc)
     (mod ,modulo)
     (assq ,assq)
+    (exit ,exit)
     ))

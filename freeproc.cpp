@@ -1444,3 +1444,8 @@ Object scheme::assqEx(Object args)
     }
     return Object::Undef;
 }
+
+Object scheme::exitEx(Object args)
+{
+    exit(EXIT_SUCCESS);
+}

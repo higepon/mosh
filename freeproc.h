@@ -152,6 +152,7 @@ Object typedVectorPEx(Object args);
 Object applyEx(Object args);
 Object modEx(Object args);
 Object assqEx(Object args);
+Object exitEx(Object args);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

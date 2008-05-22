@@ -1,5 +1,7 @@
 2008-05-22  higepon  <higepon@users.sourceforge.jp>
 
+        * Added (exit) procedure.
+
         * Added profiler.
           With -p option, you can enable profiler.
 
