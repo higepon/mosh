@@ -46,6 +46,16 @@ Object argsToList(int argc, char* argv[])
     return reverseEx(L1(p));
 }
 
+// for precompiled code
+Object arrayToList(Object* array, int size)
+{
+    Object p = Object::Nil;
+    for (int i = size - 1; i >= 0; i--) {
+        p = Object::cons(array[i], p);
+    }
+
+}
+
 #ifdef DUMP_ALL_INSTRUCTIONS
 FILE* stream;
 #endif
@@ -132,6 +142,8 @@ int main(int argc, char *argv[])
 #ifdef USE_BOEHM_GC
     GC_INIT();
 #endif
+
+    arrayToList({Object::Nil,}, 1);
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
