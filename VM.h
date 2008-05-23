@@ -135,6 +135,7 @@ public:
     void collecProfile();
     Object getProfileResult();
     Object storeCallSample();
+    Object storeCallSampleToFile();
     Object getCProcedureName(Object proc);
     void countCall(Object proc)
     {
@@ -142,6 +143,7 @@ public:
             static int i = 0;
             if (i >= SAMPLE_NUM) {
                 stopTimer();
+                storeCallSampleToFile();
                 storeCallSample();
                 startTimer();
                 i = 0;

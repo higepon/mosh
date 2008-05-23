@@ -1522,6 +1522,30 @@ void VM::collectProfile()
     totalSampleCount_++;
 }
 
+Object VM::storeCallSampleToFile()
+{
+    FILE* fp = fopen(PRFILER_TEMP_FILE, "a");
+    FileBinaryOutputPort* p = new FileBinaryOutputPort(fp);
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    TextualOutputPort outPort(TextualOutputPort(p, transcoder));
+
+    Object ht = nameSpace_.toEqHashTable()->swap();
+    for (int i = 0; i < SAMPLE_NUM; i++) {
+        const Object proc = callSamples_[i];
+        if (proc.isCProcedure()) {
+            outPort.display(getCProcedureName(proc));
+            outPort.putChar('\n');
+        } else  {
+            const Object name = ht.toEqHashTable()->ref(proc, notFound_);
+            if (name != notFound_) {
+                outPort.display(splitId(name).cdr());
+            outPort.putChar('\n');
+            }
+        }
+    }
+    fclose(fp);
+}
+
 Object VM::storeCallSample()
 {
     EqHashTable* ht = callHash_.toEqHashTable();

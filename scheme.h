@@ -89,6 +89,8 @@ typedef word ucs4char;
 #include "ucs4string.h"
 #include "oniguruma.h"
 
+#define PRFILER_TEMP_FILE "/tmp/mosh-profiler.log"
+
 namespace scheme {
 
 class HeapObject EXTEND_GC
