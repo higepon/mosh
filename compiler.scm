@@ -594,6 +594,28 @@
            [(let*)
             (pass1/expand (let*->let sexp))]
            [(do)
+;;             (pass1/expand
+;;             (match `(do ,@sexp)
+;;               [('do ((var init step ...) ...)
+;;                    (test expr ...)
+;;                  command ...)
+;;                `(letrec
+;;                     ((loop
+;;                       (lambda (,@var)
+;;                         (if ,test
+;;                             (begin
+;;                               #f ; avoid empty begin
+;;                               ,@expr)
+;;                             (begin
+;;                               ,@command
+;;                               (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
+;;                   (loop ,@init))]
+;;               [('do "step" x)
+;;                x]
+;;               [('do "step" x y)
+;;                y]
+;;               [else
+;;                (error "malformed do")]))]
             (pass1/expand (do->loop sexp))]
            [(cond)
             (pass1/expand (cond->if sexp))]

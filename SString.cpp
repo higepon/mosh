@@ -39,7 +39,7 @@ extern VM* theVM;
 
 ucs4char String::charAt(int n)
 {
-    if (n >= data_.size()) {
+    if (n >= static_cast<int>(data_.size())) {
         VM_RAISE1("string-ref argument out of range:", Object::makeInt(n));
     }
     return data_[n];
