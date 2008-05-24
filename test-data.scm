@@ -871,6 +871,59 @@ val
 [mosh-only -12(div 123 -10)]
 [mosh-only -13 (div -123 10)]
 [mosh-only 13 (div -123 -10)]
+[#\c (string-ref "abc" 2)]
+[#t (list? '(a b c))]
+[#t (list? '())]
+[#f (list? '(a . b))]
+
+;; match
+[(0 1 2 3 4 5)
+ (match '(0 (1 2) (3 4 5))
+   ((a (b c) (d e f))
+    (list a b c d e f)))]
+[(number 123)
+ (match 123
+   ((? string? x) (list 'string x))
+   ((? number? x) (list 'number x)))]
+["normal let, vars=(a c) exprs=(b d)"
+ (define let-analyzer
+   (match-lambda
+    (('let (? symbol?)
+           ((var expr) ...)
+       body ...)
+     (format "named let, vars=~s exprs=~s" var expr))
+    (('let ((var expr) ...)
+       body ...)
+     (format "normal let, vars=~s exprs=~s" var expr))
+    (_
+     (format "malformed let"))))
+(let-analyzer '(let ((a b) (c d)) e f g))]
+["named let, vars=(x y) exprs=((f a b) (f c d))"
+ (let-analyzer '(let foo ((x (f a b)) (y (f c d))) e f g))]
+["malformed let"
+ (let-analyzer '(let (a) b c d))]
+[42
+ (match '(the answer is 42)
+   (`(the answer is ,value) value)
+   (else #f))]
+[#f
+ (match '(the answer was 42)
+   (`(the answer is ,value) value)
+   (else #f))]
+[d
+ (match '(a b c d)
+   ((the answer is value) value)
+   (else #f))]
+["base=mosh suffix=scm"
+ (match "mosh.scm"
+  ((? string? (= #/(.*)\.([^.]+)$/ m))
+   (format "base=~a suffix=~a" (m 1) (m 2))))]
+
+
+
+
+
+
 
 ;
 ;; List utilities

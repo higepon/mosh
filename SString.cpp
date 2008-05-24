@@ -1,5 +1,5 @@
 /*
- * SString.h - <string>
+ * SString.cpp - String.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,38 +26,21 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: SString.h 5210 2008-04-13 01:51:53Z higepon $
+ *  $Id: Regexp.cpp 5271 2008-04-25 05:02:07Z higepon $
  */
 
-#ifndef __SCHEME_STRING_H__
-#define __SCHEME_STRING_H__
+#include "scheme.h"
+#include "SString.h"
+#include "VM.h"
 
-namespace scheme {
+using namespace scheme;
 
-class String EXTEND_GC
+extern VM* theVM;
+
+ucs4char String::charAt(int n)
 {
-public:
-    String(const ucs4char* s) : data_(s) {}
-    String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
-    String(const char* s)
-    {
-        const int len = strlen(s);
-#ifdef USE_BOEHM_GC
-        ucs4char* p = new(PointerFreeGC) ucs4char[len + 1];
-#else
-        ucs4char* p = new ucs4char[len + 1];
-#endif
-        for (int i = 0; i < len + 1; i++) {
-            p[i] = s[i];
-        }
-        data_ = p;
+    if (n >= data_.size()) {
+        VM_RAISE1("string-ref argument out of range:", Object::makeInt(n));
     }
-    ucs4char charAt(int n);
-    ucs4string& data() { return data_; }
-private:
-    ucs4string data_;
-};
-
-}; // namespace scheme
-
-#endif // __SCHEME_STRING_H__
+    return data_[n];
+}

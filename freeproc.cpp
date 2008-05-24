@@ -108,8 +108,11 @@ Object scheme::numberPEx(Object args)
 
 Object scheme::consEx(Object args)
 {
-    printf("cons called\n");
-    return Object::UnBound;
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for cons (required 2, got ~d)\n", Object::makeInt(length));
+    }
+    return Object::cons(args.first(), args.second());
 }
 
 Object scheme::carEx(Object args)
@@ -783,7 +786,18 @@ Object scheme::vectorPEx(Object args)
 
 Object scheme::listPEx(Object args)
 {
-    printf("list? called\n");
+    Object obj = args.first();
+    Object seen = obj;
+    for (;;) {
+        if (obj.isNil()) return Object::True;
+        if (!obj.isPair()) return Object::False; // dot pair
+        obj = obj.cdr();
+        if (obj.isNil()) return Object::True;
+        if (!obj.isPair()) return Object::False; // dot pair
+        obj = obj.cdr();
+        seen = seen.cdr();
+        if (obj == seen) return Object::False; // circular
+    }
     return Object::UnBound;
 }
 
@@ -859,7 +873,18 @@ Object scheme::symbolTostringEx(Object args)
 
 Object scheme::stringRefEx(Object args)
 {
-    printf("string-ref called\n");
+    const int length = Pair::length(args);
+    if (length < 2) {
+        VM_RAISE1("wrong number of arguments for string-ref (required 2, got ~d)\n", Object::makeInt(length));
+    }
+
+    Object arg1 = args.first();
+    Object arg2 = args.second();
+    if (arg1.isString() && arg2.isInt()) {
+        return Object::makeChar(arg1.toString()->charAt(arg2.toInt()));
+    } else {
+        VM_RAISE2("wrong arguments for string-ref required (string number), got (~a ~a)\n", arg1, arg2);
+    }
     return Object::UnBound;
 }
 

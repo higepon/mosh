@@ -326,6 +326,7 @@ Object VM::apply(Object proc, Object args)
     closure.toClosure()->pc = code;
     SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(code, length);
+    cl_ = closure;
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
     return ret;
@@ -1522,7 +1523,7 @@ void VM::collectProfile()
     totalSampleCount_++;
 }
 
-Object VM::storeCallSampleToFile()
+void VM::storeCallSampleToFile()
 {
     FILE* fp = fopen(PRFILER_TEMP_FILE, "a");
     FileBinaryOutputPort* p = new FileBinaryOutputPort(fp);
@@ -1546,7 +1547,7 @@ Object VM::storeCallSampleToFile()
     fclose(fp);
 }
 
-Object VM::storeCallSample()
+void VM::storeCallSample()
 {
     EqHashTable* ht = callHash_.toEqHashTable();
     for (int i = 0; i < SAMPLE_NUM; i++) {

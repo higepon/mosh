@@ -134,8 +134,8 @@ public:
     void stopTimer();
     void collecProfile();
     Object getProfileResult();
-    Object storeCallSample();
-    Object storeCallSampleToFile();
+    void storeCallSample();
+    void storeCallSampleToFile();
     Object getCProcedureName(Object proc);
     void countCall(Object proc)
     {

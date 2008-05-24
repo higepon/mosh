@@ -109,6 +109,20 @@
 ;; .form (if [test] [consequent] [alternate]) (if [test] [consequent])
 (define-doc (if) ...)
 
+;; Returns character k of string using zero-origin indexing.
+;; .returns character k of string using zero-origin indexing.
+;; .form (string-ref string k)
+;; .pre-condition k of string using zero-origin indexing.
+(define-doc (string-ref) ...)
+
+;; Returns #t if obj is a list, #f otherwise. By definition, all lists are chains of pairs that have finite length and are terminated by the empty list.
+;; .form (list? obj)
+;; .returns #t if obj is a list, #f otherwise.
+;; .example (list? '(a b c)) => #t
+;; .example (list? '()) => #t
+;; .example (list? '(a . b)) => #f
+(define-doc (list?) ...)
+
 ;; <p>(let [bindings] [body])</p>
 ;; <p>Syntax: [Bindings] must have the form</p>
 ;; <p>  (([variable1] [init1]) ...),</p>

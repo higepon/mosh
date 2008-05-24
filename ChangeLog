@@ -1,3 +1,11 @@
+2008-05-24  higepon  <higepon@users.sourceforge.jp>
+
+        * match.scm: Added Andrew Wright's match.
+
+        * library.scm : Added (list? obj) procedure.
+
+        * library.scm (string-ref): Added (string-ref s k) procedure.
+
 2008-05-23  higepon  <higepon@users.sourceforge.jp>
 
         * Added div procedure and some tests.
