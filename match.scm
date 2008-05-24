@@ -1,7 +1,7 @@
 ;;
 ;; match - Andrew Wright's pattern matching macro.
 ;;
-;;   Ported to Mona Scheme by higepon@users.sourceforge.jp.
+;;   Ported to Mosh by higepon@users.sourceforge.jp.
 
 (define-macro (gentemp)
   `(gensym))

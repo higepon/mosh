@@ -2191,3 +2191,9 @@
          (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
        ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
     (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
+
+;;; Pattern matching.
+;;; A port of Andrew Wright's pattern matching macro library.
+;;; See the Gauche's pattern match document
+;; .reference "Gauche's manual" "match" "http://practical-scheme.net/gauche/man/gauche-refe_163.html#SEC439"
+(define-doc (match) ...)
