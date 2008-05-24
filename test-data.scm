@@ -920,6 +920,12 @@ val
    (format "base=~a suffix=~a" (m 1) (m 2))))]
 
 
+;; ["syntax error: malformed when"
+;;  (print (guard (con
+;;          [con con]
+;;          [else ""])
+;;         (when #t)))]
+
 
 
 

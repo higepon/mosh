@@ -12,6 +12,7 @@
   (define find10 find)
   (define foldr2 fold-right)
   (define source-info debug-source-info)
+  (define syntax-error error)
   ]
  [vm?
   (define *command-line-args* '())
@@ -21,6 +22,7 @@
   (define hash-table-ref hash-table-get)
   (define dd (lambda a '()))
   (define pp (lambda a '()))
+  (define syntax-error error)
   (define find10 find)
   (define (source-info p) #f)
   ]
@@ -29,6 +31,7 @@
   (define pp (lambda a '()))
   (include "./free-vars-decl.scm")
   (define find10 find)
+  (define syntax-error error)
   (define (command-line) *command-line-args*)
   ]
 [vm-cpp?
@@ -50,6 +53,9 @@
 
 (define-macro (dolist a . body)
   `(begin (for-each (lambda (,(first a)) ,@body) ,(second a)) '()))
+
+(define (syntax-error msg)
+  (raise (format "syntax error: ~a" msg)))
 
 (define (acons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
 
@@ -597,13 +603,17 @@
                   [else
                    `(lambda ,(cadr sexp) ,@ (pass1/expand (cddr sexp)))])]
            [(when)
-            (pass1/expand (when->cond sexp))]
+            (match sexp
+              [('when pred body . more)
+               (pass1/expand `(cond (,pred ,body ,@more)))]
+              [else
+               (syntax-error "malformed when")])]
            [(unless)
-            (pass1/expand (unless->cond sexp))]
-;;            [(and)
-;;             (pass1/expand (and->if sexp))]
-;;            [(or)
-;;             (pass1/expand (or->if sexp))]
+            (match sexp
+              [('unless pred body . more)
+               (pass1/expand `(cond ((not ,pred) ,body ,@more)))]
+              [else
+               (syntax-error "malformed unless")])]
            [(aif)
             (pass1/expand (aif->let sexp))]
            [(case)
@@ -670,53 +680,10 @@
         (body (cddr sexp)))
     `(define ,(car args) (lambda ,(cdr args) ,@body))))
 
-(define (when->cond sexp)
-  `(cond (,(cadr sexp) ,@(cddr sexp))))
 
 (define (unless->cond sexp)
   `(cond ((not ,(cadr sexp)) ,@(cddr sexp))))
 
-
-;; (define (and->if sexp)
-;;   (if (null? (cdr sexp))
-;;       #t ; (and) => #t
-;;       (let* ([args (cdr sexp)]
-;;              [last (list-ref args (- (length args) 1))])
-;;         (fold-right (lambda (a b) (let1 temp (gensym) `(let1 ,temp ,a (if ,temp ,(if (eq? b last) temp b) ,#f)))) last args))))
-
-;; (define (and->if sexp)
-;;   (define (rec s)
-;;     (match s
-;;       [() #t]
-;;       [(s) s]
-;;       [(e . more)
-;;        `(if ,e ,(rec more) #f)]
-;;       [else
-;;        (error "syntax-error: malformed and: sexp")]))
-;;   (rec (cdr sexp)))
-
-;; (define (or->if sexp)
-;;   (define (rec s)
-;;     (match s
-;;       [() #f]
-;;       [(s) s]
-;;       [(e . more)
-;;        (let1 tmp (gensym)
-;;          `(let1 ,tmp ,e
-;;             (if ,tmp ,tmp ,(rec more))))]
-;;       [else
-;;        (error "syntax-error: malformed or: sexp")]))
-;;   (rec (cdr sexp)))
-
-;; (define (or->if sexp)
-;;   (if (null? (cdr sexp))
-;;       #f
-;;       (let1 args (cdr sexp)
-;;         (fold-right (lambda (a b) (let1 temp (gensym) `(let1 ,temp ,a (if ,temp ,temp ,b)))) #f args))))
-
-
-;; (define (or->if sexp)
-;;   (fold-right (lambda (a b) `(if ,a ,a ,b)) #f (cdr sexp)))
 
 (define (let*->let sexp)
   (let ([args (cadr sexp)]
