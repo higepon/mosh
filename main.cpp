@@ -53,7 +53,7 @@ Object arrayToList(Object* array, int size)
     for (int i = size - 1; i >= 0; i--) {
         p = Object::cons(array[i], p);
     }
-
+    return p;
 }
 
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -143,7 +143,6 @@ int main(int argc, char *argv[])
     GC_INIT();
 #endif
 
-    arrayToList({Object::Nil,}, 1);
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));

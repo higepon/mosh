@@ -84,7 +84,8 @@ Instruction.h: ./instruction.scm
 
 ##### compiler generation
 compiler.cpp: compiler-with-library.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
+#	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "vm-cpp?" > $(PWD)/$@
@@ -93,7 +94,7 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
 
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
-	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+	cat ./library.scm match.scm ./compiler-vm-cpp.scm > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm
 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
