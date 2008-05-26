@@ -918,6 +918,8 @@ val
  (match "mosh.scm"
   ((? string? (= #/(.*)\.([^.]+)$/ m))
    (format "base=~a suffix=~a" (m 1) (m 2))))]
+[2
+ (do ((i 0) (j 0)) ((zero? j) (set! i 1) (set! i 2) i))]
 
 
 ;; ["syntax error: malformed when"

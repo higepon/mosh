@@ -54,6 +54,30 @@
 (define-macro (dolist a . body)
   `(begin (for-each (lambda (,(first a)) ,@body) ,(second a)) '()))
 
+(define-macro (do . sexp)
+  (match `(do ,@sexp)
+    [('do ((var init step ...) ...)
+         (test expr ...)
+       command ...)
+     `(letrec
+       ((loop
+         (lambda (,@var)
+           (if ,test
+               (begin
+                 #f ; avoid empty begin
+                 ,@expr)
+               (begin
+                 ,@command
+                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
+        (loop ,@init))]
+    [('do "step" x)
+     x]
+    [('do "step" x y)
+     y]
+    [else
+     (syntax-error "malformed do")]))
+
+
 (define (syntax-error msg)
   (raise (format "syntax error: ~a" msg)))
 
@@ -593,30 +617,6 @@
                 (expand-let (second sexp) (cddr sexp)))]
            [(let*)
             (pass1/expand (let*->let sexp))]
-           [(do)
-;;             (pass1/expand
-;;             (match `(do ,@sexp)
-;;               [('do ((var init step ...) ...)
-;;                    (test expr ...)
-;;                  command ...)
-;;                `(letrec
-;;                     ((loop
-;;                       (lambda (,@var)
-;;                         (if ,test
-;;                             (begin
-;;                               #f ; avoid empty begin
-;;                               ,@expr)
-;;                             (begin
-;;                               ,@command
-;;                               (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-;;                   (loop ,@init))]
-;;               [('do "step" x)
-;;                x]
-;;               [('do "step" x y)
-;;                y]
-;;               [else
-;;                (error "malformed do")]))]
-            (pass1/expand (do->loop sexp))]
            [(cond)
             (pass1/expand (cond->if sexp))]
            [(lambda)
@@ -788,18 +788,6 @@
              #f)
          ($map1 (lambda (s) (replace-proc s a b)) sexp))
         (else sexp)))
-
-(define (do->loop sexp)
-  (let* ([loop (gensym)]
-         [vars (second sexp)]
-         [pred (third sexp)]
-         [body (cdddr sexp)]
-         [loop-vars ($map1 (lambda (p) (if (null? (cddr p)) (first p) (third p))) vars)]
-         [init-vars ($map1 (lambda (p) (list (first p) (second p))) vars)])
-    `(let ,loop ,init-vars
-          (if ,(first pred)
-              ,(if (null? (cdr pred)) (quote (if #f #t)) (second pred))
-              (begin ,@body (,loop ,@loop-vars))))))
 
 (define (aif->let sexp)
   `(let ((it ,(cadr sexp)))

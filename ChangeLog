@@ -1,5 +1,7 @@
 2008-05-26  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (do): Added do macro using match.
+
         * read.cpp (Scm_StringToNumber): Fixed the bug for '... .
                                          strtol accept "..." and returns 0.
 
