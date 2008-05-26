@@ -55,8 +55,8 @@
   `(begin (for-each (lambda (,(first a)) ,@body) ,(second a)) '()))
 
 (define-macro (do . sexp)
-  (match `(do ,@sexp)
-    [('do ((var init step ...) ...)
+  (match sexp
+    [(((var init step ...) ...)
          (test expr ...)
        command ...)
      `(letrec
@@ -70,9 +70,9 @@
                  ,@command
                  (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
         (loop ,@init))]
-    [('do "step" x)
+    [("step" x)
      x]
-    [('do "step" x y)
+    [("step" x y)
      y]
     [else
      (syntax-error "malformed do")]))
