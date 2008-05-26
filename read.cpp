@@ -191,13 +191,15 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
 #else
 ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
 {
-    errno = 0;
     const char* p = s->data().ascii_c_str();
-    if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0) {
+    // strtol returns no error for "." or "...".
+    if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0 || p[0] == '.') {
         return SCM_FALSE;
     }
+    errno = 0;
     long int ret = strtol(p, NULL, base);
-    if (errno != 0) {
+    if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
+        || (errno != 0 && ret == 0)) {
         return SCM_FALSE;
     } else {
         return Object::makeInt(ret);
@@ -1352,6 +1354,7 @@ static ScmObj read_number(ScmPort *port, ScmChar initial, ScmReadContext *ctx)
 }
 
 static ScmObj read_symbol_or_number(ScmPort *port, ScmChar initial, ScmReadContext *ctx)
+
 {
     ScmString *s = SCM_STRING(read_word(port, initial, ctx, FALSE));
     ScmObj num = Scm_StringToNumber(s, 10, TRUE);

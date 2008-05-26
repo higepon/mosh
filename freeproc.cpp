@@ -806,6 +806,7 @@ Object scheme::memqEx(Object args)
     const Object arg1 = args.first();
     if (Pair::length(args) == 2) {
         const Object arg2 = args.second();
+//        VM_LOG2("memq ~a, ~a\n", arg1, arg2);
         if (!arg2.isPair() && !arg2.isNil()) {
             VM_RAISE1("memq pair required, but got ~a\n", arg2);
         }
@@ -1519,4 +1520,10 @@ Object scheme::assqEx(Object args)
 Object scheme::exitEx(Object args)
 {
     exit(EXIT_SUCCESS);
+}
+
+Object scheme::macroexpandEx(Object args)
+{
+    static Object proc = Symbol::intern(UC("pass1/macroexpand"));
+    return theVM->callClosureByName(proc, args.first());
 }

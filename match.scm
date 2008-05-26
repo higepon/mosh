@@ -350,6 +350,8 @@
                                               ___))))))
            (dot-dot-k? (lambda (s)
                          (and (symbol? s)
+;                              (display "memq ")
+;                              (print s)
                               (if (memq s '(... ___))
                                   0
                                   (let* ((s (symbol->string s))

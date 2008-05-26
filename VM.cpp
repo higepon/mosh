@@ -132,6 +132,7 @@ void VM::loadFile(const ucs4string& file)
         TextualInputPort* p = port.toTextualInputPort();
         for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
             const Object compiled = compile(o);
+//            LOG1("compiled=~a\n", compiled);
             evaluate(compiled);
         }
         copyJmpBuf(returnPoint_, org);

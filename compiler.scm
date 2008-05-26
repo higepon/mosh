@@ -1108,6 +1108,16 @@
   ;; default import level is zero.
   ($import ($map1 (lambda (i) (import-iter i 0)) (cdr sexp))))
 
+;; N.B.
+;; this procedure is called from freeproc.cpp
+(define (pass1/macroexpand sexp)
+  (let1 proc (first sexp)
+    (acond
+     [(and (symbol? proc) (assoc proc ($library.macro top-level-library)))
+      (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
+     [else sexp])))
+
+
 (define (pass1/sexp->iform sexp library lvars tail?)
   (define (sexp->iform sexp)
     (pass1/sexp->iform (pass1/expand sexp) library lvars tail?))
@@ -1301,6 +1311,9 @@
        (let1 proc (first sexp)
          (acond
           [(and (symbol? proc) (assoc proc ($library.macro library)))
+;           (display "1=>") (print (cdr it))
+;           (display "2=>") (print (cdr sexp))
+;           (display "hoge=>")(print (vm/apply (cdr it) (cdr sexp)))
            (sexp->iform (pass1/expand (vm/apply (cdr it) (cdr sexp))))]
           [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
            (let* ([lib (hashtable-ref libraries (second it) #f)]

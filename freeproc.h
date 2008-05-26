@@ -154,6 +154,7 @@ Object modEx(Object args);
 Object divEx(Object args);
 Object assqEx(Object args);
 Object exitEx(Object args);
+Object macroexpandEx(Object args);
 int mod(int x, int y);
 int div(int x, int y);
 }; // namespace scheme

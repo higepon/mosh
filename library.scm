@@ -2222,3 +2222,9 @@
 ;;; See the Gauche's pattern match document
 ;; .reference "Gauche's manual" "match" "http://practical-scheme.net/gauche/man/gauche-refe_163.html#SEC439"
 (define-doc (match) ...)
+
+;; Expand macro
+;; .returns expanded macro form.(Now you can expand only top-level defined macro)
+;; .form (macroexpand form)
+(define-doc (macroexpand) ...)
+

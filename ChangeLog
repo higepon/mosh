@@ -1,3 +1,10 @@
+2008-05-26  higepon  <higepon@users.sourceforge.jp>
+
+        * read.cpp (Scm_StringToNumber): Fixed the bug for '... .
+                                         strtol accept "..." and returns 0.
+
+        * freeproc.cpp (scheme::macroexpandEx): Added macroexpand procedure.
+
 2008-05-24  higepon  <higepon@users.sourceforge.jp>
 
         * match.scm: Added Andrew Wright's match.
