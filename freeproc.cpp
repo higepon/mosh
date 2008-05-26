@@ -822,6 +822,27 @@ Object scheme::memqEx(Object args)
     return Object::UnBound;
 }
 
+Object scheme::memvEx(Object args)
+{
+    const Object arg1 = args.first();
+    if (Pair::length(args) == 2) {
+        const Object arg2 = args.second();
+        if (!arg2.isPair() && !arg2.isNil()) {
+            VM_RAISE1("memq pair required, but got ~a\n", arg2);
+        }
+        for (Object o = arg2; o != Object::Nil; o = o.cdr()) {
+            if (o.car().eqv(arg1).isTrue()) {
+                return o;
+            }
+        }
+        return Object::False;
+    } else {
+        VM_RAISE1("wrong number of arguments for memq (required 2, got ~d)\n", Object::makeInt(Pair::length(args)));
+    }
+    return Object::UnBound;
+}
+
+
 Object scheme::eqPEx(Object args)
 {
     if (Pair::length(args) == 2) {

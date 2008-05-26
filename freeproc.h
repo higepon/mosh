@@ -102,6 +102,7 @@ Object stringEqPEx(Object args);
 Object vectorPEx(Object args);
 Object listPEx(Object args);
 Object memqEx(Object args);
+Object memvEx(Object args);
 Object eqPEx(Object args);
 Object memberEx(Object args);
 Object booleanPEx(Object args);

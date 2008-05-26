@@ -750,7 +750,9 @@
           '()
           (if (eq? 'else (caar clauses))
               clauses
-              (cons `((eqv? ',(caaar clauses) ,tmpname) ,@(cdar clauses)) (loop (cdr clauses)))))))
+              (if (= 1 (length (caar clauses)))
+                  (cons `((eqv? ',(caaar clauses) ,tmpname) ,@(cdar clauses)) (loop (cdr clauses)))
+                  (cons `((memv ,tmpname ',(caar clauses)) ,@(cdar clauses)) (loop (cdr clauses))))))))
   (let* ([pred    (cadr sexp)]
          [clauses (cddr sexp)]
          [tmpname (gensym)]
