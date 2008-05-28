@@ -1304,7 +1304,9 @@
 ;           (display "1=>") (print (cdr it))
 ;           (display "2=>") (print (cdr sexp))
 ;           (display "hoge=>")(print (vm/apply (cdr it) (cdr sexp)))
-           (sexp->iform (pass1/expand (vm/apply (cdr it) (cdr sexp))))]
+;           (sexp->iform (pass1/expand (vm/apply (cdr it) (cdr sexp))))]
+;           (pp (cdr sexp))
+           (sexp->iform (vm/apply (cdr it) (cdr sexp)))]
           [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
            (let* ([lib (hashtable-ref libraries (second it) #f)]
                   [mac (assoc (third it) ($library.macro lib))])

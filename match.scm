@@ -159,7 +159,8 @@
 
 (define match:error
   (lambda (val . args)
-    (for-each pretty-print args)
+    (print args)
+;    (for-each pretty-print args)
     (error "no matching clause for " val)))
 
 (define match:andmap

@@ -2199,7 +2199,17 @@
 (define-doc (match) ...)
 
 ;; Expand macro
+;; .returns expanded only once macro form.(Now you can expand only top-level defined macro)
+;; .form (macroexpand-1 form)
+(define-doc (macroexpand-1) ...)
+
+;; Expand macro
 ;; .returns expanded macro form.(Now you can expand only top-level defined macro)
 ;; .form (macroexpand form)
-(define-doc (macroexpand) ...)
+(define (macroexpand sexp)
+  (let1 val (macroexpand-1 sexp)
+    (if (equal? val sexp)
+        sexp
+        (macroexpand-1 val))))
+
 

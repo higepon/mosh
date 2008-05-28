@@ -1543,7 +1543,7 @@ Object scheme::exitEx(Object args)
     exit(EXIT_SUCCESS);
 }
 
-Object scheme::macroexpandEx(Object args)
+Object scheme::macroexpand1Ex(Object args)
 {
     static Object proc = Symbol::intern(UC("pass1/macroexpand"));
     return theVM->callClosureByName(proc, args.first());

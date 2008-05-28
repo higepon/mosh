@@ -115,6 +115,6 @@
     (div ,(lambda a (error "div not implemented")))
     (assq ,assq)
     (exit ,exit)
-    (macroexpand ,pass1/macroexpand)
+    (macroexpand-1 ,pass1/macroexpand)
     (memv ,memv)
     ))
