@@ -110,10 +110,11 @@ public:
     Object getStackTrace();
 
     void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
-
+    void setInputPort(Object port ) { inputPort_ = port; }
     Object standardInputPort() const { return stdinPort_; }
 
     Object currentInputPort() { return inputPort_; }
+
 
     void defineGlobal(Object id, Object val)
     {

@@ -1,6 +1,6 @@
 2008-05-28  higepon  <higepon@users.sourceforge.jp>
 
-        * library.scm (procedure?): Added procedure?.
+        * library.scm : Added procedure?, with-input-from-file.
 
 2008-05-26  higepon  <higepon@users.sourceforge.jp>
 

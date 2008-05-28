@@ -147,8 +147,11 @@ Object scheme::sourceInfoEx(Object args)
 
 Object scheme::nullPEx(Object args)
 {
-    printf("null? called\n");
-    return Object::UnBound;
+    if (args.first().isPair()) {
+        return Object::makeBool(args.first().isNil());
+    } else {
+        return Object::False;
+    }
 }
 
 Object scheme::setCarEx(Object args)
@@ -720,7 +723,11 @@ Object scheme::currentOutputPortEx(Object args)
 
 Object scheme::setCurrentInputPortEx(Object args)
 {
-    printf("set-current-input-port! called\n");
+    if (args.first().isTextualInputPort()) {
+        theVM->setInputPort(args.first());
+    } else {
+        VM_RAISE1("set-current-input-port! <textual-port> required, but got ~a\n", args.first());
+    }
     return Object::UnBound;
 }
 

@@ -2,6 +2,9 @@
 ;;; automatically generated from psyntax sources
 ;;; for copyright details, see psyntax/main.ss
 
+(define (void) (if #f #f))
+(define (eval-core x) (eval x '()))
+
 (begin (define g$739$12318 '#f) (define g$739$12315 '#f) ((lambda (g$739$12208 g$739$12295) (begin (set! g$739$12208 (lambda g$739$12311 ((lambda (g$739$12312) (if (= g$739$12312 '1) (apply (lambda (g$739$12297) (g$739$12208 g$739$12297 (lambda (g$739$12299) g$739$12299))) g$739$12311) (if (= g$739$12312 '2) (apply (lambda (g$739$12301 g$739$12302) (begin (if (procedure? g$739$12302) (void) (error 'assert '"assertion failed" '(procedure? fender))) ((lambda (g$739$12305) (lambda g$739$12309 ((lambda (g$739$12310) (if (= g$739$12310 '0) (apply (lambda () g$739$12305) g$739$12309) (if (= g$739$12310 '1) (apply (lambda (g$739$12307) (set! g$739$12305 (g$739$12302 g$739$12307))) g$739$12309) (error 'apply '"invalid arg count")))) (length g$739$12309)))) (g$739$12302 g$739$12301)))) g$739$12311) (error 'apply '"invalid arg count")))) (length g$739$12311)))) (set! g$739$12295 (lambda (g$739$12313) (error 'file-options-spec '"not implemented"))) (begin (set! g$739$12315 g$739$12295) (set! g$739$12318 g$739$12208)))) '#f '#f))
 
 

@@ -177,7 +177,7 @@
 ;; .example (not '())          =>  #f
 ;; .example (not (list))       =>  #f
 ;; .example (not 'nil)         =>  #f
-(define-doc (not) ...)
+(define (not x) (if x #f #t))
 
 ;; If there are no [test]s, #f is returned. Otherwise, the [test] expressions are evaluated from left to right until a [test] returns a true value val or the last [test] is reached.
 ;; <p>In the former case, the or expression returns val without evaluating the remaining expressions.
@@ -1289,6 +1289,15 @@
 ; ==============================================================================================================================================================
 ;;; Exceptions and conditionsI/O.
 ;;; R6RS library Chapter 7.
+
+;; .pre-condition Thunk must be a procedure and must accept zero arguments. The file is opened for input or output using empty file options, and thunk is called with no arguments.
+(define (with-input-from-file filename thunk)
+  (let ([org-port (current-input-port)]
+        [inport (open-file-input-port filename)])
+    (set-current-input-port! inport)
+    (let1 ret (thunk)
+      (set-current-input-port! org-port)
+      ret)))
 
 ;; Raises a non-continuable exception by invoking the current exception handler on obj.
 ;; .form (raise obj)
