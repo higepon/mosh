@@ -935,6 +935,17 @@ val
 [0 (case 1 ((2 1) 0))]
 [0 (case 2 ((2 1) 0))]
 
+;; procedure?
+[mosh-only
+ #t (procedure? car)]
+[mosh-only
+ #f (procedure? 'car)]
+[mosh-only
+ #t (procedure? (lambda (x) (* x x)))]
+[mosh-only
+ #f (procedure? '(lambda (x) (* x x)))]
+
+
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

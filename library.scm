@@ -85,6 +85,15 @@
 ;; .example (eqv? #f 'nil)                          =>  #f
 (define-doc (eqv?) ...)
 
+;; Returns #t if obj is a procedure, otherwise returns #f.
+;; .form (procedure? obj)
+;; .returns #t if obj is a procedure, otherwise returns #f.
+;; .example (procedure? car)                    =>  #t
+;; .example (procedure? 'car)                   =>  #f
+;; .example (procedure? (lambda (x) (* x x)))   =>  #t
+;; .example (procedure? '(lambda (x) (* x x)))  =>  #f
+(define-doc (procedure?) ...)
+
 ;; A lambda expression evaluates to a procedure.
 ;; <p>The environment in effect when the lambda expression is evaluated is remembered as part of the procedure.</p>
 ;; <p>When the procedure is later called with some arguments, the environment in which the lambda expression was evaluated is extended by binding the variables in the parameter list to fresh locations, and the resulting argument values are stored in those locations.</p>

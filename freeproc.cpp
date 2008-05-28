@@ -1548,3 +1548,9 @@ Object scheme::macroexpand1Ex(Object args)
     static Object proc = Symbol::intern(UC("pass1/macroexpand"));
     return theVM->callClosureByName(proc, args.first());
 }
+
+Object scheme::procedurePEx(Object args)
+{
+    const Object arg1 = args.first();
+    return Object::makeBool(arg1.isClosure() || arg1.isCProcedure());
+}
