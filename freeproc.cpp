@@ -1561,3 +1561,13 @@ Object scheme::procedurePEx(Object args)
     const Object arg1 = args.first();
     return Object::makeBool(arg1.isClosure() || arg1.isCProcedure());
 }
+
+Object scheme::loadEx(Object args)
+{
+    if (args.first().isString()) {
+        theVM->loadFile(args.first().toString()->data());
+    } else {
+        VM_RAISE1("load string required, but got ~a\n", args.first());
+    }
+    return Object::Undef;
+}

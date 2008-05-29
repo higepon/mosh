@@ -118,4 +118,5 @@
     (macroexpand-1 ,pass1/macroexpand)
     (memv ,memv)
     (procedure? ,(lambda e (error "procedure? not implemented")))
+    (load ,(lambda e (error "load not implemented")))
     ))

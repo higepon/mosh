@@ -1,3 +1,7 @@
+2008-05-29  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp : Added load for internal use.
+
 2008-05-28  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm : Added procedure?, with-input-from-file.

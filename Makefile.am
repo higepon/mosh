@@ -78,6 +78,12 @@ CLEANFILES = $(GENERATED) mosh-compiler.o
 psyntax:
 	(cd tools/psyntax-r6rs/ && rm -f psyntax.pp && cp pre-built/psyntax-petite.pp psyntax.pp && gosh gosh.r6rs.ss psyntax-buildscript.ss && gosh gosh.r6rs.ss psyntax-buildscript.ss && (cat gosh.r6rs.ss psyntax.pp > pre-built/gosh.pp) && mv psyntax.pp  pre-built/psyntax-mosh.pp)
 
+psyntax-mosh:
+	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
+
+psyntax-gosh:
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-gosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./test.scm)
+
 #compiler build without -O2
 # mosh-compiler.o: compiler.cpp
 # 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mosh_CXXFLAGS) $(CXXFLAGS) -O0 -fomit-frame-pointer -MT mosh-compiler.o -MD -MP -MF $(DEPDIR)/mosh-compiler.Tpo -c -o mosh-compiler.o `test -f 'compiler.cpp' || echo '$(srcdir)/'`compiler.cpp

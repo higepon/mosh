@@ -157,6 +157,7 @@ Object assqEx(Object args);
 Object exitEx(Object args);
 Object macroexpand1Ex(Object args);
 Object procedurePEx(Object args);
+Object loadEx(Object args);
 int mod(int x, int y);
 int div(int x, int y);
 }; // namespace scheme

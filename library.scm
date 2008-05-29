@@ -2230,6 +2230,9 @@
         sexp
         (macroexpand-1 val))))
 
+; used internal.
+(define-doc (load ..))
+
 ;; For psynxtax
 (define (void) (if #f #f))
 (define (eval-core x) (eval x '()))
