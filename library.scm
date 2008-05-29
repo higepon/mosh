@@ -2230,4 +2230,7 @@
         sexp
         (macroexpand-1 val))))
 
+;; For psynxtax
+(define (void) (if #f #f))
+(define (eval-core x) (eval x '()))
 

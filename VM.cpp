@@ -1033,10 +1033,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("READ");
             if (ac_.isNil()) {
                 ac_ = inputPort_.toTextualInputPort()->getDatum();
-                LOG1("ac==~a", ac_);
             } else {
                 ac_ = ac_.toTextualInputPort()->getDatum();
-                LOG1("ac==~a", ac_);
             }
             NEXT;
         }
