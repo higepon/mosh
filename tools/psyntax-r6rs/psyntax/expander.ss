@@ -3026,15 +3026,16 @@
                      export-env))))))
   
   (define (parse-top-level-program e*)
-    (display e*)
+    (write e*)
     (syntax-match e* ()
-      (((import imp* ...) b* ...) (eq? import 'import)
+      (((import imp* ...) b* ...) (and (display "<eq?>") (eq? import 'import))
        (values imp* b*))
       (_ (error "invalid syntax of top-level program"))))
 
   (define top-level-expander
     (lambda (e*)
       (let-values (((imp* b*) (parse-top-level-program e*)))
+        (display "higepon")
           (let-values (((imp* invoke-req* visit-req* invoke-code
                          visit-code export-subst export-env)
                         (library-body-expander '() imp* b*)))
@@ -3245,6 +3246,11 @@
   (define eval-r6rs-top-level
     (lambda (x*)
       (let-values (((lib* invoke-code) (top-level-expander x*)))
+        (display "lib*=")
+        (display lib*)
+        (display "\n invoke-code=")
+        (display invoke-code)
+
         (for-each invoke-library lib*)
         (eval-core (expanded->core invoke-code)))))
 

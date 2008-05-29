@@ -147,7 +147,7 @@ Object scheme::sourceInfoEx(Object args)
 
 Object scheme::nullPEx(Object args)
 {
-    if (args.first().isPair()) {
+    if (args.isPair()) {
         return Object::makeBool(args.first().isNil());
     } else {
         return Object::False;
@@ -1570,4 +1570,10 @@ Object scheme::loadEx(Object args)
         VM_RAISE1("load string required, but got ~a\n", args.first());
     }
     return Object::Undef;
+}
+
+Object scheme::symbolPEx(Object args)
+{
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return Object::makeBool(args.car().isSymbol());
 }

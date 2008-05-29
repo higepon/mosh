@@ -78,11 +78,14 @@ CLEANFILES = $(GENERATED) mosh-compiler.o
 psyntax:
 	(cd tools/psyntax-r6rs/ && rm -f psyntax.pp && cp pre-built/psyntax-petite.pp psyntax.pp && gosh gosh.r6rs.ss psyntax-buildscript.ss && gosh gosh.r6rs.ss psyntax-buildscript.ss && (cat gosh.r6rs.ss psyntax.pp > pre-built/gosh.pp) && mv psyntax.pp  pre-built/psyntax-mosh.pp)
 
+# psyntax-mosh:
+# 	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
+
 psyntax-mosh:
-	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh ./mosh.r6rs.ss ./test.scm)
 
 psyntax-gosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-gosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./test.scm)
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./test.scm)
 
 #compiler build without -O2
 # mosh-compiler.o: compiler.cpp
