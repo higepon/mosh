@@ -184,8 +184,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     }
 
     // temp
-    fflush(stdout);
-    fflush(stderr);
+//     fflush(stdout);
+//     fflush(stderr);
 }
 
 void TextualOutputPort::display(Object o, bool inList /* = false */)
@@ -281,22 +281,24 @@ void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
 {
     if (!inList) {
         const Object kar = obj.car();
-        if (Symbol::UNQUOTE == kar) {
-            putString(UC(","));
-            putDatum(obj.second(), false);
-            return;
-        } else if (Symbol::UNQUOTE_SPLICING == kar) {
-            putString(UC(",@"));
-            putDatum(obj.second(), false);
-            return;
-        } else if (Symbol::QUOTE == kar) {
-            putString(UC("'"));
-            putDatum(obj.second(), false);
-            return;
-        } else if (Symbol::QUASIQUOTE == kar) {
-            putString(UC("`"));
-            putDatum(obj.second(), false);
-            return;
+        if (obj.cdr().isPair()) {
+            if (Symbol::UNQUOTE == kar) {
+                putString(UC(","));
+                putDatum(obj.second(), false);
+                return;
+            } else if (Symbol::UNQUOTE_SPLICING == kar) {
+                putString(UC(",@"));
+                putDatum(obj.second(), false);
+                return;
+            } else if (Symbol::QUOTE == kar) {
+                putString(UC("'"));
+                putDatum(obj.second(), false);
+                return;
+            } else if (Symbol::QUASIQUOTE == kar) {
+                putString(UC("`"));
+                putDatum(obj.second(), false);
+                return;
+            }
         }
     }
 

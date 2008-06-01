@@ -444,7 +444,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CALL)
         {
-            TRACE_INSN1("CALL", "(~a)\n", ac_);
             operand = fetchOperand();
         call_entry:
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -719,7 +718,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CONSTANT)
         {
             const Object c = fetchOperand();
-            TRACE_INSN1("CONSTANT", "(~a)\n", c);
+            TRACE_INSN0("CONSTANT\n");
             ac_ = c;
             NEXT;
         }

@@ -52,6 +52,8 @@
 #include <stdio.h>
 #include <signal.h>
 
+#define TRACE_INSN
+
 #ifdef USE_BOEHM_GC
 #define EXTEND_GC : public gc
 #include <gc_cpp.h>

@@ -1448,6 +1448,7 @@ Object scheme::applyEx(Object args)
     }
 
     Object proc = args.first();
+//    VM_LOG1("proc=~a\n", proc);
     Object p = args.cdr();
     Object argsAsList = Object::Nil;
     for (int i = 0; i < length - 1; i++) {

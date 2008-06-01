@@ -1,4 +1,5 @@
-(print (apply symbol? '(3)))
+(print '(quote))
+;(print (apply symbol? '(3)))
 
 ;; ; mosh only
 ;; (define (assertion-violation a b c)

@@ -146,7 +146,12 @@ int main(int argc, char *argv[])
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
+#ifdef TRACE_INSN
+    FILE* errOut = fopen("/tmp/mosh-insn.log", "w");
+    TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
+#else
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
+#endif
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
 
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
@@ -188,7 +193,9 @@ int main(int argc, char *argv[])
         theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
 #endif
-
+#ifdef TRACE_INSN
+    fclose(errOut);
+#endif
     exit(EXIT_SUCCESS);
 }
 
