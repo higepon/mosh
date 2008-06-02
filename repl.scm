@@ -5,7 +5,10 @@
             [e
              (print e)
              (rec)])
-            (print (eval (read (current-input-port)) '())))
+           (let1 obj (read (current-input-port))
+             (if (eof-object? obj)
+                 (exit)
+                 (print (eval obj '())))))
     (rec))
   (rec))
 

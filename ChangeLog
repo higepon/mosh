@@ -1,5 +1,7 @@
 2008-06-02  higepon  <higepon@users.sourceforge.jp>
 
+        * repl.scm (repl): Added EOF handling for Ctrl-D.
+
         * VM.cpp (VM::load): Added TRY and CATCH macro.
 
 2008-05-30  higepon  <higepon@users.sourceforge.jp>

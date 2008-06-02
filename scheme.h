@@ -53,6 +53,7 @@
 #include <signal.h>
 
 //#define TRACE_INSN
+#define INSN_LOG_FILE "/tmp/mosh-insn.log"
 
 #ifdef USE_BOEHM_GC
 #define EXTEND_GC : public gc

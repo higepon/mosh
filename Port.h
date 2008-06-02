@@ -500,6 +500,8 @@ public:
         return Object::Undef;
     }
 
+    BinaryOutputPort* binaryPort() const { return port_; }
+
 private:
     BinaryOutputPort* port_;
     Codec* codec_;
