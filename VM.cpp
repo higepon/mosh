@@ -41,6 +41,13 @@
 #define COUNT_CALL(a) /* */
 #endif
 
+#define TRY     jmp_buf org;                     \
+                copyJmpBuf(org, returnPoint_);   \
+                if (setjmp(returnPoint_) == 0)   \
+
+#define CATCH   copyJmpBuf(returnPoint_, org); \
+                } else {
+
 using namespace scheme;
 
 #define SAVE_REGISTERS()                       \
@@ -92,23 +99,24 @@ Object VM::raiseContinuable(Object o)
 }
 
 
+
 Object VM::withExceptionHandler(Object handler, Object thunk)
 {
     SAVE_REGISTERS();
     errorHandler_ = handler;
-    jmp_buf org;
     Object ret;
+    jmp_buf org;
     copyJmpBuf(org, returnPoint_);
-    if (setjmp(returnPoint_) != 0) {
+    if (setjmp(returnPoint_) == 0) {
+        ret = callClosure0(thunk);
+        copyJmpBuf(returnPoint_, org);
+    } else {
         copyJmpBuf(returnPoint_, org);
         if (handler.isNil()) {
             defaultExceptionHandler(errorObj_);
         } else {
             ret = callClosure(handler, errorObj_);
         }
-    } else {
-        ret = callClosure0(thunk);
-        copyJmpBuf(returnPoint_, org);
     }
     RESTORE_REGISTERS();
     return ret;
@@ -119,23 +127,21 @@ void VM::defaultExceptionHandler(Object error)
     errorPort_.format(UC("  Error:\n    ~a\n"), L1(error));
 }
 
+
 void VM::loadFile(const ucs4string& file)
 {
-    jmp_buf org;
-    copyJmpBuf(org, returnPoint_);
-    if (setjmp(returnPoint_) != 0) {
-        // call default error handler
-        defaultExceptionHandler(errorObj_);
-        exit(-1);
-    } else {
+    TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
             const Object compiled = compile(o);
-//            LOG1("compiled=~a\n", compiled);
             evaluate(compiled);
         }
-        copyJmpBuf(returnPoint_, org);
+//        copyJmpBuf(returnPoint_, org);
+    CATCH
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
     }
 }
 
@@ -146,16 +152,25 @@ Object VM::eval(Object obj, Object env)
     return evaluate(compile(obj));
 }
 
+
+
 void VM::load(const ucs4string& file)
 {
-    ucs4string moshLibPath(UC(MOSH_LIB_PATH));
-    moshLibPath += UC("/") + file;
-    if (fileExistsP(file)) {
-        loadFile(file);
-    } else if (fileExistsP(moshLibPath)) {
-        loadFile(moshLibPath);
-    } else {
-        RAISE1("cannot find file ~a in load path", Object::makeString(file));
+    TRY {
+        ucs4string moshLibPath(UC(MOSH_LIB_PATH));
+        moshLibPath += UC("/") + file;
+        if (fileExistsP(file)) {
+            loadFile(file);
+        } else if (fileExistsP(moshLibPath)) {
+            loadFile(moshLibPath);
+        } else {
+            RAISE1("cannot find file ~a in load path", Object::makeString(file));
+        }
+        copyJmpBuf(returnPoint_, org);
+    CATCH
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
     }
 }
 
