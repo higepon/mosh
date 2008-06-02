@@ -35,6 +35,8 @@
 #include "scheme.h"
 #include "Instruction.h"
 
+extern FILE* errOut;
+
 namespace scheme {
 
 #define RAISE0(msg)    raise(msg)
@@ -54,10 +56,10 @@ namespace scheme {
 #define VM_LOG2(fmt, a, b)    theVM->getErrorPort().format(UC(fmt), L2(a, b))
 
 #ifdef TRACE_INSN
-#define TRACE_INSN0(name) errorPort_.format(UC("=========================\n~a\n"), L1(name))
-#define TRACE_INSN1(name, fmt, a) TRACE_INSN0(name),errorPort_.format(UC(fmt), L1(a))
-#define TRACE_INSN2(name, fmt, a, b) TRACE_INSN0(name),errorPort_.format(UC(fmt), L2(a, b))
-#define TRACE_INSN3(name, fmt, a, b, c) TRACE_INSN0(name),errorPort_.format(UC(fmt), L3(a, b, c))
+#define TRACE_INSN0(name) errorPort_.format(UC("=========================\n~a\n"), L1(name)), fflush(errOut)
+#define TRACE_INSN1(name, fmt, a) TRACE_INSN0(name),errorPort_.format(UC(fmt), L1(a)), fflush(errOut)
+#define TRACE_INSN2(name, fmt, a, b) TRACE_INSN0(name),errorPort_.format(UC(fmt), L2(a, b)), fflush(errOut)
+#define TRACE_INSN3(name, fmt, a, b, c) TRACE_INSN0(name),errorPort_.format(UC(fmt), L3(a, b, c)), fflush(errOut)
 #else
 #define TRACE_INSN0(name) //
 #define TRACE_INSN1(name, fmt, a) //

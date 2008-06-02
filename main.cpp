@@ -36,6 +36,10 @@
 using namespace scheme;
 
 VM* theVM;
+#ifdef TRACE_INSN
+FILE* errOut;
+#endif
+
 
 Object argsToList(int argc, char* argv[])
 {
@@ -147,7 +151,7 @@ int main(int argc, char *argv[])
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
 #ifdef TRACE_INSN
-    FILE* errOut = fopen(INSN_LOG_FILE, "w");
+    errOut = fopen(INSN_LOG_FILE, "w");
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
 #else
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));

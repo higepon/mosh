@@ -393,7 +393,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 {
 #ifdef DUMP_ALL_INSTRUCTIONS
     uint8_t logBuf[2];
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE);
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort logPort(TextualOutputPort(new FileBinaryOutputPort(stream), transcoder));
 #endif
 #ifdef USE_DIRECT_THREADED_CODE
@@ -430,15 +430,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #ifdef DUMP_ALL_INSTRUCTIONS
             fwrite(logBuf, 1, 2, stream);
 #endif
-#ifdef TRACE_INSN
-            static long i = 0;
-            if (i++ % 100000 == 0) {
-                errorPort_.binaryPort()->close();
-                FILE* errOut = fopen(INSN_LOG_FILE, "w");
-                Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-                errorPort_ = TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder);
-            }
-#endif
+// #ifdef TRACE_INSN
+//             static long i = 0;
+//             if (i++ % 100000 == 0) {
+//                 errorPort_.binaryPort()->close();
+//                 FILE* errOut = fopen(INSN_LOG_FILE, "w");
+//                 Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+//                 errorPort_ = TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder);
+//             }
+// #endif
             return ac_;
         }
         CASE(APPEND)
