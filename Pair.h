@@ -57,14 +57,33 @@ struct Pair EXTEND_GC
         }
     }
 
+//     static Object cloneList(Object list1)
+//     {
+//         if (list1.isNil()) {
+//             return Object::Nil;
+//         } else {
+//             return Object::cons(list1.car(), cloneList(list1.cdr()));
+//         }
+//     }
+
     static Object cloneList(Object list1)
     {
-        if (list1.isNil()) {
-            return Object::Nil;
-        } else {
-            return Object::cons(list1.car(), cloneList(list1.cdr()));
-        }
+//         Object ret = Object::Nil;
+//         for (Object p = list1; p.isPair(); p = p.cdr()) {
+//             ret = Object::cons(p.car(), ret);
+//         }
+        return reverse(reverse(list1));
     }
+
+    static Object reverse(Object list1)
+    {
+        Object ret = Object::Nil;
+        for (Object p = list1; p.isPair(); p = p.cdr()) {
+            ret = Object::cons(p.car(), ret);
+        }
+        return ret;
+    }
+
 
     // append
     static Object append(Object list1, Object list2)

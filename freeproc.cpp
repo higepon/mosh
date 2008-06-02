@@ -458,7 +458,8 @@ Object scheme::reverseIter(Object rest, Object ret)
 
 Object scheme::reverseEx(Object args)
 {
-    return reverseIter(args.car(), Object::Nil);
+    return Pair::reverse(args.first());
+//    return reverseIter(args.car(), Object::Nil);
 }
 
 Object scheme::eofObjectPEx(Object args)

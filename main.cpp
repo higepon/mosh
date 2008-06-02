@@ -47,7 +47,7 @@ Object argsToList(int argc, char* argv[])
     for (int i = 0; i < argc; i++) {
         p = Object::cons(Object::makeString(argv[i]), p);
     }
-    return reverseEx(L1(p));
+    return Pair::reverse(p);
 }
 
 // for precompiled code

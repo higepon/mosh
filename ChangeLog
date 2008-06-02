@@ -1,5 +1,7 @@
 2008-06-02  higepon  <higepon@users.sourceforge.jp>
 
+        * Pair.h (scheme): Rewrote cloneList recut to loop.
+
         * repl.scm (repl): Added EOF handling for Ctrl-D.
 
         * VM.cpp (VM::load): Added TRY and CATCH macro.
