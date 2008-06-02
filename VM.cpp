@@ -556,6 +556,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_  = callCode;
                 sp_ = sp;
             } else {
+// あとでかならずもどす。
+//                 if (!args.isPair()) {
+//                     RAISE1("apply requires pair arguments, bug got ~a\n", args.toClosure()->sourceInfo);
+//                 }
+
                 const int length = Pair::length(args);
                 const int shiftLen = length > 1 ? length - 1 : 0;
                 Object* const sp = sp_ + shiftLen; //unShiftArgs(sp_, 0, shiftLen);////
