@@ -1,0 +1,1 @@
+run ./mosh.r6rs.ss ./test.scm
