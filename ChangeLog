@@ -1,5 +1,7 @@
 2008-06-03  higepon  <higepon@users.sourceforge.jp>
 
+        * test-data.scm (call-with-values): Fixed the bug of (call-with-values (lambda () (values 1 2)) cons).
+
         * freeproc.cpp (scheme::applyEx): Added argument check.
 
         * scheme.h (isCallable): Added for apply procedure.

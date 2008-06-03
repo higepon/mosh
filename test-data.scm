@@ -412,8 +412,11 @@
 (4 (begin (define (func2) (define val 4) val) (func2)))
 ;; values
 (#t (if (values 1 2 3) #t #f))
+(5 (call-with-values (lambda () (values 4 5))
+                  (lambda (a b) b)))
 (6 (call-with-values (lambda () (values 1 2 3)) (lambda (a b c) (+ a b c))))
 (6 (receive (a b c) (values 1 2 3) (+ a b c)))
+((1 . 2) (call-with-values (lambda () (values 1 2)) cons))
 ;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
 ("higepon" (receive (port proc) (open-string-output-port)
              (display "hige" port)

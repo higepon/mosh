@@ -543,10 +543,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (args.isValues()) { // call-with-values
                 const Object arg = args.toValues()->values();
                 const int length = Pair::length(arg);
-                const Closure* const c = ac_.toClosure();
-                int requiredLength = c->argLength;
-                if (!c->isOptionalArg && requiredLength != length) {
-                    RAISE1("Values received ~a values than expected", length > requiredLength ? Object::makeString(UC("more")) : Object::makeString(UC("fewer")));
+                if (ac_.isClosure()) {
+                    const Closure* const c = ac_.toClosure();
+                    int requiredLength = c->argLength;
+                    if (!c->isOptionalArg && requiredLength != length) {
+                        RAISE3("Values received ~a values than expected, required ~d got ~d", length > requiredLength ? Object::makeString(UC("more")) : Object::makeString(UC("fewer"))
+                               , Object::makeInt(requiredLength)
+                               , Object::makeInt(length));
+                    }
                 }
 
                 const int shiftLen = length > 1 ? length - 1 : 0;
