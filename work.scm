@@ -1,4 +1,9 @@
-(print '(quote))
+;(call-with-values (lambda () (let1 x (and (display "before[x]")(g$70$13650 '() g$70$22851 g$70$22852)) (display "***")(display x) (display "***>>" )x)) (lambda (g$70$22855 g$70$22856 g$70$22857 g$70$22858 g$70$22859 g$70$22860 g$70$22861) (begin (display '"<after>") (values g$70$22856 g$70$22858))))
+(define (x)
+  (values 1 2 3 4))
+(print (call-with-values (lambda () (x)) (lambda (a b c d) (values b c))))
+
+
 ;(print (apply symbol? '(3)))
 
 ;; ; mosh only

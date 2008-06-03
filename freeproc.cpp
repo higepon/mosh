@@ -934,6 +934,8 @@ Object scheme::getTimeofdayEx(Object args)
 
 Object scheme::valuesEx(Object args)
 {
+    VM_LOG1("values=~d ", Object::makeInt(Pair::length(args)));
+    fflush(stderr);
     return Object::makeValues(args);
 }
 

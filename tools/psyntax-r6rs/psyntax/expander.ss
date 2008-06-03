@@ -3007,12 +3007,14 @@
                                 (build-exports global* init*)))
                             (invoke-definitions 
                              (map build-global-define (map cdr global*))))
+                        (display "before values")
                         (values
-                          imp* (rtc) (vtc)
-                          (build-sequence no-source 
+                          imp* (and (display "rtc") (rtc)) 
+                          (and (display "vtc") (vtc))
+                          (and (display "build" ) (build-sequence no-source 
                             (append invoke-definitions
-                              (list invoke-body)))
-                          macro* export-subst export-env))))))))))))
+                              (list invoke-body))))
+                          (and (display "macro*") macro*) export-subst export-env))))))))))))
 
   (define core-library-expander
     (lambda (e)
@@ -3039,6 +3041,7 @@
           (let-values (((imp* invoke-req* visit-req* invoke-code
                          visit-code export-subst export-env)
                         (library-body-expander '() imp* b*)))
+            (display "<after>")
             (values invoke-req* invoke-code)))))
 
   ;;; An env record encapsulates a substitution and a set of
