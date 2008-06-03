@@ -1,3 +1,9 @@
+2008-06-03  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp (scheme::applyEx): Added argument check.
+
+        * scheme.h (isCallable): Added for apply procedure.
+
 2008-06-02  higepon  <higepon@users.sourceforge.jp>
 
         * Pair.h (scheme): Rewrote cloneList recut to loop.

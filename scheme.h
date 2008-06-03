@@ -245,6 +245,11 @@ public:
         return False == *this;
     }
 
+    bool isCallable() const
+    {
+        return isClosure() || isCProcedure() || isRegexp() || isRegMatch();
+    }
+
     // Pair
     Pair* toPair() const;
     bool isPair() const;

@@ -1448,17 +1448,24 @@ Object scheme::applyEx(Object args)
         VM_RAISE1("wrong number of arguments for apply (required at least 2, got ~d)\n", Object::makeInt(length));
     }
 
-    Object proc = args.first();
-//    VM_LOG1("proc=~a\n", proc);
-    Object p = args.cdr();
+    const Object proc = args.first();
+    if (!proc.isCallable()) {
+        VM_RAISE1("wrong arguments for apply required closure, got ~a\n", proc);
+    }
+
+    Object rest = args.cdr();
+    const Object last = Pair::getLastPair(rest).car();
+    if (!last.isPair() && !last.isNil() && !last.isValues()) {
+        VM_RAISE1("wrong arguments for apply last argument required list, got ~a\n", last);
+    }
     Object argsAsList = Object::Nil;
     for (int i = 0; i < length - 1; i++) {
         if (i == length - 2) {
-            argsAsList = Pair::appendD(argsAsList, p.car());
+            argsAsList = Pair::appendD(argsAsList, rest.car());
         } else {
-            argsAsList = Pair::appendD(argsAsList, Pair::list1(p.car()));
+            argsAsList = Pair::appendD(argsAsList, Pair::list1(rest.car()));
         }
-        p = p.cdr();
+        rest = rest.cdr();
     }
     return theVM->applyClosure(proc, argsAsList);
 }
