@@ -415,6 +415,9 @@
 (5 (call-with-values (lambda () (values 4 5))
                   (lambda (a b) b)))
 (6 (call-with-values (lambda () (values 1 2 3)) (lambda (a b c) (+ a b c))))
+((1 2 3)  (call-with-values (lambda () (values 1 2 3)) list))
+(1235 (call-with-values (lambda () 1) (lambda (x) (+ x 1234))))
+
 (6 (receive (a b c) (values 1 2 3) (+ a b c)))
 ((1 . 2) (call-with-values (lambda () (values 1 2)) cons))
 ;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))

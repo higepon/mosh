@@ -1454,9 +1454,14 @@ Object scheme::applyEx(Object args)
     }
 
     Object rest = args.cdr();
-    const Object last = Pair::getLastPair(rest).car();
+    const Object lastPair = Pair::getLastPair(rest);
+    const Object last = lastPair.car();
+
+    // For the case like (call-with-values (lambda () 1) print).
+    // I'm not sure this is correct or wrong.
     if (!last.isPair() && !last.isNil() && !last.isValues()) {
-        VM_RAISE1("wrong arguments for apply last argument required list, got ~a\n", last);
+        lastPair.car() = Pair::list1(last);
+//        VM_RAISE1("wrong arguments for apply last argument required list, got ~a\n", last);
     }
     Object argsAsList = Object::Nil;
     for (int i = 0; i < length - 1; i++) {
@@ -1583,6 +1588,5 @@ Object scheme::loadEx(Object args)
 
 Object scheme::symbolPEx(Object args)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return Object::makeBool(args.car().isSymbol());
 }
