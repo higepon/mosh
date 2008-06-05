@@ -1,50 +1,49 @@
 (use srfi-1)
 (use util.match)
-(define (make-char c)
-  `(char ,c))
 
-(define (char-value c)
-  (second c))
 
-(define (grass-char? c)
-  (match c
-    [('char . _) #t]
-    [else #f]))
 
-;; (define-macro (define-primitive name val proc)
-;;   `(define ,name ,(list val proc)))
+(define-macro (define-primitive name tag val proc)
+  `(define ,name (list 'primitive ',tag ',val ,proc)))
 
-;(define-primitive out '() (lambda (c) (display c)))
+(define-primitive out out '() (lambda (c) (unless (primitive-is? c 'char)
+                                            (error "out:charcter required"))
+                                      (display (primitive-val c))
+                                      c))
 
-(define out (lambda (c) (display c) c))
-(define in (lambda (c) (display "in called") c))
-(define succ (lambda (c) (display "succ called") c))
-(define w (lambda (c) (display "w called") c))
+(define-primitive succ succ '() (lambda (c) (unless (primitive-is? c 'char)
+                                              (error "succ:charctor required"))
+                                        (let1 v (char->integer c)
+                                          (if (= v 255)
+                                              (integer->char 0)
+                                              (integer->char (+ v 1))))))
 
-(define e (list out in succ w))
+(define-primitive in in '() (lambda (x) (let1 c (read-char)
+                                          (if (eof-object? c)
+                                              x
+                                              c)))) ;; todo
+
+
+(define-primitive w char #\w (lambda (c) (eq? c #\w)))
+
+
+(define (primitive? p)
+  (match p
+    [('primitive . more) #t]
+    [else             #f]))
+
+(define (primitive-val p) (third p))
+(define (primitive-proc p) (fourth p))
+(define (primitive-is? p tag) (eq? (second p) tag))
+
 
 
 (define (make-app n m)
   `(app ,n ,m))
 
-(define (app-n x)
-  (second x))
-
-(define (app-m x)
-  (third x))
-
-
-(define (app? x)
-  (eq? (first x) 'app))
-
 (define (make-abs n c)
   `(abs ,n ,c))
 
-(define (abs? x)
-  (eq? (first x) 'abs))
-
-(define (abs-n x)
-  (second n))
 
 (define (grass-eval code env dump)
   (define (env-ref i)  (list-ref env (- i 1)))
@@ -54,9 +53,9 @@
   (match code
     [(('app m n) . c)
      (let1 mth (env-ref m)
-       (if (procedure? mth)
+       (if (primitive? mth)
            (grass-eval c
-                       `(,(mth (env-ref n)) . ,env)
+                       `(,((primitive-proc mth) (env-ref n)) . ,env)
                        dump)
            (grass-eval (nth-code m)
                        `((,(nth-code n) . ,(nth-env n)) . ,(nth-env m))
@@ -64,7 +63,7 @@
     [(('abs 1 cc) . c)
      (grass-eval c `((,cc . ,env) . ,env) dump)]
     [(('abs n cc) . c)
-     (grass-eval c `((,((make-abs (- n 1) cc)) . ,env) . ,env) dump)]
+     (grass-eval c `((,(list (make-abs (- n 1) cc)) . ,env) . ,env) dump)]
     [()
      (if (null? dump)
          '()
@@ -81,4 +80,11 @@
 ;; wWWwwww => print w
 (grass-eval (list (make-abs 1 `(,(make-app 2 4)))) e0 d0)
 
-;; 
+;; wwWWwv
+;; wwwwWWWwwWwwWWWWWWwwwwWwwv
+;; wWWwwwWwwwwWwwwwwwWwwwwwwwww
+;; => (+ 1 1)
+(grass-eval `(,(make-abs 2 (list (make-app 2 1)))
+              ,(make-abs 4 (list (make-app 3 2) (make-app 1 2) (make-app 6 4) (make-app 1 2)))
+              ,(make-abs 1 (list (make-app 2 3) (make-app 1 4) (make-app 1 6) (make-app 1 9))))
+            e0 d0)
