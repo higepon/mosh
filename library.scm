@@ -2233,4 +2233,14 @@
 ; used internal.
 (define-doc (load ..))
 
+(define (string->list str)
+  (let loop ((pos (- (string-length str) 1)) (l '()))
+    (if (< pos 0)
+        l
+      (loop (- pos 1) (cons (string-ref str pos) l)))))
+
+
+(define-macro (aif test-form then-form . else-form)
+  `(let ((it ,test-form))
+     (if it ,then-form ,@else-form)))
 
