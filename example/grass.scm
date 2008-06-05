@@ -1,42 +1,37 @@
-(use srfi-1)
-(use util.match)
-
-
-
-(define-macro (define-primitive name tag val proc)
-  `(define ,name (list 'primitive ',tag ',val ,proc)))
-
-(define-primitive out out '() (lambda (c) (unless (primitive-is? c 'char)
-                                            (error "out:charcter required"))
-                                      (display (primitive-val c))
-                                      c))
-
-(define-primitive succ succ '() (lambda (c) (unless (primitive-is? c 'char)
-                                              (error "succ:charctor required"))
-                                        (let1 v (char->integer c)
-                                          (if (= v 255)
-                                              (integer->char 0)
-                                              (integer->char (+ v 1))))))
-
-(define-primitive in in '() (lambda (x) (let1 c (read-char)
-                                          (if (eof-object? c)
-                                              x
-                                              c)))) ;; todo
-
-
-(define-primitive w char #\w (lambda (c) (eq? c #\w)))
-
+(define (make-primitive tag val proc)
+  `(primitive ,tag ,val ,proc))
 
 (define (primitive? p)
   (match p
     [('primitive . more) #t]
-    [else             #f]))
+    [else                #f]))
 
 (define (primitive-val p) (third p))
 (define (primitive-proc p) (fourth p))
 (define (primitive-is? p tag) (eq? (second p) tag))
 
+(define (make-char ch)
+  (make-primitive 'char ch (lambda (c) (eq? c ch))))
 
+(define out (make-primitive 'proc '() (lambda (c) (unless (primitive-is? c 'char)
+                                            (error "out:charcter required"))
+                                      (display (primitive-val c))
+                                      c)))
+
+(define succ (make-primitive 'proc '() (lambda (c) (unless (primitive-is? c 'char)
+                                              (error "succ:charctor required"))
+                                        (let1 v (char->integer c)
+                                          (if (= v 255)
+                                              (integer->char 0)
+                                              (integer->char (+ v 1)))))))
+
+(define in (make-primitive 'proc '() (lambda (x) (let1 c (read-char)
+                                          (if (eof-object? c)
+                                              x
+                                              (make-char c))))))
+
+
+(define w (make-char #\w))
 
 (define (make-app n m)
   `(app ,n ,m))
@@ -76,6 +71,7 @@
 (define e0 `(,out ,succ ,w ,in))
 (define d0 `(((,(make-app 1 1)) . ()) (() . ())))
 
+;; eval してみる
 
 ;; wWWwwww => print w
 (grass-eval (list (make-abs 1 `(,(make-app 2 4)))) e0 d0)
