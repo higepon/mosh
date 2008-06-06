@@ -669,7 +669,11 @@ Object scheme::charTointegerEx(Object args)
 
 Object scheme::integerTocharEx(Object args)
 {
-    printf("integer->char called\n");
+    if (args.first().isInt()) {
+        return Object::makeChar(args.first().toInt());
+    } else {
+        VM_RAISE1("integer->char number required, but got ~a\n", args.first());
+    }
     return Object::UnBound;
 }
 

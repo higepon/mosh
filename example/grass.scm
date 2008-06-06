@@ -57,11 +57,11 @@
                                       c)))
 
 (define succ (make-primitive 'proc '() (lambda (c) (unless (primitive-is? c 'char)
-                                              (error "succ:charctor required"))
-                                        (let1 v (char->integer c)
+                                                     (error "succ:charctor required"))
+                                        (let1 v (char->integer (primitive-val c))
                                           (if (= v 255)
-                                              (integer->char 0)
-                                              (integer->char (+ v 1)))))))
+                                              (make-char (integer->char 0))
+                                              (make-char (integer->char (+ v 1))))))))
 
 (define in (make-primitive 'proc '() (lambda (x) (let1 c (read-char)
                                           (if (eof-object? c)
@@ -126,4 +126,25 @@
 
 (grass-eval "ｗＷＷｗｗｗｗ" e0 d0)
 
-(grass-eval "無限に草植えときますねｗＷＷｗｗｗｗＷＷｗｗ" e0 d0)
+(grass-eval "wWWWwWWWWwv wWWwWWWwv wWWwWWWwv wWWwWWWwv wWWwWWWwv wWWwWWWwv
+wWWwWWWwv wWWWwWWWWwv wWWwwwwwwwwwwwwWWWWWWwWWWWWWwWWWWWWWWWwWWWWWWWWW
+WWWWWWwWWWWWWWWWWWWWwWWWWWWWWWWWWWWWwwWWWWWWWWWWWWWWwWWWWWWWWWWWWWWWww
+wwwWWWWWWWWWWWWWWWWwwwwwwwWWWWWWWWWWWWWWWWWWwWWWWWWWWWWWWWWWWWWWWwWWWW
+WWWWWWWWWWWWWWWWWWWwwWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwWWWWWWWWWWWWW
+WWWWWWWWwWWWWWWWWWWWWWWWWWWWWWwwWWWWWWWWWWWWWWWWWWWWWWWWwWWWWWWWWWWWWW
+WWWWWWWWWWWWWwwwwwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWwWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWwWWWWWWWWWWW
+WWWWWWWWWWWWWWWWwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwww
+wwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwwWWWWWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWW
+WWWWWWWWWWWWWWwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwww
+wwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwwwwww
+wwwwwwwwwwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwww
+wwwwwwwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwww
+wwwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwwwwww
+wwwWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwwwwwwwwWWW
+WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWwwwwwwwwwwwwwwww" e0 d0)
+
+
+;(grass-eval "無限に草植えときますねｗＷＷｗｗｗｗＷＷｗｗ" e0 d0)
