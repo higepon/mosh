@@ -648,7 +648,7 @@
 ;;   (let loop ([n (- num-args 1)]
 ;;              [args '()])
 ;;     (if (>= n 0)
-;;         (begin 
+;;         (begin
 ;;           (print "sp=" n " val=" (if (string? (index stack sp n)) (index stack sp n) 'a ))
 ;;           (loop (- n 1) (cons (index stack sp n) args)))
 ;;         args)))
@@ -731,38 +731,60 @@
 
 (define-macro (let-frame-size) 2)
 
+(define valuez (make-vector 100))
+(define num-valuez 1)
+
 (define (VM codes pc a fp c stack sp)
   (letrec-syntax
       ([skip (syntax-rules ()
                ((_ n)
                 (+ pc n 1)))]
+       [val1 (syntax-rules ()
+               ((_)
+                (set! num-valuez 1)))]
        [next (syntax-rules ()
                ((_ n)
                 (vector-ref codes (+ n pc))))]
        [apply-native-1arg (syntax-rules ()
                             ((_ proc)
-                             (VM codes (skip 0) (proc a) fp c stack sp)))]
+                             (begin
+                               (val1)
+                               (VM codes (skip 0) (proc a) fp c stack sp))))]
        [apply-native-1arg-optional (syntax-rules ()
                                      ((_ proc)
-                                      (VM codes (skip 0) (if (null? a) (proc) (proc a)) fp c stack sp)))]
+                                      (begin
+                                        (val1)
+                                        (VM codes (skip 0) (if (null? a) (proc) (proc a)) fp c stack sp))))]
        [apply-native-2arg (syntax-rules ()
                             ((_ proc)
-                             (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (- sp 1))))]
+                             (begin
+                               (val1)
+                               (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (- sp 1)))))]
        [apply-native-2arg-ac (syntax-rules ()
                                ((_ proc ac)
-                                (VM codes (skip 0) (proc (index stack sp 0) aac) fp c stack (- sp 1))))]
+                                (begin
+                                  (val1)
+                                (VM codes (skip 0) (proc (index stack sp 0) aac) fp c stack (- sp 1)))))]
        [apply-native-2arg-push (syntax-rules ()
                                  ((_ proc)
-                                  (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a)))))]
+                                  (begin
+                                    (val1)
+                                  (VM codes (skip 0) (proc (index stack sp 0) a) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a))))))]
        [apply-native-2arg-push(syntax-rules ()
                                  ((_ proc ac)
-                                  (VM codes (skip 0) (proc (index stack sp 0) ac) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a)))))]
+                                  (begin
+                                    (val1)
+                                  (VM codes (skip 0) (proc (index stack sp 0) ac) fp c stack (push stack (- sp 1) (proc (index stack sp 0) a))))))]
        [apply-native-3arg (syntax-rules ()
                             ((_ proc)
-                             (VM codes (skip 0) (proc (index stack sp 1) (index stack sp 0) a) fp c stack (- sp 2))))]
+                             (begin
+                               (val1)
+                               (VM codes (skip 0) (proc (index stack sp 1) (index stack sp 0) a) fp c stack (- sp 2)))))]
        [apply-native-3arg-ac (syntax-rules ()
                                ((_ proc ac)
-                                (VM codes (skip 0) (proc (index stack sp 1) (index stack sp 0) ac) fp c stack (- sp 2))))]
+                                (begin
+                                  (val1)
+                                  (VM codes (skip 0) (proc (index stack sp 1) (index stack sp 0) ac) fp c stack (- sp 2)))))]
        [return (syntax-rules ()
                  ((_ n)
                   (let ([sp (- sp n)])
@@ -861,12 +883,66 @@
                     '()])
              (debug-case code
                ;;---------------------------- HALT -------------------------------
-               [(HALT)
-                a]
+               [(HALT) a]
+               [(VALUES)
+                ;; values stack layout
+                ;;   (value 'a 'b 'c 'd)
+                ;;   ==>
+                ;;   =====
+                ;;     a
+                ;;   =====
+                ;;     b
+                ;;   =====
+                ;;     c    [a-reg] = d
+                ;;   =====
+                ;;
+                ;; values are stored in [valuez vector] and [a-reg] like following.
+                ;; #(b c d)
+                ;; [a-reg] = a
+                (let1 n-args (next 1)
+                  (set! num-valuez n-args)
+                  (let loop ([i (- n-args 1)]
+                             [val a])
+                    (if (>= 0 i)
+                        (begin
+;;                           ;; debug
+;;                           (let dump ([j 0])
+;;                             (if (>= j (- n-args 1))
+;;                                 (format #t "areg=~a" val)
+;;                                 (begin (format #t "valuez[~d]=~a\n" j (vector-ref valuez j))
+;;                                        (dump (+ j 1)))))
+                          (VM codes (skip 1) val fp c stack (- sp n-args -1))
+                          )
+                        (begin
+;                          (format #t "set valuez[~d]=~a\n" (- i 1) val)
+                          (vector-set! valuez (- i 1) val)
+                          (loop (- i 1) (index stack sp (- n-args i 1)))))))]
+               [(RECEIVE)
+                (let1 n-args (next 1)
+                  (cond
+                   [(< num-valuez n-args)
+                    (error "received fewer values than expected")]
+                   [(> num-valuez n-args)
+                    (error "received more values than expected")]
+                   [else
+                    (when (> n-args 0)
+                      (let loop ([i      0]
+                                 [new-sp (push stack sp a)])
+                        (if (>= i (- n-args 1))
+                            '()
+                            (loop (+ i 1) (push stack new-sp (vector-ref valuez i))))))
+                    (VM codes
+                        (skip 1)
+                        a
+                        fp
+                        c
+                        stack
+                        (+ sp n-args))]))]
                ;;---------------------------- CLOSURE ----------------------------
                [(CLOSURE)
                 (check-vm-paranoia (number? (skip (next 1))))
                 (check-vm-paranoia (number? (next 2)))
+                (val1)
                 (VM codes
                     (skip (next 1))
                     (make-closure codes (skip 6) (next 2) (next 3) (next 4) (next 5) stack sp (next 6))
@@ -961,21 +1037,28 @@
                ;;---------------------------- REFER_LOCAL ----------------------
                [(REFER_LOCAL)
                 (check-vm-paranoia (number? (next 1)))
+                (val1)
                 (VM codes (skip 1) (refer-local (next 1)) fp c stack sp)]
                ;;---------------------------- REFER_LOCAL0 ----------------------
                [(REFER_LOCAL0)
+                (val1)
                 (VM codes (skip 0) (refer-local 0) fp c stack sp)]
                [(REFER_LOCAL1)
+                (val1)
                 (VM codes (skip 0) (refer-local 1) fp c stack sp)]
                [(REFER_LOCAL2)
+                (val1)
                 (VM codes (skip 0) (refer-local 2) fp c stack sp)]
                [(REFER_LOCAL3)
+                (val1)
                 (VM codes (skip 0) (refer-local 3) fp c stack sp)]
                [(REFER_LOCAL0_EQV_TEST)
+                (val1)
                 (if (eqv? (index stack sp 0) (refer-local 0))
                     (VM codes (skip 1) a fp c stack (- sp 1))
                     (VM codes (skip (next 1)) a fp c stack (- sp 1)))]
                 [(REFER_LOCAL0_PUSH)
+                 (val1)
                  (VM codes (skip 0) a fp c stack (push stack sp (refer-local 0)))]
 
 ;;                 [(REFER_LOCAL0_PUSH_DISPLAY)
@@ -989,19 +1072,24 @@
 ;;                 (VM codes (skip 0) (index stack fp 2) fp c stack sp)]
 ;;                ;;---------------------------- REFER_LOCAL_PUSH -----------------
                [(REFER_LOCAL_PUSH)
+                (val1)
                 (VM codes (skip 1) a fp c stack (push stack sp (refer-local (next 1))))]
 ;;                ;;---------------------------- REFER_LOCAL0_PUSH ----------------
 ;;                [(REFER_LOCAL0_PUSH)
 ;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
                [(REFER_LOCAL0_PUSH_CONSTANT)
+                (val1)
 ;                (print "REFER_LOCAL0_PUSH_CONSTANT " (next 1))
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 0)))]
                [(REFER_LOCAL1_PUSH_CONSTANT)
+                (val1)
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 1)))]
 ;;                ;;---------------------------- REFER_LOCAL1_PUSH ----------------
                [(REFER_LOCAL1_PUSH)
+                (val1)
                 (VM codes (skip 0) a fp c stack (push stack sp (refer-local 1)))]
                [(REFER_LOCAL2_PUSH)
+                (val1)
                 (VM codes (skip 0) a fp c stack (push stack sp (refer-local 2)))]
 
 ;;                ;;---------------------------- REFER_LOCAL2_PUSH ----------------
@@ -1009,28 +1097,38 @@
 ;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 2)))]
                ;;---------------------------- REFER_FREE -----------------------
                [(REFER_FREE)
+                (val1)
                 (check-vm-paranoia (vector? c))
                 (check-vm-paranoia (number? (next 1)))
 ;                (print "refer free" (index-closure c (next 1)))
                 (VM codes (skip 1) (index-closure c (next 1)) fp c stack sp)]
                [(REFER_FREE0)
+                (val1)
                 (VM codes (skip 0) (index-closure c 0) fp c stack sp)]
                [(REFER_FREE1)
+                (val1)
                 (VM codes (skip 0) (index-closure c 1) fp c stack sp)]
                [(REFER_FREE2)
+                (val1)
                 (VM codes (skip 0) (index-closure c 2) fp c stack sp)]
                [(REFER_FREE3)
+                (val1)
                 (VM codes (skip 0) (index-closure c 3) fp c stack sp)]
                [(PUSH_REFER_FREE0)
+                (val1)
                 (VM codes (skip 0) (index-closure c 0) fp c stack (push stack sp (index-closure c 0)))]
                ;;---------------------------- REFER_FREE_PUSH ------------------
                [(REFER_FREE_PUSH)
+                (val1)
                 (VM codes (skip 1) a fp c stack (push stack sp (index-closure c (next 1))))]
                [(REFER_FREE0_PUSH)
+                (val1)
                 (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 0)))]
                [(REFER_FREE1_PUSH)
+                (val1)
                 (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 1)))]
                [(REFER_FREE2_PUSH)
+                (val1)
                 (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 2)))]
 
                ;;---------------------------- NOP ------------------------------
@@ -1042,25 +1140,32 @@
                 (VM codes (skip 1) a fp c stack (+ fp (next 1)))]
                ;;---------------------------- CALL ------------------------------
                [(CALL)
+                (val1)
                 (apply-body a (next 1) sp)]
                [(CALL1)
+                (val1)
                 (apply-body a 1 sp)]
                [(CALL2)
+                (val1)
                 (apply-body a 2 sp)]
                [(CALL3)
+                (val1)
                 (apply-body a 3 sp)]
                [(PUSH_REFER_GLOBAL_CALL1)
+                (val1)
                 (let* ([lib (next 1)]
                        [new-sp (push stack sp a)]
                        [v (refer-global lib)])
                   (apply-body v 1 new-sp))]
                [(REFER_GLOBAL_CALL1)
+                (val1)
                 (apply-body (refer-global (next 1)) 1 sp)]
                [(REFER_GLOBAL_CALL)
+                (val1)
                 (apply-body (refer-global (next 1)) (next 2) sp)]
-
                ;;---------------------------- APPLY ----------------------------
                [(APPLY) ;; (apply proc args)
+                (val1)
                 (let1 args (index stack sp 0)
                   (cond
                    [(null? args) ;; (aplly proc '()). proc takes no argument.
@@ -1086,6 +1191,7 @@
                       (VM `#(CALL, len HALT) 0 a fp c stack new-sp))]))]
                ;;---------------------------- LIST -----------------------------
                [(LIST)
+                (val1)
                 (let1 n (next 1)
                   (VM codes (skip 1)
                       (let loop ([i 0]
@@ -1124,24 +1230,29 @@
                   (apply-body a (next 3) sp))]
                ;;---------------------------- MAKE_CONTINUATION ------------------
                [(MAKE_CONTINUATION)
+                (val1)
                 (VM codes (skip 1) (make-continuation stack sp (next 1)) fp c stack sp)]
                ;;---------------------------- RESTORE_CONTINUATION ---------------
                [(RESTORE_CONTINUATION)
                 (VM codes (skip 1) a fp c stack (restore-stack stack (next 1)))]
                ;;---------------------------- CONSTANT ---------------------------
                [(CONSTANT)
+                (val1)
                 (VM codes (skip 1) (next 1) fp c stack sp)]
                ;;---------------------------- TEST  ------------------------------
                [(TEST)
+                (val1)
                 (if a
                     (VM codes (skip 1) a fp c stack sp)
                     (VM codes (skip (next 1)) a fp c stack sp))]
                [(NUMBER_LE_TEST)
+                (val1)
                 (let1 val (<= (index stack sp 0) a)
                 (if val
                     (VM codes (skip 1) val fp c stack (- sp 1))
                     (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
                [(NOT_TEST)
+                (val1)
                 (let1 val (not a)
                 (if val
                     (VM codes (skip 1) val fp c stack sp)
@@ -1197,12 +1308,14 @@
                 (VM codes (skip 1) a fp c stack sp)]
                ;;---------------------------- INDIRECT  --------------------------
                [(INDIRECT)
+                (val1)
                 (VM codes (skip 0) (unbox a) fp c stack sp)]
                [(REFER_FREE0_INDIRECT)
+                (val1)
                 (VM codes (skip 0) (unbox (index-closure c 0)) fp c stack sp)]
                [(REFER_FREE1_INDIRECT)
+                (val1)
                 (VM codes (skip 0) (unbox (index-closure c 1)) fp c stack sp)]
-
                ;;---------------------------- ASSIGN_BIND  -----------------------
                [(ASSIGN_LOCAL)
                 (set-box! (refer-local (next 1)) a)
@@ -1233,6 +1346,7 @@
                     (VM ($library.compiled-body lib) 0 a fp c stack sp))])]
                ;;---------------------------- REFER_GLOBAL  ----------------------
                [(REFER_GLOBAL)
+                (val1)
                 (VM codes (skip 1) (refer-global (next 1)) fp c stack sp)]
                ;;---------------------------- ASSIGN_GLOBAL  ---------------------
                [(ASSIGN_GLOBAL)
@@ -1284,6 +1398,7 @@
                [(EQUAL)           (apply-native-2arg equal?)]
                ;;---------------------------- UNDEF ------------------------------
                [(UNDEF)
+                (val1)
                 (VM codes (skip 0) undef fp c stack sp)]
                [else
                 (error "unknown instruction on vm:" code)]))])))
@@ -1758,7 +1873,7 @@
 ;;           [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) `(,(assq 'kar ($library.macro top-level-library))))])
 ;;       (write (list->vector (append compiled (vector->list (compile `($library.set-macro! top-level-library (quote ,v)) #t)))))
         ]
-        
+
 ;    (print (compile `($library.set-macro top-level-library (quote ,($library.macro top-level-library)))))]
 ;    (write `($library.set-macro! top-level-library ,($library.macro top-level-library)))]
    ;;  execute script

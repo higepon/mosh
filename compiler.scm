@@ -518,7 +518,21 @@
 (define ($it)
   (make-vector 1 $IT))
 
-(define $INSN-NUM 21)
+;; struct $receive
+(define $RECEIVE 21)
+(define ($receive lvars vals body tail?)
+  `#(,$RECEIVE ,lvars ,vals ,body ,tail?))
+
+(define-macro ($receive.lvars iform) `(vector-ref ,iform 1))
+(define-macro ($receive.vals iform) `(vector-ref ,iform 2))
+(define-macro ($receive.body iform) `(vector-ref ,iform 3))
+(define-macro ($receive.tail? iform) `(vector-ref ,iform 4))
+(define-macro ($receive.set-lvars! iform lvars) `(vector-set! ,iform 1 ,lvars))
+(define-macro ($receive.set-vals! iform body) `(vector-set! ,iform 2 ,body))
+(define-macro ($receive.set-body! iform body) `(vector-set! ,iform 3 ,body))
+(define-macro ($receive.set-tail?! iform tail?) `(vector-set! ,iform 4 ,tail?))
+
+(define $INSN-NUM 22)
 
 (define-macro (tag iform)
   `(vector-ref ,iform 0))
@@ -1170,6 +1184,9 @@
       ;;---------------------------- begin -------------------------------------
       [(begin)
        (pass1/body->iform (pass1/expand (cdr sexp)) library lvars tail?)]
+      ;;---------------------------- values ------------------------------------
+      [(values)
+       ($asm 'VALUES ($map1 sexp->iform (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
        (match sexp
@@ -1188,6 +1205,19 @@
            ($library.set-macro! library (acons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library) ($library.macro library)))
            ($library.set-macro! library (acons (second sexp) (compile-partial (third sexp)) ($library.macro library))))
        ($undef)]
+      ;;---------------------------- receive -----------------------------------
+      [(receive)
+       (match sexp
+         [('receive (vars ...) vals . body)
+          (let1 this-lvars ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)
+            ($receive
+             this-lvars
+             (sexp->iform vals)
+             ;; the inner lvar comes first.
+             (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+             tail?))]
+         [else
+          (syntax-error "malformed receive")])]
       ;;---------------------------- let ---------------------------------------
       [(let)
        (let* ([vars       ($map1 car (second sexp))]
@@ -1506,6 +1536,11 @@
         o
         (pass2/optimize o closures))))
 
+(define (pass2/$receive iform closures)
+  ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
+  ($receive.set-vals! iform (pass2/optimize ($receive.vals iform) closures))
+  iform)
+
 (define (pass2/$local-ref iform closures)
   (pass2/optimize-local-ref iform)
   iform)
@@ -1575,6 +1610,7 @@
 (pass2/register $LIBRARY       pass2/empty)
 (pass2/register $IMPORT        pass2/empty)
 (pass2/register $IT            pass2/empty)
+(pass2/register $RECEIVE       pass2/$receive)
 
 (define (pass2/optimize iform closures)
   ((vector-ref pass2/dispatch-table (vector-ref iform 0)) iform closures))
@@ -2048,6 +2084,9 @@
        [(= $LET t)
         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+       [(= $RECEIVE t)
+        (append (rec ($receive.vals i) l labels-seen)
+                (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
        [(= $SEQ t)
         ($append-map1 (lambda (fm) (rec fm locals labels-seen)) ($seq.body i))]
        [(= $LAMBDA t)
@@ -2114,6 +2153,9 @@
        [(= $LET t)
         (append ($append-map1 rec ($let.inits i))
                 (rec ($let.body i)))]
+       [(= $RECEIVE t)
+        (append (rec ($receive.vals i))
+                (rec ($receive.body i)))]
        [(= $SEQ t)
         ($append-map1 rec ($seq.body i))]
        [(= $LAMBDA t)
@@ -2309,6 +2351,10 @@
   '(0 UNDEF))
 
 (define (pass3/$asm iform locals frees can-frees sets tail)
+  (define (sum lst)
+    (if (null? lst)
+        0
+        (+ (car lst) (sum (cdr lst)))))
   (define (push-arg i)
     (pass3/compile-arg i locals frees can-frees sets tail))
   (define (compile-1arg insn args)
@@ -2332,42 +2378,56 @@
       ,@(code-body y)
       ,@(code-body z)
       ,insn)))
+  (define (compile-n-args args)
+    (if (null? args)
+        '(0)
+        (let1 code
+            (let loop ([args args])
+              (if (null? (cdr args))
+                  (list (pass3 (car args) locals frees can-frees sets #f))
+                  (cons (push-arg (car args)) (loop (cdr args)))))
+          `(,(sum ($map1 car code))
+            ,@($append-map1 cdr code)))))
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
-      [(APPEND)            (compile-2arg 'APPEND          args )]
-      [(NUMBER_ADD)        (compile-2arg 'NUMBER_ADD      args )]
-      [(NUMBER_SUB)        (compile-2arg 'NUMBER_SUB      args )]
-      [(NUMBER_MUL)        (compile-2arg 'NUMBER_MUL      args )]
-      [(NUMBER_DIV)        (compile-2arg 'NUMBER_DIV      args )]
-      [(NUMBER_EQUAL)      (compile-2arg 'NUMBER_EQUAL    args )]
-      [(NUMBER_GE)         (compile-2arg 'NUMBER_GE       args )]
-      [(NUMBER_GT)         (compile-2arg 'NUMBER_GT       args )]
-      [(NUMBER_LT)         (compile-2arg 'NUMBER_LT       args )]
-      [(NUMBER_LE)         (compile-2arg 'NUMBER_LE       args )]
-      [(CONS)              (compile-2arg 'CONS            args )]
-      [(CAR)               (compile-1arg 'CAR             args )]
-      [(CDR)               (compile-1arg 'CDR             args )]
-      [(CAAR)              (compile-1arg 'CAAR            args )]
-      [(CADR)              (compile-1arg 'CADR            args )]
-      [(CDAR)              (compile-1arg 'CDAR            args )]
-      [(CDDR)              (compile-1arg 'CDDR            args )]
-      [(SET_CDR)           (compile-2arg 'SET_CDR         args )]
-      [(SET_CAR)           (compile-2arg 'SET_CAR         args )]
-      [(MAKE_VECTOR)       (compile-2arg 'MAKE_VECTOR     args )]
-      [(VECTOR_LENGTH)     (compile-1arg 'VECTOR_LENGTH   args )]
-      [(VECTOR_SET)        (compile-3arg 'VECTOR_SET      args )]
-      [(VECTOR_REF)        (compile-2arg 'VECTOR_REF      args )]
-      [(EQ)                (compile-2arg 'EQ              args )]
-      [(EQV)               (compile-2arg 'EQV             args )]
-      [(EQUAL)             (compile-2arg 'EQUAL           args )]
-      [(PAIR_P)            (compile-1arg 'PAIR_P          args )]
-      [(NULL_P)            (compile-1arg 'NULL_P          args )]
-      [(SYMBOL_P)          (compile-1arg 'SYMBOL_P        args )]
-      [(VECTOR_P)          (compile-1arg 'VECTOR_P        args )]
-      [(NOT)               (compile-1arg 'NOT             args )]
-      [(OPEN_INPUT_FILE)   (compile-1arg 'OPEN_INPUT_FILE args )]
-      [(READ)              (compile-1arg 'READ            args )]
-      [(READ_CHAR)         (compile-1arg 'READ_CHAR       args )]
+      [(APPEND)            (compile-2arg   'APPEND          args)]
+      [(NUMBER_ADD)        (compile-2arg   'NUMBER_ADD      args)]
+      [(NUMBER_SUB)        (compile-2arg   'NUMBER_SUB      args)]
+      [(NUMBER_MUL)        (compile-2arg   'NUMBER_MUL      args)]
+      [(NUMBER_DIV)        (compile-2arg   'NUMBER_DIV      args)]
+      [(NUMBER_EQUAL)      (compile-2arg   'NUMBER_EQUAL    args)]
+      [(NUMBER_GE)         (compile-2arg   'NUMBER_GE       args)]
+      [(NUMBER_GT)         (compile-2arg   'NUMBER_GT       args)]
+      [(NUMBER_LT)         (compile-2arg   'NUMBER_LT       args)]
+      [(NUMBER_LE)         (compile-2arg   'NUMBER_LE       args)]
+      [(CONS)              (compile-2arg   'CONS            args)]
+      [(CAR)               (compile-1arg   'CAR             args)]
+      [(CDR)               (compile-1arg   'CDR             args)]
+      [(CAAR)              (compile-1arg   'CAAR            args)]
+      [(CADR)              (compile-1arg   'CADR            args)]
+      [(CDAR)              (compile-1arg   'CDAR            args)]
+      [(CDDR)              (compile-1arg   'CDDR            args)]
+      [(SET_CDR)           (compile-2arg   'SET_CDR         args)]
+      [(SET_CAR)           (compile-2arg   'SET_CAR         args)]
+      [(MAKE_VECTOR)       (compile-2arg   'MAKE_VECTOR     args)]
+      [(VECTOR_LENGTH)     (compile-1arg   'VECTOR_LENGTH   args)]
+      [(VECTOR_SET)        (compile-3arg   'VECTOR_SET      args)]
+      [(VECTOR_REF)        (compile-2arg   'VECTOR_REF      args)]
+      [(EQ)                (compile-2arg   'EQ              args)]
+      [(EQV)               (compile-2arg   'EQV             args)]
+      [(EQUAL)             (compile-2arg   'EQUAL           args)]
+      [(PAIR_P)            (compile-1arg   'PAIR_P          args)]
+      [(NULL_P)            (compile-1arg   'NULL_P          args)]
+      [(SYMBOL_P)          (compile-1arg   'SYMBOL_P        args)]
+      [(VECTOR_P)          (compile-1arg   'VECTOR_P        args)]
+      [(NOT)               (compile-1arg   'NOT             args)]
+      [(OPEN_INPUT_FILE)   (compile-1arg   'OPEN_INPUT_FILE args)]
+      [(READ)              (compile-1arg   'READ            args)]
+      [(READ_CHAR)         (compile-1arg   'READ_CHAR       args)]
+      [(VALUES)
+       `(,@(compile-n-args args)
+         VALUES
+         ,(length args))]
       [(APPLY)
        (let ([arg1-c (pass3 (first args) locals frees can-frees sets #f)]
              [arg2-c (pass3 (second args) locals frees can-frees sets #f)]
@@ -2381,7 +2441,7 @@
            APPLY
            ,end-of-frame))]
       [else
-       (print "unknown insn")])))
+       (print "unknown insn on pass3/$asm")])))
 
 (define (pass3/$if iform locals frees can-frees sets tail)
   (define (push-arg i)
@@ -2581,6 +2641,39 @@
       ,end-of-closure
       )))
 
+(define (pass3/$receive iform locals frees can-frees sets tail)
+  (let* ([vars ($receive.lvars iform)]
+         [body ($receive.body iform)]
+         [frees-here (append
+                      (pass3/find-free ($receive.vals iform) locals (append locals frees can-frees))
+                      (pass3/find-free body
+                                       vars
+                                       (append locals frees can-frees)))]
+         [sets-here  (append (pass3/find-sets body vars) sets)]
+         [boxes-code (pass3/make-boxes sets-here vars)]
+         [body-code  (pass3 body
+                            vars
+                            frees-here
+                            (set-union can-frees vars)
+                            (set-union sets-here
+                                       (set-intersect sets frees-here))
+                            (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
+         [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets tail)]
+         [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+    ;; non-tail call works fine.
+    `(,(code-stack-sum body-code vals-code free-code)
+      LET_FRAME
+      ,@(code-body free-code)
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+      ,@(code-body vals-code)
+      RECEIVE
+      ,(length vars)
+      ,@boxes-code
+      ,@(list 'ENTER (length vars))
+      ,@(code-body body-code)
+      ,@(list 'LEAVE (length vars)))))
+
+
 (define (pass3/$let iform locals frees can-frees sets tail)
   (if (eq? ($let.type iform) 'rec)
       (pass3/letrec iform locals frees can-frees sets tail)
@@ -2716,6 +2809,7 @@
 (pass3/register $LIBRARY       pass3/$library)
 (pass3/register $IMPORT        pass3/$import)
 (pass3/register $IT            pass3/$it)
+(pass3/register $RECEIVE       pass3/$receive)
 
 (define (pass3 iform locals frees can-frees sets tail)
   ((vector-ref pass3/dispatch-table (vector-ref iform 0)) iform locals frees can-frees sets tail))
@@ -2787,8 +2881,9 @@
       (let loop ([i 0]
                  [j 0]
                  [labels '()])
+        (pp "pass4")
         (cond
-         [(= i len) (values ret labels)]
+         [(= i len) (pp "hige") (values ret labels)]
          [else
           (let1 insn (vector-ref v i)
             (cond
@@ -2805,7 +2900,9 @@
              [else
               (vector-set! ret j insn)
               (loop (+ i 1) (+ j 1) labels)]))]))))
+  (pp "before receive")
   (receive (code labels) (collect-labels)
+    (pp "after receive")
     (let1 len (vector-length code)
     (let loop ([i 0])
       (cond

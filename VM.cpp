@@ -76,12 +76,16 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     inputPort_(inputPort),
     stdinPort_(Object::makeBinaryInputPort(stdin)),
     errorObj_(Object::Nil),
-    isProfiler_(isProfiler)
+    isProfiler_(isProfiler),
+    maxNumValues_(256),
+    numValues_(0)
 {
 #ifdef USE_BOEHM_GC
     stack_ = new (GC)Object[stackSize];
+    values_ = new (GC)Object[maxNumValues_];
 #else
     stack_ = new Object[stackSize];
+    values_ = new Object[maxNumValues_];
 #endif
     stackEnd_ = stack_ + stackSize;
     sp_ = stack_;
@@ -367,6 +371,13 @@ Object VM::compile(Object code)
     fwrite(logBuf, 1, 2, stream);   \
     goto *(*pc_++).val  ;           \
 }
+#define NEXT1                       \
+{                                   \
+    fwrite(logBuf, 1, 2, stream);   \
+    numValues_ = 1;                 \
+    goto *(*pc_++).val  ;           \
+}
+
 #else
 #define CASE(insn)  LABEL_##insn :
 #define NEXT                         \
@@ -375,6 +386,12 @@ Object VM::compile(Object code)
     goto *((*pc_++).val);            \
     asm volatile(" \t # -- next end");   \
 }
+#define NEXT1                       \
+{                                   \
+    numValues_ = 1;                 \
+    goto *(*pc_++).val;             \
+}
+
 
 #endif // DUMP_ALL_INSTRUCTIONS
 
@@ -448,7 +465,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("APPEND");
             ac_ = Pair::append(list1, list2);
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(CALL1)
         {
@@ -530,7 +547,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 RAISE2("not supported apply ~a ~a", operand, ac_);
             }
-            NEXT;
+            NEXT1;
         }
         CASE(APPLY)
         {
@@ -541,6 +558,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_  = callCode;
                 sp_--;
             } else if (args.isValues()) { // call-with-values
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 const Object arg = args.toValues()->values();
                 const int length = Pair::length(arg);
                 if (ac_.isClosure()) {
@@ -586,7 +604,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object c = fetchOperand();
             ac_ = c;
             push(ac_);
-            NEXT;
+            NEXT1;
         }
         CASE(ASSIGN_FREE)
         {
@@ -611,7 +629,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 nameSpace_.toEqHashTable()->set(id, ac_);
                 ac_ = Object::Undef;
             }
-            NEXT;
+            NEXT1;
         }
         CASE(ASSIGN_LOCAL)
         {
@@ -648,7 +666,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("caar pair required, but got ~a", ac_);
             }
             ac_ = ac_.car();
-            NEXT;
+            NEXT1;
         }
         CASE(CADR)
         {
@@ -661,7 +679,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("cadr pair required, but got ~a\n", ac_);
             }
             ac_ = ac_.car();
-            NEXT;
+            NEXT1;
         }
         CASE(CAR)
         {
@@ -670,7 +688,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("car pair required, but got ~a", ac_);
             }
             ac_ = ac_.car();
-            NEXT;
+            NEXT1;
         }
         CASE(CAR_PUSH)
         {
@@ -679,7 +697,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("car pair required, but got ~a", ac_);
             }
             push(ac_.car());
-            NEXT;
+            NEXT1;
         }
         CASE(CDAR)
         {
@@ -692,7 +710,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("cdar pair required, but got ~a", ac_);
             }
             ac_ = ac_.cdr();
-            NEXT;
+            NEXT1;
         }
         CASE(CDDR)
         {
@@ -705,7 +723,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("cddr pair required, but got ~a", ac_);
             }
             ac_ = ac_.cdr();
-            NEXT;
+            NEXT1;
         }
         CASE(CDR)
         {
@@ -714,7 +732,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("cdr pair required, but got ~a", ac_);
             }
             ac_ = ac_.cdr();
-            NEXT;
+            NEXT1;
         }
         CASE(CDR_PUSH)
         {
@@ -723,7 +741,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("cdr pair required, but got ~a", ac_);
             }
             push(ac_.cdr());
-            NEXT;
+            NEXT1;
         }
         CASE(CLOSURE)
         {
@@ -737,7 +755,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Object::makeClosure(pc_, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
             sp_ -= freeVariablesNum;
             pc_ += skipSize - 6;
-            NEXT;
+            NEXT1;
         }
         CASE(CONS)
         {
@@ -745,20 +763,20 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("CONS");
             ac_ = Object::cons(n, ac_);
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(CONSTANT)
         {
             const Object c = fetchOperand();
             TRACE_INSN0("CONSTANT\n");
             ac_ = c;
-            NEXT;
+            NEXT1;
         }
         CASE(PUSH_CONSTANT)
         {
             push(ac_);
             ac_ = fetchOperand();
-            NEXT;
+            NEXT1;
         }
         CASE(DEFINE_GLOBAL)
         {
@@ -798,7 +816,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("EQ");
             ac_ = o.eq(ac_);
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(EQV)
         {
@@ -806,7 +824,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("EQV");
             ac_ = o.eqv(ac_);
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(EQUAL)
         {
@@ -814,7 +832,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("EQUAL");
             ac_ = o.equal(ac_);
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(PUSH_FRAME)
         {
@@ -874,7 +892,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("INDIRECT");
         indirect_entry:
             ac_ = ac_.toBox()->value();
-            NEXT;
+            NEXT1;
         }
         CASE(LEAVE1)
         {
@@ -930,14 +948,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object n = fetchOperand();
             TRACE_INSN1("MAKE_CONTINUATION", "(~d)\n", n);
             ac_ = makeContinuation(n);
-            NEXT;
+            NEXT1;
         }
         CASE(MAKE_VECTOR)
         {
             const Object n = index(sp_, 0);
             ac_ = Object::makeVector(n.toInt(), ac_);
             sp_--;
-            NEXT;
+            NEXT1;
 
         }
         CASE(NOP)
@@ -949,20 +967,20 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("NOT");
             ac_ = ac_.isFalse() ? Object::True : Object::False;
-            NEXT;
+            NEXT1;
         }
         CASE(NULL_P)
         {
             TRACE_INSN0("NULL_P");
             ac_ = ac_.isNil() ? Object::True : Object::False;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_ADD)
         {
             TRACE_INSN0("NUMBER_ADD");
             ac_ = Object::makeInt(index(sp_, 0).toInt() + ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_EQUAL)
         {
@@ -970,7 +988,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_EQUAL");
             ac_ = Object::makeBool(n.toInt() == ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_GE)
         {
@@ -978,7 +996,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_GE");
             ac_ = Object::makeBool(n.toInt() >= ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_GT)
         {
@@ -986,7 +1004,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_GT");
             ac_ = Object::makeBool(n.toInt() > ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_LE)
         {
@@ -994,7 +1012,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_LE");
             ac_ = Object::makeBool(n.toInt() <= ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_LT)
         {
@@ -1002,7 +1020,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_GE");
             ac_ = Object::makeBool(n.toInt() < ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_MUL)
         {
@@ -1010,7 +1028,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_MUL");
             ac_ = Object::makeInt(n.toInt() * ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_DIV)
         {
@@ -1020,7 +1038,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             }
             ac_ = Object::makeInt(n.toInt() / ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_SUB)
         {
@@ -1028,7 +1046,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("NUMBER_SUB");
             ac_ = Object::makeInt(n.toInt() - ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(NUMBER_SUB_PUSH)
         {
@@ -1037,7 +1055,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Object::makeInt(n.toInt() - ac_.toInt());
             sp_--;
             push(ac_);
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_LOCAL0_NUMBER_ADD_PUSH)
         {
@@ -1051,13 +1069,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Object::makeInt(n.toInt() + ac_.toInt());
             sp_--;
             push(ac_);
-            NEXT;
+            NEXT1;
         }
         CASE(PAIR_P)
         {
             TRACE_INSN0("PAIR_P");
             ac_ = Object::makeBool(ac_.isPair());
-            NEXT;
+            NEXT1;
         }
         CASE(READ)
         {
@@ -1067,7 +1085,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 ac_ = ac_.toTextualInputPort()->getDatum();
             }
-            NEXT;
+            NEXT1;
         }
         CASE(READ_CHAR)
         {
@@ -1079,7 +1097,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const ucs4char c = ac_.toTextualInputPort()->getChar();
                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
             }
-            NEXT;
+            NEXT1;
         }
         CASE(REDUCE)
         {
@@ -1099,7 +1117,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             ac_ = referFree(operand);
             TRACE_INSN1("REFER_FREE", "(~d)\n", operand);
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_FREE_PUSH)
         {
@@ -1151,7 +1169,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 ac_ = val;
             }
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_GLOBAL_CALL)
         {
@@ -1177,7 +1195,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             ac_ = referLocal(operand.toInt());
             TRACE_INSN1("REFER_LOCAL", "(~d)\n", operand);
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_LOCAL0)
         {
@@ -1205,7 +1223,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object n = fetchOperand();
             ac_ = n;
             TRACE_INSN0("REFER_LOCAL_PUSH0");
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_LOCAL1_PUSH_CONSTANT)
         {
@@ -1213,7 +1231,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object n = fetchOperand();
             ac_ = n;
             TRACE_INSN0("REFER_LOCAL_PUSH0");
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_LOCAL_PUSH)
         {
@@ -1269,8 +1287,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int m = operand.toInt();
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
-
-
             TRACE_INSN1("RETURN", "(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
             fp_ = index(sp, 0).toObjectPointer();
@@ -1286,7 +1302,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             p.car() = ac_;
             ac_ = Object::Undef;
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(SET_CDR)
         {
@@ -1295,7 +1311,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             p.cdr() = ac_;
             ac_ = Object::Undef;
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(SHIFT)
         {
@@ -1320,7 +1336,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("SYMBOL_P");
             ac_ = Object::makeBool(ac_.isSymbol());
-            NEXT;
+            NEXT1;
         }
         CASE(TEST)
         {
@@ -1355,19 +1371,19 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("UNDEF");
             ac_ = Object::Undef;
-            NEXT;
+            NEXT1;
         }
         CASE(VECTOR_LENGTH)
         {
             TRACE_INSN0("VECTOR_LENGTH");
             ac_ = Object::makeInt(ac_.toVector()->length());
-            NEXT;
+            NEXT1;
         }
         CASE(VECTOR_P)
         {
             TRACE_INSN0("VECTOR_P");
             ac_ = Object::makeBool(ac_.isVector());
-            NEXT;
+            NEXT1;
         }
         CASE(REFER_LOCAL0_VECTOR_REF)
         {
@@ -1389,7 +1405,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("VECTOR_REF");
             ac_ = v.toVector()->ref(ac_.toInt());
             sp_--;
-            NEXT;
+            NEXT1;
         }
         CASE(VECTOR_SET)
         {
@@ -1400,7 +1416,78 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             v.toVector()->set(n.toInt(), ac_);
             ac_ = Object::Undef;
             sp_ -= 2;
+            NEXT1;
+        }
+        CASE(VALUES)
+        {
+            TRACE_INSN0("VALUES");
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            //  values stack layout
+            //    (value 'a 'b 'c 'd)
+            //    ==>
+            //    =====
+            //      a
+            //    =====
+            //      b
+            //    =====
+            //      c    [ac_] = d
+            //    =====
+            //  values are stored in [valuez vector] and [a-reg] like following.
+            //  #(b c d)
+            //  [ac_] = a
+            const int num = fetchOperand().toInt();
+            if (num > maxNumValues_ + 1) {
+                RAISE1("too many values ~d", Object::makeInt(num));
+            }
+            numValues_ = num;
+            if (num > 0) {
+                for (int i = num - 1; i > 0; i--) {
+                    values_[i - 1] = ac_;
+                    ac_ = index(sp_, num - i - 1);
+                }
+            }
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT;
+        }
+        CASE(RECEIVE)
+        {
+            TRACE_INSN0("RECEIVE");
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            const int num = fetchOperand().toInt();
+            if (numValues_ < num) {
+                RAISE0("received fewer values than expected");
+            } else if (numValues_ > num) {
+                RAISE0("received more values than expected");
+            }
+            if (num > 0) {
+                push(ac_);
+            }
+            for (int i = 0; i < num - 1; i++) {
+                push(values_[i]);
+            }
+            NEXT1;
+//                 (let1 n-args (next 1)
+//                   (cond
+//                    [(< num-valuez n-args)
+//                     (error "received fewer values than expected")]
+//                    [(> num-valuez n-args)
+//                     (error "received more values than expected")]
+//                    [else
+//                     (when (> n-args 0)
+//                       (let loop ([i      0]
+//                                  [new-sp (push stack sp a)])
+//                         (if (>= i (- n-args 1))
+//                             '()
+//                             (loop (+ i 1) (push stack new-sp (vector-ref valuez i))))))
+//                     (VM codes
+//                         (skip 1)
+//                         a
+//                         fp
+//                         c
+//                         stack
+//                         (+ sp n-args))]))]
+
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         }
         DEFAULT
         {

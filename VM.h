@@ -343,6 +343,9 @@ protected:
     int totalSampleCount_;       // for profiler
 #endif
     const bool isProfiler_;      // for profiler
+    const int maxNumValues_;
+    int numValues_;
+    Object* values_;
     jmp_buf returnPoint_;
 };
 

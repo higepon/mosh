@@ -28,8 +28,8 @@
 ;  $Id$
 
 ; document is written at manual.scm
-(define-macro (receive . args)
-  `(call-with-values (lambda () ,(cadr args)) (lambda ,(car args) ,@(cddr args))))
+;; (define-macro (receive . args)
+;;   `(call-with-values (lambda () ,(cadr args)) (lambda ,(car args) ,@(cddr args))))
 
 ; document is written at manual.scm
 (define-macro (acond . clauses)
