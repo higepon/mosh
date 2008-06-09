@@ -936,12 +936,12 @@ Object scheme::getTimeofdayEx(Object args)
     return Object::cons(Object::makeInt(tv.tv_sec), Object::makeInt(tv.tv_usec));
 }
 
-Object scheme::valuesEx(Object args)
-{
-//    VM_LOG1("values=~d ", Object::makeInt(Pair::length(args)));
-    fflush(stderr);
-    return Object::makeValues(args);
-}
+// Object scheme::valuesEx(Object args)
+// {
+// //    VM_LOG1("values=~d ", Object::makeInt(Pair::length(args)));
+//     fflush(stderr);
+//     return Object::makeValues(args);
+// }
 
 Object scheme::vmApplyEx(Object a)
 {
@@ -1463,12 +1463,6 @@ Object scheme::applyEx(Object args)
     const Object lastPair = Pair::getLastPair(rest);
     const Object last = lastPair.car();
 
-    // For the case like (call-with-values (lambda () 1) print).
-    // I'm not sure this is correct or wrong.
-    if (!last.isPair() && !last.isNil() && !last.isValues()) {
-        lastPair.car() = Pair::list1(last);
-//        VM_RAISE1("wrong arguments for apply last argument required list, got ~a\n", last);
-    }
     Object argsAsList = Object::Nil;
     for (int i = 0; i < length - 1; i++) {
         if (i == length - 2) {

@@ -1,3 +1,7 @@
+2008-06-09  higepon  <higepon@users.sourceforge.jp>
+
+	* VM.cpp : Rewrote multiple values support.
+
 2008-06-06  higepon  <higepon@users.sourceforge.jp>
 
         * example/grass.scm (make-app): Added Grass interpreter.

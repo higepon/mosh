@@ -53,7 +53,7 @@
 #include <signal.h>
 
 //#define DUMP_ALL_INSTRUCTIONS
-#define TRACE_INSN
+//#define TRACE_INSN
 #define INSN_LOG_FILE "/tmp/mosh-insn.log"
 
 #ifdef USE_BOEHM_GC
@@ -125,14 +125,13 @@ public:
         TextualInputPort  = Type<10>::VALUE,
         Regexp            = Type<11>::VALUE,
         RegMatch          = Type<12>::VALUE,
-        Values            = Type<13>::VALUE,
-        TextualOutputPort = Type<14>::VALUE,
-        BinaryInputPort   = Type<15>::VALUE,
-        BinaryOutputPort  = Type<16>::VALUE,
-        Codec             = Type<17>::VALUE,
-        Transcoder        = Type<18>::VALUE,
-        TypedVectorDesc   = Type<20>::VALUE,
-        TypedVector       = Type<21>::VALUE,
+        TextualOutputPort = Type<13>::VALUE,
+        BinaryInputPort   = Type<14>::VALUE,
+        BinaryOutputPort  = Type<15>::VALUE,
+        Codec             = Type<16>::VALUE,
+        Transcoder        = Type<17>::VALUE,
+        TypedVectorDesc   = Type<18>::VALUE,
+        TypedVector       = Type<19>::VALUE,
         forbidden_comma
     };
 };
@@ -152,7 +151,6 @@ class TextualInputPort;
 class TextualOutputPort;
 class Regexp;
 class RegMatch;
-class Values;
 class BinaryInputPort;
 class BinaryOutputPort;
 class Transcoder;
@@ -385,7 +383,6 @@ public:
     }
     static Object makeRegexp(const ucs4string& pattern, bool caseFold = false);
     static Object makeRegMatch(OnigRegion* region, const ucs4string& text);
-    static Object makeValues(Object values);
     static Object makeUTF8Codec();
     static Object makeTranscoder(Codec* codec);
     static Object makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability);
@@ -423,7 +420,6 @@ DECL_ACCESSOR(TextualInputPort)
 DECL_ACCESSOR(TextualOutputPort)
 DECL_ACCESSOR(Regexp)
 DECL_ACCESSOR(RegMatch)
-DECL_ACCESSOR(Values)
 DECL_ACCESSOR(BinaryInputPort)
 DECL_ACCESSOR(BinaryOutputPort)
 DECL_ACCESSOR(Codec)
@@ -506,7 +502,6 @@ namespace scheme {
 #include "Box.h"
 #include "Port.h"
 #include "Regexp.h"
-#include "Values.h"
 #include "freeproc.h"
 #include "TypedVector.h"
 #endif // __SCHEME_SCHEME_H__

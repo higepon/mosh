@@ -419,6 +419,9 @@
 (1235 (call-with-values (lambda () 1) (lambda (x) (+ x 1234))))
 
 (6 (receive (a b c) (values 1 2 3) (+ a b c)))
+((x y) (receive z (values 'x 'y) z))
+((y z) (receive (a . b) (values 'x 'y 'z) b))
+(x (receive (a . b) (values 'x 'y 'z) a))
 ((1 . 2) (call-with-values (lambda () (values 1 2)) cons))
 ;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
 ("higepon" (receive (port proc) (open-string-output-port)

@@ -310,12 +310,6 @@ Object Object::makeRegMatch(OnigRegion* region, const ucs4string& text)
                                                         reinterpret_cast<word>(new RegMatch(region, text)))));
 }
 
-Object Object::makeValues(Object values)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Values,
-                                                        reinterpret_cast<word>(new Values(values)))));
-}
-
 Object Object::makeCustomBinaryInputPort(Object readProc)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,

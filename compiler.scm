@@ -520,17 +520,19 @@
 
 ;; struct $receive
 (define $RECEIVE 21)
-(define ($receive lvars vals body tail?)
-  `#(,$RECEIVE ,lvars ,vals ,body ,tail?))
+(define ($receive lvars reqargs optarg vals body tail?)
+  `#(,$RECEIVE ,lvars ,reqargs ,optarg ,vals ,body ,tail?))
 
 (define-macro ($receive.lvars iform) `(vector-ref ,iform 1))
-(define-macro ($receive.vals iform) `(vector-ref ,iform 2))
-(define-macro ($receive.body iform) `(vector-ref ,iform 3))
-(define-macro ($receive.tail? iform) `(vector-ref ,iform 4))
+(define-macro ($receive.reqargs iform) `(vector-ref ,iform 2))
+(define-macro ($receive.optarg iform) `(vector-ref ,iform 3))
+(define-macro ($receive.vals iform) `(vector-ref ,iform 4))
+(define-macro ($receive.body iform) `(vector-ref ,iform 5))
+(define-macro ($receive.tail? iform) `(vector-ref ,iform 6))
 (define-macro ($receive.set-lvars! iform lvars) `(vector-set! ,iform 1 ,lvars))
-(define-macro ($receive.set-vals! iform body) `(vector-set! ,iform 2 ,body))
-(define-macro ($receive.set-body! iform body) `(vector-set! ,iform 3 ,body))
-(define-macro ($receive.set-tail?! iform tail?) `(vector-set! ,iform 4 ,tail?))
+(define-macro ($receive.set-vals! iform body) `(vector-set! ,iform 4 ,body))
+(define-macro ($receive.set-body! iform body) `(vector-set! ,iform 5 ,body))
+(define-macro ($receive.set-tail?! iform tail?) `(vector-set! ,iform 6 ,tail?))
 
 (define $INSN-NUM 22)
 
@@ -589,6 +591,14 @@
          (list #f '()))
         (else
          (list #t (list vars)))))
+
+;; 後でこれに統一
+(define (parse-lambda-args formals)
+  (let loop ((formals formals) (args '()))
+    (cond ((null? formals) (values (reverse args) (length args) 0))
+          ((pair? formals) (loop (cdr formals) (cons (car formals) args)))
+          (else (values (reverse (cons formals args)) (length args) 1)))))
+
 
 ;; (define (define-is-lambda? sexp)
 ;;   (pair? (cadr sexp)))
@@ -1208,14 +1218,17 @@
       ;;---------------------------- receive -----------------------------------
       [(receive)
        (match sexp
-         [('receive (vars ...) vals . body)
-          (let1 this-lvars ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)
-            ($receive
-             this-lvars
-             (sexp->iform vals)
-             ;; the inner lvar comes first.
-             (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
-             tail?))]
+         [('receive vars vals . body)
+          (receive (vars reqargs optarg) (parse-lambda-args vars)
+            (let1 this-lvars ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)
+              ($receive
+               this-lvars
+               reqargs
+               optarg
+               (sexp->iform vals)
+               ;; the inner lvar comes first.
+               (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+               tail?)))]
          [else
           (syntax-error "malformed receive")])]
       ;;---------------------------- let ---------------------------------------
@@ -2658,7 +2671,7 @@
                             (set-union sets-here
                                        (set-intersect sets frees-here))
                             (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
-         [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets tail)]
+         [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets #f)]
          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
     ;; non-tail call works fine.
     `(,(code-stack-sum body-code vals-code free-code)
@@ -2667,7 +2680,8 @@
       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
       ,@(code-body vals-code)
       RECEIVE
-      ,(length vars)
+      ,($receive.reqargs iform)
+      ,($receive.optarg  iform)
       ,@boxes-code
       ,@(list 'ENTER (length vars))
       ,@(code-body body-code)
@@ -2881,9 +2895,8 @@
       (let loop ([i 0]
                  [j 0]
                  [labels '()])
-        (pp "pass4")
         (cond
-         [(= i len) (pp "hige") (values ret labels)]
+         [(= i len) (values ret labels)]
          [else
           (let1 insn (vector-ref v i)
             (cond
@@ -2900,9 +2913,7 @@
              [else
               (vector-set! ret j insn)
               (loop (+ i 1) (+ j 1) labels)]))]))))
-  (pp "before receive")
   (receive (code labels) (collect-labels)
-    (pp "after receive")
     (let1 len (vector-length code)
     (let loop ([i 0])
       (cond

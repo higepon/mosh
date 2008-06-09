@@ -28,10 +28,6 @@
 ;  $Id$
 
 ; document is written at manual.scm
-;; (define-macro (receive . args)
-;;   `(call-with-values (lambda () ,(cadr args)) (lambda ,(car args) ,@(cddr args))))
-
-; document is written at manual.scm
 (define-macro (acond . clauses)
   (if (null? clauses)
       '()
@@ -876,8 +872,10 @@
 ;; .parameter consumer must be a procedure and should accept as many values as producer returns
 ;; .returns result of consumer
 ;; .internal-references "SRFI-8 Binding to multiple values." "receive"
+;; (define (call-with-values producer consumer)
+;;   (apply consumer (producer)))
 (define (call-with-values producer consumer)
-  (apply consumer (producer)))
+  (receive vals (producer) (apply consumer vals)))
 
 ;; returns the subchain of pairs of list obtained by omitting the first k elements
 ;; .pre-condition l should be a list of size at least k.

@@ -107,4 +107,4 @@
 (define-insn REFER_FREE_PUSH 1)
 (define-insn REFER_LOCAL_PUSH 1)
 (define-insn VALUES 1)
-(define-insn RECEIVE 1)
+(define-insn RECEIVE 2)

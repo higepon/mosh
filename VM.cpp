@@ -557,32 +557,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 callCode[1] = Object::makeInt(0);
                 pc_  = callCode;
                 sp_--;
-            } else if (args.isValues()) { // call-with-values
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                const Object arg = args.toValues()->values();
-                const int length = Pair::length(arg);
-                if (ac_.isClosure()) {
-                    const Closure* const c = ac_.toClosure();
-                    int requiredLength = c->argLength;
-                    if (!c->isOptionalArg && requiredLength != length) {
-                        RAISE3("Values received ~a values than expected, required ~d got ~d", length > requiredLength ? Object::makeString(UC("more")) : Object::makeString(UC("fewer"))
-                               , Object::makeInt(requiredLength)
-                               , Object::makeInt(length));
-                    }
-                }
-
-                const int shiftLen = length > 1 ? length - 1 : 0;
-                Object* const sp = unShiftArgs(sp_,shiftLen);
-                pairArgsToStack(sp, 0, arg);
-                callCode[1] = Object::makeInt(length);
-                pc_  = callCode;
-                sp_ = sp;
             } else {
-// あとでかならずもどす。
-//                 if (!args.isPair()) {
-//                     RAISE1("apply requires pair arguments, bug got ~a\n", args.toClosure()->sourceInfo);
-//                 }
-
+                if (!args.isPair()) {
+                    RAISE1("apply requires pair arguments, bug got ~a\n", args.toClosure()->sourceInfo);
+                }
                 const int length = Pair::length(args);
                 const int shiftLen = length > 1 ? length - 1 : 0;
                 Object* const sp = sp_ + shiftLen; //unShiftArgs(sp_, 0, shiftLen);////
@@ -1421,7 +1399,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(VALUES)
         {
             TRACE_INSN0("VALUES");
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             //  values stack layout
             //    (value 'a 'b 'c 'd)
             //    ==>
@@ -1440,54 +1417,55 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 RAISE1("too many values ~d", Object::makeInt(num));
             }
             numValues_ = num;
-            if (num > 0) {
+            if (num >= 0) {
                 for (int i = num - 1; i > 0; i--) {
                     values_[i - 1] = ac_;
                     ac_ = index(sp_, num - i - 1);
                 }
             }
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+            sp_ =  sp_ - (numValues_ - 1);
             NEXT;
         }
         CASE(RECEIVE)
         {
             TRACE_INSN0("RECEIVE");
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            const int num = fetchOperand().toInt();
-            if (numValues_ < num) {
+            const int reqargs = fetchOperand().toInt();
+            const int optarg  = fetchOperand().toInt();
+            if (numValues_ < reqargs) {
                 RAISE0("received fewer values than expected");
-            } else if (numValues_ > num) {
+            } else if (optarg == 0 && numValues_ > reqargs) {
                 RAISE0("received more values than expected");
             }
-            if (num > 0) {
+            // (receive (a b c) ...)
+            if (optarg == 0) {
+                if (reqargs > 0) {
+                    push(ac_);
+                }
+                for (int i = 0; i < reqargs - 1; i++) {
+                    push(values_[i]);
+                }
+            // (receive a ...)
+            } else if (reqargs == 0) {
+                Object ret = Pair::list1(ac_);
+                for (int i = 0; i < numValues_ - 1; i++) {
+                    ret = Pair::appendD(ret, Pair::list1(values_[i]));
+                }
+                push(ret);
+            // (receive (a b . c) ...)
+            } else {
+                Object ret = Object::Nil;
                 push(ac_);
-            }
-            for (int i = 0; i < num - 1; i++) {
-                push(values_[i]);
+                for (int i = 0; i < numValues_ - 1; i++) {
+                    if (i < reqargs - 1) {
+                        push(values_[i]);
+                    } else {
+                        ret = Pair::appendD(ret, Pair::list1(values_[i]));
+                    }
+                }
+                push(ret);
             }
             NEXT1;
-//                 (let1 n-args (next 1)
-//                   (cond
-//                    [(< num-valuez n-args)
-//                     (error "received fewer values than expected")]
-//                    [(> num-valuez n-args)
-//                     (error "received more values than expected")]
-//                    [else
-//                     (when (> n-args 0)
-//                       (let loop ([i      0]
-//                                  [new-sp (push stack sp a)])
-//                         (if (>= i (- n-args 1))
-//                             '()
-//                             (loop (+ i 1) (push stack new-sp (vector-ref valuez i))))))
-//                     (VM codes
-//                         (skip 1)
-//                         a
-//                         fp
-//                         c
-//                         stack
-//                         (+ sp n-args))]))]
-
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         }
         DEFAULT
         {

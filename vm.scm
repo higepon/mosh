@@ -918,26 +918,50 @@
                           (vector-set! valuez (- i 1) val)
                           (loop (- i 1) (index stack sp (- n-args i 1)))))))]
                [(RECEIVE)
-                (let1 n-args (next 1)
+                (let ([reqargs (next 1)]
+                      [optarg  (next 2)])
                   (cond
-                   [(< num-valuez n-args)
+                   [(< num-valuez reqargs)
                     (error "received fewer values than expected")]
-                   [(> num-valuez n-args)
+                   [(and (zero? optarg) (> num-valuez reqargs))
                     (error "received more values than expected")]
                    [else
-                    (when (> n-args 0)
+                    (cond
+                     ;; (receive (a b c) ...)
+                     [(zero? optarg)
+                      (when (> reqargs 0)
+                        (let loop ([i      0]
+                                   [new-sp (push stack sp a)])
+                          (if (>= i (- reqargs 1))
+                              '()
+                              (loop (+ i 1) (push stack new-sp (vector-ref valuez i))))))]
+                     ;; (receive a ...)
+                     [(zero? reqargs)
+                      (let loop ([ret `(,a)]
+                                 [i   0])
+                        (if (>= i (- num-valuez 1))
+                            (push stack sp ret)
+                            (loop (append ret (list (vector-ref valuez i)))
+                                  (+ i 1))))]
+                     ;; (receive (a b . c) ...)
+                     [else
                       (let loop ([i      0]
-                                 [new-sp (push stack sp a)])
-                        (if (>= i (- n-args 1))
-                            '()
-                            (loop (+ i 1) (push stack new-sp (vector-ref valuez i))))))
-                    (VM codes
-                        (skip 1)
-                        a
-                        fp
-                        c
-                        stack
-                        (+ sp n-args))]))]
+                                 [new-sp (push stack sp a)]
+                                 [ret    '()])
+                          (cond
+                           [(< i (- reqargs 1)) ;; push a, b
+                            (loop (+ i 1) (push stack new-sp (vector-ref valuez i)) ret)]
+                           [(< i (- num-valuez 1))
+                            (loop (+ i 1) new-sp (append ret (list (vector-ref valuez i))))]
+                           [else
+                            (push stack new-sp ret)]))])
+                      (VM codes
+                          (skip 2)
+                          a
+                          fp
+                          c
+                          stack
+                          (+ sp reqargs optarg))]))]
                ;;---------------------------- CLOSURE ----------------------------
                [(CLOSURE)
                 (check-vm-paranoia (number? (skip (next 1))))
