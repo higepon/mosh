@@ -1475,6 +1475,11 @@ Object scheme::applyEx(Object args)
     return theVM->applyClosure(proc, argsAsList);
 }
 
+Object scheme::valuesEx(Object args)
+{
+    return theVM->values(args);
+}
+
 int scheme::div(int x, int y)
 {
     const int sign = x * y > 0 ? 1 : -1;

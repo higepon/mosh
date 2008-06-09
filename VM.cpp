@@ -547,7 +547,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 RAISE2("not supported apply ~a ~a", operand, ac_);
             }
-            NEXT1;
+            NEXT;
         }
         CASE(APPLY)
         {
@@ -1668,6 +1668,26 @@ Object VM::getCProcedureName(Object proc)
         }
     }
     return Symbol::intern(UC("<unknwon subr>"));
+}
+
+Object VM::values(Object args)
+{
+    if (!args.isPair()) {
+        numValues_ = 0;
+        return Object::Undef;
+    }
+
+    int nvals = 1;
+    for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
+        LOG1("p =~a\n", p.car());
+        values_[nvals - 1] = p.car();
+        if (nvals++ >= maxNumValues_) {
+            RAISE0("too many values");
+        }
+
+    }
+    numValues_ = nvals;
+    return args.first(); // set to ac_ later.
 }
 
 Object VM::getProfileResult()

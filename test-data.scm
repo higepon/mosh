@@ -422,6 +422,7 @@
 ((x y) (receive z (values 'x 'y) z))
 ((y z) (receive (a . b) (values 'x 'y 'z) b))
 (x (receive (a . b) (values 'x 'y 'z) a))
+((1 2 3) (receive x (apply values '(1 2 3)) x))
 ((1 . 2) (call-with-values (lambda () (values 1 2)) cons))
 ;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
 ("higepon" (receive (port proc) (open-string-output-port)

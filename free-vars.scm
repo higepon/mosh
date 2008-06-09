@@ -69,7 +69,7 @@
     (hashtable-keys ,hash-table-keys)
 ;    (command-line ,command-line)
     (current-error-port ,current-error-port)
-;    (values ,make-valuez)
+    (values ,(lambda () (error "values proc not implemented")))
     (vm/apply ,vm/apply)
     (pair? ,pair?)
     (init-library-table, init-library-table) ;; for test
