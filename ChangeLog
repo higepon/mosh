@@ -1,3 +1,7 @@
+2008-06-10  higepon  <higepon@users.sourceforge.jp>
+
+	* freeproc.cpp (scheme::dynamicWindEx): Added dynamic-wind. It's dummy for psyntax.pp.
+
 2008-06-09  higepon  <higepon@users.sourceforge.jp>
 
 	* VM.cpp : Rewrote multiple values support.

@@ -168,6 +168,7 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         unlink(PRFILER_TEMP_FILE);
         theVM->initProfiler();
     }
@@ -194,6 +195,7 @@ int main(int argc, char *argv[])
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
         const Object result = theVM->getProfileResult();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
 #endif

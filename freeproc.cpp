@@ -1595,3 +1595,33 @@ Object scheme::symbolPEx(Object args)
 {
     return Object::makeBool(args.car().isSymbol());
 }
+
+Object scheme::dynamicWindEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 3) {
+        VM_RAISE1("wrong number of arguments for dynamic-wind (required 3, got ~d)\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    const Object arg3 = args.third();
+    if (!arg1.isCallable() || !arg2.isCallable() || !arg3.isCallable()) {
+        VM_RAISE3("dynamic-wind closure required, but got (~a, ~a, ~a)\n", arg1, arg2, arg3);
+    }
+    // call before
+    theVM->callClosure0(arg1);
+
+    // call thunk
+    const Object ret = theVM->callClosure0(arg2);
+
+    // save the return values of thunk
+    Values v = theVM->fetchValues();
+    v.val = ret;
+
+    // call after
+    theVM->callClosure0(arg3);
+
+    // returns return values of thunk.
+    theVM->restoreValues(v);
+    return v.val;
+}
