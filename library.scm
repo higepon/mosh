@@ -2187,10 +2187,12 @@
        [(null? syms)
           '()]
        [else
+        (print "heres")
         (aif (hashtable-ref table (car syms) #f)
-            (hashtable-set! table (car syms) (+ it 1))
-            (hashtable-set! table (car syms) 1))
+             (hashtable-set! table (car syms) (+ it 1))
+             (hashtable-set! table (car syms) 1))
         (loop (cdr syms))]))
+    (print "here")
     (for-each
      (lambda (x)
        (let1 call-info (assoc (first x) calls)
@@ -2201,11 +2203,16 @@
          (list key value (/ (* 100 value) total)))
        table)
       (lambda (x y) (> (third x) (third y)))))
+    (print "here2")
     (let1 seen-syms (vector->list (hashtable-keys table))
+      (print "here4")
+      (print seen-syms)
+      (print calls)
       (for-each
        (lambda (p)
          (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
        ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
+    (print "here3")
     (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
 
 ;;; Pattern matching.

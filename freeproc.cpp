@@ -818,7 +818,6 @@ Object scheme::memqEx(Object args)
     const Object arg1 = args.first();
     if (Pair::length(args) == 2) {
         const Object arg2 = args.second();
-//        VM_LOG2("memq ~a, ~a\n", arg1, arg2);
         if (!arg2.isPair() && !arg2.isNil()) {
             VM_RAISE1("memq pair required, but got ~a\n", arg2);
         }
