@@ -1,3 +1,55 @@
+Mosh 0.0.4 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Ported Andrew Wright' pattern match library.
+It's very useful.
+    (match ...)
+    (match-lambda ...)
+    (match-let ...)
+    (match-letrec ...)
+
+Added a sample application.
+    Grass language interpreter.(example/grass.scm)
+
+Added pre-compiled macro support.
+
+Rewrote multiple values system.
+
+Added many procedures.
+    (hash-table-keys ...)
+    (vector-for-each ...)
+    (hash-table-for-each ...)
+    (exit)
+    (string-ref ...)
+    (div ...)
+    (list? ...)
+    (macroexpand ...)
+    (procedure? ...)
+    (with-input-from-file ...)
+    (load ...) for internal use.
+    char>=?, char>?, char<=? and char<?.
+    cons*
+
+Added EOF handling for Ctrl-D to REPL.
+
+Fixed many bugs.
+    div bug (thx leque)
+    case bug (thx leque)
+    (read) can't read "...".
+    SEGV with (write '(quote))
+
 Mosh 0.0.3 Release Note
 ============================
 

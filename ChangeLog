@@ -84,7 +84,7 @@
 
         * library.scm (vector-for-each): Added (vector-for-each ...), Added (hash-table-for-each ...).
 
-        * freeproc.cpp (scheme::hashTableKeysEx): Adde (hash-table-keys ...)
+        * freeproc.cpp (scheme::hashTableKeysEx): Added (hash-table-keys ...)
 
         * macro.scm: Removed macro.scm.
 
@@ -96,6 +96,7 @@
 
         * library.scm : Added for-all.
 
+	
         * library.scm (even?): Added even? defined at Base Library.
 
         * freeproc.cpp : Added modulo procedure (mod a b).

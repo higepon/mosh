@@ -1440,9 +1440,10 @@
        (errorf "unbound variable ~a" lib-id)))
 
 (define (assign-global lib-id val)
-  (aif (hash-table-get vm-name-space lib-id #f)
-       (hashtable-set! vm-name-space lib-id val)
-       (errorf "can not set! to unbound variable ~a" lib-id)))
+  (if (eq? (hash-table-get vm-name-space lib-id 'notfound) 'notfound)
+      (errorf "can not set! to unbound variable ~a" lib-id)
+      (hashtable-set! vm-name-space lib-id val)))
+       
 
 (define (vm-import lib)
   (if (fetch-instance lib)
