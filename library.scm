@@ -81,6 +81,23 @@
 ;; .example (eqv? #f 'nil)                          =>  #f
 (define-doc (eqv?) ...)
 
+;; Impose a total ordering on the set of characters according to their Unicode scalar values.
+;; .form (char>=? char1 char2 char3 ...)
+(define-doc (char>=?) ...)
+
+;; Impose a total ordering on the set of characters according to their Unicode scalar values.
+;; .form (char>? char1 char2 char3 ...)
+(define-doc (char>?) ...)
+
+;; Impose a total ordering on the set of characters according to their Unicode scalar values.
+;; .form (char<=? char1 char2 char3 ...)
+(define-doc (char<=?) ...)
+
+;; Impose a total ordering on the set of characters according to their Unicode scalar values.
+;; .form (char<? char1 char2 char3 ...)
+(define-doc (char<?) ...)
+
+
 ;; Returns #t if obj is a procedure, otherwise returns #f.
 ;; .form (procedure? obj)
 ;; .returns #t if obj is a procedure, otherwise returns #f.
@@ -2032,6 +2049,20 @@
 ;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
 ;; Synonym for cadddr
 (define (fourth pair) (cadddr pair))
+
+; Copyright (c) 1998, 1999 by Olin Shivers. You may do as you please with
+; this code as long as you do not remove this copyright notice or
+; hold me liable for its use. Please send bug reports to shivers@ai.mit.edu.
+;; .form (cons* elt1 elt2 ...)
+;; .returns (cons elt1 (cons elt2 (cons ... eltn)))
+;; .example (cons* 1 2 3 4) => (1 2 3 . 4)
+;; .example (cons* 1) => 1
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+(define (cons* first . rest)
+  (let recur ((x first) (rest rest))
+    (if (pair? rest)
+        (cons x (recur (car rest) (cdr rest)))
+        x)))
 
 ; ==============================================================================================================================================================
 ;;; SRFI-8 Binding to multiple values.

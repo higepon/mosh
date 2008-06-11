@@ -1,5 +1,9 @@
 2008-06-11  higepon  <higepon@users.sourceforge.jp>
 
+	* library.scm (cons*): Added cons*.
+
+	* freeproc.cpp: Added char>=?, char>? and char<=? and char<?.
+
 	* library.scm (sort!): Fixed SEGV bug.
 	                       In library.scm, we can't use do macro.
 	                       Because do macro depend on match macro.

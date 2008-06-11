@@ -160,6 +160,12 @@ Object procedurePEx(Object args);
 Object loadEx(Object args);
 Object symbolPEx(Object args);
 Object dynamicWindEx(Object args);
+Object charGePEx(Object args);
+Object charGtPEx(Object args);
+Object charLePEx(Object args);
+Object charLtPEx(Object args);
+Object readEx(Object args);
+
 int mod(int x, int y);
 int div(int x, int y);
 }; // namespace scheme

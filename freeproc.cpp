@@ -479,6 +479,18 @@ Object scheme::readCharEx(Object args)
     return Object::UnBound;
 }
 
+Object scheme::readEx(Object args)
+{
+    if (args.isNil()) {
+        return theVM->currentInputPort().toTextualInputPort()->getDatum();
+    } else if (args.first().isTextualInputPort()) {
+        return args.first().toTextualInputPort()->getDatum();
+    } else {
+        VM_RAISE1("read required, but got ~a\n", args.first());
+    }
+    return Object::UnBound;
+}
+
 Object scheme::charEqPEx(Object args)
 {
     const Object start = args.first();
@@ -1623,4 +1635,100 @@ Object scheme::dynamicWindEx(Object args)
     // returns return values of thunk.
     theVM->restoreValues(v);
     return v.val;
+}
+
+Object scheme::charGePEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length < 2) {
+       VM_RAISE1("wrong number of arguments for char>=? required at least 2, got ~d)\n", Object::makeInt(length));
+   }
+   for (Object p = args;;) {
+       const Object o = p.car();
+       if (!o.isChar()) {
+           VM_RAISE1("char>=? char required, but got ~a\n", o);
+       }
+       if (p.cdr().isNil()) break;
+       const Object n = p.cdr().car();
+       if (!n.isChar()) {
+           VM_RAISE1("char>=? char required, but got ~a\n", n);
+       }
+       if (o.toChar() < n.toChar()) {
+           return Object::False;
+       }
+       p = p.cdr();
+   }
+   return Object::True;
+}
+
+Object scheme::charGtPEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length < 2) {
+       VM_RAISE1("wrong number of arguments for char>? required at least 2, got ~d)\n", Object::makeInt(length));
+   }
+   for (Object p = args;;) {
+       const Object o = p.car();
+       if (!o.isChar()) {
+           VM_RAISE1("char>? char required, but got ~a\n", o);
+       }
+       if (p.cdr().isNil()) break;
+       const Object n = p.cdr().car();
+       if (!n.isChar()) {
+           VM_RAISE1("char>? char required, but got ~a\n", n);
+       }
+       if (o.toChar() <= n.toChar()) {
+           return Object::False;
+       }
+       p = p.cdr();
+   }
+   return Object::True;
+}
+
+Object scheme::charLePEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length < 2) {
+       VM_RAISE1("wrong number of arguments for char<=? required at least 2, got ~d)\n", Object::makeInt(length));
+   }
+   for (Object p = args;;) {
+       const Object o = p.car();
+       if (!o.isChar()) {
+           VM_RAISE1("char<=? char required, but got ~a\n", o);
+       }
+       if (p.cdr().isNil()) break;
+       const Object n = p.cdr().car();
+       if (!n.isChar()) {
+           VM_RAISE1("char<=? char required, but got ~a\n", n);
+       }
+       if (o.toChar() > n.toChar()) {
+           return Object::False;
+       }
+       p = p.cdr();
+   }
+   return Object::True;
+}
+
+Object scheme::charLtPEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length < 2) {
+       VM_RAISE1("wrong number of arguments for char<? required at least 2, got ~d)\n", Object::makeInt(length));
+   }
+   for (Object p = args;;) {
+       const Object o = p.car();
+       if (!o.isChar()) {
+           VM_RAISE1("char<? char required, but got ~a\n", o);
+       }
+       if (p.cdr().isNil()) break;
+       const Object n = p.cdr().car();
+       if (!n.isChar()) {
+           VM_RAISE1("char<? char required, but got ~a\n", n);
+       }
+       if (o.toChar() >= n.toChar()) {
+           return Object::False;
+       }
+       p = p.cdr();
+   }
+   return Object::True;
 }

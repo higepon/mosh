@@ -954,8 +954,21 @@ val
  #t (procedure? (lambda (x) (* x x)))]
 [mosh-only
  #f (procedure? '(lambda (x) (* x x)))]
-
-
+[#t (char>=? #\b #\a)]
+[#t (char>=? #\c #\b #\a)]
+[#t (char>=? #\b #\b)]
+[#f (char>=? #\b #\c)]
+[#t (char>? #\b #\a)]
+[#f (char>? #\b #\b)]
+[#f (char>? #\b #\c)]
+[#t (char<=? #\a #\b)]
+[#t (char<=? #\b #\b)]
+[#f (char<=? #\c #\b)]
+[#t (char<? #\a #\b)]
+[#f (char<? #\b #\b)]
+[#f (char<? #\c #\b)]
+[(1 2 3 . 4) (cons* 1 2 3 4)]
+[1 (cons* 1)]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
