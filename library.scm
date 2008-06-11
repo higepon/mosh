@@ -2135,25 +2135,19 @@
     (define (internal-sort l r)
       (let ((i l) (j r) (x (vector-ref v (/ (- (+ l r) 1) 2))))
     (let loop ()
-      (format #t "pred=~a v=~a" pred v)
-         (format #t "i=~d v=~a" i v)
-         (do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))
-         (print "[1]")
-         (do () ((not (pred x (vector-ref v j)))) (set! j (- j 1)))
-         (print "[2]")
+         ;; do macro needs match macro!
+         (letrec ((loop (lambda () (if (not (pred (vector-ref v i) x)) (begin #f) (begin (set! i (+ 1 i)) (loop)))))) (loop))
+;         (do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))
+         (letrec ((loop (lambda () (if (not (pred x (vector-ref v j))) (begin #f) (begin (set! j (- j 1)) (loop)))))) (loop))
+;         (do () ((not (pred x (vector-ref v j)))) (set! j (- j 1)))
          (if (<= i j)
          (let ((temp (vector-ref v i)))
-         (print "[3]")
            (vector-set! v i (vector-ref v j))
-         (print "[4]")
            (vector-set! v j temp)
-         (print "[5]")
            (set! i (+ 1 i))
-         (print "[6]")
            (set! j (- j 1))))
          (if (<= i j)
-             (loop)
-             (print "[7]")))
+             (loop)))
     (if (< l j)
         (internal-sort l j))
     (if (< i r)
@@ -2196,12 +2190,10 @@
        [(null? syms)
           '()]
        [else
-        (print "heres")
         (aif (hashtable-ref table (car syms) #f)
              (hashtable-set! table (car syms) (+ it 1))
              (hashtable-set! table (car syms) 1))
         (loop (cdr syms))]))
-    (print "here")
     (for-each
      (lambda (x)
        (let1 call-info (assoc (first x) calls)
@@ -2212,16 +2204,11 @@
          (list key value (/ (* 100 value) total)))
        table)
       (lambda (x y) (> (third x) (third y)))))
-    (print "here2")
     (let1 seen-syms (vector->list (hashtable-keys table))
-      (print "here4")
-      (print seen-syms)
-      (print calls)
       (for-each
        (lambda (p)
          (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
        ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
-    (print "here3")
     (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
 
 ;;; Pattern matching.
@@ -2260,3 +2247,10 @@
 
 ;; (define (do-test)
 ;;   (do () ((not ((lambda (a b) (> a b)) (vector-ref #(5) ) x))) (set! i (+ 1 i)))
+
+;; (define (hoge)
+;; (let ([v (list->vector '(1 3))]
+;;       [i 0]
+;;       [x 1])
+;;   (do () ((not ((lambda (a b) (> a b)) (vector-ref v i) x))) (set! i (+ 1 i)))))
+;; ;  (letrec ((loop (lambda () (if (not ((lambda (a b) (> a b)) (vector-ref v i) x)) (begin #f) (begin (set! i (+ 1 i)) (loop)))))) (loop))))

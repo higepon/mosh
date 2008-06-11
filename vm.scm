@@ -1865,6 +1865,30 @@
               [else
                (loop (read) (append ret (compile-partial obj)))])))))
 
+(define-macro (do . sexp)
+  (match sexp
+    [(((var init step ...) ...)
+         (test expr ...)
+       command ...)
+     `(letrec
+       ((loop
+         (lambda (,@var)
+           (if ,test
+               (begin
+                 #f ; avoid empty begin
+                 ,@expr)
+               (begin
+                 ,@command
+                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
+        (loop ,@init))]
+    [("step" x)
+     x]
+    [("step" x y)
+     y]
+    [else
+     (syntax-error "malformed do on mosh")]))
+
+
 
 (define (main args)
   (set! *command-line-args* (cdr args))

@@ -77,6 +77,21 @@
     [else
      (syntax-error "malformed do")]))
 
+(define-macro (acond . clauses)
+  (if (null? clauses)
+      '()
+      (let ((cl1 (car clauses))
+            (sym (gensym)))
+        `(let ((,sym ,(car cl1)))
+           (if ,sym
+               (let ((it ,sym)) ,@(cdr cl1))
+               (acond ,@(cdr clauses)))))))
+
+(define-macro (aif test-form then-form . else-form)
+  `(let ((it ,test-form))
+     (if it ,then-form ,@else-form)))
+
+
 
 (define (syntax-error msg)
   (raise (format "syntax error: ~a" msg)))
@@ -148,20 +163,6 @@
 ;;
 (define (log . msg)
   (display msg (current-error-port)))
-
-(define-macro (acond . clauses)
-  (if (null? clauses)
-      '()
-      (let ((cl1 (car clauses))
-            (sym (gensym)))
-        `(let ((,sym ,(car cl1)))
-           (if ,sym
-               (let ((it ,sym)) ,@(cdr cl1))
-               (acond ,@(cdr clauses)))))))
-
-(define-macro (aif test-form then-form . else-form)
-  `(let ((it ,test-form))
-     (if it ,then-form ,@else-form)))
 
 (define ($map1 f l)
   (if (null? l)
@@ -1129,7 +1130,7 @@
     (acond
      [(and (symbol? proc) (assoc proc ($library.macro top-level-library)))
       (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
-     [else sexp])))
+     [#t sexp])))
 
 
 (define (pass1/sexp->iform sexp library lvars tail?)
@@ -1285,20 +1286,6 @@
        ($call-cc (sexp->iform (second sexp)) tail?)]
       [(call-with-current-continuation)
        ($call-cc (sexp->iform (second sexp)) tail?)]
-      ;;---------------------------- apply -------------------------------------
-;;       [(apply)
-;;        (let* ([proc (second sexp)]
-;;               [args (third sexp)])
-;;          ($asm 'APPLY (list (sexp->iform proc) (sexp->iform args))))]
-;; this is wrong
-;;       [(apply)
-;;        (let* ([proc (second sexp)]
-;;               [args (cddr sexp)]
-;;               [adjusted_args #?= (append
-;;                               ($take args (- (length args) 1))
-;;                               #?= (car ($drop args (- (length args) 1))))])
-;;          ($asm 'APPLY (list (sexp->iform proc) (sexp->iform adjusted_args))))]
-
       ;;---------------------------- quote -------------------------------------
       [(quote)
        ($const (second sexp))]

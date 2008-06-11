@@ -1,8 +1,36 @@
-(define (sort2 obj pred)
-  (vector->list (sort! (list->vector obj) pred)))
 
 
-(sort2 '(4 1) (lambda (a b) (> a b)))
+(print "hige")
+
+(write (macroexpand '(do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))))
+(write (macroexpand '(do () ((not (pred x (vector-ref v j)))) (set! j (- j 1)))))
+
+;; (let ([v (list->vector '(1 3))]
+;;       [x 1])
+;;   (do () ((not ((lambda (a b) (> a b)) (vector-ref v 0) x))) (set! x (+ 1 0))))
+
+
+;; (let ([v (list->vector '(1 3))]
+;;       [i 0]
+;;       [x 1])
+;;   (letrec ((loop (lambda () (if (not ((lambda (a b) (> a b)) (vector-ref v i) x)) (begin #f) (begin (set! i (+ 1 i)) (loop)))))) (loop)))
+
+;; (let ([v (list->vector '(1 3))]
+;;       [x 1])
+;;   (do () (((lambda (a b) (> a b)) (vector-ref v 0) x))))
+;; (print 'done)
+
+;; (write (macroexpand '(do () ((not (pred (vector-ref v i) x))) (set! i (+ 1 i)))))
+;; (display "\n")
+;; (hoge)
+
+
+
+;; (define (sort2 obj pred)
+;;   (vector->list (sort! (list->vector obj) pred)))
+
+
+;; (sort2 '(4 1) (lambda (a b) (> a b)))
 ;  ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30))
 
 ;; (receive x (apply values '(1 2 3))
