@@ -82,10 +82,10 @@ psyntax:
 # 	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
 
 psyntax-mosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh ./mosh.r6rs.ss ./test.scm)
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
 
 psyntax-gosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./test.scm)
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
 
 #compiler build without -O2
 # mosh-compiler.o: compiler.cpp
