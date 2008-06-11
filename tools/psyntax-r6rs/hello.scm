@@ -1,5 +1,4 @@
-;; (import (rnrs io simple))
-;; (display "Hello World\n")
-
-(import (my-library))
+(import (rnrs io simple)
+        (my-library))
 (print-hello)
+(display "Hello World\n")
