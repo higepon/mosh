@@ -170,6 +170,8 @@
                name)))))
           
   (define (find-library-by-name name)
+    (display "name=")
+    (display name)
     (or (find-library-by
           (lambda (x) (equal? (library-name x) name)))
         (find-external-library name)))
