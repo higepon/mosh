@@ -19,7 +19,7 @@
   ; Always use forward slashes in the path.
   ; The last character should be a '/'.
 
-  (laml-dir . "/home/taro/vm/monar/tools/schemedoc/")        ; <== Edit here
+  (laml-dir . "/home/taro/mosh/tools/schemedoc/")        ; <== Edit here
 
 
   ; Which Scheme system do you use:   mzscheme, mzscheme-200, mzscheme-300, scm, guile, sisc, drscheme, or drscheme-300.

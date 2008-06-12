@@ -6,4 +6,4 @@
 
 ; Set the laml-dir variable to a value determined by the configuration file
 ; in laml-config/templates/configuration.
-(define laml-dir "/home/taro/vm/monar/tools/schemedoc/")
+(define laml-dir "/home/taro/mosh/tools/schemedoc/")

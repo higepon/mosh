@@ -1798,6 +1798,20 @@
 ;; .form (let1 var val body ...)
 (define-doc (let1) ...)
 
+;; Expand macro
+;; .returns expanded only once macro form.(Now you can expand only top-level defined macro)
+;; .form (macroexpand-1 form)
+(define-doc (macroexpand-1) ...)
+
+;; Expand macro
+;; .returns expanded macro form.(Now you can expand only top-level defined macro)
+;; .form (macroexpand form)
+(define (macroexpand sexp)
+  (let1 val (macroexpand-1 sexp)
+    (if (equal? val sexp)
+        sexp
+        (macroexpand-1 val))))
+
 ;; Returns a new symbol.
 ;; .form (gensym)
 ;; .returns A new symbol.
@@ -2248,22 +2262,9 @@
 ;; .reference "Gauche's manual" "match" "http://practical-scheme.net/gauche/man/gauche-refe_163.html#SEC439"
 (define-doc (match) ...)
 
-;; Expand macro
-;; .returns expanded only once macro form.(Now you can expand only top-level defined macro)
-;; .form (macroexpand-1 form)
-(define-doc (macroexpand-1) ...)
-
-;; Expand macro
-;; .returns expanded macro form.(Now you can expand only top-level defined macro)
-;; .form (macroexpand form)
-(define (macroexpand sexp)
-  (let1 val (macroexpand-1 sexp)
-    (if (equal? val sexp)
-        sexp
-        (macroexpand-1 val))))
 
 ; used internal.
-(define-doc (load ..))
+(define-doc (load) ...)
 
 (define (string->list str)
   (let loop ((pos (- (string-length str) 1)) (l '()))
@@ -2275,14 +2276,3 @@
 (define-macro (aif test-form then-form . else-form)
   `(let ((it ,test-form))
      (if it ,then-form ,@else-form)))
-
-;; (define (do-test)
-;;   (do () ((not ((lambda (a b) (> a b)) (vector-ref #(5) ) x))) (set! i (+ 1 i)))
-
-;; (define (hoge)
-;; (let ([v (list->vector '(1 3))]
-;;       [i 0]
-;;       [x 1])
-;;   (do () ((not ((lambda (a b) (> a b)) (vector-ref v i) x))) (set! i (+ 1 i)))))
-;; ;  (letrec ((loop (lambda () (if (not ((lambda (a b) (> a b)) (vector-ref v i) x)) (begin #f) (begin (set! i (+ 1 i)) (loop)))))) (loop))))
-
