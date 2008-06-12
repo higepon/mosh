@@ -27,7 +27,6 @@ Instruction.h        \
 Port.h               \
 SString.h            \
 Symbol.h             \
-Values.h             \
 config.h             \
 scheme.h             \
 ByteVector.h         \
