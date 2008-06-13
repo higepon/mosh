@@ -202,6 +202,15 @@ protected:
         *sp_++ = obj;
     }
 
+    void pushWithCheck(Object obj)
+    {
+        if (sp_ > maxStack_) {
+            maxStack_ = sp_;
+        }
+        *sp_++ = obj;
+    }
+
+
     Object splitId(Object id);
 
     Object stackToPairArgs(Object* sp, int nArgs)
@@ -350,6 +359,7 @@ protected:
     const int stackSize_;
     Object* stack_;
     Object* stackEnd_;
+    Object* maxStack_;
     Object topLevelInstance_;
     Object instances_;
     Object libraries_;

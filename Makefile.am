@@ -80,8 +80,12 @@ psyntax:
 # psyntax-mosh:
 # 	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
 
+psyntax-mosh-p:
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
+
 psyntax-mosh:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
+
 
 psyntax-gosh:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)

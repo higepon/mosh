@@ -46,6 +46,7 @@
       (display "provide a script name argument\n")
       (exit 17))
     (let ((script-name (car args)) (args (cdr args)))
-      (load-r6rs-top-level (car args))))
-  (exit 0))
+      (load-r6rs-top-level (car args)))))
+; comment out for mosh
+;  (exit 0))
 
