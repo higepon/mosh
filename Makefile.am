@@ -104,7 +104,7 @@ compiler.cpp: compiler-with-library.scmc
 #	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
-	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "vm-cpp?" > $(PWD)/$@
+	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
@@ -122,7 +122,7 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 ./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "gauche?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 labels.cpp: ./instruction.scm
 	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@

@@ -21,7 +21,7 @@
   (else
    obj)))
 
-(define (write-pre-cond body)
+(define (write-cond-expand body)
   (for-each
    (lambda (x)
      (match x
@@ -40,10 +40,12 @@
          [(eof-object? obj) '()]
          [else
           (match obj
-            [('pre-cond . body)
+            [('cond-expand . body)
              (aif (find (lambda (x) (eq? (car x) (string->symbol (third args)))) body)
-                  (write-pre-cond (cdr it))
-                  (errorf "condition? ~a not found " (third args)))]
+                  (write-cond-expand (cdr it))
+                  (aif (find (lambda (x) (eq? (car x) 'else)) body)
+                       (write-cond-expand (cdr it))
+                       (errorf "condition? ~a not found " (third args))))]
             [else (write (extract-quasiquote-vector obj))])
           (loop (read))]))))
   0)
@@ -56,7 +58,7 @@
 ;;         (cond
 ;;          [(eof-object? obj) '()]
 ;;          [else
-;;           (if (and (pair? obj) (eq? 'pre-cond (first obj)))
+;;           (if (and (pair? obj) (eq? 'cond-expand (first obj)))
 ;;               (begin
 ;;                 (for-each write  (cdr (find (lambda (x) (eq? (car x) (string->symbol (third args)))) (cdr obj)))))
 ;;               (write (extract-quasiquote-vector obj)))

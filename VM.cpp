@@ -135,24 +135,26 @@ void VM::defaultExceptionHandler(Object error)
 
 void VM::loadFile(const ucs4string& file)
 {
-//     struct timeval tv1, tv2;
-//     struct timezone tz1, tz2;
-//     long long compileTime = 0;
-//     long long evalTime = 0;
+    struct timeval tv1, tv2;
+    struct timezone tz1, tz2;
+    long long compileTime = 0;
+    long long evalTime = 0;
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
-//            gettimeofday(&tv1, &tz1);
+           gettimeofday(&tv1, &tz1);
             const Object compiled = compile(o);
-//            gettimeofday(&tv2, &tz2);
-//            compileTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
-//            gettimeofday(&tv1, &tz1);
+           gettimeofday(&tv2, &tz2);
+           compileTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
+       printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
+           gettimeofday(&tv1, &tz1);
             evaluate(compiled);
-//            gettimeofday(&tv2, &tz2);
-//            evalTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
+           gettimeofday(&tv2, &tz2);
+           evalTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
+
         }
-//        printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
+
     CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);

@@ -1,5 +1,5 @@
-(pre-cond
- [gauche?
+(cond-expand
+ [gauche
   (use srfi-1)
   (use util.match)
   (load "./free-vars-decl.scm")
@@ -34,7 +34,7 @@
   (define syntax-error error)
   (define (command-line) *command-line-args*)
   ]
-[vm-cpp?
+[mosh
   (define dd display)
   (define pp print)
   (include "./free-vars-decl.scm")
@@ -122,12 +122,18 @@
            ,ret)))))
 
 ;; Utilities
-(define (set-union lst1 lst2)
-  (let ((lst1 (if (or (pair? lst1) (null? lst1)) lst1 (list lst1)))
-        (lst2 (if (or (pair? lst2) (null? lst2)) lst2 (list lst2))))
-  (if (null? lst1)
-      lst2
-      (set-union (cdr lst1) (set-cons (car lst1) lst2)))))
+(define (set-union l1 l2)
+  (define (set-cons x lst)
+    (if (memq x lst)
+        lst
+        (cons x lst)))
+  (define (rec lst1 lst2)
+    (let ((lst1 (if (or (pair? lst1) (null? lst1)) lst1 (list lst1)))
+          (lst2 (if (or (pair? lst2) (null? lst2)) lst2 (list lst2))))
+      (if (null? lst1)
+          lst2
+          (rec (cdr lst1) (set-cons (car lst1) lst2)))))
+  (rec l1 l2))
 
 (define (set-minus lst1 lst2)
   (if (null? lst1)
@@ -137,10 +143,6 @@
           (cons (car lst1) (set-minus (cdr lst1) lst2)))))
 
 
-(define (set-cons x lst)
-  (if (memq x lst)
-      lst
-      (cons x lst)))
 
 (define (set-intersect lst1 lst2)
   (if (null? lst1)
@@ -2608,39 +2610,75 @@
       1
       ,@(if tail '() (list end-of-frame)))))
 
-(define (pass3/$lambda iform locals frees can-frees sets tail)
-  (let* ([vars ($lambda.lvars iform)]
-         [body ($lambda.body iform)]
-         [frees-here (pass3/find-free body
-                                      vars
-                                      (append locals frees can-frees))]
-         [sets-here  (append (pass3/find-sets body vars) sets)]
-         [boxes-code (pass3/make-boxes sets-here vars)]
-         [body-code  (pass3 body
-                            vars
-                            frees-here
-                            (set-union can-frees vars)
-                            (set-union sets-here
-                                       (set-intersect sets frees-here))
-                            (length vars))]
-         [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
-         [end-of-closure (make-label)])
-    `(0
-      ,@(code-body free-code)
-      CLOSURE
-      ,(ref-label end-of-closure)
-      ,(length vars)                                            ;; length of arguments
-      ,(> ($lambda.optarg iform) 0)                             ;; optional-arg?
-      ,(length frees-here)                                      ;; number of free variables
-      ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
-      ,($lambda.src iform)                                      ;; source code information
-      ,@boxes-code                                              ;; lambda body start
-      ,@(code-body body-code)
-      RETURN
-      ,(length vars)
-      ,end-of-closure
-      )))
+(cond-expand
+ [mosh
+  (define (pass3/$lambda iform locals frees can-frees sets tail)
+    (let* ([vars ($lambda.lvars iform)]
+           [body ($lambda.body iform)]
+           [frees-here (pass3/find-free body
+                                        vars
+                                        (append locals frees can-frees))]
+           [sets-here  (append (pass3/find-sets body vars) sets)]
+           [boxes-code (pass3/make-boxes sets-here vars)]
+           [body-code  (pass3 body
+                              vars
+                              frees-here
+                              '()
+                              '()
+                              (length vars))]
+           [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
+           [end-of-closure (make-label)])
+      `(0
+        ,@(code-body free-code)
+        CLOSURE
+        ,(ref-label end-of-closure)
+        ,(length vars)                                            ;; length of arguments
+        ,(> ($lambda.optarg iform) 0)                             ;; optional-arg?
+        ,(length frees-here)                                      ;; number of free variables
+        ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
+        ,($lambda.src iform)                                      ;; source code information
+        ,@boxes-code                                              ;; lambda body start
+        ,@(code-body body-code)
+        RETURN
+        ,(length vars)
+        ,end-of-closure
+        )))
 
+  ]
+ [else
+  (define (pass3/$lambda iform locals frees can-frees sets tail)
+    (let* ([vars ($lambda.lvars iform)]
+           [body ($lambda.body iform)]
+           [frees-here (pass3/find-free body
+                                        vars
+                                        (append locals frees can-frees))]
+           [sets-here  (append (pass3/find-sets body vars) sets)]
+           [boxes-code (pass3/make-boxes sets-here vars)]
+           [body-code  (pass3 body
+                              vars
+                              frees-here
+                              (set-union can-frees vars)
+                              (set-union sets-here
+                                         (set-intersect sets frees-here))
+                              (length vars))]
+           [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
+           [end-of-closure (make-label)])
+      `(0
+        ,@(code-body free-code)
+        CLOSURE
+        ,(ref-label end-of-closure)
+        ,(length vars)                                            ;; length of arguments
+        ,(> ($lambda.optarg iform) 0)                             ;; optional-arg?
+        ,(length frees-here)                                      ;; number of free variables
+        ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
+        ,($lambda.src iform)                                      ;; source code information
+        ,@boxes-code                                              ;; lambda body start
+        ,@(code-body body-code)
+        RETURN
+        ,(length vars)
+        ,end-of-closure
+        )))
+  ])
 (define (pass3/$receive iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
          [body ($receive.body iform)]
@@ -3019,70 +3057,52 @@
            (cons (car s) (iter (cdr s)))])]))
   (iter sexp))
 
-(pre-cond
- [gauche?
-(define (compile sexp)
-  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
-                                   x)
-                '() *free-lvars* '() '() #f)))))
+;; (cond-expand
+;;  [gauche
+;; (define (compile sexp)
+;;   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+;;                                    x)
+;;                 '() *free-lvars* '() '() #f)))))
 
-  ]
- [vm?
-(define (compile sexp)
-  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
-                                   x)
-                '() *free-lvars* '() '() #f)))))
+;;   ]
+;;  [vm?
+;; (define (compile sexp)
+;;   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+;;                                    x)
+;;                 '() *free-lvars* '() '() #f)))))
 
-  ]
- [vm-outer?
-(define (compile sexp)
-  (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
-                                   x)
-                '() *free-lvars* '() '() #f)))))
+;;   ]
+;;  [vm-outer?
+;; (define (compile sexp)
+;;   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+;;                                    x)
+;;                 '() *free-lvars* '() '() #f)))))
 
-  ]
-[vm-cpp?
+;;   ]
+;; [mosh
 (define (compile sexp)
 ;  (print ($library.macro top-level-library))
   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
                                    x)
                 '() *free-lvars* '() '() #f)))))
 
-]
-)
-
-;; (define (compile sexp)
-;;   (pass4 (merge-insn (cdr (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
-;;                                    x)
-;;                 '() *free-lvars* '() '() #f)))))
+;; ]
+;; )
 
 (define (compile-no-optimize sexp)
   (pass4 (code-body (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '() *free-lvars* '() '() #f))))
 
 
-(pre-cond
- [gauche?
-(define (main args)
-  (if (= (length args) 2)
-      (let1 port (open-string-input-port (second args))
-        (write (compile (read port))))))
-
-  ]
- [vm?
-(define (main args)
-  (if (= (length args) 2)
-      (let1 port (open-string-input-port (second args))
-        (write (compile (read port))))))
-
-  ]
+(cond-expand
  [vm-outer?
-(define (main args)
-  (if (= (length args) 2)
-      (let1 port (open-string-input-port (second args))
-        (write (compile (read port))))))
-
-  (main (command-line))
- ]
- [vm-cpp?
-;  (write (compile '(lambda (x) x)))
- ])
+  (define (main args)
+    (if (= (length args) 2)
+        (let1 port (open-string-input-port (second args))
+          (write (compile (read port))))))
+  (main (command-line))]
+ [mosh #f]
+ [else
+  (define (main args)
+    (if (= (length args) 2)
+        (let1 port (open-string-input-port (second args))
+          (write (compile (read port))))))])
