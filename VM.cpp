@@ -342,6 +342,42 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
     return ret;
 }
 
+// Object VM::apply(Object proc, Object args)
+// {
+//     const int procLength = Pair::length(proc);
+//     const int length  = procLength + 7;
+// #ifdef USE_BOEHM_GC
+//     Object* code = new(GC) Object[length];
+// #else
+//     Object* code = new Object[length ];
+// #endif
+//     code[0] = Object::makeRaw(Instruction::FRAME);
+//     code[1] = Object::makeInt(procLength + 5);
+//     code[2] = Object::makeRaw(Instruction::CONSTANT);
+//     code[3] = args;
+//     code[4] = Object::makeRaw(Instruction::PUSH);
+//     int i = 0;
+//     for (Object o = proc; !o.isNil(); o = o.cdr()) {
+//         code[5 + i] = o.car();
+//         i++;
+//     }
+//     code[5 + i] = Object::makeRaw(Instruction::APPLY);
+//     code[6 + i] = Object::makeRaw(Instruction::HALT);
+
+//     static Object closure = Object::Undef;
+//     if (Object::Undef == closure) {
+// #       include "cprocedures.cpp"
+//         closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, Object::False /* todo */);
+//     }
+//     closure.toClosure()->pc = code;
+//     SAVE_REGISTERS();
+//     Object* const direct = getDirectThreadedCode(code, length);
+//     cl_ = closure;
+//     const Object ret = run(direct, NULL);
+//     RESTORE_REGISTERS();
+//     return ret;
+// }
+
 Object VM::apply(Object proc, Object args)
 {
     const int procLength = Pair::length(proc);
@@ -370,13 +406,12 @@ Object VM::apply(Object proc, Object args)
         closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, Object::False /* todo */);
     }
     closure.toClosure()->pc = code;
-    SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(code, length);
     cl_ = closure;
-    const Object ret = run(direct, NULL);
-    RESTORE_REGISTERS();
-    return ret;
+    pc_ = code;
+    return ac_;
 }
+
 
 Object VM::compile(Object code)
 {
