@@ -1,3 +1,7 @@
+2008-06-15  higepon  <higepon@users.sourceforge.jp>
+
+	* free-vars.scm (*free-vars*): Added set-source-info for compiler.
+
 2008-06-11  higepon  <higepon@users.sourceforge.jp>
 
 	* library.scm (cons*): Added cons*.

@@ -165,6 +165,8 @@ Object charGtPEx(Object args);
 Object charLePEx(Object args);
 Object charLtPEx(Object args);
 Object readEx(Object args);
+Object vectorTolistEx(Object args);
+Object setSourceInfoEx(Object args);
 
 int mod(int x, int y);
 int div(int x, int y);

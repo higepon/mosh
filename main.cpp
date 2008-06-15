@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
-        unlink(PRFILER_TEMP_FILE);
+//        unlink(PRFILER_TEMP_FILE);
         theVM->initProfiler();
     }
 #endif

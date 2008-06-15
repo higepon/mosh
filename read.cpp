@@ -972,6 +972,7 @@ static ScmObj read_list_int(ScmPort *port, ScmChar closer,
     return SCM_NIL;             /* dummy */
 }
     #include "VM.h"
+extern VM* theVM;
 static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
 {
     int has_ref;
@@ -983,15 +984,14 @@ static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
 #else
     if (ctx->flags & SCM_READ_SOURCE_INFO) line = Scm_PortLine(port);
 #endif
-
     r = read_list_int(port, closer, ctx, &has_ref, line);
+    VM_LOG1("r=~a", r);
+    printf("line = %d %s %s:%d\n", line, __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
 
 #ifdef MONA_SCHEME
-
     if (r.isPair() && line >= 0) {
-//        VM_LOG2("r=~a ~a\n", r, r.toPair()->sourceInfo);
         r = Object::cons(r.car(), r.cdr(), Object::cons(Object::makeString(port->toString()), Object::makeInt(line)));
-//        VM_LOG2("r=~a ~a\n", r, r.toPair()->sourceInfo);
     }
 #else
     if (SCM_PAIRP(r) && (ctx->flags & SCM_READ_SOURCE_INFO) && line >= 0) {

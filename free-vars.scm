@@ -126,4 +126,6 @@
     (char>=? ,char>=?)
     (char>? ,char>?)
     (read ,(lambda e (error "read not implemented")))
+    (vector->list ,vector->list)
+    (set-source-info! ,(lambda e #f))
     ))

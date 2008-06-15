@@ -71,12 +71,13 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     cl_(Object::Nil),
     pc_(NULL),
     stackSize_(stackSize),
+    maxStack_(NULL),
     outputPort_(outport),
     errorPort_(errorPort),
     inputPort_(inputPort),
     stdinPort_(Object::makeBinaryInputPort(stdin)),
-    maxStack_(NULL),
     errorObj_(Object::Nil),
+    profilerRunning_(false),
     isProfiler_(isProfiler),
     maxNumValues_(256),
     numValues_(0)
@@ -135,24 +136,23 @@ void VM::defaultExceptionHandler(Object error)
 
 void VM::loadFile(const ucs4string& file)
 {
-    struct timeval tv1, tv2;
-    struct timezone tz1, tz2;
-    long long compileTime = 0;
-    long long evalTime = 0;
+//     struct timeval tv1, tv2;
+//     struct timezone tz1, tz2;
+//     long long compileTime = 0;
+//     long long evalTime = 0;
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
-           gettimeofday(&tv1, &tz1);
+//            gettimeofday(&tv1, &tz1);
             const Object compiled = compile(o);
-           gettimeofday(&tv2, &tz2);
-           compileTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
-       printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
-           gettimeofday(&tv1, &tz1);
+//           gettimeofday(&tv2, &tz2);
+//           compileTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
+//           printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
+//           gettimeofday(&tv1, &tz1);
             evaluate(compiled);
-           gettimeofday(&tv2, &tz2);
-           evalTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
-
+//           gettimeofday(&tv2, &tz2);
+//           evalTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
         }
 
     CATCH
@@ -756,6 +756,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int freeVariablesNum = fetchOperand().toInt();
             const int maxStack         = fetchOperand().toInt();
             const Object sourceInfo    = fetchOperand();
+//            LOG1("(CLOSURE) source=~a\n", sourceInfo);
             TRACE_INSN1("CLOSURE", "(n => ~d)\n", Object::makeInt(freeVariablesNum));
             ac_ = Object::makeClosure(pc_, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
             sp_ -= freeVariablesNum;
@@ -1521,6 +1522,7 @@ Object VM::splitId(Object id)
 
 Object VM::getStackTrace()
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const int MAX_DEPTH = 20;
     Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
@@ -1533,6 +1535,7 @@ Object VM::getStackTrace()
             exit(-1);
         }
         Object src = cl->toClosure()->sourceInfo;
+        LOG1("stack trace src=~a\n", src);
         if (src.isPair()) {
             if (src.car().isFalse()) {
                 port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
@@ -1620,10 +1623,12 @@ void VM::startTimer()
     tval.it_value.tv_sec = 0;
     tval.it_value.tv_usec = INTERVAL_USEC;
     setitimer(ITIMER_PROF, &tval, &oval);
+    profilerRunning_ = true;
 }
 
 void VM::stopTimer()
 {
+    profilerRunning_ = false;
     struct itimerval tval, oval;
     tval.it_interval.tv_sec = 0;
     tval.it_interval.tv_usec = 0;
@@ -1635,6 +1640,7 @@ void VM::stopTimer()
 void VM::collectProfile()
 {
     static int i = 0;
+    if (!profilerRunning_) return;
     if (i >= SAMPLE_NUM) {
         errorPort_.display(UC("buffer full profilerrrr stopped."));
         stopTimer();
@@ -1646,42 +1652,63 @@ void VM::collectProfile()
     totalSampleCount_++;
 }
 
-void VM::storeCallSampleToFile()
-{
-    FILE* fp = fopen(PRFILER_TEMP_FILE, "a");
-    FileBinaryOutputPort* p = new FileBinaryOutputPort(fp);
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    TextualOutputPort outPort(TextualOutputPort(p, transcoder));
+// void VM::storeCallSampleToFile()
+// {
+//     FILE* fp = fopen(PRFILER_TEMP_FILE, "a");
+//     FileBinaryOutputPort* p = new FileBinaryOutputPort(fp);
+//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+//     TextualOutputPort outPort(TextualOutputPort(p, transcoder));
 
-    Object ht = nameSpace_.toEqHashTable()->swap();
-    for (int i = 0; i < SAMPLE_NUM; i++) {
-        const Object proc = callSamples_[i];
-        if (proc.isCProcedure()) {
-            outPort.display(getCProcedureName(proc));
-            outPort.putChar('\n');
-        } else  {
-            const Object name = ht.toEqHashTable()->ref(proc, notFound_);
-            if (name != notFound_) {
-                outPort.display(splitId(name).cdr());
-            outPort.putChar('\n');
+//     Object ht = nameSpace_.toEqHashTable()->swap();
+//     for (int i = 0; i < SAMPLE_NUM; i++) {
+//         const Object proc = callSamples_[i];
+//         if (proc.isCProcedure()) {
+//             outPort.display(getCProcedureName(proc));
+//             outPort.putChar('\n');
+//         } else  {
+//             const Object name = ht.toEqHashTable()->ref(proc, notFound_);
+//             if (name != notFound_) {
+//                 outPort.display(splitId(name).cdr());
+//             } else {
+//                 outPort.display(proc);
+//             }
+//             outPort.putChar('\n');
+//         }
+//     }
+//     fclose(fp);
+// }
+
+Object VM::getClosureName(EqHashTable* nameSpace, Object closure)
+{
+    if (closure.isCProcedure()) {
+        return getCProcedureName(closure);
+    } else if (closure.isClosure()) {
+            const Object name = nameSpace->ref(closure, notFound_);
+            if (name == notFound_) {
+                return closure;
+            } else {
+                return stringTosymbolEx(L1(splitId(name).cdr()));
             }
-        }
+    } else {
+        return closure;
     }
-    fclose(fp);
 }
 
+// 名前をとる関数を作ろう
+// Object::incInt();
 void VM::storeCallSample()
 {
-    EqHashTable* ht = callHash_.toEqHashTable();
+    EqHashTable* nameHash = nameSpace_.toEqHashTable()->swap().toEqHashTable();
+    EqHashTable* callHash = callHash_.toEqHashTable();
     for (int i = 0; i < SAMPLE_NUM; i++) {
-        const Object proc = callSamples_[i];
-        const Object count = ht->ref(proc, Object::False);
+        const Object proc = getClosureName(nameHash, callSamples_[i]);
+        const Object count = callHash->ref(proc, Object::False);
         if (count.isNil()) {
-            continue;
+            /* */
         } else if (count.isInt()) {
-            ht->set(proc, Object::makeInt(count.toInt() + 1));
+            callHash->set(proc, Object::makeInt(count.toInt() + 1));
         } else {
-            ht->set(proc, Object::makeInt(1));
+            callHash->set(proc, Object::makeInt(1));
         }
         callSamples_[i] = Object::Nil;
     }
@@ -1706,7 +1733,6 @@ Object VM::values(Object args)
 
     int nvals = 1;
     for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
-        LOG1("p =~a\n", p.car());
         values_[nvals - 1] = p.car();
         if (nvals++ >= maxNumValues_) {
             RAISE0("too many values");
@@ -1719,6 +1745,8 @@ Object VM::values(Object args)
 
 Object VM::getProfileResult()
 {
+    profilerRunning_ = false;
+    printf("REAL STOP %s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     stopProfiler();
     Object ret = Object::Nil;
     Object ht = nameSpace_.toEqHashTable()->swap();
@@ -1730,30 +1758,34 @@ Object VM::getProfileResult()
             if (name != notFound_) {
                 const Object s = splitId(name);
                 ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
+            } else {
+                // add anonymouse closure
+                ret = Pair::append(ret, L1(o));
             }
         }
     }
 
     storeCallSample();
     // call trace
-    Object ret2 = Object::Nil;
-    EqHashTable* calls = callHash_.toEqHashTable();
-    Vector* keys  = calls->keys().toVector();
-    for (int i = 0; i < keys->length(); i++) {
-        const Object o = keys->ref(i);
-        if (o.isCProcedure()) {
-            ret2 = Pair::append(ret2, L1(Object::cons(getCProcedureName(o), calls->ref(o, notFound_))));
-        } else  {
-            const Object name = ht.toEqHashTable()->ref(o, notFound_);
-            if (name != notFound_) {
-                const Object s = splitId(name);
-                ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
-                continue;
-            }
-        }
-
-    }
-    return Object::cons(Object::makeInt(totalSampleCount_), Object::cons(ret2, ret));
+//     Object ret2 = Object::Nil;
+//     EqHashTable* calls = callHash_.toEqHashTable();
+//    Vector* keys  = calls->keys().toVector();
+//    printf("keys length=%d\n", keys->length());fflush(stdout);
+//     for (int i = 0; i < keys->length(); i++) {
+//         const Object o = keys->ref(i);
+//         if (o.isCProcedure()) {
+//             ret2 = Pair::append(ret2, L1(Object::cons(getCProcedureName(o), calls->ref(o, notFound_))));
+//         } else  {
+//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
+//             if (name != notFound_) {
+//                 const Object s = splitId(name);
+//                 ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
+//             } else {
+//                 ret2 = Pair::append(ret2, L1(Object::cons(o, calls->ref(o, notFound_))));
+//             }
+//         }
+//     }
+    return Object::cons(Object::makeInt(totalSampleCount_), Object::cons(callHash_, ret));
 }
 
 #endif // ENABLE_PROFILER

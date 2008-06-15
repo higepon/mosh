@@ -169,11 +169,10 @@ public:
     Object getCProcedureName(Object proc);
     void countCall(Object proc)
     {
-        if (isProfiler_) {
+        if (isProfiler_ && profilerRunning_) {
             static int i = 0;
             if (i >= SAMPLE_NUM) {
                 stopTimer();
-                storeCallSampleToFile();
                 storeCallSample();
                 startTimer();
                 i = 0;
@@ -184,6 +183,8 @@ public:
 #endif
 
 protected:
+
+    Object getClosureName(EqHashTable* nameSpace, Object closure);
 
     void import(Object libname)
     {
@@ -355,7 +356,6 @@ public:
     Object* sp_; // stack pointer   register
     Object* pc_; // program counter register
 protected:
-
     const int stackSize_;
     Object* stack_;
     Object* stackEnd_;
@@ -378,6 +378,7 @@ protected:
     Object* callSamples_;        // for profiler
     Object callHash_;            // for profiler
     int totalSampleCount_;       // for profiler
+    bool profilerRunning_;       // for profiler
 #endif
     const bool isProfiler_;      // for profiler
     const int maxNumValues_;

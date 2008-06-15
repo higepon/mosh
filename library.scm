@@ -913,11 +913,12 @@
 ;; returns a newly allocated list of the objects contained in the elements of vector
 ;; .returns returns a newly allocated list of the objects contained in the elements of vector
 ;; .example (vector->list '#(dah dah didah)) => (dah dah didah)
-(define (vector->list v)
-  (let loop ((pos (- (vector-length v) 1)) (l '()))
-    (if (< pos 0)
-        l
-        (loop (- pos 1) (cons (vector-ref v pos) l)))))
+;; .form (vector->list v)
+(define-doc (vector->list) ...)
+;;   (let loop ((pos (- (vector-length v) 1)) (l '()))
+;;     (if (< pos 0)
+;;         l
+;;         (loop (- pos 1) (cons (vector-ref v pos) l)))))
 
 ;; tests if the number object is = to zero
 ;; .returns #t is (= n 0)
@@ -2165,6 +2166,7 @@
 
 (define (hashtable-map proc ht)
   (let1 keys (vector->list (hashtable-keys ht))
+    (print "keys ok")
     (map
      (lambda (key)
        (proc key (hashtable-ref ht key)))
@@ -2224,37 +2226,55 @@
 ; Result is returned by Object VM::getProfileResult()
 ; Format is '(total-sample-count ((proc1 . call-count) (proc2 . call-count) ...) sampled-proc1 sampled-proc2 ...)
 ; Example (define result '(69 ((generic-assoc . 10000) (hoge . 3) (hige . 13) (append . 100000000) ($append-map1-sum . 2)) generic-assoc $append-map1-sum))
-(define (show-profile result)
-  (let ([total (first result)]
-        [calls (second result)]
-        [syms  (cddr result)]
-        [table (make-eq-hashtable)])
-    (print "time%        msec      calls   name")
-    (let loop ([syms syms])
-      (cond
-       [(null? syms)
-          '()]
-       [else
-        (aif (hashtable-ref table (car syms) #f)
-             (hashtable-set! table (car syms) (+ it 1))
-             (hashtable-set! table (car syms) 1))
-        (loop (cdr syms))]))
-    (for-each
-     (lambda (x)
-       (let1 call-info (assoc (first x) calls)
-         (format #t " ~a   ~a ~a   ~a    ~a\n" (lpad (third x) " " 3) (lpad (* (second x) 10) " " 10) (lpad (cdr call-info) " " 10) (rpad (first x) " " 30))))
-     (sort
-      (hashtable-map
-       (lambda (key value)
-         (list key value (/ (* 100 value) total)))
-       table)
-      (lambda (x y) (> (third x) (third y)))))
-    (let1 seen-syms (vector->list (hashtable-keys table))
-      (for-each
-       (lambda (p)
-         (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
-       ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
-    (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
+;; (define (show-profile result)
+;;   (let ([total (first result)]
+;;         [calls-hash (second result)]
+;;         [syms  (cddr result)]
+;;         [table (make-eq-hashtable)])
+;;     (print "time%        msec      calls   name")
+;;     (let loop ([syms syms])
+;;       (cond
+;;        [(null? syms)
+;;           '()]
+;;        [else
+;;         (aif (hashtable-ref table (car syms) #f)
+;;              (hashtable-set! table (car syms) (+ it 1))
+;;              (hashtable-set! table (car syms) 1))
+;;         (loop (cdr syms))]))
+;;     (print "before")
+;;     (print calls-hash)
+;;     (print (hashtable-map
+;;             (lambda (key value)
+;;               (cons key value))
+;;             calls-hash))
+;;     (print "after")
+;;     (for-each
+;;      (lambda (x)
+;;        (print (car x))
+;;        (aif (hashtable-ref calls-hash (first x) #f)
+;;          (format #t " ~a   ~a ~a   ~a    ~a\n"
+;;                  (lpad (third x) " " 3)
+;;                  (lpad (* (second x) 10) " " 10)
+;;                  (lpad it " " 10)
+;;                  (rpad (first x) " " 30))
+;;          (format #t " ~a   ~a ~a   ~a    ~a\n"
+;;                  (lpad (third x) " " 3)
+;;                  (lpad (* (second x) 10) " " 10)
+;;                  (lpad "?" " " 10)
+;;                  (rpad (first x) " " 30))
+;;         ))
+;;      (sort
+;;       (hashtable-map
+;;        (lambda (key value)
+;;          (list key value (/ (* 100 value) total)))
+;;        table)
+;;       (lambda (x y) (> (third x) (third y)))))))
+;; ;;     (let1 seen-syms (vector->list (hashtable-keys table))
+;; ;;       (for-each
+;; ;;        (lambda (p)
+;; ;;          (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
+;; ;;        ($take (sort (filter (lambda (x) (not (memq (car x) seen-syms))) calls) (lambda (a b) (> (cdr a) (cdr b)))) 30)))
+;; ;;     (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10))))
 
 ;;; Pattern matching.
 ;;; A port of Andrew Wright's pattern matching macro library.

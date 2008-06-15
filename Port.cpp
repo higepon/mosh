@@ -158,7 +158,9 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isEqHashTable()) {
         putString(UC("#<eq-hash-table>"));
     } else if (o.isClosure()) {
-        putString(UC("#<closure>"));
+        putString(UC("#<closure "));
+        putDatum(Object::makeInt(o.val));
+        putString(UC(">"));
     } else if (o.isCProcedure()) {
         putString(UC("#<subr>"));
     } else if (o.isByteVector()) {
@@ -251,7 +253,9 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isEqHashTable()) {
         putString(UC("#<eq-hash-table>"));
     } else if (o.isClosure()) {
-        putString(UC("#<clsoure>"));
+        putString(UC("#<closure "));
+        putDatum(Object::makeInt(o.val));
+        putString(UC(">"));
     } else if (o.isCProcedure()) {
         putString(UC("#<subr>"));
     } else if (o.isByteVector()) {

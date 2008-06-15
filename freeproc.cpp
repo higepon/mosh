@@ -137,12 +137,31 @@ Object scheme::cdrEx(Object args)
 
 Object scheme::sourceInfoEx(Object args)
 {
-    if (args.first().isPair()) {
-        return args.first().sourceInfo();
+    const Object arg = args.first();
+    if (arg.isPair()) {
+        return arg.sourceInfo();
+    } else if (arg.isClosure()) {
+        return arg.toClosure()->sourceInfo;
     } else {
         return Object::False;
     }
     return Object::Undef;
+}
+
+Object scheme::setSourceInfoEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("set-source-info! 2 arguments required, but got ~d\n", Object::makeInt(length));
+    }
+    const Object arg1 = args.first();
+    const Object arg2 = args.second();
+    if (arg1.isPair()) {
+        arg1.toPair()->sourceInfo = arg2;
+    } else {
+        VM_RAISE1("set-source-info! pair required, but got ~a\n", arg1);
+    }
+    return arg1;
 }
 
 Object scheme::nullPEx(Object args)
@@ -691,8 +710,8 @@ Object scheme::integerTocharEx(Object args)
 
 Object scheme::errorfEx(Object args)
 {
-    theVM->getErrorPort().format(args.car().toString()->data(), args.cdr());
-    exit(-1);
+    theVM->raiseFormat(args.car().toString()->data().c_str(), args.cdr());
+    return Object::Undef;
 }
 
 Object scheme::formatEx(Object args)
@@ -1731,4 +1750,23 @@ Object scheme::charLtPEx(Object args)
        p = p.cdr();
    }
    return Object::True;
+}
+
+Object scheme::vectorTolistEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 1) {
+       VM_RAISE1("wrong number of arguments for vector->list required 1, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isVector()) {
+       VM_RAISE1("vector->list vector required, but got ~a\n", arg);
+   }
+   Vector* const v = arg.toVector();
+   const int vLength = v->length();
+   Object ret = Object::Nil;
+   for (int i = vLength - 1; i >= 0; i--) {
+       ret = Object::cons(v->ref(i), ret);
+   }
+   return ret;
 }

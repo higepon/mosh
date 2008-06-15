@@ -13,6 +13,7 @@
   (define foldr2 fold-right)
   (define source-info debug-source-info)
   (define syntax-error error)
+  (define (set-source-info! a b) a)
   ]
  [vm?
   (define *command-line-args* '())
@@ -24,7 +25,8 @@
   (define pp (lambda a '()))
   (define syntax-error error)
   (define find10 find)
-  (define (source-info p) #f)
+  (define (source-info p) #f) ;(let1 src (debug-source-info p) (if (pair? src) (cons (car src) (cdr src)) src)))
+  (define (set-source-info! a b) a)
   ]
  [vm-outer?
   (define dd (lambda a '()))
@@ -648,9 +650,11 @@
             (pass1/expand (cond->if sexp))]
            [(lambda)
             (cond [(lambda-has-define? sexp)
-                   (pass1/expand (internal-define->letrec sexp))]
+                   (set-source-info! (pass1/expand (internal-define->letrec sexp)) (source-info sexp))]
                   [else
-                   `(lambda ,(cadr sexp) ,@ (pass1/expand (cddr sexp)))])]
+                   (dd "source-info-of-lambda-")
+                   (pp (source-info sexp))
+                   (set-source-info! `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp))) (source-info sexp))])]
            [(when)
             (match sexp
               [('when pred body . more)
@@ -727,7 +731,12 @@
 (define (define->lambda sexp)
   (let ((args (cadr sexp))
         (body (cddr sexp)))
-    `(define ,(car args) (lambda ,(cdr args) ,@body))))
+    (let1 closure `(lambda ,(cdr args) ,@body)
+      ;; save source-info
+      (dd "define->lambda sour=")
+      (pp (source-info sexp))
+      (set-source-info! closure (source-info sexp))
+      `(define ,(car args) ,closure))))
 
 
 (define (unless->cond sexp)
@@ -953,6 +962,9 @@
       l
       (loop (- n 1) (cdr l)))))
 
+
+;; Closure source info format
+;; ((file . lineno) (proc args))
 (define (pass1/lambda->iform name sexp library lvars)
   (let* ([vars          (second sexp)]
          [body          (cddr sexp)]
@@ -960,7 +972,9 @@
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
          [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)])
-    ($lambda (cons (source-info body) `(,name ,@(second sexp)))
+    (dd "pass1/lambda->iform")
+    (pp (source-info sexp))
+    ($lambda (cons (source-info sexp) `(,name ,@(second sexp)))
              name
              (if optional-arg? (- (length vars) 1) (length vars))
              (if optional-arg? 1 0)
@@ -1204,7 +1218,12 @@
       [(define)
        (match sexp
          [('define name ('lambda . more))
-           ($define ($library.name library) name (pass1/lambda->iform name `(lambda ,@more) library lvars))]
+          (let1 closure  `(lambda ,@more)
+            (set-source-info! closure (source-info (third sexp)))
+            (dd "source-info third=")
+            (pp (source-info (third sexp)))
+            ($define ($library.name library) name (pass1/lambda->iform name closure library lvars)))]
+;           ($define ($library.name library) name (pass1/lambda->iform (cons name (source-info (third sexp))) `(lambda ,@more) library lvars))]
          [else
            ($define ($library.name library) (second sexp) (sexp->iform (third sexp)))])]
 ;;        (if (define-is-lambda? sexp)
@@ -2623,8 +2642,9 @@
            [body-code  (pass3 body
                               vars
                               frees-here
-                              '()
-                              '()
+                              (set-union can-frees vars)
+                              (set-union sets-here
+                                         (set-intersect sets frees-here))
                               (length vars))]
            [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
            [end-of-closure (make-label)])
