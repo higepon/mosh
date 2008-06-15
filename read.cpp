@@ -985,9 +985,6 @@ static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
     if (ctx->flags & SCM_READ_SOURCE_INFO) line = Scm_PortLine(port);
 #endif
     r = read_list_int(port, closer, ctx, &has_ref, line);
-    VM_LOG1("r=~a", r);
-    printf("line = %d %s %s:%d\n", line, __func__, __FILE__, __LINE__);fflush(stdout);// debug
-
 
 #ifdef MONA_SCHEME
     if (r.isPair() && line >= 0) {
