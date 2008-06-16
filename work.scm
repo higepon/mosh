@@ -1,3 +1,8 @@
+(suma 4)
+(exit)
+
+;; (map print '(1 2 3 4))
+;; (exit)
 ;; (print (source-info (lambda () x)))
 ;; (define (a) 3)
 ;(a 3)

@@ -1857,6 +1857,7 @@
         (cond [(eof-object? obj)
 ;               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
                (let* ([allowed-macro '(do acond guard receive defmacro match-let1 gentemp match match-lambda match-lambda* match-let match-let* match-letrec match-define defstruct define-structure define-const-structure)] ;; allowed macro!
+;                      [v (map (lambda (x) (if x (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) '())
                       [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
                               (assq-multi ($library.macro top-level-library) allowed-macro))]
                       [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])

@@ -16,6 +16,10 @@
   (define (set-source-info! a b) a)
   ]
  [vm?
+  (define-macro (import-only module . syms)
+    `(begin
+       ,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
+  (import-only gauche.internal extended-pair? extended-cons extended-list pair-attribute-get pair-attribute-set! pair-attributes)
   (define *command-line-args* '())
   (define (command-line) *command-line-args*)
   (define make-eq-hashtable make-hash-table)
@@ -25,8 +29,15 @@
   (define pp (lambda a '()))
   (define syntax-error error)
   (define find10 find)
-  (define (source-info p) #f) ;(let1 src (debug-source-info p) (if (pair? src) (cons (car src) (cdr src)) src)))
-  (define (set-source-info! a b) a)
+  (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
+  (define (make-list-with-src-slot lst) (apply extended-list lst))
+  (define (set-source-info! a b)
+    (cond
+     [(extended-pair? a)
+       (pair-attribute-set! a 'source-info b)
+       a]
+     [else
+      a]))
   ]
  [vm-outer?
   (define dd (lambda a '()))
@@ -40,9 +51,11 @@
   (define dd display)
   (define pp print)
   (include "./free-vars-decl.scm")
+  (define (make-list-with-src-slot lst) lst)
   (define (command-line) *command-line-args*)
  ]
 )
+
 
 (define-macro (first o)
   `(car ,o))
@@ -652,9 +665,10 @@
             (cond [(lambda-has-define? sexp)
                    (set-source-info! (pass1/expand (internal-define->letrec sexp)) (source-info sexp))]
                   [else
-                   (dd "source-info-of-lambda-")
-                   (pp (source-info sexp))
-                   (set-source-info! `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp))) (source-info sexp))])]
+;                   (display "source-info-of-lambda-")
+;                   (print (debug-source-info sexp))
+;                   (print (source-info sexp))
+                   (set-source-info! (make-list-with-src-slot `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp)))) (source-info sexp))])]
            [(when)
             (match sexp
               [('when pred body . more)
@@ -731,11 +745,13 @@
 (define (define->lambda sexp)
   (let ((args (cadr sexp))
         (body (cddr sexp)))
-    (let1 closure `(lambda ,(cdr args) ,@body)
+    (let1 closure (make-list-with-src-slot `(lambda ,(cdr args) ,@body))
       ;; save source-info
-      (dd "define->lambda sour=")
-      (pp (source-info sexp))
+;      (display "define->lambda sour=")
+;      (print (source-info sexp))
       (set-source-info! closure (source-info sexp))
+;      (print 'hage)
+;      (print (source-info closure))
       `(define ,(car args) ,closure))))
 
 
@@ -966,15 +982,24 @@
 ;; Closure source info format
 ;; ((file . lineno) (proc args))
 (define (pass1/lambda->iform name sexp library lvars)
+  (define (dotpair->list p)
+    (let loop ([p p])
+      (cond
+       [(and (not (pair? p)) (not (null? p)))
+        (cons p '())]
+       [(null? p)
+        '()]
+       [else
+        (cons (car p) (loop (cdr p)))])))
   (let* ([vars          (second sexp)]
          [body          (cddr sexp)]
          [parsed-vars   (parse-lambda-vars vars)]
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
          [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)])
-    (dd "pass1/lambda->iform")
-    (pp (source-info sexp))
-    ($lambda (cons (source-info sexp) `(,name ,@(second sexp)))
+;    (dd "pass1/lambda->iform")
+;    (pp (source-info sexp))
+    ($lambda (cons (source-info sexp) `(,name ,@(dotpair->list (second sexp))))
              name
              (if optional-arg? (- (length vars) 1) (length vars))
              (if optional-arg? 1 0)
@@ -1216,12 +1241,15 @@
        ($asm 'VALUES ($map1 sexp->iform (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
+;       (print sexp)
        (match sexp
          [('define name ('lambda . more))
-          (let1 closure  `(lambda ,@more)
+          (let1 closure  (make-list-with-src-slot `(lambda ,@more))
+;            (print (source-info (third sexp)))
+;            (print (extended-pair? (third sexp)))
             (set-source-info! closure (source-info (third sexp)))
-            (dd "source-info third=")
-            (pp (source-info (third sexp)))
+;            (display "source-info third=")
+;            (print (source-info (third sexp)))
             ($define ($library.name library) name (pass1/lambda->iform name closure library lvars)))]
 ;           ($define ($library.name library) name (pass1/lambda->iform (cons name (source-info (third sexp))) `(lambda ,@more) library lvars))]
          [else
