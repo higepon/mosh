@@ -1,5 +1,9 @@
 2008-06-16  higepon  <higepon@users.sourceforge.jp>
 
+	* freeproc.cpp : Fixed (exit) procedure. thx leque.
+
+	* freeproc.cpp (scheme::callProcessEx): Added (call-process "ls").
+
 	* compiler.scm: Improved stack trace, showing file and lineno for precompiled code.
 
 	* scripts/pp.scm: Added for precompiled code.

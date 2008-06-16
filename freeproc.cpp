@@ -1596,7 +1596,16 @@ Object scheme::assqEx(Object args)
 
 Object scheme::exitEx(Object args)
 {
-    exit(EXIT_SUCCESS);
+    if (args.isNil()) {
+        exit(EXIT_SUCCESS);
+    }
+
+    const Object arg1 = args.first();
+    if (arg1.isInt()) {
+        exit(arg1.toInt());
+    } else {
+        VM_RAISE1("wrong arguments for exit required number, got ~a\n", arg1);
+    }
 }
 
 Object scheme::macroexpand1Ex(Object args)
@@ -1769,4 +1778,31 @@ Object scheme::vectorTolistEx(Object args)
        ret = Object::cons(v->ref(i), ret);
    }
    return ret;
+}
+
+Object scheme::callProcessEx(Object args)
+{
+    const int BUFFER_SIZE = 1024;
+    const Object cmd = args.first();
+    if (!cmd.isString()) {
+       VM_RAISE1("call-process string required, but got ~a\n", cmd);
+    }
+
+    FILE* in = popen(cmd.toString()->data().ascii_c_str(), "r");
+    char buffer[BUFFER_SIZE];
+    if (in == NULL) {
+        VM_RAISE1("call-process failed: ~a\n", cmd);
+    }
+
+    memset(buffer, '\0', BUFFER_SIZE);
+
+    ucs4string ret;
+    int size;
+    while ((size = fread(buffer, sizeof(char), BUFFER_SIZE, in)) > 0) {
+        ret += ucs4string::from_c_str(buffer, size);
+    }
+    if (pclose(in) != 0) {
+        VM_RAISE0("call-process failed\n");
+    }
+    return Object::makeString(ret);
 }

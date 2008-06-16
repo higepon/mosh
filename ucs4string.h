@@ -72,6 +72,20 @@ public:
         return ret;
     }
 
+    static ucs4string from_c_str(const char* s, int size)
+    {
+#ifdef USE_BOEHM_GC
+        ucs4char* ret = new(PointerFreeGC) ucs4char[size + 1];
+#else
+        ucs4char* ret = new ucs4char[sz];
+#endif
+        for (int i = 0; i < size; i++) {
+            ret[i] = s[i];
+        }
+        ret[size] = '\0';
+        return ucs4string(ret);
+    }
+
     ucs4string substr(int x, int size) const { return ucs4string(ucs4string_base::substr(x, size).data()); }
 
     void split(ucs4char ch, gc_vector<ucs4string>& v)

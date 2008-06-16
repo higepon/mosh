@@ -128,4 +128,5 @@
     (read ,(lambda e (error "read not implemented")))
     (vector->list ,vector->list)
     (set-source-info! ,(lambda e #f))
+    (call-process ,(lambda e (error "call-process not implemented")))
     ))
