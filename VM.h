@@ -371,6 +371,7 @@ protected:
     Object stdinPort_;
     Object errorObj_;
     Object errorHandler_;
+    Object returnCode_[2];
 #ifdef ENABLE_PROFILER
     word labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler

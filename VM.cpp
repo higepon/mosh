@@ -292,7 +292,7 @@ Object VM::callClosure(Object closure, Object arg)
     return ret;
 }
 
-// accept arguments as list.
+//accept arguments as list.
 Object VM::applyClosure(Object closure, Object args)
 {
     static Object applyCode[] = {
@@ -304,16 +304,44 @@ Object VM::applyClosure(Object closure, Object args)
         Object::makeRaw(Instruction::CONSTANT),
         Object::Undef,
         Object::makeRaw(Instruction::APPLY),
-        Object::makeRaw(Instruction::HALT),
+        Object::makeRaw(Instruction::RETURN),
+        Object::makeInt(0),
+        Object::makeRaw(Instruction::HALT)
     };
     applyCode[3] = args;
     applyCode[6] = closure;
-
-    SAVE_REGISTERS();
-    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
-    RESTORE_REGISTERS();
-    return ret;
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    applyCode[10] = returnCode_[1];
+    pc_ = getDirectThreadedCode(applyCode, 11);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     SAVE_REGISTERS();
+//     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+//     RESTORE_REGISTERS();
+    return ac_;
 }
+
+// Object VM::applyClosure(Object closure, Object args)
+// {
+//     static Object applyCode[] = {
+//         Object::makeRaw(Instruction::FRAME),
+//         Object::makeInt(7),
+//         Object::makeRaw(Instruction::CONSTANT),
+//         Object::Undef,
+//         Object::makeRaw(Instruction::PUSH),
+//         Object::makeRaw(Instruction::CONSTANT),
+//         Object::Undef,
+//         Object::makeRaw(Instruction::APPLY),
+//         Object::makeRaw(Instruction::HALT),
+//     };
+//     applyCode[3] = args;
+//     applyCode[6] = closure;
+
+//     SAVE_REGISTERS();
+//     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+//     RESTORE_REGISTERS();
+//     return ret;
+// }
+
 
 // we need to save registers.
 Object VM::callClosureByName(Object procSymbol, Object arg)
@@ -451,10 +479,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
     }
 #endif
 
-    static Object returnCode[] = {
-        Object::makeRaw(INSTRUCTION(RETURN)),
-        Object::makeInt(0),
-    };
+    returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
+    returnCode_[1] = Object::makeInt(0);
 
     static Object callCode[] = {
         Object::makeRaw(INSTRUCTION(CALL)),
@@ -522,9 +548,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 fwrite(logBuf, 1, 2, stream);
 #endif
                 COUNT_CALL(ac_);
+                returnCode_[1] = operand;
+                pc_  = returnCode_;
+
+                // pc_ may be overwrite by CProcedure. for example by applyEx
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+                // applyClosure の中で呼ばれる FRAME の時点で正しい戻り先がセットされている必要がある。
                 ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
-                returnCode[1] = operand;
-                pc_  = returnCode;
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
             } else if (ac_.isClosure()) {
 
@@ -564,13 +596,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
                 ac_ = Object::makeCProcedure(scheme::rxmatchEx).toCProcedure()->call(Object::cons(ac_, stackToPairArgs(sp_, operand.toInt())));
-                returnCode[1] = operand;
-                pc_  = returnCode;
+                returnCode_[1] = operand;
+                pc_  = returnCode_;
             } else if (ac_.isRegMatch()) {
                 extern Object regMatchProxy(Object args);
                 ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(Object::cons(ac_, stackToPairArgs(sp_, operand.toInt())));
-                returnCode[1] = operand;
-                pc_  = returnCode;
+                returnCode_[1] = operand;
+                pc_  = returnCode_;
             } else {
                 RAISE2("not supported apply ~a ~a", operand, ac_);
             }
@@ -847,6 +879,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(FRAME)
         {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         frame_entry:
             const Object n = fetchOperand();
             TRACE_INSN1("FRAME", "(~d)\n", n);
@@ -878,8 +911,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 Object* code = v->data();
                 pc_ = getDirectThreadedCode(code, v->length());
             } else {
-                returnCode[1] = Object::makeInt(0);
-                pc_  = returnCode;
+                returnCode_[1] = Object::makeInt(0);
+                pc_  = returnCode_;
             }
             NEXT;
         }
@@ -1287,6 +1320,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RETURN)
         {
+            printf("<RETURN> %s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             operand = fetchOperand();
         return_entry:
 #ifdef DUMP_ALL_INSTRUCTIONS

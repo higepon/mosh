@@ -75,11 +75,12 @@ void showUsage()
     fprintf(stderr,
             "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
+//            "  -l       Loads <file> before executing the script file or entering repl.\n"
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"
 #ifdef ENABLE_PROFILER
-            "  -p       Execute with profiler.\n"
+            "  -p       Executes with profiler.\n"
 #endif
             "  -t       Executes test.\n"
             "bug report:\n"

@@ -1,12 +1,14 @@
-(define (http-get url)
-  (call-process (format "wget ~a -O- -q" url)))
-
-(print (wget "http://livedoor.com"))
-(print 'done)
-;(write (call-process "hage"))
-
-;(suma 4)
+(apply print '(1))
 (exit)
+;; (define (http-get url)
+;;   (call-process (format "wget ~a -O- -q" url)))
+
+;; ;(print (wget "http://livedoor.com"))
+;; ;(print 'done)
+;; ;(write (call-process "hage"))
+
+;; (suma 4)
+;; (exit)
 
 ;; (map print '(1 2 3 4))
 ;; (exit)

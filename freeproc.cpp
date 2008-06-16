@@ -1503,6 +1503,7 @@ Object scheme::applyEx(Object args)
         rest = rest.cdr();
     }
     return theVM->applyClosure(proc, argsAsList);
+//    return theVM->apply(proc, argsAsList);
 }
 
 Object scheme::valuesEx(Object args)
