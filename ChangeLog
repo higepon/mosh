@@ -1,5 +1,11 @@
 2008-06-17  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (string->lines): Added string->lines procedure.
+                         (filter-map): Added filter-map, car+cdr (SRFI-1).
+                                     : Added map-with-index.
+
+        * Port.cpp (FileBinaryInputPort::FileBinaryInputPort): Fixed file open error condition.
+
 	* VM.cpp (VM::applyClosure): Improved apply procedure. It used to use C stack, so changed not to use C stack.
 
 2008-06-16  higepon  <higepon@users.sourceforge.jp>

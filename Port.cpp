@@ -46,6 +46,24 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file)
+{
+    stream_ = fopen(file.ascii_c_str(), "rb");
+    if (NULL == stream_) {
+        VM_RAISE1(" couldn't open input file: ~a", Object::makeString(file));
+    }
+}
+
+FileBinaryInputPort::FileBinaryInputPort(const char* file)
+{
+    fileName_ = Object::makeString(file).toString()->data();
+    stream_ = fopen(file, "rb");
+    if (NULL == stream_) {
+        VM_RAISE1(" couldn't open input file: ~a", Object::makeString(file));
+    }
+}
+
+
 void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
 {
     // todo more faster code

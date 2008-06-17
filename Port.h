@@ -99,27 +99,8 @@ class FileBinaryInputPort : public BinaryInputPort
 {
 public:
     FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")) {}
-    FileBinaryInputPort(ucs4string file) : fileName_(file)
-    {
-        stream_ = fopen(file.ascii_c_str(), "rb");
-        if (NULL == stream_) {
-            // todo
-            fprintf(stderr, "fopen input file port=%s", file.ascii_c_str());
-            exit(-1);
-        }
-    }
-
-    FileBinaryInputPort(const char* file)
-    {
-        fileName_ = Object::makeString(file).toString()->data();
-        stream_ = fopen(file, "rb");
-        if (NULL == stream_) {
-            // todo
-            fprintf(stderr, "fopen input file port=%s", file);
-            exit(-1);
-        }
-    }
-
+    FileBinaryInputPort(ucs4string file);
+    FileBinaryInputPort(const char* file);
     ucs4string toString() {
         return fileName_;
     }

@@ -1799,6 +1799,34 @@
 ;; .form (let1 var val body ...)
 (define-doc (let1) ...)
 
+;; Like map, map-to and for-each, except proc receives the index as the first argument.
+;; .returns Like map, map-to and for-each, except proc receives the index as the first argument.
+;; .example  (map-with-index list '(a b c d)) => ((0 a  (1 b) (2 c (3 d))
+(define (map-with-index f l)
+  (define (iter f l i)
+    (if (null? l)
+        l
+        (cons (f i (car l)) (iter f (cdr l) (+ i 1)))))
+  (iter f l 0))
+
+
+;; concatnates symbols
+;; .returns concatnated symbols
+(define (symbol-concat . symbols)
+  (define (concat a b)
+    (if (null? b)
+        a
+        (string->symbol (string-append (symbol->string a) (symbol->string b)))))
+  (let loop ([symbols symbols])
+    (if (null? symbols)
+        '()
+        (concat (car symbols) (loop (cdr symbols))))))
+
+;; Returns list of lines.
+;; .returns list of lines.
+(define (string->lines s)
+  (string-split s #\newline))
+
 ;; Expand macro
 ;; .returns expanded only once macro form.(Now you can expand only top-level defined macro)
 ;; .form (macroexpand-1 form)
@@ -2079,6 +2107,60 @@
         (cons x (recur (car rest) (cdr rest)))
         x)))
 
+;The fundamental pair deconstructor:
+
+;; same as (lambda (p) (values (car p) (cdr p)))
+;; .returns (values  (car p) (cdr p))
+(define (car+cdr pair) (values (car pair) (cdr pair)))
+
+;; Returns true if the argument is the empty list (), and false otherwise. It is an error to pass this procedure a value which is not a proper or circular list. This procedure is recommended as the termination condition for list-processing procedures that are not defined on dotted lists.
+;; .returns true if the argument is the empty list (), and false otherwise.
+;; .pre-condition List is a proper or circular list.
+;; .form (null-list? list)
+(define (null-list? l)
+  (cond ((pair? l) #f)
+    ((null? l) #t)
+    (else (error "null-list?: argument out of domain" l))))
+
+(define (check-arg pred val caller)
+  (let lp ((val val))
+    (if (pred val) val (lp (raise (format "Bad argument ~a ~a ~a" val pred caller))))))
+
+(define (%cars+cdrs lists)
+  (call-with-current-continuation
+    (lambda (abort)
+      (let recur ((lists lists))
+        (if (pair? lists)
+        (receive (list other-lists) (car+cdr lists)
+          (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
+          (receive (a d) (car+cdr list)
+            (receive (cars cdrs) (recur other-lists)
+              (values (cons a cars) (cons d cdrs))))))
+        (values '() '()))))))
+
+
+;; Like map, but only true values are saved.
+;; .returns Like map, but only true values are saved.
+;; .example (filter-map (lambda (x) (and (number? x) (* x x))) '(a 1 b 3 c 7)) => (1 9 49)
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+(define (filter-map f lis1 . lists)
+  (check-arg procedure? f filter-map)
+  (if (pair? lists)
+      (let recur ((lists (cons lis1 lists)))
+    (receive (cars cdrs) (%cars+cdrs lists)
+      (if (pair? cars)
+          (cond ((apply f cars) => (lambda (x) (cons x (recur cdrs))))
+            (else (recur cdrs))) ; Tail call in this arm.
+          '())))
+
+      ;; Fast path.
+      (let recur ((lis lis1))
+    (if (null-list? lis) lis
+        (let ((tail (recur (cdr lis))))
+          (cond ((f (car lis)) => (lambda (x) (cons x tail)))
+            (else tail)))))))
+
+
 ; ==============================================================================================================================================================
 ;;; SRFI-8 Binding to multiple values.
 ;; <p>This is the way to receive multiple values.</p>
@@ -2297,3 +2379,10 @@
      (if it ,then-form ,@else-form)))
 
 (define suma (lambda ()3))
+
+(define-macro (define-simple-struct name . elements)
+  `(begin
+     (define (,(symbol-concat 'make- name) ,@elements)
+       (vector ,@elements))
+     ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- element) x) (vector-ref x ,i))) elements)
+     ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- 'set '- element '!) x v) (vector-set! x ,i v))) elements)))
