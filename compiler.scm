@@ -655,9 +655,6 @@
            [(let1)
             (set-source-info! (pass1/expand (let1->let sexp)) (source-info sexp))]
            [(let)
-            (dd "let sourc")
-            (pp sexp)
-            (pp (source-info sexp))
             (if (let-is-named? sexp)
                 (set-source-info! (pass1/expand (named-let->letrec sexp)) (source-info sexp))
                 (set-source-info! (expand-let (second sexp) (cddr sexp)) (source-info sexp)))]
@@ -2813,7 +2810,7 @@
         `(,(code-stack-sum body-code args-code free-code)
           LET_FRAME
           ,@(code-body free-code)
-          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) ($let.src iform)) '())
+          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) `(,($let.src iform) let)) '())
           ,@(code-body args-code)
           ,@boxes-code
           ,@(list 'ENTER (length vars))
@@ -2870,7 +2867,7 @@
     `(,(code-stack-sum free-code assign-code body-code)
       LET_FRAME
       ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) ($let.src iform)) '())
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) `(,($let.src iform) letrec)) '())
       ,@init-code
       ,@boxes-code
       ,@(list 'ENTER (length vars))

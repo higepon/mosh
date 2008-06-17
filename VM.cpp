@@ -95,8 +95,11 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     libraries_ = Object::makeEqHashTable();
     instances_ = Object::makeEqHashTable();
     nameSpace_ = Object::makeEqHashTable();
-    outerSourceInfo_ = Object::cons(Object::makeString("outer closure"), Object::makeInt(0));
-    displaySourceInfo_ = Object::cons(Object::makeString("display closure"), Object::makeInt(0));
+
+    // Source info format (("compiler-with-library.scm" 8149) pass2/adjust-arglist reqargs optarg iargs name)
+    // lineno = 0 is not appeared in stack trace.
+    outerSourceInfo_   = L2(L2(Object::makeString("outer closure"), Object::makeInt(0)), Symbol::intern(UC("<outer closure>")));
+    displaySourceInfo_ = L2(L2(Object::makeString("display closure"), Object::makeInt(0)), Symbol::intern(UC("<display closure>")));
 }
 
 VM::~VM() {}
@@ -1575,12 +1578,15 @@ Object VM::getStackTrace()
             exit(-1);
         }
         Object src = cl->toClosure()->sourceInfo;
-        LOG1("stack trace src=~a\n", src);
         if (src.isPair()) {
             if (src.car().isFalse()) {
                 port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
             } else {
-                port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr(), src.cdr()));
+                const Object lineno = src.car().cdr().car();
+                // display closure and outer closure have lineno = 0.
+                if (lineno.isInt() && lineno.toInt() != 0) {
+                    port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr().car(), src.cdr()));
+                }
             }
             i++;
         }
@@ -1789,7 +1795,6 @@ Object VM::getProfileResult()
 {
     Object symAnonymous = Symbol::intern(UC("anonymous"));
     profilerRunning_ = false;
-    printf("REAL STOP %s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     stopProfiler();
     Object ret = Object::Nil;
     Object ht = nameSpace_.toEqHashTable()->swap();

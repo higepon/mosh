@@ -988,7 +988,7 @@ static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
 
 #ifdef MONA_SCHEME
     if (r.isPair() && line >= 0) {
-        r = Object::cons(r.car(), r.cdr(), Object::cons(Object::makeString(port->toString()), Object::makeInt(line)));
+        r = Object::cons(r.car(), r.cdr(), Pair::list2(Object::makeString(port->toString()), Object::makeInt(line)));
     }
 #else
     if (SCM_PAIRP(r) && (ctx->flags & SCM_READ_SOURCE_INFO) && line >= 0) {
@@ -1036,7 +1036,7 @@ static ScmObj read_quoted(ScmPort *port, ScmObj quoter, ScmReadContext *ctx)
     if (SCM_EOFP(item)) Scm_ReadError(port, "unterminated quote");
 #ifdef MONA_SCHEME
     if (line >= 0) {
-        r = Object::cons(quoter, Object::cons(item, Object::Nil), Object::cons(Object::makeString(port->toString()), Object::makeInt(line)));
+        r = Object::cons(quoter, Object::cons(item, Object::Nil), Pair::list2(Object::makeString(port->toString()), Object::makeInt(line)));
     }
 #else
     if (line >= 0) {

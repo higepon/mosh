@@ -674,9 +674,7 @@ Object scheme::fileExistsPEx(Object args)
 // string-output-port only
 Object scheme::sysGetOutputStringEx(Object args)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(args.first().toTextualOutputPort());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return Object::makeString(p->getString());
 }
 
@@ -1505,7 +1503,6 @@ Object scheme::applyEx(Object args)
         rest = rest.cdr();
     }
     return theVM->applyClosure(proc, argsAsList);
-//    return theVM->apply(proc, argsAsList);
 }
 
 Object scheme::valuesEx(Object args)

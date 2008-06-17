@@ -8,6 +8,7 @@
 (aif 3
      (print it)
      4)
+;((lambda () 3) 4)
 ;(exit)
 ;(define a 3)
 ;; (let1 b a
@@ -82,48 +83,56 @@
         [calls-hash (second result)]
         [sample-closures  (cddr result)]
         [sample-table (make-eq-hashtable)])
-    (print "time%        msec      calls   name")
-    ;; sample-closures is alist of (#<closure> . name).
+    ; collect sampled closures into sample-table
+    ;   key   => #<closure>
+    ;   value => sampling count
     (for-each (lambda (closure)
                 (aif (hashtable-ref  sample-table closure #f)
                      (hashtable-set! sample-table closure (+ it 1))
                      (hashtable-set! sample-table closure 1)))
                 sample-closures)
-;;     (let loop ([closures sample-closures])
-;;       (cond
-;;        [(null? closures) '()]
-;;        [else
-;;         (let1 closure (caar closure)
-;;           (aif (hashtable-ref table closure #f)
-;;                (hashtable-set! table closure (cons (cdar closure) (+ (cdr it) 1)))
-;;                (hashtable-set! table closure (cons (cdar closure) 1)))
-;;         (loop (cdr closures)))]))
+    (print "time%        msec      calls   name                    location")
     (for-each
      (lambda (x)
-       (aif (hashtable-ref calls-hash (first x) #f)
+       (let* ([closure  (first x)]
+              [src      (source-info closure)]
+              [name     (if src (cdr src) (get-closure-name closure))]
+              [location (if src (car src) #f)]
+              [file     (if location (car location) #f)]
+              [lineno   (if location (second location) #f)]
+              [count    (aif (hashtable-ref calls-hash closure #f) it "-")])
          (format #t " ~a   ~a ~a   ~a    ~a\n"
                  (lpad (third x) " " 3)
                  (lpad (* (second x) 10) " " 10)
-                 (lpad it " " 10)
-                 (rpad (format "~a ~a ~a" (get-closure-name (first x)) (first x) (source-info (first x))) " " 30))
-         (format #t " ~a   ~a ~a   ~a    ~a\n"
-                 (lpad (third x) " " 3)
-                 (lpad (* (second x) 10) " " 10)
-                 (lpad "?" " " 10)
-                 (rpad (format "~a ~a ~a" (get-closure-name (first x)) (first x) (source-info (first x))) " " 30))
+                 (lpad count " " 10)
+                 (rpad name " " 20)
+                 (if file (format "~a:~d" file lineno) "")
+                 )
         ))
      (sort
       (hashtable-map
-       (lambda (key value)
-         (list key value (/ (* 100 value) total)))
+       (lambda (closure sample-count)
+         (list closure sample-count (/ (* 100 sample-count) total)))
        sample-table)
       (lambda (x y) (> (third x) (third y)))))
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
       (for-each
        (lambda (p)
-         (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
+         (let* ([closure (car p)]
+                [count  (cdr p)]
+                [src      (source-info closure)]
+                [name     (if src (cdr src) (get-closure-name closure))]
+                [location (if src (car src) #f)]
+                [file     (if location (car location) #f)]
+                [lineno   (if location (second location) #f)])
+         (format #t "   0            0 ~a   ~a    ~a\n"
+                 (lpad count " " 10)
+                 (rpad name " " 20)
+                 (if file (format "~a:~d" file lineno) "")
+                 )))
+;         (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))
        (let1 filterd (filter (lambda (x) (not (memq (car x) seen-syms))) (hashtable->alist calls-hash))
-         (let1 sorted (sort filterd(lambda (a b) (> (cdr a) (cdr b))))
+         (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
        ($take  sorted 30))))
     (format #t "  **   ~d          **   total\n" (lpad (* (* total 10)) " " 10)))))
 
@@ -212,5 +221,3 @@
 ;;       (format #t "~a\n" a))))
 
 ;; (hoge)
-
-
