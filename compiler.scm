@@ -2764,7 +2764,6 @@
                             (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
          [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets #f)]
          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-    (pp "************ recccccccccccc")
     ;; non-tail call works fine.
     `(,(code-stack-sum body-code vals-code free-code)
       LET_FRAME
@@ -2811,8 +2810,6 @@
         ;;       ,@body-code
         ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
         ;; non-tail call works fine.
-        (dd "******************** let")
-        (pp ($let.src iform))
         `(,(code-stack-sum body-code args-code free-code)
           LET_FRAME
           ,@(code-body free-code)
@@ -2870,9 +2867,6 @@
     ;;       ,@body-code
     ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
     ;; non-tail call works fine.
-        (dd "******************** letrec")
-        (pp ($let.src iform))
-
     `(,(code-stack-sum free-code assign-code body-code)
       LET_FRAME
       ,@(code-body free-code)
