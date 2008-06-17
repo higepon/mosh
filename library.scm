@@ -2166,8 +2166,7 @@
 
 (define (hashtable-map proc ht)
   (let1 keys (vector->list (hashtable-keys ht))
-    (print "keys ok")
-    (map
+    ($map1
      (lambda (key)
        (proc key (hashtable-ref ht key)))
      keys)))
