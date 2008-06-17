@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>SRFI ?: An interface to access environment variables.</title>
+  </head>
+
+  <body>
+
+<H1>Title</H1>
+
+An interface to access environment variables.
+
+
+<H1>Author</H1>
+
+Taro MinowaÅiHigeponÅj
+
+<H1>Abstract</H1>
+
+This SRFI specifies the procedure getenv which gets the value of the specified environment variable.
+
+<H1>Issues</H1>
+
+<H1>Rationale</H1>
+Most operating systems provide the mechanism of passing auxiliary parameters implicitly to child processes, namely called enviornment variables.
+Some applications rely on environment variables to modify their behavior according to the local settings.
+Most implementations of common gateway interface (CGI) uses environment variables to pass Meta-Variables from the server to the script[1].
+Providing the means to access to the environment variables is indispensable to write practical programs in Scheme.
+In fact, most widely-used Scheme implementations provide the means of getting the value of the specified environment variable, usually called getenv.
+Additionally, some implementations provide the means to get all environment variables.
+Conceptually, environment variables are mappings from string names to values.
+For example, CGI programs may obtain the values of the Meta-Variabes such as "QUERY_STRING", "CONTENT_LENGTH" and "REQUEST_METHOD", as the following examples:
+<pre>
+(getenv "QUERY_STRING") => "foo=bar&huga=hige"
+(getenv "CONTENT_LENGTH") => "512"
+(getenv "REQUEST_METHOD") => "post"
+</pre>
+
+Therefore, it is quite useful to define the environment-independent way to get environment variables.
+
+<H1>Specification</H1>
+
+??? detailed specification
+
+<H1>Implementation</H1>
+
+??? explanation of how it meets the reference implementation requirement, and the code, if possible
+
+<A HREF="srfi minus ???-reference.scm">Source for the reference implementation.</A>
+
+<H1>Copyright</H1>
+Copyright (C) ??? (199?). All Rights Reserved. 
+<p>
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the "Software"),
+to deal in the Software without restriction, including without limitation
+the rights to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following conditions:
+<p>
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+<p>
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+DEALINGS IN THE SOFTWARE.
+
+    <hr>
+    <address>Editor: <a href="mailto:srfi-editors at srfi dot schemers dot org">Dave Mason</a></address>
+<!-- Created: Tue Sep 29 19:20:08 EDT 1998 -->
+<!-- hhmts start -->
+Last modified: Sun Jan 28 14:21:14 MET 2007
+<!-- hhmts end -->
+  </body>
+</html>

@@ -832,9 +832,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(DISPLAY)
         {
             const Object n = fetchOperand();
+            const Object src = fetchOperand();
             const int freeVariablesNum = n.toInt();
             // display closure
-            cl_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, displaySourceInfo_);
+            
+            cl_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, src.isFalse() ? displaySourceInfo_ : src);
             TRACE_INSN0("DISPLAY");
             sp_ = sp_ - freeVariablesNum;
             NEXT;

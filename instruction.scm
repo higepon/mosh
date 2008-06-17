@@ -16,7 +16,7 @@
 (define-insn CONS 0)
 (define-insn CONSTANT 1)
 (define-insn DEFINE_GLOBAL 1)
-(define-insn DISPLAY 1)
+(define-insn DISPLAY 2)
 (define-insn ENTER 1)
 (define-insn EQ 0)
 (define-insn EQV 0)

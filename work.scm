@@ -4,6 +4,18 @@
 (apply (lambda (a b) (print a) (print b)) '(3 1235))
 
 (apply (lambda (a b c) (print (+ a b c))) 1 2 '(3))
+
+(aif 3
+     (print it)
+     4)
+;(exit)
+;(define a 3)
+;; (let1 b a
+;;   (print b))
+
+;; (letrec ([b a])
+;;   (print b))
+
 ;(exit)
 ;; (define (http-get url)
 ;;   (call-process (format "wget ~a -O- -q" url)))
@@ -62,6 +74,9 @@
        it
        'anonymous))
 
+; If you see "display closure" at name column of profiler results.
+; Higepon can improve the result.
+; See set-source-info! on compiler and $let.src.
 (define (show-profile result)
   (let ([total (first result)]
         [calls-hash (second result)]

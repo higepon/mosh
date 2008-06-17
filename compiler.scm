@@ -653,15 +653,16 @@
                 (pass1/expand (define->lambda sexp))
                 ($map1 (lambda (s) (pass1/expand s)) sexp))]
            [(let1)
-            (pass1/expand (let1->let sexp))]
+            (set-source-info! (pass1/expand (let1->let sexp)) (source-info sexp))]
            [(let)
             (dd "let sourc")
+            (pp sexp)
             (pp (source-info sexp))
             (if (let-is-named? sexp)
-                (pass1/expand (named-let->letrec sexp))
+                (set-source-info! (pass1/expand (named-let->letrec sexp)) (source-info sexp))
                 (set-source-info! (expand-let (second sexp) (cddr sexp)) (source-info sexp)))]
            [(let*)
-            (pass1/expand (let*->let sexp))]
+            (set-source-info! (pass1/expand (let*->let sexp)) (source-info sexp))]
            [(cond)
             (pass1/expand (cond->if sexp))]
            [(lambda)
@@ -685,9 +686,11 @@
               [else
                (syntax-error "malformed unless")])]
            [(aif)
-            (pass1/expand (aif->let sexp))]
+            (let1 v (pass1/expand (aif->let sexp))
+              (set-source-info! v (source-info sexp))
+              v)]
            [(case)
-            (pass1/expand (case->cond sexp))]
+            (set-source-info! (pass1/expand (case->cond sexp)) (source-info sexp))]
            [(quasiquote)
             (expand-quasiquote (cadr sexp) 0)]
            [else sexp])) ;; macro and call are expande later.
@@ -740,10 +743,13 @@
          [args (second sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
-         [rest (second ret)])
+         [rest (second ret)]
+         [letrec-body `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+                         ,@rest)]
+         [letrec-body (set-source-info! letrec-body (source-info sexp))])
+
     `(lambda ,args
-       (letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-         ,@rest))))
+       ,letrec-body)))
 
 (define (define->lambda sexp)
   (let ((args (cadr sexp))
@@ -2623,10 +2629,11 @@
                                          (set-intersect sets frees-here))
                               (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
             [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+       (pp "eeeeeeeeeeeeeeeeeemmm")
        `(,(code-stack-sum args-code body-code free-code)
          LET_FRAME
          ,@(code-body free-code)
-         ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+         ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) #f) '())
          ,@(code-body args-code)
          ,@boxes-code
          ,@(list 'ENTER (length ($call.args iform)))
@@ -2757,11 +2764,12 @@
                             (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
          [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets #f)]
          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+    (pp "************ recccccccccccc")
     ;; non-tail call works fine.
     `(,(code-stack-sum body-code vals-code free-code)
       LET_FRAME
       ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) #f) '())
       ,@(code-body vals-code)
       RECEIVE
       ,($receive.reqargs iform)
@@ -2808,7 +2816,7 @@
         `(,(code-stack-sum body-code args-code free-code)
           LET_FRAME
           ,@(code-body free-code)
-          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) ($let.src iform)) '())
           ,@(code-body args-code)
           ,@boxes-code
           ,@(list 'ENTER (length vars))
@@ -2868,7 +2876,7 @@
     `(,(code-stack-sum free-code assign-code body-code)
       LET_FRAME
       ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) ($let.src iform)) '())
       ,@init-code
       ,@boxes-code
       ,@(list 'ENTER (length vars))
