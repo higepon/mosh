@@ -1809,3 +1809,8 @@ Object scheme::callProcessEx(Object args)
     }
     return Object::makeString(ret);
 }
+
+Object scheme::internalgetClosureNameEx(Object args)
+{
+    return theVM->getClosureName(args.first());
+}

@@ -155,6 +155,7 @@ public:
             RAISE2("~a on library ~a : defined twice\n", e.cdr(), e.car());
         }
     }
+    Object getClosureName(Object closure);
 
 #ifdef ENABLE_PROFILER
     // Profiler
@@ -184,7 +185,7 @@ public:
 
 protected:
 
-    Object getClosureName(EqHashTable* nameSpace, Object closure);
+
 
     void import(Object libname)
     {
@@ -372,6 +373,8 @@ protected:
     Object errorObj_;
     Object errorHandler_;
     Object returnCode_[2];
+    Object outerSourceInfo_;
+    Object displaySourceInfo_;
 #ifdef ENABLE_PROFILER
     word labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler

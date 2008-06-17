@@ -57,21 +57,32 @@
 ;; (print (hashtable->alist t))
 ;; (exit)
 
+(define (get-closure-name closure)
+  (aif (%get-closure-name closure)
+       it
+       'anonymous))
+
 (define (show-profile result)
   (let ([total (first result)]
         [calls-hash (second result)]
-        [syms  (cddr result)]
-        [table (make-eq-hashtable)])
+        [sample-closures  (cddr result)]
+        [sample-table (make-eq-hashtable)])
     (print "time%        msec      calls   name")
-    (let loop ([syms syms])
-      (cond
-       [(null? syms)
-          '()]
-       [else
-        (aif (hashtable-ref table (car syms) #f)
-             (hashtable-set! table (car syms) (+ it 1))
-             (hashtable-set! table (car syms) 1))
-        (loop (cdr syms))]))
+    ;; sample-closures is alist of (#<closure> . name).
+    (for-each (lambda (closure)
+                (aif (hashtable-ref  sample-table closure #f)
+                     (hashtable-set! sample-table closure (+ it 1))
+                     (hashtable-set! sample-table closure 1)))
+                sample-closures)
+;;     (let loop ([closures sample-closures])
+;;       (cond
+;;        [(null? closures) '()]
+;;        [else
+;;         (let1 closure (caar closure)
+;;           (aif (hashtable-ref table closure #f)
+;;                (hashtable-set! table closure (cons (cdar closure) (+ (cdr it) 1)))
+;;                (hashtable-set! table closure (cons (cdar closure) 1)))
+;;         (loop (cdr closures)))]))
     (for-each
      (lambda (x)
        (aif (hashtable-ref calls-hash (first x) #f)
@@ -79,20 +90,20 @@
                  (lpad (third x) " " 3)
                  (lpad (* (second x) 10) " " 10)
                  (lpad it " " 10)
-                 (rpad (source-info (first x)) " " 30))
+                 (rpad (format "~a ~a ~a" (get-closure-name (first x)) (first x) (source-info (first x))) " " 30))
          (format #t " ~a   ~a ~a   ~a    ~a\n"
                  (lpad (third x) " " 3)
                  (lpad (* (second x) 10) " " 10)
                  (lpad "?" " " 10)
-                 (rpad (source-info (first x)) " " 30))
+                 (rpad (format "~a ~a ~a" (get-closure-name (first x)) (first x) (source-info (first x))) " " 30))
         ))
      (sort
       (hashtable-map
        (lambda (key value)
          (list key value (/ (* 100 value) total)))
-       table)
+       sample-table)
       (lambda (x y) (> (third x) (third y)))))
-    (let1 seen-syms (vector->list (hashtable-keys table))
+    (let1 seen-syms (vector->list (hashtable-keys sample-table))
       (for-each
        (lambda (p)
          (format #t "   0            0 ~a   ~a\n" (lpad (cdr p) " " 10) (rpad (car p) " " 30)))

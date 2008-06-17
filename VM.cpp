@@ -95,6 +95,8 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     libraries_ = Object::makeEqHashTable();
     instances_ = Object::makeEqHashTable();
     nameSpace_ = Object::makeEqHashTable();
+    outerSourceInfo_ = Object::cons(Object::makeString("outer closure"), Object::makeInt(0));
+    displaySourceInfo_ = Object::cons(Object::makeString("display closure"), Object::makeInt(0));
 }
 
 VM::~VM() {}
@@ -235,7 +237,7 @@ Object VM::evaluate(Object* code, int codeSize)
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
 
-        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 0, Object::False /* todo */);
+        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 0, outerSourceInfo_);
     }
     closure.toClosure()->pc = code;
     ac_ = closure;
@@ -399,7 +401,7 @@ Object VM::apply(Object proc, Object args)
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
 #       include "cprocedures.cpp"
-        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, Object::False /* todo */);
+        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, outerSourceInfo_);
     }
     closure.toClosure()->pc = code;
     SAVE_REGISTERS();
@@ -832,7 +834,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object n = fetchOperand();
             const int freeVariablesNum = n.toInt();
             // display closure
-            cl_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
+            cl_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, displaySourceInfo_);
             TRACE_INSN0("DISPLAY");
             sp_ = sp_ - freeVariablesNum;
             NEXT;
@@ -1714,19 +1716,22 @@ void VM::collectProfile()
 //     fclose(fp);
 // }
 
-Object VM::getClosureName(EqHashTable* nameSpace, Object closure)
+
+// this is slow, because it creates namespace hash for each call.
+Object VM::getClosureName(Object closure)
 {
+    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
     } else if (closure.isClosure()) {
-            const Object name = nameSpace->ref(closure, notFound_);
-            if (name == notFound_) {
-                return closure;
-            } else {
-                return stringTosymbolEx(L1(splitId(name).cdr()));
-            }
+        const Object name = nameSpace->ref(closure, notFound_);
+        if (name == notFound_) {
+            return Object::False;
+        } else {
+            return stringTosymbolEx(L1(splitId(name).cdr()));
+        }
     } else {
-        return closure;
+        return Object::False;
     }
 }
 
@@ -1734,10 +1739,9 @@ Object VM::getClosureName(EqHashTable* nameSpace, Object closure)
 // Object::incInt();
 void VM::storeCallSample()
 {
-    EqHashTable* nameHash = nameSpace_.toEqHashTable()->swap().toEqHashTable();
     EqHashTable* callHash = callHash_.toEqHashTable();
     for (int i = 0; i < SAMPLE_NUM; i++) {
-        const Object proc = getClosureName(nameHash, callSamples_[i]);
+        const Object proc = callSamples_[i];//getClosureName(nameHash, callSamples_[i]);
         const Object count = callHash->ref(proc, Object::False);
         if (count.isNil()) {
             /* */
@@ -1781,24 +1785,29 @@ Object VM::values(Object args)
 
 Object VM::getProfileResult()
 {
+    Object symAnonymous = Symbol::intern(UC("anonymous"));
     profilerRunning_ = false;
     printf("REAL STOP %s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     stopProfiler();
     Object ret = Object::Nil;
     Object ht = nameSpace_.toEqHashTable()->swap();
     for (int i = 0; i < SAMPLE_NUM; i++) {
-        // check global namespace
         const Object o = samples_[i];
         if (o.isClosure()) {
-            const Object name = ht.toEqHashTable()->ref(o, notFound_);
-            if (name != notFound_) {
-                const Object s = splitId(name);
-                ret = Pair::append(ret, L1(stringTosymbolEx(L1(s.cdr()))));
-            } else {
-                // add anonymouse closure
-                ret = Pair::append(ret, L1(o));
-            }
+            ret = Pair::append(ret, L1(o));
         }
+//         // check global namespace
+//         const Object o = samples_[i];
+//         if (o.isClosure()) {
+//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
+//             if (name != notFound_) {
+//                 const Object s = splitId(name);
+//                 ret = Pair::append(ret, L1(Object::cons(o, stringTosymbolEx(L1(s.cdr())))));
+//             } else {
+//                 // add anonymouse closure
+//                 ret = Pair::append(ret, L1(Object::cons(o, symAnonymous)));
+//             }
+//         }
     }
 
     storeCallSample();

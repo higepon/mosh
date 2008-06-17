@@ -303,19 +303,21 @@
 
 ;; struct $let
 (define $LET 2)
-(define ($let type lvars inits body tail?)
-  `#(,$LET ,type ,lvars ,inits ,body ,tail? ))
+(define ($let type lvars inits body tail? src)
+  `#(,$LET ,type ,lvars ,inits ,body ,tail? ,src))
 
 (define-macro ($let.type iform) `(vector-ref ,iform 1))
 (define-macro ($let.lvars iform) `(vector-ref ,iform 2))
 (define-macro ($let.inits iform) `(vector-ref ,iform 3))
 (define-macro ($let.body iform) `(vector-ref ,iform 4))
 (define-macro ($let.tail? iform) `(vector-ref ,iform 5))
+(define-macro ($let.src iform) `(vector-ref ,iform 6))
 (define-macro ($let.set-type! iform type) `(vector-set! ,iform 1 ,type))
 (define-macro ($let.set-lvars! iform lvars) `(vector-set! ,iform 2 ,lvars))
 (define-macro ($let.set-inits! iform inits) `(vector-set! ,iform 3 ,inits))
 (define-macro ($let.set-body! iform body) `(vector-set! ,iform 4 ,body))
 (define-macro ($let.set-tail?! iform tail?) `(vector-set! ,iform 5 ,tail?))
+(define-macro ($let.set-src! iform src) `(vector-set! ,iform 6 ,src))
 
 
 ;; struct $seq
@@ -653,10 +655,11 @@
            [(let1)
             (pass1/expand (let1->let sexp))]
            [(let)
+            (dd "let sourc")
+            (pp (source-info sexp))
             (if (let-is-named? sexp)
-                                        ;                (pass1/expand (named-let->let sexp))
                 (pass1/expand (named-let->letrec sexp))
-                (expand-let (second sexp) (cddr sexp)))]
+                (set-source-info! (expand-let (second sexp) (cddr sexp)) (source-info sexp)))]
            [(let*)
             (pass1/expand (let*->let sexp))]
            [(cond)
@@ -805,7 +808,7 @@
               (if (= 1 (length (caar clauses)))
                   (cons `((eqv? ',(caaar clauses) ,tmpname) ,@(cdar clauses)) (loop (cdr clauses)))
                   (cons `((memv ,tmpname ',(caar clauses)) ,@(cdar clauses)) (loop (cdr clauses))))))))
-  (let* ([pred    (cadr sexp)]
+  (let* ([pred (cadr sexp)]
          [clauses (cddr sexp)]
          [tmpname (gensym)]
          [expanded-clauses (expand-clauses clauses tmpname)])
@@ -831,6 +834,8 @@
          (vars ($map1 car args))
          (vals ($map1 cadr args))
          (body (cdddr sexp)))
+    (dd "named-let->letrec sexp")
+    (pp (source-info sexp))
     `(letrec ((,name (lambda ,vars ,@body)))
        (,name ,@vals))))
 
@@ -1293,7 +1298,9 @@
                inits
                ;; the inner lvar comes first.
                (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
-               tail?))]
+               tail?
+               (source-info sexp)
+               ))]
       ;;---------------------------- letrec ------------------------------------
       [(letrec)
        (let* ([vars       ($map1 car (second sexp))]
@@ -1307,7 +1314,9 @@
                inits
                ;; the inner lvar comes first.
                (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
-               tail?))]
+               tail?
+               (source-info sexp)
+               ))]
       ;;---------------------------- lambda ------------------------------------
       [(lambda)
        (pass1/lambda->iform '<proc> sexp library lvars)]
@@ -1770,7 +1779,9 @@
                          ((rec) newalist))
                 ($map1 (lambda (x) (iform-copy x al)) ($let.inits iform)))
               (iform-copy ($let.body iform) newalist)
-              ($let.tail? iform)))]
+              ($let.tail? iform)
+              ($let.src iform)
+              ))]
      [(= $LAMBDA t)
       (let* ([ret (iform-copy-zip-lvs ($lambda.lvars iform) lv-alist)]
              [newlvs (car ret)]
@@ -2043,7 +2054,7 @@
         (args  (pass2/adjust-arglist ($lambda.reqargs iform) ($lambda.optarg iform)
                                      iargs ($lambda.name iform))))
     (for-each (lambda (lv a) ($lvar.set-init-val! lv a)) lvars args)
-    ($let 'let lvars args ($lambda.body iform) #f)))
+    ($let 'let lvars args ($lambda.body iform) #f #f)))
 
 (define (pass2/argcount-ok? args reqargs optarg?)
   (let1 nargs (length args)
@@ -2792,6 +2803,8 @@
         ;;       ,@body-code
         ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
         ;; non-tail call works fine.
+        (dd "******************** let")
+        (pp ($let.src iform))
         `(,(code-stack-sum body-code args-code free-code)
           LET_FRAME
           ,@(code-body free-code)
@@ -2849,6 +2862,9 @@
     ;;       ,@body-code
     ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
     ;; non-tail call works fine.
+        (dd "******************** letrec")
+        (pp ($let.src iform))
+
     `(,(code-stack-sum free-code assign-code body-code)
       LET_FRAME
       ,@(code-body free-code)

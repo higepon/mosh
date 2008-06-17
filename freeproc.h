@@ -168,6 +168,7 @@ Object readEx(Object args);
 Object vectorTolistEx(Object args);
 Object setSourceInfoEx(Object args);
 Object callProcessEx(Object args);
+Object internalgetClosureNameEx(Object args);
 
 int mod(int x, int y);
 int div(int x, int y);
