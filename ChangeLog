@@ -1,3 +1,7 @@
+2008-06-18  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (VM::storeCallSample): Improved profiler results.
+
 2008-06-17  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (string->lines): Added string->lines procedure.

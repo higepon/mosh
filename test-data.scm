@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(("all-tests.scm" . 12) (source-info '(3)))
+(("all-tests.scm"  12) (source-info '(3)))
 ;; don't edit end
 
 ;; test start

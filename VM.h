@@ -275,12 +275,12 @@ protected:
 
     Object referFree(Object n)
     {
-        return cl_.toClosure()->referFree(n.toInt());
+        return dc_.toClosure()->referFree(n.toInt());
     }
 
     Object referFree(int n)
     {
-        return cl_.toClosure()->referFree(n);
+        return dc_.toClosure()->referFree(n);
     }
 
 
@@ -352,7 +352,8 @@ protected:
 
 public:
     Object ac_;  // accumulator     register
-    Object cl_;  // current closure register
+    Object dc_;  // display closure register, used for refer-free
+    Object cl_;  // current closure register, used for profiler.
     Object* fp_; // frame pointer   register
     Object* sp_; // stack pointer   register
     Object* pc_; // program counter register
@@ -374,7 +375,6 @@ protected:
     Object errorHandler_;
     Object returnCode_[2];
     Object outerSourceInfo_;
-    Object displaySourceInfo_;
 #ifdef ENABLE_PROFILER
     word labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler

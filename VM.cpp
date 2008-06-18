@@ -52,6 +52,7 @@ using namespace scheme;
 
 #define SAVE_REGISTERS()                       \
     const Object ac = ac_;                     \
+    const Object dc = dc_;                     \
     const Object cl = cl_;                     \
     const Object errorHandler = errorHandler_; \
     Object* const pc = pc_;                    \
@@ -61,6 +62,7 @@ using namespace scheme;
 #define RESTORE_REGISTERS()       \
     ac_ = ac;                     \
     cl_ = cl;                     \
+    dc_ = dc;                     \
     errorHandler_ = errorHandler; \
     fp_ = fp;                     \
     pc_ = pc;                     \
@@ -68,6 +70,7 @@ using namespace scheme;
 
 VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
+    dc_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
     stackSize_(stackSize),
@@ -98,8 +101,7 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
 
     // Source info format (("compiler-with-library.scm" 8149) pass2/adjust-arglist reqargs optarg iargs name)
     // lineno = 0 is not appeared in stack trace.
-    outerSourceInfo_   = L2(L2(Object::makeString("outer closure"), Object::makeInt(0)), Symbol::intern(UC("<outer closure>")));
-    displaySourceInfo_ = L2(L2(Object::makeString("display closure"), Object::makeInt(0)), Symbol::intern(UC("<display closure>")));
+    outerSourceInfo_   = L2(Object::False, Symbol::intern(UC("<top-level>")));
 }
 
 VM::~VM() {}
@@ -244,6 +246,7 @@ Object VM::evaluate(Object* code, int codeSize)
     }
     closure.toClosure()->pc = code;
     ac_ = closure;
+    dc_ = closure;
     cl_ = closure;
     fp_ = 0;
 
@@ -324,6 +327,7 @@ Object VM::applyClosure(Object closure, Object args)
     // Same as Frame.
     // pc_ + 6 is return point of closure.
     push(Object::makeObjectPointer(pc_ + 6));
+    push(dc_);
     push(cl_);
     push(Object::makeObjectPointer(fp_));
     return ac_;
@@ -409,6 +413,7 @@ Object VM::apply(Object proc, Object args)
     closure.toClosure()->pc = code;
     SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(code, length);
+    dc_ = closure;
     cl_ = closure;
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
@@ -576,6 +581,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 COUNT_CALL(ac_);
                 const int argLength = operand.toInt();
                 const int requiredLength = c->argLength;
+                dc_ = ac_;
                 cl_ = ac_;
                 pc_ = c->pc;
                 if (c->isOptionalArg) {
@@ -835,11 +841,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(DISPLAY)
         {
             const Object n = fetchOperand();
-            const Object src = fetchOperand();
             const int freeVariablesNum = n.toInt();
-            // display closure
-            
-            cl_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, src.isFalse() ? displaySourceInfo_ : src);
+
+           // create display closure
+            dc_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
             TRACE_INSN0("DISPLAY");
             sp_ = sp_ - freeVariablesNum;
             NEXT;
@@ -900,6 +905,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             const int skipSize = n.toInt();
             push(Object::makeObjectPointer(pc_ + skipSize - 1));
+            push(dc_);
             push(cl_);
             push(Object::makeObjectPointer(fp_));
             NEXT;
@@ -960,7 +966,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             Object* const sp = sp_ - operand.toInt();
 
             fp_ = index(sp, 0).toObjectPointer();
-            cl_ = index(sp, 1);
+            dc_ = index(sp, 1);
 
             sp_ = sp - 2;
             NEXT;
@@ -968,7 +974,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(LET_FRAME)
         {
             TRACE_INSN0("LET_FRAME");
-            push(cl_);
+            push(dc_);
             push(Object::makeObjectPointer(fp_));
             NEXT;
         }
@@ -1341,8 +1347,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             Object* const sp = sp_ - operand.toInt();
             fp_ = index(sp, 0).toObjectPointer();
             cl_ = index(sp, 1);
-            pc_ = index(sp, 2).toObjectPointer();
-            sp_ = sp - 3;
+            dc_ = index(sp, 2);
+            pc_ = index(sp, 3).toObjectPointer();
+            sp_ = sp - 4;
             NEXT;
         }
         CASE(SET_CAR)
@@ -1570,7 +1577,7 @@ Object VM::getStackTrace()
     Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
-    Object* cl = &cl_;
+    Object* cl = &dc_;
     for (int i = 0;;) {
         if (!cl->isClosure()) {
             // this case is very rare and may be bug of VM.
@@ -1583,10 +1590,7 @@ Object VM::getStackTrace()
                 port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
             } else {
                 const Object lineno = src.car().cdr().car();
-                // display closure and outer closure have lineno = 0.
-                if (lineno.isInt() && lineno.toInt() != 0) {
-                    port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), src.car().cdr().car(), src.cdr()));
-                }
+                port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
             }
             i++;
         }
@@ -1688,7 +1692,7 @@ void VM::collectProfile()
     static int i = 0;
     if (!profilerRunning_) return;
     if (i >= SAMPLE_NUM) {
-        errorPort_.display(UC("buffer full profilerrrr stopped."));
+        errorPort_.display(UC("buffer full profiler stopped."));
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
         samples_[i++] = ac_;
@@ -1697,33 +1701,6 @@ void VM::collectProfile()
     }
     totalSampleCount_++;
 }
-
-// void VM::storeCallSampleToFile()
-// {
-//     FILE* fp = fopen(PRFILER_TEMP_FILE, "a");
-//     FileBinaryOutputPort* p = new FileBinaryOutputPort(fp);
-//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-//     TextualOutputPort outPort(TextualOutputPort(p, transcoder));
-
-//     Object ht = nameSpace_.toEqHashTable()->swap();
-//     for (int i = 0; i < SAMPLE_NUM; i++) {
-//         const Object proc = callSamples_[i];
-//         if (proc.isCProcedure()) {
-//             outPort.display(getCProcedureName(proc));
-//             outPort.putChar('\n');
-//         } else  {
-//             const Object name = ht.toEqHashTable()->ref(proc, notFound_);
-//             if (name != notFound_) {
-//                 outPort.display(splitId(name).cdr());
-//             } else {
-//                 outPort.display(proc);
-//             }
-//             outPort.putChar('\n');
-//         }
-//     }
-//     fclose(fp);
-// }
-
 
 // this is slow, because it creates namespace hash for each call.
 Object VM::getClosureName(Object closure)
@@ -1743,13 +1720,12 @@ Object VM::getClosureName(Object closure)
     }
 }
 
-// 名前をとる関数を作ろう
-// Object::incInt();
 void VM::storeCallSample()
 {
     EqHashTable* callHash = callHash_.toEqHashTable();
     for (int i = 0; i < SAMPLE_NUM; i++) {
-        const Object proc = callSamples_[i];//getClosureName(nameHash, callSamples_[i]);
+        const Object proc = callSamples_[i];
+        if (proc.isNil()) continue;
         const Object count = callHash->ref(proc, Object::False);
         if (count.isNil()) {
             /* */
@@ -1793,7 +1769,6 @@ Object VM::values(Object args)
 
 Object VM::getProfileResult()
 {
-    Object symAnonymous = Symbol::intern(UC("anonymous"));
     profilerRunning_ = false;
     stopProfiler();
     Object ret = Object::Nil;
@@ -1803,40 +1778,9 @@ Object VM::getProfileResult()
         if (o.isClosure()) {
             ret = Pair::append(ret, L1(o));
         }
-//         // check global namespace
-//         const Object o = samples_[i];
-//         if (o.isClosure()) {
-//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
-//             if (name != notFound_) {
-//                 const Object s = splitId(name);
-//                 ret = Pair::append(ret, L1(Object::cons(o, stringTosymbolEx(L1(s.cdr())))));
-//             } else {
-//                 // add anonymouse closure
-//                 ret = Pair::append(ret, L1(Object::cons(o, symAnonymous)));
-//             }
-//         }
     }
 
     storeCallSample();
-    // call trace
-//     Object ret2 = Object::Nil;
-//     EqHashTable* calls = callHash_.toEqHashTable();
-//    Vector* keys  = calls->keys().toVector();
-//    printf("keys length=%d\n", keys->length());fflush(stdout);
-//     for (int i = 0; i < keys->length(); i++) {
-//         const Object o = keys->ref(i);
-//         if (o.isCProcedure()) {
-//             ret2 = Pair::append(ret2, L1(Object::cons(getCProcedureName(o), calls->ref(o, notFound_))));
-//         } else  {
-//             const Object name = ht.toEqHashTable()->ref(o, notFound_);
-//             if (name != notFound_) {
-//                 const Object s = splitId(name);
-//                 ret2 = Pair::append(ret2, L1(Object::cons(stringTosymbolEx(L1(s.cdr())), calls->ref(o, notFound_))));
-//             } else {
-//                 ret2 = Pair::append(ret2, L1(Object::cons(o, calls->ref(o, notFound_))));
-//             }
-//         }
-//     }
     return Object::cons(Object::makeInt(totalSampleCount_), Object::cons(callHash_, ret));
 }
 

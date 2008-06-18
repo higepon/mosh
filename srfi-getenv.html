@@ -81,6 +81,22 @@ Here is an implementation using SRFI 0: Feature-based conditional expansion cons
   #f))
 </pre>
 
+<H1>Appendix: Existing implementations</H1>
+<table border=1>
+  <tbody><tr><th>Scheme implementation</th><th>get environment variable</th><th>get all the environment variables as an a-list</th></tr>
+  <tr><td>Bigloo</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>CHICKEN</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>Gambit</td><td>(getenv name . &lt;default&gt;) -&gt;(or string? &lt;default&gt; &lt;Unbound OS environment variable error&gt;) name:string?</td><td>&nbsp;</td></tr>
+
+  <tr><td>Gauche</td><td>(sys-getenv name) =&gt; (or string? false) name:string?</td><td>(sys-environ)</td></tr>
+  <tr><td>Guile</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>PLT</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>Scheme48</td><td>(lookup-environment-variable name) Å® (or string? false) name:string?</td><td>(environment-alist)</td></tr>
+
+  <tr><td>SLIB</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>STk</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>STklos</td><td>(getenv name) Å® (or string? false) name:string?</td><td>(getenv)</td></tr>
+  </tbody></table>
 <H1>Acknowledgements</H1>
 Thanks to Shiro Kawai, jmuk, Kokosabu, leque and all the members of the #Lisp_Scheme IRC channel on Freenode.
 <H1>Copyright</H1>

@@ -990,7 +990,7 @@
                ;;
                [(DISPLAY)
                 (VM codes
-                    (skip 2)
+                    (skip 1)
                     a
                     fp
                     (make-display (next 1) stack sp)

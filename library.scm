@@ -2386,3 +2386,90 @@
        (vector ,@elements))
      ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- element) x) (vector-ref x ,i))) elements)
      ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- 'set '- element '!) x v) (vector-set! x ,i v))) elements)))
+
+(define (hashtable-keys->list ht)
+  (vector->list (hashtable-keys ht)))
+
+(define (hashtable->alist ht)
+  (hashtable-map cons ht))
+
+(define (get-closure-name closure)
+  (aif (%get-closure-name closure)
+       it
+       'anonymous))
+
+
+(define (string-chop s len . tail)
+  (cond
+   [(> (string-length s) len)
+     (let1 ret (make-string len)
+       (let loop ([i 0])
+         (if (>= i len)
+           (if (pair? tail)
+               (string-append ret (car tail))
+               ret)
+           (begin
+             (string-set! ret i (string-ref s i))
+             (loop (+ i 1))))))]
+    [else s]))
+
+
+; If you see "display closure" at name column of profiler results.
+; Higepon can improve the result.
+; See set-source-info! on compiler and $let.src.
+(define (show-profile result)
+  (let ([total (first result)]
+        [calls-hash (second result)]
+        [sample-closures  (cddr result)]
+        [sample-table (make-eq-hashtable)])
+    ; collect sampled closures into sample-table
+    ;   key   => #<closure>
+    ;   value => sampling count
+    (for-each (lambda (closure)
+                (aif (hashtable-ref  sample-table closure #f)
+                     (hashtable-set! sample-table closure (+ it 1))
+                     (hashtable-set! sample-table closure 1)))
+                sample-closures)
+    (print "time%        msec      calls   name                              location")
+    (for-each
+     (lambda (x)
+       (let* ([closure  (first x)]
+              [src      (source-info closure)]
+              [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
+              [location (if src (car src) #f)]
+              [file     (if location (car location) #f)]
+              [lineno   (if location (second location) #f)]
+              [count    (aif (hashtable-ref calls-hash closure #f) it "-")])
+         (format #t " ~a   ~a ~a   ~a    ~a\n"
+                 (lpad (third x) " " 3)
+                 (lpad (* (second x) 10) " " 10)
+                 (lpad count " " 10)
+                 (rpad name " " 30)
+                 (if file (format "~a:~d" file lineno) "")
+                 )
+        ))
+     (sort
+      (hashtable-map
+       (lambda (closure sample-count)
+         (list closure sample-count (/ (* 100 sample-count) total)))
+       sample-table)
+      (lambda (x y) (> (third x) (third y)))))
+    (let1 seen-syms (vector->list (hashtable-keys sample-table))
+      (for-each
+       (lambda (p)
+         (let* ([closure (car p)]
+                [count  (cdr p)]
+                [src      (source-info closure)]
+                [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
+                [location (if src (car src) #f)]
+                [file     (if location (car location) #f)]
+                [lineno   (if location (second location) #f)])
+         (format #t "   0            0 ~a   ~a    ~a\n"
+                 (lpad count " " 10)
+                 (rpad name " " 30)
+                 (if file (format "~a:~d" file lineno) "")
+                 )))
+       (let1 filterd (filter (lambda (x) (not (memq (car x) seen-syms))) (hashtable->alist calls-hash))
+         (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
+       ($take  sorted 30))))
+    (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))

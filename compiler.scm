@@ -653,22 +653,19 @@
                 (pass1/expand (define->lambda sexp))
                 ($map1 (lambda (s) (pass1/expand s)) sexp))]
            [(let1)
-            (set-source-info! (pass1/expand (let1->let sexp)) (source-info sexp))]
+            (pass1/expand (let1->let sexp))]
            [(let)
             (if (let-is-named? sexp)
-                (set-source-info! (pass1/expand (named-let->letrec sexp)) (source-info sexp))
-                (set-source-info! (expand-let (second sexp) (cddr sexp)) (source-info sexp)))]
+                (pass1/expand (named-let->letrec sexp))
+                (expand-let (second sexp) (cddr sexp)))]
            [(let*)
-            (set-source-info! (pass1/expand (let*->let sexp)) (source-info sexp))]
+            (pass1/expand (let*->let sexp))]
            [(cond)
             (pass1/expand (cond->if sexp))]
            [(lambda)
             (cond [(lambda-has-define? sexp)
                    (set-source-info! (pass1/expand (internal-define->letrec sexp)) (source-info sexp))]
                   [else
-;                   (display "source-info-of-lambda-")
-;                   (print (debug-source-info sexp))
-;                   (print (source-info sexp))
                    (set-source-info! (make-list-with-src-slot `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp)))) (source-info sexp))])]
            [(when)
             (match sexp
@@ -683,11 +680,9 @@
               [else
                (syntax-error "malformed unless")])]
            [(aif)
-            (let1 v (pass1/expand (aif->let sexp))
-              (set-source-info! v (source-info sexp))
-              v)]
+            (pass1/expand (aif->let sexp))]
            [(case)
-            (set-source-info! (pass1/expand (case->cond sexp)) (source-info sexp))]
+            (pass1/expand (case->cond sexp))]
            [(quasiquote)
             (expand-quasiquote (cadr sexp) 0)]
            [else sexp])) ;; macro and call are expande later.
@@ -742,9 +737,7 @@
          [defines (first ret)]
          [rest (second ret)]
          [letrec-body `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-                         ,@rest)]
-         [letrec-body (set-source-info! letrec-body (source-info sexp))])
-
+                         ,@rest)])
     `(lambda ,args
        ,letrec-body)))
 
@@ -752,12 +745,7 @@
   (let ((args (cadr sexp))
         (body (cddr sexp)))
     (let1 closure (make-list-with-src-slot `(lambda ,(cdr args) ,@body))
-      ;; save source-info
-;      (display "define->lambda sour=")
-;      (print (source-info sexp))
       (set-source-info! closure (source-info sexp))
-;      (print 'hage)
-;      (print (source-info closure))
       `(define ,(car args) ,closure))))
 
 
@@ -1249,15 +1237,10 @@
        ($asm 'VALUES ($map1 sexp->iform (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
-;       (print sexp)
        (match sexp
          [('define name ('lambda . more))
           (let1 closure  (make-list-with-src-slot `(lambda ,@more))
-;            (print (source-info (third sexp)))
-;            (print (extended-pair? (third sexp)))
             (set-source-info! closure (source-info (third sexp)))
-;            (display "source-info third=")
-;            (print (source-info (third sexp)))
             ($define ($library.name library) name (pass1/lambda->iform name closure library lvars)))]
 ;           ($define ($library.name library) name (pass1/lambda->iform (cons name (source-info (third sexp))) `(lambda ,@more) library lvars))]
          [else
@@ -2626,11 +2609,10 @@
                                          (set-intersect sets frees-here))
                               (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
             [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-       (pp "eeeeeeeeeeeeeeeeeemmm")
        `(,(code-stack-sum args-code body-code free-code)
          LET_FRAME
          ,@(code-body free-code)
-         ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) #f) '())
+         ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
          ,@(code-body args-code)
          ,@boxes-code
          ,@(list 'ENTER (length ($call.args iform)))
@@ -2765,7 +2747,7 @@
     `(,(code-stack-sum body-code vals-code free-code)
       LET_FRAME
       ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) #f) '())
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
       ,@(code-body vals-code)
       RECEIVE
       ,($receive.reqargs iform)
@@ -2810,7 +2792,7 @@
         `(,(code-stack-sum body-code args-code free-code)
           LET_FRAME
           ,@(code-body free-code)
-          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) `(,($let.src iform) let)) '())
+          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
           ,@(code-body args-code)
           ,@boxes-code
           ,@(list 'ENTER (length vars))
@@ -2867,7 +2849,7 @@
     `(,(code-stack-sum free-code assign-code body-code)
       LET_FRAME
       ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here) `(,($let.src iform) letrec)) '())
+      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
       ,@init-code
       ,@boxes-code
       ,@(list 'ENTER (length vars))
