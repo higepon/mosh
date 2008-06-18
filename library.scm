@@ -2455,21 +2455,22 @@
        sample-table)
       (lambda (x y) (> (third x) (third y)))))
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
-      (for-each
-       (lambda (p)
-         (let* ([closure (car p)]
-                [count  (cdr p)]
-                [src      (source-info closure)]
-                [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
-                [location (if src (car src) #f)]
-                [file     (if location (car location) #f)]
-                [lineno   (if location (second location) #f)])
-         (format #t "   0            0 ~a   ~a    ~a\n"
-                 (lpad count " " 10)
-                 (rpad name " " 30)
-                 (if file (format "~a:~d" file lineno) "")
-                 )))
-       (let1 filterd (filter (lambda (x) (not (memq (car x) seen-syms))) (hashtable->alist calls-hash))
-         (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
-       ($take  sorted 30))))
+      ;; (for-each
+;;        (lambda (p)
+;;          (let* ([closure (car p)]
+;;                 [count  (cdr p)]
+;;                 [src      (source-info closure)]
+;;                 [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
+;;                 [location (if src (car src) #f)]
+;;                 [file     (if location (car location) #f)]
+;;                 [lineno   (if location (second location) #f)])
+;;          (format #t "   0            0 ~a   ~a    ~a\n"
+;;                  (lpad count " " 10)
+;;                  (rpad name " " 30)
+;;                  (if file (format "~a:~d" file lineno) "")
+;;                  )))
+;;        (let1 filterd (filter (lambda (x) (not (memq (car x) seen-syms))) (hashtable->alist calls-hash))
+;;          (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
+;;        ($take  sorted 30))))
     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
+

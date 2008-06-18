@@ -51,7 +51,7 @@
   (define dd display)
   (define pp print)
   (include "./free-vars-decl.scm")
-  (define (make-list-with-src-slot lst) lst)
+  (define-macro (make-list-with-src-slot lst) lst)
   (define (command-line) *command-line-args*)
  ]
 )
@@ -633,6 +633,9 @@
 ;;
 ;; Pass1: Code expansion
 ;;
+(define-macro ($src x sexp)
+  `(set-source-info! (make-list-with-src-slot ,x) (source-info ,sexp)))
+
 (define (pass1/expand sexp)
   (define (lambda-has-define? sexp)
     (and (not (null? (cddr sexp)))
@@ -651,38 +654,38 @@
            [(define)
             (if (define-is-lambda? sexp)
                 (pass1/expand (define->lambda sexp))
-                ($map1 (lambda (s) (pass1/expand s)) sexp))]
+                ($src ($map1 (lambda (s) (pass1/expand s)) sexp) sexp))]
            [(let1)
-            (pass1/expand (let1->let sexp))]
+            ($src (pass1/expand (let1->let sexp)) sexp)]
            [(let)
             (if (let-is-named? sexp)
-                (pass1/expand (named-let->letrec sexp))
-                (expand-let (second sexp) (cddr sexp)))]
+                ($src (pass1/expand (named-let->letrec sexp)) sexp)
+                ($src (expand-let (second sexp) (cddr sexp)) sexp))]
            [(let*)
-            (pass1/expand (let*->let sexp))]
+            ($src (pass1/expand (let*->let sexp)) sexp)]
            [(cond)
-            (pass1/expand (cond->if sexp))]
+            ($src (pass1/expand (cond->if sexp)) sexp)]
            [(lambda)
             (cond [(lambda-has-define? sexp)
-                   (set-source-info! (pass1/expand (internal-define->letrec sexp)) (source-info sexp))]
+                   ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
                   [else
-                   (set-source-info! (make-list-with-src-slot `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp)))) (source-info sexp))])]
+                   ($src `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp))) sexp)])]
            [(when)
             (match sexp
               [('when pred body . more)
-               (pass1/expand `(cond (,pred ,body ,@more)))]
+               ($src (pass1/expand `(cond (,pred ,body ,@more))) sexp)]
               [else
                (syntax-error "malformed when")])]
            [(unless)
             (match sexp
               [('unless pred body . more)
-               (pass1/expand `(cond ((not ,pred) ,body ,@more)))]
+               ($src (pass1/expand `(cond ((not ,pred) ,body ,@more))) sexp)]
               [else
                (syntax-error "malformed unless")])]
            [(aif)
-            (pass1/expand (aif->let sexp))]
+            ($src (pass1/expand (aif->let sexp)) sexp)]
            [(case)
-            (pass1/expand (case->cond sexp))]
+            ($src (pass1/expand (case->cond sexp)) sexp)]
            [(quasiquote)
             (expand-quasiquote (cadr sexp) 0)]
            [else sexp])) ;; macro and call are expande later.
@@ -736,17 +739,23 @@
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
-                         ,@rest)])
-    `(lambda ,args
-       ,letrec-body)))
+         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+                         ,@rest) sexp)])
+    ($src `(lambda ,args
+             ,letrec-body) sexp)))
+
+;; (define (define->lambda sexp)
+;;   (let ((args (cadr sexp))
+;;         (body (cddr sexp)))
+;;     (let1 closure (make-list-with-src-slot `(lambda ,(cdr args) ,@body))
+;;       (set-source-info! closure (source-info sexp))
+;;       `(define ,(car args) ,closure))))
 
 (define (define->lambda sexp)
   (let ((args (cadr sexp))
         (body (cddr sexp)))
-    (let1 closure (make-list-with-src-slot `(lambda ,(cdr args) ,@body))
-      (set-source-info! closure (source-info sexp))
-      `(define ,(car args) ,closure))))
+      `(define ,(car args) ,($src `(lambda ,(cdr args) ,@body) sexp))))
+
 
 
 (define (unless->cond sexp)
@@ -759,7 +768,7 @@
     (car (let loop ([args args])
            (if (null? args)
                body
-               `((let (,(car args)) ,@(loop (cdr args)))))))))
+               ($src `((let (,(car args)) ,@(loop (cdr args)))) sexp))))))
 
 (define (cond->if sexp)
   (define (make-if test then else)
@@ -824,11 +833,9 @@
          (args (caddr sexp))
          (vars ($map1 car args))
          (vals ($map1 cadr args))
-         (body (cdddr sexp)))
-    (dd "named-let->letrec sexp")
-    (pp (source-info sexp))
-    `(letrec ((,name (lambda ,vars ,@body)))
-       (,name ,@vals))))
+         (body (cdddr sexp))
+         (lambda-body ($src `(lambda ,vars ,@body) sexp)))
+    ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
 
 
 (define (replace-proc sexp a b)
@@ -1305,7 +1312,7 @@
                ))]
       ;;---------------------------- lambda ------------------------------------
       [(lambda)
-       (pass1/lambda->iform '<proc> sexp library lvars)]
+       (pass1/lambda->iform 'lambda sexp library lvars)]
       ;;---------------------------- library -----------------------------------
       [(library)
        (pass1/library->iform sexp library lvars)]
