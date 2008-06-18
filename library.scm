@@ -2453,7 +2453,7 @@
        (lambda (closure sample-count)
          (list closure sample-count (/ (* 100 sample-count) total)))
        sample-table)
-      (lambda (x y) (> (third x) (third y)))))
+      (lambda (x y) (> (second x) (second y)))))
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
       ;; (for-each
 ;;        (lambda (p)

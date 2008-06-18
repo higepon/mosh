@@ -1,5 +1,7 @@
 2008-06-18  higepon  <higepon@users.sourceforge.jp>
 
+        * main.cpp (main): Added -l option.
+
         * VM.cpp (VM::storeCallSample): Improved profiler results.
 
 2008-06-17  higepon  <higepon@users.sourceforge.jp>

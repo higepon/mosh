@@ -1,13 +1,14 @@
-(define (hage)
-  (define (collect-labels)
-    (let* ([len (vector-length '#(1))]
-           [ret (make-vector len 'NOP)])
-      (let loop ([i 0]
-                 [j 0])
-        (loop i))))
-  (collect-labels))
+(print 'work)
+;; (define (hage)
+;;   (define (collect-labels)
+;;     (let* ([len (vector-length '#(1))]
+;;            [ret (make-vector len 'NOP)])
+;;       (let loop ([i 0]
+;;                  [j 0])
+;;         (loop i))))
+;;   (collect-labels))
 
-(hage)
+;; (hage)
 
 
 ;; ;; (apply print '(1))

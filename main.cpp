@@ -1,4 +1,3 @@
-
 /*
  * main.cpp - Interpreter main.
  *
@@ -75,7 +74,7 @@ void showUsage()
     fprintf(stderr,
             "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
-//            "  -l       Loads <file> before executing the script file or entering repl.\n"
+            "  -l       Loads <file> before executing the script file or entering repl.\n"
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"
@@ -100,15 +99,18 @@ void signal_handler(int signo)
 int main(int argc, char *argv[])
 {
     int opt;
-    bool isRepl          = false;
     bool isTestOption    = false;
     bool isCompileString = false;
     bool isProfiler      = false;
+    char* initFile = NULL;
 
-    while ((opt = getopt(argc, argv, "htvpVc")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
+            break;
+        case 'l':
+            initFile = argv[optind];
             break;
         case 'v':
             showVersion();
@@ -132,12 +134,13 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (optind > argc || (isProfiler && optind == argc)) {
+    argc -= optind;
+    argv += optind;
+
+    if (isProfiler && argc <= 0) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
-    } else if (optind == argc &&  argc == 1) {
-        isRepl = true;
     }
 
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -169,23 +172,26 @@ int main(int argc, char *argv[])
 
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
-//        unlink(PRFILER_TEMP_FILE);
         theVM->initProfiler();
     }
 #endif
 
     theVM->evaluate(compiler);
 
-    if (isRepl) {
-        theVM->load(UC("repl.scm"));
-    } else if (isTestOption) {
+    if (initFile != NULL) {
+        theVM->load(Object::makeString(initFile).toString()->data());
+    }
+
+    if (isTestOption) {
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
         sysDisplayEx(L1(theVM->compile(code)));
+    } else if (argc >= 1) {
+        theVM->load(Object::makeString(argv[argc - 1]).toString()->data());
     } else {
-        theVM->load(Object::makeString(argv[optind]).toString()->data());
+        theVM->load(UC("repl.scm"));
     }
 
 #ifdef DUMP_ALL_INSTRUCTIONS
