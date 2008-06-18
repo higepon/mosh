@@ -1,3 +1,17 @@
+(print (command-line))
+;; (define (hoge i)
+;;   (define (hige) (set! i i))
+;;   (define (hage) (set! i i))
+;;   (cond
+;;    [(> i 100000)
+;;     i]
+;;    [else
+;;     (hige)
+;;     (hage)
+;;     (hoge (+ i 1))
+;;     ]))
+;; (hoge 0)
+
 (print 'work)
 ;; (define (hage)
 ;;   (define (collect-labels)

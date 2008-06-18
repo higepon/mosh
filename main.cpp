@@ -40,10 +40,10 @@ FILE* errOut;
 #endif
 
 
-Object argsToList(int argc, char* argv[])
+Object argsToList(int argc, int optind, char* argv[])
 {
-    Object p = Object::Nil;
-    for (int i = 0; i < argc; i++) {
+    Object p = Pair::list1(Object::makeString(argv[0])); // program name
+    for (int i = optind; i < argc; i++) {
         p = Object::cons(Object::makeString(argv[i]), p);
     }
     return Pair::reverse(p);
@@ -104,13 +104,13 @@ int main(int argc, char *argv[])
     bool isProfiler      = false;
     char* initFile = NULL;
 
-    while ((opt = getopt(argc, argv, "htvpVcl")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
             break;
         case 'l':
-            initFile = argv[optind];
+            initFile = optarg;
             break;
         case 'v':
             showVersion();
@@ -134,10 +134,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    argc -= optind;
-    argv += optind;
-
-    if (isProfiler && argc <= 0) {
+    if (isProfiler && argc == optind) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
@@ -150,7 +147,6 @@ int main(int argc, char *argv[])
 #ifdef USE_BOEHM_GC
     GC_INIT();
 #endif
-
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
@@ -168,7 +164,7 @@ int main(int argc, char *argv[])
     const Object compiler = getCompiler();
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
-    theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc - optind, &argv[optind]));
+    theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc, optind, argv));
 
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
@@ -188,8 +184,8 @@ int main(int argc, char *argv[])
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
         sysDisplayEx(L1(theVM->compile(code)));
-    } else if (argc >= 1) {
-        theVM->load(Object::makeString(argv[argc - 1]).toString()->data());
+    } else if (optind < argc) {
+        theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {
         theVM->load(UC("repl.scm"));
     }
