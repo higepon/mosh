@@ -42,7 +42,7 @@ FILE* errOut;
 
 Object argsToList(int argc, int optind, char* argv[])
 {
-    Object p = Pair::list1(Object::makeString(argv[0])); // program name
+    Object p = Object::Nil;
     for (int i = optind; i < argc; i++) {
         p = Object::cons(Object::makeString(argv[i]), p);
     }
