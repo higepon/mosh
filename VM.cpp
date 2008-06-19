@@ -1777,7 +1777,7 @@ Object VM::getProfileResult()
     for (int i = 0; i < SAMPLE_NUM; i++) {
         const Object o = samples_[i];
         if (o.isClosure()) {
-            ret = Pair::append(ret, L1(o));
+            ret = Pair::append2(ret, L1(o));
         }
     }
 

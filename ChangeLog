@@ -1,5 +1,7 @@
 2008-06-19  higepon  <higepon@users.sourceforge.jp>
 
+        * Pair.h (scheme): Added append(Object l, Object o) for (append ...).
+
         * compiler.scm (merge-insn): Added (not 'CONSTANT_PUSH) for PUSH_FRAME.
 
         * VM.cpp (VM::run): Removed APPEND instruction, it is buggy. We use appendEx instead.

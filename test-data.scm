@@ -971,6 +971,14 @@ val
 [(1 2 3 . 4) (cons* 1 2 3 4)]
 [1 (cons* 1)]
 [(1 . 3) (receive (x y) (car+cdr '(1 . 3)) (cons x y))]
+[1 (append 1)]
+[(1 . 2) (append '(1) 2)]
+[(1  2 . 3) (append '(1 2) 3)]
+[(1  2  3) (append '(1 2) '(3))]
+[(1  2  3 . 4) (append '(1 2) '(3) 4)]
+[(1  2  3 . 4) (append '(1 2) '(3) 4)]
+[1 (append '() 1)]
+[(1) (append '(1) '())]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

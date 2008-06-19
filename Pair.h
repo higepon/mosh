@@ -109,7 +109,8 @@ struct Pair EXTEND_GC
         for (Object p = l; p.isPair(); p = p.cdr()) {
             lists.push_back(p.car());
         }
-        Object ret = *(lists.end());
+        printf("lists.size() = %d\n", lists.size());
+        Object ret = lists[lists.size() - 1];
         for (int i = lists.size() - 2; i >= 0; i--) {
             if (!lists[i].isPair()) {
                 // error
@@ -120,11 +121,11 @@ struct Pair EXTEND_GC
     }
 
 
-    // append
-    static Object append(Object list1, Object list2)
-    {
-        return appendD(cloneList(list1), cloneList(list2));
-    }
+//     // append
+//     static Object append(Object list1, Object list2)
+//     {
+//         return appendD(cloneList(list1), cloneList(list2));
+//     }
 
 
     static Object getLastPair(Object obj)

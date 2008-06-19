@@ -1022,18 +1022,6 @@
             (loop (cdr l) (+ pos 1)))))
     v))
 
-; used internal
-(define (append2 l1 l2)
-    (if (null? l1)
-        l2
-        (let ((tete (cons (car l1) l2)))
-          (let loop ((cur tete) (l1 (cdr l1)))
-            (if (null? l1)
-                tete
-                (begin
-                  (set-cdr! cur (cons (car l1) l2))
-                  (loop (cdr cur) (cdr l1))))))))
-
 ;; Returns a possibly improper list consisting of the elements of the first list followed by the elements of the other lists, with obj as the cdr of the final pair. An improper list results if obj is not a list.
 ;; .returns Returns a possibly improper list consisting of the elements of the first list followed by the elements of the other lists, with obj as the cdr of the final pair. An improper list results if obj is not a list.
 ;; .post-condition If append constructs a nonempty chain of pairs, it is always newly allocated. If no pairs are allocated, obj is returned.
@@ -1042,8 +1030,8 @@
 ;; .example (append '(a (b)) '((c)))                =>  (a (b) (c))
 ;; .example (append '(a b) '(c . d))                =>  (a b c . d)
 ;; .example (append '() 'a)                         =>  a
-(define (append . ll)
-    (foldr1 append2 (cons '() ll)))
+;; .form (append list ... obj)
+(define-doc (append) ...)
 
 ;; Applies proc element-wise to the elements of the vectors for its side effects, in order from the first elements to the last. Proc is always called in the same dynamic environment as vector-for-each itself.(todo vector2 ...)
 ;; .form (vector-for-each proc vector1 vector2 ...)
