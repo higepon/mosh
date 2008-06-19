@@ -525,15 +525,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 // #endif
             return ac_;
         }
-        CASE(APPEND)
-        {
-            const Object list1 = index(sp_, 0);
-            const Object list2 = ac_;
-            TRACE_INSN0("APPEND");
-            ac_ = Pair::append(list1, list2);
-            sp_--;
-            NEXT1;
-        }
+//         CASE(APPEND)
+//         {
+//             const Object list1 = index(sp_, 0);
+//             const Object list2 = ac_;
+//             TRACE_INSN0("APPEND");
+//             ac_ = Pair::append(list1, list2);
+//             sp_--;
+//             NEXT1;
+//         }
         CASE(CALL1)
         {
             operand = Object::makeInt(1);
@@ -562,6 +562,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 fwrite(logBuf, 1, 2, stream);
 #endif
                 COUNT_CALL(ac_);
+                cl_ = ac_;
                 if (ac_.toCProcedure()->proc == applyEx) {
                     returnCode_[1] = operand;
 

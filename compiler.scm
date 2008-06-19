@@ -1000,8 +1000,6 @@
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
          [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)])
-;    (dd "pass1/lambda->iform")
-;    (pp (source-info sexp))
     ($lambda (cons (source-info sexp) `(,name ,@(dotpair->list (second sexp))))
              name
              (if optional-arg? (- (length vars) 1) (length vars))
@@ -1349,7 +1347,7 @@
       [(-)                (operator-nargs->iform '- 'NUMBER_SUB)]
       [(*)                (operator-nargs->iform '* 'NUMBER_MUL)]
       [(/)                (operator-nargs->iform '/ 'NUMBER_DIV)]
-      [(append)           (operator-nargs->iform 'append 'APPEND)]
+;      [(append)           (operator-nargs->iform 'append 'APPEND)]
       [(=)                (numcmp->iform '= (cdr sexp) 'NUMBER_EQUAL)]
       [(>=)               (numcmp->iform '>= (cdr sexp) 'NUMBER_GE)]
       [(>)                (numcmp->iform '> (cdr sexp) 'NUMBER_GT)]
@@ -2443,7 +2441,7 @@
             ,@($append-map1 cdr code)))))
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
-      [(APPEND)            (compile-2arg   'APPEND          args)]
+;      [(APPEND)            (compile-2arg   'APPEND          args)]
       [(NUMBER_ADD)        (compile-2arg   'NUMBER_ADD      args)]
       [(NUMBER_SUB)        (compile-2arg   'NUMBER_SUB      args)]
       [(NUMBER_MUL)        (compile-2arg   'NUMBER_MUL      args)]
@@ -3011,6 +3009,8 @@
 
 (define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) *free-vars-decl*))
 
+
+;; こいつを気軽に OFF にできるように。
 (define (merge-insn sexp)
   (define (iter s)
     (cond
@@ -3073,6 +3073,12 @@
            (iter `(PUSH_CONSTANT ,@rest))]
           [('PUSH 'FRAME . rest)
            (iter `(PUSH_FRAME ,@rest))]
+          ;; N.B.
+          ;; compiled pass3/$asm code has list '(CONSTANT_PUSH PUSH FRAME), ignore it.
+          [((and x (not 'CONSTANT_PUSH)) 'PUSH 'FRAME . rest)
+           (iter `(, x PUSH_FRAME ,@rest))]
+;;           [('PUSH 'FRAME . rest)
+;;            (iter `(PUSH_FRAME ,@rest))]
           [('REFER_FREE 3 . rest)
            (iter `(REFER_FREE3 ,@rest))]
           [('REFER_LOCAL 3 . rest)
@@ -3107,7 +3113,10 @@
 ;;            (iter (cons 'REFER_LOCAL0_PUSH_DISPLAY rest))]
           [else
            (cons (car s) (iter (cdr s)))])]))
-  (iter sexp))
+;;  (iter sexp))
+  sexp)
+
+
 
 ;; (cond-expand
 ;;  [gauche

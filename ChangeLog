@@ -1,3 +1,9 @@
+2008-06-19  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (merge-insn): Added (not 'CONSTANT_PUSH) for PUSH_FRAME.
+
+        * VM.cpp (VM::run): Removed APPEND instruction, it is buggy. We use appendEx instead.
+
 2008-06-18  higepon  <higepon@users.sourceforge.jp>
 
         * main.cpp (main): Added -l option.

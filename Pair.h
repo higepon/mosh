@@ -84,6 +84,41 @@ struct Pair EXTEND_GC
         return ret;
     }
 
+    // append o (list or obj) to l.
+    // if l is not list return o.
+    // allocate new cons sell.
+    static Object append2(Object l, Object o)
+    {
+        if (!l.isPair()) return o;
+        Object start = Object::Nil;
+        Object last  = Object::Nil;
+        for (Object p = l; p.isPair(); p = p.cdr()) {
+            if (start.isNil()) {
+                start = last = Object::cons(p.car(), Object::Nil);
+            } else {
+                last.cdr() = Object::cons(p.car(), Object::Nil);
+                last = last.cdr();
+            }
+        }
+        last.cdr() = o;
+        return start;
+    }
+
+    static Object append(Object l) {
+        gc_vector<Object> lists;
+        for (Object p = l; p.isPair(); p = p.cdr()) {
+            lists.push_back(p.car());
+        }
+        Object ret = *(lists.end());
+        for (int i = lists.size() - 2; i >= 0; i--) {
+            if (!lists[i].isPair()) {
+                // error
+            }
+            ret = append2(lists[i], ret);
+        }
+        return ret;
+    }
+
 
     // append
     static Object append(Object list1, Object list2)

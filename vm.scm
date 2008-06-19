@@ -1401,7 +1401,7 @@
                [(CDDR)    (apply-native-1arg cddr)]
                [(SET_CAR) (apply-native-2arg set-car!)]
                [(SET_CDR) (apply-native-2arg set-cdr!)]
-               [(APPEND)  (apply-native-2arg append)]
+;               [(APPEND)  (apply-native-2arg append)]
                [(CAR_PUSH)  (VM codes (skip 0) a fp c stack (push stack sp (car a)))]
                [(CDR_PUSH)  (VM codes (skip 0) a fp c stack (push stack sp (cdr a)))]
                ;;---------------------------- Vector  ----------------------------

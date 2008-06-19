@@ -130,4 +130,5 @@
     (set-source-info! ,(lambda e #f))
     (call-process ,(lambda e (error "call-process not implemented")))
     (%get-closure-name ,(lambda e (error "%get-closure-name not implemented")))
+    (append! ,append!)
     ))

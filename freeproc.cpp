@@ -55,7 +55,7 @@ Object scheme::hashtableKeysEx(Object args)
     }
     return ht.toEqHashTable()->keys();
 }
-Object scheme::hashtableSetEx(Object args)
+Object scheme::hashtableSetDEx(Object args)
 {
     const Object ht = args.first();
     if (!ht.isEqHashTable()) {
@@ -148,7 +148,7 @@ Object scheme::sourceInfoEx(Object args)
     return Object::Undef;
 }
 
-Object scheme::setSourceInfoEx(Object args)
+Object scheme::setSourceInfoDEx(Object args)
 {
     const int length = Pair::length(args);
     if (length != 2) {
@@ -173,13 +173,13 @@ Object scheme::nullPEx(Object args)
     }
 }
 
-Object scheme::setCarEx(Object args)
+Object scheme::setCarDEx(Object args)
 {
     printf("set-car! called\n");
     return Object::UnBound;
 }
 
-Object scheme::setCdrEx(Object args)
+Object scheme::setCdrDEx(Object args)
 {
     printf("set-cdr! called\n");
     return Object::UnBound;
@@ -359,7 +359,7 @@ Object scheme::makeStringEx(Object args)
     }
 }
 
-Object scheme::stringSetEx(Object args)
+Object scheme::stringSetDEx(Object args)
 {
     const int length = Pair::length(args);
     if (length != 3) {
@@ -757,7 +757,7 @@ Object scheme::currentOutputPortEx(Object args)
     return Object::UnBound;
 }
 
-Object scheme::setCurrentInputPortEx(Object args)
+Object scheme::setCurrentInputPortDEx(Object args)
 {
     if (args.first().isTextualInputPort()) {
         theVM->setInputPort(args.first());
@@ -767,7 +767,7 @@ Object scheme::setCurrentInputPortEx(Object args)
     return Object::UnBound;
 }
 
-Object scheme::setCurrentOutputPortEx(Object args)
+Object scheme::setCurrentOutputPortDEx(Object args)
 {
     if (args.first().isTextualOutputPort()) {
         theVM->setOutputPort(*(args.first().toTextualOutputPort()));
@@ -1098,7 +1098,7 @@ Object scheme::getU8Ex(Object args)
     return Object::Undef;
 }
 
-Object scheme::bytevectorU8SetEx(Object args)
+Object scheme::bytevectorU8SetDEx(Object args)
 {
     const int length = Pair::length(args);
     if (length != 3) {
@@ -1811,3 +1811,19 @@ Object scheme::internalgetClosureNameEx(Object args)
 {
     return theVM->getClosureName(args.first());
 }
+
+Object scheme::appendDEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 2) {
+       VM_RAISE1("wrong number of arguments for append! required 1, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg1 = args.first();
+   const Object arg2 = args.second();
+   if ((arg1.isNil() || arg1.isPair()) && (arg2.isNil() || arg2.isPair())) {
+       return Pair::appendD(arg1, arg2);
+   } else {
+       VM_RAISE2("append! pair required, but got ~a ~a\n", arg1, arg2);
+   }
+   return Object::Undef;
+} 

@@ -12,6 +12,9 @@
            [(#\?)
             (display "P" out)
             (rec (read-char in))]
+           [(#\!)
+            (display "D" out)
+            (rec (read-char in))]
            [(#\%)
             (display "internal" out)
             (rec (read-char in))]
