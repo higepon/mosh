@@ -1,3 +1,9 @@
+2008-06-20  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm : Added take, drop, take!, take-right, drop-right
+                            , drop-right!, integer?
+                            , fifth, sixth, seventh, eighth, ninth and tenth
+
 2008-06-19  higepon  <higepon@users.sourceforge.jp>
 
         * Pair.h (scheme): Added append(Object l, Object o) for (append ...).

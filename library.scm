@@ -2060,6 +2060,67 @@
 ;;; SRFI-1 List library.
 ;;; .section-id srfi-1
 
+(define integer? number?)
+(define (fifth   x) (car    (cddddr x)))
+(define (sixth   x) (cadr   (cddddr x)))
+(define (seventh x) (caddr  (cddddr x)))
+(define (eighth  x) (cadddr (cddddr x)))
+(define (ninth   x) (car  (cddddr (cddddr x))))
+(define (tenth   x) (cadr (cddddr (cddddr x))))
+
+; take & drop
+
+(define (take lis k)
+  (check-arg integer? k take)
+  (let recur ((lis lis) (k k))
+    (if (zero? k) '()
+    (cons (car lis)
+          (recur (cdr lis) (- k 1))))))
+
+(define (drop lis k)
+  (check-arg integer? k drop)
+  (let iter ((lis lis) (k k))
+    (if (zero? k) lis (iter (cdr lis) (- k 1)))))
+
+(define (take! lis k)
+  (check-arg integer? k take!)
+  (if (zero? k) '()
+      (begin (set-cdr! (drop lis (- k 1)) '())
+         lis)))
+
+; TAKE-RIGHT and DROP-RIGHT work by getting two pointers into the list,
+; off by K, then chasing down the list until the lead pointer falls off
+; the end.
+
+(define (take-right lis k)
+  (check-arg integer? k take-right)
+  (let lp ((lag lis)  (lead (drop lis k)))
+    (if (pair? lead)
+    (lp (cdr lag) (cdr lead))
+    lag)))
+
+(define (drop-right lis k)
+  (check-arg integer? k drop-right)
+  (let recur ((lag lis) (lead (drop lis k)))
+    (if (pair? lead)
+    (cons (car lag) (recur (cdr lag) (cdr lead)))
+    '())))
+; In this function, LEAD is actually K+1 ahead of LAG. This lets
+; us stop LAG one step early, in time to smash its cdr to ().
+(define (drop-right! lis k)
+  (check-arg integer? k drop-right!)
+  (let ((lead (drop lis k)))
+    (if (pair? lead)
+
+    (let lp ((lag lis)  (lead (cdr lead)))  ; Standard case
+      (if (pair? lead)
+          (lp (cdr lag) (cdr lead))
+          (begin (set-cdr! lag '())
+             lis)))
+
+    '())))  ; Special case dropping everything -- no cons to side-effect.
+
+
 ;; .form (first pair)
 ;; .returns (car pair)
 ;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"

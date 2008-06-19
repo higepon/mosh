@@ -979,6 +979,29 @@ val
 [(1  2  3 . 4) (append '(1 2) '(3) 4)]
 [1 (append '() 1)]
 [(1) (append '(1) '())]
+[1 (append! 1)]
+[(1 . 2) (append! '(1) 2)]
+[(1  2 . 3) (append! '(1 2) 3)]
+[(1  2  3) (append! '(1 2) '(3))]
+[(1  2  3 . 4) (append! '(1 2) '(3) 4)]
+[(1  2  3 . 4) (append! '(1 2) '(3) 4)]
+[1 (append! '() 1)]
+[(1) (append! '(1) '())]
+
+[(a b) (take '(a b c d e)  2)]
+[ (c d e) (drop '(a b c d e)  2)]
+[(1 2) (take '(1 2 3 . d) 2)]
+[(3 . d) (drop '(1 2 3 . d) 2)]
+[(1 2 3)(take '(1 2 3 . d) 3)]
+[d (drop '(1 2 3 . d) 3)]
+[(d e) (take-right '(a b c d e) 2)]
+[(a b c) (drop-right '(a b c d e) 2)]
+[(2 3 . d) (take-right '(1 2 3 . d) 2)]
+[(1) (drop-right '(1 2 3 . d) 2)]
+[d (take-right '(1 2 3 . d) 0)]
+[(1 2 3) (drop-right '(1 2 3 . d) 0)]
+
+
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

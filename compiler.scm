@@ -38,6 +38,7 @@
        a]
      [else
       a]))
+  (define append! append)
   ]
  [vm-outer?
   (define dd (lambda a '()))

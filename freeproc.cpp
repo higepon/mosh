@@ -1827,30 +1827,22 @@ Object scheme::appendEx(Object args)
             ret = Pair::append2(lists[i], ret);
         }
         return ret;
-
-//    return Pair::append(args);
-//     gc_vector<Object> lists;
-//     for (Object p = args; p.isPair(); p = p.cdr()) {
-//         lists.push_back(p.car());
-//     }
-//     Object ret = lists[lists.size() - 1];
-//     for (int i = lists.size() - 2; i >= 0; i--) {
-//         if (!lists[i].isPair()) {
-//             VM_RAISE1("append list required, but got ~a\n", lists[i]);
-//         }
-//         ret = Pair::append2(lists[i], ret);
-//     }
-//     return ret;
 }
-//    const int length = Pair::length(args);
-//    if (length != 2) {
-//        VM_RAISE1("wrong number of arguments for append! required 1, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg1 = args.first();
-//    const Object arg2 = args.second();
-//    if ((arg1.isNil() || arg1.isPair()) && (arg2.isNil() || arg2.isPair())) {
-//        return Pair::appendD(arg1, arg2);
-//    } else {
-//        VM_RAISE2("append! pair required, but got ~a ~a\n", arg1, arg2);
-//    }
-//    return Object::Undef;
+
+Object scheme::appendDEx(Object args)
+{
+    if (args.isNil()) return Object::Nil;
+    gc_vector<Object> lists;
+    for (Object p = args; p.isPair(); p = p.cdr()) {
+        lists.push_back(p.car());
+    }
+    Object ret = lists[lists.size() - 1];
+    for (int i = lists.size() - 2; i >= 0; i--) {
+        if (!lists[i].isPair()) {
+            // error
+        }
+        ret = Pair::appendD2(lists[i], ret);
+    }
+    return ret;
+}
+

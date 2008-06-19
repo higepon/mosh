@@ -170,6 +170,7 @@ Object setSourceInfoDEx(Object args);
 Object callProcessEx(Object args);
 Object internalgetClosureNameEx(Object args);
 Object appendEx(Object args);
+Object appendDEx(Object args);
 int mod(int x, int y);
 int div(int x, int y);
 }; // namespace scheme
