@@ -8,7 +8,7 @@
   (define open-string-input-port open-input-string)
   (define make-eq-hashtable make-hash-table)
   (define hashtable-set! hash-table-put!)
-  (define hash-table-ref hash-table-get)
+  (define hashtable-ref hash-table-get)
   (define find10 find)
   (define foldr2 fold-right)
   (define source-info debug-source-info)
@@ -24,7 +24,7 @@
   (define (command-line) *command-line-args*)
   (define make-eq-hashtable make-hash-table)
   (define hashtable-set! hash-table-put!)
-  (define hash-table-ref hash-table-get)
+  (define hashtable-ref hash-table-get)
   (define dd (lambda a '()))
   (define pp (lambda a '()))
   (define syntax-error error)
@@ -2129,74 +2129,35 @@
 ;;     can-frees: candidates of free variables as $lvar structure.
 ;;
 
-(define (pass3/find-free iform locals can-frees)
-  (define (rec i l labels-seen)
-    (let1 t (tag i)
-      (cond
-       [(= $CONST t) '()]
-       [(= $LET t)
-        (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-                (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
-       [(= $RECEIVE t)
-        (append (rec ($receive.vals i) l labels-seen)
-                (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
-       [(= $SEQ t)
-        ($append-map1 (lambda (fm) (rec fm locals labels-seen)) ($seq.body i))]
-       [(= $LAMBDA t)
-        (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
-       [(= $LOCAL-ASSIGN t)
-        (let1 lvar ($local-assign.lvar i)
-          (append (if (memq lvar can-frees) (list lvar) '())
-                  (rec ($local-assign.val i) l labels-seen)))]
-       [(= $LOCAL-REF t)
-        (let1 lvar ($local-ref.lvar i)
-          (cond [(memq lvar l) '()]
-                [(memq lvar can-frees) (list lvar)]
-                [else '()]))]
-       [(= $GLOBAL-REF t)
-        (let* ([sym ($global-ref.sym i)]
-               [found (find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
-          (if found (list found) '()))]
-       [(= $UNDEF t)      '()]
-       [(= $IF t)
-        (append (rec ($if.test i) l labels-seen)
-                (rec ($if.then i) l labels-seen)
-                (rec ($if.else i) l labels-seen))]
-       [(= $ASM t)
-        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
-       [(= $DEFINE t)
-        (rec ($define.val i) l labels-seen)]
-       [(= $CALL t)
-        ;; N.B.
-        ;; (proc args)
-        ;;   args are evaluate before proc, so you should find free variables of args at first.
-       (append
-         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
-         (rec ($call.proc i) l labels-seen)
-                )]
-       [(= $CALL-CC t)
-        (rec ($call-cc.proc i) l labels-seen)]
-       [(= $GLOBAL-ASSIGN t)
-        (rec ($global-assign.val i) l labels-seen)]
-       [(= $LIST t)
-        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($list.args i))]
-       [(= $LABEL t)
-        (if (memq i labels-seen)
-            '()
-            (rec ($label.body i) l (cons i labels-seen)))]
-       [(= $IMPORT t)
-        '() ;; todo 本当?
-        ]
-       [(= $LIBRARY t)
-        '() ;; todo 本当?
-        ]
-       [(= $IT t) '()]
-       [else
-        (error "pass3/find-free unknown iform:" (tag i))])))
-  (uniq (rec iform locals '())))
+(define test-table (make-eq-hashtable))
+
+(define (get table a b c)
+  (aif (hashtable-ref table a #f)
+       (aif (hashtable-ref it b #f)
+            (hashtable-ref it c #f)
+            #f)
+       #f))
+
+(define (set table a b c v)
+  (aif (hashtable-ref table a #f)
+       (let1 it2 (hashtable-ref it b #f)
+         (if it2
+             (hashtable-set! it2 c v)
+             (let1 t (make-eq-hashtable)
+               (hashtable-set! it b t)
+               (hashtable-set! t c v))))
+       (let1 t (make-eq-hashtable)
+         (hashtable-set! table a t)
+         (let1 t2 (make-eq-hashtable)
+             (hashtable-set! t b t2)
+             (hashtable-set! t2 c v)))))
+
 
 ;; (define (pass3/find-free iform locals can-frees)
 ;;   (define (rec i l labels-seen)
+;;     (aif #f ;(get test-table i l labels-seen)
+;;          it
+;;          (let1 v
 ;;     (let1 t (tag i)
 ;;       (cond
 ;;        [(= $CONST t) '()]
@@ -2258,8 +2219,77 @@
 ;;         ]
 ;;        [(= $IT t) '()]
 ;;        [else
-;;         (error "pass3/find-free unknown iform:" (tag i))])))
+;;         (error "pass3/find-free unknown iform:" (tag i))]))
+;;     (set test-table i l labels-seen v)
+;;     v)))
+    
 ;;   (uniq (rec iform locals '())))
+
+(define (pass3/find-free iform locals can-frees)
+  (define (rec i l labels-seen)
+    (let1 t (tag i)
+      (cond
+       [(= $CONST t) '()]
+       [(= $LET t)
+        (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+                (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+       [(= $RECEIVE t)
+        (append (rec ($receive.vals i) l labels-seen)
+                (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
+       [(= $SEQ t)
+        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
+       [(= $LAMBDA t)
+        (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
+       [(= $LOCAL-ASSIGN t)
+        (let1 lvar ($local-assign.lvar i)
+          (append (if (memq lvar can-frees) (list lvar) '())
+                  (rec ($local-assign.val i) l labels-seen)))]
+       [(= $LOCAL-REF t)
+        (let1 lvar ($local-ref.lvar i)
+          (cond [(memq lvar l) '()]
+                [(memq lvar can-frees) (list lvar)]
+                [else '()]))]
+       [(= $GLOBAL-REF t)
+        (let* ([sym ($global-ref.sym i)]
+               [found (find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
+          (if found (list found) '()))]
+       [(= $UNDEF t)      '()]
+       [(= $IF t)
+        (append (rec ($if.test i) l labels-seen)
+                (rec ($if.then i) l labels-seen)
+                (rec ($if.else i) l labels-seen))]
+       [(= $ASM t)
+        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
+       [(= $DEFINE t)
+        (rec ($define.val i) l labels-seen)]
+       [(= $CALL t)
+        ;; N.B.
+        ;; (proc args)
+        ;;   args are evaluate before proc, so you should find free variables of args at first.
+       (append
+         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
+         (rec ($call.proc i) l labels-seen)
+                )]
+       [(= $CALL-CC t)
+        (rec ($call-cc.proc i) l labels-seen)]
+       [(= $GLOBAL-ASSIGN t)
+        (rec ($global-assign.val i) l labels-seen)]
+       [(= $LIST t)
+        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($list.args i))]
+       [(= $LABEL t)
+        (if (memq i labels-seen)
+            '()
+            (rec ($label.body i) l (cons i labels-seen)))]
+       [(= $IMPORT t)
+        '() ;; todo 本当?
+        ]
+       [(= $LIBRARY t)
+        '() ;; todo 本当?
+        ]
+       [(= $IT t) '()]
+       [else
+        (error "pass3/find-free unknown iform:" (tag i))])))
+  (uniq (rec iform locals '())))
 
 
 ;;

@@ -1,3 +1,7 @@
+(define find-table (make-eq-hashtable))
+
+
+
 
 
 (take '(a b c d e)  2)
