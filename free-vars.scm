@@ -132,4 +132,16 @@
     (%get-closure-name ,(lambda e (error "%get-closure-name not implemented")))
     (append ,append)
     (append! ,append!)
+;;     (%set-union ,(lambda (l1 l2)
+;;                    (define (set-cons x lst1)
+;;                      (if (memq x lst)
+;;                          lst
+;;                          (cons x lst)))
+;;                    (define (rec lst1 lst2)
+;;                      (cond
+;;                       [(null? lst1) lst2]
+;;                       [(null? lst2) lst1]
+;;                       [else
+;;                        (rec (cdr lst1) (set-cons (car lst1) lst2))]))
+;;                    (rec l1 l2)))
     ))

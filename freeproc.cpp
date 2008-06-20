@@ -1846,3 +1846,24 @@ Object scheme::appendDEx(Object args)
     return ret;
 }
 
+// Scheme code is faster than this
+// Object scheme::internalsetUnionEx(Object args)
+// {
+//     const Object list1 = args.first();
+//     const Object list2 = args.second();
+//     if (list1.isNil()) {
+//         return list2;
+//     } else if (list2.isNil()) {
+//         return list1;
+//     }
+//     Object ret = list2;
+//     for (Object p = list1; p.isPair(); p = p.cdr()) {
+//         const Object o = p.car();
+//         if (existsInList(o, ret)) {
+//             continue;
+//         } else {
+//             ret = Object::cons(o, ret);
+//         }
+//     }
+//     return ret;
+// }

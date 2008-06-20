@@ -171,6 +171,16 @@ Object callProcessEx(Object args);
 Object internalgetClosureNameEx(Object args);
 Object appendEx(Object args);
 Object appendDEx(Object args);
+Object internalsetUnionEx(Object args);
+inline bool existsInList(Object o, Object list)
+{
+    for (Object q = list; q.isPair(); q = q.cdr()) {
+        if (q.car() == o) return true;
+    }
+    return false;
+}
+
+
 int mod(int x, int y);
 int div(int x, int y);
 }; // namespace scheme
