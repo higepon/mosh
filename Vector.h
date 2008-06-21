@@ -78,7 +78,7 @@ public:
 
     ~Vector() {}
 
-    Object ref(int index)
+    Object ref(int index) const
     {
         return objects_[index];
     }

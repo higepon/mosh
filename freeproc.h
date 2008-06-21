@@ -170,8 +170,11 @@ Object setSourceInfoDEx(Object args);
 Object callProcessEx(Object args);
 Object internalgetClosureNameEx(Object args);
 Object appendEx(Object args);
+Object append2Ex(Object args);
 Object appendDEx(Object args);
 Object internalsetUnionEx(Object args);
+Object pass3FindFreeEx(Object args);
+Object pass3FindSetsEx(Object args);
 inline bool existsInList(Object o, Object list)
 {
     for (Object q = list; q.isPair(); q = q.cdr()) {
@@ -180,6 +183,20 @@ inline bool existsInList(Object o, Object list)
     return false;
 }
 
+Object pass4FixupLabelsEx(Object args);
+
+Object memq(Object o, Object list);
+Object uniq(Object list);
+Object assq(Object o, Object alist);
+Object findFree(Object iform, Object locals, Object canFrees);
+Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
+Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
+Object findSetsRecMap(Object lvars, Object list);
+Object findSets(Object iform, Object lvars);
+Object findSetsRec(Object i, Object lvars);
+
+Object pass4FixupLabelCollect(Object vec);
+Object pass4FixupLabel(Object vec);
 
 int mod(int x, int y);
 int div(int x, int y);

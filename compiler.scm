@@ -29,6 +29,7 @@
   (define pp (lambda a '()))
   (define syntax-error error)
   (define find10 find)
+  (define append2 append)
   (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
@@ -235,6 +236,10 @@
 
 (define-macro ($append-map1 f l)
   `(apply append ($map1 ,f ,l)))
+
+(define-macro ($append!-map1 f l)
+  `(apply append! ($map1 ,f ,l)))
+
 
 (define (uniq lst)
   (let loop ([lst lst]
@@ -731,7 +736,7 @@
     (cond [(null? lst)
            (if (null? found) (list '() lst) (values found '()))]
           [(pred (car lst))
-           (loop (append found (list (car lst))) (cdr lst))]
+           (loop (append2 found (list (car lst))) (cdr lst))]
           [else
            (if (null? found) (list '() lst) (list found lst))])))
 
@@ -1712,7 +1717,7 @@
       (cond ((null? new-vars)
              (if (null? removed-inits)
                  body
-                 ($seq (append removed-inits (list body)) ($let.tail? iform))))
+                 ($seq (append2 removed-inits (list body)) ($let.tail? iform))))
             (else
              ($let.set-lvars! iform new-vars)
              ($let.set-inits! iform new-inits)
@@ -1720,10 +1725,10 @@
              (unless (null? removed-inits)
                (if (tag? body $SEQ)
                    ($seq.set-body! body
-                                   (append removed-inits
+                                   (append2 removed-inits
                                             ($seq.body body)))
                    ($let.set-body! iform
-                                   ($seq (append removed-inits
+                                   ($seq (append2 removed-inits
                                                  (list body))
                                          ($let.tail? iform)))))
              iform)))))
@@ -1887,7 +1892,7 @@
   (if (zero? optarg)
       iargs
       (receive (reqs opts) (split-at iargs reqargs)
-        (append reqs (list ($list opts))))))
+        (append2 reqs (list ($list opts))))))
 
 ;; Does the given argument list satisfy procedure's reqargs/optarg?
 (define (argcount-ok? args reqargs optarg?)
@@ -2063,7 +2068,7 @@
       (let* ([ret-args (pass2/split-args iargs reqargs)]
              [reqs     (car ret-args)]
              [opts     (cdr ret-args)])
-        (append reqs (list ($list opts))))))
+        (append2 reqs (list ($list opts))))))
 
 (define (pass2/split-args args reqargs)
   (let loop ((i reqargs) (rest args) (r '()))
@@ -2232,7 +2237,7 @@
        [(= $CONST t) '()]
        [(= $LET t)
         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-                (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
        [(= $RECEIVE t)
         (append (rec ($receive.vals i) l labels-seen)
                 (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
@@ -2256,8 +2261,8 @@
        [(= $UNDEF t)      '()]
        [(= $IF t)
         (append (rec ($if.test i) l labels-seen)
-                (rec ($if.then i) l labels-seen)
-                (rec ($if.else i) l labels-seen))]
+                 (append (rec ($if.then i) l labels-seen)
+                          (rec ($if.else i) l labels-seen)))]
        [(= $ASM t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
        [(= $DEFINE t)
@@ -2701,7 +2706,7 @@
             [vars ($lambda.lvars ($call.proc iform))]
             [frees-here (pass3/find-free body
                                          vars
-                                         (append locals frees can-frees))]
+                                         (append locals (append frees can-frees)))]
             [args-code (pass3/compile-args ($call.args iform) locals frees-here can-frees sets #f)]
             [sets-here  (append (pass3/find-sets body vars) sets)]
             [boxes-code (pass3/make-boxes sets-here vars)]
@@ -2765,7 +2770,7 @@
            [body ($lambda.body iform)]
            [frees-here (pass3/find-free body
                                         vars
-                                        (append locals frees can-frees))]
+                                        (append locals (append frees can-frees)))]
            [sets-here  (append (pass3/find-sets body vars) sets)]
            [boxes-code (pass3/make-boxes sets-here vars)]
            [body-code  (pass3 body
@@ -2800,7 +2805,7 @@
            [body ($lambda.body iform)]
            [frees-here (pass3/find-free body
                                         vars
-                                        (append locals frees can-frees))]
+                                        (append locals (append frees can-frees)))]
            [sets-here  (append (pass3/find-sets body vars) sets)]
            [boxes-code (pass3/make-boxes sets-here vars)]
            [body-code  (pass3 body
@@ -2832,10 +2837,10 @@
   (let* ([vars ($receive.lvars iform)]
          [body ($receive.body iform)]
          [frees-here (append
-                      (pass3/find-free ($receive.vals iform) locals (append locals frees can-frees))
+                      (pass3/find-free ($receive.vals iform) locals (append locals (append frees can-frees)))
                       (pass3/find-free body
                                        vars
-                                       (append locals frees can-frees)))]
+                                       (append locals (append frees can-frees))))]
          [sets-here  (append (pass3/find-sets body vars) sets)]
          [boxes-code (pass3/make-boxes sets-here vars)]
          [body-code  (pass3 body
@@ -2868,11 +2873,11 @@
       (let* ([vars ($let.lvars iform)]
              [body ($let.body iform)]
              [frees-here (append
-                          ($append-map1 (lambda (i) (pass3/find-free i locals (append locals frees can-frees))) ($let.inits iform))
+                          ($append-map1 (lambda (i) (pass3/find-free i locals (append2 locals (append2 frees can-frees)))) ($let.inits iform))
                           (pass3/find-free body
                                            vars
-                                           (append locals frees can-frees)))]
-             [sets-here  (append (pass3/find-sets body vars) sets)]
+                                           (append2 locals (append2 frees can-frees))))]
+             [sets-here  (append2 (pass3/find-sets body vars) sets)]
              [boxes-code (pass3/make-boxes sets-here vars)]
              [body-code  (pass3 body
                                vars
@@ -2908,10 +2913,10 @@
   (let* ([vars ($let.lvars iform)]
          [body ($let.body iform)]
          [frees-here (append
-                      ($append-map1 (lambda (i) (pass3/find-free i vars (append locals frees can-frees))) ($let.inits iform))
+                      ($append-map1 (lambda (i) (pass3/find-free i vars (append locals (append frees can-frees)))) ($let.inits iform))
                       (pass3/find-free body
                                        vars
-                                       (append locals frees can-frees)))]
+                                       (append locals (append frees can-frees))))]
          ;; each vars can be set!
          [sets-here  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)) sets)]
          [boxes-code (pass3/make-boxes sets-here vars)]

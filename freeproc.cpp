@@ -1604,8 +1604,9 @@ Object scheme::exitEx(Object args)
     if (arg1.isInt()) {
         exit(arg1.toInt());
     } else {
-        VM_RAISE1("wrong arguments for exit required number, got ~a\n", arg1);
+        exit(-1);
     }
+    return Object::Undef;
 }
 
 Object scheme::macroexpand1Ex(Object args)
@@ -1829,6 +1830,16 @@ Object scheme::appendEx(Object args)
         return ret;
 }
 
+Object scheme::append2Ex(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for append2 required 2, got ~d)\n", Object::makeInt(length));
+    }
+    return Pair::append2(args.first(), args.second());
+}
+
+
 Object scheme::appendDEx(Object args)
 {
     if (args.isNil()) return Object::Nil;
@@ -1847,23 +1858,620 @@ Object scheme::appendDEx(Object args)
 }
 
 // Scheme code is faster than this
-// Object scheme::internalsetUnionEx(Object args)
-// {
-//     const Object list1 = args.first();
-//     const Object list2 = args.second();
-//     if (list1.isNil()) {
-//         return list2;
-//     } else if (list2.isNil()) {
-//         return list1;
-//     }
-//     Object ret = list2;
-//     for (Object p = list1; p.isPair(); p = p.cdr()) {
-//         const Object o = p.car();
-//         if (existsInList(o, ret)) {
-//             continue;
-//         } else {
-//             ret = Object::cons(o, ret);
-//         }
-//     }
-//     return ret;
-// }
+Object scheme::internalsetUnionEx(Object args)
+{
+    const Object list1 = args.first();
+    const Object list2 = args.second();
+    if (list1.isNil()) {
+        return list2;
+    } else if (list2.isNil()) {
+        return list1;
+    }
+    Object ret = list2;
+    for (Object p = list1; p.isPair(); p = p.cdr()) {
+        const Object o = p.car();
+        if (existsInList(o, ret)) {
+            continue;
+        } else {
+            ret = Object::cons(o, ret);
+        }
+    }
+    return ret;
+}
+
+Object scheme::uniq(Object list)
+{
+    Object ret = Object::Nil;
+    for (Object p = list; p.isPair(); p = p.cdr()) {
+        if (!memq(p.car(), ret).isFalse()) {
+            continue;
+        } else {
+            ret = Object::cons(p.car(), ret);
+        }
+    }
+    return ret;
+}
+
+Object scheme::pass3FindFreeEx(Object args)
+{
+    return findFree(args.first(), args.second(), args.third());
+}
+
+Object scheme::pass3FindSetsEx(Object args)
+{
+    return findSets(args.first(), args.second());
+}
+
+Object scheme::findFree(Object iform, Object locals, Object canFrees)
+{
+    const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
+//    VM_LOG1("find-free = ~a\n", uniq(ret));
+    return uniq(ret);
+//   (uniq (rec iform locals '())))
+}
+
+
+Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
+{
+    const int CONST = 0;
+    const int LVAR = 1;
+    const int LET = 2;
+    const int SEQ = 3;
+    const int LAMBDA = 4;
+    const int LOCAL_REF = 5;
+    const int LOCAL_ASSIGN = 6;
+    const int GLOBAL_REF = 7;
+    const int GLOBAL_ASSIGN = 8;
+    const int UNDEF = 9;
+    const int IF = 10;
+    const int ASM = 11;
+    const int DEFINE = 12;
+    const int CALL_CC = 13;
+    const int CALL = 14;
+    const int LABEL = 15;
+    const int LIST = 16;
+    const int LIBRARY = 17;
+    const int IMPORT = 18;
+    const int IMPORT_SPEC = 19;
+    const int IT = 20;
+    const int RECEIVE = 21;
+
+    Vector* v = i.toVector();
+    switch(v->ref(0).toInt()) {
+    case CONST:
+        return Object::Nil;
+    case LET:
+    {
+//        [(= $LET t)
+//         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+//                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+
+        const Object letLvars = v->ref(2);
+        const Object letInits = v->ref(3);
+        const Object letBody = v->ref(4);
+        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, letInits),
+                             findFreeRec(letBody, Pair::append2(l, letLvars), canFrees, labelsSeen));
+    }
+    case RECEIVE:
+    {
+//        [(= $RECEIVE t)
+//         (append (rec ($receive.vals i) l labels-seen)
+//                 (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
+        const Object receiveVals = v->ref(4);
+        const Object receiveBody = v->ref(5);
+        const Object receiveLVars = v->ref(1);
+        return Pair::append2(findFreeRec(receiveVals, l, canFrees, labelsSeen),
+                             findFreeRec(receiveBody, Pair::append2(l, receiveLVars), canFrees, labelsSeen));
+
+    }
+    case SEQ:
+    {
+//        [(= $SEQ t)
+//         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
+        const Object seqBody = v->ref(1);
+        return findFreeRecMap(l, canFrees, labelsSeen, seqBody);
+    }
+    case LAMBDA:
+    {
+//        [(= $LAMBDA t)
+//         (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
+        const Object lambdaBody = v->ref(6);
+        const Object lambdaLvars = v->ref(5);
+        return findFreeRec(lambdaBody, Pair::append2(l, lambdaLvars), canFrees, labelsSeen);
+    }
+    case LOCAL_ASSIGN:
+    {
+//        [(= $LOCAL-ASSIGN t)
+//         (let1 lvar ($local-assign.lvar i)
+//           (append (if (memq lvar can-frees) (list lvar) '())
+//                   (rec ($local-assign.val i) l labels-seen)))]
+        const Object lvar = v->ref(1);
+        const Object val = v->ref(2);
+        return Pair::append2(!memq(lvar, canFrees).isFalse() ? Pair::list1(lvar) : Object::Nil,
+                             findFreeRec(val, l, canFrees, labelsSeen));
+    }
+    case LOCAL_REF:
+    {
+//        [(= $LOCAL-REF t)
+//         (let1 lvar ($local-ref.lvar i)
+//           (cond [(memq lvar l) '()]
+//                 [(memq lvar can-frees) (list lvar)]
+//                 [else '()]))]
+        const Object lvar = v->ref(1);
+        if (!memq(lvar, l).isFalse()) {
+            return Object::Nil;
+        } else if (!memq(lvar, canFrees).isFalse()) {
+            return Pair::list1(lvar);
+        } else {
+            return Object::Nil;
+        }
+    }
+    case GLOBAL_REF:
+    {
+//        [(= $GLOBAL-REF t)
+//         (let* ([sym ($global-ref.sym i)]
+//                [found (find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
+//           (if found (list found) '()))]
+        const Object sym = v->ref(2);
+        Object found = Object::False;
+        for (Object p = canFrees; p.isPair(); p = p.cdr()) {
+            const Object lvarSym = p.car().toVector()->ref(1);
+            if (lvarSym == sym) {
+                found = p.car();
+                break;
+            }
+        }
+        return !found.isFalse() ? Pair::list1(found) : Object::Nil;
+    }
+    case UNDEF:
+//        [(= $UNDEF t)      '()]
+        return Object::Nil;
+    case IF:
+    {
+//        [(= $IF t)
+//         (append (rec ($if.test i) l labels-seen)
+//                 (rec ($if.then i) l labels-seen)
+//                 (rec ($if.else i) l labels-seen))]
+        const Object testF = findFreeRec(v->ref(1), l, canFrees, labelsSeen);
+        const Object thenF = findFreeRec(v->ref(2), l, canFrees, labelsSeen);
+        const Object elseF = findFreeRec(v->ref(3), l, canFrees, labelsSeen);
+        return Pair::append2(testF, Pair::append2(thenF, elseF));
+    }
+    case ASM:
+    {
+//        [(= $ASM t)
+//         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
+        const Object asmArgs = v->ref(2);
+        return findFreeRecMap(l, canFrees, labelsSeen, asmArgs);
+    }
+    case DEFINE:
+    {
+//        [(= $DEFINE t)
+//         (rec ($define.val i) l labels-seen)]
+        const Object defineVal = v->ref(3);
+        return findFreeRec(defineVal, l, canFrees, labelsSeen);
+    }
+    case CALL:
+    {
+//        [(= $CALL t)
+//         ;; N.B.
+//         ;; (proc args)
+//         ;;   args are evaluate before proc, so you should find free variables of args at first.
+//        (append
+//          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
+//          (rec ($call.proc i) l labels-seen)
+//                 )]
+        const Object callArgs = v->ref(2);
+        const Object callProc = v->ref(1);
+        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, callArgs),
+                             findFreeRec(callProc, l, canFrees, labelsSeen));
+    }
+    case CALL_CC:
+    {
+//        [(= $CALL-CC t)
+//         (rec ($call-cc.proc i) l labels-seen)]
+        const Object callccProc = v->ref(1);
+        return findFreeRec(callccProc, l, canFrees, labelsSeen);
+    }
+    case GLOBAL_ASSIGN:
+    {
+//        [(= $GLOBAL-ASSIGN t)
+//         (rec ($global-assign.val i) l labels-seen)]
+        const Object globalAssignVal = v->ref(3);
+        return findFreeRec(globalAssignVal, l, canFrees, labelsSeen);
+    }
+    case LIST:
+    {
+//        [(= $LIST t)
+//         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($list.args i))]
+        const Object listArgs = v->ref(1);
+        return findFreeRecMap(l, canFrees, labelsSeen, listArgs);
+    }
+    case LABEL:
+    {
+//        [(= $LABEL t)
+//         (if (memq i labels-seen)
+//             '()
+//             (rec ($label.body i) l (cons i labels-seen)))]
+        const Object labelBody = v->ref(2);
+        if (!memq(i, labelsSeen).isFalse()) {
+            return Object::Nil;
+        } else {
+            findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
+        }
+    }
+    case IMPORT:
+//        [(= $IMPORT t)
+//         '() ;; todo 本当?
+//         ]
+        return Object::Nil;
+    case LIBRARY:
+//        [(= $LIBRARY t)
+//         '() ;; todo 本当?
+//         ]
+
+        return Object::Nil;
+    case IT:
+//        [(= $IT t) '()]
+        return Object::Nil;
+    default:
+//        [else
+//         (error "pass3/find-free unknown iform:" (tag i))])))
+        VM_RAISE1("pass3/find-free unknown iform: ~a", v->ref(0));
+        break;
+    }
+    return Object::Undef;
+}
+
+// callee should check <list>.
+Object scheme::memq(Object o, Object list)
+{
+    for (Object p = list; p != Object::Nil; p = p.cdr()) {
+        if (p.car() == o) {
+            return p;
+        }
+    }
+    return Object::False;
+}
+
+
+Object scheme::findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
+{
+    Object ret = Object::Nil;
+    for (Object p = list; p.isPair(); p = p.cdr()) {
+        ret = Pair::append2(ret, findFreeRec(p.car(), l, canFrees, labelsSeen));
+    }
+    return ret;
+}
+
+Object scheme::findSetsRecMap(Object lvars, Object list)
+{
+    Object ret = Object::Nil;
+    for (Object p = list; p.isPair(); p = p.cdr()) {
+        ret = Pair::append2(ret, findSetsRec(p.car(), lvars));
+    }
+    return ret;
+}
+
+Object scheme::findSets(Object iform, Object lvars)
+{
+    return uniq(findSetsRec(iform, lvars));
+}
+
+Object scheme::findSetsRec(Object i, Object lvars)
+{
+   const int CONST = 0;
+    const int LVAR = 1;
+    const int LET = 2;
+    const int SEQ = 3;
+    const int LAMBDA = 4;
+    const int LOCAL_REF = 5;
+    const int LOCAL_ASSIGN = 6;
+    const int GLOBAL_REF = 7;
+    const int GLOBAL_ASSIGN = 8;
+    const int UNDEF = 9;
+    const int IF = 10;
+    const int ASM = 11;
+    const int DEFINE = 12;
+    const int CALL_CC = 13;
+    const int CALL = 14;
+    const int LABEL = 15;
+    const int LIST = 16;
+    const int LIBRARY = 17;
+    const int IMPORT = 18;
+    const int IMPORT_SPEC = 19;
+    const int IT = 20;
+    const int RECEIVE = 21;
+
+    Vector* v = i.toVector();
+    switch(v->ref(0).toInt()) {
+    case CONST:
+//        [(= $CONST t) '()]
+        return Object::Nil;
+    case LET:
+    {
+//        [(= $LET t)
+//         (append ($append-map1 rec ($let.inits i))
+//                 (rec ($let.body i)))]
+        const Object letInits = v->ref(3);
+        const Object letBody = v->ref(4);
+        return Pair::append2(findSetsRecMap(lvars, letInits),
+                             findSetsRec(letBody, lvars));
+    }
+    case RECEIVE:
+    {
+//        [(= $RECEIVE t)
+//         (append (rec ($receive.vals i))
+//                 (rec ($receive.body i)))]
+        const Object receiveVals = v->ref(4);
+        const Object receiveBody = v->ref(5);
+        return Pair::append2(findSetsRec(receiveVals, lvars),
+                             findSetsRec(receiveBody, lvars));
+    }
+    case SEQ:
+    {
+//        [(= $SEQ t)
+//         ($append-map1 rec ($seq.body i))]
+        const Object seqBody = v->ref(1);
+        return findSetsRecMap(lvars, seqBody);
+    }
+    case LAMBDA:
+    {
+//        [(= $LAMBDA t)
+//         (rec ($lambda.body i))]
+        const Object lambdaBody = v->ref(6);
+        return findSetsRec(lambdaBody, lvars);
+    }
+    case LOCAL_ASSIGN:
+    {
+//        [(= $LOCAL-ASSIGN t)
+//         (let1 lvar ($local-assign.lvar i)
+//           (append (if (memq lvar lvars) (list lvar) '())
+//                   (rec ($local-assign.val i))))]
+        const Object localAssignLvar = v->ref(1);
+        const Object localAssignVal = v->ref(2);
+        return Pair::append2(!memq(localAssignLvar, lvars).isFalse() ? Pair::list1(localAssignLvar) : Object::Nil,
+                             findSetsRec(localAssignVal, lvars));
+    }
+    case LOCAL_REF:
+    {
+//        [(= $LOCAL-REF t)  '()]
+        return Object::Nil;
+    }
+    case GLOBAL_REF:
+    {
+//        [(= $GLOBAL-REF t) '()]
+        return Object::Nil;
+    }
+    case UNDEF:
+//        [(= $UNDEF t)      '()]
+        return Object::Nil;
+    case IF:
+    {
+//        [(= $IF t)
+//         (append (rec ($if.test i))
+//                 (rec ($if.then i))
+//                 (rec ($if.else i)))]
+        const Object testF = findSetsRec(v->ref(1), lvars);
+        const Object thenF = findSetsRec(v->ref(2), lvars);
+        const Object elseF = findSetsRec(v->ref(3), lvars);
+        return Pair::append2(testF, Pair::append2(thenF, elseF));
+    }
+    case ASM:
+    {
+//        [(= $ASM t)
+//         ($append-map1 rec ($asm.args i))]
+        const Object asmArgs = v->ref(2);
+        return findSetsRecMap(lvars, asmArgs);
+    }
+    case DEFINE:
+    {
+//        [(= $DEFINE t)
+//         (rec ($define.val i))]
+        const Object defineVal = v->ref(3);
+        return findSetsRec(defineVal, lvars);
+    }
+    case CALL:
+    {
+//        [(= $CALL t)
+//         (append
+//          ($append-map1 rec ($call.args i))
+//          (rec ($call.proc i))
+//                 )]
+        const Object callArgs = v->ref(2);
+        const Object callProc = v->ref(1);
+        return Pair::append2(findSetsRecMap(lvars, callArgs),
+                             findSetsRec(callProc, lvars));
+    }
+    case CALL_CC:
+    {
+//        [(= $CALL-CC t)
+//         (rec ($call-cc.proc i))]
+        const Object callccProc = v->ref(1);
+        return findSetsRec(callccProc, lvars);
+    }
+    case GLOBAL_ASSIGN:
+    {
+//        [(= $GLOBAL-ASSIGN t)
+//         (rec ($global-assign.val i))]
+        const Object globalAssignVal = v->ref(3);
+        return findSetsRec(globalAssignVal, lvars);
+    }
+    case LIST:
+    {
+//        [(= $LIST t)
+//         ($append-map1 rec ($list.args i))]
+        const Object listArgs = v->ref(1);
+        return findSetsRecMap(lvars, listArgs);
+    }
+    case LABEL:
+    {
+//        [(= $LABEL t)
+//         '() ;; todo 本当
+//         ]
+        return Object::Nil;
+    }
+    case IMPORT:
+//        [(= $IMPORT t)
+//         '() ;; todo 本当?
+//         ]
+        return Object::Nil;
+    case LIBRARY:
+//        [(= $LIBRARY t)
+//         '() ;; todo 本当?
+//         ]
+
+        return Object::Nil;
+    case IT:
+//        [(= $IT t) '()]
+        return Object::Nil;
+    default:
+        VM_RAISE1("pass3/find-sets unknown iform: ~a", v->ref(0));
+        break;
+    }
+    return Object::Undef;
+}
+
+Object scheme::pass4FixupLabelCollect(Object vec)
+{
+    static const Object NOP                   = Symbol::intern(UC("NOP"));
+    static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
+    static const Object TEST                  = Symbol::intern(UC("TEST"));
+    static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
+    static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
+    static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
+    static const Object FRAME                 = Symbol::intern(UC("FRAME"));
+    static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
+    static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
+    const int LABEL = 15;
+
+    const Vector* const v = vec.toVector();
+    const int length = v->length();
+    const Object ret = Object::makeVector(length, NOP);
+    Vector* const rv= ret.toVector();
+    Object labels = Object::Nil;
+    for (int i = 0, j = 0; i < length;) {
+        const Object insn = v->ref(i);
+        if (insn == UNFIXED_JUMP          ||
+            insn == TEST                  ||
+            insn == NUMBER_LE_TEST        ||
+            insn == NOT_TEST              ||
+            insn == REFER_LOCAL0_EQV_TEST ||
+            insn == FRAME                 ||
+            insn == PUSH_FRAME            ||
+            insn == CLOSURE) {
+            rv->set(j, insn);
+            rv->set(j + 1, v->ref(i + 1));
+            i += 2;
+            j += 2;
+        } else if (insn.isVector() && insn.toVector()->length() > 0 &&
+                   insn.toVector()->ref(0).toInt() == LABEL) {
+            i++;
+            labels = Object::cons(Object::cons(insn, Object::makeInt(j)), labels);
+        } else {
+            rv->set(j, insn);
+            i++;
+            j++;
+        }
+    }
+    return Object::cons(ret, labels);
+}
+
+Object scheme::assq(Object o, Object alist)
+{
+    for (Object p = alist; p.isPair(); p = p.cdr()) {
+        if (p.car().car() == o) {
+            return p.car();
+        }
+    }
+    return Object::False;
+}
+
+// コンパイラはインストラクションをシンボルで持ってなかった。。
+Object scheme::pass4FixupLabel(Object vec)
+{
+    static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
+    static const Object TEST                  = Symbol::intern(UC("TEST"));
+    static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
+    static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
+    static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
+    static const Object FRAME                 = Symbol::intern(UC("FRAME"));
+    static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
+    static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
+    static const Object LOCAL_JMP             = Symbol::intern(UC("LOCAL_JMP"));
+
+    const Object collected = pass4FixupLabelCollect(vec);
+    Vector* const code = collected.car().toVector();
+    const Object labels = collected.cdr();
+    const int length = code->length();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    VM_LOG1("labels = ~a", labels);
+//   (receive (code labels) (collect-labels)
+//     (let1 len (vector-length code)
+//     (let loop ([i 0])
+//       (cond
+//        [(= i len) code]
+//        [else
+//         (let1 insn (vector-ref code i)
+//           (cond
+//            [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
+//            [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
+//            [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
+//            [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
+//            [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
+//            [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
+//            [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
+//            [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
+//            [else (loop (+ i 1))]))])))))
+
+
+//   `(let1 label (assq (vector-ref code (+ i 1)) labels)
+//      (cond
+//       [label
+//        (vector-set! code i ,insn)
+//        (vector-set! code (+ i 1) (- (cdr label) i 1)) ;; jump point
+//        (loop (+ i 2))]
+//       [else
+//        (loop (+ i 1))])))
+
+
+    for (int i = 0; i < length;) {
+        const Object insn = code->ref(i);
+            VM_LOG1("insn = ~a\n", insn);
+        if (insn == UNFIXED_JUMP) {
+            const Object label = assq(code->ref(i + 1), labels);
+            if (!labels.isFalse()) {
+                code->set(i, LOCAL_JMP);
+                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                i += 2;
+            } else {
+                i++;
+            }
+        } else if (insn == TEST                  ||
+                   insn == NUMBER_LE_TEST        ||
+                   insn == NOT_TEST              ||
+                   insn == REFER_LOCAL0_EQV_TEST ||
+                   insn == FRAME                 ||
+                   insn == PUSH_FRAME            ||
+                   insn == CLOSURE) {
+            const Object label = assq(code->ref(i + 1), labels);
+            if (!labels.isFalse()) {
+                code->set(i, insn);
+                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                i += 2;
+            } else {
+                i++;
+            }
+        } else {
+            i++;
+        }
+    }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return collected.car();
+}
+
+Object scheme::pass4FixupLabelsEx(Object args)
+{
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return pass4FixupLabel(args.first());
+}

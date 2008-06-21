@@ -1776,7 +1776,7 @@ Object VM::getProfileResult()
     Object ht = nameSpace_.toEqHashTable()->swap();
     for (int i = 0; i < SAMPLE_NUM; i++) {
         const Object o = samples_[i];
-        if (o.isClosure()) {
+        if (o.isCallable()) {
             ret = Pair::append2(ret, L1(o));
         }
     }
