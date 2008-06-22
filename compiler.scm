@@ -30,6 +30,7 @@
   (define syntax-error error)
   (define find10 find)
   (define append2 append)
+  (define appendA append)
   (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
@@ -220,14 +221,14 @@
   (let loop ([l l])
     (if (null? l)
         '()
-        (append (loop (cdr l)) (proc (car l))))))
+        (append2 (loop (cdr l)) (proc (car l))))))
 
 (define ($append-map1-with-rindex proc l)
   (let loop ([l l]
              [i (- (length l) 1)])
     (if (null? l)
         '()
-        (append (proc (car l) i) (loop (cdr l) (- i 1))))))
+        (append2 (proc (car l) i) (loop (cdr l) (- i 1))))))
 
 
 
@@ -588,10 +589,10 @@
   `($local-ref.set-lvar! ,dst ($local-ref.lvar ,src)))
 
 (define-macro ($library.add-import-syms! library import-syms)
-  `($library.set-import-syms! ,library (append ($library.import-syms ,library) ,import-syms)))
+  `($library.set-import-syms! ,library (append2 ($library.import-syms ,library) ,import-syms)))
 
 (define-macro ($library.add-import! library import)
-  `($library.set-import! ,library (append ($library.import ,library) (list ,import))))
+  `($library.set-import! ,library (append2 ($library.import ,library) (list ,import))))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -676,7 +677,7 @@
             (cond [(lambda-has-define? sexp)
                    ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
                   [else
-                   ($src `(lambda ,(cadr sexp) ,@(pass1/expand (cddr sexp))) sexp)])]
+                   ($src (append! (list 'lambda (cadr sexp)) (pass1/expand (cddr sexp))) sexp)])]
            [(when)
             (match sexp
               [('when pred body . more)
@@ -761,7 +762,8 @@
 (define (define->lambda sexp)
   (let ((args (cadr sexp))
         (body (cddr sexp)))
-      `(define ,(car args) ,($src `(lambda ,(cdr args) ,@body) sexp))))
+;      `(define ,(car args) ,($src `(lambda ,(cdr args) ,@body) sexp))))
+      `(define ,(car args) ,($src (append! (list 'lambda (cdr args)) body) sexp))))
 
 
 
@@ -779,14 +781,15 @@
 
 (define (cond->if sexp)
   (define (make-if test then else)
-    (let ([then (if (> (length then) 1) `(begin ,@then) (car then))])
+    ;; don't use unquote splicing, it uses append
+    (let ([then (if (> (length then) 1) (cons 'begin then) (car then))])
       `(if ,test ,then ,else)))
   (let loop ((clauses (cdr sexp)))
     (if (null? clauses)
         '#f
         (cond ((and (null? (cdr clauses)) (eq? 'else (caar clauses)))
                (if (> (length (cdar clauses)) 1)
-                   `(begin ,@(cdar clauses))
+                   (cons 'begin (cdar clauses))
                    (cadar clauses)))
               ((and (= 3 (length (car clauses))) (eq? '=> (cadar clauses)))
                (let ((tmp (gensym)))
@@ -906,7 +909,7 @@
                                                               (return 'unquote
                                                                       car-arg))
                                                              (else
-                                                              (return 'append
+                                                              (return 'append2
                                                                       (list car-arg (finalize-quasiquote
                                                                                      cdr-mode cdr-arg))))))
                                                       (else
@@ -1007,13 +1010,13 @@
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
          [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)])
-    ($lambda (cons (source-info sexp) `(,name ,@(dotpair->list (second sexp))))
+    ($lambda (cons (source-info sexp) (cons 'name (dotpair->list (second sexp))))
              name
              (if optional-arg? (- (length vars) 1) (length vars))
              (if optional-arg? 1 0)
              this-lvars
              ;; the inner lvar comes first.
-             (pass1/body->iform body library (append this-lvars lvars) #t)
+             (pass1/body->iform body library (append2 this-lvars lvars) #t)
              '()
              '())))
 
@@ -1078,7 +1081,7 @@
        [(null? export) ret]
        [(and (pair? (car export)) (eq? (caar export) 'rename))
         (loop (cdr export)
-              (append ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
+              (append2 ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
        [else
         (loop (cdr export) (cons (get-identifier (car export) libname imports) ret))])))
   (let1 lib ($library (library-name sexp) '() '() '() '() '() #f)
@@ -1251,7 +1254,7 @@
       [(define)
        (match sexp
          [('define name ('lambda . more))
-          (let1 closure  (make-list-with-src-slot `(lambda ,@more))
+          (let1 closure  (make-list-with-src-slot (cons 'lambda more))
             (set-source-info! closure (source-info (third sexp)))
             ($define ($library.name library) name (pass1/lambda->iform name closure library lvars)))]
 ;           ($define ($library.name library) name (pass1/lambda->iform (cons name (source-info (third sexp))) `(lambda ,@more) library lvars))]
@@ -1280,7 +1283,7 @@
                optarg
                (sexp->iform vals)
                ;; the inner lvar comes first.
-               (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+               (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
                tail?)))]
          [else
           (syntax-error "malformed receive")])]
@@ -1295,7 +1298,7 @@
                this-lvars
                inits
                ;; the inner lvar comes first.
-               (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+               (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
                tail?
                (source-info sexp)
                ))]
@@ -1305,13 +1308,13 @@
               [vals       ($map1 cadr (second sexp))]
               [body       (cddr sexp)]
               [this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
-              [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
+              [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append2 this-lvars lvars) tail?)) vals)])
          (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
          ($let 'rec
                this-lvars
                inits
                ;; the inner lvar comes first.
-               (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+               (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
                tail?
                (source-info sexp)
                ))]
@@ -2167,18 +2170,18 @@
 ;;       (cond
 ;;        [(= $CONST t) '()]
 ;;        [(= $LET t)
-;;         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-;;                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+;;         (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+;;                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
 ;;        [(= $RECEIVE t)
-;;         (append (rec ($receive.vals i) l labels-seen)
-;;                 (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
+;;         (append2 (rec ($receive.vals i) l labels-seen)
+;;                 (rec ($receive.body i) (append2 l ($receive.lvars i)) labels-seen))]
 ;;        [(= $SEQ t)
 ;;         ($append-map1 (lambda (fm) (rec fm locals labels-seen)) ($seq.body i))]
 ;;        [(= $LAMBDA t)
-;;         (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
+;;         (rec ($lambda.body i) (append2 l ($lambda.lvars i)) labels-seen)]
 ;;        [(= $LOCAL-ASSIGN t)
 ;;         (let1 lvar ($local-assign.lvar i)
-;;           (append (if (memq lvar can-frees) (list lvar) '())
+;;           (append2 (if (memq lvar can-frees) (list lvar) '())
 ;;                   (rec ($local-assign.val i) l labels-seen)))]
 ;;        [(= $LOCAL-REF t)
 ;;         (let1 lvar ($local-ref.lvar i)
@@ -2191,7 +2194,7 @@
 ;;           (if found (list found) '()))]
 ;;        [(= $UNDEF t)      '()]
 ;;        [(= $IF t)
-;;         (append (rec ($if.test i) l labels-seen)
+;;         (append2 (rec ($if.test i) l labels-seen)
 ;;                 (rec ($if.then i) l labels-seen)
 ;;                 (rec ($if.else i) l labels-seen))]
 ;;        [(= $ASM t)
@@ -2236,18 +2239,18 @@
       (cond
        [(= $CONST t) '()]
        [(= $LET t)
-        (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+        (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
        [(= $RECEIVE t)
-        (append (rec ($receive.vals i) l labels-seen)
-                (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
+        (append2 (rec ($receive.vals i) l labels-seen)
+                (rec ($receive.body i) (append2 l ($receive.lvars i)) labels-seen))]
        [(= $SEQ t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
        [(= $LAMBDA t)
-        (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
+        (rec ($lambda.body i) (append2 l ($lambda.lvars i)) labels-seen)]
        [(= $LOCAL-ASSIGN t)
         (let1 lvar ($local-assign.lvar i)
-          (append (if (memq lvar can-frees) (list lvar) '())
+          (append2 (if (memq lvar can-frees) (list lvar) '())
                   (rec ($local-assign.val i) l labels-seen)))]
        [(= $LOCAL-REF t)
         (let1 lvar ($local-ref.lvar i)
@@ -2260,9 +2263,9 @@
           (if found (list found) '()))]
        [(= $UNDEF t)      '()]
        [(= $IF t)
-        (append (rec ($if.test i) l labels-seen)
-                 (append (rec ($if.then i) l labels-seen)
-                          (rec ($if.else i) l labels-seen)))]
+        (append2 (rec ($if.test i) l labels-seen)
+                 (append2 (rec ($if.then i) l labels-seen)
+                         (rec ($if.else i) l labels-seen)))]
        [(= $ASM t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
        [(= $DEFINE t)
@@ -2271,7 +2274,7 @@
         ;; N.B.
         ;; (proc args)
         ;;   args are evaluate before proc, so you should find free variables of args at first.
-       (append
+       (append2
          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
          (rec ($call.proc i) l labels-seen)
                 )]
@@ -2356,16 +2359,16 @@
   (uniq (rec iform)))
 
 (define ($append-map1-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append (cdr y) (cdr x)))) '(0 . ()) ($map1 proc lst)))
+  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1 proc lst)))
 
 (define ($append-map1-with-tail-sum proc lst)
   (fold (lambda (x y) (cons (+ (car y) (car x)) (append! (cdr y) (cdr x)))) '(0 . ()) ($map1-with-tail proc lst)))
 
 (define ($append-map1-with-rindex-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append (cdr y) (cdr x)))) '(0 . ()) ($map1-with-rindex proc lst)))
+  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-rindex proc lst)))
 
 (define ($append-map1-with-index-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append (cdr y) (cdr x)))) '(0 . ()) ($map1-with-index proc lst)))
+  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-index proc lst)))
 
 
 (define-macro (code-stack-sum . code)
@@ -2379,7 +2382,7 @@
 
 (define (pass3/collect-free frees-here locals frees)
   ($append-map1-sum (lambda (x)
-                      (append (pass3/compile-refer x locals frees) '(PUSH)))
+                      (append2 (pass3/compile-refer x locals frees) '(PUSH)))
                     (reverse frees-here)))
 
 ;; (define (pass3/symbol-lookup lvar locals frees return-local return-free)
@@ -2451,7 +2454,7 @@
 
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
 (define (pass3/$local-ref iform locals frees can-frees sets tail)
-  (append (pass3/compile-refer ($local-ref.lvar iform) locals frees)
+  (append2 (pass3/compile-refer ($local-ref.lvar iform) locals frees)
           (if (memq ($local-ref.lvar iform) sets) '(INDIRECT) '())))
 
 ;; $local-assign is classified into ASSIGN_LOCAL and ASSIGN_FREE
@@ -2669,14 +2672,14 @@
 ;;         '()
 ;;         (match sexp
 ;; ;;           [('REFER_LOCAL0_PUSH 'CONSTANT . other)
-;; ;;            (iter (append '(REFER_LOCAL0_PUSH_CONSTANT) other))]
+;; ;;            (iter (append2 '(REFER_LOCAL0_PUSH_CONSTANT) other))]
 ;;           [('REFER_LOCAL 0 'PUSH . other)
-;;            (iter (append '(REFER_LOCAL0_PUSH) other))]
+;;            (iter (append2 '(REFER_LOCAL0_PUSH) other))]
 ;;           [('FRAME . other) sexp]
 ;;           [('TEST . other) sexp]
 ;;           [('CLOSURE . other) sexp]
 ;;           [else
-;;            (append (list (car sexp)) (iter (cdr sexp)))])))
+;;            (append2 (list (car sexp)) (iter (cdr sexp)))])))
 ;;   (iter sexp))
 
 ;; hoge
@@ -2706,9 +2709,9 @@
             [vars ($lambda.lvars ($call.proc iform))]
             [frees-here (pass3/find-free body
                                          vars
-                                         (append locals (append frees can-frees)))]
+                                         (append2 locals (append2 frees can-frees)))]
             [args-code (pass3/compile-args ($call.args iform) locals frees-here can-frees sets #f)]
-            [sets-here  (append (pass3/find-sets body vars) sets)]
+            [sets-here  (append2 (pass3/find-sets body vars) sets)]
             [boxes-code (pass3/make-boxes sets-here vars)]
             [body-code  (pass3  body
                               vars
@@ -2770,8 +2773,8 @@
            [body ($lambda.body iform)]
            [frees-here (pass3/find-free body
                                         vars
-                                        (append locals (append frees can-frees)))]
-           [sets-here  (append (pass3/find-sets body vars) sets)]
+                                        (append2 locals (append2 frees can-frees)))]
+           [sets-here  (append2 (pass3/find-sets body vars) sets)]
            [boxes-code (pass3/make-boxes sets-here vars)]
            [body-code  (pass3 body
                               vars
@@ -2792,12 +2795,12 @@
         ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
         ,($lambda.src iform)                                      ;; source code information
         ,@boxes-code                                              ;; lambda body start
+        )
         ,@(code-body body-code)
         RETURN
         ,(length vars)
         ,end-of-closure
-        )))
-
+        ))
   ]
  [else
   (define (pass3/$lambda iform locals frees can-frees sets tail)
@@ -2805,8 +2808,8 @@
            [body ($lambda.body iform)]
            [frees-here (pass3/find-free body
                                         vars
-                                        (append locals (append frees can-frees)))]
-           [sets-here  (append (pass3/find-sets body vars) sets)]
+                                        (append2 locals (append2 frees can-frees)))]
+           [sets-here  (append2 (pass3/find-sets body vars) sets)]
            [boxes-code (pass3/make-boxes sets-here vars)]
            [body-code  (pass3 body
                               vars
@@ -2836,12 +2839,12 @@
 (define (pass3/$receive iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
          [body ($receive.body iform)]
-         [frees-here (append
-                      (pass3/find-free ($receive.vals iform) locals (append locals (append frees can-frees)))
+         [frees-here (append2
+                      (pass3/find-free ($receive.vals iform) locals (append2 locals (append2 frees can-frees)))
                       (pass3/find-free body
                                        vars
-                                       (append locals (append frees can-frees))))]
-         [sets-here  (append (pass3/find-sets body vars) sets)]
+                                       (append2 locals (append2 frees can-frees))))]
+         [sets-here  (append2 (pass3/find-sets body vars) sets)]
          [boxes-code (pass3/make-boxes sets-here vars)]
          [body-code  (pass3 body
                             vars
@@ -2872,7 +2875,7 @@
       (pass3/letrec iform locals frees can-frees sets tail)
       (let* ([vars ($let.lvars iform)]
              [body ($let.body iform)]
-             [frees-here (append
+             [frees-here (append2
                           ($append-map1 (lambda (i) (pass3/find-free i locals (append2 locals (append2 frees can-frees)))) ($let.inits iform))
                           (pass3/find-free body
                                            vars
@@ -2912,11 +2915,11 @@
 (define (pass3/letrec iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
          [body ($let.body iform)]
-         [frees-here (append
-                      ($append-map1 (lambda (i) (pass3/find-free i vars (append locals (append frees can-frees)))) ($let.inits iform))
+         [frees-here (append2
+                      ($append-map1 (lambda (i) (pass3/find-free i vars (append2 locals (append2 frees can-frees)))) ($let.inits iform))
                       (pass3/find-free body
                                        vars
-                                       (append locals (append frees can-frees))))]
+                                       (append2 locals (append2 frees can-frees))))]
          ;; each vars can be set!
          [sets-here  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)) sets)]
          [boxes-code (pass3/make-boxes sets-here vars)]
@@ -2943,7 +2946,7 @@
 ;;                             ret
 ;;                             (loop (cdr args)
 ;;                                   (- n 1)
-;;                                   (append ret (pass3 (car args) vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f) (list 'ASSIGN_LOCAL n)))))])
+;;                                   (append2 ret (pass3 (car args) vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f) (list 'ASSIGN_LOCAL n)))))])
 
     ;; tail-call doesn't work yet
     ;;       ,@(if tail '() '(LET_FRAME))
@@ -3008,7 +3011,7 @@
   ((vector-ref pass3/dispatch-table (vector-ref iform 0)) iform locals frees can-frees sets tail))
 
 (define (pass4 lst)
-  (pass4/fixup-labels (list->vector (append lst '(HALT)))))
+  (pass4/fixup-labels (list->vector (append2 lst '(HALT)))))
 
 (define (compile-library-body! lib)
   (let1 body ($append-map1 (lambda (sexp) (code-body (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) '() *free-lvars* '() '() #f))) ($library.body lib))

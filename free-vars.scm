@@ -132,6 +132,7 @@
     (%get-closure-name ,(lambda e (error "%get-closure-name not implemented")))
     (append ,append)
     (append2 ,append)
+    (appendA ,append) ;; 実験用
     (append! ,append!)
     (pass3/find-free ,pass3/find-free)
     (pass3/find-sets ,pass3/find-sets)

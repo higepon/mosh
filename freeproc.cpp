@@ -1839,6 +1839,15 @@ Object scheme::append2Ex(Object args)
     return Pair::append2(args.first(), args.second());
 }
 
+Object scheme::appendAEx(Object args)
+{
+    const int length = Pair::length(args);
+    if (length != 2) {
+        VM_RAISE1("wrong number of arguments for appendA required 2, got ~d)\n", Object::makeInt(length));
+    }
+    return Pair::append2(args.first(), args.second());
+}
+
 
 Object scheme::appendDEx(Object args)
 {
@@ -1857,7 +1866,6 @@ Object scheme::appendDEx(Object args)
     return ret;
 }
 
-// Scheme code is faster than this
 Object scheme::internalsetUnionEx(Object args)
 {
     const Object list1 = args.first();
@@ -1869,6 +1877,10 @@ Object scheme::internalsetUnionEx(Object args)
     }
     Object ret = list2;
     EqHashTable seen;
+    for (Object p = ret; p.isPair(); p = p.cdr()) {
+        seen.set(p.car(), Object::True);
+    }
+
     Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
     for (Object p = list1; p.isPair(); p = p.cdr()) {
         const Object o = p.car();

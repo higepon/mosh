@@ -171,6 +171,7 @@ Object callProcessEx(Object args);
 Object internalgetClosureNameEx(Object args);
 Object appendEx(Object args);
 Object append2Ex(Object args);
+Object appendAEx(Object args);
 Object appendDEx(Object args);
 Object internalsetUnionEx(Object args);
 Object pass3FindFreeEx(Object args);
