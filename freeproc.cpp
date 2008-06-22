@@ -1868,12 +1868,13 @@ Object scheme::internalsetUnionEx(Object args)
         return list1;
     }
     Object ret = list2;
+    EqHashTable seen;
+    Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
     for (Object p = list1; p.isPair(); p = p.cdr()) {
         const Object o = p.car();
-        if (existsInList(o, ret)) {
-            continue;
-        } else {
+        if (seen.ref(o, notFound) == notFound) {
             ret = Object::cons(o, ret);
+            seen.set(o, Object::True);
         }
     }
     return ret;
