@@ -1,3 +1,8 @@
+2008-06-23  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm : Added xcons, make-list, list-tabulate, list-copy,
+                        last-pair, last, circular-list, proper-list?, circular-list? and dotted-list?.
+
 2008-06-20  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm : Added take, drop, take!, take-right, drop-right

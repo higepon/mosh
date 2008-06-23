@@ -81,6 +81,11 @@
 ;; .example (eqv? #f 'nil)                          =>  #f
 (define-doc (eqv?) ...)
 
+;; Returns#t if obj is integer, otherwise #f.
+;; .returns #t if obj is integer, otherwise #f.
+;; .form (integer? obj)
+(define integer? number?)
+
 ;; Impose a total ordering on the set of characters according to their Unicode scalar values.
 ;; .form (char>=? char1 char2 char3 ...)
 (define-doc (char>=?) ...)
@@ -2060,16 +2065,109 @@
 ;;; SRFI-1 List library.
 ;;; .section-id srfi-1
 
-(define integer? number?)
-(define (fifth   x) (car    (cddddr x)))
-(define (sixth   x) (cadr   (cddddr x)))
-(define (seventh x) (caddr  (cddddr x)))
-(define (eighth  x) (cadddr (cddddr x)))
-(define (ninth   x) (car  (cddddr (cddddr x))))
-(define (tenth   x) (cadr (cddddr (cddddr x))))
+;; Of utility only as a value to be conveniently passed to higher-order procedures.
+;; .returns (xcons '(b c) 'a) => (a b c)
+;; .example (xcons '(b c) 'a) => (a b c)
+(define (xcons d a) (cons a d))
 
-; take & drop
+;; Returns an n-element list, whose elements are all the value fill. If the fill argument is not given, the elements of the list may be arbitrary values.
+;; .returns an n-element list, whose elements are all the value fill. If the fill argument is not given, the elements of the list may be arbitrary values.
+;; .example (make-list 4 'c) => (c c c c)
+(define (make-list len . maybe-elt)
+  (check-arg (lambda (n) (and (integer? n) (>= n 0))) len make-list)
+  (let ((elt (cond ((null? maybe-elt) #f) ; Default value
+           ((null? (cdr maybe-elt)) (car maybe-elt))
+           (else (error "Too many arguments to MAKE-LIST"
+                (cons len maybe-elt))))))
+    (letrec ((loop (lambda (i ans) (if (<= i 0) (begin #f ans) (begin (loop (- i 1) (cons elt ans))))))) (loop len '()))))
+;;     (do ((i len (- i 1))
+;;      (ans '() (cons elt ans)))
+;;     ((<= i 0) ans))))
 
+;; Returns an n-element list. Element i of the list, where 0 <= i < n, is produced by (init-proc i). No guarantee is made about the dynamic order in which init-proc is applied to these indices.
+;; .returns an n-element list. Element i of the list, where 0 <= i < n, is produced by (init-proc i). No guarantee is made about the dynamic order in which init-proc is applied to these indices.
+;; .example list-tabulate 4 values) => (0 1 2 3)
+(define (list-tabulate len proc)
+  (check-arg (lambda (n) (and (integer? n) (>= n 0))) len list-tabulate)
+  (check-arg procedure? proc list-tabulate)
+  (letrec ((loop (lambda (i ans) (if (< i 0) (begin #f ans) (begin (loop (- i 1) (cons (proc i) ans))))))) (loop (- len 1) '())))
+;;   (do ((i (- len 1) (- i 1))
+;;        (ans '() (cons (proc i) ans)))
+;;       ((< i 0) ans)))
+
+;; Copies the spine of the argument.
+;; .returns copied list
+(define (list-copy lis)
+  (let recur ((lis lis))
+    (if (pair? lis)
+        (cons (car lis) (recur (cdr lis)))
+        lis)))
+
+;; Returns the last pair in the non-empty, finite list pair.
+;; .returns the last pair in the non-empty, finite list pair.
+;; .example (last-pair '(a b c)) => (c)
+(define (last-pair lis)
+  (check-arg pair? lis last-pair)
+  (let lp ((lis lis))
+    (let ((tail (cdr lis)))
+      (if (pair? tail) (lp tail) lis))))
+
+;; Returns the last element of the non-empty, finite list pair.
+;; .returns the last element of the non-empty, finite list pair.
+;; .example (last '(a b c)) => c
+(define (last lis) (car (last-pair lis)))
+
+;; Constructs a circular list of the elements.
+;; .returns Constructs a circular list of the elements.
+;; .example (circular-list 'z 'q) => (z q z q z q ...)
+(define (circular-list val1 . vals)
+  (let ((ans (cons val1 vals)))
+    (set-cdr! (last-pair ans) ans)
+    ans))
+
+;; .returns #t iff x is a proper list -- a finite, nil-terminated list.
+;; Returns true iff x is a proper list -- a finite, nil-terminated list. More carefully: The empty list is a proper list.
+(define (proper-list? x)
+  (let lp ((x x) (lag x))
+    (if (pair? x)
+        (let ((x (cdr x)))
+          (if (pair? x)
+              (let ((x   (cdr x))
+                    (lag (cdr lag)))
+                (and (not (eq? x lag)) (lp x lag)))
+              (null? x)))
+        (null? x))))
+
+;; .returns #t if x is a circular list. A circular list is a value such that for every n >= 0, cdrn(x) is a pair.
+;; True if x is a circular list. A circular list is a value such that for every n >= 0, cdrn(x) is a pair.
+(define (circular-list? x)
+  (let lp ((x x) (lag x))
+    (and (pair? x)
+         (let ((x (cdr x)))
+           (and (pair? x)
+                (let ((x   (cdr x))
+                      (lag (cdr lag)))
+                  (or (eq? x lag) (lp x lag))))))))
+
+;; .returns #t if x is a finite, non-nil-terminated list. That is, there exists an n >= 0 such that cdrn(x) is neither a pair nor (). This includes non-pair, non-() values (e.g. symbols, numbers), which are considered to be dotted lists of length 0.
+;; True if x is a finite, non-nil-terminated list. That is, there exists an n >= 0 such that cdrn(x) is neither a pair nor (). This includes non-pair, non-() values (e.g. symbols, numbers), which are considered to be dotted lists of length 0.
+(define (dotted-list? x)
+  (let lp ((x x) (lag x))
+    (if (pair? x)
+        (let ((x (cdr x)))
+          (if (pair? x)
+              (let ((x   (cdr x))
+                    (lag (cdr lag)))
+                (and (not (eq? x lag)) (lp x lag)))
+              (not (null? x))))
+        (not (null? x)))))
+
+
+
+
+
+;; Returns the first i elements of list x.
+;; .returns the first i elements of list x.
 (define (take lis k)
   (check-arg integer? k take)
   (let recur ((lis lis) (k k))
@@ -2077,21 +2175,23 @@
     (cons (car lis)
           (recur (cdr lis) (- k 1))))))
 
+;; Returns all but the first i elements of list x.
+;; .returns all but the first i elements of list x.
 (define (drop lis k)
   (check-arg integer? k drop)
   (let iter ((lis lis) (k k))
     (if (zero? k) lis (iter (cdr lis) (- k 1)))))
 
+;; take! is linear-update variants of take. The procedure is allowed, but not required, to alter the argument list to produce the result.
+;; .returns take! is linear-update variant of take. The procedure is allowed, but not required, to alter the argument list to produce the result.
 (define (take! lis k)
   (check-arg integer? k take!)
   (if (zero? k) '()
       (begin (set-cdr! (drop lis (- k 1)) '())
          lis)))
 
-; TAKE-RIGHT and DROP-RIGHT work by getting two pointers into the list,
-; off by K, then chasing down the list until the lead pointer falls off
-; the end.
-
+;; Returns the last i elements of flist.
+;; .returns the last i elements of flist.
 (define (take-right lis k)
   (check-arg integer? k take-right)
   (let lp ((lag lis)  (lead (drop lis k)))
@@ -2099,14 +2199,17 @@
     (lp (cdr lag) (cdr lead))
     lag)))
 
+;; Returns all but the last i elements of flist.
+;; .returns all but the last i elements of flist.
 (define (drop-right lis k)
   (check-arg integer? k drop-right)
   (let recur ((lag lis) (lead (drop lis k)))
     (if (pair? lead)
     (cons (car lag) (recur (cdr lag) (cdr lead)))
     '())))
-; In this function, LEAD is actually K+1 ahead of LAG. This lets
-; us stop LAG one step early, in time to smash its cdr to ().
+
+;; drop-right! is linear-update variant of drop-right: the procedure is allowed, but not required, to alter the argument list to produce the result.
+;; .returns drop-right! is linear-update variant of drop-right: the procedure is allowed, but not required, to alter the argument list to produce the result.
 (define (drop-right! lis k)
   (check-arg integer? k drop-right!)
   (let ((lead (drop lis k)))
@@ -2117,9 +2220,7 @@
           (lp (cdr lag) (cdr lead))
           (begin (set-cdr! lag '())
              lis)))
-
     '())))  ; Special case dropping everything -- no cons to side-effect.
-
 
 ;; .form (first pair)
 ;; .returns (car pair)
@@ -2141,6 +2242,37 @@
 ;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
 ;; Synonym for cadddr
 (define (fourth pair) (cadddr pair))
+
+;; .returns (car (cddddr x))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (car (cddddr x))
+(define (fifth x) (car (cddddr x)))
+
+;; .returns (cadr   (cddddr x))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (cadr   (cddddr x))
+(define (sixth   x) (cadr   (cddddr x)))
+
+;; .returns (caddr  (cddddr x))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (caddr  (cddddr x))
+(define (seventh x) (caddr  (cddddr x)))
+
+;; .returns (cadddr (cddddr x))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (cadddr (cddddr x))
+(define (eighth  x) (cadddr (cddddr x)))
+
+;; .returns (car  (cddddr (cddddr x)))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (car  (cddddr (cddddr x)))
+(define (ninth   x) (car  (cddddr (cddddr x))))
+
+;; .returns (cadr (cddddr (cddddr x)))
+;; .reference "SRFI-1" "SRFI-1 List Library" "http://srfi.schemers.org/srfi-1/srfi-1.html"
+;; Synonym for (cadr (cddddr (cddddr x)))
+(define (tenth   x) (cadr (cddddr (cddddr x))))
+
 
 ; Copyright (c) 1998, 1999 by Olin Shivers. You may do as you please with
 ; this code as long as you do not remove this copyright notice or
@@ -2522,7 +2654,6 @@
 ;;          (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
 ;;        ($take  sorted 30))))
     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
-
 
 ;; ;; temp
 ;; (define (append! l1 l2)

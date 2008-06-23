@@ -1001,6 +1001,20 @@ val
 [d (take-right '(1 2 3 . d) 0)]
 [(1 2 3) (drop-right '(1 2 3 . d) 0)]
 
+[(a b c) (xcons '(b c) 'a)]
+[(c c c c) (make-list 4 'c)]
+[(0 1 2 3) (list-tabulate 4 values)]
+[(1 2 3 4) (list-copy '(1 2 3 4))]
+[z (let1 lst (circular-list 'z 'q)
+      (and (eq? (first lst) 'z) (eq? (second lst) 'q) (third lst) 'z))]
+[#t (proper-list? '())]
+[#t (proper-list? '(1 2 3))]
+[#f (proper-list? '(1 . 3))]
+[#t (dotted-list? '(1 2 . 3))]
+[#f (dotted-list? '(1 2 3))]
+[(c) (last-pair '(a b c))]
+[c (last '(a b c))]
+
 
 
 ;; ["syntax error: malformed when"
