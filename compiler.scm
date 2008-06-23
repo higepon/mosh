@@ -2795,12 +2795,11 @@
         ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
         ,($lambda.src iform)                                      ;; source code information
         ,@boxes-code                                              ;; lambda body start
-        )
         ,@(code-body body-code)
         RETURN
         ,(length vars)
         ,end-of-closure
-        ))
+        )))
   ]
  [else
   (define (pass3/$lambda iform locals frees can-frees sets tail)

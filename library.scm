@@ -2523,3 +2523,12 @@
 ;;        ($take  sorted 30))))
     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
 
+
+;; ;; temp
+;; (define (append! l1 l2)
+;;   (cond ((pair? l1)
+;;          (if (pair? (cdr l1))
+;;              (append! (cdr l1) l2)
+;;              (set-cdr! l1 l2) )
+;;          l1 )
+;;         (else l2) ) )

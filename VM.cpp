@@ -153,6 +153,7 @@ void VM::loadFile(const ucs4string& file)
         for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
 //            gettimeofday(&tv1, &tz1);
             const Object compiled = compile(o);
+//            LOG1("compiled=~a\n", compiled);
 //           gettimeofday(&tv2, &tz2);
 //           compileTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
 //           printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
