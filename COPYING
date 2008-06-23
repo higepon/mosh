@@ -110,3 +110,22 @@ Copyright of sort ------------------------------------------------------------
 
    Copyright (c) Oliver Laumann 
      http://www-rn.informatik.uni-bremen.de/software/elk/dist.html
+
+Copyright of SRFI-1 ----------------------------------------------------------
+   SRFI-1 list-processing library 			-*- Scheme -*-
+   Reference implementation
+
+   Copyright (c) 1998, 1999 by Olin Shivers. You may do as you please with
+   this code as long as you do not remove this copyright notice or
+   hold me liable for its use. Please send bug reports to shivers@ai.mit.edu.
+       -Olin
+
+   This is a library of list- and pair-processing functions. I wrote it after
+   carefully considering the functions provided by the libraries found in
+   R4RS/R5RS Scheme, MIT Scheme, Gambit, RScheme, MzScheme, slib, Common
+   Lisp, Bigloo, guile, T, APL and the SML standard basis. It is a pretty
+   rich toolkit, providing a superset of the functionality found in any of
+   the various Schemes I considered.
+
+   This implementation is intended as a portable reference implementation
+   for SRFI-1. See the porting notes below for more information.

@@ -1014,7 +1014,13 @@ val
 [#f (dotted-list? '(1 2 3))]
 [(c) (last-pair '(a b c))]
 [c (last '(a b c))]
-
+[#t (not-pair? 3)]
+[#f (not-pair? '(1 2))]
+[#t (list= eq?)]
+[#t (list= eq? '(a))]
+[#t (list= eq? '(a) '(a))]
+[#f (list= eq? '(a) '(a b))]
+[((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
 
 
 ;; ["syntax error: malformed when"

@@ -2065,6 +2065,49 @@
 ;;; SRFI-1 List library.
 ;;; .section-id srfi-1
 
+;; split-at splits the list x at index i, returning a list of the first i elements, and the remaining tail. It is equivalent to (values (take x i) (drop x i))
+;; .returns (values (take x i) (drop x i))
+(define (split-at x k)
+  (check-arg integer? k split-at)
+  (let recur ((lis x) (k k))
+    (if (zero? k) (values '() lis)
+    (receive (prefix suffix) (recur (cdr lis) (- k 1))
+      (values (cons (car lis) prefix) suffix)))))
+
+;; split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result. 
+;; .returns split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result. 
+(define (split-at! x k)
+  (check-arg integer? k split-at!)
+  (if (zero? k) (values '() x)
+      (let* ((prev (drop x (- k 1)))
+         (suffix (cdr prev)))
+    (set-cdr! prev '())
+    (values x suffix))))
+
+
+;; Provided as a procedure as it can be useful as the termination condition for list-processing procedures that wish to handle all finite lists, both proper and dotted.
+;; .returns (not (pair? x))
+(define (not-pair? x) (not (pair? x)))
+(define-macro (not-pair? x) `(not (pair? ,x)))
+
+;; Determines list equality, given an element-equality procedure. Proper list A equals proper list B if they are of the same length, and their corresponding elements are equal, as determined by elt=. If the element-comparison procedure's first argument is from listi, then its second argument is from listi+1, i.e. it is always called as (elt= a b)  for a an element of list A, and b an element of list B.
+(define (list= = . lists)
+  (or (null? lists) ; special case
+      (let lp1 ((list-a (car lists)) (others (cdr lists)))
+        (or (null? others)
+            (let ((list-b (car others))
+                  (others (cdr others)))
+              (if (eq? list-a list-b)   ; EQ? => LIST=
+                  (lp1 list-b others)
+                  (let lp2 ((list-a list-a) (list-b list-b))
+                    (if (null-list? list-a)
+                        (and (null-list? list-b)
+                             (lp1 list-b others))
+                        (and (not (null-list? list-b))
+                             (= (car list-a) (car list-b))
+                             (lp2 (cdr list-a) (cdr list-b)))))))))))
+
+
 ;; Of utility only as a value to be conveniently passed to higher-order procedures.
 ;; .returns (xcons '(b c) 'a) => (a b c)
 ;; .example (xcons '(b c) 'a) => (a b c)
