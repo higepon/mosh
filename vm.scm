@@ -62,7 +62,10 @@
   (vm-import (libname->symbol '(top level))))
 
 (load "./free-vars-decl.scm")
-(load "./compiler-vm.scm")
+
+;; pass3 の変更のために一時的に読み込むものを変更している
+;(load "./compiler-vm.scm")
+(load "./compiler-vm-pass3.scm")
 (load "./free-vars.scm")
 
 (define-syntax check-sexp->iform
