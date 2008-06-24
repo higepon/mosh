@@ -2395,26 +2395,74 @@
                                   `(BOX ,n)
                                   '()))
                             vars))
+
+(use util.match)
+(define (make-code-builder)
+  '(builder))
+
+(define (code-builder-put! cb x)
+  (append! cb (list x)))
+
+define (code-builder-put-list! cb lst)
+  (for-each
+   (lambda (x)
+     (code-builder-put! cb x))
+   lst))
+
+(define (code-builder-emit cb)
+  (list->vector (cdr cb)))
+
+;; code-builder synonyms
+(define-macro (cput! cb . more)
+  (match more
+    [() '()]
+    [(x . y)
+     `(begin
+        (code-builder-put! ,cb ,x)
+        (cput! ,cb ,@y))]))
 ;;
 ;; Pass3/compile
 ;;   the compiler.
 ;;
+(define zass3/map (iforms locals frees can-frees sets tail)
+  (fold (lambda (i accum) (+ (zass3/rec i locals frees can-frees sets tail) accum)) 0 iforms))
+
+(define zass3/dispatch-table (make-vector $INSN-NUM))
+
 (define pass3/dispatch-table (make-vector $INSN-NUM))
 
 (define (pass3/register insn proc)
   (vector-set! pass3/dispatch-table insn proc))
 
+(define (zass3/register insn proc)
+  (vector-set! zass3/dispatch-table insn proc))
+
 (define (pass3/$const iform locals frees can-frees sets tail)
   `(0 CONSTANT ,($const.val iform)))
 
+(define (zass3/$const cb iform locals frees can-frees sets tail)
+  (cput! cb 'CONSTANT ($const.val iform))
+  0)
+
 (define (pass3/$it iform locals frees can-frees sets tail)
   `(0))
+
+(define (zass3/$it iform locals frees can-frees sets tail) 0)
 
 (define (pass3/$list iform locals frees can-frees sets tail)
   (let1 args ($list.args iform)
     `(,@($append-map1-sum (lambda (i) `(,@(pass3 i locals frees can-frees sets tail) PUSH)) args)
       LIST
       ,(length args))))
+
+(define (zass3/$list iform locals frees can-frees sets tail)
+  (let* ([args ($list.args iform)]
+         [stack-size (fold (lambda (i accum)
+                             (let1 size (zass3/rec i locals frees can-frees sets tail)
+                               (cput! 'PUSH)
+                               (+ size accum))) 0 args)])
+    (cput! 'LIST (length args))
+    stack-size))
 
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
 (define (pass3/$local-ref iform locals frees can-frees sets tail)

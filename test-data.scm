@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(("all-tests.scm"  12) (source-info '(3)))
+(mosh-only ("all-tests.scm"  12) (source-info '(3)))
 ;; don't edit end
 
 ;; test start
@@ -419,14 +419,14 @@
 ((1 2 3)  (call-with-values (lambda () (values 1 2 3)) list))
 (1235 (call-with-values (lambda () 1) (lambda (x) (+ x 1234))))
 
-(6 (receive (a b c) (values 1 2 3) (+ a b c)))
-((x y) (receive z (values 'x 'y) z))
-((y z) (receive (a . b) (values 'x 'y 'z) b))
-(x (receive (a . b) (values 'x 'y 'z) a))
-((1 2 3) (receive x (apply values '(1 2 3)) x))
-((1 . 2) (call-with-values (lambda () (values 1 2)) cons))
+(mosh-only 6 (receive (a b c) (values 1 2 3) (+ a b c)))
+(mosh-only (x y) (receive z (values 'x 'y) z))
+(mosh-only (y z) (receive (a . b) (values 'x 'y 'z) b))
+(mosh-only x (receive (a . b) (values 'x 'y 'z) a))
+(mosh-only (1 2 3) (receive x (apply values '(1 2 3)) x))
+(mosh-only (1 . 2) (call-with-values (lambda () (values 1 2)) cons))
 ;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
-("higepon" (receive (port proc) (open-string-output-port)
+(mosh-only "higepon" (receive (port proc) (open-string-output-port)
              (display "hige" port)
              (display "pon" port)
              (proc)))
@@ -663,7 +663,7 @@ val
 ;;; eq?
 (#t (eq? 'a 'a))
 (#f (eq? '(a) '(a))) ;; unspecified on R6RS
-(#f (eq? (list 'a) (list 'a)))
+(mosh-only #f (eq? (list 'a) (list 'a)))
 (#f (eq? "a" "a"))   ;; unspecified on R6RS
 (#f (eq? "" ""))     ;; unspecified on R6RS
 (#t (eq? '() '()))   ;; unspecified on R6RS
@@ -694,11 +694,11 @@ val
       (else #f)))
 
 ;; do
-(#(0 1 2 3 4) (do ((vec (make-vector 5))
+(mosh-only #(0 1 2 3 4) (do ((vec (make-vector 5))
                    (i 0 (+ i 1)))
                   ((= i 5) vec)
                 (vector-set! vec i i)))
-(25 (let ((x '(1 3 5 7 9)))
+(mosh-only 25 (let ((x '(1 3 5 7 9)))
       (do ((x x (cdr x))
            (sum 0 (+ sum (car x))))
           ((null? x) sum))))
@@ -721,10 +721,10 @@ val
 ;; not
 (#f (not #t))
 (#f (not 3))
-(#f (not (list 3)))
+(mosh-only #f (not (list 3)))
 (#t (not #f))
 (#f (not '()))
-(#f (not (list)))
+(mosh-only #f (not (list)))
 (#f (not 'nil))
 
 ;; let
@@ -860,16 +860,16 @@ val
 [6
   (apply (lambda (a b c) (+ a b c)) 1 '(2 3))]
 [3 (/ 6 2)]
-[3 (mod 23 10)]
-[#t (even? 2)]
-[#f (even? 3)]
-[#f (for-all even? '(3 1 4 1 5 9))]
-[#f (for-all even? '(3 1 4 1 5 9 . 2))]
-[#t (for-all even? '(2 4 14))]
+[mosh-only 3 (mod 23 10)]
+[mosh-only #t (even? 2)]
+[mosh-only #f (even? 3)]
+[mosh-only #f (for-all even? '(3 1 4 1 5 9))]
+[mosh-only #f (for-all even? '(3 1 4 1 5 9 . 2))]
+[mosh-only #t (for-all even? '(2 4 14))]
 ;[14 (for-all (lambda (n) (and (even? n) n))
 ;             '(2 4 14))]
-[#t (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))]
-[#f (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))]
+[mosh-only #t (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))]
+[mosh-only #f (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))]
 
 [mosh-only 0 (/ 2)]
 [mosh-only 0 (/ 3)]
@@ -888,15 +888,15 @@ val
 [#f (list? '(a . b))]
 
 ;; match
-[(0 1 2 3 4 5)
+[mosh-only (0 1 2 3 4 5)
  (match '(0 (1 2) (3 4 5))
    ((a (b c) (d e f))
     (list a b c d e f)))]
-[(number 123)
+[mosh-only (number 123)
  (match 123
    ((? string? x) (list 'string x))
    ((? number? x) (list 'number x)))]
-["normal let, vars=(a c) exprs=(b d)"
+[mosh-only "normal let, vars=(a c) exprs=(b d)"
  (define let-analyzer
    (match-lambda
     (('let (? symbol?)
@@ -909,28 +909,28 @@ val
     (_
      (format "malformed let"))))
 (let-analyzer '(let ((a b) (c d)) e f g))]
-["named let, vars=(x y) exprs=((f a b) (f c d))"
+[mosh-only "named let, vars=(x y) exprs=((f a b) (f c d))"
  (let-analyzer '(let foo ((x (f a b)) (y (f c d))) e f g))]
-["malformed let"
+[mosh-only "malformed let"
  (let-analyzer '(let (a) b c d))]
-[42
+[mosh-only 42
  (match '(the answer is 42)
    (`(the answer is ,value) value)
    (else #f))]
-[#f
+[mosh-only #f
  (match '(the answer was 42)
    (`(the answer is ,value) value)
    (else #f))]
-[d
+[mosh-only d
  (match '(a b c d)
    ((the answer is value) value)
    (else #f))]
-["base=mosh suffix=scm"
+[mosh-only "base=mosh suffix=scm"
  (match "mosh.scm"
   ((? string? (= #/(.*)\.([^.]+)$/ m))
    (format "base=~a suffix=~a" (m 1) (m 2))))]
 ;; do
-[2
+[mosh-only 2
  (do ((i 0) (j 0)) ((zero? j) (set! i 1) (set! i 2) i))]
 
 ;; case
@@ -956,7 +956,7 @@ val
 [mosh-only
  #f (procedure? '(lambda (x) (* x x)))]
 [#t (char>=? #\b #\a)]
-[#t (char>=? #\c #\b #\a)]
+[mosh-only #t (char>=? #\c #\b #\a)]
 [#t (char>=? #\b #\b)]
 [#f (char>=? #\b #\c)]
 [#t (char>? #\b #\a)]
@@ -968,9 +968,9 @@ val
 [#t (char<? #\a #\b)]
 [#f (char<? #\b #\b)]
 [#f (char<? #\c #\b)]
-[(1 2 3 . 4) (cons* 1 2 3 4)]
-[1 (cons* 1)]
-[(1 . 3) (receive (x y) (car+cdr '(1 . 3)) (cons x y))]
+[mosh-only (1 2 3 . 4) (cons* 1 2 3 4)]
+[mosh-only 1 (cons* 1)]
+[mosh-only (1 . 3) (receive (x y) (car+cdr '(1 . 3)) (cons x y))]
 [1 (append 1)]
 [(1 . 2) (append '(1) 2)]
 [(1  2 . 3) (append '(1 2) 3)]
@@ -988,39 +988,39 @@ val
 [1 (append! '() 1)]
 [(1) (append! '(1) '())]
 
-[(a b) (take '(a b c d e)  2)]
-[ (c d e) (drop '(a b c d e)  2)]
-[(1 2) (take '(1 2 3 . d) 2)]
-[(3 . d) (drop '(1 2 3 . d) 2)]
-[(1 2 3)(take '(1 2 3 . d) 3)]
-[d (drop '(1 2 3 . d) 3)]
-[(d e) (take-right '(a b c d e) 2)]
-[(a b c) (drop-right '(a b c d e) 2)]
-[(2 3 . d) (take-right '(1 2 3 . d) 2)]
-[(1) (drop-right '(1 2 3 . d) 2)]
-[d (take-right '(1 2 3 . d) 0)]
-[(1 2 3) (drop-right '(1 2 3 . d) 0)]
+[mosh-only (a b) (take '(a b c d e)  2)]
+[mosh-only  (c d e) (drop '(a b c d e)  2)]
+[mosh-only (1 2) (take '(1 2 3 . d) 2)]
+[mosh-only (3 . d) (drop '(1 2 3 . d) 2)]
+[mosh-only (1 2 3)(take '(1 2 3 . d) 3)]
+[mosh-only d (drop '(1 2 3 . d) 3)]
+[mosh-only (d e) (take-right '(a b c d e) 2)]
+[mosh-only (a b c) (drop-right '(a b c d e) 2)]
+[mosh-only (2 3 . d) (take-right '(1 2 3 . d) 2)]
+[mosh-only (1) (drop-right '(1 2 3 . d) 2)]
+[mosh-only d (take-right '(1 2 3 . d) 0)]
+[mosh-only (1 2 3) (drop-right '(1 2 3 . d) 0)]
 
-[(a b c) (xcons '(b c) 'a)]
-[(c c c c) (make-list 4 'c)]
-[(0 1 2 3) (list-tabulate 4 values)]
-[(1 2 3 4) (list-copy '(1 2 3 4))]
-[z (let1 lst (circular-list 'z 'q)
+[mosh-only (a b c) (xcons '(b c) 'a)]
+[mosh-only (c c c c) (make-list 4 'c)]
+[mosh-only (0 1 2 3) (list-tabulate 4 values)]
+[mosh-only (1 2 3 4) (list-copy '(1 2 3 4))]
+[mosh-only z (let1 lst (circular-list 'z 'q)
       (and (eq? (first lst) 'z) (eq? (second lst) 'q) (third lst) 'z))]
-[#t (proper-list? '())]
-[#t (proper-list? '(1 2 3))]
-[#f (proper-list? '(1 . 3))]
-[#t (dotted-list? '(1 2 . 3))]
-[#f (dotted-list? '(1 2 3))]
-[(c) (last-pair '(a b c))]
-[c (last '(a b c))]
-[#t (not-pair? 3)]
-[#f (not-pair? '(1 2))]
-[#t (list= eq?)]
-[#t (list= eq? '(a))]
-[#t (list= eq? '(a) '(a))]
-[#f (list= eq? '(a) '(a b))]
-[((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
+[mosh-only #t (proper-list? '())]
+[mosh-only #t (proper-list? '(1 2 3))]
+[mosh-only #f (proper-list? '(1 . 3))]
+[mosh-only #t (dotted-list? '(1 2 . 3))]
+[mosh-only #f (dotted-list? '(1 2 3))]
+[mosh-only (c) (last-pair '(a b c))]
+[mosh-only c (last '(a b c))]
+[mosh-only #t (not-pair? 3)]
+[mosh-only #f (not-pair? '(1 2))]
+[mosh-only #t (list= eq?)]
+[mosh-only #t (list= eq? '(a))]
+[mosh-only #t (list= eq? '(a) '(a))]
+[mosh-only #f (list= eq? '(a) '(a b))]
+[mosh-only ((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
 
 
 ;; ["syntax error: malformed when"
