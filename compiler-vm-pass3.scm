@@ -2575,18 +2575,19 @@
 (define (zass3/$global-assign cb iform locals frees can-frees sets tail)
   (let1 sym ($global-assign.sym iform)
     (let next-free ([free frees] [n 0])
-      (cond [(null? free)
-             (zass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
-             (cput! cb
-                    'ASSIGN_GLOBAL
-                    (merge-libname-sym ($global-assign.libname iform) sym))
-             0]
-            [(eq? ($lvar.sym (car free)) sym)
-             (zass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
-             (cput! cb 'ASSIGN_FREE n)
-             0]
-            [else
-             (next-free (cdr free) (+ n 1))]))))
+      (cond
+       [(null? free)
+        (begin0
+          (zass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
+          (cput! cb
+                 'ASSIGN_GLOBAL
+                 (merge-libname-sym ($global-assign.libname iform) sym)))]
+       [(eq? ($lvar.sym (car free)) sym)
+        (being0
+         (zass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
+         (cput! cb 'ASSIGN_FREE n))]
+       [else
+        (next-free (cdr free) (+ n 1))]))))
 
 
 (define (pass3/$seq iform locals frees can-frees sets tail)
@@ -2900,7 +2901,7 @@
 (define (pass3/$call iform locals frees can-frees sets tail)
   (define (compile-apply i code)
     (let1 procc (code-body code)
-      (format #t "CODE stack=~d\n" (code-stack code))
+;      (format #t "CODE stack=~d\n" (code-stack code))
         `(,(code-stack code)
           ,@procc
           ,@(if tail (list 'SHIFT (length ($call.args i)) tail) '())
@@ -2970,11 +2971,11 @@
 (define (zass3/$call cb iform locals frees can-frees sets tail)
   (case ($call.type iform)
     [(jump)
-     (print "JUMP")
+;     (print "JUMP")
      (let1 label ($lambda.body ($call.proc ($call.proc iform)))
        (cput! cb 'REDUCE (length ($call.args iform)))
        (begin0
-         (zass3/compile-args ($call.args iform) locals frees can-frees sets #f)
+         (zass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)
          (cput! cb
                 'SHIFT
                 (length ($call.args iform))
@@ -2982,7 +2983,7 @@
                 'UNFIXED_JUMP
                 label)))] ;; ここまで終わった
     [(embed)
-     (print "EMBED")
+;     (print "EMBED")
      (let* ([label ($lambda.body ($call.proc iform))]
             [body ($label.body label)]
             [vars ($lambda.lvars ($call.proc iform))]
@@ -2991,7 +2992,7 @@
                                          (append2 locals (append2 frees can-frees)))]
             [sets-here  (append2 (pass3/find-sets body vars) sets)])
        (cput! cb 'LET_FRAME)
-       (let1 free-size (if (> length frees-here)
+       (let1 free-size (if (> (length frees-here) 0)
                            (zass3/collect-free cb frees-here locals frees)
                            0)
          (when (> (length frees-here) 0)
@@ -3013,7 +3014,7 @@
              (cput! cb 'LEAVE (length ($call.args iform)))
              (+ args-size body-size free-size)))))]
     [else
-     (print "ELSE")
+;     (print "ELSE")
      (let1 end-of-frame (make-label)
        ;;
        ;; How tail context call be optimized.
@@ -3082,7 +3083,7 @@
                               (length vars))]
            [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
            [end-of-closure (make-label)])
-      (format #t "===== OLD: ~d ~d ~d\n" (car body-code) (car free-code) (length vars))
+;      (format #t "===== OLD: ~d ~d ~d\n" (car body-code) (car free-code) (length vars))
       `(0
         ,@(code-body free-code)
         CLOSURE
@@ -3126,7 +3127,7 @@
                                  (%set-union sets-here
                                              (set-intersect sets frees-here))
                                  (length vars))
-      (format #t "===== NEW: ~d ~d ~d\n" body-size free-size (length vars))
+;      (format #t "===== NEW: ~d ~d ~d\n" body-size free-size (length vars))
         (cput! cb
                (+ body-size free-size (length vars) 4) ;; max-stack 4 is sizeof frame
                ($lambda.src iform))                    ;; source code information
@@ -3412,7 +3413,7 @@
                 'IMPORT
                 libname
                 end-of-frame)))
-     ($import.import-specs i))
+     ($import.import-specs form))
     0)
   (rec iform))
 
