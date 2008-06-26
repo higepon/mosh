@@ -39,25 +39,20 @@
        (pair-attribute-set! a 'source-info b)
        a]
      [else
-      a]))
-;  (define append! append)
-  ]
+      a]))]
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
   (include "./free-vars-decl.scm")
   (define find10 find)
   (define syntax-error error)
-  (define (command-line) *command-line-args*)
-  ]
+  (define (command-line) *command-line-args*)]
 [mosh
   (define dd display)
   (define pp print)
   (include "./free-vars-decl.scm")
   (define-macro (make-list-with-src-slot lst) lst)
-  (define (command-line) *command-line-args*)
- ]
-)
+  (define (command-line) *command-line-args*)])
 
 (define ($for-each1-with-rindex proc lst)
   (let loop ([i (- (length lst) 1)]
@@ -67,8 +62,6 @@
      [else
       (proc i (car lst))
       (loop (- i 1) (cdr lst))])))
-
-
 
 (define-macro (begin0 form . forms)
   (let ((var (gensym)))
@@ -123,8 +116,6 @@
   `(let ((it ,test-form))
      (if it ,then-form ,@else-form)))
 
-
-
 (define (syntax-error msg)
   (raise (format "syntax error: ~a" msg)))
 
@@ -137,21 +128,21 @@
         (string->symbol ret)
         (loop (cdr name) (string-append ret (symbol->string (car name)) " ")))))
 
-(define (make-gensym)
-  (let1 i 0
-    (lambda ()
-      (set! i (+ i 1))
-      (string->symbol (format "G~d" i)))))
+;; (define (make-gensym)
+;;   (let1 i 0
+;;     (lambda ()
+;;       (set! i (+ i 1))
+;;       (string->symbol (format "G~d" i)))))
 
-(define-macro with-gensym
-  (lambda body
-    (let ([org (gensym)]
-          [ret (gensym)])
-      `(let1 ,org gensym
-         (set! gensym ,(make-gensym))
-         (let ((,ret (begin ,@body)))
-           (set! gensym ,org)
-           ,ret)))))
+;; (define-macro with-gensym
+;;   (lambda body
+;;     (let ([org (gensym)]
+;;           [ret (gensym)])
+;;       `(let1 ,org gensym
+;;          (set! gensym ,(make-gensym))
+;;          (let ((,ret (begin ,@body)))
+;;            (set! gensym ,org)
+;;            ,ret)))))
 
 ;; moved to freeproc.cpp
 ;; N.B. this procedure is still required by vm.scm
@@ -168,14 +159,12 @@
       (rec (cdr lst1) (set-cons (car lst1) lst2))]))
   (rec l1 l2))
 
-(define (set-minus lst1 lst2)
-  (if (null? lst1)
-      '()
-      (if (memq (car lst1) lst2)
-          (set-minus (cdr lst1) lst2)
-          (cons (car lst1) (set-minus (cdr lst1) lst2)))))
-
-
+;; (define (set-minus lst1 lst2)
+;;   (if (null? lst1)
+;;       '()
+;;       (if (memq (car lst1) lst2)
+;;           (set-minus (cdr lst1) lst2)
+;;           (cons (car lst1) (set-minus (cdr lst1) lst2)))))
 
 (define (set-intersect lst1 lst2)
   (if (null? lst1)
@@ -184,20 +173,12 @@
           (cons (car lst1) (set-intersect (cdr lst1) lst2))
           (set-intersect (cdr lst1) lst2))))
 
-;; (load "./lib/sets.scm")
-
-;; (define debug-mode         #f)
-;; (define debug-max-sp       0)
-;; (define debug-vm-run-time  0)
-;; (define debug-compile-time 0)
-;; (define optimize?          #t)
-
 ;;--------------------------------------------------------------------
 ;;
 ;; Generic
 ;;
-(define (log . msg)
-  (display msg (current-error-port)))
+;; (define (log . msg)
+;;   (display msg (current-error-port)))
 
 (define ($map1 f l)
   (if (null? l)
@@ -216,45 +197,44 @@
       l
       (cons (f (car l) (null? (cdr l))) ($map1-with-tail f (cdr l)))))
 
-(define ($map1-with-rindex f l)
-  (define (iter f l i)
-    (if (null? l)
-        l
-        (cons (f (car l) i) (iter f (cdr l) (- i 1)))))
-  (iter f l (- (length l) 1)))
+;; (define ($map1-with-rindex f l)
+;;   (define (iter f l i)
+;;     (if (null? l)
+;;         l
+;;         (cons (f (car l) i) (iter f (cdr l) (- i 1)))))
+;;   (iter f l (- (length l) 1)))
 
-(define ($map1-with-index f l)
-  (define (iter f l i)
-    (if (null? l)
-        l
-        (cons (f (car l) i) (iter f (cdr l) (+ i 1)))))
-  (iter f l 0))
-
-
-(define ($reverse-append-map1 proc l)
-  (let loop ([l l])
-    (if (null? l)
-        '()
-        (append2 (loop (cdr l)) (proc (car l))))))
-
-(define ($append-map1-with-rindex proc l)
-  (let loop ([l l]
-             [i (- (length l) 1)])
-    (if (null? l)
-        '()
-        (append2 (proc (car l) i) (loop (cdr l) (- i 1))))))
+;; (define ($map1-with-index f l)
+;;   (define (iter f l i)
+;;     (if (null? l)
+;;         l
+;;         (cons (f (car l) i) (iter f (cdr l) (+ i 1)))))
+;;   (iter f l 0))
 
 
+;; (define ($reverse-append-map1 proc l)
+;;   (let loop ([l l])
+;;     (if (null? l)
+;;         '()
+;;         (append2 (loop (cdr l)) (proc (car l))))))
 
-(define ($append-map1-with-tail proc l)
-  (apply append ($map1-with-tail proc l)))
+;; (define ($append-map1-with-rindex proc l)
+;;   (let loop ([l l]
+;;              [i (- (length l) 1)])
+;;     (if (null? l)
+;;         '()
+;;         (append2 (proc (car l) i) (loop (cdr l) (- i 1))))))
+
+
+
+;; (define ($append-map1-with-tail proc l)
+;;   (apply append ($map1-with-tail proc l)))
 
 (define-macro ($append-map1 f l)
   `(apply append ($map1 ,f ,l)))
 
-(define-macro ($append!-map1 f l)
-  `(apply append! ($map1 ,f ,l)))
-
+;; (define-macro ($append!-map1 f l)
+;;   `(apply append! ($map1 ,f ,l)))
 
 (define (uniq lst)
   (let loop ([lst lst]
@@ -288,7 +268,6 @@
      [else
       (loop (cdr lst) (cons (car lst) ret))])))
 
-
 ;;--------------------------------------------------------------------
 ;;
 ;; IForm Structs
@@ -303,13 +282,10 @@
 (define-macro ($const.val iform) `(vector-ref ,iform 1))
 (define-macro ($const.set-val! iform val) `(vector-set! ,iform 1 ,val))
 
-
 ;; struct $lvar
 (define $LVAR 1)
-
 (define ($lvar sym init-val ref-count set-count)
   `#(,$LVAR ,sym ,init-val ,ref-count ,set-count ))
-
 
 (define-macro ($lvar.sym iform) `(vector-ref ,iform 1))
 (define-macro ($lvar.init-val iform) `(vector-ref ,iform 2))
@@ -341,7 +317,6 @@
 (define-macro ($let.set-tail?! iform tail?) `(vector-set! ,iform 5 ,tail?))
 (define-macro ($let.set-src! iform src) `(vector-set! ,iform 6 ,src))
 
-
 ;; struct $seq
 (define $SEQ 3)
 (define ($seq body tail?)
@@ -351,7 +326,6 @@
 (define-macro ($seq.tail? iform) `(vector-ref ,iform 2))
 (define-macro ($seq.set-body! iform body) `(vector-set! ,iform 1 ,body))
 (define-macro ($seq.set-tail?! iform tail?) `(vector-set! ,iform 2 ,tail?))
-
 
 ;; struct $lambda
 (define $LAMBDA 4)
@@ -375,7 +349,6 @@
 (define-macro ($lambda.set-flag! iform flag) `(vector-set! ,iform 7 ,flag))
 (define-macro ($lambda.set-calls! iform calls) `(vector-set! ,iform 8 ,calls))
 
-
 ;; struct $local-ref
 (define $LOCAL-REF 5)
 (define ($local-ref lvar)
@@ -395,7 +368,6 @@
 (define-macro ($local-assign.set-lvar! iform lvar) `(vector-set! ,iform 1 ,lvar))
 (define-macro ($local-assign.set-val! iform val) `(vector-set! ,iform 2 ,val))
 
-
 ;; struct $global-ref
 (define $GLOBAL-REF 7)
 (define ($global-ref libname sym)
@@ -405,7 +377,6 @@
 (define-macro ($global-ref.sym iform) `(vector-ref ,iform 2))
 (define-macro ($global-ref.set-libname! iform libname) `(vector-set! ,iform 1 ,libname))
 (define-macro ($global-ref.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
-
 
 ;; struct $global-assign
 (define $GLOBAL-ASSIGN 8)
@@ -419,13 +390,9 @@
 (define-macro ($global-assign.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
 (define-macro ($global-assign.set-val! iform val) `(vector-set! ,iform 3 ,val))
 
-
 ;; struct $undef
 (define $UNDEF 9)
 (define ($undef) (make-vector 1 $UNDEF))
-;  `#(,$UNDEF ))
-
-
 
 ;; struct $if
 (define $IF 10)
@@ -439,7 +406,6 @@
 (define-macro ($if.set-then! iform then) `(vector-set! ,iform 2 ,then))
 (define-macro ($if.set-else! iform else) `(vector-set! ,iform 3 ,else))
 
-
 ;; struct $asm
 (define $ASM 11)
 (define ($asm insn args)
@@ -449,7 +415,6 @@
 (define-macro ($asm.args iform) `(vector-ref ,iform 2))
 (define-macro ($asm.set-insn! iform insn) `(vector-set! ,iform 1 ,insn))
 (define-macro ($asm.set-args! iform args) `(vector-set! ,iform 2 ,args))
-
 
 ;; struct $define
 (define $DEFINE 12)
@@ -463,7 +428,6 @@
 (define-macro ($define.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
 (define-macro ($define.set-val! iform val) `(vector-set! ,iform 3 ,val))
 
-
 ;; struct $call-cc
 (define $CALL-CC 13)
 (define ($call-cc proc tail?)
@@ -473,7 +437,6 @@
 (define-macro ($call-cc.tail? iform) `(vector-ref ,iform 2))
 (define-macro ($call-cc.set-proc! iform proc) `(vector-set! ,iform 1 ,proc))
 (define-macro ($call-cc.set-tail?! iform tail?) `(vector-set! ,iform 2 ,tail?))
-
 
 ;; struct $call
 (define $CALL 14)
@@ -488,7 +451,6 @@
 (define-macro ($call.set-args! iform args) `(vector-set! ,iform 2 ,args))
 (define-macro ($call.set-tail?! iform tail?) `(vector-set! ,iform 3 ,tail?))
 (define-macro ($call.set-type! iform type) `(vector-set! ,iform 4 ,type))
-
 
 ;; struct $label
 (define $LABEL 15)
@@ -641,7 +603,6 @@
           ((pair? formals) (loop (cdr formals) (cons (car formals) args)))
           (else (values (reverse (cons formals args)) (length args) 1)))))
 
-
 ;; (define (define-is-lambda? sexp)
 ;;   (pair? (cadr sexp)))
 
@@ -649,7 +610,6 @@
 ;;   (if (null? (cdr conditions))
 ;;       (car conditions)
 ;;       (list 'if (car conditions) (conditions->if (cdr conditions)) #f)))
-
 
 ;;--------------------------------------------------------------------
 ;;
@@ -669,50 +629,50 @@
   (define (expand-let vars body)
     (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
       `(let ,expanded-vars ,@(pass1/expand body))))
-  (cond ((pair? sexp)
-         (case (first sexp)
-           [(quote) sexp]
-           [(define-macro) sexp]
-           [(define)
-            (if (define-is-lambda? sexp)
-                (pass1/expand (define->lambda sexp))
-                ($src ($map1 (lambda (s) (pass1/expand s)) sexp) sexp))]
-           [(let1)
-            ($src (pass1/expand (let1->let sexp)) sexp)]
-           [(let)
-            (if (let-is-named? sexp)
-                ($src (pass1/expand (named-let->letrec sexp)) sexp)
-                ($src (expand-let (second sexp) (cddr sexp)) sexp))]
-           [(let*)
-            ($src (pass1/expand (let*->let sexp)) sexp)]
-           [(cond)
-            ($src (pass1/expand (cond->if sexp)) sexp)]
-           [(lambda)
-            (cond [(lambda-has-define? sexp)
-                   ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
-                  [else
-                   ($src (append! (list 'lambda (cadr sexp)) (pass1/expand (cddr sexp))) sexp)])]
-           [(when)
-            (match sexp
-              [('when pred body . more)
-               ($src (pass1/expand `(cond (,pred ,body ,@more))) sexp)]
-              [else
-               (syntax-error "malformed when")])]
-           [(unless)
-            (match sexp
-              [('unless pred body . more)
-               ($src (pass1/expand `(cond ((not ,pred) ,body ,@more))) sexp)]
-              [else
-               (syntax-error "malformed unless")])]
-           [(aif)
-            ($src (pass1/expand (aif->let sexp)) sexp)]
-           [(case)
-            ($src (pass1/expand (case->cond sexp)) sexp)]
-           [(quasiquote)
-            (expand-quasiquote (cadr sexp) 0)]
-           [else sexp])) ;; macro and call are expande later.
-        (else sexp)))
-
+  (cond
+   ((pair? sexp)
+    (case (first sexp)
+      [(quote) sexp]
+      [(define-macro) sexp]
+      [(define)
+       (if (define-is-lambda? sexp)
+           (pass1/expand (define->lambda sexp))
+           ($src ($map1 (lambda (s) (pass1/expand s)) sexp) sexp))]
+      [(let1)
+       ($src (pass1/expand (let1->let sexp)) sexp)]
+      [(let)
+       (if (let-is-named? sexp)
+           ($src (pass1/expand (named-let->letrec sexp)) sexp)
+           ($src (expand-let (second sexp) (cddr sexp)) sexp))]
+      [(let*)
+       ($src (pass1/expand (let*->let sexp)) sexp)]
+      [(cond)
+       ($src (pass1/expand (cond->if sexp)) sexp)]
+      [(lambda)
+       (cond [(lambda-has-define? sexp)
+              ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
+             [else
+              ($src (append! (list 'lambda (cadr sexp)) (pass1/expand (cddr sexp))) sexp)])]
+      [(when)
+       (match sexp
+         [('when pred body . more)
+          ($src (pass1/expand `(cond (,pred ,body ,@more))) sexp)]
+         [else
+          (syntax-error "malformed when")])]
+      [(unless)
+       (match sexp
+         [('unless pred body . more)
+          ($src (pass1/expand `(cond ((not ,pred) ,body ,@more))) sexp)]
+         [else
+          (syntax-error "malformed unless")])]
+      [(aif)
+       ($src (pass1/expand (aif->let sexp)) sexp)]
+      [(case)
+       ($src (pass1/expand (case->cond sexp)) sexp)]
+      [(quasiquote)
+       (expand-quasiquote (cadr sexp) 0)]
+      [else sexp])) ;; macro and call are expande later.
+   (else sexp)))
 
 (define (define-is-lambda? sexp)
   (pair? (cadr sexp)))
@@ -721,7 +681,6 @@
   (if (null? (cdr conditions))
       (car conditions)
       (list 'if (car conditions) (conditions->if (cdr conditions)) #f)))
-
 
 ;; (define (letrec->let sexp)
 ;;   (let* ([args (second sexp)]
@@ -779,11 +738,8 @@
 ;      `(define ,(car args) ,($src `(lambda ,(cdr args) ,@body) sexp))))
       `(define ,(car args) ,($src (append! (list 'lambda (cdr args)) body) sexp))))
 
-
-
 (define (unless->cond sexp)
   `(cond ((not ,(cadr sexp)) ,@(cddr sexp))))
-
 
 (define (let*->let sexp)
   (let ([args (cadr sexp)]
@@ -840,17 +796,16 @@
        (cond
         ,@expanded-clauses))))
 
-(define (named-let->let sexp)
-  (let* ((name (cadr sexp))
-         (args (caddr sexp))
-         (vars ($map1 car args))
-         (vals ($map1 cadr args))
-         (temp-name (gensym))
-         (body (replace-proc (cdddr sexp) name temp-name)))
-    `(let1 ,temp-name '()
-       (set! ,temp-name (lambda ,vars ,@body))
-       (,temp-name ,@vals))))
-
+;; (define (named-let->let sexp)
+;;   (let* ((name (cadr sexp))
+;;          (args (caddr sexp))
+;;          (vars ($map1 car args))
+;;          (vals ($map1 cadr args))
+;;          (temp-name (gensym))
+;;          (body (replace-proc (cdddr sexp) name temp-name)))
+;;     `(let1 ,temp-name '()
+;;        (set! ,temp-name (lambda ,vars ,@body))
+;;        (,temp-name ,@vals))))
 
 (define (named-let->letrec sexp)
   (let* ((name (cadr sexp))
@@ -861,14 +816,13 @@
          (lambda-body ($src `(lambda ,vars ,@body) sexp)))
     ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
 
-
-(define (replace-proc sexp a b)
-  (cond ((pair? sexp)
-         (if (eq? (car sexp) a)
-             (set-car! sexp b)
-             #f)
-         ($map1 (lambda (s) (replace-proc s a b)) sexp))
-        (else sexp)))
+;; (define (replace-proc sexp a b)
+;;   (cond ((pair? sexp)
+;;          (if (eq? (car sexp) a)
+;;              (set-car! sexp b)
+;;              #f)
+;;          ($map1 (lambda (s) (replace-proc s a b)) sexp))
+;;         (else sexp)))
 
 (define (aif->let sexp)
   `(let ((it ,(cadr sexp)))
@@ -945,7 +899,6 @@
   (descend-quasiquote x level finalize-quasiquote))
 ;; based on bdc-scheme end
 
-
 ;;--------------------------------------------------------------------
 ;;
 ;;  Pass1: Sexp into IForm
@@ -990,20 +943,20 @@
         (car iforms)
         ($seq iforms tail?))))
 
-(define ($take lis k)
-  (if (< (length lis) k)
-      lis
-      (let recur ((lis lis) (k k))
-        (if (zero? k)
-            '()
-            (cons (car lis)
-                  (recur (cdr lis) (- k 1)))))))
+;; (define ($take lis k)
+;;   (if (< (length lis) k)
+;;       lis
+;;       (let recur ((lis lis) (k k))
+;;         (if (zero? k)
+;;             '()
+;;             (cons (car lis)
+;;                   (recur (cdr lis) (- k 1)))))))
 
-(define ($drop x i)
-  (let loop ((n i) (l x))
-    (if (<= n 0)
-      l
-      (loop (- n 1) (cdr l)))))
+;; (define ($drop x i)
+;;   (let loop ((n i) (l x))
+;;     (if (<= n 0)
+;;       l
+;;       (loop (- n 1) (cdr l)))))
 
 
 ;; Closure source info format
@@ -1075,7 +1028,6 @@
       [else
        (error "syntax-error: malformed or:" sexp)]))
   (rec (cdr sexp)))
-
 
 (define (pass1/library->iform sexp library lvars)
   (define (get-identifier symbol libname imports)
@@ -1197,7 +1149,6 @@
      [(and (symbol? proc) (assoc proc ($library.macro top-level-library)))
       (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
      [#t sexp])))
-
 
 (define (pass1/sexp->iform sexp library lvars tail?)
   (define (sexp->iform sexp)
@@ -1688,19 +1639,19 @@
 (define (pass2/optimize iform closures)
   ((vector-ref pass2/dispatch-table (vector-ref iform 0)) iform closures))
 
-(define (pv v)
-  (let loop ([i 0])
-    (if (>= i (vector-length v))
-        (begin
-          (cond
-           [(vector? (vector-ref v i))
-            (dd "<iform> ")]
-           [(pair? (vector-ref v i))
-            (dd "<pair> ")]
-           [else
-            (dd (vector-ref v i))
-            (dd " ")])
-          (loop (+ i 1))))))
+;; (define (pv v)
+;;   (let loop ([i 0])
+;;     (if (>= i (vector-length v))
+;;         (begin
+;;           (cond
+;;            [(vector? (vector-ref v i))
+;;             (dd "<iform> ")]
+;;            [(pair? (vector-ref v i))
+;;             (dd "<pair> ")]
+;;            [else
+;;             (dd (vector-ref v i))
+;;             (dd " ")])
+;;           (loop (+ i 1))))))
 
 
 (define (pass2/optimize-local-ref iform)
@@ -2153,26 +2104,26 @@
 
 (define test-table (make-eq-hashtable))
 
-(define (get table a b c)
-  (aif (hashtable-ref table a #f)
-       (aif (hashtable-ref it b #f)
-            (hashtable-ref it c #f)
-            #f)
-       #f))
+;; (define (get table a b c)
+;;   (aif (hashtable-ref table a #f)
+;;        (aif (hashtable-ref it b #f)
+;;             (hashtable-ref it c #f)
+;;             #f)
+;;        #f))
 
-(define (set table a b c v)
-  (aif (hashtable-ref table a #f)
-       (let1 it2 (hashtable-ref it b #f)
-         (if it2
-             (hashtable-set! it2 c v)
-             (let1 t (make-eq-hashtable)
-               (hashtable-set! it b t)
-               (hashtable-set! t c v))))
-       (let1 t (make-eq-hashtable)
-         (hashtable-set! table a t)
-         (let1 t2 (make-eq-hashtable)
-             (hashtable-set! t b t2)
-             (hashtable-set! t2 c v)))))
+;; (define (set table a b c v)
+;;   (aif (hashtable-ref table a #f)
+;;        (let1 it2 (hashtable-ref it b #f)
+;;          (if it2
+;;              (hashtable-set! it2 c v)
+;;              (let1 t (make-eq-hashtable)
+;;                (hashtable-set! it b t)
+;;                (hashtable-set! t c v))))
+;;        (let1 t (make-eq-hashtable)
+;;          (hashtable-set! table a t)
+;;          (let1 t2 (make-eq-hashtable)
+;;              (hashtable-set! t b t2)
+;;              (hashtable-set! t2 c v)))))
 
 
 ;; (define (pass3/find-free iform locals can-frees)
@@ -2372,28 +2323,29 @@
         (error "pass3/find-sets unknown iform:" i)])))
   (uniq (rec iform)))
 
-(define ($append-map1-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1 proc lst)))
+;; (define ($append-map1-sum proc lst)
+;;   (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1 proc lst)))
 
-(define ($append-map1-with-tail-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append! (cdr y) (cdr x)))) '(0 . ()) ($map1-with-tail proc lst)))
+;; (define ($append-map1-with-tail-sum proc lst)
+;;   (fold (lambda (x y) (cons (+ (car y) (car x)) (append! (cdr y) (cdr x)))) '(0 . ()) ($map1-with-tail proc lst)))
 
-(define ($append-map1-with-rindex-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-rindex proc lst)))
+;; (define ($append-map1-with-rindex-sum proc lst)
+;;   (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-rindex proc lst)))
 
-(define ($append-map1-with-index-sum proc lst)
-  (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-index proc lst)))
+;; (define ($append-map1-with-index-sum proc lst)
+;;   (fold (lambda (x y) (cons (+ (car y) (car x)) (append2 (cdr y) (cdr x)))) '(0 . ()) ($map1-with-index proc lst)))
 
-(define-macro (code-stack-sum . code)
-  `(+ ,@(map (lambda (x) `(car ,x)) code)))
+;; (define-macro (code-stack-sum . code)
+;;   `(+ ,@(map (lambda (x) `(car ,x)) code)))
 
-(define-macro (code-stack code)
-  `(car ,code))
+;; (define-macro (code-stack code)
+;;   `(car ,code))
 
-(define-macro (code-body code)
-  `(cdr ,code))
+;; (define-macro (code-body code)
+;;   `(cdr ,code))
 
-
+;; moved to freeproc.cpp start
+;; N.B. these procedures are still required by vm.scm
 (define (make-code-builder)
   (list 'builder))
 
@@ -2423,8 +2375,9 @@
 
 (define (code-builder-emit cb)
   (cdr cb))
+;; moved to freeproc.cpp end
 
-;; code-builder synonyms
+;; code-builder synonym
 (define-macro (cput! cb . more)
   (match more
     [() '()]
@@ -2444,10 +2397,10 @@
      `(begin (code-builder-put1! ,cb ,a)
              (cput! ,cb ,@b))]))
 
-(define (pass3/collect-free frees-here locals frees)
-  ($append-map1-sum (lambda (x)
-                      (append2 (pass3/compile-refer x locals frees) '(PUSH)))
-                    (reverse frees-here)))
+;; (define (pass3/collect-free frees-here locals frees)
+;;   ($append-map1-sum (lambda (x)
+;;                       (append2 (pass3/compile-refer x locals frees) '(PUSH)))
+;;                     (reverse frees-here)))
 
 (define (zass3/collect-free cb frees-here locals frees)
   (fold (lambda (i accum)
@@ -2471,10 +2424,10 @@
 
 
 
-(define (pass3/compile-refer lvar locals frees)
-  (pass3/symbol-lookup lvar locals frees
-                       (lambda (n) `(0 REFER_LOCAL ,n))
-                       (lambda (n) `(0 REFER_FREE ,n))))
+;; (define (pass3/compile-refer lvar locals frees)
+;;   (pass3/symbol-lookup lvar locals frees
+;;                        (lambda (n) `(0 REFER_LOCAL ,n))
+;;                        (lambda (n) `(0 REFER_FREE ,n))))
 
 (define (zass3/compile-refer cb lvar locals frees)
   (pass3/symbol-lookup lvar locals frees
@@ -2485,10 +2438,10 @@
                          (cput! cb 'REFER_FREE n)
                          0)))
 
-(define (pass3/compile-assign lvar locals frees)
-  (pass3/symbol-lookup lvar locals frees
-                       (lambda (n) `(0 ASSIGN_LOCAL ,n))
-                       (lambda (n) `(0 ASSIGN_FREE ,n))))
+;; (define (pass3/compile-assign lvar locals frees)
+;;   (pass3/symbol-lookup lvar locals frees
+;;                        (lambda (n) `(0 ASSIGN_LOCAL ,n))
+;;                        (lambda (n) `(0 ASSIGN_FREE ,n))))
 
 (define (zass3/compile-assign cb lvar locals frees)
   (pass3/symbol-lookup lvar locals frees
@@ -2499,12 +2452,12 @@
                          (cput! cb 'ASSIGN_FREE n)
                          0)))
 
-(define (pass3/make-boxes sets vars)
-  ($append-map1-with-rindex (lambda (x n)
-                              (if (memq x sets)
-                                  `(BOX ,n)
-                                  '()))
-                            vars))
+;; (define (pass3/make-boxes sets vars)
+;;   ($append-map1-with-rindex (lambda (x n)
+;;                               (if (memq x sets)
+;;                                   `(BOX ,n)
+;;                                   '()))
+;;                             vars))
 
 (define (zass3/make-boxes cb sets vars)
   ($for-each1-with-rindex (lambda (index var)
@@ -2522,31 +2475,31 @@
 
 (define zass3/dispatch-table (make-vector $INSN-NUM))
 
-(define pass3/dispatch-table (make-vector $INSN-NUM))
+;;(define pass3/dispatch-table (make-vector $INSN-NUM))
 
-(define (pass3/register insn proc)
-  (vector-set! pass3/dispatch-table insn proc))
+;; (define (pass3/register insn proc)
+;;   (vector-set! pass3/dispatch-table insn proc))
 
 (define (zass3/register insn proc)
   (vector-set! zass3/dispatch-table insn proc))
 
-(define (pass3/$const iform locals frees can-frees sets tail)
-  `(0 CONSTANT ,($const.val iform)))
+;; (define (pass3/$const iform locals frees can-frees sets tail)
+;;   `(0 CONSTANT ,($const.val iform)))
 
 (define (zass3/$const cb iform locals frees can-frees sets tail)
   (cput! cb 'CONSTANT ($const.val iform))
   0)
 
-(define (pass3/$it iform locals frees can-frees sets tail)
-  `(0))
+;; (define (pass3/$it iform locals frees can-frees sets tail)
+;;   `(0))
 
 (define (zass3/$it cb iform locals frees can-frees sets tail) 0)
 
-(define (pass3/$list iform locals frees can-frees sets tail)
-  (let1 args ($list.args iform)
-    `(,@($append-map1-sum (lambda (i) `(,@(pass3 i locals frees can-frees sets tail) PUSH)) args)
-      LIST
-      ,(length args))))
+;; (define (pass3/$list iform locals frees can-frees sets tail)
+;;   (let1 args ($list.args iform)
+;;     `(,@($append-map1-sum (lambda (i) `(,@(pass3 i locals frees can-frees sets tail) PUSH)) args)
+;;       LIST
+;;       ,(length args))))
 
 (define (zass3/$list cb iform locals frees can-frees sets tail)
   (let1 args ($list.args iform)
@@ -2558,9 +2511,9 @@
       (cput! cb 'LIST (length args)))))
 
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
-(define (pass3/$local-ref iform locals frees can-frees sets tail)
-  (append2 (pass3/compile-refer ($local-ref.lvar iform) locals frees)
-          (if (memq ($local-ref.lvar iform) sets) '(INDIRECT) '())))
+;; (define (pass3/$local-ref iform locals frees can-frees sets tail)
+;;   (append2 (pass3/compile-refer ($local-ref.lvar iform) locals frees)
+;;           (if (memq ($local-ref.lvar iform) sets) '(INDIRECT) '())))
 
 (define (zass3/$local-ref cb iform locals frees can-frees sets tail)
   (zass3/compile-refer cb ($local-ref.lvar iform) locals frees)
@@ -2569,12 +2522,12 @@
   0)
 
 ;; $local-assign is classified into ASSIGN_LOCAL and ASSIGN_FREE
-(define (pass3/$local-assign iform locals frees can-frees sets tail)
-  (let ([valc (pass3 ($local-assign.val iform) locals frees can-frees sets #f)]
-        [varc (pass3/compile-assign ($local-ref.lvar iform) locals frees)])
-  `(,(code-stack-sum valc varc)
-    ,@(code-body valc)
-    ,@(code-body varc))))
+;; (define (pass3/$local-assign iform locals frees can-frees sets tail)
+;;   (let ([valc (pass3 ($local-assign.val iform) locals frees can-frees sets #f)]
+;;         [varc (pass3/compile-assign ($local-ref.lvar iform) locals frees)])
+;;   `(,(code-stack-sum valc varc)
+;;     ,@(code-body valc)
+;;     ,@(code-body varc))))
 
 (define (zass3/$local-assign cb iform locals frees can-frees sets tail)
   (let ([val-stack-size (zass3/rec cb ($local-assign.val iform) locals frees can-frees sets #f)]
@@ -2591,15 +2544,15 @@
                   (symbol->string sym))))
 
 ;; $global-lef is classified into REFER_GLOBAL and REFER_FREE
-(define (pass3/$global-ref iform locals frees can-frees sets tail)
-  (let1 sym ($global-ref.sym iform)
-    (let next-free ([free frees] [n 0])
-      (cond [(null? free)
-             `(0 REFER_GLOBAL ,(merge-libname-sym ($global-ref.libname iform) sym))]
-            [(eq? ($lvar.sym (car free)) sym)
-             `(0 REFER_FREE ,n)]
-            [else
-             (next-free (cdr free) (+ n 1))]))))
+;; (define (pass3/$global-ref iform locals frees can-frees sets tail)
+;;   (let1 sym ($global-ref.sym iform)
+;;     (let next-free ([free frees] [n 0])
+;;       (cond [(null? free)
+;;              `(0 REFER_GLOBAL ,(merge-libname-sym ($global-ref.libname iform) sym))]
+;;             [(eq? ($lvar.sym (car free)) sym)
+;;              `(0 REFER_FREE ,n)]
+;;             [else
+;;              (next-free (cdr free) (+ n 1))]))))
 
 (define (zass3/$global-ref cb iform locals frees can-frees sets tail)
   (let1 sym ($global-ref.sym iform)
@@ -2615,20 +2568,20 @@
 
 
 ;; $global-assign is classified into ASSIGN_GLOBAL and ASSIGN_FREE
-(define (pass3/$global-assign iform locals frees can-frees sets tail)
-  (let1 sym ($global-assign.sym iform)
-    (let next-free ([free frees] [n 0])
-      (cond [(null? free)
-             `(,@(pass3 ($global-assign.val iform) locals frees can-frees sets #f)
-               ASSIGN_GLOBAL
-               ,(merge-libname-sym ($global-assign.libname iform)
-                                   sym))]
-            [(eq? ($lvar.sym (car free)) sym)
-             `(,@(pass3 ($global-assign.val iform) locals frees can-frees sets #f)
-               ASSIGN_FREE
-               ,n)]
-            [else
-             (next-free (cdr free) (+ n 1))]))))
+;; (define (pass3/$global-assign iform locals frees can-frees sets tail)
+;;   (let1 sym ($global-assign.sym iform)
+;;     (let next-free ([free frees] [n 0])
+;;       (cond [(null? free)
+;;              `(,@(pass3 ($global-assign.val iform) locals frees can-frees sets #f)
+;;                ASSIGN_GLOBAL
+;;                ,(merge-libname-sym ($global-assign.libname iform)
+;;                                    sym))]
+;;             [(eq? ($lvar.sym (car free)) sym)
+;;              `(,@(pass3 ($global-assign.val iform) locals frees can-frees sets #f)
+;;                ASSIGN_FREE
+;;                ,n)]
+;;             [else
+;;              (next-free (cdr free) (+ n 1))]))))
 
 (define (zass3/$global-assign cb iform locals frees can-frees sets tail)
   (let1 sym ($global-assign.sym iform)
@@ -2648,10 +2601,10 @@
         (next-free (cdr free) (+ n 1))]))))
 
 
-(define (pass3/$seq iform locals frees can-frees sets tail)
-  ($append-map1-with-tail-sum (lambda (i tail?)
-                                (pass3 i locals frees can-frees sets (if tail? tail #f)))
-                              ($seq.body iform)))
+;; (define (pass3/$seq iform locals frees can-frees sets tail)
+;;   ($append-map1-with-tail-sum (lambda (i tail?)
+;;                                 (pass3 i locals frees can-frees sets (if tail? tail #f)))
+;;                               ($seq.body iform)))
 
 (define (zass3/$seq cb iform locals frees can-frees sets tail)
   (let loop ([form ($seq.body iform)]
@@ -2664,105 +2617,105 @@
               (+ size (zass3/rec cb (car form) locals frees can-frees sets tail?))))])))
 
 
-(define (pass3/$undef iform locals frees can-frees sets tail)
-  '(0 UNDEF))
+;; (define (pass3/$undef iform locals frees can-frees sets tail)
+;;   '(0 UNDEF))
 
 (define (zass3/$undef cb iform locals frees can-frees sets tail)
   (cput! cb 'UNDEF)
   0)
 
-(define (pass3/$asm iform locals frees can-frees sets tail)
-  (define (sum lst)
-    (if (null? lst)
-        0
-        (+ (car lst) (sum (cdr lst)))))
-  (define (push-arg i)
-    (pass3/compile-arg i locals frees can-frees sets tail))
-  (define (compile-1arg insn args)
-    `(,@(pass3 (first args) locals frees can-frees sets #f)
-      ,insn))
-  (define (compile-2arg insn args)
-    (let ([x (push-arg (first args))]
-          [y (pass3 (second args) locals frees can-frees sets #f)])
-      (let1 val
-          `(,(code-stack-sum x y)
-            ,@(code-body x)
-            ,@(code-body y)
-            ,insn)
-        val)))
-  (define (compile-3arg insn args)
-    (let ([x (push-arg (first args))]
-          [y (push-arg (second args))]
-          [z (pass3 (third args) locals frees can-frees sets #f)])
-    `(,(code-stack-sum x y z)
-      ,@(code-body x)
-      ,@(code-body y)
-      ,@(code-body z)
-      ,insn)))
-  (define (compile-n-args args)
-    (if (null? args)
-        '(0)
-        (let1 code
-            (let loop ([args args])
-              (if (null? (cdr args))
-                  (list (pass3 (car args) locals frees can-frees sets #f))
-                  (cons (push-arg (car args)) (loop (cdr args)))))
-          `(,(sum ($map1 car code))
-            ,@($append-map1 cdr code)))))
-  (let1 args ($asm.args iform)
-    (case ($asm.insn iform)
-;      [(APPEND)            (compile-2arg   'APPEND          args)]
-      [(NUMBER_ADD)        (compile-2arg   'NUMBER_ADD      args)]
-      [(NUMBER_SUB)        (compile-2arg   'NUMBER_SUB      args)]
-      [(NUMBER_MUL)        (compile-2arg   'NUMBER_MUL      args)]
-      [(NUMBER_DIV)        (compile-2arg   'NUMBER_DIV      args)]
-      [(NUMBER_EQUAL)      (compile-2arg   'NUMBER_EQUAL    args)]
-      [(NUMBER_GE)         (compile-2arg   'NUMBER_GE       args)]
-      [(NUMBER_GT)         (compile-2arg   'NUMBER_GT       args)]
-      [(NUMBER_LT)         (compile-2arg   'NUMBER_LT       args)]
-      [(NUMBER_LE)         (compile-2arg   'NUMBER_LE       args)]
-      [(CONS)              (compile-2arg   'CONS            args)]
-      [(CAR)               (compile-1arg   'CAR             args)]
-      [(CDR)               (compile-1arg   'CDR             args)]
-      [(CAAR)              (compile-1arg   'CAAR            args)]
-      [(CADR)              (compile-1arg   'CADR            args)]
-      [(CDAR)              (compile-1arg   'CDAR            args)]
-      [(CDDR)              (compile-1arg   'CDDR            args)]
-      [(SET_CDR)           (compile-2arg   'SET_CDR         args)]
-      [(SET_CAR)           (compile-2arg   'SET_CAR         args)]
-      [(MAKE_VECTOR)       (compile-2arg   'MAKE_VECTOR     args)]
-      [(VECTOR_LENGTH)     (compile-1arg   'VECTOR_LENGTH   args)]
-      [(VECTOR_SET)        (compile-3arg   'VECTOR_SET      args)]
-      [(VECTOR_REF)        (compile-2arg   'VECTOR_REF      args)]
-      [(EQ)                (compile-2arg   'EQ              args)]
-      [(EQV)               (compile-2arg   'EQV             args)]
-      [(EQUAL)             (compile-2arg   'EQUAL           args)]
-      [(PAIR_P)            (compile-1arg   'PAIR_P          args)]
-      [(NULL_P)            (compile-1arg   'NULL_P          args)]
-      [(SYMBOL_P)          (compile-1arg   'SYMBOL_P        args)]
-      [(VECTOR_P)          (compile-1arg   'VECTOR_P        args)]
-      [(NOT)               (compile-1arg   'NOT             args)]
-      [(OPEN_INPUT_FILE)   (compile-1arg   'OPEN_INPUT_FILE args)]
-      [(READ)              (compile-1arg   'READ            args)]
-      [(READ_CHAR)         (compile-1arg   'READ_CHAR       args)]
-      [(VALUES)
-       `(,@(compile-n-args args)
-         VALUES
-         ,(length args))]
-      [(APPLY)
-       (let ([arg1-c (pass3 (first args) locals frees can-frees sets #f)]
-             [arg2-c (pass3 (second args) locals frees can-frees sets #f)]
-             [end-of-frame (make-label)])
-         `(,(code-stack-sum arg1-c arg2-c)
-           FRAME
-           ,(ref-label end-of-frame)
-           ,@(code-body arg2-c)
-           PUSH
-           ,@(code-body arg1-c)
-           APPLY
-           ,end-of-frame))]
-      [else
-       (print "unknown insn on pass3/$asm")])))
+;; (define (pass3/$asm iform locals frees can-frees sets tail)
+;;   (define (sum lst)
+;;     (if (null? lst)
+;;         0
+;;         (+ (car lst) (sum (cdr lst)))))
+;;   (define (push-arg i)
+;;     (pass3/compile-arg i locals frees can-frees sets tail))
+;;   (define (compile-1arg insn args)
+;;     `(,@(pass3 (first args) locals frees can-frees sets #f)
+;;       ,insn))
+;;   (define (compile-2arg insn args)
+;;     (let ([x (push-arg (first args))]
+;;           [y (pass3 (second args) locals frees can-frees sets #f)])
+;;       (let1 val
+;;           `(,(code-stack-sum x y)
+;;             ,@(code-body x)
+;;             ,@(code-body y)
+;;             ,insn)
+;;         val)))
+;;   (define (compile-3arg insn args)
+;;     (let ([x (push-arg (first args))]
+;;           [y (push-arg (second args))]
+;;           [z (pass3 (third args) locals frees can-frees sets #f)])
+;;     `(,(code-stack-sum x y z)
+;;       ,@(code-body x)
+;;       ,@(code-body y)
+;;       ,@(code-body z)
+;;       ,insn)))
+;;   (define (compile-n-args args)
+;;     (if (null? args)
+;;         '(0)
+;;         (let1 code
+;;             (let loop ([args args])
+;;               (if (null? (cdr args))
+;;                   (list (pass3 (car args) locals frees can-frees sets #f))
+;;                   (cons (push-arg (car args)) (loop (cdr args)))))
+;;           `(,(sum ($map1 car code))
+;;             ,@($append-map1 cdr code)))))
+;;   (let1 args ($asm.args iform)
+;;     (case ($asm.insn iform)
+;; ;      [(APPEND)            (compile-2arg   'APPEND          args)]
+;;       [(NUMBER_ADD)        (compile-2arg   'NUMBER_ADD      args)]
+;;       [(NUMBER_SUB)        (compile-2arg   'NUMBER_SUB      args)]
+;;       [(NUMBER_MUL)        (compile-2arg   'NUMBER_MUL      args)]
+;;       [(NUMBER_DIV)        (compile-2arg   'NUMBER_DIV      args)]
+;;       [(NUMBER_EQUAL)      (compile-2arg   'NUMBER_EQUAL    args)]
+;;       [(NUMBER_GE)         (compile-2arg   'NUMBER_GE       args)]
+;;       [(NUMBER_GT)         (compile-2arg   'NUMBER_GT       args)]
+;;       [(NUMBER_LT)         (compile-2arg   'NUMBER_LT       args)]
+;;       [(NUMBER_LE)         (compile-2arg   'NUMBER_LE       args)]
+;;       [(CONS)              (compile-2arg   'CONS            args)]
+;;       [(CAR)               (compile-1arg   'CAR             args)]
+;;       [(CDR)               (compile-1arg   'CDR             args)]
+;;       [(CAAR)              (compile-1arg   'CAAR            args)]
+;;       [(CADR)              (compile-1arg   'CADR            args)]
+;;       [(CDAR)              (compile-1arg   'CDAR            args)]
+;;       [(CDDR)              (compile-1arg   'CDDR            args)]
+;;       [(SET_CDR)           (compile-2arg   'SET_CDR         args)]
+;;       [(SET_CAR)           (compile-2arg   'SET_CAR         args)]
+;;       [(MAKE_VECTOR)       (compile-2arg   'MAKE_VECTOR     args)]
+;;       [(VECTOR_LENGTH)     (compile-1arg   'VECTOR_LENGTH   args)]
+;;       [(VECTOR_SET)        (compile-3arg   'VECTOR_SET      args)]
+;;       [(VECTOR_REF)        (compile-2arg   'VECTOR_REF      args)]
+;;       [(EQ)                (compile-2arg   'EQ              args)]
+;;       [(EQV)               (compile-2arg   'EQV             args)]
+;;       [(EQUAL)             (compile-2arg   'EQUAL           args)]
+;;       [(PAIR_P)            (compile-1arg   'PAIR_P          args)]
+;;       [(NULL_P)            (compile-1arg   'NULL_P          args)]
+;;       [(SYMBOL_P)          (compile-1arg   'SYMBOL_P        args)]
+;;       [(VECTOR_P)          (compile-1arg   'VECTOR_P        args)]
+;;       [(NOT)               (compile-1arg   'NOT             args)]
+;;       [(OPEN_INPUT_FILE)   (compile-1arg   'OPEN_INPUT_FILE args)]
+;;       [(READ)              (compile-1arg   'READ            args)]
+;;       [(READ_CHAR)         (compile-1arg   'READ_CHAR       args)]
+;;       [(VALUES)
+;;        `(,@(compile-n-args args)
+;;          VALUES
+;;          ,(length args))]
+;;       [(APPLY)
+;;        (let ([arg1-c (pass3 (first args) locals frees can-frees sets #f)]
+;;              [arg2-c (pass3 (second args) locals frees can-frees sets #f)]
+;;              [end-of-frame (make-label)])
+;;          `(,(code-stack-sum arg1-c arg2-c)
+;;            FRAME
+;;            ,(ref-label end-of-frame)
+;;            ,@(code-body arg2-c)
+;;            PUSH
+;;            ,@(code-body arg1-c)
+;;            APPLY
+;;            ,end-of-frame))]
+;;       [else
+;;        (print "unknown insn on pass3/$asm")])))
 
 (define (zass3/$asm cb iform locals frees can-frees sets tail)
   (define (compile-1arg insn args)
@@ -2841,49 +2794,49 @@
        (print "unknown insn on zass3/$asm")])))
 
 
-(define (pass3/$if iform locals frees can-frees sets tail)
-  (define (push-arg i)
-;;     (if (tag? i $CONST)
-;;         `(1 CONSTANT_PUSH ,($const.val i)) ;; compound
-        (let1 code (pass3 i locals frees can-frees sets #f)
-        `(,(+ (code-stack code) 1),@(code-body code) PUSH)))
-  (define (pass3/test i)
-    (define (gen-test1 op)
-      `(,@(pass3 (first ($asm.args i)) locals frees can-frees sets #f) ,op))
-    (define (gen-test2 op)
-      (let ([x (push-arg (first ($asm.args i)))]
-            [y (pass3 (second ($asm.args i)) locals frees can-frees sets #f)])
-      `(,(code-stack-sum x y)
-        ,@(code-body x)
-        ,@(code-body y)
-        ,op)))
-    (if (tag? i $ASM)
-        (case ($asm.insn i)
-;;           [(NULL_P) (gen-test1 'BRANCH_NULLP)]
-;;           [(PAIR_P) (gen-test1 'BRANCH_PAIRP)]
-;;           [(EQ)     (gen-test2 'BRANCH_EQ)]
-;;           [(NUMBER_EQUAL) (gen-test2 'BRANCH_NUMBER_EQUAL)]
-;;           [(NUMBER_GT) (gen-test2 'BRANCH_NUMBER_GT)]
-;;           [(NUMBER_GE) (gen-test2 'BRANCH_NUMBER_GE)]
-;;           [(NUMBER_LE) (gen-test2 'BRANCH_NUMBER_LE)]
-;;           [(NUMBER_LT) (gen-test2 'BRANCH_NUMBER_LT)]
-          [else
-           `(,@(pass3 i locals frees can-frees sets #f) TEST)])
-        `(,@(pass3 i locals frees can-frees sets #f) TEST)))
-  (let ([thenc (pass3 ($if.then iform) locals frees can-frees sets tail)]
-        [elsec (pass3 ($if.else iform) locals frees can-frees sets tail)]
-        [testc (pass3/test ($if.test iform))]
-        [end-of-else   (make-label)]
-        [begin-of-else (make-label)])
-    `(,(code-stack-sum thenc elsec testc)
-      ,@(code-body testc)
-      ,(ref-label begin-of-else)
-      ,@(code-body thenc)
-      UNFIXED_JUMP
-      ,(ref-label end-of-else)
-      ,begin-of-else
-      ,@(code-body elsec)
-      ,end-of-else)))
+;; (define (pass3/$if iform locals frees can-frees sets tail)
+;;   (define (push-arg i)
+;; ;;     (if (tag? i $CONST)
+;; ;;         `(1 CONSTANT_PUSH ,($const.val i)) ;; compound
+;;         (let1 code (pass3 i locals frees can-frees sets #f)
+;;         `(,(+ (code-stack code) 1),@(code-body code) PUSH)))
+;;   (define (pass3/test i)
+;;     (define (gen-test1 op)
+;;       `(,@(pass3 (first ($asm.args i)) locals frees can-frees sets #f) ,op))
+;;     (define (gen-test2 op)
+;;       (let ([x (push-arg (first ($asm.args i)))]
+;;             [y (pass3 (second ($asm.args i)) locals frees can-frees sets #f)])
+;;       `(,(code-stack-sum x y)
+;;         ,@(code-body x)
+;;         ,@(code-body y)
+;;         ,op)))
+;;     (if (tag? i $ASM)
+;;         (case ($asm.insn i)
+;; ;;           [(NULL_P) (gen-test1 'BRANCH_NULLP)]
+;; ;;           [(PAIR_P) (gen-test1 'BRANCH_PAIRP)]
+;; ;;           [(EQ)     (gen-test2 'BRANCH_EQ)]
+;; ;;           [(NUMBER_EQUAL) (gen-test2 'BRANCH_NUMBER_EQUAL)]
+;; ;;           [(NUMBER_GT) (gen-test2 'BRANCH_NUMBER_GT)]
+;; ;;           [(NUMBER_GE) (gen-test2 'BRANCH_NUMBER_GE)]
+;; ;;           [(NUMBER_LE) (gen-test2 'BRANCH_NUMBER_LE)]
+;; ;;           [(NUMBER_LT) (gen-test2 'BRANCH_NUMBER_LT)]
+;;           [else
+;;            `(,@(pass3 i locals frees can-frees sets #f) TEST)])
+;;         `(,@(pass3 i locals frees can-frees sets #f) TEST)))
+;;   (let ([thenc (pass3 ($if.then iform) locals frees can-frees sets tail)]
+;;         [elsec (pass3 ($if.else iform) locals frees can-frees sets tail)]
+;;         [testc (pass3/test ($if.test iform))]
+;;         [end-of-else   (make-label)]
+;;         [begin-of-else (make-label)])
+;;     `(,(code-stack-sum thenc elsec testc)
+;;       ,@(code-body testc)
+;;       ,(ref-label begin-of-else)
+;;       ,@(code-body thenc)
+;;       UNFIXED_JUMP
+;;       ,(ref-label end-of-else)
+;;       ,begin-of-else
+;;       ,@(code-body elsec)
+;;       ,end-of-else)))
 
 (define (zass3/$if cb iform locals frees can-frees sets tail)
   (let ([end-of-else   (make-label)]
@@ -2899,11 +2852,11 @@
           (cput! cb end-of-else)
           (+ test-size then-size else-size))))))
 
-(define (pass3/$define iform locals frees can-frees sets tail)
-  `(,@(pass3 ($define.val iform) locals frees can-frees sets #f)
-    DEFINE_GLOBAL
-    ,(merge-libname-sym ($define.libname iform)
-                        ($define.sym iform))))
+;; (define (pass3/$define iform locals frees can-frees sets tail)
+;;   `(,@(pass3 ($define.val iform) locals frees can-frees sets #f)
+;;     DEFINE_GLOBAL
+;;     ,(merge-libname-sym ($define.libname iform)
+;;                         ($define.sym iform))))
 
 
 (define (zass3/$define cb iform locals frees can-frees sets tail)
@@ -2912,15 +2865,15 @@
     (cput! cb 'DEFINE_GLOBAL (merge-libname-sym ($define.libname iform)
                                                 ($define.sym iform)))))
 
-(define (pass3/compile-arg arg locals frees can-frees sets tail)
-  (cond
-   [(tag? arg $ASM)
-    (let1 compiled (pass3 arg locals frees can-frees sets #f)
-       `(,(+ 1 (code-stack compiled)) ,@(code-body compiled) PUSH))]
-   [else
-      (let* ([code (pass3 arg locals frees can-frees sets #f)]
-             [compiled (code-body code)])
-        `(,(+ (code-stack code) 1) ,@compiled PUSH))])) ;; ここを zass3 対応で変更した
+;; (define (pass3/compile-arg arg locals frees can-frees sets tail)
+;;   (cond
+;;    [(tag? arg $ASM)
+;;     (let1 compiled (pass3 arg locals frees can-frees sets #f)
+;;        `(,(+ 1 (code-stack compiled)) ,@(code-body compiled) PUSH))]
+;;    [else
+;;       (let* ([code (pass3 arg locals frees can-frees sets #f)]
+;;              [compiled (code-body code)])
+;;         `(,(+ (code-stack code) 1) ,@compiled PUSH))])) ;; ここを zass3 対応で変更した
 
 (define (zass3/compile-arg cb arg locals frees can-frees sets tail)
   (let1 size (zass3/rec cb arg locals frees can-frees sets #f)
@@ -2933,13 +2886,13 @@
             (+ size accum)))
         0 args))
 
-(define (pass3/compile-args args locals frees can-frees sets tail)
-  ($append-map1-sum (lambda (arg)
-                      (pass3/compile-arg arg locals frees can-frees sets tail)) args))
+;; (define (pass3/compile-args args locals frees can-frees sets tail)
+;;   ($append-map1-sum (lambda (arg)
+;;                       (pass3/compile-arg arg locals frees can-frees sets tail)) args))
 
 
-(define (pass3/merge-insn sexp)
-  sexp)
+;; (define (pass3/merge-insn sexp)
+;;   sexp)
 ;;   (define (iter sexp)
 ;;     (if (null? sexp)
 ;;         '()
@@ -2956,75 +2909,75 @@
 ;;   (iter sexp))
 
 ;; hoge
-(define (pass3/$call iform locals frees can-frees sets tail)
-  (define (compile-apply i code)
-    (let1 procc (code-body code)
-;      (format #t "CODE stack=~d\n" (code-stack code))
-        `(,(code-stack code)
-          ,@procc
-          ,@(if tail (list 'SHIFT (length ($call.args i)) tail) '())
-          CALL
-          ,(length ($call.args i)))))
-  (case ($call.type iform)
-    [(jump)
-     (let ([argsc (pass3/compile-args ($call.args iform) locals frees can-frees sets #f)]
-           [label ($lambda.body ($call.proc ($call.proc iform)))])
-       `(,(code-stack argsc)
-         ,@(list 'REDUCE (length ($call.args iform)))
-         ,@(code-body argsc)
-         SHIFT
-         ,(length ($call.args iform))
-         ,(length ($call.args iform))
-         UNFIXED_JUMP
-         ,label))]
-    [(embed)
-     (let* ([label ($lambda.body ($call.proc iform))]
-            [body ($label.body label)]
-            [vars ($lambda.lvars ($call.proc iform))]
-            [frees-here (pass3/find-free body
-                                         vars
-                                         (append2 locals (append2 frees can-frees)))]
-            [args-code (pass3/compile-args ($call.args iform) locals frees-here can-frees sets #f)]
-            [sets-here  (append2 (pass3/find-sets body vars) sets)]
-            [boxes-code (pass3/make-boxes sets-here vars)]
-            [body-code  (pass3  body
-                              vars
-                              frees-here
-                              (%set-union can-frees vars)
-                              (%set-union sets-here
-                                         (set-intersect sets frees-here))
-                              (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
-            [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-       `(,(code-stack-sum args-code body-code free-code)
-         LET_FRAME
-         ,@(code-body free-code)
-         ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-         ,@(code-body args-code)
-         ,@boxes-code
-         ,@(list 'ENTER (length ($call.args iform)))
-         ,label
-         ,@(code-body body-code)
-         ,@(list 'LEAVE (length ($call.args iform)))))]
-    [else
-     (let* ([procc        (pass3 ($call.proc iform) locals frees can-frees sets #f)]
-            [argsc        (pass3/compile-args ($call.args iform) locals frees can-frees sets #f)]
-            [applyc       (compile-apply iform procc)]
-            [end-of-frame (make-label)])
-       ;;
-       ;; How tail context call be optimized.
-       ;;
-       ;;   On ((lambda () (a 3))), (a 3) is tail call.
-       ;;   Normally, after this call, VM jmp to saved continuation (code, ip, sp) with (RETURN n) instruction.
-       ;;   This continuation is saved by FRAME instruction before applying (a 3).
-       ;;   Because (a 3) is tail call, continuation of (a 3) is exactly equal to continuation of ((lambda () ...)).
-       ;;   So we don't have to execute FRAME, instead we can use FRAME informtion which is saved before applying ((lambda () ...)).
-       ;;   To access the FRAME informtion, we remove arguments for a, so we do this SHIFT.
-       ;;
-       `(,(code-stack-sum argsc applyc)
-         ,@(if tail '() (list 'FRAME (ref-label end-of-frame)))
-         ,@(code-body argsc)
-         ,@(code-body applyc)
-         ,@(if tail '() (list end-of-frame))))]))
+;; (define (pass3/$call iform locals frees can-frees sets tail)
+;;   (define (compile-apply i code)
+;;     (let1 procc (code-body code)
+;; ;      (format #t "CODE stack=~d\n" (code-stack code))
+;;         `(,(code-stack code)
+;;           ,@procc
+;;           ,@(if tail (list 'SHIFT (length ($call.args i)) tail) '())
+;;           CALL
+;;           ,(length ($call.args i)))))
+;;   (case ($call.type iform)
+;;     [(jump)
+;;      (let ([argsc (pass3/compile-args ($call.args iform) locals frees can-frees sets #f)]
+;;            [label ($lambda.body ($call.proc ($call.proc iform)))])
+;;        `(,(code-stack argsc)
+;;          ,@(list 'REDUCE (length ($call.args iform)))
+;;          ,@(code-body argsc)
+;;          SHIFT
+;;          ,(length ($call.args iform))
+;;          ,(length ($call.args iform))
+;;          UNFIXED_JUMP
+;;          ,label))]
+;;     [(embed)
+;;      (let* ([label ($lambda.body ($call.proc iform))]
+;;             [body ($label.body label)]
+;;             [vars ($lambda.lvars ($call.proc iform))]
+;;             [frees-here (pass3/find-free body
+;;                                          vars
+;;                                          (append2 locals (append2 frees can-frees)))]
+;;             [args-code (pass3/compile-args ($call.args iform) locals frees-here can-frees sets #f)]
+;;             [sets-here  (append2 (pass3/find-sets body vars) sets)]
+;;             [boxes-code (pass3/make-boxes sets-here vars)]
+;;             [body-code  (pass3  body
+;;                               vars
+;;                               frees-here
+;;                               (%set-union can-frees vars)
+;;                               (%set-union sets-here
+;;                                          (set-intersect sets frees-here))
+;;                               (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
+;;             [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+;;        `(,(code-stack-sum args-code body-code free-code)
+;;          LET_FRAME
+;;          ,@(code-body free-code)
+;;          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;          ,@(code-body args-code)
+;;          ,@boxes-code
+;;          ,@(list 'ENTER (length ($call.args iform)))
+;;          ,label
+;;          ,@(code-body body-code)
+;;          ,@(list 'LEAVE (length ($call.args iform)))))]
+;;     [else
+;;      (let* ([procc        (pass3 ($call.proc iform) locals frees can-frees sets #f)]
+;;             [argsc        (pass3/compile-args ($call.args iform) locals frees can-frees sets #f)]
+;;             [applyc       (compile-apply iform procc)]
+;;             [end-of-frame (make-label)])
+;;        ;;
+;;        ;; How tail context call be optimized.
+;;        ;;
+;;        ;;   On ((lambda () (a 3))), (a 3) is tail call.
+;;        ;;   Normally, after this call, VM jmp to saved continuation (code, ip, sp) with (RETURN n) instruction.
+;;        ;;   This continuation is saved by FRAME instruction before applying (a 3).
+;;        ;;   Because (a 3) is tail call, continuation of (a 3) is exactly equal to continuation of ((lambda () ...)).
+;;        ;;   So we don't have to execute FRAME, instead we can use FRAME informtion which is saved before applying ((lambda () ...)).
+;;        ;;   To access the FRAME informtion, we remove arguments for a, so we do this SHIFT.
+;;        ;;
+;;        `(,(code-stack-sum argsc applyc)
+;;          ,@(if tail '() (list 'FRAME (ref-label end-of-frame)))
+;;          ,@(code-body argsc)
+;;          ,@(code-body applyc)
+;;          ,@(if tail '() (list end-of-frame))))]))
 
 (define (zass3/$call cb iform locals frees can-frees sets tail)
   (case ($call.type iform)
@@ -3096,19 +3049,19 @@
          (+ args-size proc-size)))]))
 
 
-(define (pass3/$call-cc iform locals frees can-frees sets tail)
-  (let ([argc         (pass3 ($call-cc.proc iform) locals frees can-frees sets #f)]
-        [end-of-frame (make-label)])
-    `(,(code-stack argc)
-      ,@(if tail '() (list 'FRAME (ref-label end-of-frame)))
-      MAKE_CONTINUATION
-      ,(if tail 1 0)
-      PUSH
-      ,@(code-body argc)
-      ,@(if tail (list 'SHIFT 1 tail) '())
-      CALL
-      1
-      ,@(if tail '() (list end-of-frame)))))
+;; (define (pass3/$call-cc iform locals frees can-frees sets tail)
+;;   (let ([argc         (pass3 ($call-cc.proc iform) locals frees can-frees sets #f)]
+;;         [end-of-frame (make-label)])
+;;     `(,(code-stack argc)
+;;       ,@(if tail '() (list 'FRAME (ref-label end-of-frame)))
+;;       MAKE_CONTINUATION
+;;       ,(if tail 1 0)
+;;       PUSH
+;;       ,@(code-body argc)
+;;       ,@(if tail (list 'SHIFT 1 tail) '())
+;;       CALL
+;;       1
+;;       ,@(if tail '() (list end-of-frame)))))
 
 (define (zass3/$call-cc cb iform locals frees can-frees sets tail)
   (let1 end-of-frame (make-label)
@@ -3124,39 +3077,39 @@
         (cput! cb end-of-frame)))))
 
 
-(define (pass3/$lambda iform locals frees can-frees sets tail)
-    (let* ([vars ($lambda.lvars iform)]
-           [body ($lambda.body iform)]
-           [frees-here (pass3/find-free body
-                                        vars
-                                        (append2 locals (append2 frees can-frees)))]
-           [sets-here  (append2 (pass3/find-sets body vars) sets)]
-           [boxes-code (pass3/make-boxes sets-here vars)]
-           [body-code  (pass3 body
-                              vars
-                              frees-here
-                              (%set-union can-frees vars)
-                              (%set-union sets-here
-                                         (set-intersect sets frees-here))
-                              (length vars))]
-           [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
-           [end-of-closure (make-label)])
-;      (format #t "===== OLD: ~d ~d ~d\n" (car body-code) (car free-code) (length vars))
-      `(0
-        ,@(code-body free-code)
-        CLOSURE
-        ,(ref-label end-of-closure)
-        ,(length vars)                                            ;; length of arguments
-        ,(> ($lambda.optarg iform) 0)                             ;; optional-arg?
-        ,(length frees-here)                                      ;; number of free variables
-        ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
-        ,($lambda.src iform)                                      ;; source code information
-        ,@boxes-code                                              ;; lambda body start
-        ,@(code-body body-code)
-        RETURN
-        ,(length vars)
-        ,end-of-closure
-        )))
+;; (define (pass3/$lambda iform locals frees can-frees sets tail)
+;;     (let* ([vars ($lambda.lvars iform)]
+;;            [body ($lambda.body iform)]
+;;            [frees-here (pass3/find-free body
+;;                                         vars
+;;                                         (append2 locals (append2 frees can-frees)))]
+;;            [sets-here  (append2 (pass3/find-sets body vars) sets)]
+;;            [boxes-code (pass3/make-boxes sets-here vars)]
+;;            [body-code  (pass3 body
+;;                               vars
+;;                               frees-here
+;;                               (%set-union can-frees vars)
+;;                               (%set-union sets-here
+;;                                          (set-intersect sets frees-here))
+;;                               (length vars))]
+;;            [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))]
+;;            [end-of-closure (make-label)])
+;; ;      (format #t "===== OLD: ~d ~d ~d\n" (car body-code) (car free-code) (length vars))
+;;       `(0
+;;         ,@(code-body free-code)
+;;         CLOSURE
+;;         ,(ref-label end-of-closure)
+;;         ,(length vars)                                            ;; length of arguments
+;;         ,(> ($lambda.optarg iform) 0)                             ;; optional-arg?
+;;         ,(length frees-here)                                      ;; number of free variables
+;;         ,(+ (code-stack-sum body-code free-code) (length vars) 4) ;; max-stack 4 is sizeof frame
+;;         ,($lambda.src iform)                                      ;; source code information
+;;         ,@boxes-code                                              ;; lambda body start
+;;         ,@(code-body body-code)
+;;         RETURN
+;;         ,(length vars)
+;;         ,end-of-closure
+;;         )))
 
 (define (zass3/$lambda cb iform locals frees can-frees sets tail)
   (let* ([vars ($lambda.lvars iform)]
@@ -3194,38 +3147,38 @@
         (cput! cb 'RETURN (length vars) end-of-closure)
         0))))
 
-(define (pass3/$receive iform locals frees can-frees sets tail)
-  (let* ([vars ($receive.lvars iform)]
-         [body ($receive.body iform)]
-         [frees-here (append2
-                      (pass3/find-free ($receive.vals iform) locals (append2 locals (append2 frees can-frees)))
-                      (pass3/find-free body
-                                       vars
-                                       (append2 locals (append2 frees can-frees))))]
-         [sets-here  (append2 (pass3/find-sets body vars) sets)]
-         [boxes-code (pass3/make-boxes sets-here vars)]
-         [body-code  (pass3 body
-                            vars
-                            frees-here
-                            (%set-union can-frees vars)
-                            (%set-union sets-here
-                                       (set-intersect sets frees-here))
-                            (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
-         [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets #f)]
-         [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-    ;; non-tail call works fine.
-    `(,(code-stack-sum body-code vals-code free-code)
-      LET_FRAME
-      ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-      ,@(code-body vals-code)
-      RECEIVE
-      ,($receive.reqargs iform)
-      ,($receive.optarg  iform)
-      ,@boxes-code
-      ,@(list 'ENTER (length vars))
-      ,@(code-body body-code)
-      ,@(list 'LEAVE (length vars)))))
+;; (define (pass3/$receive iform locals frees can-frees sets tail)
+;;   (let* ([vars ($receive.lvars iform)]
+;;          [body ($receive.body iform)]
+;;          [frees-here (append2
+;;                       (pass3/find-free ($receive.vals iform) locals (append2 locals (append2 frees can-frees)))
+;;                       (pass3/find-free body
+;;                                        vars
+;;                                        (append2 locals (append2 frees can-frees))))]
+;;          [sets-here  (append2 (pass3/find-sets body vars) sets)]
+;;          [boxes-code (pass3/make-boxes sets-here vars)]
+;;          [body-code  (pass3 body
+;;                             vars
+;;                             frees-here
+;;                             (%set-union can-frees vars)
+;;                             (%set-union sets-here
+;;                                        (set-intersect sets frees-here))
+;;                             (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
+;;          [vals-code (pass3  ($receive.vals iform) locals frees-here can-frees sets #f)]
+;;          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+;;     ;; non-tail call works fine.
+;;     `(,(code-stack-sum body-code vals-code free-code)
+;;       LET_FRAME
+;;       ,@(code-body free-code)
+;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;       ,@(code-body vals-code)
+;;       RECEIVE
+;;       ,($receive.reqargs iform)
+;;       ,($receive.optarg  iform)
+;;       ,@boxes-code
+;;       ,@(list 'ENTER (length vars))
+;;       ,@(code-body body-code)
+;;       ,@(list 'LEAVE (length vars)))))
 
 (define (zass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
@@ -3257,46 +3210,46 @@
           (cput! cb 'LEAVE (length vars))
           (+ body-size vals-size free-size))))))
 
-(define (pass3/$let iform locals frees can-frees sets tail)
-  (if (eq? ($let.type iform) 'rec)
-      (pass3/letrec iform locals frees can-frees sets tail)
-      (let* ([vars ($let.lvars iform)]
-             [body ($let.body iform)]
-             [frees-here (append2
-                          ($append-map1 (lambda (i) (pass3/find-free i locals (append2 locals (append2 frees can-frees)))) ($let.inits iform))
-                          (pass3/find-free body
-                                           vars
-                                           (append2 locals (append2 frees can-frees))))]
-             [sets-here  (append2 (pass3/find-sets body vars) sets)]
-             [boxes-code (pass3/make-boxes sets-here vars)]
-             [body-code  (pass3 body
-                               vars
-                               frees-here
-                               (%set-union can-frees vars)
-                               (%set-union sets-here
-                                          (set-intersect sets frees-here))
-                               (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
-             [args-code (pass3/compile-args ($let.inits iform) locals frees-here can-frees sets tail)]
-             [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-        ;; tail-call doesn't work yet
-        ;;       ,@(if tail '() '(LET_FRAME))
-        ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
-        ;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-        ;;       ,@args-code
-        ;;       ,@boxes-code
-        ;;       ENTER
-        ;;       ,@body-code
-        ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
-        ;; non-tail call works fine.
-        `(,(code-stack-sum body-code args-code free-code)
-          LET_FRAME
-          ,@(code-body free-code)
-          ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-          ,@(code-body args-code)
-          ,@boxes-code
-          ,@(list 'ENTER (length vars))
-          ,@(code-body body-code)
-          ,@(list 'LEAVE (length vars))))))
+;; (define (pass3/$let iform locals frees can-frees sets tail)
+;;   (if (eq? ($let.type iform) 'rec)
+;;       (pass3/letrec iform locals frees can-frees sets tail)
+;;       (let* ([vars ($let.lvars iform)]
+;;              [body ($let.body iform)]
+;;              [frees-here (append2
+;;                           ($append-map1 (lambda (i) (pass3/find-free i locals (append2 locals (append2 frees can-frees)))) ($let.inits iform))
+;;                           (pass3/find-free body
+;;                                            vars
+;;                                            (append2 locals (append2 frees can-frees))))]
+;;              [sets-here  (append2 (pass3/find-sets body vars) sets)]
+;;              [boxes-code (pass3/make-boxes sets-here vars)]
+;;              [body-code  (pass3 body
+;;                                vars
+;;                                frees-here
+;;                                (%set-union can-frees vars)
+;;                                (%set-union sets-here
+;;                                           (set-intersect sets frees-here))
+;;                                (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
+;;              [args-code (pass3/compile-args ($let.inits iform) locals frees-here can-frees sets tail)]
+;;              [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+;;         ;; tail-call doesn't work yet
+;;         ;;       ,@(if tail '() '(LET_FRAME))
+;;         ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
+;;         ;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;         ;;       ,@args-code
+;;         ;;       ,@boxes-code
+;;         ;;       ENTER
+;;         ;;       ,@body-code
+;;         ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
+;;         ;; non-tail call works fine.
+;;         `(,(code-stack-sum body-code args-code free-code)
+;;           LET_FRAME
+;;           ,@(code-body free-code)
+;;           ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;           ,@(code-body args-code)
+;;           ,@boxes-code
+;;           ,@(list 'ENTER (length vars))
+;;           ,@(code-body body-code)
+;;           ,@(list 'LEAVE (length vars))))))
 
 (define (zass3/$let cb iform locals frees can-frees sets tail)
   (if (eq? ($let.type iform) 'rec)
@@ -3337,62 +3290,62 @@
               (cput! cb 'LEAVE (length vars))
               (+ body-size args-size free-size)))))))
 
-(define (pass3/letrec iform locals frees can-frees sets tail)
-  (let* ([vars ($let.lvars iform)]
-         [body ($let.body iform)]
-         [frees-here (append2
-                      ($append-map1 (lambda (i) (pass3/find-free i vars (append2 locals (append2 frees can-frees)))) ($let.inits iform))
-                      (pass3/find-free body
-                                       vars
-                                       (append2 locals (append2 frees can-frees))))]
-         ;; each vars can be set!
-         [sets-here  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)) sets)]
-         [boxes-code (pass3/make-boxes sets-here vars)]
-         [body-code (pass3  body
-                           vars
-                           frees-here
-                           (%set-union can-frees vars)
-                           (%set-union sets-here
-                                      (set-intersect sets frees-here))
-                           (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
-         [args ($let.inits iform)]
-         [init-code ($append-map1 (lambda (x) '(UNDEF PUSH)) args)]
-         ;; hoge
-         [assign-code ($append-map1-with-index-sum (lambda (x n)
-                                                     (append
-                                                      (pass3 x vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f)
-                                                      (list 'ASSIGN_LOCAL n)))
-                                                   args)]
-         [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
-;;          [assign-code (let loop ([args args]
-;;                                  [n (- (length args) 1)]
-;;                                  [ret '()])
-;;                         (if (null? args)
-;;                             ret
-;;                             (loop (cdr args)
-;;                                   (- n 1)
-;;                                   (append2 ret (pass3 (car args) vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f) (list 'ASSIGN_LOCAL n)))))])
+;; (define (pass3/letrec iform locals frees can-frees sets tail)
+;;   (let* ([vars ($let.lvars iform)]
+;;          [body ($let.body iform)]
+;;          [frees-here (append2
+;;                       ($append-map1 (lambda (i) (pass3/find-free i vars (append2 locals (append2 frees can-frees)))) ($let.inits iform))
+;;                       (pass3/find-free body
+;;                                        vars
+;;                                        (append2 locals (append2 frees can-frees))))]
+;;          ;; each vars can be set!
+;;          [sets-here  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)) sets)]
+;;          [boxes-code (pass3/make-boxes sets-here vars)]
+;;          [body-code (pass3  body
+;;                            vars
+;;                            frees-here
+;;                            (%set-union can-frees vars)
+;;                            (%set-union sets-here
+;;                                       (set-intersect sets frees-here))
+;;                            (if tail (+ tail (length vars) 2) #f))] ;; 2 is size of LET_FRAME
+;;          [args ($let.inits iform)]
+;;          [init-code ($append-map1 (lambda (x) '(UNDEF PUSH)) args)]
+;;          ;; hoge
+;;          [assign-code ($append-map1-with-index-sum (lambda (x n)
+;;                                                      (append
+;;                                                       (pass3 x vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f)
+;;                                                       (list 'ASSIGN_LOCAL n)))
+;;                                                    args)]
+;;          [free-code (if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '(0))])
+;; ;;          [assign-code (let loop ([args args]
+;; ;;                                  [n (- (length args) 1)]
+;; ;;                                  [ret '()])
+;; ;;                         (if (null? args)
+;; ;;                             ret
+;; ;;                             (loop (cdr args)
+;; ;;                                   (- n 1)
+;; ;;                                   (append2 ret (pass3 (car args) vars frees-here (%set-union can-frees vars) (%set-union sets-here (set-intersect sets frees-here)) #f) (list 'ASSIGN_LOCAL n)))))])
 
-    ;; tail-call doesn't work yet
-    ;;       ,@(if tail '() '(LET_FRAME))
-    ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
-    ;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-    ;;       ,@args-code
-    ;;       ,@boxes-code
-    ;;       ENTER
-    ;;       ,@body-code
-    ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
-    ;; non-tail call works fine.
-    `(,(code-stack-sum free-code assign-code body-code)
-      LET_FRAME
-      ,@(code-body free-code)
-      ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-      ,@init-code
-      ,@boxes-code
-      ,@(list 'ENTER (length vars))
-      ,@(code-body assign-code)
-      ,@(code-body body-code)
-      ,@(list 'LEAVE (length vars)))))
+;;     ;; tail-call doesn't work yet
+;;     ;;       ,@(if tail '() '(LET_FRAME))
+;;     ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
+;;     ;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;     ;;       ,@args-code
+;;     ;;       ,@boxes-code
+;;     ;;       ENTER
+;;     ;;       ,@body-code
+;;     ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
+;;     ;; non-tail call works fine.
+;;     `(,(code-stack-sum free-code assign-code body-code)
+;;       LET_FRAME
+;;       ,@(code-body free-code)
+;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
+;;       ,@init-code
+;;       ,@boxes-code
+;;       ,@(list 'ENTER (length vars))
+;;       ,@(code-body assign-code)
+;;       ,@(code-body body-code)
+;;       ,@(list 'LEAVE (length vars)))))
 
 (define (zass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
@@ -3442,20 +3395,20 @@
           (cput! cb 'LEAVE (length vars))
           (+ free-size assign-size body-size))))))
 
-(define (pass3/$import iform locals frees can-frees sets tail)
-  (define (rec i)
-    ($append-map1 (lambda (s)
-                    (let* ([libname      ($import-spec.libname s)]
-                           [lib          (hashtable-ref libraries libname)]
-                           [end-of-frame (make-label)])
-                      `(,@(rec ($library.import lib))
-                        FRAME  ;; We execute (RETURN 0) in library body
-                        ,(ref-label end-of-frame)
-                        IMPORT
-                        ,libname
-                        ,end-of-frame)))
-                  ($import.import-specs i)))
-  (cons 0 (rec iform)))
+;; (define (pass3/$import iform locals frees can-frees sets tail)
+;;   (define (rec i)
+;;     ($append-map1 (lambda (s)
+;;                     (let* ([libname      ($import-spec.libname s)]
+;;                            [lib          (hashtable-ref libraries libname)]
+;;                            [end-of-frame (make-label)])
+;;                       `(,@(rec ($library.import lib))
+;;                         FRAME  ;; We execute (RETURN 0) in library body
+;;                         ,(ref-label end-of-frame)
+;;                         IMPORT
+;;                         ,libname
+;;                         ,end-of-frame)))
+;;                   ($import.import-specs i)))
+;;   (cons 0 (rec iform)))
 
 (define (zass3/$import cb iform locals frees can-frees sets tail)
   (define (rec form)
@@ -3475,32 +3428,32 @@
     0)
   (rec iform))
 
-(define (pass3/$library iform locals frees can-frees sets tail)
-  `(0 LIBRARY ,($library.name iform) ,iform))
+;; (define (pass3/$library iform locals frees can-frees sets tail)
+;;   `(0 LIBRARY ,($library.name iform) ,iform))
 
 (define (zass3/$library cb iform locals frees can-frees sets tail)
   (cput! cb 'LIBRARY ($library.name iform) iform)
   0)
 
-(pass3/register $CONST         pass3/$const)
-(pass3/register $LAMBDA        pass3/$lambda)
-(pass3/register $LOCAL-REF     pass3/$local-ref)
-(pass3/register $LOCAL-ASSIGN  pass3/$local-assign)
-(pass3/register $GLOBAL-ASSIGN pass3/$global-assign)
-(pass3/register $GLOBAL-REF    pass3/$global-ref)
-(pass3/register $SEQ           pass3/$seq)
-(pass3/register $UNDEF         pass3/$undef)
-(pass3/register $IF            pass3/$if)
-(pass3/register $ASM           pass3/$asm)
-(pass3/register $DEFINE        pass3/$define)
-(pass3/register $CALL          pass3/$call)
-(pass3/register $CALL-CC       pass3/$call-cc)
-(pass3/register $LET           pass3/$let)
-(pass3/register $LIST          pass3/$list)
-(pass3/register $LIBRARY       pass3/$library)
-(pass3/register $IMPORT        pass3/$import)
-(pass3/register $IT            pass3/$it)
-(pass3/register $RECEIVE       pass3/$receive)
+;; (pass3/register $CONST         pass3/$const)
+;; (pass3/register $LAMBDA        pass3/$lambda)
+;; (pass3/register $LOCAL-REF     pass3/$local-ref)
+;; (pass3/register $LOCAL-ASSIGN  pass3/$local-assign)
+;; (pass3/register $GLOBAL-ASSIGN pass3/$global-assign)
+;; (pass3/register $GLOBAL-REF    pass3/$global-ref)
+;; (pass3/register $SEQ           pass3/$seq)
+;; (pass3/register $UNDEF         pass3/$undef)
+;; (pass3/register $IF            pass3/$if)
+;; (pass3/register $ASM           pass3/$asm)
+;; (pass3/register $DEFINE        pass3/$define)
+;; (pass3/register $CALL          pass3/$call)
+;; (pass3/register $CALL-CC       pass3/$call-cc)
+;; (pass3/register $LET           pass3/$let)
+;; (pass3/register $LIST          pass3/$list)
+;; (pass3/register $LIBRARY       pass3/$library)
+;; (pass3/register $IMPORT        pass3/$import)
+;; (pass3/register $IT            pass3/$it)
+;; (pass3/register $RECEIVE       pass3/$receive)
 
 (zass3/register $CONST         zass3/$const)
 (zass3/register $LAMBDA        zass3/$lambda)
@@ -3523,8 +3476,8 @@
 (zass3/register $RECEIVE       zass3/$receive)
 
 
-(define (pass3 iform locals frees can-frees sets tail)
-  ((vector-ref pass3/dispatch-table (vector-ref iform 0)) iform locals frees can-frees sets tail))
+;; (define (pass3 iform locals frees can-frees sets tail)
+;;   ((vector-ref pass3/dispatch-table (vector-ref iform 0)) iform locals frees can-frees sets tail))
 
 (define (zass3/rec cb iform locals frees can-frees sets tail)
   ((vector-ref zass3/dispatch-table (vector-ref iform 0)) cb iform locals frees can-frees sets tail))
@@ -4313,11 +4266,8 @@
 ;; (define (proxy-pass3 iform locals frees can-frees sets tail)
 ;;   (code-body (pass3 iform locals frees can-frees sets tail)))
 
-(define (proxy-pass3 iform locals frees can-frees sets tail)
-  (zass3 iform locals frees can-frees sets tail))
-
 (define (compile-library-body! lib)
-  (let1 body ($append-map1 (lambda (sexp) (proxy-pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) '() *free-lvars* '() '() #f)) ($library.body lib))
+  (let1 body ($append-map1 (lambda (sexp) (zass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) '() *free-lvars* '() '() #f)) ($library.body lib))
     ($library.set-compiled-body! lib (pass4 `(,@body RETURN 0)))))
 
 (define (compile-partial sexp . lib)
@@ -4326,7 +4276,7 @@
      (pass4/fixup-labels
       (list->vector
        (merge-insn
-         (proxy-pass3
+         (zass3
           (pass2/optimize
            (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()) '() *free-lvars* '() '() #f)))))))
 
@@ -4612,7 +4562,7 @@
 ;; [mosh
 (define (compile sexp)
 ;  (print ($library.macro top-level-library))
-  (pass4 (merge-insn (proxy-pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+  (pass4 (merge-insn (zass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
                                    x)
                 '() *free-lvars* '() '() #f))))
 
@@ -4620,8 +4570,7 @@
 ;; )
 
 (define (compile-no-optimize sexp)
-  (pass4 (proxy-pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '() *free-lvars* '() '() #f)))
-
+  (pass4 (zass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '() *free-lvars* '() '() #f)))
 
 (cond-expand
  [vm-outer?

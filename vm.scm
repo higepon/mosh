@@ -34,8 +34,8 @@
   (let* ([proc (first args)]
          [args (cdr args)]
          [adjusted_args (append
-                         ($take args (- (length args) 1))
-                         (car ($drop args (- (length args) 1))))])
+                         (take args (- (length args) 1))
+                         (car (drop args (- (length args) 1))))])
      (VM `#(FRAME
            7
            CONSTANT
