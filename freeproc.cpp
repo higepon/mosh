@@ -2494,7 +2494,7 @@ Object scheme::makeCodeBuilderEx(Object args)
     return Object::makeCodeBuilder();
 }
 
-Object scheme::codeBuilderPutDEx(Object args)
+Object scheme::codeBuilderPut1DEx(Object args)
 {
    const int length = Pair::length(args);
    if (length != 2) {
@@ -2507,6 +2507,68 @@ Object scheme::codeBuilderPutDEx(Object args)
    arg.toCodeBuilder()->put(args.second());
    return Object::Undef;
 }
+
+Object scheme::codeBuilderPut2DEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 3) {
+       VM_RAISE1("wrong number of arguments for code-builder-put2! required 3, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~a\n", arg);
+   }
+   arg.toCodeBuilder()->put(args.second(), args.third());
+   return Object::Undef;
+}
+
+Object scheme::codeBuilderPut3DEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 4) {
+       VM_RAISE1("wrong number of arguments for code-builder-put3! required 4, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~a\n", arg);
+   }
+   arg.toCodeBuilder()->put(args.second(), args.third(), args.cdr().cdr().cdr().car());
+   return Object::Undef;
+}
+
+Object scheme::codeBuilderPut4DEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 5) {
+       VM_RAISE1("wrong number of arguments for code-builder-put4! required 5, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~a\n", arg);
+   }
+   arg.toCodeBuilder()->put(args.second(), args.third(), args.cdr().cdr().cdr().car(), args.cdr().cdr().cdr().cdr().car());
+   return Object::Undef;
+}
+
+Object scheme::codeBuilderPut5DEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 6) {
+       VM_RAISE1("wrong number of arguments for code-builder-put5! required 6, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~a\n", arg);
+   }
+   arg.toCodeBuilder()->put(args.second(),
+                            args.third(),
+                            args.cdr().cdr().cdr().car(),
+                            args.cdr().cdr().cdr().cdr().car(),
+                            args.cdr().cdr().cdr().cdr().cdr().car());
+   return Object::Undef;
+}
+
+
 
 Object scheme::codeBuilderAppendDEx(Object args)
 {

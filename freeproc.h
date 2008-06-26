@@ -175,7 +175,12 @@ Object appendAEx(Object args);
 Object appendDEx(Object args);
 Object internalsetUnionEx(Object args);
 Object makeCodeBuilderEx(Object args);
-Object codeBuilderPutDEx(Object args);
+Object codeBuilderPut1DEx(Object args);
+Object codeBuilderPut2DEx(Object args);
+Object codeBuilderPut3DEx(Object args);
+Object codeBuilderPut4DEx(Object args);
+Object codeBuilderPut5DEx(Object args);
+
 Object codeBuilderAppendDEx(Object args);
 Object codeBuilderEmitEx(Object args);
 

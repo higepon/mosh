@@ -2397,8 +2397,20 @@
 (define (make-code-builder)
   (list 'builder))
 
-(define (code-builder-put! cb x)
+(define (code-builder-put1! cb x)
   (append! cb (list x)))
+
+(define (code-builder-put2! cb a b)
+  (append! cb (list a b)))
+
+(define (code-builder-put3! cb a b c)
+  (append! cb (list a b c)))
+
+(define (code-builder-put4! cb a b c d)
+  (append! cb (list a b c d)))
+
+(define (code-builder-put5! cb a b c d e)
+  (append! cb (list a b c d e)))
 
 (define (code-builder-append! cb1 cb2)
   (let loop ([e (cdr cb2)])
@@ -2406,7 +2418,7 @@
      [(null? e)
       '()]
      [else
-      (code-builder-put! cb1 (car e))
+      (code-builder-put1! cb1 (car e))
       (loop (cdr e))])))
 
 (define (code-builder-emit cb)
@@ -2416,10 +2428,21 @@
 (define-macro (cput! cb . more)
   (match more
     [() '()]
-    [(x . y)
-     `(begin
-        (code-builder-put! ,cb ,x)
-        (cput! ,cb ,@y))]))
+    [(a b c d e . f)
+     `(begin (code-builder-put5! ,cb ,a ,b ,c ,d ,e)
+             (cput! ,cb ,@f))]
+    [(a b c d . e)
+     `(begin (code-builder-put4! ,cb ,a ,b ,c ,d)
+             (cput! ,cb ,@e))]
+    [(a b c . d)
+     `(begin (code-builder-put3! ,cb ,a ,b ,c)
+             (cput! ,cb ,@d))]
+    [(a b . c)
+     `(begin (code-builder-put2! ,cb ,a ,b)
+             (cput! ,cb ,@c))]
+    [(a . b)
+     `(begin (code-builder-put1! ,cb ,a)
+             (cput! ,cb ,@b))]))
 
 (define (pass3/collect-free frees-here locals frees)
   ($append-map1-sum (lambda (x)
