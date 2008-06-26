@@ -1881,7 +1881,7 @@ Object scheme::internalsetUnionEx(Object args)
         seen.set(p.car(), Object::True);
     }
 
-    Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+    const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
     for (Object p = list1; p.isPair(); p = p.cdr()) {
         const Object o = p.car();
         if (seen.ref(o, notFound) == notFound) {
@@ -2596,4 +2596,68 @@ Object scheme::codeBuilderEmitEx(Object args)
        VM_RAISE1("code-builder required, but got ~an", arg1);
    }
    return arg1.toCodeBuilder()->emit();
+}
+
+// (define (%set-intersect lst1 lst2)
+//   (if (null? lst1)
+//       '()
+//       (if (memq2 (car lst1) lst2)
+//           (cons (car lst1) (%set-intersect (cdr lst1) lst2))
+//           (%set-intersect (cdr lst1) lst2))))
+
+
+Object setIntersectRec(Object lst1, Object lst2)
+{
+    if (lst1.isNil()) {
+        return Object::Nil;
+    }
+    if (memq(lst1.car(), lst2).isFalse()) {
+        return setIntersectRec(lst1.cdr(), lst2);
+    } else {
+        return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), lst2));
+    }
+}
+
+// Object setIntersectRec(Object lst1, EqHashTable* seen)
+// {
+//     static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+//     if (lst1.isNil()) {
+//         return Object::Nil;
+//     }
+//     if (seen->ref(lst1.car(), notFound) != notFound) {
+//         return setIntersectRec(lst1.cdr(), seen);
+//     } else {
+//         return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), seen));
+//     }
+// }
+
+
+Object scheme::internalsetIntersectEx(Object args)
+{
+    const Object list2 = args.second();
+//     EqHashTable seen;
+//     for (Object p = list2; p.isPair(); p = p.cdr()) {
+//         seen.set(p.car(), Object::True);
+//     }
+
+    return setIntersectRec(args.first(), list2);
+//     if (list1.isNil()) {
+//         return Object::Nil;
+//     } else if (list2.isNil()) {
+//         return Object::Nil;
+//     }
+//     EqHashTable seen;
+//     for (Object p = list2; p.isPair(); p = p.cdr()) {
+//         seen.set(p.car(), Object::True);
+//     }
+
+//     Object ret = Object::Nil;
+//     const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+//     for (Object p = list1; p.isPair(); p = p.cdr()) {
+//         const Object o = p.car();
+//         if (seen.ref(o, notFound) != notFound) {
+//             ret = Object::cons(o, ret);
+//         }
+//     }
+//     return ret;//Pair::reverse(ret);
 }

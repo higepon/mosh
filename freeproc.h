@@ -174,6 +174,7 @@ Object append2Ex(Object args);
 Object appendAEx(Object args);
 Object appendDEx(Object args);
 Object internalsetUnionEx(Object args);
+Object internalsetIntersectEx(Object args);
 Object makeCodeBuilderEx(Object args);
 Object codeBuilderPut1DEx(Object args);
 Object codeBuilderPut2DEx(Object args);

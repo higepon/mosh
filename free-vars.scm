@@ -137,6 +137,7 @@
     (pass3/find-free ,pass3/find-free)
     (pass3/find-sets ,pass3/find-sets)
     (%set-union ,%set-union)
+    (%set-intersect ,%set-intersect)
     (make-code-builder ,make-code-builder)
     (code-builder-put1! ,code-builder-put1!)
     (code-builder-put2! ,code-builder-put2!)

@@ -30,6 +30,7 @@
   (define find10 find)
   (define append2 append)
   (define appendA append)
+  (define memq2 memq)
   (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
@@ -142,12 +143,12 @@
       (rec (cdr lst1) (set-cons (car lst1) lst2))]))
   (rec l1 l2))
 
-(define (set-intersect lst1 lst2)
+(define (%set-intersect lst1 lst2)
   (if (null? lst1)
       '()
-      (if (memq (car lst1) lst2)
-          (cons (car lst1) (set-intersect (cdr lst1) lst2))
-          (set-intersect (cdr lst1) lst2))))
+      (if (memq2 (car lst1) lst2)
+          (cons (car lst1) (%set-intersect (cdr lst1) lst2))
+          (%set-intersect (cdr lst1) lst2))))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -2361,7 +2362,7 @@
                                       frees-here
                                       (%set-union can-frees vars)
                                       (%set-union sets-here
-                                                  (set-intersect sets frees-here))
+                                                  (%set-intersect sets frees-here))
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
              (cput! cb 'LEAVE (length ($call.args iform)))
              (+ args-size body-size free-size)))))]
@@ -2426,7 +2427,7 @@
                                  frees-here
                                  (%set-union can-frees vars)
                                  (%set-union sets-here
-                                             (set-intersect sets frees-here))
+                                             (%set-intersect sets frees-here))
                                  (length vars))
         (cput! cb
                (+ body-size free-size (length vars) 4) ;; max-stack 4 is sizeof frame
@@ -2461,7 +2462,7 @@
                                    frees-here
                                    (%set-union can-frees vars)
                                    (%set-union sets-here
-                                               (set-intersect sets frees-here))
+                                               (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ body-size vals-size free-size))))))
@@ -2500,7 +2501,7 @@
                                        frees-here
                                        (%set-union can-frees vars)
                                        (%set-union sets-here
-                                                   (set-intersect sets frees-here))
+                                                   (%set-intersect sets frees-here))
                                        (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
               (cput! cb 'LEAVE (length vars))
               (+ body-size args-size free-size)))))))
@@ -2537,7 +2538,7 @@
                             (let1 stack-size (pass3/rec cb (car args) vars frees-here
                                                        (%set-union can-frees vars)
                                                        (%set-union sets-here
-                                                                   (set-intersect sets frees-here)) #f)
+                                                                   (%set-intersect sets frees-here)) #f)
                               (cput! cb 'ASSIGN_LOCAL index)
                               (loop (cdr args)
                                     (+ stack-size size)
@@ -2548,7 +2549,7 @@
                                    frees-here
                                    (%set-union can-frees vars)
                                    (%set-union sets-here
-                                               (set-intersect sets frees-here))
+                                               (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ free-size assign-size body-size))))))
