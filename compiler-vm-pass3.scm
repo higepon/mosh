@@ -2583,7 +2583,7 @@
                  'ASSIGN_GLOBAL
                  (merge-libname-sym ($global-assign.libname iform) sym)))]
        [(eq? ($lvar.sym (car free)) sym)
-        (being0
+        (begin0
          (zass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
          (cput! cb 'ASSIGN_FREE n))]
        [else
@@ -3490,10 +3490,10 @@
      (pass4/fixup-labels
       (list->vector
        (merge-insn
-        (code-body
-         (pass3
+;        (code-body
+         (zass3
           (pass2/optimize
-           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()) '() *free-lvars* '() '() #f))))))))
+           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()) '() *free-lvars* '() '() #f)))))))
 
 ;; (define (pass4/fixup-labels v)
 ;;   (let1 len (vector-length v)

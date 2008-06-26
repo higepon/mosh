@@ -2488,3 +2488,50 @@ Object scheme::pass4FixupLabelsEx(Object args)
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return pass4FixupLabel(args.first());
 }
+
+Object scheme::makeCodeBuilderEx(Object args)
+{
+    return Object::makeCodeBuilder();
+}
+
+Object scheme::codeBuilderPutDEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 2) {
+       VM_RAISE1("wrong number of arguments for code-builder-put! required 2, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg = args.first();
+   if (!arg.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~a\n", arg);
+   }
+   arg.toCodeBuilder()->put(args.second());
+   return Object::Undef;
+}
+
+Object scheme::codeBuilderAppendDEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 2) {
+       VM_RAISE1("wrong number of arguments for code-builder-append! required 2, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg1 = args.first();
+   const Object arg2 = args.second();
+   if (!arg1.isCodeBuilder() || !arg2.isCodeBuilder()) {
+       VM_RAISE2("code-builder required, but got ~a, ~a\n", arg1, arg2);
+   }
+   arg1.toCodeBuilder()->append(arg2.toCodeBuilder());
+   return Object::Undef;
+}
+
+Object scheme::codeBuilderEmitEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 1) {
+       VM_RAISE1("wrong number of arguments for code-builder-emit required 1, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg1 = args.first();
+   if (!arg1.isCodeBuilder()) {
+       VM_RAISE1("code-builder required, but got ~an", arg1);
+   }
+   return arg1.toCodeBuilder()->emit();
+}

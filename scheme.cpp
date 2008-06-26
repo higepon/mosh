@@ -375,3 +375,9 @@ Object Object::makeTypedVector(Object desc, Object fieldsList)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TypedVector,
                                                         reinterpret_cast<word>(new TypedVector(desc, fieldsList)))));
 }
+
+Object Object::makeCodeBuilder()
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CodeBuilder,
+                                                        reinterpret_cast<word>(new CodeBuilder()))));
+}

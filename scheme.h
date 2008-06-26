@@ -132,6 +132,7 @@ public:
         Transcoder        = Type<17>::VALUE,
         TypedVectorDesc   = Type<18>::VALUE,
         TypedVector       = Type<19>::VALUE,
+        CodeBuilder       = Type<20>::VALUE,
         forbidden_comma
     };
 };
@@ -157,6 +158,7 @@ class Transcoder;
 class Codec;
 class TypedVectorDesc;
 class TypedVector;
+class CodeBuilder;
 
 class Object
 {
@@ -387,6 +389,7 @@ public:
     static Object makeTranscoder(Codec* codec);
     static Object makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability);
     static Object makeTypedVector(Object desc, Object fieldsList);
+    static Object makeCodeBuilder();
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
@@ -426,6 +429,7 @@ DECL_ACCESSOR(Codec)
 DECL_ACCESSOR(Transcoder)
 DECL_ACCESSOR(TypedVector)
 DECL_ACCESSOR(TypedVectorDesc)
+DECL_ACCESSOR(CodeBuilder)
 
 Object* toObjectPointer() const { return reinterpret_cast<Object*>(val); }
 
@@ -504,4 +508,5 @@ namespace scheme {
 #include "Regexp.h"
 #include "freeproc.h"
 #include "TypedVector.h"
+#include "CodeBuilder.h"
 #endif // __SCHEME_SCHEME_H__

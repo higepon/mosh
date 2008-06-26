@@ -1,3 +1,10 @@
+2008-06-26  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp : Added (make-code-builder), (code-builder-put! cb o),
+                               (code-builder-append cb1 cb2) and (code-builder-emit cb).
+
+        * CodeBuilder.h (scheme): Added CodeBuilder object used for more efficient compilation.
+
 2008-06-23  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm : Added xcons, make-list, list-tabulate, list-copy, list=, split-at, split-at!, not-pair?

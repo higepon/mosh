@@ -174,6 +174,11 @@ Object append2Ex(Object args);
 Object appendAEx(Object args);
 Object appendDEx(Object args);
 Object internalsetUnionEx(Object args);
+Object makeCodeBuilderEx(Object args);
+Object codeBuilderPutDEx(Object args);
+Object codeBuilderAppendDEx(Object args);
+Object codeBuilderEmitEx(Object args);
+
 Object pass3FindFreeEx(Object args);
 Object pass3FindSetsEx(Object args);
 inline bool existsInList(Object o, Object list)

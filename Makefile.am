@@ -41,6 +41,7 @@ freeproc.h           \
 Box.h                \
 TypedVector.h        \
 TypedVector.cpp      \
+CodeBuilder.h        \
 SString.cpp          \
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
@@ -81,10 +82,10 @@ psyntax:
 # 	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
 
 psyntax-mosh-p:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
 
 psyntax-mosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && /home/taro/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
+	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
 
 
 psyntax-gosh:
