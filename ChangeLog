@@ -1,5 +1,7 @@
 2008-06-26  higepon  <higepon@users.sourceforge.jp>
 
+        * Improved compilaion speed on pass3 phase.
+
         * freeproc.cpp : Added (make-code-builder), (code-builder-put! cb o),
                                (code-builder-append cb1 cb2) and (code-builder-emit cb).
 
@@ -38,39 +40,39 @@
 
         * Port.cpp (FileBinaryInputPort::FileBinaryInputPort): Fixed file open error condition.
 
-	* VM.cpp (VM::applyClosure): Improved apply procedure. It used to use C stack, so changed not to use C stack.
+    * VM.cpp (VM::applyClosure): Improved apply procedure. It used to use C stack, so changed not to use C stack.
 
 2008-06-16  higepon  <higepon@users.sourceforge.jp>
 
-	* freeproc.cpp : Fixed (exit) procedure. thx leque.
+    * freeproc.cpp : Fixed (exit) procedure. thx leque.
 
-	* freeproc.cpp (scheme::callProcessEx): Added (call-process "ls").
+    * freeproc.cpp (scheme::callProcessEx): Added (call-process "ls").
 
-	* compiler.scm: Improved stack trace, showing file and lineno for precompiled code.
+    * compiler.scm: Improved stack trace, showing file and lineno for precompiled code.
 
-	* scripts/pp.scm: Added for precompiled code.
+    * scripts/pp.scm: Added for precompiled code.
 
 2008-06-15  higepon  <higepon@users.sourceforge.jp>
 
-	* free-vars.scm (*free-vars*): Added set-source-info for compiler.
+    * free-vars.scm (*free-vars*): Added set-source-info for compiler.
 
 2008-06-11  higepon  <higepon@users.sourceforge.jp>
 
-	* library.scm (cons*): Added cons*.
+    * library.scm (cons*): Added cons*.
 
-	* freeproc.cpp: Added char>=?, char>? and char<=? and char<?.
+    * freeproc.cpp: Added char>=?, char>? and char<=? and char<?.
 
-	* library.scm (sort!): Fixed SEGV bug.
-	                       In library.scm, we can't use do macro.
-	                       Because do macro depend on match macro.
+    * library.scm (sort!): Fixed SEGV bug.
+                           In library.scm, we can't use do macro.
+                           Because do macro depend on match macro.
 
 2008-06-10  higepon  <higepon@users.sourceforge.jp>
 
-	* freeproc.cpp (scheme::dynamicWindEx): Added dynamic-wind. It's dummy for psyntax.pp.
+    * freeproc.cpp (scheme::dynamicWindEx): Added dynamic-wind. It's dummy for psyntax.pp.
 
 2008-06-09  higepon  <higepon@users.sourceforge.jp>
 
-	* VM.cpp : Rewrote multiple values support.
+    * VM.cpp : Rewrote multiple values support.
 
 2008-06-06  higepon  <higepon@users.sourceforge.jp>
 
@@ -152,7 +154,7 @@
 
         * library.scm : Added for-all.
 
-	
+
         * library.scm (even?): Added even? defined at Base Library.
 
         * freeproc.cpp : Added modulo procedure (mod a b).
