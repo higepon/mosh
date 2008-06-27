@@ -1868,8 +1868,13 @@ Object scheme::appendDEx(Object args)
 
 Object scheme::internalsetUnionEx(Object args)
 {
+    static long seenTime = 0;
+    static long restTime = 0;
+
     const Object list1 = args.first();
     const Object list2 = args.second();
+//    printf("set-union %d %d\n",Pair::length(list1), Pair::length(list2));
+
     if (list1.isNil()) {
         return list2;
     } else if (list2.isNil()) {
@@ -1877,18 +1882,38 @@ Object scheme::internalsetUnionEx(Object args)
     }
     Object ret = list2;
     EqHashTable seen;
+
+    struct timeval tv1, tv2;
+    struct timezone tz1, tz2;
+
     for (Object p = ret; p.isPair(); p = p.cdr()) {
         seen.set(p.car(), Object::True);
     }
 
-    const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+
+    static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+//    gettimeofday(&tv1, &tz1);
+
     for (Object p = list1; p.isPair(); p = p.cdr()) {
         const Object o = p.car();
-        if (seen.ref(o, notFound) == notFound) {
+
+        const Object found = seen.ref(o, notFound);
+        if (found == notFound) {
+//    gettimeofday(&tv1, &tz1);
             ret = Object::cons(o, ret);
+//    gettimeofday(&tv2, &tz2);
+//    seenTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+
+//    gettimeofday(&tv1, &tz1);
+
             seen.set(o, Object::True);
+//     gettimeofday(&tv2, &tz2);
+//     restTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+
         }
+
     }
+//    printf("seen = %ld rest = %ld %d\n", seenTime, restTime, i);
     return ret;
 }
 
