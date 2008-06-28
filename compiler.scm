@@ -1918,18 +1918,25 @@
        [(= $CONST t) '()]
        [(= $LET t)
         (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
+; removed unnecesary append
+;                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
+                 (rec ($let.body i) ($let.lvars i) labels-seen))]
        [(= $RECEIVE t)
         (append2 (rec ($receive.vals i) l labels-seen)
-                (rec ($receive.body i) (append2 l ($receive.lvars i)) labels-seen))]
+; removed unnecesary append
+;                (rec ($receive.body i) (append2 l ($receive.lvars i)) labels-seen))]
+                (rec ($receive.body i) ($receive.lvars i) labels-seen))]
        [(= $SEQ t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
        [(= $LAMBDA t)
-        (rec ($lambda.body i) (append2 l ($lambda.lvars i)) labels-seen)]
+; removed unnecesary append
+;        (rec ($lambda.body i) (append2 l ($lambda.lvars i)) labels-seen)]
+        (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
        [(= $LOCAL-ASSIGN t)
         (let1 lvar ($local-assign.lvar i)
-          (append2 (if (memq lvar can-frees) (list lvar) '())
-                  (rec ($local-assign.val i) l labels-seen)))]
+          (if (memq lvar can-frees)
+              (cons lvar (rec ($local-assign.val i) l labels-seen))
+              (rec ($local-assign.val i) l labels-seen)))]
        [(= $LOCAL-REF t)
         (let1 lvar ($local-ref.lvar i)
           (cond [(memq lvar l) '()]
@@ -2161,7 +2168,7 @@
 ;; $local-assign is classified into ASSIGN_LOCAL and ASSIGN_FREE
 (define (pass3/$local-assign cb iform locals frees can-frees sets tail)
   (let ([val-stack-size (pass3/rec cb ($local-assign.val iform) locals frees can-frees sets #f)]
-        [var-stack-size (pass3/compile-assign cb ($local-ref.lvar iform) locals frees)])
+        [var-stack-size (pass3/compile-assign cb ($local-assign.lvar iform) locals frees)])
     (+ val-stack-size var-stack-size)))
 
 (define top-level-sym (string->symbol "top level "))
@@ -2343,7 +2350,7 @@
             [frees-here (pass3/find-free body
                                          vars
                                          (append2 locals (append2 frees can-frees)))]
-            [sets-here  (append2 (pass3/find-sets body vars) sets)])
+            [sets-here  (append2 (pass3/find-sets body vars) #?= sets)])
        (cput! cb 'LET_FRAME)
        (let1 free-size (if (> (length frees-here) 0)
                            (pass3/collect-free cb frees-here locals frees)
@@ -2360,7 +2367,8 @@
                                       body
                                       vars
                                       frees-here
-                                      (%set-union can-frees vars)
+;                                      (%set-union can-frees vars)
+                                      (append2 can-frees vars)
                                       (%set-union sets-here
                                                   (%set-intersect sets frees-here))
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2425,7 +2433,8 @@
                                  body
                                  vars
                                  frees-here
-                                 (%set-union can-frees vars)
+;                                 (%set-union can-frees vars)
+                                 (append2 can-frees vars) ;; can-frees and vars don't have common lvars.
                                  (%set-union sets-here
                                              (%set-intersect sets frees-here))
                                  (length vars))
@@ -2460,7 +2469,8 @@
                                    body
                                    vars
                                    frees-here
-                                   (%set-union can-frees vars)
+;                                   (%set-union can-frees vars)
+                                   (append2 can-frees vars)
                                    (%set-union sets-here
                                                (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2499,7 +2509,8 @@
                                        body
                                        vars
                                        frees-here
-                                       (%set-union can-frees vars)
+;                                       (%set-union can-frees vars)
+                                       (append2 can-frees vars)
                                        (%set-union sets-here
                                                    (%set-intersect sets frees-here))
                                        (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2529,25 +2540,29 @@
           (loop (cdr args))]))
       (pass3/make-boxes cb sets-here vars)
       (cput! cb 'ENTER (length vars))
-      (let1 assign-size (let loop ([args  args]
-                                   [size  0]
-                                   [index 0])
-                          (cond
-                           [(null? args) size]
-                           [else
-                            (let1 stack-size (pass3/rec cb (car args) vars frees-here
-                                                       (%set-union can-frees vars)
-                                                       (%set-union sets-here
-                                                                   (%set-intersect sets frees-here)) #f)
-                              (cput! cb 'ASSIGN_LOCAL index)
-                              (loop (cdr args)
-                                    (+ stack-size size)
-                                    (+ index 1)))]))
-        (let1 body-size (pass3/rec cb
-                                   body
-                                   vars
-                                   frees-here
-                                   (%set-union can-frees vars)
+      (let* ([new-can-frees (append2 can-frees vars)]
+             [assign-size
+              (let loop ([args  args]
+                         [size  0]
+                         [index 0])
+                (cond
+                 [(null? args) size]
+                 [else
+                  (let1 stack-size (pass3/rec cb (car args) vars frees-here
+;                                             (%set-union can-frees vars)
+                                              new-can-frees
+                                              (%set-union sets-here
+                                                          (%set-intersect sets frees-here)) #f)
+                    (cput! cb 'ASSIGN_LOCAL index)
+                    (loop (cdr args)
+                          (+ stack-size size)
+                          (+ index 1)))]))])
+             (let1 body-size (pass3/rec cb
+                                        body
+                                        vars
+                                        frees-here
+    ;                                   (%set-union can-frees vars)
+                                        new-can-frees
                                    (%set-union sets-here
                                                (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME

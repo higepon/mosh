@@ -1952,7 +1952,6 @@ Object scheme::findFree(Object iform, Object locals, Object canFrees)
 Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
     const int CONST = 0;
-    const int LVAR = 1;
     const int LET = 2;
     const int SEQ = 3;
     const int LAMBDA = 4;
@@ -1970,7 +1969,6 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     const int LIST = 16;
     const int LIBRARY = 17;
     const int IMPORT = 18;
-    const int IMPORT_SPEC = 19;
     const int IT = 20;
     const int RECEIVE = 21;
 
@@ -1982,24 +1980,24 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     {
 //        [(= $LET t)
 //         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-//                 (rec ($let.body i) (append l ($let.lvars i)) labels-seen))]
+//                 (rec ($let.body i) ($let.lvars i) labels-seen))]
 
         const Object letLvars = v->ref(2);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
         return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, letInits),
-                             findFreeRec(letBody, Pair::append2(l, letLvars), canFrees, labelsSeen));
+                             findFreeRec(letBody, letLvars, canFrees, labelsSeen));
     }
     case RECEIVE:
     {
 //        [(= $RECEIVE t)
 //         (append (rec ($receive.vals i) l labels-seen)
-//                 (rec ($receive.body i) (append l ($receive.lvars i)) labels-seen))]
+//                 (rec ($receive.body i) ($receive.lvars i) labels-seen))]
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         const Object receiveLVars = v->ref(1);
         return Pair::append2(findFreeRec(receiveVals, l, canFrees, labelsSeen),
-                             findFreeRec(receiveBody, Pair::append2(l, receiveLVars), canFrees, labelsSeen));
+                             findFreeRec(receiveBody, receiveLVars, canFrees, labelsSeen));
 
     }
     case SEQ:
@@ -2012,10 +2010,10 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     case LAMBDA:
     {
 //        [(= $LAMBDA t)
-//         (rec ($lambda.body i) (append l ($lambda.lvars i)) labels-seen)]
+//         (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
-        return findFreeRec(lambdaBody, Pair::append2(l, lambdaLvars), canFrees, labelsSeen);
+        return findFreeRec(lambdaBody, lambdaLvars, canFrees, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
@@ -2025,8 +2023,13 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
 //                   (rec ($local-assign.val i) l labels-seen)))]
         const Object lvar = v->ref(1);
         const Object val = v->ref(2);
-        return Pair::append2(!memq(lvar, canFrees).isFalse() ? Pair::list1(lvar) : Object::Nil,
-                             findFreeRec(val, l, canFrees, labelsSeen));
+        if (memq(lvar, canFrees).isFalse()) {
+            return findFreeRec(val, l, canFrees, labelsSeen);
+        } else {
+            return Object::cons(lvar, findFreeRec(val, l, canFrees, labelsSeen));
+        }
+//         return Pair::append2(!memq(lvar, canFrees).isFalse() ? Pair::list1(lvar) : Object::Nil,
+//                              findFreeRec(val, l, canFrees, labelsSeen));
     }
     case LOCAL_REF:
     {
@@ -2198,8 +2201,7 @@ Object scheme::findSets(Object iform, Object lvars)
 
 Object scheme::findSetsRec(Object i, Object lvars)
 {
-   const int CONST = 0;
-    const int LVAR = 1;
+    const int CONST = 0;
     const int LET = 2;
     const int SEQ = 3;
     const int LAMBDA = 4;
@@ -2217,7 +2219,6 @@ Object scheme::findSetsRec(Object i, Object lvars)
     const int LIST = 16;
     const int LIBRARY = 17;
     const int IMPORT = 18;
-    const int IMPORT_SPEC = 19;
     const int IT = 20;
     const int RECEIVE = 21;
 
@@ -2268,8 +2269,13 @@ Object scheme::findSetsRec(Object i, Object lvars)
 //                   (rec ($local-assign.val i))))]
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
-        return Pair::append2(!memq(localAssignLvar, lvars).isFalse() ? Pair::list1(localAssignLvar) : Object::Nil,
-                             findSetsRec(localAssignVal, lvars));
+        if (memq(localAssignLvar, lvars).isFalse()) {
+            return findSetsRec(localAssignVal, lvars);
+        } else {
+            return Object::cons(localAssignLvar, findSetsRec(localAssignVal, lvars));
+        }
+//         return Pair::append2(!memq(localAssignLvar, lvars).isFalse() ? Pair::list1(localAssignLvar) : Object::Nil,
+//                              findSetsRec(localAssignVal, lvars));
     }
     case LOCAL_REF:
     {

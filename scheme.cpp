@@ -179,9 +179,11 @@ Pair* Object::toPair() const
 
 Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object::False */)
 {
-    if (sourceInfo.isFalse() && car.isPair()) {
-        sourceInfo = car.sourceInfo();
-    }
+// this makes Mosh very slow.
+// don't use this.
+//     if (sourceInfo.isFalse() && car.isPair()) {
+//         sourceInfo = car.sourceInfo();
+//     }
     return Object(reinterpret_cast<word>(new Pair(car, cdr, sourceInfo)));
 }
 
