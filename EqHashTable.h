@@ -36,15 +36,17 @@ namespace scheme {
 
 class EqHashTable EXTEND_GC
 {
+    typedef gc_map<Object, Object> Table;
 public:
     EqHashTable() {}
+
     // todo
     //    EqHashTable(int capacity) {}
 
     Object ref(Object key, Object defaultVal)
     {
-        InternalMap::iterator p = map_.find(key);
-        if (p == map_.end()) {
+        Table::iterator p = table_.find(key);
+        if (p == table_.end()) {
             return defaultVal;
         } else {
             return p->second;
@@ -53,13 +55,13 @@ public:
 
     void set(Object key, Object val)
     {
-        map_[key] = val;
+        table_[key] = val;
     }
 
     void eraseAllExcept(Object key)
     {
         const Object o = ref(key, Object::False);
-        map_.clear();
+        table_.clear();
         set(key, o);
     }
 
@@ -67,7 +69,7 @@ public:
     {
         // swap (key, value)
         Object ht = Object::makeEqHashTable();
-        for (InternalMap::const_iterator it = map_.begin(); it != map_.end(); ++it) {
+        for (Table::const_iterator it = table_.begin(); it != table_.end(); ++it) {
             ht.toEqHashTable()->set(it->second, it->first);
         }
         return ht;
@@ -76,19 +78,29 @@ public:
     Object keys()
     {
         Object ht = Object::makeEqHashTable();
-        Object v = Object::makeVector(map_.size());
+        Object v = Object::makeVector(table_.size());
         int i = 0;
-        for (InternalMap::const_iterator it = map_.begin(); it != map_.end(); ++it, i++) {
+        for (Table::const_iterator it = table_.begin(); it != table_.end(); ++it, i++) {
             v.toVector()->set(i, it->first);
         }
         return v;
     }
 
+    Object copy()
+    {
+        Object ret = Object::makeEqHashTable();
+        ret.toEqHashTable()->setTable(getTable());
+        return ret;
+    }
+
     ~EqHashTable() {} // not virtual
 
+private:
+    inline void setTable(Table i) { table_ = i; }
+    inline Table getTable() const { return table_; }
+
 protected:
-    typedef gc_map<Object, Object> InternalMap;
-    InternalMap map_;
+    Table table_;
 };
 
 }; // namespace scheme

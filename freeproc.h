@@ -41,6 +41,7 @@ Object currentErrorPortEx(Object args);
 Object hashtableKeysEx(Object args);
 Object hashtableSetDEx(Object args);
 Object hashtableRefEx(Object args);
+Object eqHashtableCopyEx(Object args);
 Object makeEqHashtableEx(Object args);
 Object numberPEx(Object args);
 Object consEx(Object args);

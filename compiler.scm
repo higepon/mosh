@@ -54,6 +54,14 @@
   (define-macro (make-list-with-src-slot lst) lst)
   (define (command-line) *command-line-args*)])
 
+(define (eq-hashtable-copy ht)
+  (let1 ret (make-eq-hashtable)
+    (hashtable-for-each
+     (lambda (key value)
+       (hashtable-set! ret key value))
+     ht)
+    ret))
+
 (define ($for-each1-with-rindex proc lst)
   (let loop ([i (- (length lst) 1)]
              [lst lst])
@@ -2830,4 +2838,3 @@
     (if (= (length args) 2)
         (let1 port (open-string-input-port (second args))
           (write (compile (read port))))))])
-

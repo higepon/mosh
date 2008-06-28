@@ -2629,6 +2629,19 @@ Object scheme::codeBuilderEmitEx(Object args)
    return arg1.toCodeBuilder()->emit();
 }
 
+Object scheme::eqHashtableCopyEx(Object args)
+{
+   const int length = Pair::length(args);
+   if (length != 1) {
+       VM_RAISE1("wrong number of argument for eq-hashtable-copy required 1, got ~d)\n", Object::makeInt(length));
+   }
+   const Object arg1 = args.first();
+   if (!arg1.isEqHashTable()) {
+       VM_RAISE1("eq-hashtable required, but got ~an", arg1);
+   }
+   return arg1.toEqHashTable()->copy();
+}
+
 // (define (%set-intersect lst1 lst2)
 //   (if (null? lst1)
 //       '()

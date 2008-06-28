@@ -98,6 +98,9 @@ void signal_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    gc_map<int, int> a;
+    gc_map<int, int> b;
+
     int opt;
     bool isTestOption    = false;
     bool isCompileString = false;

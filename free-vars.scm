@@ -67,6 +67,7 @@
     (hashtable-set! ,hash-table-put!)
     (hashtable-ref ,hash-table-get)
     (hashtable-keys ,hash-table-keys)
+    (eq-hashtable-copy ,eq-hashtable-copy)
 ;    (command-line ,command-line)
     (current-error-port ,current-error-port)
     (values ,(lambda () (error "values proc not implemented")))
