@@ -1,5 +1,7 @@
 2008-06-28  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm: removed set-union and set-intersect.
+
         * compiler.scm (pass3/$call): Changed (%set-union can-frees vars) => (append2 can-frees vars) for perfomance. (thx! koguro)
 
         * scheme.cpp (Object::cons): comment out source info copy. This made mosh very slow.

@@ -130,25 +130,25 @@
 
 ;; moved to freeproc.cpp
 ;; N.B. this procedure is still required by vm.scm
-(define (%set-union l1 l2)
-  (define (set-cons x lst)
-    (if (memq x lst)
-        lst
-        (cons x lst)))
-  (define (rec lst1 lst2)
-    (cond
-     [(null? lst1) lst2]
-     [(null? lst2) lst1]
-     [else
-      (rec (cdr lst1) (set-cons (car lst1) lst2))]))
-  (rec l1 l2))
+;; (define (%set-union l1 l2)
+;;   (define (set-cons x lst)
+;;     (if (memq x lst)
+;;         lst
+;;         (cons x lst)))
+;;   (define (rec lst1 lst2)
+;;     (cond
+;;      [(null? lst1) lst2]
+;;      [(null? lst2) lst1]
+;;      [else
+;;       (rec (cdr lst1) (set-cons (car lst1) lst2))]))
+;;   (rec l1 l2))
 
-(define (%set-intersect lst1 lst2)
-  (if (null? lst1)
-      '()
-      (if (memq2 (car lst1) lst2)
-          (cons (car lst1) (%set-intersect (cdr lst1) lst2))
-          (%set-intersect (cdr lst1) lst2))))
+;; (define (%set-intersect lst1 lst2)
+;;   (if (null? lst1)
+;;       '()
+;;       (if (memq2 (car lst1) lst2)
+;;           (cons (car lst1) (%set-intersect (cdr lst1) lst2))
+;;           (%set-intersect (cdr lst1) lst2))))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -2369,8 +2369,9 @@
                                       frees-here
 ;                                      (%set-union can-frees vars)
                                       (append2 can-frees vars)
-                                      (%set-union (append2 sets-for-this-lvars sets)
-                                                  (%set-intersect sets frees-here))
+                                      (append2 sets-for-this-lvars sets)
+;;                                       (%set-union (append2 sets-for-this-lvars sets)
+;;                                                   (%set-intersect sets frees-here))
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
              (cput! cb 'LEAVE (length ($call.args iform)))
              (+ args-size body-size free-size)))))]
@@ -2435,8 +2436,9 @@
                                  frees-here
 ;                                 (%set-union can-frees vars)
                                  (append2 can-frees vars) ;; can-frees and vars don't have common lvars.
-                                 (%set-union (append2 sets-for-this-lvars sets)
-                                             (%set-intersect sets frees-here))
+                                 (append2 sets-for-this-lvars sets)
+;;                                  (%set-union (append2 sets-for-this-lvars sets)
+;;                                              (%set-intersect sets frees-here))
                                  (length vars))
         (cput! cb
                (+ body-size free-size (length vars) 4) ;; max-stack 4 is sizeof frame
@@ -2471,8 +2473,9 @@
                                    frees-here
 ;                                   (%set-union can-frees vars)
                                    (append2 can-frees vars)
-                                   (%set-union (append2 sets-for-this-lvars sets)
-                                               (%set-intersect sets frees-here))
+;;                                    (%set-union (append2 sets-for-this-lvars sets)
+;;                                                (%set-intersect sets frees-here))
+                                   (append2 sets-for-this-lvars sets)
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ body-size vals-size free-size))))))
@@ -2511,8 +2514,9 @@
                                        frees-here
 ;                                       (%set-union can-frees vars)
                                        (append2 can-frees vars)
-                                       (%set-union (append2 sets-for-this-lvars sets)
-                                                   (%set-intersect sets frees-here))
+                                       (append2 sets-for-this-lvars sets)
+;;                                        (%set-union (append2 sets-for-this-lvars sets)
+;;                                                    (%set-intersect sets frees-here))
                                        (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
               (cput! cb 'LEAVE (length vars))
               (+ body-size args-size free-size)))))))
@@ -2551,8 +2555,10 @@
                   (let1 stack-size (pass3/rec cb (car args) vars frees-here
 ;                                             (%set-union can-frees vars)
                                               new-can-frees
-                                              (%set-union (append2 sets-for-this-lvars sets)
-                                                          (%set-intersect sets frees-here)) #f)
+                                              (append2 sets-for-this-lvars sets)
+;;                                               (%set-union (append2 sets-for-this-lvars sets)
+;;                                                           (%set-intersect sets frees-here))
+                                              #f)
                     (cput! cb 'ASSIGN_LOCAL index)
                     (loop (cdr args)
                           (+ stack-size size)
@@ -2563,8 +2569,9 @@
                                         frees-here
     ;                                   (%set-union can-frees vars)
                                         new-can-frees
-                                   (%set-union (append2 sets-for-this-lvars sets)
-                                               (%set-intersect sets frees-here))
+                                        (append2 sets-for-this-lvars sets)
+;;                                    (%set-union (append2 sets-for-this-lvars sets)
+;;                                                (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ free-size assign-size body-size))))))

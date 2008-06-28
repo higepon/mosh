@@ -1866,56 +1866,56 @@ Object scheme::appendDEx(Object args)
     return ret;
 }
 
-Object scheme::internalsetUnionEx(Object args)
-{
-    static long seenTime = 0;
-    static long restTime = 0;
+// Object scheme::internalsetUnionEx(Object args)
+// {
+//     static long seenTime = 0;
+//     static long restTime = 0;
 
-    const Object list1 = args.first();
-    const Object list2 = args.second();
-//    printf("set-union %d %d\n",Pair::length(list1), Pair::length(list2));
+//     const Object list1 = args.first();
+//     const Object list2 = args.second();
+// //    printf("set-union %d %d\n",Pair::length(list1), Pair::length(list2));
 
-    if (list1.isNil()) {
-        return list2;
-    } else if (list2.isNil()) {
-        return list1;
-    }
-    Object ret = list2;
-    EqHashTable seen;
+//     if (list1.isNil()) {
+//         return list2;
+//     } else if (list2.isNil()) {
+//         return list1;
+//     }
+//     Object ret = list2;
+//     EqHashTable seen;
 
-    struct timeval tv1, tv2;
-    struct timezone tz1, tz2;
+//     struct timeval tv1, tv2;
+//     struct timezone tz1, tz2;
 
-    for (Object p = ret; p.isPair(); p = p.cdr()) {
-        seen.set(p.car(), Object::True);
-    }
+//     for (Object p = ret; p.isPair(); p = p.cdr()) {
+//         seen.set(p.car(), Object::True);
+//     }
 
 
-    static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
-//    gettimeofday(&tv1, &tz1);
+//     static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
+// //    gettimeofday(&tv1, &tz1);
 
-    for (Object p = list1; p.isPair(); p = p.cdr()) {
-        const Object o = p.car();
+//     for (Object p = list1; p.isPair(); p = p.cdr()) {
+//         const Object o = p.car();
 
-        const Object found = seen.ref(o, notFound);
-        if (found == notFound) {
-//    gettimeofday(&tv1, &tz1);
-            ret = Object::cons(o, ret);
-//    gettimeofday(&tv2, &tz2);
-//    seenTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+//         const Object found = seen.ref(o, notFound);
+//         if (found == notFound) {
+// //    gettimeofday(&tv1, &tz1);
+//             ret = Object::cons(o, ret);
+// //    gettimeofday(&tv2, &tz2);
+// //    seenTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
 
-//    gettimeofday(&tv1, &tz1);
+// //    gettimeofday(&tv1, &tz1);
 
-            seen.set(o, Object::True);
-//     gettimeofday(&tv2, &tz2);
-//     restTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
+//             seen.set(o, Object::True);
+// //     gettimeofday(&tv2, &tz2);
+// //     restTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
 
-        }
+//         }
 
-    }
-//    printf("seen = %ld rest = %ld %d\n", seenTime, restTime, i);
-    return ret;
-}
+//     }
+// //    printf("seen = %ld rest = %ld %d\n", seenTime, restTime, i);
+//     return ret;
+// }
 
 Object scheme::uniq(Object list)
 {
@@ -2637,17 +2637,17 @@ Object scheme::codeBuilderEmitEx(Object args)
 //           (%set-intersect (cdr lst1) lst2))))
 
 
-Object setIntersectRec(Object lst1, Object lst2)
-{
-    if (lst1.isNil()) {
-        return Object::Nil;
-    }
-    if (memq(lst1.car(), lst2).isFalse()) {
-        return setIntersectRec(lst1.cdr(), lst2);
-    } else {
-        return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), lst2));
-    }
-}
+// Object setIntersectRec(Object lst1, Object lst2)
+// {
+//     if (lst1.isNil()) {
+//         return Object::Nil;
+//     }
+//     if (memq(lst1.car(), lst2).isFalse()) {
+//         return setIntersectRec(lst1.cdr(), lst2);
+//     } else {
+//         return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), lst2));
+//     }
+// }
 
 // Object setIntersectRec(Object lst1, EqHashTable* seen)
 // {
@@ -2663,15 +2663,15 @@ Object setIntersectRec(Object lst1, Object lst2)
 // }
 
 
-Object scheme::internalsetIntersectEx(Object args)
-{
-    const Object list2 = args.second();
-//     EqHashTable seen;
-//     for (Object p = list2; p.isPair(); p = p.cdr()) {
-//         seen.set(p.car(), Object::True);
-//     }
+// Object scheme::internalsetIntersectEx(Object args)
+// {
+//     const Object list2 = args.second();
+// //     EqHashTable seen;
+// //     for (Object p = list2; p.isPair(); p = p.cdr()) {
+// //         seen.set(p.car(), Object::True);
+// //     }
 
-    return setIntersectRec(args.first(), list2);
+//     return setIntersectRec(args.first(), list2);
 //     if (list1.isNil()) {
 //         return Object::Nil;
 //     } else if (list2.isNil()) {
@@ -2691,4 +2691,4 @@ Object scheme::internalsetIntersectEx(Object args)
 //         }
 //     }
 //     return ret;//Pair::reverse(ret);
-}
+//}
