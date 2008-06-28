@@ -2629,15 +2629,15 @@
 (define (pass3/rec cb iform locals frees can-frees sets tail)
   ((vector-ref pass3/dispatch-table (vector-ref iform 0)) cb iform locals frees can-frees sets tail))
 
-(define (pass3 iform locals frees can-frees sets tail)
+(define (pass3 iform)
   (let1 cb (make-code-builder)
-    (pass3/rec cb iform locals frees can-frees sets tail)
+    (pass3/rec cb iform '() *free-lvars* '() '() #f)
     (code-builder-emit cb)))
 (define (pass4 lst)
   (pass4/fixup-labels (list->vector (append2 lst '(HALT)))))
 
 (define (compile-library-body! lib)
-  (let1 body ($append-map1 (lambda (sexp) (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) '() *free-lvars* '() '() #f)) ($library.body lib))
+  (let1 body ($append-map1 (lambda (sexp) (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) )) ($library.body lib))
     ($library.set-compiled-body! lib (pass4 `(,@body RETURN 0)))))
 
 (define (compile-partial sexp . lib)
@@ -2648,7 +2648,7 @@
        (merge-insn
          (pass3
           (pass2/optimize
-           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()) '() *free-lvars* '() '() #f)))))))
+           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()))))))))
 
 ;; todo local macro
 (define-macro (pass4/fixup-labels-clollect insn)
@@ -2820,10 +2820,10 @@
   (pass4 (merge-insn
           (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
                    x)
-                 '() *free-lvars* '() '() #f))))
+                 ))))
 
 (define (compile-no-optimize sexp)
-  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '() *free-lvars* '() '() #f)))
+  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f))))
 
 (cond-expand
  [vm-outer?
