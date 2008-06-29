@@ -568,7 +568,66 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     returnCode_[1] = operand;
 
                     // pc_ will be changed in applyEx
-                    ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
+//                    ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
+//                    ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
+                    const int argc = operand.toInt();
+                    ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
+
+                } else if (ac_.toCProcedure()->proc == eqHashtableCopyEx ||
+                           ac_.toCProcedure()->proc == codeBuilderAppendDEx ||
+                           ac_.toCProcedure()->proc == codeBuilderPut5DEx ||
+                           ac_.toCProcedure()->proc == codeBuilderPut4DEx ||
+                           ac_.toCProcedure()->proc == codeBuilderPut3DEx ||
+                           ac_.toCProcedure()->proc == codeBuilderPut2DEx ||
+                           ac_.toCProcedure()->proc == codeBuilderPut1DEx ||
+                           ac_.toCProcedure()->proc == makeCodeBuilderEx ||
+                           ac_.toCProcedure()->proc == pass3FindSetsEx ||
+                           ac_.toCProcedure()->proc == pass3FindFreeEx ||
+                           ac_.toCProcedure()->proc == appendDEx ||
+                           ac_.toCProcedure()->proc == appendAEx ||
+                           ac_.toCProcedure()->proc == appendEx ||
+                           ac_.toCProcedure()->proc == internalgetClosureNameEx ||
+                           ac_.toCProcedure()->proc == append2Ex ||
+                           ac_.toCProcedure()->proc == callProcessEx ||
+                           ac_.toCProcedure()->proc == vectorTolistEx ||
+                           ac_.toCProcedure()->proc == charLtPEx ||
+                           ac_.toCProcedure()->proc == charLePEx ||
+                           ac_.toCProcedure()->proc == charGtPEx ||
+                           ac_.toCProcedure()->proc == charGePEx ||
+                           ac_.toCProcedure()->proc == dynamicWindEx ||
+                           ac_.toCProcedure()->proc == symbolPEx ||
+                           ac_.toCProcedure()->proc == loadEx ||
+                           ac_.toCProcedure()->proc == valuesEx ||
+                           ac_.toCProcedure()->proc == applyEx ||
+                           ac_.toCProcedure()->proc == exitEx ||
+                           ac_.toCProcedure()->proc == assqEx ||
+                           ac_.toCProcedure()->proc == divEx ||
+                           ac_.toCProcedure()->proc == modEx ||
+                           ac_.toCProcedure()->proc == procedurePEx ||
+                           ac_.toCProcedure()->proc == macroexpand1Ex ||
+                           ac_.toCProcedure()->proc == vectorTypePEx ||
+                           ac_.toCProcedure()->proc == typedVectorPEx ||
+                           ac_.toCProcedure()->proc == vectorTypeDataEx ||
+                           ac_.toCProcedure()->proc == makeTypedVectorEx ||
+                           ac_.toCProcedure()->proc == makeVectorTypeEx ||
+                           ac_.toCProcedure()->proc == vectorTypeInstanceOfPEx ||
+                           ac_.toCProcedure()->proc == typedVectorGetNthEx ||
+                           ac_.toCProcedure()->proc == typedVectorSetNthEx ||
+                           ac_.toCProcedure()->proc == hashtableKeysEx ||
+                            ac_.toCProcedure()->proc == hashtableSetDEx ||
+                            ac_.toCProcedure()->proc == hashtableRefEx ||
+//                            ac_.toCProcedure()->proc == makeEqHashtableEx ||
+                           //                         ac_.toCProcedure()->proc == numberPEx ||
+//                           ac_.toCProcedure()->proc == consEx ||
+//                           ac_.toCProcedure()->proc == carEx ||
+                           ac_.toCProcedure()->proc == typedVectorTypeEx ||
+                           ac_.toCProcedure()->proc == codeBuilderEmitEx
+                    ) {
+                    const int argc = operand.toInt();
+                    ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
+                    returnCode_[1] = operand;
+                    pc_  = returnCode_;
+
                 } else {
                     ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
                     returnCode_[1] = operand;
@@ -1607,7 +1666,7 @@ Object VM::getStackTrace()
             break;
         }
     }
-    return sysGetOutputStringEx(L1(sport));
+    return sysGetOutputStringEx(L1(sport), 0, NULL);
 }
 
 void VM::raise(Object o)
@@ -1618,9 +1677,9 @@ void VM::raise(Object o)
 
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
-    const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list));
+    const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list), 0, NULL);
     const Object tr = getStackTrace();
-    raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), tr)));
+    raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), tr), 0, NULL));
 }
 
 #ifdef ENABLE_PROFILER
@@ -1715,7 +1774,7 @@ Object VM::getClosureName(Object closure)
         if (name == notFound_) {
             return Object::False;
         } else {
-            return stringTosymbolEx(L1(splitId(name).cdr()));
+            return stringTosymbolEx(L1(splitId(name).cdr()), 0, NULL);
         }
     } else {
         return Object::False;
@@ -1750,23 +1809,43 @@ Object VM::getCProcedureName(Object proc)
     return Symbol::intern(UC("<unknwon subr>"));
 }
 
-Object VM::values(Object args)
+Object VM::values(int num, Object* v)
 {
-    if (!args.isPair()) {
+    if (0 == num) {
         numValues_ = 0;
         return Object::Undef;
     }
 
-    int nvals = 1;
-    for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
-        values_[nvals - 1] = p.car();
-        if (nvals++ >= maxNumValues_) {
+//    int nvals = 1;
+//    for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
+    for (int i = 1; i < num; i++) {
+        if (i >= maxNumValues_) {
             RAISE0("too many values");
         }
+//        values_[nvals - 1] = v[i];
+        values_[i - 1] = v[i];
 
     }
-    numValues_ = nvals;
-    return args.first(); // set to ac_ later.
+    numValues_ = num;
+    return v[0]; // set to ac_ later.
+
+//     if (!args.isPair()) {
+//         numValues_ = 0;
+//         return Object::Undef;
+//     }
+
+//     int nvals = 1;
+//     for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
+//         values_[nvals - 1] = p.car();
+//         if (nvals++ >= maxNumValues_) {
+//             RAISE0("too many values");
+//         }
+
+//     }
+//     numValues_ = nvals;
+//     return args.first(); // set to ac_ later.
+// }
+
 }
 
 Object VM::getProfileResult()

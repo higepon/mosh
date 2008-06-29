@@ -374,7 +374,7 @@ public:
     static Object makeInputFilePort(const ucs4char* str);
     static Object makeStack(Object* src, int size);
     static Object makeEqHashTable();
-    static Object makeCProcedure(Object (*proc)(Object));
+    static Object makeCProcedure(Object (*proc)(Object, int, Object*));
     static Object makeBox(Object o);
     static Object makeByteVector(int n, int8_t v = 0);
     static Object makeByteVector(ByteVector* b);

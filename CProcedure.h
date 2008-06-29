@@ -37,15 +37,20 @@ namespace scheme {
 class CProcedure EXTEND_GC
 {
 public:
-    CProcedure(Object (*proc)(Object)) : proc(proc) {}
+    CProcedure(Object (*proc)(Object, int, Object*)) : proc(proc) {}
     ~CProcedure() {}
 
     Object call(Object arg)
     {
-        return (*proc)(arg);
+        return (*proc)(arg, 0, NULL);
     }
 
-    Object (*proc)(Object);
+    Object call(int argc, Object* argv)
+    {
+        return (*proc)(Object::False, argc, argv);
+    }
+
+    Object (*proc)(Object, int, Object*);
 };
 
 }; // namespace scheme

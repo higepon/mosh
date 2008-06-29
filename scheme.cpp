@@ -254,7 +254,7 @@ Object Object::makeEqHashTable()
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
 }
 
-Object Object::makeCProcedure(Object (*proc)(Object))
+Object Object::makeCProcedure(Object (*proc)(Object, int, Object*))
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
 }

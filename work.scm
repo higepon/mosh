@@ -1,7 +1,25 @@
+(eq-hashtable-copy 3 2 3)
+;; (define (do-nothing2 a b c) #t)
+
+;; (let loop ([i 0])
+;;   (cond
+;;    [(> i 100000) (print i)]
+;;    [else
+;;     (do-nothing 1 2 3)
+;;     (loop (+ i 1))]))
+
+;; (let1 cb (make-code-builder)
+;;   (let loop ([i 0])
+;;     (cond
+;;      [(> i 100000) (print i)]
+;;      [else
+;;       (code-builder-put3! cb 1 2 3)
+;;       (loop (+ i 1))])))
 
 
-(print ((lambda (a) (set! a 3) a) 5))
-(exit)
+
+;; (print ((lambda (a) (set! a 3) a) 5))
+;; (exit)
 ;(print 3)
 ;; (define find-table (make-eq-hashtable))
 

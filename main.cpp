@@ -98,9 +98,6 @@ void signal_handler(int signo)
 
 int main(int argc, char *argv[])
 {
-    gc_map<int, int> a;
-    gc_map<int, int> b;
-
     int opt;
     bool isTestOption    = false;
     bool isCompileString = false;
@@ -186,7 +183,7 @@ int main(int argc, char *argv[])
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
-        sysDisplayEx(L1(theVM->compile(code)));
+        sysDisplayEx(L1(theVM->compile(code)), 0, NULL); // temp
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {
