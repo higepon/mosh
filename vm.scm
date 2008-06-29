@@ -54,6 +54,7 @@
 
 ;(define (VM codes pc a fp c stack sp)
 
+
 (define (init-library-table)
   (set! vm-instances (make-hash-table 'eq?))
   (set! vm-libraries (make-hash-table 'eq?))

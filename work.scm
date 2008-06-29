@@ -1,4 +1,6 @@
-(print (((lambda (a) (lambda () a)) 10)))
+
+
+(print ((lambda (a) (set! a 3) a) 5))
 (exit)
 ;(print 3)
 ;; (define find-table (make-eq-hashtable))

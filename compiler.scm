@@ -24,6 +24,8 @@
   (define make-eq-hashtable make-hash-table)
   (define hashtable-set! hash-table-put!)
   (define hashtable-ref hash-table-get)
+  (define hashtable-keys hash-table-keys)
+  (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
   (define dd (lambda a '()))
   (define pp (lambda a '()))
   (define syntax-error error)
@@ -61,6 +63,14 @@
        (hashtable-set! ret key value))
      ht)
     ret))
+
+(define (hashtable-set-true! ht keys)
+  (let loop ([keys keys])
+    (cond
+     [(null? keys) ht]
+     [else
+      (hashtable-set! ht (car keys) #t)
+      (loop (cdr keys))])))
 
 (define ($for-each1-with-rindex proc lst)
   (let loop ([i (- (length lst) 1)]
@@ -2169,7 +2179,7 @@
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
 (define (pass3/$local-ref cb iform locals frees can-frees sets tail)
   (pass3/compile-refer cb ($local-ref.lvar iform) locals frees)
-  (when (memq ($local-ref.lvar iform) sets)
+  (when (hashtable-ref sets ($local-ref.lvar iform) #f)
     (cput! cb 'INDIRECT))
   0)
 
@@ -2377,7 +2387,8 @@
                                       frees-here
 ;                                      (%set-union can-frees vars)
                                       (append2 can-frees vars)
-                                      (append2 sets-for-this-lvars sets)
+;                                      (append2 sets-for-this-lvars sets)
+                                      (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars)
 ;;                                       (%set-union (append2 sets-for-this-lvars sets)
 ;;                                                   (%set-intersect sets frees-here))
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2425,7 +2436,7 @@
          [frees-here (pass3/find-free body
                                       vars
                                       (append2 locals (append2 frees can-frees)))]
-         [sets-for-this-lvars  (pass3/find-sets body vars)]
+         [sets-for-this-lvars (pass3/find-sets body vars)]
          [end-of-closure (make-label)]
          [lambda-cb (make-code-builder)])
     (let1 free-size (if (> (length frees-here) 0)
@@ -2444,7 +2455,10 @@
                                  frees-here
 ;                                 (%set-union can-frees vars)
                                  (append2 can-frees vars) ;; can-frees and vars don't have common lvars.
-                                 (append2 sets-for-this-lvars sets)
+;                                 (append2 sets-for-this-lvars sets)
+                                 (if (null? sets-for-this-lvars)
+                                     sets
+                                     (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
 ;;                                  (%set-union (append2 sets-for-this-lvars sets)
 ;;                                              (%set-intersect sets frees-here))
                                  (length vars))
@@ -2483,7 +2497,10 @@
                                    (append2 can-frees vars)
 ;;                                    (%set-union (append2 sets-for-this-lvars sets)
 ;;                                                (%set-intersect sets frees-here))
-                                   (append2 sets-for-this-lvars sets)
+;;                                   (append2 sets-for-this-lvars sets)
+                                   (if (null? sets-for-this-lvars)
+                                       sets
+                                       (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ body-size vals-size free-size))))))
@@ -2522,7 +2539,10 @@
                                        frees-here
 ;                                       (%set-union can-frees vars)
                                        (append2 can-frees vars)
-                                       (append2 sets-for-this-lvars sets)
+;                                       (append2 sets-for-this-lvars sets)
+                                           (if (null? sets-for-this-lvars)
+                                               sets
+                                               (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
 ;;                                        (%set-union (append2 sets-for-this-lvars sets)
 ;;                                                    (%set-intersect sets frees-here))
                                        (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2563,7 +2583,10 @@
                   (let1 stack-size (pass3/rec cb (car args) vars frees-here
 ;                                             (%set-union can-frees vars)
                                               new-can-frees
-                                              (append2 sets-for-this-lvars sets)
+;                                              (append2 sets-for-this-lvars sets)
+                                              (if (null? sets-for-this-lvars)
+                                                  sets
+                                                  (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
 ;;                                               (%set-union (append2 sets-for-this-lvars sets)
 ;;                                                           (%set-intersect sets frees-here))
                                               #f)
@@ -2577,7 +2600,10 @@
                                         frees-here
     ;                                   (%set-union can-frees vars)
                                         new-can-frees
-                                        (append2 sets-for-this-lvars sets)
+;                                        (append2 sets-for-this-lvars sets)
+                                        (if (null? sets-for-this-lvars)
+                                            sets
+                                            (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
 ;;                                    (%set-union (append2 sets-for-this-lvars sets)
 ;;                                                (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
@@ -2631,7 +2657,7 @@
 
 (define (pass3 iform)
   (let1 cb (make-code-builder)
-    (pass3/rec cb iform '() *free-lvars* '() '() #f)
+    (pass3/rec cb iform '() *free-lvars* '() (make-eq-hashtable) #f)
     (code-builder-emit cb)))
 (define (pass4 lst)
   (pass4/fixup-labels (list->vector (append2 lst '(HALT)))))

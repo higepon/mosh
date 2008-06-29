@@ -2631,9 +2631,9 @@ Object scheme::codeBuilderEmitEx(Object args)
 
 Object scheme::eqHashtableCopyEx(Object args)
 {
-   const int length = Pair::length(args);
-   if (length != 1) {
-       VM_RAISE1("wrong number of argument for eq-hashtable-copy required 1, got ~d)\n", Object::makeInt(length));
+    const int length = Pair::length(args);
+    if (length != 1) {
+        VM_RAISE1("wrong number of argument for eq-hashtable-copy required 1, got ~d)\n", Object::makeInt(length));
    }
    const Object arg1 = args.first();
    if (!arg1.isEqHashTable()) {
