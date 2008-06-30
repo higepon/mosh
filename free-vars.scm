@@ -74,7 +74,7 @@
     (vm/apply ,vm/apply)
     (pair? ,pair?)
     (init-library-table, init-library-table) ;; for test
-    (map10, map)
+;    (map10, map)
     (find10, find)
     (make-custom-binary-input-port, (lambda (id read! get-position set-position! close) (display "make-custom-binary-input-port not implemented")))
     (get-u8 (lambda (port) (display "get-u8 not implemented")))
