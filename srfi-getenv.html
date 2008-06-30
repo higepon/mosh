@@ -28,14 +28,14 @@ Some applications rely on environment variables to modify their behavior accordi
 Providing the means to access to the environment variables is indispensable to write practical programs in Scheme.</p>
 <p>In fact, most widely-used Scheme implementations provide the means of getting the value of the specified environment variable, usually called getenv.</p>
 <p>Additionally, some implementations provide the means to get all environment variables.</p>
+<p>For obtaining the value of the environment value, getenv may use locale-setting information to encode the name, and decode the value of the environment variable.</p>
 <p>Conceptually, environment variables are mappings from string names to values.</p>
-<p>For example, CGI programs may obtain the values of the Meta-Variabes such as "QUERY_STRING", "CONTENT_LENGTH" and "REQUEST_METHOD", as the following examples:</p>
+<p>For example, CGI programs may obtain the values of the Meta-Variables such as "QUERY_STRING", "CONTENT_LENGTH" and "REQUEST_METHOD", as the following examples:</p>
 <pre>
 (getenv "QUERY_STRING") => "foo=bar&huga=hige"
 (getenv "CONTENT_LENGTH") => "512"
 (getenv "REQUEST_METHOD") => "post"
 </pre>
-
 <p>Therefore, it is quite useful to define the environment-independent way to get environment variables.</p>
 <p><a name="cgi">[1]</a> The Common Gateway Interface (CGI) Version 1.1, RFC3875, <a href="http://www.ietf.org/rfc/rfc3875">http://www.ietf.org/rfc/rfc3875</a>.</p>
 <H1>Specification</H1>
@@ -54,48 +54,48 @@ Returns names and values of all the environment variables as an a-list.
 </pre>
 
 <H1>Implementation</H1>
-Here is an implementation using SRFI 0: Feature-based conditional expansion construct.
+<H2>Chicken, PLT Scheme and MzScheme</H2>
 <pre>
-(cond-expand
- ((or chicken plt mzscheme)
-  (let ((%getenv getenv))
+(let ((%getenv getenv))
   (set! getenv
     (lambda args
       (if (null? args)
         '()
         (%getenv (car args)))))))
- (gauche
-  (define (getenv . args)
-    (if (null? args)
-        (sys-environ->alist)
-        (apply sys-getenv args))))
- ((or scheme48 scsh)
-  (define (getenv . args)
-    (if (null? args)
-        (environment-alist)
-        (apply lookup-environment-variable args))))
- (stklos
-  ; getenv is built into stklos.
-  #f)
- (else
-  #f))
 </pre>
+<H2>Gauche</H2>
+<pre>
+(define (getenv . args)
+  (if (null? args)
+      (sys-environ->alist)
+      (apply sys-getenv args))))
+</pre>
+<H2>Scheme48 and Scsh</H2>
+<pre>
+(define (getenv . args)
+  (if (null? args)
+      (environment-alist)
+      (apply lookup-environment-variable args))))
+</pre>
+
+<H2>STklos</H2>
+getenv is built into stklos.
 
 <H1>Appendix: Existing implementations</H1>
 <table border=1>
   <tbody><tr><th>Scheme implementation</th><th>get environment variable</th><th>get all the environment variables as an a-list</th></tr>
-  <tr><td>Bigloo</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
-  <tr><td>CHICKEN</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>Bigloo</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>CHICKEN</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>Gambit</td><td>(getenv name . &lt;default&gt;) -&gt;(or string? &lt;default&gt; &lt;Unbound OS environment variable error&gt;) name:string?</td><td>&nbsp;</td></tr>
 
   <tr><td>Gauche</td><td>(sys-getenv name) =&gt; (or string? false) name:string?</td><td>(sys-environ)</td></tr>
-  <tr><td>Guile</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
-  <tr><td>PLT</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
-  <tr><td>Scheme48</td><td>(lookup-environment-variable name) Å® (or string? false) name:string?</td><td>(environment-alist)</td></tr>
+  <tr><td>Guile</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>PLT</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>Scheme48</td><td>(lookup-environment-variable name) => (or string? false) name:string?</td><td>(environment-alist)</td></tr>
 
-  <tr><td>SLIB</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
-  <tr><td>STk</td><td>(getenv name) Å® (or string? false) name:string?</td><td>&nbsp;</td></tr>
-  <tr><td>STklos</td><td>(getenv name) Å® (or string? false) name:string?</td><td>(getenv)</td></tr>
+  <tr><td>SLIB</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>STk</td><td>(getenv name) => (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>STklos</td><td>(getenv name) => (or string? false) name:string?</td><td>(getenv)</td></tr>
   </tbody></table>
 <H1>Acknowledgements</H1>
 Thanks to Shiro Kawai, jmuk, Kokosabu, leque and all the members of the #Lisp_Scheme IRC channel on Freenode.
