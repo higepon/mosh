@@ -41,71 +41,11 @@ using namespace scheme;
         VM_RAISE1("wrong number of argument for " proc " required " #required ", got ~d\n", Object::makeInt(argc)); \
     } \
 
-
-
-// Object scheme::dummy(Object obj)
-// {
-//     return Object::False;
-// }
-
 Object scheme::currentErrorPortEx(Object args, int argc, Object* argv)
 {
     printf("current-error-port called\n");
     return Object::UnBound;
-
 }
-
-// Object scheme::hashtableKeysEx(Object args, int argc, Object* argv)
-// {
-//     const Object ht = args.first();
-//     if (!ht.isEqHashTable()) {
-//         VM_RAISE1("hashtable-keys hash-table required, but got ~a\n", ht);
-//     }
-//     return ht.toEqHashTable()->keys();
-// }
-// Object scheme::hashtableSetDEx(Object args, int argc, Object* argv)
-// {
-//     const Object ht = args.first();
-//     if (!ht.isEqHashTable()) {
-//         VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", ht);
-//     }
-
-//     if (Pair::length(args) == 3) {
-//         const Object key = args.second();
-//         const Object val = args.third();
-//         ht.toEqHashTable()->set(key, val);
-//         return Object::Undef;
-//     } else {
-//         VM_RAISE1("wrong number of arguments for hashtable-set! (required 3, got ~d)\n", Object::makeInt(Pair::length(args)));
-//     }
-//     return Object::UnBound;
-// }
-
-// Object scheme::hashtableRefEx(Object args, int argc, Object* argv)
-// {
-//     const Object ht = args.first();
-//     if (!ht.isEqHashTable()) {
-//         VM_RAISE1("hashtable-ref hash-table required, but got ~a\n", ht);
-//     }
-
-//     const int length = Pair::length(args);
-//     if (length == 3) {
-//         const Object key = args.second();
-//         const Object defaultVal = args.third();
-//         return ht.toEqHashTable()->ref(key, defaultVal);
-//     } else if (length == 2) {
-//         const Object key = args.second();
-//         return ht.toEqHashTable()->ref(key, Object::False);
-//     } else {
-//         VM_RAISE1("wrong number of arguments for hash-table-get (required 2 or 3, got ~d)\n", Object::makeInt(Pair::length(args)));
-//     }
-//     return Object::UnBound;
-// }
-
-// Object scheme::makeEqHashtableEx(Object args, int argc, Object* argv)
-// {
-//     return Object::makeEqHashTable();
-// }
 
 Object scheme::hashtableKeysEx(Object args, int argc, Object* argv)
 {
@@ -140,20 +80,11 @@ Object scheme::hashtableRefEx(Object args, int argc, Object* argv)
         const Object key = argv[1];
         const Object defaultVal = (argc == 3 ? argv[2] : Object::False);
         return ht.toEqHashTable()->ref(key, defaultVal);
-//     } else if (argc == 2) {
-//         const Object ht = argv[0];
-//         if (!ht.isEqHashTable()) {
-//             VM_RAISE1("hashtable-ref hash-table required, but got ~a\n", ht);
-//         }
-//         const Object key = argv[1];
-//         return ht.toEqHashTable()->ref(key, Object::False);
     } else {
         VM_RAISE1("wrong number of arguments for hash-table-get (required 2 or 3, got ~d)\n", Object::makeInt(argc));
     }
     return Object::UnBound;
 }
-
-
 
 Object scheme::makeEqHashtableEx(Object args, int argc, Object* argv)
 {
@@ -559,7 +490,6 @@ Object scheme::reverseIter(Object rest, Object ret)
 Object scheme::reverseEx(Object args, int argc, Object* argv)
 {
     return Pair::reverse(argv[0]);
-//    return reverseIter(args.car(), Object::Nil);
 }
 
 Object scheme::eofObjectPEx(Object args, int argc, Object* argv)
@@ -1069,13 +999,6 @@ Object scheme::getTimeofdayEx(Object args, int argc, Object* argv)
     return Object::cons(Object::makeInt(tv.tv_sec), Object::makeInt(tv.tv_usec));
 }
 
-// Object scheme::valuesEx(Object args, int argc, Object* argv)
-// {
-// //    VM_LOG1("values=~d ", Object::makeInt(Pair::length(args)));
-//     fflush(stderr);
-//     return Object::makeValues(args);
-// }
-
 Object scheme::vmApplyEx(Object args, int argc, Object* argv)
 {
     return theVM->apply(argv[0], argv[1]);
@@ -1092,36 +1015,6 @@ Object scheme::initLibraryTableEx(Object args, int argc, Object* argv)
     theVM->initLibraryTable();
     return Object::Undef;
 }
-
-Object mapIter(Object proc, Object lst)
-{
-    if (lst.isNil()) {
-        return Object::Nil;
-    } else {
-        return Object::cons(theVM->callClosure(proc, lst.car()), mapIter(proc, lst.cdr()));
-    }
-}
-
-// まだ正しく動いていない（全てのtestが通らない）
-// Object scheme::map10Ex(Object args, int argc, Object* argv)
-// {
-//     const Object proc = args.first();
-//     if (!proc.isClosure() && !proc.isCProcedure()) {
-//         VM_RAISE1("map closure required, but got ~a\n", proc);
-//     }
-//     const int length = Pair::length(args);
-//     if (length == 2) {
-//         const Object lst = args.second();
-//         if (lst.isNil()) return lst;
-//         if (!lst.isPair()) {
-//             VM_RAISE1("map pair required, but got ~a\n", lst);
-//         }
-//         return mapIter(proc, lst);
-//     } else {
-//         VM_RAISE1("wrong number of arguments for map (required 2, got ~d)\n", Object::makeInt(length));
-//     }
-//     return Object::Undef;
-// }
 
 Object findIter(Object proc, Object lst)
 {
@@ -1403,11 +1296,6 @@ Object scheme::regexpReplaceAllEx(Object args, int argc, Object* argv)
 Object scheme::evalEx(Object args, int argc, Object* argv)
 {
     checkArgLength(2, argc, "eval");
-//     const int length = Pair::length(args);
-//     if (length != 2) {
-//         VM_RAISE1("wrong number of arguments for eval (required 2, got ~d)\n", Object::makeInt(length));
-//     }
-
     return theVM->eval(argv[0], argv[1]);
 }
 
@@ -1512,10 +1400,6 @@ Object scheme::typedVectorGetNthEx(Object args, int argc, Object* argv)
 Object scheme::typedVectorSetNthEx(Object args, int argc, Object* argv)
 {
     checkArgLength(3, argc, "typed-vector-set-nth");
-//     const int length = Pair::length(args);
-//     if (length != 3) {
-//         VM_RAISE1("wrong number of arguments for typed-vector-set-nth (required 3, got ~d)\n", Object::makeInt(length));
-//     }
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     const Object arg3 = argv[2];
@@ -1563,31 +1447,6 @@ Object scheme::applyEx(Object args, int argc, Object* argv)
         }
     }
     return theVM->applyClosure(proc, argsAsList);
-//     const int length = Pair::length(args);
-//     if (length < 2) {
-//         VM_RAISE1("wrong number of arguments for apply (required at least 2, got ~d)\n", Object::makeInt(length));
-//     }
-
-//     const Object proc = args.first();
-//     if (!proc.isCallable()) {
-//         VM_RAISE1("wrong arguments for apply required closure, got ~a\n", proc);
-//     }
-
-//     Object rest = args.cdr();
-//     const Object lastPair = Pair::getLastPair(rest);
-//     const Object last = lastPair.car();
-
-//     Object argsAsList = Object::Nil;
-//     for (int i = 0; i < length - 1; i++) {
-//         if (i == length - 2) {
-//             argsAsList = Pair::appendD(argsAsList, rest.car());
-//         } else {
-//             argsAsList = Pair::appendD(argsAsList, Pair::list1(rest.car()));
-//         }
-//         rest = rest.cdr();
-//     }
-//     return theVM->applyClosure(proc, argsAsList);
-
 }
 
 Object scheme::valuesEx(Object args, int argc, Object* argv)
@@ -1716,10 +1575,6 @@ Object scheme::symbolPEx(Object args, int argc, Object* argv)
 Object scheme::dynamicWindEx(Object args, int argc, Object* argv)
 {
     checkArgLength(3, argc, "dynamic-wind");
-//     const int length = Pair::length(args);
-//     if (length != 3) {
-//         VM_RAISE1("wrong number of arguments for dynamic-wind (required 3, got ~d)\n", Object::makeInt(length));
-//     }
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     const Object arg3 = argv[2];
@@ -1746,26 +1601,6 @@ Object scheme::dynamicWindEx(Object args, int argc, Object* argv)
 
 Object scheme::charGePEx(Object args, int argc, Object* argv)
 {
-//    const int length = Pair::length(args);
-//    if (length < 2) {
-//        VM_RAISE1("wrong number of arguments for char>=? required at least 2, got ~d)\n", Object::makeInt(length));
-//    }
-//    for (Object p = args;;) {
-//        const Object o = p.car();
-//        if (!o.isChar()) {
-//            VM_RAISE1("char>=? char required, but got ~a\n", o);
-//        }
-//        if (p.cdr().isNil()) break;
-//        const Object n = p.cdr().car();
-//        if (!n.isChar()) {
-//            VM_RAISE1("char>=? char required, but got ~a\n", n);
-//        }
-//        if (o.toChar() < n.toChar()) {
-//            return Object::False;
-//        }
-//        p = p.cdr();
-//    }
-//    return Object::True;
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char>=? required at least 2, got ~d)\n", Object::makeInt(argc));
    }
@@ -1789,26 +1624,6 @@ Object scheme::charGePEx(Object args, int argc, Object* argv)
 
 Object scheme::charGtPEx(Object args, int argc, Object* argv)
 {
-//    const int length = Pair::length(args);
-//    if (length < 2) {
-//        VM_RAISE1("wrong number of arguments for char>? required at least 2, got ~d)\n", Object::makeInt(length));
-//    }
-//    for (Object p = args;;) {
-//        const Object o = p.car();
-//        if (!o.isChar()) {
-//            VM_RAISE1("char>? char required, but got ~a\n", o);
-//        }
-//        if (p.cdr().isNil()) break;
-//        const Object n = p.cdr().car();
-//        if (!n.isChar()) {
-//            VM_RAISE1("char>? char required, but got ~a\n", n);
-//        }
-//        if (o.toChar() <= n.toChar()) {
-//            return Object::False;
-//        }
-//        p = p.cdr();
-//    }
-//   return Object::True;
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char>? required at least 2, got ~d)\n", Object::makeInt(argc));
    }
@@ -1850,27 +1665,6 @@ Object scheme::charLePEx(Object args, int argc, Object* argv)
        }
    }
    return Object::True;
-
-//    const int length = Pair::length(args);
-//    if (length < 2) {
-//        VM_RAISE1("wrong number of arguments for char<=? required at least 2, got ~d)\n", Object::makeInt(length));
-//    }
-//    for (Object p = args;;) {
-//        const Object o = p.car();
-//        if (!o.isChar()) {
-//            VM_RAISE1("char<=? char required, but got ~a\n", o);
-//        }
-//        if (p.cdr().isNil()) break;
-//        const Object n = p.cdr().car();
-//        if (!n.isChar()) {
-//            VM_RAISE1("char<=? char required, but got ~a\n", n);
-//        }
-//        if (o.toChar() > n.toChar()) {
-//            return Object::False;
-//        }
-//        p = p.cdr();
-//    }
-//    return Object::True;
 }
 
 Object scheme::charLtPEx(Object args, int argc, Object* argv)
@@ -1893,27 +1687,6 @@ Object scheme::charLtPEx(Object args, int argc, Object* argv)
        }
    }
    return Object::True;
-
-//    const int length = Pair::length(args);
-//    if (length < 2) {
-//        VM_RAISE1("wrong number of arguments for char<? required at least 2, got ~d)\n", Object::makeInt(length));
-//    }
-//    for (Object p = args;;) {
-//        const Object o = p.car();
-//        if (!o.isChar()) {
-//            VM_RAISE1("char<? char required, but got ~a\n", o);
-//        }
-//        if (p.cdr().isNil()) break;
-//        const Object n = p.cdr().car();
-//        if (!n.isChar()) {
-//            VM_RAISE1("char<? char required, but got ~a\n", n);
-//        }
-//        if (o.toChar() >= n.toChar()) {
-//            return Object::False;
-//        }
-//        p = p.cdr();
-//    }
-//    return Object::True;
 }
 
 Object scheme::vectorTolistEx(Object args, int argc, Object* argv)
@@ -1930,22 +1703,6 @@ Object scheme::vectorTolistEx(Object args, int argc, Object* argv)
         ret = Object::cons(v->ref(i), ret);
     }
     return ret;
-//    const int length = Pair::length(args);
-//    if (length != 1) {
-//        VM_RAISE1("wrong number of arguments for vector->list required 1, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg = args.first();
-//    if (!arg.isVector()) {
-//        VM_RAISE1("vector->list vector required, but got ~a\n", arg);
-//    }
-//    Vector* const v = arg.toVector();
-//    const int vLength = v->length();
-//    Object ret = Object::Nil;
-//    for (int i = vLength - 1; i >= 0; i--) {
-//        ret = Object::cons(v->ref(i), ret);
-//    }
-//    return ret;
-
 }
 
 Object scheme::callProcessEx(Object args, int argc, Object* argv)
@@ -1973,53 +1730,15 @@ Object scheme::callProcessEx(Object args, int argc, Object* argv)
         VM_RAISE0("call-process failed\n");
     }
     return Object::makeString(ret);
-//     const int BUFFER_SIZE = 1024;
-//     const Object cmd = args.first();
-//     if (!cmd.isString()) {
-//        VM_RAISE1("call-process string required, but got ~a\n", cmd);
-//     }
-
-//     FILE* in = popen(cmd.toString()->data().ascii_c_str(), "r");
-//     char buffer[BUFFER_SIZE];
-//     if (in == NULL) {
-//         VM_RAISE1("call-process failed: ~a\n", cmd);
-//     }
-
-//     memset(buffer, '\0', BUFFER_SIZE);
-
-//     ucs4string ret;
-//     int size;
-//     while ((size = fread(buffer, sizeof(char), BUFFER_SIZE, in)) > 0) {
-//         ret += ucs4string::from_c_str(buffer, size);
-//     }
-//     if (pclose(in) != 0) {
-//         VM_RAISE0("call-process failed\n");
-//     }
-//     return Object::makeString(ret);
-
 }
 
 Object scheme::internalgetClosureNameEx(Object args, int argc, Object* argv)
 {
     return theVM->getClosureName(argv[0]);
-//    return theVM->getClosureName(args.first());
 }
 
 Object scheme::appendEx(Object args, int argc, Object* argv)
 {
-//     if (args.isNil()) return Object::Nil;
-//         gc_vector<Object> lists;
-//         for (Object p = args; p.isPair(); p = p.cdr()) {
-//             lists.push_back(p.car());
-//         }
-//         Object ret = lists[lists.size() - 1];
-//         for (int i = lists.size() - 2; i >= 0; i--) {
-//             if (!lists[i].isPair()) {
-//                 // error
-//             }
-//             ret = Pair::append2(lists[i], ret);
-//         }
-//         return ret;
     if (0 == argc) return Object::Nil;
     Object ret = argv[argc - 1];
     for (int i = argc - 2; i >= 0; i--) {
@@ -2047,24 +1766,7 @@ Object scheme::appendAEx(Object args, int argc, Object* argv)
 
 Object scheme::appendDEx(Object args, int argc, Object* argv)
 {
-//     if (args.isNil()) return Object::Nil;
-//     gc_vector<Object> lists;
-//     for (Object p = args; p.isPair(); p = p.cdr()) {
-//         lists.push_back(p.car());
-//     }
-//     Object ret = lists[lists.size() - 1];
-//     for (int i = lists.size() - 2; i >= 0; i--) {
-//         if (!lists[i].isPair()) {
-//             // error
-//         }
-//         ret = Pair::appendD2(lists[i], ret);
-//     }
-//     return ret;
     if (0 == argc) return Object::Nil;
-//     gc_vector<Object> lists;
-//     for (Object p = args; p.isPair(); p = p.cdr()) {
-//         lists.push_back(p.car());
-//     }
     Object ret = argv[argc - 1];
     for (int i = argc - 2; i >= 0; i--) {
         if (!argv[i].isPair()) {
@@ -2075,57 +1777,6 @@ Object scheme::appendDEx(Object args, int argc, Object* argv)
     return ret;
 
 }
-
-// Object scheme::internalsetUnionEx(Object args, int argc, Object* argv)
-// {
-//     static long seenTime = 0;
-//     static long restTime = 0;
-
-//     const Object list1 = args.first();
-//     const Object list2 = args.second();
-// //    printf("set-union %d %d\n",Pair::length(list1), Pair::length(list2));
-
-//     if (list1.isNil()) {
-//         return list2;
-//     } else if (list2.isNil()) {
-//         return list1;
-//     }
-//     Object ret = list2;
-//     EqHashTable seen;
-
-//     struct timeval tv1, tv2;
-//     struct timezone tz1, tz2;
-
-//     for (Object p = ret; p.isPair(); p = p.cdr()) {
-//         seen.set(p.car(), Object::True);
-//     }
-
-
-//     static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
-// //    gettimeofday(&tv1, &tz1);
-
-//     for (Object p = list1; p.isPair(); p = p.cdr()) {
-//         const Object o = p.car();
-
-//         const Object found = seen.ref(o, notFound);
-//         if (found == notFound) {
-// //    gettimeofday(&tv1, &tz1);
-//             ret = Object::cons(o, ret);
-// //    gettimeofday(&tv2, &tz2);
-// //    seenTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
-
-// //    gettimeofday(&tv1, &tz1);
-
-//             seen.set(o, Object::True);
-// //     gettimeofday(&tv2, &tz2);
-// //     restTime += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
-
-//         }
-
-//     }
-// //    printf("seen = %ld rest = %ld %d\n", seenTime, restTime, i);
-//     return ret;
-// }
 
 Object scheme::uniq(Object list)
 {
@@ -2142,22 +1793,18 @@ Object scheme::uniq(Object list)
 
 Object scheme::pass3FindFreeEx(Object args, int argc, Object* argv)
 {
-//    return findFree(args.first(), args.second(), args.third());
     return findFree(argv[0], argv[1], argv[2]);
 }
 
 Object scheme::pass3FindSetsEx(Object args, int argc, Object* argv)
 {
-//    return findSets(args.first(), args.second());
     return findSets(argv[0], argv[1]);
 }
 
 Object scheme::findFree(Object iform, Object locals, Object canFrees)
 {
     const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
-//    VM_LOG1("find-free = ~a\n", uniq(ret));
     return uniq(ret);
-//   (uniq (rec iform locals '())))
 }
 
 
@@ -2190,10 +1837,6 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
         return Object::Nil;
     case LET:
     {
-//        [(= $LET t)
-//         (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-//                 (rec ($let.body i) ($let.lvars i) labels-seen))]
-
         const Object letLvars = v->ref(2);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
@@ -2202,9 +1845,6 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     }
     case RECEIVE:
     {
-//        [(= $RECEIVE t)
-//         (append (rec ($receive.vals i) l labels-seen)
-//                 (rec ($receive.body i) ($receive.lvars i) labels-seen))]
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         const Object receiveLVars = v->ref(1);
@@ -2214,25 +1854,17 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     }
     case SEQ:
     {
-//        [(= $SEQ t)
-//         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
         const Object seqBody = v->ref(1);
         return findFreeRecMap(l, canFrees, labelsSeen, seqBody);
     }
     case LAMBDA:
     {
-//        [(= $LAMBDA t)
-//         (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
         return findFreeRec(lambdaBody, lambdaLvars, canFrees, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
-//        [(= $LOCAL-ASSIGN t)
-//         (let1 lvar ($local-assign.lvar i)
-//           (append (if (memq lvar can-frees) (list lvar) '())
-//                   (rec ($local-assign.val i) l labels-seen)))]
         const Object lvar = v->ref(1);
         const Object val = v->ref(2);
         if (memq(lvar, canFrees).isFalse()) {
@@ -2588,51 +2220,6 @@ Object scheme::findSetsRec(Object i, Object lvars)
     return Object::Undef;
 }
 
-// Object scheme::pass4FixupLabelCollect(Object vec)
-// {
-//     static const Object NOP                   = Symbol::intern(UC("NOP"));
-//     static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
-//     static const Object TEST                  = Symbol::intern(UC("TEST"));
-//     static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
-//     static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
-//     static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
-//     static const Object FRAME                 = Symbol::intern(UC("FRAME"));
-//     static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
-//     static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
-//     const int LABEL = 15;
-
-//     const Vector* const v = vec.toVector();
-//     const int length = v->length();
-//     const Object ret = Object::makeVector(length, NOP);
-//     Vector* const rv= ret.toVector();
-//     Object labels = Object::Nil;
-//     for (int i = 0, j = 0; i < length;) {
-//         const Object insn = v->ref(i);
-//         if (insn == UNFIXED_JUMP          ||
-//             insn == TEST                  ||
-//             insn == NUMBER_LE_TEST        ||
-//             insn == NOT_TEST              ||
-//             insn == REFER_LOCAL0_EQV_TEST ||
-//             insn == FRAME                 ||
-//             insn == PUSH_FRAME            ||
-//             insn == CLOSURE) {
-//             rv->set(j, insn);
-//             rv->set(j + 1, v->ref(i + 1));
-//             i += 2;
-//             j += 2;
-//         } else if (insn.isVector() && insn.toVector()->length() > 0 &&
-//                    insn.toVector()->ref(0).toInt() == LABEL) {
-//             i++;
-//             labels = Object::cons(Object::cons(insn, Object::makeInt(j)), labels);
-//         } else {
-//             rv->set(j, insn);
-//             i++;
-//             j++;
-//         }
-//     }
-//     return Object::cons(ret, labels);
-// }
-
 Object scheme::assq(Object o, Object alist)
 {
     for (Object p = alist; p.isPair(); p = p.cdr()) {
@@ -2643,155 +2230,11 @@ Object scheme::assq(Object o, Object alist)
     return Object::False;
 }
 
-// // コンパイラはインストラクションをシンボルで持ってなかった。。
-// Object scheme::pass4FixupLabel(Object vec)
-// {
-//     static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
-//     static const Object TEST                  = Symbol::intern(UC("TEST"));
-//     static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
-//     static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
-//     static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
-//     static const Object FRAME                 = Symbol::intern(UC("FRAME"));
-//     static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
-//     static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
-//     static const Object LOCAL_JMP             = Symbol::intern(UC("LOCAL_JMP"));
-
-//     const Object collected = pass4FixupLabelCollect(vec);
-//     Vector* const code = collected.car().toVector();
-//     const Object labels = collected.cdr();
-//     const int length = code->length();
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     VM_LOG1("labels = ~a", labels);
-// //   (receive (code labels) (collect-labels)
-// //     (let1 len (vector-length code)
-// //     (let loop ([i 0])
-// //       (cond
-// //        [(= i len) code]
-// //        [else
-// //         (let1 insn (vector-ref code i)
-// //           (cond
-// //            [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
-// //            [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
-// //            [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-// //            [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
-// //            [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-// //            [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
-// //            [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
-// //            [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-// //            [else (loop (+ i 1))]))])))))
-
-
-// //   `(let1 label (assq (vector-ref code (+ i 1)) labels)
-// //      (cond
-// //       [label
-// //        (vector-set! code i ,insn)
-// //        (vector-set! code (+ i 1) (- (cdr label) i 1)) ;; jump point
-// //        (loop (+ i 2))]
-// //       [else
-// //        (loop (+ i 1))])))
-
-
-//     for (int i = 0; i < length;) {
-//         const Object insn = code->ref(i);
-//             VM_LOG1("insn = ~a\n", insn);
-//         if (insn == UNFIXED_JUMP) {
-//             const Object label = assq(code->ref(i + 1), labels);
-//             if (!labels.isFalse()) {
-//                 code->set(i, LOCAL_JMP);
-//                 code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
-//                 i += 2;
-//             } else {
-//                 i++;
-//             }
-//         } else if (insn == TEST                  ||
-//                    insn == NUMBER_LE_TEST        ||
-//                    insn == NOT_TEST              ||
-//                    insn == REFER_LOCAL0_EQV_TEST ||
-//                    insn == FRAME                 ||
-//                    insn == PUSH_FRAME            ||
-//                    insn == CLOSURE) {
-//             const Object label = assq(code->ref(i + 1), labels);
-//             if (!labels.isFalse()) {
-//                 code->set(i, insn);
-//                 code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
-//                 i += 2;
-//             } else {
-//                 i++;
-//             }
-//         } else {
-//             i++;
-//         }
-//     }
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return collected.car();
-// }
-
-// Object scheme::pass4FixupLabelsEx(Object args, int argc, Object* argv)
-// {
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return pass4FixupLabel(args.first());
-// }
-
 Object scheme::makeCodeBuilderEx(Object args, int argc, Object* argv)
 {
     return Object::makeCodeBuilder();
 }
 
-// Object scheme::codeBuilderPut1DEx(Object args, int argc, Object* argv)
-// {
-//    const int length = Pair::length(args);
-//    if (length != 2) {
-//        VM_RAISE1("wrong number of arguments for code-builder-put! required 2, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg = args.first();
-//    if (!arg.isCodeBuilder()) {
-//        VM_RAISE1("code-builder required, but got ~a\n", arg);
-//    }
-//    arg.toCodeBuilder()->put(args.second());
-//    return Object::Undef;
-// }
-
-// Object scheme::codeBuilderPut2DEx(Object args, int argc, Object* argv)
-// {
-//    const int length = Pair::length(args);
-//    if (length != 3) {
-//        VM_RAISE1("wrong number of arguments for code-builder-put2! required 3, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg = args.first();
-//    if (!arg.isCodeBuilder()) {
-//        VM_RAISE1("code-builder required, but got ~a\n", arg);
-//    }
-//    arg.toCodeBuilder()->put(args.second(), args.third());
-//    return Object::Undef;
-// }
-
-// Object scheme::codeBuilderPut3DEx(Object args, int argc, Object* argv)
-// {
-//    const int length = Pair::length(args);
-//    if (length != 4) {
-//        VM_RAISE1("wrong number of arguments for code-builder-put3! required 4, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg = args.first();
-//    if (!arg.isCodeBuilder()) {
-//        VM_RAISE1("code-builder required, but got ~a\n", arg);
-//    }
-//    arg.toCodeBuilder()->put(args.second(), args.third(), args.cdr().cdr().cdr().car());
-//    return Object::Undef;
-// }
-
-// Object scheme::codeBuilderPut4DEx(Object args, int argc, Object* argv)
-// {
-//    const int length = Pair::length(args);
-//    if (length != 5) {
-//        VM_RAISE1("wrong number of arguments for code-builder-put4! required 5, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg = args.first();
-//    if (!arg.isCodeBuilder()) {
-//        VM_RAISE1("code-builder required, but got ~a\n", arg);
-//    }
-//    arg.toCodeBuilder()->put(args.second(), args.third(), args.cdr().cdr().cdr().car(), args.cdr().cdr().cdr().cdr().car());
-//    return Object::Undef;
-// }
 Object scheme::codeBuilderPut1DEx(Object args, int argc, Object* argv)
 {
     checkArgLength(2, argc, "code-builder-put1!");
@@ -2864,49 +2307,23 @@ Object scheme::codeBuilderPut5DEx(Object args, int argc, Object* argv)
 Object scheme::codeBuilderAppendDEx(Object args, int argc, Object* argv)
 {
     checkArgLength(2, argc, "code-builder-append!");
-//    const int length = Pair::length(args);
-//    if (length != 2) {
-//        VM_RAISE1("wrong number of arguments for code-builder-append! required 2, got ~d)\n", Object::makeInt(length));
-//    }
     const Object cbDst = argv[0];
-   const Object cbSrc = argv[1];
-   if (!cbDst.isCodeBuilder() || !cbSrc.isCodeBuilder()) {
-       VM_RAISE2("code-builder required, but got ~a, ~a\n", cbDst, cbSrc);
-   }
-   cbDst.toCodeBuilder()->append(cbSrc.toCodeBuilder());
-   return Object::Undef;
-//    const Object arg1 = args.first();
-//    const Object arg2 = args.second();
-//    if (!arg1.isCodeBuilder() || !arg2.isCodeBuilder()) {
-//        VM_RAISE2("code-builder required, but got ~a, ~a\n", arg1, arg2);
-//    }
-//    arg1.toCodeBuilder()->append(arg2.toCodeBuilder());
-//    return Object::Undef;
-
+    const Object cbSrc = argv[1];
+    if (!cbDst.isCodeBuilder() || !cbSrc.isCodeBuilder()) {
+        VM_RAISE2("code-builder required, but got ~a, ~a\n", cbDst, cbSrc);
+    }
+    cbDst.toCodeBuilder()->append(cbSrc.toCodeBuilder());
+    return Object::Undef;
 }
 
 Object scheme::codeBuilderEmitEx(Object args, int argc, Object* argv)
 {
     checkArgLength(1, argc, "code-builder-emit2");
-//    const int length = Pair::length(args);
-//    if (length != 1) {
-//        VM_RAISE1("wrong number of arguments for code-builder-emit required 1, got ~d)\n", Object::makeInt(length));
-//    }
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~an", cb);
     }
    return cb.toCodeBuilder()->emit();
-//    const int length = Pair::length(args);
-//    if (length != 1) {
-//        VM_RAISE1("wrong number of arguments for code-builder-emit required 1, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg1 = args.first();
-//    if (!arg1.isCodeBuilder()) {
-//        VM_RAISE1("code-builder required, but got ~an", arg1);
-//    }
-//    return arg1.toCodeBuilder()->emit();
-
 }
 
 Object scheme::eqHashtableCopyEx(Object args, int argc, Object* argv)
@@ -2917,108 +2334,4 @@ Object scheme::eqHashtableCopyEx(Object args, int argc, Object* argv)
         VM_RAISE1("eq-hashtable required, but got ~an", ht);
     }
     return ht.toEqHashTable()->copy();
-//     const int length = Pair::length(args);
-//     if (length != 1) {
-//         VM_RAISE1("wrong number of argument for eq-hashtable-copy required 1, got ~d)\n", Object::makeInt(length));
-//    }
-//    const Object arg1 = args.first();
-//    if (!arg1.isEqHashTable()) {
-//        VM_RAISE1("eq-hashtable required, but got ~an", arg1);
-//    }
-//    return arg1.toEqHashTable()->copy();
 }
-
-
-Object scheme::doNothingEx(Object args, int argc, Object* argv)
-{
-//    argv[0];
-//    printf("argc=%d\n", argc);
-    asm volatile("\t # minowa");
-    VM_LOG1("arg1=~a", argv[0]);
-    VM_LOG1("arg2=~a", argv[1]);
-    VM_LOG1("arg3=~a", argv[2]);
-    asm volatile("\t # taro");
-//    VM_LOG1("arg2=~a", argv[-2]);
-//    VM_LOG1("arg3=~a", argv[-1]);
-
-
-}
-// {
-//     printf("%d %s %s:%d\n", argc, __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return Object::True;
-//     const int length = Pair::length(args);
-//     if (length != 3) {
-//         VM_RAISE1("wrong number of argument for eq-hashtable-copy required 1, got ~d)\n", Object::makeInt(length));
-//    }
-
-//     const Object arg1 = args.first();
-//     const Object arg2 = args.second();
-//     const Object arg3 = args.third();
-//     if (arg1.isInt() && arg2.isInt() && arg3.isInt()) {
-//     return Object::makeInt(arg1.toInt() + arg2.toInt() + arg3.toInt());
-//     }
-//}
-
-// (define (%set-intersect lst1 lst2)
-//   (if (null? lst1)
-//       '()
-//       (if (memq2 (car lst1) lst2)
-//           (cons (car lst1) (%set-intersect (cdr lst1) lst2))
-//           (%set-intersect (cdr lst1) lst2))))
-
-
-// Object setIntersectRec(Object lst1, Object lst2)
-// {
-//     if (lst1.isNil()) {
-//         return Object::Nil;
-//     }
-//     if (memq(lst1.car(), lst2).isFalse()) {
-//         return setIntersectRec(lst1.cdr(), lst2);
-//     } else {
-//         return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), lst2));
-//     }
-// }
-
-// Object setIntersectRec(Object lst1, EqHashTable* seen)
-// {
-//     static const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
-//     if (lst1.isNil()) {
-//         return Object::Nil;
-//     }
-//     if (seen->ref(lst1.car(), notFound) != notFound) {
-//         return setIntersectRec(lst1.cdr(), seen);
-//     } else {
-//         return Object::cons(lst1.car(), setIntersectRec(lst1.cdr(), seen));
-//     }
-// }
-
-
-// Object scheme::internalsetIntersectEx(Object args, int argc, Object* argv)
-// {
-//     const Object list2 = args.second();
-// //     EqHashTable seen;
-// //     for (Object p = list2; p.isPair(); p = p.cdr()) {
-// //         seen.set(p.car(), Object::True);
-// //     }
-
-//     return setIntersectRec(args.first(), list2);
-//     if (list1.isNil()) {
-//         return Object::Nil;
-//     } else if (list2.isNil()) {
-//         return Object::Nil;
-//     }
-//     EqHashTable seen;
-//     for (Object p = list2; p.isPair(); p = p.cdr()) {
-//         seen.set(p.car(), Object::True);
-//     }
-
-//     Object ret = Object::Nil;
-//     const Object notFound = Symbol::intern(UC("%%NOTFOUND%%"));
-//     for (Object p = list1; p.isPair(); p = p.cdr()) {
-//         const Object o = p.car();
-//         if (seen.ref(o, notFound) != notFound) {
-//             ret = Object::cons(o, ret);
-//         }
-//     }
-//     return ret;//Pair::reverse(ret);
-//}

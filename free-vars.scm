@@ -147,7 +147,7 @@
     (code-builder-put5! ,code-builder-put5!)
     (code-builder-append! ,code-builder-append!)
     (code-builder-emit ,code-builder-emit)
-    (do-nothing ,(lambda () #t))
+;    (do-nothing ,(lambda () #t))
     ;;    (pass4/fixup-labels ,pass4/fixup-labels)
 ;;     (%set-union ,(lambda (l1 l2)
 ;;                    (define (set-cons x lst1)

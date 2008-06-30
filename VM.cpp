@@ -334,29 +334,6 @@ Object VM::applyClosure(Object closure, Object args)
     return ac_;
 }
 
-// Object VM::applyClosure(Object closure, Object args)
-// {
-//     static Object applyCode[] = {
-//         Object::makeRaw(Instruction::FRAME),
-//         Object::makeInt(7),
-//         Object::makeRaw(Instruction::CONSTANT),
-//         Object::Undef,
-//         Object::makeRaw(Instruction::PUSH),
-//         Object::makeRaw(Instruction::CONSTANT),
-//         Object::Undef,
-//         Object::makeRaw(Instruction::APPLY),
-//         Object::makeRaw(Instruction::HALT),
-//     };
-//     applyCode[3] = args;
-//     applyCode[6] = closure;
-
-//     SAVE_REGISTERS();
-//     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
-//     RESTORE_REGISTERS();
-//     return ret;
-// }
-
-
 // we need to save registers.
 Object VM::callClosureByName(Object procSymbol, Object arg)
 {
@@ -566,154 +543,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 cl_ = ac_;
                 if (ac_.toCProcedure()->proc == applyEx) {
                     returnCode_[1] = operand;
-
-                    // pc_ will be changed in applyEx
-//                    ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
-//                    ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-
-//                 } else if (ac_.toCProcedure()->proc == eqHashtableCopyEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderAppendDEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderPut5DEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderPut4DEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderPut3DEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderPut2DEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderPut1DEx ||
-//                            ac_.toCProcedure()->proc == makeCodeBuilderEx ||
-//                            ac_.toCProcedure()->proc == pass3FindSetsEx ||
-//                            ac_.toCProcedure()->proc == pass3FindFreeEx ||
-//                            ac_.toCProcedure()->proc == appendDEx ||
-//                            ac_.toCProcedure()->proc == appendAEx ||
-//                            ac_.toCProcedure()->proc == appendEx ||
-//                            ac_.toCProcedure()->proc == errorfEx ||
-//                            ac_.toCProcedure()->proc == formatEx ||
-//                            ac_.toCProcedure()->proc == charPEx ||
-//                            ac_.toCProcedure()->proc == writeEx ||
-//                            ac_.toCProcedure()->proc == gensymEx ||
-//                            ac_.toCProcedure()->proc == listPEx ||
-//                            ac_.toCProcedure()->proc == memqEx ||
-//                            ac_.toCProcedure()->proc == memvEx ||
-//                            ac_.toCProcedure()->proc == memberEx ||
-//                            ac_.toCProcedure()->proc == booleanPEx ||
-//                            ac_.toCProcedure()->proc == symbolTostringEx ||
-//                            ac_.toCProcedure()->proc == stringRefEx ||
-//                            ac_.toCProcedure()->proc == errorEx ||
-//                            ac_.toCProcedure()->proc == vmApplyEx ||
-//                            ac_.toCProcedure()->proc == pairPEx ||
-//                            ac_.toCProcedure()->proc == find10Ex ||
-//                            ac_.toCProcedure()->proc == makeCustomBinaryInputPortEx ||
-//                            ac_.toCProcedure()->proc == getU8Ex ||
-//                            ac_.toCProcedure()->proc == bytevectorU8SetDEx ||
-//                            ac_.toCProcedure()->proc == transcodedPortEx ||
-//                            ac_.toCProcedure()->proc == sysOpenBytevectorOutputPortEx ||
-//                            ac_.toCProcedure()->proc == sysGetBytevectorEx ||
-//                            ac_.toCProcedure()->proc == bytevectorU8RefEx ||
-//                            ac_.toCProcedure()->proc == bytevectorLengthEx ||
-//                            ac_.toCProcedure()->proc == getBytevectorNEx ||
-//                            ac_.toCProcedure()->proc == utf8TostringEx ||
-//                            ac_.toCProcedure()->proc == openFileOutputPortEx ||
-//                            ac_.toCProcedure()->proc == openFileInputPortEx ||
-//                            ac_.toCProcedure()->proc == vectorEx ||
-//                            ac_.toCProcedure()->proc == regexpReplaceEx ||
-//                            ac_.toCProcedure()->proc == regexpReplaceAllEx ||
-//                            ac_.toCProcedure()->proc == evalEx ||
-//                            ac_.toCProcedure()->proc == raiseEx ||
-//                            ac_.toCProcedure()->proc == raiseContinuableEx ||
-//                            ac_.toCProcedure()->proc == withExceptionHandlerEx ||
-//                            ac_.toCProcedure()->proc == eqPEx ||
-//                            ac_.toCProcedure()->proc == setCurrentInputPortDEx ||
-//                            ac_.toCProcedure()->proc == setCurrentOutputPortDEx ||
-//                            ac_.toCProcedure()->proc == internalgetClosureNameEx ||
-//                            ac_.toCProcedure()->proc == append2Ex ||
-//                            ac_.toCProcedure()->proc == callProcessEx ||
-//                            ac_.toCProcedure()->proc == vectorTolistEx ||
-//                            ac_.toCProcedure()->proc == charLtPEx ||
-//                            ac_.toCProcedure()->proc == makeStringEx ||
-//                            ac_.toCProcedure()->proc == stringSetDEx ||
-//                            ac_.toCProcedure()->proc == stringLengthEx ||
-//                            ac_.toCProcedure()->proc == stringTosymbolEx ||
-//                            ac_.toCProcedure()->proc == stringTonumberEx ||
-//                            ac_.toCProcedure()->proc == stringAppendEx ||
-//                            ac_.toCProcedure()->proc == stringSplitEx ||
-//                            ac_.toCProcedure()->proc == numberTostringEx ||
-//                            ac_.toCProcedure()->proc == reverseEx ||
-//                            ac_.toCProcedure()->proc == eofObjectPEx ||
-//                            ac_.toCProcedure()->proc == readEx ||
-//                            ac_.toCProcedure()->proc == charEqPEx ||
-//                            ac_.toCProcedure()->proc == stringPEx ||
-//                            ac_.toCProcedure()->proc == sysGetenvEx ||
-//                            ac_.toCProcedure()->proc == equalPEx ||
-//                            ac_.toCProcedure()->proc == openStringInputPortEx ||
-//                            ac_.toCProcedure()->proc == sysOpenOutputStringEx ||
-//                            ac_.toCProcedure()->proc == sysPortSeekEx ||
-//                            ac_.toCProcedure()->proc == closeOutputPortEx ||
-//                            ac_.toCProcedure()->proc == closeInputPortEx ||
-//                            ac_.toCProcedure()->proc == digitTointegerEx ||
-//                            ac_.toCProcedure()->proc == sysReaddirEx ||
-//                            ac_.toCProcedure()->proc == fileExistsPEx ||
-//                            ac_.toCProcedure()->proc == stringToregexpEx ||
-//                            ac_.toCProcedure()->proc == charTointegerEx ||
-//                            ac_.toCProcedure()->proc == integerTocharEx ||
-//                            ac_.toCProcedure()->proc == sysGetOutputStringEx ||
-//                            ac_.toCProcedure()->proc == charLePEx ||
-//                            ac_.toCProcedure()->proc == charGtPEx ||
-//                            ac_.toCProcedure()->proc == regexpPEx ||
-//                            ac_.toCProcedure()->proc == rxmatchStartEx ||
-//                            ac_.toCProcedure()->proc == rxmatchEndEx ||
-//                            ac_.toCProcedure()->proc == rxmatchAfterEx ||
-//                            ac_.toCProcedure()->proc == rxmatchBeforeEx ||
-//                            ac_.toCProcedure()->proc == rxmatchSubstringEx ||
-//                            ac_.toCProcedure()->proc == charGePEx ||
-//                            ac_.toCProcedure()->proc == dynamicWindEx ||
-//                            ac_.toCProcedure()->proc == symbolPEx ||
-//                            ac_.toCProcedure()->proc == loadEx ||
-//                            ac_.toCProcedure()->proc == valuesEx ||
-//                            ac_.toCProcedure()->proc == applyEx ||
-//                            ac_.toCProcedure()->proc == exitEx ||
-//                            ac_.toCProcedure()->proc == assqEx ||
-//                            ac_.toCProcedure()->proc == divEx ||
-//                            ac_.toCProcedure()->proc == modEx ||
-//                            ac_.toCProcedure()->proc == procedurePEx ||
-//                            ac_.toCProcedure()->proc == macroexpand1Ex ||
-//                            ac_.toCProcedure()->proc == vectorTypePEx ||
-//                            ac_.toCProcedure()->proc == typedVectorPEx ||
-//                            ac_.toCProcedure()->proc == vectorTypeDataEx ||
-//                            ac_.toCProcedure()->proc == makeTypedVectorEx ||
-//                            ac_.toCProcedure()->proc == makeVectorTypeEx ||
-//                            ac_.toCProcedure()->proc == vectorTypeInstanceOfPEx ||
-//                            ac_.toCProcedure()->proc == typedVectorGetNthEx ||
-//                            ac_.toCProcedure()->proc == typedVectorSetNthEx ||
-//                            ac_.toCProcedure()->proc == hashtableKeysEx ||
-//                             ac_.toCProcedure()->proc == hashtableSetDEx ||
-//                             ac_.toCProcedure()->proc == hashtableRefEx ||
-//                             ac_.toCProcedure()->proc == makeEqHashtableEx ||
-//                            ac_.toCProcedure()->proc == numberPEx ||
-//                           ac_.toCProcedure()->proc == consEx ||
-//                           ac_.toCProcedure()->proc == carEx ||
-//                           ac_.toCProcedure()->proc == cdrEx ||
-//                           ac_.toCProcedure()->proc == sourceInfoEx ||
-//                           ac_.toCProcedure()->proc == nullPEx ||
-//                           ac_.toCProcedure()->proc == sysDisplayEx ||
-//                           ac_.toCProcedure()->proc == rxmatchEx ||
-//                           ac_.toCProcedure()->proc == setSourceInfoDEx ||
-//                            ac_.toCProcedure()->proc == typedVectorTypeEx ||
-//                            ac_.toCProcedure()->proc == codeBuilderEmitEx
-//                     ) {
-//                     const int argc = operand.toInt();
-//                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-//                     returnCode_[1] = operand;
-//                     pc_  = returnCode_;
-
                 } else {
-//                     ac_ = ac_.toCProcedure()->call(stackToPairArgs(sp_, operand.toInt()));
-//                     returnCode_[1] = operand;
-//                     pc_  = returnCode_;
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                     returnCode_[1] = operand;
                     pc_  = returnCode_;
-
                 }
             } else if (ac_.isClosure()) {
 
@@ -753,7 +589,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 }
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
-//                ac_ = Object::makeCProcedure(scheme::rxmatchEx).toCProcedure()->call(Object::cons(ac_, stackToPairArgs(sp_, operand.toInt())));
                 const int argc = operand.toInt();
                 Object argv[2];
                 argv[0] = ac_;
@@ -767,7 +602,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
-//                ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(Object::cons(ac_, stackToPairArgs(sp_, operand.toInt())));
 ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 1, argv);
                 returnCode_[1] = operand;
                 pc_  = returnCode_;
