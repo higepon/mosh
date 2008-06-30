@@ -174,6 +174,9 @@ int main(int argc, char *argv[])
 
     theVM->evaluate(compiler);
 
+    VM_LOG1("compiled = ~a\n", Object::makeInt(theVM->compile(Object::makeInt(1234)).toVector()->ref(0) == Object::makeRaw(Instruction::CONSTANT)));
+    exit(-1);
+
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
     }
