@@ -2225,15 +2225,6 @@ Object scheme::findSetsRec(Object i, Object lvars)
     return Object::Undef;
 }
 
-Object scheme::assq(Object o, Object alist)
-{
-    for (Object p = alist; p.isPair(); p = p.cdr()) {
-        if (p.car().car() == o) {
-            return p.car();
-        }
-    }
-    return Object::False;
-}
 
 Object scheme::makeCodeBuilderEx(int argc, const Object* argv)
 {
@@ -2358,7 +2349,8 @@ Object scheme::pass4FixupLabelCollect(Object vec)
     const int length = v->length();
     const Object ret = Object::makeVector(length, NOP);
     Vector* const rv= ret.toVector();
-    Object labels = Object::Nil;
+    Object labels = Object::makeEqHashTable();
+    EqHashTable* const table = labels.toEqHashTable();
     for (int i = 0, j = 0; i < length;) {
         const Object insn = v->ref(i);
         if (insn == UNFIXED_JUMP          ||
@@ -2376,7 +2368,7 @@ Object scheme::pass4FixupLabelCollect(Object vec)
         } else if (insn.isVector() && insn.toVector()->length() > 0 &&
                    insn.toVector()->ref(0).toInt() == LABEL) {
             i++;
-            labels = Object::cons(Object::cons(insn, Object::makeInt(j)), labels);
+            table->set(insn, Object::makeInt(j));
         } else {
             rv->set(j, insn);
             i++;
@@ -2386,7 +2378,6 @@ Object scheme::pass4FixupLabelCollect(Object vec)
     return Object::cons(ret, labels);
 }
 
-// // コンパイラはインストラクションをシンボルで持ってなかった。。
 Object scheme::pass4FixupLabel(Object vec)
 {
     static const Object UNFIXED_JUMP          = Object::makeRaw(Instruction::UNFIXED_JUMP);
@@ -2402,43 +2393,16 @@ Object scheme::pass4FixupLabel(Object vec)
     const Object collected = pass4FixupLabelCollect(vec);
     Vector* const code = collected.car().toVector();
     const Object labels = collected.cdr();
+    EqHashTable* const table = labels.toEqHashTable();
     const int length = code->length();
-//   (receive (code labels) (collect-labels)
-//     (let1 len (vector-length code)
-//     (let loop ([i 0])
-//       (cond
-//        [(= i len) code]
-//        [else
-//         (let1 insn (vector-ref code i)
-//           (cond
-//            [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
-//            [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
-//            [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-//            [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
-//            [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-//            [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
-//            [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
-//            [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-//            [else (loop (+ i 1))]))])))))
-
-
-//   `(let1 label (assq (vector-ref code (+ i 1)) labels)
-//      (cond
-//       [label
-//        (vector-set! code i ,insn)
-//        (vector-set! code (+ i 1) (- (cdr label) i 1)) ;; jump point
-//        (loop (+ i 2))]
-//       [else
-//        (loop (+ i 1))])))
-
 
     for (int i = 0; i < length;) {
         const Object insn = code->ref(i);
         if (insn == UNFIXED_JUMP) {
-            const Object label = assq(code->ref(i + 1), labels);
+            const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, LOCAL_JMP);
-                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                code->set(i + 1, Object::makeInt(label.toInt() - i - 1));
                 i += 2;
             } else {
                 i++;
@@ -2450,10 +2414,10 @@ Object scheme::pass4FixupLabel(Object vec)
                    insn == FRAME                 ||
                    insn == PUSH_FRAME            ||
                    insn == CLOSURE) {
-            const Object label = assq(code->ref(i + 1), labels);
+            const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
-                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                code->set(i + 1, Object::makeInt(label.toInt() - i - 1));
                 i += 2;
             } else {
                 i++;
@@ -2469,4 +2433,3 @@ Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
 {
     return pass4FixupLabel(argv[0]);
 }
-

@@ -137,6 +137,7 @@
     (append! ,append!)
     (pass3/find-free ,pass3/find-free)
     (pass3/find-sets ,pass3/find-sets)
+    (pass4/fixup-labels ,pass4/fixup-labels)
 ;;     (%set-union ,%set-union)
 ;;     (%set-intersect ,%set-intersect)
     (make-code-builder ,make-code-builder)
@@ -148,7 +149,7 @@
     (code-builder-append! ,code-builder-append!)
     (code-builder-emit ,code-builder-emit)
 ;    (do-nothing ,(lambda () #t))
-    (pass4/fixup-labels ,pass4/fixup-labels)
+
 ;;     (%set-union ,(lambda (l1 l2)
 ;;                    (define (set-cons x lst1)
 ;;                      (if (memq x lst)

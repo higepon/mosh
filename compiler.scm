@@ -146,28 +146,6 @@
         (string->symbol ret)
         (loop (cdr name) (string-append ret (symbol->string (car name)) " ")))))
 
-;; moved to freeproc.cpp
-;; N.B. this procedure is still required by vm.scm
-;; (define (%set-union l1 l2)
-;;   (define (set-cons x lst)
-;;     (if (memq x lst)
-;;         lst
-;;         (cons x lst)))
-;;   (define (rec lst1 lst2)
-;;     (cond
-;;      [(null? lst1) lst2]
-;;      [(null? lst2) lst1]
-;;      [else
-;;       (rec (cdr lst1) (set-cons (car lst1) lst2))]))
-;;   (rec l1 l2))
-
-;; (define (%set-intersect lst1 lst2)
-;;   (if (null? lst1)
-;;       '()
-;;       (if (memq2 (car lst1) lst2)
-;;           (cons (car lst1) (%set-intersect (cdr lst1) lst2))
-;;           (%set-intersect (cdr lst1) lst2))))
-
 ;;--------------------------------------------------------------------
 ;;
 ;; Generic
@@ -2705,6 +2683,8 @@
       [else
        (loop (+ i 1))])))
 
+;; moved to freeproc.cpp
+;; N.B. this procedure is still required by vm.scm
 (define (pass4/fixup-labels v)
   (define (collect-labels)
     (let* ([len (vector-length v)]

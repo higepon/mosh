@@ -217,8 +217,15 @@ namespace scheme {
 
     Object stringTosymbol(Object str);
 
-
-
+    inline Object assq(Object o, Object alist)
+    {
+        for (Object p = alist; p.isPair(); p = p.cdr()) {
+            if (p.car().car() == o) {
+                return p.car();
+            }
+        }
+        return Object::False;
+    }
 
 }; // namespace scheme
 
