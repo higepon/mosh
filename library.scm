@@ -966,11 +966,13 @@
 ;; (length '(a b c)) => 3
 ;; (length '(a (b) (c d e))) => 3
 ;; (length '()) => 0
-(define (length l)
-  (let loop ((l l) (len 0))
-    (if (null? l)
-        len
-        (loop (cdr l) (+ len 1)))))
+;; .form (length l)
+(define-doc (length) ...)
+;; (define (length l)
+;;   (let loop ((l l) (len 0))
+;;     (if (null? l)
+;;         len
+;;         (loop (cdr l) (+ len 1)))))
 
 ;; Returns a newly allocated list consisting of the elements of list in reverse order.
 ;; .returns a newly allocated list consisting of the elements of list in reverse order.

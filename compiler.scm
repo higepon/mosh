@@ -846,10 +846,11 @@
          [parsed-vars   (parse-lambda-vars vars)]
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
-         [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)])
+         [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)]
+         [vars-length  (length vars)])
     ($lambda (cons (source-info sexp) (cons name (dotpair->list (second sexp))))
              name
-             (if optional-arg? (- (length vars) 1) (length vars))
+             (if optional-arg? (- vars-length 1) vars-length)
              (if optional-arg? 1 0)
              this-lvars
              ;; the inner lvar comes first.
@@ -1020,6 +1021,16 @@
       (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
      [#t sexp])))
 
+;; for checking performance with logging.
+(define-macro (case-with-time val . clauses)
+  `(case ,val
+     ,@(map (lambda (clause)
+             (match clause
+               [(p . more)
+                (let1 temp (gensym)
+                `(,p (let1 ,temp (get-timeofday) (let1 v (begin ,@more) (dd (quote ,p)) (dd ,temp) (pp (get-timeofday)) v))))]))
+           clauses)))
+
 (define (pass1/sexp->iform sexp library lvars tail?)
   (define (sexp->iform sexp)
     (pass1/sexp->iform (pass1/expand sexp) library lvars tail?))
@@ -1069,7 +1080,7 @@
              (sexp->iform (conditions->if (apply-each-pair operator args)))])))
   (cond
    [(pair? sexp)
-    (case (car sexp)
+    (case-with-time (car sexp)
       ;;---------------------------- cons --------------------------------------
       [(cons)
        ($asm 'CONS ($map1 sexp->iform (cdr sexp)))]
@@ -1087,6 +1098,7 @@
        ($asm 'VALUES ($map1 sexp->iform (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
+       (pp (get-timeofday))
        (match sexp
          [('define name ('lambda . more))
           (let1 closure  (make-list-with-src-slot (cons 'lambda more))

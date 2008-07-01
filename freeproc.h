@@ -187,6 +187,7 @@ namespace scheme {
     Object codeBuilderAppendDEx(int argc, const Object* argv);
     Object codeBuilderEmitEx(int argc, const Object* argv);
 
+    Object lengthEx(int argc, const Object* argv);
     Object pass3FindFreeEx(int argc, const Object* argv);
     Object pass3FindSetsEx(int argc, const Object* argv);
     inline bool existsInList(Object o, Object list)

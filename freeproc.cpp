@@ -2433,3 +2433,19 @@ Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
 {
     return pass4FixupLabel(argv[0]);
 }
+
+Object scheme::lengthEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "length");
+    const Object lst = argv[0];
+    if (lst.isNil()) {
+        return Object::makeInt(0);
+    } else if (!lst.isPair()) {
+        VM_RAISE1("length pair required, but got ~an", lst);
+    }
+    int ret = 0;
+    for (Object p = lst; p.isPair(); p = p.cdr()) {
+        ret++;
+    }
+    return Object::makeInt(ret);
+}

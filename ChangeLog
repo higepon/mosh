@@ -1,5 +1,7 @@
 2008-07-01  higepon  <higepon@users.sourceforge.jp>
 
+        * freeproc.cpp (lengthEx): Rewrote (length ...) in C++ for perfomance.
+
         * compiler.scm (pass4/fixup-labels): Rewrote in C++ for perfomance.
 
 2008-06-30  higepon  <higepon@users.sourceforge.jp>

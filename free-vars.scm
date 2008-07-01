@@ -148,6 +148,7 @@
     (code-builder-put5! ,code-builder-put5!)
     (code-builder-append! ,code-builder-append!)
     (code-builder-emit ,code-builder-emit)
+    (length ,length)
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

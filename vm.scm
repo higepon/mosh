@@ -4,6 +4,8 @@
 (use util.match)
 (use gauche.sequence)
 
+(define (get-timeofday) (receive (a b) (sys-gettimeofday) (cons a b)))
+
 (define (foldr2 binop start l1 l2)
     (if (null? l1)
         start
