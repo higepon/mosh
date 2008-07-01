@@ -174,8 +174,8 @@ int main(int argc, char *argv[])
 
     theVM->evaluate(compiler);
 
-    VM_LOG1("compiled = ~a\n", Object::makeInt(theVM->compile(Object::makeInt(1234)).toVector()->ref(0) == Object::makeRaw(Instruction::CONSTANT)));
-    exit(-1);
+//     VM_LOG1("compiled = ~a\n", Object::makeInt(theVM->compile(Object::makeInt(1234)).toVector()->ref(0) == Object::makeRaw(Instruction::CONSTANT)));
+//     exit(-1);
 
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
@@ -186,7 +186,8 @@ int main(int argc, char *argv[])
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
-        sysDisplayEx(L1(theVM->compile(code)), 0, NULL); // temp
+        const Object compiled = theVM->compile(code);
+        sysDisplayEx(1, &compiled);
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {

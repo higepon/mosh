@@ -41,13 +41,13 @@ using namespace scheme;
         VM_RAISE1("wrong number of argument for " proc " required " #required ", got ~d\n", Object::makeInt(argc)); \
     } \
 
-Object scheme::currentErrorPortEx(Object args, int argc, Object* argv)
+Object scheme::currentErrorPortEx(int argc, const Object* argv)
 {
     printf("current-error-port called\n");
     return Object::UnBound;
 }
 
-Object scheme::hashtableKeysEx(Object args, int argc, Object* argv)
+Object scheme::hashtableKeysEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "hash-table-keys");
     const Object ht = argv[0];
@@ -56,7 +56,7 @@ Object scheme::hashtableKeysEx(Object args, int argc, Object* argv)
     }
     return ht.toEqHashTable()->keys();
 }
-Object scheme::hashtableSetDEx(Object args, int argc, Object* argv)
+Object scheme::hashtableSetDEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "hash-table-set!");
     const Object ht = argv[0];
@@ -70,7 +70,7 @@ Object scheme::hashtableSetDEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::hashtableRefEx(Object args, int argc, Object* argv)
+Object scheme::hashtableRefEx(int argc, const Object* argv)
 {
     if (argc == 2 || argc == 3) {
         const Object ht = argv[0];
@@ -86,25 +86,25 @@ Object scheme::hashtableRefEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::makeEqHashtableEx(Object args, int argc, Object* argv)
+Object scheme::makeEqHashtableEx(int argc, const Object* argv)
 {
     checkArgLength(0, argc, "make-eq-hashtable");
     return Object::makeEqHashTable();
 }
 
-Object scheme::numberPEx(Object args, int argc, Object* argv)
+Object scheme::numberPEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "number?");
     RETURN_BOOL(argv[0].isInt());
 }
 
-Object scheme::consEx(Object args, int argc, Object* argv)
+Object scheme::consEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "cons");
     return Object::cons(argv[0], argv[1]);
 }
 
-Object scheme::carEx(Object args, int argc, Object* argv)
+Object scheme::carEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "car");
     const Object p = argv[0];
@@ -116,7 +116,7 @@ Object scheme::carEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::cdrEx(Object args, int argc, Object* argv)
+Object scheme::cdrEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "cdr");
     const Object p = argv[0];
@@ -128,7 +128,7 @@ Object scheme::cdrEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::sourceInfoEx(Object args, int argc, Object* argv)
+Object scheme::sourceInfoEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "source-info");
     const Object arg = argv[0];
@@ -141,7 +141,7 @@ Object scheme::sourceInfoEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::setSourceInfoDEx(Object args, int argc, Object* argv)
+Object scheme::setSourceInfoDEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "set-source-info!");
     const Object arg1 = argv[0];
@@ -154,7 +154,7 @@ Object scheme::setSourceInfoDEx(Object args, int argc, Object* argv)
     return arg1;
 }
 
-Object scheme::nullPEx(Object args, int argc, Object* argv)
+Object scheme::nullPEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "null?!");
     if (argc > 1) {
@@ -167,19 +167,19 @@ Object scheme::nullPEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::setCarDEx(Object args, int argc, Object* argv)
+Object scheme::setCarDEx(int argc, const Object* argv)
 {
     printf("set-car! called\n");
     return Object::UnBound;
 }
 
-Object scheme::setCdrDEx(Object args, int argc, Object* argv)
+Object scheme::setCdrDEx(int argc, const Object* argv)
 {
     printf("set-cdr! called\n");
     return Object::UnBound;
 }
 
-Object scheme::sysDisplayEx(Object args, int argc, Object* argv)
+Object scheme::sysDisplayEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for display required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -197,7 +197,7 @@ Object scheme::sysDisplayEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::rxmatchEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "rxmatch");
     const Object arg1 = argv[0];
@@ -212,13 +212,13 @@ Object scheme::rxmatchEx(Object args, int argc, Object* argv)
     return arg1.toRegexp()->match(arg2.toString()->data());
 }
 
-Object scheme::regexpPEx(Object args, int argc, Object* argv)
+Object scheme::regexpPEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "regexp?");
     RETURN_BOOL(argv[0].isRegexp());
 }
 
-Object scheme::regexpTostringEx(Object args, int argc, Object* argv)
+Object scheme::regexpTostringEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (!arg1.isRegexp()) {
@@ -227,7 +227,7 @@ Object scheme::regexpTostringEx(Object args, int argc, Object* argv)
     return Object::makeString(arg1.toRegexp()->pattern());
 }
 
-Object scheme::rxmatchStartEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchStartEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-start required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -249,7 +249,7 @@ Object scheme::rxmatchStartEx(Object args, int argc, Object* argv)
     return Object::makeInt(r.toRegMatch()->matchStart(index));
 }
 
-Object scheme::rxmatchEndEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchEndEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-start required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -271,7 +271,7 @@ Object scheme::rxmatchEndEx(Object args, int argc, Object* argv)
     return Object::makeInt(r.toRegMatch()->matchEnd(index));
 }
 
-Object scheme::rxmatchAfterEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchAfterEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-after required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -294,7 +294,7 @@ Object scheme::rxmatchAfterEx(Object args, int argc, Object* argv)
     return r.toRegMatch()->matchAfter(index);
 }
 
-Object scheme::rxmatchBeforeEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-after required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -316,7 +316,7 @@ Object scheme::rxmatchBeforeEx(Object args, int argc, Object* argv)
     return r.toRegMatch()->matchBefore(index);
 }
 
-Object scheme::rxmatchSubstringEx(Object args, int argc, Object* argv)
+Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-substring required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -338,19 +338,19 @@ Object scheme::rxmatchSubstringEx(Object args, int argc, Object* argv)
     return r.toRegMatch()->matchSubString(index);
 }
 
-Object scheme::regMatchProxy(Object args, int argc, Object* argv)
+Object scheme::regMatchProxy(int argc, const Object* argv)
 {
     const Object match = argv[0];
     if (argc == 2 && argv[1] == Symbol::AFTER) {
-        return rxmatchAfterEx(Object::Nil, 1, argv);
+        return rxmatchAfterEx(1, argv);
     } else if (argc == 2 && argv[1] == Symbol::BEFORE) {
-        return rxmatchBeforeEx(Object::Nil, 1, argv);
+        return rxmatchBeforeEx(1, argv);
     } else {
-        return rxmatchSubstringEx(Object::Nil, argc, argv);
+        return rxmatchSubstringEx(argc, argv);
     }
 }
 
-Object scheme::makeStringEx(Object args, int argc, Object* argv)
+Object scheme::makeStringEx(int argc, const Object* argv)
 {
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for make-string required at least 1, got ~d)\n", Object::makeInt(argc));
@@ -371,7 +371,7 @@ Object scheme::makeStringEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::stringSetDEx(Object args, int argc, Object* argv)
+Object scheme::stringSetDEx(int argc, const Object* argv)
 {
     if (argc != 3) {
         VM_RAISE1("string-set! 3 arguments required, but got ~d\n", Object::makeInt(argc));
@@ -386,7 +386,7 @@ Object scheme::stringSetDEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::stringLengthEx(Object args, int argc, Object* argv)
+Object scheme::stringLengthEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "string-length");
     if (argv[0].isString()) {
@@ -397,18 +397,23 @@ Object scheme::stringLengthEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::stringTosymbolEx(Object args, int argc, Object* argv)
+Object scheme::stringTosymbol(Object str)
 {
-    checkArgLength(1, argc, "string->symbol");
-    if (argv[0].isString()) {
-        return Symbol::intern(argv[0].toString()->data().c_str());
+    if (str.isString()) {
+        return Symbol::intern(str.toString()->data().c_str());
     } else {
-        VM_RAISE1("string->symbol string required, but got ~a\n", argv[0]);
+        VM_RAISE1("string->symbol string required, but got ~a\n", str);
     }
     return Object::Undef;
 }
 
-Object scheme::stringTonumberEx(Object args, int argc, Object* argv)
+Object scheme::stringTosymbolEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "string->symbol");
+    return stringTosymbol(argv[0]);
+}
+
+Object scheme::stringTonumberEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "string->number");
     if (argv[0].isString()) {
@@ -419,7 +424,7 @@ Object scheme::stringTonumberEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::stringAppendEx(Object args, int argc, Object* argv)
+Object scheme::stringAppendEx(int argc, const Object* argv)
 {
     ucs4string ret;
     for (int i = 0; i < argc; i++) {
@@ -440,7 +445,7 @@ Object scheme::makeList(gc_vector<ucs4string>& v, gc_vector<ucs4string>::size_ty
     }
 }
 
-Object scheme::stringSplitEx(Object args, int argc, Object* argv)
+Object scheme::stringSplitEx(int argc, const Object* argv)
 {
     if (argc != 2) {
         VM_RAISE1("string-split 2 arguments required, but got ~d\n", Object::makeInt(argc));
@@ -455,7 +460,7 @@ Object scheme::stringSplitEx(Object args, int argc, Object* argv)
     return makeList(v, 0);
 }
 
-Object scheme::numberTostringEx(Object args, int argc, Object* argv)
+Object scheme::numberTostringEx(int argc, const Object* argv)
 {
     if (argc == 2) {
         Object arg1 = argv[0];
@@ -487,17 +492,17 @@ Object scheme::reverseIter(Object rest, Object ret)
     }
 }
 
-Object scheme::reverseEx(Object args, int argc, Object* argv)
+Object scheme::reverseEx(int argc, const Object* argv)
 {
     return Pair::reverse(argv[0]);
 }
 
-Object scheme::eofObjectPEx(Object args, int argc, Object* argv)
+Object scheme::eofObjectPEx(int argc, const Object* argv)
 {
     RETURN_BOOL(argv[0].isEof());
 }
 
-Object scheme::readCharEx(Object args, int argc, Object* argv)
+Object scheme::readCharEx(int argc, const Object* argv)
 {
     // todo
     if (argv[0].isTextualInputPort()) {
@@ -509,7 +514,7 @@ Object scheme::readCharEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::readEx(Object args, int argc, Object* argv)
+Object scheme::readEx(int argc, const Object* argv)
 {
     if (0 == argc) {
         return theVM->currentInputPort().toTextualInputPort()->getDatum();
@@ -521,7 +526,7 @@ Object scheme::readEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::charEqPEx(Object args, int argc, Object* argv)
+Object scheme::charEqPEx(int argc, const Object* argv)
 {
     const Object start = argv[0];
     if (!start.isChar()) {
@@ -539,12 +544,12 @@ Object scheme::charEqPEx(Object args, int argc, Object* argv)
     return Object::True;
 }
 
-Object scheme::stringPEx(Object args, int argc, Object* argv)
+Object scheme::stringPEx(int argc, const Object* argv)
 {
     return Object::makeBool(argv[0].isString());
 }
 
-Object scheme::sysGetenvEx(Object args, int argc, Object* argv)
+Object scheme::sysGetenvEx(int argc, const Object* argv)
 {
     if (argv[0].isString()) {
         const char* str = getenv(argv[0].toString()->data().ascii_c_str());
@@ -555,7 +560,7 @@ Object scheme::sysGetenvEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::equalPEx(Object args, int argc, Object* argv)
+Object scheme::equalPEx(int argc, const Object* argv)
 {
     if (2 == argc) {
         return argv[0].equal(argv[1]);
@@ -565,7 +570,7 @@ Object scheme::equalPEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::openStringInputPortEx(Object args, int argc, Object* argv)
+Object scheme::openStringInputPortEx(int argc, const Object* argv)
 {
     if (argv[0].isString()) {
         return Object::makeStringInputPort(argv[0].toString()->data());
@@ -575,12 +580,12 @@ Object scheme::openStringInputPortEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::sysOpenOutputStringEx(Object args, int argc, Object* argv)
+Object scheme::sysOpenOutputStringEx(int argc, const Object* argv)
 {
     return Object::makeStringOutputPort();
 }
 
-Object scheme::sysPortSeekEx(Object args, int argc, Object* argv)
+Object scheme::sysPortSeekEx(int argc, const Object* argv)
 {
 
 //todo
@@ -588,13 +593,13 @@ Object scheme::sysPortSeekEx(Object args, int argc, Object* argv)
 }
 
 
-Object scheme::openOutputFileEx(Object args, int argc, Object* argv)
+Object scheme::openOutputFileEx(int argc, const Object* argv)
 {
     printf("open-output-file called\n");
     return Object::UnBound;
 }
 
-Object scheme::closeOutputPortEx(Object args, int argc, Object* argv)
+Object scheme::closeOutputPortEx(int argc, const Object* argv)
 {
     const Object port = argv[0];
     if (port.isTextualOutputPort()) {
@@ -609,7 +614,7 @@ Object scheme::closeOutputPortEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::closeInputPortEx(Object args, int argc, Object* argv)
+Object scheme::closeInputPortEx(int argc, const Object* argv)
 {
     const Object port = argv[0];
     if (port.isTextualInputPort()) {
@@ -625,7 +630,7 @@ Object scheme::closeInputPortEx(Object args, int argc, Object* argv)
 }
 
 // todo from gauche
-Object scheme::digitTointegerEx(Object args, int argc, Object* argv)
+Object scheme::digitTointegerEx(int argc, const Object* argv)
 {
     const ucs4char ch = argv[0].toChar();
     const int radix  =argv[1].toInt();
@@ -642,13 +647,13 @@ Object scheme::digitTointegerEx(Object args, int argc, Object* argv)
     return Object::False;
 }
 
-Object scheme::getRemainingInputStringEx(Object args, int argc, Object* argv)
+Object scheme::getRemainingInputStringEx(int argc, const Object* argv)
 {
     printf("get-remaining-input-string called\n");
     return Object::UnBound;
 }
 
-Object scheme::sysReaddirEx(Object args, int argc, Object* argv)
+Object scheme::sysReaddirEx(int argc, const Object* argv)
 {
     if (!argv[0].isString()) {
         VM_RAISE1("sys-readdir string required, but got ~a\n", argv[0]);
@@ -666,7 +671,7 @@ Object scheme::sysReaddirEx(Object args, int argc, Object* argv)
    return ret;
 }
 
-Object scheme::fileExistsPEx(Object args, int argc, Object* argv)
+Object scheme::fileExistsPEx(int argc, const Object* argv)
 {
     if (!argv[0].isString()) {
         VM_RAISE1("file-exists? string required, but got ~a\n", argv[0]);
@@ -683,13 +688,13 @@ Object scheme::fileExistsPEx(Object args, int argc, Object* argv)
 
 
 // string-output-port only
-Object scheme::sysGetOutputStringEx(Object args, int argc, Object* argv)
+Object scheme::sysGetOutputStringEx(int argc, const Object* argv)
 {
     StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(argv[0].toTextualOutputPort());
     return Object::makeString(p->getString());
 }
 
-Object scheme::stringToregexpEx(Object args, int argc, Object* argv)
+Object scheme::stringToregexpEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "string->regexp");
     if (argv[0].isString()) {
@@ -700,7 +705,7 @@ Object scheme::stringToregexpEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::charTointegerEx(Object args, int argc, Object* argv)
+Object scheme::charTointegerEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "char->integer");
     if (argv[0].isChar()) {
@@ -711,7 +716,7 @@ Object scheme::charTointegerEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::integerTocharEx(Object args, int argc, Object* argv)
+Object scheme::integerTocharEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "integer->char");
     if (argv[0].isInt()) {
@@ -722,7 +727,7 @@ Object scheme::integerTocharEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::errorfEx(Object args, int argc, Object* argv)
+Object scheme::errorfEx(int argc, const Object* argv)
 {
     Object lst = Object::Nil;
     for (int i = argc - 1; i >= 1; i--) {
@@ -733,7 +738,7 @@ Object scheme::errorfEx(Object args, int argc, Object* argv)
 }
 
 // todo cleanup
-Object scheme::formatEx(Object args, int argc, Object* argv)
+Object scheme::formatEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (arg1.isTextualOutputPort()) {
@@ -782,18 +787,18 @@ Object scheme::formatEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::currentInputPortEx(Object args, int argc, Object* argv)
+Object scheme::currentInputPortEx(int argc, const Object* argv)
 {
     return theVM->currentInputPort();
 }
 
-Object scheme::currentOutputPortEx(Object args, int argc, Object* argv)
+Object scheme::currentOutputPortEx(int argc, const Object* argv)
 {
     printf("current-output-port called\n");
     return Object::UnBound;
 }
 
-Object scheme::setCurrentInputPortDEx(Object args, int argc, Object* argv)
+Object scheme::setCurrentInputPortDEx(int argc, const Object* argv)
 {
     if (argv[0].isTextualInputPort()) {
         theVM->setInputPort(argv[0]);
@@ -803,7 +808,7 @@ Object scheme::setCurrentInputPortDEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::setCurrentOutputPortDEx(Object args, int argc, Object* argv)
+Object scheme::setCurrentOutputPortDEx(int argc, const Object* argv)
 {
     if (argv[0].isTextualOutputPort()) {
         theVM->setOutputPort(*(argv[0].toTextualOutputPort()));
@@ -813,12 +818,12 @@ Object scheme::setCurrentOutputPortDEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::charPEx(Object args, int argc, Object* argv)
+Object scheme::charPEx(int argc, const Object* argv)
 {
     RETURN_BOOL(argv[0].isChar());
 }
 
-Object scheme::writeEx(Object args, int argc, Object* argv)
+Object scheme::writeEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (1 == argc) {
@@ -833,7 +838,7 @@ Object scheme::writeEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::gensymEx(Object args, int argc, Object* argv)
+Object scheme::gensymEx(int argc, const Object* argv)
 {
     static int next = 0;
     char ubuf[32];
@@ -851,19 +856,19 @@ Object scheme::gensymEx(Object args, int argc, Object* argv)
     return Symbol::intern(ibuf);
 }
 
-Object scheme::stringEqPEx(Object args, int argc, Object* argv)
+Object scheme::stringEqPEx(int argc, const Object* argv)
 {
     printf("string=? called\n");
     return Object::UnBound;
 }
 
-Object scheme::vectorPEx(Object args, int argc, Object* argv)
+Object scheme::vectorPEx(int argc, const Object* argv)
 {
     printf("vector? called\n");
     return Object::UnBound;
 }
 
-Object scheme::listPEx(Object args, int argc, Object* argv)
+Object scheme::listPEx(int argc, const Object* argv)
 {
     Object obj = argv[0];
     Object seen = obj;
@@ -880,7 +885,7 @@ Object scheme::listPEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::memqEx(Object args, int argc, Object* argv)
+Object scheme::memqEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (2 == argc) {
@@ -900,7 +905,7 @@ Object scheme::memqEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::memvEx(Object args, int argc, Object* argv)
+Object scheme::memvEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (2 == argc) {
@@ -921,13 +926,13 @@ Object scheme::memvEx(Object args, int argc, Object* argv)
 }
 
 
-Object scheme::eqPEx(Object args, int argc, Object* argv)
+Object scheme::eqPEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "eq?");
     RETURN_BOOL(argv[0] == argv[1]);
 }
 
-Object scheme::memberEx(Object args, int argc, Object* argv)
+Object scheme::memberEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (2 == argc) {
@@ -947,7 +952,7 @@ Object scheme::memberEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::booleanPEx(Object args, int argc, Object* argv)
+Object scheme::booleanPEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];
     if (arg1.isFalse() || arg1.isTrue()) {
@@ -957,7 +962,7 @@ Object scheme::booleanPEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::symbolTostringEx(Object args, int argc, Object* argv)
+Object scheme::symbolTostringEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "symbol->string");
     if (argv[0].isSymbol()) {
@@ -968,7 +973,7 @@ Object scheme::symbolTostringEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::stringRefEx(Object args, int argc, Object* argv)
+Object scheme::stringRefEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "string-ref");
     Object arg1 = argv[0];
@@ -981,7 +986,7 @@ Object scheme::stringRefEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::errorEx(Object args, int argc, Object* argv)
+Object scheme::errorEx(int argc, const Object* argv)
 {
     Object msg = Object::Nil;
     for (int i = argc - 1; i >= 0; i--) {
@@ -991,7 +996,7 @@ Object scheme::errorEx(Object args, int argc, Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::getTimeofdayEx(Object args, int argc, Object* argv)
+Object scheme::getTimeofdayEx(int argc, const Object* argv)
 {
     struct timeval tv;
     struct timezone tz;
@@ -999,18 +1004,18 @@ Object scheme::getTimeofdayEx(Object args, int argc, Object* argv)
     return Object::cons(Object::makeInt(tv.tv_sec), Object::makeInt(tv.tv_usec));
 }
 
-Object scheme::vmApplyEx(Object args, int argc, Object* argv)
+Object scheme::vmApplyEx(int argc, const Object* argv)
 {
     return theVM->apply(argv[0], argv[1]);
 }
 
-Object scheme::pairPEx(Object args, int argc, Object* argv)
+Object scheme::pairPEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "pair?");
     RETURN_BOOL(argv[0].isPair());
 }
 
-Object scheme::initLibraryTableEx(Object args, int argc, Object* argv)
+Object scheme::initLibraryTableEx(int argc, const Object* argv)
 {
     theVM->initLibraryTable();
     return Object::Undef;
@@ -1027,7 +1032,7 @@ Object findIter(Object proc, Object lst)
     }
 }
 
-Object scheme::find10Ex(Object args, int argc, Object* argv)
+Object scheme::find10Ex(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "find");
     const Object proc = argv[0];
@@ -1044,7 +1049,7 @@ Object scheme::find10Ex(Object args, int argc, Object* argv)
 
 // todo incomplete
 // (make-custom-binary-input-port id read! get-position set-position! close)
-Object scheme::makeCustomBinaryInputPortEx(Object args, int argc, Object* argv)
+Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
 {
     checkArgLength(5, argc, "make-custom-binary-input-port");
     const Object id = argv[0];
@@ -1076,7 +1081,7 @@ Object scheme::makeCustomBinaryInputPortEx(Object args, int argc, Object* argv)
     return Object::makeCustomBinaryInputPort(readProc);
 }
 
-Object scheme::getU8Ex(Object args, int argc, Object* argv)
+Object scheme::getU8Ex(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "get-u8");
     if (argv[0].isBinaryInputPort()) {
@@ -1087,7 +1092,7 @@ Object scheme::getU8Ex(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::bytevectorU8SetDEx(Object args, int argc, Object* argv)
+Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "bytevector-u8-set!");
     const Object bv = argv[0];
@@ -1109,7 +1114,7 @@ Object scheme::bytevectorU8SetDEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::transcodedPortEx(Object args, int argc, Object* argv)
+Object scheme::transcodedPortEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "transcoded-port");
     const Object port = argv[0];
@@ -1122,12 +1127,12 @@ Object scheme::transcodedPortEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::utf8CodecEx(Object args, int argc, Object* argv)
+Object scheme::utf8CodecEx(int argc, const Object* argv)
 {
     return Object::makeUTF8Codec();
 }
 
-Object scheme::makeTranscoderEx(Object args, int argc, Object* argv)
+Object scheme::makeTranscoderEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "make-trans-coder");
     if (argv[0].isCodec()) {
@@ -1138,12 +1143,12 @@ Object scheme::makeTranscoderEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::eofObjectEx(Object args, int argc, Object* argv)
+Object scheme::eofObjectEx(int argc, const Object* argv)
 {
     return Object::Eof;
 }
 
-Object scheme::sysOpenBytevectorOutputPortEx(Object args, int argc, Object* argv)
+Object scheme::sysOpenBytevectorOutputPortEx(int argc, const Object* argv)
 {
     if (0 == argc || argv[0].isFalse()) {
         printf("not implemented binary port %s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
@@ -1155,13 +1160,13 @@ Object scheme::sysOpenBytevectorOutputPortEx(Object args, int argc, Object* argv
     return Object::Undef;
 }
 
-Object scheme::sysGetBytevectorEx(Object args, int argc, Object* argv)
+Object scheme::sysGetBytevectorEx(int argc, const Object* argv)
 {
     TextualByteVectorOutputPort* p = reinterpret_cast<TextualByteVectorOutputPort*>(argv[0].toTextualOutputPort());
     return Object::makeByteVector(p->getByteVector());
 }
 
-Object scheme::bytevectorU8RefEx(Object args, int argc, Object* argv)
+Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "bytevector-u8-ref");
     const Object bv = argv[0];
@@ -1174,7 +1179,7 @@ Object scheme::bytevectorU8RefEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::bytevectorLengthEx(Object args, int argc, Object* argv)
+Object scheme::bytevectorLengthEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "bytevector-length");
     if (argv[0].isByteVector()) {
@@ -1185,12 +1190,12 @@ Object scheme::bytevectorLengthEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::standardInputPortEx(Object args, int argc, Object* argv)
+Object scheme::standardInputPortEx(int argc, const Object* argv)
 {
     return theVM->standardInputPort();
 }
 
-Object scheme::getBytevectorNEx(Object args, int argc, Object* argv)
+Object scheme::getBytevectorNEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "get-byte-vector-n");
     const Object p = argv[0];
@@ -1211,7 +1216,7 @@ Object scheme::getBytevectorNEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::utf8TostringEx(Object args, int argc, Object* argv)
+Object scheme::utf8TostringEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "utf8->string");
     const Object bv = argv[0];
@@ -1229,7 +1234,7 @@ Object scheme::utf8TostringEx(Object args, int argc, Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::openFileOutputPortEx(Object args, int argc, Object* argv)
+Object scheme::openFileOutputPortEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "open-file-output-port");
     const Object file = argv[0];
@@ -1242,7 +1247,7 @@ Object scheme::openFileOutputPortEx(Object args, int argc, Object* argv)
     return ret;
 }
 
-Object scheme::openFileInputPortEx(Object args, int argc, Object* argv)
+Object scheme::openFileInputPortEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "open-file-input-port");
     const Object file = argv[0];
@@ -1253,7 +1258,7 @@ Object scheme::openFileInputPortEx(Object args, int argc, Object* argv)
     return Object::makeTextualInputPort(new FileBinaryInputPort(file.toString()->data()), transcoder);
 }
 
-Object scheme::vectorEx(Object args, int argc, Object* argv)
+Object scheme::vectorEx(int argc, const Object* argv)
 {
     const Object vec = Object::makeVector(argc);
     Vector* const v = vec.toVector();
@@ -1263,7 +1268,7 @@ Object scheme::vectorEx(Object args, int argc, Object* argv)
     return vec;
 }
 
-Object scheme::regexpReplaceEx(Object args, int argc, Object* argv)
+Object scheme::regexpReplaceEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "regexp-replace");
     const Object reg = argv[0];
@@ -1278,7 +1283,7 @@ Object scheme::regexpReplaceEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::regexpReplaceAllEx(Object args, int argc, Object* argv)
+Object scheme::regexpReplaceAllEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "regexp-replace-all");
     const Object reg = argv[0];
@@ -1293,27 +1298,27 @@ Object scheme::regexpReplaceAllEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::evalEx(Object args, int argc, Object* argv)
+Object scheme::evalEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "eval");
     return theVM->eval(argv[0], argv[1]);
 }
 
-Object scheme::raiseEx(Object args, int argc, Object* argv)
+Object scheme::raiseEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "raise");
     theVM->raise(argv[0]);
     return Object::Undef;
 }
 
-Object scheme::raiseContinuableEx(Object args, int argc, Object* argv)
+Object scheme::raiseContinuableEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "raise-continuable");
     return theVM->raiseContinuable(argv[0]);
 }
 
 
-Object scheme::withExceptionHandlerEx(Object args, int argc, Object* argv)
+Object scheme::withExceptionHandlerEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "with-exception-handler");
     const Object arg1 = argv[0];
@@ -1326,7 +1331,7 @@ Object scheme::withExceptionHandlerEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::makeVectorTypeEx(Object args, int argc, Object* argv)
+Object scheme::makeVectorTypeEx(int argc, const Object* argv)
 {
     checkArgLength(5, argc, "make-vector-type");
     const Object name = argv[0];
@@ -1342,12 +1347,12 @@ Object scheme::makeVectorTypeEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::vectorTypePEx(Object args, int argc, Object* argv)
+Object scheme::vectorTypePEx(int argc, const Object* argv)
 {
     return Object::makeBool(argv[0].isTypedVectorDesc());
 }
 
-Object scheme::vectorTypeDataEx(Object args, int argc, Object* argv)
+Object scheme::vectorTypeDataEx(int argc, const Object* argv)
 {
     const Object vt = argv[0];
     if (vt.isTypedVectorDesc()) {
@@ -1358,7 +1363,7 @@ Object scheme::vectorTypeDataEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::vectorTypeInstanceOfPEx(Object args, int argc, Object* argv)
+Object scheme::vectorTypeInstanceOfPEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "vector-type-instance-of");
     const Object arg1 = argv[0];
@@ -1371,7 +1376,7 @@ Object scheme::vectorTypeInstanceOfPEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::makeTypedVectorEx(Object args, int argc, Object* argv)
+Object scheme::makeTypedVectorEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "make-typed-vector");
     const Object arg1 = argv[0];
@@ -1384,7 +1389,7 @@ Object scheme::makeTypedVectorEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::typedVectorGetNthEx(Object args, int argc, Object* argv)
+Object scheme::typedVectorGetNthEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "typed-vector-get-nth");
     const Object arg1 = argv[0];
@@ -1397,7 +1402,7 @@ Object scheme::typedVectorGetNthEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::typedVectorSetNthEx(Object args, int argc, Object* argv)
+Object scheme::typedVectorSetNthEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "typed-vector-set-nth");
     const Object arg1 = argv[0];
@@ -1411,7 +1416,7 @@ Object scheme::typedVectorSetNthEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::typedVectorTypeEx(Object args, int argc, Object* argv)
+Object scheme::typedVectorTypeEx(int argc, const Object* argv)
 {
     const Object vt = argv[0];
     if (vt.isTypedVector()) {
@@ -1422,12 +1427,12 @@ Object scheme::typedVectorTypeEx(Object args, int argc, Object* argv)
     }
 }
 
-Object scheme::typedVectorPEx(Object args, int argc, Object* argv)
+Object scheme::typedVectorPEx(int argc, const Object* argv)
 {
     return Object::makeBool(argv[0].isTypedVector());
 }
 
-Object scheme::applyEx(Object args, int argc, Object* argv)
+Object scheme::applyEx(int argc, const Object* argv)
 {
     if (argc < 2) {
         VM_RAISE1("wrong number of arguments for apply (required at least 2, got ~d)\n", Object::makeInt(argc));
@@ -1449,7 +1454,7 @@ Object scheme::applyEx(Object args, int argc, Object* argv)
     return theVM->applyClosure(proc, argsAsList);
 }
 
-Object scheme::valuesEx(Object args, int argc, Object* argv)
+Object scheme::valuesEx(int argc, const Object* argv)
 {
     return theVM->values(argc, argv);
 }
@@ -1471,7 +1476,7 @@ int scheme::mod(int x, int y)
     return x - div(x, y) * y;
 }
 
-Object scheme::modEx(Object args, int argc, Object* argv)
+Object scheme::modEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "mod");
     Object arg1 = argv[0];
@@ -1490,7 +1495,7 @@ Object scheme::modEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::divEx(Object args, int argc, Object* argv)
+Object scheme::divEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "div");
     Object arg1 = argv[0];
@@ -1509,7 +1514,7 @@ Object scheme::divEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::assqEx(Object args, int argc, Object* argv)
+Object scheme::assqEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "assq");
     const Object arg1 = argv[0];
@@ -1527,7 +1532,7 @@ Object scheme::assqEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::exitEx(Object args, int argc, Object* argv)
+Object scheme::exitEx(int argc, const Object* argv)
 {
     if (0 == argc) {
         exit(EXIT_SUCCESS);
@@ -1542,20 +1547,20 @@ Object scheme::exitEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::macroexpand1Ex(Object args, int argc, Object* argv)
+Object scheme::macroexpand1Ex(int argc, const Object* argv)
 {
     static Object proc = Symbol::intern(UC("pass1/macroexpand"));
     return theVM->callClosureByName(proc, argv[0]);
 }
 
-Object scheme::procedurePEx(Object args, int argc, Object* argv)
+Object scheme::procedurePEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "procedure");
     const Object arg1 = argv[0];
     return Object::makeBool(arg1.isClosure() || arg1.isCProcedure());
 }
 
-Object scheme::loadEx(Object args, int argc, Object* argv)
+Object scheme::loadEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "load");
     if (argv[0].isString()) {
@@ -1566,13 +1571,13 @@ Object scheme::loadEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::symbolPEx(Object args, int argc, Object* argv)
+Object scheme::symbolPEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "symbol?");
     return Object::makeBool(argv[0].isSymbol());
 }
 
-Object scheme::dynamicWindEx(Object args, int argc, Object* argv)
+Object scheme::dynamicWindEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "dynamic-wind");
     const Object arg1 = argv[0];
@@ -1599,7 +1604,7 @@ Object scheme::dynamicWindEx(Object args, int argc, Object* argv)
     return v.val;
 }
 
-Object scheme::charGePEx(Object args, int argc, Object* argv)
+Object scheme::charGePEx(int argc, const Object* argv)
 {
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char>=? required at least 2, got ~d)\n", Object::makeInt(argc));
@@ -1622,7 +1627,7 @@ Object scheme::charGePEx(Object args, int argc, Object* argv)
 
 }
 
-Object scheme::charGtPEx(Object args, int argc, Object* argv)
+Object scheme::charGtPEx(int argc, const Object* argv)
 {
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char>? required at least 2, got ~d)\n", Object::makeInt(argc));
@@ -1645,7 +1650,7 @@ Object scheme::charGtPEx(Object args, int argc, Object* argv)
 
 }
 
-Object scheme::charLePEx(Object args, int argc, Object* argv)
+Object scheme::charLePEx(int argc, const Object* argv)
 {
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char<=? required at least 2, got ~d)\n", Object::makeInt(argc));
@@ -1667,7 +1672,7 @@ Object scheme::charLePEx(Object args, int argc, Object* argv)
    return Object::True;
 }
 
-Object scheme::charLtPEx(Object args, int argc, Object* argv)
+Object scheme::charLtPEx(int argc, const Object* argv)
 {
    if (argc < 2) {
        VM_RAISE1("wrong number of arguments for char<? required at least 2, got ~d)\n", Object::makeInt(argc));
@@ -1689,7 +1694,7 @@ Object scheme::charLtPEx(Object args, int argc, Object* argv)
    return Object::True;
 }
 
-Object scheme::vectorTolistEx(Object args, int argc, Object* argv)
+Object scheme::vectorTolistEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "vector->list");
     const Object vec = argv[0];
@@ -1705,7 +1710,7 @@ Object scheme::vectorTolistEx(Object args, int argc, Object* argv)
     return ret;
 }
 
-Object scheme::callProcessEx(Object args, int argc, Object* argv)
+Object scheme::callProcessEx(int argc, const Object* argv)
 {
     const int BUFFER_SIZE = 1024;
     const Object cmd = argv[0];
@@ -1732,12 +1737,12 @@ Object scheme::callProcessEx(Object args, int argc, Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::internalgetClosureNameEx(Object args, int argc, Object* argv)
+Object scheme::internalgetClosureNameEx(int argc, const Object* argv)
 {
     return theVM->getClosureName(argv[0]);
 }
 
-Object scheme::appendEx(Object args, int argc, Object* argv)
+Object scheme::appendEx(int argc, const Object* argv)
 {
     if (0 == argc) return Object::Nil;
     Object ret = argv[argc - 1];
@@ -1751,20 +1756,20 @@ Object scheme::appendEx(Object args, int argc, Object* argv)
 
 }
 
-Object scheme::append2Ex(Object args, int argc, Object* argv)
+Object scheme::append2Ex(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "append2");
     return Pair::append2(argv[0], argv[1]);
 }
 
-Object scheme::appendAEx(Object args, int argc, Object* argv)
+Object scheme::appendAEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "appendA");
     return Pair::append2(argv[0], argv[1]);
 }
 
 
-Object scheme::appendDEx(Object args, int argc, Object* argv)
+Object scheme::appendDEx(int argc, const Object* argv)
 {
     if (0 == argc) return Object::Nil;
     Object ret = argv[argc - 1];
@@ -1791,12 +1796,12 @@ Object scheme::uniq(Object list)
     return ret;
 }
 
-Object scheme::pass3FindFreeEx(Object args, int argc, Object* argv)
+Object scheme::pass3FindFreeEx(int argc, const Object* argv)
 {
     return findFree(argv[0], argv[1], argv[2]);
 }
 
-Object scheme::pass3FindSetsEx(Object args, int argc, Object* argv)
+Object scheme::pass3FindSetsEx(int argc, const Object* argv)
 {
     return findSets(argv[0], argv[1]);
 }
@@ -2230,12 +2235,12 @@ Object scheme::assq(Object o, Object alist)
     return Object::False;
 }
 
-Object scheme::makeCodeBuilderEx(Object args, int argc, Object* argv)
+Object scheme::makeCodeBuilderEx(int argc, const Object* argv)
 {
     return Object::makeCodeBuilder();
 }
 
-Object scheme::codeBuilderPut1DEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderPut1DEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "code-builder-put1!");
     const Object cb = argv[0];
@@ -2247,7 +2252,7 @@ Object scheme::codeBuilderPut1DEx(Object args, int argc, Object* argv)
 }
 
 
-Object scheme::codeBuilderPut2DEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderPut2DEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "code-builder-put2!");
     const Object cb = argv[0];
@@ -2259,7 +2264,7 @@ Object scheme::codeBuilderPut2DEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPut3DEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
 {
     checkArgLength(4, argc, "code-builder-put3!");
     const Object cb = argv[0];
@@ -2272,7 +2277,7 @@ Object scheme::codeBuilderPut3DEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPut4DEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderPut4DEx(int argc, const Object* argv)
 {
     checkArgLength(5, argc, "code-builder-put4!");
     const Object cb = argv[0];
@@ -2287,7 +2292,7 @@ Object scheme::codeBuilderPut4DEx(Object args, int argc, Object* argv)
 }
 
 
-Object scheme::codeBuilderPut5DEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderPut5DEx(int argc, const Object* argv)
 {
     checkArgLength(6, argc, "code-builder-put5!");
     const Object cb = argv[0];
@@ -2304,7 +2309,7 @@ Object scheme::codeBuilderPut5DEx(Object args, int argc, Object* argv)
 
 
 
-Object scheme::codeBuilderAppendDEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "code-builder-append!");
     const Object cbDst = argv[0];
@@ -2316,7 +2321,7 @@ Object scheme::codeBuilderAppendDEx(Object args, int argc, Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderEmitEx(Object args, int argc, Object* argv)
+Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "code-builder-emit2");
     const Object cb = argv[0];
@@ -2326,7 +2331,7 @@ Object scheme::codeBuilderEmitEx(Object args, int argc, Object* argv)
    return cb.toCodeBuilder()->emit();
 }
 
-Object scheme::eqHashtableCopyEx(Object args, int argc, Object* argv)
+Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "eq-hashtable-copy");
     const Object ht = argv[0];
@@ -2474,7 +2479,7 @@ Object scheme::eqHashtableCopyEx(Object args, int argc, Object* argv)
 //     return collected.car();
 // }
 
-// Object scheme::pass4FixupLabelsEx(Object args, int argc, Object* argv)
+// Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
 // {
 //     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 //     return pass4FixupLabel(args.first());

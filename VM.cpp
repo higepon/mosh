@@ -1561,7 +1561,7 @@ Object VM::splitId(Object id)
 Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;
-    Object sport = Object::makeStringOutputPort();
+    const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &dc_;
@@ -1592,7 +1592,7 @@ Object VM::getStackTrace()
             break;
         }
     }
-    return sysGetOutputStringEx(L1(sport), 0, NULL);
+    return sysGetOutputStringEx(1, &sport);
 }
 
 void VM::raise(Object o)
@@ -1603,9 +1603,21 @@ void VM::raise(Object o)
 
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
-    const Object errorMessage = formatEx(Object::cons(Object::makeString(fmt), list), 0, NULL);
+    const int argc = Pair::length(list) + 1;
+#ifdef USE_BOEHM_GC
+    Object* argv = new (GC)Object[argc];
+#else
+    Object* argv = new Object[argc];
+#endif
+    argv[0] = Object::makeString(fmt);
+    for (int i = 1; i < argc; i++) {
+        argv[i] = list.car();
+        list = list.cdr();
+    }
+    const Object errorMessage = formatEx(argc, argv);
     const Object tr = getStackTrace();
-    raise(stringAppendEx(L3(errorMessage, Object::makeString(UC("\n")), tr), 0, NULL));
+    Object texts[] = {errorMessage, Object::makeString(UC("\n")), tr};
+    raise(stringAppendEx(sizeof(texts)/ sizeof(Object), texts));
 }
 
 #ifdef ENABLE_PROFILER
@@ -1700,7 +1712,7 @@ Object VM::getClosureName(Object closure)
         if (name == notFound_) {
             return Object::False;
         } else {
-            return stringTosymbolEx(L1(splitId(name).cdr()), 0, NULL);
+            return stringTosymbol(splitId(name.cdr()));
         }
     } else {
         return Object::False;
@@ -1735,43 +1747,20 @@ Object VM::getCProcedureName(Object proc)
     return Symbol::intern(UC("<unknwon subr>"));
 }
 
-Object VM::values(int num, Object* v)
+Object VM::values(int num, const Object* v)
 {
     if (0 == num) {
         numValues_ = 0;
         return Object::Undef;
     }
-
-//    int nvals = 1;
-//    for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
     for (int i = 1; i < num; i++) {
         if (i >= maxNumValues_) {
             RAISE0("too many values");
         }
-//        values_[nvals - 1] = v[i];
         values_[i - 1] = v[i];
-
     }
     numValues_ = num;
     return v[0]; // set to ac_ later.
-
-//     if (!args.isPair()) {
-//         numValues_ = 0;
-//         return Object::Undef;
-//     }
-
-//     int nvals = 1;
-//     for (Object p = args.cdr(); !p.isNil(); p = p.cdr()) {
-//         values_[nvals - 1] = p.car();
-//         if (nvals++ >= maxNumValues_) {
-//             RAISE0("too many values");
-//         }
-
-//     }
-//     numValues_ = nvals;
-//     return args.first(); // set to ac_ later.
-// }
-
 }
 
 Object VM::getProfileResult()
