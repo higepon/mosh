@@ -1028,7 +1028,20 @@
              (match clause
                [(p . more)
                 (let1 temp (gensym)
-                `(,p (let1 ,temp (get-timeofday) (let1 v (begin ,@more) (dd (quote ,p)) (dd ,temp) (pp (get-timeofday)) v))))]))
+                `(,p (let1 ,temp (get-timeofday) (let1 v (begin ,@more) (dd "(log ") (dd (quote ,p)) (dd ,temp) (dd (get-timeofday)) (dd ")\n") v))))]))
+           clauses)))
+
+(define-macro (case-with-lambda val . clauses)
+  `(case ,val
+     ,@(map (lambda (clause)
+             (match clause
+               [('else . more)
+                `(else ((lambda (else) (set! else 3) ,@more) 4))]
+               [(p . more)
+                (if (and (pair? p) (symbol? (car p)))
+                    (let1 sym (string->symbol (string-append "profile-" (symbol->string (car p))))
+                      `(,p ((lambda (,sym) (set! ,sym 3) ,@more) 4)))
+                    `(,p ((lambda (anonymous) (set! anonymous 3) ,@more) 4)))]))
            clauses)))
 
 (define (pass1/sexp->iform sexp library lvars tail?)
@@ -1038,7 +1051,7 @@
     (let* ([args (cdr sexp)]
            [len (length args)])
       (cond [(= 0 len)
-             (case op
+             (case-with-lambda op
                [(+)
                 (sexp->iform 0)]
                [(*)
@@ -1046,7 +1059,7 @@
                [else
                 (error op " got too few argment")])]
             [(= 1 len)
-             (case op
+             (case-with-lambda op
                [(-)
                 (sexp->iform (* -1 (car args)))]
                [(/)
@@ -1080,7 +1093,8 @@
              (sexp->iform (conditions->if (apply-each-pair operator args)))])))
   (cond
    [(pair? sexp)
-    (case-with-time (car sexp)
+;    (case-with-time (car sexp)
+    (case-with-lambda (car sexp)
       ;;---------------------------- cons --------------------------------------
       [(cons)
        ($asm 'CONS ($map1 sexp->iform (cdr sexp)))]
@@ -1098,7 +1112,6 @@
        ($asm 'VALUES ($map1 sexp->iform (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
-       (pp (get-timeofday))
        (match sexp
          [('define name ('lambda . more))
           (let1 closure  (make-list-with-src-slot (cons 'lambda more))
