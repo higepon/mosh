@@ -2341,147 +2341,132 @@ Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
     return ht.toEqHashTable()->copy();
 }
 
-// Object scheme::pass4FixupLabelCollect(Object vec)
-// {
-//     static const Object NOP                   = Symbol::intern(UC("NOP"));
-//     static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
-//     static const Object TEST                  = Symbol::intern(UC("TEST"));
-//     static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
-//     static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
-//     static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
-//     static const Object FRAME                 = Symbol::intern(UC("FRAME"));
-//     static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
-//     static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
-//     const int LABEL = 15;
+Object scheme::pass4FixupLabelCollect(Object vec)
+{
+    static const Object NOP                   = Object::makeRaw(Instruction::NOP);
+    static const Object UNFIXED_JUMP          = Object::makeRaw(Instruction::UNFIXED_JUMP);
+    static const Object TEST                  = Object::makeRaw(Instruction::TEST);
+    static const Object NUMBER_LE_TEST        = Object::makeRaw(Instruction::NUMBER_LE_TEST);
+    static const Object NOT_TEST              = Object::makeRaw(Instruction::NOT_TEST);
+    static const Object REFER_LOCAL0_EQV_TEST = Object::makeRaw(Instruction::REFER_LOCAL0_EQV_TEST);
+    static const Object FRAME                 = Object::makeRaw(Instruction::FRAME);
+    static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
+    static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
+    const int LABEL = 15;
 
-//     const Vector* const v = vec.toVector();
-//     const int length = v->length();
-//     const Object ret = Object::makeVector(length, NOP);
-//     Vector* const rv= ret.toVector();
-//     Object labels = Object::Nil;
-//     for (int i = 0, j = 0; i < length;) {
-//         const Object insn = v->ref(i);
-//         if (insn == UNFIXED_JUMP          ||
-//             insn == TEST                  ||
-//             insn == NUMBER_LE_TEST        ||
-//             insn == NOT_TEST              ||
-//             insn == REFER_LOCAL0_EQV_TEST ||
-//             insn == FRAME                 ||
-//             insn == PUSH_FRAME            ||
-//             insn == CLOSURE) {
-//             rv->set(j, insn);
-//             rv->set(j + 1, v->ref(i + 1));
-//             i += 2;
-//             j += 2;
-//         } else if (insn.isVector() && insn.toVector()->length() > 0 &&
-//                    insn.toVector()->ref(0).toInt() == LABEL) {
-//             i++;
-//             labels = Object::cons(Object::cons(insn, Object::makeInt(j)), labels);
-//         } else {
-//             rv->set(j, insn);
-//             i++;
-//             j++;
-//         }
-//     }
-//     return Object::cons(ret, labels);
-// }
-
-// Object scheme::assq(Object o, Object alist)
-// {
-//     for (Object p = alist; p.isPair(); p = p.cdr()) {
-//         if (p.car().car() == o) {
-//             return p.car();
-//         }
-//     }
-//     return Object::False;
-// }
+    const Vector* const v = vec.toVector();
+    const int length = v->length();
+    const Object ret = Object::makeVector(length, NOP);
+    Vector* const rv= ret.toVector();
+    Object labels = Object::Nil;
+    for (int i = 0, j = 0; i < length;) {
+        const Object insn = v->ref(i);
+        if (insn == UNFIXED_JUMP          ||
+            insn == TEST                  ||
+            insn == NUMBER_LE_TEST        ||
+            insn == NOT_TEST              ||
+            insn == REFER_LOCAL0_EQV_TEST ||
+            insn == FRAME                 ||
+            insn == PUSH_FRAME            ||
+            insn == CLOSURE) {
+            rv->set(j, insn);
+            rv->set(j + 1, v->ref(i + 1));
+            i += 2;
+            j += 2;
+        } else if (insn.isVector() && insn.toVector()->length() > 0 &&
+                   insn.toVector()->ref(0).toInt() == LABEL) {
+            i++;
+            labels = Object::cons(Object::cons(insn, Object::makeInt(j)), labels);
+        } else {
+            rv->set(j, insn);
+            i++;
+            j++;
+        }
+    }
+    return Object::cons(ret, labels);
+}
 
 // // コンパイラはインストラクションをシンボルで持ってなかった。。
-// Object scheme::pass4FixupLabel(Object vec)
-// {
-//     static const Object UNFIXED_JUMP          = Symbol::intern(UC("UNFIXED_JUMP"));
-//     static const Object TEST                  = Symbol::intern(UC("TEST"));
-//     static const Object NUMBER_LE_TEST        = Symbol::intern(UC("NUMBER_LE_TEST"));
-//     static const Object NOT_TEST              = Symbol::intern(UC("NOT_TEST"));
-//     static const Object REFER_LOCAL0_EQV_TEST = Symbol::intern(UC("REFER_LOCAL0_EQV_TEST"));
-//     static const Object FRAME                 = Symbol::intern(UC("FRAME"));
-//     static const Object PUSH_FRAME            = Symbol::intern(UC("PUSH_FRAME"));
-//     static const Object CLOSURE               = Symbol::intern(UC("CLOSURE"));
-//     static const Object LOCAL_JMP             = Symbol::intern(UC("LOCAL_JMP"));
+Object scheme::pass4FixupLabel(Object vec)
+{
+    static const Object UNFIXED_JUMP          = Object::makeRaw(Instruction::UNFIXED_JUMP);
+    static const Object TEST                  = Object::makeRaw(Instruction::TEST);
+    static const Object NUMBER_LE_TEST        = Object::makeRaw(Instruction::NUMBER_LE_TEST);
+    static const Object NOT_TEST              = Object::makeRaw(Instruction::NOT_TEST);
+    static const Object REFER_LOCAL0_EQV_TEST = Object::makeRaw(Instruction::REFER_LOCAL0_EQV_TEST);
+    static const Object FRAME                 = Object::makeRaw(Instruction::FRAME);
+    static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
+    static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
+    static const Object LOCAL_JMP             = Object::makeRaw(Instruction::LOCAL_JMP);
 
-//     const Object collected = pass4FixupLabelCollect(vec);
-//     Vector* const code = collected.car().toVector();
-//     const Object labels = collected.cdr();
-//     const int length = code->length();
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     VM_LOG1("labels = ~a", labels);
-// //   (receive (code labels) (collect-labels)
-// //     (let1 len (vector-length code)
-// //     (let loop ([i 0])
-// //       (cond
-// //        [(= i len) code]
-// //        [else
-// //         (let1 insn (vector-ref code i)
-// //           (cond
-// //            [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
-// //            [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
-// //            [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-// //            [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
-// //            [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-// //            [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
-// //            [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
-// //            [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-// //            [else (loop (+ i 1))]))])))))
+    const Object collected = pass4FixupLabelCollect(vec);
+    Vector* const code = collected.car().toVector();
+    const Object labels = collected.cdr();
+    const int length = code->length();
+//   (receive (code labels) (collect-labels)
+//     (let1 len (vector-length code)
+//     (let loop ([i 0])
+//       (cond
+//        [(= i len) code]
+//        [else
+//         (let1 insn (vector-ref code i)
+//           (cond
+//            [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
+//            [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
+//            [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
+//            [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
+//            [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
+//            [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
+//            [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
+//            [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
+//            [else (loop (+ i 1))]))])))))
 
 
-// //   `(let1 label (assq (vector-ref code (+ i 1)) labels)
-// //      (cond
-// //       [label
-// //        (vector-set! code i ,insn)
-// //        (vector-set! code (+ i 1) (- (cdr label) i 1)) ;; jump point
-// //        (loop (+ i 2))]
-// //       [else
-// //        (loop (+ i 1))])))
+//   `(let1 label (assq (vector-ref code (+ i 1)) labels)
+//      (cond
+//       [label
+//        (vector-set! code i ,insn)
+//        (vector-set! code (+ i 1) (- (cdr label) i 1)) ;; jump point
+//        (loop (+ i 2))]
+//       [else
+//        (loop (+ i 1))])))
 
 
-//     for (int i = 0; i < length;) {
-//         const Object insn = code->ref(i);
-//             VM_LOG1("insn = ~a\n", insn);
-//         if (insn == UNFIXED_JUMP) {
-//             const Object label = assq(code->ref(i + 1), labels);
-//             if (!labels.isFalse()) {
-//                 code->set(i, LOCAL_JMP);
-//                 code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
-//                 i += 2;
-//             } else {
-//                 i++;
-//             }
-//         } else if (insn == TEST                  ||
-//                    insn == NUMBER_LE_TEST        ||
-//                    insn == NOT_TEST              ||
-//                    insn == REFER_LOCAL0_EQV_TEST ||
-//                    insn == FRAME                 ||
-//                    insn == PUSH_FRAME            ||
-//                    insn == CLOSURE) {
-//             const Object label = assq(code->ref(i + 1), labels);
-//             if (!labels.isFalse()) {
-//                 code->set(i, insn);
-//                 code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
-//                 i += 2;
-//             } else {
-//                 i++;
-//             }
-//         } else {
-//             i++;
-//         }
-//     }
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return collected.car();
-// }
+    for (int i = 0; i < length;) {
+        const Object insn = code->ref(i);
+        if (insn == UNFIXED_JUMP) {
+            const Object label = assq(code->ref(i + 1), labels);
+            if (!labels.isFalse()) {
+                code->set(i, LOCAL_JMP);
+                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                i += 2;
+            } else {
+                i++;
+            }
+        } else if (insn == TEST                  ||
+                   insn == NUMBER_LE_TEST        ||
+                   insn == NOT_TEST              ||
+                   insn == REFER_LOCAL0_EQV_TEST ||
+                   insn == FRAME                 ||
+                   insn == PUSH_FRAME            ||
+                   insn == CLOSURE) {
+            const Object label = assq(code->ref(i + 1), labels);
+            if (!labels.isFalse()) {
+                code->set(i, insn);
+                code->set(i + 1, Object::makeInt(label.cdr().toInt() - i - 1));
+                i += 2;
+            } else {
+                i++;
+            }
+        } else {
+            i++;
+        }
+    }
+    return collected.car();
+}
 
-// Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
-// {
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return pass4FixupLabel(args.first());
-// }
+Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
+{
+    return pass4FixupLabel(argv[0]);
+}
 

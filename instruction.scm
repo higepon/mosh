@@ -108,3 +108,4 @@
 (define-insn REFER_LOCAL_PUSH 1)
 (define-insn VALUES 1)
 (define-insn RECEIVE 2)
+(define-insn UNFIXED_JUMP 1)

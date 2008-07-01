@@ -1533,6 +1533,10 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
             }
             NEXT1;
         }
+        CASE(UNFIXED_JUMP)
+        {
+            RAISE0("not reached UNFIXED_JUMP");
+        }
         DEFAULT
         {
             printf("val=%d\n", (*(pc_ - 1)).val);
