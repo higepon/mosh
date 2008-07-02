@@ -1044,6 +1044,37 @@
                     `(,p ((lambda (anonymous) (set! anonymous 3) ,@more) 4)))]))
            clauses)))
 
+;; short cut macro
+(define-macro (pass1/s->i sexp)
+  `(pass1/sexp->iform (pass1/expand ,sexp) library lvars tail?))
+
+(define (pass1/call sexp library lvars tail?)
+  (let1 proc (first sexp)
+    (acond
+     [(and (symbol? proc)
+           (assoc proc ($library.macro library)))
+      (pass1/s->i (vm/apply (cdr it) (cdr sexp)))]
+;      (pass1/sexp->iform (pass1/expand (vm/apply (cdr it) (cdr sexp))) library lvars tail?)]
+     [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
+      (let* ([lib (hashtable-ref libraries (second it) #f)]
+             [mac (assoc (third it) ($library.macro lib))])
+        (if mac
+            (pass1/s->if (vm/apply (cdr mac) (cdr sexp)))
+;;             (pass1/sexp->iform
+;;              (pass1/expand
+;;               (vm/apply (cdr mac) (cdr sexp)))
+;;              library lvars tail?)
+            ($call ;(pass1/sexp->iform (pass1/expand proc) library lvars tail?)
+             (pass1/s->i proc)
+                   ($map1 (lambda (x) (pass1/s->i x))(cdr sexp))
+                   tail?
+                   #f)))]
+     [#t
+      ($call (pass1/s->i proc);(pass1/sexp->iform (pass1/expand proc) library lvars tail?)
+             ($map1 (lambda (x) (pass1/s->i x))  (cdr sexp))
+             tail?
+             #f)])))
+
 (define (pass1/sexp->iform sexp library lvars tail?)
   (define (sexp->iform sexp)
     (pass1/sexp->iform (pass1/expand sexp) library lvars tail?))
@@ -1051,7 +1082,7 @@
     (let* ([args (cdr sexp)]
            [len (length args)])
       (cond [(= 0 len)
-             (case-with-lambda op
+             (case op
                [(+)
                 (sexp->iform 0)]
                [(*)
@@ -1059,7 +1090,7 @@
                [else
                 (error op " got too few argment")])]
             [(= 1 len)
-             (case-with-lambda op
+             (case op
                [(-)
                 (sexp->iform (* -1 (car args)))]
                [(/)
@@ -1094,7 +1125,10 @@
   (cond
    [(pair? sexp)
 ;    (case-with-time (car sexp)
-    (case-with-lambda (car sexp)
+    (case (car sexp)
+      ;;---------------------------- lambda ------------------------------------
+      [(lambda)
+       (pass1/lambda->iform 'lambda sexp library lvars)]
       ;;---------------------------- cons --------------------------------------
       [(cons)
        ($asm 'CONS ($map1 sexp->iform (cdr sexp)))]
@@ -1174,9 +1208,6 @@
                tail?
                (source-info sexp)
                ))]
-      ;;---------------------------- lambda ------------------------------------
-      [(lambda)
-       (pass1/lambda->iform 'lambda sexp library lvars)]
       ;;---------------------------- library -----------------------------------
       [(library)
        (pass1/library->iform sexp library lvars)]
@@ -1242,30 +1273,35 @@
       [(read-char)        (call-1arg-optional->iform 'READ_CHAR)]
       ;;---------------------------- call or macro------------------------------
       [else
-       (let1 proc (first sexp)
-         (acond
-          [(and (symbol? proc) (assoc proc ($library.macro library)))
-           (sexp->iform (vm/apply (cdr it) (cdr sexp)))]
-          [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
-           (let* ([lib (hashtable-ref libraries (second it) #f)]
-                  [mac (assoc (third it) ($library.macro lib))])
-             (if mac
-                 (sexp->iform (pass1/expand (vm/apply (cdr mac) (cdr sexp))))
-                 ($call (sexp->iform proc)
-                        ($map1 sexp->iform (cdr sexp))
-                        tail?
-                        #f ;; type will be set on pass2
-                        )))]
-          ;; call
-          [#t
-           ($call (sexp->iform proc)
-                  ($map1 sexp->iform (cdr sexp))
-                  tail?
-                  #f ;; type will be set on pass2
-                  )]))])]
+       (pass1/call sexp  library lvars tail?)
+;;        (let1 proc (first sexp)
+;;          (acond
+;;           [(and (symbol? proc) (assoc proc ($library.macro library)))
+;;            (sexp->iform (vm/apply (cdr it) (cdr sexp)))]
+;;           [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
+;;            (let* ([lib (hashtable-ref libraries (second it) #f)]
+;;                   [mac (assoc (third it) ($library.macro lib))])
+;;              (if mac
+;;                  (sexp->iform (pass1/expand (vm/apply (cdr mac) (cdr sexp))))
+;;                  ($call (sexp->iform proc)
+;;                         ($map1 sexp->iform (cdr sexp))
+;;                         tail?
+;;                         #f ;; type will be set on pass2
+;;                         )))]
+;;           ;; call
+;;           [#t
+;;            ($call (sexp->iform proc)
+;;                   ($map1 sexp->iform (cdr sexp))
+;;                   tail?
+;;                   #f ;; type will be set on pass2
+;;                   )]))
+       ]
+      )]
    [(symbol? sexp)
     (pass1/refer->iform sexp library lvars)]
    [else ($const sexp)]))
+
+
 
 ;;--------------------------------------------------------------------
 ;;
