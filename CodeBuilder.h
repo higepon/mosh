@@ -35,7 +35,11 @@
 #include "scheme.h"
 
 namespace scheme {
-
+//template <class T1>
+// class gc_vector2 : public std::vector<T1, gc_allocator<T1> >, public gc {
+// public:
+//     gc_vector2(int size) : std::vector<T1, gc_allocator<T1> >(size) {}
+// };
 class CodeBuilder EXTEND_GC
 {
 public:
@@ -61,7 +65,7 @@ public:
         return ret;
     }
 
-    gc_vector<Object> code;
+    ObjectVector code;
 };
 
 }; // namespace scheme

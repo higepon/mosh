@@ -2106,38 +2106,43 @@
         (error "pass3/find-sets unknown iform:" i)])))
   (uniq (rec iform)))
 
-;; moved to freeproc.cpp start
-;; N.B. these procedures are still required by vm.scm
-(define (make-code-builder)
-  (list 'builder))
+(cond-expand
+ [mosh
+  ]
+ [else
+  ;; moved to freeproc.cpp start
+  ;; N.B. these procedures are still required by vm.scm
+  (define (make-code-builder)
+    (list 'builder))
 
-(define (code-builder-put1! cb x)
-  (append! cb (list x)))
+  (define (code-builder-put1! cb x)
+    (append! cb (list x)))
 
-(define (code-builder-put2! cb a b)
-  (append! cb (list a b)))
+  (define (code-builder-put2! cb a b)
+    (append! cb (list a b)))
 
-(define (code-builder-put3! cb a b c)
-  (append! cb (list a b c)))
+  (define (code-builder-put3! cb a b c)
+    (append! cb (list a b c)))
 
-(define (code-builder-put4! cb a b c d)
-  (append! cb (list a b c d)))
+  (define (code-builder-put4! cb a b c d)
+    (append! cb (list a b c d)))
 
-(define (code-builder-put5! cb a b c d e)
-  (append! cb (list a b c d e)))
+  (define (code-builder-put5! cb a b c d e)
+    (append! cb (list a b c d e)))
 
-(define (code-builder-append! cb1 cb2)
-  (let loop ([e (cdr cb2)])
-    (cond
-     [(null? e)
-      '()]
-     [else
-      (code-builder-put1! cb1 (car e))
-      (loop (cdr e))])))
+  (define (code-builder-append! cb1 cb2)
+    (let loop ([e (cdr cb2)])
+      (cond
+       [(null? e)
+        '()]
+       [else
+        (code-builder-put1! cb1 (car e))
+        (loop (cdr e))])))
 
-(define (code-builder-emit cb)
-  (cdr cb))
-;; moved to freeproc.cpp end
+  (define (code-builder-emit cb)
+    (cdr cb))
+  ;; moved to freeproc.cpp end
+  ])
 
 ;; code-builder synonym
 (define-macro (cput! cb . more)
@@ -2170,37 +2175,42 @@
             (cput! cb 'PUSH)
             (+ size accum))) 0 (reverse frees-here)))
 
-(define (pass3/symbol-lookup lvar locals frees return-local return-free)
+(define (pass3/symbol-lookup cb lvar locals frees return-local return-free)
   (let next-local ([locals locals] [n 0])
     (if (null? locals)
         (let next-free ([free frees] [n 0])
           (cond [(null? free)
                  (error "pass3/symbol-lookup bug? Unknown lvar:" lvar)]
                 [(eq? (car free) lvar)
-                 (return-free n)]
+                 (return-free cb n)]
                 [else
                  (next-free (cdr free) (+ n 1))]))
         (if (eq? (car locals) lvar)
-            (return-local n)
+            (return-local cb n)
             (next-local (cdr locals) (+ n 1))))))
 
+;; N.B. Do NOT use anonymous closure for this usage. Because symbol-lookup will be called many times.
+(define (pass3/return-refer-local cb n)
+  (cput! cb 'REFER_LOCAL n)
+  0)
+
+(define (pass3/return-refer-free cb n)
+  (cput! cb 'REFER_FREE n)
+  0)
+
 (define (pass3/compile-refer cb lvar locals frees)
-  (pass3/symbol-lookup lvar locals frees
-                       (lambda (n)
-                         (cput! cb 'REFER_LOCAL n)
-                         0)
-                       (lambda (n)
-                         (cput! cb 'REFER_FREE n)
-                         0)))
+  (pass3/symbol-lookup cb lvar locals frees pass3/return-refer-local pass3/return-refer-free))
+
+(define (pass3/return-assign-local cb n)
+  (cput! cb 'ASSIGN_LOCAL n)
+  0)
+
+(define (pass3/return-assign-free cb n)
+  (cput! cb 'ASSIGN_FREE n)
+  0)
 
 (define (pass3/compile-assign cb lvar locals frees)
-  (pass3/symbol-lookup lvar locals frees
-                       (lambda (n)
-                         (cput! cb 'ASSIGN_LOCAL n)
-                         0)
-                       (lambda (n)
-                         (cput! cb 'ASSIGN_FREE n)
-                         0)))
+  (pass3/symbol-lookup cb lvar locals frees pass3/return-assign-local pass3/return-assign-free))
 
 (define (pass3/make-boxes cb sets vars)
   ($for-each1-with-rindex (lambda (index var)

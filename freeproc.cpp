@@ -1835,13 +1835,34 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     const int IMPORT = 18;
     const int IT = 20;
     const int RECEIVE = 21;
+//         for (Object p = canFrees; p.isPair(); p = p.cdr()) {
+//             const Object lvarSym = p.car().toVector()->ref(1);
+//             VM_LOG1("~a, ", lvarSym);
+//         }
 
     Vector* v = i.toVector();
     switch(v->ref(0).toInt()) {
     case CONST:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::Nil;
     case LET:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+// Object scheme::findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
+// {
+//     Object ret = Object::Nil;
+//     for (Object p = list; p.isPair(); p = p.cdr()) {
+//         ret = Pair::append2(ret, findFreeRec(p.car(), l, canFrees, labelsSeen));
+//     }
+//     return ret;
+// }
+
+//        [(= $LET t)
+//         (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+// ; removed unnecesary append
+// ;                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
+//                  (rec ($let.body i) ($let.lvars i) labels-seen))]
+
         const Object letLvars = v->ref(2);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
@@ -1850,6 +1871,7 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     }
     case RECEIVE:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         const Object receiveLVars = v->ref(1);
@@ -1859,17 +1881,23 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     }
     case SEQ:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object seqBody = v->ref(1);
         return findFreeRecMap(l, canFrees, labelsSeen, seqBody);
     }
     case LAMBDA:
     {
+//        [(= $LAMBDA t)
+//         (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
+
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
         return findFreeRec(lambdaBody, lambdaLvars, canFrees, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object lvar = v->ref(1);
         const Object val = v->ref(2);
         if (memq(lvar, canFrees).isFalse()) {
@@ -1882,6 +1910,7 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
     }
     case LOCAL_REF:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 //        [(= $LOCAL-REF t)
 //         (let1 lvar ($local-ref.lvar i)
 //           (cond [(memq lvar l) '()]
@@ -1903,9 +1932,12 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
 //                [found (find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
 //           (if found (list found) '()))]
         const Object sym = v->ref(2);
+//        VM_LOG1("GLOBAL-REF sym=~a\n", sym);
+
         Object found = Object::False;
         for (Object p = canFrees; p.isPair(); p = p.cdr()) {
             const Object lvarSym = p.car().toVector()->ref(1);
+//            VM_LOG1("~a, ", lvarSym);
             if (lvarSym == sym) {
                 found = p.car();
                 break;
@@ -1987,7 +2019,7 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
         if (!memq(i, labelsSeen).isFalse()) {
             return Object::Nil;
         } else {
-            findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
+            return findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
         }
     }
     case IMPORT:
@@ -2257,14 +2289,33 @@ Object scheme::codeBuilderPut2DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
 {
+//     struct timeval tv1, tv2;
+//     struct timezone tz1, tz2;
+//     static long compileTime = 0;
+//     static long evalTime = 0;
+//     gettimeofday(&tv1, &tz1);
+//    gettimeofday(&tv2, &tz2);
+//    compileTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
+    // env is currently ignored
+//    gettimeofday(&tv1, &tz1);
+//    gettimeofday(&tv2, &tz2);
+//    evalTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
+    //  printf("compile =%ld eval = %ld \n", compileTime, evalTime);
+
+//    gettimeofday(&tv1, &tz1);
     checkArgLength(4, argc, "code-builder-put3!");
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
-    cb.toCodeBuilder()->put(argv[1],
-                            argv[2],
-                            argv[3]);
+//    gettimeofday(&tv2, &tz2);
+//    compileTime += (tv2.tv_sec * 1000*1000 + tv2.tv_usec) - (tv1.tv_sec * 1000*1000 + tv1.tv_usec);
+//    gettimeofday(&tv1, &tz1);
+
+    cb.toCodeBuilder()->put(argv[1], argv[2], argv[3]);
+//    gettimeofday(&tv2, &tz2);
+//    evalTime += (tv2.tv_sec * 1000*1000 + tv2.tv_usec) - (tv1.tv_sec * 1000*1000 + tv1.tv_usec);
+//    printf("%ld %ld\n", compileTime, evalTime);
     return Object::Undef;
 }
 
@@ -2448,4 +2499,18 @@ Object scheme::lengthEx(int argc, const Object* argv)
         ret++;
     }
     return Object::makeInt(ret);
+}
+
+Object scheme::listTovectorEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "list->vector");
+    const Object list = argv[0];
+    if (list.isPair()) {
+        return Object::makeVector(list);
+    } else if (list.isNil()) {
+        return Object::makeVector(0);
+    } else {
+        VM_RAISE1("list->vector proper list required, but got ~an", list);
+        return Object::Undef;
+    }
 }

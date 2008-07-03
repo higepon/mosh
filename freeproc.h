@@ -228,6 +228,8 @@ namespace scheme {
         return Object::False;
     }
 
+    Object listTovectorEx(int argc, const Object* argv);
+
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

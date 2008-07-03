@@ -149,6 +149,7 @@
     (code-builder-append! ,code-builder-append!)
     (code-builder-emit ,code-builder-emit)
     (length ,length)
+    (list->vector ,list->vector)
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

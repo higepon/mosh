@@ -97,6 +97,16 @@ typedef word ucs4char;
 
 namespace scheme {
 
+
+#ifdef USE_BOEHM_GC
+class Object;
+typedef std::vector<Object, gc_allocator<Object> > ObjectVector;
+#else
+class Object;
+typedef std::vector<Object> ObjectVector;
+#endif
+
+
 class HeapObject EXTEND_GC
 {
     template <int N>
