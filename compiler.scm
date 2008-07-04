@@ -2545,15 +2545,8 @@
                                  body
                                  vars
                                  frees-here
-;                                 (%set-union can-frees vars)
                                  (append2 can-frees vars) ;; can-frees and vars don't have common lvars.
-;                                 (append2 sets-for-this-lvars sets)
                                  (pass3/add-sets! sets sets-for-this-lvars)
-;;                                  (if (null? sets-for-this-lvars)
-;;                                      sets
-;;                                      (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
-;;                                  (%set-union (append2 sets-for-this-lvars sets)
-;;                                              (%set-intersect sets frees-here))
                                  (length vars))
         (cput! cb
                (+ body-size free-size (length vars) 4) ;; max-stack 4 is sizeof frame
