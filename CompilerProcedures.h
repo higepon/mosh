@@ -39,6 +39,7 @@ namespace scheme {
 
     Object pass3FindFreeEx(int argc, const Object* argv);
     Object pass3FindSetsEx(int argc, const Object* argv);
+    Object pass3CompileReferEx(int argc, const Object* argv);
 
     Object pass4FixupLabelsEx(int argc, const Object* argv);
 

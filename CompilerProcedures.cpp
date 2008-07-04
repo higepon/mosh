@@ -44,6 +44,34 @@ static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
 
+Object scheme::pass3CompileReferEx(int argc, const Object* argv)
+{
+    checkArgLength(4, argc, "pass3/compile-refer");
+    const Object codeBuilder        = argv[0];
+    const Object variable           = argv[1];
+    const Object localVariablesList = argv[2];
+    int localsIndex = 0;
+    for (Object p = localVariablesList; p.isPair(); p = p.cdr(), localsIndex++) {
+        const Object localVariable = p.car();
+        if (localVariable == variable) {
+            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
+            return Object::makeInt(0);
+        }
+    }
+
+    const Object freeVariablesList = argv[3];
+    int freesIndex = 0;
+    for (Object p = freeVariablesList; p.isPair(); p = p.cdr(), freesIndex++) {
+        const Object freeVariable = p.car();
+        if (freeVariable == variable) {
+            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
+            return Object::makeInt(0);
+        }
+    }
+    VM_RAISE1("pass3/symbol-lookup bug? Unknown lvar:", variable);
+    return Object::Undef;
+}
+
 
 Object scheme::pass3FindFreeEx(int argc, const Object* argv)
 {
@@ -278,13 +306,9 @@ Object findSetsRec(Object i, Object lvars)
     Vector* v = i.toVector();
     switch(v->ref(0).toInt()) {
     case CONST:
-//        [(= $CONST t) '()]
         return Object::Nil;
     case LET:
     {
-//        [(= $LET t)
-//         (append ($append-map1 rec ($let.inits i))
-//                 (rec ($let.body i)))]
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
         return Pair::append2(findSetsRecMap(lvars, letInits),
@@ -292,9 +316,6 @@ Object findSetsRec(Object i, Object lvars)
     }
     case RECEIVE:
     {
-//        [(= $RECEIVE t)
-//         (append (rec ($receive.vals i))
-//                 (rec ($receive.body i)))]
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         return Pair::append2(findSetsRec(receiveVals, lvars),
@@ -302,24 +323,16 @@ Object findSetsRec(Object i, Object lvars)
     }
     case SEQ:
     {
-//        [(= $SEQ t)
-//         ($append-map1 rec ($seq.body i))]
         const Object seqBody = v->ref(1);
         return findSetsRecMap(lvars, seqBody);
     }
     case LAMBDA:
     {
-//        [(= $LAMBDA t)
-//         (rec ($lambda.body i))]
         const Object lambdaBody = v->ref(6);
         return findSetsRec(lambdaBody, lvars);
     }
     case LOCAL_ASSIGN:
     {
-//        [(= $LOCAL-ASSIGN t)
-//         (let1 lvar ($local-assign.lvar i)
-//           (append (if (memq lvar lvars) (list lvar) '())
-//                   (rec ($local-assign.val i))))]
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
         if (memq(localAssignLvar, lvars).isFalse()) {
@@ -327,28 +340,19 @@ Object findSetsRec(Object i, Object lvars)
         } else {
             return Object::cons(localAssignLvar, findSetsRec(localAssignVal, lvars));
         }
-//         return Pair::append2(!memq(localAssignLvar, lvars).isFalse() ? Pair::list1(localAssignLvar) : Object::Nil,
-//                              findSetsRec(localAssignVal, lvars));
     }
     case LOCAL_REF:
     {
-//        [(= $LOCAL-REF t)  '()]
         return Object::Nil;
     }
     case GLOBAL_REF:
     {
-//        [(= $GLOBAL-REF t) '()]
         return Object::Nil;
     }
     case UNDEF:
-//        [(= $UNDEF t)      '()]
         return Object::Nil;
     case IF:
     {
-//        [(= $IF t)
-//         (append (rec ($if.test i))
-//                 (rec ($if.then i))
-//                 (rec ($if.else i)))]
         const Object testF = findSetsRec(v->ref(1), lvars);
         const Object thenF = findSetsRec(v->ref(2), lvars);
         const Object elseF = findSetsRec(v->ref(3), lvars);
@@ -356,25 +360,16 @@ Object findSetsRec(Object i, Object lvars)
     }
     case ASM:
     {
-//        [(= $ASM t)
-//         ($append-map1 rec ($asm.args i))]
         const Object asmArgs = v->ref(2);
         return findSetsRecMap(lvars, asmArgs);
     }
     case DEFINE:
     {
-//        [(= $DEFINE t)
-//         (rec ($define.val i))]
         const Object defineVal = v->ref(3);
         return findSetsRec(defineVal, lvars);
     }
     case CALL:
     {
-//        [(= $CALL t)
-//         (append
-//          ($append-map1 rec ($call.args i))
-//          (rec ($call.proc i))
-//                 )]
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
         return Pair::append2(findSetsRecMap(lvars, callArgs),
@@ -382,45 +377,28 @@ Object findSetsRec(Object i, Object lvars)
     }
     case CALL_CC:
     {
-//        [(= $CALL-CC t)
-//         (rec ($call-cc.proc i))]
         const Object callccProc = v->ref(1);
         return findSetsRec(callccProc, lvars);
     }
     case GLOBAL_ASSIGN:
     {
-//        [(= $GLOBAL-ASSIGN t)
-//         (rec ($global-assign.val i))]
         const Object globalAssignVal = v->ref(3);
         return findSetsRec(globalAssignVal, lvars);
     }
     case LIST:
     {
-//        [(= $LIST t)
-//         ($append-map1 rec ($list.args i))]
         const Object listArgs = v->ref(1);
         return findSetsRecMap(lvars, listArgs);
     }
     case LABEL:
     {
-//        [(= $LABEL t)
-//         '() ;; todo 本当
-//         ]
         return Object::Nil;
     }
     case IMPORT:
-//        [(= $IMPORT t)
-//         '() ;; todo 本当?
-//         ]
         return Object::Nil;
     case LIBRARY:
-//        [(= $LIBRARY t)
-//         '() ;; todo 本当?
-//         ]
-
         return Object::Nil;
     case IT:
-//        [(= $IT t) '()]
         return Object::Nil;
     default:
         VM_RAISE1("pass3/find-sets unknown iform: ~a", v->ref(0));
@@ -626,3 +604,4 @@ Object pass4FixupLabel(Object vec)
     }
     return collected.car();
 }
+

@@ -2206,6 +2206,8 @@
   (cput! cb 'REFER_FREE n)
   0)
 
+;; moved to CompilerProcedures.cpp
+;; N.B. this procedure is still required by vm.scm
 (define (pass3/compile-refer cb lvar locals frees)
   (pass3/symbol-lookup cb lvar locals frees pass3/return-refer-local pass3/return-refer-free))
 

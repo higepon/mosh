@@ -1846,13 +1846,3 @@ Object scheme::listTovectorEx(int argc, const Object* argv)
     }
 }
 
-// (define (pass3/compile-refer cb lvar locals frees)
-//   (pass3/symbol-lookup cb lvar locals frees pass3/return-refer-local pass3/return-refer-free))
-
-
-
-Object scheme::pass3CompileReferEx(int argc, const Object* argv)
-{
-
-
-}
