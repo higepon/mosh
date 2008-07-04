@@ -809,9 +809,17 @@
          ($global-assign (second it) (third it) val) ;; bind found on import-syms.
          ($global-assign ($library.name library) symbol val))))
 
+(define (pass1/find-symbol-in-lvars symbol lvars)
+  (cond
+   [(null? lvars) #f]
+   [(eq? symbol ($lvar.sym (car lvars))) (car lvars)]
+   [else
+    (pass1/find-symbol-in-lvars symbol (cdr lvars))]))
+
 (define (pass1/refer->iform symbol library lvars)
   (acond
-   [(find10 (lambda (lvar) (eq? ($lvar.sym lvar) symbol)) lvars)
+;   [(find10 (lambda (lvar) (eq? ($lvar.sym lvar) symbol)) lvars)
+   [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
     ($lvar.ref-count++! it)
     ($local-ref it)]
    [(pass1/lib-refer->iform symbol library)
@@ -821,7 +829,7 @@
 (define (pass1/assign symbol val library lvars tail?)
   (let1 iform (pass1/sexp->iform val library lvars tail?)
     (acond
-     [(find10 (lambda (lvar) (eq? ($lvar.sym lvar) symbol)) lvars)
+     [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
       ($lvar.set-count++! it)
       ($local-assign it iform)]
      [(pass1/lib-assign->iform symbol library iform)
@@ -2178,10 +2186,23 @@
        (hashtable-set-true! (eq-hashtable-copy ,sets) ,new-sets)))
 
 (define (pass3/collect-free cb frees-here locals frees)
-  (fold (lambda (i accum)
-          (let1 size (pass3/compile-refer cb i locals frees)
-            (cput! cb 'PUSH)
-            (+ size accum))) 0 (reverse frees-here)))
+  (let loop ([size 0]
+             [reversed-frees (reverse frees-here)])
+    (cond
+     [(null? reversed-frees) size]
+     [else
+      (let1 stack-size (pass3/compile-refer cb (car reversed-frees) locals frees)
+        (cput! cb 'PUSH)
+        (loop (+ size stack-size) (cdr reversed-frees)))])))
+
+;; fold requires anonymous closure
+;; So, if this procedure is called many times, it causes slow compilation.
+;; (define (pass3/collect-free cb frees-here locals frees)
+;;   (fold (lambda (i accum)
+;;           (let1 size (pass3/compile-refer cb i locals frees)
+;;             (cput! cb 'PUSH)
+;;             (+ size accum))) 0 (reverse frees-here)))
+
 
 (define (pass3/symbol-lookup cb lvar locals frees return-local return-free)
   (let next-local ([locals locals] [n 0])
@@ -2443,11 +2464,22 @@
     (cput! cb 'PUSH)
     (+ size 1)))
 
+;; (define (pass3/compile-args cb args locals frees can-frees sets tail)
+;;   (fold (lambda (i accum)
+;;           (let1 size (pass3/compile-arg cb i locals frees can-frees sets tail)
+;;             (+ size accum)))
+;;         0 args))
+
+;; fold requires anonymous closure
+;; So, if this procedure is called many times, it causes slow compilation.
 (define (pass3/compile-args cb args locals frees can-frees sets tail)
-  (fold (lambda (i accum)
-          (let1 size (pass3/compile-arg cb i locals frees can-frees sets tail)
-            (+ size accum)))
-        0 args))
+  (let loop ([size 0]
+             [iform args])
+    (cond
+     [(null? iform) size]
+     [else
+      (loop (+ size (pass3/compile-arg cb (car iform) locals frees can-frees sets tail))
+            (cdr iform))])))
 
 ;; N.B.
 ;; We don't append vars directory.
@@ -2464,14 +2496,15 @@
 (define (pass3/$call cb iform locals frees can-frees sets tail)
   (case ($call.type iform)
     [(jump)
-     (let1 label ($lambda.body ($call.proc ($call.proc iform)))
-       (cput! cb 'REDUCE (length ($call.args iform)))
+     (let ([label ($lambda.body ($call.proc ($call.proc iform)))]
+           [args-length (length ($call.args iform))])
+       (cput! cb 'REDUCE args-length)
        (begin0
          (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)
          (cput! cb
                 'SHIFT
-                (length ($call.args iform))
-                (length ($call.args iform))
+                args-length
+                args-length
                 'UNFIXED_JUMP
                 label)))]
     [(embed)
@@ -2483,16 +2516,18 @@
                                          (pass3/add-can-frees2 can-frees locals frees))]
             [sets-for-this-lvars (pass3/find-sets body vars)])
        (cput! cb 'LET_FRAME)
-       (let1 free-size (if (> (length frees-here) 0)
-                           (pass3/collect-free cb frees-here locals frees)
-                           0)
-         (when (> (length frees-here) 0)
-           (cput! cb 'DISPLAY (length frees-here)))
-         (let1 args-size (pass3/compile-args cb ($call.args iform) locals frees-here can-frees sets #f)
+       (let* ([frees-here-length (length frees-here)]
+              [free-size (if (> frees-here-length 0)
+                             (pass3/collect-free cb frees-here locals frees)
+                             0)])
+         (when (> frees-here-length 0)
+           (cput! cb 'DISPLAY frees-here-length))
+         (let ([args-size (pass3/compile-args cb ($call.args iform) locals frees-here can-frees sets #f)]
+               [args-length (length ($call.args iform))])
            (pass3/make-boxes cb sets-for-this-lvars vars)
            (cput! cb
                   'ENTER
-                  (length ($call.args iform))
+                  args-length
                   label)
            (let1 body-size (pass3/rec cb
                                       body
@@ -2501,7 +2536,7 @@
                                       (pass3/add-can-frees1 can-frees vars)
                                       (pass3/add-sets! sets sets-for-this-lvars)
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
-             (cput! cb 'LEAVE (length ($call.args iform)))
+             (cput! cb 'LEAVE args-length)
              (+ args-size body-size free-size)))))]
     [else
      (let1 end-of-frame (make-label)
@@ -2518,13 +2553,15 @@
        (unless tail
          (cput! cb 'FRAME (ref-label end-of-frame)))
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)]
-              [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f)])
+              [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f)]
+              [args-length (length ($call.args iform))])
          (when tail
-           (cput! cb 'SHIFT (length ($call.args iform)) tail))
-         (cput! cb 'CALL (length ($call.args iform)))
+           (cput! cb 'SHIFT args-length tail))
+         (cput! cb 'CALL args-length)
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
+
 
 (define (pass3/$call-cc cb iform locals frees can-frees sets tail)
   (let1 end-of-frame (make-label)
@@ -2547,16 +2584,18 @@
                                       (pass3/add-can-frees2 can-frees locals frees))]
          [sets-for-this-lvars (pass3/find-sets body vars)]
          [end-of-closure (make-label)]
-         [lambda-cb (make-code-builder)])
-    (let1 free-size (if (> (length frees-here) 0)
+         [lambda-cb (make-code-builder)]
+         [frees-here-length (length frees-here)]
+         [free-size (if (> frees-here-length 0)
                         (pass3/collect-free cb frees-here locals frees)
-                        0)
-      (cput! cb
-             'CLOSURE
-             (ref-label end-of-closure)
-             (length vars)                                            ;; length of arguments
-             (> ($lambda.optarg iform) 0)                             ;; optional-arg?
-             (length frees-here))                                     ;; number of free variables
+                        0)]
+         [vars-length (length vars)])
+    (cput! cb
+           'CLOSURE
+           (ref-label end-of-closure)
+           vars-length                                              ;; length of arguments
+           (> ($lambda.optarg iform) 0)                             ;; optional-arg?
+           frees-here-length)                                       ;; number of free variables
       ;; we want to know stack size of lambda body, before emit.
       (let1 body-size (pass3/rec lambda-cb
                                  body
@@ -2564,14 +2603,14 @@
                                  frees-here
                                  (pass3/add-can-frees1 can-frees vars) ;; can-frees and vars don't have common lvars.
                                  (pass3/add-sets! sets sets-for-this-lvars)
-                                 (length vars))
+                                 vars-length)
         (cput! cb
-               (+ body-size free-size (length vars) 4) ;; max-stack 4 is sizeof frame
+               (+ body-size free-size vars-length 4) ;; max-stack 4 is sizeof frame
                ($lambda.src iform))                    ;; source code information
         (pass3/make-boxes cb sets-for-this-lvars vars)
         (code-builder-append! cb lambda-cb)
-        (cput! cb 'RETURN (length vars) end-of-closure)
-        0))))
+        (cput! cb 'RETURN vars-length end-of-closure)
+        0)))
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
