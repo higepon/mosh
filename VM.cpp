@@ -26,10 +26,11 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: VM.cpp 5323 2008-05-09 09:06:26Z higepon $
+ *  $Id$
  */
 
 #include "VM.h"
+#include "CompilerProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

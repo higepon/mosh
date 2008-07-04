@@ -2,7 +2,7 @@
  *  read.cpp - Shiro Kawai's read.
  *
  *  Ported to Mosh by higepon@users.sourceforge.jp.
- *  $Id: read.cpp 5306 2008-05-06 11:06:23Z higepon $
+ *  $Id$
  */
 
 /*

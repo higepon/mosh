@@ -150,6 +150,7 @@
     (code-builder-emit ,code-builder-emit)
     (length ,length)
     (list->vector ,list->vector)
+;    (pass3/compile-refer ,pass3/compile-refer)
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

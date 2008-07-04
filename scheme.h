@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: scheme.h 5323 2008-05-09 09:06:26Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_SCHEME_H__
@@ -78,6 +78,14 @@ class gc_vector : public std::vector<T1> {};
 #define SCHEME_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); }}
 //#define RAISE_ERROR(fmt, ...) //{ format(Object::True, UC(fmt), __VA_ARGS__); exit(-1); }
 #define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
+
+
+#define checkArgLength(required, argc, proc)   \
+    if (argc != required) { \
+        VM_RAISE1("wrong number of argument for " proc " required " #required ", got ~d\n", Object::makeInt(argc)); \
+    } \
+
+
 
 typedef intptr_t word;
 typedef word ucs4char;

@@ -1,5 +1,5 @@
 /*
- * SString.cpp - String.
+ * CompilerProcedures.h - Procedures written in C++ for compiler.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -29,18 +29,27 @@
  *  $Id$
  */
 
+#ifndef __SCHEME_COMPILER_PROCEDURES__
+#define __SCHEME_COMPILER_PROCEDURES__
+
 #include "scheme.h"
-#include "SString.h"
 #include "VM.h"
 
-using namespace scheme;
+namespace scheme {
 
-extern VM* theVM;
+    Object pass3FindFreeEx(int argc, const Object* argv);
+    Object pass3FindSetsEx(int argc, const Object* argv);
 
-ucs4char String::charAt(int n)
-{
-    if (n >= static_cast<int>(data_.size())) {
-        VM_RAISE1("string-ref argument out of range:", Object::makeInt(n));
-    }
-    return data_[n];
-}
+    Object pass4FixupLabelsEx(int argc, const Object* argv);
+
+    Object makeCodeBuilderEx(int argc, const Object* argv);
+    Object codeBuilderPut1DEx(int argc, const Object* argv);
+    Object codeBuilderPut2DEx(int argc, const Object* argv);
+    Object codeBuilderPut3DEx(int argc, const Object* argv);
+    Object codeBuilderPut4DEx(int argc, const Object* argv);
+    Object codeBuilderPut5DEx(int argc, const Object* argv);
+    Object codeBuilderAppendDEx(int argc, const Object* argv);
+    Object codeBuilderEmitEx(int argc, const Object* argv);
+}; // namespace scheme
+
+#endif // __SCHEME_COMPILER_PROCEDURES__

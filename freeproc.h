@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: freeproc.h 5306 2008-05-06 11:06:23Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_FREE_PROC_H__
@@ -176,20 +176,8 @@ namespace scheme {
     Object appendDEx(int argc, const Object* argv);
     Object internalsetUnionEx(int argc, const Object* argv);
     Object internalsetIntersectEx(int argc, const Object* argv);
-    Object makeCodeBuilderEx(int argc, const Object* argv);
-    Object codeBuilderPut1DEx(int argc, const Object* argv);
-    Object codeBuilderPut2DEx(int argc, const Object* argv);
-    Object codeBuilderPut3DEx(int argc, const Object* argv);
-    Object codeBuilderPut4DEx(int argc, const Object* argv);
-    Object codeBuilderPut5DEx(int argc, const Object* argv);
-    Object doNothingEx(int argc, const Object* argv);
-
-    Object codeBuilderAppendDEx(int argc, const Object* argv);
-    Object codeBuilderEmitEx(int argc, const Object* argv);
 
     Object lengthEx(int argc, const Object* argv);
-    Object pass3FindFreeEx(int argc, const Object* argv);
-    Object pass3FindSetsEx(int argc, const Object* argv);
     inline bool existsInList(Object o, Object list)
     {
         for (Object q = list; q.isPair(); q = q.cdr()) {
@@ -198,20 +186,11 @@ namespace scheme {
         return false;
     }
 
-    Object pass4FixupLabelsEx(int argc, const Object* argv);
 
     Object memq(Object o, Object list);
     Object uniq(Object list);
     Object assq(Object o, Object alist);
-    Object findFree(Object iform, Object locals, Object canFrees);
-    Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
-    Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
-    Object findSetsRecMap(Object lvars, Object list);
-    Object findSets(Object iform, Object lvars);
-    Object findSetsRec(Object i, Object lvars);
 
-    Object pass4FixupLabelCollect(Object vec);
-    Object pass4FixupLabel(Object vec);
 
     int mod(int x, int y);
     int div(int x, int y);
@@ -230,6 +209,7 @@ namespace scheme {
 
     Object listTovectorEx(int argc, const Object* argv);
 
+    Object pass3CompileReferEx(int argc, const Object* argv);
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

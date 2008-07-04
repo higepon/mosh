@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: EqHashTable.h 5290 2008-05-01 09:00:57Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_EQ_HASH_TABLE__
@@ -36,7 +36,8 @@ namespace scheme {
 
 class EqHashTable EXTEND_GC
 {
-    typedef gc_map<Object, Object> Table;
+//    typedef gc_map<Object, Object> Table;
+    typedef std::map<Object, Object, std::less<Object>, gc_allocator<std::pair<const Object, Object> > > Table;
 public:
     EqHashTable() {}
 
