@@ -1812,6 +1812,28 @@ Object scheme::findFree(Object iform, Object locals, Object canFrees)
     return uniq(ret);
 }
 
+static bool existsInCanFrees(Object lvar, Object canFrees)
+{
+    for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
+        if (!memq(lvar, frees.car()).isFalse()) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static Object findSymbolInCanFrees(Object sym, Object canFrees)
+{
+    for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
+        for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
+            const Object lvarSym = p.car().toVector()->ref(1);
+            if (lvarSym == sym) {
+                return p.car();
+            }
+        }
+    }
+    return Object::False;
+}
 
 Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
@@ -1900,10 +1922,10 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
 //        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object lvar = v->ref(1);
         const Object val = v->ref(2);
-        if (memq(lvar, canFrees).isFalse()) {
-            return findFreeRec(val, l, canFrees, labelsSeen);
-        } else {
+        if (existsInCanFrees(lvar, canFrees)) {
             return Object::cons(lvar, findFreeRec(val, l, canFrees, labelsSeen));
+        } else {
+            return findFreeRec(val, l, canFrees, labelsSeen);
         }
 //         return Pair::append2(!memq(lvar, canFrees).isFalse() ? Pair::list1(lvar) : Object::Nil,
 //                              findFreeRec(val, l, canFrees, labelsSeen));
@@ -1919,7 +1941,7 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
         const Object lvar = v->ref(1);
         if (!memq(lvar, l).isFalse()) {
             return Object::Nil;
-        } else if (!memq(lvar, canFrees).isFalse()) {
+        } else if (existsInCanFrees(lvar, canFrees)) {
             return Pair::list1(lvar);
         } else {
             return Object::Nil;
@@ -1934,16 +1956,16 @@ Object scheme::findFreeRec(Object i, Object l, Object canFrees, Object labelsSee
         const Object sym = v->ref(2);
 //        VM_LOG1("GLOBAL-REF sym=~a\n", sym);
 
-        Object found = Object::False;
-        for (Object p = canFrees; p.isPair(); p = p.cdr()) {
-            const Object lvarSym = p.car().toVector()->ref(1);
-//            VM_LOG1("~a, ", lvarSym);
-            if (lvarSym == sym) {
-                found = p.car();
-                break;
-            }
-        }
-        return !found.isFalse() ? Pair::list1(found) : Object::Nil;
+        Object foundSym = findSymbolInCanFrees(sym, canFrees);
+//         for (Object p = canFrees; p.isPair(); p = p.cdr()) {
+//             const Object lvarSym = p.car().toVector()->ref(1);
+// //            VM_LOG1("~a, ", lvarSym);
+//             if (lvarSym == sym) {
+//                 found = p.car();
+//                 break;
+//             }
+//         }
+        return !foundSym.isFalse() ? Pair::list1(foundSym) : Object::Nil;
     }
     case UNDEF:
 //        [(= $UNDEF t)      '()]

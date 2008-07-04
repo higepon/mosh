@@ -1965,6 +1965,20 @@
 ;;
 ;;
 
+(define (pass3/exists-in-can-frees? lvar can-frees)
+  (if (null? can-frees)
+      #f
+      (if (memq lvar (car can-frees))
+          #t
+          (pass3/exists-in-can-frees? lvar (cdr can-frees)))))
+
+(define (pass3/find-sym-in-can-frees sym can-frees)
+  (if (null? can-frees)
+      #f
+      (aif (find10 (lambda (x) (eq? ($lvar.sym x) sym)) (car can-frees))
+           it
+           (pass3/find-sym-in-can-frees sym (cdr can-frees)))))
+
 ;;
 ;; Find free variables in IForm.
 ;;   free variables is neither global variable nor local variable.
@@ -1983,33 +1997,27 @@
        [(= $CONST t) '()]
        [(= $LET t)
         (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-; removed unnecesary append
-;                 (rec ($let.body i) (append2 l ($let.lvars i)) labels-seen))]
                  (rec ($let.body i) ($let.lvars i) labels-seen))]
        [(= $RECEIVE t)
         (append2 (rec ($receive.vals i) l labels-seen)
-; removed unnecesary append
-;                (rec ($receive.body i) (append2 l ($receive.lvars i)) labels-seen))]
                 (rec ($receive.body i) ($receive.lvars i) labels-seen))]
        [(= $SEQ t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
        [(= $LAMBDA t)
-; removed unnecesary append
-;        (rec ($lambda.body i) (append2 l ($lambda.lvars i)) labels-seen)]
         (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
        [(= $LOCAL-ASSIGN t)
         (let1 lvar ($local-assign.lvar i)
-          (if (memq lvar can-frees)
+          (if (pass3/exists-in-can-frees? lvar can-frees)
               (cons lvar (rec ($local-assign.val i) l labels-seen))
               (rec ($local-assign.val i) l labels-seen)))]
        [(= $LOCAL-REF t)
         (let1 lvar ($local-ref.lvar i)
           (cond [(memq lvar l) '()]
-                [(memq lvar can-frees) (list lvar)]
+                [(pass3/exists-in-can-frees? lvar can-frees) (list lvar)]
                 [else '()]))]
        [(= $GLOBAL-REF t)
         (let* ([sym ($global-ref.sym i)]
-               [found (find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
+               [found (pass3/find-sym-in-can-frees sym can-frees)]);(find10 (lambda (x) (eq? ($lvar.sym x) sym)) can-frees)])
           (if found (list found) '()))]
        [(= $UNDEF t)      '()]
        [(= $IF t)
@@ -2439,6 +2447,18 @@
             (+ size accum)))
         0 args))
 
+;; N.B.
+;; We don't append vars directory.
+;; If vars's length is very long, it causes very slow compilations.
+;; So we append the referrence of vars instread.
+;; can-frees may be like following.
+;; '((a b c) (x y) (i j))
+(define-macro (pass3/add-can-frees1 can-frees vars)
+  `(append2 ,can-frees (list ,vars)))
+
+(define-macro (pass3/add-can-frees2 can-frees vars1 vars2)
+  `(append2 (append2 ,can-frees (list ,vars1)) (list ,vars2)))
+
 (define (pass3/$call cb iform locals frees can-frees sets tail)
   (case ($call.type iform)
     [(jump)
@@ -2458,7 +2478,7 @@
             [vars ($lambda.lvars ($call.proc iform))]
             [frees-here (pass3/find-free body
                                          vars
-                                         (append2 locals (append2 frees can-frees)))]
+                                         (pass3/add-can-frees2 can-frees locals frees))]
             [sets-for-this-lvars (pass3/find-sets body vars)])
        (cput! cb 'LET_FRAME)
        (let1 free-size (if (> (length frees-here) 0)
@@ -2476,13 +2496,8 @@
                                       body
                                       vars
                                       frees-here
-;                                      (%set-union can-frees vars)
-                                      (append2 can-frees vars)
-;                                      (append2 sets-for-this-lvars sets)
+                                      (pass3/add-can-frees1 can-frees vars)
                                       (pass3/add-sets! sets sets-for-this-lvars)
-;                                      (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars)
-;;                                       (%set-union (append2 sets-for-this-lvars sets)
-;;                                                   (%set-intersect sets frees-here))
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
              (cput! cb 'LEAVE (length ($call.args iform)))
              (+ args-size body-size free-size)))))]
@@ -2527,7 +2542,7 @@
          [body ($lambda.body iform)]
          [frees-here (pass3/find-free body
                                       vars
-                                      (append2 locals (append2 frees can-frees)))]
+                                      (pass3/add-can-frees2 can-frees locals frees))]
          [sets-for-this-lvars (pass3/find-sets body vars)]
          [end-of-closure (make-label)]
          [lambda-cb (make-code-builder)])
@@ -2545,7 +2560,7 @@
                                  body
                                  vars
                                  frees-here
-                                 (append2 can-frees vars) ;; can-frees and vars don't have common lvars.
+                                 (pass3/add-can-frees1 can-frees vars) ;; can-frees and vars don't have common lvars.
                                  (pass3/add-sets! sets sets-for-this-lvars)
                                  (length vars))
         (cput! cb
@@ -2560,10 +2575,10 @@
   (let* ([vars ($receive.lvars iform)]
          [body ($receive.body iform)]
          [frees-here (append2
-                      (pass3/find-free ($receive.vals iform) locals (append2 locals (append2 frees can-frees)))
+                      (pass3/find-free ($receive.vals iform) locals (pass3/add-can-frees2 can-frees locals frees))
                       (pass3/find-free body
                                        vars
-                                       (append2 locals (append2 frees can-frees))))]
+                                       (pass3/add-can-frees2 can-frees locals frees)))]
          [sets-for-this-lvars (pass3/find-sets body vars)])
     (cput! cb 'LET_FRAME)
     (let1 free-size (if (> (length frees-here) 0)
@@ -2579,15 +2594,8 @@
                                    body
                                    vars
                                    frees-here
-;                                   (%set-union can-frees vars)
-                                   (append2 can-frees vars)
-;;                                    (%set-union (append2 sets-for-this-lvars sets)
-;;                                                (%set-intersect sets frees-here))
-;;                                   (append2 sets-for-this-lvars sets)
+                                   (pass3/add-can-frees1 can-frees vars)
                                    (pass3/add-sets! sets sets-for-this-lvars)
-;;                                    (if (null? sets-for-this-lvars)
-;;                                        sets
-;;                                        (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ body-size vals-size free-size))))))
@@ -2598,10 +2606,10 @@
       (let* ([vars ($let.lvars iform)]
              [body ($let.body iform)]
              [frees-here (append2
-                          ($append-map1 (lambda (i) (pass3/find-free i locals (append2 locals (append2 frees can-frees)))) ($let.inits iform))
+                          ($append-map1 (lambda (i) (pass3/find-free i locals (pass3/add-can-frees2 can-frees frees locals))) ($let.inits iform))
                           (pass3/find-free body
                                            vars
-                                           (append2 locals (append2 frees can-frees))))]
+                                           (pass3/add-can-frees2 can-frees frees locals)))]
              [sets-for-this-lvars (pass3/find-sets body vars)])
         ;; tail-call doesn't work yet
         ;;       ,@(if tail '() '(LET_FRAME))
@@ -2624,15 +2632,8 @@
                                        body
                                        vars
                                        frees-here
-;                                       (%set-union can-frees vars)
-                                       (append2 can-frees vars)
-;                                       (append2 sets-for-this-lvars sets)
+                                       (pass3/add-can-frees1 can-frees vars)
                                        (pass3/add-sets! sets sets-for-this-lvars)
-;;                                            (if (null? sets-for-this-lvars)
-;;                                                sets
-;;                                                (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
-;;                                        (%set-union (append2 sets-for-this-lvars sets)
-;;                                                    (%set-intersect sets frees-here))
                                        (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
               (cput! cb 'LEAVE (length vars))
               (+ body-size args-size free-size)))))))
@@ -2641,10 +2642,10 @@
   (let* ([vars ($let.lvars iform)]
          [body ($let.body iform)]
          [frees-here (append2
-                      ($append-map1 (lambda (i) (pass3/find-free i vars (append2 locals (append2 frees can-frees)))) ($let.inits iform))
+                      ($append-map1 (lambda (i) (pass3/find-free i vars (pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
                       (pass3/find-free body
                                        vars
-                                       (append2 locals (append2 frees can-frees))))]
+                                       (pass3/add-can-frees2 can-frees locals frees)))]
          ;; each vars can be set!
          [sets-for-this-lvars  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)))]
          [args ($let.inits iform)])
@@ -2660,7 +2661,7 @@
           (loop (cdr args))]))
       (pass3/make-boxes cb sets-for-this-lvars vars)
       (cput! cb 'ENTER (length vars))
-      (let* ([new-can-frees (append2 can-frees vars)]
+      (let* ([new-can-frees (pass3/add-can-frees1 can-frees vars)]
              [assign-size
               (let loop ([args  args]
                          [size  0]
@@ -2669,15 +2670,8 @@
                  [(null? args) size]
                  [else
                   (let1 stack-size (pass3/rec cb (car args) vars frees-here
-;                                             (%set-union can-frees vars)
                                               new-can-frees
-;                                              (append2 sets-for-this-lvars sets)
                                               (pass3/add-sets! sets sets-for-this-lvars)
-;;                                               (if (null? sets-for-this-lvars)
-;;                                                   sets
-;;                                                   (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
-;;                                               (%set-union (append2 sets-for-this-lvars sets)
-;;                                                           (%set-intersect sets frees-here))
                                               #f)
                     (cput! cb 'ASSIGN_LOCAL index)
                     (loop (cdr args)
@@ -2687,15 +2681,8 @@
                                         body
                                         vars
                                         frees-here
-    ;                                   (%set-union can-frees vars)
                                         new-can-frees
-;                                        (append2 sets-for-this-lvars sets)
                                         (pass3/add-sets! sets sets-for-this-lvars)
-;;                                         (if (null? sets-for-this-lvars)
-;;                                             sets
-;;                                             (hashtable-set-true! (eq-hashtable-copy sets) sets-for-this-lvars))
-;;                                    (%set-union (append2 sets-for-this-lvars sets)
-;;                                                (%set-intersect sets frees-here))
                                    (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
           (cput! cb 'LEAVE (length vars))
           (+ free-size assign-size body-size))))))

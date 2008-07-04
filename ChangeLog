@@ -1,3 +1,7 @@
+2008-07-04  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/add-can-frees2): Improved very slow (append2 ...) call on compiler.
+
 2008-07-03  higepon  <higepon@users.sourceforge.jp>
 
         * CodeBuilder.h (scheme): use ObjectVector instead of gc_vector<Object, gc_allocator<Object> > for perfomance.
