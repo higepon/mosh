@@ -799,15 +799,24 @@
 ;;
 ;;  Pass1: Sexp into IForm
 ;;
+
+;; same as (find (lambbda (l) (eq? object (car l))) lst), but it doesn't need to create closure
+(define (find-with-car object lst)
+  (if (null? lst)
+      #f
+      (if (eq? object (caar lst))
+          (car lst)
+          (find-with-car object (cdr lst)))))
+
 (define (pass1/lib-refer->iform symbol library)
   (let1 import-syms ($library.import-syms library)
-    (aif (find10 (lambda (import) (eq? symbol (first import))) import-syms)
+    (aif (find-with-car symbol import-syms)
          ($global-ref (second it) (third it)) ;; bind found on import-syms.
          ($global-ref ($library.name library) symbol))))
 
 (define (pass1/lib-assign->iform symbol library val)
   (let1 import-syms ($library.import-syms library)
-    (aif (find10 (lambda (import) (eq? symbol (first import))) import-syms)
+    (aif (find-with-car symbol import-syms)
          ($global-assign (second it) (third it) val) ;; bind found on import-syms.
          ($global-assign ($library.name library) symbol val))))
 
@@ -919,11 +928,13 @@
 
 (define (pass1/library->iform sexp library lvars)
   (define (get-identifier symbol libname imports)
-    (aif (find10 (lambda (import) (eq? symbol (first import))) imports)
+    (aif (find-with-car symbol imports)
+     ;(find10 (lambda (import) (eq? symbol (first import))) imports)
          (copy-identifier it)
          (make-identifier symbol libname symbol)))
   (define (get-rename-identifier rename-set libname imports)
-    (aif (find10 (lambda (import) (eq? (first rename-set) (first import))) imports)
+    (aif (find-with-car (car rename-set) imports)
+     ;(find10 (lambda (import) (eq? (first rename-set) (first import))) imports)
          (let1 identifier (copy-identifier it)
            (set-car! identifier (second rename-set))
            identifier)
@@ -1000,7 +1011,8 @@
          (acond
           [(hashtable-ref libraries (library-name (second form)) #f)
            ($library.add-import-syms! library ($filter-map1 (lambda (x)
-                                                              (aif (find10 (lambda (rename) (eq? (first x) (first rename))) renames)
+                                                              (aif (find-with-car (first x) renames)
+                                                               ;(find10 (lambda (rename) (eq? (first x) (first rename))) renames)
                                                                    (make-identifier (second it) (second x) (third x))
                                                                    (copy-identifier x)))
                                                             ($library.export-syms it)))
@@ -1073,7 +1085,8 @@
    [(and (symbol? proc)
          (assoc proc ($library.macro library)))
     (pass1/s->i (vm/apply (cdr it) args))]
-   [(and (symbol? proc) (find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
+   [(and (symbol? proc) (find-with-car proc ($library.import-syms library)))
+         ;(find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
     (let* ([lib (hashtable-ref libraries (second it) #f)]
            [macro (assoc (third it) ($library.macro lib))])
       (if macro
@@ -1879,7 +1892,8 @@
                  (cons (car vars) rl) (cons (car init-iforms) ri) rr)))))
 
 (define (pass2/self-recursing? closure closures)
-  (find10 (lambda (c) (eq? closure c)) closures))
+;  (find10 (lambda (c) (eq? closure c)) closures))
+  (memq closure closures))
 
 (define (pass2/classify-local-ref-call iform closures tail?)
   (let1 lvar ($local-ref.lvar iform)
@@ -2695,11 +2709,13 @@
                                        (pass3/add-can-frees2 can-frees locals frees)))]
          ;; each vars can be set!
          [sets-for-this-lvars  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)))]
-         [args ($let.inits iform)])
+         [args ($let.inits iform)]
+         [frees-here-length (length frees-here)]
+         [vars-length (length vars)])
     (cput! cb 'LET_FRAME)
-    (let1 free-size (if (> (length frees-here) 0) (pass3/collect-free cb frees-here locals frees) 0)
-      (when (> (length frees-here) 0)
-        (cput! cb 'DISPLAY (length frees-here)))
+    (let1 free-size (if (> frees-here-length 0) (pass3/collect-free cb frees-here locals frees) 0)
+      (when (> frees-here-length 0)
+        (cput! cb 'DISPLAY frees-here-length))
       (let loop ([args args]) ;; init code
         (cond
          [(null? args) '()]
@@ -2707,7 +2723,7 @@
           (cput! cb 'UNDEF 'PUSH)
           (loop (cdr args))]))
       (pass3/make-boxes cb sets-for-this-lvars vars)
-      (cput! cb 'ENTER (length vars))
+      (cput! cb 'ENTER vars-length)
       (let* ([new-can-frees (pass3/add-can-frees1 can-frees vars)]
              [assign-size
               (let loop ([args  args]
@@ -2730,8 +2746,8 @@
                                         frees-here
                                         new-can-frees
                                         (pass3/add-sets! sets sets-for-this-lvars)
-                                   (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
-          (cput! cb 'LEAVE (length vars))
+                                   (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+          (cput! cb 'LEAVE vars-length)
           (+ free-size assign-size body-size))))))
 
 (define (pass3/$import cb iform locals frees can-frees sets tail)
