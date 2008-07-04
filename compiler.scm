@@ -1,6 +1,8 @@
 ;; Optimization memo
 ;; 1. Do NOT use internal define. Because cost of closure creation is very high.
 ;;    Use global define or inline macro instead.
+;; 2. Do NOT use fold or find, they alse create closure.
+;; 3. (length ...) may be slow, so call only when necessary.
 
 (cond-expand
  [gauche
@@ -2622,23 +2624,25 @@
                                        (pass3/add-can-frees2 can-frees locals frees)))]
          [sets-for-this-lvars (pass3/find-sets body vars)])
     (cput! cb 'LET_FRAME)
-    (let1 free-size (if (> (length frees-here) 0)
-                        (pass3/collect-free cb frees-here locals frees)
-                        0)
-      (when (> (length frees-here) 0)
-        (cput! cb 'DISPLAY (length frees-here)))
-      (let1 vals-size (pass3/rec cb ($receive.vals iform) locals frees-here can-frees sets #f)
+    (let* ([frees-here-length (length frees-here)]
+           [free-size (if (> frees-here-length 0)
+                          (pass3/collect-free cb frees-here locals frees)
+                          0)])
+      (when (> frees-here-length 0)
+        (cput! cb 'DISPLAY frees-here-length))
+      (let ([vals-size (pass3/rec cb ($receive.vals iform) locals frees-here can-frees sets #f)]
+            [vars-length (length vars)])
         (cput! cb 'RECEIVE ($receive.reqargs iform) ($receive.optarg  iform))
         (pass3/make-boxes cb sets-for-this-lvars vars)
-        (cput! cb 'ENTER (length vars))
+        (cput! cb 'ENTER vars-length)
         (let1 body-size (pass3/rec cb
                                    body
                                    vars
                                    frees-here
                                    (pass3/add-can-frees1 can-frees vars)
                                    (pass3/add-sets! sets sets-for-this-lvars)
-                                   (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
-          (cput! cb 'LEAVE (length vars))
+                                   (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+          (cput! cb 'LEAVE vars-length)
           (+ body-size vals-size free-size))))))
 
 (define (pass3/$let cb iform locals frees can-frees sets tail)
