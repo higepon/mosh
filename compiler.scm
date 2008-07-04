@@ -2655,7 +2655,9 @@
                           (pass3/find-free body
                                            vars
                                            (pass3/add-can-frees2 can-frees frees locals)))]
-             [sets-for-this-lvars (pass3/find-sets body vars)])
+             [sets-for-this-lvars (pass3/find-sets body vars)]
+             [frees-here-length   (length frees-here)]
+             [vars-length         (length vars)])
         ;; tail-call doesn't work yet
         ;;       ,@(if tail '() '(LET_FRAME))
         ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
@@ -2667,20 +2669,20 @@
         ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
         ;; non-tail call works fine.
         (cput! cb 'LET_FRAME)
-        (let1 free-size (if (> (length frees-here) 0) (pass3/collect-free cb frees-here locals frees) 0)
-          (when (> (length frees-here) 0)
-            (cput! cb 'DISPLAY (length frees-here)))
+        (let1 free-size (if (> frees-here-length 0) (pass3/collect-free cb frees-here locals frees) 0)
+          (when (> frees-here-length 0)
+            (cput! cb 'DISPLAY frees-here-length))
           (let1 args-size (pass3/compile-args cb ($let.inits iform) locals frees-here can-frees sets tail)
             (pass3/make-boxes cb sets-for-this-lvars vars)
-            (cput! cb 'ENTER (length vars))
+            (cput! cb 'ENTER vars-length)
             (let1 body-size (pass3/rec cb
                                        body
                                        vars
                                        frees-here
                                        (pass3/add-can-frees1 can-frees vars)
                                        (pass3/add-sets! sets sets-for-this-lvars)
-                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
-              (cput! cb 'LEAVE (length vars))
+                                       (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+              (cput! cb 'LEAVE vars-length)
               (+ body-size args-size free-size)))))))
 
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
