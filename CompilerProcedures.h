@@ -37,6 +37,14 @@
 
 namespace scheme {
 
+    inline Object lvarSym(Object lvar)
+    {
+        return lvar.toVector()->ref(1);
+    }
+
+
+    Object pass1FindSymbolInLvarsEx(int argc, const Object* argv);
+
     Object pass3FindFreeEx(int argc, const Object* argv);
     Object pass3FindSetsEx(int argc, const Object* argv);
     Object pass3CompileReferEx(int argc, const Object* argv);

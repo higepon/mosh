@@ -619,7 +619,7 @@
       (car conditions)
       (list 'if (car conditions) (conditions->if (cdr conditions)) #f)))
 
-;;  (find-serial-from-head even? '(2 4 6 8 3 5))
+;;  (find-d-serial-from-head even? '(2 4 6 8 3 5))
 ;;   ==> ((2 4 6 8) (3 5))
 ;;
 ;;  (find-serial-from-head even? '(1 4 6 8 3 5))
@@ -820,6 +820,8 @@
          ($global-assign (second it) (third it) val) ;; bind found on import-syms.
          ($global-assign ($library.name library) symbol val))))
 
+;; moved to CompilerProcedures.cpp
+;; N.B. this procedure is still required by vm.scm
 (define (pass1/find-symbol-in-lvars symbol lvars)
   (cond
    [(null? lvars) #f]

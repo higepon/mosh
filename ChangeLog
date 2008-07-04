@@ -1,6 +1,6 @@
 2008-07-04  higepon  <higepon@users.sourceforge.jp>
 
-        * compiler.scm (pass3/compile-refer): Rewrote in C++ for perfomance.
+        * compiler.scm (pass3/compile-refer, pass1/find-symbol-in-lvars): Rewrote in C++ for perfomance.
 
         * CompilerProcedures.h: Added procedures for compiler.
 

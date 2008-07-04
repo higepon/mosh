@@ -43,6 +43,21 @@ static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Objec
 static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
+static Object lvarSym(Object lvar);
+
+Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "pass1/find-symbol-in-lvars");
+    const Object symbol = argv[0];
+    const Object lvars  = argv[1];
+    for (Object p = lvars; p.isPair(); p = p.cdr()) {
+        const Object lvar =p.car();
+        if (symbol == lvarSym(lvar)) {
+            return lvar;
+        }
+    }
+    return Object::False;
+}
 
 Object scheme::pass3CompileReferEx(int argc, const Object* argv)
 {
@@ -604,4 +619,3 @@ Object pass4FixupLabel(Object vec)
     }
     return collected.car();
 }
-

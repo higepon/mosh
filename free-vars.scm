@@ -151,6 +151,7 @@
     (length ,length)
     (list->vector ,list->vector)
     (pass3/compile-refer ,pass3/compile-refer)
+    (pass1/find-symbol-in-lvars, pass1/find-symbol-in-lvars)
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)
