@@ -1018,6 +1018,13 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
             ac_ = ac_.isNil() ? Object::True : Object::False;
             NEXT1;
         }
+        CASE(APPEND2)
+        {
+            TRACE_INSN0("APPEND2");
+            ac_ = Pair::append2(index(sp_, 0), ac_);
+            sp_--;
+            NEXT1;
+        }
         CASE(NUMBER_ADD)
         {
             TRACE_INSN0("NUMBER_ADD");

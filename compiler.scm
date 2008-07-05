@@ -508,10 +508,10 @@
   `($local-ref.set-lvar! ,dst ($local-ref.lvar ,src)))
 
 (define-macro ($library.add-import-syms! library import-syms)
-  `($library.set-import-syms! ,library (append2 ($library.import-syms ,library) ,import-syms)))
+  `($library.set-import-syms! ,library (append ($library.import-syms ,library) ,import-syms)))
 
 (define-macro ($library.add-import! library import)
-  `($library.set-import! ,library (append2 ($library.import ,library) (list ,import))))
+  `($library.set-import! ,library (append ($library.import ,library) (list ,import))))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -631,7 +631,7 @@
     (cond [(null? lst)
            (if (null? found) (list '() lst) (values found '()))]
           [(pred (car lst))
-           (loop (append2 found (list (car lst))) (cdr lst))]
+           (loop (append found (list (car lst))) (cdr lst))]
           [else
            (if (null? found) (list '() lst) (list found lst))])))
 
@@ -771,7 +771,7 @@
                                                               (return 'unquote
                                                                       car-arg))
                                                              (else
-                                                              (return 'append2
+                                                              (return 'append
                                                                       (list car-arg (finalize-quasiquote
                                                                                      cdr-mode cdr-arg))))))
                                                       (else
@@ -882,7 +882,7 @@
              (if optional-arg? 1 0)
              this-lvars
              ;; the inner lvar comes first.
-             (pass1/body->iform body library (append2 this-lvars lvars) #t)
+             (pass1/body->iform body library (append this-lvars lvars) #t)
              '()
              '())))
 
@@ -948,7 +948,7 @@
        [(null? export) ret]
        [(and (pair? (car export)) (eq? (caar export) 'rename))
         (loop (cdr export)
-              (append2 ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
+              (append ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
        [else
         (loop (cdr export) (cons (get-identifier (car export) libname imports) ret))])))
   (let1 lib ($library (library-name sexp) '() '() '() '() '() #f)
@@ -1123,7 +1123,7 @@
           optarg
           (pass1/s->i vals)
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
           tail?)))]
     [else
      (syntax-error "malformed receive")]))
@@ -1136,20 +1136,20 @@
           this-lvars
           inits
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
           tail?
           source-info
           )))
 
 (define (pass1/letrec vars vals body source-info library lvars tail?)
   (let* ([this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
-         [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append2 this-lvars lvars) tail?)) vals)])
+         [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
     (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
     ($let 'rec
           this-lvars
           inits
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append2 this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
           tail?
           source-info
           )))
@@ -1294,37 +1294,38 @@
       ;;---------------------------- quote -------------------------------------
       [(quote)
        ($const (second sexp))]
-      [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp) library lvars tail?)]
-      [(-)                (pass1/asm-n-args         'NUMBER_SUB   '-  (cdr sexp) library lvars tail?)]
-      [(*)                (pass1/asm-n-args         'NUMBER_MUL   '*  (cdr sexp) library lvars tail?)]
-      [(/)                (pass1/asm-n-args         'NUMBER_DIV   '/  (cdr sexp) library lvars tail?)]
-      [(=)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  (cdr sexp) library lvars tail?)]
-      [(>=)               (pass1/asm-numcmp         'NUMBER_GE    '>= (cdr sexp) library lvars tail?)]
-      [(>)                (pass1/asm-numcmp         'NUMBER_GT    '>  (cdr sexp) library lvars tail?)]
-      [(<)                (pass1/asm-numcmp         'NUMBER_LT    '<  (cdr sexp) library lvars tail?)]
-      [(<=)               (pass1/asm-numcmp         'NUMBER_LE    '<= (cdr sexp) library lvars tail?)]
-      [(vector?)          (pass1/asm-1-arg          'VECTOR_P      (second sexp) library lvars tail?)]
-      [(vector-length)    (pass1/asm-1-arg          'VECTOR_LENGTH (second sexp) library lvars tail?)]
-      [(vector-set!)      (pass1/asm-3-arg          'VECTOR_SET    (second sexp) (third sexp) (fourth sexp) library lvars tail?)]
-      [(vector-ref)       (pass1/asm-2-arg          'VECTOR_REF    (second sexp) (third sexp) library lvars tail?)]
-      [(make-vector)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   (second sexp) (cddr sexp) library lvars tail?)]
-      [(car)              (pass1/asm-1-arg          'CAR           (second sexp) library lvars tail?)]
-      [(cdr)              (pass1/asm-1-arg          'CDR           (second sexp) library lvars tail?)]
-      [(caar)             (pass1/asm-1-arg          'CAAR          (second sexp) library lvars tail?)]
-      [(cadr)             (pass1/asm-1-arg          'CADR          (second sexp) library lvars tail?)]
-      [(cdar)             (pass1/asm-1-arg          'CDAR          (second sexp) library lvars tail?)]
-      [(cddr)             (pass1/asm-1-arg          'CDDR          (second sexp) library lvars tail?)]
-      [(set-car!)         (pass1/asm-2-arg          'SET_CAR       (second sexp) (third sexp) library lvars tail?)]
-      [(set-cdr!)         (pass1/asm-2-arg          'SET_CDR       (second sexp) (third sexp) library lvars tail?)]
-      [(eq?)              (pass1/asm-2-arg          'EQ            (second sexp) (third sexp) library lvars tail?)]
-      [(eqv?)             (pass1/asm-2-arg          'EQV           (second sexp) (third sexp) library lvars tail?)]
-      [(equal?)           (pass1/asm-2-arg          'EQUAL         (second sexp) (third sexp) library lvars tail?)]
-      [(not)              (pass1/asm-1-arg          'NOT           (second sexp) library lvars tail?)]
-      [(null?)            (pass1/asm-1-arg          'NULL_P        (second sexp) library lvars tail?)]
-      [(pair?)            (pass1/asm-1-arg          'PAIR_P        (second sexp) library lvars tail?)]
-      [(symbol?)          (pass1/asm-1-arg          'SYMBOL_P      (second sexp) library lvars tail?)]
-      [(read)             (pass1/asm-1-arg-optional 'READ          (cdr sexp)    library lvars tail?)]
-      [(read-char)        (pass1/asm-1-arg-optional 'READ_CHAR     (cdr sexp)    library lvars tail?)]
+      [(append)           (pass1/asm-n-args         'APPEND2      'dummy (cdr sexp) library lvars tail?)]
+      [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp)    library lvars tail?)]
+      [(-)                (pass1/asm-n-args         'NUMBER_SUB   '-  (cdr sexp)    library lvars tail?)]
+      [(*)                (pass1/asm-n-args         'NUMBER_MUL   '*  (cdr sexp)    library lvars tail?)]
+      [(/)                (pass1/asm-n-args         'NUMBER_DIV   '/  (cdr sexp)    library lvars tail?)]
+      [(=)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  (cdr sexp)    library lvars tail?)]
+      [(>=)               (pass1/asm-numcmp         'NUMBER_GE    '>= (cdr sexp)    library lvars tail?)]
+      [(>)                (pass1/asm-numcmp         'NUMBER_GT    '>  (cdr sexp)    library lvars tail?)]
+      [(<)                (pass1/asm-numcmp         'NUMBER_LT    '<  (cdr sexp)    library lvars tail?)]
+      [(<=)               (pass1/asm-numcmp         'NUMBER_LE    '<= (cdr sexp)    library lvars tail?)]
+      [(vector?)          (pass1/asm-1-arg          'VECTOR_P      (second sexp)    library lvars tail?)]
+      [(vector-length)    (pass1/asm-1-arg          'VECTOR_LENGTH (second sexp)    library lvars tail?)]
+      [(vector-set!)      (pass1/asm-3-arg          'VECTOR_SET    (second sexp)    (third sexp) (fourth sexp) library lvars tail?)]
+      [(vector-ref)       (pass1/asm-2-arg          'VECTOR_REF    (second sexp)    (third sexp) library lvars tail?)]
+      [(make-vector)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   (second sexp)    (cddr sexp) library lvars tail?)]
+      [(car)              (pass1/asm-1-arg          'CAR           (second sexp)    library lvars tail?)]
+      [(cdr)              (pass1/asm-1-arg          'CDR           (second sexp)    library lvars tail?)]
+      [(caar)             (pass1/asm-1-arg          'CAAR          (second sexp)    library lvars tail?)]
+      [(cadr)             (pass1/asm-1-arg          'CADR          (second sexp)    library lvars tail?)]
+      [(cdar)             (pass1/asm-1-arg          'CDAR          (second sexp)    library lvars tail?)]
+      [(cddr)             (pass1/asm-1-arg          'CDDR          (second sexp)    library lvars tail?)]
+      [(set-car!)         (pass1/asm-2-arg          'SET_CAR       (second sexp)    (third sexp) library lvars tail?)]
+      [(set-cdr!)         (pass1/asm-2-arg          'SET_CDR       (second sexp)    (third sexp) library lvars tail?)]
+      [(eq?)              (pass1/asm-2-arg          'EQ            (second sexp)    (third sexp) library lvars tail?)]
+      [(eqv?)             (pass1/asm-2-arg          'EQV           (second sexp)    (third sexp) library lvars tail?)]
+      [(equal?)           (pass1/asm-2-arg          'EQUAL         (second sexp)    (third sexp) library lvars tail?)]
+      [(not)              (pass1/asm-1-arg          'NOT           (second sexp)    library lvars tail?)]
+      [(null?)            (pass1/asm-1-arg          'NULL_P        (second sexp)    library lvars tail?)]
+      [(pair?)            (pass1/asm-1-arg          'PAIR_P        (second sexp)    library lvars tail?)]
+      [(symbol?)          (pass1/asm-1-arg          'SYMBOL_P      (second sexp)    library lvars tail?)]
+      [(read)             (pass1/asm-1-arg-optional 'READ          (cdr sexp)       library lvars tail?)]
+      [(read-char)        (pass1/asm-1-arg-optional 'READ_CHAR     (cdr sexp)       library lvars tail?)]
       ;;---------------------------- call or macro------------------------------
       [else
        (pass1/call (car sexp) ; proc
@@ -1598,7 +1599,7 @@
       (cond ((null? new-vars)
              (if (null? removed-inits)
                  body
-                 ($seq (append2 removed-inits (list body)) ($let.tail? iform))))
+                 ($seq (append removed-inits (list body)) ($let.tail? iform))))
             (else
              ($let.set-lvars! iform new-vars)
              ($let.set-inits! iform new-inits)
@@ -1606,10 +1607,10 @@
              (unless (null? removed-inits)
                (if (tag? body $SEQ)
                    ($seq.set-body! body
-                                   (append2 removed-inits
+                                   (append removed-inits
                                             ($seq.body body)))
                    ($let.set-body! iform
-                                   ($seq (append2 removed-inits
+                                   ($seq (append removed-inits
                                                  (list body))
                                          ($let.tail? iform)))))
              iform)))))
@@ -1758,7 +1759,7 @@
   (if (zero? optarg)
       iargs
       (receive (reqs opts) (split-at iargs reqargs)
-        (append2 reqs (list ($list opts))))))
+        (append reqs (list ($list opts))))))
 
 ;; Does the given argument list satisfy procedure's reqargs/optarg?
 (define (argcount-ok? args reqargs optarg?)
@@ -1935,7 +1936,7 @@
       (let* ([ret-args (pass2/split-args iargs reqargs)]
              [reqs     (car ret-args)]
              [opts     (cdr ret-args)])
-        (append2 reqs (list ($list opts))))))
+        (append reqs (list ($list opts))))))
 
 (define (pass2/split-args args reqargs)
   (let loop ((i reqargs) (rest args) (r '()))
@@ -2022,10 +2023,10 @@
       (cond
        [(= $CONST t) '()]
        [(= $LET t)
-        (append2 ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+        (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
                  (rec ($let.body i) ($let.lvars i) labels-seen))]
        [(= $RECEIVE t)
-        (append2 (rec ($receive.vals i) l labels-seen)
+        (append (rec ($receive.vals i) l labels-seen)
                 (rec ($receive.body i) ($receive.lvars i) labels-seen))]
        [(= $SEQ t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
@@ -2047,8 +2048,8 @@
           (if found (list found) '()))]
        [(= $UNDEF t)      '()]
        [(= $IF t)
-        (append2 (rec ($if.test i) l labels-seen)
-                 (append2 (rec ($if.then i) l labels-seen)
+        (append (rec ($if.test i) l labels-seen)
+                 (append (rec ($if.then i) l labels-seen)
                          (rec ($if.else i) l labels-seen)))]
        [(= $ASM t)
         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
@@ -2058,7 +2059,7 @@
         ;; N.B.
         ;; (proc args)
         ;;   args are evaluate before proc, so you should find free variables of args at first.
-       (append2
+       (append
          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
          (rec ($call.proc i) l labels-seen)
                 )]
@@ -2409,7 +2410,8 @@
 ;;               (+ stack-size (pass3/compile-arg cb (car args) locals frees can-frees sets #f)))])))
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
-      [(NUMBER_ADD)        (pass3/$asm-2-arg cb   'NUMBER_ADD     (first args) (second args) locals frees can-frees sets)]
+      [(APPEND2)           (pass3/$asm-2-arg cb  'APPEND2         (first args) (second args) locals frees can-frees sets)]
+      [(NUMBER_ADD)        (pass3/$asm-2-arg cb  'NUMBER_ADD      (first args) (second args) locals frees can-frees sets)]
       [(NUMBER_SUB)        (pass3/$asm-2-arg cb  'NUMBER_SUB      (first args) (second args) locals frees can-frees sets)]
       [(NUMBER_MUL)        (pass3/$asm-2-arg cb  'NUMBER_MUL      (first args) (second args) locals frees can-frees sets)]
       [(NUMBER_DIV)        (pass3/$asm-2-arg cb  'NUMBER_DIV      (first args) (second args) locals frees can-frees sets)]
@@ -2506,10 +2508,10 @@
 ;; can-frees may be like following.
 ;; '((a b c) (x y) (i j))
 (define-macro (pass3/add-can-frees1 can-frees vars)
-  `(append2 ,can-frees (list ,vars)))
+  `(append ,can-frees (list ,vars)))
 
 (define-macro (pass3/add-can-frees2 can-frees vars1 vars2)
-  `(append2 (append2 ,can-frees (list ,vars1)) (list ,vars2)))
+  `(append (append ,can-frees (list ,vars1)) (list ,vars2)))
 
 (define (pass3/$call cb iform locals frees can-frees sets tail)
   (case ($call.type iform)
@@ -2633,7 +2635,7 @@
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
          [body ($receive.body iform)]
-         [frees-here (append2
+         [frees-here (append
                       (pass3/find-free ($receive.vals iform) locals (pass3/add-can-frees2 can-frees locals frees))
                       (pass3/find-free body
                                        vars
@@ -2666,7 +2668,7 @@
       (pass3/letrec cb iform locals frees can-frees sets tail)
       (let* ([vars ($let.lvars iform)]
              [body ($let.body iform)]
-             [frees-here (append2
+             [frees-here (append
                           ($append-map1 (lambda (i) (pass3/find-free i locals (pass3/add-can-frees2 can-frees frees locals))) ($let.inits iform))
                           (pass3/find-free body
                                            vars
@@ -2704,7 +2706,7 @@
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
          [body ($let.body iform)]
-         [frees-here (append2
+         [frees-here (append
                       ($append-map1 (lambda (i) (pass3/find-free i vars (pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
                       (pass3/find-free body
                                        vars
@@ -2803,7 +2805,7 @@
 ;    (code-builder-put1! cb 'HALT)
     (code-builder-emit cb)))
 (define (pass4 lst)
-  (pass4/fixup-labels (list->vector (append2 lst '(HALT)))))
+  (pass4/fixup-labels (list->vector (append lst '(HALT)))))
 
 (define (compile-library-body! lib)
   (let1 body ($append-map1 (lambda (sexp) (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) )) ($library.body lib))
@@ -2986,6 +2988,7 @@
           [else
            (cons (car s) (iter (cdr s)))])]))
   sexp)
+;  (iter sexp))
 
 (define (compile sexp)
   (pass4 (merge-insn

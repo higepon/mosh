@@ -1396,6 +1396,7 @@
                [(REFER_LOCAL0_NUMBER_ADD_PUSH) (apply-native-2arg-push-a + (refer-local 0))]
                [(NUMBER_MUL)   (apply-native-2arg *)]
                ;;---------------------------- Pair  ------------------------------
+               [(APPEND2) (apply-native-2arg append)]
                [(PAIR_P)  (apply-native-1arg pair?)]
                [(NULL_P)  (apply-native-1arg null?)]
                [(CONS)    (apply-native-2arg cons)]
