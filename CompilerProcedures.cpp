@@ -43,7 +43,6 @@ static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Objec
 static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
-static Object lvarSym(Object lvar);
 
 Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
 {

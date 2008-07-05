@@ -1,3 +1,7 @@
+2008-07-05  higepon  <higepon@users.sourceforge.jp>
+
+        * scheme.h (scheme): inlined car(), cdr(), cons(), makeClosure().
+
 2008-07-04  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass3/compile-refer, pass1/find-symbol-in-lvars): Rewrote in C++ for perfomance.

@@ -1791,16 +1791,6 @@ Object scheme::uniq(Object list)
     return ret;
 }
 
-// callee should check <list>.
-Object scheme::memq(Object o, Object list)
-{
-    for (Object p = list; p != Object::Nil; p = p.cdr()) {
-        if (p.car() == o) {
-            return p;
-        }
-    }
-    return Object::False;
-}
 
 
 

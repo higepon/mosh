@@ -508,8 +508,68 @@ void test();
 #include "Pair.h"
 
 // force inline
+// If you inline car() and cdr(), Mosh becomes xx% faster.
+// use -pg for finding inline target functions.
 namespace scheme {
 
+inline Object& Object::car() const
+{
+    return toPair()->car;
+}
+
+inline Pair* Object::toPair() const
+{
+    return reinterpret_cast<Pair*>(val);
+}
+
+inline Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object::False */)
+{
+// this makes Mosh very slow.
+// don't use this.
+//     if (sourceInfo.isFalse() && car.isPair()) {
+//         sourceInfo = car.sourceInfo();
+//     }
+    return Object(reinterpret_cast<word>(new Pair(car, cdr, sourceInfo)));
+}
+
+inline Object& Object::cdr() const
+{
+    return toPair()->cdr;
+}
+
+inline bool Object::isPair() const
+{
+    return isPointer() && ((toPair()->car.val & 0x03) != 0x03);
+}
+inline Object& Object::sourceInfo() const
+{
+    return toPair()->sourceInfo;
+}
+
+inline Object& Object::first() const
+{
+    return car();
+}
+
+inline Object& Object::second() const
+{
+    return cdr().car();
+}
+
+inline Object& Object::third() const
+{
+    return cdr().cdr().car();
+}
+
+inline Object& Object::fourth() const
+{
+    return cdr().cdr().cdr().car();
+}
+
+inline Object& Object::fifth() const
+{
+    return cdr().cdr().cdr().cdr().car();
+}
 
 };
 
@@ -527,4 +587,61 @@ namespace scheme {
 #include "freeproc.h"
 #include "TypedVector.h"
 #include "CodeBuilder.h"
+
+namespace scheme {
+inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,
+                           const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
+                                                        reinterpret_cast<word>(new Closure(pc, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
+}
+inline Object::Object(int n, Object o) : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))
+{
+}
+
+inline Object::Object(const ucs4char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+{
+}
+
+inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+{
+}
+
+inline Object Object::makeVector(int n, Object* objects)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+                                                        (new Vector(n, objects)))));
+}
+
+inline Object Object::makeVector(Object pair)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+                                                        (new Vector(pair)))));
+}
+
+
+inline Object Object::makeString(int n, ucs4char c /* = ' ' */)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(n, c)))));
+}
+
+
+
+
+inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(new ByteVector(v)))));
+}
+
+inline Object Object::makeByteVector(ByteVector* b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(b))));
+}
+
+
+
+};
+
 #endif // __SCHEME_SCHEME_H__

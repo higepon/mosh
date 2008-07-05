@@ -187,7 +187,17 @@ namespace scheme {
     }
 
 
-    Object memq(Object o, Object list);
+    // callee should check <list>.
+    inline Object memq(Object o, Object list)
+    {
+        for (Object p = list; p != Object::Nil; p = p.cdr()) {
+            if (p.car() == o) {
+                return p;
+            }
+        }
+        return Object::False;
+    }
+
     Object uniq(Object list);
     Object assq(Object o, Object alist);
 

@@ -136,134 +136,21 @@ Object Object::equal(Object o) const
     return Object::False;
 }
 
-Object& Object::car() const
+
+
+Object Object::makeBinaryInputPort(FILE* in)
 {
-    return toPair()->car;
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
+                                                        reinterpret_cast<word>(new FileBinaryInputPort(in)))));
 }
 
-Object& Object::sourceInfo() const
+Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
 {
-    return toPair()->sourceInfo;
-}
-
-Object& Object::first() const
-{
-    return car();
-}
-
-Object& Object::second() const
-{
-    return cdr().car();
-}
-
-Object& Object::third() const
-{
-    return cdr().cdr().car();
-}
-
-Object& Object::fourth() const
-{
-    return cdr().cdr().cdr().car();
-}
-
-Object& Object::fifth() const
-{
-    return cdr().cdr().cdr().cdr().car();
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
+                                                        reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
 }
 
 
-Pair* Object::toPair() const
-{
-    return reinterpret_cast<Pair*>(val);
-}
-
-Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object::False */)
-{
-// this makes Mosh very slow.
-// don't use this.
-//     if (sourceInfo.isFalse() && car.isPair()) {
-//         sourceInfo = car.sourceInfo();
-//     }
-    return Object(reinterpret_cast<word>(new Pair(car, cdr, sourceInfo)));
-}
-
-Object& Object::cdr() const
-{
-    return toPair()->cdr;
-}
-
-bool Object::isPair() const
-{
-    return isPointer() && ((toPair()->car.val & 0x03) != 0x03);
-}
-
-Object::Object(int n, Object o) : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))
-{
-}
-
-Object::Object(const ucs4char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
-{
-}
-
-Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
-{
-}
-
-Object Object::makeVector(int n, Object* objects)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
-                                                        (new Vector(n, objects)))));
-}
-
-Object Object::makeVector(Object pair)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
-                                                        (new Vector(pair)))));
-}
-
-
-Object Object::makeSymbol(const ucs4char* str)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Symbol, reinterpret_cast<word>(new Symbol(str)))));
-}
-
-Object Object::makeBox(Object o)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Box, reinterpret_cast<word>(new Box(o)))));
-}
-
-Object Object::makeByteVector(int n, int8_t v)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n, v)))));
-}
-
-Object Object::makeStack(Object* src, int size)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Stack, reinterpret_cast<word>(new Stack(src, size)))));
-}
-
-Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,
-                           const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
-                                                        reinterpret_cast<word>(new Closure(pc, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
-}
-
-Object Object::makeEqHashTable()
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
-}
-
-Object Object::makeCProcedure(Object (*proc)(int, const Object*))
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
-}
-
-
-Object Object::makeString(int n, ucs4char c /* = ' ' */)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(n, c)))));
-}
 
 Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
@@ -299,19 +186,6 @@ Object Object::makeStringInputPort(const uint8_t* buf, int size)
                                                                                                     , new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR))))));
 }
 
-
-Object Object::makeRegexp(const ucs4string& pattern, bool caseFold /* = false */)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Regexp,
-                                                        reinterpret_cast<word>(new Regexp(pattern, caseFold)))));
-}
-
-Object Object::makeRegMatch(OnigRegion* region, const ucs4string& text)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RegMatch,
-                                                        reinterpret_cast<word>(new RegMatch(region, text)))));
-}
-
 Object Object::makeCustomBinaryInputPort(Object readProc)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
@@ -342,28 +216,46 @@ Object Object::makeTextualByteVectorOuputPort(Transcoder* transcoder)
                                                         reinterpret_cast<word>(new TextualByteVectorOutputPort(transcoder)))));
 }
 
-Object Object::makeByteVector(const gc_vector<uint8_t>& v)
+Object Object::makeRegexp(const ucs4string& pattern, bool caseFold /* = false */)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
-                                                        reinterpret_cast<word>(new ByteVector(v)))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Regexp,
+                                                        reinterpret_cast<word>(new Regexp(pattern, caseFold)))));
 }
 
-Object Object::makeByteVector(ByteVector* b)
+Object Object::makeRegMatch(OnigRegion* region, const ucs4string& text)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
-                                                        reinterpret_cast<word>(b))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RegMatch,
+                                                        reinterpret_cast<word>(new RegMatch(region, text)))));
+}
+Object Object::makeSymbol(const ucs4char* str)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Symbol, reinterpret_cast<word>(new Symbol(str)))));
 }
 
-Object Object::makeBinaryInputPort(FILE* in)
+Object Object::makeBox(Object o)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new FileBinaryInputPort(in)))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Box, reinterpret_cast<word>(new Box(o)))));
 }
 
-Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
+   Object Object::makeByteVector(int n, int8_t v)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n, v)))));
+}
+
+Object Object::makeStack(Object* src, int size)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Stack, reinterpret_cast<word>(new Stack(src, size)))));
+}
+
+
+Object Object::makeEqHashTable()
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
+}
+
+Object Object::makeCProcedure(Object (*proc)(int, const Object*))
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
 }
 
 Object Object::makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability)
