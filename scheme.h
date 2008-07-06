@@ -53,7 +53,7 @@
 #include <signal.h>
 
 //#define DUMP_ALL_INSTRUCTIONS
-//#define TRACE_INSN
+#define TRACE_INSN
 #define INSN_LOG_FILE "/tmp/mosh-insn.log"
 
 #ifdef USE_BOEHM_GC

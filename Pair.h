@@ -144,6 +144,15 @@ struct Pair EXTEND_GC
         return Object::cons(a, list3(b, c, d));
     }
 
+    static Object objectVectorToList(const ObjectVector& objectVector)
+    {
+        Object ret = Object::Nil;
+        for (int i = objectVector.size() - 1; i >= 0; i--) {
+            ret = Object::cons(objectVector[i], ret);
+        }
+        return ret;
+    }
+
 
     Object car;
     Object cdr;

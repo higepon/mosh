@@ -40,33 +40,83 @@ namespace scheme {
 // public:
 //     gc_vector2(int size) : std::vector<T1, gc_allocator<T1> >(size) {}
 // };
+
+class CodePacket EXTEND_GC
+{
+public:
+    enum Type
+    {
+        EMPTY,
+        ARGUMENT0,
+        EXTRA
+    };
+
+    CodePacket();
+    CodePacket(Type packetType, Object instruction, Object argument1, Object argument2, Object operand);
+
+    // accessors
+    Type type() const { return packetType_; }
+    void setType(Type packetType) { packetType_ = packetType; }
+    Object instruction() const { return instruction_; }
+
+private:
+    Type packetType_;
+    Object instruction_;
+    Object argument1_;
+    Object argument2_;
+    Object operand_;
+};
+
 class CodeBuilder EXTEND_GC
 {
 public:
-    CodeBuilder() {}
+    CodeBuilder();
+    void putExtra(Object object);
+    Object emit();
+    void append(CodeBuilder* codeBuilder);
 
-    void put(Object a) { code.push_back(a); }
-    void put(Object a, Object b) { code.push_back(a); code.push_back(b); }
-    void put(Object a, Object b, Object c) { code.push_back(a); code.push_back(b); code.push_back(c); }
-    void put(Object a, Object b, Object c, Object d) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); }
-    void put(Object a, Object b, Object c, Object d, Object e) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); code.push_back(e); }
+    // accessors
+    ObjectVector& code() { return code_; }
 
-    void append(CodeBuilder* cb)
-    {
-        code.insert(code.end(), cb->code.begin(), cb->code.end());
-    }
 
-    Object emit()
-    {
-        Object ret = Object::Nil;
-        for (int i = code.size() - 1; i >= 0; i--) {
-            ret = Object::cons(code[i], ret);
-        }
-        return ret;
-    }
+private:
+    void flush();
+    void put(CodePacket codePacket);
 
-    ObjectVector code;
+    CodePacket previousCodePacket_;
+    Object labelDefinitions_;
+    Object labelReferences_;
+    ObjectVector code_;
 };
+
+
+// class CodeBuilder EXTEND_GC
+// {
+// public:
+//     CodeBuilder() {}
+
+//     void put(Object a) { code.push_back(a); }
+//     void put(Object a, Object b) { code.push_back(a); code.push_back(b); }
+//     void put(Object a, Object b, Object c) { code.push_back(a); code.push_back(b); code.push_back(c); }
+//     void put(Object a, Object b, Object c, Object d) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); }
+//     void put(Object a, Object b, Object c, Object d, Object e) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); code.push_back(e); }
+
+//     void append(CodeBuilder* cb)
+//     {
+//         code.insert(code.end(), cb->code.begin(), cb->code.end());
+//     }
+
+//     Object emit()
+//     {
+//         Object ret = Object::Nil;
+//         for (int i = code.size() - 1; i >= 0; i--) {
+//             ret = Object::cons(code[i], ret);
+//         }
+//         return ret;
+//     }
+
+//     ObjectVector code;
+// };
 
 }; // namespace scheme
 
