@@ -47,7 +47,7 @@ public:
     enum Type
     {
         EMPTY,
-        ARGUMENT0,
+        ARGUMENT1,
         EXTRA
     };
 
@@ -57,7 +57,10 @@ public:
     // accessors
     Type type() const { return packetType_; }
     void setType(Type packetType) { packetType_ = packetType; }
+    void setInstruction(Object instruction) { instruction_ = instruction; }
     Object instruction() const { return instruction_; }
+    word instructionImmediate() const { return instruction_.val; }
+    Object argument1() const { return argument1_; }
 
 private:
     Type packetType_;
@@ -72,6 +75,7 @@ class CodeBuilder EXTEND_GC
 public:
     CodeBuilder();
     void putExtra(Object object);
+    void putInstructionArgument1(Object instruction, Object argument1);
     Object emit();
     void append(CodeBuilder* codeBuilder);
 
@@ -87,6 +91,8 @@ public:
 private:
     void flush();
     void put(CodePacket codePacket);
+    void combineInstructionsArgument1(CodePacket codePacket);
+    void combineInstructionsArgument0(CodePacket codePacket);
 
     CodePacket previousCodePacket_;
     Object labelDefinitions_;

@@ -148,6 +148,7 @@
     (code-builder-put5! ,code-builder-put5!)
     (code-builder-append! ,code-builder-append!)
     (code-builder-emit ,code-builder-emit)
+    (code-builder-put-insn-arg1! ,code-builder-put-insn-arg1!)
     (length ,length)
     (list->vector ,list->vector)
     (pass3/compile-refer ,pass3/compile-refer)

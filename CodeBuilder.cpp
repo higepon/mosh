@@ -67,31 +67,198 @@ void CodeBuilder::putExtra(Object object)
     put(CodePacket(CodePacket::EXTRA, object, Object::Undef, Object::Undef, Object::Undef));
 }
 
-void CodeBuilder::put(CodePacket packet)
+void CodeBuilder::putInstructionArgument1(Object instruction, Object argument)
 {
-    if (packet.type() == CodePacket::EXTRA) {
+    put(CodePacket(CodePacket::ARGUMENT1, instruction, argument, Object::Undef, Object::Undef));
+}
+
+void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
+{
+    const Object argument1 = codePacket.argument1();
+    switch(codePacket.instructionImmediate()) {
+    case Instruction::REFER_LOCAL:
+    {
         flush();
-        previousCodePacket_ = packet;
-    } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        SCHEME_ASSERT("not reached now! all packet should be EXTRA");
-        // do nothing now!
+        const int index = argument1.toInt();
+        if (0 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0));
+        } else if (1 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1));
+        } else if (2 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL2));
+        } else {
+            // do nothing
+        }
+        previousCodePacket_ = codePacket;
+        break;
     }
+    case Instruction::REFER_FREE:
+    {
+        flush();
+        const int index = argument1.toInt();
+        if (0 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE0));
+        } else if (1 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE1));
+        } else if (2 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE2));
+        } else {
+            // do nothing
+        }
+        previousCodePacket_ = codePacket;
+        break;
+    }
+    case Instruction::RETURN:
+        flush();
+        const int index = argument1.toInt();
+        if (1 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::RETURN1));
+        } else if (2 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::RETURN2));
+        } else if (3 == index) {
+            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setInstruction(Object::makeRaw(Instruction::RETURN3));
+        } else {
+            // do nothing
+        }
+        previousCodePacket_ = codePacket;
+        break;
+    default:
+        flush();
+        previousCodePacket_ = codePacket;
+        break;
+    }
+}
+
+void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
+{
+       switch(codePacket.instructionImmediate()) {
+        case Instruction::PUSH:
+            switch(previousCodePacket_.instructionImmediate()) {
+            case Instruction::REFER_LOCAL0:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH));
+                break;
+            case Instruction::REFER_LOCAL1:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1_PUSH));
+                break;
+            case Instruction::REFER_LOCAL2:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL2_PUSH));
+                break;
+            case Instruction::REFER_FREE0:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE0_PUSH));
+                break;
+            case Instruction::REFER_FREE1:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE1_PUSH));
+                break;
+            case Instruction::REFER_FREE2:
+                previousCodePacket_.setType(CodePacket::EXTRA);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE2_PUSH));
+                break;
+// 100msec遅くなるので後回し
+            case Instruction::REFER_FREE:
+                previousCodePacket_.setType(CodePacket::ARGUMENT1);
+                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE_PUSH));
+                break;
+            default:
+                flush();
+                previousCodePacket_ = codePacket;
+                break;
+            }
+            break;
+        default:
+            flush();
+            previousCodePacket_ = codePacket;
+        }
+}
+
+void CodeBuilder::put(CodePacket codePacket)
+{
+    switch(codePacket.type()) {
+#if 1
+    case CodePacket::EXTRA:
+ //        switch(codePacket.instructionImmediate()) {
+//         case Instruction::PUSH:
+//             if (previousCodePacket_.instructionImmediate() == Instruction::REFER_LOCAL0) {
+//                 previousCodePacket_.setType(CodePacket::EXTRA);
+//                 previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH));
+//             } else {
+//                 flush();
+//                 previousCodePacket_ = codePacket;
+//             }
+//             break;
+//         default:
+//             flush();
+//             previousCodePacket_ = codePacket;
+//         }
+        combineInstructionsArgument0(codePacket);
+        break;
+    case CodePacket::ARGUMENT1:
+        combineInstructionsArgument1(codePacket);
+        break;
+#endif
+    default:
+        flush();
+        previousCodePacket_ = codePacket;
+        break;
+    }
+//     if (packet.type() == CodePacket::EXTRA) {
+//         flush();
+//         previousCodePacket_ = packet;
+//     } else {
+//         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
+//         // do nothing now!
+//     }
 }
 
 void CodeBuilder::flush()
 {
-    if (previousCodePacket_.type() == CodePacket::EMPTY) return;
-    if (previousCodePacket_.type() == CodePacket::EXTRA) {
-        //      VM_LOG1("previousCodePacket_.instruction()=~a\n", previousCodePacket_.instruction());
+    switch(previousCodePacket_.type()) {
+    case CodePacket::EMPTY:
+        // just do nothing
+        break;
+    case CodePacket::EXTRA:
         code_.push_back(previousCodePacket_.instruction());
         previousCodePacket_.setType(CodePacket::EMPTY);
-    } else {
+        break;
+    case CodePacket::ARGUMENT1:
+        code_.push_back(previousCodePacket_.instruction());
+        code_.push_back(previousCodePacket_.argument1());
+        previousCodePacket_.setType(CodePacket::EMPTY);
+        break;
+    default:
         // do nothing now!
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
+        break;
     }
+//    if (previousCodePacket_.type() == CodePacket::EMPTY) return;
+//     if (previousCodePacket_.type() == CodePacket::EXTRA) {
+//         code_.push_back(previousCodePacket_.instruction());
+//         previousCodePacket_.setType(CodePacket::EMPTY);
+//     } else if (previousCodePacket_.type() == CodePacket::ARGUMENT1) {
+//         code_.push_back(previousCodePacket_.instruction());
+//         code_.push_back(previousCodePacket_.argument1());
+//     } else {
+//         // do nothing now!
+//         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+//         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
+//     }
 }
 
 Object CodeBuilder::emit()
@@ -107,4 +274,3 @@ void CodeBuilder::append(CodeBuilder* sourcCodeBuilder)
     ObjectVector& sourceCode = sourcCodeBuilder->code();
     code_.insert(code_.end(), sourceCode.begin(), sourceCode.end());
 }
-

@@ -69,9 +69,8 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = localVariablesList; p.isPair(); p = p.cdr(), localsIndex++) {
         const Object localVariable = p.car();
         if (localVariable == variable) {
-            codeBuilder.toCodeBuilder()->putExtra(Object::makeRaw(Instruction::REFER_LOCAL));
-            codeBuilder.toCodeBuilder()->putExtra(Object::makeInt(localsIndex));
-//            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
+//           codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
             return Object::makeInt(0);
         }
     }
@@ -81,8 +80,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = freeVariablesList; p.isPair(); p = p.cdr(), freesIndex++) {
         const Object freeVariable = p.car();
         if (freeVariable == variable) {
-            codeBuilder.toCodeBuilder()->putExtra(Object::makeRaw(Instruction::REFER_FREE));
-            codeBuilder.toCodeBuilder()->putExtra(Object::makeInt(freesIndex));
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
 //            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
             return Object::makeInt(0);
         }
@@ -545,7 +543,20 @@ Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~an", cb);
     }
-   return cb.toCodeBuilder()->emit();
+    return cb.toCodeBuilder()->emit();
+}
+
+Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
+{
+    checkArgLength(3, argc, "code-builder-put-insn-arg1!");
+    const Object cb = argv[0];
+    if (!cb.isCodeBuilder()) {
+        VM_RAISE1("code-builder required, but got ~an", cb);
+    }
+    const Object instruction = argv[1];
+    const Object argument = argv[2];
+    cb.toCodeBuilder()->putInstructionArgument1(instruction, argument);
+    return Object::Undef;
 }
 
 Object pass4FixupLabelCollect(Object vec)

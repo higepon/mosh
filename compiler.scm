@@ -2176,6 +2176,8 @@
 
   (define (code-builder-emit cb)
     (cdr cb))
+
+  (define code-builder-put-insn-arg1! code-builder-put2!)
   ;; moved to freeproc.cpp end
   ])
 
@@ -2238,12 +2240,13 @@
             (next-local (cdr locals) (+ n 1))))))
 
 ;; N.B. Do NOT use anonymous closure for this usage. Because symbol-lookup will be called many times.
+;; moved to CompilerProcedures.cpp
 (define (pass3/return-refer-local cb n)
-  (cput! cb 'REFER_LOCAL n)
+  (code-builder-put-insn-arg1! cb 'REFER_LOCAL n)
   0)
 
 (define (pass3/return-refer-free cb n)
-  (cput! cb 'REFER_FREE n)
+  (code-builder-put-insn-arg1! cb 'REFER_FREE n)
   0)
 
 ;; moved to CompilerProcedures.cpp
@@ -2629,7 +2632,8 @@
                ($lambda.src iform))                    ;; source code information
         (pass3/make-boxes cb sets-for-this-lvars vars)
         (code-builder-append! cb lambda-cb)
-        (cput! cb 'RETURN vars-length end-of-closure)
+        (code-builder-put-insn-arg1! cb 'RETURN vars-length)
+        (cput! cb end-of-closure)
         0)))
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
@@ -2897,12 +2901,12 @@
          (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))]
         [('REFER_LOCAL1_PUSH 'CONSTANT . rest)
          (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
-        [('REFER_LOCAL 1 'PUSH . rest)
+        [('REFER_LOCAL 1 'PUSH . rest) ;; done
          (iter `(REFER_LOCAL1_PUSH ,@rest))]
-        [('REFER_LOCAL 0 'PUSH . rest)
-         (iter `(REFER_LOCAL0_PUSH ,@rest))]
+        [('REFER_LOCAL 0 'PUSH . rest) ;; done
+         (iter `(REFER_LOCAL0_PUSH ,@rest))] ;; done
         [('REFER_LOCAL 0 . rest)
-         (iter `(REFER_LOCAL0 ,@rest))]
+         (iter `(REFER_LOCAL0 ,@rest))] ;; done
           ;; N.B.
           ;; compiled pass3/$asm code has list '(CONSTANT NUMBER_SUB PUSH), ignore it.
           [((and x (not 'CONSTANT)) 'NUMBER_SUB 'PUSH . rest)
@@ -2911,23 +2915,23 @@
            (iter (cons 'PUSH_ENTER rest))]
           [('CONSTANT v 'PUSH . rest)
            (iter `(CONSTANT_PUSH ,v ,@rest))]
-          [('REFER_FREE 0 'PUSH . rest)
-           (iter `(REFER_FREE0_PUSH ,@rest))]
-          [('REFER_FREE 1 'PUSH . rest)
+          [('REFER_FREE 0 'PUSH . rest) ;; done
+           (iter `(REFER_FREE0_PUSH ,@rest))] 
+          [('REFER_FREE 1 'PUSH . rest) ;; done
            (iter `(REFER_FREE1_PUSH ,@rest))]
-          [('REFER_FREE 2 'PUSH . rest)
+          [('REFER_FREE 2 'PUSH . rest) ;; done
            (iter `(REFER_FREE2_PUSH ,@rest))]
           [('REFER_FREE n 'PUSH . rest)
            (iter `(REFER_FREE_PUSH ,n ,@rest))]
-          [('REFER_FREE 0 . rest)
+          [('REFER_FREE 0 . rest);; done
            (iter `(REFER_FREE0 ,@rest))]
-          [('REFER_FREE 1 . rest)
+          [('REFER_FREE 1 . rest);;done
            (iter `(REFER_FREE1 ,@rest))]
-          [('REFER_FREE 2 . rest)
+          [('REFER_FREE 2 . rest);; done
            (iter `(REFER_FREE2 ,@rest))]
-          [('REFER_LOCAL 1 . rest)
+          [('REFER_LOCAL 1 . rest);;done
            (iter `(REFER_LOCAL1 ,@rest))]
-          [('REFER_LOCAL 2 . rest)
+          [('REFER_LOCAL 2 . rest);;done
            (iter `(REFER_LOCAL2 ,@rest))]
           [('LEAVE 1 . rest)
            (iter `(LEAVE1 ,@rest))]
