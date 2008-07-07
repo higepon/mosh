@@ -83,7 +83,7 @@ void CodeBuilder::flush()
 {
     if (previousCodePacket_.type() == CodePacket::EMPTY) return;
     if (previousCodePacket_.type() == CodePacket::EXTRA) {
-        VM_LOG1("previousCodePacket_.instruction()=~a\n", previousCodePacket_.instruction());
+        //      VM_LOG1("previousCodePacket_.instruction()=~a\n", previousCodePacket_.instruction());
         code_.push_back(previousCodePacket_.instruction());
         previousCodePacket_.setType(CodePacket::EMPTY);
     } else {
@@ -98,13 +98,13 @@ Object CodeBuilder::emit()
 {
     flush();
     const Object ret = Pair::objectVectorToList(code_);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return ret;
 }
 
 void CodeBuilder::append(CodeBuilder* sourcCodeBuilder)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    flush();
     ObjectVector& sourceCode = sourcCodeBuilder->code();
     code_.insert(code_.end(), sourceCode.begin(), sourceCode.end());
 }
+

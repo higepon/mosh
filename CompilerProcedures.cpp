@@ -30,6 +30,7 @@
  */
 
 #include "CompilerProcedures.h"
+#include "CodeBuilder.h"
 
 using namespace scheme;
 
@@ -70,6 +71,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
         if (localVariable == variable) {
             codeBuilder.toCodeBuilder()->putExtra(Object::makeRaw(Instruction::REFER_LOCAL));
             codeBuilder.toCodeBuilder()->putExtra(Object::makeInt(localsIndex));
+//            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
             return Object::makeInt(0);
         }
     }
@@ -81,6 +83,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
         if (freeVariable == variable) {
             codeBuilder.toCodeBuilder()->putExtra(Object::makeRaw(Instruction::REFER_FREE));
             codeBuilder.toCodeBuilder()->putExtra(Object::makeInt(freesIndex));
+//            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
             return Object::makeInt(0);
         }
     }
@@ -442,6 +445,7 @@ Object scheme::codeBuilderPut1DEx(int argc, const Object* argv)
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
+//    cb.toCodeBuilder()->put(argv[1]);
     return Object::Undef;
 }
 
@@ -455,6 +459,9 @@ Object scheme::codeBuilderPut2DEx(int argc, const Object* argv)
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+
     return Object::Undef;
 }
 
@@ -466,9 +473,13 @@ Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
 
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+//     cb.toCodeBuilder()->put(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
+
     return Object::Undef;
 }
 
@@ -479,10 +490,15 @@ Object scheme::codeBuilderPut4DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+//     cb.toCodeBuilder()->put(argv[3]);
+//     cb.toCodeBuilder()->put(argv[4]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[4]);
+
     return Object::Undef;
 }
 
@@ -494,11 +510,17 @@ Object scheme::codeBuilderPut5DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+//     cb.toCodeBuilder()->put(argv[3]);
+//     cb.toCodeBuilder()->put(argv[4]);
+//     cb.toCodeBuilder()->put(argv[5]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[4]);
     cb.toCodeBuilder()->putExtra(argv[5]);
+
     return Object::Undef;
 }
 

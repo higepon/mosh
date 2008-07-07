@@ -41,7 +41,7 @@ namespace scheme {
 //     gc_vector2(int size) : std::vector<T1, gc_allocator<T1> >(size) {}
 // };
 
-class CodePacket EXTEND_GC
+class CodePacket
 {
 public:
     enum Type
@@ -76,7 +76,12 @@ public:
     void append(CodeBuilder* codeBuilder);
 
     // accessors
-    ObjectVector& code() { return code_; }
+    ObjectVector& code()
+    {
+        flush();
+        return code_;
+    }
+
 
 
 private:

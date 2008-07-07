@@ -53,7 +53,7 @@
 #include <signal.h>
 
 //#define DUMP_ALL_INSTRUCTIONS
-#define TRACE_INSN
+//#define TRACE_INSN
 #define INSN_LOG_FILE "/tmp/mosh-insn.log"
 
 #ifdef USE_BOEHM_GC
@@ -586,7 +586,7 @@ inline Object& Object::fifth() const
 #include "Regexp.h"
 #include "freeproc.h"
 #include "TypedVector.h"
-#include "CodeBuilder.h"
+
 
 namespace scheme {
 inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,

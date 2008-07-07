@@ -30,6 +30,7 @@
  */
 
 #include "scheme.h"
+#include "CodeBuilder.h"
 
 using namespace scheme;
 
