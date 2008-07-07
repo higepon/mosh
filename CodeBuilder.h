@@ -47,7 +47,9 @@ public:
     enum Type
     {
         EMPTY,
+        ARGUMENT0,
         ARGUMENT1,
+
         EXTRA
     };
 
@@ -58,6 +60,7 @@ public:
     Type type() const { return packetType_; }
     void setType(Type packetType) { packetType_ = packetType; }
     void setInstruction(Object instruction) { instruction_ = instruction; }
+    void setArgument1(Object argument) { argument1_ = argument; }
     Object instruction() const { return instruction_; }
     word instructionImmediate() const { return instruction_.val; }
     Object argument1() const { return argument1_; }
@@ -76,6 +79,7 @@ public:
     CodeBuilder();
     void putExtra(Object object);
     void putInstructionArgument1(Object instruction, Object argument1);
+    void putInstructionArgument0(Object instruction);
     Object emit();
     void append(CodeBuilder* codeBuilder);
 

@@ -67,27 +67,141 @@ void CodeBuilder::putExtra(Object object)
     put(CodePacket(CodePacket::EXTRA, object, Object::Undef, Object::Undef, Object::Undef));
 }
 
+void CodeBuilder::putInstructionArgument0(Object instruction)
+{
+    put(CodePacket(CodePacket::ARGUMENT0, instruction, Object::Undef, Object::Undef, Object::Undef));
+}
+
+
 void CodeBuilder::putInstructionArgument1(Object instruction, Object argument)
 {
     put(CodePacket(CodePacket::ARGUMENT1, instruction, argument, Object::Undef, Object::Undef));
 }
 
+
+
+// argument 0 とただの put を分けるべきだ。そうすればもっと速くなる。
+
+void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
+{
+    switch(codePacket.instructionImmediate()) {
+    case Instruction::PUSH:
+        switch(previousCodePacket_.instructionImmediate()) {
+        case Instruction::CAR:
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::CAR_PUSH));
+            break;
+        case Instruction::CDR:
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::CDR_PUSH));
+            break;
+
+        case Instruction::CONSTANT:
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::CONSTANT_PUSH));
+            break;
+        case Instruction::REFER_LOCAL0:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH));
+            break;
+        case Instruction::REFER_LOCAL1:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1_PUSH));
+            break;
+        case Instruction::REFER_LOCAL2:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL2_PUSH));
+            break;
+        case Instruction::REFER_FREE0:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE0_PUSH));
+            break;
+        case Instruction::REFER_FREE1:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE1_PUSH));
+            break;
+        case Instruction::REFER_FREE2:
+            previousCodePacket_.setType(CodePacket::ARGUMENT0);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE2_PUSH));
+            break;
+// 100msec遅くなるので後回し
+        case Instruction::REFER_FREE:
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE_PUSH));
+            break;
+        default:
+            flush();
+            previousCodePacket_ = codePacket;
+            break;
+        }
+        break;
+    default:
+        flush();
+        previousCodePacket_ = codePacket;
+    }
+}
+
+
 void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
 {
     const Object argument1 = codePacket.argument1();
     switch(codePacket.instructionImmediate()) {
+    case Instruction::ENTER:
+    {
+        switch(previousCodePacket_.instructionImmediate()) {
+        case Instruction::PUSH:
+            previousCodePacket_.setType(CodePacket::ARGUMENT1);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::PUSH_ENTER));
+            previousCodePacket_.setArgument1(codePacket.argument1());
+            break;
+        default:
+            flush();
+            previousCodePacket_ = codePacket;
+            break;
+        }
+        break;
+    }
+    case Instruction::CONSTANT:
+    {
+        switch(previousCodePacket_.instructionImmediate()) {
+        case Instruction::REFER_LOCAL0_PUSH:
+            previousCodePacket_.setType(CodePacket::ARGUMENT1);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH_CONSTANT));
+            previousCodePacket_.setArgument1(codePacket.argument1());
+            break;
+        case Instruction::REFER_LOCAL1_PUSH:
+            previousCodePacket_.setType(CodePacket::ARGUMENT1);
+            previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1_PUSH_CONSTANT));
+            previousCodePacket_.setArgument1(codePacket.argument1());
+            break;
+        default:
+            flush();
+            previousCodePacket_ = codePacket;
+            break;
+        }
+        break;
+    }
+    case Instruction::LEAVE:
+    {
+        flush();
+        const int index = argument1.toInt();
+        if (1 == index) {
+            codePacket.setType(CodePacket::ARGUMENT0);
+            codePacket.setInstruction(Object::makeRaw(Instruction::LEAVE1));
+        } else {
+            // do nothing
+        }
+        previousCodePacket_ = codePacket;
+        break;
+    }
     case Instruction::REFER_LOCAL:
     {
         flush();
         const int index = argument1.toInt();
         if (0 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0));
         } else if (1 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1));
         } else if (2 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL2));
         } else {
             // do nothing
@@ -100,13 +214,13 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
         flush();
         const int index = argument1.toInt();
         if (0 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE0));
         } else if (1 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE1));
         } else if (2 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::REFER_FREE2));
         } else {
             // do nothing
@@ -114,23 +228,25 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
         previousCodePacket_ = codePacket;
         break;
     }
-    case Instruction::RETURN:
+    case Instruction::RETURN:// slow
+    {
         flush();
         const int index = argument1.toInt();
         if (1 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::RETURN1));
         } else if (2 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::RETURN2));
         } else if (3 == index) {
-            codePacket.setType(CodePacket::EXTRA);
+            codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstruction(Object::makeRaw(Instruction::RETURN3));
         } else {
             // do nothing
         }
         previousCodePacket_ = codePacket;
         break;
+    }
     default:
         flush();
         previousCodePacket_ = codePacket;
@@ -138,75 +254,20 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     }
 }
 
-void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
-{
-       switch(codePacket.instructionImmediate()) {
-        case Instruction::PUSH:
-            switch(previousCodePacket_.instructionImmediate()) {
-            case Instruction::REFER_LOCAL0:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH));
-                break;
-            case Instruction::REFER_LOCAL1:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL1_PUSH));
-                break;
-            case Instruction::REFER_LOCAL2:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL2_PUSH));
-                break;
-            case Instruction::REFER_FREE0:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE0_PUSH));
-                break;
-            case Instruction::REFER_FREE1:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE1_PUSH));
-                break;
-            case Instruction::REFER_FREE2:
-                previousCodePacket_.setType(CodePacket::EXTRA);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE2_PUSH));
-                break;
-// 100msec遅くなるので後回し
-            case Instruction::REFER_FREE:
-                previousCodePacket_.setType(CodePacket::ARGUMENT1);
-                previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_FREE_PUSH));
-                break;
-            default:
-                flush();
-                previousCodePacket_ = codePacket;
-                break;
-            }
-            break;
-        default:
-            flush();
-            previousCodePacket_ = codePacket;
-        }
-}
 
 void CodeBuilder::put(CodePacket codePacket)
 {
     switch(codePacket.type()) {
 #if 1
-    case CodePacket::EXTRA:
- //        switch(codePacket.instructionImmediate()) {
-//         case Instruction::PUSH:
-//             if (previousCodePacket_.instructionImmediate() == Instruction::REFER_LOCAL0) {
-//                 previousCodePacket_.setType(CodePacket::EXTRA);
-//                 previousCodePacket_.setInstruction(Object::makeRaw(Instruction::REFER_LOCAL0_PUSH));
-//             } else {
-//                 flush();
-//                 previousCodePacket_ = codePacket;
-//             }
-//             break;
-//         default:
-//             flush();
-//             previousCodePacket_ = codePacket;
-//         }
+    case CodePacket::ARGUMENT0:
         combineInstructionsArgument0(codePacket);
         break;
     case CodePacket::ARGUMENT1:
         combineInstructionsArgument1(codePacket);
+        break;
+    case CodePacket::EXTRA:
+        flush();
+        previousCodePacket_ = codePacket;
         break;
 #endif
     default:
@@ -214,30 +275,22 @@ void CodeBuilder::put(CodePacket codePacket)
         previousCodePacket_ = codePacket;
         break;
     }
-//     if (packet.type() == CodePacket::EXTRA) {
-//         flush();
-//         previousCodePacket_ = packet;
-//     } else {
-//         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
-//         // do nothing now!
-//     }
 }
 
 void CodeBuilder::flush()
 {
     switch(previousCodePacket_.type()) {
     case CodePacket::EMPTY:
-        // just do nothing
-        break;
+        return;
     case CodePacket::EXTRA:
         code_.push_back(previousCodePacket_.instruction());
-        previousCodePacket_.setType(CodePacket::EMPTY);
+        break;
+    case CodePacket::ARGUMENT0:
+        code_.push_back(previousCodePacket_.instruction());
         break;
     case CodePacket::ARGUMENT1:
         code_.push_back(previousCodePacket_.instruction());
         code_.push_back(previousCodePacket_.argument1());
-        previousCodePacket_.setType(CodePacket::EMPTY);
         break;
     default:
         // do nothing now!
@@ -246,19 +299,7 @@ void CodeBuilder::flush()
         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
         break;
     }
-//    if (previousCodePacket_.type() == CodePacket::EMPTY) return;
-//     if (previousCodePacket_.type() == CodePacket::EXTRA) {
-//         code_.push_back(previousCodePacket_.instruction());
-//         previousCodePacket_.setType(CodePacket::EMPTY);
-//     } else if (previousCodePacket_.type() == CodePacket::ARGUMENT1) {
-//         code_.push_back(previousCodePacket_.instruction());
-//         code_.push_back(previousCodePacket_.argument1());
-//     } else {
-//         // do nothing now!
-//         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-
-//         SCHEME_ASSERT("not reached now! all packet should be EXTRA");
-//     }
+        previousCodePacket_.setType(CodePacket::EMPTY);
 }
 
 Object CodeBuilder::emit()

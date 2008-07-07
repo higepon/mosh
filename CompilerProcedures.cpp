@@ -559,6 +559,19 @@ Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
+Object scheme::codeBuilderPutInsnArg0DEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "code-builder-put-insn-arg0!");
+    const Object cb = argv[0];
+    if (!cb.isCodeBuilder()) {
+        VM_RAISE1("code-builder required, but got ~an", cb);
+    }
+    const Object instruction = argv[1];
+    cb.toCodeBuilder()->putInstructionArgument0(instruction);
+    return Object::Undef;
+}
+
+
 Object pass4FixupLabelCollect(Object vec)
 {
     static const Object NOP                   = Object::makeRaw(Instruction::NOP);

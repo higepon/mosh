@@ -2178,6 +2178,7 @@
     (cdr cb))
 
   (define code-builder-put-insn-arg1! code-builder-put2!)
+  (define code-builder-put-insn-arg0! code-builder-put1!)
   ;; moved to freeproc.cpp end
   ])
 
@@ -2213,7 +2214,7 @@
      [(null? reversed-frees) size]
      [else
       (let1 stack-size (pass3/compile-refer cb (car reversed-frees) locals frees)
-        (cput! cb 'PUSH)
+        (code-builder-put-insn-arg0! cb 'PUSH)
         (loop (+ size stack-size) (cdr reversed-frees)))])))
 
 ;; fold requires anonymous closure
@@ -2255,11 +2256,11 @@
   (pass3/symbol-lookup cb lvar locals frees pass3/return-refer-local pass3/return-refer-free))
 
 (define (pass3/return-assign-local cb n)
-  (cput! cb 'ASSIGN_LOCAL n)
+  (code-builder-put-insn-arg1! cb 'ASSIGN_LOCAL n)
   0)
 
 (define (pass3/return-assign-free cb n)
-  (cput! cb 'ASSIGN_FREE n)
+  (code-builder-put-insn-arg1! cb 'ASSIGN_FREE n)
   0)
 
 (define (pass3/compile-assign cb lvar locals frees)
@@ -2268,7 +2269,7 @@
 (define (pass3/make-boxes cb sets vars)
   ($for-each1-with-rindex (lambda (index var)
                             (if (memq var sets)
-                                (cput! cb 'BOX index)))
+                                (code-builder-put-insn-arg1! cb 'BOX index)))
                           vars))
 
 (define pass3/dispatch-table (make-vector $INSN-NUM))
@@ -2277,7 +2278,7 @@
   (vector-set! pass3/dispatch-table insn proc))
 
 (define (pass3/$const cb iform locals frees can-frees sets tail)
-  (cput! cb 'CONSTANT ($const.val iform))
+  (code-builder-put-insn-arg1! cb 'CONSTANT ($const.val iform))
   0)
 
 (define (pass3/$it cb iform locals frees can-frees sets tail) 0)
@@ -2287,15 +2288,15 @@
     (begin0
       (fold (lambda (i accum)
               (let1 size (pass3/rec cb i locals frees can-frees sets tail)
-                (cput! cb 'PUSH)
+                (code-builder-put-insn-arg0! cb 'PUSH)
                 (+ size accum))) 0 args)
-      (cput! cb 'LIST (length args)))))
+      (code-builder-put-insn-arg1! cb 'LIST (length args)))))
 
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
 (define (pass3/$local-ref cb iform locals frees can-frees sets tail)
   (pass3/compile-refer cb ($local-ref.lvar iform) locals frees)
   (when (hashtable-ref sets ($local-ref.lvar iform) #f)
-    (cput! cb 'INDIRECT))
+    (code-builder-put-insn-arg0! cb 'INDIRECT))
   0)
 
 ;; $local-assign is classified into ASSIGN_LOCAL and ASSIGN_FREE
@@ -2317,10 +2318,10 @@
   (let1 sym ($global-ref.sym iform)
     (let next-free ([free frees] [n 0])
       (cond [(null? free)
-             (cput! cb 'REFER_GLOBAL (merge-libname-sym ($global-ref.libname iform) sym))
+             (code-builder-put-insn-arg1! cb 'REFER_GLOBAL (merge-libname-sym ($global-ref.libname iform) sym))
              0]
             [(eq? ($lvar.sym (car free)) sym)
-             (cput! cb 'REFER_FREE n)
+             (code-builder-put-insn-arg1! cb 'REFER_FREE n)
              0]
             [else
              (next-free (cdr free) (+ n 1))]))))
@@ -2332,13 +2333,13 @@
        [(null? free)
         (begin0
           (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
-          (cput! cb
+          (code-builder-put-insn-arg1! cb
                  'ASSIGN_GLOBAL
                  (merge-libname-sym ($global-assign.libname iform) sym)))]
        [(eq? ($lvar.sym (car free)) sym)
         (begin0
          (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f)
-         (cput! cb 'ASSIGN_FREE n))]
+         (code-builder-put-insn-arg1! cb 'ASSIGN_FREE n))]
        [else
         (next-free (cdr free) (+ n 1))]))))
 
@@ -2353,25 +2354,25 @@
               (+ size (pass3/rec cb (car form) locals frees can-frees sets tail?))))])))
 
 (define (pass3/$undef cb iform locals frees can-frees sets tail)
-  (cput! cb 'UNDEF)
+  (code-builder-put-insn-arg0! cb 'UNDEF)
   0)
 
 (define (pass3/$asm-1-arg cb insn arg1 locals frees can-frees sets)
   (begin0
     (pass3/rec cb arg1 locals frees can-frees sets #f)
-    (cput! cb insn)))
+    (code-builder-put-insn-arg0! cb insn)))
 
 (define (pass3/$asm-2-arg cb insn arg1 arg2 locals frees can-frees sets)
     (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f)]
           [y (pass3/rec cb arg2 locals frees can-frees sets #f)])
-      (cput! cb insn)
+      (code-builder-put-insn-arg0! cb insn)
       (+ x y)))
 
 (define (pass3/$asm-3-arg cb insn arg1 arg2 arg3 locals frees can-frees sets)
   (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f)]
         [y (pass3/compile-arg cb arg2 locals frees can-frees sets #f)]
         [z (pass3/rec cb arg3 locals frees can-frees sets #f)])
-    (cput! cb insn)
+    (code-builder-put-insn-arg0! cb insn)
     (+ x y z)))
 
 (define (pass3/$asm-n-args cb args locals frees can-frees sets)
@@ -2450,12 +2451,12 @@
       [(VALUES)
        (begin0
          (pass3/$asm-n-args cb args locals frees can-frees sets)
-         (cput! cb 'VALUES (length args)))]
+         (code-builder-put-insn-arg1! cb 'VALUES (length args)))]
       [(APPLY)
        (let1 end-of-frame (make-label)
-         (cput! cb 'FRAME (ref-label end-of-frame))
+         (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame))
          (let1 arg2-size (pass3/rec cb (second args) locals frees can-frees sets #f)
-           (cput! cb 'PUSH)
+           (code-builder-put-insn-arg0! cb 'PUSH)
            (let1 arg1-size (pass3/rec cb (first args) locals frees can-frees sets #f)
              (cput! cb 'APPLY end-of-frame)
              (+ arg1-size arg2-size))))]
@@ -2484,7 +2485,7 @@
 
 (define (pass3/compile-arg cb arg locals frees can-frees sets tail)
   (let1 size (pass3/rec cb arg locals frees can-frees sets #f)
-    (cput! cb 'PUSH)
+    (code-builder-put-insn-arg0! cb 'PUSH)
     (+ size 1)))
 
 ;; (define (pass3/compile-args cb args locals frees can-frees sets tail)
@@ -2548,10 +2549,8 @@
          (let ([args-size (pass3/compile-args cb ($call.args iform) locals frees-here can-frees sets #f)]
                [args-length (length ($call.args iform))])
            (pass3/make-boxes cb sets-for-this-lvars vars)
-           (cput! cb
-                  'ENTER
-                  args-length
-                  label)
+           (code-builder-put-insn-arg1! cb 'ENTER args-length)
+           (cput! cb label)
            (let1 body-size (pass3/rec cb
                                       body
                                       vars
@@ -2559,7 +2558,7 @@
                                       (pass3/add-can-frees1 can-frees vars)
                                       (pass3/add-sets! sets sets-for-this-lvars)
                                       (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
-             (cput! cb 'LEAVE args-length)
+             (code-builder-put-insn-arg1! cb 'LEAVE args-length)
              (+ args-size body-size free-size)))))]
     [else
      (let1 end-of-frame (make-label)
@@ -2590,7 +2589,8 @@
   (let1 end-of-frame (make-label)
     (unless tail
       (cput! cb 'FRAME (ref-label end-of-frame)))
-    (cput! cb 'MAKE_CONTINUATION (if tail 1 0) 'PUSH)
+    (cput! cb 'MAKE_CONTINUATION (if tail 1 0))
+    (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f)
       (when tail
@@ -2656,7 +2656,7 @@
             [vars-length (length vars)])
         (cput! cb 'RECEIVE ($receive.reqargs iform) ($receive.optarg  iform))
         (pass3/make-boxes cb sets-for-this-lvars vars)
-        (cput! cb 'ENTER vars-length)
+        (code-builder-put-insn-arg1! cb 'ENTER vars-length)
         (let1 body-size (pass3/rec cb
                                    body
                                    vars
@@ -2664,7 +2664,7 @@
                                    (pass3/add-can-frees1 can-frees vars)
                                    (pass3/add-sets! sets sets-for-this-lvars)
                                    (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
-          (cput! cb 'LEAVE vars-length)
+          (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ body-size vals-size free-size))))))
 
 (define (pass3/$let cb iform locals frees can-frees sets tail)
@@ -2696,7 +2696,7 @@
             (cput! cb 'DISPLAY frees-here-length))
           (let1 args-size (pass3/compile-args cb ($let.inits iform) locals frees-here can-frees sets tail)
             (pass3/make-boxes cb sets-for-this-lvars vars)
-            (cput! cb 'ENTER vars-length)
+            (code-builder-put-insn-arg1! cb 'ENTER vars-length)
             (let1 body-size (pass3/rec cb
                                        body
                                        vars
@@ -2704,7 +2704,7 @@
                                        (pass3/add-can-frees1 can-frees vars)
                                        (pass3/add-sets! sets sets-for-this-lvars)
                                        (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
-              (cput! cb 'LEAVE vars-length)
+              (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
               (+ body-size args-size free-size)))))))
 
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
@@ -2728,10 +2728,11 @@
         (cond
          [(null? args) '()]
          [else
-          (cput! cb 'UNDEF 'PUSH)
+          (cput! cb 'UNDEF)
+          (code-builder-put-insn-arg0! cb 'PUSH)
           (loop (cdr args))]))
       (pass3/make-boxes cb sets-for-this-lvars vars)
-      (cput! cb 'ENTER vars-length)
+      (code-builder-put-insn-arg1! cb 'ENTER vars-length)
       (let* ([new-can-frees (pass3/add-can-frees1 can-frees vars)]
              [assign-size
               (let loop ([args  args]
@@ -2755,7 +2756,7 @@
                                         new-can-frees
                                         (pass3/add-sets! sets sets-for-this-lvars)
                                    (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
-          (cput! cb 'LEAVE vars-length)
+          (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ free-size assign-size body-size))))))
 
 (define (pass3/$import cb iform locals frees can-frees sets tail)
@@ -2897,9 +2898,9 @@
      [(null? s) '()]
      [else
       (match s
-        [('REFER_LOCAL0_PUSH 'CONSTANT . rest)
-         (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))]
-        [('REFER_LOCAL1_PUSH 'CONSTANT . rest)
+        [('REFER_LOCAL0_PUSH 'CONSTANT . rest) ;; done
+         (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))] 
+        [('REFER_LOCAL1_PUSH 'CONSTANT . rest);;done
          (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
         [('REFER_LOCAL 1 'PUSH . rest) ;; done
          (iter `(REFER_LOCAL1_PUSH ,@rest))]
@@ -2911,9 +2912,9 @@
           ;; compiled pass3/$asm code has list '(CONSTANT NUMBER_SUB PUSH), ignore it.
           [((and x (not 'CONSTANT)) 'NUMBER_SUB 'PUSH . rest)
            (iter `(, x NUMBER_SUB_PUSH ,@rest))]
-          [('PUSH 'ENTER . rest)
+          [('PUSH 'ENTER . rest) ;; done
            (iter (cons 'PUSH_ENTER rest))]
-          [('CONSTANT v 'PUSH . rest)
+          [('CONSTANT v 'PUSH . rest) ;; done
            (iter `(CONSTANT_PUSH ,v ,@rest))]
           [('REFER_FREE 0 'PUSH . rest) ;; done
            (iter `(REFER_FREE0_PUSH ,@rest))] 
@@ -2921,7 +2922,7 @@
            (iter `(REFER_FREE1_PUSH ,@rest))]
           [('REFER_FREE 2 'PUSH . rest) ;; done
            (iter `(REFER_FREE2_PUSH ,@rest))]
-          [('REFER_FREE n 'PUSH . rest)
+          [('REFER_FREE n 'PUSH . rest) ;; done
            (iter `(REFER_FREE_PUSH ,n ,@rest))]
           [('REFER_FREE 0 . rest);; done
            (iter `(REFER_FREE0 ,@rest))]
@@ -2939,11 +2940,11 @@
            (iter `(NUMBER_LE_TEST ,@rest))]
           [('NUMBER_ADD 'PUSH . rest)
            (iter `(NUMBER_ADD_PUSH ,@rest))]
-          [('RETURN 1 . rest)
+          [('RETURN 1 . rest) ;; done
            (iter `(RETURN1 ,@rest))]
-          [('RETURN 2 . rest)
+          [('RETURN 2 . rest) ;;done
            (iter `(RETURN2 ,@rest))]
-          [('RETURN 3 . rest)
+          [('RETURN 3 . rest) ;;done
            (iter `(RETURN3 ,@rest))]
           [('CALL 2 . rest)
            (iter `(CALL2 ,@rest))]
@@ -2959,13 +2960,13 @@
            (iter `(, x PUSH_FRAME ,@rest))]
 ;;           [('PUSH 'FRAME . rest)
 ;;            (iter `(PUSH_FRAME ,@rest))]
-          [('REFER_FREE 3 . rest)
+          [('REFER_FREE 3 . rest) ;; done
            (iter `(REFER_FREE3 ,@rest))]
-          [('REFER_LOCAL 3 . rest)
+          [('REFER_LOCAL 3 . rest) ;; done
            (iter `(REFER_LOCAL3 ,@rest))]
-          [('CAR 'PUSH . rest)
+          [('CAR 'PUSH . rest);;done
            (iter `(CAR_PUSH ,@rest))]
-          [('CDR 'PUSH . rest)
+          [('CDR 'PUSH . rest);;done
            (iter `(CDR_PUSH ,@rest))]
           [('REFER_FREE0 'INDIRECT . rest)
            (iter `(REFER_FREE0_INDIRECT ,@rest))]

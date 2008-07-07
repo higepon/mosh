@@ -59,7 +59,9 @@ namespace scheme {
     Object codeBuilderPut5DEx(int argc, const Object* argv);
     Object codeBuilderAppendDEx(int argc, const Object* argv);
     Object codeBuilderEmitEx(int argc, const Object* argv);
+    Object codeBuilderPutInsnArg0DEx(int argc, const Object* argv);
     Object codeBuilderPutInsnArg1DEx(int argc, const Object* argv);
+
 }; // namespace scheme
 
 #endif // __SCHEME_COMPILER_PROCEDURES__

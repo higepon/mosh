@@ -1,3 +1,7 @@
+2008-07-07  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (merge-insn): Moved merge-insn to C++.
+
 2008-07-05  higepon  <higepon@users.sourceforge.jp>
 
         * VM.cpp (VM::run): RE added "APPEND2" instruction for perfomance.
