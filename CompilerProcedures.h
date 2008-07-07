@@ -52,11 +52,11 @@ namespace scheme {
     Object pass4FixupLabelsEx(int argc, const Object* argv);
 
     Object makeCodeBuilderEx(int argc, const Object* argv);
-    Object codeBuilderPut1DEx(int argc, const Object* argv);
-    Object codeBuilderPut2DEx(int argc, const Object* argv);
-    Object codeBuilderPut3DEx(int argc, const Object* argv);
-    Object codeBuilderPut4DEx(int argc, const Object* argv);
-    Object codeBuilderPut5DEx(int argc, const Object* argv);
+    Object codeBuilderPutExtra1DEx(int argc, const Object* argv);
+    Object codeBuilderPutExtra2DEx(int argc, const Object* argv);
+    Object codeBuilderPutExtra3DEx(int argc, const Object* argv);
+    Object codeBuilderPutExtra4DEx(int argc, const Object* argv);
+    Object codeBuilderPutExtra5DEx(int argc, const Object* argv);
     Object codeBuilderAppendDEx(int argc, const Object* argv);
     Object codeBuilderEmitEx(int argc, const Object* argv);
     Object codeBuilderPutInsnArg0DEx(int argc, const Object* argv);

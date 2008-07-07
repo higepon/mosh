@@ -35,11 +35,6 @@
 #include "scheme.h"
 
 namespace scheme {
-//template <class T1>
-// class gc_vector2 : public std::vector<T1, gc_allocator<T1> >, public gc {
-// public:
-//     gc_vector2(int size) : std::vector<T1, gc_allocator<T1> >(size) {}
-// };
 
 class CodePacket
 {
@@ -49,28 +44,29 @@ public:
         EMPTY,
         ARGUMENT0,
         ARGUMENT1,
-
+        ARGUMENT2,
         EXTRA
     };
 
     CodePacket();
-    CodePacket(Type packetType, Object instruction, Object argument1, Object argument2, Object operand);
+    CodePacket(Type packetType, Object instruction, Object argument1, Object argument2);
 
     // accessors
     Type type() const { return packetType_; }
     void setType(Type packetType) { packetType_ = packetType; }
-    void setInstruction(Object instruction) { instruction_ = instruction; }
+    void setInstructionImmediate(int instruction) { instruction_ = Object::makeRaw(instruction); }
     void setArgument1(Object argument) { argument1_ = argument; }
+    void setArgument2(Object argument) { argument2_ = argument; }
     Object instruction() const { return instruction_; }
     word instructionImmediate() const { return instruction_.val; }
     Object argument1() const { return argument1_; }
+    Object argument2() const { return argument2_; }
 
 private:
     Type packetType_;
     Object instruction_;
     Object argument1_;
     Object argument2_;
-    Object operand_;
 };
 
 class CodeBuilder EXTEND_GC
@@ -89,8 +85,6 @@ public:
         flush();
         return code_;
     }
-
-
 
 private:
     void flush();

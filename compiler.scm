@@ -2150,19 +2150,19 @@
   (define (make-code-builder)
     (list 'builder))
 
-  (define (code-builder-put1! cb x)
+  (define (code-builder-put-extra1! cb x)
     (append! cb (list x)))
 
-  (define (code-builder-put2! cb a b)
+  (define (code-builder-put-extra2! cb a b)
     (append! cb (list a b)))
 
-  (define (code-builder-put3! cb a b c)
+  (define (code-builder-put-extra3! cb a b c)
     (append! cb (list a b c)))
 
-  (define (code-builder-put4! cb a b c d)
+  (define (code-builder-put-extra4! cb a b c d)
     (append! cb (list a b c d)))
 
-  (define (code-builder-put5! cb a b c d e)
+  (define (code-builder-put-extra5! cb a b c d e)
     (append! cb (list a b c d e)))
 
   (define (code-builder-append! cb1 cb2)
@@ -2171,14 +2171,14 @@
        [(null? e)
         '()]
        [else
-        (code-builder-put1! cb1 (car e))
+        (code-builder-put-extra1! cb1 (car e))
         (loop (cdr e))])))
 
   (define (code-builder-emit cb)
     (cdr cb))
 
-  (define code-builder-put-insn-arg1! code-builder-put2!)
-  (define code-builder-put-insn-arg0! code-builder-put1!)
+  (define code-builder-put-insn-arg1! code-builder-put-extra2!)
+  (define code-builder-put-insn-arg0! code-builder-put-extra1!)
   ;; moved to freeproc.cpp end
   ])
 
@@ -2187,19 +2187,19 @@
   (match more
     [() '()]
     [(a b c d e . f)
-     `(begin (code-builder-put5! ,cb ,a ,b ,c ,d ,e)
+     `(begin (code-builder-put-extra5! ,cb ,a ,b ,c ,d ,e)
              (cput! ,cb ,@f))]
     [(a b c d . e)
-     `(begin (code-builder-put4! ,cb ,a ,b ,c ,d)
+     `(begin (code-builder-put-extra4! ,cb ,a ,b ,c ,d)
              (cput! ,cb ,@e))]
     [(a b c . d)
-     `(begin (code-builder-put3! ,cb ,a ,b ,c)
+     `(begin (code-builder-put-extra3! ,cb ,a ,b ,c)
              (cput! ,cb ,@d))]
     [(a b . c)
-     `(begin (code-builder-put2! ,cb ,a ,b)
+     `(begin (code-builder-put-extra2! ,cb ,a ,b)
              (cput! ,cb ,@c))]
     [(a . b)
-     `(begin (code-builder-put1! ,cb ,a)
+     `(begin (code-builder-put-extra1! ,cb ,a)
              (cput! ,cb ,@b))]))
 
 (define-macro (pass3/add-sets! sets new-sets)
@@ -2467,7 +2467,7 @@
   (let ([end-of-else   (make-label)]
         [begin-of-else (make-label)])
     (let1 test-size (pass3/rec cb ($if.test iform) locals frees can-frees sets #f)
-      (cput! cb 'TEST (ref-label begin-of-else))
+      (code-builder-put-insn-arg1! cb 'TEST (ref-label begin-of-else))
       (let1 then-size (pass3/rec cb ($if.then iform) locals frees can-frees sets tail)
         (cput! cb
                'UNFIXED_JUMP
@@ -2573,13 +2573,13 @@
        ;;   To access the FRAME informtion, we remove arguments for a, so we do this SHIFT.
        ;;
        (unless tail
-         (cput! cb 'FRAME (ref-label end-of-frame)))
+         (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)]
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f)]
               [args-length (length ($call.args iform))])
          (when tail
            (cput! cb 'SHIFT args-length tail))
-         (cput! cb 'CALL args-length)
+         (code-builder-put-insn-arg1! cb 'CALL args-length)
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
@@ -2588,14 +2588,14 @@
 (define (pass3/$call-cc cb iform locals frees can-frees sets tail)
   (let1 end-of-frame (make-label)
     (unless tail
-      (cput! cb 'FRAME (ref-label end-of-frame)))
+      (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
     (cput! cb 'MAKE_CONTINUATION (if tail 1 0))
     (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f)
       (when tail
         (cput! cb 'SHIFT 1 tail))
-      (cput! cb 'CALL 1)
+      (code-builder-put-insn-arg1! cb 'CALL 1)
       (unless tail
         (cput! cb end-of-frame)))))
 
@@ -2745,7 +2745,7 @@
                                               new-can-frees
                                               (pass3/add-sets! sets sets-for-this-lvars)
                                               #f)
-                    (cput! cb 'ASSIGN_LOCAL index)
+                    (code-builder-put-insn-arg1! cb 'ASSIGN_LOCAL index)
                     (loop (cdr args)
                           (+ stack-size size)
                           (+ index 1)))]))])
@@ -2767,9 +2767,9 @@
               [lib          (hashtable-ref libraries libname)]
               [end-of-frame (make-label)])
          (rec ($library.import lib))
+         (code-builder-put-insn-arg1! cb 'FRAME  ;; We execute (RETURN 0) in library body
+                                      (ref-label end-of-frame))
          (cput! cb
-                'FRAME  ;; We execute (RETURN 0) in library body
-                (ref-label end-of-frame)
                 'IMPORT
                 libname
                 end-of-frame)))
@@ -2892,22 +2892,27 @@
 
 (define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) *free-vars-decl*))
 
-(define (merge-insn sexp)
-  (define (iter s)
-    (cond
-     [(null? s) '()]
-     [else
-      (match s
-        [('REFER_LOCAL0_PUSH 'CONSTANT . rest) ;; done
-         (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))] 
-        [('REFER_LOCAL1_PUSH 'CONSTANT . rest);;done
-         (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
-        [('REFER_LOCAL 1 'PUSH . rest) ;; done
-         (iter `(REFER_LOCAL1_PUSH ,@rest))]
-        [('REFER_LOCAL 0 'PUSH . rest) ;; done
-         (iter `(REFER_LOCAL0_PUSH ,@rest))] ;; done
-        [('REFER_LOCAL 0 . rest)
-         (iter `(REFER_LOCAL0 ,@rest))] ;; done
+;; merge-insn for Mosh is written in CodeBuilder.cpp
+(cond-expand
+ [mosh
+  (define-macro (merge-insn sexp) sexp)]
+ [else
+  (define (merge-insn sexp)
+    (define (iter s)
+      (cond
+       [(null? s) '()]
+       [else
+        (match s
+          [('REFER_LOCAL0_PUSH 'CONSTANT . rest) ;; done
+           (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))] 
+          [('REFER_LOCAL1_PUSH 'CONSTANT . rest);;done
+           (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
+          [('REFER_LOCAL 1 'PUSH . rest) ;; done
+           (iter `(REFER_LOCAL1_PUSH ,@rest))]
+          [('REFER_LOCAL 0 'PUSH . rest) ;; done
+           (iter `(REFER_LOCAL0_PUSH ,@rest))] ;; done
+          [('REFER_LOCAL 0 . rest)
+           (iter `(REFER_LOCAL0 ,@rest))] ;; done
           ;; N.B.
           ;; compiled pass3/$asm code has list '(CONSTANT NUMBER_SUB PUSH), ignore it.
           [((and x (not 'CONSTANT)) 'NUMBER_SUB 'PUSH . rest)
@@ -2958,8 +2963,8 @@
           ;; compiled pass3/$asm code has list '(CONSTANT_PUSH PUSH FRAME), ignore it.
           [((and x (not 'CONSTANT_PUSH)) 'PUSH 'FRAME . rest)
            (iter `(, x PUSH_FRAME ,@rest))]
-;;           [('PUSH 'FRAME . rest)
-;;            (iter `(PUSH_FRAME ,@rest))]
+          ;;           [('PUSH 'FRAME . rest)
+          ;;            (iter `(PUSH_FRAME ,@rest))]
           [('REFER_FREE 3 . rest) ;; done
            (iter `(REFER_FREE3 ,@rest))]
           [('REFER_LOCAL 3 . rest) ;; done
@@ -2988,12 +2993,11 @@
            (iter (cons 'REFER_LOCAL0_VECTOR_SET rest))]
           [('REFER_LOCAL0 'VECTOR_REF . rest)
            (iter (cons 'REFER_LOCAL0_VECTOR_REF rest))]
-          [('REFER_LOCAL n 'PUSH . rest)
+          [('REFER_LOCAL n 'PUSH . rest) ;; done
            (iter `(REFER_LOCAL_PUSH ,n ,@rest))]
           [else
            (cons (car s) (iter (cdr s)))])]))
-  sexp)
-;  (iter sexp))
+    (iter sexp))])
 
 (define (compile sexp)
   (pass4 (merge-insn

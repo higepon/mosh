@@ -435,7 +435,7 @@ Object scheme::makeCodeBuilderEx(int argc, const Object* argv)
     return Object::makeCodeBuilder();
 }
 
-Object scheme::codeBuilderPut1DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "code-builder-put1!");
     const Object cb = argv[0];
@@ -448,7 +448,7 @@ Object scheme::codeBuilderPut1DEx(int argc, const Object* argv)
 }
 
 
-Object scheme::codeBuilderPut2DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
 {
     checkArgLength(3, argc, "code-builder-put2!");
     const Object cb = argv[0];
@@ -463,7 +463,7 @@ Object scheme::codeBuilderPut2DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
 {
     checkArgLength(4, argc, "code-builder-put3!");
     const Object cb = argv[0];
@@ -471,9 +471,6 @@ Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
 
-//     cb.toCodeBuilder()->put(argv[1]);
-//     cb.toCodeBuilder()->put(argv[2]);
-//     cb.toCodeBuilder()->put(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
@@ -481,7 +478,7 @@ Object scheme::codeBuilderPut3DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPut4DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
 {
     checkArgLength(5, argc, "code-builder-put4!");
     const Object cb = argv[0];
@@ -501,7 +498,7 @@ Object scheme::codeBuilderPut4DEx(int argc, const Object* argv)
 }
 
 
-Object scheme::codeBuilderPut5DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
 {
     checkArgLength(6, argc, "code-builder-put5!");
     const Object cb = argv[0];
