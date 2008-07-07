@@ -230,6 +230,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     }
     case Instruction::RETURN:// slow
     {
+    {
         flush();
         const int index = argument1.toInt();
         if (1 == index) {
