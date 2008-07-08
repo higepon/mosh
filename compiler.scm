@@ -2711,7 +2711,8 @@
   (let* ([vars ($let.lvars iform)]
          [body ($let.body iform)]
          [frees-here (append
-                      ($append-map1 (lambda (i) (pass3/find-free i vars (pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
+                      ($append-map1 (lambda (i) (pass3/find-free i vars 
+(pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
                       (pass3/find-free body
                                        vars
                                        (pass3/add-can-frees2 can-frees locals frees)))]
