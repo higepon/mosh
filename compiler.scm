@@ -2817,82 +2817,6 @@
   (let1 body ($append-map1 (lambda (sexp) (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) )) ($library.body lib))
     ($library.set-compiled-body! lib (pass4 `(,@body RETURN 0)))))
 
-(define (compile-partial sexp . lib)
-  (let1 ss (pass1/expand sexp)
-    (vector->list
-     (pass4/fixup-labels
-      (list->vector
-       (merge-insn
-         (pass3
-          (pass2/optimize
-           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()))))))))
-
-;; todo local macro
-(define-macro (pass4/fixup-labels-clollect insn)
-  `(begin
-     (vector-set! ret j ,insn)
-     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
-     (loop (+ i 2) (+ j 2))))
-
-(define-macro (pass4/fixup-labels-insn insn)
-  `(let1 label (hashtable-ref labels(vector-ref code (+ i 1)) #f)
-     (cond
-      [label
-       (vector-set! code i ,insn)
-       (vector-set! code (+ i 1) (- label i 1)) ;; jump point
-       (loop (+ i 2))]
-      [else
-       (loop (+ i 1))])))
-
-;; moved to freeproc.cpp
-;; N.B. this procedure is still required by vm.scm
-(define (pass4/fixup-labels v)
-  (define (collect-labels)
-    (let* ([len (vector-length v)]
-           [ret (make-vector len 'NOP)]
-           [labels (make-eq-hashtable)])
-      (let loop ([i 0]
-                 [j 0])
-        (cond
-         [(= i len) (values ret labels)]
-         [else
-          (let1 insn (vector-ref v i)
-            (cond
-             [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-clollect 'UNFIXED_JUMP)]
-             [(eq? insn 'TEST)                  (pass4/fixup-labels-clollect 'TEST)]
-             [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-clollect 'NUMBER_LE_TEST)]
-             [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-clollect 'NOT_TEST)]
-             [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-clollect 'REFER_LOCAL0_EQV_TEST)]
-             [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
-             [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
-             [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
-             [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
-              (hashtable-set! labels insn j)
-              (loop (+ i 1) j)]  ;; save the location of label)
-             [else
-              (vector-set! ret j insn)
-              (loop (+ i 1) (+ j 1))]))]))))
-  (receive (code labels) (collect-labels)
-    (let1 len (vector-length code)
-    (let loop ([i 0])
-      (cond
-       [(= i len) code]
-       [else
-        (let1 insn (vector-ref code i)
-          (cond
-           [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
-           [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
-           [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-           [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
-           [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-           [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
-           [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
-           [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-           [else (loop (+ i 1))]))])))))
-
-
-(define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) *free-vars-decl*))
-
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
 (cond-expand
  [mosh
@@ -2999,6 +2923,84 @@
           [else
            (cons (car s) (iter (cdr s)))])]))
     (iter sexp))])
+
+
+(define (compile-partial sexp . lib)
+  (let1 ss (pass1/expand sexp)
+    (vector->list
+     (pass4/fixup-labels
+      (list->vector
+       (merge-insn
+         (pass3
+          (pass2/optimize
+           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()))))))))
+
+;; todo local macro
+(define-macro (pass4/fixup-labels-clollect insn)
+  `(begin
+     (vector-set! ret j ,insn)
+     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
+     (loop (+ i 2) (+ j 2))))
+
+(define-macro (pass4/fixup-labels-insn insn)
+  `(let1 label (hashtable-ref labels(vector-ref code (+ i 1)) #f)
+     (cond
+      [label
+       (vector-set! code i ,insn)
+       (vector-set! code (+ i 1) (- label i 1)) ;; jump point
+       (loop (+ i 2))]
+      [else
+       (loop (+ i 1))])))
+
+;; moved to freeproc.cpp
+;; N.B. this procedure is still required by vm.scm
+(define (pass4/fixup-labels v)
+  (define (collect-labels)
+    (let* ([len (vector-length v)]
+           [ret (make-vector len 'NOP)]
+           [labels (make-eq-hashtable)])
+      (let loop ([i 0]
+                 [j 0])
+        (cond
+         [(= i len) (values ret labels)]
+         [else
+          (let1 insn (vector-ref v i)
+            (cond
+             [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-clollect 'UNFIXED_JUMP)]
+             [(eq? insn 'TEST)                  (pass4/fixup-labels-clollect 'TEST)]
+             [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-clollect 'NUMBER_LE_TEST)]
+             [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-clollect 'NOT_TEST)]
+             [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-clollect 'REFER_LOCAL0_EQV_TEST)]
+             [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
+             [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
+             [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
+             [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
+              (hashtable-set! labels insn j)
+              (loop (+ i 1) j)]  ;; save the location of label)
+             [else
+              (vector-set! ret j insn)
+              (loop (+ i 1) (+ j 1))]))]))))
+  (receive (code labels) (collect-labels)
+    (let1 len (vector-length code)
+    (let loop ([i 0])
+      (cond
+       [(= i len) code]
+       [else
+        (let1 insn (vector-ref code i)
+          (cond
+           [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
+           [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
+           [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
+           [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
+           [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
+           [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
+           [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
+           [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
+           [else (loop (+ i 1))]))])))))
+
+
+(define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) *free-vars-decl*))
+
 
 (define (compile sexp)
   (pass4 (merge-insn
