@@ -70,7 +70,6 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
         const Object localVariable = p.car();
         if (localVariable == variable) {
             codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
-//           codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
             return Object::makeInt(0);
         }
     }
@@ -81,7 +80,6 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
         const Object freeVariable = p.car();
         if (freeVariable == variable) {
             codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
-//            codeBuilder.toCodeBuilder()->put(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
             return Object::makeInt(0);
         }
     }
@@ -106,27 +104,14 @@ Object findFree(Object iform, Object locals, Object canFrees)
     return uniq(ret);
 }
 
-bool existsInCanFrees(Object lvar, Object canFrees)
+bool existsInCanFrees(Object sym, Object canFrees)
 {
     for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
-        if (!memq(lvar, frees.car()).isFalse()) {
+        if (!memq(sym, frees.car()).isFalse()) {
             return true;
         }
     }
     return false;
-}
-
-Object findSymbolInCanFrees(Object sym, Object canFrees)
-{
-    for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
-        for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
-            const Object lvarSym = p.car().toVector()->ref(1);
-            if (lvarSym == sym) {
-                return p.car();
-            }
-        }
-    }
-    return Object::False;
 }
 
 Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
@@ -185,21 +170,21 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case LOCAL_ASSIGN:
     {
-        const Object lvar = v->ref(1);
+        const Object sym = v->ref(1).toVector()->ref(1);
         const Object val = v->ref(2);
-        if (existsInCanFrees(lvar, canFrees)) {
-            return Object::cons(lvar, findFreeRec(val, l, canFrees, labelsSeen));
+        if (existsInCanFrees(sym, canFrees)) {
+            return Object::cons(sym, findFreeRec(val, l, canFrees, labelsSeen));
         } else {
             return findFreeRec(val, l, canFrees, labelsSeen);
         }
     }
     case LOCAL_REF:
     {
-        const Object lvar = v->ref(1);
-        if (!memq(lvar, l).isFalse()) {
+        const Object sym = v->ref(1).toVector()->ref(1);
+        if (!memq(sym, l).isFalse()) {
             return Object::Nil;
-        } else if (existsInCanFrees(lvar, canFrees)) {
-            return Pair::list1(lvar);
+        } else if (existsInCanFrees(sym, canFrees)) {
+            return Pair::list1(sym);
         } else {
             return Object::Nil;
         }
@@ -207,8 +192,11 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     case GLOBAL_REF:
     {
         const Object sym = v->ref(2);
-        Object foundSym = findSymbolInCanFrees(sym, canFrees);
-        return !foundSym.isFalse() ? Pair::list1(foundSym) : Object::Nil;
+        if (existsInCanFrees(sym, canFrees)) {
+            return Pair::list1(sym);
+        } else {
+            return Object::Nil;
+        }
     }
     case UNDEF:
         return Object::Nil;

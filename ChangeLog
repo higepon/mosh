@@ -1,3 +1,7 @@
+2008-07-09  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/find-free): locals, can-frees and frees becomes list of symbols(used to be list of lvars).
+
 2008-07-07  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (merge-insn): Moved merge-insn to C++.

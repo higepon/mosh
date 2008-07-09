@@ -4,6 +4,23 @@
 ;; 2. Do NOT use fold or find, they alse create closure.
 ;; 3. (length ...) may be slow, so call only when necessary.
 
+(cond-expand
+ [gauche
+  (use srfi-1)
+  (use util.match)
+  (load "./free-vars-decl.scm")
+  (define dd display)
+  (define pp print)
+  (define open-string-input-port open-input-string)
+  (define make-eq-hashtable make-hash-table)
+  (define hashtable-set! hash-table-put!)
+  (define hashtable-ref hash-table-get)
+  (define find10 find)
+  (define foldr2 fold-right)
+  (define source-info debug-source-info)
+  (define syntax-error error)
+  (define (set-source-info! a b) a)]
+ [vm?
   (define-macro (import-only module . syms)
     `(begin
        ,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
@@ -30,7 +47,20 @@
        (pair-attribute-set! a 'source-info b)
        a]
      [else
-      a]))
+      a]))]
+ [vm-outer?
+  (define dd (lambda a '()))
+  (define pp (lambda a '()))
+  (include "./free-vars-decl.scm")
+  (define find10 find)
+  (define syntax-error error)
+  (define (command-line) *command-line-args*)]
+[mosh
+  (define dd display)
+  (define pp print)
+  (include "./free-vars-decl.scm")
+  (define-macro (make-list-with-src-slot lst) lst)
+  (define (command-line) *command-line-args*)])
 
 (define (eq-hashtable-copy ht)
   (let1 ret (make-eq-hashtable)
@@ -2111,6 +2141,10 @@
         (error "pass3/find-sets unknown iform:" i)])))
   (uniq (rec iform)))
 
+(cond-expand
+ [mosh
+  ]
+ [else
   ;; moved to freeproc.cpp start
   ;; N.B. these procedures are still required by vm.scm
   (define (make-code-builder)
@@ -2146,7 +2180,7 @@
   (define code-builder-put-insn-arg1! code-builder-put-extra2!)
   (define code-builder-put-insn-arg0! code-builder-put-extra1!)
   ;; moved to freeproc.cpp end
-  
+  ])
 
 ;; code-builder synonym
 (define-macro (cput! cb . more)
@@ -2258,7 +2292,6 @@
                 (+ size accum))) 0 args)
       (code-builder-put-insn-arg1! cb 'LIST (length args)))))
 
-;; hage
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
 (define (pass3/$local-ref cb iform locals frees can-frees sets tail)
   (pass3/compile-refer cb ($lvar.sym ($local-ref.lvar iform)) locals frees)
@@ -2280,7 +2313,6 @@
                   ":$:"
                   (symbol->string sym))))
 
-;; hage
 ;; $global-lef is classified into REFER_GLOBAL and REFER_FREE
 (define (pass3/$global-ref cb iform locals frees can-frees sets tail)
   (let1 sym ($global-ref.sym iform)
@@ -2294,7 +2326,6 @@
             [else
              (next-free (cdr free) (+ n 1))]))))
 
-;; hage
 (define (pass3/$global-assign cb iform locals frees can-frees sets tail)
   (let1 sym ($global-assign.sym iform)
     (let next-free ([free frees] [n 0])
@@ -2569,7 +2600,6 @@
       (unless tail
         (cput! cb end-of-frame)))))
 
-;; hage
 (define (pass3/$lambda cb iform locals frees can-frees sets tail)
   (let* ([vars ($lambda.lvars iform)]
          [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
@@ -2608,7 +2638,6 @@
         (cput! cb end-of-closure)
         0)))
 
-;; hage
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
          [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
@@ -2641,7 +2670,6 @@
           (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ body-size vals-size free-size))))))
 
-;; hage
 (define (pass3/$let cb iform locals frees can-frees sets tail)
   (if (eq? ($let.type iform) 'rec)
       (pass3/letrec cb iform locals frees can-frees sets tail)
@@ -2683,7 +2711,6 @@
               (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
               (+ body-size args-size free-size)))))))
 
-;; hage
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
          [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
@@ -2796,6 +2823,10 @@
     ($library.set-compiled-body! lib (pass4 `(,@body RETURN 0)))))
 
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
+(cond-expand
+ [mosh
+  (define-macro (merge-insn sexp) sexp)]
+ [else
   (define (merge-insn sexp)
     (define (iter s)
       (cond
@@ -2896,8 +2927,7 @@
            (iter `(REFER_LOCAL_PUSH ,n ,@rest))]
           [else
            (cons (car s) (iter (cdr s)))])]))
-    (iter sexp))
-
+    (iter sexp))])
 
 (define (compile-partial sexp . lib)
   (let1 ss (pass1/expand sexp)
@@ -2986,7 +3016,16 @@
 (define (compile-no-optimize sexp)
   (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f))))
 
+(cond-expand
+ [vm-outer?
   (define (main args)
     (if (= (length args) 2)
         (let1 port (open-string-input-port (second args))
           (write (compile (read port))))))
+  (main (command-line))]
+ [mosh #f]
+ [else
+  (define (main args)
+    (if (= (length args) 2)
+        (let1 port (open-string-input-port (second args))
+          (write (compile (read port))))))])
