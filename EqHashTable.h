@@ -32,21 +32,61 @@
 #ifndef __SCHEME_EQ_HASH_TABLE__
 #define __SCHEME_EQ_HASH_TABLE__
 
+#define USE_GNU_CXX_HASH_MAP
+
+#ifdef USE_GNU_CXX_HASH_MAP
+#include <tr1/unordered_map>
+#include <ext/hash_map>
+struct hash_func
+{
+    size_t operator()(scheme::Object const & s) const
+    {
+            return std::tr1::hash<word>()(s.val);
+    }
+};
+typedef __gnu_cxx::hash_map<scheme::Object,
+                            scheme::Object,
+                            hash_func,
+                            std::equal_to<scheme::Object>,
+                            gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+
+#elif defined(USE_TR1_UNORDERED_MAP)
+
+#include <tr1/unordered_map>
+struct hash_func
+{
+    size_t operator()(scheme::Object const & s) const
+    {
+        return std::tr1::hash<word>()(s.val);
+    }
+};
+
+typedef std::tr1::unordered_map<scheme::Object,
+                                scheme::Object,
+                                hash_func, std::equal_to<scheme::Object>,
+                                gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+
+#else // std::map
+typedef std::map<scheme::Object,
+                 scheme::Object,
+                 std::less<scheme::Object>,
+                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
+#endif
+
 namespace scheme {
 
 class EqHashTable EXTEND_GC
 {
-//    typedef gc_map<Object, Object> Table;
-    typedef std::map<Object, Object, std::less<Object>, gc_allocator<std::pair<const Object, Object> > > Table;
+
 public:
     EqHashTable() {}
 
     // todo
-    //    EqHashTable(int capacity) {}
+    //    EqHashObjectMap(int capacity) {}
 
     Object ref(Object key, Object defaultVal)
     {
-        Table::iterator p = table_.find(key);
+        ObjectMap::iterator p = table_.find(key);
         if (p == table_.end()) {
             return defaultVal;
         } else {
@@ -70,7 +110,7 @@ public:
     {
         // swap (key, value)
         Object ht = Object::makeEqHashTable();
-        for (Table::const_iterator it = table_.begin(); it != table_.end(); ++it) {
+        for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it) {
             ht.toEqHashTable()->set(it->second, it->first);
         }
         return ht;
@@ -81,7 +121,7 @@ public:
         Object ht = Object::makeEqHashTable();
         Object v = Object::makeVector(table_.size());
         int i = 0;
-        for (Table::const_iterator it = table_.begin(); it != table_.end(); ++it, i++) {
+        for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it, i++) {
             v.toVector()->set(i, it->first);
         }
         return v;
@@ -97,11 +137,11 @@ public:
     ~EqHashTable() {} // not virtual
 
 private:
-    inline void setTable(Table i) { table_ = i; }
-    inline Table getTable() const { return table_; }
+    inline void setTable(ObjectMap i) { table_ = i; }
+    inline ObjectMap getTable() const { return table_; }
 
 protected:
-    Table table_;
+    ObjectMap table_;
 };
 
 }; // namespace scheme

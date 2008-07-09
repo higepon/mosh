@@ -39,8 +39,8 @@ extern scheme::VM* theVM;
 static Object pass4FixupLabelCollect(Object vec);
 static Object pass4FixupLabel(Object vec);
 static Object findFree(Object iform, Object locals, Object canFrees);
-static Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
-static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
+static Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen);
+static Object findFreeRecMap(Object l, EqHashTable* canFrees, Object labelsSeen, Object list);
 static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
@@ -98,9 +98,21 @@ Object scheme::pass3FindSetsEx(int argc, const Object* argv)
     return findSets(argv[0], argv[1]);
 }
 
+static EqHashTable* canFreesHash_ = NULL;
+static Object canFrees_;
+
+
 Object findFree(Object iform, Object locals, Object canFrees)
 {
-    const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
+    EqHashTable* ht = new EqHashTable;
+//     for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
+//         for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
+//             ht->set(p.car(), Object::True);
+//         }
+//     }
+    canFrees_ = canFrees;
+    const Object ret = findFreeRec(iform, locals, ht, Object::Nil);
+    canFreesHash_ = NULL;
     return uniq(ret);
 }
 
@@ -114,7 +126,21 @@ bool existsInCanFrees(Object sym, Object canFrees)
     return false;
 }
 
-Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
+
+EqHashTable* canFreesHash()
+{
+    if (NULL == canFreesHash_) {
+        canFreesHash_ = new EqHashTable;
+        for (Object frees = canFrees_; frees.isPair(); frees = frees.cdr()) {
+            for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
+                canFreesHash_->set(p.car(), Object::True);
+            }
+        }
+    }
+    return canFreesHash_;
+}
+
+Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
 {
     const int CONST = 0;
     const int LET = 2;
@@ -172,7 +198,8 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     {
         const Object sym = v->ref(1).toVector()->ref(1);
         const Object val = v->ref(2);
-        if (existsInCanFrees(sym, canFrees)) {
+//        if (existsInCanFrees(sym, canFrees)) {
+        if (!canFreesHash()->ref(sym, Object::False).isFalse()) {
             return Object::cons(sym, findFreeRec(val, l, canFrees, labelsSeen));
         } else {
             return findFreeRec(val, l, canFrees, labelsSeen);
@@ -180,10 +207,28 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case LOCAL_REF:
     {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object sym = v->ref(1).toVector()->ref(1);
-        if (!memq(sym, l).isFalse()) {
+//        VM_LOG1("sym=~a\n", sym);
+
+//         struct timeval tv1, tv2;
+//         struct timezone tz1, tz2;
+//         static long ltime = 0;
+//         static long ftime = 0;
+//         printf("ltime = %ld ftime= %ld\n", ltime, ftime);
+//        gettimeofday(&tv1, &tz1);
+        const bool foundInLocals = !memq(sym, l).isFalse();
+//        gettimeofday(&tv2, &tz2);
+//        ltime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
+        if (foundInLocals) {
             return Object::Nil;
-        } else if (existsInCanFrees(sym, canFrees)) {
+        }
+
+//        gettimeofday(&tv1, &tz1);
+        const bool foundInCanFress = !canFreesHash()->ref(sym, Object::False).isFalse();
+        //      gettimeofday(&tv2, &tz2);
+//        ftime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
+        if (foundInCanFress) {
             return Pair::list1(sym);
         } else {
             return Object::Nil;
@@ -192,7 +237,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     case GLOBAL_REF:
     {
         const Object sym = v->ref(2);
-        if (existsInCanFrees(sym, canFrees)) {
+        if (!canFreesHash()->ref(sym, Object::False).isFalse()) {//        if (existsInCanFrees(sym, canFrees)) {
             return Pair::list1(sym);
         } else {
             return Object::Nil;
@@ -262,7 +307,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 }
 
 
-Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
+Object findFreeRecMap(Object l, EqHashTable* canFrees, Object labelsSeen, Object list)
 {
     Object ret = Object::Nil;
     for (Object p = list; p.isPair(); p = p.cdr()) {
