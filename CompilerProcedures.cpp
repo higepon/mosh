@@ -39,8 +39,8 @@ extern scheme::VM* theVM;
 static Object pass4FixupLabelCollect(Object vec);
 static Object pass4FixupLabel(Object vec);
 static Object findFree(Object iform, Object locals, Object canFrees);
-static Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen);
-static Object findFreeRecMap(Object l, EqHashTable* canFrees, Object labelsSeen, Object list);
+static Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
+static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
 static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
@@ -69,8 +69,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = localVariablesList; p.isPair(); p = p.cdr(), localsIndex++) {
         const Object localVariable = p.car();
         if (localVariable == variable) {
-            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL),
-                                                                 Object::makeInt(localsIndex));
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
             return Object::makeInt(0);
         }
     }
@@ -80,8 +79,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = freeVariablesList; p.isPair(); p = p.cdr(), freesIndex++) {
         const Object freeVariable = p.car();
         if (freeVariable == variable) {
-            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE),
-                                                                 Object::makeInt(freesIndex));
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
             return Object::makeInt(0);
         }
     }
@@ -100,21 +98,9 @@ Object scheme::pass3FindSetsEx(int argc, const Object* argv)
     return findSets(argv[0], argv[1]);
 }
 
-static EqHashTable* canFreesHash_ = NULL;
-static Object canFrees_;
-
-
 Object findFree(Object iform, Object locals, Object canFrees)
 {
-    EqHashTable* ht = new EqHashTable;
-//     for (Object frees = canFrees; frees.isPair(); frees = frees.cdr()) {
-//         for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
-//             ht->set(p.car(), Object::True);
-//         }
-//     }
-    canFrees_ = canFrees;
-    const Object ret = findFreeRec(iform, locals, ht, Object::Nil);
-    canFreesHash_ = NULL;
+    const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
     return uniq(ret);
 }
 
@@ -128,21 +114,7 @@ bool existsInCanFrees(Object sym, Object canFrees)
     return false;
 }
 
-
-EqHashTable* canFreesHash()
-{
-    if (NULL == canFreesHash_) {
-        canFreesHash_ = new EqHashTable;
-        for (Object frees = canFrees_; frees.isPair(); frees = frees.cdr()) {
-            for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
-                canFreesHash_->insert(p.car(), Object::True);
-            }
-        }
-    }
-    return canFreesHash_;
-}
-
-Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
+Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
     const int CONST = 0;
     const int LET = 2;
@@ -200,8 +172,7 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
     {
         const Object sym = v->ref(1).toVector()->ref(1);
         const Object val = v->ref(2);
-//        if (existsInCanFrees(sym, canFrees)) {
-        if (!canFreesHash()->ref(sym, Object::False).isFalse()) {
+        if (existsInCanFrees(sym, canFrees)) {
             return Object::cons(sym, findFreeRec(val, l, canFrees, labelsSeen));
         } else {
             return findFreeRec(val, l, canFrees, labelsSeen);
@@ -209,28 +180,10 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
     }
     case LOCAL_REF:
     {
-//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const Object sym = v->ref(1).toVector()->ref(1);
-//        VM_LOG1("sym=~a\n", sym);
-
-//         struct timeval tv1, tv2;
-//         struct timezone tz1, tz2;
-//         static long ltime = 0;
-//         static long ftime = 0;
-//         printf("ltime = %ld ftime= %ld\n", ltime, ftime);
-//        gettimeofday(&tv1, &tz1);
-        const bool foundInLocals = !memq(sym, l).isFalse();
-//        gettimeofday(&tv2, &tz2);
-//        ltime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
-        if (foundInLocals) {
+        if (!memq(sym, l).isFalse()) {
             return Object::Nil;
-        }
-
-//        gettimeofday(&tv1, &tz1);
-        const bool foundInCanFress = !canFreesHash()->ref(sym, Object::False).isFalse();
-//             gettimeofday(&tv2, &tz2);
-//       ftime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
-        if (foundInCanFress) {
+        } else if (existsInCanFrees(sym, canFrees)) {
             return Pair::list1(sym);
         } else {
             return Object::Nil;
@@ -239,7 +192,7 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
     case GLOBAL_REF:
     {
         const Object sym = v->ref(2);
-        if (!canFreesHash()->ref(sym, Object::False).isFalse()) {//        if (existsInCanFrees(sym, canFrees)) {
+        if (existsInCanFrees(sym, canFrees)) {
             return Pair::list1(sym);
         } else {
             return Object::Nil;
@@ -288,7 +241,7 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
     }
     case LABEL:
     {
-        const Object labelBody = v->ref(2);
+        const Object labelBody = v->ref(1);
         if (!memq(i, labelsSeen).isFalse()) {
             return Object::Nil;
         } else {
@@ -309,7 +262,7 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
 }
 
 
-Object findFreeRecMap(Object l, EqHashTable* canFrees, Object labelsSeen, Object list)
+Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
 {
     Object ret = Object::Nil;
     for (Object p = list; p.isPair(); p = p.cdr()) {
@@ -478,6 +431,7 @@ Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
+//    cb.toCodeBuilder()->put(argv[1]);
     return Object::Undef;
 }
 
@@ -491,6 +445,9 @@ Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+
     return Object::Undef;
 }
 
@@ -516,10 +473,15 @@ Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+//     cb.toCodeBuilder()->put(argv[3]);
+//     cb.toCodeBuilder()->put(argv[4]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[4]);
+
     return Object::Undef;
 }
 
@@ -531,11 +493,17 @@ Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
+//     cb.toCodeBuilder()->put(argv[1]);
+//     cb.toCodeBuilder()->put(argv[2]);
+//     cb.toCodeBuilder()->put(argv[3]);
+//     cb.toCodeBuilder()->put(argv[4]);
+//     cb.toCodeBuilder()->put(argv[5]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
     cb.toCodeBuilder()->putExtra(argv[4]);
     cb.toCodeBuilder()->putExtra(argv[5]);
+
     return Object::Undef;
 }
 
