@@ -139,11 +139,15 @@ Object scheme::pass3FindSetsEx(int argc, const Object* argv)
     return findSets(argv[0], argv[1]);
 }
 
+static ObjectMap cache_;
+
 Object findFree(Object iform, Object locals, Object canFrees)
 {
     const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
     return uniq(ret);
 }
+
+
 
 bool existsInCanFrees(Object sym, Object canFrees)
 {
@@ -155,52 +159,51 @@ bool existsInCanFrees(Object sym, Object canFrees)
     return false;
 }
 
-Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
+Object findFreeLet(Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
-    Vector* v = i.toVector();
-    switch(v->ref(0).toInt()) {
-    case CONST:
-        return Object::Nil;
-    case LET:
-    {
         const Object letLvars = v->ref(2);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
         return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, letInits),
                              findFreeRec(letBody, letLvars, canFrees, labelsSeen));
-    }
-    case RECEIVE:
-    {
+}
+
+Object findFreeReceive(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         const Object receiveLVars = v->ref(1);
         return Pair::append2(findFreeRec(receiveVals, l, canFrees, labelsSeen),
                              findFreeRec(receiveBody, receiveLVars, canFrees, labelsSeen));
 
-    }
-    case SEQ:
-    {
+}
+
+Object findFreeSeq(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
         const Object seqBody = v->ref(1);
         return findFreeRecMap(l, canFrees, labelsSeen, seqBody);
-    }
-    case LAMBDA:
-    {
+}
+
+Object findFreeLambda(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
         return findFreeRec(lambdaBody, lambdaLvars, canFrees, labelsSeen);
-    }
-    case LOCAL_ASSIGN:
-    {
-        const Object sym = v->ref(1).toVector()->ref(1);
+}
+
+Object findFreeLocalAssign(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
+    const Object sym = v->ref(1).toVector()->ref(1);
         const Object val = v->ref(2);
         if (existsInCanFrees(sym, canFrees)) {
             return Object::cons(sym, findFreeRec(val, l, canFrees, labelsSeen));
         } else {
             return findFreeRec(val, l, canFrees, labelsSeen);
         }
-    }
-    case LOCAL_REF:
-    {
+}
+
+Object findFreeLocalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
         const Object sym = v->ref(1).toVector()->ref(1);
         if (!memq(sym, l).isFalse()) {
             return Object::Nil;
@@ -209,24 +212,85 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
         } else {
             return Object::Nil;
         }
-    }
-    case GLOBAL_REF:
-    {
+}
+
+Object findFreeGlobalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
         const Object sym = v->ref(2);
         if (existsInCanFrees(sym, canFrees)) {
             return Pair::list1(sym);
         } else {
             return Object::Nil;
         }
+}
+
+Object findFreeIf(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
+    const Object testF = findFreeRec(v->ref(1), l, canFrees, labelsSeen);
+    const Object thenF = findFreeRec(v->ref(2), l, canFrees, labelsSeen);
+    const Object elseF = findFreeRec(v->ref(3), l, canFrees, labelsSeen);
+    return Pair::append2(testF, Pair::append2(thenF, elseF));
+}
+
+Object findFreeLabel(Object i, Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
+        const Object labelBody = v->ref(1);
+        if (!memq(i, labelsSeen).isFalse()) {
+            return Object::Nil;
+        } else {
+            return findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
+        }
+}
+
+Object findFreeCall(Vector* v, Object l, Object canFrees, Object labelsSeen)
+{
+
+        const Object callArgs = v->ref(2);
+        const Object callProc = v->ref(1);
+        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, callArgs),
+                             findFreeRec(callProc, l, canFrees, labelsSeen));
+}
+
+
+Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
+{
+    Vector* v = i.toVector();
+    switch(v->ref(0).toInt()) {
+    case CONST:
+        return Object::Nil;
+    case LET:
+    {
+        return findFreeLet(v, l, canFrees, labelsSeen);
+    }
+    case RECEIVE:
+    {
+        return findFreeReceive(v, l, canFrees, labelsSeen);
+    }
+    case SEQ:
+    {
+        return findFreeSeq(v, l, canFrees, labelsSeen);
+    }
+    case LAMBDA:
+    {
+        return findFreeLambda(v, l, canFrees, labelsSeen);
+    }
+    case LOCAL_ASSIGN:
+    {
+        return findFreeLocalAssign(v, l, canFrees, labelsSeen);
+    }
+    case LOCAL_REF:
+    {
+        return findFreeLocalRef(v, l, canFrees, labelsSeen);
+    }
+    case GLOBAL_REF:
+    {
+        return findFreeGlobalRef(v, l, canFrees, labelsSeen);
     }
     case UNDEF:
         return Object::Nil;
     case IF:
     {
-        const Object testF = findFreeRec(v->ref(1), l, canFrees, labelsSeen);
-        const Object thenF = findFreeRec(v->ref(2), l, canFrees, labelsSeen);
-        const Object elseF = findFreeRec(v->ref(3), l, canFrees, labelsSeen);
-        return Pair::append2(testF, Pair::append2(thenF, elseF));
+        return findFreeIf(v, l, canFrees, labelsSeen);
     }
     case ASM:
     {
@@ -240,10 +304,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case CALL:
     {
-        const Object callArgs = v->ref(2);
-        const Object callProc = v->ref(1);
-        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, callArgs),
-                             findFreeRec(callProc, l, canFrees, labelsSeen));
+        return findFreeCall(v, l, canFrees, labelsSeen);
     }
     case CALL_CC:
     {
@@ -262,12 +323,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case LABEL:
     {
-        const Object labelBody = v->ref(1);
-        if (!memq(i, labelsSeen).isFalse()) {
-            return Object::Nil;
-        } else {
-            return findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
-        }
+        return findFreeLabel(i, v, l, canFrees, labelsSeen);
     }
     case IMPORT:
         return Object::Nil;

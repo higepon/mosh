@@ -190,7 +190,7 @@ namespace scheme {
     // callee should check <list>.
     inline Object memq(Object o, Object list)
     {
-        for (Object p = list; p != Object::Nil; p = p.cdr()) {
+        for (Object p = list; p.isPair(); p = p.cdr()) {
             if (p.car() == o) {
                 return p;
             }

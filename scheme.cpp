@@ -41,9 +41,6 @@ const Object Object::UnBound = Object::makeConst(3);
 const Object Object::True    = Object::makeConst(4);
 const Object Object::False   = Object::makeConst(5);
 
-Object Object::eqv(Object o) const
-{
-    return eq(o);
 //     const int taga = tag();
 //     const int tagb = o.tag();
 //     if (taga && tagb) {
@@ -88,7 +85,7 @@ Object Object::eqv(Object o) const
 
 //     // todo
 //     return Object::False;
-}
+//}
 
 
 Object Object::equal(Object o) const

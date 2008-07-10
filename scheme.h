@@ -640,6 +640,11 @@ inline Object Object::makeByteVector(ByteVector* b)
                                                         reinterpret_cast<word>(b))));
 }
 
+inline Object Object::eqv(Object o) const
+{
+    return eq(o);
+}
+
 
 
 };
