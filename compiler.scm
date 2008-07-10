@@ -395,19 +395,9 @@
 (define-macro ($call.set-tail?! iform tail?) `(vector-set! ,iform 3 ,tail?))
 (define-macro ($call.set-type! iform type) `(vector-set! ,iform 4 ,type))
 
-;; struct $label
-;; (define $LABEL 15)
-;; (define ($label label body)
-;;   `#(,$LABEL ,label ,body ))
-
-;; (define-macro ($label.label iform) `(vector-ref ,iform 1))
-;; (define-macro ($label.body iform) `(vector-ref ,iform 2))
-;; (define-macro ($label.set-label! iform label) `(vector-set! ,iform 1 ,label))
-;; (define-macro ($label.set-body! iform body) `(vector-set! ,iform 2 ,body))
-;; (define-macro (make-label) `($label #f #f))
-;; (define-macro (ref-label l) l)
-
 (define $LABEL 15)
+
+;; moved to C++
 (define ($label body)
   `#(,$LABEL ,body ))
 

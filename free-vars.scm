@@ -154,6 +154,8 @@
     (list->vector ,list->vector)
     (pass3/compile-refer ,pass3/compile-refer)
     (pass1/find-symbol-in-lvars, pass1/find-symbol-in-lvars)
+    ($label ,$label)
+    ($local-ref ,$local-ref)
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

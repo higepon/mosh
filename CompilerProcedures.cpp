@@ -45,6 +45,47 @@ static Object findSetsRecMap(Object lvars, Object list);
 static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
 
+enum {
+    CONST = 0,
+    LET = 2,
+    SEQ = 3,
+    LAMBDA = 4,
+    LOCAL_REF = 5,
+    LOCAL_ASSIGN = 6,
+    GLOBAL_REF = 7,
+    GLOBAL_ASSIGN = 8,
+    UNDEF = 9,
+    IF = 10,
+    ASM = 11,
+    DEFINE = 12,
+    CALL_CC = 13,
+    CALL = 14,
+    LABEL = 15,
+    LIST = 16,
+    LIBRARY = 17,
+    IMPORT = 18,
+    IT = 20,
+    RECEIVE = 21
+};
+
+Object scheme::labelEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "$label");
+    const Object label = Object::makeVector(2);
+    label.toVector()->set(0, Object::makeInt(LABEL));
+    label.toVector()->set(1, argv[0]);
+    return label;
+}
+
+Object scheme::localRefEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "$localRefEx");
+    const Object label = Object::makeVector(2);
+    label.toVector()->set(0, Object::makeInt(LOCAL_REF));
+    label.toVector()->set(1, argv[0]);
+    return label;
+}
+
 Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "pass1/find-symbol-in-lvars");
@@ -116,26 +157,6 @@ bool existsInCanFrees(Object sym, Object canFrees)
 
 Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
-    const int CONST = 0;
-    const int LET = 2;
-    const int SEQ = 3;
-    const int LAMBDA = 4;
-    const int LOCAL_REF = 5;
-    const int LOCAL_ASSIGN = 6;
-    const int GLOBAL_REF = 7;
-    const int GLOBAL_ASSIGN = 8;
-    const int UNDEF = 9;
-    const int IF = 10;
-    const int ASM = 11;
-    const int DEFINE = 12;
-    const int CALL_CC = 13;
-    const int CALL = 14;
-    const int LABEL = 15;
-    const int LIST = 16;
-    const int LIBRARY = 17;
-    const int IMPORT = 18;
-    const int IT = 20;
-    const int RECEIVE = 21;
     Vector* v = i.toVector();
     switch(v->ref(0).toInt()) {
     case CONST:
@@ -287,27 +308,6 @@ Object findSets(Object iform, Object lvars)
 
 Object findSetsRec(Object i, Object lvars)
 {
-    const int CONST = 0;
-    const int LET = 2;
-    const int SEQ = 3;
-    const int LAMBDA = 4;
-    const int LOCAL_REF = 5;
-    const int LOCAL_ASSIGN = 6;
-    const int GLOBAL_REF = 7;
-    const int GLOBAL_ASSIGN = 8;
-    const int UNDEF = 9;
-    const int IF = 10;
-    const int ASM = 11;
-    const int DEFINE = 12;
-    const int CALL_CC = 13;
-    const int CALL = 14;
-    const int LABEL = 15;
-    const int LIST = 16;
-    const int LIBRARY = 17;
-    const int IMPORT = 18;
-    const int IT = 20;
-    const int RECEIVE = 21;
-
     Vector* v = i.toVector();
     switch(v->ref(0).toInt()) {
     case CONST:
@@ -431,7 +431,6 @@ Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
-//    cb.toCodeBuilder()->put(argv[1]);
     return Object::Undef;
 }
 
@@ -445,9 +444,6 @@ Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
     }
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
-//     cb.toCodeBuilder()->put(argv[1]);
-//     cb.toCodeBuilder()->put(argv[2]);
-
     return Object::Undef;
 }
 
@@ -473,10 +469,6 @@ Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
-//     cb.toCodeBuilder()->put(argv[1]);
-//     cb.toCodeBuilder()->put(argv[2]);
-//     cb.toCodeBuilder()->put(argv[3]);
-//     cb.toCodeBuilder()->put(argv[4]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
@@ -493,11 +485,6 @@ Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
     }
-//     cb.toCodeBuilder()->put(argv[1]);
-//     cb.toCodeBuilder()->put(argv[2]);
-//     cb.toCodeBuilder()->put(argv[3]);
-//     cb.toCodeBuilder()->put(argv[4]);
-//     cb.toCodeBuilder()->put(argv[5]);
     cb.toCodeBuilder()->putExtra(argv[1]);
     cb.toCodeBuilder()->putExtra(argv[2]);
     cb.toCodeBuilder()->putExtra(argv[3]);
@@ -568,7 +555,6 @@ Object pass4FixupLabelCollect(Object vec)
     static const Object FRAME                 = Object::makeRaw(Instruction::FRAME);
     static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
     static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
-    const int LABEL = 15;
 
     const Vector* const v = vec.toVector();
     const int length = v->length();

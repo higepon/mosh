@@ -42,9 +42,10 @@ namespace scheme {
         return lvar.toVector()->ref(1);
     }
 
-
     Object pass1FindSymbolInLvarsEx(int argc, const Object* argv);
 
+    Object labelEx(int argc, const Object* argv);
+    Object localRefEx(int argc, const Object* argv);
     Object pass3FindFreeEx(int argc, const Object* argv);
     Object pass3FindSetsEx(int argc, const Object* argv);
     Object pass3CompileReferEx(int argc, const Object* argv);

@@ -18,6 +18,8 @@
            [(#\%)
             (display "internal" out)
             (rec (read-char in))]
+           [(#\$)
+            (rec (read-char in))]
            [(#\>)
             (let1 c (read-char in)
               (if (char=? #\= c)
