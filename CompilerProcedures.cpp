@@ -46,26 +46,26 @@ static Object findSets(Object iform, Object lvars);
 static Object findSetsRec(Object i, Object lvars);
 
 enum {
-    CONST = 0,
-    LET = 2,
-    SEQ = 3,
-    LAMBDA = 4,
-    LOCAL_REF = 5,
-    LOCAL_ASSIGN = 6,
-    GLOBAL_REF = 7,
+    CONST         = 0,
+    LET           = 2,
+    SEQ           = 3,
+    LAMBDA        = 4,
+    LOCAL_REF     = 5,
+    LOCAL_ASSIGN  = 6,
+    GLOBAL_REF    = 7,
     GLOBAL_ASSIGN = 8,
-    UNDEF = 9,
-    IF = 10,
-    ASM = 11,
-    DEFINE = 12,
-    CALL_CC = 13,
-    CALL = 14,
-    LABEL = 15,
-    LIST = 16,
-    LIBRARY = 17,
-    IMPORT = 18,
-    IT = 20,
-    RECEIVE = 21
+    UNDEF         = 9,
+    IF            = 10,
+    ASM           = 11,
+    DEFINE        = 12,
+    CALL_CC       = 13,
+    CALL          = 14,
+    LABEL         = 15,
+    LIST          = 16,
+    LIBRARY       = 17,
+    IMPORT        = 18,
+    IT            = 20,
+    RECEIVE       = 21
 };
 
 Object scheme::labelEx(int argc, const Object* argv)
