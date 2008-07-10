@@ -230,6 +230,7 @@
 (define ($lvar sym init-val ref-count set-count)
   `#(,$LVAR ,sym ,init-val ,ref-count ,set-count ))
 
+(define ($lvar.sym-proc iform) (vector-ref iform 1))
 (define-macro ($lvar.sym iform) `(vector-ref ,iform 1))
 (define-macro ($lvar.init-val iform) `(vector-ref ,iform 2))
 (define-macro ($lvar.ref-count iform) `(vector-ref ,iform 3))
@@ -2527,7 +2528,7 @@
      (let* ([label ($lambda.body ($call.proc iform))]
             [body ($label.body label)]
             [vars ($lambda.lvars ($call.proc iform))]
-            [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
+            [vars-sym ($map1 $lvar.sym-proc vars)]
             [frees-here (pass3/find-free body
                                          vars-sym
                                          (pass3/add-can-frees2 can-frees locals frees))]
@@ -2594,7 +2595,7 @@
 
 (define (pass3/$lambda cb iform locals frees can-frees sets tail)
   (let* ([vars ($lambda.lvars iform)]
-         [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
+         [vars-sym ($map1 $lvar.sym-proc vars)]
          [body ($lambda.body iform)]
          [frees-here (pass3/find-free body
                                       vars
@@ -2632,7 +2633,7 @@
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
-         [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
+         [vars-sym ($map1 $lvar.sym-proc vars)]
          [body ($receive.body iform)]
          [frees-here (append
                       (pass3/find-free ($receive.vals iform) locals (pass3/add-can-frees2 can-frees locals frees))
@@ -2666,7 +2667,7 @@
   (if (eq? ($let.type iform) 'rec)
       (pass3/letrec cb iform locals frees can-frees sets tail)
       (let* ([vars ($let.lvars iform)]
-             [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
+             [vars-sym ($map1 $lvar.sym-proc vars)]
              [body ($let.body iform)]
              [frees-here (append
                           ($append-map1 (lambda (i) (pass3/find-free i locals (pass3/add-can-frees2 can-frees frees locals))) ($let.inits iform))
@@ -2705,10 +2706,10 @@
 
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
-         [vars-sym ($map1 (lambda (var) ($lvar.sym var)) vars)]
+         [vars-sym ($map1 $lvar.sym-proc vars)]
          [body ($let.body iform)]
          [frees-here (append
-                      ($append-map1 (lambda (i) (pass3/find-free i vars 
+                      ($append-map1 (lambda (i) (pass3/find-free i vars
 (pass3/add-can-frees2 can-frees locals frees))) ($let.inits iform))
                       (pass3/find-free body
                                        vars-sym
@@ -2826,7 +2827,7 @@
        [else
         (match s
           [('REFER_LOCAL0_PUSH 'CONSTANT . rest) ;; done
-           (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))] 
+           (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))]
           [('REFER_LOCAL1_PUSH 'CONSTANT . rest);;done
            (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
           [('REFER_LOCAL 1 'PUSH . rest) ;; done
@@ -2844,13 +2845,15 @@
           [('CONSTANT v 'PUSH . rest) ;; done
            (iter `(CONSTANT_PUSH ,v ,@rest))]
           [('REFER_FREE 0 'PUSH . rest) ;; done
-           (iter `(REFER_FREE0_PUSH ,@rest))] 
+           (iter `(REFER_FREE0_PUSH ,@rest))]
           [('REFER_FREE 1 'PUSH . rest) ;; done
            (iter `(REFER_FREE1_PUSH ,@rest))]
           [('REFER_FREE 2 'PUSH . rest) ;; done
            (iter `(REFER_FREE2_PUSH ,@rest))]
           [('REFER_FREE n 'PUSH . rest) ;; done
            (iter `(REFER_FREE_PUSH ,n ,@rest))]
+          [('REFER_FREE_PUSH n 'REFER_FREE_PUSH . rest) ;; done
+           (iter `(REFER_FREE_PUSH_REFER_FREE_PUSH ,n ,@rest))]
           [('REFER_FREE 0 . rest);; done
            (iter `(REFER_FREE0 ,@rest))]
           [('REFER_FREE 1 . rest);;done

@@ -1548,7 +1548,7 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
         }
         DEFAULT
         {
-            printf("val=%d\n", (*(pc_ - 1)).val);
+            printf("val=%ld\n", (*(pc_ - 1)).val);
             RAISE1("unknown instruction ~a", *(pc_ - 1));
 
             NEXT;
@@ -1781,7 +1781,6 @@ Object VM::getProfileResult()
     profilerRunning_ = false;
     stopProfiler();
     Object ret = Object::Nil;
-    Object ht = nameSpace_.toEqHashTable()->swap();
     for (int i = 0; i < SAMPLE_NUM; i++) {
         const Object o = samples_[i];
         if (o.isCallable()) {

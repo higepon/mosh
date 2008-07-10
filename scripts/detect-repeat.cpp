@@ -302,7 +302,7 @@ int main() {
     vector< pair <int, int> > v;
     for (int i = 0; i < tableSize; i++) {
         const int val = table[i];
-        if (val > 1000000) {
+        if (val > 10000) {
             v.push_back(pair<int, int>(i, val));
         }
     }
