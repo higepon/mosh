@@ -396,15 +396,24 @@
 (define-macro ($call.set-type! iform type) `(vector-set! ,iform 4 ,type))
 
 ;; struct $label
-(define $LABEL 15)
-(define ($label label body)
-  `#(,$LABEL ,label ,body ))
+;; (define $LABEL 15)
+;; (define ($label label body)
+;;   `#(,$LABEL ,label ,body ))
 
-(define-macro ($label.label iform) `(vector-ref ,iform 1))
-(define-macro ($label.body iform) `(vector-ref ,iform 2))
-(define-macro ($label.set-label! iform label) `(vector-set! ,iform 1 ,label))
-(define-macro ($label.set-body! iform body) `(vector-set! ,iform 2 ,body))
-(define-macro (make-label) `($label #f #f))
+;; (define-macro ($label.label iform) `(vector-ref ,iform 1))
+;; (define-macro ($label.body iform) `(vector-ref ,iform 2))
+;; (define-macro ($label.set-label! iform label) `(vector-set! ,iform 1 ,label))
+;; (define-macro ($label.set-body! iform body) `(vector-set! ,iform 2 ,body))
+;; (define-macro (make-label) `($label #f #f))
+;; (define-macro (ref-label l) l)
+
+(define $LABEL 15)
+(define ($label body)
+  `#(,$LABEL ,body ))
+
+(define-macro ($label.body iform) `(vector-ref ,iform 1))
+(define-macro ($label.set-body! iform body) `(vector-set! ,iform 1 ,body))
+(define-macro (make-label) `($label #f))
 (define-macro (ref-label l) l)
 
 ;; struct $list
@@ -1815,7 +1824,7 @@
     ($lambda.set-flag! lambda-node 'dissolved)
     (unless (null? rec-calls)
       (let1 body
-          ($label #f ($lambda.body lambda-node))
+          ($label ($lambda.body lambda-node))
         ($lambda.set-body! lambda-node body)
         (dolist (jcall rec-calls)
           ($lvar.ref-count--! lvar)
