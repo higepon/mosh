@@ -133,7 +133,7 @@ EqHashTable* canFreesHash()
         canFreesHash_ = new EqHashTable;
         for (Object frees = canFrees_; frees.isPair(); frees = frees.cdr()) {
             for (Object p = frees.car(); p.isPair(); p = p.cdr()) {
-                canFreesHash_->set(p.car(), Object::True);
+                canFreesHash_->insert(p.car(), Object::True);
             }
         }
     }
@@ -226,8 +226,8 @@ Object findFreeRec(Object i, Object l, EqHashTable* canFrees, Object labelsSeen)
 
 //        gettimeofday(&tv1, &tz1);
         const bool foundInCanFress = !canFreesHash()->ref(sym, Object::False).isFalse();
-        //      gettimeofday(&tv2, &tz2);
-//        ftime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
+//             gettimeofday(&tv2, &tz2);
+//       ftime += (tv2.tv_sec * 1000000 + tv2.tv_usec) - (tv1.tv_sec * 1000000 + tv1.tv_usec);
         if (foundInCanFress) {
             return Pair::list1(sym);
         } else {

@@ -99,6 +99,11 @@ public:
         table_[key] = val;
     }
 
+    void insert(Object key, Object val)
+    {
+        table_.insert(std::pair<const Object, Object>(key, val));
+    }
+
     void eraseAllExcept(Object key)
     {
         const Object o = ref(key, Object::False);
