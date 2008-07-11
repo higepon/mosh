@@ -502,7 +502,6 @@ Object portOutputPair(Object port, Object obj, bool inList = false);
 
 }; // namespace scheme
 
-scheme::Object getCompiler();
 void test();
 
 #include "Pair.h"

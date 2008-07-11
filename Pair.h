@@ -153,6 +153,14 @@ struct Pair EXTEND_GC
         return ret;
     }
 
+    static Object arrayToList(Object* array, int size)
+    {
+        Object p = Object::Nil;
+        for (int i = size - 1; i >= 0; i--) {
+            p = Object::cons(array[i], p);
+        }
+        return p;
+    }
 
     Object car;
     Object cdr;

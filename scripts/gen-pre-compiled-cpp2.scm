@@ -1,31 +1,16 @@
 #!/usr/bin/env gosh
 (use srfi-1)
 (use srfi-43)
+(use file.util)
 (use gauche.sequence)
-(define (up lst)
+(use gauche.parseopt)
+
+(define (flatten lst)
   (cond
    [(null? lst) '()]
-   [else
-    (cond
-     [(list? (car lst))
-      (append (car lst) (up (cdr lst)))]
-     [(pair? (car lst))
-      (append (list (caar lst) (cdar lst)) (cdr lst))]
-     [else
-      (cons (car lst) (up (cdr lst)))])]))
-(define (flatten slist)
-  (define (upup o)
-    (if (pair? o)
-        (if (find pair? o)
-            (upup (up o))
-            o)
-        o))
-  (remove null? (upup slist)))
-
-
-;(define (comma-join lst)
-;  (fold-right (lambda (a b) (if (string=? b "") (string-append "    " a "\n") (string-append "    " a ",\n" b))) "" lst))
-;  (fold-right (lambda (a b) (format "    ~a,\n~a\n" a b)) "" lst))
+   [(pair? lst)
+    (append (flatten (car lst)) (flatten (cdr lst)))]
+   [else (list lst)]))
 
 (define (collect-list lst)
   (define (rec lst)
@@ -49,91 +34,105 @@
 (define inc 0)
 
 (define (vector->cpp name obj)
-  (define symbols  (delete-duplicates (filter symbol? (flatten (vector->list obj)))))
+  (define symbols  (collect-all-symbols))
   (define (rec obj)
     (cond
      [(symbol? obj)
       (receive (index o) (find-with-index (lambda (x) (eq? x obj)) symbols)
         (unless o
           (error "symbol not found" obj))
-        (format "symbols[~d]" index))]
+        (format "        builtinSymbols[~d]" index))]
      [(number? obj)
-      (format "MI(~d)" obj)]
+      (format "        MI(~d)" obj)]
      [(and (pair? obj) (eq? (car obj) '*insn*))
-      (format "MIS(~d)" (second obj))]
+      (format "        MIS(~d)" (second obj))]
      [(and (pair? obj) (eq? (car obj) '*compiler-insn*))
-      (format "MCI(~d)" (second obj))]
+      (format "        MCI(~d)" (second obj))]
      [(regexp? obj)
-      (format "Object::makeRegexp(UC(~s))" (regexp->string obj))]
+      (format "             Object::makeRegexp(UC(~s))" (regexp->string obj))]
      [(string? obj)
       (if (string=? obj "\n")
-          (format "Object::makeString(UC(\"\\n\"))")
-          (format "Object::makeString(UC(~s))" obj))]
+          (format "        Object::makeString(UC(\"\\n\"))")
+          (format "        Object::makeString(UC(~s))" obj))]
      [(vector? obj)
-      (format "Object::makeVector(~a)" (rec (vector->list obj)))]
+      (format "            Object::makeVector(~a)" (rec (vector->list obj)))]
      [(char? obj)
       (cond
        [(char=? obj #\space)
-        "Object::makeChar(' ')"]
+        "            Object::makeChar(' ')"]
        [(char=? obj #\newline)
-        "Object::makeChar('\\n')"]
+        "            Object::makeChar('\\n')"]
        [else
-        (format "Object::makeChar('~a')" obj)])]
+        (format "            Object::makeChar('~a')" obj)])]
      [(boolean? obj)
-      (if obj "Object::True" "Object::False")]
-     [(null? obj) "Object::Nil"]
+      (if obj "        Object::True" "        Object::False")]
+     [(null? obj) "        Object::Nil"]
      [(list? obj)
       (if (hash-table-get ht obj #f)
-          (format "~a" (hash-table-get ht obj #f))
+          (format "        ~a" (hash-table-get ht obj #f))
           (let ([array-name (format "array~d" inc)]
                 [list-name (format "list~d" inc)]
                 [len (length obj)])
             (hash-table-put! ht obj list-name)
-            (let1 v (format "static Object ~a[] = {\n~a};\nObject ~a = arrayToList(~a, ~d);\n" array-name (string-join (map rec obj) ",\n ") list-name array-name len)
+            (let1 v (format "    static Object ~a[] = {\n~a\n    };\n    Object ~a = Pair::arrayToList(~a, ~d);\n"
+                            array-name (string-join (map rec obj) ",\n") list-name array-name len)
             (set! inc (+ inc 1))
             v)
             ))]
      [(pair? obj)
-      (format "Object::cons(~a, ~a)" (rec (car obj)) (rec (cdr obj)))]
+      (format "    Object::cons(~a, ~a)" (rec (car obj)) (rec (cdr obj)))]
      [else
       (error "unknown Object")]))
   (define (make-obj i obj)
     (rec obj))
-  (print "#include \"scheme.h\"\n")
+  (print "#include \"Builtin.h\"\n")
   (print "using namespace scheme;\n")
-  (print "extern Object arrayToList(Object* array, int size);")
-  (format #t "Object ~a() {\n" name)
-  (print "#define MI(i) Object::makeInt(i)")
-  (print "#define MIS(i) Object::makeInstruction(i)")
-  (print "#define MCI(i) Object::makeCompilerInstruction(i)")
-  (print "#define SA(s) Symbol::add(UC(s))\n")
-  (print "#define SI(s) Symbol::intern(UC(s))\n")
-  (print "\tstatic const Object symbols[] = {")
-  (for-each (lambda (x) (format #t "\t\tSA(\"~a\"),\n" x)) symbols)
-  (print "\t};")
+  (format #t "Object scheme::~a() {\n" name)
+  (print "    const Object* builtinSymbols = getBuiltinSymbols();")
   (let* ([source (vector->list obj)]
          [collected (collect-list source)])
-;    (print "source" source)
-;    (print "collected " collected)
     (for-each (lambda (src) (print (rec src))) collected)
     (print (rec source))
-;;   (print "\tstatic Object code[] = {")
-;;   (let1 lst (list->vector obj)p
-;;     (for-each (lambda (x) (format #t "\t\t~a,\n" x)) (vector-map make-obj obj))
-;;   (print "\t};")
-  (format #t "\treturn Object::makeVector(~d, array~d);\n}\n" (vector-length obj) (length collected))))
+  (format #t "    return Object::makeVector(~d, array~d);\n}\n" (vector-length obj) (length collected))))
 
-;; (let* ([source '(1 (2 (#\a . #\b) 3 (#t 4 5 (6 7))))]
-;;        [collected (collect-list source)])
-;;   (for-each (lambda (src) (print (scm->cpp src collected))) collected)
-;;   (print (scm->cpp source collected)))
+(define (collect-symbol-from-file file)
+  (delete-duplicates
+   (append-map (lambda (sexp)
+                 (filter symbol? (flatten (vector->list sexp))))
+               (file->sexp-list file))))
+
+(define (collect-all-symbols)
+  (sort
+   (delete-duplicates
+    (append-map collect-symbol-from-file (glob "*.scmc")))
+   (lambda (a b) (string<? (symbol->string a) (symbol->string b)))))
+
+(define (print-symbol-header symbols)
+  (print "#include \"Builtin.h\"\n")
+  (print "using namespace scheme;\n")
+  (print "const Object* scheme::getBuiltinSymbols() {")
+  (print "    static const Object builtinSymbols[] = {")
+  (for-each
+   (lambda (symbol) (format #t "        SA(\"~a\"),\n" symbol))
+   symbols)
+  (print "    };")
+  (print "    return builtinSymbols;")
+  (print "}"))
 
 (define (main args)
-  (format #t "// Do not edit this file generated by ~a.\n" (first args))
-  (with-input-from-file (third args)
-    (lambda ()
-      (let1 obj (read)
-        (if (vector? obj)
-            (vector->cpp (second args) obj)
-            (errorf "~a : vector required, but got ~a" (first args) obj)))))
+  (let-args (cdr args)
+      ([generate-symbol-header? "g" #f])
+    (cond
+     [generate-symbol-header?
+      (format #t "// Do not edit this file generated by ~a.\n" (first args))
+       (print-symbol-header (collect-all-symbols))]
+     [else
+      (format #t "// Do not edit this file generated by ~a.\n" (first args))
+      (with-input-from-file (third args)
+        (lambda ()
+          (let1 obj (read)
+            (if (vector? obj)
+                (vector->cpp (second args) obj)
+                (errorf "~a : vector required, but got ~a" (first args) obj)))))
+      ]))
   0)

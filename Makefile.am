@@ -46,23 +46,29 @@ CodeBuilder.cpp        \
 CompilerProcedures.cpp\
 CompilerProcedures.h\
 SString.cpp          \
+BuiltinSymbols.cpp\
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall
 #mosh_CFLAGS   = -O2  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a
+mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a libmatch.a
 
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
-noinst_LIBRARIES = libcompiler.a
+noinst_LIBRARIES = libcompiler.a libmatch.a
 libcompiler_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
 libcompiler_a_SOURCES = compiler.cpp
 
+# noinst_LIBRARIES = libmatch.a
+libmatch_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
+libmatch_a_SOURCES = match.cpp
+
+
 # generated files should be listed here.
-BUILT_SOURCES  = Instruction.h compiler.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
+BUILT_SOURCES  = Instruction.h compiler.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
 EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm
 
@@ -74,6 +80,7 @@ compiler-vm-cpp.scm \
 all-tests.scm \
 labels.cpp \
 DebugInstruction.h \
+BuiltinSymbols.cpp\
 ./compiler-gauche.scm \
 ./compiler-vm-outer.scm \
 ./compiler-vm.scm
@@ -104,9 +111,16 @@ Instruction.h: ./instruction.scm
 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
 ##### compiler generation
+BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc
+	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm -g > $(PWD)/$@
+
 compiler.cpp: compiler-with-library.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 #	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getCompiler" $(PWD)/$< > $(PWD)/$@
+
+match.cpp: match.scmc
+	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
+
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
@@ -114,8 +128,12 @@ compiler.cpp: compiler-with-library.scmc
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
 
+match.scmc: ./match.scm ./compiler-vm.scm
+	@GOSH@ ./vm.scm compile-file $(PWD)/$< > $(PWD)/$@
+
+
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
-	cat ./library.scm match.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm
 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@

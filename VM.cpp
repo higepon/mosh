@@ -1611,6 +1611,7 @@ Object VM::getStackTrace()
 void VM::raise(Object o)
 {
     errorObj_ = o;
+    LOG1("~a", errorObj_);
     longjmp(returnPoint_, -1);
 }
 

@@ -1840,7 +1840,7 @@
   (append-map (lambda (x) (if (assq (car x) before) '() (list x))) after))
 
 (define (assq-multi alist keys)
-  (append-map (lambda (keys) (list (assq keys alist))) keys))
+  (append-map (lambda (key) (aif (assq key alist) (list it) '())) keys))
 
 ;; Generate pre-compiled code.
 ;; (1)normal form
@@ -1865,6 +1865,7 @@
 ;               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
                (let* ([allowed-macro '(define-simple-struct do acond guard receive defmacro match-let1 gentemp match match-lambda match-lambda* match-let match-let* match-letrec match-define defstruct define-structure define-const-structure)] ;; allowed macro!
 ;                      [v (map (lambda (x) (if x (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) '())
+;                      [dummy (print (assq-multi ($library.macro top-level-library) allowed-macro))]
                       [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
                               (assq-multi ($library.macro top-level-library) allowed-macro))]
                       [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])

@@ -31,6 +31,7 @@
 
 #include "scheme.h"
 #include "VM.h"
+#include "Builtin.h"
 
 using namespace scheme;
 
@@ -49,15 +50,6 @@ Object argsToList(int argc, int optind, char* argv[])
     return Pair::reverse(p);
 }
 
-// for precompiled code
-Object arrayToList(Object* array, int size)
-{
-    Object p = Object::Nil;
-    for (int i = size - 1; i >= 0; i--) {
-        p = Object::cons(array[i], p);
-    }
-    return p;
-}
 
 #ifdef DUMP_ALL_INSTRUCTIONS
 FILE* stream;
@@ -161,7 +153,8 @@ int main(int argc, char *argv[])
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
     // Do not call Symbol::intern before you load precompiled compiler!
-    const Object compiler = getCompiler();
+
+    const Object compiler = getBuiltinCompiler();
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
     theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc, optind, argv));
@@ -173,6 +166,7 @@ int main(int argc, char *argv[])
 #endif
 
     theVM->evaluate(compiler);
+    theVM->evaluate(getBuiltinMatch());
 
 //     VM_LOG1("compiled = ~a\n", Object::makeInt(theVM->compile(Object::makeInt(1234)).toVector()->ref(0) == Object::makeRaw(Instruction::CONSTANT)));
 //     exit(-1);
