@@ -433,6 +433,7 @@
 (define-macro ($library.set-import-syms! iform import-syms) `(vector-set! ,iform 3 ,import-syms))
 (define-macro ($library.set-import! iform import) `(vector-set! ,iform 4 ,import))
 (define-macro ($library.set-macro! iform macro) `(vector-set! ,iform 5 ,macro))
+(define-macro ($library.append-macro! iform macro) `(vector-set! ,iform 5 (append ($library.macro ,iform) ,macro)))
 (define-macro ($library.set-body! iform body) `(vector-set! ,iform 6 ,body))
 (define-macro ($library.set-compiled-body! iform compiled-body) `(vector-set! ,iform 7 ,compiled-body))
 
@@ -3018,7 +3019,8 @@
         (let1 port (open-string-input-port (second args))
           (write (compile (read port))))))
   (main (command-line))]
- [mosh #f]
+ [mosh
+  #f]
  [else
   (define (main args)
     (if (= (length args) 2)

@@ -118,7 +118,7 @@ compiler.cpp: compiler-with-library.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
 match.cpp: match.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-cpp2.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@

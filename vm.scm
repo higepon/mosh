@@ -1856,24 +1856,6 @@
 ;;    If you pre-compile all of the macro that top-level-library has.
 ;;    The size of compiler.cpp becomes bigger and difficult to compiler with g++.
 
-(define (compile-file file . for-vm-cpp?)
-  (with-input-from-file file
-    (lambda ()
-      (let loop ([obj (read)]
-                 [ret '()])
-        (cond [(eof-object? obj)
-;               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
-               (let* ([allowed-macro '(define-simple-struct do acond guard receive defmacro match-let1 gentemp match match-lambda match-lambda* match-let match-let* match-letrec match-define defstruct define-structure define-const-structure)] ;; allowed macro!
-;                      [v (map (lambda (x) (if x (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) '())
-;                      [dummy (print (assq-multi ($library.macro top-level-library) allowed-macro))]
-                      [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
-                              (assq-multi ($library.macro top-level-library) allowed-macro))]
-                      [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])
-               (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
-                   (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
-                   (pass4 ret)))]
-              [else
-               (loop (read) (append ret (compile-partial obj)))])))))
 
 (define-macro (do . sexp)
   (match sexp
@@ -1898,6 +1880,27 @@
     [else
      (syntax-error "malformed do on mosh")]))
 
+
+
+(define (compile-file file . for-vm-cpp?)
+  (with-input-from-file file
+    (lambda ()
+      (let loop ([obj (read)]
+                 [ret '()])
+        (cond [(eof-object? obj)
+;               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
+               (let* ([allowed-macro '(define-simple-struct do acond guard receive defmacro match-let1 gentemp match match-lambda match-lambda* match-let match-let* match-letrec match-define defstruct define-structure define-const-structure)] ;; allowed macro!
+;                      [v (map (lambda (x) (if x (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) '())
+;                      [dummy (print (assq-multi ($library.macro top-level-library) allowed-macro))]
+                      [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
+                              (assq-multi ($library.macro top-level-library) allowed-macro))]
+ ;                     [c (compile-partial `($library.append-macro! top-level-library (quote ,v)))])
+                      [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])
+               (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
+                   (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
+                   (pass4 ret)))]
+              [else
+               (loop (read) (append ret (compile-partial obj)))])))))
 
 
 (define (main args)

@@ -3,29 +3,7 @@
   (quasiquote
     (vector-set! (unquote iform) 5 (unquote macro))))
 
-(define-macro (do . sexp)
-  (match sexp
-    [(((var init step ...) ...)
-         (test expr ...)
-       command ...)
-     `(letrec
-       ((loop
-         (lambda (,@var)
-           (if ,test
-               (begin
-                 #f ; avoid empty begin
-                 ,@expr)
-               (begin
-                 ,@command
-                 (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-        (loop ,@init))]
-    [("step" x)
-     x]
-    [("step" x y)
-     y]
-    [else
-     (syntax-error "malformed do on mosh")]))
-
+(define-macro ($library.append-macro! iform macro) `(vector-set! ,iform 5 (append (vector-ref ,iform 5) ,macro)))
 
 ;;
 ;; match - Andrew Wright's pattern matching macro.
