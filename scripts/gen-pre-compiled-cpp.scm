@@ -104,7 +104,7 @@
 (define (collect-all-symbols)
   (sort
    (delete-duplicates
-    (append-map collect-symbol-from-file (glob "*.scmc")))
+    (append-map collect-symbol-from-file (sys-glob "*.scmc")))
    (lambda (a b) (string<? (symbol->string a) (symbol->string b)))))
 
 (define (print-symbol-header symbols)

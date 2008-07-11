@@ -1,3 +1,7 @@
+2008-07-11  higepon  <higepon@users.sourceforge.jp>
+
+        * match.cpp: pre-compiled.
+
 2008-07-10  higepon  <higepon@users.sourceforge.jp>
 
         * CompilerProcedures.cpp (labelEx): Moved $label to C++.

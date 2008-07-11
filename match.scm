@@ -1,8 +1,3 @@
-(define-macro
-  ($library.set-macro! iform macro)
-  (quasiquote
-    (vector-set! (unquote iform) 5 (unquote macro))))
-
 (define-macro ($library.append-macro! iform macro) `(vector-set! ,iform 5 (append (vector-ref ,iform 5) ,macro)))
 
 ;;

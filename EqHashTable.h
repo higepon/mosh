@@ -79,7 +79,7 @@ class EqHashTable EXTEND_GC
 {
 
 public:
-    EqHashTable() : table_(ObjectMap(100)){}
+    EqHashTable() : table_(ObjectMap(200)){}
 
     // todo
     //    EqHashObjectMap(int capacity) {}

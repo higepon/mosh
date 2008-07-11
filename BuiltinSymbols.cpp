@@ -24,6 +24,8 @@ const Object* scheme::getBuiltinSymbols() {
         SA("$lambda"),
         SA("$let"),
         SA("$library"),
+        SA("$library.append-macro!"),
+        SA("$library.macro"),
         SA("$list"),
         SA("$local-assign"),
         SA("$local-ref"),
