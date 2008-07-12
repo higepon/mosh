@@ -1,5 +1,7 @@
 2008-07-12  higepon  <higepon@users.sourceforge.jp>
 
+        * Added r6rs-test directory.
+
         * library.scm (string): Added document of (string ...).
 
         * freeproc.cpp (scheme::stringEx): Added (string ...).

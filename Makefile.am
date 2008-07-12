@@ -102,6 +102,10 @@ psyntax-mosh:
 psyntax-gosh:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
 
+r6rs-test:
+	(cd tools/psyntax-r6rs/ && ../../mosh mosh.r6rs.ss ../../r6rs-examples/hello.scm)
+
+
 #compiler build without -O2
 # mosh-compiler.o: compiler.cpp
 # 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mosh_CXXFLAGS) $(CXXFLAGS) -O0 -fomit-frame-pointer -MT mosh-compiler.o -MD -MP -MF $(DEPDIR)/mosh-compiler.Tpo -c -o mosh-compiler.o `test -f 'compiler.cpp' || echo '$(srcdir)/'`compiler.cpp
