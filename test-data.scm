@@ -1022,7 +1022,7 @@ val
 [mosh-only #f (list= eq? '(a) '(a b))]
 [mosh-only ((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
 ["123" (string #\1 #\2 #\3)]
-
+["taro&amp;hanako" (regexp-replace-all #/&/ "taro&hanako" "&amp;")]
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
 ;;          [con con]

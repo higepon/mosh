@@ -1,5 +1,7 @@
 2008-07-12  higepon  <higepon@users.sourceforge.jp>
 
+        * Regexp.cpp (Regexp::replaceAll): Fixed finite loop.
+
         * freeproc.cpp (scheme::getEnvironmentVariablesEx): Added get-environment-variables.
 
         * tools/psyntax-r6rs/psyntax-buildscript-mosh.ss (identifier->library-map): Added for Mosh.

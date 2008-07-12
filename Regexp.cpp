@@ -123,12 +123,22 @@ Object Regexp::replace(Object t, Object subst)
 
 Object Regexp::replaceAll(Object t, Object subst)
 {
-    ucs4string ret = t.toString()->data();
-    ucs4string sub = subst.toString()->data();
-    bool matched = false;
-    do {
-        ret = replace(ret, sub, matched);
-    } while (matched);
+    ucs4string ret;
+    ucs4string targetString = t.toString()->data();
+    ucs4string substitute = subst.toString()->data();
+
+    for (;;) {
+        OnigRegion* const region = matchInternal(targetString);
+        if (NULL == region) {
+            ret += targetString;
+            break;
+        }
+
+        const ucs4string preString  = targetString.substr(0, region->beg[0] / sizeof(ucs4char));
+        const ucs4string postString = targetString.substr(region->end[0] / sizeof(ucs4char), targetString.size() - region->end[0] / sizeof(ucs4char));
+        ret += preString + substitute;
+        targetString = postString;
+    }
     return Object::makeString(ret);
 }
 
