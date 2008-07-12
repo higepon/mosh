@@ -544,16 +544,35 @@ Object scheme::stringPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isString());
 }
 
-Object scheme::sysGetenvEx(int argc, const Object* argv)
+Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
 {
+    checkArgLength(1, argc, "get-environment-variable");
     if (argv[0].isString()) {
         const char* str = getenv(argv[0].toString()->data().ascii_c_str());
         return str == NULL ? Object::False : Object::makeString(str);
     } else {
-        VM_RAISE1("getenv string required, but got ~a\n", argv[0]);
+        VM_RAISE1("get-environment-variable string required, but got ~a\n", argv[0]);
     }
     return Object::UnBound;
 }
+
+Object scheme::getEnvironmentVariablesEx(int argc, const Object* argv)
+{
+    checkArgLength(0, argc, "get-environment-variables");
+    Object ret = Object::Nil;
+    char ** env = environ;
+    while(*env) {
+        char* equalPostion = strchr(*env, '=');
+        ucs4string key = ucs4string::from_c_str(*env, equalPostion - *env);
+        ucs4string value = ucs4string::from_c_str(equalPostion + 1, strlen(equalPostion + 1));
+        ret = Object::cons(Object::cons(Object::makeString(key),
+                                        Object::makeString(value)),
+                           ret);
+        env++;
+    }
+    return ret;
+}
+
 
 Object scheme::equalPEx(int argc, const Object* argv)
 {
@@ -859,8 +878,8 @@ Object scheme::stringEqPEx(int argc, const Object* argv)
 
 Object scheme::vectorPEx(int argc, const Object* argv)
 {
-    printf("vector? called\n");
-    return Object::UnBound;
+    checkArgLength(1, argc, "vector?");
+    return Object::makeBool(argv[0].isVector());
 }
 
 Object scheme::listPEx(int argc, const Object* argv)
@@ -983,11 +1002,13 @@ Object scheme::stringRefEx(int argc, const Object* argv)
 
 Object scheme::errorEx(int argc, const Object* argv)
 {
-    Object msg = Object::Nil;
+    const Object stringPort = Object::makeStringOutputPort();
+    TextualOutputPort* port = stringPort.toTextualOutputPort();
     for (int i = argc - 1; i >= 0; i--) {
-        msg = Object::cons(argv[i], msg);
+        port->display(argv[i]);
+        port->display(" ");
     }
-    VM_RAISE1("error : ~a", msg);
+    VM_RAISE1("error : ~a", sysGetOutputStringEx(1, &stringPort));
     return Object::UnBound;
 }
 

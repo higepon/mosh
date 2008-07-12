@@ -76,7 +76,8 @@ namespace scheme {
     Object readCharEx(int argc, const Object* argv);
     Object charEqPEx(int argc, const Object* argv);
     Object stringPEx(int argc, const Object* argv);
-    Object sysGetenvEx(int argc, const Object* argv);
+    Object getEnvironmentVariableEx(int argc, const Object* argv);
+    Object getEnvironmentVariablesEx(int argc, const Object* argv);
     Object equalPEx(int argc, const Object* argv);
     Object openStringInputPortEx(int argc, const Object* argv);
     Object sysOpenOutputStringEx(int argc, const Object* argv);

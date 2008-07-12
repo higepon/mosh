@@ -55,7 +55,7 @@ mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a libmatch.a
 
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm
+data_DATA = all-tests.scm repl.scm psyntax.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
 noinst_LIBRARIES = libcompiler.a libmatch.a
@@ -70,7 +70,7 @@ libmatch_a_SOURCES = match.cpp
 # generated files should be listed here.
 BUILT_SOURCES  = Instruction.h compiler.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm psyntax.scm
 
 GENERATED = \
 Instruction.h \
@@ -86,11 +86,23 @@ BuiltinSymbols.cpp\
 ./compiler-vm.scm
 CLEANFILES = $(GENERATED) mosh-compiler.o
 
+PSYNTAX_DIR=tools/psyntax-r6rs
+PSYNTAX_SRC_DIR=$(PSYNTAX_DIR)/psyntax
+
+psyntax.scm: $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss
+	cp -f $(PSYNTAX_DIR)/psyntax.pp $(PSYNTAX_DIR)/psyntax.pp.bak        # save current psyntax.pp
+	mv $(PSYNTAX_SRC_DIR)/main.ss $(PSYNTAX_SRC_DIR)/main.ss.bak         # save normal main.ss
+	cp -f $< $(PSYNTAX_SRC_DIR)/main.ss                                  # use main-mosh.ss for instead of main.ss
+	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript-mosh.ss) # expand!
+	cp -fp $(PSYNTAX_SRC_DIR)/main.ss.bak $(PSYNTAX_SRC_DIR)/main.ss     # N.B. preserve timestamp
+	cp $(PSYNTAX_DIR)/psyntax.pp $@                                      # copy target
+	mv $(PSYNTAX_DIR)/psyntax.pp.bak $(PSYNTAX_DIR)/psyntax.pp           # restore
+	echo "please make install ***** "
+
+
 psyntax:
 	(cd tools/psyntax-r6rs/ && rm -f psyntax.pp && cp pre-built/psyntax-petite.pp psyntax.pp && gosh gosh.r6rs.ss psyntax-buildscript.ss && gosh gosh.r6rs.ss psyntax-buildscript.ss && (cat gosh.r6rs.ss psyntax.pp > pre-built/gosh.pp) && mv psyntax.pp  pre-built/psyntax-mosh.pp)
 
-# psyntax-mosh:
-# 	./mosh tools/psyntax-r6rs/pre-built/psyntax-mosh.pp tools/psyntax-r6rs/test.scm
 
 psyntax-mosh-p:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
@@ -103,7 +115,9 @@ psyntax-gosh:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
 
 r6rs-test:
-	(cd tools/psyntax-r6rs/ && ../../mosh mosh.r6rs.ss ../../r6rs-examples/hello.ss)
+	(cd tools/psyntax-r6rs/ && ../../mosh -b ../../r6rs-examples/hello.ss)
+	(cd tools/psyntax-r6rs/ && ../../mosh -b ../../r6rs-examples/let-syntax.ss)
+	(cd tools/psyntax-r6rs/ && ../../mosh -b ../../r6rs-examples/env.ss)
 
 
 #compiler build without -O2

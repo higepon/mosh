@@ -1579,20 +1579,31 @@ Object VM::getStackTrace()
     Object* fp = fp_;
     Object* cl = &dc_;
     for (int i = 0;;) {
-        if (!cl->isClosure()) {
-            // this case is very rare and may be bug of VM.
-            fprintf(stderr, "fatal: stack corrupt!\n");
-            exit(-1);
-        }
-        Object src = cl->toClosure()->sourceInfo;
-        if (src.isPair()) {
-            if (src.car().isFalse()) {
-                port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
-            } else {
-                const Object lineno = src.car().cdr().car();
-                port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
+        if (cl->isClosure()) {
+            Object src = cl->toClosure()->sourceInfo;
+            if (src.isPair()) {
+                if (src.car().isFalse()) {
+                    port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
+                } else {
+                    const Object lineno = src.car().cdr().car();
+                    port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
+                }
+                i++;
             }
+        } else if (cl->isCProcedure()) {
+            port->format(UC("      <subr>: ~a\n"), L1(getClosureName(*cl)));
             i++;
+        } else if (cl->isRegMatch()) {
+            port->format(UC("      <reg-match>: ~a\n"), L1(*cl));
+            i++;
+        } else if (cl->isRegexp()) {
+            port->format(UC("      <regexp>: ~a\n"), L1(*cl));
+            i++;
+        } else {
+            // this case is very rare and may be bug of VM.
+            LOG1("cl = ~a\n", *cl);
+            fprintf(stderr, "fatal: stack corrupt!\n");
+            break;//            exit(-1);
         }
         if (i > MAX_DEPTH) {
             port->display(UC("      ... (more stack dump truncated)\n"));
@@ -1611,7 +1622,6 @@ Object VM::getStackTrace()
 void VM::raise(Object o)
 {
     errorObj_ = o;
-    LOG1("~a", errorObj_);
     longjmp(returnPoint_, -1);
 }
 
@@ -1629,7 +1639,6 @@ void VM::raiseFormat(const ucs4char* fmt, Object list)
         list = list.cdr();
     }
     const Object errorMessage = formatEx(argc, argv);
-    LOG1("errorMessage=~a\n", errorMessage);
     const Object tr = getStackTrace();
     Object texts[] = {errorMessage, Object::makeString(UC("\n")), tr};
     raise(stringAppendEx(sizeof(texts)/ sizeof(Object), texts));

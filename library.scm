@@ -1777,10 +1777,17 @@
 ;;; System interfaces.
 
 ;; Returns the value of the environment variable name as a string, or #f if the environment variable is not defined.
-;; .form (sys-getenv name)
+;; .form (get-environment-variable name)
 ;; .returns The value of the environment variable name as a string, or #f if the environment variable is not defined.
-;; .example (sys-getenv "QUERY_STRING")
-(define-doc (sys-getenv) ...)
+;; .example (get-environment-variable "QUERY_STRING")
+(define-doc (get-environment-variable) ...)
+
+;; Returns names and values of all the environment variables as an a-list.
+;; .form (get-environment-variables)
+;; .returns Returns names and values of all the environment variables as an a-list.
+;; .example (get-environment-variables)
+(define-doc (get-environment-variables) ...)
+
 
 ;; Returns a list of strings of the directory entries.
 ;; .form (sys-readdir path)
@@ -2714,3 +2721,6 @@
 ;;          l1 )
 ;;         (else l2) ) )
 
+;; for psyntax.pp
+(define (void) (if #f #f))
+(define (eval-core x) (eval x '()))

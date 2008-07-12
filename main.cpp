@@ -94,15 +94,19 @@ int main(int argc, char *argv[])
     bool isTestOption    = false;
     bool isCompileString = false;
     bool isProfiler      = false;
+    bool isR6RSBatchMode = false;
     char* initFile = NULL;
 
-    while ((opt = getopt(argc, argv, "htvpVcl:")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:b")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
             break;
         case 'l':
             initFile = optarg;
+            break;
+        case 'b':
+            isR6RSBatchMode = true;
             break;
         case 'v':
             showVersion();
@@ -182,6 +186,8 @@ int main(int argc, char *argv[])
         const Object code = port.toTextualInputPort()->getDatum();
         const Object compiled = theVM->compile(code);
         sysDisplayEx(1, &compiled);
+    } else if (isR6RSBatchMode) {
+        theVM->load(UC("psyntax.scm"));
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {

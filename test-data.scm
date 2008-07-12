@@ -1046,7 +1046,7 @@ val
 ;; (+ (with-input-from-string "+" (lambda () (read))))
 
 ;; ("/usr/bin"
-;;  (find (lambda (s) (string=? "/usr/bin" s)) (string-split (sys-getenv "PATH") #\:)))
+;;  (find (lambda (s) (string=? "/usr/bin" s)) (string-split (get-environment-variable "PATH") #\:)))
 ;; ;; let1 local env
 ;("f" (number->string 15 16))
 

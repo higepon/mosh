@@ -1,5 +1,19 @@
 2008-07-12  higepon  <higepon@users.sourceforge.jp>
 
+        * freeproc.cpp (scheme::getEnvironmentVariablesEx): Added get-environment-variables.
+
+        * tools/psyntax-r6rs/psyntax-buildscript-mosh.ss (identifier->library-map): Added for Mosh.
+
+        * freeproc.h (scheme): renamed sys-getenv -> get-environment-variable.
+
+        * freeproc.cpp (scheme::errorEx): Improved message for (error ...).
+
+        * main.cpp (main): Added -b "R6RS batch mode" using psyntax.
+
+        * VM.cpp (VM::getStackTrace): Fixed stack trace bug for <subr>.
+
+        * freeproc.cpp (scheme::vectorPEx): Added vector?.
+
         * Added r6rs-test directory.
 
         * library.scm (string): Added document of (string ...).

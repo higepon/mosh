@@ -1,0 +1,9 @@
+Psyntax memo for Mosh.
+
+* How to add system depedent procedure.
+
+  Add line like(get-environment-variables sys) to psyntax-buildscript-mosh.ss.
+
+* Test r6rs
+
+  make r6rs-test

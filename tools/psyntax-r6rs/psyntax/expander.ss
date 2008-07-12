@@ -3027,7 +3027,6 @@
                      export-env))))))
   
   (define (parse-top-level-program e*)
-    (write e*)
     (syntax-match e* ()
       (((import imp* ...) b* ...) (eq? import 'import)
        (values imp* b*))
