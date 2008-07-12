@@ -189,6 +189,7 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
+    (mosh-regexp (mosh regexp)                                #f    #t)  ;; for mosh
     (sys        (system)                                #f    #t) ;; for mosh
     ))
 
@@ -933,6 +934,7 @@
     (sys-display mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)
+    (regexp-replace-all mosh-regexp)
     ;;;
     (char-ready?                                )
     (interaction-environment                    )
