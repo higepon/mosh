@@ -23,6 +23,7 @@
     (string->number ,string->number)
     (string-append ,string-append)
     (string-split ,string-split)
+    (string ,string)
     (number->string ,number->string)
     (reverse ,reverse)
     (eof-object? ,eof-object?)

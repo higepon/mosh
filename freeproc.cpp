@@ -1836,3 +1836,16 @@ Object scheme::listTovectorEx(int argc, const Object* argv)
     }
 }
 
+Object scheme::stringEx(int argc, const Object* argv)
+{
+    ucs4string ret;
+    for (int i = 0; i < argc; i++) {
+        Object c = argv[i];
+        if (c.isChar()) {
+            ret += c.toChar();
+        } else {
+            VM_RAISE1("string charcter required, but got ~a", c);
+        }
+    }
+    return Object::makeString(ret);
+}

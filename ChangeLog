@@ -1,3 +1,9 @@
+2008-07-12  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (string): Added document of (string ...).
+
+        * freeproc.cpp (scheme::stringEx): Added (string ...).
+
 2008-07-11  higepon  <higepon@users.sourceforge.jp>
 
         * match.cpp: pre-compiled.

@@ -494,6 +494,11 @@
 ;; .returns allocated string of length k.
 (define-doc (make-string) ...)
 
+;; Returns a newly allocated string composed of the arguments.
+;; .form (string char ...)
+;; .returns Returns a newly allocated string composed of the arguments.
+(define-doc (string) ...)
+
 ;; Returns #t if obj is a string, otherwise returns #f.
 ;; .form (string? obj)
 ;; .returns #t if obj is a string, otherwise returns #f.

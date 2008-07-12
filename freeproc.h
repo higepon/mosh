@@ -176,6 +176,7 @@ namespace scheme {
     Object appendDEx(int argc, const Object* argv);
     Object internalsetUnionEx(int argc, const Object* argv);
     Object internalsetIntersectEx(int argc, const Object* argv);
+    Object stringEx(int argc, const Object* argv);
 
     Object lengthEx(int argc, const Object* argv);
     inline bool existsInList(Object o, Object list)

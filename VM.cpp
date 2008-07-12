@@ -1629,6 +1629,7 @@ void VM::raiseFormat(const ucs4char* fmt, Object list)
         list = list.cdr();
     }
     const Object errorMessage = formatEx(argc, argv);
+    LOG1("errorMessage=~a\n", errorMessage);
     const Object tr = getStackTrace();
     Object texts[] = {errorMessage, Object::makeString(UC("\n")), tr};
     raise(stringAppendEx(sizeof(texts)/ sizeof(Object), texts));
