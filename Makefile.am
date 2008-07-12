@@ -103,7 +103,7 @@ psyntax-gosh:
 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
 
 r6rs-test:
-	(cd tools/psyntax-r6rs/ && ../../mosh mosh.r6rs.ss ../../r6rs-examples/hello.scm)
+	(cd tools/psyntax-r6rs/ && ../../mosh mosh.r6rs.ss ../../r6rs-examples/hello.ss)
 
 
 #compiler build without -O2
