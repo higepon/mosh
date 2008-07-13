@@ -189,8 +189,11 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
-    (mosh-regexp (mosh regexp)                                #f    #t)  ;; for mosh
-    (sys        (system)                                #f    #t) ;; for mosh
+    (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
+    (mosh-collection (mosh collection)                 #f    #t)  ;; for mosh
+    (sys        (system)                               #f    #t)  ;; for mosh
+    (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
+;    (srfi-8     (srfi-8)                               #f    #t)  ;; for mosh
     ))
 
 ;;; required? flag means that said library is required for 
@@ -935,6 +938,14 @@
     (get-environment-variable sys)
     (get-environment-variables sys)
     (regexp-replace-all mosh-regexp)
+    (bytevector-for-each mosh-collection)
+    (string-split mosh)
+    (call-with-string-io mosh)
+    (digit->integer mosh)
+    (format mosh)
+    (first srfi-1)
+    (second srfi-1)
+;    (receive srfi-8)
     ;;;
     (char-ready?                                )
     (interaction-environment                    )

@@ -601,7 +601,6 @@ Object scheme::sysOpenOutputStringEx(int argc, const Object* argv)
 
 Object scheme::sysPortSeekEx(int argc, const Object* argv)
 {
-
 //todo
     return Object::UnBound;
 }
@@ -1869,4 +1868,22 @@ Object scheme::stringEx(int argc, const Object* argv)
         }
     }
     return Object::makeString(ret);
+}
+
+// for psyntax
+Object scheme::setSymbolValueDEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "set-symbol-value");
+    const Object id  = argv[0];
+    const Object val = argv[1];
+    theVM->setGlobalValue(id, val);
+    return Object::Undef;
+}
+
+// for psyntax
+Object scheme::symbolValueEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "symbol-value");
+    const Object id  = argv[0];
+    return theVM->getGlobalValue(id);
 }

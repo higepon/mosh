@@ -158,6 +158,8 @@
     (pass1/find-symbol-in-lvars, pass1/find-symbol-in-lvars)
     ($label ,$label)
     ($local-ref ,$local-ref)
+    (symbol-value, (lambda e (error "symbol-value")))
+    (set-symbol-value!, (lambda e (error "set-symbol-value!")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

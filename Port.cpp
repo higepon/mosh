@@ -364,7 +364,8 @@ int CustomBinaryInputPort::getU8()
     const Object bv = Object::makeByteVector(1);
     const Object start = Object::makeInt(0);
     const Object count = Object::makeInt(1);
-    if (0 == theVM->applyClosure(readProc_, L3(bv, start, count)).toInt()) {
+    const Object result = theVM->callClosure3(readProc_, bv, start, count);
+    if (0 == result.toInt()) {
         return EOF;
     }
     return bv.toByteVector()->u8RefI(0);

@@ -222,6 +222,10 @@ namespace scheme {
     Object listTovectorEx(int argc, const Object* argv);
 
     Object pass3CompileReferEx(int argc, const Object* argv);
+
+    Object setSymbolValueDEx(int argc, const Object* argv);
+    Object symbolValueEx(int argc, const Object* argv);
+
 }; // namespace scheme
 
 #endif // __SCHEME_FREE_PROC_H__

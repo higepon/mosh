@@ -102,7 +102,9 @@ public:
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure(Object closure, Object o);
     Object callClosure0(Object closure);
+    Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
     Object applyClosure(Object closure, Object args);
+    Object applyClosureDebug(Object closure, Object args, int returnSize);
     Object apply(Object proc, Object args);
     void load(const ucs4string& file);
     void loadFile(const ucs4string& file);
@@ -155,6 +157,28 @@ public:
             RAISE2("~a on library ~a : defined twice\n", e.cdr(), e.car());
         }
     }
+
+    void setGlobalValue(Object id, Object val)
+    {
+        nameSpace_.toEqHashTable()->set(id, val);
+    }
+
+    Object getGlobalValue(Object id)
+    {
+        const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
+        if (val != notFound_) {
+            return val;
+        } else {
+            Object e = splitId(id);
+            RAISE2("unbound variable ~a on ~a", e.cdr(), e.car());
+            return Object::Undef;
+        }
+
+    }
+
+
+
+
     Object getClosureName(Object closure);
 
 #ifdef ENABLE_PROFILER
@@ -229,7 +253,8 @@ protected:
         if (args.isNil()) {
             indexSet(sp, offset, Object::Nil);
         } else {
-            for (int i = Pair::length(args) - 1; !(args.isNil()); i--, args = args.cdr()) {
+            const int length = Pair::length(args);
+            for (int i =  length - 1; !(args.isNil()); i--, args = args.cdr()) {
                 indexSet(sp, i + offset, args.car());
             }
         }

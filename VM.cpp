@@ -278,6 +278,38 @@ Object VM::callClosure0(Object closure)
 }
 
 
+Object VM::callClosure3(Object closure, Object arg1, Object arg2, Object arg3)
+{
+    static Object applyCode[] = {
+        Object::makeRaw(Instruction::FRAME),
+        Object::makeInt(14),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::CALL),
+        Object::makeInt(3),
+        Object::makeRaw(Instruction::HALT),
+    };
+    applyCode[3] = arg1;
+    applyCode[6] = arg2;
+    applyCode[9] = arg3;
+    applyCode[12] = closure;
+    SAVE_REGISTERS();
+    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+    RESTORE_REGISTERS();
+    return ret;
+}
+
+
+
 // accept one argument.
 Object VM::callClosure(Object closure, Object arg)
 {

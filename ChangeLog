@@ -1,3 +1,9 @@
+2008-07-13  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp : Added set-symbol-value and symbol-value for psyntax.
+
+        * VM.cpp (VM::callClosure3): Added for make-custom-binary-input-port.
+
 2008-07-12  higepon  <higepon@users.sourceforge.jp>
 
         * Regexp.cpp (Regexp::replaceAll): Fixed finite loop.
