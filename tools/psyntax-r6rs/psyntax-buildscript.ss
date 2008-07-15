@@ -941,6 +941,7 @@
     (module                   cm)
     (syntax-dispatch ) ; only goes to $all
     (syntax-error    ) ; only goes to $all
+    (regexp? r) ;; mosh
     ))
 
 

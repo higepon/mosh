@@ -18,8 +18,6 @@
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ;;; DEALINGS IN THE SOFTWARE.
 
-
-;;; modified for Mosh by Higepon.
 (library (psyntax main)
   (export)
   (import
@@ -41,5 +39,13 @@
                        '()
                        (cons x (f)))))))))
       (eval-r6rs-top-level x*)))
+
+  (display "r6rs psyntax ready\n")
   (let ((args (command-line)))
-    (load-r6rs-top-level (car args))))
+    (unless (= (length args) 2)
+      (display "provide a script name argument\n")
+      (exit 17))
+    (let ((script-name (car args)) (args (cdr args)))
+      (load-r6rs-top-level (car args)))))
+; comment out for mosh
+;  (exit 0))

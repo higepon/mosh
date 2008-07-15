@@ -428,7 +428,7 @@
 
   (define self-evaluating?
     (lambda (x) ;;; am I missing something here?
-      (or (number? x) (string? x) (char? x) (boolean? x) (regexp? x))))
+      (or (number? x) (string? x) (char? x) (boolean? x))))
 
   ;;; strip is used to remove the wrap of a syntax object.
   ;;; It takes an stx's expr and marks.  If the marks contain

@@ -3,9 +3,9 @@
   (import (rnrs)
           (rnrs mutable-pairs)
           (only (mosh) read-line)
-          (only (mosh list) acons assoc-ref)
+          (only (mosh list) assoc-ref)
           (only (mosh regexp) rxmatch)
-          (only (srfi-1) first second third)
+          (only (srfi-1) first second third alist-cons)
           (prefix (cgi) cgi:)
           )
 
@@ -58,7 +58,7 @@
   (third plugin))
 
 (define (register-plugin plugin)
-  (set! *plugins* (acons (plugin-name plugin) plugin *plugins*)))
+  (set! *plugins* (alist-cons (plugin-name plugin) plugin *plugins*)))
 
 (define (get-plugin name)
   (assoc-ref *plugins* name))
@@ -103,7 +103,7 @@
              (list 'pre pre-lines)]
             [(rxmatch #/^ / line)
              (loop (read-line-reader reader)
-                   (append pre-lines (list (cgi-escape line))))]
+                   (append pre-lines (list (cgi:escape line))))]
             [else
              (unread-line-reader! reader line)
              (list 'pre pre-lines)])))
@@ -113,7 +113,7 @@
     (cond [(eof-object? line)
            (add-to-list parsed (list 'p text))]
           [else
-           (let1 line (cgi-escape line)
+           (let1 line (cgi:escape line)
              (cond [(#/^(-+)/ line) => (lambda (match) ;; list syntax
                                          (unread-line-reader! r line)
                                          (loop (add-to-list (add-to-list parsed (list 'p text))
@@ -278,7 +278,7 @@
   (file->string (page-name->path page-name)))
 
 (define (print-edit-form page-name)
-  (format #t "<h1>Edit ~a</h1>" (cgi-escape page-name))
+  (format #t "<h1>Edit ~a</h1>" (cgi:escape page-name))
   (format #t "<form method='POST' action='/wiki/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n  <input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" (cgi-encode page-name) (read-raw-page page-name) page-name))
 
 (define (print-page get-parameter page-name)
@@ -299,7 +299,7 @@
 <html lang=\"ja\">
 <head>
 <meta HTTP-EQUIV=\"Content-Type\" CONTENT=\"text/html; charset=utf-8\">")
-  (format #t "<title>~a - Lambda Wiki</title>" (if (null? args) "Lambda Wiki" (cgi-escape (car args))))
+  (format #t "<title>~a - Lambda Wiki</title>" (if (null? args) "Lambda Wiki" (cgi:escape (car args))))
   (print "<link REL=\"stylesheet\" href=\"/wiki.css\" TYPE=\"TEXT/CSS\">
 <meta http-equiv=\"content-style-type\" content=\"text/css\">
 </head>
@@ -378,7 +378,7 @@
                     "<input value='Post Comment' type='submit' class=\"submit\">"
                     "</form>\n"
                     ))
-                  (call-with-string-input-port (cgi-escape (read-raw-page comment-page))
+                  (call-with-string-input-port (cgi:escape (read-raw-page comment-page))
 ;                  (call-with-string-input-port (read-raw-page comment-page)
                     (lambda (port)
                       (wiki->html get-parameter page-name (wiki-parse (make-reader port)))))))

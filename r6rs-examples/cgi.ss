@@ -1,5 +1,5 @@
  (library (cgi)
-  (export init encode decode)
+  (export init encode decode escape)
   (import (rnrs)
           (only (system) get-environment-variable)
           (only (mosh regexp) regexp-replace-all)

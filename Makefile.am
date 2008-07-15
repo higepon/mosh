@@ -89,18 +89,27 @@ CLEANFILES = $(GENERATED) mosh-compiler.o
 PSYNTAX_DIR=tools/psyntax-r6rs
 PSYNTAX_SRC_DIR=$(PSYNTAX_DIR)/psyntax
 
-PSYNTAX_SOURCES=$(PSYNTAX_SRC_DIR)/compat.ss $(PSYNTAX_SRC_DIR)/config.ss $(PSYNTAX_SRC_DIR)/expander.ss $(PSYNTAX_SRC_DIR)/internal.ss $(PSYNTAX_SRC_DIR)/library-manager.ss $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_SRC_DIR)/main.ss
+PSYNTAX_COMMON_SRC= \
+$(PSYNTAX_SRC_DIR)/compat.ss \
+$(PSYNTAX_SRC_DIR)/config.ss \
+$(PSYNTAX_SRC_DIR)/internal.ss \
+$(PSYNTAX_SRC_DIR)/library-manager.ss
 
-# psyntax-mosh.scm, this is different from psyntax.pp
-psyntax.scm: $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_SOURCES)
-	cp -f $(PSYNTAX_DIR)/psyntax.pp $(PSYNTAX_DIR)/psyntax.pp.bak        # save current psyntax.pp
-	mv $(PSYNTAX_SRC_DIR)/main.ss $(PSYNTAX_SRC_DIR)/main.ss.bak         # save normal main.ss
-	cp -f $< $(PSYNTAX_SRC_DIR)/main.ss                                  # use main-mosh.ss for instead of main.ss
-	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript-mosh.ss) # expand!
-	cp -fp $(PSYNTAX_SRC_DIR)/main.ss.bak $(PSYNTAX_SRC_DIR)/main.ss     # N.B. preserve timestamp
-	cp $(PSYNTAX_DIR)/psyntax.pp $@                                      # copy target
-	mv $(PSYNTAX_DIR)/psyntax.pp.bak $(PSYNTAX_DIR)/psyntax.pp           # restore
+PSYNTAX_MOSH_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander-mosh.ss $(PSYNTAX_SRC_DIR)/main-mosh.ss
+
+PSYNTAX_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander.ss $(PSYNTAX_SRC_DIR)/main.ss
+
+psyntax.scm: $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_MOSH_SRC) $(PSYNTAX_DIR)/psyntax.pp
+	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript-mosh.ss)
 	echo "please make install ***** "
+
+$(PSYNTAX_DIR)/psyntax.pp: $(PSYNTAX_DIR)/psyntax-buildscript.ss $(PSYNTAX_SRC)
+	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript.ss)
+
+# update psyntax
+# psyntax-buildscript.ss を更新する
+psyntax-update:
+	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript.ss)
 
 
 # psyntax-mosh-p:

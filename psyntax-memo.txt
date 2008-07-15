@@ -19,3 +19,52 @@ Psyntax doesn't know about regexp, so it causes error.
 I think regexp literal is classified into (constant).
 So self-evaluating? returns #t for regexp literal, it works well.
 
+#/^ / という正規表現が expander.ss の (define chi-exprのどれにもマッチしなくてエラーになる。
+(core-prim) と判定されるのがよさそう。
+
+*[scheme][mosh]
+psyntax で wiki をR6RSライブラリ化していたら正規表現リテラルの問題に行き当たる。
+R6RS には正規表現がないので、Mosh のコード中に #/^/ などの正規表現リテラルがあるとエラーとなってしまう。
+より具体的には expander.ss の chi-expr で (stx-error e "invalid expression") となる。
+正規表現リテラルが入力要素として想定されるどの type にも属していないため else に行きエラーとなっている。
+
+
+これを直すには self-evaluating? 手続きに regexp? を追加するのがよさそう。ただし本当は regexp は self evaluating ではない。あくまでも psyntax をだますため。
+expander.ss に直接 regexp? と追記して psyntax をビルドし直しても途中でエラーになる。
+これは regexp? がどこにも import/export されていないからだ。
+>|sh|
+"error": expander "unbound identifier" (regexp? x)
+||<
+
+ふーむ。psyntax-buildscript-mosh.ss に手を入れて (rnrs) に regexp? を突っ込んでみる。
+これはつまりブートストラップに使っている psyntax.pp が (rnrs) に regexp? があると知らないのが問題と見た。
+鶏と卵の議論状態だな。
+
+手順
+- main.ss を mosh 用ではなく psyntax 用にする
+- psyntax-buildscript.ss に regexp? の登録を記述する
+- expander.ss には regexp? の記述はあってはならない。
+- make psyntax-update
+- main.ss を Mosh 用に切り替える
+- expander.ss に regexp? の記述を追記
+- make
+- これで psyntax.pp は regexp? を認識するようになった。
+
+ふむぅ。問題としては手順が複雑なこと、手順を誤ると動かなくなることか。
+より具体的には
+- main.ss が異なる
+- オリジナルの expander.ss に手を入れているのが分かりづらい
+- 確実に動く psyntax.pp にすぐに戻せるようにしたい
+の３つ。
+
+main.ss が異なることに関しては builder を分けることですっきり出来そう。
+というか builder を分けることで全部解決するな。
+
+新しい仕組みで上記と同じ事をやるには
+- psyntax-buildscript.ss に regexp? の記述を追加
+- make
+- expander-mosh.ss に regexp? を追加。
+- psyntax-buildscript-mosh.ss に regexp? の記述を追加	
+- make
+- 動作確認
+-- ../mosh -b wiki-test.ss 

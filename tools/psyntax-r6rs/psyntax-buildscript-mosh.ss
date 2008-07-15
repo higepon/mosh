@@ -38,8 +38,8 @@
     "psyntax/config.ss"
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
-    "psyntax/expander.ss"
-    "psyntax/main.ss"))
+    "psyntax/expander-mosh.ss"
+    "psyntax/main-mosh.ss"))
 
 
 (define psyntax-system-macros
@@ -945,7 +945,7 @@
     (call-with-string-io mosh)
     (digit->integer mosh)
     (format mosh)
-    (acons-list srfi-1)
+    (alist-cons srfi-1)
     (assoc-ref mosh-list)
     (first srfi-1)
     (second srfi-1)
@@ -1204,9 +1204,9 @@
         (cond
           ((assq x locs) => cdr)
           (else #f))))
-    (when (file-exists? "psyntax.pp")
-      (delete-file "psyntax.pp"))
-    (let ((p (open-output-file "psyntax.pp")))
+    (when (file-exists? "../../psyntax.scm")
+      (delete-file "../../psyntax.scm"))
+    (let ((p (open-output-file "../../psyntax.scm")))
       (display ";;; Copyright (c) 2006, 2007 Abdulaziz Ghuloum and Kent Dybvig" p) (newline p)
       (display ";;; automatically generated from psyntax sources" p) (newline p)
       (display ";;; for copyright details, see psyntax/main.ss" p) (newline p) (newline p)
