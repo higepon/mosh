@@ -7,3 +7,15 @@ Psyntax memo for Mosh.
 * Test r6rs
 
   make r6rs-test
+
+
+** porting plobrem
+(1) regexp
+Mosh has regexp literal like #/^ /.
+Psyntax doesn't know about regexp, so it causes error.
+
+(stx-error e "invalid expression") occurs on chi-expr at expander.ss.
+
+I think regexp literal is classified into (constant).
+So self-evaluating? returns #t for regexp literal, it works well.
+

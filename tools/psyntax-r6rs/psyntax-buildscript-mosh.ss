@@ -189,6 +189,7 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
+    (mosh-list   (mosh list)                           #f    #t)  ;; for mosh
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
     (mosh-collection (mosh collection)                 #f    #t)  ;; for mosh
     (sys        (system)                               #f    #t)  ;; for mosh
@@ -938,13 +939,19 @@
     (get-environment-variable sys)
     (get-environment-variables sys)
     (regexp-replace-all mosh-regexp)
+    (rxmatch mosh-regexp)
     (bytevector-for-each mosh-collection)
     (string-split mosh)
     (call-with-string-io mosh)
     (digit->integer mosh)
     (format mosh)
+    (acons-list srfi-1)
+    (assoc-ref mosh-list)
     (first srfi-1)
     (second srfi-1)
+    (third srfi-1)
+    (read-line mosh)
+    (regexp? r)
 ;    (receive srfi-8)
     ;;;
     (char-ready?                                )

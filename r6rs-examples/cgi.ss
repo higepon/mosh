@@ -91,8 +91,9 @@
    '()
    (string-split input #\&))))
 
-(define (init)
-  (let ([parsed (parse-query-string (request-body (request-method)))])
+(define (init . body)
+  (let* ([content-body (if (pair? body) (car body)  (request-body (request-method)))]
+         [parsed (parse-query-string content-body)])
     (values
      (lambda (key)
        (let ([value (assoc key parsed)])

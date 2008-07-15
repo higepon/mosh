@@ -143,7 +143,7 @@
 (define (syntax-error msg)
   (raise (format "syntax error: ~a" msg)))
 
-(define (acons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
+(define (alist-cons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
 
 (define (libname->symbol name)
   (let loop ([name name]
@@ -1167,8 +1167,8 @@
   (if (pair? (second sexp))
       ; we can't use hash-table here, because hash-table can't be written with (write).
       ; So we use acons instead.
-      ($library.set-macro! library (acons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library) ($library.macro library)))
-      ($library.set-macro! library (acons (second sexp) (compile-partial (third sexp)) ($library.macro library))))
+      ($library.set-macro! library (alist-cons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library) ($library.macro library)))
+      ($library.set-macro! library (alist-cons (second sexp) (compile-partial (third sexp)) ($library.macro library))))
        ($undef))
 
 (define (pass1/asm-numcmp tag operator args library lvars tail?)
@@ -1619,7 +1619,7 @@
 (define (iform-copy-zip-lvs orig-lvars lv-alist)
   (let1 new-lvars ($map1 (lambda (lv) (make-lvar ($lvar.sym lv))) orig-lvars)
     (cons new-lvars
-          (foldr2 acons lv-alist orig-lvars new-lvars)))) ;; todo foldr2
+          (foldr2 alist-cons lv-alist orig-lvars new-lvars)))) ;; todo foldr2
 
 (define (iform-copy-lvar lvar lv-alist)
   ;; NB: using extra lambda after => is a kludge for the current optimizer

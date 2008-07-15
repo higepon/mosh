@@ -89,7 +89,10 @@ CLEANFILES = $(GENERATED) mosh-compiler.o
 PSYNTAX_DIR=tools/psyntax-r6rs
 PSYNTAX_SRC_DIR=$(PSYNTAX_DIR)/psyntax
 
-psyntax.scm: $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss
+PSYNTAX_SOURCES=$(PSYNTAX_SRC_DIR)/compat.ss $(PSYNTAX_SRC_DIR)/config.ss $(PSYNTAX_SRC_DIR)/expander.ss $(PSYNTAX_SRC_DIR)/internal.ss $(PSYNTAX_SRC_DIR)/library-manager.ss $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_SRC_DIR)/main.ss
+
+# psyntax-mosh.scm, this is different from psyntax.pp
+psyntax.scm: $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_SOURCES)
 	cp -f $(PSYNTAX_DIR)/psyntax.pp $(PSYNTAX_DIR)/psyntax.pp.bak        # save current psyntax.pp
 	mv $(PSYNTAX_SRC_DIR)/main.ss $(PSYNTAX_SRC_DIR)/main.ss.bak         # save normal main.ss
 	cp -f $< $(PSYNTAX_SRC_DIR)/main.ss                                  # use main-mosh.ss for instead of main.ss
@@ -100,19 +103,14 @@ psyntax.scm: $(PSYNTAX_SRC_DIR)/main-mosh.ss $(PSYNTAX_DIR)/psyntax-buildscript-
 	echo "please make install ***** "
 
 
-psyntax:
-	(cd tools/psyntax-r6rs/ && rm -f psyntax.pp && cp pre-built/psyntax-petite.pp psyntax.pp && gosh gosh.r6rs.ss psyntax-buildscript.ss && gosh gosh.r6rs.ss psyntax-buildscript.ss && (cat gosh.r6rs.ss psyntax.pp > pre-built/gosh.pp) && mv psyntax.pp  pre-built/psyntax-mosh.pp)
+# psyntax-mosh-p:
+# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
 
+# psyntax-mosh:
+# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
 
-psyntax-mosh-p:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
-
-psyntax-mosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
-
-
-psyntax-gosh:
-	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
+# psyntax-gosh:
+# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
 
 r6rs-test:
 	(cd r6rs-examples && ../mosh -b hello.ss)

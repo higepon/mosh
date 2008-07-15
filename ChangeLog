@@ -1,3 +1,7 @@
+2008-07-15  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp: Added extern char** environ.
+
 2008-07-13  higepon  <higepon@users.sourceforge.jp>
 
         * freeproc.cpp : Added set-symbol-value and symbol-value for psyntax.

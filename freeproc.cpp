@@ -556,6 +556,7 @@ Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
+extern char** environ;
 Object scheme::getEnvironmentVariablesEx(int argc, const Object* argv)
 {
     checkArgLength(0, argc, "get-environment-variables");
