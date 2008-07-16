@@ -1,3 +1,9 @@
+2008-07-16  higepon  <higepon@users.sourceforge.jp>
+
+        * r6rs-examples/cgi.ss: Rewrote cgi library with R6RS form.
+
+        * r6rs-examples/lambda/wiki.ss: Rewrote lambda wiki with R6RS form.
+
 2008-07-15  higepon  <higepon@users.sourceforge.jp>
 
         * freeproc.cpp: Added extern char** environ.

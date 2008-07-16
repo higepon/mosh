@@ -86,7 +86,7 @@ namespace scheme {
     Object closeInputPortEx(int argc, const Object* argv);
     Object digitTointegerEx(int argc, const Object* argv);
     Object getRemainingInputStringEx(int argc, const Object* argv);
-    Object sysReaddirEx(int argc, const Object* argv);
+    Object readdirEx(int argc, const Object* argv);
     Object fileExistsPEx(int argc, const Object* argv);
     Object sysGetOutputStringEx(int argc, const Object* argv);
     Object stringToregexpEx(int argc, const Object* argv);

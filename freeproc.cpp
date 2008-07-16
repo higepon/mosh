@@ -667,10 +667,10 @@ Object scheme::getRemainingInputStringEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::sysReaddirEx(int argc, const Object* argv)
+Object scheme::readdirEx(int argc, const Object* argv)
 {
     if (!argv[0].isString()) {
-        VM_RAISE1("sys-readdir string required, but got ~a\n", argv[0]);
+        VM_RAISE1("readdir string required, but got ~a\n", argv[0]);
     }
 
    DIR* dir;

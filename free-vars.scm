@@ -40,7 +40,7 @@
     (close-output-port ,close-output-port)
     (digit->integer ,digit->integer)
     (get-remaining-input-string ,get-remaining-input-string)
-    (sys-readdir ,sys-readdir)
+    (readdir ,sys-readdir)
     (file-exists? ,file-exists?)
     (sys-get-output-string ,get-output-string)
     (string->regexp ,string->regexp)
