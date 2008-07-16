@@ -1,5 +1,7 @@
 2008-07-16  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm: Removed CGI library from library.scm, it moved to r6rs-examples/ directory.
+
         * tools/psyntax-r6rs/psyntax-buildscript-mosh.ss : Added library rules.
 
         * r6rs-examples/cgi.ss: Rewrote cgi library with R6RS form.

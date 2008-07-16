@@ -1,5 +1,5 @@
  (library (lambda wiki)
-  (export wiki-main)
+  (export main)
   (import (rnrs)
           (rnrs mutable-pairs)
           (only (mosh list) assoc-ref)
@@ -9,20 +9,21 @@
           (only (mosh regexp) rxmatch)
           (only (srfi-1) first second third alist-cons)
           (only (srfi-8) receive)
-          (prefix (cgi) cgi:)
-          )
-
-(define (init)
-  (display "wiki-init"))
+          (prefix (cgi) cgi:))
 
 (define (print msg)
   (display msg)
   (newline))
 
 ;; Configuration
-(define wiki-data-dir "/home/taro/vm/monar/wikidata/")
-(define wiki-top-url  "http://lambdawiki:8001/wiki")
+(define data-dir "please/set/data/dir")
+(define wiki-top-url "http://please/set/top-url")
 
+(define (set-data-dir! dir)
+  (set! data-dir dir))
+
+(define (set-top-url! url)
+  (set! set-top-url! url))
 
 (define (add-to-list lst a)
   (append lst (list a)))
@@ -279,13 +280,13 @@
   (for-each iter wiki))
 
 (define (page-name->path page-name)
-  (string-append wiki-data-dir (cgi:encode page-name) ".dat"))
+  (string-append data-dir (cgi:encode page-name) ".dat"))
 
 (define (wiki-enum-pages)
   (map cgi:decode
        (map (lambda (f) ((#/\.dat$/ f) 'before))
             (filter (lambda (f) (#/\.dat$/ f))
-                    (readdir wiki-data-dir)))))
+                    (readdir data-dir)))))
 
 (define (print-a uri text)
   (format #t "<a href='~a'>~a</a>" uri text))
@@ -376,7 +377,7 @@
   (cgi:header)
   (print str))
 
-(define (wiki-main)
+(define (main args-alist)
   (define (get-page-cmd)
     (let ([path-info (get-environment-variable "PATH_INFO")])
       (cond
@@ -390,6 +391,11 @@
                      (values "TopPage" "show")))))]
        [else
          (values "TopPage" "show")])))
+  (set-data-dir! (assoc-ref args-alist 'data-dir))
+  (set-top-url! (assoc-ref args-alist 'top-url))
+  (unless (file-exists? data-dir)
+     (cgi:header)
+     (format #t "lambda wiki data-dir ~s not found\n" data-dir))
   (receive (get-parameter get-request-method) (cgi:init)
     (receive (page-name cmd) (get-page-cmd)
       (cond
@@ -474,8 +480,5 @@
 
               (lambda (get-parameter page-name) #f)
                 ))
-
-
-
 
 )

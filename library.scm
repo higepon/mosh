@@ -1937,143 +1937,143 @@
   (let ((in (open-string-input-port str)))
     (proc in)))
 
-; ==============================================================================================================================================================
-;;; CGI.
-;;; Note this library will go away once it is switched to the new CGI library.
+;; ; ==============================================================================================================================================================
+;; ;;; CGI.
+;; ;;; Note this library will go away once it is switched to the new CGI library.
 
-; used internal
-(define cgi-header-out? #f)
+;; ; used internal
+;; (define cgi-header-out? #f)
 
-;; Escape some not safe characters.
-;; .returns escaped string
-(define (cgi-escape text)
-  (fold (lambda (x y) (regexp-replace-all (car x) y (cdr x)))
-        text
-        '(;(#/&/ . "&amp;")
-          (#/</ . "&lt;")
-          (#/>/ . "&gt;")
-;          (#/\"/ . "&quot;")
-          (#/[^\\]'/ . "\'"))))
+;; ;; Escape some not safe characters.
+;; ;; .returns escaped string
+;; (define (cgi-escape text)
+;;   (fold (lambda (x y) (regexp-replace-all (car x) y (cdr x)))
+;;         text
+;;         '(;(#/&/ . "&amp;")
+;;           (#/</ . "&lt;")
+;;           (#/>/ . "&gt;")
+;; ;          (#/\"/ . "&quot;")
+;;           (#/[^\\]'/ . "\'"))))
 
-;; Apply "% encode" to string and return the result. Assumes input is UTF-8.
-;; .returns encoded string
-(define (cgi-encode text)
-  (call-with-string-output-port
-   (lambda(out)
-     (bytevector-for-each
-      (call-with-bytevector-output-port
-       (lambda (port)
-         (display  text port))
-       (make-transcoder (utf-8-codec)))
-      (lambda (b)
-        (display "%" out)
-        (display (number->string b 16) out))))))
+;; ;; Apply "% encode" to string and return the result. Assumes input is UTF-8.
+;; ;; .returns encoded string
+;; (define (cgi-encode text)
+;;   (call-with-string-output-port
+;;    (lambda(out)
+;;      (bytevector-for-each
+;;       (call-with-bytevector-output-port
+;;        (lambda (port)
+;;          (display  text port))
+;;        (make-transcoder (utf-8-codec)))
+;;       (lambda (b)
+;;         (display "%" out)
+;;         (display (number->string b 16) out))))))
 
-;; Initialize CGI library and returns get-parameter and get-request-method procedures.
-;; .returns get-parameter and get-request-method procedures as multiple values.
-;; .example (receive (get-parameter get-request-method) (cgi-init) ...)
-(define (cgi-init)
-  (let1 parsed (cgi-parse-query-string (get-request-body-cgi (get-request-method-cgi)))
-    (values
-     (lambda (key)
-       (let ([value (assoc key parsed)])
-         (if value
-             (second value)
-             #f)))
-     get-request-method-cgi)))
+;; ;; Initialize CGI library and returns get-parameter and get-request-method procedures.
+;; ;; .returns get-parameter and get-request-method procedures as multiple values.
+;; ;; .example (receive (get-parameter get-request-method) (cgi-init) ...)
+;; (define (cgi-init)
+;;   (let1 parsed (cgi-parse-query-string (get-request-body-cgi (get-request-method-cgi)))
+;;     (values
+;;      (lambda (key)
+;;        (let ([value (assoc key parsed)])
+;;          (if value
+;;              (second value)
+;;              #f)))
+;;      get-request-method-cgi)))
 
-;; Outputs HTTP header "Status: 200 OK\nContent-type: text/html; charset=utf-8\n"
-;; .returns unspecified
-(define (cgi-header)
-  (unless cgi-header-out?
-    (print "Status: 200 OK\nContent-type: text/html; charset=utf-8\n")
-    (set! cgi-header-out? #t)))
+;; ;; Outputs HTTP header "Status: 200 OK\nContent-type: text/html; charset=utf-8\n"
+;; ;; .returns unspecified
+;; (define (cgi-header)
+;;   (unless cgi-header-out?
+;;     (print "Status: 200 OK\nContent-type: text/html; charset=utf-8\n")
+;;     (set! cgi-header-out? #t)))
 
-;; Outputs HTTP header "Status: 302 Moved Temporarily\nLocation: [url]\n\n"
-;; .parameter url redirect URL
-;; .returns unspecified
-(define (cgi-moved-header url)
-   (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n\n" url)
-   (set! cgi-header-out? #t))
+;; ;; Outputs HTTP header "Status: 302 Moved Temporarily\nLocation: [url]\n\n"
+;; ;; .parameter url redirect URL
+;; ;; .returns unspecified
+;; (define (cgi-moved-header url)
+;;    (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n\n" url)
+;;    (set! cgi-header-out? #t))
 
-;; used internal
-(define (cgi-parse-query-string input)
-  (if (or (not (string? input)) (equal? "" input)) '()
-  (fold-right
-   (lambda (a b)
-     (let [(params (string-split a #\=))]
-       (cons (list (car params) (cadr params)) b)))
-   '()
-   (string-split input #\&))))
+;; ;; used internal
+;; (define (cgi-parse-query-string input)
+;;   (if (or (not (string? input)) (equal? "" input)) '()
+;;   (fold-right
+;;    (lambda (a b)
+;;      (let [(params (string-split a #\=))]
+;;        (cons (list (car params) (cadr params)) b)))
+;;    '()
+;;    (string-split input #\&))))
 
-;; Apply "% decode" to string and return the result.  Assumes input is UTF-8.
-;; .returns decoded string
-(define (cgi-decode s)
-  (call-with-string-io
-   s
-   (lambda (in out)
-     (let1 p (transcoded-port
-              (make-custom-binary-input-port
-               "cgi decode"
-               (lambda (bv start count)
-                 (let1 read-byte (lambda ()
-                                   (let1 c (read-char in)
-                                     (cond
-                                      [(eof-object? c) (eof-object)]
-                                      [(eq? #\+ c) 32]
-                                      [(eq? #\% c)
-                                       (let ([a (digit->integer (read-char in) 16)]
-                                             [b (digit->integer (read-char in) 16)])
-                                         (+ (* a 16) b))]
-                                      [else
-                                       (char->integer c)])))
-                   (let loop ([size 0]
-                              [b (read-byte)])
-                     (cond
-                      [(eof-object? b) size]
-                      [else
-                       (bytevector-u8-set! bv (+ start size) b)
-                       (if (>= (+ size 1) count)
-                           '()
-                           (loop (+ size 1) (read-byte)))]))))
-               #f #f #f)
-              (make-transcoder (utf-8-codec)))
-       (let loop ([c (read-char p)])
-         (cond
-          [(eof-object? c) '()]
-          [else
-           (display c out)
-           (loop (read-char p))]))))))
+;; ;; Apply "% decode" to string and return the result.  Assumes input is UTF-8.
+;; ;; .returns decoded string
+;; (define (cgi-decode s)
+;;   (call-with-string-io
+;;    s
+;;    (lambda (in out)
+;;      (let1 p (transcoded-port
+;;               (make-custom-binary-input-port
+;;                "cgi decode"
+;;                (lambda (bv start count)
+;;                  (let1 read-byte (lambda ()
+;;                                    (let1 c (read-char in)
+;;                                      (cond
+;;                                       [(eof-object? c) (eof-object)]
+;;                                       [(eq? #\+ c) 32]
+;;                                       [(eq? #\% c)
+;;                                        (let ([a (digit->integer (read-char in) 16)]
+;;                                              [b (digit->integer (read-char in) 16)])
+;;                                          (+ (* a 16) b))]
+;;                                       [else
+;;                                        (char->integer c)])))
+;;                    (let loop ([size 0]
+;;                               [b (read-byte)])
+;;                      (cond
+;;                       [(eof-object? b) size]
+;;                       [else
+;;                        (bytevector-u8-set! bv (+ start size) b)
+;;                        (if (>= (+ size 1) count)
+;;                            '()
+;;                            (loop (+ size 1) (read-byte)))]))))
+;;                #f #f #f)
+;;               (make-transcoder (utf-8-codec)))
+;;        (let loop ([c (read-char p)])
+;;          (cond
+;;           [(eof-object? c) '()]
+;;           [else
+;;            (display c out)
+;;            (loop (read-char p))]))))))
 
-; used internal
-(define (get-request-method-command-line) (if (equal? (third (command-line)) "GET") 'GET 'POST))
+;; ; used internal
+;; (define (get-request-method-command-line) (if (equal? (third (command-line)) "GET") 'GET 'POST))
 
-; used internal
-(define (get-request-body-command-line method) (fourth (command-line)))
+;; ; used internal
+;; (define (get-request-body-command-line method) (fourth (command-line)))
 
-; used internal
-(define (get-request-method-cgi) (if (equal? (sys-getenv "REQUEST_METHOD") "GET") 'GET 'POST))
+;; ; used internal
+;; (define (get-request-method-cgi) (if (equal? (sys-getenv "REQUEST_METHOD") "GET") 'GET 'POST))
 
-; used internal
-(define (get-request-body-cgi method)
-  (case method
-    [(POST)
-     (let* ([content-length (sys-getenv "CONTENT_LENGTH")]
-            [len            (if content-length (string->number content-length) 0)])
-       (if (= 0 len)
-           ""
-           (utf8->string (get-bytevector-n (standard-input-port) len)))
-             )]
-    [else
-     (sys-getenv "QUERY_STRING")]))
+;; ; used internal
+;; (define (get-request-body-cgi method)
+;;   (case method
+;;     [(POST)
+;;      (let* ([content-length (sys-getenv "CONTENT_LENGTH")]
+;;             [len            (if content-length (string->number content-length) 0)])
+;;        (if (= 0 len)
+;;            ""
+;;            (utf8->string (get-bytevector-n (standard-input-port) len)))
+;;              )]
+;;     [else
+;;      (sys-getenv "QUERY_STRING")]))
 
-; used internal
-(define (cgi-print-env key)
-  (format #t "(~a ~a)<br>" key (sys-getenv key)))
+;; ; used internal
+;; (define (cgi-print-env key)
+;;   (format #t "(~a ~a)<br>" key (sys-getenv key)))
 
-; used internal for debug use.
-(define (cgi-print-all-env)
-  (for-each print-env '("HTTP_HOST" "CONTENT_LENGTH" "QUERY_STRING" "HTTP_COOKIE" "REQUEST_METHOD" "CONTENT_TYPE" "PATHINFO" "REQUEST_URI" "SCRIPT_NAME")))
+;; ; used internal for debug use.
+;; (define (cgi-print-all-env)
+;;   (for-each print-env '("HTTP_HOST" "CONTENT_LENGTH" "QUERY_STRING" "HTTP_COOKIE" "REQUEST_METHOD" "CONTENT_TYPE" "PATHINFO" "REQUEST_URI" "SCRIPT_NAME")))
 
 ; ==============================================================================================================================================================
 ;;; SRFI-1 List library.
@@ -2724,3 +2724,5 @@
 ;; for psyntax.pp
 (define (void) (if #f #f))
 (define (eval-core x) (eval x '()))
+
+(define (exact? n) #t)

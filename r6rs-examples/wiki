@@ -1,0 +1,6 @@
+#!/usr/local/bin/mosh -b
+(import (prefix (lambda wiki) wiki:)
+        (rnrs))
+
+(wiki:main '((data-dir . "/Users/taro/repos-mosh/trunk/r6rs-examples/wikidata")
+             (top-url  . "http://127.0.0.1:8001")))
