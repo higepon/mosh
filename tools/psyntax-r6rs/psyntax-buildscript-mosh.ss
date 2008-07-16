@@ -947,6 +947,7 @@
     (format mosh)
     (alist-cons srfi-1)
     (assoc-ref mosh-list)
+    (add-to-list mosh-list)
     (first srfi-1)
     (second srfi-1)
     (third srfi-1)

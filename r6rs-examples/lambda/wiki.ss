@@ -2,8 +2,8 @@
   (export wiki-main)
   (import (rnrs)
           (rnrs mutable-pairs)
-          (only (mosh) read-line)
-          (only (mosh list) assoc-ref)
+          (only (mosh) read-line string-split format)
+          (only (mosh list) assoc-ref add-to-list)
           (only (mosh regexp) rxmatch)
           (only (srfi-1) first second third alist-cons)
           (prefix (cgi) cgi:)
@@ -11,6 +11,10 @@
 
 (define (init)
   (display "wiki-init"))
+
+(define (print msg)
+  (display msg)
+  (newline))
 
 ;; Configuration
 (define wiki-data-dir "/home/taro/vm/monar/wikidata/")
@@ -113,7 +117,7 @@
     (cond [(eof-object? line)
            (add-to-list parsed (list 'p text))]
           [else
-           (let1 line (cgi:escape line)
+           (let ([line (cgi:escape line)])
              (cond [(#/^(-+)/ line) => (lambda (match) ;; list syntax
                                          (unread-line-reader! r line)
                                          (loop (add-to-list (add-to-list parsed (list 'p text))
@@ -138,10 +142,10 @@
                                             (read-line-reader r)
                                             '()))]
                    [(#/^#([^(^)^\s]+)(?:\(([^\)]+)\))?/ line) => (lambda (match) ;; plugin syntax
-                                                                   (let1 plugin
+                                                                   (let ([plugin
                                                                        (if (match 2)
                                                                            (list 'plugin (match 1) (string-split (match 2) #\,))
-                                                                           (list 'plugin (match 1)))
+                                                                           (list 'plugin (match 1)))])
                                                                      (loop (add-to-list (add-to-list parsed (list 'p text))
                                                                                         plugin)
                                                                            (read-line-reader r)
@@ -244,7 +248,7 @@
           [(new)
            (format #t "<strong>~a</strong>" (second wiki))]
           [(plugin)
-           (let1 plugin (get-plugin (second wiki))
+           (let ([plugin (get-plugin (second wiki))])
              (cond [plugin
                     ((plugin-inline-proc plugin) get-parameter page-name (cddr wiki))]
                    [else
