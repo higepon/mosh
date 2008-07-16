@@ -172,16 +172,7 @@ class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
     FileBinaryOutputPort(FILE* stream) : stream_(stream) {}
-    FileBinaryOutputPort(ucs4string file)
-    {
-        stream_ = fopen(file.ascii_c_str(), "w");
-        if (NULL == stream_) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            // todo
-            fprintf(stderr, "fopen output file port=<%s>", file.ascii_c_str());
-            exit(-1);
-        }
-    }
+    FileBinaryOutputPort(ucs4string file);
 
     virtual ~FileBinaryOutputPort() {}
 

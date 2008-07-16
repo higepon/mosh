@@ -23,7 +23,7 @@
   (set! data-dir dir))
 
 (define (set-top-url! url)
-  (set! set-top-url! url))
+  (set! wiki-top-url url))
 
 (define (add-to-list lst a)
   (append lst (list a)))
@@ -349,7 +349,7 @@
 (define (print-footer)
   (print "</div>
 </div>
-<div id=\"footer\"><p>powered by <a href=\"http://code.google.com/p/monar/\">Monar</a> Scheme</p></div>
+<div id=\"footer\"><p>powered by <a href=\"http://code.google.com/p/mosh-scheme/\">Mosh</a> Scheme</p></div>
 </body>
 </html>"))
 
@@ -401,6 +401,7 @@
       (cond
        [(equal? "post" cmd)
          (when (eq? 'POST (get-request-method))
+;           (format #t "bod=~a" (get-parameter "body"))
            (write-to-file (page-name->path page-name)
                           (cgi:decode (get-parameter "body")))
            (cgi:moved-temporarily-header (format "~a/~a" wiki-top-url (cgi:encode page-name))))]
@@ -415,14 +416,14 @@
        [else
         (cgi:header)
         (print-header page-name)
-        (case cmd
-          [("edit") (print-edit-form page-name)]
-          [("create")
+        (cond
+          [(equal? "edit" cmd) (print-edit-form page-name)]
+          [(equal? "create" cmd)
            (let ([it (get-parameter "page")])
              (if it
                  (print-edit-form it)
                  (print-new-page-form page-name)))]
-          [("list") (list-page)]
+          [(equal? "list" cmd) (list-page)]
           [else
            (print-page get-parameter page-name)])
         (print-footer)]))))

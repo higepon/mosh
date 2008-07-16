@@ -75,11 +75,15 @@
 (define (request-body method)
   (case method
     [(POST)
-     (let* ([content-length (get-environment-variable "CONTENT_LENGTH")]
-            [len            (if content-length (string->number content-length) 0)])
-       (if (= 0 len)
-           ""
-           (utf8->string (get-bytevector-n (standard-input-port) len))))]
+     (cond
+      [(get-environment-variable "COMMAND_LINE") ;; for debug
+       (get-environment-variable "QUERY_STRING")]
+      [else
+       (let* ([content-length (get-environment-variable "CONTENT_LENGTH")]
+              [len            (if content-length (string->number content-length) 0)])
+         (if (= 0 len)
+             ""
+             (utf8->string (get-bytevector-n (standard-input-port) len))))])]
     [else
      (get-environment-variable "QUERY_STRING")]))
 

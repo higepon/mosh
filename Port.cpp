@@ -46,6 +46,15 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
+{
+    stream_ = fopen(file.ascii_c_str(), "w");
+    if (NULL == stream_) {
+        VM_RAISE1(" couldn't open output file: ~a", Object::makeString(file));
+    }
+}
+
+
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file)
 {
     stream_ = fopen(file.ascii_c_str(), "rb");

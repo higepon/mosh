@@ -316,7 +316,6 @@ Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
     if (argc < 1) {
         VM_RAISE1("wrong number of arguments for rxmatch-substring required at least 1, got ~d)\n", Object::makeInt(argc));
     }
-    printf("rxmatch-substring %d \n", argc);
     const Object r = argv[0];
     if (r.isFalse())  return Object::False;
     if (!r.isRegMatch()) {

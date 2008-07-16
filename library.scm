@@ -1892,10 +1892,13 @@
   (let* ((char (apply read-char port)))
     (if (eof-object? char)
         char
-        (do ((char char (apply read-char port))
-             (clist '() (cons char clist)))
-            ((or (eof-object? char) (char=? #\newline char))
-             (list->string (reverse clist)))))))
+        (letrec ((loop (lambda (char clist) (if (or (eof-object? char) (char=? #\newline char))
+                                                (begin #f (list->string (reverse clist)))
+                                                (begin (loop (apply read-char port) (cons char clist))))))) (loop char '())))))
+;;         (do ((char char (apply read-char port))
+;;              (clist '() (cons char clist)))
+;;             ((or (eof-object? char) (char=? #\newline char))
+;;              (list->string (reverse clist)))))))
 
 ;; Same as (call-with-output-file path (lambda (port) (display content obj)))
 ;; .returns unspecified.

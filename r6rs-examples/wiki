@@ -2,5 +2,11 @@
 (import (prefix (lambda wiki) wiki:)
         (rnrs))
 
-(wiki:main '((data-dir . "/Users/taro/repos-mosh/trunk/r6rs-examples/wikidata")
-             (top-url  . "http://127.0.0.1:8001")))
+;; run from commandline like following
+;; PATH_INFO="/wiki/TopPage/post" REQUEST_METHOD="POST" COMMAND_LINE=1 QUERY_STRING="body=hage" ../mosh -b wiki
+;; PATH_INFO="/wiki/TopPage/post" REQUEST_METHOD="POST" COMMAND_LINE=1 QUERY_STRING="body=hige" sudo -u www-data  ../mosh -b wiki
+
+
+;(wiki:main '((data-dir . "/Users/taro/repos-mosh/trunk/r6rs-examples/wikidata")
+(wiki:main '((data-dir . "/home/taro/repos-mosh/trunk/r6rs-examples/wikidata/")
+             (top-url  . "http://127.0.0.1:8001/wiki")))
