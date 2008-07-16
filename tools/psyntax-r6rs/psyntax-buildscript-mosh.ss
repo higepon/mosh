@@ -189,10 +189,13 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
+    (mosh-file   (mosh file)                           #f    #t)  ;; for mosh
+    (mosh-bytevector (mosh bytevector)                 #f    #t)  ;; for mosh
+    (mosh-number (mosh number)                         #f    #t)  ;; for mosh
+    (mosh-string (mosh string)                         #f    #t)  ;; for mosh
     (mosh-list   (mosh list)                           #f    #t)  ;; for mosh
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
-    (mosh-collection (mosh collection)                 #f    #t)  ;; for mosh
-    (sys        (system)                               #f    #t)  ;; for mosh
+    (sys         (system)                              #f    #t)  ;; for mosh
     (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
 ;    (srfi-8     (srfi-8)                               #f    #t)  ;; for mosh
     ))
@@ -935,27 +938,34 @@
     (string-titlecase                           r uc)
     (string-upcase                              r uc)
     ;;; mosh
+    ;;; string-split など操作の対象が string で戻り値も string に関連するものなら
+    ;;; => (mosh string)
+    ;;; readdir のようにファイル操作に関わるものは
+    ;;; => (mosh file)
+    ;;; string->regexp のように型を変換するものは source の string の型に合わせたライブラリに
+    ;;; => (mosh string)
+    ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
     (sys-display mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)
     (readdir sys)
     (regexp-replace-all mosh-regexp)
     (rxmatch mosh-regexp)
-    (string->regexp mosh-regexp)
-    (bytevector-for-each mosh-collection)
-    (string-split mosh)
-    (call-with-string-io mosh)
-    (call-with-string-input-port mosh)
-    (digit->integer mosh)
-    (file->string mosh)
-    (write-to-file mosh)
-    (format mosh)
+    (string->regexp mosh-string)
+    (bytevector-for-each mosh-bytevector)
+    (string-split mosh-string)
+    (call-with-string-io mosh-string)
+    (call-with-string-input-port mosh-string)
+    (digit->integer mosh-number)
+    (file->string mosh-file)
+    (write-to-file mosh-file)
+    (format mosh-string)
     (alist-cons srfi-1)
     (assoc-ref mosh-list)
     (first srfi-1)
     (second srfi-1)
     (third srfi-1)
-    (read-line mosh)
+    (read-line mosh-file)
     (regexp? r)
 ;    (receive srfi-8)
     ;;;

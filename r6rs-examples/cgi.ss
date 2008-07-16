@@ -3,8 +3,9 @@
   (import (rnrs)
           (only (system) get-environment-variable)
           (only (mosh regexp) regexp-replace-all)
-          (only (mosh collection) bytevector-for-each)
-          (only (mosh) string-split format call-with-string-io digit->integer)
+          (only (mosh bytevector) bytevector-for-each)
+          (only (mosh string) string-split format call-with-string-io)
+          (only (mosh number) digit->integer)
           (only (srfi-1) second)
           )
 
