@@ -421,56 +421,7 @@ public:
     void display(Object o, bool inList = false);
     void putPair(Object obj, bool inList = false);
 
-    Object format(const ucs4string& fmt, Object args)
-    {
-        ucs4string buffer = UC("");
-        for (uint32_t i = 0; i < fmt.size(); i++) {
-            if (fmt[i] == '~') {
-                i++;
-                if (!buffer.empty()) {
-                    putString(buffer);
-                    buffer.clear();
-                }
-                switch (fmt[i]) {
-                case 'a':
-                case 'A':
-                case 'd':
-                case 'D':
-                {
-                    if (args.isPair()) {
-                        display(args.car());
-                        args = args.cdr();
-                    } else {
-//                    RAISE_ERROR("too few arguments for format string: ~a", f);
-                    }
-                    break;
-                }
-                case 's':
-                case 'S':
-                {
-                    if (args.isPair()) {
-                        putDatum(args.car());
-                        args = args.cdr();
-                    } else {
-//                    RAISE_ERROR("too few arguments for format string: ~a", f);
-                    }
-                    break;
-                }
-                case '\0':
-                    i--;
-                    break;
-                }
-            } else {
-                buffer += fmt[i];
-            }
-        }
-
-        if (!buffer.empty()) {
-            putString(buffer);
-        }
-        fflush(stdout); // temp
-        return Object::Undef;
-    }
+    Object format(const ucs4string& fmt, Object args);
 
     BinaryOutputPort* binaryPort() const { return port_; }
 

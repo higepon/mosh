@@ -9,6 +9,12 @@ body{
   font-family:"Verdana","Geneva","ＭＳ Ｐゴシック",Osaka,sans-serif;
 }
 
+.notice {
+  border:1px solid #C6C3FF;
+  padding:0.7em 0.7em 0.7em 0.7em;
+  background-color:#dde;
+}
+
 #header{
   width:100%;
   background-color:white;

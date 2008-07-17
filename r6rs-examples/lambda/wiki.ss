@@ -28,7 +28,6 @@
 (define (add-to-list lst a)
   (append lst (list a)))
 
-
 ;;; reader for unread-line
 (define (make-reader port)
   (cons port '()))
@@ -305,7 +304,7 @@
           (lambda (p)
             (let ([r (make-reader p)])
               (wiki->html get-parameter page-name (wiki-parse r)))))
-        (begin (print "page does'nt exist")
+        (begin (format #t "<p class='notice'>~s doesn't exist. Please create with following form.</p>" page-name)
         (print-edit-form page-name)))))
 
 (define (print-header . args)
@@ -377,6 +376,21 @@
   (cgi:header)
   (print str))
 
+(define (save-to-file path body)
+  (define (backup-file-path path)
+    (let loop ([i 0])
+      (let ([path (format "~a.bak~d" path i)])
+        (cond
+         [(> i 100) #f]
+         [(file-exists? path)
+          (loop (+ i 1))]
+         [else path]))))
+  (let ([prev-body (if (file-exists? path) (file->string path) #f)]
+        [backup-file (backup-file-path path)])
+    (write-to-file path body)
+    (when (and prev-body backup-file)
+      (write-to-file backup-file prev-body))))
+
 (define (main args-alist)
   (define (get-page-cmd)
     (let ([path-info (get-environment-variable "PATH_INFO")])
@@ -402,8 +416,8 @@
        [(equal? "post" cmd)
          (when (eq? 'POST (get-request-method))
 ;           (format #t "bod=~a" (get-parameter "body"))
-           (write-to-file (page-name->path page-name)
-                          (cgi:decode (get-parameter "body")))
+           (save-to-file (page-name->path page-name)
+                         (cgi:decode (get-parameter "body")))
            (cgi:moved-temporarily-header (format "~a/~a" wiki-top-url (cgi:encode page-name))))]
        [(equal? "plugin" cmd)
         (let ([plugin (get-plugin (get-parameter "plugin"))])
