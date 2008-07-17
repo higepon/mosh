@@ -34,7 +34,7 @@
 
 #define USE_GNU_CXX_HASH_MAP
 
-#ifdef USE_GNU_CXX_HASH_MAP
+#ifdef HAVE_TR1
 #include <tr1/unordered_map>
 #include <ext/hash_map>
 struct hash_func
@@ -50,7 +50,7 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             std::equal_to<scheme::Object>,
                             gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 
-#elif defined(USE_TR1_UNORDERED_MAP)
+#elif defined(HAVE_TR1) && defined(USE_TR1_UNORDERED_MAP)
 
 #include <tr1/unordered_map>
 struct hash_func
