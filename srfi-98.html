@@ -37,7 +37,7 @@ the list.  You can access previous messages via
 
 <h1>Abstract</h1>
 
-This SRFI specifies the procedure getenv which gets the value of the specified environment variable.
+This SRFI specifies the procedure get-environment-variable which gets the value of the specified environment variable.
 
 <h1>Issues</h1>
 
@@ -62,49 +62,38 @@ the environment variable.</p>
 <p>For example, CGI programs may obtain the values of the
 Meta-Variables such as "QUERY_STRING", "CONTENT_LENGTH" and
 "REQUEST_METHOD", as the following examples:</p>
-<pre>(getenv "QUERY_STRING") =&gt; "foo=bar&amp;huga=hige"
-(getenv "CONTENT_LENGTH") =&gt; "512"
-(getenv "REQUEST_METHOD") =&gt; "post"
+<pre>(get-environment-variable "QUERY_STRING") =&gt; "foo=bar&amp;huga=hige"
+(get-environment-variable "CONTENT_LENGTH") =&gt; "512"
+(get-environment-variable "REQUEST_METHOD") =&gt; "post"
 </pre>
 <p>Therefore, it is quite useful to define the environment-independent way to get environment variables.</p>
 <p><a name="cgi">[1]</a> The Common Gateway Interface (CGI) Version 1.1, RFC3875, <a href="http://www.ietf.org/rfc/rfc3875">http://www.ietf.org/rfc/rfc3875</a>.</p>
 <h1>Specification</h1>
 <pre>R6RS library name</pre>
-Following two procedures belong to the R6RS library named (system getenv).
+Following two procedures belong to the R6RS library named (system).
 This is a provisional library name until naming rules for SRFI library on R6RS are specified.
-<pre>Function: getenv name</pre>
+<pre>Function: get-environment-variable name</pre>
 Returns the value of the named environment variable as a string, or #f if the named environment variable is not found.
-<pre>(getenv "PATH") =&gt; "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
+<pre>(get-environment-variable "PATH") =&gt; "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
 </pre>
-<pre>Function: getenv</pre>
+<pre>Function: get-environment-variables</pre>
 Returns names and values of all the environment variables as an a-list.
-<pre>(getenv) =&gt; (("PATH" . "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin") ("USERNAME" . "taro"))
+<pre>(get-environment-variables) =&gt; (("PATH" . "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin") ("USERNAME" . "taro"))
 </pre>
 
 <h1>Implementation</h1>
-<h2>Chicken, PLT Scheme and MzScheme</h2>
-<pre>(let ((%getenv getenv))
-  (set! getenv
-    (lambda args
-      (if (null? args)
-        '()
-        (%getenv (car args)))))))
-</pre>
 <h2>Gauche</h2>
-<pre>(define (getenv . args)
+<pre>(define (get-environment-variable . args)
   (if (null? args)
       (sys-environ-&gt;alist)
-      (apply sys-getenv args))))
+      (apply sys-get-env args))))
 </pre>
 <h2>Scheme48 and Scsh</h2>
-<pre>(define (getenv . args)
+<pre>(define (get-environment-variable . args)
   (if (null? args)
       (environment-alist)
       (apply lookup-environment-variable args))))
 </pre>
-
-<h2>STklos</h2>
-getenv is built into stklos.
 
 <h1>Appendix: Existing implementations</h1>
 <table border="1">
