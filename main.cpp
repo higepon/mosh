@@ -67,6 +67,7 @@ void showUsage()
             "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
             "  -l       Loads <file> before executing the script file or entering repl.\n"
+            "  -b       [experimental] R6RS batch mode. Loads R6RS top-level program file\n"
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"

@@ -34,7 +34,7 @@
 
 #define USE_GNU_CXX_HASH_MAP
 
-#ifdef HAVE_TR1
+#if defined(HAVE_EXT_HASHES) && defined(HAVE_TR1_HASHES)
 #include <tr1/unordered_map>
 #include <ext/hash_map>
 struct hash_func
@@ -50,22 +50,21 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             std::equal_to<scheme::Object>,
                             gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 
-#elif defined(HAVE_TR1) && defined(USE_TR1_UNORDERED_MAP)
+// #elif defined(HAVE_TR1) && defined(USE_TR1_UNORDERED_MAP)
 
-#include <tr1/unordered_map>
-struct hash_func
-{
-    size_t operator()(scheme::Object const & s) const
-    {
-        return std::tr1::hash<word>()(s.val);
-    }
-};
+// #include <tr1/unordered_map>
+// struct hash_func
+// {
+//     size_t operator()(scheme::Object const & s) const
+//     {
+//         return std::tr1::hash<word>()(s.val);
+//     }
+// };
 
-typedef std::tr1::unordered_map<scheme::Object,
-                                scheme::Object,
-                                hash_func, std::equal_to<scheme::Object>,
-                                gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
-
+// typedef std::tr1::unordered_map<scheme::Object,
+//                                 scheme::Object,
+//                                 hash_func, std::equal_to<scheme::Object>,
+//                                 gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 #else // std::map
 typedef std::map<scheme::Object,
                  scheme::Object,
@@ -79,7 +78,12 @@ class EqHashTable EXTEND_GC
 {
 
 public:
-    EqHashTable() : table_(ObjectMap(200)){}
+    EqHashTable() :
+#ifdef HAVE_TR1_HASHES
+        table_(ObjectMap(200)){}
+#else
+        table_(ObjectMap()){}
+#endif
 
     // todo
     //    EqHashObjectMap(int capacity) {}

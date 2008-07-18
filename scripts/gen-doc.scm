@@ -20,8 +20,8 @@
     'source-destination-delta "")
 
    (manual-from-scheme-files
-    (manual-from-scheme-file 'src "/home/taro/mosh/library.scm")
-    (manual-from-scheme-file 'src "/home/taro/mosh/manual.scm")
+    (manual-from-scheme-file 'src (string-append (sys-getenv "HOME") "/mosh/library.scm"))
+    (manual-from-scheme-file 'src (string-append (sys-getenv "HOME") "/mosh/manual.scm"))
     ))
   (end-laml)
   0)
