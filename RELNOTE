@@ -14,7 +14,7 @@ About This Release
 ------------------
 
 Added experimental "R6RS batch mode" using psyntax.
-  run with -b option
+  run with -b option like "cd r6rs-examples; mosh -b hello.ss"
   There are some samples in mosh/r6rs-examples directory.
 
 Ported psyntax library.
