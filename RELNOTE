@@ -1,3 +1,79 @@
+Mosh 0.0.5 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Added experimental "R6RS batch mode" using psyntax.
+  run with -b option
+  There are some samples in mosh/r6rs-examples directory.
+
+Ported psyntax library.
+  psyntax is "The portable R6RS library and syntax-case system" by Abdulaziz Ghuloum and Kent Dybvig.
+
+Added SRFI 98 get-environment-variable and get-environment-variables.
+
+Improved stack trace.
+
+Improved (apply ...) not to use C native stack recursively.
+
+Improved profiler.
+
+Improved compilations speed.
+
+Improved procedure speed which is written in C++.
+
+Rewrote some procedures in C++ for perfomance.
+
+Added load option. run mosh with "-l".
+
+Added many procedures.
+  call-process
+  vector?
+  string
+  string->lines
+  filter-map
+  map-with-index
+  car+cdr
+  take
+  drop
+  take!
+  take-right
+  drop-right
+  drop-right!
+  integer?
+  fifth
+  sixth
+  seventh
+  eighth
+  ninth
+  tenth
+  xcons
+  make-list
+  list-tabulate
+  list-copy
+  list=
+  split-at
+  split-at!
+  not-pair?
+  last-pair
+  last
+  circular-list
+  proper-list?
+  circular-list?
+  dotted-list?.
+
+Fixed many bugs.
+
 Mosh 0.0.4 Release Note
 ============================
 

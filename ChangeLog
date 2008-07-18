@@ -1,3 +1,7 @@
+2008-07-18  higepon  <higepon@users.sourceforge.jp>
+
+        *  0.0.5 released.
+
 2008-07-16  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm: Removed CGI library from library.scm, it moved to r6rs-examples/ directory.

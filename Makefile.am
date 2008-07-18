@@ -47,6 +47,7 @@ CompilerProcedures.cpp\
 CompilerProcedures.h\
 SString.cpp          \
 BuiltinSymbols.cpp\
+Builtin.h\
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall
@@ -68,9 +69,9 @@ libmatch_a_SOURCES = match.cpp
 
 
 # generated files should be listed here.
-BUILT_SOURCES  = Instruction.h compiler.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
+BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm psyntax.scm
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE
 
 GENERATED = \
 Instruction.h \
@@ -139,7 +140,7 @@ Instruction.h: ./instruction.scm
 BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm -g > $(PWD)/$@
 
-compiler.cpp: compiler-with-library.scmc
+compiler.cpp: compiler-with-library.scmc match.scmc # match.scmc is also required for collecting symbols
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
 match.cpp: match.scmc
@@ -195,8 +196,8 @@ all-tests.scm: ./test-data.scm
 	@GOSH@ ./scripts/gen-test.scm $< > $@
 
 doc:
-	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
+# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
+# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
 fulltest:
 	./mosh -t
