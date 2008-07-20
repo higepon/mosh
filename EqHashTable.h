@@ -34,7 +34,7 @@
 
 #define USE_GNU_CXX_HASH_MAP
 
-#if defined(HAVE_EXT_HASHES) && defined(HAVE_TR1_HASHES)
+#if HAVE_EXT_HASHES && HAVE_TR1_HASHES
 #include <tr1/unordered_map>
 #include <ext/hash_map>
 struct hash_func
@@ -79,7 +79,7 @@ class EqHashTable EXTEND_GC
 
 public:
     EqHashTable() :
-#ifdef HAVE_TR1_HASHES
+#if HAVE_TR1_HASHES
         table_(ObjectMap(200)){}
 #else
         table_(ObjectMap()){}
