@@ -43,7 +43,6 @@ fi
 # Checks for libraries.
 have_tr1_hashes=0
 have_ext_hashes=0
-have_std_hashes=0
 AC_LANG([C++])
 AC_MSG_CHECKING([for hashed associative containers])
 AC_COMPILE_IFELSE([
@@ -54,12 +53,10 @@ int main(int, char **)
     m.insert(std::make_pair(1, 2));
 }
 ],
-    [
-     AC_MSG_RESULT([std::tr1::unordered_map])
-     have_tr1_hashes=1
-    ],
-    [
-     AC_COMPILE_IFELSE([
+[have_tr1_hashes=1],
+[have_tr1_hashes=0])
+
+AC_COMPILE_IFELSE([
 #include <ext/hash_map>
 int main(int, char **)
 {
@@ -67,26 +64,9 @@ int main(int, char **)
     m.insert(std::make_pair(1, 2));
 }
 ],
-     [
-      AC_MSG_RESULT([__gnu_cxx::hash_map])
-      have_ext_hashes=1
-     ],
-     [
-      AC_COMPILE_IFELSE([
-#include <hash_map>
-int main(int, char **)
-{
-    std::hash_map<int, int> m;
-    m.insert(std::make_pair(1, 2));
-}
-],
-      [
-       AC_MSG_RESULT([std::hash_map])
-       have_std_hashes=1
-      ],
-      [
-       AC_MSG_RESULT([no, falling back to std::map (slower)])
-      ])])])
+[have_ext_hashes=1],
+[have_ext_hashes=0])
+
 
 HAVE_TR1_HASHES=$have_tr1_hashes
 AC_DEFINE_UNQUOTED([HAVE_TR1_HASHES], $have_tr1_hashes, [Do we have std::tr1:: hashes?])
@@ -94,9 +74,6 @@ AC_SUBST([HAVE_TR1_HASHES])
 HAVE_EXT_HASHES=$have_ext_hashes
 AC_DEFINE_UNQUOTED([HAVE_EXT_HASHES], $have_ext_hashes, [Do we have __gnu_cxx:: hashes?])
 AC_SUBST([HAVE_EXT_HASHES])
-HAVE_STD_HASHES=$have_std_hashes
-AC_DEFINE_UNQUOTED([HAVE_STD_HASHES], $have_std_hashes, [Do we have std:: hashes?])
-AC_SUBST([HAVE_STD_HASHES])
 
 
 # Checks for header files.

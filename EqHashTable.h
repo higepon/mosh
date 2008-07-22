@@ -79,7 +79,7 @@ class EqHashTable EXTEND_GC
 
 public:
     EqHashTable() :
-#if HAVE_TR1_HASHES
+#if HAVE_EXT_HASHES && HAVE_TR1_HASHES
         table_(ObjectMap(200)){}
 #else
         table_(ObjectMap()){}
