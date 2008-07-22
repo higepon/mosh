@@ -39,7 +39,7 @@ using namespace scheme;
 Object scheme::eqHashEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "eq-hash");
-    return Object::makeInt(Object.val);
+    return Object::makeInt(argv[0].val);
 }
 
 Object scheme::currentErrorPortEx(int argc, const Object* argv)
