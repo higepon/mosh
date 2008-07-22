@@ -160,6 +160,7 @@
     ($local-ref ,$local-ref)
     (symbol-value, (lambda e (error "symbol-value")))
     (set-symbol-value!, (lambda e (error "set-symbol-value!")))
+    (eq-hash ,(lambda e (error "eq-hash not implemented")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

@@ -32,8 +32,6 @@
 #ifndef __SCHEME_EQ_HASH_TABLE__
 #define __SCHEME_EQ_HASH_TABLE__
 
-#define USE_GNU_CXX_HASH_MAP
-
 #if HAVE_EXT_HASHES && HAVE_TR1_HASHES
 #include <tr1/unordered_map>
 #include <ext/hash_map>
@@ -72,9 +70,14 @@ typedef std::map<scheme::Object,
                  gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 #endif
 
+#include "HashTable.h"
+
 namespace scheme {
 
-class EqHashTable EXTEND_GC
+extern Object eqHashEx(int argc, const Object* argv);
+extern Object eqPEx(int argc, const Object* argv);
+
+class EqHashTable : public HashTable
 {
 
 public:
@@ -85,8 +88,18 @@ public:
         table_(ObjectMap()){}
 #endif
 
-    // todo
-    //    EqHashObjectMap(int capacity) {}
+    virtual ~EqHashTable() {}
+
+    size_t size() const
+    {
+        return table_.size();
+    }
+
+    bool contains(Object key)
+    {
+        ObjectMap::iterator p = table_.find(key);
+        return p != table_.end();
+    }
 
     Object ref(Object key, Object defaultVal)
     {
@@ -101,6 +114,22 @@ public:
     void set(Object key, Object val)
     {
         table_[key] = val;
+    }
+
+    void deleteD(Object key)
+    {
+        table_.erase(key);
+    }
+
+
+    Object hashFunction() const
+    {
+        return Object::makeCProcedure(eqHashEx);
+    }
+
+    Object equivalenceFunction() const
+    {
+        return Object::makeCProcedure(eqPEx);
     }
 
     void insert(Object key, Object val)
@@ -143,7 +172,6 @@ public:
         return ret;
     }
 
-    ~EqHashTable() {} // not virtual
 
 private:
     inline void setTable(ObjectMap i) { table_ = i; }

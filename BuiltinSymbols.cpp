@@ -272,6 +272,7 @@ const Object* scheme::getBuiltinSymbols() {
         SA("env"),
         SA("eof-object"),
         SA("eof-object?"),
+        SA("eq-hash"),
         SA("eq-hashtable-copy"),
         SA("eq?"),
         SA("equal?"),

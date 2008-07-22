@@ -31,7 +31,10 @@ config.h             \
 scheme.h             \
 ByteVector.h         \
 Closure.h            \
+HashTable.h          \
 EqHashTable.h        \
+GenericHashTable.h   \
+GenericHashTable.cpp \
 Pair.h               \
 Regexp.h             \
 Stack.h              \

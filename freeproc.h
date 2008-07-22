@@ -106,6 +106,7 @@ namespace scheme {
     Object memqEx(int argc, const Object* argv);
     Object memvEx(int argc, const Object* argv);
     Object eqPEx(int argc, const Object* argv);
+    Object eqHashEx(int argc, const Object* argv);
     Object memberEx(int argc, const Object* argv);
     Object booleanPEx(int argc, const Object* argv);
     Object symbolTostringEx(int argc, const Object* argv);

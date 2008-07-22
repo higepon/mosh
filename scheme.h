@@ -161,6 +161,7 @@ class String;
 class InputFilePort;
 class Closure;
 class Stack;
+class HashTable;
 class EqHashTable;
 class CProcedure;
 class Symbol;
@@ -266,6 +267,11 @@ public:
     bool isCallable() const
     {
         return isClosure() || isCProcedure() || isRegexp() || isRegMatch();
+    }
+
+    bool isHashTable() const
+    {
+        return isEqHashTable();
     }
 
     // Pair
@@ -449,6 +455,12 @@ DECL_ACCESSOR(TypedVector)
 DECL_ACCESSOR(TypedVectorDesc)
 DECL_ACCESSOR(CodeBuilder)
 
+HashTable* toHashTable() const
+{
+    return reinterpret_cast<HashTable*>(reinterpret_cast<HeapObject*>(val)->obj);
+}
+
+
 Object* toObjectPointer() const { return reinterpret_cast<Object*>(val); }
 
     bool isPointer() const
@@ -579,6 +591,7 @@ inline Object& Object::fifth() const
 #include "Closure.h"
 #include "Stack.h"
 #include "EqHashTable.h"
+#include "GenericHashTable.h"
 #include "CProcedure.h"
 #include "Box.h"
 #include "Port.h"

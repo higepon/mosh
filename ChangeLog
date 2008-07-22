@@ -1,3 +1,13 @@
+2008-07-22  higepon  <higepon@users.sourceforge.jp>
+
+        * EqHashTable.h : Added (eq-hash ...).
+
+        * GenericMap.h: Added.
+
+        * GenericHashTable.h (scheme): Added.
+
+        * HashTable.h (scheme): Added for Generic HashTable
+
 2008-07-18  higepon  <higepon@users.sourceforge.jp>
 
         *  0.0.5 released.
