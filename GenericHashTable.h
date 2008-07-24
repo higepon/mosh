@@ -41,6 +41,9 @@ namespace scheme {
 class GenericHashTable : public HashTable
 {
 public:
+    GenericHashTable(Object hashFunction, Object equivalenceFunction);
+    ~GenericHashTable();
+
     size_t size() const;
     Object ref(Object key, Object defaultValue);
     void set(Object key, Object values);
@@ -48,11 +51,13 @@ public:
     bool contains(Object key);
     Object copy();
     Object keys();
+    Object hashFunction() const;
+    Object equivalenceFunction() const;
 
 private:
     GenericMap map_;
     Object hashFunction_;
-    Object equiv_;
+    Object equivalenceFunction_;
 };
 
 }; // namespace scheme

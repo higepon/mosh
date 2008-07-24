@@ -36,62 +36,12 @@ extern scheme::VM* theVM;
 
 using namespace scheme;
 
-Object scheme::eqHashEx(int argc, const Object* argv)
-{
-    checkArgLength(1, argc, "eq-hash");
-    return Object::makeInt(argv[0].val);
-}
-
 Object scheme::currentErrorPortEx(int argc, const Object* argv)
 {
     printf("current-error-port called\n");
     return Object::UnBound;
 }
 
-Object scheme::hashtableKeysEx(int argc, const Object* argv)
-{
-    checkArgLength(1, argc, "hash-table-keys");
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("hashtable-keys hash-table required, but got ~a\n", ht);
-    }
-    return ht.toHashTable()->keys();
-}
-Object scheme::hashtableSetDEx(int argc, const Object* argv)
-{
-    checkArgLength(3, argc, "hash-table-set!");
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", ht);
-    }
-
-    const Object key = argv[1];
-    const Object val = argv[2];
-    ht.toHashTable()->set(key, val);
-    return Object::Undef;
-}
-
-Object scheme::hashtableRefEx(int argc, const Object* argv)
-{
-    if (argc == 2 || argc == 3) {
-        const Object ht = argv[0];
-        if (!ht.isHashTable()) {
-            VM_RAISE1("hashtable-ref hash-table required, but got ~a\n", ht);
-        }
-        const Object key = argv[1];
-        const Object defaultVal = (argc == 3 ? argv[2] : Object::False);
-        return ht.toHashTable()->ref(key, defaultVal);
-    } else {
-        VM_RAISE1("wrong number of arguments for hash-table-get (required 2 or 3, got ~d)\n", Object::makeInt(argc));
-    }
-    return Object::UnBound;
-}
-
-Object scheme::makeEqHashtableEx(int argc, const Object* argv)
-{
-    checkArgLength(0, argc, "make-eq-hashtable");
-    return Object::makeEqHashTable();
-}
 
 Object scheme::numberPEx(int argc, const Object* argv)
 {
@@ -1816,21 +1766,6 @@ Object scheme::uniq(Object list)
     }
     return ret;
 }
-
-
-
-
-
-Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
-{
-    checkArgLength(1, argc, "eq-hashtable-copy");
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("eq-hashtable required, but got ~an", ht);
-    }
-    return ht.toHashTable()->copy();
-}
-
 
 Object scheme::lengthEx(int argc, const Object* argv)
 {

@@ -38,11 +38,6 @@ namespace scheme {
 
     Object dummy(Object obj);
     Object currentErrorPortEx(int argc, const Object* argv);
-    Object hashtableKeysEx(int argc, const Object* argv);
-    Object hashtableSetDEx(int argc, const Object* argv);
-    Object hashtableRefEx(int argc, const Object* argv);
-    Object eqHashtableCopyEx(int argc, const Object* argv);
-    Object makeEqHashtableEx(int argc, const Object* argv);
     Object numberPEx(int argc, const Object* argv);
     Object consEx(int argc, const Object* argv);
     Object carEx(int argc, const Object* argv);
@@ -106,7 +101,6 @@ namespace scheme {
     Object memqEx(int argc, const Object* argv);
     Object memvEx(int argc, const Object* argv);
     Object eqPEx(int argc, const Object* argv);
-    Object eqHashEx(int argc, const Object* argv);
     Object memberEx(int argc, const Object* argv);
     Object booleanPEx(int argc, const Object* argv);
     Object symbolTostringEx(int argc, const Object* argv);

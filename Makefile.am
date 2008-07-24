@@ -46,8 +46,10 @@ TypedVector.h        \
 TypedVector.cpp      \
 CodeBuilder.h        \
 CodeBuilder.cpp        \
-CompilerProcedures.cpp\
-CompilerProcedures.h\
+CompilerProcedures.cpp \
+CompilerProcedures.h   \
+HashTableProceduures.cpp \
+HashTableProceduures.h   \
 SString.cpp          \
 BuiltinSymbols.cpp\
 Builtin.h\

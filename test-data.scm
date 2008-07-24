@@ -1023,6 +1023,17 @@ val
 [mosh-only ((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
 ["123" (string #\1 #\2 #\3)]
 ["taro&amp;hanako" (regexp-replace-all #/&/ "taro&hanako" "&amp;")]
+[mosh-only 2 (let1 ht (make-hash-table (lambda (x) 2) ;; always 2
+                                       (lambda (a b) #t))
+               (hashtable-set! ht 1 1)
+               (hashtable-set! ht 2 2)
+               (hashtable-ref ht 1))]
+[mosh-only "apple" (let1 ht (make-hash-table string-hash
+                                             string=?)
+                     (hashtable-set! ht "my" "apple")
+                     (hashtable-set! ht "our" "water")
+                     (hashtable-ref ht "my"))]
+
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
 ;;          [con con]

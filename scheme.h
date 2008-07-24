@@ -151,6 +151,7 @@ public:
         TypedVectorDesc   = Type<18>::VALUE,
         TypedVector       = Type<19>::VALUE,
         CodeBuilder       = Type<20>::VALUE,
+        GenericHashTable  = Type<21>::VALUE,
         forbidden_comma
     };
 };
@@ -163,6 +164,7 @@ class Closure;
 class Stack;
 class HashTable;
 class EqHashTable;
+class GenericHashTable;
 class CProcedure;
 class Symbol;
 class Box;
@@ -271,7 +273,7 @@ public:
 
     bool isHashTable() const
     {
-        return isEqHashTable();
+        return isEqHashTable() || isGenericHashTable();
     }
 
     // Pair
@@ -414,6 +416,7 @@ public:
     static Object makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability);
     static Object makeTypedVector(Object desc, Object fieldsList);
     static Object makeCodeBuilder();
+    static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
@@ -433,6 +436,7 @@ bool is##tp() const                                               \
 DECL_IS(type) \
 DECL_TO(type)
 
+DECL_ACCESSOR(GenericHashTable)
 DECL_ACCESSOR(Vector)
 DECL_ACCESSOR(InputFilePort)
 DECL_ACCESSOR(Closure)

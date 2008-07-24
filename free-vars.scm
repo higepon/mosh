@@ -69,6 +69,7 @@
     (hashtable-set! ,hash-table-put!)
     (hashtable-ref ,hash-table-get)
     (hashtable-keys ,hash-table-keys)
+    (string-hash ,(lambda e (error "string-hash not implemented")))
     (eq-hashtable-copy ,eq-hashtable-copy)
 ;    (command-line ,command-line)
     (current-error-port ,current-error-port)
@@ -161,6 +162,7 @@
     (symbol-value, (lambda e (error "symbol-value")))
     (set-symbol-value!, (lambda e (error "set-symbol-value!")))
     (eq-hash ,(lambda e (error "eq-hash not implemented")))
+    (make-hash-table ,(lambda e (error "make-hash-table not implemented")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

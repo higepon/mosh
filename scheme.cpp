@@ -273,3 +273,9 @@ Object Object::makeCodeBuilder()
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CodeBuilder,
                                                         reinterpret_cast<word>(new CodeBuilder()))));
 }
+
+Object Object::makeGenericHashTable(Object hashFunction, Object equivalenceFunction)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::GenericHashTable,
+                                                        reinterpret_cast<word>(new GenericHashTable(hashFunction, equivalenceFunction)))));
+}

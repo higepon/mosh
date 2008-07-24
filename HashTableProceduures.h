@@ -1,5 +1,5 @@
 /*
- * GenericMap.h
+ * HashTableProceduures.h - Procedures written in C++ for compiler.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,48 +26,25 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: EqHashTable.h 251 2008-07-22 05:12:58Z higepon $
+ *  $Id: HashTableProceduures.h 210 2008-07-10 03:02:14Z higepon $
  */
 
-#ifndef __SCHEME_GENERIC_MAP__
-#define __SCHEME_GENERIC_MAP__
+#ifndef __SCHEME_HASH_TABLE_PROCEDURES__
+#define __SCHEME_HASH_TABLE_PROCEDURES__
 
-#include "config.h"
+#include "scheme.h"
 
-#if HAVE_EXT_HASHES && HAVE_TR1_HASHES
-#include <tr1/unordered_map>
-#include <ext/hash_map>
+namespace scheme {
 
-extern scheme::Object genericHashFunction;
-extern scheme::Object genericEquivalenceFunction;
+    Object makeHashTableEx(int argc, const Object* argv);
+    Object hashtableKeysEx(int argc, const Object* argv);
+    Object hashtableSetDEx(int argc, const Object* argv);
+    Object hashtableRefEx(int argc, const Object* argv);
+    Object eqHashtableCopyEx(int argc, const Object* argv);
+    Object makeEqHashtableEx(int argc, const Object* argv);
+    Object eqHashEx(int argc, const Object* argv);
+    Object stringHashEx(int argc, const Object* argv);
 
-extern int callHashFunction(scheme::Object hashFunction, scheme::Object key);
-extern bool callEquivalenceFunction(scheme::Object equivalenceFunction, scheme::Object o1, scheme::Object o2);
+}; // namespace scheme
 
-struct generic_hash_func
-{
-    size_t operator()(scheme::Object key) const
-    {
-        return callHashFunction(genericHashFunction, key);
-    }
-};
-
-struct generic_equal_to
-{
-    bool operator()(scheme::Object const& o1, scheme::Object const& o2) const
-    {
-        return callEquivalenceFunction(genericEquivalenceFunction, o1, o2);
-    }
-};
-
-
-typedef __gnu_cxx::hash_map<scheme::Object,
-                            scheme::Object,
-                            generic_hash_func,
-                            generic_equal_to,
-                            gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
-#else
-#error todo_ext_hash_map_not_found
-#endif
-
-#endif // __SCHEME_GENERIC_MAP__
+#endif // __SCHEME_HASH_TABLE_PROCEDURES__

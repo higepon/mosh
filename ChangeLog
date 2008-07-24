@@ -1,3 +1,11 @@
+2008-07-24  higepon  <higepon@users.sourceforge.jp>
+
+        * HashTableProceduures.cpp : Added (hash-string).
+
+        * HashTableProceduures.h: Added.
+
+        * HashTableProceduures.cpp: Added.
+
 2008-07-22  higepon  <higepon@users.sourceforge.jp>
 
         * EqHashTable.h : Added (eq-hash ...).

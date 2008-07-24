@@ -78,6 +78,8 @@ struct Values {
     int num;
 };
 
+    class TextualOutputPort;
+
 class VM EXTEND_GC
 {
 public:
@@ -102,6 +104,7 @@ public:
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure(Object closure, Object o);
     Object callClosure0(Object closure);
+    Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
     Object applyClosure(Object closure, Object args);
     Object applyClosureDebug(Object closure, Object args, int returnSize);
@@ -140,7 +143,7 @@ public:
 
     Object getStackTrace();
 
-    void setOutputPort(TextualOutputPort& port) { outputPort_ = port; }
+    void setOutputPort(TextualOutputPort& port);
     void setInputPort(Object port ) { inputPort_ = port; }
     Object standardInputPort() const { return stdinPort_; }
 
