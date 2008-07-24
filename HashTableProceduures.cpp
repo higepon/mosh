@@ -35,10 +35,29 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+Object scheme::hashtableSizeEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "hashtable-size");
+    const Object ht = argv[0];
+    if (ht.isHashTable()) {
+        return Object::makeInt(ht.toHashTable()->size());
+    } else {
+        VM_RAISE1("hashtable-size hashtable required, but got ~a\n", ht);
+        return Object::Undef;
+    }
+}
+
+Object scheme::hashtablePEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "hashtable?");
+    return Object::makeBool(argv[0].isHashTable());
+}
+
+
 Object scheme::stringHashEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "string-hash");
-    Object str = argv[0];
+    const Object str = argv[0];
     if (!str.isString()) {
         VM_RAISE1("string-hash string required, but got ~a\n", str);
     }

@@ -354,6 +354,8 @@ const Object* scheme::getBuiltinSymbols() {
         SA("hashtable-ref"),
         SA("hashtable-set!"),
         SA("hashtable-set-true!"),
+        SA("hashtable-size"),
+        SA("hashtable?"),
         SA("ht"),
         SA("i"),
         SA("iargs"),

@@ -1,5 +1,7 @@
 2008-07-24  higepon  <higepon@users.sourceforge.jp>
 
+        * free-vars.scm : Added (hashtable? ...) and (hashtable-size ...).
+
         * HashTableProceduures.cpp : Added (hash-string).
 
         * HashTableProceduures.h: Added.
