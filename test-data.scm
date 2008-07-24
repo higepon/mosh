@@ -1023,16 +1023,27 @@ val
 [mosh-only ((a b c) d e f g h) (receive (x y) (split-at '(a b c d e f g h) 3) (cons x y))]
 ["123" (string #\1 #\2 #\3)]
 ["taro&amp;hanako" (regexp-replace-all #/&/ "taro&hanako" "&amp;")]
-[mosh-only 2 (let1 ht (make-hash-table (lambda (x) 2) ;; always 2
+[mosh-only 2 (let1 ht (make-hashtable (lambda (x) 2) ;; always 2
                                        (lambda (a b) #t))
                (hashtable-set! ht 1 1)
                (hashtable-set! ht 2 2)
                (hashtable-ref ht 1))]
-[mosh-only "apple" (let1 ht (make-hash-table string-hash
+[mosh-only "apple" (let1 ht (make-hashtable string-hash
                                              string=?)
                      (hashtable-set! ht "my" "apple")
                      (hashtable-set! ht "our" "water")
                      (hashtable-ref ht "my"))]
+[mosh-only #t (hashtable? (make-hashtable string-hash string=?))]
+[mosh-only #t (hashtable? (make-eq-hashtable))]
+[mosh-only #f (hashtable? '(a . b))]
+[mosh-only 2 (let1 ht (make-hashtable string-hash string=?)
+                 (hashtable-set! ht "my" "apple")
+                 (hashtable-set! ht "our" "water")
+                 (hashtable-size ht))]
+[mosh-only 2 (let1 ht (make-eq-hashtable)
+                 (hashtable-set! ht "my" "apple")
+                 (hashtable-set! ht "my" "apple")
+                 (hashtable-size ht))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

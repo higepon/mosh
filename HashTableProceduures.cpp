@@ -70,7 +70,7 @@ Object scheme::stringHashEx(int argc, const Object* argv)
     return Object::makeInt(hashValue);
 }
 
-Object scheme::makeHashTableEx(int argc, const Object* argv)
+Object scheme::makeHashtableEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "make-hash-table");
     Object hashFunction        = argv[0];

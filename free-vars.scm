@@ -162,7 +162,7 @@
     (symbol-value, (lambda e (error "symbol-value")))
     (set-symbol-value!, (lambda e (error "set-symbol-value!")))
     (eq-hash ,(lambda e (error "eq-hash not implemented")))
-    (make-hash-table ,(lambda e (error "make-hash-table not implemented")))
+    (make-hashtable ,(lambda e (error "make-hash-table not implemented")))
     (hashtable? ,(lambda e (error "hashtable? not implemented")))
     (hashtable-size ,(lambda e (error "hashtable-size not implemented")))
 

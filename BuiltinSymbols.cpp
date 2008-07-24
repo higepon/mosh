@@ -457,7 +457,7 @@ const Object* scheme::getBuiltinSymbols() {
         SA("make-custom-binary-input-port"),
         SA("make-empty-library"),
         SA("make-eq-hashtable"),
-        SA("make-hash-table"),
+        SA("make-hashtable"),
         SA("make-list"),
         SA("make-raw-"),
         SA("make-string"),

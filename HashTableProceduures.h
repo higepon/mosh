@@ -38,7 +38,7 @@ namespace scheme {
 
     Object hashtableSizeEx(int argc, const Object* argv);
     Object hashtablePEx(int argc, const Object* argv);
-    Object makeHashTableEx(int argc, const Object* argv);
+    Object makeHashtableEx(int argc, const Object* argv);
     Object hashtableKeysEx(int argc, const Object* argv);
     Object hashtableSetDEx(int argc, const Object* argv);
     Object hashtableRefEx(int argc, const Object* argv);
