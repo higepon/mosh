@@ -141,23 +141,19 @@ Object scheme::hashtableSetDEx(int argc, const Object* argv)
 
 Object scheme::hashtableRefEx(int argc, const Object* argv)
 {
-    if (argc == 2 || argc == 3) {
-        const Object ht = argv[0];
-        if (!ht.isHashTable()) {
-            VM_RAISE1("hashtable-ref hashtable required, but got ~a\n", ht);
-        }
-        const Object key = argv[1];
-        const Object defaultVal = (argc == 3 ? argv[2] : Object::False);
-        return ht.toHashTable()->ref(key, defaultVal);
-    } else {
-        VM_RAISE1("wrong number of arguments for hashtable-ref (required 2 or 3, got ~d)\n", Object::makeInt(argc));
+    checkArgLengthBetween(2, 3, argc, "hashtable-ref");
+    const Object ht = argv[0];
+    if (!ht.isHashTable()) {
+        VM_RAISE1("hashtable-ref hashtable required, but got ~a\n", ht);
     }
-    return Object::UnBound;
+    const Object key = argv[1];
+    const Object defaultVal = (argc == 3 ? argv[2] : Object::False);
+    return ht.toHashTable()->ref(key, defaultVal);
 }
 
 Object scheme::makeEqHashtableEx(int argc, const Object* argv)
 {
-    checkArgLength(0, argc, "make-eq-hashtable");
+    checkArgLengthBetween(0, 1, argc, "make-eq-hashtable");
     return Object::makeEqHashTable();
 }
 
@@ -173,20 +169,16 @@ Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
 
 Object scheme::hashtableCopyEx(int argc, const Object* argv)
 {
-    if (argc >= 1) {
-        bool mutableP = false;
-        if (argc == 2 && !argv[1].isFalse()) {
-            mutableP = true;
-        }
-        const Object hashtable = argv[0];
-        if (hashtable.isHashTable()) {
-            return hashtable.toHashTable()->copy(mutableP);
-        } else {
-            VM_RAISE1("hashtable-copy hashtable required, but got ~an", hashtable);
-            return Object::Undef;
-        }
+    checkArgLengthBetween(1, 2, argc, "hashtable-copy");
+    bool mutableP = false;
+    if (argc == 2 && !argv[1].isFalse()) {
+        mutableP = true;
+    }
+    const Object hashtable = argv[0];
+    if (hashtable.isHashTable()) {
+        return hashtable.toHashTable()->copy(mutableP);
     } else {
-        VM_RAISE1("wrong number of arguments for hashtable-copy required at least 1, got ~d\n", Object::makeInt(argc));
+        VM_RAISE1("hashtable-copy hashtable required, but got ~an", hashtable);
         return Object::Undef;
     }
 }
@@ -205,18 +197,38 @@ Object scheme::hashtableMutablePEx(int argc, const Object* argv)
 
 Object scheme::hashtableClearDEx(int argc, const Object* argv)
 {
+    checkArgLengthBetween(1, 2, argc, "hashtable-clear!");
     // we now ignore "k" argument.
-    if (argc >= 1) {
-        const Object hashtable = argv[0];
-        if (hashtable.isHashTable()) {
-            hashtable.toHashTable()->clearD();
-        } else {
-            VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);
-        }
+    const Object hashtable = argv[0];
+    if (hashtable.isHashTable()) {
+        hashtable.toHashTable()->clearD();
     } else {
-        VM_RAISE1("wrong number of arguments for hashtable-clear! required at least 1, got ~d\n", Object::makeInt(argc));
+        VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);
     }
     return Object::Undef;
 }
 
+Object scheme::hashtableEquivalenceFunctionEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "hashtable-equivalence-function");
+    const Object hashtable = argv[0];
+    if (hashtable.isHashTable()) {
+        return hashtable.toHashTable()->equivalenceFunction();
+    } else {
+        VM_RAISE1("hashtable-equivalence-function hashtable required, but got ~an", hashtable);
+        return Object::Undef;
+    }
+}
+
+Object scheme::hashtableHashFunctionEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "hashtable-hash-function");
+    const Object hashtable = argv[0];
+    if (hashtable.isHashTable()) {
+        return hashtable.toHashTable()->hashFunction();
+    } else {
+        VM_RAISE1("hashtable-hash-function hashtable required, but got ~an", hashtable);
+        return Object::Undef;
+    }
+}
 

@@ -85,6 +85,11 @@ class gc_vector : public std::vector<T1> {};
         VM_RAISE1("wrong number of argument for " proc " required " #required ", got ~d\n", Object::makeInt(argc)); \
     } \
 
+#define checkArgLengthBetween(min, max, argc, proc)  \
+    if (argc < min || argc > max) { \
+        VM_RAISE1("wrong number of argument for " proc " required between " #min " and " #max ", but got ~d\n", Object::makeInt(argc)); \
+    } \
+
 
 
 typedef intptr_t word;

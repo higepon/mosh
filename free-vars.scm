@@ -171,6 +171,8 @@
     (hashtable-mutable? ,(lambda e (error "hashtable-mutable? not implemented")))
     (hashtable-clear! ,(lambda e (error "hashtable-clear! not implemented")))
     (hashtable-keys ,(lambda e (error "hashtable-keys not implemented")))
+    (hashtable-equivalence-function ,(lambda e (error "hashtable-equivalence-function not implemented")))
+    (hashtable-hash-function ,(lambda e (error "hashtable-hash-function not implemented")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object hashtableEquivalenceFunctionEx(int argc, const Object* argv);
+    Object hashtableHashFunctionEx(int argc, const Object* argv);
     Object hashtableKeysEx(int argc, const Object* argv);
     Object hashtableClearDEx(int argc, const Object* argv);
     Object hashtableCopyEx(int argc, const Object* argv);

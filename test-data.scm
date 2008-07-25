@@ -1113,6 +1113,11 @@ val
              (receive (keys vals) (hashtable-entries ht)
                (append (vector->list keys)
                        (vector->list vals))))]
+[mosh-only #t (equal? eq? (hashtable-equivalence-function (make-eq-hashtable)))]
+[mosh-only #f (hashtable-hash-function (make-eq-hashtable))]
+
+[mosh-only #t (equal? string=? (hashtable-equivalence-function (make-hashtable string-hash string=?)))]
+[mosh-only #t (equal? string-hash (hashtable-hash-function (make-hashtable string-hash string=?)))]
 
 
 ;; ["syntax error: malformed when"

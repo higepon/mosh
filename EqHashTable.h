@@ -125,7 +125,7 @@ public:
 
     Object hashFunction() const
     {
-        return Object::makeCProcedure(eqHashEx);
+        return Object::False;
     }
 
     Object equivalenceFunction() const
