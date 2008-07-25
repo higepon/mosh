@@ -167,7 +167,10 @@
     (hashtable-size ,(lambda e (error "hashtable-size not implemented")))
     (hashtable-delete! ,(lambda e (error "hashtable-delete! not implemented")))
     (hashtable-contains? ,(lambda e (error "hashtable-contains? not implemented")))
-
+    (hashtable-copy ,(lambda e (error "hashtable-copy not implemented")))
+    (hashtable-mutable? ,(lambda e (error "hashtable-mutable? not implemented")))
+    (hashtable-clear! ,(lambda e (error "hashtable-clear! not implemented")))
+    (hashtable-keys ,(lambda e (error "hashtable-keys not implemented")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

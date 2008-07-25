@@ -1069,6 +1069,43 @@ val
                            (hashtable-update! ht "one" (lambda (x) (string-append "!" x "!")) "hige")
                            (hashtable-update! ht "two" (lambda (x) (string-append "!" x "!")) "hige")
                            (string-append (hashtable-ref ht "one") (hashtable-ref ht "two")))]
+[mosh-only #t (let1 ht (make-eq-hashtable)
+                (hashtable-set! ht 1 "one")
+                (let1 ht-copy (hashtable-copy ht)
+                  (and (string=? (hashtable-ref ht-copy 1) "one") (not (hashtable-mutable? ht-copy)))))]
+[mosh-only #t (let1 ht (make-eq-hashtable)
+                (hashtable-set! ht 1 "one")
+                (let1 ht-copy (hashtable-copy ht #t)
+                  (and (string=? (hashtable-ref ht-copy 1) "one") (hashtable-mutable? ht-copy))))]
+[mosh-only #t (let1 ht (make-hashtable string-hash string=?)
+                (hashtable-set! ht "one" "one")
+                (let1 ht-copy (hashtable-copy ht)
+                  (and (string=? (hashtable-ref ht-copy "one") "one") (not (hashtable-mutable? ht-copy)))))]
+[mosh-only #t (let1 ht (make-hashtable string-hash string=?)
+                (hashtable-set! ht "one" "one")
+                (let1 ht-copy (hashtable-copy ht #t)
+                  (and (string=? (hashtable-ref ht-copy "one") "one") (hashtable-mutable? ht-copy))))]
+[mosh-only 0 (let1 ht (make-eq-hashtable)
+               (hashtable-set! ht 1 "one")
+               (hashtable-set! ht 2 "two")
+               (hashtable-clear! ht)
+                (hashtable-size ht))]
+[mosh-only 0 (let1 ht (make-hashtable string-hash string=?)
+               (hashtable-set! ht "one" 1)
+               (hashtable-set! ht "two" 2)
+               (hashtable-clear! ht)
+                (hashtable-size ht))]
+[mosh-only (1 2) (let1 ht (make-eq-hashtable)
+                    (hashtable-set! ht 1 "one")
+                    (hashtable-set! ht 2 "two")
+                    (vector->list (hashtable-keys ht)))]
+[mosh-only #t (let1 ht (make-hashtable string-hash string=?)
+                            (hashtable-set! ht "one" 1)
+                            (hashtable-set! ht "two" 2)
+                            (let1 keys (vector->list (hashtable-keys ht))
+                              (and (member "one" keys)
+                                   (member "two" keys)
+                                   (= 2 (length keys)))))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

@@ -47,19 +47,23 @@ public:
     size_t size() const;
     Object ref(Object key, Object defaultValue);
     void set(Object key, Object values);
+    void clearD();
     void deleteD(Object key);
-    bool contains(Object key);
-    Object copy();
+    bool containsP(Object key);
+    Object copy(bool mutableP);
     Object keys();
     Object hashFunction() const;
     Object equivalenceFunction() const;
+    bool mutableP() const;
 
     void prepareFunctions();
-
+    void setMap(GenericMap map);
+    void setMutableP(bool mutableP);
 private:
     GenericMap map_;
     Object hashFunction_;
     Object equivalenceFunction_;
+    bool mutable_;
 };
 
 }; // namespace scheme

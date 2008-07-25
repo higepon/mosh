@@ -46,11 +46,13 @@ public:
     virtual Object ref(Object key, Object defaultValue) = 0;
     virtual void set(Object key, Object values) = 0;
     virtual void deleteD(Object key) = 0;
-    virtual bool contains(Object key) = 0;
-    virtual Object copy() = 0;
+    virtual void clearD() = 0;
+    virtual bool containsP(Object key) = 0;
+    virtual Object copy(bool mutableP) = 0;
     virtual Object keys() = 0;
     virtual Object hashFunction() const = 0;
     virtual Object equivalenceFunction() const = 0;
+    virtual bool mutableP() const = 0;
 };
 
 }; // namespace scheme

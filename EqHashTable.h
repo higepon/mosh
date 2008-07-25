@@ -83,10 +83,11 @@ class EqHashTable : public HashTable
 public:
     EqHashTable() :
 #if HAVE_EXT_HASHES && HAVE_TR1_HASHES
-        table_(ObjectMap(200)){}
+        table_(ObjectMap(200))
 #else
-        table_(ObjectMap()){}
+        table_(ObjectMap())
 #endif
+        , mutable_(true) {}
 
     virtual ~EqHashTable() {}
 
@@ -95,7 +96,7 @@ public:
         return table_.size();
     }
 
-    bool contains(Object key)
+    bool containsP(Object key)
     {
         ObjectMap::iterator p = table_.find(key);
         return p != table_.end();
@@ -154,9 +155,13 @@ public:
         return ht;
     }
 
+    void clearD()
+    {
+        table_.clear();
+    }
+
     Object keys()
     {
-        Object ht = Object::makeEqHashTable();
         Object v = Object::makeVector(table_.size());
         int i = 0;
         for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it, i++) {
@@ -165,20 +170,24 @@ public:
         return v;
     }
 
-    Object copy()
+    Object copy(bool mutableP)
     {
         Object ret = Object::makeEqHashTable();
         ret.toEqHashTable()->setTable(getTable());
+        ret.toEqHashTable()->setMutableP(mutableP);
         return ret;
     }
 
+    bool mutableP() const { return mutable_; }
+    void setMutableP(bool mutableP) { mutable_ = mutableP; }
 
 private:
     inline void setTable(ObjectMap i) { table_ = i; }
     inline ObjectMap getTable() const { return table_; }
 
-protected:
+private:
     ObjectMap table_;
+    bool mutable_;
 };
 
 }; // namespace scheme

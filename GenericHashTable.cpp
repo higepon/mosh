@@ -50,7 +50,9 @@ bool callEquivalenceFunction(Object equivalenceFunction, Object o1, Object o2)
 }
 
 GenericHashTable::GenericHashTable(Object hashFunction, Object equivalenceFunction) :
-    hashFunction_(hashFunction), equivalenceFunction_(equivalenceFunction)
+    hashFunction_(hashFunction),
+    equivalenceFunction_(equivalenceFunction),
+    mutable_(true)
 {
 }
 
@@ -63,6 +65,16 @@ void GenericHashTable::prepareFunctions()
     // TODO: should be thread safe.
     genericHashFunction = hashFunction();
     genericEquivalenceFunction = equivalenceFunction();
+}
+
+void GenericHashTable::setMap(GenericMap map)
+{
+    map_ = map;
+}
+
+void GenericHashTable::setMutableP(bool mutableP)
+{
+    mutable_ = mutableP;
 }
 
 size_t GenericHashTable::size() const
@@ -87,26 +99,42 @@ void GenericHashTable::set(Object key, Object value)
     map_[key] = value;
 }
 
+void GenericHashTable::clearD()
+{
+    prepareFunctions();
+    map_.clear();
+}
+
 void GenericHashTable::deleteD(Object key)
 {
     prepareFunctions();
     map_.erase(key);
 }
 
-bool GenericHashTable::contains(Object key)
+bool GenericHashTable::containsP(Object key)
 {
     prepareFunctions();
     return map_.find(key) != map_.end();
 }
 
-Object GenericHashTable::copy()
+Object GenericHashTable::copy(bool mutableP)
 {
-
+    Object ret = Object::makeGenericHashTable(hashFunction(),
+                                              equivalenceFunction());
+    GenericHashTable* genericHashTable = ret.toGenericHashTable();
+    genericHashTable->setMap(map_);
+    genericHashTable->setMutableP(mutableP);
+    return ret;
 }
 
 Object GenericHashTable::keys()
 {
-    return Object::makeVector(1, Object::False);
+    Object v = Object::makeVector(map_.size());
+    int i = 0;
+    for (GenericMap::const_iterator it = map_.begin(); it != map_.end(); ++it, i++) {
+        v.toVector()->set(i, it->first);
+    }
+    return v;
 }
 
 
@@ -118,4 +146,9 @@ Object GenericHashTable::hashFunction() const
 Object GenericHashTable::equivalenceFunction() const
 {
     return equivalenceFunction_;
+}
+
+bool GenericHashTable::mutableP() const
+{
+    return mutable_;
 }

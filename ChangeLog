@@ -1,6 +1,7 @@
 2008-07-25  higepon  <higepon@users.sourceforge.jp>
 
-        * library.scm : hashtable-update!.
+
+        * library.scm : hashtable-update!, hashtable-copy and hashtable-mutable?.
 
         * free-vars.scm : Added hashtable-delete!, hashtable-contains?.
 
