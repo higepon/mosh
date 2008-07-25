@@ -1,6 +1,6 @@
 2008-07-25  higepon  <higepon@users.sourceforge.jp>
 
-        * string-ci-hash, symbol-hash.
+        * string-ci-hash, symbol-hash, equal-hash.
 
         * hashtable-clear!, hashtable-entries, hashtable-hash-function, hashtable-equivalence-function.
 

@@ -157,6 +157,7 @@ public:
         TypedVector       = Type<19>::VALUE,
         CodeBuilder       = Type<20>::VALUE,
         GenericHashTable  = Type<21>::VALUE,
+        EqvHashTable      = Type<22>::VALUE,
         forbidden_comma
     };
 };
@@ -169,6 +170,7 @@ class Closure;
 class Stack;
 class HashTable;
 class EqHashTable;
+class EqvHashTable;
 class GenericHashTable;
 class CProcedure;
 class Symbol;
@@ -278,7 +280,7 @@ public:
 
     bool isHashTable() const
     {
-        return isEqHashTable() || isGenericHashTable();
+        return isEqHashTable() || isGenericHashTable() || isEqvHashTable();
     }
 
     // Pair
@@ -405,6 +407,7 @@ public:
     static Object makeInputFilePort(const ucs4char* str);
     static Object makeStack(Object* src, int size);
     static Object makeEqHashTable();
+    static Object makeEqvHashTable();
     static Object makeCProcedure(Object (*proc)(int, const Object*));
     static Object makeBox(Object o);
     static Object makeByteVector(int n, int8_t v = 0);
@@ -451,6 +454,7 @@ DECL_ACCESSOR(Symbol)
 DECL_ACCESSOR(Stack)
 DECL_ACCESSOR(Box)
 DECL_ACCESSOR(EqHashTable)
+DECL_ACCESSOR(EqvHashTable)
 DECL_ACCESSOR(ByteVector)
 DECL_ACCESSOR(TextualInputPort)
 DECL_ACCESSOR(TextualOutputPort)
@@ -600,6 +604,7 @@ inline Object& Object::fifth() const
 #include "Closure.h"
 #include "Stack.h"
 #include "EqHashTable.h"
+#include "EqvHashTable.h"
 #include "GenericHashTable.h"
 #include "CProcedure.h"
 #include "Box.h"

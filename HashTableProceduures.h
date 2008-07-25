@@ -52,7 +52,7 @@ namespace scheme {
     Object hashtableRefEx(int argc, const Object* argv);
     Object eqHashtableCopyEx(int argc, const Object* argv);
     Object makeEqHashtableEx(int argc, const Object* argv);
-    Object eqHashEx(int argc, const Object* argv);
+    Object makeEqvHashtableEx(int argc, const Object* argv);
     Object stringHashEx(int argc, const Object* argv);
     Object stringCiHashEx(int argc, const Object* argv);
     Object symbolHashEx(int argc, const Object* argv);
@@ -61,7 +61,6 @@ namespace scheme {
     int stringHash(const ucs4string& str);
     int stringCiHash(const ucs4string& str);
     int symbolHash(Symbol* symbol);
-
     int equalHash(Object o);
 }; // namespace scheme
 

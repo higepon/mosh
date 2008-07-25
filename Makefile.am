@@ -33,6 +33,8 @@ ByteVector.h         \
 Closure.h            \
 HashTable.h          \
 EqHashTable.h        \
+EqvHashTable.h       \
+EqvHashTable.cpp     \
 GenericHashTable.h   \
 GenericHashTable.cpp \
 Pair.h               \

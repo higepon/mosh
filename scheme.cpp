@@ -253,6 +253,12 @@ Object Object::makeEqHashTable()
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
 }
 
+Object Object::makeEqvHashTable()
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqvHashTable, reinterpret_cast<word>(new EqvHashTable()))));
+}
+
+
 Object Object::makeCProcedure(Object (*proc)(int, const Object*))
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));

@@ -956,6 +956,13 @@ Object scheme::eqPEx(int argc, const Object* argv)
     RETURN_BOOL(argv[0] == argv[1]);
 }
 
+Object scheme::eqvPEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "eqv?");
+    return argv[0].eqv(argv[1]);
+}
+
+
 Object scheme::memberEx(int argc, const Object* argv)
 {
     const Object arg1 = argv[0];

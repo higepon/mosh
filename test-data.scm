@@ -1122,7 +1122,7 @@ val
 [mosh-only #t (= (symbol-hash 'abc) (symbol-hash 'abc))]
 [mosh-only #f (= (symbol-hash 'abc) (symbol-hash 'aBc))]
 [mosh-only #t (= (equal-hash '(a b c)) (equal-hash '(a b c)))]
-
+[mosh-only #t (equal? eqv? (hashtable-equivalence-function (make-eqv-hashtable)))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

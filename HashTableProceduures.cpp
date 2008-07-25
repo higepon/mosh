@@ -253,12 +253,6 @@ Object scheme::makeHashtableEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::eqHashEx(int argc, const Object* argv)
-{
-    checkArgLength(1, argc, "eq-hash");
-    return Object::makeInt(argv[0].val);
-}
-
 Object scheme::hashtableKeysEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "hash-table-keys");
@@ -298,6 +292,12 @@ Object scheme::makeEqHashtableEx(int argc, const Object* argv)
 {
     checkArgLengthBetween(0, 1, argc, "make-eq-hashtable");
     return Object::makeEqHashTable();
+}
+
+Object scheme::makeEqvHashtableEx(int argc, const Object* argv)
+{
+    checkArgLengthBetween(0, 1, argc, "make-eqv-hashtable");
+    return Object::makeEqvHashTable();
 }
 
 Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
