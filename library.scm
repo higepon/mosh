@@ -1632,6 +1632,16 @@
    (proc (hashtable-ref
           hashtable key default))))
 
+(define (hashtable-entries hashtable)
+  (let* ([keys (hashtable-keys hashtable)]
+         [vals (make-vector (vector-length keys))])
+    (let loop ([i 0])
+      (cond
+       [(>= i (vector-length keys))
+        (values keys vals)]
+       [else
+        (vector-set! vals i (hashtable-ref hashtable (vector-ref keys i)))
+        (loop (+ i 1))]))))
 
 ; ==============================================================================================================================================================
 ;;; Eval.

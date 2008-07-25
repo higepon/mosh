@@ -1106,6 +1106,14 @@ val
                               (and (member "one" keys)
                                    (member "two" keys)
                                    (= 2 (length keys)))))]
+[mosh-only ("two" "one" 2 1)
+           (let1 ht (make-hashtable string-hash string=?)
+             (hashtable-set! ht "one" 1)
+             (hashtable-set! ht "two" 2)
+             (receive (keys vals) (hashtable-entries ht)
+               (append (vector->list keys)
+                       (vector->list vals))))]
+
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

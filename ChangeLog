@@ -1,5 +1,6 @@
 2008-07-25  higepon  <higepon@users.sourceforge.jp>
 
+        * hashtable-clear!, hashtable-entries.
 
         * library.scm : hashtable-update!, hashtable-copy and hashtable-mutable?.
 
