@@ -35,6 +35,126 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+//     if (depth > EQUAL_HASH_DEPTH_LIMIT) return 1;
+//     if (PAIRP(obj)) {
+//         uint32_t hash1 = equal_hash2(CAR(obj), bound, depth + 1);
+//         uint32_t hash2 = equal_hash2(CDR(obj), bound, depth + 1);
+//         return (hash1 + hash2 * 64 - hash2) % bound;
+//     }
+//     if (VECTORP(obj)) {
+//         scm_vector_t vector = (scm_vector_t)obj;
+//         int n = HDR_VECTOR_COUNT(vector->hdr);
+//         scm_obj_t* elts = vector->elts;
+//         uint32_t hash = 1;
+//         for (int i = 0; i < n; i++) {
+//             hash = hash * 32 - hash + equal_hash2(elts[i], bound, depth + 1);
+//         }
+//         return hash % bound;
+//     }
+//     if (SYMBOLP(obj)) {
+//         return string_hash(((scm_symbol_t)obj)->name, bound);
+//     }
+//     if (STRINGP(obj)) {
+//         return (string_hash(obj, bound) * 3) % bound;
+//     }
+//     if (number_pred(obj)) return n_hash(obj, bound);
+//     if (CELLP(obj)) return HDR_TC(HDR(obj)) % bound;
+//     return 1;
+//     const int taga = tag();
+//     const int tagb = o.tag();
+//     if (taga && tagb) {
+//         return eq(o);
+//     } else if (taga && 0 == tagb) {
+//         return Object::False;
+//     } else if (0 == taga && tagb) {
+//         return Object::False;
+//     } else if (isPair() && o.isPair()) {
+//         RETURN_BOOL(car().equal(o.car()) != Object::False &&
+//                     cdr().equal(o.cdr()) != Object::False);
+//     } else if (isHeapObject() && o.isHeapObject()) {
+//         if (isString() && o.isString()) {
+//             RETURN_BOOL(toString()->data() == o.toString()->data());
+//         } else if (isSymbol() && o.isSymbol()) {
+//             return eq(o);
+//         } else if (isVector() && o.isVector()) {
+//             Vector* av = toVector();
+//             Vector* bv = o.toVector();
+//             const int aLength = av->length();
+//             const int bLength = bv->length();
+//             if (aLength == bLength) {
+//                 for (int i = 0; i < aLength; i++) {
+//                     if (av->ref(i).equal(bv->ref(i)).isFalse()) return Object::False;
+//                 }
+//                 return Object::True;
+//             } else {
+//                 return Object::False;
+//             }
+//         } else if (isRegexp() && o.isRegexp()) {
+//             RETURN_BOOL(toRegexp()->pattern() == o.toRegexp()->pattern());
+//         } else if (isCProcedure() && o.isCProcedure()) {
+//             RETURN_BOOL(toCProcedure()->proc == o.toCProcedure()->proc);
+//         }
+// // todo
+// //         } else if (isPointer() && o.isPointer()) {
+// //             // address of instruction label is pointer
+// //             RETURN_BOOL(o.val == val);
+// //         }
+
+//     }
+
+//     // todo
+//     return Object::False;
+
+
+int scheme::equalHash(Object obj)
+{
+    // borrowed from ypsilon scheme by Yoshikatsu Fujita
+    if (obj.isPair()) {
+        int hash1 = equalHash(obj.car());
+        int hash2 = equalHash(obj.cdr());
+        return (hash1 + hash2 * 64 - hash2);
+    } else if (obj.isVector()) {
+        int hash = 1;
+        const Vector* const vec = obj.toVector();
+        const int length = vec->length();
+        for (int i = 0; i < length; i++) {
+            hash = hash * 32 - hash + equalHash(vec->ref(i));
+        }
+        return hash;
+    } else if (obj.isString()) {
+        return stringHash(obj.toString()->data());
+    } else if (obj.isSymbol()) {
+        return symbolHash(obj.toSymbol());
+    } else {
+        return obj.val;
+    }
+}
+
+int scheme::stringHash(const ucs4string& str)
+{
+    int hashValue = 0;
+    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        hashValue = (hashValue << 5) - hashValue + (unsigned char)(*it);
+    }
+    return hashValue;
+}
+
+int scheme::stringCiHash(const ucs4string& str)
+{
+    int hashValue = 0;
+    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        hashValue = (hashValue << 5) - hashValue + (unsigned char)toupper(*it);
+    }
+    return hashValue;
+}
+
+int scheme::symbolHash(Symbol* symbol)
+{
+    // we can use pointer as hash, because symbol is interned.
+    return reinterpret_cast<int>(symbol);
+}
+
+
 Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
 {
     checkArgLength(2, argc, "hashtable-delete!");
@@ -88,14 +208,37 @@ Object scheme::stringHashEx(int argc, const Object* argv)
     if (!str.isString()) {
         VM_RAISE1("string-hash string required, but got ~a\n", str);
     }
-
-    const ucs4string& s = str.toString()->data();
-    int hashValue = 0;
-    for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
-        hashValue = (hashValue << 5) - hashValue + (unsigned char)(*it);
-    }
-    return Object::makeInt(hashValue);
+    return Object::makeInt(stringHash(str.toString()->data()));
 }
+
+Object scheme::symbolHashEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "symbol-hash");
+    const Object symbol = argv[0];
+    if (!symbol.isSymbol()) {
+        VM_RAISE1("symbol-hash string required, but got ~a\n", symbol);
+    }
+    // we can use pointer as hash, because symbol is interned.
+    return Object::makeInt(symbolHash(symbol.toSymbol()));
+}
+
+Object scheme::stringCiHashEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "string-ci-hash");
+    const Object str = argv[0];
+    if (!str.isString()) {
+        VM_RAISE1("string-ci-hash string required, but got ~a\n", str);
+    }
+    return Object::makeInt(stringCiHash(str.toString()->data()));
+}
+
+
+Object scheme::equalHashEx(int argc, const Object* argv)
+{
+    checkArgLength(1, argc, "equal-hash");
+    return Object::makeInt(equalHash(argv[0]));
+}
+
 
 Object scheme::makeHashtableEx(int argc, const Object* argv)
 {

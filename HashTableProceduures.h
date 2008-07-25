@@ -54,7 +54,15 @@ namespace scheme {
     Object makeEqHashtableEx(int argc, const Object* argv);
     Object eqHashEx(int argc, const Object* argv);
     Object stringHashEx(int argc, const Object* argv);
+    Object stringCiHashEx(int argc, const Object* argv);
+    Object symbolHashEx(int argc, const Object* argv);
+    Object equalHashEx(int argc, const Object* argv);
 
+    int stringHash(const ucs4string& str);
+    int stringCiHash(const ucs4string& str);
+    int symbolHash(Symbol* symbol);
+
+    int equalHash(Object o);
 }; // namespace scheme
 
 #endif // __SCHEME_HASH_TABLE_PROCEDURES__

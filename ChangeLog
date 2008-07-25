@@ -1,6 +1,8 @@
 2008-07-25  higepon  <higepon@users.sourceforge.jp>
 
-        * hashtable-clear!, hashtable-entries.
+        * string-ci-hash, symbol-hash.
+
+        * hashtable-clear!, hashtable-entries, hashtable-hash-function, hashtable-equivalence-function.
 
         * library.scm : hashtable-update!, hashtable-copy and hashtable-mutable?.
 
