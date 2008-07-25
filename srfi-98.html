@@ -67,6 +67,7 @@ environment variables, but others do not.</p>
 <p>For obtaining the value of the environment variable, getenv may use
 locale-setting information to encode the name and decode the value of
 the environment variable.</p>
+<p>If getenv can't decode the value, getenv may raise an exception.</p>
 <p>This SRFI specifies a uniform interface for accessing environment
 variables.  That should make it easier to write portable programs
 that need access to their environment.
@@ -101,11 +102,6 @@ Returns names and values of all the environment variables as an a-list.
 <pre>
 (define get-environment-variable sys-get-env)
 (define get-environment-variables sys-environ-&gt;alist)
-</pre>
-<h2>Scheme48 and Scsh</h2>
-<pre>
-(define get-environment-variable lookup-environment-variable)
-(define get-environment-variables environment-alist)
 </pre>
 <h2>SCM</h2>
 <pre>
