@@ -165,6 +165,8 @@
     (make-hashtable ,(lambda e (error "make-hash-table not implemented")))
     (hashtable? ,(lambda e (error "hashtable? not implemented")))
     (hashtable-size ,(lambda e (error "hashtable-size not implemented")))
+    (hashtable-delete! ,(lambda e (error "hashtable-delete! not implemented")))
+    (hashtable-contains? ,(lambda e (error "hashtable-contains? not implemented")))
 
 ;    (do-nothing ,(lambda () #t))
 

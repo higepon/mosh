@@ -1044,6 +1044,31 @@ val
                  (hashtable-set! ht "my" "apple")
                  (hashtable-set! ht "my" "apple")
                  (hashtable-size ht))]
+[mosh-only #f (let1 ht (make-eq-hashtable)
+                (hashtable-set! ht 1 "one")
+                (hashtable-delete! ht 1)
+                (hashtable-ref ht 1 #f))]
+[mosh-only #f (let1 ht (make-hashtable string-hash string=?)
+                (hashtable-set! ht "one" 1)
+                (hashtable-delete! ht "one")
+                (hashtable-ref ht "one" #f))]
+[mosh-only #f (let1 ht (make-eq-hashtable)
+                (hashtable-set! ht 1 "one")
+                (hashtable-contains? ht 2))]
+[mosh-only #t (let1 ht (make-eq-hashtable)
+                (hashtable-set! ht 1 "one")
+                (hashtable-contains? ht 1))]
+[mosh-only #f (let1 ht (make-hashtable string-hash string=?)
+                (hashtable-set! ht "one" 1)
+                (hashtable-contains? ht "two"))]
+[mosh-only #t (let1 ht (make-hashtable string-hash string=?)
+                (hashtable-set! ht "one" 1)
+                (hashtable-contains? ht "one"))]
+[mosh-only "!one!!hige!" (let1 ht (make-hashtable string-hash string=?)
+                           (hashtable-set! ht "one" "one")
+                           (hashtable-update! ht "one" (lambda (x) (string-append "!" x "!")) "hige")
+                           (hashtable-update! ht "two" (lambda (x) (string-append "!" x "!")) "hige")
+                           (string-append (hashtable-ref ht "one") (hashtable-ref ht "two")))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

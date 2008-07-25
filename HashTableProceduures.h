@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object hashtableDeleteDEx(int argc, const Object* argv);
+    Object hashtableContainsPEx(int argc, const Object* argv);
     Object hashtableSizeEx(int argc, const Object* argv);
     Object hashtablePEx(int argc, const Object* argv);
     Object makeHashtableEx(int argc, const Object* argv);

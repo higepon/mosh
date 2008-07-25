@@ -1626,6 +1626,13 @@
 ;; .returns A vector of all keys in hashtable. The order of the vector is unspecified.
 (define-doc (hashtable-keys) ...)
 
+(define (hashtable-update! hashtable key proc default)
+  (hashtable-set!
+   hashtable key
+   (proc (hashtable-ref
+          hashtable key default))))
+
+
 ; ==============================================================================================================================================================
 ;;; Eval.
 ;;; R6RS library Chapter 16.

@@ -32,21 +32,15 @@
 #include "GenericHashTable.h"
 #include "VM.h"
 
-
-
 using namespace scheme;
 
 Object genericHashFunction;
 Object genericEquivalenceFunction;
-
-
 extern scheme::VM* theVM;
 
 int callHashFunction(Object hashFunction, Object key)
 {
     int r = theVM->callClosure(hashFunction, key).toInt();
-    printf("hash=%d\n", r);
-    VM_LOG1("key= ~a\n", key);
     return r;
 }
 
@@ -64,6 +58,13 @@ GenericHashTable::~GenericHashTable()
 {
 }
 
+void GenericHashTable::prepareFunctions()
+{
+    // TODO: should be thread safe.
+    genericHashFunction = hashFunction();
+    genericEquivalenceFunction = equivalenceFunction();
+}
+
 size_t GenericHashTable::size() const
 {
     return map_.size();
@@ -71,9 +72,7 @@ size_t GenericHashTable::size() const
 
 Object GenericHashTable::ref(Object key, Object defaultValue)
 {
-    // TODO: should be thread safe.
-    genericHashFunction = hashFunction();
-    genericEquivalenceFunction = equivalenceFunction();
+    prepareFunctions();
     GenericMap::iterator p = map_.find(key);
     if (p == map_.end()) {
         return defaultValue;
@@ -84,21 +83,20 @@ Object GenericHashTable::ref(Object key, Object defaultValue)
 
 void GenericHashTable::set(Object key, Object value)
 {
-    // TODO: should be thread safe.
-    genericHashFunction = hashFunction();
-    genericEquivalenceFunction = equivalenceFunction();
+    prepareFunctions();
     map_[key] = value;
 }
 
 void GenericHashTable::deleteD(Object key)
 {
-
-
+    prepareFunctions();
+    map_.erase(key);
 }
 
 bool GenericHashTable::contains(Object key)
 {
-    return false;
+    prepareFunctions();
+    return map_.find(key) != map_.end();
 }
 
 Object GenericHashTable::copy()

@@ -54,6 +54,12 @@ public:
     }
     ucs4char charAt(int n);
     ucs4string& data() { return data_; }
+
+    bool operator==(String& s)
+    {
+        return data() == s.data();
+    }
+
 private:
     ucs4string data_;
 };

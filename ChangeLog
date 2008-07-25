@@ -1,3 +1,9 @@
+2008-07-25  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm : hashtable-update!.
+
+        * free-vars.scm : Added hashtable-delete!, hashtable-contains?.
+
 2008-07-24  higepon  <higepon@users.sourceforge.jp>
 
         * free-vars.scm : Added (hashtable? ...) and (hashtable-size ...).

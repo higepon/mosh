@@ -35,6 +35,33 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "hashtable-delete!");
+    const Object ht = argv[0];
+    const Object key = argv[1];
+    if (ht.isHashTable()) {
+        ht.toHashTable()->deleteD(key);
+    } else {
+        VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", ht);
+    }
+    return Object::Undef;
+}
+
+Object scheme::hashtableContainsPEx(int argc, const Object* argv)
+{
+    checkArgLength(2, argc, "hashtable-contains?");
+    const Object ht = argv[0];
+    const Object key = argv[1];
+    if (ht.isHashTable()) {
+        return Object::makeBool(ht.toHashTable()->contains(key));
+    } else {
+        VM_RAISE1("hashtable-contains? hashtable required, but got ~a\n", ht);
+    }
+    return Object::Undef;
+}
+
+
 Object scheme::hashtableSizeEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "hashtable-size");

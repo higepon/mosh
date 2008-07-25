@@ -875,8 +875,15 @@ Object scheme::gensymEx(int argc, const Object* argv)
 
 Object scheme::stringEqPEx(int argc, const Object* argv)
 {
-    printf("string=? called\n");
-    return Object::UnBound;
+    checkArgLength(2, argc, "string=?");
+    const Object string1 = argv[0];
+    const Object string2 = argv[1];
+    if (string1.isString() && string2.isString()) {
+        return Object::makeBool(*(string1.toString()) == *(string2.toString()));
+    } else {
+        VM_RAISE2("string=? string required, but got ~a, ~a\n", string1, string2);
+        return Object::Undef;
+    }
 }
 
 Object scheme::vectorPEx(int argc, const Object* argv)

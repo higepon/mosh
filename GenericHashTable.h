@@ -54,6 +54,8 @@ public:
     Object hashFunction() const;
     Object equivalenceFunction() const;
 
+    void prepareFunctions();
+
 private:
     GenericMap map_;
     Object hashFunction_;

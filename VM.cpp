@@ -356,11 +356,9 @@ Object VM::callClosure(Object closure, Object arg)
     applyCode[3] = arg;
     applyCode[6] = closure;
 
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     SAVE_REGISTERS();
     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
     RESTORE_REGISTERS();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return ret;
 }
 
