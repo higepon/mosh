@@ -103,6 +103,17 @@ Returns names and values of all the environment variables as an a-list.
 (define get-environment-variable sys-get-env)
 (define get-environment-variables sys-environ-&gt;alist)
 </pre>
+<h2>Scheme48 and Scsh</h2>
+<pre>
+(define (get-environment-variable name)
+  (cond
+    ((lookup-environment-variable name) => os-string->string)
+    (else #f)))
+(define (get-environment-variables)
+  (map (lambda (p)
+        (cons (os-string->string (car p)) (os-string->string (cdr p))))
+      (environment-alist)))
+</pre>
 <h2>SCM</h2>
 <pre>
 (define get-environment-variable getenv)
