@@ -82,19 +82,19 @@
             (string-append "set-" (syn->str id) "-" (syn->str fld) "!")))))
     (syntax-case x ()
       [(_ name (field* ...) printer)
-       #`(begin 
+       (quasisyntax (begin 
            (define-record name (field* ...)) 
-           (define rp (make-record-printer 'name printer)))]
+           (define rp (make-record-printer 'name printer))))]
       [(_ name (field* ...))
        (with-syntax ([(getter* ...)
-                      (map (gen-getter #'name) #'(field* ...))]
+                      (map (gen-getter (syntax name)) (syntax (field* ...)))]
                      [(setter* ...)
-                      (map (gen-setter #'name) #'(field* ...))])
-         #`(define-record-type name
+                      (map (gen-setter (syntax name)) (syntax (field* ...)))])
+         (quasisyntax (define-record-type name
              (sealed #t) ; for better performance
              (opaque #t) ; for security
              (nongenerative) ; for sanity
-             (fields (mutable field* getter* setter*) ...)))])))                       
+             (fields (mutable field* getter* setter*) ...))))])))                       
 
   (define (file-options-spec x) x)
 )

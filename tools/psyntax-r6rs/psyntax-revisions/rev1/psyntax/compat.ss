@@ -22,7 +22,7 @@
   (export make-parameter parameterize define-record pretty-print
           gensym void eval-core symbol-value set-symbol-value! file-options-spec
           read-annotated annotation? annotation-expression annotation-source
-          annotation-stripped)
+          annotation-stripped &condition-rcd)
   (import 
     (rnrs)
     (ironscheme reader)
@@ -42,6 +42,8 @@
   (define annotation-expression #f)
   (define annotation-source #f)
   (define annotation-stripped #f)
+  (define &condition-rcd #f)
+
 
   (define make-parameter
     (case-lambda
