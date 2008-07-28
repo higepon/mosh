@@ -583,6 +583,7 @@
                   (b (label->binding label r))
                   (type (binding-type b)))
              (unless label ;;; fail early.
+               (display "here")
                (raise-unbound-error id))
              (case type
                ((lexical core-prim macro macro! global local-macro
@@ -598,6 +599,7 @@
                       (b (label->binding label r))
                       (type (binding-type b)))
                  (unless label ;;; fail early.
+                   (display "here2")
                    (raise-unbound-error id))
                  (case type
                    ((define define-syntax core-macro begin macro

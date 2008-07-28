@@ -42,7 +42,7 @@
   (define annotation-expression #f)
   (define annotation-source #f)
   (define annotation-stripped #f)
-  (define &condition-rcd #f)
+  (define &condition-rcd 'condition-rcd-dummy)
 
 
   (define make-parameter
