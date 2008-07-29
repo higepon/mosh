@@ -17,8 +17,11 @@
 ;;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 ;;; DEALINGS IN THE SOFTWARE. 
+
 (define (clr-new-internal . args) `(clr-new-internal ,@args))
 (define (clr-call-internal . args) `(clr-call-internal ,@args))
+
+(define (assertion-violation . args) (apply error args))
 (define (all-empty? ls)
   (or (null? ls) 
       (and (null? (car ls)) 

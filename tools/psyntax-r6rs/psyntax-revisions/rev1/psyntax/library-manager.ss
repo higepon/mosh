@@ -84,7 +84,9 @@ library-path library-locator)
             (assertion-violation 'library-path "not a list of strings" x)))))
   
   (define (library-name->file-name x)
-    (let-values (((p extract) (open-string-output-port)))
+;    (let-values (((p extract) (open-string-output-port)))
+    (call-with-values (lambda () (open-string-output-port))
+      (lambda (p extract)
       (define (display-hex n)
         (cond
           ((<= 0 n 9) (display n p))
@@ -114,7 +116,7 @@ library-path library-locator)
              (string->list 
                (symbol->string (car ls))))
            (f (cdr ls)))))
-      (extract)))
+      (extract))))
 
   (define file-locator
     (make-parameter

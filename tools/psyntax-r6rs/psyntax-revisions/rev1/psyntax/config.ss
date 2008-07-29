@@ -40,7 +40,7 @@
   ;;; implementation-specific extensions can be added 
   ;;; to the expander
   
-  (define-option if-wants-global-defines #f)
+  (define-option if-wants-global-defines #t)
   ;;; If the implementation requires that all global 
   ;;; variables be defined before they're set!ed, 
   ;;; then enabling this option causes the expander
@@ -55,7 +55,7 @@
   ;;; ugly, inefficient, but correct code by expanding
   ;;; case-lambda into explicit dispatch code.
 
-  (define-option if-wants-letrec*        #t)
+  (define-option if-wants-letrec*        #f)
   ;;; If the implementation has built-in support for
   ;;; efficient letrec* (ikarus, chez), then this option
   ;;; should be enabled.  Disabling the option expands
