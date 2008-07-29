@@ -968,6 +968,7 @@
       (lambda (x)
         (let ((name (car x)) (binding (cadr x)))
           (let ((label (gensym)))
+            (display label)
             (export-subst (cons name label))
             (export-env   (cons label binding)))))
       psyntax-system-macros)
@@ -998,6 +999,7 @@
            ;;; core primitive with no backing definition, assumed to
            ;;; be defined in other strata of the system
            (let ((label (gensym)))
+             (display label)
              (export-subst (cons x label))
              (export-env (cons label (cons 'core-prim x)))))))
       (map car identifier->library-map))
@@ -1033,6 +1035,7 @@
             (import-libs '())
             (visit-libs  '())
             (invoke-libs '()))
+        (display id)
         (let-values (((subst env)
                       (if (equal? name '(psyntax system $all))
                           (values export-subst export-env)
@@ -1133,6 +1136,7 @@
                 (import-libs '())
                 (visit-libs  '())
                 (invoke-libs '()))
+            (display id)
             (let-values (((subst env)
                           (if (equal? name '(psyntax system $all))
                               (values export-subst export-env)
@@ -1146,6 +1150,8 @@
                    subst env values values visible?)))))))
     (for-each build-library library-legend)))
 
+(display (gensym))
+(display ">>>\n")
 (let ()
   (define-syntax define-prims
     (syntax-rules ()
@@ -1166,7 +1172,7 @@
     open-string-output-port identifier? free-identifier=? exists
     values call-with-values for-all))
 
-
+(display "higepon")
 
 
 (let-values (((core* locs)
