@@ -78,20 +78,20 @@
   (let ((p (open-output-string)))
     (values p (lambda () (get-output-string p)))))
 
-(define make-eq-hashtable 
-  (lambda () (cons '() #f)))
+;; (define make-eq-hashtable 
+;;   (lambda () (cons '() #f)))
 
-(define hashtable-ref 
-  (lambda (h x v) 
-    (cond
-      ((assq x (car h)) => cdr)
-      (else v))))
+;; (define hashtable-ref 
+;;   (lambda (h x v) 
+;;     (cond
+;;       ((assq x (car h)) => cdr)
+;;       (else v))))
 
-(define hashtable-set! 
-  (lambda (h x v) 
-    (cond
-      ((assq x (car h)) => (lambda (p) (set-cdr! p v)))
-      (else (set-car! h (cons (cons x v) (car h)))))))
+;; (define hashtable-set! 
+;;   (lambda (h x v) 
+;;     (cond
+;;       ((assq x (car h)) => (lambda (p) (set-cdr! p v)))
+;;       (else (set-car! h (cons (cons x v) (car h)))))))
 
 (define char<=?
   (let ((char<=? char<=?))
@@ -143,6 +143,56 @@
 (with-output-to-file "session-id" 
   (lambda () 
     (write (+ 1 session-id))))
+
+(define-syntax condition
+  (syntax-rules ()
+    ((_ . other)
+     `(condition ,@other))))
+
+;; (define make-eq-hashtable 
+;;   (lambda () (cons '() #f)))
+
+;; (define hashtable-ref 
+;;   (lambda (h x v) 
+;;     (cond
+;;       ((assq x (car h)) => cdr)
+;;       (else v))))
+
+;; (define hashtable-set! 
+;;   (lambda (h x v) 
+;;     (cond
+;;       ((assq x (car h)) => (lambda (p) (set-cdr! p v)))
+;;       (else (set-car! h (cons (cons x v) (car h)))))))
+
+(define (make-eq-hashtable)
+  (make-hash-table 'eq?))
+
+(define (hashtable-ref h x v)
+  (hash-table-get h x v))
+
+(define (hashtable-set! h x v)
+  (hash-table-put! h x v))
+
+(define (hashtable-entries hashtable)
+  (let* ([keys (list->vector (hash-table-keys hashtable))]
+         [vals (make-vector (vector-length keys))])
+    (let loop ([i 0])
+      (cond
+       [(>= i (vector-length keys))
+        (values keys vals)]
+       [else
+        (vector-set! vals i (hashtable-ref hashtable (vector-ref keys i) #f))
+        (loop (+ i 1))]))))
+
+(define (vector-for-each proc v1 v2)
+  (let1 len (vector-length v1)
+    (let loop ([i 0])
+      (cond
+       [(>= i len) '()]
+       [else
+          (proc (vector-ref v1 i) (vector-ref v2 i))
+          (loop (+ i 1))]))))
+
 
 (load "./psyntax.pp")
 

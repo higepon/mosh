@@ -453,8 +453,8 @@
 
   (define self-evaluating?
     (lambda (x) ;;; am I missing something here?
-      (or (number? x) (string? x) (char? x) (boolean? x)
-          (bytevector? x))))
+      (or (number? x) (string? x) (char? x) (boolean? x))))
+;          (bytevector? x))))
 
   ;;; strip is used to remove the wrap of a syntax object.
   ;;; It takes an stx's expr and marks.  If the marks contain
@@ -1046,9 +1046,18 @@
         (cond
           [(null? x*) (values '() old* new*)]
           [else
-           (let*-values ([(x old* new*) (rename (car x*) old* new*)]
-                         [(x* old* new*) (rename* (cdr x*) old* new*)])
-             (values (cons x x*) old* new*))]))
+;;            (call-with-values (rename (car x*) old* new*)
+;;              (lambda (x old* new*)
+;;                (call-with-values
+;;                    (rename* (cdr x*) old* new*)
+;;                  (lambda (x* old* new*)
+;;                    (values (cons x x*) old* new*)))))]))
+           (let-values ([(x old* new*) (rename (car x*) old* new*)])
+             (let-values ([(x* old* new*) (rename* (cdr x*) old* new*)])
+               (values (cons x x*) old* new*)))]))
+;;            (let*-values ([(x old* new*) (rename (car x*) old* new*)]
+;;                          [(x* old* new*) (rename* (cdr x*) old* new*)])
+;;              (values (cons x x*) old* new*))]))
       (syntax-match stx ()
         ((_ () b b* ...)
          (cons* (bless 'let) '() b b*))
@@ -1067,13 +1076,15 @@
                         (lambda ,y* 
                           ,(f (cdr lhs*) (cdr rhs*) old* new*))))]
                   [(x* ... . x)
-                   (let*-values ([(y old* new*) (rename x old* new*)]
-                                 [(y* old* new*) (rename* x* old* new*)])
+;;                    (let*-values ([(y old* new*) (rename x old* new*)]
+;;                                  [(y* old* new*) (rename* x* old* new*)])
+                   (let-values ([(y old* new*) (rename x old* new*)])
+                     (let-values ([(y* old* new*) (rename* x* old* new*)])
                      `(call-with-values 
                         (lambda () ,(car rhs*))
                         (lambda ,(append y* y)
                           ,(f (cdr lhs*) (cdr rhs*)
-                              old* new*))))]
+                              old* new*)))))]
                   [others
                    (syntax-violation #f "malformed bindings"
                       stx others)])])))))))
@@ -1237,9 +1248,9 @@
                   (lambda (x) 
                     (syntax-case x () 
                       [(_ n)
-                       (identifier? #'n)
-                       (if (memq (syntax->datum #'n) ',name*) 
-                           #''n
+                       (identifier? (syntax n))
+                       (if (memq (syntax->datum (syntax n)) ',name*) 
+                           (syntax 'n)
                            (syntax-error x
                               "not a member of set"
                               ',name*))])))
@@ -1254,8 +1265,8 @@
                                 (syntax-error x "non-identifier argument"))
                               (unless (memq (syntax->datum n) ',name*)
                                 (syntax-error n "not a member of set")))
-                           #'(n* ...))
-                         #'(,mk '(n* ...)))]))))))])))
+                           (syntax (n* ...)))
+                         (syntax (,mk '(n* ...))))]))))))])))
 
   (define time-macro
     (lambda (stx)
@@ -1811,7 +1822,7 @@
                (define ,foo-rtd ,foo-rtd-code)
                (define ,protocol ,protocol-code)
                (define ,foo-rcd ,foo-rcd-code)
-               (define-syntax ,foo (list '$rtd #',foo-rtd #',foo-rcd))
+               (define-syntax ,foo (list '$rtd (syntax ,foo-rtd) (syntax ,foo-rcd)))
                (define ,foo? (record-predicate ,foo-rtd))
                (define ,make-foo (record-constructor ,foo-rcd))
                ,@(map 
@@ -3603,16 +3614,18 @@
           (assertion-violation 'bound-identifier=? "not an identifier" x))))
   
   (define (extract-position-condition x) 
-    (define-condition-type &source-information &condition
-      make-source-condition source-condition?
-      (file-name source-filename)
-      (character source-character))
+;;     (define-condition-type &source-information &condition
+;;       make-source-condition source-condition?
+;;       (file-name source-filename)
+;;       (character source-character))
     (if (stx? x) 
         (let ([x (stx-expr x)])
           (if (annotation? x)
               (let ([src (annotation-source x)])
                 (if (pair? src) 
-                    (make-source-condition (car src) (cdr src))
+;                    (begin (display "make-source-condition :hoge") (condition))
+                    (condition)
+;                    (make-source-condition (car src) (cdr src))
                     (condition)))
               (condition)))
         (condition)))

@@ -36,7 +36,7 @@
           (symbol? x)
           (boolean? x)
           (string? x)
-          (bytevector? x)
+;          (bytevector? x)
           (number? x)))
     (not (simple? x)))
 
@@ -100,6 +100,5 @@
 
   (define (compile-core-expr-to-port x p)
     (pretty-print ((rewriter #f) x) p)
-    (newline p)))
-
-
+    (newline p))
+)

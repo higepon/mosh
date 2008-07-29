@@ -26,9 +26,9 @@
   (rnrs lists)
   (rnrs files)
   (psyntax internal)
-  (psyntax compat)
-  (psyntax library-manager)
-  (psyntax expander)
+   (psyntax compat)
+   (psyntax library-manager)
+   (psyntax expander)
   )
 
 (define scheme-library-files
@@ -1193,4 +1193,4 @@
 (display "Happy Happy Joy Joy\n")
 
 
-;;; vim:syntax=scheme
+;; ;;; vim:syntax=scheme

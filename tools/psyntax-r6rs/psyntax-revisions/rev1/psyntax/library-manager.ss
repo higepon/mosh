@@ -19,13 +19,17 @@
 ;;; DEALINGS IN THE SOFTWARE. 
 
 (library (psyntax library-manager)
-  (export imported-label->binding library-subst installed-libraries
+  (export
+ imported-label->binding library-subst installed-libraries
     visit-library library-name library-version library-exists?
     find-library-by-name install-library library-spec invoke-library 
     extend-library-subst! extend-library-env! current-library-expander
-    current-library-collection library-path library-locator)
-  (import (rnrs) (psyntax compat) (rnrs r5rs))
-
+    current-library-collection
+library-path library-locator)
+  (import (rnrs)
+          (psyntax compat)
+          (rnrs r5rs))
+  (define hoge1  (display "hoge1"))
   (define (make-collection)
     (let ((set '()))
       (define (set-cons x ls)
@@ -35,7 +39,7 @@
       (case-lambda
         (() set)
         ((x) (set! set (set-cons x set))))))
-
+  (define hoge2  (display "hoge2"))
   (define current-library-collection
     ;;; this works now because make-collection is a lambda
     ;;; binding and this turns into a complex binding as far
@@ -119,20 +123,21 @@
           (let f ((ls (library-path)) (failed-list '()))
             (cond
               ((null? ls) 
-               (let ()
-                 (define-condition-type &library-resolution &condition
-                    make-library-resolution-condition
-                    library-resolution-condition?
-                    (library condition-library)
-                    (files condition-files))
-                 (raise 
-                   (condition 
-                     (make-error)
-                     (make-who-condition 'expander)
-                     (make-message-condition
-                       "cannot locate library in library-path")
-                     (make-library-resolution-condition 
-                       x (reverse failed-list))))))
+               (display "cannot locate library in library-path"))
+;;                (let ()
+;;                  (define-condition-type &library-resolution &condition
+;;                     make-library-resolution-condition
+;;                     library-resolution-condition?
+;;                     (library condition-library)
+;;                     (files condition-files))
+;;                  (raise 
+;;                    (condition 
+;;                      (make-error)
+;;                      (make-who-condition 'expander)
+;;                      (make-message-condition
+;;                        "cannot locate library in library-path")
+;;                      (make-library-resolution-condition 
+;;                        x (reverse failed-list))))))
               (else
                (let ((name (string-append (car ls) str)))
                  (if (file-exists? name)
@@ -168,7 +173,7 @@
 
   (define external-pending-libraries 
     (make-parameter '()))
-
+  (define hoge3  (display "hoge3"))
   (define (find-external-library name)
     (when (member name (external-pending-libraries))
       (assertion-violation #f "circular attempt to import library was detected" name))
@@ -274,7 +279,7 @@
 
   (define (invoke-library-by-spec spec)
     (invoke-library (find-library-by-spec/die spec)))
-
+  (define hoge4  (display "hoge4"))
   (define installed-libraries 
     (case-lambda
       ((all?)
@@ -291,5 +296,7 @@
       (unless (library? x)
         (assertion-violation 'library-spec "not a library" x))
       (list (library-id x) (library-name x) (library-version x)))) 
+
+
   )
 
