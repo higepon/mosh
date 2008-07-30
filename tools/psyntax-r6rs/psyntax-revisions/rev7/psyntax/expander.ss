@@ -1741,7 +1741,7 @@
                   `(quote ,(convert-field-spec* field-spec*))]
                  [_ ''#()])])
           (bless
-            `(make-record-type-descriptor ',name
+o            `(make-record-type-descriptor ',name
                ,parent-rtd-code 
                ,uid-code ,sealed? ,opaque? ,fields))))
       (define (foo-rcd-code clause* foo-rtd protocol) 
