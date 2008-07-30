@@ -22,6 +22,9 @@
 (define (clr-call-internal . args) `(clr-call-internal ,@args))
 
 (define (assertion-violation . args) (apply error args))
+(define (make-undefined-violation . args) (display args) `(undefined-violation ,@args))
+(define (make-message-condition . args) (display args) `(make-message-condition ,@args))
+(define (make-who-condition . args) (display args) `(make-who-condition ,@args))
 (define (all-empty? ls)
   (or (null? ls) 
       (and (null? (car ls)) 

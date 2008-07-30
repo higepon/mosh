@@ -1046,15 +1046,15 @@
         (cond
           [(null? x*) (values '() old* new*)]
           [else
-;;            (call-with-values (rename (car x*) old* new*)
-;;              (lambda (x old* new*)
-;;                (call-with-values
-;;                    (rename* (cdr x*) old* new*)
-;;                  (lambda (x* old* new*)
-;;                    (values (cons x x*) old* new*)))))]))
-           (let-values ([(x old* new*) (rename (car x*) old* new*)])
-             (let-values ([(x* old* new*) (rename* (cdr x*) old* new*)])
-               (values (cons x x*) old* new*)))]))
+           (call-with-values (lambda () (rename (car x*) old* new*))
+             (lambda (x old* new*)
+               (call-with-values
+                   (lambda () (rename* (cdr x*) old* new*))
+                 (lambda (x* old* new*)
+                   (values (cons x x*) old* new*)))))]))
+;;            (let-values ([(x old* new*) (rename (car x*) old* new*)])
+;;              (let-values ([(x* old* new*) (rename* (cdr x*) old* new*)])
+;;                (values (cons x x*) old* new*)))]))
 ;;            (let*-values ([(x old* new*) (rename (car x*) old* new*)]
 ;;                          [(x* old* new*) (rename* (cdr x*) old* new*)])
 ;;              (values (cons x x*) old* new*))]))
@@ -1078,13 +1078,17 @@
                   [(x* ... . x)
 ;;                    (let*-values ([(y old* new*) (rename x old* new*)]
 ;;                                  [(y* old* new*) (rename* x* old* new*)])
-                   (let-values ([(y old* new*) (rename x old* new*)])
-                     (let-values ([(y* old* new*) (rename* x* old* new*)])
+;;                    (let-values ([(y old* new*) (rename x old* new*)])
+;;                      (let-values ([(y* old* new*) (rename* x* old* new*)])
+                   (call-with-values (lambda () (rename x old* new*))
+                     (lambda (y old* new*)
+                       (call-with-values (lambda () (rename* x* old* new*))
+                         (lambda (y* old* new*)
                      `(call-with-values 
                         (lambda () ,(car rhs*))
                         (lambda ,(append y* y)
                           ,(f (cdr lhs*) (cdr rhs*)
-                              old* new*)))))]
+                              old* new*)))))))]
                   [others
                    (syntax-violation #f "malformed bindings"
                       stx others)])])))))))

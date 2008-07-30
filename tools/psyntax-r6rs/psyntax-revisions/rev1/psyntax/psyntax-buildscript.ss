@@ -64,7 +64,7 @@
     (unless              (core-macro . unless))
     (parameterize        (core-macro . parameterize))
     (case                (core-macro . case))
-    (let-values          (core-macro . let-values))
+;    (let-values          (core-macro . let-values))
     (record-type-descriptor (core-macro . record-type-descriptor))
     (record-constructor-descriptor (core-macro . record-constructor-descriptor))
     (define-struct       (macro . define-struct))
@@ -75,6 +75,7 @@
     (with-syntax         (macro . with-syntax))
     (identifier-syntax   (macro . identifier-syntax))
     (let                 (macro . let))
+    (let-values          (macro . let-values));added
     (let*                (macro . let*))
     (cond                (macro . cond))
     (do                  (macro . do))
