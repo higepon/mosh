@@ -221,6 +221,8 @@ namespace scheme {
 
     Object setSymbolValueDEx(int argc, const Object* argv);
     Object symbolValueEx(int argc, const Object* argv);
+    Object testEx(int argc, const Object* argv);
+    Object test2Ex(int argc, const Object* argv);
 
 }; // namespace scheme
 

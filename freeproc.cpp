@@ -1472,7 +1472,7 @@ Object scheme::applyEx(int argc, const Object* argv)
     }
 
     const Object proc = argv[0];
-    if (!proc.isCallable()) {
+    if (!proc.isProcedure()) {
         VM_RAISE1("wrong arguments for apply required closure, got ~a\n", proc);
     }
 
@@ -1616,7 +1616,7 @@ Object scheme::dynamicWindEx(int argc, const Object* argv)
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     const Object arg3 = argv[2];
-    if (!arg1.isCallable() || !arg2.isCallable() || !arg3.isCallable()) {
+    if (!arg1.isProcedure() || !arg2.isProcedure() || !arg3.isProcedure()) {
         VM_RAISE3("dynamic-wind closure required, but got (~a, ~a, ~a)\n", arg1, arg2, arg3);
     }
     // call before
@@ -1889,4 +1889,14 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
     checkArgLength(1, argc, "symbol-value");
     const Object id  = argv[0];
     return theVM->getGlobalValue(id);
+}
+
+Object scheme::testEx(int argc, const Object* argv)
+{
+    return Object::makeCallable(new Return2());
+}
+
+Object scheme::test2Ex(int argc, const Object* argv)
+{
+    return Object::makeInt(2);
 }

@@ -653,6 +653,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                            , Object::makeInt(requiredLength)
                            , operand);
                 }
+            } else if (ac_.isCallable()) {
+                COUNT_CALL(ac_);
+                cl_ = ac_;
+                const int argc = operand.toInt();
+                ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
+                returnCode_[1] = operand;
+                pc_  = returnCode_;
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
                 const int argc = operand.toInt();
@@ -1859,7 +1866,7 @@ Object VM::getProfileResult()
     Object ret = Object::Nil;
     for (int i = 0; i < SAMPLE_NUM; i++) {
         const Object o = samples_[i];
-        if (o.isCallable()) {
+        if (o.isProcedure()) {
             ret = Pair::append2(ret, L1(o));
         }
     }

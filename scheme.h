@@ -158,6 +158,7 @@ public:
         CodeBuilder       = Type<20>::VALUE,
         GenericHashTable  = Type<21>::VALUE,
         EqvHashTable      = Type<22>::VALUE,
+        Callable          = Type<23>::VALUE,
         forbidden_comma
     };
 };
@@ -187,6 +188,7 @@ class Codec;
 class TypedVectorDesc;
 class TypedVector;
 class CodeBuilder;
+class Callable;
 
 class Object
 {
@@ -273,7 +275,7 @@ public:
         return False == *this;
     }
 
-    bool isCallable() const
+    bool isProcedure() const
     {
         return isClosure() || isCProcedure() || isRegexp() || isRegMatch();
     }
@@ -425,6 +427,7 @@ public:
     static Object makeTypedVector(Object desc, Object fieldsList);
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
+    static Object makeCallable(Callable* callable);
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
@@ -467,6 +470,7 @@ DECL_ACCESSOR(Transcoder)
 DECL_ACCESSOR(TypedVector)
 DECL_ACCESSOR(TypedVectorDesc)
 DECL_ACCESSOR(CodeBuilder)
+DECL_ACCESSOR(Callable)
 
 HashTable* toHashTable() const
 {
@@ -612,6 +616,7 @@ inline Object& Object::fifth() const
 #include "Regexp.h"
 #include "freeproc.h"
 #include "TypedVector.h"
+#include "Callable.h"
 
 
 namespace scheme {

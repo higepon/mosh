@@ -245,7 +245,7 @@ Object scheme::makeHashtableEx(int argc, const Object* argv)
     checkArgLength(2, argc, "make-hash-table");
     Object hashFunction        = argv[0];
     Object equivalenceFunction = argv[1];
-    if (hashFunction.isCallable() && equivalenceFunction.isCallable()) {
+    if (hashFunction.isProcedure() && equivalenceFunction.isProcedure()) {
         return Object::makeGenericHashTable(hashFunction, equivalenceFunction);
     } else {
         VM_RAISE2("make-hash-table procedure required, but got ~a, ~a\n", hashFunction, equivalenceFunction);

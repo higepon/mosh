@@ -287,3 +287,9 @@ Object Object::makeGenericHashTable(Object hashFunction, Object equivalenceFunct
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::GenericHashTable,
                                                         reinterpret_cast<word>(new GenericHashTable(hashFunction, equivalenceFunction)))));
 }
+
+Object Object::makeCallable(Callable* callable)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Callable,
+                                                        reinterpret_cast<word>(callable))));
+}

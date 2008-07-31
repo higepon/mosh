@@ -177,6 +177,8 @@
     (hashtable-keys ,(lambda e (error "hashtable-keys not implemented")))
     (hashtable-equivalence-function ,(lambda e (error "hashtable-equivalence-function not implemented")))
     (hashtable-hash-function ,(lambda e (error "hashtable-hash-function not implemented")))
+    (test ,(lambda e (error "test")))
+    (test2 ,(lambda e (error "test2")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)
