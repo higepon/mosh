@@ -43,6 +43,20 @@ namespace scheme {
     Object recordAccessorEx(int argc, const Object* argv);
     Object recordMutatorEx(int argc, const Object* argv);
 
+    class DefaultRecordConstructor : public Callable
+    {
+    public:
+        DefaultRecordConstructor(const RecordConstructorDescriptor* rcd, int fieldsLength);
+        ~DefaultRecordConstructor();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const RecordConstructorDescriptor* rcd_;
+        const int fieldsLength_;
+    };
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_RECORD_PROCEDURES__

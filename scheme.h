@@ -439,6 +439,7 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
+    static Object makeRecord(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,
@@ -640,6 +641,7 @@ inline Object& Object::fifth() const
 #include "freeproc.h"
 #include "TypedVector.h"
 #include "Callable.h"
+#include "Record.h"
 #include "RecordTypeDescriptor.h"
 #include "RecordConstructorDescriptor.h"
 

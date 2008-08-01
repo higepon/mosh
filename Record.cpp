@@ -33,7 +33,7 @@
 
 using namespace scheme;
 
-Record::Record(Object rtd, Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
+Record::Record(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength) : rcd_(rcd), fields_(NULL), fieldsLength_(fieldsLength)
 {
 #ifdef USE_BOEHM_GC
     fields_ = new(GC) Object[fieldsLength_];

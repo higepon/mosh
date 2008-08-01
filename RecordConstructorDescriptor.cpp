@@ -30,14 +30,16 @@
  */
 
 #include "RecordConstructorDescriptor.h"
+#include "RecordProcedures.h"
 
 using namespace scheme;
 
 RecordConstructorDescriptor::RecordConstructorDescriptor(Object rtd,
-                            Object parentRcd,
-                            Object protocol) : rtd_(rtd),
-                                               parentRcd_(parentRcd),
-                                               protocol_(protocol)
+                                                         Object parentRcd,
+                                                         Object protocol)
+  : rtd_(rtd),
+    parentRcd_(parentRcd),
+    protocol_(protocol)
 {
 }
 
@@ -49,7 +51,7 @@ Object RecordConstructorDescriptor::constructor()
 {
     if (protocol_.isFalse()) {
         const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLength();
-
+        return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
     } else {
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         exit(-1);
@@ -57,15 +59,3 @@ Object RecordConstructorDescriptor::constructor()
     return Object::Undef;
 }
 
-RecordConstructor::RecordConstructor(int fieldsLength) : fieldsLength_(fieldsLength)
-{
-}
-
-RecordConstructor::~RecordConstructor()
-{
-}
-
-Object RecordConstructor::call(VM* vm, int argc, const Object* argv)
-{
-
-}

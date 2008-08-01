@@ -39,9 +39,7 @@ namespace scheme {
 class RecordConstructorDescriptor
 {
 public:
-    RecordConstructorDescriptor(Object rtd,
-                                Object parentRcd,
-                                Object protocol);
+    RecordConstructorDescriptor(Object rtd, Object parentRcd, Object protocol);
     ~RecordConstructorDescriptor();
 
     Object constructor();
@@ -50,18 +48,6 @@ private:
     Object rtd_;
     Object parentRcd_;
     Object protocol_;
-};
-
-class RecordConstructor : public Callable
-{
-public:
-    RecordConstructor(int fieldsLength);
-    ~RecordConstructor();
-
-    Object call(VM* vm, int argc, const Object* argv);
-
-private:
-    const int fieldsLength_;
 };
 
 }; // namespace scheme

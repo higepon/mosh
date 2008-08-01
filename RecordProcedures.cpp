@@ -119,3 +119,21 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
 {
     return Symbol::intern(UC("record-mutatorhoge"));
 }
+
+
+DefaultRecordConstructor::DefaultRecordConstructor(const RecordConstructorDescriptor* rcd,
+                                                   int fieldsLength) : rcd_(rcd), fieldsLength_(fieldsLength)
+{
+}
+
+DefaultRecordConstructor::~DefaultRecordConstructor()
+{
+}
+
+Object DefaultRecordConstructor::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("default-record-constructor");
+    checkArgLength(fieldsLength_);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return Object::makeRecord(rcd_, argv, fieldsLength_);
+}
