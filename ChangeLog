@@ -1,5 +1,9 @@
 2008-08-01  higepon  <higepon@users.sourceforge.jp>
 
+        * example/grass.scm: Applied a patch by IRIE Shinsuke.
+
+        * VM.cpp (VM): Applied a patch for READ_CHAR by IRIE Shinsuke.
+
         * Record.h: Added.
 
         * RecordTypeDescriptor.h: Added.

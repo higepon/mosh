@@ -27,6 +27,10 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 ;  $Id$
+;
+;  Update: 2008/08/01 Bug fixed by IRIE Shinsuke.
+
+
 (define (make-app n m)
   `(app ,n ,m))
 
@@ -45,19 +49,23 @@
 (define (primitive-proc p) (fourth p))
 (define (primitive-is? p tag) (eq? (second p) tag))
 
-(define church-true  (cons (make-abs 1 (make-app 3 2)) (cons '() '())))
-(define church-false (cons (make-abs 1 '()) '()))
+(define church-true  `((,(make-abs 1 `(,(make-app 3 2)))) . ((() . ()))))
+(define church-false `((,(make-abs 1 '())) . ()))
 
 (define (make-char ch)
-  (make-primitive 'char ch (lambda (c) (if (eq? c ch) church-true church-false))))
+  (make-primitive 'char ch (lambda (c) (unless (primitive-is? c 'char)
+                                               (error "char:character required"))
+                                   (if (eq? (primitive-val c) ch)
+                                       church-true
+                                       church-false))))
 
 (define out (make-primitive 'proc '() (lambda (c) (unless (primitive-is? c 'char)
-                                            (error "out:charcter required"))
+                                            (error "out:character required"))
                                       (display (primitive-val c))
                                       c)))
 
 (define succ (make-primitive 'proc '() (lambda (c) (unless (primitive-is? c 'char)
-                                                     (error "succ:charctor required"))
+                                                     (error "succ:character required"))
                                         (let1 v (char->integer (primitive-val c))
                                           (if (= v 255)
                                               (make-char (integer->char 0))
@@ -104,17 +112,20 @@
 
 (define (parse text)
   (define (normalize t)
+   (regexp-replace-all #/wvW/
     (list->string
      (filter (lambda (p) (memq p '(#\w #\W #\v)))
+            (memq #\w
              (string->list
               (regexp-replace-all #/Ｗ/ (regexp-replace-all #/ｖ/ (regexp-replace-all #/ｗ/ t "w") "v") "W")))))
+    "wW"))
   (define (parse-body t)
     (aif (#/^(W+)(w+)(.*)/ (if t t ""))
          (cons (make-app (string-length (it 1)) (string-length (it 2)))
                (parse-body (it 3)))
          '()))
   (map (lambda (x)
-         (aif (#/^(w+)(.+)/ x)
+         (aif (#/^(w+)(.*)/ x)
               (make-abs (string-length (it 1)) (parse-body (it 2)))
               (error "syntax error")))
        (string-split (normalize text) #\v)))

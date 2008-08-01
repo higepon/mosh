@@ -1213,13 +1213,16 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
         CASE(READ_CHAR)
         {
             TRACE_INSN0("READ_CHAR");
-            if (ac_.isNil()) {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                exit(-1);
-            } else {
-                const ucs4char c = ac_.toTextualInputPort()->getChar();
-                ac_= c == EOF ? Object::Eof : Object::makeChar(c);
-            }
+            const ucs4char c = ac_.isNil() ? inputPort_.toTextualInputPort()->getChar() : ac_.toTextualInputPort()->getChar();
+            ac_= c == EOF ? Object::Eof : Object::makeChar(c);
+
+//             if (ac_.isNil()) {
+//                 printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//                 exit(-1);
+//             } else {
+//                 const ucs4char c = ac_.toTextualInputPort()->getChar();
+//                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
+//             }
             NEXT1;
         }
         CASE(REDUCE)
