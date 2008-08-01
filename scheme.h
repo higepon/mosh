@@ -135,30 +135,33 @@ public:
     word type;
     word obj;
     enum {
-        Vector            = Type<0>::VALUE,
-        String            = Type<1>::VALUE,
-        Symbol            = Type<2>::VALUE,
-        InputFilePort     = Type<3>::VALUE,
-        Closure           = Type<4>::VALUE,
-        Stack             = Type<5>::VALUE,
-        EqHashTable       = Type<6>::VALUE,
-        CProcedure        = Type<7>::VALUE,
-        Box               = Type<8>::VALUE,
-        ByteVector        = Type<9>::VALUE,
-        TextualInputPort  = Type<10>::VALUE,
-        Regexp            = Type<11>::VALUE,
-        RegMatch          = Type<12>::VALUE,
-        TextualOutputPort = Type<13>::VALUE,
-        BinaryInputPort   = Type<14>::VALUE,
-        BinaryOutputPort  = Type<15>::VALUE,
-        Codec             = Type<16>::VALUE,
-        Transcoder        = Type<17>::VALUE,
-        TypedVectorDesc   = Type<18>::VALUE,
-        TypedVector       = Type<19>::VALUE,
-        CodeBuilder       = Type<20>::VALUE,
-        GenericHashTable  = Type<21>::VALUE,
-        EqvHashTable      = Type<22>::VALUE,
-        Callable          = Type<23>::VALUE,
+        Vector                      = Type<0>::VALUE,
+        String                      = Type<1>::VALUE,
+        Symbol                      = Type<2>::VALUE,
+        InputFilePort               = Type<3>::VALUE,
+        Closure                     = Type<4>::VALUE,
+        Stack                       = Type<5>::VALUE,
+        EqHashTable                 = Type<6>::VALUE,
+        CProcedure                  = Type<7>::VALUE,
+        Box                         = Type<8>::VALUE,
+        ByteVector                  = Type<9>::VALUE,
+        TextualInputPort            = Type<10>::VALUE,
+        Regexp                      = Type<11>::VALUE,
+        RegMatch                    = Type<12>::VALUE,
+        TextualOutputPort           = Type<13>::VALUE,
+        BinaryInputPort             = Type<14>::VALUE,
+        BinaryOutputPort            = Type<15>::VALUE,
+        Codec                       = Type<16>::VALUE,
+        Transcoder                  = Type<17>::VALUE,
+        TypedVectorDesc             = Type<18>::VALUE,
+        TypedVector                 = Type<19>::VALUE,
+        CodeBuilder                 = Type<20>::VALUE,
+        GenericHashTable            = Type<21>::VALUE,
+        EqvHashTable                = Type<22>::VALUE,
+        Callable                    = Type<23>::VALUE,
+        Record                      = Type<24>::VALUE,
+        RecordTypeDescriptor        = Type<24>::VALUE,
+        RecordConstructorDescriptor = Type<25>::VALUE,
         forbidden_comma
     };
 };
@@ -189,6 +192,9 @@ class TypedVectorDesc;
 class TypedVector;
 class CodeBuilder;
 class Callable;
+class Record;
+class RecordTypeDescriptor;
+class RecordConstructorDescriptor;
 
 class Object
 {
@@ -207,6 +213,11 @@ public:
     bool isInt() const
     {
         return tag() == 1;
+    }
+
+    bool isBoolean() const
+    {
+        return isFalse() || isTrue();
     }
 
     bool isInstruction() const
@@ -428,6 +439,15 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
+    static Object makeRecordTypeDescriptor(Object name,
+                                           Object parent,
+                                           Object uid,
+                                           Object isSealed,
+                                           Object isOpaque,
+                                           Object fields);
+    static Object makeRecordConstructorDescriptor(Object rtd,
+                                                  Object parentRcd,
+                                                  Object protocol);
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
@@ -471,6 +491,9 @@ DECL_ACCESSOR(TypedVector)
 DECL_ACCESSOR(TypedVectorDesc)
 DECL_ACCESSOR(CodeBuilder)
 DECL_ACCESSOR(Callable)
+DECL_ACCESSOR(Record)
+DECL_ACCESSOR(RecordTypeDescriptor)
+DECL_ACCESSOR(RecordConstructorDescriptor)
 
 HashTable* toHashTable() const
 {
@@ -617,7 +640,8 @@ inline Object& Object::fifth() const
 #include "freeproc.h"
 #include "TypedVector.h"
 #include "Callable.h"
-
+#include "RecordTypeDescriptor.h"
+#include "RecordConstructorDescriptor.h"
 
 namespace scheme {
 inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,

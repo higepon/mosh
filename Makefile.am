@@ -47,6 +47,14 @@ TypedVector.h        \
 TypedVector.cpp      \
 CodeBuilder.h        \
 CodeBuilder.cpp        \
+RecordTypeDescriptor.h \
+RecordTypeDescriptor.cpp \
+RecordConstructorDescriptor.h\
+RecordConstructorDescriptor.cpp\
+Record.h \
+Record.cpp \
+RecordProcedures.cpp \
+RecordProcedures.h \
 CompilerProcedures.cpp \
 CompilerProcedures.h   \
 HashTableProceduures.cpp \

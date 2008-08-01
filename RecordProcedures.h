@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * RecordProcedures.h - R6RS Record procedures.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,23 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: RecordProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#ifndef __SCHEME_RECORD_PROCEDURES__
+#define __SCHEME_RECORD_PROCEDURES__
 
 #include "scheme.h"
 
 namespace scheme {
 
-class RecordTypeDescriptor EXTEND_GC
-{
-public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
-
-    int fieldsLength() const;
-
-private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
-    const int fieldsLength_;
-};
+    Object makeRecordTypeDescriptorEx(int argc, const Object* argv);
+    Object makeRecordConstructorDescriptorEx(int argc, const Object* argv);
+    Object recordPredicateEx(int argc, const Object* argv);
+    Object recordConstructorEx(int argc, const Object* argv);
+    Object recordAccessorEx(int argc, const Object* argv);
+    Object recordMutatorEx(int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#endif // __SCHEME_RECORD_PROCEDURES__

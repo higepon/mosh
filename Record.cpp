@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * Record.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,35 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Record.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#include "Record.h"
 
-#include "scheme.h"
+using namespace scheme;
 
-namespace scheme {
-
-class RecordTypeDescriptor EXTEND_GC
+Record::Record(Object rtd, Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
 {
-public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
+#ifdef USE_BOEHM_GC
+    fields_ = new(GC) Object[fieldsLength_];
+#else
+    fields_ = new Object[fieldsLength_];
+#endif
+    for (int i = 0; i < fieldsLength_; i++) {
+        fields_[i] = fields[i];
+    }
+}
 
-    int fieldsLength() const;
+Record::~Record()
+{
+}
 
-private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
-    const int fieldsLength_;
-};
+Object Record::fieldAt(int index)
+{
+    // index check
+}
 
-}; // namespace scheme
-
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+Object Record::setFieldAt(int index, Object value)
+{
+    // index check
+}

@@ -260,6 +260,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<typed-vector>"));
     } else if (o.isTypedVectorDesc()) {
         putString(UC("#<vector-type>"));
+    } else if (o.isRecordConstructorDescriptor()) {
+        putString(UC("#<record-constructor-descriptor>"));
+    } else if (o.isRecordTypeDescriptor()) {
+        putString(UC("#<record-type-descriptor>"));
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -355,6 +359,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<typed-vector>"));
     } else if (o.isTypedVectorDesc()) {
         putString(UC("#<vector-type>"));
+    } else if (o.isRecordConstructorDescriptor()) {
+        putString(UC("#<record-constructor-descriptor>"));
+    } else if (o.isRecordTypeDescriptor()) {
+        putString(UC("#<record-type-descriptor>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

@@ -293,3 +293,29 @@ Object Object::makeCallable(Callable* callable)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Callable,
                                                         reinterpret_cast<word>(callable))));
 }
+
+Object Object::makeRecordTypeDescriptor(Object name,
+                                        Object parent,
+                                        Object uid,
+                                        Object isSealed,
+                                        Object isOpaque,
+                                        Object fields)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RecordTypeDescriptor,
+                                                        reinterpret_cast<word>(new RecordTypeDescriptor(name,
+                                                                                                        parent,
+                                                                                                        uid,
+                                                                                                        isSealed,
+                                                                                                        isOpaque,
+                                                                                                        fields)))));
+}
+
+Object Object::makeRecordConstructorDescriptor(Object rtd,
+                                               Object parentRcd,
+                                               Object protocol)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RecordConstructorDescriptor,
+                                                        reinterpret_cast<word>(new RecordConstructorDescriptor(rtd,
+                                                                                                               parentRcd,
+                                                                                                               protocol)))));
+}

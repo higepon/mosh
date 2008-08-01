@@ -32,6 +32,7 @@
 #include "VM.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
+#include "RecordProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

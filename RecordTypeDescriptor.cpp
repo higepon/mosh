@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * RecordTypeDescriptor.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,34 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: RecordTypeDescriptor.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#include "RecordTypeDescriptor.h"
 
-#include "scheme.h"
+using namespace scheme;
 
-namespace scheme {
-
-class RecordTypeDescriptor EXTEND_GC
+RecordTypeDescriptor::RecordTypeDescriptor(Object name,
+                                           Object parent,
+                                           Object uid,
+                                           Object isSealed,
+                                           Object isOpaque,
+                                           Object fields) : name_(name),
+                                                            parent_(parent),
+                                                            uid_(uid),
+                                                            isSealed_(isSealed),
+                                                            isOpaque_(isOpaque),
+                                                            fields_(fields),
+                                                            fieldsLength_(fields.toVector()->length())
 {
-public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
+}
 
-    int fieldsLength() const;
+RecordTypeDescriptor::~RecordTypeDescriptor()
+{
 
-private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
-    const int fieldsLength_;
-};
+}
 
-}; // namespace scheme
-
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+int RecordTypeDescriptor::fieldsLength() const
+{
+    return fieldsLength_;
+}

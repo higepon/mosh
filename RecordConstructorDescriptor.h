@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * RecordConstructorDescriptor.h - R6RS record-constructor-descriptor
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,45 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: RecordConstructorDescriptor.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#ifndef __SCHEME_RECORD_CONSTRUCTOR_DESCRIPTOR__
+#define __SCHEME_RECORD_CONSTRUCTOR_DESCRIPTOR__
 
 #include "scheme.h"
 
 namespace scheme {
 
-class RecordTypeDescriptor EXTEND_GC
+class RecordConstructorDescriptor
 {
 public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
+    RecordConstructorDescriptor(Object rtd,
+                                Object parentRcd,
+                                Object protocol);
+    ~RecordConstructorDescriptor();
 
-    int fieldsLength() const;
+    Object constructor();
 
 private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
+    Object rtd_;
+    Object parentRcd_;
+    Object protocol_;
+};
+
+class RecordConstructor : public Callable
+{
+public:
+    RecordConstructor(int fieldsLength);
+    ~RecordConstructor();
+
+    Object call(VM* vm, int argc, const Object* argv);
+
+private:
     const int fieldsLength_;
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+
+#endif // __SCHEME_RECORD_CONSTRUCTOR_DESCRIPTOR__

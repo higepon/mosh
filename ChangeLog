@@ -1,5 +1,7 @@
 2008-08-01  higepon  <higepon@users.sourceforge.jp>
 
+        * Record.h: Added.
+
         * RecordTypeDescriptor.h: Added.
 
         * Callable.h : Added.

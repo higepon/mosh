@@ -179,6 +179,12 @@
     (hashtable-hash-function ,(lambda e (error "hashtable-hash-function not implemented")))
     (test ,(lambda e (error "test")))
     (test2 ,(lambda e (error "test2")))
+    (make-record-type-descriptor ,(lambda e (error "make-record-type-descriptor not implemented2")))
+    (make-record-constructor-descriptor ,(lambda e (error "make-record-constructor-descriptor implemented2")))
+    (record-predicate ,(lambda e (error "record-predicate")))
+    (record-constructor ,(lambda e (error "record-constructor")))
+    (record-accessor ,(lambda e (error "record-constructor")))
+    (record-mutator ,(lambda e (error "record-mutator")))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

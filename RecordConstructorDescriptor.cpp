@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * RecordConstructorDescriptor.cpp - R6RS record-constructor-descriptor
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,46 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: RecordConstructorDescriptor.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#include "RecordConstructorDescriptor.h"
 
-#include "scheme.h"
+using namespace scheme;
 
-namespace scheme {
-
-class RecordTypeDescriptor EXTEND_GC
+RecordConstructorDescriptor::RecordConstructorDescriptor(Object rtd,
+                            Object parentRcd,
+                            Object protocol) : rtd_(rtd),
+                                               parentRcd_(parentRcd),
+                                               protocol_(protocol)
 {
-public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
+}
 
-    int fieldsLength() const;
+RecordConstructorDescriptor::~RecordConstructorDescriptor()
+{
+}
 
-private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
-    const int fieldsLength_;
-};
+Object RecordConstructorDescriptor::constructor()
+{
+    if (protocol_.isFalse()) {
+        const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLength();
 
-}; // namespace scheme
+    } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        exit(-1);
+    }
+    return Object::Undef;
+}
 
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+RecordConstructor::RecordConstructor(int fieldsLength) : fieldsLength_(fieldsLength)
+{
+}
+
+RecordConstructor::~RecordConstructor()
+{
+}
+
+Object RecordConstructor::call(VM* vm, int argc, const Object* argv)
+{
+
+}

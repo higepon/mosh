@@ -1,5 +1,5 @@
 /*
- * RecordTypeDescriptor.h - 
+ * Record.h - R6RS Record
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,31 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Record.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#ifndef __SCHEME_RECORD__
+#define __SCHEME_RECORD__
 
-#include "scheme.h"
+#include "RecordTypeDescriptor.h"
 
 namespace scheme {
 
-class RecordTypeDescriptor EXTEND_GC
+class Record
 {
 public:
-    RecordTypeDescriptor(Object name, Object parent, Object uid, Object isSealed, Object isOpaque, Object fields);
-    ~RecordTypeDescriptor();
+    Record(Object rtd, Object* fields, int fieldsLength);
+    ~Record();
 
-    int fieldsLength() const;
+    Object fieldAt(int index);
+    Object setFieldAt(int index, Object value);
 
 private:
-    Object name_;
-    Object parent_;
-    Object uid_;
-    Object isSealed_;
-    Object isOpaque_;
-    Object fields_;
+    Object rtd_;
+    Object* fields_;
     const int fieldsLength_;
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#endif // __SCHEME_RECORD__
