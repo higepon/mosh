@@ -55,5 +55,46 @@ RecordTypeDescriptor::~RecordTypeDescriptor()
 
 int RecordTypeDescriptor::fieldsLength() const
 {
-    return fieldsLength_;
+    if (parent_.isFalse()) {
+        return fieldsLength_;
+    } else {
+        return parent_.toRecordTypeDescriptor()->fieldsLength() + fieldsLength_;
+    }
+}
+
+int RecordTypeDescriptor::parentFieldsLength() const
+{
+    if (parent_.isFalse()) {
+        return 0;
+    } else {
+        return parent_.toRecordTypeDescriptor()->fieldsLength();
+    }
+}
+
+Object RecordTypeDescriptor::name() const
+{
+    return name_;
+}
+
+// caller should check index range
+bool RecordTypeDescriptor::isFieldMutable(int index) const
+{
+    Vector* const fields = fields_.toVector();
+    const Object field = fields->ref(index);
+    if (field.car() == Symbol::intern(UC("mutable"))) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd)
+{
+    if (this == rtd) {
+        return true;
+    } else if (!parent_.isFalse()) {
+        return parent_.toRecordTypeDescriptor()->isA(rtd);
+    } else {
+        return false;
+    }
 }

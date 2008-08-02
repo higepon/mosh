@@ -43,6 +43,10 @@ public:
     ~RecordTypeDescriptor();
 
     int fieldsLength() const;
+    int parentFieldsLength() const;
+    Object name() const;
+    bool isFieldMutable(int index) const;
+    bool isA(const RecordTypeDescriptor* rtd);
 
 private:
     Object name_;

@@ -31,8 +31,11 @@
 
 #include "RecordConstructorDescriptor.h"
 #include "RecordProcedures.h"
+#include "VM.h"
 
 using namespace scheme;
+
+extern scheme::VM* theVM;
 
 RecordConstructorDescriptor::RecordConstructorDescriptor(Object rtd,
                                                          Object parentRcd,
@@ -47,15 +50,17 @@ RecordConstructorDescriptor::~RecordConstructorDescriptor()
 {
 }
 
-Object RecordConstructorDescriptor::constructor()
+Object RecordConstructorDescriptor::rtd() const
 {
-    if (protocol_.isFalse()) {
-        const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLength();
-        return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
-    } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        exit(-1);
-    }
-    return Object::Undef;
+    return rtd_;
 }
 
+Object RecordConstructorDescriptor::constructor()
+{
+    const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLength();
+    if (protocol_.isFalse()) {
+        return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
+    } else {
+        return theVM->callClosure(protocol_, Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength)));
+    }
+}

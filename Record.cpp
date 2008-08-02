@@ -49,12 +49,30 @@ Record::~Record()
 {
 }
 
-Object Record::fieldAt(int index)
+const RecordConstructorDescriptor* Record::rcd() const
 {
-    // index check
+    return rcd_;
 }
 
-Object Record::setFieldAt(int index, Object value)
+Object Record::rtd() const
 {
-    // index check
+    return rcd_->rtd();
+}
+
+// caller should check index range
+Object Record::fieldAt(int index)
+{
+    return fields_[index];
+}
+
+// caller should check index range
+void Record::setFieldAt(int index, Object value)
+{
+    fields_[index] = value;
+}
+
+bool Record::isA(const RecordTypeDescriptor* rtd)
+{
+    RecordTypeDescriptor* thisRtd = this->rtd().toRecordTypeDescriptor();
+    return thisRtd->isA(rtd);
 }

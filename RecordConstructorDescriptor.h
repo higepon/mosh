@@ -43,6 +43,7 @@ public:
     ~RecordConstructorDescriptor();
 
     Object constructor();
+    Object rtd() const;
 
 private:
     Object rtd_;

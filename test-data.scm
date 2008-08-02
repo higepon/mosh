@@ -1124,6 +1124,105 @@ val
 [mosh-only #t (= (equal-hash '(a b c)) (equal-hash '(a b c)))]
 [mosh-only #t (equal? eqv? (hashtable-equivalence-function (make-eqv-hashtable)))]
 
+;; record procedual layer
+[mosh-only #t (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                          '#((mutable x) (mutable y)))]
+                     [:point-cd (make-record-constructor-descriptor :point #f #f)]
+                     [make-point (record-constructor :point-cd)]
+                     [point? (record-predicate :point)]
+                     [point-x (record-accessor :point 0)]
+                     [point-y (record-accessor :point 1)]
+                     [point-x-set! (record-mutator :point 0)]
+                     [point-y-set! (record-mutator :point 1)]
+                     [p1 (make-point 1 2)])
+                (and (point? p1)
+                     (= (point-x p1) 1)
+                     (= (point-y p1) 2)
+                     (point-x-set! p1 5)
+                     (= (point-x p1) 5)))]
+[mosh-only #t (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                          '#((mutable x) (mutable y)))]
+                     [:point2 (make-record-type-descriptor 'point2 :point #f #f #f
+                                                           '#((mutable x) (mutable y)))]
+                     [make-point2 (record-constructor (make-record-constructor-descriptor :point2 #f #f))]
+                     [point? (record-predicate :point)]
+                     [point-x (record-accessor :point 0)]
+                     [point-y (record-accessor :point 1)]
+                     [point-x-set! (record-mutator :point 0)]
+                     [point-y-set! (record-mutator :point 1)]
+                     [point2? (record-predicate :point2)]
+                     [point2-xx (record-accessor :point2 0)]
+                     [point2-yy (record-accessor :point2 1)]
+                     [point2-xx-set! (record-mutator :point2 0)]
+                     [point2-yy-set! (record-mutator :point2 1)]
+                     [p2 (make-point2 1 2 3 4)])
+                (and (point? p2)
+                     (point2? p2)
+                     (= (point-x p2) 1)
+                     (= (point-y p2) 2)
+                     (= (point2-xx p2) 3)
+                     (= (point2-yy p2) 4)
+                     (point-x-set! p2 5)
+                     (= (point-x p2) 5)
+                     (point-y-set! p2 6)
+                     (= (point-y p2) 6)
+                     (point2-xx-set! p2 7)
+                     (= (point2-xx p2) 7)
+                     (point2-yy-set! p2 8)
+                     (= (point2-yy p2) 8)
+))]
+[mosh-only #t
+           (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                       '#((mutable x) (mutable y)))]
+                  [:point-cd/abs (make-record-constructor-descriptor
+                                  :point #f
+                                  (lambda (new)
+                                    (lambda (x y)
+                                      (new (abs x) (abs y)))))]
+                  [point-x (record-accessor :point 0)]
+                  [point-y (record-accessor :point 1)]
+                  [make-point/abs
+                   (record-constructor :point-cd/abs)])
+             (and
+              (= (point-x (make-point/abs -1 -2)) 1)
+              (= (point-y (make-point/abs -1 -2)) 2))
+)]
+[mosh-only #t
+           (let* ([color->rgb (lambda (c) (cons 'rgb c))]
+                  [:point (make-record-type-descriptor 'point #f #f #f #f
+                                                       '#((mutable x) (mutable y)))]
+                  [:point-cd (make-record-constructor-descriptor :point #f #f)]
+                  [:point-cd/abs (make-record-constructor-descriptor
+                                  :point #f
+                                  (lambda (new)
+                                    (lambda (x y)
+                                      (new (abs x) (abs y)))))]
+                  [:cpoint (make-record-type-descriptor
+                            'cpoint :point
+                            #f #f #f
+                            '#((mutable rgb)))]
+                  [cpoint-rgb
+                   (record-accessor :cpoint 0)]
+                  [make-cpoint(record-constructor
+                               (make-record-constructor-descriptor
+                                :cpoint :point-cd
+                                (lambda (p)
+                                  (lambda (x y c)
+                                    ((p x y) (color->rgb c))))))]
+                  [make-cpoint/abs (record-constructor
+                                    (make-record-constructor-descriptor
+                                     :cpoint :point-cd/abs
+                                     (lambda (p)
+                                       (lambda (x y c)
+                                         ((p x y) (color->rgb c))))))])
+             (cpoint-rgb (make-cpoint -1 -3 'red))
+)]
+
+
+
+
+
+
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
 ;;          [con con]

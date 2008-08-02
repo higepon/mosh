@@ -56,6 +56,45 @@ namespace scheme {
         const int fieldsLength_;
     };
 
+    class RecordPrediate : public Callable
+    {
+    public:
+        RecordPrediate(Object rtd);
+        ~RecordPrediate();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const Object rtd_;
+    };
+
+    class RecordAccessor : public Callable
+    {
+    public:
+        RecordAccessor(Object rtd, int index);
+        ~RecordAccessor();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const Object rtd_;
+        const int index_;
+    };
+
+    class RecordMutator : public Callable
+    {
+    public:
+        RecordMutator(Object rtd, int index);
+        ~RecordMutator();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const Object rtd_;
+        const int index_;
+    };
+
+
 
 }; // namespace scheme
 

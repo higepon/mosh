@@ -1,5 +1,5 @@
 /*
- * RecordProcedures.cpp - 
+ * RecordProcedures.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -46,6 +46,9 @@ extern scheme::VM* theVM;
     if (!variableName.pred() && !variableName.isFalse()) { \
         VM_RAISE2("~a " #required " or #f required, but got ~a\n", Object::makeString(procedureName), variableName); } \
 
+#define argumentAsInt(index, variableName) checkType(index, variableName, isInt, number)
+#define argumentAsRecord(index, variableName) checkType(index, variableName, isRecord, record)
+
 #define argumentAsVector(index, variableName) checkType(index, variableName, isVector, vector)
 
 #define argumentAsSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
@@ -65,7 +68,7 @@ extern scheme::VM* theVM;
 
 #define checkArgLength(required)   \
     if (argc != required) { \
-        VM_RAISE2("wrong number of argument for ~a required " #required ", got ~d\n", Object::makeString(procedureName), Object::makeInt(argc)); \
+        VM_RAISE3("wrong number of argument for ~a required ~d, got ~d\n", Object::makeString(procedureName), Object::makeInt(required), Object::makeInt(argc)); \
     } \
 
 
@@ -99,7 +102,10 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
 
 Object scheme::recordPredicateEx(int argc, const Object* argv)
 {
-    return Symbol::intern(UC("record-predicatehoge"));
+    DeclareProcedureName("record-prediate");
+    checkArgLength(1);
+    argumentAsRecordTypeDescriptor(0, rtd);
+    return Object::makeCallable(new RecordPrediate(rtd));
 }
 
 Object scheme::recordConstructorEx(int argc, const Object* argv)
@@ -112,12 +118,34 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
 
 Object scheme::recordAccessorEx(int argc, const Object* argv)
 {
-    return Symbol::intern(UC("record-accessorhoge"));
+    DeclareProcedureName("record-accessor");
+    checkArgLength(2);
+    argumentAsRecordTypeDescriptor(0, rtd);
+    argumentAsInt(1, k);
+    const int index = k.toInt();
+    if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
+        VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
+    }
+    return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLength()));
 }
 
 Object scheme::recordMutatorEx(int argc, const Object* argv)
 {
-    return Symbol::intern(UC("record-mutatorhoge"));
+    DeclareProcedureName("record-mutator");
+    checkArgLength(2);
+    argumentAsRecordTypeDescriptor(0, rtd);
+    argumentAsInt(1, k);
+    const int index = k.toInt();
+    const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
+    if (index < 0 || index >= recordTypeDescriptor->fieldsLength()) {
+        VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
+    }
+    if (recordTypeDescriptor->isFieldMutable(index)) {
+        return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLength()));
+    } else {
+        VM_RAISE1("~a required mutable field, but got immutable field index", Object::makeString(procedureName));
+    }
+    return Object::Undef;
 }
 
 
@@ -134,6 +162,77 @@ Object DefaultRecordConstructor::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("default-record-constructor");
     checkArgLength(fieldsLength_);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return Object::makeRecord(rcd_, argv, fieldsLength_);
+}
+
+RecordPrediate::RecordPrediate(Object rtd) : rtd_(rtd)
+{
+}
+
+RecordPrediate::~RecordPrediate()
+{
+}
+
+Object RecordPrediate::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("record-predicate for record");
+    checkArgLength(1);
+    const Object object = argv[0];
+    if (object.isRecord()) {
+        Record* record = object.toRecord();
+        return Object::makeBool(record->isA(rtd_.toRecordTypeDescriptor()));
+    } else {
+        return Object::False;
+    }
+}
+
+
+RecordAccessor::RecordAccessor(Object rtd, int index) : rtd_(rtd), index_(index)
+{
+}
+
+RecordAccessor::~RecordAccessor()
+{
+}
+
+Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("record-accessor for record");
+    checkArgLength(1);
+    argumentAsRecord(0, record);
+    const Object rtd = record.toRecord()->rtd();
+
+    if (rtd_.toRecordTypeDescriptor()->isA(rtd_.toRecordTypeDescriptor())) {
+        return record.toRecord()->fieldAt(index_);
+    } else {
+        VM_RAISE2("accessor for ~a can't be used as accessor for ~a",
+                  rtd_.toRecordTypeDescriptor()->name(),
+                  rtd.toRecordTypeDescriptor()->name());
+    }
+    return Object::Undef;
+}
+
+RecordMutator::RecordMutator(Object rtd, int index) : rtd_(rtd), index_(index)
+{
+}
+
+RecordMutator::~RecordMutator()
+{
+}
+
+Object RecordMutator::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("record-mutator for record");
+    checkArgLength(2);
+    argumentAsRecord(0, record);
+    const Object value = argv[1];
+    const Object rtd = record.toRecord()->rtd();
+    if (rtd_.toRecordTypeDescriptor()->isA(rtd_.toRecordTypeDescriptor())) {
+        record.toRecord()->setFieldAt(index_, value);
+    } else {
+        VM_RAISE2("mutator for ~a can't be used as mutator for ~a",
+                  rtd_.toRecordTypeDescriptor()->name(),
+                  rtd.toRecordTypeDescriptor()->name());
+    }
+    return Object::Undef;
 }

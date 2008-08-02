@@ -18,8 +18,11 @@
 (define point-y-set! (record-mutator :point 1))
 
 (define p1 (make-point 1 2))
-(point? p1)  ;       ⇒ #t
-(point-x p1);         ⇒ 1
+(display (point? p1))  ;       ⇒ #t
+(display (point-x p1));         ⇒ 1
+(display (point-y p1));         ⇒ 2
+(point-y-set! p1 3)
+(display (point-y p1));         ⇒ 3
 
 ;;; 次はこれを検証
 ;; (define-record-type (point make-point point?)

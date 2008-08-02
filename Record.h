@@ -43,7 +43,10 @@ public:
     ~Record();
 
     Object fieldAt(int index);
-    Object setFieldAt(int index, Object value);
+    void setFieldAt(int index, Object value);
+    const RecordConstructorDescriptor* rcd() const;
+    Object rtd() const;
+    bool isA(const RecordTypeDescriptor* rtd);
 
 private:
     const RecordConstructorDescriptor* rcd_;
