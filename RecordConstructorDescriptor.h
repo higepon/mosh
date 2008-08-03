@@ -36,13 +36,15 @@
 
 namespace scheme {
 
+class RecordConstructorInternal;
+
 class RecordConstructorDescriptor
 {
 public:
     RecordConstructorDescriptor(Object rtd, Object parentRcd, Object protocol);
     ~RecordConstructorDescriptor();
 
-    Object constructor();
+    Object constructor(RecordConstructorInternal* childConstructor);
     Object rtd() const;
 
 private:

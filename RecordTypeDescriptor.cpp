@@ -55,19 +55,20 @@ RecordTypeDescriptor::~RecordTypeDescriptor()
 
 int RecordTypeDescriptor::fieldsLength() const
 {
-    if (parent_.isFalse()) {
-        return fieldsLength_;
-    } else {
-        return parent_.toRecordTypeDescriptor()->fieldsLength() + fieldsLength_;
-    }
+    return fieldsLength_;
 }
 
-int RecordTypeDescriptor::parentFieldsLength() const
+int RecordTypeDescriptor::fieldsLengthTotal() const
+{
+    return fieldsLength() + parentFieldsLengthTotal();
+}
+
+int RecordTypeDescriptor::parentFieldsLengthTotal() const
 {
     if (parent_.isFalse()) {
         return 0;
     } else {
-        return parent_.toRecordTypeDescriptor()->fieldsLength();
+        return parent_.toRecordTypeDescriptor()->fieldsLengthTotal();
     }
 }
 

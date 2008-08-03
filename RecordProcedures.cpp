@@ -113,7 +113,7 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
     DeclareProcedureName("record-constructor");
     checkArgLength(1);
     argumentAsRecordConstructorDescriptor(0, constructorDescriptor);
-    return constructorDescriptor.toRecordConstructorDescriptor()->constructor();
+    return constructorDescriptor.toRecordConstructorDescriptor()->constructor(NULL);
 }
 
 Object scheme::recordAccessorEx(int argc, const Object* argv)
@@ -126,7 +126,7 @@ Object scheme::recordAccessorEx(int argc, const Object* argv)
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
         VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
     }
-    return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLength()));
+    return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
 }
 
 Object scheme::recordMutatorEx(int argc, const Object* argv)
@@ -141,7 +141,7 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
         VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
     }
     if (recordTypeDescriptor->isFieldMutable(index)) {
-        return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLength()));
+        return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
     } else {
         VM_RAISE1("~a required mutable field, but got immutable field index", Object::makeString(procedureName));
     }
@@ -235,4 +235,48 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
                   rtd.toRecordTypeDescriptor()->name());
     }
     return Object::Undef;
+}
+
+
+RecordConstructorInternal::RecordConstructorInternal(RecordConstructorDescriptor* rcd, RecordConstructorInternal* childConstructor, int fieldsLength) :
+    rcd_(rcd), childConstructor_(childConstructor), fieldsLength_(fieldsLength),
+    parentFields_(NULL), parentFieldsLength_(0)
+{
+}
+
+RecordConstructorInternal::~RecordConstructorInternal()
+{
+
+}
+
+void RecordConstructorInternal::setParentFields(Object* parentFields, int parentFieldsLength)
+{
+    parentFields_ = parentFields;
+    parentFieldsLength_ = parentFieldsLength;
+}
+
+Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("record-constructor-internal");
+    checkArgLength(fieldsLength_);
+    const int fieldsLength = fieldsLength_ + parentFieldsLength_;
+
+    // parent が NULL のときに 非効率
+    Object* fields = new(GC) Object[fieldsLength];
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    for (int i = 0; i < parentFieldsLength_; i++) {
+        fields[i] = parentFields_[i];
+    }
+
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    for (int i = 0; i < argc; i++) {
+        fields[i + parentFieldsLength_] = argv[i];
+    }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    if (NULL == childConstructor_) {
+        return Object::makeRecord(rcd_, fields, fieldsLength);
+    } else {
+        childConstructor_->setParentFields(fields, fieldsLength);
+        return Object::makeCallable(childConstructor_);
+    }
 }

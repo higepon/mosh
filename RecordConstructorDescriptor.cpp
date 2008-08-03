@@ -55,12 +55,24 @@ Object RecordConstructorDescriptor::rtd() const
     return rtd_;
 }
 
-Object RecordConstructorDescriptor::constructor()
+Object RecordConstructorDescriptor::constructor(RecordConstructorInternal* childConstructor)
 {
-    const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLength();
     if (protocol_.isFalse()) {
-        return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        return Object::makeCallable(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
+    } else if (parentRcd_.isFalse()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        return theVM->callClosure(protocol_, Object::makeCallable(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength())));
+
+        // ここはうまく親が見られていないね。x
     } else {
-        return theVM->callClosure(protocol_, Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength)));
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        return parentRcd_.toRecordConstructorDescriptor()->constructor(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength()));
     }
+//     const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLengthTotal();
+//     if (protocol_.isFalse()) {
+//         return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
+//     } else {
+//         return theVM->callClosure(protocol_, Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength)));
+//     }
 }

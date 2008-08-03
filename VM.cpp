@@ -680,7 +680,7 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
                 returnCode_[1] = operand;
                 pc_  = returnCode_;
             } else {
-                RAISE2("not supported apply ~a ~a", operand, ac_);
+                RAISE2("invalid application (~a ...) arugment length=~d", ac_, operand);
             }
             NEXT;
         }
