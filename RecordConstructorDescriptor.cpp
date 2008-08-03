@@ -57,6 +57,7 @@ Object RecordConstructorDescriptor::rtd() const
 
 Object RecordConstructorDescriptor::constructor(RecordConstructorInternal* childConstructor)
 {
+    // protocol は自分のものを使う。再帰しないほうが良い。
     if (protocol_.isFalse()) {
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::makeCallable(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
