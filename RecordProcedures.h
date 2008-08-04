@@ -43,18 +43,18 @@ namespace scheme {
     Object recordAccessorEx(int argc, const Object* argv);
     Object recordMutatorEx(int argc, const Object* argv);
 
-    class RecordConstructorInternal : public Callable
+    class RecordInitializer : public Callable
     {
     public:
-        RecordConstructorInternal(RecordConstructorDescriptor* rcd, RecordConstructorInternal* childConstructor, int fieldsLength);
-        ~RecordConstructorInternal();
+        RecordInitializer(RecordConstructorDescriptor* rcd, RecordInitializer* childConstructor, int fieldsLength);
+        ~RecordInitializer();
 
         Object call(VM* vm, int argc, const Object* argv);
         void setParentFields(Object* parentFields, int parentFieldsLength);
 
     private:
         RecordConstructorDescriptor* rcd_;
-        RecordConstructorInternal* childConstructor_;
+        RecordInitializer* childConstructor_;
         const int fieldsLength_;
         Object* parentFields_;
         int parentFieldsLength_;

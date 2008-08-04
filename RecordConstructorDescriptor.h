@@ -36,7 +36,7 @@
 
 namespace scheme {
 
-class RecordConstructorInternal;
+class RecordInitializer;
 
 class RecordConstructorDescriptor
 {
@@ -50,12 +50,13 @@ public:
     Object protocol() const;
 
 private:
+    Object makeRecordInitializer();
+    void collectProtocols(ObjectVector& protocols);
     Object rtd_;
     Object parentRcd_;
     Object protocol_;
 };
 
 }; // namespace scheme
-
 
 #endif // __SCHEME_RECORD_CONSTRUCTOR_DESCRIPTOR__

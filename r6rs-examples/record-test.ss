@@ -24,7 +24,7 @@
 (point-y-set! p1 3)
 (display (point-y p1));         ⇒ 3
 
-;;; 次はこれを検証
+;; ;;; 次はこれを検証
 ;; (define-record-type (point make-point point?)
 ;;   (fields (immutable x point-x)
 ;;           (mutable y point-y set-point-y!))

@@ -238,24 +238,24 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
 }
 
 
-RecordConstructorInternal::RecordConstructorInternal(RecordConstructorDescriptor* rcd, RecordConstructorInternal* childConstructor, int fieldsLength) :
+RecordInitializer::RecordInitializer(RecordConstructorDescriptor* rcd, RecordInitializer* childConstructor, int fieldsLength) :
     rcd_(rcd), childConstructor_(childConstructor), fieldsLength_(fieldsLength),
     parentFields_(NULL), parentFieldsLength_(0)
 {
 }
 
-RecordConstructorInternal::~RecordConstructorInternal()
+RecordInitializer::~RecordInitializer()
 {
 
 }
 
-void RecordConstructorInternal::setParentFields(Object* parentFields, int parentFieldsLength)
+void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLength)
 {
     parentFields_ = parentFields;
     parentFieldsLength_ = parentFieldsLength;
 }
 
-Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
+Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor-internal");
     checkArgLength(fieldsLength_);
@@ -289,7 +289,7 @@ Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
 // {
 // }
 
-// Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
+// Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
 // {
 //     DeclareProcedureName("record-default-protocol");
 //     checkArgLength(1);
