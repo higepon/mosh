@@ -36,57 +36,10 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
-#define checkType(index, variableName, pred, required) \
-    const Object variableName = argv[index]; \
-    if (!variableName.pred()) { \
-        VM_RAISE2("~a " #required " required, but got ~a\n", Object::makeString(procedureName), variableName); } \
-
-#define castArgument(index, variableName, pred, required, type, castFunction)    \
-    const Object obj ## variableName = argv[index]; \
-    if (!obj ## variableName.pred()) { \
-        VM_RAISE2("~a " #required " required, but got ~a\n", Object::makeString(procedureName), obj ## variableName); \
-    } \
-    type variableName = obj ## variableName.castFunction();
-
-
-#define checkTypeOrFalse(index, variableName, pred, required) \
-    const Object variableName = argv[index]; \
-    if (!variableName.pred() && !variableName.isFalse()) { \
-        VM_RAISE2("~a " #required " or #f required, but got ~a\n", Object::makeString(procedureName), variableName); } \
-
-#define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
-#define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
-#define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
-#define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
-
-#define argumentCheckVector(index, variableName) checkType(index, variableName, isVector, vector)
-
-#define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
-#define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
-
-#define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
-#define argumentCheckClosure(index, variableName) checkType(index, variableName, isClosure, closure)
-#define argumentCheckClosureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isClosure, closure)
-#define argumentCheckRecordTypeDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
-
-#define argumentCheckRecordTypeDescriptor(index, variableName) checkType(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
-
-#define argumentAsRecordConstructorDescriptor(index, variableName) castArgument(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor, RecordConstructorDescriptor*, toRecordConstructorDescriptor)
-#define argumentCheckRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
-#define argumentCheckRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
-
-#define DeclareProcedureName(name) const ucs4char* procedureName = UC(name);
-
-#define checkArgLength(required)   \
-    if (argc != required) { \
-        VM_RAISE3("wrong number of argument for ~a required ~d, got ~d\n", Object::makeString(procedureName), Object::makeInt(required), Object::makeInt(argc)); \
-    } \
-
-
 Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-type-descriptor");
-    checkArgLength(6);
+    checkArgumentLength(6);
     argumentCheckSymbol(0, name);
     argumentCheckRecordTypeDescriptorOrFalse(1, parent);
     argumentCheckSymbolOrFalse(2, uid);
@@ -104,7 +57,7 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
 Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-constructor-descriptor");
-    checkArgLength(3);
+    checkArgumentLength(3);
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentCheckRecordConstructorDescriptorOrFalse(1, parentRcd);
     argumentCheckClosureOrFalse(2, protocol);
@@ -114,7 +67,7 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
 Object scheme::recordPredicateEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-prediate");
-    checkArgLength(1);
+    checkArgumentLength(1);
     argumentCheckRecordTypeDescriptor(0, rtd);
     return Object::makeCallable(new RecordPrediate(rtd));
 }
@@ -122,7 +75,7 @@ Object scheme::recordPredicateEx(int argc, const Object* argv)
 Object scheme::recordConstructorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor");
-    checkArgLength(1);
+    checkArgumentLength(1);
     argumentAsRecordConstructorDescriptor(0, recordConstructorDescriptor);
     return recordConstructorDescriptor->makeConstructor();
 }
@@ -130,7 +83,7 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
 Object scheme::recordAccessorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-accessor");
-    checkArgLength(2);
+    checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentAsInt(1, index);
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
@@ -142,7 +95,7 @@ Object scheme::recordAccessorEx(int argc, const Object* argv)
 Object scheme::recordMutatorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-mutator");
-    checkArgLength(2);
+    checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentAsInt(1, index);
     const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
@@ -168,7 +121,7 @@ RecordPrediate::~RecordPrediate()
 Object RecordPrediate::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-predicate for record");
-    checkArgLength(1);
+    checkArgumentLength(1);
     const Object object = argv[0];
     if (object.isRecord()) {
         Record* record = object.toRecord();
@@ -190,9 +143,9 @@ RecordAccessor::~RecordAccessor()
 Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-accessor for record");
-    checkArgLength(1);
+    checkArgumentLength(1);
     argumentAsRecord(0, record);
-    const RecordTypeDescriptor* rtd = record->rtd();
+    const RecordTypeDescriptor* rtd = record->recordTypeDescriptor();
 
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record->fieldAt(index_);
@@ -215,10 +168,10 @@ RecordMutator::~RecordMutator()
 Object RecordMutator::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-mutator for record");
-    checkArgLength(2);
+    checkArgumentLength(2);
     argumentAsRecord(0, record);
     const Object value = argv[1];
-    const RecordTypeDescriptor* rtd = record->rtd();
+    const RecordTypeDescriptor* rtd = record->recordTypeDescriptor();
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         record->setFieldAt(index_, value);
     } else {
@@ -249,7 +202,7 @@ void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLe
 Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor-internal");
-    checkArgLength(fieldsLength_);
+    checkArgumentLength(fieldsLength_);
     const int fieldsLength = fieldsLength_ + parentFieldsLength_;
 
     // allocate fields and copy
@@ -261,9 +214,73 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
         fields[i + parentFieldsLength_] = argv[i];
     }
     if (NULL == childConstructor_) {
-        return Object::makeRecord(rcd_->rtd().toRecordTypeDescriptor(), fields, fieldsLength);
+        return Object::makeRecord(rcd_->rtd(), fields, fieldsLength);
     } else {
         childConstructor_->setParentFields(fields, fieldsLength);
         return Object::makeCallable(childConstructor_);
     }
 }
+
+Object scheme::recordFieldMutablePEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeFieldNamesEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeOpaquePEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeSealedPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeGenerativePEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeUidEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeParentEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::recordTypeNameEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("record-type-name");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return recordTypeDescriptor->name();
+}
+
+Object scheme::recordPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("record?");
+    checkArgumentLength(1);
+    const Object object = argv[0];
+    if (object.isRecord()) {
+        const bool isOpaque = object.toRecord()->recordTypeDescriptor()->isOpaque();
+        return Object::makeBool(!isOpaque);
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::recordRtdEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("record-rtd");
+    checkArgumentLength(1);
+    argumentAsRecord(0, record);
+    if (record->recordTypeDescriptor()->isOpaque()) {
+        // todo &assertion
+        VM_RAISE1("~a: record is opaque", Object::makeString(procedureName));
+    } else {
+        return record->rtd();
+    }
+    return Object::Undef;
+}
+

@@ -440,13 +440,14 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
-    static Object makeRecord(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength);
+    static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,
                                            Object isSealed,
                                            Object isOpaque,
                                            Object fields);
+
     static Object makeRecordConstructorDescriptor(Object rtd,
                                                   Object parentRcd,
                                                   Object protocol);

@@ -33,7 +33,7 @@
 
 using namespace scheme;
 
-Record::Record(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
+Record::Record(Object rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
 {
     fields_ = Object::makeObjectArray(fieldsLength_);
     for (int i = 0; i < fieldsLength_; i++) {
@@ -45,9 +45,14 @@ Record::~Record()
 {
 }
 
-const RecordTypeDescriptor* Record::rtd() const
+Object Record::rtd() const
 {
     return rtd_;
+}
+
+RecordTypeDescriptor* Record::recordTypeDescriptor() const
+{
+    return rtd_.toRecordTypeDescriptor();
 }
 
 // caller should check index range
@@ -64,5 +69,5 @@ void Record::setFieldAt(int index, Object value)
 
 bool Record::isA(const RecordTypeDescriptor* rtd) const
 {
-    return rtd_->isA(rtd);
+    return recordTypeDescriptor()->isA(rtd);
 }

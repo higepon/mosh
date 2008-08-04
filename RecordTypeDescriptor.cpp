@@ -42,7 +42,7 @@ RecordTypeDescriptor::RecordTypeDescriptor(Object name,
                                                             parent_(parent),
                                                             uid_(uid),
                                                             isSealed_(isSealed),
-                                                            isOpaque_(isOpaque),
+                                                            isOpaque_(!isOpaque.isFalse()),
                                                             fields_(fields),
                                                             fieldsLength_(fields.toVector()->length())
 {
@@ -75,6 +75,11 @@ int RecordTypeDescriptor::parentFieldsLengthTotal() const
 Object RecordTypeDescriptor::name() const
 {
     return name_;
+}
+
+bool RecordTypeDescriptor::isOpaque() const
+{
+    return isOpaque_;
 }
 
 // caller should check index range

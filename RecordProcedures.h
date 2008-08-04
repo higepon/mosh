@@ -42,6 +42,16 @@ namespace scheme {
     Object recordConstructorEx(int argc, const Object* argv);
     Object recordAccessorEx(int argc, const Object* argv);
     Object recordMutatorEx(int argc, const Object* argv);
+    Object recordFieldMutablePEx(int argc, const Object* argv);
+    Object recordTypeFieldNamesEx(int argc, const Object* argv);
+    Object recordTypeOpaquePEx(int argc, const Object* argv);
+    Object recordTypeSealedPEx(int argc, const Object* argv);
+    Object recordTypeGenerativePEx(int argc, const Object* argv);
+    Object recordTypeUidEx(int argc, const Object* argv);
+    Object recordTypeParentEx(int argc, const Object* argv);
+    Object recordTypeNameEx(int argc, const Object* argv);
+    Object recordRtdEx(int argc, const Object* argv);
+    Object recordPEx(int argc, const Object* argv);
 
     class RecordInitializer : public Callable
     {
@@ -60,19 +70,6 @@ namespace scheme {
         int parentFieldsLength_;
 
     };
-
-//     class DefaultRecordConstructor : public Callable
-//     {
-//     public:
-//         DefaultRecordConstructor(const RecordConstructorDescriptor* rcd, int fieldsLength);
-//         ~DefaultRecordConstructor();
-
-//         Object call(VM* vm, int argc, const Object* argv);
-
-//     private:
-//         const RecordConstructorDescriptor* rcd_;
-//         const int fieldsLength_;
-//     };
 
     class RecordPrediate : public Callable
     {

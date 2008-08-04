@@ -48,6 +48,7 @@ public:
     Object name() const;
     bool isFieldMutable(int index) const;
     bool isA(const RecordTypeDescriptor* rtd) const;
+    bool isOpaque() const;
     Object parent() const;
 
 private:
@@ -55,7 +56,7 @@ private:
     Object parent_;
     Object uid_;
     Object isSealed_;
-    Object isOpaque_;
+    const bool isOpaque_;
     Object fields_;
     const int fieldsLength_;
 };

@@ -1136,6 +1136,7 @@ val
                      [point-y-set! (record-mutator :point 1)]
                      [p1 (make-point 1 2)])
                 (and (point? p1)
+                     (record? p1)
                      (= (point-x p1) 1)
                      (= (point-y p1) 2)
                      (point-x-set! p1 5)
@@ -1158,6 +1159,7 @@ val
                      [p2 (make-point2 1 2 3 4)])
                 (and (point? p2)
                      (point2? p2)
+                     (record? p2)
                      (= (point-x p2) 1)
                      (= (point-y p2) 2)
                      (= (point2-xx p2) 3)
@@ -1220,6 +1222,25 @@ val
                   (= (point-x (make-cpoint -1 -3 'red)) -1)
                   (= (point-x (make-cpoint/abs -1 -3 'red)) 1))
 )]
+;; opaque
+[mosh-only #f (let* ([:point (make-record-type-descriptor 'point #f #f #f #t
+                                                          '#((mutable x) (mutable y)))]
+                     [:point-cd (make-record-constructor-descriptor :point #f #f)]
+                     [make-point (record-constructor :point-cd)]
+                     [p (make-point 1 2)])
+                (record? p))]
+[mosh-only #t (let* ([:point (make-record-type-descriptor 'point #f #f #f #f ; #t raise assertion
+                                                          '#((mutable x) (mutable y)))]
+                     [:point-cd (make-record-constructor-descriptor :point #f #f)]
+                     [make-point (record-constructor :point-cd)]
+                     [p (make-point 1 2)])
+                (eqv? :point (record-rtd p)))]
+[mosh-only point (let* ([:point (make-record-type-descriptor 'point #f #f #f #f ; #t raise assertion
+                                                              '#((mutable x) (mutable y)))]
+                         [:point-cd (make-record-constructor-descriptor :point #f #f)]
+                         [make-point (record-constructor :point-cd)]
+                         [p (make-point 1 2)])
+                   (record-type-name (record-rtd p)))]
 
 
 
