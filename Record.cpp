@@ -35,11 +35,12 @@ using namespace scheme;
 
 Record::Record(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
 {
-#ifdef USE_BOEHM_GC
-    fields_ = new(GC) Object[fieldsLength_];
-#else
-    fields_ = new Object[fieldsLength_];
-#endif
+// #ifdef USE_BOEHM_GC
+//     fields_ = new(GC) Object[fieldsLength_];
+// #else
+//     fields_ = new Object[fieldsLength_];
+// #endif
+    fields_ = Object::makeObjectArray(fieldsLength_);
     for (int i = 0; i < fieldsLength_; i++) {
         fields_[i] = fields[i];
     }

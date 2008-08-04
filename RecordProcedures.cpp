@@ -246,7 +246,6 @@ RecordInitializer::RecordInitializer(RecordConstructorDescriptor* rcd, RecordIni
 
 RecordInitializer::~RecordInitializer()
 {
-
 }
 
 void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLength)
@@ -261,18 +260,15 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
     checkArgLength(fieldsLength_);
     const int fieldsLength = fieldsLength_ + parentFieldsLength_;
 
-    // parent が NULL のときに 非効率
-    Object* fields = new(GC) Object[fieldsLength];
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    // allocate fields and copy
+//    Object* fields = new(GC) Object[fieldsLength];
+    Object* fields = Object::makeObjectArray(fieldsLength);
     for (int i = 0; i < parentFieldsLength_; i++) {
         fields[i] = parentFields_[i];
     }
-
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     for (int i = 0; i < argc; i++) {
         fields[i + parentFieldsLength_] = argv[i];
     }
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (NULL == childConstructor_) {
         return Object::makeRecord(rcd_->rtd().toRecordTypeDescriptor(), fields, fieldsLength);
     } else {
@@ -280,20 +276,3 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
         return Object::makeCallable(childConstructor_);
     }
 }
-
-// DefaultProtocol::DefaultProtocol(int fieldsLength) : fieldsLength_(fieldsLength)
-// {
-// }
-
-// DefaultProtocol::~DefaultProtocol()
-// {
-// }
-
-// Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("record-default-protocol");
-//     checkArgLength(1);
-//     t
-
-// }
-

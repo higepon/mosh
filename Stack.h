@@ -39,11 +39,12 @@ class Stack EXTEND_GC
 public:
     Stack(Object* src, int size) : size_(size)
     {
-#ifdef USE_BOEHM_GC
-        stack_ = new(GC) Object[size_];
-#else
-        stack_ = new Object[size_];
-#endif
+// #ifdef USE_BOEHM_GC
+//         stack_ = new(GC) Object[size_];
+// #else
+//         stack_ = new Object[size_];
+// #endif
+        stack_ = Object::makeObjectArray(size_);
         memcpy(stack_, src, size_ * sizeof(Object));
     }
     ~Stack() {} // not virtual

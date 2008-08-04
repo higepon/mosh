@@ -327,3 +327,12 @@ Object Object::makeRecordConstructorDescriptor(Object rtd,
                                                                                                                parentRcd,
                                                                                                                protocol)))));
 }
+
+Object* Object::makeObjectArray(int size)
+{
+#ifdef USE_BOEHM_GC
+    return new(GC) Object[size];
+#else
+    return new Object[size];
+#endif
+}

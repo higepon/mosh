@@ -48,11 +48,7 @@ public:
 
     Vector(int num, Object obj) : num_(num)
     {
-#ifdef USE_BOEHM_GC
-        objects_ = new(GC) Object[num];
-#else
-        objects_ = new Object[num];
-#endif
+        objects_ = Object::makeObjectArray(num);
         for (int i = 0; i < num; i++) {
             objects_[i] = obj;
         }
@@ -64,11 +60,7 @@ public:
 
     Vector(Object pair) : num_(Pair::length(pair))
     {
-#ifdef USE_BOEHM_GC
-        objects_ = new(GC) Object[num_];
-#else
-        objects_ = new Object[num_];
-#endif
+        objects_ = Object::makeObjectArray(num_);
         int i = 0;
         for (Object o = pair; !o.isNil(); o = o.cdr()) {
             objects_[i] = o.car();

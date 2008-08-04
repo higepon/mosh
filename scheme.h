@@ -332,6 +332,7 @@ public:
     Object eqv(Object o) const;
 
 public:
+    static Object* makeObjectArray(int size);
 
     static Object makeInt(signed long int n)
     {
