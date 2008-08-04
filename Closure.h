@@ -45,11 +45,6 @@ public:
         ,maxStack(maxStack)
         ,sourceInfo(sourceInfo)
     {
-// #ifdef USE_BOEHM_GC
-//         freeVariables = new(GC) Object[freeVariablesNum];
-// #else
-//         freeVariables = new Object[freeVariablesNum];
-// #endif
         freeVariables = Object::makeObjectArray(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
             this->freeVariables[i] = freeVars[freeVariablesNum - i - 1];

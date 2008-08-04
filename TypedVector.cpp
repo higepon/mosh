@@ -44,11 +44,7 @@ TypedVector::TypedVector(Object desc, Object fieldsList) : desc(desc), fieldNumb
                   , Object::makeInt(fieldNumber)
                   , Object::makeInt(length));
     }
-#ifdef USE_BOEHM_GC
-    fields = new(GC) Object[fieldNumber];
-#else
-    fields = new Object[fieldNumber];
-#endif
+    fields = Object::makeObjectArray(fieldNumber);
 
     int i = 0;
     for (Object c = fieldsList; !c.isNil(); c = c.cdr(), i++) {

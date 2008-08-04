@@ -261,7 +261,6 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
     const int fieldsLength = fieldsLength_ + parentFieldsLength_;
 
     // allocate fields and copy
-//    Object* fields = new(GC) Object[fieldsLength];
     Object* fields = Object::makeObjectArray(fieldsLength);
     for (int i = 0; i < parentFieldsLength_; i++) {
         fields[i] = parentFields_[i];

@@ -88,13 +88,8 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     maxNumValues_(256),
     numValues_(0)
 {
-#ifdef USE_BOEHM_GC
-    stack_ = new (GC)Object[stackSize];
-    values_ = new (GC)Object[maxNumValues_];
-#else
-    stack_ = new Object[stackSize];
-    values_ = new Object[maxNumValues_];
-#endif
+    stack_ = Object::makeObjectArray(stackSize);
+    values_ = Object::makeObjectArray(maxNumValues_);
     stackEnd_ = stack_ + stackSize;
     sp_ = stack_;
     fp_ = stack_;
@@ -432,11 +427,7 @@ Object VM::apply(Object proc, Object args)
 {
     const int procLength = Pair::length(proc);
     const int length  = procLength + 7;
-#ifdef USE_BOEHM_GC
-    Object* code = new(GC) Object[length];
-#else
-    Object* code = new Object[length ];
-#endif
+    Object* code = Object::makeObjectArray(length);
     code[0] = Object::makeRaw(Instruction::FRAME);
     code[1] = Object::makeInt(procLength + 5);
     code[2] = Object::makeRaw(Instruction::CONSTANT);
@@ -1704,11 +1695,7 @@ void VM::raise(Object o)
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
     const int argc = Pair::length(list) + 1;
-#ifdef USE_BOEHM_GC
-    Object* argv = new (GC)Object[argc];
-#else
-    Object* argv = new Object[argc];
-#endif
+    Object* argv = Object::makeObjectArray(argc);
     argv[0] = Object::makeString(fmt);
     for (int i = 1; i < argc; i++) {
         argv[i] = list.car();
@@ -1735,13 +1722,8 @@ static void signal_handler(int signo)
 
 void VM::initProfiler()
 {
-#ifdef USE_BOEHM_GC
-    samples_ = new (GC)Object[SAMPLE_NUM];
-    callSamples_ = new (GC)Object[SAMPLE_NUM];
-#else
-    samples_ = new Object[SAMPLE_NUM];
-    callSamples_ = new Object[SAMPLE_NUM];
-#endif
+    samples_ = Object::makeObjectArray(SAMPLE_NUM);
+    callSamples_ = Object::makeObjectArray(SAMPLE_NUM);
     callHash_ = Object::makeEqHashTable();
     totalSampleCount_ = 0;
     for (int i = 0; i < SAMPLE_NUM; i++) {

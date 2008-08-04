@@ -39,11 +39,7 @@ class Vector EXTEND_GC
 public:
     Vector(int num) : num_(num)
     {
-#ifdef USE_BOEHM_GC
-        objects_ = new(GC) Object[num];
-#else
-        objects_ = new Object[num];
-#endif
+        objects_ = Object::makeObjectArray(num);
     }
 
     Vector(int num, Object obj) : num_(num)

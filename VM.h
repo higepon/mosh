@@ -315,11 +315,7 @@ protected:
     Object makeContinuation(Object n)
     {
         const int codeSize = 6;
-#ifdef USE_BOEHM_GC
-        Object* code = new(GC) Object[codeSize];
-#else
-        Object* code = new Object[codeSize];
-#endif
+        Object* code = Object::makeObjectArray(codeSize);
         code[0] = Object::makeRaw(Instruction::REFER_LOCAL);
         code[1] = Object::makeInt(0);
         code[2] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
@@ -332,7 +328,7 @@ protected:
     Object* getDirectThreadedCode(Object* code, int length)
     {
 #ifdef USE_DIRECT_THREADED_CODE
-        Object* direct = new(GC) Object[length];
+        Object* direct = Object::makeObjectArray(length);
         void** table = (void**)run(NULL, NULL, true).val;
         for (int i = 0; i < length; i++) {
             // Direct threaded code
