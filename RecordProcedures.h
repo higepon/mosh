@@ -112,6 +112,18 @@ namespace scheme {
         const int index_;
     };
 
+//     class DefaultProtocol : public Callable
+//     {
+//     public:
+//         DefaultProtocol(int fieldsLength);
+//         ~DefaultProtocol();
+
+//         Object call(VM* vm, int argc, const Object* argv);
+
+//     private:
+//         const int fieldsLength_;
+//     }
+
 
 
 }; // namespace scheme

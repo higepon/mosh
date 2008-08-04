@@ -48,6 +48,7 @@ public:
     Object name() const;
     bool isFieldMutable(int index) const;
     bool isA(const RecordTypeDescriptor* rtd);
+    Object parent() const;
 
 private:
     Object name_;

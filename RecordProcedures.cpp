@@ -280,3 +280,20 @@ Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
         return Object::makeCallable(childConstructor_);
     }
 }
+
+// DefaultProtocol::DefaultProtocol(int fieldsLength) : fieldsLength_(fieldsLength)
+// {
+// }
+
+// DefaultProtocol::~DefaultProtocol()
+// {
+// }
+
+// Object RecordConstructorInternal::call(VM* vm, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("record-default-protocol");
+//     checkArgLength(1);
+//     t
+
+// }
+

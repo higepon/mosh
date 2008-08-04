@@ -1216,9 +1216,9 @@ val
                                      (lambda (p)
                                        (lambda (x y c)
                                          ((p x y) (color->rgb c))))))])
-             (cpoint-rgb (make-cpoint -1 -3 'red))
-             (point-x (make-cpoint -1 -3 'red))
-             (point-x (make-cpoint/abs -1 -3 'red))
+             (and (equal? (cpoint-rgb (make-cpoint -1 -3 'red)) '(rgb . red))
+                  (= (point-x (make-cpoint -1 -3 'red)) -1)
+                  (= (point-x (make-cpoint/abs -1 -3 'red)) 1))
 )]
 
 

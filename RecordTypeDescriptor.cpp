@@ -99,3 +99,8 @@ bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd)
         return false;
     }
 }
+
+Object RecordTypeDescriptor::parent() const
+{
+    return parent_;
+}

@@ -44,6 +44,11 @@ RecordConstructorDescriptor::RecordConstructorDescriptor(Object rtd,
     parentRcd_(parentRcd),
     protocol_(protocol)
 {
+//     // set default protocol
+//     if (protocol_.isFalse()) {
+//         const int fieldsLength = rtd.toRecordTypeDescriptor()->fieldsLength();
+//         protocol_ = Object::makeCallable(new DefaultProtocol(fieldsLength));
+//     }
 }
 
 RecordConstructorDescriptor::~RecordConstructorDescriptor()
@@ -67,30 +72,74 @@ Object RecordConstructorDescriptor::protocol() const
 
 Object RecordConstructorDescriptor::makeConstructor()
 {
-    // protocol は自分のものを使う。再帰しないほうが良い。
     if (protocol_.isFalse()) {
         return Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
-    } else if (parentRcd_.isFalse()) {
-        return theVM->callClosure(protocol_, Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLength())));
-        // ここはうまく親が見られていないね。x
-    } else {
-        RecordConstructorInternal* child = NULL;
-        RecordConstructorDescriptor* rcd = this;
-        for (;;) {
-            child = new RecordConstructorInternal(this, child, rcd->rtd().toRecordTypeDescriptor()->fieldsLength());
-            if (rcd->parentRcd().isFalse()) {
-                return theVM->callClosure(protocol_, Object::makeCallable(child));
-            } else {
-                rcd = rcd->parentRcd().toRecordConstructorDescriptor();
-            }
+    }
+
+    // create internal constructor
+    RecordConstructorDescriptor* rcd = this;
+    RecordConstructorInternal* child = NULL;
+    RecordTypeDescriptor* rtd = rcd->rtd().toRecordTypeDescriptor();
+    for (;;) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        child = new RecordConstructorInternal(this, child, rtd->fieldsLength());
+        if (rtd->parent().isFalse()) {
+            break;
+        } else {
+            rtd = rtd->parent().toRecordTypeDescriptor();
         }
+    }
+    const Object internalConstructor = Object::makeCallable(child);
+
+    // collect protocols
+    ObjectVector protocols;
+    rcd = this;
+    for (;;) {
+        protocols.push_back(rcd->protocol());
+        if (rcd->parentRcd().isFalse()) {
+            break;
+        } else {
+            rcd = rcd->parentRcd().toRecordConstructorDescriptor();
+        }
+    }
+
+    Object initalizer = internalConstructor;
+    for (ObjectVector::reverse_iterator it = protocols.rbegin(); it != protocols.rend(); ++it) {
+        if (!(*it).isFalse()) {
+            initalizer = theVM->callClosure(*it, initalizer);
+        }
+    }
+    return initalizer;
+
+}
+//     // protocol は自分のものを使う。再帰しないほうが良い。
+//     if (protocol_.isFalse()) {
+//         return Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
+//     } else if (parentRcd_.isFalse()) {
+//         return theVM->callClosure(protocol_, Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLength())));
+//         // ここはうまく親が見られていないね。x
+//     } else {
+//         RecordConstructorInternal* child = NULL;
+//         RecordConstructorDescriptor* rcd = this;
+//         for (;;) {
+//             if (rcd->protocol().isFalse()) {
+//                 child = new RecordConstructorInternal(this, child, rcd->rtd().toRecordTypeDescriptor()->fieldsLength());
+//             } else {
+
+//             }
+//             if (rcd->parentRcd().isFalse()) {
+//                 return theVM->callClosure(protocol_, Object::makeCallable(child));
+//             } else {
+//                 rcd = rcd->parentRcd().toRecordConstructorDescriptor();
+//             }
+//         }
 //         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 //         return parentRcd_.toRecordConstructorDescriptor()->constructor(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength()));
-    }
+//    }
 //     const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLengthTotal();
 //     if (protocol_.isFalse()) {
 //         return Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength));
 //     } else {
 //         return theVM->callClosure(protocol_, Object::makeCallable(new DefaultRecordConstructor(this, fieldsLength)));
 //     }
-}
+//}
