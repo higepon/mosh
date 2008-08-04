@@ -44,8 +44,10 @@ public:
     RecordConstructorDescriptor(Object rtd, Object parentRcd, Object protocol);
     ~RecordConstructorDescriptor();
 
-    Object constructor(RecordConstructorInternal* childConstructor);
+    Object makeConstructor();
     Object rtd() const;
+    Object parentRcd() const;
+    Object protocol() const;
 
 private:
     Object rtd_;

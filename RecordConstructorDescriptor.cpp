@@ -55,20 +55,37 @@ Object RecordConstructorDescriptor::rtd() const
     return rtd_;
 }
 
-Object RecordConstructorDescriptor::constructor(RecordConstructorInternal* childConstructor)
+Object RecordConstructorDescriptor::parentRcd() const
+{
+    return parentRcd_;
+}
+
+Object RecordConstructorDescriptor::protocol() const
+{
+    return protocol_;
+}
+
+Object RecordConstructorDescriptor::makeConstructor()
 {
     // protocol は自分のものを使う。再帰しないほうが良い。
     if (protocol_.isFalse()) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        return Object::makeCallable(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
+        return Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLengthTotal()));
     } else if (parentRcd_.isFalse()) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        return theVM->callClosure(protocol_, Object::makeCallable(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength())));
-
+        return theVM->callClosure(protocol_, Object::makeCallable(new RecordConstructorInternal(this, NULL, rtd_.toRecordTypeDescriptor()->fieldsLength())));
         // ここはうまく親が見られていないね。x
     } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        return parentRcd_.toRecordConstructorDescriptor()->constructor(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength()));
+        RecordConstructorInternal* child = NULL;
+        RecordConstructorDescriptor* rcd = this;
+        for (;;) {
+            child = new RecordConstructorInternal(this, child, rcd->rtd().toRecordTypeDescriptor()->fieldsLength());
+            if (rcd->parentRcd().isFalse()) {
+                return theVM->callClosure(protocol_, Object::makeCallable(child));
+            } else {
+                rcd = rcd->parentRcd().toRecordConstructorDescriptor();
+            }
+        }
+//         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//         return parentRcd_.toRecordConstructorDescriptor()->constructor(new RecordConstructorInternal(this, childConstructor, rtd_.toRecordTypeDescriptor()->fieldsLength()));
     }
 //     const int fieldsLength = rtd_.toRecordTypeDescriptor()->fieldsLengthTotal();
 //     if (protocol_.isFalse()) {

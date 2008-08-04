@@ -1197,6 +1197,7 @@ val
                                   (lambda (new)
                                     (lambda (x y)
                                       (new (abs x) (abs y)))))]
+                  [point-x (record-accessor :point 0)]
                   [:cpoint (make-record-type-descriptor
                             'cpoint :point
                             #f #f #f
@@ -1216,6 +1217,8 @@ val
                                        (lambda (x y c)
                                          ((p x y) (color->rgb c))))))])
              (cpoint-rgb (make-cpoint -1 -3 'red))
+             (point-x (make-cpoint -1 -3 'red))
+             (point-x (make-cpoint/abs -1 -3 'red))
 )]
 
 

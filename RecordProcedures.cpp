@@ -113,7 +113,7 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
     DeclareProcedureName("record-constructor");
     checkArgLength(1);
     argumentAsRecordConstructorDescriptor(0, constructorDescriptor);
-    return constructorDescriptor.toRecordConstructorDescriptor()->constructor(NULL);
+    return constructorDescriptor.toRecordConstructorDescriptor()->makeConstructor();
 }
 
 Object scheme::recordAccessorEx(int argc, const Object* argv)
