@@ -1891,12 +1891,3 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
     return theVM->getGlobalValue(id);
 }
 
-Object scheme::testEx(int argc, const Object* argv)
-{
-    return Object::makeCallable(new Return2());
-}
-
-Object scheme::test2Ex(int argc, const Object* argv)
-{
-    return Object::makeInt(2);
-}

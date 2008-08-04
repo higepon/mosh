@@ -41,28 +41,39 @@ extern scheme::VM* theVM;
     if (!variableName.pred()) { \
         VM_RAISE2("~a " #required " required, but got ~a\n", Object::makeString(procedureName), variableName); } \
 
+#define castArgument(index, variableName, pred, required, type, castFunction)    \
+    const Object obj ## variableName = argv[index]; \
+    if (!obj ## variableName.pred()) { \
+        VM_RAISE2("~a " #required " required, but got ~a\n", Object::makeString(procedureName), obj ## variableName); \
+    } \
+    type variableName = obj ## variableName.castFunction();
+
+
 #define checkTypeOrFalse(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred() && !variableName.isFalse()) { \
         VM_RAISE2("~a " #required " or #f required, but got ~a\n", Object::makeString(procedureName), variableName); } \
 
-#define argumentAsInt(index, variableName) checkType(index, variableName, isInt, number)
-#define argumentAsRecord(index, variableName) checkType(index, variableName, isRecord, record)
+#define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
+#define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
+#define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
+#define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 
-#define argumentAsVector(index, variableName) checkType(index, variableName, isVector, vector)
+#define argumentCheckVector(index, variableName) checkType(index, variableName, isVector, vector)
 
-#define argumentAsSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
-#define argumentAsSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
+#define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
+#define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
 
-#define argumentAsBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
-#define argumentAsClosure(index, variableName) checkType(index, variableName, isClosure, closure)
-#define argumentAsClosureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isClosure, closure)
-#define argumentAsRecordTypeDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
+#define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
+#define argumentCheckClosure(index, variableName) checkType(index, variableName, isClosure, closure)
+#define argumentCheckClosureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isClosure, closure)
+#define argumentCheckRecordTypeDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
 
-#define argumentAsRecordTypeDescriptor(index, variableName) checkType(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
+#define argumentCheckRecordTypeDescriptor(index, variableName) checkType(index, variableName, isRecordTypeDescriptor, record-type-descriptor)
 
-#define argumentAsRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
-#define argumentAsRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
+#define argumentAsRecordConstructorDescriptor(index, variableName) castArgument(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor, RecordConstructorDescriptor*, toRecordConstructorDescriptor)
+#define argumentCheckRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
+#define argumentCheckRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 
 #define DeclareProcedureName(name) const ucs4char* procedureName = UC(name);
 
@@ -76,12 +87,12 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-type-descriptor");
     checkArgLength(6);
-    argumentAsSymbol(0, name);
-    argumentAsRecordTypeDescriptorOrFalse(1, parent);
-    argumentAsSymbolOrFalse(2, uid);
-    argumentAsBoolean(3, isSealed);
-    argumentAsBoolean(4, isOpaque);
-    argumentAsVector(5, fields);
+    argumentCheckSymbol(0, name);
+    argumentCheckRecordTypeDescriptorOrFalse(1, parent);
+    argumentCheckSymbolOrFalse(2, uid);
+    argumentCheckBoolean(3, isSealed);
+    argumentCheckBoolean(4, isOpaque);
+    argumentCheckVector(5, fields);
     return Object::makeRecordTypeDescriptor(name,
                                             parent,
                                             uid,
@@ -94,9 +105,9 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-constructor-descriptor");
     checkArgLength(3);
-    argumentAsRecordTypeDescriptor(0, rtd);
-    argumentAsRecordConstructorDescriptorOrFalse(1, parentRcd);
-    argumentAsClosureOrFalse(2, protocol);
+    argumentCheckRecordTypeDescriptor(0, rtd);
+    argumentCheckRecordConstructorDescriptorOrFalse(1, parentRcd);
+    argumentCheckClosureOrFalse(2, protocol);
     return Object::makeRecordConstructorDescriptor(rtd, parentRcd, protocol);
 }
 
@@ -104,7 +115,7 @@ Object scheme::recordPredicateEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-prediate");
     checkArgLength(1);
-    argumentAsRecordTypeDescriptor(0, rtd);
+    argumentCheckRecordTypeDescriptor(0, rtd);
     return Object::makeCallable(new RecordPrediate(rtd));
 }
 
@@ -112,17 +123,16 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor");
     checkArgLength(1);
-    argumentAsRecordConstructorDescriptor(0, constructorDescriptor);
-    return constructorDescriptor.toRecordConstructorDescriptor()->makeConstructor();
+    argumentAsRecordConstructorDescriptor(0, recordConstructorDescriptor);
+    return recordConstructorDescriptor->makeConstructor();
 }
 
 Object scheme::recordAccessorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-accessor");
     checkArgLength(2);
-    argumentAsRecordTypeDescriptor(0, rtd);
-    argumentAsInt(1, k);
-    const int index = k.toInt();
+    argumentCheckRecordTypeDescriptor(0, rtd);
+    argumentAsInt(1, index);
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
         VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
     }
@@ -133,9 +143,8 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("record-mutator");
     checkArgLength(2);
-    argumentAsRecordTypeDescriptor(0, rtd);
-    argumentAsInt(1, k);
-    const int index = k.toInt();
+    argumentCheckRecordTypeDescriptor(0, rtd);
+    argumentAsInt(1, index);
     const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
     if (index < 0 || index >= recordTypeDescriptor->fieldsLength()) {
         VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
@@ -147,23 +156,6 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
     }
     return Object::Undef;
 }
-
-
-// DefaultRecordConstructor::DefaultRecordConstructor(const RecordConstructorDescriptor* rcd,
-//                                                    int fieldsLength) : rcd_(rcd), fieldsLength_(fieldsLength)
-// {
-// }
-
-// DefaultRecordConstructor::~DefaultRecordConstructor()
-// {
-// }
-
-// Object DefaultRecordConstructor::call(VM* vm, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("default-record-constructor");
-//     checkArgLength(fieldsLength_);
-//     return Object::makeRecord(rcd_, argv, fieldsLength_);
-// }
 
 RecordPrediate::RecordPrediate(Object rtd) : rtd_(rtd)
 {
@@ -200,10 +192,10 @@ Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
     DeclareProcedureName("record-accessor for record");
     checkArgLength(1);
     argumentAsRecord(0, record);
-    const RecordTypeDescriptor* rtd = record.toRecord()->rtd();
+    const RecordTypeDescriptor* rtd = record->rtd();
 
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
-        return record.toRecord()->fieldAt(index_);
+        return record->fieldAt(index_);
     } else {
         VM_RAISE2("accessor for ~a can't be used as accessor for ~a",
                   rtd_.toRecordTypeDescriptor()->name(),
@@ -226,9 +218,9 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
     checkArgLength(2);
     argumentAsRecord(0, record);
     const Object value = argv[1];
-    const RecordTypeDescriptor* rtd = record.toRecord()->rtd();
+    const RecordTypeDescriptor* rtd = record->rtd();
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
-        record.toRecord()->setFieldAt(index_, value);
+        record->setFieldAt(index_, value);
     } else {
         VM_RAISE2("mutator for ~a can't be used as mutator for ~a",
                   rtd_.toRecordTypeDescriptor()->name(),

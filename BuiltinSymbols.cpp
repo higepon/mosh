@@ -792,7 +792,6 @@ const Object* scheme::getBuiltinSymbols() {
         SA("take-right"),
         SA("tenth"),
         SA("test"),
-        SA("test2"),
         SA("then"),
         SA("third"),
         SA("thunk"),

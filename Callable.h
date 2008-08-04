@@ -43,32 +43,6 @@ public:
     virtual Object call(VM* vm, int argc, const Object* argv) = 0;
 };
 
-class RecordSetter : public Callable
-{
-public:
-    RecordSetter(int index) : index_(index) {}
-
-    Object call(VM* vm, int argc, const Object* argv)
-    {
-        return Object::makeInt(index_);
-    }
-
-private:
-    int index_;
-};
-
-class Return2 : public Callable
-{
-public:
-    Return2() {}
-
-    Object call(VM* vm, int argc, const Object* argv)
-    {
-        return Object::makeInt(2);
-    }
-};
-
-
 }; // namespace scheme
 
 #endif // __SCHEME_CALLABLE__
