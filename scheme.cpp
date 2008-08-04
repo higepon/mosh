@@ -310,10 +310,10 @@ Object Object::makeRecordTypeDescriptor(Object name,
                                                                                                         fields)))));
 }
 
-Object Object::makeRecord(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength)
+Object Object::makeRecord(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Record,
-                                                        reinterpret_cast<word>(new Record(rcd,
+                                                        reinterpret_cast<word>(new Record(rtd,
                                                                                           fields,
                                                                                           fieldsLength)))));
 }

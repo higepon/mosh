@@ -89,7 +89,7 @@ bool RecordTypeDescriptor::isFieldMutable(int index) const
     }
 }
 
-bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd)
+bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd) const
 {
     if (this == rtd) {
         return true;

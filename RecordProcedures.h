@@ -61,18 +61,18 @@ namespace scheme {
 
     };
 
-    class DefaultRecordConstructor : public Callable
-    {
-    public:
-        DefaultRecordConstructor(const RecordConstructorDescriptor* rcd, int fieldsLength);
-        ~DefaultRecordConstructor();
+//     class DefaultRecordConstructor : public Callable
+//     {
+//     public:
+//         DefaultRecordConstructor(const RecordConstructorDescriptor* rcd, int fieldsLength);
+//         ~DefaultRecordConstructor();
 
-        Object call(VM* vm, int argc, const Object* argv);
+//         Object call(VM* vm, int argc, const Object* argv);
 
-    private:
-        const RecordConstructorDescriptor* rcd_;
-        const int fieldsLength_;
-    };
+//     private:
+//         const RecordConstructorDescriptor* rcd_;
+//         const int fieldsLength_;
+//     };
 
     class RecordPrediate : public Callable
     {

@@ -33,7 +33,7 @@
 
 using namespace scheme;
 
-Record::Record(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength) : rcd_(rcd), fields_(NULL), fieldsLength_(fieldsLength)
+Record::Record(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
 {
 #ifdef USE_BOEHM_GC
     fields_ = new(GC) Object[fieldsLength_];
@@ -49,14 +49,9 @@ Record::~Record()
 {
 }
 
-const RecordConstructorDescriptor* Record::rcd() const
+const RecordTypeDescriptor* Record::rtd() const
 {
-    return rcd_;
-}
-
-Object Record::rtd() const
-{
-    return rcd_->rtd();
+    return rtd_;
 }
 
 // caller should check index range
@@ -71,8 +66,7 @@ void Record::setFieldAt(int index, Object value)
     fields_[index] = value;
 }
 
-bool Record::isA(const RecordTypeDescriptor* rtd)
+bool Record::isA(const RecordTypeDescriptor* rtd) const
 {
-    RecordTypeDescriptor* thisRtd = this->rtd().toRecordTypeDescriptor();
-    return thisRtd->isA(rtd);
+    return rtd_->isA(rtd);
 }

@@ -439,7 +439,7 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
-    static Object makeRecord(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength);
+    static Object makeRecord(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,

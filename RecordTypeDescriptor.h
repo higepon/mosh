@@ -47,7 +47,7 @@ public:
     int parentFieldsLengthTotal() const;
     Object name() const;
     bool isFieldMutable(int index) const;
-    bool isA(const RecordTypeDescriptor* rtd);
+    bool isA(const RecordTypeDescriptor* rtd) const;
     Object parent() const;
 
 private:

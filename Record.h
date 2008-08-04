@@ -39,17 +39,16 @@ namespace scheme {
 class Record
 {
 public:
-    Record(const RecordConstructorDescriptor* rcd, const Object* fields, int fieldsLength);
+    Record(const RecordTypeDescriptor* rtd, const Object* fields, int fieldsLength);
     ~Record();
 
     Object fieldAt(int index);
     void setFieldAt(int index, Object value);
-    const RecordConstructorDescriptor* rcd() const;
-    Object rtd() const;
-    bool isA(const RecordTypeDescriptor* rtd);
+    const RecordTypeDescriptor* rtd() const;
+    bool isA(const RecordTypeDescriptor* rtd) const;
 
 private:
-    const RecordConstructorDescriptor* rcd_;
+    const RecordTypeDescriptor* rtd_;
     Object* fields_;
     const int fieldsLength_;
 };

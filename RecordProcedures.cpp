@@ -149,21 +149,21 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
 }
 
 
-DefaultRecordConstructor::DefaultRecordConstructor(const RecordConstructorDescriptor* rcd,
-                                                   int fieldsLength) : rcd_(rcd), fieldsLength_(fieldsLength)
-{
-}
+// DefaultRecordConstructor::DefaultRecordConstructor(const RecordConstructorDescriptor* rcd,
+//                                                    int fieldsLength) : rcd_(rcd), fieldsLength_(fieldsLength)
+// {
+// }
 
-DefaultRecordConstructor::~DefaultRecordConstructor()
-{
-}
+// DefaultRecordConstructor::~DefaultRecordConstructor()
+// {
+// }
 
-Object DefaultRecordConstructor::call(VM* vm, int argc, const Object* argv)
-{
-    DeclareProcedureName("default-record-constructor");
-    checkArgLength(fieldsLength_);
-    return Object::makeRecord(rcd_, argv, fieldsLength_);
-}
+// Object DefaultRecordConstructor::call(VM* vm, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("default-record-constructor");
+//     checkArgLength(fieldsLength_);
+//     return Object::makeRecord(rcd_, argv, fieldsLength_);
+// }
 
 RecordPrediate::RecordPrediate(Object rtd) : rtd_(rtd)
 {
@@ -200,14 +200,14 @@ Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
     DeclareProcedureName("record-accessor for record");
     checkArgLength(1);
     argumentAsRecord(0, record);
-    const Object rtd = record.toRecord()->rtd();
+    const RecordTypeDescriptor* rtd = record.toRecord()->rtd();
 
-    if (rtd_.toRecordTypeDescriptor()->isA(rtd_.toRecordTypeDescriptor())) {
+    if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record.toRecord()->fieldAt(index_);
     } else {
         VM_RAISE2("accessor for ~a can't be used as accessor for ~a",
                   rtd_.toRecordTypeDescriptor()->name(),
-                  rtd.toRecordTypeDescriptor()->name());
+                  rtd->name());
     }
     return Object::Undef;
 }
@@ -226,13 +226,13 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
     checkArgLength(2);
     argumentAsRecord(0, record);
     const Object value = argv[1];
-    const Object rtd = record.toRecord()->rtd();
-    if (rtd_.toRecordTypeDescriptor()->isA(rtd_.toRecordTypeDescriptor())) {
+    const RecordTypeDescriptor* rtd = record.toRecord()->rtd();
+    if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         record.toRecord()->setFieldAt(index_, value);
     } else {
         VM_RAISE2("mutator for ~a can't be used as mutator for ~a",
                   rtd_.toRecordTypeDescriptor()->name(),
-                  rtd.toRecordTypeDescriptor()->name());
+                  rtd->name());
     }
     return Object::Undef;
 }
@@ -274,7 +274,7 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
     }
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (NULL == childConstructor_) {
-        return Object::makeRecord(rcd_, fields, fieldsLength);
+        return Object::makeRecord(rcd_->rtd().toRecordTypeDescriptor(), fields, fieldsLength);
     } else {
         childConstructor_->setParentFields(fields, fieldsLength);
         return Object::makeCallable(childConstructor_);
