@@ -1241,8 +1241,28 @@ val
                          [make-point (record-constructor :point-cd)]
                          [p (make-point 1 2)])
                    (record-type-name (record-rtd p)))]
-
-
+[mosh-only point (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                             '#((mutable x) (mutable y)))]
+                        [:point2 (make-record-type-descriptor 'point2 :point #f #f #f
+                                                              '#((mutable x) (mutable y)))])
+                   (record-type-name (record-type-parent :point2)))]
+[mosh-only #t (let* ([:point (make-record-type-descriptor 'point #f 'point-uid #f #f
+                                                             '#((mutable x) (mutable y)))]
+                        [:point2 (make-record-type-descriptor 'point #f 'point-uid #f #f
+                                                              '#((mutable x) (mutable y)))])
+                   (eq? :point :point2))]
+[mosh-only #t (let* ([:point2 (make-record-type-descriptor 'point2 #f #f #f #f
+                                                           '#((mutable x) (mutable y)))])
+                   (record-type-generative? :point2))]
+[mosh-only #f (let* ([:point (make-record-type-descriptor 'point #f 'point-uid #f #f
+                                                             '#((mutable x) (mutable y)))])
+                   (record-type-generative? :point))]
+[mosh-only #(x y) (let* ([:point (make-record-type-descriptor 'point #f 'point-uid #f #f
+                                                             '#((mutable x) (mutable y)))])
+                (record-type-field-names :point))]
+[mosh-only #t (let* ([:point (make-record-type-descriptor 'point #f 'point-uid #f #f
+                                                             '#((mutable x) (mutable y)))])
+                (record-field-mutable? :point 1))]
 
 
 

@@ -46,12 +46,32 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
     argumentCheckBoolean(3, isSealed);
     argumentCheckBoolean(4, isOpaque);
     argumentCheckVector(5, fields);
-    return Object::makeRecordTypeDescriptor(name,
-                                            parent,
-                                            uid,
-                                            isSealed,
-                                            isOpaque,
-                                            fields);
+
+    // nongenerative
+    if (uid.isFalse()) {
+        return Object::makeRecordTypeDescriptor(name,
+                                                parent,
+                                                uid,
+                                                isSealed,
+                                                isOpaque,
+                                                fields);
+    // generative
+    } else {
+        static ObjectMap generatedRtd;
+        ObjectMap::const_iterator found = generatedRtd.find(uid);
+        if (found != generatedRtd.end()) {
+            return found->second;
+        } else {
+            const Object rtd = Object::makeRecordTypeDescriptor(name,
+                                                         parent,
+                                                         uid,
+                                                         isSealed,
+                                                         isOpaque,
+                                                         fields);
+            generatedRtd[uid] = rtd;
+            return rtd;
+        }
+    }
 }
 
 Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
@@ -223,30 +243,61 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
 
 Object scheme::recordFieldMutablePEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-field-mutable?");
+    checkArgumentLength(2);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    argumentAsInt(1, index);
+    return Object::makeBool(recordTypeDescriptor->isFieldMutable(index));
 }
 
 Object scheme::recordTypeFieldNamesEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-field-names");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return recordTypeDescriptor->fieldNames();
+
 }
 
 Object scheme::recordTypeOpaquePEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-opaque?");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return Object::makeBool(recordTypeDescriptor->isOpaque());
 }
 
 Object scheme::recordTypeSealedPEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-sealed?");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return Object::makeBool(recordTypeDescriptor->isSealed());
 }
 
 Object scheme::recordTypeGenerativePEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-generative?");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return Object::makeBool(recordTypeDescriptor->isGenerative());
+
 }
 
 Object scheme::recordTypeUidEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-ui");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return recordTypeDescriptor->uid();
 }
 
 Object scheme::recordTypeParentEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("record-type-parent");
+    checkArgumentLength(1);
+    argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
+    return recordTypeDescriptor->parent();
 }
 
 Object scheme::recordTypeNameEx(int argc, const Object* argv)
@@ -283,4 +334,3 @@ Object scheme::recordRtdEx(int argc, const Object* argv)
     }
     return Object::Undef;
 }
-

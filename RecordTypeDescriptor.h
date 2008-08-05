@@ -49,13 +49,17 @@ public:
     bool isFieldMutable(int index) const;
     bool isA(const RecordTypeDescriptor* rtd) const;
     bool isOpaque() const;
+    bool isSealed() const;
+    bool isGenerative() const;
     Object parent() const;
+    Object uid() const;
+    Object fieldNames() const;
 
 private:
     Object name_;
     Object parent_;
     Object uid_;
-    Object isSealed_;
+    const bool isSealed_;
     const bool isOpaque_;
     Object fields_;
     const int fieldsLength_;

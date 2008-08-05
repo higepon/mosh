@@ -41,7 +41,7 @@ RecordTypeDescriptor::RecordTypeDescriptor(Object name,
                                            Object fields) : name_(name),
                                                             parent_(parent),
                                                             uid_(uid),
-                                                            isSealed_(isSealed),
+                                                            isSealed_(!isSealed.isFalse()),
                                                             isOpaque_(!isOpaque.isFalse()),
                                                             fields_(fields),
                                                             fieldsLength_(fields.toVector()->length())
@@ -108,4 +108,30 @@ bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd) const
 Object RecordTypeDescriptor::parent() const
 {
     return parent_;
+}
+
+Object RecordTypeDescriptor::uid() const
+{
+    return uid_;
+}
+
+bool RecordTypeDescriptor::isSealed() const
+{
+    return isSealed_;
+}
+
+bool RecordTypeDescriptor::isGenerative() const
+{
+    return uid_.isFalse();
+}
+
+Object RecordTypeDescriptor::fieldNames() const
+{
+    Vector* const fields = fields_.toVector();
+    const Object fieldNames = Object::makeVector(fields->length());
+    Vector* const fieldNamesVector = fieldNames.toVector();
+    for (int i = 0; i < fields->length(); i++) {
+        fieldNamesVector->set(i, fields->ref(i).cdr().car());
+    }
+    return fieldNames;
 }
