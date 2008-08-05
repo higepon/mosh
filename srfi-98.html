@@ -131,15 +131,6 @@ The same decoding considerations as for get-environment-variable apply.
 (define get-environment-variables getenv)
 </pre>
 
-<h2>MIT/GNU Scheme</h2>
-<pre>
-;; get-environment-variable is already defined appropriately.
-(define (get-environment-variables)
- (hash-table->alist
-  (access environment-variables
-          (->environment '(runtime os-primitives)))))
-</pre>
-
 <a name="0.1_appendix"></a>
 <h1>Appendix: Existing implementations</h1>
 <table border="1">
@@ -156,7 +147,8 @@ The same decoding considerations as for get-environment-variable apply.
   <tr><td>SLIB</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>STk</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>STklos</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>(getenv)</td></tr>
-    <tr><td>SCM</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>(getenv)</td></tr>
+  <tr><td>SCM</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>(getenv)</td></tr>
+  <tr><td>MIT/GNU Scheme</td><td>(get-environment-variable name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   </tbody></table>
 <h1>Acknowledgements</h1>
 Thanks to Shiro Kawai, Alexey Radul, jmuk, Kokosabu, leque and all the members of the #Lisp_Scheme IRC channel on Freenode.
