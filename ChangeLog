@@ -1,5 +1,9 @@
 2008-08-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Implemented R6RS Records "Syntactic Layer".
+
+        * r6rs-examples/record-test.ss: Added R6RS Records test.
+
         * Implemented R6RS Records "Inspection".
 
 2008-08-04  higepon  <higepon@users.sourceforge.jp>
