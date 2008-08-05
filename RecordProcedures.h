@@ -52,6 +52,7 @@ namespace scheme {
     Object recordTypeNameEx(int argc, const Object* argv);
     Object recordRtdEx(int argc, const Object* argv);
     Object recordPEx(int argc, const Object* argv);
+    Object recordTypeDescriptorPEx(int argc, const Object* argv);
 
     class RecordInitializer : public Callable
     {
@@ -108,20 +109,6 @@ namespace scheme {
         const Object rtd_;
         const int index_;
     };
-
-//     class DefaultProtocol : public Callable
-//     {
-//     public:
-//         DefaultProtocol(int fieldsLength);
-//         ~DefaultProtocol();
-
-//         Object call(VM* vm, int argc, const Object* argv);
-
-//     private:
-//         const int fieldsLength_;
-//     }
-
-
 
 }; // namespace scheme
 

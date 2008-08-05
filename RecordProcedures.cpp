@@ -46,7 +46,7 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
     argumentCheckBoolean(3, isSealed);
     argumentCheckBoolean(4, isOpaque);
     argumentCheckVector(5, fields);
-
+    VM_LOG1("opaque ~a\n", argv[4]);
     // nongenerative
     if (uid.isFalse()) {
         return Object::makeRecordTypeDescriptor(name,
@@ -315,6 +315,7 @@ Object scheme::recordPEx(int argc, const Object* argv)
     const Object object = argv[0];
     if (object.isRecord()) {
         const bool isOpaque = object.toRecord()->recordTypeDescriptor()->isOpaque();
+        printf("%s %s:%d %d\n", __func__, __FILE__, __LINE__, isOpaque);fflush(stdout);// debug
         return Object::makeBool(!isOpaque);
     } else {
         return Object::False;
@@ -333,4 +334,11 @@ Object scheme::recordRtdEx(int argc, const Object* argv)
         return record->rtd();
     }
     return Object::Undef;
+}
+
+Object scheme::recordTypeDescriptorPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("record-type-descriptor?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isRecordTypeDescriptor());
 }

@@ -8,6 +8,9 @@ Psyntax memo for Mosh.
 
   make r6rs-test
 
+** bug of psyntax rev4
+opaque, sealed clause of define-record-type are ignored.
+
 
 ** porting plobrem
 (1) regexp

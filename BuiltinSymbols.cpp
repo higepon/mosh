@@ -690,6 +690,7 @@ const Object* scheme::getBuiltinSymbols() {
         SA("record-mutator"),
         SA("record-predicate"),
         SA("record-rtd"),
+        SA("record-type-descriptor?"),
         SA("record-type-field-names"),
         SA("record-type-generative?"),
         SA("record-type-name"),

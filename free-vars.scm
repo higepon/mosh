@@ -195,6 +195,7 @@
     (record-type-opaque? ,(lambda e "not implemented"))
     (record-type-field-names ,(lambda e "not implemented"))
     (record-field-mutable? ,(lambda e "not implemented"))
+    (record-type-descriptor? ,(lambda e "not implemented"))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)
