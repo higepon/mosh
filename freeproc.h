@@ -107,6 +107,7 @@ namespace scheme {
     Object symbolTostringEx(int argc, const Object* argv);
     Object stringRefEx(int argc, const Object* argv);
     Object errorEx(int argc, const Object* argv);
+    Object assertionViolationEx(int argc, const Object* argv);
     Object getTimeofdayEx(int argc, const Object* argv);
     Object valuesEx(int argc, const Object* argv);
     Object vmApplyEx(int argc, const Object* argv);

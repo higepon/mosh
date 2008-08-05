@@ -44,8 +44,6 @@ the value of the specified environment variable, and the procedure
 get-environment-variables, which gets an association list of all
 environment variables.
 
-<h1>Issues</h1>
-
 <h1>Rationale</h1>
 <p>Most operating systems provide a mechanism for passing auxiliary
 parameters implicitly to child processes.  Usually, this mechanism is
@@ -81,7 +79,7 @@ Meta-Variables "QUERY_STRING", "CONTENT_LENGTH" and
 (get-environment-variable "REQUEST_METHOD") =&gt; "post"
 </pre>
 
-<p><a name="0.1_cgi">[1]</a> The Common Gateway Interface (CGI) Version 1.1, RFC3875, <a href="http://www.ietf.org/rfc/rfc3875" target="_blank">http://www.ietf.org/rfc/<wbr>rfc3875</a>.</p>
+<p><a name="0.1_cgi">[1]</a> The Common Gateway Interface (CGI) Version 1.1, RFC3875, <a href="http://www.ietf.org/rfc/rfc3875" target="_blank">http://www.ietf.org/rfc/rfc3875</a>.</p>
 <h1>Specification</h1>
 <pre>R6RS library name</pre>
 The following two procedures belong to the R6RS library named (system).
@@ -94,12 +92,12 @@ get-environment-variable may use
 locale-setting information to encode the name and decode the value of
 the environment variable.
 If get-environment-variable can't decode the value, get-environment-variable may raise an exception.</p>
-<pre>(get-environment-variable "PATH") =&gt; "/usr/local/sbin:/usr/local/<wbr>bin:/usr/sbin:/usr/bin"
+<pre>(get-environment-variable "PATH") =&gt; "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin"
 </pre>
 <pre>Function: get-environment-variables</pre>
 Returns names and values of all the environment variables as an a-list.
 The same decoding considerations as for get-environment-variable apply.
-<pre>(get-environment-variables) =&gt; (("PATH" . "/usr/local/sbin:/usr/local/<wbr>bin:/usr/sbin:/usr/bin") ("USERNAME" . "taro"))
+<pre>(get-environment-variables) =&gt; (("PATH" . "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin") ("USERNAME" . "taro"))
 </pre>
 
 <h1>Implementation</h1>
@@ -130,6 +128,10 @@ The same decoding considerations as for get-environment-variable apply.
 (define get-environment-variable getenv)
 (define get-environment-variables getenv)
 </pre>
+
+<h1>Issues</h1>
+<p>get-environment-variable is expected to return "Scheme string".</p>
+<p>But on a few cases on some platforms, an implementation doesn't known how to decode or interpret environment-variables.</p>
 
 <a name="0.1_appendix"></a>
 <h1>Appendix: Existing implementations</h1>

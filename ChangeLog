@@ -1,5 +1,7 @@
 2008-08-05  higepon  <higepon@users.sourceforge.jp>
 
+        * freeproc.cpp (scheme::assertionViolationEx): added assertion-violation.
+
         * Implemented R6RS Records "Syntactic Layer".
 
         * r6rs-examples/record-test.ss: Added R6RS Records test.

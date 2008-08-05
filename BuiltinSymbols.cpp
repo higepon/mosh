@@ -83,6 +83,7 @@ const Object* scheme::getBuiltinSymbols() {
         SA("arg3"),
         SA("argcount-ok?"),
         SA("args"),
+        SA("assertion-violation"),
         SA("assoc"),
         SA("assoc-ref"),
         SA("assq"),

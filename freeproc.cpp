@@ -1029,6 +1029,11 @@ Object scheme::errorEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
+Object scheme::assertionViolationEx(int argc, const Object* argv)
+{
+    errorEx(argc, argv);
+}
+
 Object scheme::getTimeofdayEx(int argc, const Object* argv)
 {
     struct timeval tv;
