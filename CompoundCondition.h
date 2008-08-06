@@ -39,9 +39,15 @@ namespace scheme {
 class CompoundCondition EXTEND_GC
 {
 public:
-    CompoundCondition();
+    CompoundCondition(int conditionCounts, const Object* conditions);
     ~CompoundCondition();
 
+    Object conditionsList() const;
+    const ObjectVector& conditions() const;
+    int conditionCounts() const;
+
+private:
+    ObjectVector conditions_;
 };
 
 }; // namespace scheme

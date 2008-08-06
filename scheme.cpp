@@ -328,6 +328,13 @@ Object Object::makeRecordConstructorDescriptor(Object rtd,
                                                                                                                protocol)))));
 }
 
+Object Object::makeCompoundCondition(int conditionCounts, const Object* conditions)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CompoundCondition,
+                                                        reinterpret_cast<word>(new CompoundCondition(conditionCounts,
+                                                                                                     conditions)))));
+}
+
 Object* Object::makeObjectArray(int size)
 {
 #ifdef USE_BOEHM_GC

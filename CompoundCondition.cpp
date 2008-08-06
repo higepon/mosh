@@ -33,3 +33,36 @@
 
 using namespace scheme;
 
+CompoundCondition::CompoundCondition(int conditionCounts, const Object* conditions)
+{
+    for (int i = 0; i < conditionCounts; i++) {
+        const Object condition = conditions[i];
+        if (condition.isCompoundCondition()) {
+            const ObjectVector& simpleConditions = condition.toCompoundCondition()->conditions();
+            for (ObjectVector::const_iterator it = simpleConditions.begin(); it != simpleConditions.end(); ++it) {
+                conditions_.push_back(*it);
+            }
+        } else {
+            conditions_.push_back(condition);
+        }
+    }
+}
+
+CompoundCondition::~CompoundCondition()
+{
+}
+
+Object CompoundCondition::conditionsList() const
+{
+    return Pair::objectVectorToList(conditions_);
+}
+
+const ObjectVector& CompoundCondition::conditions() const
+{
+    return conditions_;
+}
+
+int CompoundCondition::conditionCounts() const
+{
+    return conditions_.size();
+}

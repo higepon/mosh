@@ -454,6 +454,8 @@ public:
                                                   Object parentRcd,
                                                   Object protocol);
 
+    static Object makeCompoundCondition(int conditionCounts, const Object* conditions);
+
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \
 {                                                                               \
@@ -499,6 +501,7 @@ DECL_ACCESSOR(Callable)
 DECL_ACCESSOR(Record)
 DECL_ACCESSOR(RecordTypeDescriptor)
 DECL_ACCESSOR(RecordConstructorDescriptor)
+DECL_ACCESSOR(CompoundCondition)
 
 HashTable* toHashTable() const
 {

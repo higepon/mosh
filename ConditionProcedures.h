@@ -42,6 +42,18 @@ namespace scheme {
     Object simpleConditionsEx(int argc, const Object* argv);
     Object conditionEx(int argc, const Object* argv);
 
+    class ConditionPredicate : public Callable
+    {
+    public:
+        ConditionPredicate(Object rtd);
+        ~ConditionPredicate();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const Object rtd_;
+    };
+
 }; // namespace scheme
 
 #endif // __SCHEME_CONDITION_PROCEDURES__

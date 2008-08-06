@@ -30,8 +30,11 @@
  */
 
 #include "ConditionProcedures.h"
+#include "VM.h"
 
 using namespace scheme;
+
+extern scheme::VM* theVM;
 
 Object scheme::conditionAccessorEx(int argc, const Object* argv)
 {
@@ -45,16 +48,55 @@ Object scheme::conditionPredicateEx(int argc, const Object* argv)
 
 Object scheme::conditionPEx(int argc, const Object* argv)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    // todo
+    return Object::True;
 }
 
 Object scheme::simpleConditionsEx(int argc, const Object* argv)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    DeclareProcedureName("simple-conditions");
+    checkArgumentLength(1);
+    const Object condition = argv[0];
+    if (condition.isCompoundCondition()) {
+        return condition.toCompoundCondition()->conditionsList();
+    } else {
+        // simple condition
+        return Pair::list1(condition);
+    }
 }
 
 Object scheme::conditionEx(int argc, const Object* argv)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    DeclareProcedureName("condition");
+    return Object::makeCompoundCondition(argc, argv);
 }
 
+ConditionPredicate::ConditionPredicate(Object rtd) : rtd_(rtd)
+{
+}
+
+ConditionPredicate::~ConditionPredicate()
+{
+}
+
+Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("condition-predicate for condition");
+    checkArgumentLength(1);
+    const Object object = argv[0];
+    if (object.isRecord()) {
+        Record* record = object.toRecord();
+        return Object::makeBool(record->isA(rtd_.toRecordTypeDescriptor()));
+    } else if (object.isCompoundCondition()) {
+        const ObjectVector conditions = object.toCompoundCondition()->conditions();
+        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            const Object condition = *it;
+            if (condition.isRecord() && condition.toRecord()->isA(rtd_.toRecordTypeDescriptor())) {
+                return Object::True;
+            }
+        }
+        return Object::False;
+    } else {
+        return Object::False;
+    }
+}

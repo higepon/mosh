@@ -40,7 +40,6 @@ VM* theVM;
 FILE* errOut;
 #endif
 
-
 Object argsToList(int argc, int optind, char* argv[])
 {
     Object p = Object::Nil;
