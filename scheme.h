@@ -160,9 +160,9 @@ public:
         EqvHashTable                = Type<22>::VALUE,
         Callable                    = Type<23>::VALUE,
         Record                      = Type<24>::VALUE,
-        RecordTypeDescriptor        = Type<24>::VALUE,
-        RecordConstructorDescriptor = Type<25>::VALUE,
-        CompoundCondition           = Type<26>::VALUE,
+        RecordTypeDescriptor        = Type<25>::VALUE,
+        RecordConstructorDescriptor = Type<26>::VALUE,
+        CompoundCondition           = Type<27>::VALUE,
         forbidden_comma
     };
 };
@@ -290,7 +290,7 @@ public:
 
     bool isProcedure() const
     {
-        return isClosure() || isCProcedure() || isRegexp() || isRegMatch();
+        return isClosure() || isCProcedure() || isRegexp() || isRegMatch() || isCallable();
     }
 
     bool isHashTable() const

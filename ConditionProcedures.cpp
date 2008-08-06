@@ -39,11 +39,21 @@ extern scheme::VM* theVM;
 Object scheme::conditionAccessorEx(int argc, const Object* argv)
 {
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    DeclareProcedureName("condition-accessor");
+    checkArgumentLength(2);
+    argumentCheckRecordTypeDescriptor(0, rtd);
+    argumentCheckProcedure(1, proc);
+    return Object::makeCallable(new ConditionAccessor(rtd, proc));
 }
 
 Object scheme::conditionPredicateEx(int argc, const Object* argv)
 {
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    DeclareProcedureName("condition-prediate");
+    checkArgumentLength(1);
+    argumentCheckRecordTypeDescriptor(0, rtd);
+    return Object::makeCallable(new ConditionPredicate(rtd));
+
 }
 
 Object scheme::conditionPEx(int argc, const Object* argv)

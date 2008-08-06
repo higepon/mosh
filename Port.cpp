@@ -264,6 +264,12 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {
         putString(UC("#<record-type-descriptor>"));
+    } else if (o.isCompoundCondition()) {
+        putString(UC("#<compound-condition>"));
+    } else if (o.isRecord()) {
+        putString(UC("#<record "));
+        putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
+        putString(UC("> "));
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -363,6 +369,13 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {
         putString(UC("#<record-type-descriptor>"));
+    } else if (o.isCompoundCondition()) {
+        putString(UC("#<compound-condition>"));
+    } else if (o.isRecord()) {
+        putString(UC("#<record "));
+        putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
+        putString(UC("> "));
+
     } else {
         putString(UC("#<unknown datum>"));
     }

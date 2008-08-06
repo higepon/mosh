@@ -66,6 +66,8 @@ public:
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 
+#define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
+
 #define argumentCheckVector(index, variableName) checkType(index, variableName, isVector, vector)
 
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
