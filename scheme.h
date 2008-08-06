@@ -162,6 +162,7 @@ public:
         Record                      = Type<24>::VALUE,
         RecordTypeDescriptor        = Type<24>::VALUE,
         RecordConstructorDescriptor = Type<25>::VALUE,
+        CompoundCondition           = Type<26>::VALUE,
         forbidden_comma
     };
 };
@@ -195,6 +196,7 @@ class Callable;
 class Record;
 class RecordTypeDescriptor;
 class RecordConstructorDescriptor;
+class CompoundCondition;
 
 class Object
 {
@@ -646,6 +648,7 @@ inline Object& Object::fifth() const
 #include "Record.h"
 #include "RecordTypeDescriptor.h"
 #include "RecordConstructorDescriptor.h"
+#include "CompoundCondition.h"
 
 namespace scheme {
 inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,

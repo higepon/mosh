@@ -39,6 +39,7 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander-mosh.ss"
+    "../../r6rs-examples/mosh/condition.ss"
     "psyntax/main-mosh.ss"))
 
 
@@ -1009,6 +1010,8 @@
     (module                   cm)
     (syntax-dispatch ) ; only goes to $all
     (syntax-error    ) ; only goes to $all
+
+    ;; mosh
     ))
 
 

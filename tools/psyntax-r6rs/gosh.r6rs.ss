@@ -144,5 +144,7 @@
   (lambda () 
     (write (+ 1 session-id))))
 
+(define (error a b . c) (format #t "who:~a" a) (apply errorf `(,b ,@c)))
+
 (load "./psyntax.pp")
 

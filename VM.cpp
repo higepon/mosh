@@ -33,6 +33,7 @@
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
 #include "RecordProcedures.h"
+#include "ConditionProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

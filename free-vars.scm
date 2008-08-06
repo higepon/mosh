@@ -197,6 +197,11 @@
     (record-type-field-names ,(lambda e "not implemented"))
     (record-field-mutable? ,(lambda e "not implemented"))
     (record-type-descriptor? ,(lambda e "not implemented"))
+    (condition ,(lambda e "not implemented"))
+    (simple-conditions ,(lambda e "not implemented"))
+    (condition? ,(lambda e "not implemented"))
+    (condition-accessor ,(lambda e "not implemented"))
+    (condition-predicate ,(lambda e "not implemented"))
 ;    (do-nothing ,(lambda () #t))
 
 ;;     (%set-union ,(lambda (l1 l2)

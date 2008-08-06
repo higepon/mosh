@@ -55,12 +55,16 @@ Record.h \
 Record.cpp \
 RecordProcedures.cpp \
 RecordProcedures.h \
+ConditionProcedures.cpp \
+ConditionProcedures.h \
 CompilerProcedures.cpp \
 CompilerProcedures.h   \
 HashTableProceduures.cpp \
 HashTableProceduures.h   \
 SString.cpp          \
 BuiltinSymbols.cpp\
+CompoundCondition.h\
+CompoundCondition.cpp\
 Builtin.h\
 ucs4string.h
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
