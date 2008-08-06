@@ -54,6 +54,20 @@ namespace scheme {
         const Object rtd_;
     };
 
+    class ConditionAccessor : public Callable
+    {
+    public:
+        ConditionAccessor(Object rtd, Object proc);
+        ~ConditionAccessor();
+
+        Object call(VM* vm, int argc, const Object* argv);
+
+    private:
+        const Object rtd_;
+        const Object proc_;
+    };
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_CONDITION_PROCEDURES__

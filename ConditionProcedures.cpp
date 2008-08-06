@@ -100,3 +100,33 @@ Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
         return Object::False;
     }
 }
+
+ConditionAccessor::ConditionAccessor(Object rtd, Object proc) : rtd_(rtd), proc_(proc)
+{
+}
+
+ConditionAccessor::~ConditionAccessor()
+{
+}
+
+Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
+{
+    DeclareProcedureName("condition-accessor for condition");
+    checkArgumentLength(1);
+    const Object object = argv[0];
+    if (object.isRecord()) {
+        return theVM->callClosure(proc_, object);
+    } else if (object.isCompoundCondition()) {
+        const ObjectVector conditions = object.toCompoundCondition()->conditions();
+        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            const Object condition = *it;
+            if (condition.isRecord() && condition.toRecord()->isA(rtd_.toRecordTypeDescriptor())) {
+                return theVM->callClosure(proc_, condition);
+            }
+        }
+        VM_RAISE0("condition-accessor bug? 1");
+    } else {
+        VM_RAISE0("condition-accessor bug? 2");
+    }
+    return Object::Undef;
+}
