@@ -161,25 +161,43 @@ public:
         }
     }
 
-    void setGlobalValue(Object id, Object val)
+    Object idToTopLevelSymbol(Object id)
     {
-        nameSpace_.toEqHashTable()->set(id, val);
+        ucs4string name(UC("top level :$:"));
+        name += id.toSymbol()->c_str();
+        // don't use name variable directly, it is temporary!
+        return Symbol::intern(Object::makeString(name).toString()->data().c_str());
     }
 
-    Object getGlobalValue(Object id)
+    void setTopLevelGlobalValue(Object id, Object val)
     {
-        const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
+        const Object key = idToTopLevelSymbol(id);
+        nameSpace_.toEqHashTable()->set(idToTopLevelSymbol(id), val);
+    }
+
+
+    Object getTopLevelGlobalValue(Object id)
+    {
+        const Object key = idToTopLevelSymbol(id);
+        const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
         if (val != notFound_) {
             return val;
         } else {
-            Object e = splitId(id);
-            RAISE2("unbound variable ~a on ~a", e.cdr(), e.car());
+            RAISE1("unbound variable ~a on symbol-values", id);
             return Object::Undef;
         }
-
     }
 
-
+    Object getTopLevelGlobalValueOrFalse(Object id)
+    {
+        const Object key = idToTopLevelSymbol(id);
+        const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
+        if (val != notFound_) {
+            return val;
+        } else {
+            return Object::False;
+        }
+    }
 
 
     Object getClosureName(Object closure);

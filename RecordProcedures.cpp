@@ -36,6 +36,38 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+static Object getConditionRtd();
+bool isSubTypeOfCondition(Object rtd);
+static bool setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object values);
+
+// return &conditon-rtd
+Object getConditionRtd()
+{
+    static Object conditionRtd = Object::False;
+    if (conditionRtd.isFalse()) {
+        conditionRtd = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("&condition-rtd")));
+    }
+    return conditionRtd;
+}
+
+// subtype of &condition ?
+bool isSubTypeOfCondition(Object rtd)
+{
+    const Object conditionRtd = getConditionRtd();
+    if (conditionRtd.isFalse()) {
+        return false;
+    }
+    return rtd.toRecordTypeDescriptor()->isA(conditionRtd.toRecordTypeDescriptor());
+}
+
+bool setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object value)
+{
+    ucs4string name = id.toSymbol()->c_str();
+    name += postfix;
+    // N.B. don't use name variable for Symbol::intern!
+    theVM->setTopLevelGlobalValue(Symbol::intern(Object::makeString(name.c_str()).toString()->data().c_str()), value);
+}
+
 Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-type-descriptor");
@@ -46,15 +78,15 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
     argumentCheckBoolean(3, isSealed);
     argumentCheckBoolean(4, isOpaque);
     argumentCheckVector(5, fields);
-    VM_LOG1("opaque ~a\n", argv[4]);
+    Object rtd;
     // nongenerative
     if (uid.isFalse()) {
-        return Object::makeRecordTypeDescriptor(name,
-                                                parent,
-                                                uid,
-                                                isSealed,
-                                                isOpaque,
-                                                fields);
+        rtd = Object::makeRecordTypeDescriptor(name,
+                                               parent,
+                                               uid,
+                                               isSealed,
+                                               isOpaque,
+                                               fields);
     // generative
     } else {
         static ObjectMap generatedRtd;
@@ -62,16 +94,24 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
         if (found != generatedRtd.end()) {
             return found->second;
         } else {
-            const Object rtd = Object::makeRecordTypeDescriptor(name,
-                                                         parent,
-                                                         uid,
-                                                         isSealed,
-                                                         isOpaque,
-                                                         fields);
+            rtd = Object::makeRecordTypeDescriptor(name,
+                                                   parent,
+                                                   uid,
+                                                   isSealed,
+                                                   isOpaque,
+                                                   fields);
             generatedRtd[uid] = rtd;
-            return rtd;
         }
     }
+
+    // psyntax requires &xxx-rtd global defined.
+    if (name == Symbol::intern(UC("&condition"))) {
+        theVM->setTopLevelGlobalValue(Symbol::intern(UC("&condition-rtd")), rtd);
+    }
+    if (isSubTypeOfCondition(rtd)) {
+        setTopLevelGlobalValueWithPostfix(name, UC("-rtd"), rtd);
+    }
+    return rtd;
 }
 
 Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
@@ -81,7 +121,14 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentCheckRecordConstructorDescriptorOrFalse(1, parentRcd);
     argumentCheckClosureOrFalse(2, protocol);
-    return Object::makeRecordConstructorDescriptor(rtd, parentRcd, protocol);
+
+    const Object rcd =  Object::makeRecordConstructorDescriptor(rtd, parentRcd, protocol);
+
+    // psyntax requires &xxx-rcd global defined.
+    if (isSubTypeOfCondition(rtd)) {
+        setTopLevelGlobalValueWithPostfix(rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
+    }
+    return rcd;
 }
 
 Object scheme::recordPredicateEx(int argc, const Object* argv)

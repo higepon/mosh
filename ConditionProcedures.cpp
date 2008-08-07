@@ -36,9 +36,10 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+extern bool isSubTypeOfCondition(Object rtd);
+
 Object scheme::conditionAccessorEx(int argc, const Object* argv)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     DeclareProcedureName("condition-accessor");
     checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
@@ -48,7 +49,6 @@ Object scheme::conditionAccessorEx(int argc, const Object* argv)
 
 Object scheme::conditionPredicateEx(int argc, const Object* argv)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     DeclareProcedureName("condition-prediate");
     checkArgumentLength(1);
     argumentCheckRecordTypeDescriptor(0, rtd);
@@ -58,8 +58,17 @@ Object scheme::conditionPredicateEx(int argc, const Object* argv)
 
 Object scheme::conditionPEx(int argc, const Object* argv)
 {
-    // todo
-    return Object::True;
+    DeclareProcedureName("condition?");
+    checkArgumentLength(1);
+    const Object object = argv[0];
+    if (object.isRecord()) {
+        const Object rtd = object.toRecord()->rtd();
+        return Object::makeBool(isSubTypeOfCondition(rtd));
+    } else if (object.isCompoundCondition()) {
+        return Object::True;
+    } else {
+        return Object::False;
+    }
 }
 
 Object scheme::simpleConditionsEx(int argc, const Object* argv)

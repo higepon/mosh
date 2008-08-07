@@ -1884,7 +1884,7 @@ Object scheme::setSymbolValueDEx(int argc, const Object* argv)
     checkArgLength(2, argc, "set-symbol-value");
     const Object id  = argv[0];
     const Object val = argv[1];
-    theVM->setGlobalValue(id, val);
+    theVM->setTopLevelGlobalValue(id, val);
     return Object::Undef;
 }
 
@@ -1893,6 +1893,6 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
 {
     checkArgLength(1, argc, "symbol-value");
     const Object id  = argv[0];
-    return theVM->getGlobalValue(id);
+    return theVM->getTopLevelGlobalValue(id);
 }
 

@@ -1,3 +1,7 @@
+2008-08-07  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented R6RS Conditions.
+
 2008-08-05  higepon  <higepon@users.sourceforge.jp>
 
         * freeproc.cpp (scheme::assertionViolationEx): added assertion-violation.
