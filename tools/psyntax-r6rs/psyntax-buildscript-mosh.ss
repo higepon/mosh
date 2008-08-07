@@ -130,8 +130,8 @@
     (&assertion                ($core-rtd . (&assertion-rtd &assertion-rcd)))
     (&irritants                ($core-rtd . (&irritants-rtd &irritants-rcd)))
     (&who                      ($core-rtd . (&who-rtd &who-rcd)))
-    (&non                      ($core-rtd . (&non-continuable-rtd &non-continuable-rcd)))
-    (&implementation           ($core-rtd . (&implementation-restriction-rtd &implementation-restriction-rcd)))
+    (&non-continuable          ($core-rtd . (&non-continuable-rtd &non-continuable-rcd)))
+    (&implementation-restriction ($core-rtd . (&implementation-restriction-rtd &implementation-restriction-rcd)))
     (&lexical                  ($core-rtd . (&lexical-rtd &lexical-rcd)))
     (&syntax                   ($core-rtd . (&syntax-rtd &syntax-rcd)))
     (&undefined                ($core-rtd . (&undefined-rtd &undefined-rcd)))
@@ -1068,7 +1068,6 @@
     (&no-infinities-rcd)
     (&no-nans-rtd)
     (&no-nans-rcd)
-
     ))
 
 

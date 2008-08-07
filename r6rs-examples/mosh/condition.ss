@@ -43,13 +43,13 @@
     who-condition?
     condition-who
 
-;;     &non-continuable
-;;     make-non-continuable-violation
-;;     non-continuable-violation?
+    &non-continuable
+    make-non-continuable-violation
+    non-continuable-violation?
 
-;;     &implementation-restriction
-;;     make-implementation-restriction-violation
-;;     implementation-restriction-violation?
+    &implementation-restriction
+    make-implementation-restriction-violation
+    implementation-restriction-violation?
 
     &lexical
     make-lexical-violation
