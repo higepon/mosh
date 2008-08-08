@@ -32,6 +32,7 @@
   )
 
 
+;; here we put libraries used in psyntax.
 (define scheme-library-files
   '("psyntax/compat.ss"
     "psyntax/internal.ss"
@@ -39,7 +40,7 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander-mosh.ss"
-    "../../r6rs-examples/mosh/condition.ss"
+    "../../lib/mosh/condition.ss"
     "psyntax/main-mosh.ss"))
 
 

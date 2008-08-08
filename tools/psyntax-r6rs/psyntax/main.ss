@@ -27,7 +27,8 @@
     (rnrs programs)
     (psyntax compat)
     (psyntax library-manager)
-    (psyntax expander))
+    (psyntax expander)
+    )
 
   (define (load-r6rs-top-level filename)
     (let ((x*
