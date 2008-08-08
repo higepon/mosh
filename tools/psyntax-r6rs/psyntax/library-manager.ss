@@ -92,7 +92,8 @@
                   p))))
       (let f ((ls x))
         (cond
-          ((null? ls) (display ".ss" p))
+         ;; quick hack for mosh
+          ((null? ls) #f) ; (display ".ss" p))
           (else
            (display "/" p)
            (for-each
@@ -119,10 +120,13 @@
         (let ((str (library-name->file-name x)))
           (let f ((ls (library-path)))
             (and (pair? ls)
-                 (let ((name (string-append (car ls) str)))
-                   (if (file-exists? name)
-                       name
-                       (f (cdr ls))))))))
+                 (let loop ([exts '(".ss" ".sls")]) ;; quick hack for mosh
+                   (if (null? exts)
+                       (f (cdr ls))
+                       (let ((name (string-append (car ls) str (car exts))))
+                         (if (file-exists? name)
+                             name
+                             (loop (cdr exts))))))))))
       (lambda (f)
         (if (procedure? f)
             f

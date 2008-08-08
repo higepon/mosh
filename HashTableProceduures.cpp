@@ -242,7 +242,7 @@ Object scheme::equalHashEx(int argc, const Object* argv)
 
 Object scheme::makeHashtableEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "make-hash-table");
+    checkArgLengthBetween(2, 3, argc, "make-hash-table");
     Object hashFunction        = argv[0];
     Object equivalenceFunction = argv[1];
     if (hashFunction.isProcedure() && equivalenceFunction.isProcedure()) {

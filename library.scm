@@ -2108,8 +2108,8 @@
     (receive (prefix suffix) (recur (cdr lis) (- k 1))
       (values (cons (car lis) prefix) suffix)))))
 
-;; split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result. 
-;; .returns split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result. 
+;; split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result.
+;; .returns split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result.
 (define (split-at! x k)
   (check-arg integer? k split-at!)
   (if (zero? k) (values '() x)
@@ -2746,3 +2746,11 @@
 (define (eval-core x) (eval x '()))
 
 (define (exact? n) #t)
+(define (real? n) (number? n))
+(define (nan? n) (not (number? n)))
+
+(define exists
+  (lambda (pred . lsts)
+    (if (null? (car lsts)) #t
+    (and (apply pred        (map car lsts))
+         (apply exists pred (map cdr lsts))))))
