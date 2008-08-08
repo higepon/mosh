@@ -212,6 +212,7 @@ test:all-tests.scm ./mosh
 	./mosh all-tests.scm
 	(cd r6rs-examples && ../mosh -b record-test.ss)
 	(cd r6rs-examples && ../mosh -b condition-test.ss)
+	(cd r6rs-test-suite && $(MAKE) $@)
 
 all-tests.scm: ./test-data.scm
 	@GOSH@ ./scripts/gen-test.scm $< > $@
