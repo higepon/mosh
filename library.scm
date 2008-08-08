@@ -2754,3 +2754,10 @@
     (if (null? (car lsts)) #t
     (and (apply pred        (map car lsts))
          (apply exists pred (map cdr lsts))))))
+
+(define (expt n m)
+  (let loop ([i m]
+             [ret 1])
+    (if (>= 0 i)
+        ret
+        (loop (- i 1) (* ret n)))))

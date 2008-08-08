@@ -123,6 +123,8 @@ Object Object::equal(Object o) const
             RETURN_BOOL(toRegexp()->pattern() == o.toRegexp()->pattern());
         } else if (isCProcedure() && o.isCProcedure()) {
             RETURN_BOOL(toCProcedure()->proc == o.toCProcedure()->proc);
+        } else if (isClosure() && o.isClosure()) {
+            RETURN_BOOL(val == o.val);
         } else if (isRecord() && o.isRecord()) {
             RETURN_BOOL(toRecord()->rtd() == o.toRecord()->rtd());
         }

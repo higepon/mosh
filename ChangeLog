@@ -1,5 +1,7 @@
 2008-08-08  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (expt): Addes expt.
+
         * r6rs-test-suite/Makefile (test): Added r6rs-test-suite from PLT Scheme.
 
         * Makefile.am (test): Added R6RS tests.
