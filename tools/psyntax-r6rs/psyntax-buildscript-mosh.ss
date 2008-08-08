@@ -1306,9 +1306,9 @@
         (cond
           ((assq x locs) => cdr)
           (else #f))))
-    (when (file-exists? "../../psyntax.scm")
-      (delete-file "../../psyntax.scm"))
-    (let ((p (open-output-file "../../psyntax.scm")))
+    (when (file-exists? "../../r6rs-examples/psyntax.scm")
+      (delete-file "../../r6rs-examples/psyntax.scm"))
+    (let ((p (open-output-file "../../r6rs-examples/psyntax.scm")))
       (display ";;; Copyright (c) 2006, 2007 Abdulaziz Ghuloum and Kent Dybvig" p) (newline p)
       (display ";;; automatically generated from psyntax sources" p) (newline p)
       (display ";;; for copyright details, see psyntax/main.ss" p) (newline p) (newline p)

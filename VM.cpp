@@ -190,8 +190,6 @@ Object VM::eval(Object obj, Object env)
     return ret;
 }
 
-
-
 void VM::load(const ucs4string& file)
 {
     TRY {

@@ -74,7 +74,7 @@ mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a libmatch.a
 
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm psyntax.scm
+data_DATA = all-tests.scm repl.scm r6rs-examples/psyntax.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
 noinst_LIBRARIES = libcompiler.a libmatch.a
@@ -89,7 +89,7 @@ libmatch_a_SOURCES = match.cpp
 # generated files should be listed here.
 BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm r6rs-examples/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE
 
 GENERATED = \
 Instruction.h \
@@ -119,7 +119,7 @@ PSYNTAX_MOSH_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander-mosh.ss $(PSY
 
 PSYNTAX_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander.ss $(PSYNTAX_SRC_DIR)/main.ss
 
-psyntax.scm: $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_MOSH_SRC) $(PSYNTAX_DIR)/psyntax.pp
+r6rs-examples/psyntax.scm: $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_MOSH_SRC) $(PSYNTAX_DIR)/psyntax.pp
 	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript-mosh.ss)
 	echo "please make install ***** "
 
@@ -210,6 +210,8 @@ check:test
 
 test:all-tests.scm ./mosh
 	./mosh all-tests.scm
+	(cd r6rs-examples && ../mosh -b record-test.ss)
+	(cd r6rs-examples && ../mosh -b condition-test.ss)
 
 all-tests.scm: ./test-data.scm
 	@GOSH@ ./scripts/gen-test.scm $< > $@
