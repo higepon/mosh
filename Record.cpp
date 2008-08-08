@@ -35,10 +35,12 @@ using namespace scheme;
 
 Record::Record(Object rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     fields_ = Object::makeObjectArray(fieldsLength_);
     for (int i = 0; i < fieldsLength_; i++) {
         fields_[i] = fields[i];
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
 Record::~Record()

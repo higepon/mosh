@@ -96,11 +96,15 @@ bool RecordTypeDescriptor::isFieldMutable(int index) const
 
 bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd) const
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (this == rtd) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug {
         return true;
     } else if (!parent_.isFalse()) {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return parent_.toRecordTypeDescriptor()->isA(rtd);
     } else {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return false;
     }
 }

@@ -188,9 +188,12 @@ RecordPrediate::~RecordPrediate()
 Object RecordPrediate::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("record-predicate for record");
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     checkArgumentLength(1);
     const Object object = argv[0];
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (object.isRecord()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Record* record = object.toRecord();
         return Object::makeBool(record->isA(rtd_.toRecordTypeDescriptor()));
     } else {
@@ -268,21 +271,27 @@ void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLe
 
 Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     DeclareProcedureName("record-constructor-internal");
     checkArgumentLength(fieldsLength_);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const int fieldsLength = fieldsLength_ + parentFieldsLength_;
 
     // allocate fields and copy
     Object* fields = Object::makeObjectArray(fieldsLength);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     for (int i = 0; i < parentFieldsLength_; i++) {
         fields[i] = parentFields_[i];
     }
     for (int i = 0; i < argc; i++) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         fields[i + parentFieldsLength_] = argv[i];
     }
     if (NULL == childConstructor_) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::makeRecord(rcd_->rtd(), fields, fieldsLength);
     } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         childConstructor_->setParentFields(fields, fieldsLength);
         return Object::makeCallable(childConstructor_);
     }

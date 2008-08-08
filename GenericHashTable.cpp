@@ -101,8 +101,13 @@ void GenericHashTable::set(Object key, Object value)
 
 void GenericHashTable::clearD()
 {
-    prepareFunctions();
-    map_.clear();
+    if (mutable_) {
+        prepareFunctions();
+        map_.clear();
+    } else {
+        const Object violation = theVM->getTopLevelGlobalValue(UC("&violation-rcd"));
+        theVM->raise(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
+    }
 }
 
 void GenericHashTable::deleteD(Object key)

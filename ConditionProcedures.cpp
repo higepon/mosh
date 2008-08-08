@@ -104,9 +104,13 @@ Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object object = argv[0];
     if (object.isRecord()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        VM_LOG1("record?=~a\n", object);
         Record* record = object.toRecord();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::makeBool(record->isA(rtd_.toRecordTypeDescriptor()));
     } else if (object.isCompoundCondition()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         const ObjectVector conditions = object.toCompoundCondition()->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
             const Object condition = *it;
@@ -116,6 +120,8 @@ Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
         }
         return Object::False;
     } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        VM_RAISE1("condition-predicate for conditon requires record, but got ~a", object);
         return Object::False;
     }
 }

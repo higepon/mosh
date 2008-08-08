@@ -193,6 +193,7 @@ Object scheme::sysDisplayEx(int argc, const Object* argv)
         }
         arg2.toTextualOutputPort()->display(arg1);
     }
+    fflush(stdout);// temp
     return Object::Undef;
 }
 

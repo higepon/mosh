@@ -197,7 +197,7 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
         return SCM_FALSE;
     }
     errno = 0;
-    long int ret = strtol(p, NULL, base);
+    long long ret = strtoll(p, NULL, base);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
         return SCM_FALSE;

@@ -1686,23 +1686,31 @@ Object VM::getStackTrace()
 
 void VM::raise(Object o)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     errorObj_ = o;
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     LOG1("~a", errorObj_);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     longjmp(returnPoint_, -1);
 }
 
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debuge
     const int argc = Pair::length(list) + 1;
     Object* argv = Object::makeObjectArray(argc);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     argv[0] = Object::makeString(fmt);
     for (int i = 1; i < argc; i++) {
         argv[i] = list.car();
         list = list.cdr();
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const Object errorMessage = formatEx(argc, argv);
     const Object tr = getStackTrace();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object texts[] = {errorMessage, Object::makeString(UC("\n")), tr};
+
     raise(stringAppendEx(sizeof(texts)/ sizeof(Object), texts));
 }
 
