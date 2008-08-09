@@ -1033,6 +1033,7 @@ Object scheme::errorEx(int argc, const Object* argv)
 Object scheme::assertionViolationEx(int argc, const Object* argv)
 {
     errorEx(argc, argv);
+    return Object::Undef;
 }
 
 Object scheme::getTimeofdayEx(int argc, const Object* argv)

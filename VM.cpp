@@ -1569,6 +1569,7 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
         }
         CASE(RECEIVE)
         {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             TRACE_INSN0("RECEIVE");
             const int reqargs = fetchOperand().toInt();
             const int optarg  = fetchOperand().toInt();
