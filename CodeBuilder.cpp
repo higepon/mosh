@@ -425,7 +425,7 @@ void CodeBuilder::flush()
         break;
 
     default:
-        SCHEME_ASSERT("not reached now! all packet should be EXTRA");
+        MOSH_ASSERT("not reached now! all packet should be EXTRA");
         break;
     }
     previousCodePacket_.setType(CodePacket::EMPTY);

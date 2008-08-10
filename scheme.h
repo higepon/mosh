@@ -75,8 +75,14 @@ class gc_vector : public std::vector<T1> {};
 
 #define MAKE_BOOL(a) ((a) ? Object::True : Object::False)
 #define RETURN_BOOL(a) return ((a) ? Object::True : Object::False)
-#define SCHEME_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); }}
-//#define RAISE_ERROR(fmt, ...) //{ format(Object::True, UC(fmt), __VA_ARGS__); exit(-1); }
+
+#ifdef DEBUG_VERSION
+#define MOSH_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); exit(-1);}}
+#else
+#define MOSH_ASSERT(condition) /* */
+#endif
+
+
 #define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
 

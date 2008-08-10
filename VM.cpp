@@ -127,9 +127,15 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
         if (handler.isNil()) {
             defaultExceptionHandler(errorObj_);
         } else {
+            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
             ret = callClosure(handler, errorObj_);
+//            ret = applyClosure(handler, L1(errorObj_));
+            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            
         }
     }
+
     RESTORE_REGISTERS();
     return ret;
 }
@@ -352,7 +358,9 @@ Object VM::callClosure(Object closure, Object arg)
     applyCode[6] = closure;
 
     SAVE_REGISTERS();
+            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
     RESTORE_REGISTERS();
     return ret;
 }
@@ -1378,6 +1386,7 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
             const Object s = fetchOperand();
             TRACE_INSN0("RESTORE_CONTINUATION");
             sp_ = stack_ + s.toStack()->restore(stack_);
+            LOG1("RESTORE_CONTINUATION ~a", Object::makeInt(sp_ - stack_));
             NEXT;
         }
         CASE(RETURN1)
@@ -1408,7 +1417,12 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
             Object* const sp = sp_ - operand.toInt();
             fp_ = index(sp, 0).toObjectPointer();
             cl_ = index(sp, 1);
+            if (!cl_.isProcedure()) {
+                LOG1("proc = ~a\n", cl_);
+            }
+            MOSH_ASSERT(cl_.isProcedure());
             dc_ = index(sp, 2);
+            MOSH_ASSERT(dc_.isProcedure());
             pc_ = index(sp, 3).toObjectPointer();
             sp_ = sp - 4;
             NEXT;
