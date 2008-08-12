@@ -1264,6 +1264,72 @@ val
                                                              '#((mutable x) (mutable y)))])
                 (record-field-mutable? :point 1))]
 
+;; dynamic-wind start
+[mosh-only (connect talk1 disconnect connect talk2 disconnect)
+           (let ((path '())
+                 (c '()))
+             (let ((add (lambda (s) (set! path (cons s path)))))
+               (dynamic-wind
+                   (lambda () (add 'connect))
+                   (lambda ()
+                     (add (call-with-current-continuation
+                           (lambda (c0) (set! c c0) 'talk1))))
+                   (lambda () (add 'disconnect)))
+               (if (< (length path) 4)
+                   (c 'talk2)
+                   (reverse path))))]
+[mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
+  (let* ([c '()]
+         [dynwind-test1
+          (lambda ()
+            (let ((path '()))
+              (let ((add (lambda (s) (set! path (cons s path)))))
+                (dynamic-wind
+                    (lambda () (add 'connect))
+                    (lambda ()
+                      (add (call-with-current-continuation
+                            (lambda (c0) (set! c c0) 'talk1))))
+                    (lambda () (add 'disconnect)))
+                (if (< (length path) 4)
+                    (c 'talk2)
+                    (reverse path)))))]
+          [dynwind-test2
+           (lambda ()
+             (let ((path '()))
+               (dynamic-wind
+                   (lambda () (set! path (cons 1 path)))
+                   (lambda () (set! path (append (dynwind-test1) path)))
+                   (lambda () (set! path (cons 3 path))))
+               path))])
+    (dynwind-test2))]
+[mosh-only (a b c d e f g b c d e f g h)
+             (let ((x '())
+                   (c #f))
+               (dynamic-wind
+                   (lambda () (set! x (cons 'a x)))
+                   (lambda ()
+                     (dynamic-wind
+                         (lambda () (set! x (cons 'b x)))
+                         (lambda ()
+                           (dynamic-wind
+                               (lambda () (set! x (cons 'c x)))
+                               (lambda () (set! c (call/cc (lambda (x) x))))
+                               (lambda () (set! x (cons 'd x)))))
+                         (lambda () (set! x (cons 'e x))))
+                     (dynamic-wind
+                         (lambda () (set! x (cons 'f x)))
+                         (lambda () (when c (c #f)))
+                         (lambda () (set! x (cons 'g x)))))
+                   (lambda () (set! x (cons 'h x))))
+               (reverse x))]
+[mosh-only (a b c) ;; multiple values from Gauche
+      ((lambda ()
+        (receive x
+            (dynamic-wind (lambda () #f)
+                          (lambda () (values 'a 'b 'c))
+                          (lambda () #f))
+          x)))]
+
 
 
 

@@ -2809,7 +2809,10 @@
     (lambda (in body out)
       (in)
       (set! winders (cons (cons in out) winders))
-      (let ((ans (body)))
+      ;; we need multiple values
+      (receive ans (body)
         (set! winders (cdr winders))
         (out)
-        ans))))
+        (apply values ans)))))
+
+(define call-with-current-continuation call/cc)
