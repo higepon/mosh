@@ -2763,9 +2763,13 @@
         (loop (- i 1) (* ret n)))))
 
 
-(define call/cc #f)
+;; dynamic-wind implementation
+;;   The Scheme Programming Language
+;;   Third Edition by R. Kent Dybvig.
+(define (dynamic-wind before thunk after) #f)
+(define (call/cc cont) #f)
+(define (call-with-current-continuation cont) #f)
 
-(define dynamic-wind #f)
 (let ((winders '()))
   (define common-tail
     (lambda (x y)
@@ -2805,6 +2809,7 @@
                   (lambda (x)
                     (if (not (eq? save winders)) (do-wind save))
                     (k x))))))))
+  (set! call-with-current-continuation call/cc)
   (set! dynamic-wind
     (lambda (in body out)
       (in)
@@ -2815,4 +2820,4 @@
         (out)
         (apply values ans)))))
 
-(define call-with-current-continuation call/cc)
+

@@ -114,25 +114,25 @@ public:
     Object withExceptionHandler(Object handler, Object thunk);
     void defaultExceptionHandler(Object error);
 
-    Values fetchValues()
-    {
-        Values v;
-        v.values = new Object[numValues_ - 1];
-        for (int i = 0; i < numValues_ - 1; i++) {
-            v.values[i] = values_[i];
-        }
-        v.val = ac_;
-        v.num = numValues_;
-        return v;
-    }
-    void restoreValues(Values v)
-    {
-        for (int i = 0; i < v.num; i++) {
-            values_[i] = v.values[i];
-        }
-        ac_ = v.val;
-        numValues_ = v.num;
-    }
+//     Values fetchValues()
+//     {
+//         Values v;
+//         v.values = new Object[numValues_ - 1];
+//         for (int i = 0; i < numValues_ - 1; i++) {
+//             v.values[i] = values_[i];
+//         }
+//         v.val = ac_;
+//         v.num = numValues_;
+//         return v;
+//     }
+//     void restoreValues(Values v)
+//     {
+//         for (int i = 0; i < v.num; i++) {
+//             values_[i] = v.values[i];
+//         }
+//         ac_ = v.val;
+//         numValues_ = v.num;
+//     }
 
     void initLibraryTable();
     void raiseFormat(const ucs4char* fmt, Object list);

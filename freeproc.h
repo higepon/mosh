@@ -158,7 +158,6 @@ namespace scheme {
     Object procedurePEx(int argc, const Object* argv);
     Object loadEx(int argc, const Object* argv);
     Object symbolPEx(int argc, const Object* argv);
-    Object dynamicWindEx(int argc, const Object* argv);
     Object charGePEx(int argc, const Object* argv);
     Object charGtPEx(int argc, const Object* argv);
     Object charLePEx(int argc, const Object* argv);

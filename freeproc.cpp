@@ -1617,33 +1617,6 @@ Object scheme::symbolPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isSymbol());
 }
 
-Object scheme::dynamicWindEx(int argc, const Object* argv)
-{
-    checkArgLength(3, argc, "dynamic-wind");
-    const Object arg1 = argv[0];
-    const Object arg2 = argv[1];
-    const Object arg3 = argv[2];
-    if (!arg1.isProcedure() || !arg2.isProcedure() || !arg3.isProcedure()) {
-        VM_RAISE3("dynamic-wind closure required, but got (~a, ~a, ~a)\n", arg1, arg2, arg3);
-    }
-    // call before
-    theVM->callClosure0(arg1);
-
-    // call thunk
-    const Object ret = theVM->callClosure0(arg2);
-
-    // save the return values of thunk
-    Values v = theVM->fetchValues();
-    v.val = ret;
-
-    // call after
-    theVM->callClosure0(arg3);
-
-    // returns return values of thunk.
-    theVM->restoreValues(v);
-    return v.val;
-}
-
 Object scheme::charGePEx(int argc, const Object* argv)
 {
    if (argc < 2) {
