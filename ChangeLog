@@ -1,3 +1,7 @@
+2008-08-12  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (VM::run): Fixed bug of recieve from (values).
+
 2008-08-08  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (expt): Addes expt.

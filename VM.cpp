@@ -1578,7 +1578,11 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
                 }
             }
 
-            sp_ =  sp_ - (numValues_ - 1);
+            if (numValues_ > 1) {
+                sp_ =  sp_ - (numValues_ - 1);
+            } else {
+                // there's no need to push
+            }
             NEXT;
         }
         CASE(RECEIVE)
@@ -1602,7 +1606,8 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
                 }
             // (receive a ...)
             } else if (reqargs == 0) {
-                Object ret = Pair::list1(ac_);
+
+                Object ret = numValues_ == 0 ? Object::Nil : Pair::list1(ac_);
                 for (int i = 0; i < numValues_ - 1; i++) {
                     ret = Pair::appendD(ret, Pair::list1(values_[i]));
                 }

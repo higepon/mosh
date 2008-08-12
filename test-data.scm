@@ -1329,6 +1329,13 @@ val
                           (lambda () (values 'a 'b 'c))
                           (lambda () #f))
           x)))]
+[mosh-only () ;; multiple values from Gauche
+    ((lambda ()
+      (receive x
+        (dynamic-wind (lambda () #f)
+            (lambda () (values))
+            (lambda () #f))
+      x)))]
 
 
 

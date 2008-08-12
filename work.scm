@@ -1,3 +1,8 @@
+(receive x (values)
+  (display x))
+
+(exit)
+
 
 (let ([captured '()])
   (dynamic-wind
