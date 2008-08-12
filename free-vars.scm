@@ -130,7 +130,7 @@
     (procedure? ,vector?)
     (load ,(lambda e (error "load not implemented")))
     (symbol? ,symbol?)
-    (dynamic-wind ,(lambda e (error "dynamic-wind not implemented")))
+;;    (dynamic-wind ,(lambda e (error "dynamic-wind not implemented")))
     (char<=? ,char<=?)
     (char<? ,char<?)
     (char>=? ,char>=?)

@@ -1288,9 +1288,9 @@
                  (cdddr sexp)  ;; else if exists.
                  library lvars tail?)]
       ;;---------------------------- call/cc -----------------------------------
-      [(call/cc)
+      [($call/cc)
        ($call-cc (pass1/s->i (second sexp)) tail?)]
-      [(call-with-current-continuation)
+      [($call-with-current-continuation)
        ($call-cc (pass1/s->i (second sexp)) tail?)]
       ;;---------------------------- quote -------------------------------------
       [(quote)

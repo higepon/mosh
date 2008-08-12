@@ -2761,3 +2761,55 @@
     (if (>= 0 i)
         ret
         (loop (- i 1) (* ret n)))))
+
+
+(define call/cc #f)
+
+(define dynamic-wind #f)
+(let ((winders '()))
+  (define common-tail
+    (lambda (x y)
+      (let ((lx (length x)) (ly (length y)))
+        ;; (do ((x (if (> lx ly) (list-tail x (- lx ly)) x) (cdr x))
+;;              (y (if (> ly lx) (list-tail y (- ly lx)) y) (cdr y)))
+;;             ((eq? x y) x))
+        (letrec ([loop (lambda (x y)
+                         (if (eq? x y)
+                             x
+                             (loop (cdr x) (cdr y))))])
+          (loop (if (> lx ly)
+                    (list-tail x (- lx ly))
+                    x)
+                (if (> ly lx)
+                    (list-tail y (- ly lx))
+                    y))))))
+  (define do-wind
+    (lambda (new)
+      (let ((tail (common-tail new winders)))
+        (let f ((l winders))
+          (if (not (eq? l tail))
+              (begin
+                (set! winders (cdr l))
+                ((cdar l))
+                (f (cdr l)))))
+        (let f ((l new))
+          (if (not (eq? l tail))
+              (begin
+                (f (cdr l))
+                ((caar l))
+                (set! winders l)))))))
+  (set! call/cc
+      (lambda (f)
+        ($call/cc (lambda (k)
+             (f (let ((save winders))
+                  (lambda (x)
+                    (if (not (eq? save winders)) (do-wind save))
+                    (k x))))))))
+  (set! dynamic-wind
+    (lambda (in body out)
+      (in)
+      (set! winders (cons (cons in out) winders))
+      (let ((ans (body)))
+        (set! winders (cdr winders))
+        (out)
+        ans))))
