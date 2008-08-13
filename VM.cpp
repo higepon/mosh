@@ -381,7 +381,7 @@ Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
         Object::makeRaw(Instruction::HALT)
     };
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(Object::makeObjectPointer(pc_ ));
+    push(Object::makeObjectPointer(pc_ + 1));
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
@@ -408,7 +408,7 @@ Object VM::call1(Object closure, Object arg1)
         Object::makeRaw(Instruction::HALT)
     };
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(Object::makeObjectPointer(pc_ ));
+    push(Object::makeObjectPointer(pc_  + 1));
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
@@ -667,9 +667,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 } else {
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-                    returnCode_[1] = operand;
-                    pc_  = returnCode_;
-//                    goto return_entry;
+//                     returnCode_[1] = operand;
+//                     pc_  = returnCode_;
+                    goto return_entry; // N.B. operand variable is used.
 
                 }
             } else if (ac_.isClosure()) {
@@ -713,8 +713,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 cl_ = ac_;
                 const int argc = operand.toInt();
                 ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
-                returnCode_[1] = operand;
-                pc_  = returnCode_;
+//                 returnCode_[1] = operand;
+//                pc_  = returnCode_;
+                goto return_entry;
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
                 const int argc = operand.toInt();
@@ -722,17 +723,19 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
                 ac_ = Object::makeCProcedure(scheme::rxmatchEx).toCProcedure()->call(argc + 1, argv);
-                returnCode_[1] = operand;
-                pc_  = returnCode_;
+//                 returnCode_[1] = operand;
+//                 pc_  = returnCode_;
+                goto return_entry;
             } else if (ac_.isRegMatch()) {
                 extern Object regMatchProxy(Object args);
                 const int argc = operand.toInt();
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
-ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 1, argv);
-                returnCode_[1] = operand;
-                pc_  = returnCode_;
+                ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 1, argv);
+//                 returnCode_[1] = operand;
+//                 pc_  = returnCode_;
+                goto return_entry;
             } else {
                 RAISE2("invalid application (~a ...) arugment length=~d", ac_, operand);
             }
@@ -1042,8 +1045,9 @@ ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 
                 Object* code = v->data();
                 pc_ = getDirectThreadedCode(code, v->length());
             } else {
-                returnCode_[1] = Object::makeInt(0);
-                pc_  = returnCode_;
+//                 returnCode_[1] = Object::makeInt(0);
+//                 pc_  = returnCode_;
+                goto return_entry;
             }
             NEXT;
         }
