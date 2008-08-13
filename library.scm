@@ -2820,4 +2820,94 @@
         (out)
         (apply values ans)))))
 
+;; srfi-39 parameter objects
+(define make-parameter
+  (lambda (init . conv)
+    (let ((converter
+           (if (null? conv) (lambda (x) x) (car conv))))
+      (let ((global-cell
+             (cons #f (converter init))))
+        (letrec ((parameter
+                  (lambda new-val
+                    (let ((cell (dynamic-lookup parameter global-cell)))
+                      (cond ((null? new-val)
+                             (cdr cell))
+                            ((null? (cdr new-val))
+                             (set-cdr! cell (converter (car new-val))))
+                            (else ; this case is needed for parameterize
+                             (converter (car new-val))))))))
+          (set-car! global-cell parameter)
+          parameter)))))
 
+(define-macro (parameterize . sexp)
+  (let ([expr1 (map first (car sexp))]
+        [expr2 (map second (car sexp))]
+        [body (cdr sexp)])
+    `(dynamic-bind (list ,@expr1)
+                   (list ,@expr2)
+                   (lambda () ,@body))))
+
+(define dynamic-bind
+  (lambda (parameters values body)
+    (let* ((old-local
+            (dynamic-env-local-get))
+           (new-cells
+            (map (lambda (parameter value)
+                   (cons parameter (parameter value #f)))
+                 parameters
+                 values))
+           (new-local
+            (append new-cells old-local)))
+      (dynamic-wind
+          (lambda () (dynamic-env-local-set! new-local))
+          body
+          (lambda () (dynamic-env-local-set! old-local))))))
+
+(define dynamic-lookup
+  (lambda (parameter global-cell)
+    (or (assq parameter (dynamic-env-local-get))
+        global-cell)))
+
+(define dynamic-env-local '())
+
+(define dynamic-env-local-get
+  (lambda () dynamic-env-local))
+
+(define dynamic-env-local-set!
+  (lambda (new-env) (set! dynamic-env-local new-env)))
+
+(define current-exception-handler (make-parameter #f))
+(define parent-exception-handler (make-parameter #f))
+
+(define with-exception-handler
+  (lambda (new thunk)
+    (let ((parent (current-exception-handler)))
+      (parameterize
+          ((parent-exception-handler parent)
+           (current-exception-handler
+            (lambda (condition)
+              (parameterize ((current-exception-handler parent))
+                (new condition)))))
+        (thunk)))))
+
+(define raise
+  (lambda (c)
+    (cond ((current-exception-handler)
+           => (lambda (proc)
+                (proc c)
+                (cond ((parent-exception-handler)
+                       => (lambda (proc)
+                            (proc "hige"))))
+                (error "in raise: returned from non-continuable exception~%~%irritants:~%~a"))))
+    (error "in raise: unhandled exception has occurred~%~%irritants:~%~a")))
+
+(define raise-continuable
+  (lambda (c)
+    (cond ((current-exception-handler)
+           => (lambda (proc) (proc c)))
+          (else
+           (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a")))))
+
+
+(define (test-plus a b c)
+  (+ a b c))

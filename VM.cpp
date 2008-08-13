@@ -132,7 +132,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
 //            ret = applyClosure(handler, L1(errorObj_));
             LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            
+
         }
     }
 
@@ -369,6 +369,60 @@ void VM::setOutputPort(TextualOutputPort& port)
 {
     outputPort_ = port;
 }
+
+// N.B be sure that pc_ should be set to next pc_(= return point)
+Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
+{
+    static Object callCode[] = {
+        Object::makeRaw(Instruction::CALL),  // call closure
+        Object::makeInt(3),
+        Object::makeRaw(Instruction::RETURN),
+        Object::makeInt(0),
+        Object::makeRaw(Instruction::HALT)
+    };
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(Object::makeObjectPointer(pc_ ));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+    push(dc_);
+    push(cl_);
+    push(Object::makeObjectPointer(fp_));
+
+    push(arg1);
+    push(arg2);
+    push(arg3);
+    ac_ = closure;
+
+    return ac_;
+}
+
+Object VM::call1(Object closure, Object arg1)
+{
+    static Object callCode[] = {
+        Object::makeRaw(Instruction::CALL),  // call closure
+        Object::makeInt(1),
+        Object::makeRaw(Instruction::RETURN),
+        Object::makeInt(0),
+        Object::makeRaw(Instruction::HALT)
+    };
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(Object::makeObjectPointer(pc_ ));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+    push(dc_);
+    push(cl_);
+    push(Object::makeObjectPointer(fp_));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(arg1);
+    ac_ = closure;
+
+    return ac_;
+}
+
 
 //accept arguments as list.
 Object VM::applyClosure(Object closure, Object args)
@@ -607,7 +661,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 COUNT_CALL(ac_);
                 cl_ = ac_;
                 if (ac_.toCProcedure()->proc == applyEx) {
-                    returnCode_[1] = operand;
+                    returnCode_[1] = operand; // todo
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                 } else {
@@ -615,6 +669,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                     returnCode_[1] = operand;
                     pc_  = returnCode_;
+//                    goto return_entry;
+
                 }
             } else if (ac_.isClosure()) {
 

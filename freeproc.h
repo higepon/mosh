@@ -223,6 +223,7 @@ namespace scheme {
     Object symbolValueEx(int argc, const Object* argv);
     Object testEx(int argc, const Object* argv);
     Object test2Ex(int argc, const Object* argv);
+    Object testTempEx(int argc, const Object* argv);
 
 }; // namespace scheme
 

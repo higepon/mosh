@@ -1871,3 +1871,9 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
     return theVM->getTopLevelGlobalValue(id);
 }
 
+Object scheme::testTempEx(int argc, const Object* argv)
+{
+   checkArgLength(3, argc, "symbol-value");
+   return theVM->call3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
+                              , argv[0], argv[1], argv[2]);
+}

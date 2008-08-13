@@ -1,3 +1,7 @@
+2008-08-13  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (make-parameter): Added SRFI-39 Parameter Objects to Mosh core.
+
 2008-08-12  higepon  <higepon@users.sourceforge.jp>
 
         * Added dynamic-wind. It works well.

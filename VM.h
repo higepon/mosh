@@ -106,6 +106,8 @@ public:
     Object callClosure0(Object closure);
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
+    Object call3(Object closure, Object arg1, Object arg2, Object arg3);
+    Object call1(Object closure, Object arg1);
     Object applyClosure(Object closure, Object args);
     Object applyClosureDebug(Object closure, Object args, int returnSize);
     Object apply(Object proc, Object args);

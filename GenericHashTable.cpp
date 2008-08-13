@@ -106,7 +106,8 @@ void GenericHashTable::clearD()
         map_.clear();
     } else {
         const Object violation = theVM->getTopLevelGlobalValue(UC("&violation-rcd"));
-        theVM->raise(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
+//        theVM->raise(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
+        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
     }
 }
 
