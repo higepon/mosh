@@ -2910,4 +2910,5 @@
 
 
 (define (test-plus a b c)
+  (display "hhhhhhhhhhhhhhhhhhhhh")
   (+ a b c))

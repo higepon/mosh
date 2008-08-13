@@ -127,12 +127,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
         if (handler.isNil()) {
             defaultExceptionHandler(errorObj_);
         } else {
-            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
             ret = callClosure(handler, errorObj_);
-//            ret = applyClosure(handler, L1(errorObj_));
-            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-
         }
     }
 
@@ -358,9 +353,7 @@ Object VM::callClosure(Object closure, Object arg)
     applyCode[6] = closure;
 
     SAVE_REGISTERS();
-            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
-            LOG1("sp=~a\n", Object::makeInt(sp_ - stack_));
     RESTORE_REGISTERS();
     return ret;
 }
@@ -374,27 +367,50 @@ void VM::setOutputPort(TextualOutputPort& port)
 Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
 {
     static Object callCode[] = {
+        Object::makeRaw(Instruction::PUSH), //0
+        Object::Undef,      //1
+        Object::makeRaw(Instruction::PUSH),// 2
+        Object::Undef,//3
+        Object::makeRaw(Instruction::PUSH),//4
+        Object::Undef,//5
+        Object::makeRaw(Instruction::PUSH),//6
+        Object::Undef,//7
+        Object::makeRaw(Instruction::CONSTANT),//8
+        Object::Undef,//9
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::STOP),  // call closure
         Object::makeRaw(Instruction::CALL),  // call closure
         Object::makeInt(3),
         Object::makeRaw(Instruction::RETURN),
         Object::makeInt(0),
         Object::makeRaw(Instruction::HALT)
     };
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(Object::makeObjectPointer(pc_ + 1));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+    const Object thisPc = Object::makeObjectPointer(pc_);
     pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
+
+    // same as frame
+    pc_[1] = thisPc;
+    pc_[3] = dc_;
+    pc_[5] = cl_;
+    pc_[7] = dc_;
+    pc_[9] = Object::makeObjectPointer(fp_);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    pc_[12] = arg1;
+    pc_[15] = arg2;
+    pc_[18] = arg3;
+    pc_[21] = closure;
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
-    push(dc_);
-    push(cl_);
-    push(Object::makeObjectPointer(fp_));
-
-    push(arg1);
-    push(arg2);
-    push(arg3);
-    ac_ = closure;
-
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return ac_;
 }
 
@@ -599,7 +615,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         Object::makeRaw(INSTRUCTION(HALT)),
     };
 
-    Object operand;
+    Object operand = Object::Undef;;
 
     pc_ = code;
 
@@ -667,9 +683,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 } else {
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-//                     returnCode_[1] = operand;
-//                     pc_  = returnCode_;
-                    goto return_entry; // N.B. operand variable is used.
+                    returnCode_[1] = operand;
+                    pc_  = returnCode_;
+
+//                    goto return_entry; // N.B. operand variable is used.
 
                 }
             } else if (ac_.isClosure()) {
@@ -1647,7 +1664,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RECEIVE)
         {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             TRACE_INSN0("RECEIVE");
             const int reqargs = fetchOperand().toInt();
             const int optarg  = fetchOperand().toInt();
@@ -1690,6 +1706,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(UNFIXED_JUMP)
         {
             RAISE0("not reached UNFIXED_JUMP");
+        }
+        CASE(STOP)
+        {
+            printf("STOP for debug\n");
+            exit(-1);
         }
         DEFAULT
         {

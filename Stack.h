@@ -39,7 +39,6 @@ class Stack EXTEND_GC
 public:
     Stack(Object* src, int size) : size_(size)
     {
-        printf("size=%d\n", size);
         stack_ = Object::makeObjectArray(size_);
         memcpy(stack_, src, size_ * sizeof(Object));
     }
@@ -48,7 +47,6 @@ public:
     int restore(Object* toStack)
     {
         memcpy(toStack, stack_, size_ * sizeof(Object));
-        printf("restore:size=%d\n", size_);
         return size_;
     }
 

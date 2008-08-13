@@ -109,3 +109,4 @@
 (define-insn VALUES 1)
 (define-insn RECEIVE 2)
 (define-insn UNFIXED_JUMP 1)
+(define-insn STOP 0)
