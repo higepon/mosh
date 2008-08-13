@@ -1,3 +1,6 @@
+(apply car '((3 2)))
+(exit)
+
 (display (test-temp 1  2 3))
 (display (test-temp 4 5 6))
 (exit)

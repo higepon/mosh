@@ -460,16 +460,18 @@ Object VM::applyClosure(Object closure, Object args)
     // set closure
     applyCode[4] = closure;
 
-    applyCode[7] = returnCode_[1];
+//    applyCode[7] = returnCode_[1];
 
-    pc_ = getDirectThreadedCode(applyCode, sizeof(applyCode) / sizeof(Object));
+
 
     // Same as Frame.
     // pc_ + 6 is return point of closure.
-    push(Object::makeObjectPointer(pc_ + 6));
+    push(Object::makeObjectPointer(pc_));
     push(dc_);
     push(cl_);
     push(Object::makeObjectPointer(fp_));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    pc_ = getDirectThreadedCode(applyCode, sizeof(applyCode) / sizeof(Object));
     return ac_;
 }
 
@@ -677,8 +679,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 COUNT_CALL(ac_);
                 cl_ = ac_;
                 if (ac_.toCProcedure()->proc == applyEx) {
-                    returnCode_[1] = operand; // todo
+//                    returnCode_[1] = operand; // todo
                     const int argc = operand.toInt();
+                    returnCode_[1] = operand;
+                    pc_  = returnCode_;
+
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                 } else {
                     const int argc = operand.toInt();
@@ -760,6 +765,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(APPLY)
         {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             TRACE_INSN0("APPLY");
             const Object args = index(sp_, 0);
             if (args.isNil()) {
@@ -778,6 +784,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_ = callCode;
                 sp_ = sp;
             }
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT;
         }
         CASE(PUSH)
@@ -1483,8 +1490,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RETURN)
         {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 //            printf("RETURN %d\n", operand.toInt());
             operand = fetchOperand();
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return_entry:
 #ifdef DUMP_ALL_INSTRUCTIONS
             const int m = operand.toInt();
@@ -1492,16 +1501,23 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #endif
             TRACE_INSN1("RETURN", "(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             fp_ = index(sp, 0).toObjectPointer();
             cl_ = index(sp, 1);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             if (!cl_.isProcedure()) {
                 LOG1("proc = ~a\n", cl_);
             }
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             MOSH_ASSERT(cl_.isProcedure());
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             dc_ = index(sp, 2);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             MOSH_ASSERT(dc_.isProcedure());
             pc_ = index(sp, 3).toObjectPointer();
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             sp_ = sp - 4;
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT;
         }
         CASE(SET_CAR)
