@@ -175,7 +175,12 @@ void VM::loadFile(const ucs4string& file)
 Object VM::eval(Object obj, Object env)
 {
     const Object code = compile(obj);
+
+    // (CALL) -> evalEx -> eval -> evaluate
+    // evaluate が pc_ を壊してしまい evalEx の呼び出し元に戻れない。
+    SAVE_REGISTERS();
     const Object ret = evaluate(code);
+    RESTORE_REGISTERS();
     return ret;
 }
 
@@ -355,113 +360,51 @@ void VM::setOutputPort(TextualOutputPort& port)
 Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
 {
     static Object callCode[] = {
-        Object::makeRaw(Instruction::PUSH), //0
-        Object::Undef,      //1
-        Object::makeRaw(Instruction::PUSH),// 2
-        Object::Undef,//3
-        Object::makeRaw(Instruction::PUSH),//4
-        Object::Undef,//5
-        Object::makeRaw(Instruction::PUSH),//6
-        Object::Undef,//7
-        Object::makeRaw(Instruction::CONSTANT),//8
-        Object::Undef,//9
-        Object::makeRaw(Instruction::PUSH),
         Object::makeRaw(Instruction::CONSTANT),
         Object::Undef,
-        Object::makeRaw(Instruction::PUSH),
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::PUSH),
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::STOP),  // call closure
-        Object::makeRaw(Instruction::CALL),  // call closure
+        Object::makeRaw(Instruction::CALL),
         Object::makeInt(3),
         Object::makeRaw(Instruction::RETURN),
         Object::makeInt(0),
         Object::makeRaw(Instruction::HALT)
     };
 
-    const Object thisPc = Object::makeObjectPointer(pc_);
+    push(Object::makeObjectPointer(pc_));
     pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
 
-    // same as frame
-    pc_[1] = thisPc;
-    pc_[3] = dc_;
-    pc_[5] = cl_;
-    pc_[7] = dc_;
-    pc_[9] = Object::makeObjectPointer(fp_);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    pc_[12] = arg1;
-    pc_[15] = arg2;
-    pc_[18] = arg3;
-    pc_[21] = closure;
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(dc_);
+    push(cl_);
+    push(Object::makeObjectPointer(fp_));
+    push(arg1);
+    push(arg2);
+    push(arg3);
+    pc_[1] = closure; // don't do like "ac_ = closure;" ac_ will be overwritten.
     return ac_;
 }
 
 Object VM::call1(Object closure, Object arg1)
 {
     static Object callCode[] = {
-        Object::makeRaw(Instruction::CALL),  // call closure
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::CALL),
         Object::makeInt(1),
         Object::makeRaw(Instruction::RETURN),
         Object::makeInt(0),
         Object::makeRaw(Instruction::HALT)
     };
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(Object::makeObjectPointer(pc_  + 1));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(Object::makeObjectPointer(pc_));
     pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
     push(dc_);
     push(cl_);
     push(Object::makeObjectPointer(fp_));
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     push(arg1);
-    ac_ = closure;
+    pc_[1]= closure;
 
     return ac_;
 }
-
-
-// //accept arguments as list.
-// Object VM::applyClosure(Object closure, Object args)
-// {
-//     static Object applyCode[] = {
-//         Object::makeRaw(Instruction::CONSTANT),
-//         Object::Undef,
-//         Object::makeRaw(Instruction::PUSH),
-//         Object::makeRaw(Instruction::CONSTANT),
-//         Object::Undef,
-//         Object::makeRaw(Instruction::APPLY),  // call closure
-//         Object::makeRaw(Instruction::RETURN), // return from apply
-//         Object::makeInt(0),
-//         Object::makeRaw(Instruction::HALT)
-//     };
-
-//     // set arguments
-//     applyCode[1] = args;
-//     // set closure
-//     applyCode[4] = closure;
-
-// //    applyCode[7] = returnCode_[1];
-
-
-
-//     // Same as Frame.
-//     // pc_ + 6 is return point of closure.
-//     push(Object::makeObjectPointer(pc_));
-//     push(dc_);
-//     push(cl_);
-//     push(Object::makeObjectPointer(fp_));
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     pc_ = getDirectThreadedCode(applyCode, sizeof(applyCode) / sizeof(Object));
-//     return ac_;
-// }
 
 void VM::applyClosure(Object closure, Object args)
 {
@@ -676,7 +619,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 COUNT_CALL(ac_);
                 cl_ = ac_;
                 if (ac_.toCProcedure()->proc == applyEx) {
+
                     // don't share retCode with others.
+                    // because apply's arguments length is not constant.
                     Object* const retCode = Object::makeObjectArray(2);
                     retCode[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     retCode[1] = operand;
@@ -685,17 +630,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     pc_  = retCode;
                     ac_.toCProcedure()->call(argc, sp_ - argc);
                 } else {
-                    const int argc = operand.toInt();
-
+                    CProcedure* const cprocedure = ac_.toCProcedure();
                     // set pc_ before call() for pointing where to return.
-                    pc_  = returnCode_;
+                    pc_  = cprocedure->returnCode;
+                    pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
+                    pc_[1] = operand;
+
+                    const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-
-                    // eval などが evaluate で pc_ を破壊してしまう。これはバグだ。
-                    pc_  = returnCode_;
-
-                    // for nest call, we set returnCode_[1] after the call.
-                    returnCode_[1] = operand;
                 }
             } else if (ac_.isClosure()) {
 
@@ -738,9 +680,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 cl_ = ac_;
                 const int argc = operand.toInt();
                 ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
-//                 returnCode_[1] = operand;
-//                pc_  = returnCode_;
-                goto return_entry;
+                returnCode_[1] = operand;
+               pc_  = returnCode_;
+//                goto return_entry;
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
                 const int argc = operand.toInt();
@@ -769,7 +711,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(APPLY)
         {
             const Object args = index(sp_, 0);
-            LOG2("APPLY(~d):~a", Object::makeInt(Pair::length(args)), args);
             if (args.isNil()) {
                 callCode[1] = Object::makeInt(0);
                 pc_  = callCode;
@@ -786,7 +727,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_ = callCode;
                 sp_ = sp;
             }
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT;
         }
         CASE(PUSH)
@@ -1502,6 +1442,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int m = operand.toInt();
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
+
 //            LOG1("RETURN(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
 

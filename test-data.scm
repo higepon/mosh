@@ -1338,7 +1338,8 @@ val
             (lambda () (values))
             (lambda () #f))
       x)))]
-
+[mosh-only 3 (eval 3 '())]
+[mosh-only 6 (test-temp 1 2 3)]
 
 
 

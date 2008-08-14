@@ -105,9 +105,16 @@ void GenericHashTable::clearD()
         prepareFunctions();
         map_.clear();
     } else {
-        const Object violation = theVM->getTopLevelGlobalValue(UC("&violation-rcd"));
+        const Object violationRcd = theVM->getTopLevelGlobalValue(UC("&violation-rcd"));
 //        theVM->raise(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
-        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
+
+        const Object violation = theVM->callClosure0(violationRcd.toRecordConstructorDescriptor()->makeConstructor());
+        VM_LOG1("violation=~a\n", violation);
+            
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), violation);
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), Pair::list1(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor())));
     }
 }
 

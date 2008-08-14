@@ -46,6 +46,7 @@ public:
     }
 
     Object (*proc)(int, const Object*);
+    Object returnCode[2];
 };
 
 }; // namespace scheme

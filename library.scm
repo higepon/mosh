@@ -2892,6 +2892,7 @@
 
 (define raise
   (lambda (c)
+    (display "*** in raise")
     (cond ((current-exception-handler)
            => (lambda (proc)
                 (proc c)
@@ -2908,7 +2909,6 @@
           (else
            (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a")))))
 
-
+;; c -> scheme test
 (define (test-plus a b c)
-  (display "hhhhhhhhhhhhhhhhhhhhh")
   (+ a b c))

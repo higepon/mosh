@@ -1875,6 +1875,10 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
 Object scheme::testTempEx(int argc, const Object* argv)
 {
    checkArgLength(3, argc, "symbol-value");
+   printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
    return theVM->call3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
                               , argv[0], argv[1], argv[2]);
+//       theVM->applyClosure(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
+//                                  , Pair::list3(argv[0], argv[1], argv[2]));
+//       return Object::Undef;
 }
