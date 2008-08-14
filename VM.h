@@ -214,8 +214,6 @@ public:
 
 protected:
 
-
-
     void import(Object libname)
     {
         EqHashTable* const ht = instances_.toEqHashTable();

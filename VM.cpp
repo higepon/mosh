@@ -164,9 +164,9 @@ void VM::loadFile(const ucs4string& file)
 //           evalTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
         }
 
-    CATCH
-        // call default error handler
-        defaultExceptionHandler(errorObj_);
+        CATCH
+            // call default error handler
+            defaultExceptionHandler(errorObj_);
         exit(-1);
     }
 }
@@ -174,20 +174,8 @@ void VM::loadFile(const ucs4string& file)
 // same as (eval ...)
 Object VM::eval(Object obj, Object env)
 {
-//     struct timeval tv1, tv2;
-//     struct timezone tz1, tz2;
-//     long compileTime = 0;
-//     long evalTime = 0;
-//     gettimeofday(&tv1, &tz1);
     const Object code = compile(obj);
-//    gettimeofday(&tv2, &tz2);
-//    compileTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
-    // env is currently ignored
-//    gettimeofday(&tv1, &tz1);
     const Object ret = evaluate(code);
-//    gettimeofday(&tv2, &tz2);
-//    evalTime += (tv2.tv_sec * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 + tv1.tv_usec);
-    //  printf("compile =%ld eval = %ld \n", compileTime, evalTime);
     return ret;
 }
 
@@ -656,26 +644,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #ifdef DUMP_ALL_INSTRUCTIONS
             fwrite(logBuf, 1, 2, stream);
 #endif
-// #ifdef TRACE_INSN
-//             static long i = 0;
-//             if (i++ % 100000 == 0) {
-//                 errorPort_.binaryPort()->close();
-//                 FILE* errOut = fopen(INSN_LOG_FILE, "w");
-//                 Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-//                 errorPort_ = TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder);
-//             }
-// #endif
             return ac_;
         }
-//         CASE(APPEND)
-//         {
-//             const Object list1 = index(sp_, 0);
-//             const Object list2 = ac_;
-//             TRACE_INSN0("APPEND");
-//             ac_ = Pair::append(list1, list2);
-//             sp_--;
-//             NEXT1;
-//         }
         CASE(CALL1)
         {
             operand = Object::makeInt(1);
@@ -719,8 +689,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
                     // set pc_ before call() for pointing where to return.
                     pc_  = returnCode_;
-
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
+
+                    // eval などが evaluate で pc_ を破壊してしまう。これはバグだ。
+                    pc_  = returnCode_;
 
                     // for nest call, we set returnCode_[1] after the call.
                     returnCode_[1] = operand;

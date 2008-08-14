@@ -1,3 +1,7 @@
+;(eval (list 'quote  (cons '1 '2)) '())
+;(eval '(quote  (cons '1 '2)) '())
+(eval 3 '())
+(exit)
 (display (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr)))
 (display (apply (lambda (x) (car x)) '((3 2))))
 (exit)
