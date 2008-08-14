@@ -41,53 +41,6 @@ const Object Object::UnBound = Object::makeConst(3);
 const Object Object::True    = Object::makeConst(4);
 const Object Object::False   = Object::makeConst(5);
 
-//     const int taga = tag();
-//     const int tagb = o.tag();
-//     if (taga && tagb) {
-//         return eq(o);
-//     } else if (taga && 0 == tagb) {
-//         return Object::False;
-//     } else if (0 == taga && tagb) {
-//         return Object::False;
-//     } else if (isPair() && o.isPair()) {
-//         RETURN_BOOL(car().equal(o.car()) != Object::False &&
-//                     cdr().equal(o.cdr()) != Object::False);
-//     } else if (isHeapObject() && o.isHeapObject()) {
-//         if (isString() && o.isString()) {
-//             RETURN_BOOL(toString()->data() == o.toString()->data());
-//         } else if (isSymbol() && o.isSymbol()) {
-//             return eq(o);
-//         } else if (isVector() && o.isVector()) {
-//             Vector* av = toVector();
-//             Vector* bv = o.toVector();
-//             const int aLength = av->length();
-//             const int bLength = bv->length();
-//             if (aLength == bLength) {
-//                 for (int i = 0; i < aLength; i++) {
-//                     if (av->ref(i).equal(bv->ref(i)).isFalse()) return Object::False;
-//                 }
-//                 return Object::True;
-//             } else {
-//                 return Object::False;
-//             }
-//         } else if (isRegexp() && o.isRegexp()) {
-//             RETURN_BOOL(toRegexp()->pattern() == o.toRegexp()->pattern());
-//         } else if (isPointer() && o.isPointer()) {
-//             // address of instruction label is pointer
-//             RETURN_BOOL(o.val == val);
-//         }
-//     }
-
-// if (isPointer() && o.isPointer()) {
-//             // address of instruction label is pointer
-//             RETURN_BOOL(o.val == val);
-// }
-
-//     // todo
-//     return Object::False;
-//}
-
-
 Object Object::equal(Object o) const
 {
     const int taga = tag();
