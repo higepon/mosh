@@ -2749,11 +2749,12 @@
 (define (real? n) (number? n))
 (define (nan? n) (not (number? n)))
 
-(define exists
-  (lambda (pred . lsts)
-    (if (null? (car lsts)) #t
-    (and (apply pred        (map car lsts))
-         (apply exists pred (map cdr lsts))))))
+(define (exists pred l)
+  (let loop ([l l])
+    (cond
+     [(null? l) #f]
+     [(pred (car l)) #t]
+     [else (loop (cdr l))])))
 
 (define (expt n m)
   (let loop ([i m]

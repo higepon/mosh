@@ -477,7 +477,6 @@ const Object* scheme::getBuiltinSymbols() {
         SA("lpad"),
         SA("ls"),
         SA("lst"),
-        SA("lsts"),
         SA("lv"),
         SA("lv-alist"),
         SA("lvar"),

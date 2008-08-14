@@ -130,8 +130,19 @@ The same decoding considerations as for get-environment-variable apply.
 </pre>
 
 <h1>Issues</h1>
-<p>get-environment-variable is expected to return "Scheme string".</p>
-<p>But on a few cases on some platforms, an implementation doesn't known how to decode or interpret environment-variables.</p>
+<p>get-environment-variable is expected to return a "Scheme string".
+Unfortunately, many current platforms, including POSIX-like ones, do
+not require environment variables to be interpretable as sequences of
+characters.  In particular, environment variables can be used to name
+files, and filenames on the system can amount to NULL-terminated byte
+vectors, which, if the Scheme program were to collect uninterpreted
+and pass to, say, the open call, would work just fine, but which might
+not represent a string in the particular encoding the program expects.
+While in principle it may be desirable to provide a mechanism for
+accessing environment variables raw, this SRFI specifies a "string"
+return type because that best represents the consensus of existing
+implementations, and captures the semantically desirable behavior in
+the common case that the byte sequence is interpretable as a string.</p>
 
 <a name="0.1_appendix"></a>
 <h1>Appendix: Existing implementations</h1>
@@ -144,13 +155,13 @@ The same decoding considerations as for get-environment-variable apply.
   <tr><td>Gauche</td><td>(sys-getenv name) =&gt; (or string? false) name:string?</td><td>(sys-environ)</td></tr>
   <tr><td>Guile</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>PLT</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
+  <tr><td>MIT/GNU Scheme</td><td>(get-environment-variable name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>Scheme48</td><td>(lookup-environment-variable name) =&gt; (or string? false) name:string?</td><td>(environment-alist)</td></tr>
 
   <tr><td>SLIB</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>STk</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   <tr><td>STklos</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>(getenv)</td></tr>
   <tr><td>SCM</td><td>(getenv name) =&gt; (or string? false) name:string?</td><td>(getenv)</td></tr>
-  <tr><td>MIT/GNU Scheme</td><td>(get-environment-variable name) =&gt; (or string? false) name:string?</td><td>&nbsp;</td></tr>
   </tbody></table>
 <h1>Acknowledgements</h1>
 Thanks to Shiro Kawai, Alexey Radul, jmuk, Kokosabu, leque and all the members of the #Lisp_Scheme IRC channel on Freenode.

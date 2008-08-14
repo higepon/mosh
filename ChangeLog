@@ -1,5 +1,7 @@
 2008-08-14  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (exists): Fixed bug of exists.
+
         * VM.cpp (run): Added Object Pointer type checking for debug build.
 
                       : Rewrote apply.

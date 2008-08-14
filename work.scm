@@ -1,3 +1,5 @@
+(display (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three))))
+(exit)
 (display (test-temp 1  2 3))
 (display (test-temp 4 5 6))
 

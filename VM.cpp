@@ -821,6 +821,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("CAR");
             if (!ac_.isPair()) {
+//                call1(getTopLevelGlobalValue(Symbol::intern(UC("raise"))), Object::makeString(UC("car pair required, but got ~a")));
                 RAISE1("car pair required, but got ~a", ac_);
             }
             ac_ = ac_.car();

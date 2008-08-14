@@ -1340,7 +1340,7 @@ val
       x)))]
 [mosh-only 3 (eval 3 '())]
 [mosh-only 6 (test-temp 1 2 3)]
-
+[#t (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three)))]
 
 
 ;; ["syntax error: malformed when"
