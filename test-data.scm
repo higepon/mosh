@@ -859,6 +859,8 @@ val
   (apply (lambda (a b c) (+ a b c)) '(1 2 3))]
 [6
   (apply (lambda (a b c) (+ a b c)) 1 '(2 3))]
+[(2)
+ (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr))]
 [3 (/ 6 2)]
 [mosh-only 3 (mod 23 10)]
 [mosh-only #t (even? 2)]

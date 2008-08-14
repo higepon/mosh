@@ -2,6 +2,8 @@
 
         * VM.cpp (run): Added Object Pointer type checking for debug build.
 
+                      : Rewrote apply.
+
 2008-08-13  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (make-parameter): Added SRFI-39 Parameter Objects to Mosh core.

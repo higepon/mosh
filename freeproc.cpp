@@ -1491,7 +1491,8 @@ Object scheme::applyEx(int argc, const Object* argv)
             argsAsList = Pair::appendD(argsAsList, Pair::list1(argv[i]));
         }
     }
-    return theVM->applyClosure(proc, argsAsList);
+    theVM->applyClosure(proc, argsAsList);
+    return Object::Undef;
 }
 
 Object scheme::valuesEx(int argc, const Object* argv)

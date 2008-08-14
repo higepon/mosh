@@ -1,4 +1,5 @@
-(apply car '((3 2)))
+(display (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr)))
+(display (apply (lambda (x) (car x)) '((3 2))))
 (exit)
 
 (display (test-temp 1  2 3))
