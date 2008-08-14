@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
 
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
+
     // Do not call Symbol::intern before you load precompiled compiler!
 
     const Object compiler = getBuiltinCompiler();

@@ -61,6 +61,8 @@ CompilerProcedures.cpp \
 CompilerProcedures.h   \
 HashTableProceduures.cpp \
 HashTableProceduures.h   \
+ViolationProcedures.cpp \
+ViolationProcedures.h \
 SString.cpp          \
 BuiltinSymbols.cpp\
 CompoundCondition.h\

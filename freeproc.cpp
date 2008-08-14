@@ -1030,11 +1030,6 @@ Object scheme::errorEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::assertionViolationEx(int argc, const Object* argv)
-{
-    errorEx(argc, argv);
-    return Object::Undef;
-}
 
 Object scheme::getTimeofdayEx(int argc, const Object* argv)
 {
@@ -1876,7 +1871,7 @@ Object scheme::testTempEx(int argc, const Object* argv)
 {
    checkArgLength(3, argc, "symbol-value");
    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-   return theVM->call3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
+   return theVM->setAfterTrigger3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
                               , argv[0], argv[1], argv[2]);
 //       theVM->applyClosure(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
 //                                  , Pair::list3(argv[0], argv[1], argv[2]));

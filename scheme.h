@@ -459,6 +459,7 @@ public:
                                                   Object protocol);
 
     static Object makeCompoundCondition(int conditionCounts, const Object* conditions);
+    static Object makeCompoundCondition(Object conditions);
 
 #define DECL_TO(type)                                                           \
 type* to##type() const                                                  \

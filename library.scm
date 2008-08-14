@@ -1627,10 +1627,14 @@
 (define-doc (hashtable-keys) ...)
 
 (define (hashtable-update! hashtable key proc default)
-  (hashtable-set!
-   hashtable key
-   (proc (hashtable-ref
-          hashtable key default))))
+  (cond
+   [(hashtable-mutable? hashtable)
+    (hashtable-set!
+     hashtable key
+     (proc (hashtable-ref
+            hashtable key default)))]
+   [else
+    (assertion-violation 'hashtable-update! "can't update! immutable hashtable")]))
 
 (define (hashtable-entries hashtable)
   (let* ([keys (hashtable-keys hashtable)]
@@ -2893,7 +2897,6 @@
 
 (define raise
   (lambda (c)
-    (display "*** in raise")
     (cond ((current-exception-handler)
            => (lambda (proc)
                 (proc c)
@@ -2909,6 +2912,11 @@
            => (lambda (proc) (proc c)))
           (else
            (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a")))))
+
+(define (assertion-violation who message . irritants)
+  (apply $assertion-violation who message irritants))
+
+
 
 ;; c -> scheme test
 (define (test-plus a b c)

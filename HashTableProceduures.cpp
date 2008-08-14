@@ -30,6 +30,7 @@
  */
 
 #include "HashTableProceduures.h"
+#include "ViolationProcedures.h"
 #include "VM.h"
 using namespace scheme;
 
@@ -157,13 +158,19 @@ int scheme::symbolHash(Symbol* symbol)
 
 Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("hashtable-delete!");
     checkArgLength(2, argc, "hashtable-delete!");
-    const Object ht = argv[0];
+    const Object hashtable = argv[0];
     const Object key = argv[1];
-    if (ht.isHashTable()) {
-        ht.toHashTable()->deleteD(key);
+    if (hashtable.isHashTable()) {
+        HashTable* const table = hashtable.toHashTable();
+        if (table->mutableP()) {
+            table->deleteD(key);
+        } else {
+            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", Object::Nil);
+        }
     } else {
-        VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", ht);
+        VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", hashtable);
     }
     return Object::Undef;
 }
@@ -264,15 +271,22 @@ Object scheme::hashtableKeysEx(int argc, const Object* argv)
 }
 Object scheme::hashtableSetDEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("hash-table-set!");
     checkArgLength(3, argc, "hash-table-set!");
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", ht);
+    const Object hashtable = argv[0];
+    if (!hashtable.isHashTable()) {
+        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", hashtable);
     }
 
     const Object key = argv[1];
     const Object val = argv[2];
-    ht.toHashTable()->set(key, val);
+
+    HashTable* const table = hashtable.toHashTable();
+    if (table->mutableP()) {
+        table->set(key, val);
+    } else {
+        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Object::Nil);
+    }
     return Object::Undef;
 }
 
@@ -340,11 +354,17 @@ Object scheme::hashtableMutablePEx(int argc, const Object* argv)
 
 Object scheme::hashtableClearDEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("hashtable-clear!");
     checkArgLengthBetween(1, 2, argc, "hashtable-clear!");
     // we now ignore "k" argument.
     const Object hashtable = argv[0];
     if (hashtable.isHashTable()) {
-        hashtable.toHashTable()->clearD();
+        HashTable* const table = hashtable.toHashTable();
+        if (table->mutableP()) {
+            table->clearD();
+        } else {
+            callAssertionViolationAfter(Symbol::intern(procedureName), "can't clear an immutable hashtable.", Object::Nil);
+        }
     } else {
         VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);
     }
@@ -374,4 +394,3 @@ Object scheme::hashtableHashFunctionEx(int argc, const Object* argv)
         return Object::Undef;
     }
 }
-

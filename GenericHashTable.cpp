@@ -101,21 +101,8 @@ void GenericHashTable::set(Object key, Object value)
 
 void GenericHashTable::clearD()
 {
-    if (mutable_) {
-        prepareFunctions();
-        map_.clear();
-    } else {
-        const Object violationRcd = theVM->getTopLevelGlobalValue(UC("&violation-rcd"));
-//        theVM->raise(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor()));
-
-        const Object violation = theVM->callClosure0(violationRcd.toRecordConstructorDescriptor()->makeConstructor());
-        VM_LOG1("violation=~a\n", violation);
-            
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), violation);
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//        theVM->call1(theVM->getTopLevelGlobalValue(Symbol::intern(UC("raise"))), Pair::list1(theVM->callClosure0(violation.toRecordConstructorDescriptor()->makeConstructor())));
-    }
+    prepareFunctions();
+    map_.clear();
 }
 
 void GenericHashTable::deleteD(Object key)

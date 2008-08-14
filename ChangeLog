@@ -1,6 +1,12 @@
 2008-08-14  higepon  <higepon@users.sourceforge.jp>
 
-        * library.scm (exists): Fixed bug of exists.
+        * Fixed with-exception-handler, raise, assertion-violation.
+
+        * Passed hashtables test of R6RS test suite.
+
+        * ViolationProcedures.cpp: Added.
+
+        * library.scm (exists): Fixed bug of (exists proc lst).
 
         * VM.cpp (run): Added Object Pointer type checking for debug build.
 

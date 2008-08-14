@@ -292,6 +292,21 @@ Object Object::makeCompoundCondition(int conditionCounts, const Object* conditio
                                                                                                      conditions)))));
 }
 
+Object Object::makeCompoundCondition(Object conditions)
+{
+    const int conditionCounts = Pair::length(conditions);
+    Object* conditionsArray = Object::makeObjectArray(conditionCounts);
+    Object p = conditions;
+    for (int i = 0; i < conditionCounts; i++) {
+        conditionsArray[i] = p.car();
+        p = p.cdr();
+    }
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CompoundCondition,
+                                                        reinterpret_cast<word>(new CompoundCondition(conditionCounts,
+                                                                                                     conditionsArray)))));
+}
+
+
 Object* Object::makeObjectArray(int size)
 {
 #ifdef USE_BOEHM_GC

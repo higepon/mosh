@@ -34,6 +34,7 @@
 #include "HashTableProceduures.h"
 #include "RecordProcedures.h"
 #include "ConditionProcedures.h"
+#include "ViolationProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;
@@ -357,7 +358,7 @@ void VM::setOutputPort(TextualOutputPort& port)
 }
 
 // N.B be sure that pc_ should be set to next pc_(= return point)
-Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
+Object VM::setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3)
 {
     static Object callCode[] = {
         Object::makeRaw(Instruction::CONSTANT),
@@ -382,7 +383,7 @@ Object VM::call3(Object closure, Object arg1, Object arg2, Object arg3)
     return ac_;
 }
 
-Object VM::call1(Object closure, Object arg1)
+Object VM::setAfterTrigger1(Object closure, Object arg1)
 {
     static Object callCode[] = {
         Object::makeRaw(Instruction::CONSTANT),
@@ -399,7 +400,6 @@ Object VM::call1(Object closure, Object arg1)
     push(dc_);
     push(cl_);
     push(Object::makeObjectPointer(fp_));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     push(arg1);
     pc_[1]= closure;
 
@@ -1415,9 +1415,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(RESTORE_CONTINUATION)
         {
             const Object s = fetchOperand();
-            TRACE_INSN0("RESTORE_CONTINUATION");
             sp_ = stack_ + s.toStack()->restore(stack_);
-            LOG1("RESTORE_CONTINUATION ~a", Object::makeInt(sp_ - stack_));
             NEXT;
         }
         CASE(RETURN1)
@@ -1789,6 +1787,17 @@ void VM::showStack(int count, const char* file, int line)
 #error "don't use showStack"
 #endif
 }
+
+void VM::raiseAssertionViolation(Object who, Object message, Object irritant)
+{
+    Object proc =  getTopLevelGlobalValue(UC("assertion-violation"));
+    if (irritant.isNil()) {
+        setAfterTrigger3(proc, who, message, irritant);
+    } else {
+//        setAfterTrigger1(proc, 3, who, message, irritant);
+    }
+}
+
 
 #ifdef ENABLE_PROFILER
 //----------------------------------------------------------------------
