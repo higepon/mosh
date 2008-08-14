@@ -1108,8 +1108,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             Object* const sp = sp_ - operand.toInt();
 
-            fp_ = index(sp, 0).toObjectPointer();
+            const Object fpObject = index(sp, 0);
+            MOSH_ASSERT(fpObject.isObjectPointer());
+            fp_ = fpObject.toObjectPointer();
+
             dc_ = index(sp, 1);
+            MOSH_ASSERT(dc_.isProcedure());
 
             sp_ = sp - 2;
             NEXT;
@@ -1490,10 +1494,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RETURN)
         {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//            printf("RETURN %d\n", operand.toInt());
             operand = fetchOperand();
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return_entry:
 #ifdef DUMP_ALL_INSTRUCTIONS
             const int m = operand.toInt();
@@ -1501,23 +1502,25 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #endif
             TRACE_INSN1("RETURN", "(~d)\n", operand);
             Object* const sp = sp_ - operand.toInt();
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            fp_ = index(sp, 0).toObjectPointer();
+
+            const Object fpObject = index(sp, 0);
+            MOSH_ASSERT(fpObject.isObjectPointer());
+            fp_ = fpObject.toObjectPointer();
+
             cl_ = index(sp, 1);
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             if (!cl_.isProcedure()) {
                 LOG1("proc = ~a\n", cl_);
             }
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             MOSH_ASSERT(cl_.isProcedure());
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
             dc_ = index(sp, 2);
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             MOSH_ASSERT(dc_.isProcedure());
-            pc_ = index(sp, 3).toObjectPointer();
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+            const Object pcObject = index(sp, 3);
+            MOSH_ASSERT(pcObject.isObjectPointer());
+            pc_ = pcObject.toObjectPointer();
+
             sp_ = sp - 4;
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT;
         }
         CASE(SET_CAR)

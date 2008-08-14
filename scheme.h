@@ -169,6 +169,7 @@ public:
         RecordTypeDescriptor        = Type<25>::VALUE,
         RecordConstructorDescriptor = Type<26>::VALUE,
         CompoundCondition           = Type<27>::VALUE,
+        ObjectPointer               = Type<28>::VALUE, // used only debug mode
         forbidden_comma
     };
 };
@@ -405,10 +406,7 @@ public:
         return Object(str);
     }
 
-    static Object makeObjectPointer(Object* p)
-    {
-        return Object((word)p);
-    }
+    static Object makeObjectPointer(Object* p);
 
     static Object makeBinaryInputPort(FILE* file);
     static Object makeTextualInputFilePort(const ucs4char* str);
@@ -515,7 +513,25 @@ HashTable* toHashTable() const
 }
 
 
-Object* toObjectPointer() const { return reinterpret_cast<Object*>(val); }
+Object* toObjectPointer() const
+{
+#ifdef DEBUG_VERSION
+    return reinterpret_cast<Object*>(reinterpret_cast<HeapObject*>(val)->obj);
+#else
+    return reinterpret_cast<Object*>(val);
+#endif
+}
+
+bool isObjectPointer() const
+{
+#ifdef DEBUG_VERSION
+    return isHeapObject()
+        && reinterpret_cast<HeapObject*>(val)->type == HeapObject::ObjectPointer;
+#else
+    return false;
+#endif
+}
+
 
     bool isPointer() const
     {
@@ -716,6 +732,15 @@ inline Object Object::eqv(Object o) const
     return eq(o);
 }
 
+inline Object Object::makeObjectPointer(Object* p)
+{
+#ifdef DEBUG_VERSION
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ObjectPointer,
+                                                        reinterpret_cast<word>(p))));
+#else
+    return Object(reinterpret_cast<word>(p));
+#endif
+}
 
 
 };
