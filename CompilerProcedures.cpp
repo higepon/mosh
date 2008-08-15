@@ -30,6 +30,7 @@
  */
 
 #include "CompilerProcedures.h"
+#include "ViolationProcedures.h"
 #include "CodeBuilder.h"
 
 using namespace scheme;

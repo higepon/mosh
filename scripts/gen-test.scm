@@ -45,6 +45,9 @@
      (rec expect test)]
     [('mosh-only expect . test)
      (rec expect test)]
+    [('error . test)
+     (rec #t (list `(equal? 'error (guard (con [#t 'error])
+                                    ,@test))))]
     [(expect . test)
      (rec expect test)]))
 

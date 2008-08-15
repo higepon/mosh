@@ -30,6 +30,7 @@
  */
 
 #include "freeproc.h"
+#include "ViolationProcedures.h"
 #include "VM.h"
 
 extern scheme::VM* theVM;

@@ -36,6 +36,8 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+static Object makeMessageCondition(Object message);
+
 Object scheme::throwEx(int argc, const Object* argv)
 {
     DeclareProcedureName("throw");
@@ -44,11 +46,24 @@ Object scheme::throwEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
+void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+{
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC("wrong number of arguments (required ~d, got ~d)"),
+                              Pair::list2(Object::makeInt(requiredCounts),
+                                          Object::makeInt(gotCounts)));
+    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
+    callAssertionViolationAfter(who, message, irritants);
+}
+
 // caller should check type of arguments.
 void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants)
 {
     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
     Object condition = Object::Nil;
     if (theVM->isR6RSMode()) {
         Object conditions = Object::Nil;
@@ -58,8 +73,8 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
             conditions = Object::cons(irritantsCondition, conditions);
         }
 
-        const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
-        const Object messageCondition = theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
+//        const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
+        const Object messageCondition = makeMessageCondition(message);//theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
         conditions = Object::cons(messageCondition, conditions);
 
         if (!who.isFalse()) {
@@ -103,4 +118,13 @@ Object scheme::assertionViolationEx(int argc, const Object* argv)
     // todo
     callAssertionViolationAfter(argv[0], argv[1], Object::Nil);
     return Object::Undef;
+}
+
+
+// private
+Object makeMessageCondition(Object message)
+{
+    const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
+    const Object messageCondition = theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
+    return messageCondition;
 }

@@ -88,7 +88,8 @@ class gc_vector : public std::vector<T1> {};
 
 #define checkArgLength(required, argc, proc)   \
     if (argc != required) { \
-        VM_RAISE1("wrong number of argument for " proc " required " #required ", got ~d\n", Object::makeInt(argc)); \
+        callWrongNumberOfArgumentsViolationAfter(proc, required, argc); \
+        return Object::Undef;\
     } \
 
 #define checkArgLengthBetween(min, max, argc, proc)  \

@@ -1,4 +1,9 @@
-
+(make-record-constructor-descriptor)
+(number? 2 2)
+(exit)
+(apply (lambda (s) (display s)) '(1 2))
+(exit)
+(car 3)
 (display (guard (con [#t 'error])
               (car 3)))
 (exit)

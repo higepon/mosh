@@ -672,16 +672,19 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                         fp_ = sp - requiredLength;
                         sp_ = sp;
                     } else {
-                        RAISE2("wrong number of arguments for #<closure> (required ~d, got ~d)"
+                        RAISE2("2wrong number of arguments for #<closure> (required ~d, got ~d)"
                                , Object::makeInt(requiredLength)
                                , operand);
                     }
                 } else if (requiredLength == argLength) {
                     fp_ = sp_ - argLength;
                 } else {
-                    RAISE2("wrong number of arguments for #<closure> (required ~d, got ~d)"
-                           , Object::makeInt(requiredLength)
-                           , operand);
+                    callWrongNumberOfArgumentsViolationAfter("#<closure>",
+                                                             requiredLength,
+                                                             operand.toInt());
+//                     RAISE2("1wrong number of arguments for #<closure> (required ~d, got ~d)"
+//                            , Object::makeInt(requiredLength)
+//                            , operand);
                 }
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);
@@ -801,38 +804,38 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CAAR)
         {
-            TRACE_INSN0("CAAR");
-            if (!ac_.isPair()) {
-                RAISE1("caar pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                ac_ = ac_.car();
+                if (ac_.isPair()) {
+                    ac_ = ac_.car();
+                } else {
+                    callAssertionViolationAfter("caar", "pair required", Pair::list1(ac_));
+                }
+            } else {
+                callAssertionViolationAfter("caar", "pair required", Pair::list1(ac_));
             }
-            ac_ = ac_.car();
-            if (!ac_.isPair()) {
-                RAISE1("caar pair required, but got ~a", ac_);
-            }
-            ac_ = ac_.car();
             NEXT1;
         }
         CASE(CADR)
         {
-            TRACE_INSN0("CADR");
-            if (!ac_.isPair()) {
-                RAISE1("cadr pair required, but got ~a\n", ac_);
+            if (ac_.isPair()) {
+                ac_ = ac_.cdr();
+                if (ac_.isPair()) {
+                    ac_ = ac_.car();
+                } else {
+                    callAssertionViolationAfter("cadr", "pair required", Pair::list1(ac_));
+                }
+            } else {
+                callAssertionViolationAfter("cadr", "pair required", Pair::list1(ac_));
             }
-            ac_ = ac_.cdr();
-            if (!ac_.isPair()) {
-                RAISE1("cadr pair required, but got ~a\n", ac_);
-            }
-            ac_ = ac_.car();
             NEXT1;
         }
         CASE(CAR)
         {
-            TRACE_INSN0("CAR");
-            if (!ac_.isPair()) {
-                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
-//                RAISE1("car pair required, but got ~a", ac_);
-            } else {
+            if (ac_.isPair()) {
                 ac_ = ac_.car();
+            } else {
+                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -847,37 +850,39 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CDAR)
         {
-            TRACE_INSN0("CDAR");
-            if (!ac_.isPair()) {
-                RAISE1("cdar pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                ac_ = ac_.car();
+                if (ac_.isPair()) {
+                    ac_ = ac_.cdr();
+                } else {
+                    callAssertionViolationAfter("cdar", "pair required", Pair::list1(ac_));
+                }
+            } else {
+                callAssertionViolationAfter("cdar", "pair required", Pair::list1(ac_));
             }
-            ac_ = ac_.car();
-            if (!ac_.isPair()) {
-                RAISE1("cdar pair required, but got ~a", ac_);
-            }
-            ac_ = ac_.cdr();
             NEXT1;
         }
         CASE(CDDR)
         {
-            TRACE_INSN0("CDDR");
-            if (!ac_.isPair()) {
-                RAISE1("cddr pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                ac_ = ac_.cdr();
+                if (ac_.isPair()) {
+                    ac_ = ac_.cdr();
+                } else {
+                    callAssertionViolationAfter("cddr", "pair required", Pair::list1(ac_));
+                }
+            } else {
+                callAssertionViolationAfter("cddr", "pair required", Pair::list1(ac_));
             }
-            ac_ = ac_.cdr();
-            if (!ac_.isPair()) {
-                RAISE1("cddr pair required, but got ~a", ac_);
-            }
-            ac_ = ac_.cdr();
             NEXT1;
         }
         CASE(CDR)
         {
-            TRACE_INSN0("CDR");
-            if (!ac_.isPair()) {
-                RAISE1("cdr pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                ac_ = ac_.cdr();
+            } else {
+                callAssertionViolationAfter("cdr", "pair required", Pair::list1(ac_));
             }
-            ac_ = ac_.cdr();
             NEXT1;
         }
         CASE(CDR_PUSH)
@@ -1615,20 +1620,21 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             //  [ac_] = a
             const int num = fetchOperand().toInt();
             if (num > maxNumValues_ + 1) {
-                RAISE1("too many values ~d", Object::makeInt(num));
-            }
-            numValues_ = num;
-            if (num >= 0) {
-                for (int i = num - 1; i > 0; i--) {
-                    values_[i - 1] = ac_;
-                    ac_ = index(sp_, num - i - 1);
-                }
-            }
-
-            if (numValues_ > 1) {
-                sp_ =  sp_ - (numValues_ - 1);
+                callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeInt(num)));
             } else {
-                // there's no need to push
+                numValues_ = num;
+                if (num >= 0) {
+                    for (int i = num - 1; i > 0; i--) {
+                        values_[i - 1] = ac_;
+                        ac_ = index(sp_, num - i - 1);
+                    }
+                }
+
+                if (numValues_ > 1) {
+                    sp_ =  sp_ - (numValues_ - 1);
+                } else {
+                    // there's no need to push
+                }
             }
             NEXT;
         }
@@ -1960,7 +1966,8 @@ Object VM::values(int num, const Object* v)
     }
     for (int i = 1; i < num; i++) {
         if (i >= maxNumValues_) {
-            RAISE0("too many values");
+            callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeInt(i)));
+            return Object::Undef;
         }
         values_[i - 1] = v[i];
     }

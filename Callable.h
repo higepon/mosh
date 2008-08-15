@@ -89,7 +89,8 @@ public:
 
 #define checkArgumentLength(required)   \
     if (argc != required) { \
-        VM_RAISE3("wrong number of argument for ~a required ~d, got ~d\n", Object::makeString(procedureName), Object::makeInt(required), Object::makeInt(argc)); \
+        callWrongNumberOfArgumentsViolationAfter(procedureName, required, argc); \
+        return Object::Undef;\
     } \
 
 
