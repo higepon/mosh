@@ -31,6 +31,7 @@
 
 #include "CompilerProcedures.h"
 #include "ViolationProcedures.h"
+#include "ProcedureMacro.h"
 #include "CodeBuilder.h"
 
 using namespace scheme;
@@ -71,7 +72,8 @@ enum {
 
 Object scheme::labelEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "$label");
+    DeclareProcedureName("$label");
+    checkArgumentLength(1);
     const Object label = Object::makeVector(2);
     label.toVector()->set(0, Object::makeInt(LABEL));
     label.toVector()->set(1, argv[0]);
@@ -80,7 +82,8 @@ Object scheme::labelEx(int argc, const Object* argv)
 
 Object scheme::localRefEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "$localRefEx");
+    DeclareProcedureName("$localRefEx");
+    checkArgumentLength(1);
     const Object label = Object::makeVector(2);
     label.toVector()->set(0, Object::makeInt(LOCAL_REF));
     label.toVector()->set(1, argv[0]);
@@ -89,7 +92,8 @@ Object scheme::localRefEx(int argc, const Object* argv)
 
 Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "pass1/find-symbol-in-lvars");
+    DeclareProcedureName("pass1/find-symbol-in-lvars");
+    checkArgumentLength(2);
     const Object symbol = argv[0];
     const Object lvars  = argv[1];
     for (Object p = lvars; p.isPair(); p = p.cdr()) {
@@ -103,7 +107,8 @@ Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
 
 Object scheme::pass3CompileReferEx(int argc, const Object* argv)
 {
-    checkArgLength(4, argc, "pass3/compile-refer");
+    DeclareProcedureName("pass3/compile-refer");
+    checkArgumentLength(4);
     const Object codeBuilder        = argv[0];
     const Object variable           = argv[1];
     const Object localVariablesList = argv[2];
@@ -482,7 +487,8 @@ Object scheme::makeCodeBuilderEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "code-builder-put1!");
+    DeclareProcedureName("code-builder-put1!");
+    checkArgumentLength(2);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
@@ -494,7 +500,8 @@ Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "code-builder-put2!");
+    DeclareProcedureName("code-builder-put2!");
+    checkArgumentLength(3);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
@@ -506,7 +513,8 @@ Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
 {
-    checkArgLength(4, argc, "code-builder-put3!");
+    DeclareProcedureName("code-builder-put3!");
+    checkArgumentLength(4);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
@@ -521,7 +529,8 @@ Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
 {
-    checkArgLength(5, argc, "code-builder-put4!");
+    DeclareProcedureName("code-builder-put4!");
+    checkArgumentLength(5);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
@@ -537,7 +546,8 @@ Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
 {
-    checkArgLength(6, argc, "code-builder-put5!");
+    DeclareProcedureName("code-builder-put5!");
+    checkArgumentLength(6);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~a\n", cb);
@@ -555,7 +565,8 @@ Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "code-builder-append!");
+    DeclareProcedureName("code-builder-append!");
+    checkArgumentLength(2);
     const Object cbDst = argv[0];
     const Object cbSrc = argv[1];
     if (!cbDst.isCodeBuilder() || !cbSrc.isCodeBuilder()) {
@@ -567,7 +578,8 @@ Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "code-builder-emit2");
+    DeclareProcedureName("code-builder-emit2");
+    checkArgumentLength(1);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~an", cb);
@@ -577,7 +589,8 @@ Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "code-builder-put-insn-arg1!");
+    DeclareProcedureName("code-builder-put-insn-arg1!");
+    checkArgumentLength(3);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~an", cb);
@@ -590,7 +603,8 @@ Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
 
 Object scheme::codeBuilderPutInsnArg0DEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "code-builder-put-insn-arg0!");
+    DeclareProcedureName("code-builder-put-insn-arg0!");
+    checkArgumentLength(2);
     const Object cb = argv[0];
     if (!cb.isCodeBuilder()) {
         VM_RAISE1("code-builder required, but got ~an", cb);

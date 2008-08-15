@@ -30,6 +30,7 @@
  */
 
 #include "ViolationProcedures.h"
+#include "ProcedureMacro.h"
 #include "VM.h"
 
 using namespace scheme;
@@ -44,6 +45,31 @@ Object scheme::throwEx(int argc, const Object* argv)
     checkArgumentLength(1);
     theVM->throwException(argv[0]);
     return Object::Undef;
+}
+
+void scheme::callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
+{
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC("~a required, but got ~a"),
+                              Pair::list2(requiredType, gotValue));
+    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
+    callAssertionViolationAfter(who, message, irritants);
+
+}
+
+void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
+{
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
+                              Pair::list3(Object::makeInt(startCounts),
+                                          Object::makeInt(endCounts),
+                                          Object::makeInt(gotCounts)));
+    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
+    callAssertionViolationAfter(who, message, irritants);
 }
 
 void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )

@@ -31,6 +31,7 @@
 
 #include "freeproc.h"
 #include "ViolationProcedures.h"
+#include "ProcedureMacro.h"
 #include "VM.h"
 
 extern scheme::VM* theVM;
@@ -44,19 +45,22 @@ Object scheme::currentErrorPortEx(int argc, const Object* argv)
 
 Object scheme::numberPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "number?");
+    DeclareProcedureName("number?");
+    checkArgumentLength(1);
     RETURN_BOOL(argv[0].isInt());
 }
 
 Object scheme::consEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "cons");
+    DeclareProcedureName("cons");
+    checkArgumentLength(2);
     return Object::cons(argv[0], argv[1]);
 }
 
 Object scheme::carEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "car");
+    DeclareProcedureName("car");
+    checkArgumentLength(1);
     const Object p = argv[0];
     if (p.isPair()) {
         return p.car();
@@ -68,7 +72,8 @@ Object scheme::carEx(int argc, const Object* argv)
 
 Object scheme::cdrEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "cdr");
+    DeclareProcedureName("cdr");
+    checkArgumentLength(1);
     const Object p = argv[0];
     if (p.isPair()) {
         return p.cdr();
@@ -80,7 +85,8 @@ Object scheme::cdrEx(int argc, const Object* argv)
 
 Object scheme::sourceInfoEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "source-info");
+    DeclareProcedureName("source-info");
+    checkArgumentLength(1);
     const Object arg = argv[0];
     if (arg.isPair()) {
         return arg.sourceInfo();
@@ -93,7 +99,8 @@ Object scheme::sourceInfoEx(int argc, const Object* argv)
 
 Object scheme::setSourceInfoDEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "set-source-info!");
+    DeclareProcedureName("set-source-info!");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg1.isPair()) {
@@ -106,7 +113,8 @@ Object scheme::setSourceInfoDEx(int argc, const Object* argv)
 
 Object scheme::nullPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "null?!");
+    DeclareProcedureName("null?!");
+    checkArgumentLength(1);
     if (argc > 1) {
         VM_RAISE1("wrong number of arguments for display required at most 1, got ~d)\n", Object::makeInt(argc));
     }
@@ -150,7 +158,8 @@ Object scheme::sysDisplayEx(int argc, const Object* argv)
 
 Object scheme::rxmatchEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "rxmatch");
+    DeclareProcedureName("rxmatch");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     if (!arg1.isRegexp()) {
         VM_RAISE1("rxmatch regexp required, but got ~a\n", arg1);
@@ -165,7 +174,8 @@ Object scheme::rxmatchEx(int argc, const Object* argv)
 
 Object scheme::regexpPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "regexp?");
+    DeclareProcedureName("regexp?");
+    checkArgumentLength(1);
     RETURN_BOOL(argv[0].isRegexp());
 }
 
@@ -338,7 +348,8 @@ Object scheme::stringSetDEx(int argc, const Object* argv)
 
 Object scheme::stringLengthEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "string-length");
+    DeclareProcedureName("string-length");
+    checkArgumentLength(1);
     if (argv[0].isString()) {
         return Object::makeInt(argv[0].toString()->data().length());
     } else {
@@ -359,13 +370,15 @@ Object scheme::stringTosymbol(Object str)
 
 Object scheme::stringTosymbolEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "string->symbol");
+    DeclareProcedureName("string->symbol");
+    checkArgumentLength(1);
     return stringTosymbol(argv[0]);
 }
 
 Object scheme::stringTonumberEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "string->number");
+    DeclareProcedureName("string->number");
+    checkArgumentLength(1);
     if (argv[0].isString()) {
         return Object::makeInt(atoi(argv[0].toString()->data().ascii_c_str()));
     } else {
@@ -501,7 +514,8 @@ Object scheme::stringPEx(int argc, const Object* argv)
 
 Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "get-environment-variable");
+    DeclareProcedureName("get-environment-variable");
+    checkArgumentLength(1);
     if (argv[0].isString()) {
         const char* str = getenv(argv[0].toString()->data().ascii_c_str());
         return str == NULL ? Object::False : Object::makeString(str);
@@ -514,7 +528,8 @@ Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
 extern char** environ;
 Object scheme::getEnvironmentVariablesEx(int argc, const Object* argv)
 {
-    checkArgLength(0, argc, "get-environment-variables");
+    DeclareProcedureName("get-environment-variables");
+    checkArgumentLength(0);
     Object ret = Object::Nil;
     char ** env = environ;
     while(*env) {
@@ -665,7 +680,8 @@ Object scheme::sysGetOutputStringEx(int argc, const Object* argv)
 
 Object scheme::stringToregexpEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "string->regexp");
+    DeclareProcedureName("string->regexp");
+    checkArgumentLength(1);
     if (argv[0].isString()) {
         return Object::makeRegexp(argv[0].toString()->data());
     } else {
@@ -676,7 +692,8 @@ Object scheme::stringToregexpEx(int argc, const Object* argv)
 
 Object scheme::charTointegerEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "char->integer");
+    DeclareProcedureName("char->integer");
+    checkArgumentLength(1);
     if (argv[0].isChar()) {
         return Object::makeInt(argv[0].toChar());
     } else {
@@ -687,7 +704,8 @@ Object scheme::charTointegerEx(int argc, const Object* argv)
 
 Object scheme::integerTocharEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "integer->char");
+    DeclareProcedureName("integer->char");
+    checkArgumentLength(1);
     if (argv[0].isInt()) {
         return Object::makeChar(argv[0].toInt());
     } else {
@@ -827,7 +845,8 @@ Object scheme::gensymEx(int argc, const Object* argv)
 
 Object scheme::stringEqPEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "string=?");
+    DeclareProcedureName("string=?");
+    checkArgumentLength(2);
     const Object string1 = argv[0];
     const Object string2 = argv[1];
     if (string1.isString() && string2.isString()) {
@@ -840,7 +859,8 @@ Object scheme::stringEqPEx(int argc, const Object* argv)
 
 Object scheme::vectorPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "vector?");
+    DeclareProcedureName("vector?");
+    checkArgumentLength(1);
     return Object::makeBool(argv[0].isVector());
 }
 
@@ -904,13 +924,15 @@ Object scheme::memvEx(int argc, const Object* argv)
 
 Object scheme::eqPEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "eq?");
+    DeclareProcedureName("eq?");
+    checkArgumentLength(2);
     RETURN_BOOL(argv[0] == argv[1]);
 }
 
 Object scheme::eqvPEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "eqv?");
+    DeclareProcedureName("eqv?");
+    checkArgumentLength(2);
     return argv[0].eqv(argv[1]);
 }
 
@@ -947,7 +969,8 @@ Object scheme::booleanPEx(int argc, const Object* argv)
 
 Object scheme::symbolTostringEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "symbol->string");
+    DeclareProcedureName("symbol->string");
+    checkArgumentLength(1);
     if (argv[0].isSymbol()) {
         return Object::makeString(argv[0].toSymbol()->c_str());
     } else {
@@ -958,7 +981,8 @@ Object scheme::symbolTostringEx(int argc, const Object* argv)
 
 Object scheme::stringRefEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "string-ref");
+    DeclareProcedureName("string-ref");
+    checkArgumentLength(2);
     Object arg1 = argv[0];
     Object arg2 = argv[1];
     if (arg1.isString() && arg2.isInt()) {
@@ -997,7 +1021,8 @@ Object scheme::vmApplyEx(int argc, const Object* argv)
 
 Object scheme::pairPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "pair?");
+    DeclareProcedureName("pair?");
+    checkArgumentLength(1);
     RETURN_BOOL(argv[0].isPair());
 }
 
@@ -1020,7 +1045,8 @@ Object findIter(Object proc, Object lst)
 
 Object scheme::find10Ex(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "find");
+    DeclareProcedureName("find");
+    checkArgumentLength(2);
     const Object proc = argv[0];
     if (!proc.isClosure() && !proc.isCProcedure()) {
         VM_RAISE1("find closure required, but got ~a\n", proc);
@@ -1037,7 +1063,8 @@ Object scheme::find10Ex(int argc, const Object* argv)
 // (make-custom-binary-input-port id read! get-position set-position! close)
 Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
 {
-    checkArgLength(5, argc, "make-custom-binary-input-port");
+    DeclareProcedureName("make-custom-binary-input-port");
+    checkArgumentLength(5);
     const Object id = argv[0];
     if (!id.isString()) {
         VM_RAISE1("make-custom-binary-input-port string required, but got ~a\n", id);
@@ -1069,7 +1096,8 @@ Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
 
 Object scheme::getU8Ex(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "get-u8");
+    DeclareProcedureName("get-u8");
+    checkArgumentLength(1);
     if (argv[0].isBinaryInputPort()) {
         return Object::makeInt(argv[0].toBinaryInputPort()->getU8());
     } else {
@@ -1080,7 +1108,8 @@ Object scheme::getU8Ex(int argc, const Object* argv)
 
 Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "bytevector-u8-set!");
+    DeclareProcedureName("bytevector-u8-set!");
+    checkArgumentLength(3);
     const Object bv = argv[0];
     if (!bv.isByteVector()) {
         VM_RAISE1("bytevector-u8-set! byte-vector required, but got ~a\n", bv);
@@ -1102,7 +1131,8 @@ Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
 
 Object scheme::transcodedPortEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "transcoded-port");
+    DeclareProcedureName("transcoded-port");
+    checkArgumentLength(2);
     const Object port = argv[0];
     const Object transcoder = argv[1];
     if (port.isBinaryInputPort() && transcoder.isTranscoder()) {
@@ -1120,7 +1150,8 @@ Object scheme::utf8CodecEx(int argc, const Object* argv)
 
 Object scheme::makeTranscoderEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "make-trans-coder");
+    DeclareProcedureName("make-trans-coder");
+    checkArgumentLength(1);
     if (argv[0].isCodec()) {
         return Object::makeTranscoder(argv[0].toCodec());
     } else {
@@ -1154,7 +1185,8 @@ Object scheme::sysGetBytevectorEx(int argc, const Object* argv)
 
 Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "bytevector-u8-ref");
+    DeclareProcedureName("bytevector-u8-ref");
+    checkArgumentLength(2);
     const Object bv = argv[0];
     const Object i = argv[1];
     if (bv.isByteVector() && i.isInt()) {
@@ -1167,7 +1199,8 @@ Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
 
 Object scheme::bytevectorLengthEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "bytevector-length");
+    DeclareProcedureName("bytevector-length");
+    checkArgumentLength(1);
     if (argv[0].isByteVector()) {
         return Object::makeInt(argv[0].toByteVector()->length());
     } else {
@@ -1183,7 +1216,8 @@ Object scheme::standardInputPortEx(int argc, const Object* argv)
 
 Object scheme::getBytevectorNEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "get-byte-vector-n");
+    DeclareProcedureName("get-byte-vector-n");
+    checkArgumentLength(2);
     const Object p = argv[0];
     if (!p.isBinaryInputPort()) {
         VM_RAISE1("get-byte-vector-n binary-input-port required, but got ~a\n", p);
@@ -1204,7 +1238,8 @@ Object scheme::getBytevectorNEx(int argc, const Object* argv)
 
 Object scheme::utf8TostringEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "utf8->string");
+    DeclareProcedureName("utf8->string");
+    checkArgumentLength(1);
     const Object bv = argv[0];
     if (!bv.isByteVector()) {
         VM_RAISE1("utf8->string bytevector required, but got ~a\n", bv);
@@ -1222,7 +1257,8 @@ Object scheme::utf8TostringEx(int argc, const Object* argv)
 
 Object scheme::openFileOutputPortEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "open-file-output-port");
+    DeclareProcedureName("open-file-output-port");
+    checkArgumentLength(1);
     const Object file = argv[0];
     if (!file.isString()) {
         VM_RAISE1("open-file-output-port string required, but got ~a\n", file);
@@ -1235,7 +1271,8 @@ Object scheme::openFileOutputPortEx(int argc, const Object* argv)
 
 Object scheme::openFileInputPortEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "open-file-input-port");
+    DeclareProcedureName("open-file-input-port");
+    checkArgumentLength(1);
     const Object file = argv[0];
     if (!file.isString()) {
         VM_RAISE1("open-file-input-port string required, but got ~a\n", file);
@@ -1256,7 +1293,8 @@ Object scheme::vectorEx(int argc, const Object* argv)
 
 Object scheme::regexpReplaceEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "regexp-replace");
+    DeclareProcedureName("regexp-replace");
+    checkArgumentLength(3);
     const Object reg = argv[0];
     const Object str = argv[1];
     const Object sub = argv[2];
@@ -1271,7 +1309,8 @@ Object scheme::regexpReplaceEx(int argc, const Object* argv)
 
 Object scheme::regexpReplaceAllEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "regexp-replace-all");
+    DeclareProcedureName("regexp-replace-all");
+    checkArgumentLength(3);
     const Object reg = argv[0];
     const Object str = argv[1];
     const Object sub = argv[2];
@@ -1286,27 +1325,31 @@ Object scheme::regexpReplaceAllEx(int argc, const Object* argv)
 
 Object scheme::evalEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "eval");
+    DeclareProcedureName("eval");
+    checkArgumentLength(2);
     return theVM->eval(argv[0], argv[1]);
 }
 
 Object scheme::raiseEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "raise");
+    DeclareProcedureName("raise");
+    checkArgumentLength(1);
     theVM->raise(argv[0]);
     return Object::Undef;
 }
 
 Object scheme::raiseContinuableEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "raise-continuable");
+    DeclareProcedureName("raise-continuable");
+    checkArgumentLength(1);
     return theVM->raiseContinuable(argv[0]);
 }
 
 
 Object scheme::withExceptionHandlerEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "with-exception-handler");
+    DeclareProcedureName("with-exception-handler");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg1.isClosure() && arg2.isClosure()) {
@@ -1319,7 +1362,8 @@ Object scheme::withExceptionHandlerEx(int argc, const Object* argv)
 
 Object scheme::makeVectorTypeEx(int argc, const Object* argv)
 {
-    checkArgLength(5, argc, "make-vector-type");
+    DeclareProcedureName("make-vector-type");
+    checkArgumentLength(5);
     const Object name = argv[0];
     const Object supertype = argv[1];
     const Object data = argv[2];
@@ -1351,7 +1395,8 @@ Object scheme::vectorTypeDataEx(int argc, const Object* argv)
 
 Object scheme::vectorTypeInstanceOfPEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "vector-type-instance-of");
+    DeclareProcedureName("vector-type-instance-of");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg1.isTypedVector() && arg2.isTypedVectorDesc()) {
@@ -1364,7 +1409,8 @@ Object scheme::vectorTypeInstanceOfPEx(int argc, const Object* argv)
 
 Object scheme::makeTypedVectorEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "make-typed-vector");
+    DeclareProcedureName("make-typed-vector");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg1.isTypedVectorDesc() && arg2.isPair()) {
@@ -1377,7 +1423,8 @@ Object scheme::makeTypedVectorEx(int argc, const Object* argv)
 
 Object scheme::typedVectorGetNthEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "typed-vector-get-nth");
+    DeclareProcedureName("typed-vector-get-nth");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg1.isTypedVector() && arg2.isInt()) {
@@ -1390,7 +1437,8 @@ Object scheme::typedVectorGetNthEx(int argc, const Object* argv)
 
 Object scheme::typedVectorSetNthEx(int argc, const Object* argv)
 {
-    checkArgLength(3, argc, "typed-vector-set-nth");
+    DeclareProcedureName("typed-vector-set-nth");
+    checkArgumentLength(3);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     const Object arg3 = argv[2];
@@ -1465,7 +1513,8 @@ int scheme::mod(int x, int y)
 
 Object scheme::modEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "mod");
+    DeclareProcedureName("mod");
+    checkArgumentLength(2);
     Object arg1 = argv[0];
     Object arg2 = argv[1];
     if (arg1.isInt() && arg2.isInt()) {
@@ -1484,7 +1533,8 @@ Object scheme::modEx(int argc, const Object* argv)
 
 Object scheme::divEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "div");
+    DeclareProcedureName("div");
+    checkArgumentLength(2);
     Object arg1 = argv[0];
     Object arg2 = argv[1];
     if (arg1.isInt() && arg2.isInt()) {
@@ -1503,7 +1553,8 @@ Object scheme::divEx(int argc, const Object* argv)
 
 Object scheme::assqEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "assq");
+    DeclareProcedureName("assq");
+    checkArgumentLength(2);
     const Object arg1 = argv[0];
     const Object arg2 = argv[1];
     if (arg2.isPair() || arg2.isNil()) {
@@ -1542,14 +1593,16 @@ Object scheme::macroexpand1Ex(int argc, const Object* argv)
 
 Object scheme::procedurePEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "procedure");
+    DeclareProcedureName("procedure");
+    checkArgumentLength(1);
     const Object arg1 = argv[0];
     return Object::makeBool(arg1.isClosure() || arg1.isCProcedure());
 }
 
 Object scheme::loadEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "load");
+    DeclareProcedureName("load");
+    checkArgumentLength(1);
     if (argv[0].isString()) {
         theVM->loadFile(argv[0].toString()->data());
     } else {
@@ -1560,7 +1613,8 @@ Object scheme::loadEx(int argc, const Object* argv)
 
 Object scheme::symbolPEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "symbol?");
+    DeclareProcedureName("symbol?");
+    checkArgumentLength(1);
     return Object::makeBool(argv[0].isSymbol());
 }
 
@@ -1656,7 +1710,8 @@ Object scheme::charLtPEx(int argc, const Object* argv)
 
 Object scheme::vectorTolistEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "vector->list");
+    DeclareProcedureName("vector->list");
+    checkArgumentLength(1);
     const Object vec = argv[0];
     if (!vec.isVector()) {
         VM_RAISE1("vector->list vector required, but got ~a\n", vec);
@@ -1718,13 +1773,15 @@ Object scheme::appendEx(int argc, const Object* argv)
 
 Object scheme::append2Ex(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "append2");
+    DeclareProcedureName("append2");
+    checkArgumentLength(2);
     return Pair::append2(argv[0], argv[1]);
 }
 
 Object scheme::appendAEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "appendA");
+    DeclareProcedureName("appendA");
+    checkArgumentLength(2);
     return Pair::append2(argv[0], argv[1]);
 }
 
@@ -1758,7 +1815,8 @@ Object scheme::uniq(Object list)
 
 Object scheme::lengthEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "length");
+    DeclareProcedureName("length");
+    checkArgumentLength(1);
     const Object lst = argv[0];
     if (lst.isNil()) {
         return Object::makeInt(0);
@@ -1774,7 +1832,8 @@ Object scheme::lengthEx(int argc, const Object* argv)
 
 Object scheme::listTovectorEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "list->vector");
+    DeclareProcedureName("list->vector");
+    checkArgumentLength(1);
     const Object list = argv[0];
     if (list.isPair()) {
         return Object::makeVector(list);
@@ -1803,7 +1862,8 @@ Object scheme::stringEx(int argc, const Object* argv)
 // for psyntax
 Object scheme::setSymbolValueDEx(int argc, const Object* argv)
 {
-    checkArgLength(2, argc, "set-symbol-value");
+    DeclareProcedureName("set-symbol-value");
+    checkArgumentLength(2);
     const Object id  = argv[0];
     const Object val = argv[1];
     theVM->setTopLevelGlobalValue(id, val);
@@ -1813,14 +1873,16 @@ Object scheme::setSymbolValueDEx(int argc, const Object* argv)
 // for psyntax
 Object scheme::symbolValueEx(int argc, const Object* argv)
 {
-    checkArgLength(1, argc, "symbol-value");
+    DeclareProcedureName("symbol-value");
+    checkArgumentLength(1);
     const Object id  = argv[0];
     return theVM->getTopLevelGlobalValue(id);
 }
 
 Object scheme::testTempEx(int argc, const Object* argv)
 {
-   checkArgLength(3, argc, "symbol-value");
+   DeclareProcedureName("symbol-value");
+    checkArgumentLength(3);
    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
    return theVM->setAfterTrigger3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
                               , argv[0], argv[1], argv[2]);

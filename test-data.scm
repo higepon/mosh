@@ -1359,6 +1359,8 @@ val
 [error (apply (lambda (s) (display s)) '(1 2))]
 [error (number? 2 2)]
 [error (make-record-constructor-descriptor)]
+[error (hashtable-clear! 1 1 1)]
+[error (record-predicate 3)]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

@@ -85,20 +85,6 @@ class gc_vector : public std::vector<T1> {};
 
 #define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
-
-#define checkArgLength(required, argc, proc)   \
-    if (argc != required) { \
-        callWrongNumberOfArgumentsViolationAfter(proc, required, argc); \
-        return Object::Undef;\
-    } \
-
-#define checkArgLengthBetween(min, max, argc, proc)  \
-    if (argc < min || argc > max) { \
-        VM_RAISE1("wrong number of argument for " proc " required between " #min " and " #max ", but got ~d\n", Object::makeInt(argc)); \
-    } \
-
-
-
 typedef intptr_t word;
 typedef word ucs4char;
 

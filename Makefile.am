@@ -47,6 +47,7 @@ TypedVector.h        \
 TypedVector.cpp      \
 CodeBuilder.h        \
 CodeBuilder.cpp        \
+ProcedureMacro.h \
 RecordTypeDescriptor.h \
 RecordTypeDescriptor.cpp \
 RecordConstructorDescriptor.h\
