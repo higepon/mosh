@@ -56,7 +56,6 @@ void scheme::callWrongTypeOfArgumentViolationAfter(Object who, Object requiredTy
                               Pair::list2(requiredType, gotValue));
     const Object message = sysGetOutputStringEx(1, &stringOutputPort);
     callAssertionViolationAfter(who, message, irritants);
-
 }
 
 void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
@@ -84,8 +83,7 @@ void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCo
     callAssertionViolationAfter(who, message, irritants);
 }
 
-// caller should check type of arguments.
-void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants)
+void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
@@ -99,8 +97,7 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
             conditions = Object::cons(irritantsCondition, conditions);
         }
 
-//        const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
-        const Object messageCondition = makeMessageCondition(message);//theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
+        const Object messageCondition = makeMessageCondition(message);
         conditions = Object::cons(messageCondition, conditions);
 
         if (!who.isFalse()) {
@@ -141,8 +138,20 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
 
 Object scheme::assertionViolationEx(int argc, const Object* argv)
 {
-    // todo
-    callAssertionViolationAfter(argv[0], argv[1], Object::Nil);
+    DeclareProcedureName("assertion-violation");
+    checkArgumentLengthBetween(2, 3);
+    const Object who = argv[0];
+    if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
+        return Object::Undef;
+    }
+    argumentCheckString(1, message);
+    const Object irritants = (argc == 3) ? argv[2] : Object::Nil;
+    if (!irritants.isNil() && !irritants.isPair()) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "list", irritants);
+        return Object::Undef;
+    }
+    callAssertionViolationAfter(who, message, irritants);
     return Object::Undef;
 }
 

@@ -38,7 +38,7 @@ namespace scheme {
 
     Object throwEx(int argc, const Object* argv);
 
-    void callAssertionViolationAfter(Object who, Object message, Object irritants);
+    void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
     void callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);

@@ -44,7 +44,8 @@
 #define castArgument(index, variableName, pred, required, type, castFunction)    \
     const Object obj ## variableName = argv[index]; \
     if (!obj ## variableName.pred()) { \
-        VM_RAISE2("~a " #required " required, but got ~a\n", Object::makeString(procedureName), obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(procedureName, #required, obj ## variableName); \
+        return Object::Undef; \
     } \
     type variableName = obj ## variableName.castFunction();
 
@@ -52,7 +53,9 @@
 #define checkTypeOrFalse(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred() && !variableName.isFalse()) { \
-        VM_RAISE2("~a " #required " or #f required, but got ~a\n", Object::makeString(procedureName), variableName); } \
+        callWrongTypeOfArgumentViolationAfter(procedureName, #required " or #f", variableName); \
+        return Object::Undef; \
+    } \
 
 #define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
 #define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
@@ -63,6 +66,7 @@
 
 #define argumentCheckVector(index, variableName) checkType(index, variableName, isVector, vector)
 
+#define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
 

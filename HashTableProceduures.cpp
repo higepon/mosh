@@ -38,77 +38,6 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
-//     if (depth > EQUAL_HASH_DEPTH_LIMIT) return 1;
-//     if (PAIRP(obj)) {
-//         uint32_t hash1 = equal_hash2(CAR(obj), bound, depth + 1);
-//         uint32_t hash2 = equal_hash2(CDR(obj), bound, depth + 1);
-//         return (hash1 + hash2 * 64 - hash2) % bound;
-//     }
-//     if (VECTORP(obj)) {
-//         scm_vector_t vector = (scm_vector_t)obj;
-//         int n = HDR_VECTOR_COUNT(vector->hdr);
-//         scm_obj_t* elts = vector->elts;
-//         uint32_t hash = 1;
-//         for (int i = 0; i < n; i++) {
-//             hash = hash * 32 - hash + equal_hash2(elts[i], bound, depth + 1);
-//         }
-//         return hash % bound;
-//     }
-//     if (SYMBOLP(obj)) {
-//         return string_hash(((scm_symbol_t)obj)->name, bound);
-//     }
-//     if (STRINGP(obj)) {
-//         return (string_hash(obj, bound) * 3) % bound;
-//     }
-//     if (number_pred(obj)) return n_hash(obj, bound);
-//     if (CELLP(obj)) return HDR_TC(HDR(obj)) % bound;
-//     return 1;
-//     const int taga = tag();
-//     const int tagb = o.tag();
-//     if (taga && tagb) {
-//         return eq(o);
-//     } else if (taga && 0 == tagb) {
-//         return Object::False;
-//     } else if (0 == taga && tagb) {
-//         return Object::False;
-//     } else if (isPair() && o.isPair()) {
-//         RETURN_BOOL(car().equal(o.car()) != Object::False &&
-//                     cdr().equal(o.cdr()) != Object::False);
-//     } else if (isHeapObject() && o.isHeapObject()) {
-//         if (isString() && o.isString()) {
-//             RETURN_BOOL(toString()->data() == o.toString()->data());
-//         } else if (isSymbol() && o.isSymbol()) {
-//             return eq(o);
-//         } else if (isVector() && o.isVector()) {
-//             Vector* av = toVector();
-//             Vector* bv = o.toVector();
-//             const int aLength = av->length();
-//             const int bLength = bv->length();
-//             if (aLength == bLength) {
-//                 for (int i = 0; i < aLength; i++) {
-//                     if (av->ref(i).equal(bv->ref(i)).isFalse()) return Object::False;
-//                 }
-//                 return Object::True;
-//             } else {
-//                 return Object::False;
-//             }
-//         } else if (isRegexp() && o.isRegexp()) {
-//             RETURN_BOOL(toRegexp()->pattern() == o.toRegexp()->pattern());
-//         } else if (isCProcedure() && o.isCProcedure()) {
-//             RETURN_BOOL(toCProcedure()->proc == o.toCProcedure()->proc);
-//         }
-// // todo
-// //         } else if (isPointer() && o.isPointer()) {
-// //             // address of instruction label is pointer
-// //             RETURN_BOOL(o.val == val);
-// //         }
-
-//     }
-
-//     // todo
-//     return Object::False;
-
-
 int scheme::equalHash(Object obj)
 {
     // borrowed from ypsilon scheme by Yoshikatsu Fujita
@@ -169,7 +98,7 @@ Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
         if (table->mutableP()) {
             table->deleteD(key);
         } else {
-            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", hashtable);
+            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(hashtable));
         }
     } else {
         VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", hashtable);

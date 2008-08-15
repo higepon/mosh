@@ -269,7 +269,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isRecord()) {
         putString(UC("#<record "));
         putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
-        putString(UC("> "));
+        putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
     } else {
@@ -376,7 +376,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isRecord()) {
         putString(UC("#<record "));
         putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
-        putString(UC("> "));
+        putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
 

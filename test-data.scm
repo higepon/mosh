@@ -1361,6 +1361,37 @@ val
 [error (make-record-constructor-descriptor)]
 [error (hashtable-clear! 1 1 1)]
 [error (record-predicate 3)]
+[error (record-constructor 3)]
+[error (make-record-type-descriptor 'point 3 'uid #f #f #f)]
+[error (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                '#((mutable x) (mutable y)))]
+           [:point-cd (make-record-constructor-descriptor :point #f #f)]
+           [make-point (record-constructor :point-cd)]
+           [point-x (record-accessor :point 3)])
+      #f)]
+[error (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                                '#((immutable x) (mutable y)))]
+           [:point-cd (make-record-constructor-descriptor :point #f #f)]
+           [make-point (record-constructor :point-cd)]
+           [point-x (record-mutator :point 0)])
+      #f)]
+[error (let* ([:point (make-record-type-descriptor 'point #f #f #f #f
+                                               '#((immutable x) (mutable y)))]
+          [:point2 (make-record-type-descriptor 'point2 #f #f #f #f
+                                                '#((immutable x) (mutable y)))]
+          [:point-cd (make-record-constructor-descriptor :point #f #f)]
+          [:point2-cd (make-record-constructor-descriptor :point2 #f #f)]
+          [make-point (record-constructor :point-cd)]
+          [point2-x (record-accessor :point2 0)])
+            (point2-x (make-point 1 2)))
+          ]
+[error (let* ([:point (make-record-type-descriptor 'point #f #f #t #t
+                                               '#((immutable x) (mutable y)))]
+          [:point-cd (make-record-constructor-descriptor :point #f #f)]
+          [make-point (record-constructor :point-cd)])
+     (record-rtd (make-point 2 21)))]
+
+;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con

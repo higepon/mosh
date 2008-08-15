@@ -689,10 +689,16 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
+                Callable* const callable = ac_.toCallable();
                 const int argc = operand.toInt();
+                // set pc_ before call() for pointing where to return.
+                pc_  = callable->returnCode;
+                pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
+                pc_[1] = operand;
                 ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
-                returnCode_[1] = operand;
-               pc_  = returnCode_;
+
+//                 returnCode_[1] = operand;
+//                pc_  = returnCode_;
 //                goto return_entry;
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);

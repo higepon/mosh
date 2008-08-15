@@ -156,7 +156,8 @@ Object scheme::recordAccessorEx(int argc, const Object* argv)
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentAsInt(1, index);
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
-        VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
+        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeInt(index)));
+        return Object::Undef;
     }
     return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
 }
@@ -169,12 +170,14 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
     argumentAsInt(1, index);
     const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
     if (index < 0 || index >= recordTypeDescriptor->fieldsLength()) {
-        VM_RAISE1("index out of range on ~s", Object::makeString(procedureName));
+        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeInt(index)));
+        return Object::Undef;
     }
     if (recordTypeDescriptor->isFieldMutable(index)) {
         return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
     } else {
-        VM_RAISE1("~a required mutable field, but got immutable field index", Object::makeString(procedureName));
+        callAssertionViolationAfter(procedureName, "required mutable field, but got immutable field index", L1(Object::makeInt(index)));
+        return Object::Undef;
     }
     return Object::Undef;
 }
@@ -219,11 +222,11 @@ Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record->fieldAt(index_);
     } else {
-        VM_RAISE2("accessor for ~a can't be used as accessor for ~a",
-                  rtd_.toRecordTypeDescriptor()->name(),
-                  rtd->name());
+        callAssertionViolationAfter(procedureName,
+                                    "invalid accessor for record",
+                                    L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
+        return Object::Undef;
     }
-    return Object::Undef;
 }
 
 RecordMutator::RecordMutator(Object rtd, int index) : rtd_(rtd), index_(index)
@@ -243,12 +246,13 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
     const RecordTypeDescriptor* rtd = record->recordTypeDescriptor();
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         record->setFieldAt(index_, value);
+        return Object::Undef;
     } else {
-        VM_RAISE2("mutator for ~a can't be used as mutator for ~a",
-                  rtd_.toRecordTypeDescriptor()->name(),
-                  rtd->name());
+        callAssertionViolationAfter(procedureName,
+                                    "invalid mutator for record",
+                                    L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
+        return Object::Undef;
     }
-    return Object::Undef;
 }
 
 
@@ -364,7 +368,6 @@ Object scheme::recordPEx(int argc, const Object* argv)
     const Object object = argv[0];
     if (object.isRecord()) {
         const bool isOpaque = object.toRecord()->recordTypeDescriptor()->isOpaque();
-        printf("%s %s:%d %d\n", __func__, __FILE__, __LINE__, isOpaque);fflush(stdout);// debug
         return Object::makeBool(!isOpaque);
     } else {
         return Object::False;
@@ -377,12 +380,11 @@ Object scheme::recordRtdEx(int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsRecord(0, record);
     if (record->recordTypeDescriptor()->isOpaque()) {
-        // todo &assertion
-        VM_RAISE1("~a: record is opaque", Object::makeString(procedureName));
+        callAssertionViolationAfter(procedureName, "record is opaque", L1(argv[0]));
+        return Object::Undef;
     } else {
         return record->rtd();
     }
-    return Object::Undef;
 }
 
 Object scheme::recordTypeDescriptorPEx(int argc, const Object* argv)
