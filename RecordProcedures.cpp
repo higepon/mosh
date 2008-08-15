@@ -38,7 +38,7 @@ extern scheme::VM* theVM;
 
 static Object getConditionRtd();
 bool isSubTypeOfCondition(Object rtd);
-static bool setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object values);
+static void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object values);
 
 // return &conditon-rtd
 Object getConditionRtd()
@@ -60,7 +60,7 @@ bool isSubTypeOfCondition(Object rtd)
     return rtd.toRecordTypeDescriptor()->isA(conditionRtd.toRecordTypeDescriptor());
 }
 
-bool setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object value)
+void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object value)
 {
     ucs4string name = id.toSymbol()->c_str();
     name += postfix;

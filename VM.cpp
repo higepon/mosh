@@ -73,7 +73,7 @@ using namespace scheme;
     pc_ = pc;                     \
     sp_ = sp;
 
-VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, Object inputPort, bool isProfiler) :
+VM::VM(int stackSize, TextualOutputPort& outport, Object errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     dc_(Object::Nil),
     cl_(Object::Nil),
@@ -88,7 +88,8 @@ VM::VM(int stackSize, TextualOutputPort& outport, TextualOutputPort& errorPort, 
     profilerRunning_(false),
     isProfiler_(isProfiler),
     maxNumValues_(256),
-    numValues_(0)
+    numValues_(0),
+    isR6RSMode_(false)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -108,7 +109,7 @@ VM::~VM() {}
 
 Object VM::raiseContinuable(Object o)
 {
-    return callClosure(errorHandler_, o);
+    return callClosure1(errorHandler_, o);
 }
 
 
@@ -128,7 +129,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
         if (handler.isNil()) {
             defaultExceptionHandler(errorObj_);
         } else {
-            ret = callClosure(handler, errorObj_);
+            ret = callClosure1(handler, errorObj_);
         }
     }
 
@@ -138,7 +139,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
 
 void VM::defaultExceptionHandler(Object error)
 {
-    errorPort_.format(UC("  Error:\n    ~a\n"), L1(error));
+    errorPort_.toTextualOutputPort()->format(UC(" Exception:\n   ~a\n"), L1(error));
 }
 
 
@@ -223,8 +224,15 @@ void VM::initLibraryTable()
 
 Object VM::evaluate(Object codeVector)
 {
-    Vector* const v = codeVector.toVector();
-    return evaluate(v->data(), v->length());
+    Object ret = Object::Nil;
+    TRY {
+        Vector* const v = codeVector.toVector();
+        ret = evaluate(v->data(), v->length());
+    CATCH
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
+    }
+    return ret;
 }
 
 #       include "cprocedures.cpp"
@@ -328,7 +336,7 @@ Object VM::callClosure3(Object closure, Object arg1, Object arg2, Object arg3)
 
 
 // accept one argument.
-Object VM::callClosure(Object closure, Object arg)
+Object VM::callClosure1(Object closure, Object arg)
 {
     static Object applyCode[] = {
         Object::makeRaw(Instruction::FRAME),
@@ -821,10 +829,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("CAR");
             if (!ac_.isPair()) {
-//                call1(getTopLevelGlobalValue(Symbol::intern(UC("raise"))), Object::makeString(UC("car pair required, but got ~a")));
-                RAISE1("car pair required, but got ~a", ac_);
+                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
+//                RAISE1("car pair required, but got ~a", ac_);
+            } else {
+                ac_ = ac_.car();
             }
-            ac_ = ac_.car();
             NEXT1;
         }
         CASE(CAR_PUSH)
@@ -1675,7 +1684,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         DEFAULT
         {
-            printf("val=%ld\n", (*(pc_ - 1)).val);
             RAISE1("unknown instruction ~a", *(pc_ - 1));
 
             NEXT;
@@ -1756,6 +1764,18 @@ void VM::raise(Object o)
     longjmp(returnPoint_, -1);
 }
 
+void VM::throwException(Object exception)
+{
+    const Object stackTrace = getStackTrace();
+
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+    textualOutputPort->format(UC("~a\n~a\n"), Pair::list2(exception, stackTrace));
+    errorObj_ = sysGetOutputStringEx(1, &stringOutputPort);
+
+    longjmp(returnPoint_, -1);
+}
+
 void VM::raiseFormat(const ucs4char* fmt, Object list)
 {
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debuge
@@ -1788,14 +1808,25 @@ void VM::showStack(int count, const char* file, int line)
 #endif
 }
 
-void VM::raiseAssertionViolation(Object who, Object message, Object irritant)
+// void VM::raiseAssertionViolation(Object who, Object message, Object irritant)
+// {
+//     Object proc =  getTopLevelGlobalValue(UC("assertion-violation"));
+//     if (irritant.isNil()) {
+//         setAfterTrigger3(proc, who, message, irritant);
+//     } else {
+// //        setAfterTrigger1(proc, 3, who, message, irritant);
+//     }
+// }
+
+bool VM::isR6RSMode() const
 {
-    Object proc =  getTopLevelGlobalValue(UC("assertion-violation"));
-    if (irritant.isNil()) {
-        setAfterTrigger3(proc, who, message, irritant);
-    } else {
-//        setAfterTrigger1(proc, 3, who, message, irritant);
-    }
+    return isR6RSMode_;
+}
+
+void VM::activateR6RSMode()
+{
+    isR6RSMode_ = true;
+    load(UC("psyntax.scm"));
 }
 
 
@@ -1865,7 +1896,7 @@ void VM::collectProfile()
     static int i = 0;
     if (!profilerRunning_) return;
     if (i >= SAMPLE_NUM) {
-        errorPort_.display(UC("buffer full profiler stopped."));
+        errorPort_.toTextualOutputPort()->display(UC("buffer full profiler stopped."));
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
         samples_[i++] = ac_;

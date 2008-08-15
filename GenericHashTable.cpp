@@ -40,7 +40,7 @@ extern scheme::VM* theVM;
 
 int callHashFunction(Object hashFunction, Object key)
 {
-    int r = theVM->callClosure(hashFunction, key).toInt();
+    const int r = theVM->callClosure1(hashFunction, key).toInt();
     return r;
 }
 

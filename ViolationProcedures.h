@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object throwEx(int argc, const Object* argv);
+
     void callAssertionViolationAfter(Object who, Object message, Object irritants);
 
 

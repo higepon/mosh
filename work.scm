@@ -1,3 +1,29 @@
+
+(display (guard (con [#t 'error])
+              (car 3)))
+(exit)
+
+(call/cc (lambda (cont)
+               (with-exception-handler
+                (lambda (c)
+                  (cont c))
+                (lambda () (car 3)))))
+(exit)
+
+(define (a) ((lambda ()
+  (throw 3))))
+(a)
+(exit)
+(call/cc
+ (lambda (cont)
+   (with-exception-handler
+    (lambda (c)
+      (display c)
+      (cont 3))
+    (lambda () (hashtable-clear! (hashtable-copy (make-eq-hashtable) #f))))))
+(exit)
+
+
 (display (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three))))
 (exit)
 (display (test-temp 1  2 3))

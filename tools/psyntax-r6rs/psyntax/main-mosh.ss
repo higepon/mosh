@@ -27,9 +27,20 @@
     (rnrs control)
     (rnrs io simple)
     (rnrs programs)
+    (rnrs exceptions)
+    (rnrs records inspection)
+    (rnrs records procedural)
+    (mosh condition)
+    (mosh string)
     (psyntax compat)
     (psyntax library-manager)
     (psyntax expander))
+
+  (define (for-each-with-index proc lst)
+    (do ((i 1 (+ i 1)) ; start with 1
+         (lst lst (cdr lst)))
+        ((null? lst))
+      (proc i (car lst))))
 
   (define (load-r6rs-top-level filename)
     (let ((x*
@@ -41,5 +52,24 @@
                        '()
                        (cons x (f)))))))))
       (eval-r6rs-top-level x*)))
-  (let ((args (command-line)))
-    (load-r6rs-top-level (car args))))
+  (let ([args (command-line)]
+        [port (current-error-port)])
+    (with-exception-handler
+     (lambda (c)
+       (display " Condition components:\n" port)
+       (for-each-with-index
+        (lambda (i x)
+          (cond
+           [(who-condition? x)
+            (format port "   ~d. &who: ~a\n" i (condition-who x))]
+           [(message-condition? x)
+            (format port "   ~d. &message: ~s\n" i (condition-message x))]
+           [(violation? x)
+            (format port "   ~d. ~a\n" i (record-type-name (record-rtd x)))]
+           [(irritants-condition? x)
+            (format port "   ~d. &irritants: ~s\n" i (condition-irritants x))]
+           [else
+            (format port "   ~d. ~a\n" i (record-type-name (record-rtd x)))]))
+        (simple-conditions c)))
+     (lambda ()
+       (load-r6rs-top-level (car args))))))

@@ -1,3 +1,9 @@
+2008-08-15  higepon  <higepon@users.sourceforge.jp>
+
+        * ViolationProcedures.cpp (scheme::throwEx): Added (throw ...) procedure.
+
+        * tools/psyntax-r6rs/psyntax/main-mosh.ss (psyntax): Defined default exception handler.
+
 2008-08-14  higepon  <higepon@users.sourceforge.jp>
 
         * Fixed with-exception-handler, raise, assertion-violation.

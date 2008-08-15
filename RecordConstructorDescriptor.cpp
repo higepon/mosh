@@ -79,7 +79,7 @@ Object RecordConstructorDescriptor::makeConstructor()
 
     for (ObjectVector::reverse_iterator it = protocols.rbegin(); it != protocols.rend(); ++it) {
         if (!(*it).isFalse()) {
-            recordInitializer = theVM->callClosure(*it, recordInitializer);
+            recordInitializer = theVM->callClosure1(*it, recordInitializer);
         }
     }
     return recordInitializer;

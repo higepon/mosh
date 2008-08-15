@@ -841,6 +841,7 @@ const Object* scheme::getBuiltinSymbols() {
         SA("test-temp"),
         SA("then"),
         SA("third"),
+        SA("throw"),
         SA("thunk"),
         SA("tmpname"),
         SA("to"),

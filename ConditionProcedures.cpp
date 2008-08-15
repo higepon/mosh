@@ -86,7 +86,6 @@ Object scheme::simpleConditionsEx(int argc, const Object* argv)
 
 Object scheme::conditionEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("condition");
     return Object::makeCompoundCondition(argc, argv);
 }
 
@@ -135,13 +134,13 @@ Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object object = argv[0];
     if (object.isRecord()) {
-        return theVM->callClosure(proc_, object);
+        return theVM->callClosure1(proc_, object);
     } else if (object.isCompoundCondition()) {
         const ObjectVector conditions = object.toCompoundCondition()->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
             const Object condition = *it;
             if (condition.isRecord() && condition.toRecord()->isA(rtd_.toRecordTypeDescriptor())) {
-                return theVM->callClosure(proc_, condition);
+                return theVM->callClosure1(proc_, condition);
             }
         }
         VM_RAISE0("condition-accessor bug? 1");

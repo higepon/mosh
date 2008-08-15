@@ -167,7 +167,7 @@ Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
         if (table->mutableP()) {
             table->deleteD(key);
         } else {
-            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", Object::Nil);
+            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", hashtable);
         }
     } else {
         VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", hashtable);
@@ -275,7 +275,7 @@ Object scheme::hashtableSetDEx(int argc, const Object* argv)
     checkArgLength(3, argc, "hash-table-set!");
     const Object hashtable = argv[0];
     if (!hashtable.isHashTable()) {
-        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", hashtable);
+        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", Pair::list1(hashtable));
     }
 
     const Object key = argv[1];
@@ -285,7 +285,7 @@ Object scheme::hashtableSetDEx(int argc, const Object* argv)
     if (table->mutableP()) {
         table->set(key, val);
     } else {
-        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Object::Nil);
+        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(hashtable));
     }
     return Object::Undef;
 }
@@ -363,7 +363,7 @@ Object scheme::hashtableClearDEx(int argc, const Object* argv)
         if (table->mutableP()) {
             table->clearD();
         } else {
-            callAssertionViolationAfter(Symbol::intern(procedureName), "can't clear an immutable hashtable.", Object::Nil);
+            callAssertionViolationAfter(Symbol::intern(procedureName), "can't clear an immutable hashtable.", Pair::list1(hashtable));
         }
     } else {
         VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);

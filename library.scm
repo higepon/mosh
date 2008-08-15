@@ -2490,13 +2490,13 @@
 
 ; todo check malformed guard
 (define-macro (guard x . body)
-  `(with-exception-handler
-    (lambda (,(car x))
-      (cond ,@(cdr x)
-            (else (raise ,(car x)))))
-    (lambda ()
-      ,@body)))
-
+  `(call/cc
+    (lambda (cont)
+      (with-exception-handler
+       (lambda (,(car x))
+         (cont (cond ,@(cdr x))))
+       (lambda ()
+         ,@body)))))
 
 ;; todo document
 
@@ -2895,16 +2895,15 @@
                 (new condition)))))
         (thunk)))))
 
-(define raise
-  (lambda (c)
-    (cond ((current-exception-handler)
-           => (lambda (proc)
-                (proc c)
-                (cond ((parent-exception-handler)
-                       => (lambda (proc)
-                            (proc "hige"))))
-                (error "in raise: returned from non-continuable exception~%~%irritants:~%~a"))))
-    (error "in raise: unhandled exception has occurred~%~%irritants:~%~a")))
+(define (raise c)
+  (cond ((current-exception-handler)
+         => (lambda (proc)
+              (proc c)
+              (cond ((parent-exception-handler)
+                     => (lambda (proc)
+                          (proc c))))
+              (throw "in raise: returned from non-continuable exception"))))
+    (throw (format "Unhandled exception:\n~a" c)))
 
 (define raise-continuable
   (lambda (c)

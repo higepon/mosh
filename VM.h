@@ -49,11 +49,11 @@ namespace scheme {
 #define VM_RAISE2(fmt, a, b)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L2(a, b));} }
 #define VM_RAISE3(fmt, a, b, c)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L3(a, b, c));} }
 
-#define LOG1(fmt, a)       errorPort_.format(UC(fmt), L1(a))
-#define LOG2(fmt, a, b)    errorPort_.format(UC(fmt), L2(a, b))
+#define LOG1(fmt, a)       errorPort_.toTextualOutputPort()->format(UC(fmt), L1(a))
+#define LOG2(fmt, a, b)    errorPort_.toTextualOutputPort()->format(UC(fmt), L2(a, b))
 
-#define VM_LOG1(fmt, a)    theVM->getErrorPort().format(UC(fmt), L1(a))
-#define VM_LOG2(fmt, a, b)    theVM->getErrorPort().format(UC(fmt), L2(a, b))
+#define VM_LOG1(fmt, a)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L1(a))
+#define VM_LOG2(fmt, a, b)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L2(a, b))
 
 #ifdef TRACE_INSN
 #define TRACE_INSN0(name) errorPort_.format(UC("=========================\n~a\n"), L1(name)), fflush(errOut)
@@ -83,7 +83,7 @@ struct Values {
 class VM EXTEND_GC
 {
 public:
-    VM(int stackSize, TextualOutputPort& outPort, TextualOutputPort& errorPort, Object inputPort, bool isProfiler = false);
+    VM(int stackSize, TextualOutputPort& outPort, Object errorPort, Object inputPort, bool isProfiler = false);
     ~VM();
 
     void importTopLevel();
@@ -102,13 +102,13 @@ public:
     Object eval(Object o, Object env);
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
-    Object callClosure(Object closure, Object o);
+    Object callClosure1(Object closure, Object o);
     Object callClosure0(Object closure);
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger1(Object closure, Object arg1);
-    void raiseAssertionViolation(Object who, Object message, Object irritant);
+//    void raiseAssertionViolation(Object who, Object message, Object irritant);
     void applyClosure(Object closure, Object args);
     Object applyClosureDebug(Object closure, Object args, int returnSize);
     Object apply(Object proc, Object args);
@@ -122,9 +122,10 @@ public:
     void initLibraryTable();
     void raiseFormat(const ucs4char* fmt, Object list);
     void raise(Object o);
+    void throwException(Object exception);
     Object raiseContinuable(Object o);
     TextualOutputPort& getOutputPort() { return outputPort_; }
-    TextualOutputPort& getErrorPort() { return errorPort_; }
+    Object getErrorPort() { return errorPort_; }
 
     Object getStackTrace();
 
@@ -133,7 +134,6 @@ public:
     Object standardInputPort() const { return stdinPort_; }
 
     Object currentInputPort() { return inputPort_; }
-
 
     void defineGlobal(Object id, Object val)
     {
@@ -186,6 +186,8 @@ public:
 
 
     Object getClosureName(Object closure);
+    bool isR6RSMode() const;
+    void activateR6RSMode();
 
 #ifdef ENABLE_PROFILER
     // Profiler
@@ -393,7 +395,7 @@ protected:
     Object nameSpace_;
     Object notFound_;
     TextualOutputPort& outputPort_;
-    TextualOutputPort& errorPort_;
+    Object errorPort_;
     Object inputPort_;
     Object stdinPort_;
     Object errorObj_;
@@ -414,6 +416,7 @@ protected:
     int numValues_;
     Object* values_;
     jmp_buf returnPoint_;
+    bool isR6RSMode_;
 };
 
 }; // namespace scheme

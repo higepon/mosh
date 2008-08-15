@@ -150,10 +150,10 @@ int main(int argc, char *argv[])
     errOut = fopen(INSN_LOG_FILE, "w");
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
 #else
-    TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(stderr), transcoder));
+    
 #endif
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
-
+    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
 
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
         const Object compiled = theVM->compile(code);
         sysDisplayEx(1, &compiled);
     } else if (isR6RSBatchMode) {
-        theVM->load(UC("psyntax.scm"));
+        theVM->activateR6RSMode();
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {

@@ -36,31 +36,65 @@ using namespace scheme;
 
 extern scheme::VM* theVM;
 
+Object scheme::throwEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("throw");
+    checkArgumentLength(1);
+    theVM->throwException(argv[0]);
+    return Object::Undef;
+}
+
 // caller should check type of arguments.
 void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants)
 {
-    Object conditions = Object::Nil;
-    if (irritants.isPair()) {
-        const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
-        const Object irritantsCondition = theVM->callClosure(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
-        conditions = Object::cons(irritantsCondition, conditions);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+        if (irritants.isPair()) {
+            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
+            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
+            conditions = Object::cons(irritantsCondition, conditions);
+        }
+
+        const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
+        const Object messageCondition = theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
+        conditions = Object::cons(messageCondition, conditions);
+
+        if (!who.isFalse()) {
+            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
+            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
+            conditions = Object::cons(whoCondition, conditions);
+        }
+
+        const Object assertionViolationRcd = theVM->getTopLevelGlobalValue(UC("&assertion-rcd"));
+        const Object assertionViolationCondition = theVM->callClosure0(assertionViolationRcd.toRecordConstructorDescriptor()->makeConstructor());
+        conditions = Object::cons(assertionViolationCondition, conditions);
+
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        const Object stringOutputPort = Object::makeStringOutputPort();
+        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+        textualOutputPort->format(UC(" Condition components:\n"
+                                     "    1. &assertion\n"
+                                     "    2. &who: ~a\n"
+                                     "    3. &message: ~s\n"
+                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+        condition = sysGetOutputStringEx(1, &stringOutputPort);
     }
 
-    if (who.isSymbol()) {
-        const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
-        const Object whoCondition = theVM->callClosure(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
-        conditions = Object::cons(whoCondition, conditions);
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
     }
-
-    const Object assertionViolationRcd = theVM->getTopLevelGlobalValue(UC("&assertion-rcd"));
-    const Object assertionViolationCondition = theVM->callClosure0(assertionViolationRcd.toRecordConstructorDescriptor()->makeConstructor());
-    conditions = Object::cons(assertionViolationCondition, conditions);
-    Object proc =  theVM->getTopLevelGlobalValue(UC("raise"));
-    theVM->setAfterTrigger1(proc, Object::makeCompoundCondition(conditions));
-
-   // callClosure -> callClosure1
-    // makeCompoundCondition を可変長にしようぜ。
-//todo message-condition
 }
 
 

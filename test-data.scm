@@ -1342,6 +1342,15 @@ val
 [mosh-only 6 (test-temp 1 2 3)]
 [#t (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three)))]
 
+[error (call/cc (lambda (cont)
+                  (with-exception-handler
+                   (lambda (c)
+                     (cont 'error))
+                   (lambda () (car 3)))))]
+
+[error (guard (con [#t 'error])
+              (car 3))]
+
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
