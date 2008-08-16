@@ -89,17 +89,15 @@ Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-delete!");
     checkArgumentLength(2);
-    const Object hashtable = argv[0];
+
+    argumentAsHashTable(0, hashtable);
     const Object key = argv[1];
-    if (hashtable.isHashTable()) {
-        HashTable* const table = hashtable.toHashTable();
-        if (table->mutableP()) {
-            table->deleteD(key);
-        } else {
-            callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(hashtable));
-        }
+
+    if (hashtable->mutableP()) {
+        hashtable->deleteD(key);
     } else {
-        VM_RAISE1("hashtable-delete! hashtable required, but got ~a\n", hashtable);
+        callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(argv[0]));
+        return Object::Undef;
     }
     return Object::Undef;
 }
@@ -108,14 +106,11 @@ Object scheme::hashtableContainsPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-contains?");
     checkArgumentLength(2);
-    const Object ht = argv[0];
+
+    argumentAsHashTable(0, hashtable);
     const Object key = argv[1];
-    if (ht.isHashTable()) {
-        return Object::makeBool(ht.toHashTable()->containsP(key));
-    } else {
-        VM_RAISE1("hashtable-contains? hashtable required, but got ~a\n", ht);
-    }
-    return Object::Undef;
+
+    return Object::makeBool(hashtable->containsP(key));
 }
 
 
@@ -123,13 +118,9 @@ Object scheme::hashtableSizeEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-size");
     checkArgumentLength(1);
-    const Object ht = argv[0];
-    if (ht.isHashTable()) {
-        return Object::makeInt(ht.toHashTable()->size());
-    } else {
-        VM_RAISE1("hashtable-size hashtable required, but got ~a\n", ht);
-        return Object::Undef;
-    }
+
+    argumentAsHashTable(0, hashtable);
+    return Object::makeInt(hashtable->size());
 }
 
 Object scheme::hashtablePEx(int argc, const Object* argv)
@@ -144,34 +135,29 @@ Object scheme::stringHashEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string-hash");
     checkArgumentLength(1);
-    const Object str = argv[0];
-    if (!str.isString()) {
-        VM_RAISE1("string-hash string required, but got ~a\n", str);
-    }
-    return Object::makeInt(stringHash(str.toString()->data()));
+
+    argumentAsString(0, text);
+    return Object::makeInt(stringHash(text->data()));
 }
 
 Object scheme::symbolHashEx(int argc, const Object* argv)
 {
     DeclareProcedureName("symbol-hash");
     checkArgumentLength(1);
-    const Object symbol = argv[0];
-    if (!symbol.isSymbol()) {
-        VM_RAISE1("symbol-hash string required, but got ~a\n", symbol);
-    }
+
+    argumentAsSymbol(0, symbol);
+
     // we can use pointer as hash, because symbol is interned.
-    return Object::makeInt(symbolHash(symbol.toSymbol()));
+    return Object::makeInt(symbolHash(symbol));
 }
 
 Object scheme::stringCiHashEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string-ci-hash");
     checkArgumentLength(1);
-    const Object str = argv[0];
-    if (!str.isString()) {
-        VM_RAISE1("string-ci-hash string required, but got ~a\n", str);
-    }
-    return Object::makeInt(stringCiHash(str.toString()->data()));
+
+    argumentAsString(0, text);
+    return Object::makeInt(stringCiHash(text->data()));
 }
 
 
@@ -187,43 +173,34 @@ Object scheme::makeHashtableEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-hashtable");
     checkArgumentLengthBetween(2, 3);
-    Object hashFunction        = argv[0];
-    Object equivalenceFunction = argv[1];
-    if (hashFunction.isProcedure() && equivalenceFunction.isProcedure()) {
-        return Object::makeGenericHashTable(hashFunction, equivalenceFunction);
-    } else {
-        VM_RAISE2("make-hash-table procedure required, but got ~a, ~a\n", hashFunction, equivalenceFunction);
-        return Object::Undef;
-    }
+
+    argumentCheckProcedure(0, hashFunction);
+    argumentCheckProcedure(1, equivalenceFunction);
+    return Object::makeGenericHashTable(hashFunction, equivalenceFunction);
 }
 
 Object scheme::hashtableKeysEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hash-table-keys");
     checkArgumentLength(1);
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("hashtable-keys hash-table required, but got ~a\n", ht);
-    }
-    return ht.toHashTable()->keys();
+
+    argumentAsHashTable(0, hashtable);
+    return hashtable->keys();
 }
 Object scheme::hashtableSetDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hash-table-set!");
     checkArgumentLength(3);
-    const Object hashtable = argv[0];
-    if (!hashtable.isHashTable()) {
-        VM_RAISE1("hashtable-set! hash-table required, but got ~a\n", Pair::list1(hashtable));
-    }
+
+    argumentAsHashTable(0, hashtable);
 
     const Object key = argv[1];
     const Object val = argv[2];
 
-    HashTable* const table = hashtable.toHashTable();
-    if (table->mutableP()) {
-        table->set(key, val);
+    if (hashtable->mutableP()) {
+        hashtable->set(key, val);
     } else {
-        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(hashtable));
+        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(argv[0]));
     }
     return Object::Undef;
 }
@@ -232,13 +209,12 @@ Object scheme::hashtableRefEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-ref");
     checkArgumentLengthBetween(2, 3);
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("hashtable-ref hashtable required, but got ~a\n", ht);
-    }
+
+    argumentAsHashTable(0, hashtable);
     const Object key = argv[1];
     const Object defaultVal = (argc == 3 ? argv[2] : Object::False);
-    return ht.toHashTable()->ref(key, defaultVal);
+
+    return hashtable->ref(key, defaultVal);
 }
 
 Object scheme::makeEqHashtableEx(int argc, const Object* argv)
@@ -259,11 +235,9 @@ Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eq-hashtable-copy");
     checkArgumentLength(1);
-    const Object ht = argv[0];
-    if (!ht.isHashTable()) {
-        VM_RAISE1("eq-hashtable required, but got ~an", ht);
-    }
-    return ht.toHashTable()->copy(true);
+
+    argumentAsHashTable(0, hashtable);
+    return hashtable->copy(true);
 }
 
 Object scheme::hashtableCopyEx(int argc, const Object* argv)
@@ -274,69 +248,51 @@ Object scheme::hashtableCopyEx(int argc, const Object* argv)
     if (argc == 2 && !argv[1].isFalse()) {
         mutableP = true;
     }
-    const Object hashtable = argv[0];
-    if (hashtable.isHashTable()) {
-        return hashtable.toHashTable()->copy(mutableP);
-    } else {
-        VM_RAISE1("hashtable-copy hashtable required, but got ~an", hashtable);
-        return Object::Undef;
-    }
+
+    argumentAsHashTable(0, hashtable);
+    return hashtable->copy(mutableP);
 }
 
 Object scheme::hashtableMutablePEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-mutable?");
     checkArgumentLength(1);
-    const Object hashtable = argv[0];
-    if (hashtable.isHashTable()) {
-        return Object::makeBool(hashtable.toHashTable()->mutableP());
-    } else {
-        VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);
-        return Object::Undef;
-    }
+
+    argumentAsHashTable(0, hashtable);
+    return Object::makeBool(hashtable->mutableP());
 }
 
 Object scheme::hashtableClearDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-clear!");
     checkArgumentLengthBetween(1, 2);
+
     // we now ignore "k" argument.
-    const Object hashtable = argv[0];
-    if (hashtable.isHashTable()) {
-        HashTable* const table = hashtable.toHashTable();
-        if (table->mutableP()) {
-            table->clearD();
-        } else {
-            callAssertionViolationAfter(Symbol::intern(procedureName), "can't clear an immutable hashtable.", Pair::list1(hashtable));
-        }
+    argumentAsHashTable(0, hashtable);
+
+    if (hashtable->mutableP()) {
+        hashtable->clearD();
+        return Object::Undef;
     } else {
-        VM_RAISE1("hashtable-mutable? hashtable required, but got ~an", hashtable);
+        callAssertionViolationAfter(procedureName, "can't clear an immutable hashtable.", Pair::list1(argv[0]));
+        return Object::Undef;
     }
-    return Object::Undef;
 }
 
 Object scheme::hashtableEquivalenceFunctionEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-equivalence-function");
     checkArgumentLength(1);
-    const Object hashtable = argv[0];
-    if (hashtable.isHashTable()) {
-        return hashtable.toHashTable()->equivalenceFunction();
-    } else {
-        VM_RAISE1("hashtable-equivalence-function hashtable required, but got ~an", hashtable);
-        return Object::Undef;
-    }
+
+    argumentAsHashTable(0, hashtable);
+    return hashtable->equivalenceFunction();
 }
 
 Object scheme::hashtableHashFunctionEx(int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-hash-function");
     checkArgumentLength(1);
-    const Object hashtable = argv[0];
-    if (hashtable.isHashTable()) {
-        return hashtable.toHashTable()->hashFunction();
-    } else {
-        VM_RAISE1("hashtable-hash-function hashtable required, but got ~an", hashtable);
-        return Object::Undef;
-    }
+
+    argumentAsHashTable(0, hashtable);
+    return hashtable->hashFunction();
 }

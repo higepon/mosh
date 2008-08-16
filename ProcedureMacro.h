@@ -63,12 +63,18 @@
     const Object variableName = argv[index]; \
     if (!variableName.pred1() && !variableName.pred2()) { \
         callWrongTypeOfArgumentViolationAfter(procedureName, #required1 " or " #required2, variableName); \
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);\
         return Object::Undef; \
     } \
 
 #define argumentCheckList(index, variableName) checkTypeOr(index, variableName, isPair, isNil, pair, ())
+#define argumentAsSymbol(index, variableName) castArgument(index, variableName, isSymbol, symbol, Symbol*, toSymbol)
+#define argumentAsVector(index, variableName) castArgument(index, variableName, isVector, vector, Vector*, toVector)
+#define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
+
 
 #define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
+#define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
@@ -80,6 +86,7 @@
 #define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
+#define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, symbol, compound-condition)
 
 #define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
 #define argumentCheckClosure(index, variableName) checkType(index, variableName, isClosure, closure)
@@ -136,5 +143,6 @@
         return Object::Undef;\
     } \
 
+extern scheme::VM* theVM;
 
 #endif // __SCHEME_PROCEDURE_MACRO__

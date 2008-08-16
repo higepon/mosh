@@ -53,7 +53,6 @@ Object scheme::conditionPredicateEx(int argc, const Object* argv)
     checkArgumentLength(1);
     argumentCheckRecordTypeDescriptor(0, rtd);
     return Object::makeCallable(new ConditionPredicate(rtd));
-
 }
 
 Object scheme::conditionPEx(int argc, const Object* argv)
@@ -101,11 +100,13 @@ Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-predicate for condition");
     checkArgumentLength(1);
-    const Object object = argv[0];
+
+    argumentCheckRecordOrCompoundConditon(0, object);
+
     if (object.isRecord()) {
         Record* record = object.toRecord();
         return Object::makeBool(record->isA(rtd_.toRecordTypeDescriptor()));
-    } else if (object.isCompoundCondition()) {
+    } else {
         const ObjectVector conditions = object.toCompoundCondition()->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
             const Object condition = *it;
@@ -113,9 +114,6 @@ Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
                 return Object::True;
             }
         }
-        return Object::False;
-    } else {
-        VM_RAISE1("condition-predicate for conditon requires record, but got ~a", object);
         return Object::False;
     }
 }
@@ -132,10 +130,12 @@ Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-accessor for condition");
     checkArgumentLength(1);
-    const Object object = argv[0];
+
+    argumentCheckRecordOrCompoundConditon(0, object);
+
     if (object.isRecord()) {
         return theVM->callClosure1(proc_, object);
-    } else if (object.isCompoundCondition()) {
+    } else { // CompoundCondition
         const ObjectVector conditions = object.toCompoundCondition()->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
             const Object condition = *it;
@@ -143,9 +143,7 @@ Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
                 return theVM->callClosure1(proc_, condition);
             }
         }
-        VM_RAISE0("condition-accessor bug? 1");
-    } else {
-        VM_RAISE0("condition-accessor bug? 2");
+        callAssertionViolationAfter(procedureName, "invalid condition", L1(object));
+        return Object::Undef;
     }
-    return Object::Undef;
 }

@@ -34,8 +34,6 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
 Object scheme::currentErrorPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("current-error-port");
@@ -250,7 +248,7 @@ Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
     DeclareProcedureName("make-custom-binary-input-port");
     checkArgumentLength(5);
 
-    argumentAsString(0, id);
+    argumentCheckString(0, id);
     argumentCheckProcedure(1, readProc);
     argumentCheckProcedureOrFalse(2, getPositionProc);
     argumentCheckProcedureOrFalse(3, setPositionProc);
@@ -350,12 +348,10 @@ Object scheme::openFileInputPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
     checkArgumentLength(1);
-    const Object file = argv[0];
-    if (!file.isString()) {
-        VM_RAISE1("open-file-input-port string required, but got ~a\n", file);
-    }
+
+    argumentAsString(0, path);
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    return Object::makeTextualInputPort(new FileBinaryInputPort(file.toString()->data()), transcoder);
+    return Object::makeTextualInputPort(new FileBinaryInputPort(path->data()), transcoder);
 }
 
 Object scheme::currentInputPortEx(int argc, const Object* argv)

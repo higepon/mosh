@@ -34,8 +34,6 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
 Object scheme::regexpReplaceEx(int argc, const Object* argv)
 {
     DeclareProcedureName("regexp-replace");
@@ -92,11 +90,20 @@ Object scheme::rxmatchStartEx(int argc, const Object* argv)
     }
 
     argumentAsRegMatch(0, regMatch);
+    Object returnValue;
     if (argc == 2) {
         argumentAsInt(1, index);
-        return Object::makeInt(regMatch->matchStart(index));
+        returnValue = Object::makeInt(regMatch->matchStart(index));
     } else {
-        return Object::makeInt(regMatch->matchStart(0));
+        returnValue = Object::makeInt(regMatch->matchStart(0));
+    }
+    if (regMatch->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regMatch->errorMessage(),
+                                    regMatch->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
     }
 }
 

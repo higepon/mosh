@@ -142,10 +142,35 @@ Object Regexp::replaceAll(Object t, Object subst)
     return Object::makeString(ret);
 }
 
+RegMatch::RegMatch(OnigRegion* region, const ucs4string& text) : region_(region),
+                                                                 text_(text),
+                                                                 isErrorOccured_(false),
+                                                                 errorMessage_(Object::Nil),
+                                                                 irritants_(Object::Nil)
+{
+}
+
+Object RegMatch::errorMessage() const
+{
+    return errorMessage_;
+}
+
+Object RegMatch::irritants() const
+{
+    return irritants_;
+}
+
+bool RegMatch::isErrorOccured() const
+{
+    return isErrorOccured_;
+}
+
 int RegMatch::matchStart(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
-        VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
+        isErrorOccured_ = true;
+        errorMessage_ = "submatch index out of range";
+        irritants_ = L1(Object::makeInt(index));
         return -1;
     }
     return region_->beg[index] / sizeof(ucs4char);
@@ -195,4 +220,5 @@ Object RegMatch::matchSubString(int index)
                                                region_->end[index] / sizeof(ucs4char) - region_->beg[index] / sizeof(ucs4char)).data());
 
 }
+
 

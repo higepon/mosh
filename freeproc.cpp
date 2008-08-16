@@ -33,11 +33,6 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 
-extern scheme::VM* theVM;
-
-#define argumentAsSymbol(index, variableName) castArgument(index, variableName, isSymbol, symbol, Symbol*, toSymbol)
-#define argumentAsVector(index, variableName) castArgument(index, variableName, isVector, vector, Vector*, toVector)
-
 using namespace scheme;
 
 Object scheme::numberPEx(int argc, const Object* argv)
@@ -47,79 +42,6 @@ Object scheme::numberPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isInt());
 }
 
-Object scheme::consEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("cons");
-    checkArgumentLength(2);
-    return Object::cons(argv[0], argv[1]);
-}
-
-Object scheme::carEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("car");
-    checkArgumentLength(1);
-    argumentCheckPair(0, p);
-    return p.car();
-}
-
-Object scheme::cdrEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("cdr");
-    checkArgumentLength(1);
-    argumentCheckPair(0, p);
-    return p.cdr();
-}
-
-Object scheme::sourceInfoEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("source-info");
-    checkArgumentLength(1);
-    const Object arg = argv[0];
-    if (arg.isPair()) {
-        return arg.sourceInfo();
-    } else if (arg.isClosure()) {
-        return arg.toClosure()->sourceInfo;
-    } else {
-        return Object::False;
-    }
-}
-
-Object scheme::setSourceInfoDEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("set-source-info!");
-    checkArgumentLength(2);
-    argumentCheckPair(0, p);
-    const Object sourceInfo = argv[1];
-    p.toPair()->sourceInfo = sourceInfo;
-    return p;
-}
-
-Object scheme::nullPEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("null?!");
-    checkArgumentLength(1);
-    return Object::makeBool(argv[0].isNil());
-}
-
-Object scheme::setCarDEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("set-car!");
-    checkArgumentLength(2);
-    argumentCheckPair(0, p);
-
-    p.car() = argv[1];
-    return Object::UnBound;
-}
-
-Object scheme::setCdrDEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("set-cdr!");
-    checkArgumentLength(2);
-    argumentCheckPair(0, p);
-
-    p.cdr() = argv[1];
-    return Object::UnBound;
-}
 
 Object scheme::numberTostringEx(int argc, const Object* argv)
 {
@@ -144,15 +66,6 @@ Object scheme::numberTostringEx(int argc, const Object* argv)
         return Object::makeString(buf);
     }
 }
-
-Object scheme::reverseEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("reverse");
-    checkArgumentLength(1);
-    argumentCheckList(0, p);
-    return Pair::reverse(p);
-}
-
 
 Object scheme::charEqPEx(int argc, const Object* argv)
 {
@@ -307,55 +220,6 @@ Object scheme::vectorPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isVector());
 }
 
-Object scheme::listPEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("list?");
-    Object obj = argv[0];
-    Object seen = obj;
-    for (;;) {
-        if (obj.isNil()) return Object::True;
-        if (!obj.isPair()) return Object::False; // dot pair
-        obj = obj.cdr();
-        if (obj.isNil()) return Object::True;
-        if (!obj.isPair()) return Object::False; // dot pair
-        obj = obj.cdr();
-        seen = seen.cdr();
-        if (obj == seen) return Object::False; // circular
-    }
-    callAssertionViolationAfter(procedureName, "internal bug?");
-    return Object::Undef;
-}
-
-Object scheme::memqEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("memq");
-    checkArgumentLength(2);
-
-    const Object arg1 = argv[0];
-    argumentCheckList(1, p);
-
-    for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car() == arg1) {
-            return o;
-        }
-    }
-    return Object::False;
-}
-
-Object scheme::memvEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("memv");
-    checkArgumentLength(2);
-
-    const Object arg1 = argv[0];
-    argumentCheckList(1, p);
-    for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().eqv(arg1).isTrue()) {
-            return o;
-        }
-    }
-    return Object::False;
-}
 
 Object scheme::eqPEx(int argc, const Object* argv)
 {
@@ -595,21 +459,6 @@ Object scheme::divEx(int argc, const Object* argv)
     return Object::makeInt(div(number1, number2));
 }
 
-Object scheme::assqEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("assq");
-    checkArgumentLength(2);
-
-    const Object obj = argv[0];
-    argumentCheckList(1, list);
-
-    for (Object o = list; o != Object::Nil; o = o.cdr()) {
-        if (o.car().car() == obj) {
-            return o.car();
-        }
-    }
-    return Object::False;
-}
 
 Object scheme::exitEx(int argc, const Object* argv)
 {
@@ -781,104 +630,14 @@ Object scheme::internalgetClosureNameEx(int argc, const Object* argv)
     return theVM->getClosureName(argv[0]);
 }
 
-Object scheme::appendEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("append");
-    if (0 == argc) return Object::Nil;
-    Object ret = argv[argc - 1];
-    for (int i = argc - 2; i >= 0; i--) {
-        argumentCheckList(i, p);
-        ret = Pair::append2(p, ret);
-    }
-    return ret;
-}
-
-Object scheme::append2Ex(int argc, const Object* argv)
-{
-    DeclareProcedureName("append2");
-    checkArgumentLength(2);
-
-    argumentCheckPair(0, list);
-    return Pair::append2(list, argv[1]);
-}
-
-Object scheme::appendDEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("append!");
-    if (0 == argc) return Object::Nil;
-    Object ret = argv[argc - 1];
-    for (int i = argc - 2; i >= 0; i--) {
-        argumentCheckList(i, p);
-        ret = Pair::appendD2(p, ret);
-    }
-    return ret;
-}
-
-Object scheme::uniq(Object list)
-{
-    Object ret = Object::Nil;
-    for (Object p = list; p.isPair(); p = p.cdr()) {
-        if (!memq(p.car(), ret).isFalse()) {
-            continue;
-        } else {
-            ret = Object::cons(p.car(), ret);
-        }
-    }
-    return ret;
-}
-
-Object scheme::lengthEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("length");
-    checkArgumentLength(1);
-    const Object lst = argv[0];
-    if (lst.isNil()) {
-        return Object::makeInt(0);
-    } else if (!lst.isPair()) {
-        VM_RAISE1("length pair required, but got ~an", lst);
-    }
-    int ret = 0;
-    for (Object p = lst; p.isPair(); p = p.cdr()) {
-        ret++;
-    }
-    return Object::makeInt(ret);
-}
-
-Object scheme::listTovectorEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("list->vector");
-    checkArgumentLength(1);
-    const Object list = argv[0];
-    if (list.isPair()) {
-        return Object::makeVector(list);
-    } else if (list.isNil()) {
-        return Object::makeVector(0);
-    } else {
-        VM_RAISE1("list->vector proper list required, but got ~an", list);
-        return Object::Undef;
-    }
-}
-
-Object scheme::stringEx(int argc, const Object* argv)
-{
-    ucs4string ret;
-    for (int i = 0; i < argc; i++) {
-        Object c = argv[i];
-        if (c.isChar()) {
-            ret += c.toChar();
-        } else {
-            VM_RAISE1("string charcter required, but got ~a", c);
-        }
-    }
-    return Object::makeString(ret);
-}
 
 // for psyntax
 Object scheme::setSymbolValueDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("set-symbol-value");
     checkArgumentLength(2);
-    const Object id  = argv[0];
+
+    argumentCheckSymbol(0, id);
     const Object val = argv[1];
     theVM->setTopLevelGlobalValue(id, val);
     return Object::Undef;
@@ -889,18 +648,6 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
 {
     DeclareProcedureName("symbol-value");
     checkArgumentLength(1);
-    const Object id  = argv[0];
+    argumentCheckSymbol(0, id);
     return theVM->getTopLevelGlobalValue(id);
-}
-
-Object scheme::testTempEx(int argc, const Object* argv)
-{
-   DeclareProcedureName("symbol-value");
-    checkArgumentLength(3);
-   printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-   return theVM->setAfterTrigger3(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
-                              , argv[0], argv[1], argv[2]);
-//       theVM->applyClosure(theVM->getTopLevelGlobalValue(Symbol::intern(UC("test-plus")))
-//                                  , Pair::list3(argv[0], argv[1], argv[2]));
-//       return Object::Undef;
 }

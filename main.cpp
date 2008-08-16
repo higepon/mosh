@@ -173,9 +173,6 @@ int main(int argc, char *argv[])
     theVM->evaluate(compiler);
     theVM->evaluate(getBuiltinMatch());
 
-//     VM_LOG1("compiled = ~a\n", Object::makeInt(theVM->compile(Object::makeInt(1234)).toVector()->ref(0) == Object::makeRaw(Instruction::CONSTANT)));
-//     exit(-1);
-
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
     }
@@ -186,7 +183,7 @@ int main(int argc, char *argv[])
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
         const Object compiled = theVM->compile(code);
-        sysDisplayEx(1, &compiled);
+        theVM->getOutputPort().display(compiled);
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode();
     } else if (optind < argc) {

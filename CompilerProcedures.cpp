@@ -31,11 +31,10 @@
 
 #include "CompilerProcedures.h"
 #include "ProcedureMacro.h"
+#include "ListProcedures.h"
 #include "CodeBuilder.h"
 
 using namespace scheme;
-
-extern scheme::VM* theVM;
 
 static Object pass4FixupLabelCollect(Object vec);
 static Object pass4FixupLabel(Object vec);
@@ -129,7 +128,7 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
             return Object::makeInt(0);
         }
     }
-    VM_RAISE1("pass3/symbol-lookup bug? Unknown lvar:", variable);
+    callAssertionViolationAfter(procedureName, "bug? Unknown lvar", L1(variable));
     return Object::Undef;
 }
 
@@ -337,8 +336,8 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     case IT:
         return Object::Nil;
     default:
-        VM_RAISE1("pass3/find-free unknown iform: ~a", v->ref(0));
-        break;
+        callAssertionViolationAfter("find-free", "unknown iform", L1(v->ref(0)));
+        return Object::Undef;
     }
     return Object::Undef;
 }
@@ -467,8 +466,8 @@ Object findSetsRec(Object i, Object lvars)
     case IT:
         return Object::Nil;
     default:
-        VM_RAISE1("pass3/find-sets unknown iform: ~a", v->ref(0));
-        break;
+        callAssertionViolationAfter("find-free", "unknown iform", L1(v->ref(0)));
+        return Object::Undef;
     }
     return Object::Undef;
 }
@@ -488,11 +487,9 @@ Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put1!");
     checkArgumentLength(2);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~a\n", cb);
-    }
-    cb.toCodeBuilder()->putExtra(argv[1]);
+
+    argumentAsCodeBuilder(0, codeBuilder);
+    codeBuilder->putExtra(argv[1]);
     return Object::Undef;
 }
 
@@ -501,12 +498,10 @@ Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put2!");
     checkArgumentLength(3);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~a\n", cb);
-    }
-    cb.toCodeBuilder()->putExtra(argv[1]);
-    cb.toCodeBuilder()->putExtra(argv[2]);
+
+    argumentAsCodeBuilder(0, codeBuilder);
+    codeBuilder->putExtra(argv[1]);
+    codeBuilder->putExtra(argv[2]);
     return Object::Undef;
 }
 
@@ -514,15 +509,11 @@ Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put3!");
     checkArgumentLength(4);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~a\n", cb);
-    }
 
-    cb.toCodeBuilder()->putExtra(argv[1]);
-    cb.toCodeBuilder()->putExtra(argv[2]);
-    cb.toCodeBuilder()->putExtra(argv[3]);
-
+    argumentAsCodeBuilder(0, codeBuilder);
+    codeBuilder->putExtra(argv[1]);
+    codeBuilder->putExtra(argv[2]);
+    codeBuilder->putExtra(argv[3]);
     return Object::Undef;
 }
 
@@ -530,15 +521,12 @@ Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put4!");
     checkArgumentLength(5);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~a\n", cb);
-    }
-    cb.toCodeBuilder()->putExtra(argv[1]);
-    cb.toCodeBuilder()->putExtra(argv[2]);
-    cb.toCodeBuilder()->putExtra(argv[3]);
-    cb.toCodeBuilder()->putExtra(argv[4]);
 
+    argumentAsCodeBuilder(0, codeBuilder);
+    codeBuilder->putExtra(argv[1]);
+    codeBuilder->putExtra(argv[2]);
+    codeBuilder->putExtra(argv[3]);
+    codeBuilder->putExtra(argv[4]);
     return Object::Undef;
 }
 
@@ -547,31 +535,25 @@ Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put5!");
     checkArgumentLength(6);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~a\n", cb);
-    }
-    cb.toCodeBuilder()->putExtra(argv[1]);
-    cb.toCodeBuilder()->putExtra(argv[2]);
-    cb.toCodeBuilder()->putExtra(argv[3]);
-    cb.toCodeBuilder()->putExtra(argv[4]);
-    cb.toCodeBuilder()->putExtra(argv[5]);
 
+    argumentAsCodeBuilder(0, codeBuilder);
+    codeBuilder->putExtra(argv[1]);
+    codeBuilder->putExtra(argv[2]);
+    codeBuilder->putExtra(argv[3]);
+    codeBuilder->putExtra(argv[4]);
+    codeBuilder->putExtra(argv[5]);
     return Object::Undef;
 }
-
 
 
 Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-append!");
     checkArgumentLength(2);
-    const Object cbDst = argv[0];
-    const Object cbSrc = argv[1];
-    if (!cbDst.isCodeBuilder() || !cbSrc.isCodeBuilder()) {
-        VM_RAISE2("code-builder required, but got ~a, ~a\n", cbDst, cbSrc);
-    }
-    cbDst.toCodeBuilder()->append(cbSrc.toCodeBuilder());
+
+    argumentAsCodeBuilder(0, destCodeBuilder);
+    argumentAsCodeBuilder(1, sourceCodeBuilder);
+    destCodeBuilder->append(sourceCodeBuilder);
     return Object::Undef;
 }
 
@@ -579,24 +561,21 @@ Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-emit2");
     checkArgumentLength(1);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~an", cb);
-    }
-    return cb.toCodeBuilder()->emit();
+
+    argumentAsCodeBuilder(0, codeBuilder);
+    return codeBuilder->emit();
 }
 
 Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put-insn-arg1!");
     checkArgumentLength(3);
-    const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~an", cb);
-    }
+
+    argumentAsCodeBuilder(0, codeBuilder);
     const Object instruction = argv[1];
     const Object argument = argv[2];
-    cb.toCodeBuilder()->putInstructionArgument1(instruction, argument);
+
+    codeBuilder->putInstructionArgument1(instruction, argument);
     return Object::Undef;
 }
 
@@ -605,11 +584,11 @@ Object scheme::codeBuilderPutInsnArg0DEx(int argc, const Object* argv)
     DeclareProcedureName("code-builder-put-insn-arg0!");
     checkArgumentLength(2);
     const Object cb = argv[0];
-    if (!cb.isCodeBuilder()) {
-        VM_RAISE1("code-builder required, but got ~an", cb);
-    }
+
+    argumentAsCodeBuilder(0, codeBuilder);
     const Object instruction = argv[1];
-    cb.toCodeBuilder()->putInstructionArgument0(instruction);
+
+    codeBuilder->putInstructionArgument0(instruction);
     return Object::Undef;
 }
 

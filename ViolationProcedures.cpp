@@ -35,7 +35,6 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
 static Object makeMessageCondition(Object message);
 
 Object scheme::throwEx(int argc, const Object* argv)
@@ -101,6 +100,7 @@ void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int req
 
 void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
+    MOSH_ASSERT(theVM);
     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
     MOSH_ASSERT(message.isString());

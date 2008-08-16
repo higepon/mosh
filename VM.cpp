@@ -38,6 +38,7 @@
 #include "PortProcedures.h"
 #include "ConditionProcedures.h"
 #include "ViolationProcedures.h"
+#include "ListProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

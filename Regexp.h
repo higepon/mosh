@@ -37,7 +37,6 @@
 
 namespace scheme {
 
-// depend on theVM instance for error reporting.
 class Regexp EXTEND_GC
 {
 public:
@@ -62,19 +61,24 @@ private:
 class RegMatch EXTEND_GC
 {
 public:
-    RegMatch(OnigRegion* region, const ucs4string& text) : region_(region), text_(text)
-    {
-    }
+    RegMatch(OnigRegion* region, const ucs4string& text);
+    ~RegMatch();
 
     int matchStart(int index);
     int matchEnd(int index);
     Object matchAfter(int index);
     Object matchBefore(int index);
     Object matchSubString(int index);
+    bool isErrorOccured() const;
+    Object errorMessage() const;
+    Object irritants() const;
 
 private:
     OnigRegion* region_;
     const ucs4string& text_;
+    bool isErrorOccured_;
+    Object errorMessage_;
+    Object irritants_;
 };
 
 }; // namespace scheme

@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object sysDisplayEx(int argc, const Object* argv);
     Object currentErrorPortEx(int argc, const Object* argv);
     Object openStringInputPortEx(int argc, const Object* argv);
     Object sysOpenOutputStringEx(int argc, const Object* argv);

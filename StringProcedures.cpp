@@ -34,9 +34,18 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
 static Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4string>::size_type i);
+
+Object scheme::stringEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("string");
+    ucs4string ret;
+    for (int i = 0; i < argc; i++) {
+        argumentAsChar(i, ch);
+        ret += ch;
+    }
+    return Object::makeString(ret);
+}
 
 Object scheme::stringRefEx(int argc, const Object* argv)
 {

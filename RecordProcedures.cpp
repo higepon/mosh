@@ -34,8 +34,6 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
 static Object getConditionRtd();
 bool isSubTypeOfCondition(Object rtd);
 static void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object values);

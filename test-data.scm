@@ -1339,7 +1339,6 @@ val
             (lambda () #f))
       x)))]
 [mosh-only 3 (eval 3 '())]
-[mosh-only 6 (test-temp 1 2 3)]
 [#t (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three)))]
 
 [error (call/cc (lambda (cont)
@@ -1392,7 +1391,7 @@ val
      (record-rtd (make-point 2 21)))]
 
 [error (apply read-char (current-input-port))] ;; the argument should be a list.
-
+[error (rxmatch-start (rxmatch #/\d+/ "a345a") 5)]
 ;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"
