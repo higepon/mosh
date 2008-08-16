@@ -62,6 +62,12 @@ CompilerProcedures.cpp \
 CompilerProcedures.h   \
 HashTableProceduures.cpp \
 HashTableProceduures.h   \
+RegexpProcedures.cpp \
+RegexpProcedures.h   \
+StringProcedures.cpp \
+StringProcedures.h   \
+PortProcedures.cpp \
+PortProcedures.h   \
 ViolationProcedures.cpp \
 ViolationProcedures.h \
 SString.cpp          \

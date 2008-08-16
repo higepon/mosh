@@ -801,57 +801,57 @@ val
 ;;           [else
 ;;            "error-is-not-string"])
 ;;          (+ 3 (raise-continuable "warn continuation")))]
-[mosh-only #t
-  (vector-type?
-   (make-vector-type 'test
-                     #f
-                     '()
-                     '(#f #f)
-                     #f))]
-[mosh-only 1234
-  (vector-type-data
-   (make-vector-type 'test
-                     #f
-                     1234
-                     '(#f #f)
-                     #f))]
-[mosh-only #t
-  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-         [constructor (typed-vector-constructor vt)]
-         [pred?       (vector-type-predicate vt)])
-    (pred? (constructor 3 4)))]
-[mosh-only #t
-  (let* ([parent (make-vector-type 'test-parent #f #f '(#f #f) #f)]
-         [vt (make-vector-type 'test parent #f '(#f #f) #f)]
-         [constructor (typed-vector-constructor vt)]
-         [pred?       (vector-type-predicate parent)])
-    (pred? (constructor 3 4)))]
-[mosh-only 12
-  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-         [get-0 (typed-vector-accessor vt 0)]
-         [get-1 (typed-vector-accessor vt 1)]
-         [constructor (typed-vector-constructor vt)]
-         [v (constructor 3 9)])
-    (+ (get-0 v) (get-1 v)))]
-[mosh-only 16
-  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-         [get-0 (typed-vector-accessor vt 0)]
-         [get-1 (typed-vector-accessor vt 1)]
-         [set-0 (typed-vector-mutator vt 0)]
-         [constructor (typed-vector-constructor vt)]
-         [v (constructor 3 9)])
-    (set-0 v 7)
-    (+ (get-0 v) (get-1 v)))]
-[mosh-only #t
-  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-         [constructor (typed-vector-constructor vt)]
-         [v (constructor 3 9)])
-    (typed-vector? v))]
-[mosh-only #t
-  (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-         [constructor (typed-vector-constructor vt)]
-         [v (constructor 3 9)])
-    (eq? vt (typed-vector-type v)))]
+;; [mosh-only #t
+;;   (vector-type?
+;;    (make-vector-type 'test
+;;                      #f
+;;                      '()
+;;                      '(#f #f)
+;;                      #f))]
+;; [mosh-only 1234
+;;   (vector-type-data
+;;    (make-vector-type 'test
+;;                      #f
+;;                      1234
+;;                      '(#f #f)
+;;                      #f))]
+;; [mosh-only #t
+;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [pred?       (vector-type-predicate vt)])
+;;     (pred? (constructor 3 4)))]
+;; [mosh-only #t
+;;   (let* ([parent (make-vector-type 'test-parent #f #f '(#f #f) #f)]
+;;          [vt (make-vector-type 'test parent #f '(#f #f) #f)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [pred?       (vector-type-predicate parent)])
+;;     (pred? (constructor 3 4)))]
+;; [mosh-only 12
+;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+;;          [get-0 (typed-vector-accessor vt 0)]
+;;          [get-1 (typed-vector-accessor vt 1)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [v (constructor 3 9)])
+;;     (+ (get-0 v) (get-1 v)))]
+;; [mosh-only 16
+;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+;;          [get-0 (typed-vector-accessor vt 0)]
+;;          [get-1 (typed-vector-accessor vt 1)]
+;;          [set-0 (typed-vector-mutator vt 0)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [v (constructor 3 9)])
+;;     (set-0 v 7)
+;;     (+ (get-0 v) (get-1 v)))]
+;; [mosh-only #t
+;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [v (constructor 3 9)])
+;;     (typed-vector? v))]
+;; [mosh-only #t
+;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
+;;          [constructor (typed-vector-constructor vt)]
+;;          [v (constructor 3 9)])
+;;     (eq? vt (typed-vector-type v)))]
 
 [6
   (apply (lambda (a b c) (+ a b c)) 1 2 '(3))]
@@ -1391,6 +1391,8 @@ val
           [make-point (record-constructor :point-cd)])
      (record-rtd (make-point 2 21)))]
 
+[error (apply read-char (current-input-port))] ;; the argument should be a list.
+
 ;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"
@@ -1611,83 +1613,3 @@ val
 
 
 
-;; ;; error "library not imported"
-;; [lib error
-;; (library (higepon)
-;;          (export hello)
-;;          (import)
-;;          (define hello "hello higepon\n"))
-;; hello
-;; ]
-
-;; ;; error "symbol is not exported"
-;; [lib error
-;; (library (higepon)
-;;          (export hello)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (higepon))
-;; goodbye
-;; ]
-
-
-;; [lib error
-;; (library (higepon)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (only (higepon) hello))
-;; goodbye
-;; ]
-
-
-
-
-;; [lib error
-;; (library (higepon)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (rename (higepon) (hello hige:hello)))
-;; hello
-;; ]
-
-
-;; [lib "hello higepon\n"
-;; (library (higepon)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (prefix (higepon) higepon.))
-;; higepon.hello
-;; ]
-
-
-;; [lib error
-;; (library (higepon)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (prefix (higepon) higepon.))
-;; hello
-;; ]
-
-
-;; ;; macro is not exported, so error.
-;; [lib error
-;; (library (my-macro-lib)
-;;          (export)
-;;          (import)
-;;          (define-macro (add3 v) `(+ 3 ,v)))
-;; (library (test)
-;;          (export val)
-;;          (import (my-macro-lib))
-;;          (define val (add3 2)))
-;; (import (test))
-;; val
-;; ]

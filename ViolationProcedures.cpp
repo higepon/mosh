@@ -31,12 +31,11 @@
 
 #include "ViolationProcedures.h"
 #include "ProcedureMacro.h"
-#include "VM.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
 extern scheme::VM* theVM;
-
 static Object makeMessageCondition(Object message);
 
 Object scheme::throwEx(int argc, const Object* argv)
@@ -45,6 +44,11 @@ Object scheme::throwEx(int argc, const Object* argv)
     checkArgumentLength(1);
     theVM->throwException(argv[0]);
     return Object::Undef;
+}
+
+void scheme::callNotImplementedAssertionViolationAfter(Object who, Object irritants /* = Object::Nil */)
+{
+    callAssertionViolationAfter(who, "not implemented", irritants);
 }
 
 void scheme::callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
@@ -77,6 +81,18 @@ void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCo
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
 
     textualOutputPort->format(UC("wrong number of arguments (required ~d, got ~d)"),
+                              Pair::list2(Object::makeInt(requiredCounts),
+                                          Object::makeInt(gotCounts)));
+    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
+    callAssertionViolationAfter(who, message, irritants);
+}
+
+void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+{
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC("wrong number of arguments (required at least ~d, got ~d)"),
                               Pair::list2(Object::makeInt(requiredCounts),
                                           Object::makeInt(gotCounts)));
     const Object message = sysGetOutputStringEx(1, &stringOutputPort);

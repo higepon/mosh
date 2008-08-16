@@ -1,5 +1,7 @@
 2008-08-16  higepon  <higepon@users.sourceforge.jp>
 
+        * freeproc.cpp (scheme::procedurePEx): Removed typdevector stuff.
+
         * ProcedureMacro.h: Added.
 
         * RecordProcedures.cpp: Replaced all RAISE to assertion-violation and added tests for them.

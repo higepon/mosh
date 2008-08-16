@@ -32,7 +32,10 @@
 #include "VM.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
+#include "RegexpProcedures.h"
 #include "RecordProcedures.h"
+#include "StringProcedures.h"
+#include "PortProcedures.h"
 #include "ConditionProcedures.h"
 #include "ViolationProcedures.h"
 

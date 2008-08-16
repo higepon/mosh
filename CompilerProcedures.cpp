@@ -30,7 +30,6 @@
  */
 
 #include "CompilerProcedures.h"
-#include "ViolationProcedures.h"
 #include "ProcedureMacro.h"
 #include "CodeBuilder.h"
 

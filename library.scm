@@ -2912,8 +2912,8 @@
           (else
            (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a")))))
 
-(define (assertion-violation who message . irritants)
-  (apply $assertion-violation who message irritants))
+;; (define (assertion-violation who message . irritants)
+;;   (apply $assertion-violation who message irritants))
 
 
 

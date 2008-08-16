@@ -96,9 +96,9 @@ public:
         return Object::makeInt(data_[index]);
     }
 
-    void u8set(int index, Object obj)
+    void u8set(int index, uint8_t value)
     {
-        data_[index] = (uint8_t)obj.toInt();
+        data_[index] = value;
     }
 
     void s8set(int index, Object obj)

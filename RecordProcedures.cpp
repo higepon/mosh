@@ -30,9 +30,7 @@
  */
 
 #include "RecordProcedures.h"
-#include "ViolationProcedures.h"
 #include "ProcedureMacro.h"
-#include "VM.h"
 
 using namespace scheme;
 

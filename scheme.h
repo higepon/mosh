@@ -82,7 +82,6 @@ class gc_vector : public std::vector<T1> {};
 #define MOSH_ASSERT(condition) /* */
 #endif
 
-
 #define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
 typedef intptr_t word;

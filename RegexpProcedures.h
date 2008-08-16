@@ -1,5 +1,5 @@
 /*
- * ViolationProcedures.h - violations.
+ * RegexpProcedures.h - <regexp> procedures.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,27 +26,27 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ViolationProcedures.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: RegexpProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_VIOLATION_PROCEDURES__
-#define __SCHEME_VIOLATION_PROCEDURES__
+#ifndef __SCHEME_REGEXP_PROCEDURES__
+#define __SCHEME_REGEXP_PROCEDURES__
 
 #include "scheme.h"
 
 namespace scheme {
 
-    Object throwEx(int argc, const Object* argv);
-
-    void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
-    void callNotImplementedAssertionViolationAfter(Object who, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
-
-
+    Object regexpReplaceEx(int argc, const Object* argv);
+    Object regexpReplaceAllEx(int argc, const Object* argv);
+    Object rxmatchEx(int argc, const Object* argv);
+    Object regexpTostringEx(int argc, const Object* argv);
+    Object rxmatchStartEx(int argc, const Object* argv);
+    Object rxmatchEndEx(int argc, const Object* argv);
+    Object rxmatchAfterEx(int argc, const Object* argv);
+    Object rxmatchBeforeEx(int argc, const Object* argv);
+    Object rxmatchSubstringEx(int argc, const Object* argv);
+    Object regMatchProxy(int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_VIOLATION_PROCEDURES__
+#endif // __SCHEME_REGEXP_PROCEDURES__

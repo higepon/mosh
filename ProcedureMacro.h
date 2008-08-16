@@ -33,6 +33,8 @@
 #define __SCHEME_PROCEDURE_MACRO__
 
 #include "scheme.h"
+#include "ViolationProcedures.h"
+#include "VM.h"
 
 #define checkType(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
@@ -56,6 +58,15 @@
         callWrongTypeOfArgumentViolationAfter(procedureName, #required " or #f", variableName); \
         return Object::Undef; \
     } \
+
+#define checkTypeOr(index, variableName, pred1, pred2, required1, required2)  \
+    const Object variableName = argv[index]; \
+    if (!variableName.pred1() && !variableName.pred2()) { \
+        callWrongTypeOfArgumentViolationAfter(procedureName, #required1 " or " #required2, variableName); \
+        return Object::Undef; \
+    } \
+
+#define argumentCheckList(index, variableName) checkTypeOr(index, variableName, isPair, isNil, pair, ())
 
 #define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
 #define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
@@ -82,6 +93,26 @@
 #define argumentCheckRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 #define argumentCheckRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 
+#define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)
+
+#define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
+
+#define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
+#define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)
+#define argumentAsString(index, variableName) castArgument(index, variableName, isString, regexp, String*, toString)
+
+
+#define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, charcter, ucs4char, toChar)
+
+#define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
+#define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)
+#define argumentAsBinaryInputPort(index, variableName) castArgument(index, variableName, isBinaryInputPort, binary-input-port, BinaryInputPort*, toBinaryInputPort)
+#define argumentAsByteVector(index, variableName) castArgument(index, variableName, isByteVector, bytevector, ByteVector*, toByteVector)
+#define argumentAsTranscoder(index, variableName) castArgument(index, variableName, isTranscoder, transcoder, Transcoder*, toTranscoder)
+#define argumentAsCodec(index, variableName) castArgument(index, variableName, isCodec, codec, Codec*, toCodec)
+#define argumentCheckTextualInputPort(index, variableName) checkType(index, variableName, isTextualInputPort, textual-input-port)
+#define argumentCheckTextualOutputPort(index, variableName) checkType(index, variableName, isTextualOutputPort, textual-output-port)
+
 
 #define DeclareProcedureName(name) const ucs4char* procedureName = UC(name);
 
@@ -94,6 +125,14 @@
 #define checkArgumentLengthBetween(start, end)             \
     if (argc < start || argc > end) { \
         callWrongNumberOfArgumentsBetweenViolationAfter(procedureName, start, end, argc); \
+        return Object::Undef;\
+    } \
+
+#define argumentAsTextualInputPort(index, variableName) castArgument(index, variableName, isTextualInputPort, textual-input-port, TextualInputPort*, toTextualInputPort)
+
+#define checkArgumentLengthAtLeast(required)             \
+    if (argc < required) { \
+        callWrongNumberOfArgumentsAtLeastViolationAfter(procedureName, required, argc); \
         return Object::Undef;\
     } \
 

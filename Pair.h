@@ -48,6 +48,8 @@ struct Pair EXTEND_GC
     // append!
     static Object appendD(Object list1, Object list2)
     {
+        MOSH_ASSERT(list1.isNil() || list1.isPair());
+        MOSH_ASSERT(list2.isNil() || list2.isPair());
         if (list1.isNil()) {
             return list2;
         } else {
@@ -57,26 +59,16 @@ struct Pair EXTEND_GC
         }
     }
 
-//     static Object cloneList(Object list1)
-//     {
-//         if (list1.isNil()) {
-//             return Object::Nil;
-//         } else {
-//             return Object::cons(list1.car(), cloneList(list1.cdr()));
-//         }
-//     }
 
     static Object cloneList(Object list1)
     {
-//         Object ret = Object::Nil;
-//         for (Object p = list1; p.isPair(); p = p.cdr()) {
-//             ret = Object::cons(p.car(), ret);
-//         }
+        MOSH_ASSERT(list1.isNil() || list1.isPair());
         return reverse(reverse(list1));
     }
 
     static Object reverse(Object list1)
     {
+        MOSH_ASSERT(list1.isNil() || list1.isPair());
         Object ret = Object::Nil;
         for (Object p = list1; p.isPair(); p = p.cdr()) {
             ret = Object::cons(p.car(), ret);
@@ -114,6 +106,7 @@ struct Pair EXTEND_GC
 
     static Object getLastPair(Object obj)
     {
+        MOSH_ASSERT(obj.isPair());
         for (Object o = obj; ;) {
             const Object kdr = o.cdr();
             if (kdr.isNil()) {
