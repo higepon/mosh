@@ -46,6 +46,7 @@ public:
     virtual int getU8() = 0;
     virtual ByteVector* getByteVector(int size) = 0;
     virtual ucs4string toString() = 0;
+    virtual int open() = 0;
     virtual int close() = 0;
 };
 
@@ -57,6 +58,7 @@ public:
     virtual int putU8(uint8_t* v, int size) = 0;
     virtual int putByteVector(ByteVector bv, int start = 0) = 0;
     virtual int putByteVector(ByteVector bv, int start, int count) = 0;
+    virtual int open() = 0;
     virtual int close() = 0;
 };
 
@@ -87,7 +89,8 @@ public:
         exit(-1);
     }
 
-    int close() { return 0; }
+    int open() { return MOSH_SUCCESS; }
+    int close() { return MOSH_SUCCESS; }
 
 private:
     const uint8_t* const buf_;
@@ -128,11 +131,14 @@ public:
         return new ByteVector(ret, buf);
     }
 
+    int open();
+
     int close()
     {
         fclose(stream_);
-        return 0;
+        return MOSH_SUCCESS;
     }
+
 
 private:
     FILE* stream_;
@@ -153,6 +159,11 @@ public:
 
     ucs4string toString() {
         return UC("<custom port>");
+    }
+
+    int open()
+    {
+        return 0;
     }
 
     int close()
@@ -197,10 +208,12 @@ public:
         return fwrite(&buf[start], 1, count, stream_);
     }
 
+    int open();
+
     int close()
     {
         fclose(stream_);
-        return 0;
+        return MOSH_SUCCESS;
     }
 
 private:

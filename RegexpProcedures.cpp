@@ -64,7 +64,16 @@ Object scheme::rxmatchEx(int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsRegexp(0, regexp);
     argumentAsString(1, text);
-    return regexp->match(text->data());
+
+    const Object returnValue = regexp->match(text->data());
+    if (regexp->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regexp->errorMessage(),
+                                    regexp->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
+    }
 }
 
 Object scheme::regexpPEx(int argc, const Object* argv)
@@ -116,11 +125,21 @@ Object scheme::rxmatchEndEx(int argc, const Object* argv)
     }
 
     argumentAsRegMatch(0, regMatch);
+    Object returnValue;
     if (argc == 2) {
         argumentAsInt(1, index);
-        return Object::makeInt(regMatch->matchEnd(index));
+        returnValue = Object::makeInt(regMatch->matchEnd(index));
     } else {
-        return Object::makeInt(regMatch->matchEnd(0));
+        returnValue = Object::makeInt(regMatch->matchEnd(0));
+    }
+
+    if (regMatch->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regMatch->errorMessage(),
+                                    regMatch->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
     }
 }
 
@@ -133,11 +152,21 @@ Object scheme::rxmatchAfterEx(int argc, const Object* argv)
     }
 
     argumentAsRegMatch(0, regMatch);
+    Object returnValue;
     if (argc == 2) {
         argumentAsInt(1, index);
-        return regMatch->matchAfter(index);
+        returnValue = regMatch->matchAfter(index);
     } else {
-        return regMatch->matchAfter(0);
+        returnValue = regMatch->matchAfter(0);
+    }
+
+    if (regMatch->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regMatch->errorMessage(),
+                                    regMatch->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
     }
 }
 
@@ -150,11 +179,21 @@ Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
     }
 
     argumentAsRegMatch(0, regMatch);
+    Object returnValue;
     if (argc == 2) {
         argumentAsInt(1, index);
-        return regMatch->matchBefore(index);
+        returnValue = regMatch->matchBefore(index);
     } else {
-        return regMatch->matchBefore(0);
+        returnValue = regMatch->matchBefore(0);
+    }
+
+    if (regMatch->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regMatch->errorMessage(),
+                                    regMatch->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
     }
 }
 
@@ -167,11 +206,21 @@ Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
     }
 
     argumentAsRegMatch(0, regMatch);
+    Object returnValue;
     if (argc == 2) {
         argumentAsInt(1, index);
-        return regMatch->matchSubString(index);
+        returnValue = regMatch->matchSubString(index);
     } else {
-        return regMatch->matchSubString(0);
+        returnValue = regMatch->matchSubString(0);
+    }
+
+    if (regMatch->isErrorOccured()) {
+        callAssertionViolationAfter(procedureName,
+                                    regMatch->errorMessage(),
+                                    regMatch->irritants());
+        return Object::Undef;
+    } else {
+        return returnValue;
     }
 }
 

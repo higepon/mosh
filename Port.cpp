@@ -101,8 +101,14 @@ bool scheme::fileExistsP(const ucs4string& file)
 FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
 {
     stream_ = fopen(file.ascii_c_str(), "w");
+}
+
+int FileBinaryOutputPort::open()
+{
     if (NULL == stream_) {
-        VM_RAISE1(" couldn't open output file: ~a", Object::makeString(file));
+        return MOSH_FAILURE;
+    } else {
+        return MOSH_SUCCESS;
     }
 }
 
@@ -110,17 +116,20 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file)
 {
     stream_ = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream_) {
-        VM_RAISE1(" couldn't open input file: ~a", Object::makeString(file));
-    }
 }
 
 FileBinaryInputPort::FileBinaryInputPort(const char* file)
 {
     fileName_ = Object::makeString(file).toString()->data();
     stream_ = fopen(file, "rb");
+}
+
+int FileBinaryInputPort::open()
+{
     if (NULL == stream_) {
-        VM_RAISE1(" couldn't open input file: ~a", Object::makeString(file));
+        return MOSH_FAILURE;
+    } else {
+        return MOSH_SUCCESS;
     }
 }
 
@@ -463,4 +472,3 @@ ByteVector* CustomBinaryInputPort::getByteVector(int size)
     fprintf(stderr, "get-byte-vector-n not implemented");
     exit(-1);
 }
-

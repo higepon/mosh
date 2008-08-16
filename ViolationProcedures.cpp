@@ -98,6 +98,24 @@ void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int req
     callAssertionViolationAfter(who, message, irritants);
 }
 
+// we can't catch this!
+void scheme::callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC(" Condition components:\n"
+                                 "    1. &assertion\n"
+                                 "    2. &who: ~a\n"
+                                 "    3. &message: ~s\n"
+                                 "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+    const Object condition = sysGetOutputStringEx(1, &stringOutputPort);
+    theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->throwException(condition);
+}
+
 void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);

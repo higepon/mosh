@@ -55,6 +55,8 @@ public:
     ucs4char charAt(int n);
     ucs4string& data() { return data_; }
 
+    int length() const { return data_.length(); }
+
     bool operator==(String& s)
     {
         return data() == s.data();

@@ -2903,7 +2903,7 @@
                      => (lambda (proc)
                           (proc c))))
               (throw "in raise: returned from non-continuable exception"))))
-    (throw (format "Unhandled exception:\n~a" c)))
+    (throw (format "    Unhandled exception\n~a" c)))
 
 (define raise-continuable
   (lambda (c)

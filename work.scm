@@ -1,3 +1,5 @@
+(#/.*/ "あいうえ")
+(exit)
 (let1 x '(2)
   (apply set-cdr! (list x 3))
   (display x))

@@ -340,8 +340,15 @@ Object scheme::openFileOutputPortEx(int argc, const Object* argv)
     argumentAsString(0, file);
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    Object ret = Object::makeTextualOutputPort(new FileBinaryOutputPort(file->data()), transcoder);
-    return ret;
+    FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
+
+    if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
+        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+    } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::openFileInputPortEx(int argc, const Object* argv)
@@ -351,7 +358,13 @@ Object scheme::openFileInputPortEx(int argc, const Object* argv)
 
     argumentAsString(0, path);
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    return Object::makeTextualInputPort(new FileBinaryInputPort(path->data()), transcoder);
+    FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+    if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
+        return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
+    } else {
+        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::currentInputPortEx(int argc, const Object* argv)

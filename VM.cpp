@@ -143,7 +143,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
 
 void VM::defaultExceptionHandler(Object error)
 {
-    errorPort_.toTextualOutputPort()->format(UC(" Exception:\n   ~a\n"), L1(error));
+    errorPort_.toTextualOutputPort()->format(UC(" Exception:\n~a\n"), L1(error));
 }
 
 
@@ -710,10 +710,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
-                ac_ = Object::makeCProcedure(scheme::rxmatchEx).toCProcedure()->call(argc + 1, argv);
-//                 returnCode_[1] = operand;
-//                 pc_  = returnCode_;
-                goto return_entry;
+                const Object rxmatchProc = Object::makeCProcedure(scheme::rxmatchEx);
+                CProcedure* const rxmatchCProc = rxmatchProc.toCProcedure();
+                // set pc_ before call() for pointing where to return.
+                pc_  = rxmatchCProc->returnCode;
+                pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
+                pc_[1] = operand;
+                ac_ = rxmatchCProc->call(argc + 1, argv);
             } else if (ac_.isRegMatch()) {
                 extern Object regMatchProxy(Object args);
                 const int argc = operand.toInt();
@@ -1729,31 +1732,32 @@ Object VM::getStackTrace()
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &dc_;
-    for (int i = 0;;) {
+    for (int i = 1;;) {
+        port->format(UC("    ~d. "), L1(Object::makeInt(i)));
         if (cl->isClosure()) {
             Object src = cl->toClosure()->sourceInfo;
             if (src.isPair()) {
                 if (src.car().isFalse()) {
-                    port->format(UC("      <unknown location>: ~a \n"), L1(src.cdr()));
+                    port->format(UC("<unknown location>: ~a \n"), L1(src.cdr()));
                 } else {
                     const Object lineno = src.car().cdr().car();
-                    port->format(UC("      ~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
+                    port->format(UC("~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
                 }
                 i++;
             }
         } else if (cl->isCProcedure()) {
-            port->format(UC("      <subr>: ~a\n"), L1(getClosureName(*cl)));
+            port->format(UC("<subr>: ~a\n"), L1(getClosureName(*cl)));
             i++;
         } else if (cl->isRegMatch()) {
-            port->format(UC("      <reg-match>: ~a\n"), L1(*cl));
+            port->format(UC("<reg-match>: ~a\n"), L1(*cl));
             i++;
         } else if (cl->isRegexp()) {
-            port->format(UC("      <regexp>: ~a\n"), L1(*cl));
+            port->format(UC("<regexp>: ~a\n"), L1(*cl));
             i++;
         } else {
             // this case is very rare and may be bug of VM.
-            LOG1("cl = ~a\n", *cl);
-            fprintf(stderr, "fatal: stack corrupt!\n");
+//             LOG1("cl = ~a\n", *cl);
+//             fprintf(stderr, "fatal: stack corrupt!\n");
             break;//            exit(-1);
         }
         if (i > MAX_DEPTH) {
@@ -1786,7 +1790,7 @@ void VM::throwException(Object exception)
 
     const Object stringOutputPort = Object::makeStringOutputPort();
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-    textualOutputPort->format(UC("~a\n~a\n"), Pair::list2(exception, stackTrace));
+    textualOutputPort->format(UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
     errorObj_ = sysGetOutputStringEx(1, &stringOutputPort);
 
     longjmp(returnPoint_, -1);

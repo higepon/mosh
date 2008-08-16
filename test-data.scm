@@ -1392,6 +1392,10 @@ val
 
 [error (apply read-char (current-input-port))] ;; the argument should be a list.
 [error (rxmatch-start (rxmatch #/\d+/ "a345a") 5)]
+;[error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
+[error (string-ref "hige" 5)] 
+[error (open-file-input-port "not-exist-path/////xxx")]
+[e (open-file-output-port "not-exist-path/////xxx")]
 ;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"

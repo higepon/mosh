@@ -39,8 +39,6 @@ extern VM* theVM;
 
 ucs4char String::charAt(int n)
 {
-    if (n >= static_cast<int>(data_.size())) {
-        VM_RAISE1("string-ref argument out of range:", Object::makeInt(n));
-    }
+    MOSH_ASSERT(n < length());
     return data_[n];
 }

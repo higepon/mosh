@@ -55,7 +55,16 @@ Object scheme::stringRefEx(int argc, const Object* argv)
     argumentAsString(0, text);
     argumentAsInt(1, index);
 
-    return Object::makeChar(text->charAt(index));
+    if (index < text->length()) {
+        return Object::makeChar(text->charAt(index));
+    } else {
+        callAssertionViolationAfter(procedureName,
+                                    "index out of range",
+                                    L2(Object::makeInt(text->length()),
+                                       argv[1]
+                                       ));
+        return Object::Undef;
+    }
 }
 
 Object scheme::stringEqPEx(int argc, const Object* argv)

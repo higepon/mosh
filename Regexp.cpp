@@ -43,7 +43,10 @@ extern VM* theVM;
 #endif
 
 
-Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern)
+Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern),
+                                                           isErrorOccured_(false),
+                                                           errorMessage_(Object::Nil),
+                                                           irritants_(Object::Nil)
 {
     const ucs4char* p = pattern_.data();
     int r = onig_new(&regexp_,
@@ -55,10 +58,27 @@ Regexp::Regexp(const ucs4string& pattern, bool caseFold) : pattern_(pattern)
                      &einfo_);
     if (r != ONIG_NORMAL)
     {
-        char s[ONIG_MAX_ERROR_MESSAGE_LEN];
-        onig_error_code_to_str((uint8_t*)s, r, &einfo_);
-        VM_RAISE1("regexp oniguruma:~a", Object::makeString(s));
+        char errorMessageBuffer[ONIG_MAX_ERROR_MESSAGE_LEN];
+        onig_error_code_to_str((uint8_t*)errorMessageBuffer, r, &einfo_);
+        isErrorOccured_ = true;
+        errorMessage_ = errorMessageBuffer;
+        irritants_ = L1(Object::makeString(pattern.data()));
     }
+}
+
+bool Regexp::isErrorOccured() const
+{
+    return isErrorOccured_;
+}
+
+Object Regexp::errorMessage() const
+{
+    return errorMessage_;
+}
+
+Object Regexp::irritants() const
+{
+    return irritants_;
 }
 
 Object Regexp::match(const ucs4string& text)
@@ -78,23 +98,19 @@ OnigRegion* Regexp::matchInternal(const ucs4string& text)
     const uint8_t* end   = start + text.size() * sizeof(ucs4char);
     const uint8_t* range = end;
     const int r = onig_search(regexp_, start, end, start, range, region, ONIG_OPTION_NONE);
-    if (r >= 0)
-    {
+    if (r >= 0) {
         return region;
     } else if (r == ONIG_MISMATCH) {
         return NULL;
+    } else {
+        char errorMessageBuffer[ONIG_MAX_ERROR_MESSAGE_LEN];
+        onig_error_code_to_str((uint8_t*)errorMessageBuffer, r);
+        isErrorOccured_ = true;
+        errorMessage_ = errorMessageBuffer;
+        irritants_ = L2(Object::makeString(text.data()),
+                        Object::makeString(pattern_.data()));
+        return NULL;
     }
-    else {
-        char s[ONIG_MAX_ERROR_MESSAGE_LEN];
-        onig_error_code_to_str((uint8_t*)s, r);
-        if (NULL != theVM) {
-            VM_RAISE1("regexp oniguruma:~a", Object::makeString(s));
-        } else {
-            fprintf(stderr, "[fatal] regexp oniguruma :%s\n", s);
-            exit(-1);
-        }
-    }
-    return NULL;
 }
 
 ucs4string Regexp::replace(ucs4string& text, ucs4string& subst, bool& matched)
@@ -179,7 +195,9 @@ int RegMatch::matchStart(int index)
 int RegMatch::matchEnd(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
-        VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
+        isErrorOccured_ = true;
+        errorMessage_ = "submatch index out of range";
+        irritants_ = L1(Object::makeInt(index));
         return -1;
     }
     return region_->end[index] / sizeof(ucs4char);
@@ -188,7 +206,9 @@ int RegMatch::matchEnd(int index)
 Object RegMatch::matchAfter(int index)
 {
     if (index < 0 || index >= region_->num_regs) {
-        VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
+        isErrorOccured_ = true;
+        errorMessage_ = "submatch index out of range";
+        irritants_ = L1(Object::makeInt(index));
         return Object::Undef;
     }
     return Object::makeString(text_.substr(region_->end[index] / sizeof(ucs4char),
@@ -199,7 +219,9 @@ Object RegMatch::matchBefore(int index)
 {
     if (index < 0 || index >= region_->num_regs)
     {
-        VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
+        isErrorOccured_ = true;
+        errorMessage_ = "submatch index out of range";
+        irritants_ = L1(Object::makeInt(index));
         return Object::Undef;
     }
     return Object::makeString(text_.substr(0, region_->beg[index] / sizeof(ucs4char)).data());
@@ -207,18 +229,19 @@ Object RegMatch::matchBefore(int index)
 
 Object RegMatch::matchSubString(int index)
 {
-        if (index< 0 || index >= region_->num_regs)
-        {
-            VM_RAISE1("submatch index out of range: ~d", Object::makeInt(index));
-            return Object::Undef;
-        }
-        // really?
-        if (region_->beg[index] == region_->end[index]) {
-            return Object::False;
-        }
-        return Object::makeString(text_.substr(region_->beg[index] / sizeof(ucs4char),
-                                               region_->end[index] / sizeof(ucs4char) - region_->beg[index] / sizeof(ucs4char)).data());
+    if (index< 0 || index >= region_->num_regs)
+    {
+        isErrorOccured_ = true;
+        errorMessage_ = "submatch index out of range";
+        irritants_ = L1(Object::makeInt(index));
+        return Object::Undef;
+    }
+
+    // really?
+    if (region_->beg[index] == region_->end[index]) {
+        return Object::False;
+    }
+    return Object::makeString(text_.substr(region_->beg[index] / sizeof(ucs4char),
+                                           region_->end[index] / sizeof(ucs4char) - region_->beg[index] / sizeof(ucs4char)).data());
 
 }
-
-

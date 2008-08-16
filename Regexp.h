@@ -49,6 +49,9 @@ public:
     Object replace(Object t, Object subst);
     ucs4string replace(ucs4string& t, ucs4string& subst, bool& matched);
     Object replaceAll(Object t, Object subst);
+    bool isErrorOccured() const;
+    Object errorMessage() const;
+    Object irritants() const;
 
 private:
     OnigRegion* matchInternal(const ucs4string& text);
@@ -56,6 +59,9 @@ private:
     ucs4string pattern_;
     regex_t* regexp_;
     OnigErrorInfo einfo_;
+    bool isErrorOccured_;
+    Object errorMessage_;
+    Object irritants_;
 };
 
 class RegMatch EXTEND_GC

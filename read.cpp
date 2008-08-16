@@ -54,6 +54,7 @@
 #ifdef MONA_SCHEME
 
 #include "scheme.h"
+#include "ViolationProcedures.h"
 
 using namespace scheme;
 
@@ -1466,7 +1467,16 @@ static ScmObj read_regexp(ScmPort *port)
             else          Scm_UngetcUnsafe(c, port);
 #endif
 #ifdef MONA_SCHEME
-            return Object::makeRegexp(ds, flags & SCM_REGEXP_CASE_FOLD);
+            const Object regexp = Object::makeRegexp(ds, flags & SCM_REGEXP_CASE_FOLD);
+            Regexp* const regexpPointer = regexp.toRegexp();
+            if (regexpPointer->isErrorOccured()) {
+                callAssertionViolationImmidiaImmediately("read",
+                                                         regexpPointer->errorMessage(),
+                                                         regexpPointer->irritants());
+                return Object::Undef;
+            } else {
+                return regexp;
+            }
 #else
             return Scm_RegComp(SCM_STRING(Scm_DStringGet(&ds, 0)), flags);
 #endif
