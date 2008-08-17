@@ -221,18 +221,6 @@ Object Object::makeCProcedure(Object (*proc)(int, const Object*))
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
 }
 
-Object Object::makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TypedVectorDesc,
-                                                        reinterpret_cast<word>(new TypedVectorDesc(name, supertype, data, fieldMutability)))));
-}
-
-Object Object::makeTypedVector(Object desc, Object fieldsList)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TypedVector,
-                                                        reinterpret_cast<word>(new TypedVector(desc, fieldsList)))));
-}
-
 Object Object::makeCodeBuilder()
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CodeBuilder,

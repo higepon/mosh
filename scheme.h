@@ -151,8 +151,6 @@ public:
         BinaryOutputPort            = Type<15>::VALUE,
         Codec                       = Type<16>::VALUE,
         Transcoder                  = Type<17>::VALUE,
-        TypedVectorDesc             = Type<18>::VALUE,
-        TypedVector                 = Type<19>::VALUE,
         CodeBuilder                 = Type<20>::VALUE,
         GenericHashTable            = Type<21>::VALUE,
         EqvHashTable                = Type<22>::VALUE,
@@ -188,8 +186,6 @@ class BinaryInputPort;
 class BinaryOutputPort;
 class Transcoder;
 class Codec;
-class TypedVectorDesc;
-class TypedVector;
 class CodeBuilder;
 class Callable;
 class Record;
@@ -433,8 +429,6 @@ public:
     static Object makeRegMatch(OnigRegion* region, const ucs4string& text);
     static Object makeUTF8Codec();
     static Object makeTranscoder(Codec* codec);
-    static Object makeTypedVectorDesc(Object name, Object supertype, Object data, Object fieldMutability);
-    static Object makeTypedVector(Object desc, Object fieldsList);
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
@@ -491,8 +485,6 @@ DECL_ACCESSOR(BinaryInputPort)
 DECL_ACCESSOR(BinaryOutputPort)
 DECL_ACCESSOR(Codec)
 DECL_ACCESSOR(Transcoder)
-DECL_ACCESSOR(TypedVector)
-DECL_ACCESSOR(TypedVectorDesc)
 DECL_ACCESSOR(CodeBuilder)
 DECL_ACCESSOR(Callable)
 DECL_ACCESSOR(Record)
@@ -661,7 +653,6 @@ inline Object& Object::fifth() const
 #include "Port.h"
 #include "Regexp.h"
 #include "freeproc.h"
-#include "TypedVector.h"
 #include "Callable.h"
 #include "Record.h"
 #include "RecordTypeDescriptor.h"

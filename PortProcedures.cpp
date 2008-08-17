@@ -189,7 +189,15 @@ Object scheme::formatEx(int argc, const Object* argv)
         for (int i = argc - 1; i >= 2; i--) {
             lst = Object::cons(argv[i], lst);
         }
-        return textualOutputPort->format(formatString->data(), lst);
+        textualOutputPort->format(formatString->data(), lst);
+        if (textualOutputPort->isErrorOccured()) {
+            callAssertionViolationAfter(procedureName,
+                                        textualOutputPort->errorMessage(),
+                                        textualOutputPort->irritants());
+            return Object::Undef;
+        } else {
+            return Object::Undef;
+        }
     } else if (arg1.isTrue()) {
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
@@ -198,7 +206,15 @@ Object scheme::formatEx(int argc, const Object* argv)
         for (int i = argc - 1; i >= 2; i--) {
             lst = Object::cons(argv[i], lst);
         }
-        return theVM->getOutputPort().format(formatString->data(), lst);
+        theVM->getOutputPort().format(formatString->data(), lst);
+        if (theVM->getOutputPort().isErrorOccured()) {
+            callAssertionViolationAfter(procedureName,
+                                        theVM->getOutputPort().errorMessage(),
+                                        theVM->getOutputPort().irritants());
+            return Object::Undef;
+        } else {
+            return Object::Undef;
+        }
     } else if (arg1.isFalse()) {
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
@@ -211,7 +227,14 @@ Object scheme::formatEx(int argc, const Object* argv)
         }
 
         p->format(formatString->data(), lst);
-        return Object::makeString(p->getString());
+        if (p->isErrorOccured()) {
+            callAssertionViolationAfter(procedureName,
+                                        p->errorMessage(),
+                                        p->irritants());
+            return Object::Undef;
+        } else {
+            return Object::makeString(p->getString());
+        }
     } else if (arg1.isString()) {
         const Object port = Object::makeStringOutputPort();
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
@@ -220,7 +243,14 @@ Object scheme::formatEx(int argc, const Object* argv)
             lst = Object::cons(argv[i], lst);
         }
         p->format(arg1.toString()->data(), lst);
-        return Object::makeString(p->getString());
+        if (p->isErrorOccured()) {
+            callAssertionViolationAfter(procedureName,
+                                        p->errorMessage(),
+                                        p->irritants());
+            return Object::Undef;
+        } else {
+            return Object::makeString(p->getString());
+        }
     } else {
         callAssertionViolationAfter(procedureName, "port and format string required");
         return Object::Undef;

@@ -35,7 +35,7 @@ using namespace scheme;
 
 extern VM* theVM;
 
-Object TextualOutputPort::format(const ucs4string& fmt, Object args)
+void TextualOutputPort::format(const ucs4string& fmt, Object args)
 {
     ucs4string buffer = UC("");
     for (uint32_t i = 0; i < fmt.size(); i++) {
@@ -55,7 +55,10 @@ Object TextualOutputPort::format(const ucs4string& fmt, Object args)
                     display(args.car());
                     args = args.cdr();
                 } else {
-                    VM_RAISE1("too few arguments for format string: ~a", Object::makeString(fmt));
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = L1(Object::makeString(fmt));
+                    return;
                 }
                 break;
             }
@@ -66,7 +69,10 @@ Object TextualOutputPort::format(const ucs4string& fmt, Object args)
                     putDatum(args.car());
                     args = args.cdr();
                 } else {
-                    VM_RAISE1("too few arguments for format string: ~a", Object::makeString(fmt));
+                    isErrorOccured_ = true;
+                    errorMessage_ = "too few arguments for format string";
+                    irritants_ = L1(Object::makeString(fmt));
+                    return;
                 }
                 break;
             }
@@ -83,7 +89,7 @@ Object TextualOutputPort::format(const ucs4string& fmt, Object args)
         putString(buffer);
     }
     fflush(stdout); // temp
-    return Object::Undef;
+    return;
 }
 
 
@@ -265,10 +271,6 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<codec>"));
     } else if (o.isBinaryInputPort()) {
         putString(UC("#<binary input port>"));
-    } else if (o.isTypedVector()) {
-        putString(UC("#<typed-vector>"));
-    } else if (o.isTypedVectorDesc()) {
-        putString(UC("#<vector-type>"));
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {
@@ -372,10 +374,6 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<codec>"));
     } else if (o.isBinaryInputPort()) {
         putString(UC("#<binary input port>"));
-    } else if (o.isTypedVector()) {
-        putString(UC("#<typed-vector>"));
-    } else if (o.isTypedVectorDesc()) {
-        putString(UC("#<vector-type>"));
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {

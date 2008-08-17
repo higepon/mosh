@@ -143,7 +143,7 @@ Object VM::withExceptionHandler(Object handler, Object thunk)
 
 void VM::defaultExceptionHandler(Object error)
 {
-    errorPort_.toTextualOutputPort()->format(UC(" Exception:\n~a\n"), L1(error));
+    errorPort_.toTextualOutputPort()->format(UC("\n Exception:\n~a\n"), L1(error));
 }
 
 

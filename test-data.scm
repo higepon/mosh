@@ -1395,7 +1395,8 @@ val
 ;[error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
 [error (string-ref "hige" 5)] 
 [error (open-file-input-port "not-exist-path/////xxx")]
-[e (open-file-output-port "not-exist-path/////xxx")]
+[error (open-file-output-port "not-exist-path/////xxx")]
+[error (format "~a ~a" 1)]
 ;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"

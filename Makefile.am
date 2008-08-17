@@ -43,8 +43,6 @@ VM.h                 \
 Vector.h             \
 freeproc.h           \
 Box.h                \
-TypedVector.h        \
-TypedVector.cpp      \
 CodeBuilder.h        \
 CodeBuilder.cpp        \
 ProcedureMacro.h \

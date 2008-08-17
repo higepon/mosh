@@ -392,7 +392,12 @@ public:
     {
     }
 
-    TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port), codec_(coder->getCodec()), coder_(coder)
+    TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
+                                                                  codec_(coder->getCodec()),
+                                                                  coder_(coder),
+                                                                  isErrorOccured_(false),
+                                                                  errorMessage_(Object::Nil),
+                                                                  irritants_(Object::Nil)
     {
     }
 
@@ -434,14 +439,21 @@ public:
     void display(Object o, bool inList = false);
     void putPair(Object obj, bool inList = false);
 
-    Object format(const ucs4string& fmt, Object args);
+    void format(const ucs4string& fmt, Object args);
 
     BinaryOutputPort* binaryPort() const { return port_; }
+
+    bool isErrorOccured() const { return isErrorOccured_; }
+    Object errorMessage() const { return errorMessage_; }
+    Object irritants() const { return irritants_; }
 
 private:
     BinaryOutputPort* port_;
     Codec* codec_;
     Transcoder* coder_;
+    bool isErrorOccured_;
+    Object errorMessage_;
+    Object irritants_;
 };
 
 class StringTextualOutputPort : public TextualOutputPort
