@@ -1,3 +1,21 @@
+(define a 3)
+(define a 3)
+(exit)
+
+yyy
+(exit)
+(define (a y . x)
+  x)
+(display (a))
+(exit)
+(define (a x)
+  (set! x 1)
+  (a x)
+  3)
+(display (guard [c (#t (display c))]
+       (a 3)))
+(exit)
+
 (#/.*/ "あいうえ")
 (exit)
 (let1 x '(2)

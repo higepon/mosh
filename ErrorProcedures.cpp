@@ -29,7 +29,7 @@
  *  $Id: ViolationProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include "ViolationProcedures.h"
+#include "ErrorProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 
@@ -169,6 +169,59 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
     }
 }
 
+void scheme::callErrorAfter(Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+        if (irritants.isPair()) {
+            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
+            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
+            conditions = Object::cons(irritantsCondition, conditions);
+        }
+
+        const Object messageCondition = makeMessageCondition(message);
+        conditions = Object::cons(messageCondition, conditions);
+
+        if (!who.isFalse()) {
+            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
+            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
+            conditions = Object::cons(whoCondition, conditions);
+        }
+
+        const Object errorRcd = theVM->getTopLevelGlobalValue(UC("&error-rcd"));
+        const Object errorCondition = theVM->callClosure0(errorRcd.toRecordConstructorDescriptor()->makeConstructor());
+        conditions = Object::cons(errorCondition, conditions);
+
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        const Object stringOutputPort = Object::makeStringOutputPort();
+        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+        textualOutputPort->format(UC(" Condition components:\n"
+                                     "    1. &error\n"
+                                     "    2. &who: ~a\n"
+                                     "    3. &message: ~s\n"
+                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+        condition = sysGetOutputStringEx(1, &stringOutputPort);
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+}
+
 
 Object scheme::assertionViolationEx(int argc, const Object* argv)
 {
@@ -186,6 +239,25 @@ Object scheme::assertionViolationEx(int argc, const Object* argv)
         return Object::Undef;
     }
     callAssertionViolationAfter(who, message, irritants);
+    return Object::Undef;
+}
+
+Object scheme::errorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("error");
+    checkArgumentLengthBetween(2, 3);
+    const Object who = argv[0];
+    if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
+        return Object::Undef;
+    }
+    argumentCheckString(1, message);
+    const Object irritants = (argc == 3) ? argv[2] : Object::Nil;
+    if (!irritants.isNil() && !irritants.isPair()) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "list", irritants);
+        return Object::Undef;
+    }
+    callErrorAfter(who, message, irritants);
     return Object::Undef;
 }
 

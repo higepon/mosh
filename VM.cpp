@@ -37,7 +37,7 @@
 #include "StringProcedures.h"
 #include "PortProcedures.h"
 #include "ConditionProcedures.h"
-#include "ViolationProcedures.h"
+#include "ErrorProcedures.h"
 #include "ListProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -111,34 +111,17 @@ VM::VM(int stackSize, TextualOutputPort& outport, Object errorPort, Object input
 
 VM::~VM() {}
 
-Object VM::raiseContinuable(Object o)
+
+Object VM::getTopLevelGlobalValue(Object id)
 {
-    return callClosure1(errorHandler_, o);
-}
-
-
-
-Object VM::withExceptionHandler(Object handler, Object thunk)
-{
-    SAVE_REGISTERS();
-    errorHandler_ = handler;
-    Object ret;
-    jmp_buf org;
-    copyJmpBuf(org, returnPoint_);
-    if (setjmp(returnPoint_) == 0) {
-        ret = callClosure0(thunk);
-        copyJmpBuf(returnPoint_, org);
+    const Object key = idToTopLevelSymbol(id);
+    const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
+    if (val != notFound_) {
+        return val;
     } else {
-        copyJmpBuf(returnPoint_, org);
-        if (handler.isNil()) {
-            defaultExceptionHandler(errorObj_);
-        } else {
-            ret = callClosure1(handler, errorObj_);
-        }
+        callAssertionViolationAfter("symbol-value", "unbound variable", L1(id));
+        return Object::Undef;
     }
-
-    RESTORE_REGISTERS();
-    return ret;
 }
 
 void VM::defaultExceptionHandler(Object error)
@@ -200,7 +183,9 @@ void VM::load(const ucs4string& file)
         } else if (fileExistsP(moshLibPath)) {
             loadFile(moshLibPath);
         } else {
-            RAISE1("cannot find file ~a in load path", Object::makeString(file));
+            callAssertionViolationImmidiaImmediately("load",
+                                                     "cannot find file in load path",
+                                                     L1(Object::makeString(file)));
         }
         copyJmpBuf(returnPoint_, org);
     CATCH
@@ -241,8 +226,6 @@ Object VM::evaluate(Object codeVector)
 
 #       include "cprocedures.cpp"
 
-
-
 Object VM::evaluate(Object* code, int codeSize)
 {
     static Object closure = Object::Undef;
@@ -273,6 +256,30 @@ Object VM::callClosure0(Object closure)
     };
 
     applyCode[3] = closure;
+
+    SAVE_REGISTERS();
+    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+    RESTORE_REGISTERS();
+    return ret;
+}
+
+Object VM::callClosure1(Object closure, Object arg)
+{
+    static Object applyCode[] = {
+        Object::makeRaw(Instruction::FRAME),
+        Object::makeInt(8),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::CALL),
+        Object::makeInt(1),
+        Object::makeRaw(Instruction::HALT),
+    };
+
+    applyCode[3] = arg;
+    applyCode[6] = closure;
 
     SAVE_REGISTERS();
     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
@@ -337,62 +344,9 @@ Object VM::callClosure3(Object closure, Object arg1, Object arg2, Object arg3)
     return ret;
 }
 
-
-
-// accept one argument.
-Object VM::callClosure1(Object closure, Object arg)
-{
-    static Object applyCode[] = {
-        Object::makeRaw(Instruction::FRAME),
-        Object::makeInt(8),
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::PUSH),
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::CALL),
-        Object::makeInt(1),
-        Object::makeRaw(Instruction::HALT),
-    };
-
-    applyCode[3] = arg;
-    applyCode[6] = closure;
-
-    SAVE_REGISTERS();
-    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
-    RESTORE_REGISTERS();
-    return ret;
-}
-
 void VM::setOutputPort(TextualOutputPort& port)
 {
     outputPort_ = port;
-}
-
-// N.B be sure that pc_ should be set to next pc_(= return point)
-Object VM::setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3)
-{
-    static Object callCode[] = {
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::CALL),
-        Object::makeInt(3),
-        Object::makeRaw(Instruction::RETURN),
-        Object::makeInt(0),
-        Object::makeRaw(Instruction::HALT)
-    };
-
-    push(Object::makeObjectPointer(pc_));
-    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
-
-    push(dc_);
-    push(cl_);
-    push(Object::makeObjectPointer(fp_));
-    push(arg1);
-    push(arg2);
-    push(arg3);
-    pc_[1] = closure; // don't do like "ac_ = closure;" ac_ will be overwritten.
-    return ac_;
 }
 
 Object VM::setAfterTrigger1(Object closure, Object arg1)
@@ -652,10 +606,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                 }
             } else if (ac_.isClosure()) {
-
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
-                    RAISE1("stack over flow sp=~d", Object::makeInt(sp_ - stack_));
+                    // todo
+                    // handle stack overflow with guard
+                    callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeInt(sp_ - stack_)));
                 }
                 COUNT_CALL(ac_);
                 const int argLength = operand.toInt();
@@ -676,9 +631,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                         fp_ = sp - requiredLength;
                         sp_ = sp;
                     } else {
-                        RAISE2("2wrong number of arguments for #<closure> (required ~d, got ~d)"
-                               , Object::makeInt(requiredLength)
-                               , operand);
+                        callWrongNumberOfArgumentsViolationAfter("#<closure>",
+                                                                 requiredLength,
+                                                                 operand.toInt());
                     }
                 } else if (requiredLength == argLength) {
                     fp_ = sp_ - argLength;
@@ -686,9 +641,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     callWrongNumberOfArgumentsViolationAfter("#<closure>",
                                                              requiredLength,
                                                              operand.toInt());
-//                     RAISE2("1wrong number of arguments for #<closure> (required ~d, got ~d)"
-//                            , Object::makeInt(requiredLength)
-//                            , operand);
                 }
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);
@@ -728,7 +680,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //                 pc_  = returnCode_;
                 goto return_entry;
             } else {
-                RAISE2("invalid application (~a ...) arugment length=~d", ac_, operand);
+                callAssertionViolationAfter("apply", "invalid application", L1(ac_));
             }
             NEXT;
         }
@@ -741,7 +693,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 sp_--;
             } else {
                 if (!args.isPair()) {
-                    RAISE1("apply requires pair arguments, bug got ~a\n", args.toClosure()->sourceInfo);
+                    callAssertionViolationAfter("apply", "bug?", L1(ac_));
+                    NEXT;
                 }
                 const int length = Pair::length(args);
                 const int shiftLen = length > 1 ? length - 1 : 0;
@@ -784,7 +737,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
                 Object e = splitId(id);
-                RAISE2("can't set! to unbound variable ~a on ~a", e.cdr(), e.car());
+                callAssertionViolationAfter("set!", "can't set! to unbound variable", L1(e.cdr()));
+                NEXT;
             } else {
                 nameSpace_.toEqHashTable()->set(id, ac_);
                 ac_ = Object::Undef;
@@ -855,10 +809,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CAR_PUSH)
         {
             TRACE_INSN0("CAR_PUSH");
-            if (!ac_.isPair()) {
-                RAISE1("car pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                push(ac_.car());
+            } else {
+                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
             }
-            push(ac_.car());
             NEXT1;
         }
         CASE(CDAR)
@@ -901,10 +856,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CDR_PUSH)
         {
             TRACE_INSN0("CDR_PUSH");
-            if (!ac_.isPair()) {
-                RAISE1("cdr pair required, but got ~a", ac_);
+            if (ac_.isPair()) {
+                push(ac_.cdr());
+            } else {
+                callAssertionViolationAfter("cdr", "pair required", Pair::list1(ac_));
             }
-            push(ac_.cdr());
             NEXT1;
         }
         CASE(CLOSURE)
@@ -946,8 +902,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(DEFINE_GLOBAL)
         {
             const Object id = fetchOperand();
-            defineGlobal(id, ac_);
-            TRACE_INSN1("DEFINE_GLOBAL", "([~a])\n", id);
+            const Object found = nameSpace_.toEqHashTable()->ref(id, notFound_);
+            if (found == notFound_) {
+                nameSpace_.toEqHashTable()->set(id, ac_);
+            } else {
+                Object e = splitId(id);
+                callErrorAfter("define", "defined twice", L1(e.cdr()));
+            }
             NEXT;
         }
         CASE(DISPLAY)
@@ -1213,11 +1174,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object n = index(sp_, 0);
             if (ac_.toInt() == 0) {
-                RAISE2("Dividing by zero (/ ~d ~d)", n, ac_);
+                callAssertionViolationAfter("/", "Dividing by zero", L2(n, ac_));
+            } else {
+                ac_ = Object::makeInt(n.toInt() / ac_.toInt());
+                sp_--;
             }
-            ac_ = Object::makeInt(n.toInt() / ac_.toInt());
-            sp_--;
-            NEXT1;
+            NEXT1
         }
         CASE(NUMBER_SUB)
         {
@@ -1271,14 +1233,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TRACE_INSN0("READ_CHAR");
             const ucs4char c = ac_.isNil() ? inputPort_.toTextualInputPort()->getChar() : ac_.toTextualInputPort()->getChar();
             ac_= c == EOF ? Object::Eof : Object::makeChar(c);
-
-//             if (ac_.isNil()) {
-//                 printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//                 exit(-1);
-//             } else {
-//                 const ucs4char c = ac_.toTextualInputPort()->getChar();
-//                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
-//             }
             NEXT1;
         }
         CASE(REDUCE)
@@ -1347,7 +1301,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
                 Object e = splitId(id);
-                RAISE2("unbound variable ~a on ~a", e.cdr(), e.car());
+                callAssertionViolationAfter("eval",
+                                            "unbound variable",
+                                            L1(e.cdr()));
             } else {
                 ac_ = val;
             }
@@ -1359,7 +1315,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
                 Object e = splitId(id);
-                RAISE2("unbound variable ~a on ~a", e.cdr(), e.car());
+                callAssertionViolationAfter("eval",
+                                            "unbound variable",
+                                            L1(e.cdr()));
             } else {
                 ac_ = val;
             }
@@ -1596,12 +1554,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
         vector_ref_entry:
             const Object v = index(sp_, 0);
-            if (!v.isVector()) {
-                RAISE1("vector-ref vector required, but got ~a", v);
+            if (v.isVector()) {
+                ac_ = v.toVector()->ref(ac_.toInt());
+                sp_--;
+            } else {
+                callAssertionViolationAfter("vector-ref",
+                                            "vector required",
+                                            L1(v));
             }
-            TRACE_INSN0("VECTOR_REF");
-            ac_ = v.toVector()->ref(ac_.toInt());
-            sp_--;
             NEXT1;
         }
         CASE(VECTOR_SET)
@@ -1609,10 +1569,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         vector_set_entry:
             const Object v = index(sp_, 1);
             const Object n = index(sp_, 0);
-            TRACE_INSN0("VECTOR_SET");
-            v.toVector()->set(n.toInt(), ac_);
-            ac_ = Object::Undef;
-            sp_ -= 2;
+            if (v.isVector()) {
+                v.toVector()->set(n.toInt(), ac_);
+                ac_ = Object::Undef;
+                sp_ -= 2;
+            } else {
+                callAssertionViolationAfter("vector-ref",
+                                            "vector required",
+                                            L1(v));
+            }
             NEXT1;
         }
         CASE(VALUES)
@@ -1653,13 +1618,20 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RECEIVE)
         {
-            TRACE_INSN0("RECEIVE");
             const int reqargs = fetchOperand().toInt();
             const int optarg  = fetchOperand().toInt();
             if (numValues_ < reqargs) {
-                RAISE0("received fewer values than expected");
+                callAssertionViolationAfter("receive",
+                                            "received fewer values than expected",
+                                            L2(Object::makeInt(numValues_),
+                                               Object::makeInt(reqargs)));
+                NEXT;
             } else if (optarg == 0 && numValues_ > reqargs) {
-                RAISE0("received more values than expected");
+                callAssertionViolationAfter("receive",
+                                            "received more values than expected",
+                                            L2(Object::makeInt(numValues_),
+                                               Object::makeInt(reqargs)));
+                NEXT;
             }
             // (receive (a b c) ...)
             if (optarg == 0) {
@@ -1694,7 +1666,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(UNFIXED_JUMP)
         {
-            RAISE0("not reached UNFIXED_JUMP");
+            callAssertionViolationAfter("UNFIXED_JUMP", "bug of VM");
+            NEXT;
         }
         CASE(STOP)
         {
@@ -1703,8 +1676,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         DEFAULT
         {
-            RAISE1("unknown instruction ~a", *(pc_ - 1));
-
+            callAssertionViolationAfter("VM", "unknown instruction, bug of VM");
             NEXT;
         }
         } // SWITCH
@@ -1774,16 +1746,6 @@ Object VM::getStackTrace()
     return sysGetOutputStringEx(1, &sport);
 }
 
-void VM::raise(Object o)
-{
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    errorObj_ = o;
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    LOG1("~a", errorObj_);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    longjmp(returnPoint_, -1);
-}
-
 void VM::throwException(Object exception)
 {
     const Object stackTrace = getStackTrace();
@@ -1796,26 +1758,6 @@ void VM::throwException(Object exception)
     longjmp(returnPoint_, -1);
 }
 
-void VM::raiseFormat(const ucs4char* fmt, Object list)
-{
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debuge
-    const int argc = Pair::length(list) + 1;
-    Object* argv = Object::makeObjectArray(argc);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    argv[0] = Object::makeString(fmt);
-    for (int i = 1; i < argc; i++) {
-        argv[i] = list.car();
-        list = list.cdr();
-    }
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    const Object errorMessage = formatEx(argc, argv);
-    const Object tr = getStackTrace();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    Object texts[] = {errorMessage, Object::makeString(UC("\n")), tr};
-
-    raise(stringAppendEx(sizeof(texts)/ sizeof(Object), texts));
-}
-
 void VM::showStack(int count, const char* file, int line)
 {
     printf("** STACK %s:%d\n", file, line);fflush(stdout);
@@ -1824,19 +1766,9 @@ void VM::showStack(int count, const char* file, int line)
         LOG2("============================================\n~d: ~a\n", Object::makeInt(i), index(sp_, i));
     }
 #else
-#error "don't use showStack"
+    callAssertionViolationImmidiaImmediately("vm", "don't use showStack");
 #endif
 }
-
-// void VM::raiseAssertionViolation(Object who, Object message, Object irritant)
-// {
-//     Object proc =  getTopLevelGlobalValue(UC("assertion-violation"));
-//     if (irritant.isNil()) {
-//         setAfterTrigger3(proc, who, message, irritant);
-//     } else {
-// //        setAfterTrigger1(proc, 3, who, message, irritant);
-//     }
-// }
 
 bool VM::isR6RSMode() const
 {
@@ -1878,7 +1810,7 @@ void VM::initProfiler()
     act.sa_flags = SA_RESTART;        // restart system call after signal handler
 
     if (sigaction(SIGPROF, &act, NULL) != 0) {
-        VM_RAISE0("Profiler: sigaction failed\n");
+        callAssertionViolationImmidiaImmediately("profiler", "sigaction failed");
     }
     startTimer();
 }

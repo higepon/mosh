@@ -106,7 +106,7 @@
     (regexp-replace ,regexp-replace)
     (regexp-replace-all ,regexp-replace-all)
     (source-info ,(lambda (x) #f))
-    (errorf ,errorf)
+;    (errorf ,errorf)
     (eval ,(lambda a (evaluate (car a))))
 ;    (raise ,(lambda (a) (error a)))
 ;    (raise-continuable ,(lambda (a) (error a)))

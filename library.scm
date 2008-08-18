@@ -2884,16 +2884,16 @@
 (define current-exception-handler (make-parameter #f))
 (define parent-exception-handler (make-parameter #f))
 
-(define with-exception-handler
-  (lambda (new thunk)
-    (let ((parent (current-exception-handler)))
-      (parameterize
-          ((parent-exception-handler parent)
-           (current-exception-handler
-            (lambda (condition)
-              (parameterize ((current-exception-handler parent))
-                (new condition)))))
-        (thunk)))))
+;; borrowed from ypsilon scheme by Yoshikatsu Fujita
+(define (with-exception-handler new thunk)
+  (let ((parent (current-exception-handler)))
+    (parameterize
+        ((parent-exception-handler parent)
+         (current-exception-handler
+          (lambda (condition)
+            (parameterize ((current-exception-handler parent))
+              (new condition)))))
+      (thunk))))
 
 (define (raise c)
   (cond ((current-exception-handler)
@@ -2905,18 +2905,8 @@
               (throw "in raise: returned from non-continuable exception"))))
     (throw (format "    Unhandled exception\n\n~a" c)))
 
-(define raise-continuable
-  (lambda (c)
-    (cond ((current-exception-handler)
-           => (lambda (proc) (proc c)))
-          (else
-           (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a")))))
-
-;; (define (assertion-violation who message . irritants)
-;;   (apply $assertion-violation who message irritants))
-
-
-
-;; c -> scheme test
-(define (test-plus a b c)
-  (+ a b c))
+(define (raise-continuable c)
+  (cond ((current-exception-handler)
+         => (lambda (proc) (proc c)))
+        (else
+         (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a"))))

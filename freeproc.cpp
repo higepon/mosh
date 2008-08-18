@@ -170,21 +170,6 @@ Object scheme::integerTocharEx(int argc, const Object* argv)
     return Object::makeChar(integer);
 }
 
-Object scheme::errorfEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("errorf");
-    checkArgumentLengthAtLeast(1);
-
-    Object lst = Object::Nil;
-    for (int i = argc - 1; i >= 1; i--) {
-        lst = Object::cons(argv[i], lst);
-    }
-
-    argumentAsString(0, formatString);
-    theVM->raiseFormat(formatString->data().c_str(), lst);
-    return Object::Undef;
-}
-
 Object scheme::charPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("char?");
@@ -270,21 +255,21 @@ Object scheme::symbolTostringEx(int argc, const Object* argv)
     return Object::makeString(symbol->c_str());
 }
 
-// todo
-Object scheme::errorEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("error");
-    checkArgumentLengthAtLeast(1);
+// // todo
+// Object scheme::errorEx(int argc, const Object* argv)
+// {
+//     DeclareProcedureName("error");
+//     checkArgumentLengthAtLeast(1);
 
-    const Object stringPort = Object::makeStringOutputPort();
-    TextualOutputPort* port = stringPort.toTextualOutputPort();
-    for (int i = argc - 1; i >= 0; i--) {
-        port->display(argv[i]);
-        port->display(" ");
-    }
-    VM_RAISE1("error : ~a", sysGetOutputStringEx(1, &stringPort));
-    return Object::UnBound;
-}
+//     const Object stringPort = Object::makeStringOutputPort();
+//     TextualOutputPort* port = stringPort.toTextualOutputPort();
+//     for (int i = argc - 1; i >= 0; i--) {
+//         port->display(argv[i]);
+//         port->display(" ");
+//     }
+//     VM_RAISE1("error : ~a", sysGetOutputStringEx(1, &stringPort));
+//     return Object::UnBound;
+// }
 
 
 Object scheme::getTimeofdayEx(int argc, const Object* argv)

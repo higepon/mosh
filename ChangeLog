@@ -1,3 +1,7 @@
+2008-08-18  higepon  <higepon@users.sourceforge.jp>
+
+        * All of the internal errors are rewrote to error or assertion-violation.
+
 2008-08-17  higepon  <higepon@users.sourceforge.jp>
 
         * scheme.cpp : Removed TypedVector.cpp

@@ -162,7 +162,8 @@ int main(int argc, char *argv[])
     const Object compiler = getBuiltinCompiler();
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
-    theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc, optind, argv));
+//    theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc, optind, argv));
+    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
 
 #ifdef ENABLE_PROFILER
     if (isProfiler) {

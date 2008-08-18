@@ -58,8 +58,6 @@ namespace scheme {
     Object booleanPEx(int argc, const Object* argv);
     Object symbolTostringEx(int argc, const Object* argv);
 
-    Object errorEx(int argc, const Object* argv);
-    Object assertionViolationEx(int argc, const Object* argv);
     Object getTimeofdayEx(int argc, const Object* argv);
     Object valuesEx(int argc, const Object* argv);
     Object vmApplyEx(int argc, const Object* argv);
@@ -73,7 +71,7 @@ namespace scheme {
     Object getBytevectorNEx(int argc, const Object* argv);
     Object utf8TostringEx(int argc, const Object* argv);
     Object vectorEx(int argc, const Object* argv);
-    Object errorfEx(int argc, const Object* argv);
+    //    Object errorfEx(int argc, const Object* argv);
     Object evalEx(int argc, const Object* argv);
     Object applyEx(int argc, const Object* argv);
     Object modEx(int argc, const Object* argv);

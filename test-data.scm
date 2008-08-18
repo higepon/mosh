@@ -1397,6 +1397,17 @@ val
 [error (open-file-input-port "not-exist-path/////xxx")]
 [error (open-file-output-port "not-exist-path/////xxx")]
 [error (format "~a ~a" 1)]
+[error  my-unbound-variable]
+[error  (my-unbound-variable)]
+[error (vector-ref 'v 3)]
+[error (receive (a) (values 1 2))]
+[error (receive (a b) (values 1))]
+[error (3)]
+[error (set! my-unbound-variable 3)]
+[error (/ 3 0)]
+[error (error "our" "message")]
+
+
 ;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"

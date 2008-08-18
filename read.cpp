@@ -54,7 +54,7 @@
 #ifdef MONA_SCHEME
 
 #include "scheme.h"
-#include "ViolationProcedures.h"
+#include "ErrorProcedures.h"
 
 using namespace scheme;
 

@@ -1,5 +1,5 @@
 /*
- * ViolationProcedures.h - violations.
+ * ErrorProcedures.h - violations.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ViolationProcedures.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: ErrorProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
 #ifndef __SCHEME_VIOLATION_PROCEDURES__
@@ -37,8 +37,11 @@
 namespace scheme {
 
     Object throwEx(int argc, const Object* argv);
+    Object errorEx(int argc, const Object* argv);
+    Object assertionViolationEx(int argc, const Object* argv);
 
     void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
+    void callErrorAfter(Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);
     void callNotImplementedAssertionViolationAfter(Object who, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);

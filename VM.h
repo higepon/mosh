@@ -39,16 +39,6 @@ extern FILE* errOut;
 
 namespace scheme {
 
-#define RAISE0(msg)    raise(msg)
-#define RAISE1(fmt, a)    raiseFormat(UC(fmt), L1(a))
-#define RAISE2(fmt, a, b) raiseFormat(UC(fmt), L2(a, b))
-#define RAISE3(fmt, a, b, c) raiseFormat(UC(fmt), L3(a, b, c))
-
-#define VM_RAISE0(msg )    { if (theVM != NULL) {theVM->raise(Object::makeString(UC(msg)));} }
-#define VM_RAISE1(fmt, a)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L1(a));} }
-#define VM_RAISE2(fmt, a, b)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L2(a, b));} }
-#define VM_RAISE3(fmt, a, b, c)  { if (theVM != NULL) {theVM->raiseFormat(UC(fmt), L3(a, b, c));} }
-
 #define LOG1(fmt, a)       errorPort_.toTextualOutputPort()->format(UC(fmt), L1(a))
 #define LOG2(fmt, a, b)    errorPort_.toTextualOutputPort()->format(UC(fmt), L2(a, b))
 
@@ -72,13 +62,7 @@ inline Object L2(Object a, Object b) { return Pair::list2(a, b); }
 inline Object L3(Object a, Object b, Object c) { return Pair::list3(a, b, c); }
 inline Object L4(Object a, Object b, Object c, Object d) { return Pair::list4(a, b, c, d); }
 
-struct Values {
-    Object* values;
-    Object val;
-    int num;
-};
-
-    class TextualOutputPort;
+class TextualOutputPort;
 
 class VM EXTEND_GC
 {
@@ -106,24 +90,17 @@ public:
     Object callClosure0(Object closure);
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
-    Object setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger1(Object closure, Object arg1);
-//    void raiseAssertionViolation(Object who, Object message, Object irritant);
     void applyClosure(Object closure, Object args);
-    Object applyClosureDebug(Object closure, Object args, int returnSize);
     Object apply(Object proc, Object args);
     void load(const ucs4string& file);
     void loadFile(const ucs4string& file);
-    Object withExceptionHandler(Object handler, Object thunk);
     void defaultExceptionHandler(Object error);
     void showStack(int count, const char* file, int line);
 #define SHOW_STACK(count) showStack(count, __FILE__, __LINE__)
 
     void initLibraryTable();
-    void raiseFormat(const ucs4char* fmt, Object list);
-    void raise(Object o);
     void throwException(Object exception);
-    Object raiseContinuable(Object o);
     TextualOutputPort& getOutputPort() { return outputPort_; }
     Object getErrorPort() { return errorPort_; }
 
@@ -134,17 +111,6 @@ public:
     Object standardInputPort() const { return stdinPort_; }
 
     Object currentInputPort() { return inputPort_; }
-
-    void defineGlobal(Object id, Object val)
-    {
-        const Object found = nameSpace_.toEqHashTable()->ref(id, notFound_);
-        if (found == notFound_) {
-            nameSpace_.toEqHashTable()->set(id, val);
-        } else {
-            Object e = splitId(id);
-            RAISE2("~a on library ~a : defined twice\n", e.cdr(), e.car());
-        }
-    }
 
     Object idToTopLevelSymbol(Object id)
     {
@@ -161,17 +127,7 @@ public:
     }
 
 
-    Object getTopLevelGlobalValue(Object id)
-    {
-        const Object key = idToTopLevelSymbol(id);
-        const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
-        if (val != notFound_) {
-            return val;
-        } else {
-            RAISE1("unbound variable ~a on symbol-values", id);
-            return Object::Undef;
-        }
-    }
+    Object getTopLevelGlobalValue(Object id);
 
     Object getTopLevelGlobalValueOrFalse(Object id)
     {

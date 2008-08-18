@@ -33,7 +33,7 @@
 #define __SCHEME_PROCEDURE_MACRO__
 
 #include "scheme.h"
-#include "ViolationProcedures.h"
+#include "ErrorProcedures.h"
 #include "VM.h"
 
 #define checkType(index, variableName, pred, required) \
