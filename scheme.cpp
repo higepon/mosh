@@ -43,9 +43,12 @@ const Object Object::False   = Object::makeConst(5);
 
 Object Object::equal(Object o) const
 {
+    // todo more efficient code.
     const int taga = tag();
     const int tagb = o.tag();
-    if (taga && tagb) {
+    if (*this == o) {
+        return Object::True;
+    } else if (taga && tagb) {
         return eq(o);
     } else if (taga && 0 == tagb) {
         return Object::False;
