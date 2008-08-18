@@ -1,3 +1,6 @@
+(display '(3 #,@3))
+(exit)
+
 (delete-file "not-cgadad///")
 (exit)
 

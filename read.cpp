@@ -103,10 +103,15 @@ typedef scheme::TextualInputPort ScmPort;
 #define SCM_UNDEFINED Object::Undef
 #define SCM_UNDEFINEDP(obj) (obj.isUndef())
 #define SCM_LIST1 list1
+#define SCM_LIST2 Pair::list2
 #define SCM_SYM_QUOTE Symbol::QUOTE
 #define SCM_SYM_QUASIQUOTE Symbol::QUASIQUOTE
 #define SCM_SYM_UNQUOTE_SPLICING  Symbol::UNQUOTE_SPLICING
 #define SCM_SYM_UNQUOTE Symbol::UNQUOTE
+#define SCM_SYM_SYNTAX Symbol::SYNTAX
+#define SCM_SYM_QUACISYNTAX Symbol::QUASISYNTAX
+#define SCM_SYM_UNSYNTAX Symbol::UNSYNTAX
+#define SCM_SYM_UNSYNTAX_SPLICING Symbol::UNSYNTAX_SPLICING
 #define SCM_SET_CDR(a, b) (a.cdr() = b)
 #define SCM_SET_CAR(a, b) (a.car() = b)
 #define SCM_APPEND1(start, last, obj) APPEND1(start, last, obj)
@@ -816,7 +821,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                     case '=':
                         /* #?=form - debug print */
                         form = read_item(port, ctx);
-                        return SCM_LIST2(SCM_SYM_DEBUG_PRINT, form);
+                        return SCM_LIST2(SCM_SYM_DEBUG, form);
                     case EOF:
                         return SCM_EOF;
                     default:
@@ -845,6 +850,31 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                     read_item(port, ctx); /* read and discard */
                     ctx->flags = orig;
                     return SCM_UNDEFINED; /* indicate this is a comment */
+                }
+            case '\'':
+                /* (syntax form) */
+                {
+                    ScmObj form = read_item(port, ctx);
+                    return SCM_LIST2(SCM_SYM_SYNTAX, form);
+                }
+            case '`':
+                /* (quasisyntax form) */
+                {
+                    ScmObj form = read_item(port, ctx);
+                    return SCM_LIST2(SCM_SYM_QUACISYNTAX, form);
+                }
+            case ',':
+                /* (unsyntax form) of (unsyntax-splicing form) */
+                {
+                    int c1 = Scm_GetcUnsafe(port);
+                    if (c1 == EOF) {
+                        Scm_ReadError(port, "unterminated unsyntax");
+                    } else if (c1 == '@') {
+                        return read_quoted(port, SCM_SYM_UNSYNTAX_SPLICING, ctx);
+                    } else {
+                        Scm_UngetcUnsafe(c1, port);
+                        return read_quoted(port, SCM_SYM_UNSYNTAX, ctx);
+                    }
                 }
             default:
                 Scm_ReadError(port, "unsupported #-syntax: #%C", c1);

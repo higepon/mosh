@@ -2918,3 +2918,6 @@
          => (lambda (proc) (proc c)))
         (else
          (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a"))))
+
+(define (get-string-n port count)
+  "")

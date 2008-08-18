@@ -93,6 +93,10 @@ public:
     static Object AFTER;
     static Object BEFORE;
     static Object TOP_LEVEL;
+    static Object SYNTAX;
+    static Object QUASISYNTAX;
+    static Object UNSYNTAX;
+    static Object UNSYNTAX_SPLICING;
     static void initBuitinSymbols();
 };
 

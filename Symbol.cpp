@@ -40,14 +40,23 @@ Object Symbol::UNQUOTE_SPLICING;
 Object Symbol::AFTER;
 Object Symbol::BEFORE;
 Object Symbol::TOP_LEVEL;
+Object Symbol::SYNTAX;
+Object Symbol::QUASISYNTAX;
+Object Symbol::UNSYNTAX;
+Object Symbol::UNSYNTAX_SPLICING;
+
 
 void Symbol::initBuitinSymbols()
 {
-    QUOTE            = Symbol::intern(UC("quote"));
-    QUASIQUOTE       = Symbol::intern(UC("quasiquote"));
-    UNQUOTE          = Symbol::intern(UC("unquote"));
-    UNQUOTE_SPLICING = Symbol::intern(UC("unquote-splicing"));
-    AFTER            = Symbol::intern(UC("after"));
-    BEFORE           = Symbol::intern(UC("before"));
-    TOP_LEVEL        = Symbol::intern(UC("top level "));
+    QUOTE             = Symbol::intern(UC("quote"));
+    QUASIQUOTE        = Symbol::intern(UC("quasiquote"));
+    UNQUOTE           = Symbol::intern(UC("unquote"));
+    UNQUOTE_SPLICING  = Symbol::intern(UC("unquote-splicing"));
+    AFTER             = Symbol::intern(UC("after"));
+    BEFORE            = Symbol::intern(UC("before"));
+    TOP_LEVEL         = Symbol::intern(UC("top level "));
+    SYNTAX            = Symbol::intern(UC("syntax"));
+    QUASISYNTAX       = Symbol::intern(UC("quasisyntax"));
+    UNSYNTAX          = Symbol::intern(UC("unsyntax"));
+    UNSYNTAX_SPLICING = Symbol::intern(UC("unsyntax-splicing"));
 }

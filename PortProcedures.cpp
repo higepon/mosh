@@ -136,7 +136,7 @@ Object scheme::closeOutputPortEx(int argc, const Object* argv)
 Object scheme::closeInputPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("close-input-port");
-    checkArgumentLength(0);
+    checkArgumentLength(1);
 
     const Object port = argv[0];
     if (port.isTextualInputPort()) {

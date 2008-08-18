@@ -1,5 +1,7 @@
 2008-08-18  higepon  <higepon@users.sourceforge.jp>
 
+        * read.cpp (read_internal): Added #, #` #,@ support.
+
         * lib/mosh/io/conditions.ss: Added for i/o-filename.
 
         * All of the internal errors are rewrote to error or assertion-violation.
