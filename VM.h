@@ -67,7 +67,7 @@ class TextualOutputPort;
 class VM EXTEND_GC
 {
 public:
-    VM(int stackSize, TextualOutputPort& outPort, Object errorPort, Object inputPort, bool isProfiler = false);
+    VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false);
     ~VM();
 
     void importTopLevel();
@@ -101,12 +101,12 @@ public:
 
     void initLibraryTable();
     void throwException(Object exception);
-    TextualOutputPort& getOutputPort() { return outputPort_; }
+    Object getOutputPort() { return outputPort_; }
     Object getErrorPort() { return errorPort_; }
 
     Object getStackTrace();
 
-    void setOutputPort(TextualOutputPort& port);
+    void setOutputPort(Object port);
     void setInputPort(Object port ) { inputPort_ = port; }
     Object standardInputPort() const { return stdinPort_; }
 
@@ -350,7 +350,7 @@ protected:
     Object libraries_;
     Object nameSpace_;
     Object notFound_;
-    TextualOutputPort& outputPort_;
+    Object outputPort_;
     Object errorPort_;
     Object inputPort_;
     Object stdinPort_;

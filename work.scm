@@ -1,3 +1,6 @@
+(delete-file "not-cgadad///")
+(exit)
+
 (define a 3)
 (define a 3)
 (exit)

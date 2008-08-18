@@ -45,6 +45,7 @@ namespace scheme {
     Object closeInputPortEx(int argc, const Object* argv);
     Object readdirEx(int argc, const Object* argv);
     Object fileExistsPEx(int argc, const Object* argv);
+    Object deleteFileEx(int argc, const Object* argv);
     Object sysGetOutputStringEx(int argc, const Object* argv);
     Object formatEx(int argc, const Object* argv);
     Object currentInputPortEx(int argc, const Object* argv);

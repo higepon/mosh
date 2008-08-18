@@ -169,6 +169,59 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
     }
 }
 
+void scheme::callIoFileNameErrorAfter(Object who, Object message, Object irritants)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+        if (irritants.isPair()) {
+            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
+            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
+            conditions = Object::cons(irritantsCondition, conditions);
+        }
+
+        const Object messageCondition = makeMessageCondition(message);
+        conditions = Object::cons(messageCondition, conditions);
+
+        if (!who.isFalse()) {
+            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
+            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
+            conditions = Object::cons(whoCondition, conditions);
+        }
+
+        const Object errorRcd = theVM->getTopLevelGlobalValue(UC("&i/o-filename-rcd"));
+        const Object errorCondition = theVM->callClosure1(errorRcd.toRecordConstructorDescriptor()->makeConstructor(), "hige");
+        conditions = Object::cons(errorCondition, conditions);
+
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        const Object stringOutputPort = Object::makeStringOutputPort();
+        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+        textualOutputPort->format(UC(" Condition components:\n"
+                                     "    1. &error\n"
+                                     "    2. &who: ~a\n"
+                                     "    3. &message: ~s\n"
+                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+        condition = sysGetOutputStringEx(1, &stringOutputPort);
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+}
+
 void scheme::callErrorAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);

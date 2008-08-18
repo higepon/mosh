@@ -47,7 +47,7 @@ Object scheme::sysDisplayEx(int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
     if (1 == argc) {
-        theVM->getOutputPort().display(obj);
+        theVM->getOutputPort().toTextualOutputPort()->display(obj);
     } else {
         argumentAsTextualOutputPort(1, textualOutputPort);
         textualOutputPort->display(obj);
@@ -160,6 +160,21 @@ Object scheme::sysGetOutputStringEx(int argc, const Object* argv)
     return Object::makeString(p->getString());
 }
 
+Object scheme::deleteFileEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("delete-file");
+    checkArgumentLength(1);
+    argumentAsString(0, text);
+    if (-1 == unlink(text->data().ascii_c_str())) {
+        callIoFileNameErrorAfter(procedureName,
+                                 "can't delete file",
+                                 L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return Object::Undef;
+    }
+}
+
 Object scheme::fileExistsPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("file-exists?");
@@ -206,11 +221,12 @@ Object scheme::formatEx(int argc, const Object* argv)
         for (int i = argc - 1; i >= 2; i--) {
             lst = Object::cons(argv[i], lst);
         }
-        theVM->getOutputPort().format(formatString->data(), lst);
-        if (theVM->getOutputPort().isErrorOccured()) {
+        TextualOutputPort* const outputPort = theVM->getOutputPort().toTextualOutputPort();
+        outputPort->format(formatString->data(), lst);
+        if (outputPort->isErrorOccured()) {
             callAssertionViolationAfter(procedureName,
-                                        theVM->getOutputPort().errorMessage(),
-                                        theVM->getOutputPort().irritants());
+                                        outputPort->errorMessage(),
+                                        outputPort->irritants());
             return Object::Undef;
         } else {
             return Object::Undef;
@@ -263,7 +279,7 @@ Object scheme::writeEx(int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
     if (1 == argc) {
-        theVM->getOutputPort().putDatum(obj);
+        theVM->getOutputPort().toTextualOutputPort()->putDatum(obj);
     } else {
         argumentAsTextualOutputPort(1, textualOutputPort);
         textualOutputPort->putDatum(obj);
@@ -407,8 +423,8 @@ Object scheme::currentInputPortEx(int argc, const Object* argv)
 Object scheme::currentOutputPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("current-output-port");
-    callNotImplementedAssertionViolationAfter(procedureName);
-    return Object::UnBound;
+    checkArgumentLength(0);
+    return theVM->getOutputPort();
 }
 
 Object scheme::setCurrentInputPortDEx(int argc, const Object* argv)
@@ -426,8 +442,8 @@ Object scheme::setCurrentOutputPortDEx(int argc, const Object* argv)
     DeclareProcedureName("set-current-output-port!");
     checkArgumentLength(1);
 
-    argumentAsTextualOutputPort(0, textualOutputPort);
-    theVM->setOutputPort(*textualOutputPort);
+    argumentCheckTextualOutputPort(0, textualOutputPort);
+    theVM->setOutputPort(textualOutputPort);
     return Object::Undef;
 }
 

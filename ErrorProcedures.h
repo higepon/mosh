@@ -40,6 +40,7 @@ namespace scheme {
     Object errorEx(int argc, const Object* argv);
     Object assertionViolationEx(int argc, const Object* argv);
 
+    void callIoFileNameErrorAfter(Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
     void callErrorAfter(Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);

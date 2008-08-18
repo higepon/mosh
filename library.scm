@@ -1315,6 +1315,14 @@
       (set-current-input-port! org-port)
       ret)))
 
+(define (with-output-to-file filename thunk)
+  (let ([org-port (current-output-port)]
+        [inport (open-file-output-port filename)])
+    (set-current-output-port! inport)
+    (let1 ret (thunk)
+      (set-current-output-port! org-port)
+      ret)))
+
 ;; Raises a non-continuable exception by invoking the current exception handler on obj.
 ;; .form (raise obj)
 (define-doc (raise) ...)
@@ -2902,7 +2910,7 @@
               (cond ((parent-exception-handler)
                      => (lambda (proc)
                           (proc c))))
-              (throw "in raise: returned from non-continuable exception"))))
+              (throw "    in raise: returned from non-continuable exception"))))
     (throw (format "    Unhandled exception\n\n~a" c)))
 
 (define (raise-continuable c)

@@ -41,6 +41,7 @@
     "psyntax/builders.ss"
     "psyntax/expander-mosh.ss"
     "../../lib/mosh/condition.ss"
+    "../../lib/mosh/io/conditions.ss"
     "psyntax/main-mosh.ss"))
 
 

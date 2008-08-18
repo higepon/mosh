@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
 #endif
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    TextualOutputPort outPort(TextualOutputPort(new FileBinaryOutputPort(stdout), transcoder));
+
 #ifdef TRACE_INSN
     errOut = fopen(INSN_LOG_FILE, "w");
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
@@ -153,6 +153,8 @@ int main(int argc, char *argv[])
     
 #endif
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
+    Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
@@ -184,7 +186,7 @@ int main(int argc, char *argv[])
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         const Object code = port.toTextualInputPort()->getDatum();
         const Object compiled = theVM->compile(code);
-        theVM->getOutputPort().display(compiled);
+        theVM->getOutputPort().toTextualOutputPort()->display(compiled);
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode();
     } else if (optind < argc) {

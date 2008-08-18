@@ -42,6 +42,7 @@
     (get-remaining-input-string ,get-remaining-input-string)
     (readdir ,sys-readdir)
     (file-exists? ,file-exists?)
+    (delete-file ,(lambda e (error "delete-file")))
     (sys-get-output-string ,get-output-string)
     (string->regexp ,string->regexp)
     (char->integer ,char->integer)

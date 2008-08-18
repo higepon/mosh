@@ -77,14 +77,14 @@ using namespace scheme;
     pc_ = pc;                     \
     sp_ = sp;
 
-VM::VM(int stackSize, TextualOutputPort& outport, Object errorPort, Object inputPort, bool isProfiler) :
+VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     dc_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
     stackSize_(stackSize),
     maxStack_(NULL),
-    outputPort_(outport),
+    outputPort_(outPort),
     errorPort_(errorPort),
     inputPort_(inputPort),
     stdinPort_(Object::makeBinaryInputPort(stdin)),
@@ -344,7 +344,7 @@ Object VM::callClosure3(Object closure, Object arg1, Object arg2, Object arg3)
     return ret;
 }
 
-void VM::setOutputPort(TextualOutputPort& port)
+void VM::setOutputPort(Object port)
 {
     outputPort_ = port;
 }
