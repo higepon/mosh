@@ -1406,6 +1406,11 @@ val
 [error (set! my-unbound-variable 3)]
 [error (/ 3 0)]
 [error (error "our" "message")]
+[#t (let ([x (list 'a 'b 'c 'a)]
+         [y (list 'a 'b 'c 'a 'b 'c 'a)])
+     (set-cdr! (list-tail x 2) x)
+     (set-cdr! (list-tail y 5) y)
+     (equal? x y))] ;; circular equal?
 
 
 ;     (point2-x (make-point 1 2))))]

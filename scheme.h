@@ -324,9 +324,9 @@ public:
     Object& fourth() const;
     Object& fifth() const;
 
-    Object eq(Object o) const { RETURN_BOOL(operator==(o)); }
-    Object equal(Object o) const;
-    Object eqv(Object o) const;
+    bool eq(Object o) const { return operator==(o); }
+    bool equal(Object o) const;
+    bool eqv(Object o) const;
 
 public:
     static Object* makeObjectArray(int size);
@@ -711,7 +711,7 @@ inline Object Object::makeByteVector(ByteVector* b)
                                                         reinterpret_cast<word>(b))));
 }
 
-inline Object Object::eqv(Object o) const
+inline bool Object::eqv(Object o) const
 {
     return eq(o);
 }

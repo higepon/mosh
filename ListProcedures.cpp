@@ -34,6 +34,21 @@
 
 using namespace scheme;
 
+Object scheme::memberEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("member");
+    checkArgumentLength(2);
+
+    const Object arg1 = argv[0];
+    argumentCheckList(1, p);
+    for (Object o = p; o != Object::Nil; o = o.cdr()) {
+        if (o.car().equal(arg1)) {
+            return o;
+        }
+    }
+    return Object::False;
+}
+
 Object scheme::consEx(int argc, const Object* argv)
 {
     DeclareProcedureName("cons");
@@ -159,7 +174,7 @@ Object scheme::memvEx(int argc, const Object* argv)
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().eqv(arg1).isTrue()) {
+        if (o.car().eqv(arg1)) {
             return o;
         }
     }

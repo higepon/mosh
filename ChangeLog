@@ -1,3 +1,9 @@
+2008-08-19  higepon  <higepon@users.sourceforge.jp>
+
+        * Equivalent.cpp (equal): Added new version of equal.
+                                  It terminates even even if its arguments contain cycles.
+                                  It doesn't cause native stack overflow for long list.
+
 2008-08-18  higepon  <higepon@users.sourceforge.jp>
 
         * read.cpp (read_internal): Added #, #` #,@ support.

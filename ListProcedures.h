@@ -48,6 +48,7 @@ namespace scheme {
     Object listPEx(int argc, const Object* argv);
     Object memqEx(int argc, const Object* argv);
     Object memvEx(int argc, const Object* argv);
+    Object memberEx(int argc, const Object* argv);
     Object assqEx(int argc, const Object* argv);
     Object appendEx(int argc, const Object* argv);
     Object append2Ex(int argc, const Object* argv);

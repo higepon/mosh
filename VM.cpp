@@ -39,6 +39,7 @@
 #include "ConditionProcedures.h"
 #include "ErrorProcedures.h"
 #include "ListProcedures.h"
+#include "Equivalent.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;
@@ -941,7 +942,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object o = index(sp_, 0);
             TRACE_INSN0("EQ");
-            ac_ = o.eq(ac_);
+            ac_ = Object::makeBool(o.eq(ac_));
             sp_--;
             NEXT1;
         }
@@ -949,15 +950,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object o = index(sp_, 0);
             TRACE_INSN0("EQV");
-            ac_ = o.eqv(ac_);
+            ac_ = Object::makeBool(o.eqv(ac_));
             sp_--;
             NEXT1;
         }
         CASE(EQUAL)
         {
             const Object o = index(sp_, 0);
-            TRACE_INSN0("EQUAL");
-            ac_ = o.equal(ac_);
+            ac_ = Object::makeBool(equal(o, ac_, new EqHashTable()));
             sp_--;
             NEXT1;
         }
@@ -1518,7 +1518,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL0_EQV_TEST)
         {
-            ac_ = index(sp_, 0).eqv(referLocal(0));
+            ac_ = Object::makeBool(index(sp_, 0).eqv(referLocal(0)));
             sp_--;
             goto test_entry;
         }

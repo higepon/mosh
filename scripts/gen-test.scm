@@ -38,7 +38,7 @@
                   (display " ===> NG got ")
                   (write *test-ret*)
                   (display "\n")
-                  (error "")))))
+                  (error "test" "test failed" '(,@test))))))
   (match p
     [('lib expect . test)
      (print '(init-library-table))

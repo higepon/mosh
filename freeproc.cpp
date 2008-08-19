@@ -121,7 +121,7 @@ Object scheme::equalPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("equal?");
     checkArgumentLength(2);
-    return Object::makeBool(equal(argv[0], argv[1], NULL));
+    return Object::makeBool(equal(argv[0], argv[1], new EqHashTable()));
 //    return argv[0].equal(argv[1]);
 }
 
@@ -218,22 +218,7 @@ Object scheme::eqvPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eqv?");
     checkArgumentLength(2);
-    return argv[0].eqv(argv[1]);
-}
-
-Object scheme::memberEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("member");
-    checkArgumentLength(2);
-
-    const Object arg1 = argv[0];
-    argumentCheckList(1, p);
-    for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().equal(arg1).isTrue()) {
-            return o;
-        }
-    }
-    return Object::False;
+    return Object::makeBool(argv[0].eqv(argv[1]));
 }
 
 Object scheme::booleanPEx(int argc, const Object* argv)
