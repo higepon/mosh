@@ -32,7 +32,7 @@
 #include "freeproc.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
-
+#include "Equivalent.h"
 using namespace scheme;
 
 Object scheme::numberPEx(int argc, const Object* argv)
@@ -121,7 +121,8 @@ Object scheme::equalPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("equal?");
     checkArgumentLength(2);
-    return argv[0].equal(argv[1]);
+    return Object::makeBool(equal(argv[0], argv[1], NULL));
+//    return argv[0].equal(argv[1]);
 }
 
 // todo from gauche
