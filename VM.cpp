@@ -1065,9 +1065,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(LIST)
         {
-            printf("CASE(LIST)\n");
-            exit(-1);
-            NEXT;
+            const int num = fetchOperand().toInt();
+            Object list = Object::Nil;
+            for (int i = 0; i < num; i++) {
+                list = Object::cons(index(sp_, i), list);
+            }
+            ac_ = list;
+            sp_ = sp_ - num;
+            NEXT1;
         }
         CASE(LOCAL_JMP)
         {

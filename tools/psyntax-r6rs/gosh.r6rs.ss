@@ -63,9 +63,12 @@
   (lambda (x)
     (eval x (interaction-environment))))
 
-(define (pretty-print x p)
-  (write x p)
-  (newline p))
+;; pretty-print
+(load "../../scripts/pp.scm")
+
+;; (define (pretty-print x p)
+;;   (write x p)
+;;   (newline p))
 
 (define cons* 
   (lambda (a . rest) 
