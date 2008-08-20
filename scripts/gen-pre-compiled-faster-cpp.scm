@@ -5,12 +5,25 @@
 (use gauche.sequence)
 (use gauche.parseopt)
 
+(define vector->list-table (make-hash-table 'eq?))
+
+(define (my-vector->list v)
+  (if (hash-table-get vector->list-table v #f)
+      (hash-table-get vector->list-table v #f)
+      (begin
+        (let1 lst (vector->list v)
+          (hash-table-put! vector->list-table v lst)
+          lst))))
+
 (define (flatten lst)
   (cond
    [(null? lst) '()]
    [(pair? lst)
     (append (flatten (car lst)) (flatten (cdr lst)))]
+   [(vector? lst)
+    (flatten (my-vector->list lst))]
    [else (list lst)]))
+
 
 (define (collect-list lst)
   (define (rec lst)
@@ -24,6 +37,8 @@
       (rec (cdr lst))]
      [(null? (car lst))
       (rec (cdr lst))]
+     [(vector? (car lst))
+      (append (list (my-vector->list (car lst))) (rec (cdr lst)))]
      [(list? (car lst))
       (append (list (car lst)) (rec (car lst)) (rec (cdr lst)))]
      [else
@@ -68,8 +83,9 @@
      [(symbol? obj)
       (receive (index o) (find-with-index (lambda (x) (eq? x obj)) symbols)
         (unless o
-          (error "symbol not found" obj))
-        (format "        builtinSymbols[~d].val /* ~a */" index (list-ref symbols index)))]
+          (error "symbol not found. May be missing of dependencies on Makefile.am " obj))
+;        (format "        builtinSymbols[~d].val /* ~a */" index (list-ref symbols index)))]
+        (format "        builtinSymbols[~d].val " index))]
      [(number? obj)
       (format "        ~d" (make-int obj))]
      [(and (pair? obj) (eq? (car obj) '*insn*))
@@ -83,7 +99,12 @@
           (format "        Object::makeString(UC(\"\\n\")).val")
           (format "        Object::makeString(UC(~s)).val" obj))]
      [(vector? obj)
-      (format "            Object::makeVector(~a).val" (rec (vector->list obj)))]
+      (cond
+       [(zero? (vector-length obj))
+        "        Object::makeVector(0)"]
+       [else
+        (let ([lst (my-vector->list obj)])
+          (format "            Object::makeVector(~a).val" (hash-table-get ht lst)))])]
      [(char? obj)
       (cond
        [(char=? obj #\space)
@@ -94,7 +115,7 @@
         (format "            ~d" (make-char (char->integer obj)))])]
      [(boolean? obj)
       (format "        ~d" (if obj (make-true) (make-false)))]
-     [(null? obj) (format "        0x~8,'0x" (make-nil))]
+     [(null? obj) (format "        ~d" (make-nil))]
      [(list? obj)
       (if (hash-table-get ht obj #f)
           (format "        ~a" (hash-table-get ht obj #f))

@@ -82,13 +82,13 @@ mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_L
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall -DDEBUG_VERSION
 #mosh_CFLAGS   = -O1  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a libmatch.a libhoge.a
+mosh_LDADD    = $(GC_LIB) $(REGEXP_LIB) libcompiler.a libmatch.a libpsyntax.a
 
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm r6rs-examples/psyntax.scm
 
 # build compiler.cpp with -O0, because -O2 is much slower.
-noinst_LIBRARIES = libcompiler.a libmatch.a libhoge.a
+noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 libcompiler_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
 libcompiler_a_SOURCES = compiler.cpp
 
@@ -96,8 +96,8 @@ libcompiler_a_SOURCES = compiler.cpp
 libmatch_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
 libmatch_a_SOURCES = match.cpp
 
-libhoge_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
-libhoge_a_SOURCES = hoge.cpp
+libpsyntax_a_CXXFLAGS = -fomit-frame-pointer $(mosh_OPTS)
+libpsyntax_a_SOURCES = psyntax.cpp
 
 
 # generated files should be listed here.
@@ -108,7 +108,7 @@ EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm s
 GENERATED = \
 Instruction.h \
 compiler.cpp \
-hoge.cpp \
+psyntax.cpp \
 match.scmc \
 compiler-with-library.scmc \
 compiler-vm-cpp.scm \
@@ -171,17 +171,17 @@ Instruction.h: ./instruction.scm
 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
 ##### compiler generation
-BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc
+BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc psyntax.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm -g > $(PWD)/$@
 
-compiler.cpp: compiler-with-library.scmc match.scmc # match.scmc is also required for collecting symbols
+compiler.cpp: compiler-with-library.scmc match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
 # あとで svn remove すること
-hoge.cpp: hoge.scmc match.scmc compiler-with-library.scmc ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
-	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinHoge" $(PWD)/$< > $(PWD)/$@
+psyntax.cpp: psyntax.scmc match.scmc compiler-with-library.scmc ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
+	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinPsyntax" $(PWD)/$< > $(PWD)/$@
 
-match.cpp: match.scmc compiler-with-library.scmc
+match.cpp: match.scmc compiler-with-library.scmc psyntax.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
@@ -193,7 +193,7 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
-hoge.scmc: ./hoge.scm ./compiler-vm.scm
+psyntax.scmc: ./psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm

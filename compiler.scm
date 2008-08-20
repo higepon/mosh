@@ -488,7 +488,7 @@
   `(vector-ref ,iform 0))
 
 (define-macro (tag? iform t)
-  `(= ,t (tag ,iform)))
+  `(equal? ,t (tag ,iform)))
 
 (define-macro (set-tag! iform t)
   `(vector-set! ,iform 0 ,t))
@@ -2985,8 +2985,8 @@
       (list->vector
        (merge-insn
          (pass3
-          (pass2/optimize
-           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '()))))))))
+          (and (pass2/optimize
+           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '())))))))))
 
 ;; todo local macro
 (define-macro (pass4/fixup-labels-clollect insn)

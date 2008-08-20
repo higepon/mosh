@@ -1,3 +1,6 @@
+(display '#(moge))
+(exit)
+
 (display '(3 #,@3))
 (exit)
 

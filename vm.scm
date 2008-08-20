@@ -3,6 +3,7 @@
 (use srfi-1)
 (use util.match)
 (use gauche.sequence)
+(set! debug-print-width 3000)
 
 (define alist-cons acons)
 

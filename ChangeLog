@@ -1,5 +1,7 @@
 2008-08-20  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (tag?): Fixed the bug. use equal? instead of =.
+
         * scripts/gen-pre-compiled-faster-cpp.scm :
           Improved compilation speed for compiler.cpp, match.cpp.
 
