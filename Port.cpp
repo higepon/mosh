@@ -161,7 +161,11 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
-        snprintf(buf, 32, "%d", o.toInstruction());
+        snprintf(buf, 32, "[insn %d]", o.toInstruction());
+        putString(buf);
+    } else if (o.isCompilerInstruction()) {
+        static char buf[32];
+        snprintf(buf, 32, "[comp:%d]", o.toInstruction());
         putString(buf);
     } else if (o.isChar()) {
         putString(UC("#\\"));
@@ -313,7 +317,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
-        snprintf(buf, 32, "%d", o.toInstruction());
+        snprintf(buf, 32, "[insn %d]", o.toInstruction());
         putString(buf);
     } else if (o.isCompilerInstruction()) {
         static char buf[32];

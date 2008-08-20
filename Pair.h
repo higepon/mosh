@@ -155,6 +155,16 @@ struct Pair EXTEND_GC
         return p;
     }
 
+    static Object wordArrayToList(word* array, int size)
+    {
+        Object p = Object::Nil;
+        for (int i = size - 1; i >= 0; i--) {
+            p = Object::cons(Object::makeRaw(array[i]), p);
+        }
+        return p;
+    }
+
+
     Object car;
     Object cdr;
     Object sourceInfo;

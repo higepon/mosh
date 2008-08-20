@@ -175,11 +175,11 @@ BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm -g > $(PWD)/$@
 
 compiler.cpp: compiler-with-library.scmc match.scmc # match.scmc is also required for collecting symbols
-	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
 # あとで svn remove すること
-hoge.cpp: hoge.scmc match.scmc compiler-with-library.scmc # match.scmc is also required for collecting symbols
-	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinHoge" $(PWD)/$< > $(PWD)/$@
+hoge.cpp: hoge.scmc match.scmc compiler-with-library.scmc ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
+	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinHoge" $(PWD)/$< > $(PWD)/$@
 
 match.cpp: match.scmc compiler-with-library.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
