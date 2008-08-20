@@ -2139,28 +2139,81 @@
  [mosh
   ]
  [else
+  (define (make-array)
+    (list 'array (make-vector 2) 0))
+
+  (define (array? obj)
+    (eq? 'array (car obj)))
+
+  (define (array-length array)
+    (caddr array))
+
+  (define (vector-copy dst src length)
+    (do ((i 0 (+ i 1))) ((>= i length) #f)
+      (vector-set! dst i (vector-ref src i))))
+
+  (define (set-array-length! array length)
+    (set! (caddr array) length)
+    (when (>= length (vector-length (array-data array)))
+      (let1 next-data (make-vector (* length 2))
+        (vector-copy next-data (array-data array) length)
+        (set! (cadr array) next-data))))
+
+  (define (array-data array)
+    (cadr array))
+
+  (define (array-push! array obj)
+    (let* ([data (array-data array)]
+           [length (array-length array)])
+      (vector-set! data length obj)
+      (set-array-length! array (+ length 1))))
+
+  (define (array->list array)
+    (let ([data (array-data array)]
+          [length (array-length array)])
+      (let loop ([i 0]
+                 [ret '()])
+        (if (>= i length)
+            (reverse ret)
+            (loop (+ i 1) (cons (vector-ref data i) ret))))))
+
   ;; moved to freeproc.cpp start
   ;; N.B. these procedures are still required by vm.scm
   (define (make-code-builder)
-    (list 'builder))
+    (make-array))
 
   (define (code-builder-put-extra1! cb x)
-    (append! cb (list x)))
+    (array-push! cb x))
 
   (define (code-builder-put-extra2! cb a b)
-    (append! cb (list a b)))
+    (array-push! cb a)
+    (array-push! cb b)
+    )
+
 
   (define (code-builder-put-extra3! cb a b c)
-    (append! cb (list a b c)))
+    (array-push! cb a)
+    (array-push! cb b)
+    (array-push! cb c)
+    )
 
   (define (code-builder-put-extra4! cb a b c d)
-    (append! cb (list a b c d)))
+    (array-push! cb a)
+    (array-push! cb b)
+    (array-push! cb c)
+    (array-push! cb d)
+    )
 
   (define (code-builder-put-extra5! cb a b c d e)
-    (append! cb (list a b c d e)))
+    (array-push! cb a)
+    (array-push! cb b)
+    (array-push! cb c)
+    (array-push! cb d)
+    (array-push! cb e)
+    )
 
   (define (code-builder-append! cb1 cb2)
-    (let loop ([e (cdr cb2)])
+    (let loop ([e (array->list cb2)])
       (cond
        [(null? e)
         '()]
@@ -2169,7 +2222,7 @@
         (loop (cdr e))])))
 
   (define (code-builder-emit cb)
-    (cdr cb))
+    (array->list cb))
 
   (define code-builder-put-insn-arg1! code-builder-put-extra2!)
   (define code-builder-put-insn-arg0! code-builder-put-extra1!)

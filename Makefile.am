@@ -182,7 +182,7 @@ hoge.cpp: hoge.scmc match.scmc compiler-with-library.scmc ./scripts/gen-pre-comp
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinHoge" $(PWD)/$< > $(PWD)/$@
 
 match.cpp: match.scmc compiler-with-library.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
