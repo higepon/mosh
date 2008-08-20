@@ -1,3 +1,7 @@
+2008-08-20  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am (match.scmc): Improved compile time of match.scm -> match.cpp -> libmatch.a
+
 2008-08-19  higepon  <higepon@users.sourceforge.jp>
 
         * Equivalent.cpp (equal): Added new version of equal.

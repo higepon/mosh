@@ -175,6 +175,7 @@ int main(int argc, char *argv[])
 
     theVM->evaluate(compiler);
     theVM->evaluate(getBuiltinMatch());
+    theVM->evaluate(getBuiltinHoge());
 
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());

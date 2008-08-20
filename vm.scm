@@ -1589,15 +1589,15 @@
   (print "================================================\n\n\n")
   )
 
-(define (compile-file file)
-  (with-input-from-file file
-    (lambda ()
-      (let loop ((obj (read)))
-        (cond ((eof-object? obj) '())
-              (else
-               (print (compile obj))
-               (display "\n")
-               (loop (read))))))))
+;; (define (compile-file file)
+;;   (with-input-from-file file
+;;     (lambda ()
+;;       (let loop ((obj (read)))
+;;         (cond ((eof-object? obj) '())
+;;               (else
+;;                (print (compile obj))
+;;                (display "\n")
+;;                (loop (read))))))))
 
 (define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) ($map1 car *free-vars*)))
 
@@ -1882,27 +1882,47 @@
     [else
      (syntax-error "malformed do on mosh")]))
 
+(define default-allowed-macro '($library.append-macro!
+                                define-simple-struct
+                                do
+                                acond
+                                guard
+                                receive
+                                defmacro
+                                match-let1
+                                gentemp
+                                match
+                                match-lambda
+                                match-lambda*
+                                match-let
+                                match-let*
+                                match-letrec
+                                match-define
+                                defstruct
+                                define-structure
+                                define-const-structure
+                                parameterize))
 
-
-(define (compile-file file . for-vm-cpp?)
+(define (compile-file file allowed-macro . for-vm-cpp?)
   (with-input-from-file file
     (lambda ()
       (let loop ([obj (read)]
                  [ret '()])
         (cond [(eof-object? obj)
-;               (let* ([allowed-macro '(acond guard receive)] ;; allowed macro!
-               (let* ([allowed-macro '($library.append-macro! define-simple-struct do acond guard receive defmacro match-let1 gentemp match match-lambda match-lambda* match-let match-let* match-letrec match-define defstruct define-structure define-const-structure parameterize)] ;; allowed macro!
-;                      [v (map (lambda (x) (if x (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) '())
-;                      [dummy (print (assq-multi ($library.macro top-level-library) allowed-macro))]
-                      [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
+               (let* ([v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
                               (assq-multi ($library.macro top-level-library) allowed-macro))]
                       [c (compile-partial `($library.append-macro! top-level-library (quote ,v)))])
-;                      [c (compile-partial `($library.set-macro! top-level-library (quote ,v)))])
                (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
                    (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
                    (pass4 ret)))]
               [else
                (loop (read) (append ret (compile-partial obj)))])))))
+
+(define (compile-file-with-macro file . for-vm-cpp?)
+  (apply compile-file file default-allowed-macro for-vm-cpp?))
+
+(define (compile-file-without-macro file . for-vm-cpp?)
+  (apply compile-file file '() for-vm-cpp?))
 
 
 (define (main args)
@@ -1925,20 +1945,17 @@
     ]
    ;; compile string
    [(and (= (length args) 3) (string=? (second args) "compile"))
-;    (pretty-print (list->vector (compile-string (third args))))
     (print (compile-string (third args)))]
    ;;  compile a file
-   [(and (= (length args) 3) (string=? (second args) "compile-file"))
+   [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file "./library.scm")
     (load-file "./match.scm")
-    (write (compile-file (third args) #t))
-;;     (let ([compiled (list->vector (compile-file (third args) #t))]
-;;           [v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x)))) `(,(assq 'kar ($library.macro top-level-library))))])
-;;       (write (list->vector (append compiled (vector->list (compile `($library.set-macro! top-level-library (quote ,v)) #t)))))
-        ]
-
-;    (print (compile `($library.set-macro top-level-library (quote ,($library.macro top-level-library)))))]
-;    (write `($library.set-macro! top-level-library ,($library.macro top-level-library)))]
+    (write (compile-file-with-macro (third args) #t))]
+   ;;  compile a file
+   [(and (= (length args) 3) (string=? (second args) "compile-file-without-macro"))
+    (load-file "./library.scm")
+    (load-file "./match.scm")
+    (write (compile-file-without-macro (third args) #t))]
    ;;  execute script
    [else
     (vm-init (cdr args))
