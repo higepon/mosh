@@ -172,7 +172,7 @@ Instruction.h: ./instruction.scm
 
 ##### compiler generation
 BuiltinSymbols.cpp: compiler-with-library.scmc match.scmc psyntax.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-cpp.scm -g > $(PWD)/$@
+	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm -g > $(PWD)/$@
 
 compiler.cpp: compiler-with-library.scmc match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
@@ -193,7 +193,7 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
-psyntax.scmc: ./psyntax.scm ./compiler-vm.scm
+psyntax.scmc: r6rs-examples/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm

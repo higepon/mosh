@@ -1779,11 +1779,12 @@ bool VM::isR6RSMode() const
 {
     return isR6RSMode_;
 }
-
+#include "Builtin.h"
 void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
-    load(UC("psyntax.scm"));
+    evaluate(getBuiltinPsyntax());
+//    load(UC("psyntax.scm"));
 }
 
 

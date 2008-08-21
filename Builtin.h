@@ -44,7 +44,7 @@ namespace scheme {
     const Object* getBuiltinSymbols();
     Object getBuiltinCompiler();
     Object getBuiltinMatch();
-    Object getBuiltinHoge();
+    Object getBuiltinPsyntax();
 }; // namespace scheme
 
 #endif // __SCHEME_BUILTIN_H__

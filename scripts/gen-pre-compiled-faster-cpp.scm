@@ -38,7 +38,10 @@
      [(null? (car lst))
       (rec (cdr lst))]
      [(vector? (car lst))
-      (append (list (my-vector->list (car lst))) (rec (cdr lst)))]
+      (let1 vlist (my-vector->list (car lst))
+        (if (null? vlist)
+            (rec (cdr lst))
+            (append (list vlist) (rec vlist) (rec (cdr lst)))))]
      [(list? (car lst))
       (append (list (car lst)) (rec (car lst)) (rec (cdr lst)))]
      [else
@@ -76,6 +79,10 @@
 
 ;; シンボル名をコメントで挿入する
 
+;; symbol can include */ that miss closes C++ comment tag.
+(define (escape-symbol symbol)
+  (string->symbol (regexp-replace-all #/\// (symbol->string symbol) "\\\\")))
+
 (define (vector->cpp name obj)
   (define symbols  (collect-all-symbols))
   (define (rec obj)
@@ -84,14 +91,13 @@
       (receive (index o) (find-with-index (lambda (x) (eq? x obj)) symbols)
         (unless o
           (error "symbol not found. May be missing of dependencies on Makefile.am " obj))
-;        (format "        builtinSymbols[~d].val /* ~a */" index (list-ref symbols index)))]
-        (format "        builtinSymbols[~d].val " index))]
+        (format "        builtinSymbols[~d].val /* ~a */" index (escape-symbol (list-ref symbols index))))]
      [(number? obj)
-      (format "        ~d" (make-int obj))]
+      (format "        ~d /* ~d */" (make-int obj) obj)]
      [(and (pair? obj) (eq? (car obj) '*insn*))
-      (format "        ~d" (make-instruction (second obj)))]
+      (format "        ~d /* *insn* */" (make-instruction (second obj)))]
      [(and (pair? obj) (eq? (car obj) '*compiler-insn*))
-      (format "        ~d" (make-compiler-instruction (second obj)))]
+      (format "        ~d /* *compiler-insn* */" (make-compiler-instruction (second obj)))]
      [(regexp? obj)
       (format "             Object::makeRegexp(UC(~s)).val" (regexp->string obj))]
      [(string? obj)
@@ -101,21 +107,21 @@
      [(vector? obj)
       (cond
        [(zero? (vector-length obj))
-        "        Object::makeVector(0)"]
+        "        Object::makeVector(0).val"]
        [else
         (let ([lst (my-vector->list obj)])
           (format "            Object::makeVector(~a).val" (hash-table-get ht lst)))])]
      [(char? obj)
       (cond
        [(char=? obj #\space)
-        (format "            ~d" (make-char (char->integer #\space)))]
+        (format "            ~d /* ~a */" (make-char (char->integer #\space)) "#\space")]
        [(char=? obj #\newline)
-        (format "            ~d" (make-char (char->integer #\newline)))]
+        (format "            ~d /* ~a */" (make-char (char->integer #\newline)) "#\newline")]
        [else
-        (format "            ~d" (make-char (char->integer obj)))])]
+        (format "            ~d /* ~a */" (make-char (char->integer obj)) obj)])]
      [(boolean? obj)
-      (format "        ~d" (if obj (make-true) (make-false)))]
-     [(null? obj) (format "        ~d" (make-nil))]
+      (format "        ~d /* ~a */" (if obj (make-true) (make-false)) obj)]
+     [(null? obj) (format "        ~d /* ~a */" (make-nil) obj)]
      [(list? obj)
       (if (hash-table-get ht obj #f)
           (format "        ~a" (hash-table-get ht obj #f))
