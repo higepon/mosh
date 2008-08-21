@@ -91,7 +91,7 @@
       (receive (index o) (find-with-index (lambda (x) (eq? x obj)) symbols)
         (unless o
           (error "symbol not found. May be missing of dependencies on Makefile.am " obj))
-        (format "        builtinSymbols[~d].val /* ~a */" index (escape-symbol (list-ref symbols index))))]
+       (format "        builtinSymbols[~d].val /* ~a */" index (escape-symbol (list-ref symbols index))))]
      [(number? obj)
       (format "        ~d /* ~d */" (make-int obj) obj)]
      [(and (pair? obj) (eq? (car obj) '*insn*))
@@ -111,6 +111,13 @@
        [else
         (let ([lst (my-vector->list obj)])
           (format "            Object::makeVector(~a).val" (hash-table-get ht lst)))])]
+     [(vector? obj)
+      (cond
+       [(zero? (vector-length obj))
+        "        3 /*Object::makeVector(0)*/"]
+       [else
+        (let ([lst (my-vector->list obj)])
+          (format "           3 /*Object::makeVector() */"))])]
      [(char? obj)
       (cond
        [(char=? obj #\space)
@@ -136,6 +143,7 @@
             ))]
      [(pair? obj)
       (format "    Object::cons(Object::makeRaw(~a), Object::makeRaw(~a)).val" (rec (car obj)) (rec (cdr obj)))]
+
      [else
       (error "unknown Object")]))
   (define (make-obj i obj)
