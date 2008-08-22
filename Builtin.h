@@ -41,7 +41,7 @@
 #define MCI(i) Object::makeCompilerInstruction(i)
 
 namespace scheme {
-    const Object* getBuiltinSymbols();
+    Object* getBuiltinSymbols();
     Object getBuiltinCompiler();
     Object getBuiltinMatch();
     Object getBuiltinPsyntax();
