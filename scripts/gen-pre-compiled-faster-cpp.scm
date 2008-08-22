@@ -81,14 +81,17 @@
 
 ;; symbol can include */ that miss closes C++ comment tag.
 (define (escape-symbol symbol)
-  (string->symbol (regexp-replace-all #/\// (symbol->string symbol) "\\\\")))
+  (string->symbol (escape-string (symbol->string symbol))))
+
+(define (escape-string str)
+  (regexp-replace-all #/\// str "\\\\"))
 
 (define (vector->cpp name obj)
   (define symbols  (collect-all-symbols))
   (define (return-static const)
     (cons const #f))
   (define (return-dynamic dynamic-value)
-    (cons "        0xcc" dynamic-value))
+    (cons (format "0xcc /* ~a */" (escape-string dynamic-value)) dynamic-value))
   (define (rec obj)
     (cond
      [(symbol? obj)
@@ -96,37 +99,37 @@
         (unless o
           (error "symbol not found. May be missing of dependencies on Makefile.am " obj))
         (return-dynamic
-         (format "        builtinSymbols[~d].val /* ~a */" index (escape-symbol (list-ref symbols index)))))]
+         (format "builtinSymbols[~d].val /* ~a */" index (escape-symbol (list-ref symbols index)))))]
      [(number? obj)
-      (return-static (format "        ~d /* ~d */" (make-int obj) obj))]
+      (return-static (format "~d /* ~d */" (make-int obj) obj))]
      [(and (pair? obj) (eq? (car obj) '*insn*))
-      (return-static (format "        ~d /* *insn* */" (make-instruction (second obj))))]
+      (return-static (format "~d /* *insn* */" (make-instruction (second obj))))]
      [(and (pair? obj) (eq? (car obj) '*compiler-insn*))
-      (return-static (format "        ~d /* *compiler-insn* */" (make-compiler-instruction (second obj))))]
+      (return-static (format "~d /* *compiler-insn* */" (make-compiler-instruction (second obj))))]
      [(regexp? obj)
-      (return-dynamic (format "             Object::makeRegexp(UC(~s)).val" (regexp->string obj)))]
+      (return-dynamic (format "     Object::makeRegexp(UC(~s)).val" (regexp->string obj)))]
      [(string? obj)
       (return-dynamic
        (if (string=? obj "\n")
-           (format "        Object::makeString(UC(\"\\n\")).val")
-           (format "        Object::makeString(UC(~s)).val" obj)))]
+           (format "Object::makeString(UC(\"\\n\")).val")
+           (format "Object::makeString(UC(~s)).val" obj)))]
      [(vector? obj)
       (return-dynamic
        (cond
         [(zero? (vector-length obj))
-         "        Object::makeVector(0).val"]
+         "Object::makeVector(0).val"]
         [else
          (let ([lst (my-vector->list obj)])
-           (format "            Object::makeVector(Object::makeRaw(~a)).val" (hash-table-get ht lst)))]))]
+           (format "    Object::makeVector(Object::makeRaw(~a)).val" (hash-table-get ht lst)))]))]
      [(char? obj)
-      (return-static (format "            ~d /* ~a */" (make-char (char->integer obj)) obj))]
+      (return-static (format "    ~d /* ~a */" (make-char (char->integer obj)) obj))]
      [(boolean? obj)
-      (return-static (format "        ~d /* ~a */" (if obj (make-true) (make-false)) obj))]
+      (return-static (format "~d /* ~a */" (if obj (make-true) (make-false)) obj))]
      [(null? obj)
-      (return-static (format "        ~d /* ~a */" (make-nil) obj))]
+      (return-static (format "~d /* ~a */" (make-nil) obj))]
      [(list? obj)
       (if (hash-table-get ht obj #f)
-          (return-dynamic (format "        ~a" (hash-table-get ht obj #f)))
+          (return-dynamic (format "~a" (hash-table-get ht obj #f)))
           (let ([array-name (format "array~d" inc)]
                 [list-name (format "list~d" inc)]
                 [len (length obj)])
@@ -137,13 +140,16 @@
               (let1 v
                   (call-with-output-string
                     (lambda (in)
-                      (format in "  static word ~a[]= {\n~a\n    };\n" array-name (string-join static-list ",\n"))
+                      (format in
+                              "    static word ~a[]= {\n~a\n    };\n"
+                              array-name
+                              (string-join (map (lambda (x) (format "        ~a" x)) static-list)  ",\n"))
                       (for-each-with-index
                        (lambda (index x)
                          (when x
-                           (format in "  ~a[~d] = ~a;\n" array-name index x)))
+                           (format in "    ~a[~d] = ~a;\n" array-name index x)))
                        dynamic-list)
-                      (format in "  Object ~a = Pair::wordArrayToList(~a, ~d);\n" list-name array-name len)))
+                      (format in "    Object ~a = Pair::wordArrayToList(~a, ~d);\n" list-name array-name len)))
                 (set! inc (+ inc 1))
                 v))))]
      [(pair? obj)
