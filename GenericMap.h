@@ -34,8 +34,7 @@
 
 #include "config.h"
 
-#if HAVE_EXT_HASHES && HAVE_TR1_HASHES
-#include <tr1/unordered_map>
+#if HAVE_EXT_HASHES
 #include <ext/hash_map>
 
 extern scheme::Object genericHashFunction;
@@ -67,7 +66,7 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             generic_equal_to,
                             gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #else
-#error todo_ext_hash_map_not_found
+#error todo_use tr1_instread
 #endif
 
 #endif // __SCHEME_GENERIC_MAP__
