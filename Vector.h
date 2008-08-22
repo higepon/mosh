@@ -39,11 +39,13 @@ class Vector EXTEND_GC
 public:
     Vector(int num) : num_(num)
     {
+        MOSH_ASSERT(num < 100000); // if n is too big, you may forget some cast?
         objects_ = Object::makeObjectArray(num);
     }
 
     Vector(int num, Object obj) : num_(num)
     {
+        MOSH_ASSERT(num < 100000); // if n is too big, you may forget some cast?
         objects_ = Object::makeObjectArray(num);
         for (int i = 0; i < num; i++) {
             objects_[i] = obj;
@@ -56,6 +58,7 @@ public:
 
     Vector(Object pair) : num_(Pair::length(pair))
     {
+        MOSH_ASSERT(pair.isPair() || pair.isNil());
         objects_ = Object::makeObjectArray(num_);
         int i = 0;
         for (Object o = pair; !o.isNil(); o = o.cdr()) {

@@ -117,7 +117,7 @@
          "        Object::makeVector(0).val"]
         [else
          (let ([lst (my-vector->list obj)])
-           (format "            Object::makeVector(~a).val" (hash-table-get ht lst)))]))]
+           (format "            Object::makeVector(Object::makeRaw(~a)).val" (hash-table-get ht lst)))]))]
      [(char? obj)
       (return-static (format "            ~d /* ~a */" (make-char (char->integer obj)) obj))]
      [(boolean? obj)

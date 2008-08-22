@@ -164,10 +164,7 @@ int main(int argc, char *argv[])
     const Object compiler = getBuiltinCompiler();
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
-//    theVM->defineGlobal(Symbol::intern(UC("top level :$:*command-line-args*")), argsToList(argc, optind, argv));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
         theVM->initProfiler();
@@ -176,9 +173,7 @@ int main(int argc, char *argv[])
 
     theVM->evaluate(compiler);
 
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM->evaluate(getBuiltinMatch());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
