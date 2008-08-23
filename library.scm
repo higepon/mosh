@@ -863,6 +863,10 @@
 (define (even? x)
   (zero? (mod x 2)))
 
+(define (odd? x)
+  (= (mod x 2) 1))
+
+
 ;; (define (gen-cxxr n)
 ;;   (define (association lst1 lst2)
 ;;     (fold-right (lambda (x y) (append (map (cut cons x <>) lst2) y)) '() lst1))
@@ -1148,7 +1152,16 @@
 ;;           => 21
 ;; .example (fold-left cons '(q) '(a b c)) \
 ;;            => ((((q) . a) . b) . c)
-(define fold-left foldl)
+;; from Iron Scheme
+(define (fold-left combine nil list1 . lists)
+  (if (null? list1)
+      nil
+      (apply fold-left
+             (cons*
+              combine
+              (apply combine (cons* nil (car list1) (map car lists)))
+              (cdr list1)
+              (map cdr lists)))))
 
 ; used internal
 (define (foldr binop start l)
@@ -1197,14 +1210,62 @@
 ;;          => (a b c q)
 ;; .example (fold-right + 0 '(1 2 3) '(4 5 6))\
 ;;          => 21
-(define fold-right foldr)
+; from IronScheme
+(define (fold-right combine nil list1 . lists)
+  (if (null? list1)
+      nil
+      (apply combine
+             (append
+              (list (car list1))
+              (map car lists)
+              (list
+               (apply fold-right
+                      (cons*
+                       combine
+                       nil
+                       (cdr list1)
+                       (map cdr lists))))))))
 
 ;; The remp procedure applies proc to each element of list and returns a list of the elements of list for which proc returned #f.
 ;; .pre-condition Proc should accept one argument and return a single value. Proc should not mutate list.
 ;; .returns The remp procedure applies proc to each element of list and returns a list of the elements of list for which proc returned #f.
 ;; .example (remp even? '(3 1 4 1 5 9 2 6 5)) => (3 1 1 5 9 5)
-(define (remp pred l)
-  (filter (lambda (a) (not (pred a))) l))
+;; (define (remp pred l)
+;;   (filter (lambda (a) (not (pred a))) l))
+(define (remp proc l)
+  (let loop ([l l]
+             [ret '()])
+    (if (null? l)
+        (reverse ret)
+        (let ((e (car l)))
+          (if (proc e)
+              (loop (cdr l) ret)
+              (loop (cdr l) (cons e ret)))))))
+
+(define (remove obj list)
+  (remp (lambda (x) (equal? obj x)) list))
+
+(define (remv obj list)
+  (remp (lambda (x) (eqv? obj x)) list))
+
+(define (remq obj list)
+  (remp (lambda (x) (eq? obj x)) list))
+
+(define (memp proc lst)
+  (if (null? lst)
+      #f
+      (if (proc (car lst))
+          lst
+          (memp proc (cdr lst)))))
+
+(define (assp proc lst)
+  (if (null? lst)
+      #f
+      (let ([c (car lst)])
+        (if (proc (car c)) c
+            (assp proc (cdr lst))))))
+
+
 
 ;; <p>The filter procedure applies proc to each element of list and returns a list of the elements of list for which proc returned a true value.</p>
 ;; <p>The elements of the result list(s) are in the same order as they appear in the input list.</p>
@@ -1268,10 +1329,49 @@
 ;; <p>If proc returns #f on any set of elements, for-all returns #f after the first such application of proc. If the lists are all empty, for-all returns #t.</p>
 ;; .pre-condition The lists should all have the same length, and proc should accept n arguments and return a single value. Proc should not mutate the list arguments.
 ; .form (for-all proc list1 list2 ... listn)
-(define (for-all proc l . ls)
-  (or (null? l)
-      (and (apply proc (car l) (map car ls))
-           (apply for-all proc (cdr l) (map cdr ls)))))
+(define (for-all proc lst . lists)
+  (define (for-all-1 proc lst1)
+    (if (null? lst1)
+        #t
+        (let loop ([lst lst1])
+          (cond
+           [(not (pair? lst))
+            (assertion-violation 'for-all "proper list required" (list lst1))]
+           [(proc (car lst))
+            => (lambda (ret)
+                 (if (null? (cdr lst))
+                     ret
+                     (loop (cdr lst))))]
+           [else #f]))))
+  (define (for-all-n proc list-n)
+    (define (map-car l)
+      (let loop ([l l])
+        (cond
+         [(null? l)
+          '()]
+         [(pair? (car l))
+          (cons (caar l) (loop (cdr l)))]
+         [else
+          (assertion-violation 'for-all "the lists all should have the same length" (list list-n))])))
+    (if (null*? list-n)
+        #t
+        (let loop ([head (map-car list-n)]
+                   [rest (map cdr list-n)])
+          (if (null? (car rest))
+              (apply proc head)
+              (and (apply proc head)
+                   (loop (map-car rest) (map cdr rest)))))))
+    (if (null? lists)
+        (for-all-1 proc lst)
+        (for-all-n proc (cons lst lists))))
+
+(define (null*? lst)
+  (let loop ([lst lst])
+    (if (null? lst)
+        #t
+        (and (null? (car lst))
+             (loop (cdr lst))))))
+
 
 ; ==============================================================================================================================================================
 ;;; Control structures.
@@ -2137,7 +2237,7 @@
 (define-macro (not-pair? x) `(not (pair? ,x)))
 
 ;; Determines list equality, given an element-equality procedure. Proper list A equals proper list B if they are of the same length, and their corresponding elements are equal, as determined by elt=. If the element-comparison procedure's first argument is from listi, then its second argument is from listi+1, i.e. it is always called as (elt= a b)  for a an element of list A, and b an element of list B.
-(define (list= = . lists)
+(define (list= pred . lists)
   (or (null? lists) ; special case
       (let lp1 ((list-a (car lists)) (others (cdr lists)))
         (or (null? others)
@@ -2150,7 +2250,7 @@
                         (and (null-list? list-b)
                              (lp1 list-b others))
                         (and (not (null-list? list-b))
-                             (= (car list-a) (car list-b))
+                             (pred (car list-a) (car list-b))
                              (lp2 (cdr list-a) (cdr list-b)))))))))))
 
 
@@ -2407,6 +2507,21 @@
             (receive (cars cdrs) (recur other-lists)
               (values (cons a cars) (cons d cdrs))))))
         (values '() '()))))))
+
+; Like %CARS+CDRS, but we pass in a final elt tacked onto the end of the
+; cars list. What a hack.
+(define (%cars+cdrs+ lists cars-final)
+  (call-with-current-continuation
+    (lambda (abort)
+      (let recur ((lists lists))
+        (if (pair? lists)
+        (receive (list other-lists) (car+cdr lists)
+          (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
+          (receive (a d) (car+cdr list)
+            (receive (cars cdrs) (recur other-lists)
+              (values (cons a cars) (cons d cdrs))))))
+        (values (list cars-final) '()))))))
+
 
 
 ;; Like map, but only true values are saved.
@@ -2761,12 +2876,54 @@
 (define (real? n) (number? n))
 (define (nan? n) (not (number? n)))
 
-(define (exists pred l)
-  (let loop ([l l])
-    (cond
-     [(null? l) #f]
-     [(pred (car l)) #t]
-     [else (loop (cdr l))])))
+(define (exists proc lst . lists)
+  (define (exists-1 proc lst1)
+    (if (null? lst1)
+        #f
+        (let loop ([lst lst1])
+          (cond
+           [(not (pair? lst))
+            (assertion-violation 'exists "proper list required" (list lst1))]
+           [(proc (car lst))
+            => (lambda (ret)
+                 ret)]
+           [else
+            (if (null? (cdr lst))
+                #f
+                (loop (cdr lst)))]))))
+  (define (exists-n proc list-n)
+    (define (map-car l)
+      (let loop ([l l])
+        (cond
+         [(null? l)
+          '()]
+         [(pair? (car l))
+          (cons (caar l) (loop (cdr l)))]
+         [else
+          (assertion-violation 'exists "the lists all should have the same length" (list list-n))])))
+    (if (null*? list-n)
+        #f
+        (let loop ([head (map-car list-n)]
+                   [rest (map cdr list-n)])
+          (if (null? (car rest))
+              (apply proc head)
+              (or (apply proc head)
+                   (loop (map-car rest) (map cdr rest)))))))
+  (if (null? lists)
+      (exists-1 proc lst)
+      (exists-n proc (cons lst lists))))
+
+(define (partition proc lst)
+  (let loop ([lst lst]
+             [lst1 '()]
+             [lst2 '()])
+    (if (null? lst)
+        (values (reverse lst1) (reverse lst2))
+        (let ([var (car lst)])
+          (if (proc var)
+              (loop (cdr lst) (cons var lst1) lst2)
+              (loop (cdr lst) lst1 (cons var lst2)))))))
+
 
 (define (expt n m)
   (let loop ([i m]
@@ -2817,11 +2974,11 @@
                 (set! winders l)))))))
   (set! call/cc
       (lambda (f)
-        ($call/cc (lambda (k)
+        (%call/cc (lambda (k)
              (f (let ((save winders))
-                  (lambda (x)
+                  (lambda x
                     (if (not (eq? save winders)) (do-wind save))
-                    (k x))))))))
+                    (apply k x))))))))
   (set! call-with-current-continuation call/cc)
   (set! dynamic-wind
     (lambda (in body out)

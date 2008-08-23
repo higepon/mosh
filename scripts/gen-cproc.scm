@@ -1,61 +1,85 @@
 #!/usr/bin/env gosh
 (define (proc-name->c-proc-name name)
-  (call-with-string-io
-   name
-   (lambda (in out)
-     (define (rec c)
-       (cond
-        [(eof-object? c)
-         (display "Ex" out)]
-        [else
-         (case c
-           [(#\?)
-            (display "P" out)
-            (rec (read-char in))]
-           [(#\!)
-            (display "D" out)
-            (rec (read-char in))]
-           [(#\%)
-            (display "internal" out)
-            (rec (read-char in))]
-           [(#\$)
-            (rec (read-char in))]
-           [(#\>)
-            (let1 c (read-char in)
-              (if (char=? #\= c)
-                  (begin
-                    (display "Ge" out)
-                    (rec (read-char in)))
-                  (begin
-                    (display "Gt" out)
-                    (rec c))))]
-           [(#\<)
-            (let1 c (read-char in)
-              (if (char=? #\= c)
-                  (begin
-                    (display "Le" out)
-                    (rec (read-char in)))
-                  (begin
-                    (display "Lt" out)
-                    (rec c))))]
-           [(#\!)
-            (rec (read-char in))]
-           [(#\/)
-            (display (char-upcase (read-char in)) out)
-            (rec (read-char in))]
-           [(#\=)
-            (display "Eq" out)
-            (rec (read-char in))]
-           [(#\-)
-            (let1 c  (read-char in)
-              (if (char=? #\> c)
-                  (display "To" out)
-                  (display (char-upcase c) out)))
-            (rec (read-char in))]
-           [else
-            (display c out)
-            (rec (read-char in))])]))
-     (rec (read-char in)))))
+  (cond
+   [(string=? name "+")
+    "addEx"]
+   [(string=? name "-")
+    "subEx"]
+   [(string=? name "*")
+    "mulEx"]
+   [(string=? name "/")
+    "divideEx"]
+   [(string=? name "=")
+    "eqEx"]
+   [(string=? name ">")
+    "gtEx"]
+   [(string=? name "<")
+    "ltEx"]
+   [(string=? name ">=")
+    "geEx"]
+   [(string=? name "<=")
+    "leEx"]
+   [else
+    (call-with-string-io
+     name
+     (lambda (in out)
+       (define (rec c)
+         (cond
+          [(eof-object? c)
+           (display "Ex" out)]
+          [else
+           (case c
+             [(#\?)
+              (display "P" out)
+              (rec (read-char in))]
+             [(#\!)
+              (display "D" out)
+              (rec (read-char in))]
+             [(#\%)
+              (display "internal" out)
+              (rec (read-char in))]
+             [(#\$)
+              (rec (read-char in))]
+             [(#\>)
+              (let1 c (read-char in)
+                (cond
+                 [(eof-object? c)
+                  (display "GtEx" out)]
+                 [(char=? #\= c)
+                  (display "Ge" out)
+                  (rec (read-char in))]
+                 [else
+                  (display "Gt" out)
+                  (rec c)]))]
+             [(#\<)
+              (let1 c (read-char in)
+                (cond
+                 [(eof-object? c)
+                  (display "LtEx" out)]
+                 [(char=? #\= c)
+                  (display "Le" out)
+                  (rec (read-char in))]
+                 [else
+                  (display "Lt" out)
+                  (rec c)]))]
+             [(#\!)
+              (rec (read-char in))]
+             [(#\/)
+              (display (char-upcase (read-char in)) out)
+              (rec (read-char in))]
+             [(#\=)
+              (display "Eq" out)
+              (rec (read-char in))]
+             [(#\-)
+              (let1 c  (read-char in)
+                (if (char=? #\> c)
+                    (display "To" out)
+                    (display (char-upcase c) out)))
+              (rec (read-char in))]
+             [else
+              (display c out)
+              (rec (read-char in))])]))
+       (rec (read-char in))))]))
 
 (define (main args)
   (load "./free-vars-decl.scm")

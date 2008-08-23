@@ -203,6 +203,18 @@
     (condition-accessor ,(lambda e "not implemented"))
     (condition-predicate ,(lambda e "not implemented"))
     (throw ,(lambda e "not implemented"))
+    (< ,<)
+    (<= ,<=)
+    (> ,>)
+    (>= ,>=)
+    (= ,=)
+    (+ ,+)
+    (- ,-)
+    (* ,*)
+    (/ ,/)
+    (max ,max)
+    (min ,min)
+
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))
 

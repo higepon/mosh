@@ -273,15 +273,16 @@ protected:
 
     Object makeContinuation(Object n)
     {
-        const int codeSize = 6;
+        const int codeSize = 7;
         Object* code = Object::makeObjectArray(codeSize);
         code[0] = Object::makeRaw(Instruction::REFER_LOCAL);
         code[1] = Object::makeInt(0);
-        code[2] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
-        code[3] = Object::makeStack(stack_, sp_ - stack_);
-        code[4] = Object::makeRaw(Instruction::RETURN);
-        code[5] = n;
-        return Object::makeClosure(getDirectThreadedCode(code, codeSize), 1, false, sp_, 0, 1, Object::False);
+        code[2] = Object::makeRaw(Instruction::CONTINUATION_VALUES);
+        code[3] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
+        code[4] = Object::makeStack(stack_, sp_ - stack_);
+        code[5] = Object::makeRaw(Instruction::RETURN);
+        code[6] = n;
+        return Object::makeClosure(getDirectThreadedCode(code, codeSize), 1, true, sp_, 0, 1, Object::False);
     }
 
     Object* getDirectThreadedCode(Object* code, int length)

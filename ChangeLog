@@ -1,3 +1,15 @@
+2008-08-23  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm : Implmented all of R6RS List utilities.
+
+        * VM.cpp (VM::run): Fixed cal/cc for multiple values.
+
+        * ArithmeticProcedures.cpp : Added max and min.
+
+        * library.scm: Added partition, for-all, null*? and exists.
+
+        * ArithmeticProcedures.cpp: Added.
+
 2008-08-22  higepon  <higepon@users.sourceforge.jp>
 
         * psyntax.cpp (getBuiltinPsyntax): We now precompiled psyntax. It's load speed become much faster.

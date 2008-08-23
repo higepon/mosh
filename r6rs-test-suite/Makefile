@@ -8,3 +8,4 @@ test:
 	$(MOSH) -b tests/r6rs/run/control.sps
 	$(MOSH) -b tests/r6rs/run/hashtables.sps
 	$(MOSH) -b tests/r6rs/run/records/procedural.sps
+	$(MOSH) -b tests/r6rs/run/lists.sps

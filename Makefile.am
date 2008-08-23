@@ -52,24 +52,16 @@ RecordConstructorDescriptor.h\
 RecordConstructorDescriptor.cpp\
 Record.h \
 Record.cpp \
-RecordProcedures.cpp \
-RecordProcedures.h \
-ConditionProcedures.cpp \
-ConditionProcedures.h \
-CompilerProcedures.cpp \
-CompilerProcedures.h   \
-HashTableProceduures.cpp \
-HashTableProceduures.h   \
-RegexpProcedures.cpp \
-RegexpProcedures.h   \
-StringProcedures.cpp \
-StringProcedures.h   \
-PortProcedures.cpp \
-PortProcedures.h   \
-ListProcedures.cpp \
-ListProcedures.h   \
-ErrorProcedures.cpp \
-ErrorProcedures.h \
+RecordProcedures.cpp     RecordProcedures.h \
+ConditionProcedures.cpp  ConditionProcedures.h \
+CompilerProcedures.cpp   CompilerProcedures.h   \
+HashTableProceduures.cpp HashTableProceduures.h   \
+RegexpProcedures.cpp     RegexpProcedures.h   \
+StringProcedures.cpp     StringProcedures.h   \
+PortProcedures.cpp       PortProcedures.h   \
+ListProcedures.cpp       ListProcedures.h   \
+ErrorProcedures.cpp      ErrorProcedures.h \
+ArithmeticProcedures.cpp ArithmeticProcedures.h \
 SString.cpp          \
 BuiltinSymbols.cpp\
 CompoundCondition.h\
@@ -217,7 +209,7 @@ labels.cpp: ./instruction.scm
 DebugInstruction.h: instruction.scm
 	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
-./cprocedures.cpp: ./free-vars.scm
+./cprocedures.cpp: ./free-vars.scm ./scripts/gen-cproc.scm
 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
 #### benchmark

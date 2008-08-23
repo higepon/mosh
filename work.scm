@@ -1,3 +1,173 @@
+(fold-right + 0 '(1 2 3) '(4 5 6))
+(exit)
+(define (%cars+cdrs+ lists cars-final)
+  (call-with-current-continuation
+    (lambda (abort)
+      (let recur ((lists lists))
+        (if (pair? lists)
+	    (receive (list other-lists) (car+cdr lists)
+	      (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
+		  (receive (a d) (car+cdr list)
+		    (receive (cars cdrs) (recur other-lists)
+		      (values (cons a cars) (cons d cdrs))))))
+	    (values (list cars-final) '()))))))
+
+
+(define (fold2 kons knil lis1 . lists)
+  (check-arg procedure? kons fold)
+  (if (pair? lists)
+      (let lp ((lists (cons lis1 lists)) (ans knil))	; N-ary case
+	(receive (cars+ans cdrs) (%cars+cdrs+ lists ans)
+	  (if (null? cars+ans) ans ; Done.
+	      (lp cdrs (apply kons cars+ans)))))
+
+      (let lp ((lis lis1) (ans knil))			; Fast path
+	(if (null-list? lis) ans
+	    (lp (cdr lis) (kons (car lis) ans))))))
+
+(display  (fold2 + 0 '(1 2 3) '(4 5 6)))
+
+(receive a (call/cc (lambda (c) (c 1 2 3))) (display a))
+(exit)
+
+
+(exit)
+(display (fold-left (lambda (max-len s) (max max-len (string-length s))) 0 '("longest" "long" "longer")))
+
+
+
+(exit)
+ (fold-left (lambda (count x) (if (odd? x) (+ count 1) count)) 0 '(3 1 4 1 5 9 2 6 5 3))
+
+(display  (fold-left + 0 '(1 2 3) '(4 5 6)))
+(exit)
+(define (partition proc lst)
+  (let loop ([lst lst]
+             [lst1 '()]
+             [lst2 '()])
+    (if (null? lst)
+        (values (reverse lst1) (reverse lst2))
+        (let ([var (car lst)])
+          (if (proc var)
+              (loop (cdr lst) (cons var lst1) lst2)
+              (loop (cdr lst) lst1 (cons var lst2)))))))
+
+(receive (x y) (partition even? '(3 1 4 1 5 9 2 6))
+  (display x)
+  (display y))
+
+(exit)
+
+  (define (exists-1 proc lst1)
+    (if (null? lst1)
+        #f
+        (let loop ([lst lst1])
+          (cond
+           [(not (pair? lst))
+            (assertion-violation 'exists "proper list required" (list lst1))]
+           [(proc (car lst))
+            => (lambda (ret)
+                 ret)]
+           [else
+            (if (null? (cdr lst))
+                #f
+                (loop (cdr lst)))]))))
+
+  (define (exists-n proc list-n)
+    (define (map-car l)
+      (let loop ([l l])
+        (cond
+         [(null? l)
+          '()]
+         [(pair? (car l))
+          (cons (caar l) (loop (cdr l)))]
+         [else
+          (assertion-violation 'exists "the lists all should have the same length" (list list-n))])))
+    (if (null*? list-n)
+        #f
+        (let loop ([head (map-car list-n)]
+                   [rest (map cdr list-n)])
+          (if (null? (car rest))
+              (apply proc head)
+              (or (apply proc head)
+                   (loop (map-car rest) (map cdr rest)))))))
+
+(print (exists-1 even? '(3 1 4 1 5 9)) )
+               ; ⇒ #t
+(print (exists-1 even? '(3 1 1 5 9)));         ⇒ #f
+;(print ((exists-1 even? '(3 1 1 5 9 . 2)) ))
+               ; ⇒  &assertion exception
+(print (exists-1 (lambda (n) (and (even? n) n)) '(2 1 4 14)))
+
+(print (exists-n < '((1 2 4) (2 3 4))))
+(print (exists-n > '((1 2 3) (2 3 4))))
+(exit)
+
+(= 3 'a)
+(exit)
+(define ($for-all proc lst . lists)
+  (define (for-all-1 proc lst1)
+    (if (null? lst1)
+        #t
+        (let loop ([lst lst1])
+          (cond
+           [(not (pair? lst))
+            (assertion-violation 'for-all "proper list required" (list lst1))]
+           [(proc (car lst))
+            => (lambda (ret)
+                 (if (null? (cdr lst))
+                     ret
+                     (loop (cdr lst))))]
+           [else #f]))))
+  (define (for-all-n proc list-n)
+    (define (map-car l)
+      (let loop ([l l])
+        (cond
+         [(null? l)
+          '()]
+         [(pair? (car l))
+          (cons (caar l) (loop (cdr l)))]
+         [else
+          (assertion-violation 'for-all "the lists all should have the same length" (list list-n))])))
+    (if (null*? list-n)
+        #t
+        (let loop ([head (map-car list-n)]
+                   [rest (map cdr list-n)])
+          (if (null? (car rest))
+              (apply proc head)
+              (and (apply proc head)
+                   (loop (map-car rest) (map cdr rest)))))))
+    (if (null? lists)
+        (for-all-1 proc lst)
+        (for-all-n proc (cons lst lists))))
+
+(define (null*? lst)
+  (let loop ([lst lst])
+    (if (null? lst)
+        #t
+        (and (null? (car lst))
+             (loop (cdr lst))))))
+
+(print (null*? '(() ())))
+
+(print ($for-all even? '(3 1 4 1 5 9)))
+(print ($for-all even? '(3 1 4 1 5 9 . 2)))
+(print ($for-all even? '(2 4 14)))
+(exit)
+;(print ($for-all even? '(2 4 14 . 9)))
+;; ;                ⇒  &assertion exception
+(print ($for-all (lambda (n) (and (even? n) n))
+          '(2 4 14)))
+
+(print ($for-all even? '()))
+(print ($for-all even? '() '()))
+;; ;                ⇒ 14
+;(print (for-all < '(1 2 3) '(2 3 4)))
+;; ;                ⇒ #t
+;; (for-all < '(1 2 4) '(2 3 4))
+
+(exit)
+
 (display '#(moge))
 (exit)
 

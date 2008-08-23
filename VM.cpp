@@ -39,6 +39,7 @@
 #include "ConditionProcedures.h"
 #include "ErrorProcedures.h"
 #include "ListProcedures.h"
+#include "ArithmeticProcedures.h"
 #include "Equivalent.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -1123,83 +1124,80 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(NUMBER_ADD)
         {
             TRACE_INSN0("NUMBER_ADD");
-            ac_ = Object::makeInt(index(sp_, 0).toInt() + ac_.toInt());
+            const Object n = index(sp_, 0);
             sp_--;
+            ac_ = numberAdd(n, ac_);
             NEXT1;
         }
         CASE(NUMBER_EQUAL)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_EQUAL");
-            ac_ = Object::makeBool(n.toInt() == ac_.toInt());
             sp_--;
+            ac_ = Object::makeBool(numberEqual(n, ac_));
             NEXT1;
         }
         CASE(NUMBER_GE)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_GE");
-            ac_ = Object::makeBool(n.toInt() >= ac_.toInt());
             sp_--;
+            ac_ = Object::makeBool(numberGreaterEqual(n, ac_));
             NEXT1;
         }
         CASE(NUMBER_GT)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_GT");
-            ac_ = Object::makeBool(n.toInt() > ac_.toInt());
             sp_--;
+            ac_ = Object::makeBool(numberGreater(n, ac_));
             NEXT1;
         }
         CASE(NUMBER_LE)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_LE");
-            ac_ = Object::makeBool(n.toInt() <= ac_.toInt());
             sp_--;
+            ac_ = Object::makeBool(numberLessEqual(n, ac_));
             NEXT1;
         }
         CASE(NUMBER_LT)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_GE");
-            ac_ = Object::makeBool(n.toInt() < ac_.toInt());
             sp_--;
+            ac_ = Object::makeBool(numberLess(n, ac_));
             NEXT1;
         }
         CASE(NUMBER_MUL)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_MUL");
-            ac_ = Object::makeInt(n.toInt() * ac_.toInt());
             sp_--;
+            ac_ = numberMul(n, ac_);
             NEXT1;
         }
         CASE(NUMBER_DIV)
         {
             const Object n = index(sp_, 0);
-            if (ac_.toInt() == 0) {
-                callAssertionViolationAfter("/", "Dividing by zero", L2(n, ac_));
-            } else {
-                ac_ = Object::makeInt(n.toInt() / ac_.toInt());
-                sp_--;
-            }
+            sp_--;
+            ac_ = numberDiv(n, ac_);
             NEXT1
         }
         CASE(NUMBER_SUB)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_SUB");
-            ac_ = Object::makeInt(n.toInt() - ac_.toInt());
             sp_--;
+            ac_ = numberSub(n, ac_);
             NEXT1;
         }
         CASE(NUMBER_SUB_PUSH)
         {
             const Object n = index(sp_, 0);
             TRACE_INSN0("NUMBER_SUB");
-            ac_ = Object::makeInt(n.toInt() - ac_.toInt());
             sp_--;
+            ac_ = numberSub(n, ac_);
             push(ac_);
             NEXT1;
         }
@@ -1212,8 +1210,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
         number_add_push_entry:
             const Object n = index(sp_, 0);
-            ac_ = Object::makeInt(n.toInt() + ac_.toInt());
             sp_--;
+            ac_ = numberAdd(n, ac_);
             push(ac_);
             NEXT1;
         }
@@ -1584,6 +1582,25 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                                             L1(v));
             }
             NEXT1;
+        }
+        CASE(CONTINUATION_VALUES)
+        {
+            MOSH_ASSERT(ac_.isPair() || ac_.isNil());
+            const int num = Pair::length(ac_);
+            if (num > maxNumValues_ + 1) {
+                callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeInt(num)));
+            } else {
+                numValues_ = num;
+                Object p = ac_.cdr();
+                if (num >= 0) {
+                    for (int i = 0; i < num - 1; i++) {
+                        values_[i] = p.car();
+                        p = p.cdr();
+                    }
+                    ac_ = ac_.car();
+                }
+            }
+            NEXT;
         }
         CASE(VALUES)
         {
