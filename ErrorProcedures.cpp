@@ -298,17 +298,16 @@ Object scheme::assertionViolationEx(int argc, const Object* argv)
 Object scheme::errorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("error");
-    checkArgumentLengthBetween(2, 3);
+    checkArgumentLengthAtLeast(2);
     const Object who = argv[0];
     if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
         callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
         return Object::Undef;
     }
     argumentCheckString(1, message);
-    const Object irritants = (argc == 3) ? argv[2] : Object::Nil;
-    if (!irritants.isNil() && !irritants.isPair()) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "list", irritants);
-        return Object::Undef;
+    Object irritants = Object::Nil;
+    for (int i = 2; i < argc; i++) {
+        irritants = Object::cons(argv[i], irritants);
     }
     callErrorAfter(who, message, irritants);
     return Object::Undef;

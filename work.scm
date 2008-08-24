@@ -1,3 +1,9 @@
+(define (hige) 3)
+
+(c
+
+(hige)
+(exit)
 (define (symbol-append . symbols)
   (string->symbol (apply string-append (map symbol->string symbols))))
 
