@@ -199,7 +199,8 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
 {
     const char* p = s->data().ascii_c_str();
     // strtol returns no error for "." or "...".
-    if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0 || p[0] == '.') {
+    // strtol is !
+    if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0 || p[0] == '.' || (p[0] == '-' && !isdigit(p[1]))) {
         return SCM_FALSE;
     }
     errno = 0;

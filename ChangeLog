@@ -1,3 +1,9 @@
+2008-08-24  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm: Implmented all of R6RS Enumrations.
+
+        * read.cpp (Scm_StringToNumber): Fixed reader bug.
+
 2008-08-23  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm : Implmented all of R6RS List utilities.

@@ -1396,7 +1396,7 @@ val
 [error (apply read-char (current-input-port))] ;; the argument should be a list.
 [error (rxmatch-start (rxmatch #/\d+/ "a345a") 5)]
 ;[error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
-[error (string-ref "hige" 5)] 
+[error (string-ref "hige" 5)]
 [error (open-file-input-port "not-exist-path/////xxx")]
 [error (open-file-output-port "not-exist-path/////xxx")]
 [error (format "~a ~a" 1)]
@@ -1445,9 +1445,101 @@ val
 (24 (apply * '(2 3 4)))
 (3 (apply / '(6 2)))
 (error (apply / '(6 0)))
+((0 1 2 #f) (let* ((e (make-enumeration '(red green blue)))
+                   (i (enum-set-indexer e)))
+              (list (i 'red) (i 'green) (i 'blue) (i 'yellow))))
+
+((red green blue) (enum-set->list (make-enumeration '(red green blue))))
+
+((red blue) (let* ((e (make-enumeration '(red green blue)))
+                   (c (enum-set-constructor e)))
+              (enum-set->list (c '(blue red)))))
+
+((#t #f #t #t #f #t) (let* ((e (make-enumeration '(red green blue)))
+                            (c (enum-set-constructor e)))
+                       (list
+                        (enum-set-member? 'blue (c '(red blue)))
+                        (enum-set-member? 'green (c '(red blue)))
+                        (enum-set-subset? (c '(red blue)) e)
+                        (enum-set-subset? (c '(red blue)) (c '(blue red)))
+                        (enum-set-subset? (c '(red blue)) (c '(red)))
+                        (enum-set=? (c '(red blue)) (c '(blue red))))))
+
+(error (guard [c (#t 'error)]
+          (let* ((e (make-enumeration '(red green blue)))
+                 (c (enum-set-constructor e)))
+            (c '(pink)))))
+
+(((red green blue)
+  (red green blue)
+  1 #t #f #t #t #f #t #t #f #f #t #t #f #f #t)
+  (let* ((e (make-enumeration '(red green blue)))
+         (r ((enum-set-constructor e) '(red))))
+    (list
+     (enum-set->list (enum-set-universe e))
+     (enum-set->list (enum-set-universe r))
+     ((enum-set-indexer
+          ((enum-set-constructor e) '(red)))
+         'green)
+     (enum-set-member? 'red e)
+     (enum-set-member? 'black e)
+     (enum-set-subset? e e)
+     (enum-set-subset? r e)
+     (enum-set-subset? e r)
+     (enum-set-subset? e (make-enumeration '(blue green red)))
+     (enum-set-subset? e (make-enumeration '(blue green red black)))
+     (enum-set-subset? (make-enumeration '(blue green red black)) e)
+     (enum-set-subset? ((enum-set-constructor
+                         (make-enumeration '(blue green red black)))
+                        '(red)) e)
+     (enum-set-subset? ((enum-set-constructor
+                         (make-enumeration '(green red)))
+                        '(red))
+                       e)
+     (enum-set=? e e)
+     (enum-set=? r e)
+     (enum-set=? e r)
+     (enum-set=? e (make-enumeration '(blue green red))))))
+((#t #f #t #t #f #t) (let* ((e (make-enumeration '(red green blue)))
+                             (c (enum-set-constructor e)))
+                        (list
+                         (enum-set-member? 'blue (c '(red blue)))
+                         (enum-set-member? 'green (c '(red blue)))
+                         (enum-set-subset? (c '(red blue)) e)
+                         (enum-set-subset? (c '(red blue)) (c '(blue red)))
+                         (enum-set-subset? (c '(red blue)) (c '(red)))
+                         (enum-set=? (c '(red blue)) (c '(blue red))))))
+
+((red blue) (let* ((e (make-enumeration '(red green blue)))
+                   (c (enum-set-constructor e)))
+              (enum-set->list (c '(blue red)))))
+
+(((red blue) (red) (green)) (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (list
+      (enum-set->list
+       (enum-set-union (c '(blue)) (c '(red))))
+      (enum-set->list
+       (enum-set-intersection (c '(red green))
+                              (c '(red blue))))
+      (enum-set->list
+       (enum-set-difference (c '(red green))
+                            (c '(red blue)))))))
+
+((green blue) (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (enum-set->list
+      (enum-set-complement (c '(red))))))
+
+((red black) (let ((e1 (make-enumeration
+              '(red green blue black)))
+         (e2 (make-enumeration
+              '(red black white))))
+     (enum-set->list
+      (enum-set-projection e1 e2))))
 
 
-;     (point2-x (make-point 1 2))))]
+;;     (point2-x (make-point 1 2))))]
 
 ;; ["syntax error: malformed when"
 ;;  (print (guard (con
@@ -1661,9 +1753,3 @@ val
 ;;  (match-let1 ('let ((var val) ...) body ...)
 ;;      '(let ((a b) (c d)) foo bar baz)
 ;;    (list var val body)))
-
-
-
-
-
-

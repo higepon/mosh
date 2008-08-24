@@ -1902,6 +1902,7 @@
                                 defstruct
                                 define-structure
                                 define-const-structure
+                                define-simple-struct
                                 parameterize))
 
 (define (compile-file file allowed-macro . for-vm-cpp?)

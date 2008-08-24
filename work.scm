@@ -1,3 +1,326 @@
+(define (symbol-append . symbols)
+  (string->symbol (apply string-append (map symbol->string symbols))))
+
+(define-macro (define-simple-struct name fields)
+  (let ([rtd (symbol-append name '-rtd)]
+        [rcd (symbol-append name '-rcd)]
+        [accessors (map (lambda (field) (symbol-append name '- field)) fields)]
+        [field-set (list->vector (map (lambda (field) (list 'mutable field)) fields))]
+        [constructor (symbol-append 'make- name)])
+     `(begin
+        (define ,rtd
+          (make-record-type-descriptor
+           ',name #f #f #f #f
+           ',field-set))
+        (define ,rcd
+          (make-record-constructor-descriptor
+           ,rtd #f #f))
+        (define ,constructor
+          (record-constructor ,rcd))
+        ,@(let loop ([i 0]
+                     [accessors accessors]
+                     [ret '()])
+           (if (null? accessors)
+               ret
+               (loop (+ i 1) (cdr accessors) (cons (list 'define (car accessors) (list 'record-accessor rtd i) ) ret))))
+        )))
+
+(define-macro (t exp equal expected )
+  (let ([val (gensym)])
+    `(let ([,val ,exp])
+       (unless (equal? ,expected ,val)
+         (error 'test (format "~a failed" ',exp) (list ,expected '=> ,val))))))
+
+(define-simple-struct enum-set (type members))
+(define-simple-struct enum-type (universe indexer))
+
+(define (make-enumeration-type symbol-list)
+  (let ([ht (make-eq-hashtable)])
+    (let loop ([symbol-list symbol-list]
+               [i 0])
+      (if (null? symbol-list)
+          '()
+          (begin (hashtable-set! ht (car symbol-list) i)
+                 (loop (cdr symbol-list) (+ i 1)))))
+    (make-enum-type symbol-list
+                    (lambda (symbol)
+                      (hashtable-ref ht symbol #f)))))
+
+
+(define (make-enumeration symbol-list)
+  (make-enum-set (make-enumeration-type symbol-list) symbol-list))
+
+(define (enum-set-universe enum-set)
+  (make-enum-set (enum-set-type enum-set)
+                 (enum-type-universe (enum-set-type enum-set))))
+
+(define (enum-set-indexer enum-set)
+  (enum-type-indexer (enum-set-type enum-set)))
+
+(define (enum-set-constructor enum-set)
+  (lambda (symbol-list)
+    (let ([universe (enum-type-universe (enum-set-type enum-set))])
+      (if (for-all (lambda (x) (memq x universe)) symbol-list)
+          (make-enum-set (enum-set-type enum-set) symbol-list)
+          (assertion-violation 'enum-set-constructor "the symbol list must all belong to the universe." (list universe symbol-list))))))
+
+(define (enum-set->list enum-set)
+  (let ([universe (enum-type-universe (enum-set-type enum-set))]
+        [members (enum-set-members enum-set)])
+    (let loop ([universe universe])
+      (cond
+       [(null? universe) '()]
+       [(memq (car universe) members)
+        (cons (car universe) (loop (cdr universe)))]
+       [else
+        (loop (cdr universe))]))))
+
+(define (enum-set-member? symbol enum-set)
+  (and (memq symbol (enum-set-members enum-set)) #t))
+
+(define (enum-set-subset? enum-set1 enum-set2)
+  (and
+   (let ([enum-set2-univese (enum-set->list (enum-set-universe enum-set2))])
+     (for-all
+      (lambda (symbol) (memq symbol enum-set2-univese))
+      (enum-set->list (enum-set-universe enum-set1))))
+   (for-all
+    (lambda (symbol) (enum-set-member? symbol enum-set2))
+    (enum-set-members enum-set1))))
+
+(define (enum-set=? enum-set1 enum-set2)
+  (and (enum-set-subset? enum-set1 enum-set2)
+       (enum-set-subset? enum-set2 enum-set1)))
+
+(define (enum-set-union enum-set1 enum-set2)
+  (define (union lst1 lst2)
+    (let loop ([ret lst1]
+               [lst lst2])
+      (cond
+       [(null? lst) ret]
+       [(memq (car lst) ret)
+        (loop ret (cdr lst))]
+       [else
+        (loop (cons (car lst) ret) (cdr lst))])))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (union (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-union "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-intersection enum-set1 enum-set2)
+  (define (intersection lst1 lst2)
+    (let loop ([ret '()]
+               [lst lst1])
+      (if (null? lst)
+          ret
+          (cond
+           [(memq (car lst) lst2)
+             (loop (cons (car lst) ret) (cdr lst))]
+           [else
+            (loop ret (cdr lst))]))))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (intersection (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-intersection "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-difference enum-set1 enum-set2)
+  (define (difference lst1 lst2)
+    (let loop ([ret '()]
+               [lst lst1])
+      (if (null? lst)
+          ret
+          (cond
+           [(memq (car lst) lst2)
+            (loop ret (cdr lst))]
+           [else
+            (loop (cons (car lst) ret) (cdr lst))]))))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (difference (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-difference "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-complement enum-set)
+  (let ([members (enum-set-members enum-set)])
+    (make-enum-set (enum-set-type enum-set)
+                   (filter (lambda (symbol) (not (memq symbol members))) (enum-type-universe (enum-set-type enum-set))))))
+
+(define (enum-set-projection enum-set1 enum-set2)
+  (if (enum-set-subset? enum-set1 enum-set2)
+      enum-set1
+      (let ([universe2 (enum-type-universe (enum-set-type enum-set2))]
+            [members1 (enum-set-members enum-set1)])
+        (make-enum-set (enum-set-type enum-set2)
+                       (filter (lambda (symbol) (memq symbol universe2)) members1)))))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (i (enum-set-indexer e)))
+     (list (i 'red) (i 'green) (i 'blue) (i 'yellow)))
+   =>
+   '(0 1 2 #f))
+
+(t (enum-set->list (make-enumeration '(red green blue)))
+   =>
+   '(red green blue))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (enum-set->list (c '(blue red))))
+   =>
+   '(red blue))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (list
+      (enum-set-member? 'blue (c '(red blue)))
+      (enum-set-member? 'green (c '(red blue)))
+      (enum-set-subset? (c '(red blue)) e)
+      (enum-set-subset? (c '(red blue)) (c '(blue red)))
+      (enum-set-subset? (c '(red blue)) (c '(red)))
+      (enum-set=? (c '(red blue)) (c '(blue red)))))
+   =>
+   '(#t #f #t #t #f #t))
+
+(t (guard [c (#t 'error)]
+          (let* ((e (make-enumeration '(red green blue)))
+                 (c (enum-set-constructor e)))
+            (c '(pink))))
+   =>
+   'error)
+
+(let* ((e (make-enumeration '(red green blue)))
+       (r ((enum-set-constructor e) '(red))))
+  (t (enum-set->list (enum-set-universe e))
+     => '(red green blue))
+
+  (t (enum-set->list (enum-set-universe r))
+     => '(red green blue))
+
+  (t ((enum-set-indexer
+          ((enum-set-constructor e) '(red)))
+         'green)
+     => 1)
+
+  (t (enum-set-member? 'red e)
+     => #t)
+
+  (t (enum-set-member? 'black e)
+     => #f)
+
+  (t (enum-set-subset? e e)
+     => #t)
+
+  (t (enum-set-subset? r e)
+     => #t)
+
+  (t (enum-set-subset? e r)
+     => #f)
+
+  (t (enum-set-subset? e (make-enumeration '(blue green red)))
+     => #t)
+  (t (enum-set-subset? e (make-enumeration '(blue green red black)))
+     => #t)
+  (t (enum-set-subset? (make-enumeration '(blue green red black)) e)
+     => #f)
+  (t (enum-set-subset? ((enum-set-constructor
+                         (make-enumeration '(blue green red black)))
+                        '(red))
+                       e)
+     => #f)
+  (t (enum-set-subset? ((enum-set-constructor
+                         (make-enumeration '(green red)))
+                        '(red))
+                       e)
+     => #t)
+  (t (enum-set=? e e)
+     => #t)
+  (t (enum-set=? r e)
+     => #f)
+  (t (enum-set=? e r)
+     => #f)
+  (t (enum-set=? e (make-enumeration '(blue green red)))
+     => #t)
+)
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (list
+      (enum-set-member? 'blue (c '(red blue)))
+      (enum-set-member? 'green (c '(red blue)))
+      (enum-set-subset? (c '(red blue)) e)
+      (enum-set-subset? (c '(red blue)) (c '(blue red)))
+      (enum-set-subset? (c '(red blue)) (c '(red)))
+      (enum-set=? (c '(red blue)) (c '(blue red)))))
+   => (list #t #f #t #t #f #t))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (enum-set->list (c '(blue red))))
+   => '(red blue))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (list
+      (enum-set->list
+       (enum-set-union (c '(blue)) (c '(red))))
+      (enum-set->list
+       (enum-set-intersection (c '(red green))
+                              (c '(red blue))))
+      (enum-set->list
+       (enum-set-difference (c '(red green))
+                            (c '(red blue))))))
+     => '((red blue) (red) (green)))
+
+(t (let* ((e (make-enumeration '(red green blue)))
+          (c (enum-set-constructor e)))
+     (enum-set->list
+      (enum-set-complement (c '(red)))))
+   =>
+   '(green blue))
+
+(t (let ((e1 (make-enumeration
+              '(red green blue black)))
+         (e2 (make-enumeration
+              '(red black white))))
+     (enum-set->list
+      (enum-set-projection e1 e2)))
+   =>
+   '(red black))
+
+
+;; (define enum-set-rtd
+
+;;   (make-record-type-descriptor
+;;    'enum-set #f #f #f #f
+;;    '#((mutable type) (mutable member))))
+
+;; (define enum-set-rcd
+;;   (make-record-constructor-descriptor
+;;    enum-set-rtd #f #f))
+
+;; (define make-enum-set (record-constructor enum-set-rcd))
+
+;; (define enum-set-type (record-accessor enum-set-rtd 0))
+
+
+;; (define enum-set-rtd
+;;   (make-record-type-descriptor
+;;    'enum-set #f #f #f #f
+;;    '#((mutable type) (mutable member))))
+
+;; (define enum-set-rcd
+;;   (make-record-constructor-descriptor
+;;    enum-set-rtd #f #f))
+
+;; (define make-enum-set (record-constructor enum-set-rcd))
+
+;; (define enum-set-type (record-accessor enum-set-rtd 0))
+
+;; (print (make-enum-set 'color '(hoge hige)))
+;; (print (enum-set-type (make-enum-set 'color '(hoge hige))))
+
+
+
+(exit)
 (fold-right + 0 '(1 2 3) '(4 5 6))
 (exit)
 (define (%cars+cdrs+ lists cars-final)
@@ -5,25 +328,25 @@
     (lambda (abort)
       (let recur ((lists lists))
         (if (pair? lists)
-	    (receive (list other-lists) (car+cdr lists)
-	      (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
-		  (receive (a d) (car+cdr list)
-		    (receive (cars cdrs) (recur other-lists)
-		      (values (cons a cars) (cons d cdrs))))))
-	    (values (list cars-final) '()))))))
+        (receive (list other-lists) (car+cdr lists)
+          (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
+          (receive (a d) (car+cdr list)
+            (receive (cars cdrs) (recur other-lists)
+              (values (cons a cars) (cons d cdrs))))))
+        (values (list cars-final) '()))))))
 
 
 (define (fold2 kons knil lis1 . lists)
   (check-arg procedure? kons fold)
   (if (pair? lists)
-      (let lp ((lists (cons lis1 lists)) (ans knil))	; N-ary case
-	(receive (cars+ans cdrs) (%cars+cdrs+ lists ans)
-	  (if (null? cars+ans) ans ; Done.
-	      (lp cdrs (apply kons cars+ans)))))
+      (let lp ((lists (cons lis1 lists)) (ans knil))    ; N-ary case
+    (receive (cars+ans cdrs) (%cars+cdrs+ lists ans)
+      (if (null? cars+ans) ans ; Done.
+          (lp cdrs (apply kons cars+ans)))))
 
-      (let lp ((lis lis1) (ans knil))			; Fast path
-	(if (null-list? lis) ans
-	    (lp (cdr lis) (kons (car lis) ans))))))
+      (let lp ((lis lis1) (ans knil))           ; Fast path
+    (if (null-list? lis) ans
+        (lp (cdr lis) (kons (car lis) ans))))))
 
 (display  (fold2 + 0 '(1 2 3) '(4 5 6)))
 
