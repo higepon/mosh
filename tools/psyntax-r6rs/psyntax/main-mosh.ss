@@ -98,10 +98,12 @@
            (let ([obj (read (current-input-port))])
              (if (eof-object? obj)
                  (exit)
-                 (print (psyntax:eval obj (environment '(rnrs)))))))
+                 (display (eval-top-level obj)))))
+;                 (display (eval-top-level '(display 345))))))
     (rec))
   (rec))
 
+(set-symbol-value! 'remp eval-top-level)
 
 
   (let ([args (command-line)]

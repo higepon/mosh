@@ -1,24 +1,35 @@
 (import (rnrs)
         (mosh string))
 
+  (define (for-each-with-index proc lst)
+    (do ((i 1 (+ i 1)) ; start with 1
+         (lst lst (cdr lst)))
+        ((null? lst))
+      (proc i (car lst))))
+
 (define (repl . x)
   (define (rec)
     (display "mosh>")
     (guard (e
-           [(who-condition? )
-            (format #t "    &who: ~a\n" (condition-who e))]
-           [(message-condition? e)
-            (format #t "    &message: ~s\n" (condition-message e))]
-           [(violation? e)
-            (format #t "    ~a\n" (record-type-name (record-rtd e)))]
-           [(irritants-condition? e)
-            (format #t "    &irritants: ~s\n" (condition-irritants e))]
+            (e
+       (for-each-with-index
+        (lambda (i x)
+          (cond
+           [(who-condition? x)
+            (format #t "   ~d. &who: ~a\n" i (condition-who x))]
+           [(message-condition? x)
+            (format #t "   ~d. &message: ~s\n" i (condition-message x))]
+           [(violation? x)
+            (format #t "   ~d. ~a\n" i (record-type-name (record-rtd x)))]
+           [(irritants-condition? x)
+            (format #t "   ~d. &irritants: ~s\n" i (condition-irritants x))]
            [else
-            (format #t "    ~a\n"  (record-type-name (record-rtd e)))])
+            (format #t "   ~d. ~a\n" i (record-type-name (record-rtd x)))]))
+        (simple-conditions e))))
            (let ([obj (read (current-input-port))])
              (if (eof-object? obj)
                  (exit)
-                 (display (eval obj '())))))
+                 (display (remp obj)))))
     (rec))
   (rec))
 

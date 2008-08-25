@@ -1800,8 +1800,8 @@ bool VM::isR6RSMode() const
 void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
-    evaluate(getBuiltinPsyntax());
-//    load(UC("r6rs-examples/psyntax.scm"));
+//    evaluate(getBuiltinPsyntax());
+    load(UC("r6rs-examples/psyntax.scm"));
 }
 
 

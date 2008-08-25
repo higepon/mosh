@@ -78,8 +78,8 @@ MOSHLIB_CXXFLAGS   = -fomit-frame-pointer $(mosh_OPTS) # compile libraries with 
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm r6rs-examples/psyntax.scm
 
-noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
-PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
+noinst_LIBRARIES = libcompiler.a libmatch.a # libpsyntax.a
+PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc # psyntax.scmc
 
 libcompiler_a_CXXFLAGS = $(MOSHLIB_CXXFLAGS)
 libmatch_a_CXXFLAGS    = $(MOSHLIB_CXXFLAGS)
