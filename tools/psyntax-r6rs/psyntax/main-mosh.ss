@@ -34,7 +34,7 @@
     (mosh string)
     (psyntax compat)
     (psyntax library-manager)
-    (psyntax expander))
+    (rename (psyntax expander) (eval psyntax:eval)))
 
   (define (for-each-with-index proc lst)
     (do ((i 1 (+ i 1)) ; start with 1
@@ -52,6 +52,58 @@
                        '()
                        (cons x (f)))))))))
       (eval-r6rs-top-level x*)))
+
+;; (define (repl)
+;;   (define (rec)
+;;     (display "mosh>")
+;;     (guard (e
+;;             [e
+;;              (display e)
+;;              (rec)])
+;;            (let ([obj (read (current-input-port))])
+;;              (if (eof-object? obj)
+;;                  (exit)
+;;                  (display (eval-r6rs-top-level (list obj))))))
+;;     (rec))
+;;   (rec))
+(define (repl . x)
+  (define (rec)
+    (display "mosh>")
+    (guard (e
+;;            [(who-condition? e)
+;;             (format #t "    &who: ~a\n" (condition-who e))]
+;;            [(message-condition? e)
+;;             (format #t "    &message: ~s\n" (condition-message e))]
+;;            [(violation? e)
+;;             (format #t "    ~a\n" (record-type-name (record-rtd e)))]
+;;            [(irritants-condition? e)
+;;             (format #t "    &irritants: ~s\n" (condition-irritants e))]
+;;            [else
+;;             (format #t "    ~a\n"  (record-type-name (record-rtd e)))])
+            (#t
+       (for-each-with-index
+        (lambda (i x)
+          (cond
+           [(who-condition? x)
+            (format #t "   ~d. &who: ~a\n" i (condition-who x))]
+           [(message-condition? x)
+            (format #t "   ~d. &message: ~s\n" i (condition-message x))]
+           [(violation? x)
+            (format #t "   ~d. ~a\n" i (record-type-name (record-rtd x)))]
+           [(irritants-condition? x)
+            (format #t "   ~d. &irritants: ~s\n" i (condition-irritants x))]
+           [else
+            (format #t "   ~d. ~a\n" i (record-type-name (record-rtd x)))]))
+        (simple-conditions e))))
+           (let ([obj (read (current-input-port))])
+             (if (eof-object? obj)
+                 (exit)
+                 (print (psyntax:eval obj (environment '(rnrs)))))))
+    (rec))
+  (rec))
+
+
+
   (let ([args (command-line)]
         [port (current-error-port)])
     (with-exception-handler
@@ -72,4 +124,5 @@
             (format port "   ~d. ~a\n" i (record-type-name (record-rtd x)))]))
         (simple-conditions c)))
      (lambda ()
+;;      (repl)))))
        (load-r6rs-top-level (car args))))))

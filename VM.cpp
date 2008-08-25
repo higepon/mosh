@@ -1801,7 +1801,7 @@ void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
     evaluate(getBuiltinPsyntax());
-//    load(UC("psyntax.scm"));
+//    load(UC("r6rs-examples/psyntax.scm"));
 }
 
 

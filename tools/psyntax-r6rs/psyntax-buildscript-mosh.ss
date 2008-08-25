@@ -963,6 +963,7 @@
     (file->string mosh-file)
     (write-to-file mosh-file)
     (format mosh-string)
+    (print mosh-string)
     (alist-cons srfi-1)
     (assoc-ref mosh-list)
     (first srfi-1)
