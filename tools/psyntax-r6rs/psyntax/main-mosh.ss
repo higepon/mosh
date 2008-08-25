@@ -103,7 +103,7 @@
     (rec))
   (rec))
 
-(set-symbol-value! 'remp eval-top-level)
+;(set-symbol-value! 'remp eval-top-level)
 
 
   (let ([args (command-line)]
