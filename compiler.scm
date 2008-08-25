@@ -738,7 +738,7 @@
     (cond ((eq? mode 'quote) (list 'quote arg))
           ((eq? mode 'unquote) arg)
           ((eq? mode 'unquote-splicing)
-           (error ",@ in invalid context" arg))
+           (error 'quasiquote ",@ in invalid context" arg))
           (else (cons mode arg))))
   (define (descend-quasiquote x level return)
     (cond ((vector? x)
@@ -912,7 +912,7 @@
             (rec more)
             ($it))]
       [else
-       (error "syntax-error: malformed and:" sexp)]))
+       (error 'compiler "syntax-error: malformed and:" sexp)]))
   (rec (cdr sexp)))
 
 (define (pass1/or->iform sexp library lvars tail?)
@@ -926,7 +926,7 @@
             ($it)
             (rec more))]
       [else
-       (error "syntax-error: malformed or:" sexp)]))
+       (error 'compiler "syntax-error: malformed or:" sexp)]))
   (rec (cdr sexp)))
 
 (define (pass1/library->iform sexp library lvars)
@@ -975,11 +975,11 @@
       (case form
         [(expand) 1]
         [(run)    0]
-        [else (error "unknown for")])]
+        [else (error 'compiler "unknown for")])]
      [(and (pair? form) (= (length form) 2) (eq? (first form) 'meta))
       (second form)]
      [else
-      (error "unknown level on meta")]))
+      (error 'compiler "unknown level on meta")]))
   ;; todo cleanup this code. (uhaaaa)
   (define (import-iter form level)
     (case (first form)

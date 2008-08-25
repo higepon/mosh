@@ -1336,7 +1336,7 @@
         (let loop ([lst lst1])
           (cond
            [(not (pair? lst))
-            (assertion-violation 'for-all "proper list required" (list lst1))]
+            (assertion-violation 'for-all "proper list required" lst1)]
            [(proc (car lst))
             => (lambda (ret)
                  (if (null? (cdr lst))
@@ -1352,7 +1352,7 @@
          [(pair? (car l))
           (cons (caar l) (loop (cdr l)))]
          [else
-          (assertion-violation 'for-all "the lists all should have the same length" (list list-n))])))
+          (assertion-violation 'for-all "the lists all should have the same length" list-n)])))
     (if (null*? list-n)
         #t
         (let loop ([head (map-car list-n)]
@@ -2266,7 +2266,7 @@
   (check-arg (lambda (n) (and (integer? n) (>= n 0))) len make-list)
   (let ((elt (cond ((null? maybe-elt) #f) ; Default value
            ((null? (cdr maybe-elt)) (car maybe-elt))
-           (else (error "Too many arguments to MAKE-LIST"
+           (else (error 'make-list "Too many arguments to MAKE-LIST"
                 (cons len maybe-elt))))))
     (letrec ((loop (lambda (i ans) (if (<= i 0) (begin #f ans) (begin (loop (- i 1) (cons elt ans))))))) (loop len '()))))
 ;;     (do ((i len (- i 1))
@@ -2490,7 +2490,7 @@
 (define (null-list? l)
   (cond ((pair? l) #f)
     ((null? l) #t)
-    (else (error "null-list?: argument out of domain" l))))
+    (else (error 'null-list? "argument out of domain" l))))
 
 (define (check-arg pred val caller)
   (let lp ((val val))
@@ -2883,7 +2883,7 @@
         (let loop ([lst lst1])
           (cond
            [(not (pair? lst))
-            (assertion-violation 'exists "proper list required" (list lst1))]
+            (assertion-violation 'exists "proper list required" lst1)]
            [(proc (car lst))
             => (lambda (ret)
                  ret)]
@@ -2900,7 +2900,7 @@
          [(pair? (car l))
           (cons (caar l) (loop (cdr l)))]
          [else
-          (assertion-violation 'exists "the lists all should have the same length" (list list-n))])))
+          (assertion-violation 'exists "the lists all should have the same length" list-n)])))
     (if (null*? list-n)
         #f
         (let loop ([head (map-car list-n)]
@@ -3074,7 +3074,7 @@
   (cond ((current-exception-handler)
          => (lambda (proc) (proc c)))
         (else
-         (error "error in raise-continuable: unhandled exception has occurred~%~%irritants:~%~a"))))
+         (error 'raise-continuable "unhandled exception has occurred" c))))
 
 (define (get-string-n port count)
   "")
@@ -3146,7 +3146,7 @@
     (let ([universe (enum-type-universe (enum-set-type enum-set))])
       (if (for-all (lambda (x) (memq x universe)) symbol-list)
           (make-enum-set (enum-set-type enum-set) symbol-list)
-          (assertion-violation 'enum-set-constructor "the symbol list must all belong to the universe." (list universe symbol-list))))))
+          (assertion-violation 'enum-set-constructor "the symbol list must all belong to the universe." universe symbol-list)))))
 
 (define (enum-set->list enum-set)
   (let ([universe (enum-type-universe (enum-set-type enum-set))]
