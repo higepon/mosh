@@ -455,6 +455,7 @@ ScmObj Scm_Read(ScmPort* port, bool& errorOccured)
         o = Scm_ReadWithContext(port, &ctx);
     } CATCH {
         errorOccured = true;
+        o = Object::Undef;
     }
     return o;
 }
@@ -765,6 +766,22 @@ static int skipws(ScmPort *port, ScmReadContext *ctx)
     }
 }
 
+static ScmObj read_bytevector(ScmPort* port)
+{
+    ucs4char ch = Scm_GetcUnsafe(port);
+    if (ch == 'v') {
+        ch = Scm_GetcUnsafe(port);
+        if (ch == '8') {
+            /* bytevector */
+        } else {
+            RAISE_READ_ERROR0("malformed bytevector");
+        }
+    } else {
+        RAISE_READ_ERROR0("malformed bytevector");
+    }
+    return Object::Undef;
+}
+
 static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
 {
     int c = skipws(port, ctx);
@@ -780,6 +797,8 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
             case EOF:
                 RAISE_READ_ERROR0("premature #-sequence at EOF");
             case 't':; case 'T': return SCM_TRUE;
+            case 'v':
+                return read_bytevector(port);
 #ifndef MONA_SCHEME
             case 'f':; case 'F': return maybe_uvector(port, 'f', ctx);
             case 's':; case 'S': return maybe_uvector(port, 's', ctx);
