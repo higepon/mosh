@@ -119,8 +119,7 @@ Object scheme::sysPortSeekEx(int argc, const Object* argv)
 
 Object scheme::openOutputFileEx(int argc, const Object* argv)
 {
-    MOSH_ASSERT(false);
-    return Object::UnBound;
+    return openFileOutputPortEx(argc, argv);
 }
 
 Object scheme::closeOutputPortEx(int argc, const Object* argv)

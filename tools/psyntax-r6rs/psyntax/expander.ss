@@ -3303,6 +3303,7 @@
             (for-each eval-binding (reverse (cdr init*)))
             (eval-binding (car init*)))))))
 
+
   ;;; register the expander with the library manager
   (current-library-expander library-expander))
 

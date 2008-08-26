@@ -30,11 +30,12 @@
     (rnrs exceptions)
     (rnrs records inspection)
     (rnrs records procedural)
+    (rnrs eval)
     (mosh condition)
     (mosh string)
     (psyntax compat)
     (psyntax library-manager)
-    (rename (psyntax expander) (eval psyntax:eval)))
+    (rename (psyntax expander) (eval psyntax:eval) (environment psyntax:environment)))
 
   (define (for-each-with-index proc lst)
     (do ((i 1 (+ i 1)) ; start with 1
@@ -98,7 +99,8 @@
            (let ([obj (read (current-input-port))])
              (if (eof-object? obj)
                  (exit)
-                 (display (eval-top-level obj)))))
+;;                 (display (eval obj (interaction-environment))))))
+                (display (eval-top-level obj)))))
 ;                 (display (eval-top-level '(display 345))))))
     (rec))
   (rec))
