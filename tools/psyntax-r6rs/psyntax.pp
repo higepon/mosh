@@ -1,5 +1,3 @@
-agent-found
-svn cat -r376 psyntax.pp
 ;;; Copyright (c) 2006, 2007 Abdulaziz Ghuloum and Kent Dybvig
 ;;; automatically generated from psyntax sources
 ;;; for copyright details, see psyntax/main.ss
