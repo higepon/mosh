@@ -777,10 +777,13 @@ static ScmObj read_bytevector(ScmPort* port, ScmReadContext *ctx)
                 const Object list = read_list(port, ')', ctx);
                 for (Object p = list; !p.isNil(); p = p.cdr()) {
                     const Object number = p.car();
-                    if (p.isInt()) {
-                        if (p.toInt() < -128 && p.toInt() > 127) {
+                    if (p.car().isInt()) {
+                        const int value = p.car().toInt();
+                        if (value < -128 || value > 127) {
                             RAISE_READ_ERROR0("malformed bytevector");
                         }
+                    } else {
+                        RAISE_READ_ERROR0("malformed bytevector");
                     }
                 }
                 return Object::makeByteVector(list);
