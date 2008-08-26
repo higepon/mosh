@@ -83,12 +83,20 @@ Object scheme::readEx(int argc, const Object* argv)
     DeclareProcedureName("read");
     checkArgumentLengthBetween(0, 1);
 
+    bool errorOccured = false;
+    TextualInputPort* inputPort = NULL;
     if (0 == argc) {
-        return theVM->currentInputPort().toTextualInputPort()->getDatum();
+        inputPort = theVM->currentInputPort().toTextualInputPort();
     } else {
         argumentAsTextualInputPort(0, textualInputPort);
-        return textualInputPort->getDatum();
+        inputPort = textualInputPort;
     }
+    const Object object = inputPort->getDatum(errorOccured);
+    if (errorOccured) {
+        callLexicalViolationAfter(procedureName, inputPort->error());
+        return Object::Undef;
+    }
+    return object;
 }
 
 Object scheme::openStringInputPortEx(int argc, const Object* argv)

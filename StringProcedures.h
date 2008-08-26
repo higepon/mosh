@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object format(const ucs4char* message, Object values);
     Object stringEx(int argc, const Object* argv);
     Object makeStringEx(int argc, const Object* argv);
     Object stringSetDEx(int argc, const Object* argv);

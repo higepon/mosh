@@ -1538,6 +1538,17 @@ val
      (enum-set->list
       (enum-set-projection e1 e2))))
 
+;; reader
+(error (call-with-string-input-port
+        "("
+        (lambda (in)
+          (read in))))
+
+(3 (call-with-string-input-port
+        "("
+        (lambda (in)
+          (apply read (list in)))))
+
 
 ;;     (point2-x (make-point 1 2))))]
 

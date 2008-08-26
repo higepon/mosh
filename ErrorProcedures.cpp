@@ -36,6 +36,16 @@
 using namespace scheme;
 
 static Object makeMessageCondition(Object message);
+static Object makeIrritantsCondition(Object irritants);
+static Object makeWhoCondition(Object who);
+static Object makeAssertionCondition();
+static Object makeCondition(const ucs4char* rcdName);
+static Object makeCondition(const ucs4char* rcdName, Object conent);
+static void raiseAfter(const ucs4char* errorRcdName,
+                       const ucs4char* errorName,
+                       Object who,
+                       Object message,
+                       Object irritants = Object::Nil);
 
 Object scheme::throwEx(int argc, const Object* argv)
 {
@@ -126,24 +136,16 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
     if (theVM->isR6RSMode()) {
         Object conditions = Object::Nil;
         if (irritants.isPair()) {
-            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
-            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
-            conditions = Object::cons(irritantsCondition, conditions);
+            conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
         }
 
-        const Object messageCondition = makeMessageCondition(message);
-        conditions = Object::cons(messageCondition, conditions);
+        conditions = Object::cons(makeMessageCondition(message), conditions);
 
         if (!who.isFalse()) {
-            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
-            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
-            conditions = Object::cons(whoCondition, conditions);
+            conditions = Object::cons(makeWhoCondition(who), conditions);
         }
 
-        const Object assertionViolationRcd = theVM->getTopLevelGlobalValue(UC("&assertion-rcd"));
-        const Object assertionViolationCondition = theVM->callClosure0(assertionViolationRcd.toRecordConstructorDescriptor()->makeConstructor());
-        conditions = Object::cons(assertionViolationCondition, conditions);
-
+        conditions = Object::cons(makeAssertionCondition(), conditions);
         condition = Object::makeCompoundCondition(conditions);
     } else {
         const Object stringOutputPort = Object::makeStringOutputPort();
@@ -169,6 +171,75 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
     }
 }
 
+// we can't catch this!
+// いずれいらなくなる
+void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    const Object stringOutputPort = Object::makeStringOutputPort();
+    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+    textualOutputPort->format(UC(" Condition components:\n"
+                                 "    1. &lexical\n"
+                                 "    2. &who: ~a\n"
+                                 "    3. &message: ~s\n"
+                                 "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+    const Object condition = sysGetOutputStringEx(1, &stringOutputPort);
+    theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->throwException(condition);
+}
+
+
+void scheme::callLexicalViolationAfter(Object who, Object message, Object irritants)
+{
+    raiseAfter(UC("&lexical-rcd"), UC("&lexical"), who, message, irritants);
+//     MOSH_ASSERT(theVM);
+//     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+//     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+//     MOSH_ASSERT(message.isString());
+//     Object condition = Object::Nil;
+//     if (theVM->isR6RSMode()) {
+//         Object conditions = Object::Nil;
+//         if (irritants.isPair()) {
+//             conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
+//         }
+
+//         const Object messageCondition = makeMessageCondition(message);
+//         conditions = Object::cons(messageCondition, conditions);
+
+//         if (!who.isFalse()) {
+//             const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
+//             const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
+//             conditions = Object::cons(whoCondition, conditions);
+//         }
+//         const Object errorRcd = theVM->getTopLevelGlobalValueOrFalse(UC("&lexical-rcd"));
+//         MOSH_ASSERT(!errorRcd.isFalse());
+//         const Object errorCondition = theVM->callClosure0(errorRcd.toRecordConstructorDescriptor()->makeConstructor());
+//         conditions = Object::cons(errorCondition, conditions);
+//         condition = Object::makeCompoundCondition(conditions);
+//     } else {
+//         const Object stringOutputPort = Object::makeStringOutputPort();
+//         TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+//         textualOutputPort->format(UC(" Condition components:\n"
+//                                      "    1. &lexical\n"
+//                                      "    2. &who: ~a\n"
+//                                      "    3. &message: ~s\n"
+//                                      "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
+
+//         condition = sysGetOutputStringEx(1, &stringOutputPort);
+//     }
+
+//     const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+//     // Error occured before (raise ...) is defined.
+//     if (raiseProcedure.isFalse()) {
+//         theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+//         theVM->throwException(condition);
+//     } else {
+//         theVM->setAfterTrigger1(raiseProcedure, condition);
+//     }
+}
 void scheme::callIoFileNameErrorAfter(Object who, Object message, Object irritants)
 {
     MOSH_ASSERT(theVM);
@@ -315,9 +386,82 @@ Object scheme::errorEx(int argc, const Object* argv)
 
 
 // private
+Object makeWhoCondition(Object who)
+{
+    return makeCondition(UC("&who-rcd"), who);
+}
+
 Object makeMessageCondition(Object message)
 {
-    const Object messageRcd = theVM->getTopLevelGlobalValue(UC("&message-rcd"));
-    const Object messageCondition = theVM->callClosure1(messageRcd.toRecordConstructorDescriptor()->makeConstructor(), message);
-    return messageCondition;
+    return makeCondition(UC("&message-rcd"), message);
 }
+
+Object makeIrritantsCondition(Object irritants)
+{
+    return makeCondition(UC("&irritants-rcd"), irritants);
+}
+
+Object makeAssertionCondition()
+{
+    return makeCondition(UC("&assertion-rcd"));
+}
+
+Object makeCondition(const ucs4char* rcdName)
+{
+    const Object rcd = theVM->getTopLevelGlobalValue(rcdName);
+    MOSH_ASSERT(!rcd.isFalse());
+    return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
+}
+
+Object makeCondition(const ucs4char* rcdName, Object content)
+{
+    const Object rcd = theVM->getTopLevelGlobalValue(rcdName);
+    MOSH_ASSERT(!rcd.isFalse());
+    return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
+}
+
+void raiseAfter(const ucs4char* errorRcdName, const ucs4char* errorName, Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+        if (irritants.isPair()) {
+            conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
+        }
+
+        conditions = Object::cons(makeMessageCondition(message), conditions);
+
+        if (!who.isFalse()) {
+            conditions = Object::cons(makeWhoCondition(who), conditions);
+        }
+
+        conditions = Object::cons(makeCondition(errorRcdName), conditions);
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        const Object stringOutputPort = Object::makeStringOutputPort();
+        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
+
+        textualOutputPort->format(UC(" Condition components:\n"
+                                     "    1. ~a\n"
+                                     "    2. &who: ~a\n"
+                                     "    3. &message: ~s\n"
+                                     "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
+
+        condition = sysGetOutputStringEx(1, &stringOutputPort);
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+}
+

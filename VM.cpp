@@ -132,27 +132,19 @@ void VM::defaultExceptionHandler(Object error)
 }
 
 
+// これはいずれ Scheme でおきかえる。
 void VM::loadFile(const ucs4string& file)
 {
-//     struct timeval tv1, tv2;
-//     struct timezone tz1, tz2;
-//     long long compileTime = 0;
-//     long long evalTime = 0;
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
-        for (Object o = p->getDatum(); !o.isEof(); o = p->getDatum()) {
-//            gettimeofday(&tv1, &tz1);
+        bool readErrorOccured = false;
+        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
+            if (readErrorOccured) {
+                callLexicalViolationImmidiaImmediately("read", p->error());
+            }
             const Object compiled = compile(o);
-//            LOG1("compiled=~a\n", compiled);
-//           gettimeofday(&tv2, &tz2);
-//           compileTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
-//           printf("compile =%ld eval = %ld \n", compileTime / 1000, evalTime / 1000);
-//           gettimeofday(&tv1, &tz1);
-//            LOG1("compiled=~a\n", compiled);
             evaluate(compiled);
-//           gettimeofday(&tv2, &tz2);
-//           evalTime += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
         }
 
         CATCH
@@ -1223,11 +1215,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(READ)
         {
-            TRACE_INSN0("READ");
-            if (ac_.isNil()) {
-                ac_ = inputPort_.toTextualInputPort()->getDatum();
-            } else {
-                ac_ = ac_.toTextualInputPort()->getDatum();
+            bool errorOccured = false;
+            TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
+            ac_ = inputPort->getDatum(errorOccured);
+            if (errorOccured) {
+                callLexicalViolationAfter("read", inputPort->error());
             }
             NEXT1;
         }
@@ -1800,8 +1792,8 @@ bool VM::isR6RSMode() const
 void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
-//    evaluate(getBuiltinPsyntax());
-    load(UC("r6rs-examples/psyntax.scm"));
+    evaluate(getBuiltinPsyntax());
+//    load(UC("r6rs-examples/psyntax.scm"));
 }
 
 

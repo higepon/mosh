@@ -31,6 +31,7 @@
 
 #include "scheme.h"
 #include "VM.h"
+#include "ErrorProcedures.h"
 #include "Builtin.h"
 
 using namespace scheme;
@@ -183,9 +184,14 @@ int main(int argc, char *argv[])
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
-        const Object code = port.toTextualInputPort()->getDatum();
-        const Object compiled = theVM->compile(code);
-        theVM->getOutputPort().toTextualOutputPort()->display(compiled);
+        bool errorOccured = false;
+        const Object code = port.toTextualInputPort()->getDatum(errorOccured);
+        if (errorOccured) {
+            callLexicalViolationImmidiaImmediately("read", port.toTextualInputPort()->error());
+        } else {
+            const Object compiled = theVM->compile(code);
+            theVM->getOutputPort().toTextualOutputPort()->display(compiled);
+        }
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode();
     } else if (optind < argc) {

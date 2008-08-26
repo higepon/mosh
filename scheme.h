@@ -205,6 +205,7 @@ public:
     }
 
     Object(const ucs4char* str);
+    Object(const ucs4string& str);
     Object(const char* str);
 
     bool isInt() const
@@ -558,7 +559,7 @@ public:
 };
 
 Object read(Object port);
-Object read(TextualInputPort* port);
+Object read(TextualInputPort* port, bool& errorOccured);
 Object write(Object port, Object o, bool inList = false);
 Object portOutputPair(Object port, Object obj, bool inList = false);
 
@@ -673,6 +674,11 @@ inline Object::Object(int n, Object o) : val(reinterpret_cast<word>(new HeapObje
 inline Object::Object(const ucs4char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
 {
 }
+
+    inline Object::Object(const ucs4string& str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str.data())))))
+{
+}
+
 
 inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
 {

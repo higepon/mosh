@@ -1,6 +1,15 @@
+(exit)
+(call-with-string-input-port "("
+     (lambda (in)
+       (read in)))
+(call-with-input-file "./hige.scm"
+  (lambda (in)
+    (read in)))
+
+(exit)
+
 (define (hige) 3)
 
-(c
 
 (hige)
 (exit)

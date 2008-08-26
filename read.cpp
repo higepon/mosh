@@ -55,6 +55,7 @@
 
 #include "scheme.h"
 #include "ErrorProcedures.h"
+#include "StringProcedures.h"
 
 using namespace scheme;
 
@@ -428,18 +429,34 @@ ScmObj Scm_ReadWithContext(ScmPort* port, ScmReadContext *ctx)
     return r;
 }
 
-ScmObj Scm_Read(ScmObj port)
+static jmp_buf returnPoint;
+
+#define TRY if (setjmp(returnPoint) == 0)
+#define CATCH else
+#define RAISE_READ_ERROR0(message) raiseReadError(port, UC(message), Object::Nil)
+#define RAISE_READ_ERROR1(message, value1) raiseReadError(port, UC(message), Pair::list1(value1))
+#define RAISE_READ_ERROR2(message, value1, value2) raiseReadError(port, UC(message), Pair::list2(value1, value2))
+
+void raiseReadError(TextualInputPort* port, const ucs4char* message, Object values)
 {
-    ScmReadContext ctx;
-    read_context_init(Scm_VM(), &ctx);
-    return Scm_ReadWithContext(port, &ctx);
+    port->setError(format(UC("~a at ~a:~d"),
+                          Pair::list3(format(message, values),
+                                      port->toString(),
+                                      Object::makeInt(port->getLine()))));
+    longjmp(returnPoint, -1);
 }
 
-ScmObj Scm_Read(ScmPort* port)
+ScmObj Scm_Read(ScmPort* port, bool& errorOccured)
 {
     ScmReadContext ctx;
     read_context_init(Scm_VM(), &ctx);
-    return Scm_ReadWithContext(port, &ctx);
+    ScmObj o = Object::Nil;
+    TRY {
+        o = Scm_ReadWithContext(port, &ctx);
+    } CATCH {
+        errorOccured = true;
+    }
+    return o;
 }
 
 
@@ -714,7 +731,7 @@ static void read_nested_comment(ScmPort *port, ScmReadContext *ctx)
             continue;
         case EOF:
           eof:
-            Scm_ReadError(port, "encountered EOF inside nested multi-line comment (comment begins at line %d)", line);
+            RAISE_READ_ERROR1("encountered EOF inside nested multi-line comment (comment begins at line ~d)", Object::makeInt(line));
         default:
             break;
         }
@@ -761,7 +778,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
             int c1 = Scm_GetcUnsafe(port);
             switch (c1) {
             case EOF:
-                Scm_ReadError(port, "premature #-sequence at EOF");
+                RAISE_READ_ERROR0("premature #-sequence at EOF");
             case 't':; case 'T': return SCM_TRUE;
 #ifndef MONA_SCHEME
             case 'f':; case 'F': return maybe_uvector(port, 'f', ctx);
@@ -826,7 +843,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                     case EOF:
                         return SCM_EOF;
                     default:
-                        Scm_ReadError(port, "unsupported #?-syntax: #?%C", c2);
+                        RAISE_READ_ERROR1("unsupported #?-syntax: #?~a", Object::makeChar(c2));
                     }
                 }
             case '0': case '1': case '2': case '3': case '4':
@@ -841,7 +858,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                     int c2;
                     c2 = Scm_GetcUnsafe(port);
                     if (c2 == '"') return read_string(port, TRUE, ctx);
-                    Scm_ReadError(port, "unsupported #*-syntax: #*%C", c2);
+                    RAISE_READ_ERROR1("unsupported #*-syntax: #*~a", Object::makeChar(c2));
                 }
             case ';':
                 /* #;expr - comment out sexpr */
@@ -869,7 +886,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                 {
                     int c1 = Scm_GetcUnsafe(port);
                     if (c1 == EOF) {
-                        Scm_ReadError(port, "unterminated unsyntax");
+                        RAISE_READ_ERROR0("unterminated unsyntax");
                     } else if (c1 == '@') {
                         return read_quoted(port, SCM_SYM_UNSYNTAX_SPLICING, ctx);
                     } else {
@@ -878,7 +895,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                     }
                 }
             default:
-                Scm_ReadError(port, "unsupported #-syntax: #%C", c1);
+                RAISE_READ_ERROR1("unsupported #-syntax: #~C", Object::makeChar(c1));
             }
         }
     case '\'': return  read_quoted(port, SCM_SYM_QUOTE, ctx);
@@ -891,7 +908,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
         {
             int c1 = Scm_GetcUnsafe(port);
             if (c1 == EOF) {
-                Scm_ReadError(port, "unterminated unquote");
+                RAISE_READ_ERROR0("unterminated unquote");
             } else if (c1 == '@') {
                 return read_quoted(port, SCM_SYM_UNQUOTE_SPLICING, ctx);
             } else {
@@ -914,7 +931,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
         {
             int c1 = Scm_GetcUnsafe(port);
             if (!char_word_constituent(c1)) {
-                Scm_ReadError(port, "dot in wrong context");
+                RAISE_READ_ERROR0("dot in wrong context");
             }
             Scm_UngetcUnsafe(c1, port);
             return read_symbol_or_number(port, c, ctx);
@@ -925,7 +942,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
            but some Scheme programs use such identifiers. */
         return read_symbol_or_number(port, c, ctx);
     case ')':; case ']':; case '}':;
-        Scm_ReadError(port, "extra close parenthesis");
+        RAISE_READ_ERROR0("extra close parenthesis");
     case EOF:
         return SCM_EOF;
     default:
@@ -994,13 +1011,12 @@ static ScmObj read_list_int(ScmPort *port, ScmChar closer,
     }
   eoferr:
     if (start_line >= 0) {
-        Scm_ReadError(port, "EOF inside a list (starting from line %d)",
-                      start_line);
+        RAISE_READ_ERROR1("EOF inside a list (starting from line ~d)", Object::makeInt(start_line));
     } else {
-        Scm_ReadError(port, "EOF inside a list");
+        RAISE_READ_ERROR0("EOF inside a list");
     }
   baddot:
-    Scm_ReadError(port, "bad dot syntax");
+    RAISE_READ_ERROR0("bad dot syntax");
     return SCM_NIL;             /* dummy */
 }
     #include "VM.h"
@@ -1065,7 +1081,7 @@ static ScmObj read_quoted(ScmPort *port, ScmObj quoter, ScmReadContext *ctx)
 #endif
 
     item = read_item(port, ctx);
-    if (SCM_EOFP(item)) Scm_ReadError(port, "unterminated quote");
+    if (SCM_EOFP(item)) RAISE_READ_ERROR0("unterminated quote");
 #ifdef MONA_SCHEME
     if (line >= 0) {
         r = Object::cons(quoter, Object::cons(item, Object::Nil), Pair::list2(Object::makeString(port->toString()), Object::makeInt(line)));
@@ -1202,7 +1218,7 @@ static ScmObj read_string(ScmPort *port, int incompletep,
     }
  eof_exit:
 #ifdef MONA_SCHEME
-    Scm_ReadError(port, "EOF encountered in a string literal");
+    RAISE_READ_ERROR0("EOF encountered in a string literal");
 #else
     Scm_ReadError(port, "EOF encountered in a string literal: %S",
                   Scm_DStringGet(&ds, 0));
@@ -1252,7 +1268,7 @@ static ScmObj read_char(ScmPort *port, ScmReadContext *ctx)
     struct char_name *cntab = char_names;
     c = Scm_GetcUnsafe(port);
     switch (c) {
-    case EOF: Scm_ReadError(port, "EOF encountered in character literal");
+    case EOF: RAISE_READ_ERROR0("EOF encountered in character literal");
     case '(':; case ')':; case '[':; case ']':; case '{':; case '}':;
     case '"':; case ' ':; case '\\':; case '|':; case ';':;
     case '#':;
@@ -1306,7 +1322,7 @@ static ScmObj read_char(ScmPort *port, ScmReadContext *ctx)
       unknown:
 #ifdef MONA_SCHEME
         // todo
-        Scm_ReadError(port, "Unknown character name: %c ", c);// #\\%s", objectToCStr((Object)name));
+        RAISE_READ_ERROR1("Unknown character name: ~d ", Object::makeChar(c));
 #else
         Scm_ReadError(port, "Unknown character name: #\\%A", name);
 #endif
@@ -1375,7 +1391,7 @@ static ScmObj read_number(ScmPort *port, ScmChar initial, ScmReadContext *ctx)
     ScmObj num = Scm_StringToNumber(s, 10, TRUE);
     if (num == SCM_FALSE)
 #ifdef MONA_SCHEME
-        Scm_ReadError(port, "bad numeric format: %s", s->data().ascii_c_str());
+        RAISE_READ_ERROR1("bad numeric format: ~a", Object::makeString(s->data()));
 #else
         Scm_ReadError(port, "bad numeric format: %S", s);
 #endif
@@ -1445,8 +1461,7 @@ static ScmObj read_escaped_symbol(ScmPort *port, ScmChar delim)
     Scm_ReadError(port, "unterminated escaped symbol: |%s ...",
                   Scm_DStringGetz(&ds));
 #else
-    Scm_ReadError(port, "unterminated escaped symbol: |%s ...",
-                  ds.ascii_c_str());
+    RAISE_READ_ERROR1("unterminated escaped symbol: |~s ...", Object::makeString(ds.c_str()));
 #endif
     return SCM_UNDEFINED; /* dummy */
 }
@@ -1469,7 +1484,7 @@ static ScmObj read_regexp(ScmPort *port)
     for (;;) {
         c = Scm_GetcUnsafe(port);
         if (c == SCM_CHAR_INVALID) {
-            Scm_ReadError(port, "unterminated literal regexp");
+            RAISE_READ_ERROR0("unterminated literal regexp");
         }
         if (c == '\\') {
 #ifdef MONA_SCHEME
@@ -1479,7 +1494,7 @@ static ScmObj read_regexp(ScmPort *port)
 #endif
             c = Scm_GetcUnsafe(port);
             if (c == SCM_CHAR_INVALID) {
-                Scm_ReadError(port, "unterminated literal regexp");
+                RAISE_READ_ERROR0("unterminated literal regexp");
             }
 #ifdef MONA_SCHEME
             ds += c;
@@ -1541,15 +1556,17 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
     for (;;) {
         ch = Scm_GetcUnsafe(port);
         if (ch == EOF) {
-            Scm_ReadError(port, "unterminated reference form (#digits)");
+            RAISE_READ_ERROR0("unterminated reference form (#digits)");
         }
         if (SCM_CHAR_ASCII_P(ch) && isdigit(ch)) {
             refnum = refnum*10+Scm_DigitToInt(ch, 10);
-            if (refnum < 0) Scm_ReadError(port, "reference number overflow");
+            if (refnum < 0) RAISE_READ_ERROR0("reference number overflow");
             continue;
         }
         if (ch != '#' && ch != '=') {
-            Scm_ReadError(port, "invalid reference form (must be either #digits# or #digits=) : #%d%A", refnum, SCM_MAKE_CHAR(ch));
+            RAISE_READ_ERROR2("invalid reference form (must be either #digits# or #digits=) : #~d~a",
+                              Object::makeInt(refnum),
+                              Object::makeChar(ch));
         }
         break;
     }
@@ -1557,7 +1574,7 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
         /* #digit# - back reference */
         if (ctx->table == NULL
             || (e = Scm_HashTableGet(ctx->table, Scm_MakeInteger(refnum))) == NULL) {
-            Scm_ReadError(port, "invalid reference number in #%d#", refnum);
+            RAISE_READ_ERROR1("invalid reference number in #~d#", Object::makeInt(refnum));
         }
         if (SCM_READ_REFERENCE_P(e->value)
             && SCM_READ_REFERENCE_REALIZED(e->value)) {
@@ -1575,7 +1592,7 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
                 SCM_HASH_TABLE(Scm_MakeHashTableSimple(SCM_HASH_EQV, 0));
         }
         if (Scm_HashTableGet(ctx->table, Scm_MakeInteger(refnum)) != NULL) {
-            Scm_ReadError(port, "duplicate back-reference number in #%d=", refnum);
+            RAISE_READ_ERROR1("duplicate back-reference number in #~d=", Object::makeInt(refnum));
         }
         ref_register(ctx, ref, refnum);
         val = read_item(port, ctx);
@@ -1609,8 +1626,8 @@ static ScmObj read_sharp_comma(ScmPort *port, ScmReadContext *ctx)
 
     next = Scm_GetcUnsafe(port);
     if (next != '(') {
-        Scm_ReadError(port, "bad #,-form: '(' should be followed, but got %C",
-                      next);
+        RAISE_READ_ERROR1("bad #,-form: '(' should be followed, but got ~a",
+                          Object::makeChar(next));
     }
 
 #ifdef MONA_SCHEME
@@ -1622,7 +1639,7 @@ static ScmObj read_sharp_comma(ScmPort *port, ScmReadContext *ctx)
     form = read_list_int(port, ')', ctx, &has_ref, line);
     len = Scm_Length(form);
     if (len <= 0) {
-        Scm_ReadError(port, "bad #,-form: #,%S", form);
+        RAISE_READ_ERROR1("bad #,-form: #,~a", form);
     }
     r = process_sharp_comma(port, SCM_CAR(form), SCM_CDR(form), ctx, has_ref);
     return r;
@@ -1640,7 +1657,7 @@ static ScmObj process_sharp_comma(ScmPort *port, ScmObj key, ScmObj args,
     e = Scm_HashTableGet(readCtorData.table, key);
     (void)SCM_INTERNAL_MUTEX_UNLOCK(readCtorData.mutex);
 
-    if (e == NULL) Scm_ReadError(port, "unknown #,-key: %S", key);
+    if (e == NULL) RAISE_READ_ERROR1("unknown #,-key: ~a", key);
     SCM_ASSERT(SCM_PAIRP(e->value));
     r = Scm_ApplyRec(SCM_CAR(e->value), args);
     if (has_ref) ref_push(ctx, r, SCM_CDR(e->value));
@@ -1700,7 +1717,7 @@ static ScmObj maybe_uvector(ScmPort *port, char ch, ScmReadContext *ctx)
             bufp += SCM_CHAR_NBYTES(c2);
         }
         *bufp = '\0';
-        Scm_ReadError(port, "invalid uniform vector tag: %s", buf);
+        RAISE_READ_ERROR1("invalid uniform vector tag: ~s", Object::makeString(buf));
     }
     if (Scm_ReadUvectorHook == NULL) {
         /* Require srfi-4 (gauche/uvector)

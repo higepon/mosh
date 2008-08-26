@@ -31,10 +31,20 @@
 
 #include "StringProcedures.h"
 #include "ProcedureMacro.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
 static Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4string>::size_type i);
+
+Object scheme::format(const ucs4char* message, Object values)
+{
+    MOSH_ASSERT(values.isNil() || values.isPair());
+    const Object sport = Object::makeStringOutputPort();
+    TextualOutputPort* const port = sport.toTextualOutputPort();
+    port->format(message, values);
+    return sysGetOutputStringEx(1, &sport);
+}
 
 Object scheme::stringEx(int argc, const Object* argv)
 {

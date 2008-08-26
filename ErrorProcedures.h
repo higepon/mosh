@@ -40,10 +40,12 @@ namespace scheme {
     Object errorEx(int argc, const Object* argv);
     Object assertionViolationEx(int argc, const Object* argv);
 
+    void callLexicalViolationAfter(Object who, Object message, Object irritants = Object::Nil);
     void callIoFileNameErrorAfter(Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
     void callErrorAfter(Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);
+    void callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);
     void callNotImplementedAssertionViolationAfter(Object who, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
     void callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);

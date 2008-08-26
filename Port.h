@@ -549,13 +549,23 @@ public:
         buffer_ += c;
     }
 
-    ucs4string toString() {
+    virtual ucs4string toString() {
         return port_->toString();
     }
 
-    virtual Object getDatum()
+    virtual void setError(Object error)
     {
-        return read(this);
+        error_ = error;
+    }
+
+    virtual Object error() const
+    {
+        return error_;
+    }
+
+    virtual Object getDatum(bool& errorOccured)
+    {
+        return read(this, errorOccured);
     }
 
     virtual int close()
@@ -569,6 +579,7 @@ private:
     Transcoder* coder_;
     ucs4string buffer_;
     int line_;
+    Object error_;
 };
 
 class StringTextualInputPort : public TextualInputPort
@@ -590,6 +601,10 @@ public:
     {
         if (EOF == c) return;
         index_--;
+    }
+
+    ucs4string toString() {
+        return UC("<string port>");
     }
 
     int close() { return 0; }
