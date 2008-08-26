@@ -766,13 +766,27 @@ static int skipws(ScmPort *port, ScmReadContext *ctx)
     }
 }
 
-static ScmObj read_bytevector(ScmPort* port)
+static ScmObj read_bytevector(ScmPort* port, ScmReadContext *ctx)
 {
     ucs4char ch = Scm_GetcUnsafe(port);
-    if (ch == 'v') {
+    if (ch == 'u') {
         ch = Scm_GetcUnsafe(port);
         if (ch == '8') {
-            /* bytevector */
+            ch = Scm_GetcUnsafe(port);
+            if (ch == '(') {
+                const Object list = read_list(port, ')', ctx);
+                for (Object p = list; !p.isNil(); p = p.cdr()) {
+                    const Object number = p.car();
+                    if (p.isInt()) {
+                        if (p.toInt() < -128 && p.toInt() > 127) {
+                            RAISE_READ_ERROR0("malformed bytevector");
+                        }
+                    }
+                }
+                return Object::makeByteVector(list);
+            } else {
+                RAISE_READ_ERROR0("malformed bytevector");
+            }
         } else {
             RAISE_READ_ERROR0("malformed bytevector");
         }
@@ -798,7 +812,7 @@ static ScmObj read_internal(ScmPort *port, ScmReadContext *ctx)
                 RAISE_READ_ERROR0("premature #-sequence at EOF");
             case 't':; case 'T': return SCM_TRUE;
             case 'v':
-                return read_bytevector(port);
+                return read_bytevector(port, ctx);
 #ifndef MONA_SCHEME
             case 'f':; case 'F': return maybe_uvector(port, 'f', ctx);
             case 's':; case 'S': return maybe_uvector(port, 's', ctx);

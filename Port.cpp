@@ -262,7 +262,16 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isCProcedure()) {
         putString(UC("#<subr>"));
     } else if (o.isByteVector()) {
-        putString(UC("#<byte vector>"));
+        ByteVector* const byteVector = o.toByteVector();
+        const int length = byteVector->length();
+        putString(UC("#vu8("));
+        for (int i = 0; i < length; i++) {
+            if (i != 0) {
+                putString(" ");
+            }
+            putDatum(byteVector->s8Ref(i));
+        }
+        putString(UC(")"));
     } else if (o.isBox()) {
         putString(UC("#<box>"));
     } else if (o.isInputFilePort()) {
@@ -365,7 +374,16 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isCProcedure()) {
         putString(UC("#<subr>"));
     } else if (o.isByteVector()) {
-        putString(UC("#<byte vector>"));
+        ByteVector* const byteVector = o.toByteVector();
+        const int length = byteVector->length();
+        putString(UC("#vu8("));
+        for (int i = 0; i < length; i++) {
+            if (i != 0) {
+                putString(" ");
+            }
+            putDatum(byteVector->s8Ref(i));
+        }
+        putString(UC(")"));
     } else if (o.isBox()) {
         putString(UC("#<box>"));
     } else if (o.isInputFilePort()) {

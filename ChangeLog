@@ -1,3 +1,11 @@
+2008-08-26  higepon  <higepon@users.sourceforge.jp>
+
+        * Rewrote error system for reader.
+
+        * ErrorProcedures.cpp (scheme::callLexicalViolationAfter): Added.
+
+        * read.cpp (read_bytevector): Added read bytevector support.
+
 2008-08-24  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm: Implmented all of R6RS Enumrations.

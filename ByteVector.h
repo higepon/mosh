@@ -70,6 +70,25 @@ public:
         }
     }
 
+    ByteVector(Object pair) : num_(Pair::length(pair))
+    {
+        MOSH_ASSERT(pair.isPair() || pair.isNil());
+
+#ifdef USE_BOEHM_GC
+        data_ = new(PointerFreeGC) int8_t[num_];
+#else
+        data_ = new int8_t[num_];
+#endif
+        int i = 0;
+        for (Object p = pair; !p.isNil(); p = p.cdr()) {
+            MOSH_ASSERT(p.car().isInt());
+            MOSH_ASSERT(p.car().toInt() >= -128 && p.car().toInt() <= 127);
+            data_[i] = p.car().toInt();
+            i++;
+        }
+
+    }
+
     ByteVector(int num, int8_t* data) : data_(data), num_(num)
     {
     }

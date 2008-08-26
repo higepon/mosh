@@ -421,6 +421,7 @@ public:
     static Object makeBox(Object o);
     static Object makeByteVector(int n, int8_t v = 0);
     static Object makeByteVector(ByteVector* b);
+    static Object makeByteVector(Object pair);
     static Object makeByteVector(const gc_vector<uint8_t>& v);
     static Object makeBool(bool a)
     {
@@ -710,6 +711,14 @@ inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
                                                         reinterpret_cast<word>(new ByteVector(v)))));
 }
+
+inline Object Object::makeByteVector(Object pair)
+{
+    MOSH_ASSERT(pair.isPair() || pair.isNil());
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(new ByteVector(pair)))));
+}
+
 
 inline Object Object::makeByteVector(ByteVector* b)
 {
