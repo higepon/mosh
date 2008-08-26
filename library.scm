@@ -1701,7 +1701,7 @@
 ;; .parameter textual-output-port port to write
 ;; .returns unspecified
 ;; .todo textual-output-port
-(define (newline) (display "\n"))
+(define (newline . p) (apply display "\n" p))
 
 ; ==============================================================================================================================================================
 ;;; File system.
@@ -3235,3 +3235,5 @@
             [members1 (enum-set-members enum-set1)])
         (make-enum-set (enum-set-type enum-set2)
                        (filter (lambda (symbol) (memq symbol universe2)) members1)))))
+
+(define (pretty-print x p) (display x p) (newline p))

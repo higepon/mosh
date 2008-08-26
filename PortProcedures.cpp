@@ -125,7 +125,7 @@ Object scheme::openOutputFileEx(int argc, const Object* argv)
 Object scheme::closeOutputPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("close-output-port");
-    checkArgumentLength(0);
+    checkArgumentLength(1);
 
     const Object port = argv[0];
     if (port.isTextualOutputPort()) {
@@ -398,7 +398,6 @@ Object scheme::openFileOutputPortEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
     } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }

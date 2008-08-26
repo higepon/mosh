@@ -1,5 +1,7 @@
 2008-08-26  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (newline): fixed bug of (newline).
+
         * Rewrote error system for reader.
 
         * ErrorProcedures.cpp (scheme::callLexicalViolationAfter): Added.
