@@ -1544,7 +1544,7 @@ val
         (lambda (in)
           (read in))))
 
-(3 (call-with-string-input-port
+(error (call-with-string-input-port
         "("
         (lambda (in)
           (apply read (list in)))))
