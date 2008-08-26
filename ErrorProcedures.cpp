@@ -43,6 +43,7 @@ static Object makeCondition(const ucs4char* rcdName);
 static Object makeCondition(const ucs4char* rcdName, Object conent);
 static void raiseAfter(const ucs4char* errorRcdName,
                        const ucs4char* errorName,
+                       int argumentCount,
                        Object who,
                        Object message,
                        Object irritants = Object::Nil);
@@ -128,51 +129,10 @@ void scheme::callAssertionViolationImmidiaImmediately(Object who, Object message
 
 void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-        if (irritants.isPair()) {
-            conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
-        }
-
-        conditions = Object::cons(makeMessageCondition(message), conditions);
-
-        if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(who), conditions);
-        }
-
-        conditions = Object::cons(makeAssertionCondition(), conditions);
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        const Object stringOutputPort = Object::makeStringOutputPort();
-        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-        textualOutputPort->format(UC(" Condition components:\n"
-                                     "    1. &assertion\n"
-                                     "    2. &who: ~a\n"
-                                     "    3. &message: ~s\n"
-                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-        condition = sysGetOutputStringEx(1, &stringOutputPort);
-    }
-
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
+    raiseAfter(UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
 }
 
 // we can't catch this!
-// いずれいらなくなる
 void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
@@ -193,159 +153,17 @@ void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, 
 
 void scheme::callLexicalViolationAfter(Object who, Object message, Object irritants)
 {
-    raiseAfter(UC("&lexical-rcd"), UC("&lexical"), who, message, irritants);
-//     MOSH_ASSERT(theVM);
-//     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-//     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-//     MOSH_ASSERT(message.isString());
-//     Object condition = Object::Nil;
-//     if (theVM->isR6RSMode()) {
-//         Object conditions = Object::Nil;
-//         if (irritants.isPair()) {
-//             conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
-//         }
-
-//         const Object messageCondition = makeMessageCondition(message);
-//         conditions = Object::cons(messageCondition, conditions);
-
-//         if (!who.isFalse()) {
-//             const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
-//             const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
-//             conditions = Object::cons(whoCondition, conditions);
-//         }
-//         const Object errorRcd = theVM->getTopLevelGlobalValueOrFalse(UC("&lexical-rcd"));
-//         MOSH_ASSERT(!errorRcd.isFalse());
-//         const Object errorCondition = theVM->callClosure0(errorRcd.toRecordConstructorDescriptor()->makeConstructor());
-//         conditions = Object::cons(errorCondition, conditions);
-//         condition = Object::makeCompoundCondition(conditions);
-//     } else {
-//         const Object stringOutputPort = Object::makeStringOutputPort();
-//         TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-//         textualOutputPort->format(UC(" Condition components:\n"
-//                                      "    1. &lexical\n"
-//                                      "    2. &who: ~a\n"
-//                                      "    3. &message: ~s\n"
-//                                      "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-//         condition = sysGetOutputStringEx(1, &stringOutputPort);
-//     }
-
-//     const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
-//     // Error occured before (raise ...) is defined.
-//     if (raiseProcedure.isFalse()) {
-//         theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
-//         theVM->throwException(condition);
-//     } else {
-//         theVM->setAfterTrigger1(raiseProcedure, condition);
-//     }
+    raiseAfter(UC("&lexical-rcd"), UC("&lexical"), 0, who, message, irritants);
 }
 void scheme::callIoFileNameErrorAfter(Object who, Object message, Object irritants)
 {
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-        if (irritants.isPair()) {
-            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
-            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
-            conditions = Object::cons(irritantsCondition, conditions);
-        }
-
-        const Object messageCondition = makeMessageCondition(message);
-        conditions = Object::cons(messageCondition, conditions);
-
-        if (!who.isFalse()) {
-            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
-            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
-            conditions = Object::cons(whoCondition, conditions);
-        }
-
-        const Object errorRcd = theVM->getTopLevelGlobalValue(UC("&i/o-filename-rcd"));
-        const Object errorCondition = theVM->callClosure1(errorRcd.toRecordConstructorDescriptor()->makeConstructor(), "hige");
-        conditions = Object::cons(errorCondition, conditions);
-
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        const Object stringOutputPort = Object::makeStringOutputPort();
-        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-        textualOutputPort->format(UC(" Condition components:\n"
-                                     "    1. &error\n"
-                                     "    2. &who: ~a\n"
-                                     "    3. &message: ~s\n"
-                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-        condition = sysGetOutputStringEx(1, &stringOutputPort);
-    }
-
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
+    raiseAfter(UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
 }
 
 void scheme::callErrorAfter(Object who, Object message, Object irritants /* = Object::Nil */)
 {
-    MOSH_ASSERT(theVM);
-    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
-    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
-    MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
-    if (theVM->isR6RSMode()) {
-        Object conditions = Object::Nil;
-        if (irritants.isPair()) {
-            const Object irritantsRcd = theVM->getTopLevelGlobalValue(UC("&irritants-rcd"));
-            const Object irritantsCondition = theVM->callClosure1(irritantsRcd.toRecordConstructorDescriptor()->makeConstructor(), irritants);
-            conditions = Object::cons(irritantsCondition, conditions);
-        }
-
-        const Object messageCondition = makeMessageCondition(message);
-        conditions = Object::cons(messageCondition, conditions);
-
-        if (!who.isFalse()) {
-            const Object whoRcd = theVM->getTopLevelGlobalValue(UC("&who-rcd"));
-            const Object whoCondition = theVM->callClosure1(whoRcd.toRecordConstructorDescriptor()->makeConstructor(), who);
-            conditions = Object::cons(whoCondition, conditions);
-        }
-
-        const Object errorRcd = theVM->getTopLevelGlobalValue(UC("&error-rcd"));
-        const Object errorCondition = theVM->callClosure0(errorRcd.toRecordConstructorDescriptor()->makeConstructor());
-        conditions = Object::cons(errorCondition, conditions);
-
-        condition = Object::makeCompoundCondition(conditions);
-    } else {
-        const Object stringOutputPort = Object::makeStringOutputPort();
-        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-        textualOutputPort->format(UC(" Condition components:\n"
-                                     "    1. &error\n"
-                                     "    2. &who: ~a\n"
-                                     "    3. &message: ~s\n"
-                                     "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-        condition = sysGetOutputStringEx(1, &stringOutputPort);
-    }
-
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
-
-    // Error occured before (raise ...) is defined.
-    if (raiseProcedure.isFalse()) {
-        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
-    } else {
-        theVM->setAfterTrigger1(raiseProcedure, condition);
-    }
+    raiseAfter(UC("&error-rcd"), UC("&error"), 0, who, message, irritants);
 }
-
 
 Object scheme::assertionViolationEx(int argc, const Object* argv)
 {
@@ -420,7 +238,12 @@ Object makeCondition(const ucs4char* rcdName, Object content)
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
-void raiseAfter(const ucs4char* errorRcdName, const ucs4char* errorName, Object who, Object message, Object irritants /* = Object::Nil */)
+void raiseAfter(const ucs4char* errorRcdName,
+                const ucs4char* errorName,
+                int argumentCount,
+                Object who,
+                Object message,
+                Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
@@ -439,7 +262,12 @@ void raiseAfter(const ucs4char* errorRcdName, const ucs4char* errorName, Object 
             conditions = Object::cons(makeWhoCondition(who), conditions);
         }
 
-        conditions = Object::cons(makeCondition(errorRcdName), conditions);
+        MOSH_ASSERT(argumentCount >= 0 && argumentCount <= 1);
+        if (0 == argumentCount) {
+            conditions = Object::cons(makeCondition(errorRcdName), conditions);
+        } else {
+            conditions = Object::cons(makeCondition(errorRcdName, Object::Nil), conditions);
+        }
         condition = Object::makeCompoundCondition(conditions);
     } else {
         const Object stringOutputPort = Object::makeStringOutputPort();
