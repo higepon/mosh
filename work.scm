@@ -1,3 +1,8 @@
+(display (string? #vu8(1 2)))
+(exit)
+(display #e1e100)
+;#e10e
+(exit)
 '#vu8(1 2)
 (exit)
 (call-with-string-input-port "("

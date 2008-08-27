@@ -19,18 +19,20 @@
 ;;; DEALINGS IN THE SOFTWARE. 
 
 (library (psyntax compat)
-  (export make-parameter parameterize define-record compile-core
+  (export make-parameter parameterize define-record ;compile-core
           gensym void eval-core symbol-value set-symbol-value! file-options-spec
-          read-annotated annotation? annotation-expression annotation-source
-          load-serialized-library serialize-library
-          annotation-stripped make-record-printer read-library-source-file)
+          read-annotated
+          read-library-source-file)
   (import 
     (rnrs)
-    (ironscheme reader)
-    (ironscheme records printer)
-    (ironscheme serialization)
+;    (ironscheme reader)
+;    (ironscheme records printer)
+;    (ironscheme serialization)
     (only (psyntax system $bootstrap)
-          void gensym eval-core set-symbol-value! symbol-value compile-core))
+          void gensym eval-core set-symbol-value! symbol-value ))
+;compile-core))
+
+  (define read-annotated read)
 
   (define (read-library-source-file file-name)
 		(with-input-from-file file-name read-annotated))
@@ -84,7 +86,8 @@
       [(_ name (field* ...) printer)
        #`(begin 
            (define-record name (field* ...)) 
-           (define rp (make-record-printer 'name printer)))]
+;           (define rp (make-record-printer 'name printer)))]
+           )]
       [(_ name (field* ...))
        (with-syntax ([(getter* ...)
                       (map (gen-getter #'name) #'(field* ...))]

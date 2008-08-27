@@ -1451,6 +1451,8 @@
         ((_ expr)
          (bless `(unless ,expr
                    (assertion-violation 'assert "assertion failed" ',expr)))))))
+
+  (define read-annotated read)
   
   (define endianness-macro
     (lambda (stx)

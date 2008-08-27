@@ -1276,6 +1276,7 @@
 (define (expand-all files)
   ;;; remove all re-exported identifiers (those with labels in
   ;;; subst but not binding in env).
+  (define read-annotated read)
   (define (prune-subst subst env)
     (cond
       ((null? subst) '())

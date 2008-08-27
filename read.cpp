@@ -147,63 +147,61 @@ ScmObj Scm_ListToVector(ScmObj l, int start, int end)
 
 #define SCM_SYM_STRING_INTERPOLATE ((ScmObj)SOME_VALUE)
 
-#if 0
-Object power10(int n) {
-    const Object ret = makeInt(1);
-    const Object ten = makeInt(10);
-    for (int i = 0; i < n; i++) {
-        ret = Arithmetic::mul(ret, ten);
-    }
-    return ret;
-}
-
-ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
-{
-    if (base != 10) {
-        // todo
-        fprintf(stderr, "unsupported number format in (read)\n");
-        exit(-1);
-    }
-    const Object ret = makeInt(0);
-    const UCS4Char* text = s->text().data();
-    uint32_t length = s->text().size();
-    if (0 == length) return SCM_FALSE;
-    const char* p = s->text().c_str();
-    if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0) {
-        return SCM_FALSE;
-    }
-
-    int sign = 1;
-    for (uint32_t i = 0; i < length; i++) {
-        UCS4Char c = text[i];
-        if (0 == i) {
-            if ('+' == c) {
-                continue;
-            } else if ('-' == c) {
-                sign = -1;
-                continue;
-            }
-        }
-
-        if (c < '0' || c > '9') return SCM_FALSE;
-        const Object current = Arithmetic::mul(makeInt(c - '0'), power10(length - i - 1));
-        ret = Arithmetic::add(ret, current);
-    }
-    if (sign == -1) {
-        ret = Arithmetic::mul(ret, makeInt(-1));
-    }
-    return ret;
-}
-
+#include "oniguruma.h"
+#if WORDS_BIGENDIAN
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_BE
 #else
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_LE
+#endif
+
+bool match(const char* pattern, const char* text)
+{
+    regex_t* regexp;
+    OnigErrorInfo einfo;
+    int r = onig_new(&regexp,
+                     (const uint8_t*)pattern,
+                     (const uint8_t*)(pattern + strlen(pattern)),
+                     ONIG_OPTION_DEFAULT,
+                     ONIG_ENCODING_ASCII,
+                     ONIG_SYNTAX_RUBY,
+                     &einfo);
+    OnigRegion* region = onig_region_new();
+    const uint8_t* start = (const uint8_t*)text;
+    const uint8_t* end   = (const uint8_t*)(text + strlen(text));
+    const uint8_t* range = end;
+    r = onig_search(regexp, start, end, start, range, region, ONIG_OPTION_NONE);
+    if (r >= 0) {
+        return true;
+    } else {
+        return false;
+    }
+
+}
+
 ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
 {
-    const char* p = s->data().ascii_c_str();
+    bool exact = false;
+    ucs4string str = s->data();
+    int length = str.size();
+    const char* p = str.ascii_c_str();
+
+    // todo
+    if (match("#[e|i|x]", p) ||
+        match("\\.\\d+", p) ||
+        match("\\+nan\\.0", p) ||
+        match("\\+inf\\.0", p) ||
+        match("-inf\\.0", p)
+        ) {
+        return Object::makeInt(0);
+    }
+
     // strtol returns no error for "." or "...".
     // strtol is !
     if (strcmp(p, "+") == 0 || strcmp(p, "-") == 0 || p[0] == '.' || (p[0] == '-' && !isdigit(p[1]))) {
         return SCM_FALSE;
     }
+
+
     errno = 0;
     long long ret = strtoll(p, NULL, base);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
@@ -214,7 +212,6 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
     }
 }
 
-#endif
 
 /* Some useful macros */
 #ifndef FALSE
@@ -1358,7 +1355,9 @@ static ScmObj read_char(ScmPort *port, ScmReadContext *ctx)
       unknown:
 #ifdef MONA_SCHEME
         // todo
-        RAISE_READ_ERROR1("Unknown character name: ~d ", Object::makeChar(c));
+//        RAISE_READ_ERROR1("Unknown character name: ~d ", Object::makeChar(c));
+        // todo
+        return Object::makeChar(c);
 #else
         Scm_ReadError(port, "Unknown character name: #\\%A", name);
 #endif

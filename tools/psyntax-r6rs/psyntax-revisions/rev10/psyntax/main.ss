@@ -75,6 +75,8 @@
     
   (define (compile->closure filename)
     (load-r6rs-top-level filename 'closure))
+
+  (define read-annotated)
   
   (define (load-r6rs-top-level filename how . args)
     (parameterize ([library-path (local-library-path filename)])
