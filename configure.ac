@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(mosh, 0.0.5, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.0.6, higepon@users.sourceforge.jp)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([VM.h])
 AC_CONFIG_HEADER([config.h])
