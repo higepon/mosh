@@ -135,6 +135,7 @@ void VM::defaultExceptionHandler(Object error)
 // これはいずれ Scheme でおきかえる。
 void VM::loadFile(const ucs4string& file)
 {
+    SAVE_REGISTERS();
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
@@ -152,6 +153,7 @@ void VM::loadFile(const ucs4string& file)
             defaultExceptionHandler(errorObj_);
         exit(-1);
     }
+    RESTORE_REGISTERS();
 }
 
 // same as (eval ...)

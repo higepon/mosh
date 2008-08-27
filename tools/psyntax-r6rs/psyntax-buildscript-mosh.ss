@@ -1319,7 +1319,8 @@
           (compile-core-expr-to-port x p)
           (newline p))
         core*)
-      (close-output-port p)))
+      (close-output-port p)
+))
 
 (display "Happy Happy Joy Joy\n")
 
