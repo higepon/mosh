@@ -232,8 +232,8 @@ all-tests.scm: ./test-data.scm
 	@GOSH@ ./scripts/gen-test.scm $< > $@
 
 doc:
-# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
+	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
+	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
 fulltest:
 	./mosh -t
