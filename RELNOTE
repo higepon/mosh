@@ -1,3 +1,54 @@
+Mosh 0.0.6 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Improved load speed of "R6RS batch mode" using psyntax.
+  Run with -b option like "cd r6rs-examples; mosh -b hello.ss"
+  There are some samples in mosh/r6rs-examples directory.
+
+Supported running "R6RS test suite".
+  R6RS test suite written by PLT Scheme project.
+    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
+  Run like following.
+    mosh -b tests/r6rs/run/mutable-strings.sps
+  Mosh 0.0.6 passed following tests.
+    mutable-strings, mutable-pairs,
+    contrib, programs, control, hashtables,
+    records/procedural, lists and enums.
+
+Implemented R6RS Hashtables.
+
+Implemented R6RS Records.
+
+Implemented R6RS Exceptions and conditions.
+
+Implemented R6RS List Utilities.
+
+Implemented R6RS Enumerations.
+
+Implemented dynamic-wind.
+
+Improved internal error system.
+
+Fixed bug of call/cc with multiple values.
+
+Applied READ_CHAR/grass.scm patch by IRIE Shinsuke.
+
+Added many procedures.
+
+Fixed many bugs.
+
 Mosh 0.0.5 Release Note
 ============================
 
