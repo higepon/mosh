@@ -95,7 +95,7 @@ mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) $(noinst_LIBRARIES)
 # generated files should be listed here.
 BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm r6rs-examples/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm r6rs-examples/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
 
 GENERATED = \
 Instruction.h \

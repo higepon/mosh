@@ -10,3 +10,4 @@ test:
 	$(MOSH) -b tests/r6rs/run/records/procedural.sps
 	$(MOSH) -b tests/r6rs/run/lists.sps
 	$(MOSH) -b tests/r6rs/run/enums.sps
+	$(MOSH) -b tests/r6rs/run/sorting.sps
