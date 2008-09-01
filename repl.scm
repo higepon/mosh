@@ -1,5 +1,5 @@
-(import (rnrs)
-        (mosh string))
+;; (import (rnrs)
+;;         (mosh string))
 
   (define (for-each-with-index proc lst)
     (do ((i 1 (+ i 1)) ; start with 1
