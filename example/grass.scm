@@ -29,6 +29,7 @@
 ;  $Id$
 ;
 ;  Update: 2008/08/01 Bug fixed by IRIE Shinsuke.
+;        : 2008/09/01 Fixed parse by IRIE Shinsuke.
 
 
 (define (make-app n m)
@@ -112,23 +113,24 @@
 
 (define (parse text)
   (define (normalize t)
-   (regexp-replace-all #/wvW/
     (list->string
      (filter (lambda (p) (memq p '(#\w #\W #\v)))
             (memq #\w
              (string->list
-              (regexp-replace-all #/Ｗ/ (regexp-replace-all #/ｖ/ (regexp-replace-all #/ｗ/ t "w") "v") "W")))))
-    "wW"))
+              (regexp-replace-all #/Ｗ/ (regexp-replace-all #/ｖ/ (regexp-replace-all #/ｗ/ t "w") "v") "W"))))))
   (define (parse-body t)
     (aif (#/^(W+)(w+)(.*)/ (if t t ""))
          (cons (make-app (string-length (it 1)) (string-length (it 2)))
                (parse-body (it 3)))
          '()))
-  (map (lambda (x)
-         (aif (#/^(w+)(.*)/ x)
-              (make-abs (string-length (it 1)) (parse-body (it 2)))
-              (error "syntax error")))
-       (string-split (normalize text) #\v)))
+  (define (parse-prog t)
+    (if (null? t)
+        '()
+        (append (aif (#/^(w+)(.*)/ (car t))
+                     (list (make-abs (string-length (it 1)) (parse-body (it 2))))
+                     (parse-body (car t)))
+                (parse-prog (cdr t)))))
+  (parse-prog (string-split (normalize text) #\v)))
 
 (grass-eval "ｗｗＷＷｗv
              ｗｗｗｗＷＷＷｗｗＷｗｗＷＷＷＷＷＷｗｗｗｗＷｗｗv

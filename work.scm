@@ -1,7 +1,42 @@
+<<<<<<< .mine
+(fold
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(import (rnrs))
+=======
 ;; quick hack
 ;; (define-macro (let-values clause . body)
 ;; `(receive ,(car clause
 ;; )
+>>>>>>> .r387
 
 ;; quick hack
 (define-macro (let-values clause . body)
@@ -10,8 +45,15 @@
 (define list-head take)
 
 
+<<<<<<< .mine
+
+;; (let ([hashtable (make-eq-hashtable)])
+;;   (hashtable-set! hashtable 'red 'apple)
+;;   (display (hashtable-ref hashtable 'red)))
+=======
   (define list-sort
     (lambda (proc lst)
+>>>>>>> .r387
 
       (define merge
         (lambda (lst1 lst2)

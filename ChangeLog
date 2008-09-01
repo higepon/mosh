@@ -1,3 +1,7 @@
+2008-09-01  higepon  <higepon@users.sourceforge.jp>
+
+        * example/grass.scm (parse): Applied a patch by IRIE Shinsuke.
+
 2008-08-29  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (list-sort): Ported R6RS sorting from Ypsilon Scheme System by Y.FUJITA, LittleWing Company.

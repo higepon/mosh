@@ -98,6 +98,7 @@ int main(int argc, char *argv[])
     bool isR6RSBatchMode = false;
     char* initFile = NULL;
 
+
     while ((opt = getopt(argc, argv, "htvpVcl:b")) != -1) {
         switch (opt) {
         case 'h':
