@@ -36,166 +36,17 @@
 #include "BinaryInputPort.h"
 #include "BinaryOutputPort.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "FileBinaryInputPort.h"
+#include "FileBinaryOutputPort.h"
+#include "CustomBinaryInputPort.h"
+#include "TextualOutputPort.h"
 
 namespace scheme {
 
-// //----------------------------------------------------------------------
-// //    Binary input port
-// //----------------------------------------------------------------------
-// class ByteArrayBinaryInputPort : public BinaryInputPort
-// {
-// public:
-//     ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
-//     {
-//     }
-//     ~ByteArrayBinaryInputPort() {}
-
-//     int getU8()
-//     {
-//         if (index_ >= size_) return -1;
-//         return buf_[index_++];
-//     }
-
-//     ucs4string toString() {
-//         return UC("<byte-array-input-port>");
-//     }
-
-//     ByteVector* getByteVector(int size)
-//     {
-//         fprintf(stderr, "get-byte-vector-n not implemented");
-//         exit(-1);
-//     }
-
-//     int open() { return MOSH_SUCCESS; }
-//     int close() { return MOSH_SUCCESS; }
-
-// private:
-//     const uint8_t* const buf_;
-//     const int size_;
-//     int index_;
-// };
-
-class FileBinaryInputPort : public BinaryInputPort
-{
-public:
-    FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")) {}
-    FileBinaryInputPort(ucs4string file);
-    FileBinaryInputPort(const char* file);
-    ucs4string toString() {
-        return fileName_;
-    }
-
-    virtual ~FileBinaryInputPort() {}
-
-    int getU8()
-    {
-        uint8_t c;
-        if (0 == fread(&c, 1, 1, stream_)) {
-            return EOF;
-        } else {
-            return c;
-        }
-    }
-
-    ByteVector* getByteVector(int size)
-    {
-#ifdef USE_BOEHM_GC
-        int8_t* buf = new(PointerFreeGC) int8_t[size];
-#else
-        int8_t* buf = new int8_t[size];
-#endif
-        int ret = fread(buf, 1, size, stream_);
-        return new ByteVector(ret, buf);
-    }
-
-    int open();
-
-    int close()
-    {
-        fclose(stream_);
-        return MOSH_SUCCESS;
-    }
-
-
-private:
-    FILE* stream_;
-    ucs4string fileName_;
-};
-
-class CustomBinaryInputPort : public BinaryInputPort
-{
-public:
-    CustomBinaryInputPort(Object readProc) : readProc_(readProc)
-    {
-    }
-
-    virtual ~CustomBinaryInputPort() {}
-
-    int getU8();
-    ByteVector* getByteVector(int size);
-
-    ucs4string toString() {
-        return UC("<custom port>");
-    }
-
-    int open()
-    {
-        return 0;
-    }
-
-    int close()
-    {
-        // todo if close! proc exists
-        return 0;
-
-    }
-private:
-    const Object readProc_;
-};
 
 //----------------------------------------------------------------------
 //    Binary output port
 //----------------------------------------------------------------------
-class FileBinaryOutputPort : public BinaryOutputPort
-{
-public:
-    FileBinaryOutputPort(FILE* stream) : stream_(stream) {}
-    FileBinaryOutputPort(ucs4string file);
-
-    virtual ~FileBinaryOutputPort() {}
-
-    int putU8(uint8_t v)
-    {
-        return fwrite(&v, 1, 1, stream_);
-    }
-
-    int putU8(uint8_t* v, int size)
-    {
-        return fwrite(v, size, 1, stream_);
-    }
-
-    int putByteVector(ByteVector bv, int start = 0)
-    {
-        return putByteVector(bv, start, bv.length() - start);
-    }
-
-    int putByteVector(ByteVector bv, int start, int count)
-    {
-        int8_t* buf = bv.data();
-        return fwrite(&buf[start], 1, count, stream_);
-    }
-
-    int open();
-
-    int close()
-    {
-        fclose(stream_);
-        return MOSH_SUCCESS;
-    }
-
-private:
-    FILE* stream_;
-};
 
 //----------------------------------------------------------------------
 //    Codec and Transcoder
@@ -362,76 +213,6 @@ private:
 //----------------------------------------------------------------------
 //    Textual output port
 //----------------------------------------------------------------------
-class TextualOutputPort EXTEND_GC
-{
-public:
-    TextualOutputPort()
-    {
-    }
-
-    TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
-                                                                  codec_(coder->getCodec()),
-                                                                  coder_(coder),
-                                                                  isErrorOccured_(false),
-                                                                  errorMessage_(Object::Nil),
-                                                                  irritants_(Object::Nil)
-    {
-    }
-
-    virtual ~TextualOutputPort()
-    {
-    }
-
-    virtual int close()
-    {
-        return port_->close();
-    }
-
-    void putString(String* str)
-    {
-        putString(str->data());
-    }
-
-    void putString(const ucs4string& s)
-    {
-        for (ucs4string::size_type i = 0; i < s.size(); i++) {
-            putChar(s[i]);
-        }
-    }
-
-    void putString(const char* s)
-    {
-        const int len = strlen(s);
-        for (int i = 0; i < len; i++) {
-            putChar(s[i]);
-        }
-    }
-
-    virtual void putChar(ucs4char c)
-    {
-        codec_->out(port_, c);
-    }
-
-    void putDatum(Object o, bool inList = false);
-    void display(Object o, bool inList = false);
-    void putPair(Object obj, bool inList = false);
-
-    void format(const ucs4string& fmt, Object args);
-
-    BinaryOutputPort* binaryPort() const { return port_; }
-
-    bool isErrorOccured() const { return isErrorOccured_; }
-    Object errorMessage() const { return errorMessage_; }
-    Object irritants() const { return irritants_; }
-
-private:
-    BinaryOutputPort* port_;
-    Codec* codec_;
-    Transcoder* coder_;
-    bool isErrorOccured_;
-    Object errorMessage_;
-    Object irritants_;
-};
 
 class StringTextualOutputPort : public TextualOutputPort
 {

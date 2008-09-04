@@ -34,6 +34,14 @@ BinaryInputPort.h    \
 BinaryOutputPort.h    \
 ByteArrayBinaryInputPort.h \
 ByteArrayBinaryInputPort.cpp \
+FileBinaryInputPort.h\
+FileBinaryInputPort.cpp \
+FileBinaryOutputPort.h\
+FileBinaryOutputPort.cpp \
+CustomBinaryInputPort.h \
+CustomBinaryInputPort.cpp \
+TextualOutputPort.h \
+TextualOutputPort.cpp \
 SString.h            \
 Symbol.h             \
 config.h             \
