@@ -131,6 +131,8 @@ digit-16 {hex-digit}
     return BOOLEAN;
  }
 
+<<EOF>> { return END_OF_FILE; }
+
 
 
 {number} { printf("number, %s", yytext); }

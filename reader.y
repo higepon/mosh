@@ -14,7 +14,7 @@ Object parsed;
 %token <Object> IDENTIFIER
 %token <Object> STRING
 %token <boolValue> BOOLEAN
-%token LEFT_PAREN RIGHT_PAREN
+%token LEFT_PAREN RIGHT_PAREN END_OF_FILE
 %type <object> datum lexme_datum compound_datum list datum_list top_level
 %start top_level
 
@@ -25,6 +25,7 @@ datum : lexme_datum    { $$ = $1;}
       ;
 
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
+            | END_OF_FILE { $$ = Object::Eof; }
             ;
 
 compound_datum : list { $$ = $1; }
