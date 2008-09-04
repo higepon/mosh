@@ -42,6 +42,8 @@ CustomBinaryInputPort.h \
 CustomBinaryInputPort.cpp \
 TextualOutputPort.h \
 TextualOutputPort.cpp \
+TextualByteVectorOutputPort.h \
+TextualByteVectorOutputPort.cpp \
 SString.h            \
 Symbol.h             \
 config.h             \

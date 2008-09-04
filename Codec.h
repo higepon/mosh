@@ -1,5 +1,5 @@
 /*
- * Port.cpp - port
+ * Codec.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,44 +26,25 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: Codec.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Port.h"
-#include "VM.h"
-using namespace scheme;
+#ifndef __SCHEME_CODEC__
+#define __SCHEME_CODEC__
 
-extern VM* theVM;
+#include "scheme.h"
 
-bool scheme::fileExistsP(const ucs4string& file)
+namespace scheme {
+
+class Codec EXTEND_GC
 {
-    FILE* stream = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return false;
-    } else {
-        fclose(stream);
-        return true;
-    }
-}
+public:
+    virtual ~Codec() {}
+    virtual int out(BinaryOutputPort* port, ucs4char c) = 0;
+    virtual int out(uint8_t* buf, ucs4char c) = 0;
+    virtual ucs4char in(BinaryInputPort* port) = 0;
+};
 
+}; // namespace scheme
 
-
-
-
-int CustomBinaryInputPort::getU8()
-{
-    const Object bv = Object::makeByteVector(1);
-    const Object start = Object::makeInt(0);
-    const Object count = Object::makeInt(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
-    if (0 == result.toInt()) {
-        return EOF;
-    }
-    return bv.toByteVector()->u8RefI(0);
-}
-
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
-{
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
-}
+#endif // __SCHEME_CODEC__

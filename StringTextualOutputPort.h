@@ -1,5 +1,5 @@
 /*
- * Port.cpp - port
+ * StringTextualOutputPort.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,44 +26,30 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: StringTextualOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Port.h"
-#include "VM.h"
-using namespace scheme;
+#ifndef __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
+#define __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
 
-extern VM* theVM;
+#include "scheme.h"
 
-bool scheme::fileExistsP(const ucs4string& file)
+namespace scheme {
+
+class StringTextualOutputPort : public TextualOutputPort
 {
-    FILE* stream = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return false;
-    } else {
-        fclose(stream);
-        return true;
-    }
-}
+public:
+    StringTextualOutputPort();
+    virtual ~StringTextualOutputPort();
+    void putChar(ucs4char c);
+    ucs4string getString();
+    int close();
 
+private:
+    ucs4string buffer_;
+    ucs4string::size_type index_;
+};
 
+}; // namespace scheme
 
-
-
-int CustomBinaryInputPort::getU8()
-{
-    const Object bv = Object::makeByteVector(1);
-    const Object start = Object::makeInt(0);
-    const Object count = Object::makeInt(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
-    if (0 == result.toInt()) {
-        return EOF;
-    }
-    return bv.toByteVector()->u8RefI(0);
-}
-
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
-{
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
-}
+#endif // __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__

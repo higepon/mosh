@@ -560,7 +560,6 @@ public:
 };
 
 Object read(Object port);
-Object read(TextualInputPort* port, bool& errorOccured);
 Object read2(TextualInputPort* port);
 Object write(Object port, Object o, bool inList = false);
 Object portOutputPair(Object port, Object obj, bool inList = false);

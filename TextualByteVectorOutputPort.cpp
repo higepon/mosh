@@ -1,5 +1,5 @@
 /*
- * Port.cpp - port
+ * TextualByteVectorOutputPort.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,44 +26,36 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: TextualByteVectorOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include "Port.h"
-#include "VM.h"
+#include "TextualByteVectorOutputPort.h"
+
 using namespace scheme;
 
-extern VM* theVM;
-
-bool scheme::fileExistsP(const ucs4string& file)
+TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->getCodec())
 {
-    FILE* stream = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return false;
-    } else {
-        fclose(stream);
-        return true;
+}
+
+~TextualByteVectorOutputPort::TextualByteVectorOutputPort()
+{
+}
+
+void TextualByteVectorOutputPort::putChar(ucs4char c)
+{
+    uint8_t buf[4];
+    const int size = codec_->out(buf, c);
+    for (int i = 0; i < size; i++) {
+        v_.push_back(buf[i]);
     }
 }
 
-
-
-
-
-int CustomBinaryInputPort::getU8()
+const gc_vector<uint8_t>& TextualByteVectorOutputPort::getByteVector() const
 {
-    const Object bv = Object::makeByteVector(1);
-    const Object start = Object::makeInt(0);
-    const Object count = Object::makeInt(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
-    if (0 == result.toInt()) {
-        return EOF;
-    }
-    return bv.toByteVector()->u8RefI(0);
+    return v_;
 }
 
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
+int TextualByteVectorOutputPort::close()
 {
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
+    return 0;
 }

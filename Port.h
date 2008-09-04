@@ -40,9 +40,11 @@
 #include "FileBinaryOutputPort.h"
 #include "CustomBinaryInputPort.h"
 #include "TextualOutputPort.h"
+#include "TextualByteVectorOutputPort.h"
+#include "Transcoder.h"
 
 namespace scheme {
-
+extern Object read(TextualInputPort* port, bool& errorOccured);
 
 //----------------------------------------------------------------------
 //    Binary output port
@@ -51,14 +53,6 @@ namespace scheme {
 //----------------------------------------------------------------------
 //    Codec and Transcoder
 //----------------------------------------------------------------------
-class Codec EXTEND_GC
-{
-public:
-    virtual ~Codec() {}
-    virtual int out(BinaryOutputPort* port, ucs4char c) = 0;
-    virtual int out(uint8_t* buf, ucs4char c) = 0;
-    virtual ucs4char in(BinaryInputPort* port) = 0;
-};
 
 class UTF8Codec : public Codec
 {
@@ -176,99 +170,43 @@ public:
     }
 };
 
-class Transcoder EXTEND_GC
-{
-public:
-    enum EolStyle
-    {
-        LF,
-        CR,
-        CRLF,
-        NEL,
-        CRNEL,
-        LS,
-        NONE,
-    };
-    enum ErrorHandlingMode
-    {
-        IGNORE_ERROR,
-        RAISE,
-        REPLACE,
-    };
-    Transcoder(Codec* codec, enum EolStyle e, enum ErrorHandlingMode m) : codec_(codec)
-    {
-    }
-
-    Transcoder(Codec* codec) : codec_(codec)
-    {
-    }
-
-
-    Codec* getCodec() const { return codec_; }
-
-private:
-    Codec* codec_;
-};
 
 //----------------------------------------------------------------------
 //    Textual output port
 //----------------------------------------------------------------------
 
-class StringTextualOutputPort : public TextualOutputPort
-{
-public:
-    StringTextualOutputPort() : index_(0) {}
-    virtual ~StringTextualOutputPort() {}
 
-    void putChar(ucs4char c)
-    {
-        buffer_ += c;
-        index_++;
-    }
+// class TextualByteVectorOutputPort : public TextualOutputPort
+// {
+// public:
+//     TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->getCodec()) {}
+//     virtual ~TextualByteVectorOutputPort() {}
 
-    ucs4string getString() { return buffer_; }
+//     void putChar(ucs4char c)
+//     {
+//         uint8_t buf[4];
+//         const int size = codec_->out(buf, c);
+//         for (int i = 0; i < size; i++) {
+//             v_.push_back(buf[i]);
+//         }
+//     }
 
-    int close()
-    {
-        return 0;
-    }
+//     const gc_vector<uint8_t>& getByteVector() const
+//     {
+//         return v_;
+//     }
 
-private:
-    ucs4string buffer_;
-    ucs4string::size_type index_;
-};
-
-class TextualByteVectorOutputPort : public TextualOutputPort
-{
-public:
-    TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->getCodec()) {}
-    virtual ~TextualByteVectorOutputPort() {}
-
-    void putChar(ucs4char c)
-    {
-        uint8_t buf[4];
-        const int size = codec_->out(buf, c);
-        for (int i = 0; i < size; i++) {
-            v_.push_back(buf[i]);
-        }
-    }
-
-    const gc_vector<uint8_t>& getByteVector() const
-    {
-        return v_;
-    }
-
-    int close()
-    {
-        return 0;
-    }
+//     int close()
+//     {
+//         return 0;
+//     }
 
 
-private:
-    Transcoder* transcoder_;
-    Codec* codec_;
-    gc_vector<uint8_t> v_;
-};
+// private:
+//     Transcoder* transcoder_;
+//     Codec* codec_;
+//     gc_vector<uint8_t> v_;
+// };
 
 //----------------------------------------------------------------------
 //    Textual input port
