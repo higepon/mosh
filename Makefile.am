@@ -14,6 +14,9 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
 bin_PROGRAMS = mosh
 mosh_SOURCES =      \
+reader.tab.cpp      \
+reader.tab.hpp      \
+reader.lex.yy.cpp   \
 main.cpp             \
 scheme.cpp           \
 read.cpp             \
@@ -137,6 +140,12 @@ $(PSYNTAX_DIR)/psyntax.pp: $(PSYNTAX_DIR)/psyntax-buildscript.ss $(PSYNTAX_SRC)
 # psyntax-buildscript.ss を更新する
 psyntax-update:
 	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript.ss)
+
+reader.tab.cpp: reader.y
+	bison -d $< -o $@
+
+reader.lex.yy.cpp: reader.lex
+	flex -o $@ $<
 
 
 # psyntax-mosh-p:

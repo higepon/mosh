@@ -89,6 +89,23 @@ void signal_handler(int signo)
 }
 #endif
 
+static TextualInputPort* in;
+bool parser_input(char* buf, int max_size) {
+    const ucs4char c = in->getChar();
+    buf[0] = c;
+    return c == EOF;
+}
+
+Object scheme::read2(TextualInputPort* port)
+{
+    extern int yyparse(void);
+    extern Object parsed;
+
+    in = port;
+    yyparse();
+    return parsed;
+}
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -152,7 +169,7 @@ int main(int argc, char *argv[])
     errOut = fopen(INSN_LOG_FILE, "w");
     TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
 #else
-    
+
 #endif
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
     Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
@@ -160,6 +177,38 @@ int main(int argc, char *argv[])
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
+
+    extern int yyparse(void);
+    extern FILE *yyin;
+    extern Object parsed;
+
+    FILE* fp = fopen("./hige.scm", "r");
+    in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
+    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//    yyin = fp;
+
+//     // yyparse の戻り値をしらべる
+//     // 文字列やポートから read できなければならない。これを調べる。
+//     printf("yyparse=%d\n", yyparse());
+//     outPort.toTextualOutputPort()->putDatum(parsed);
+//     printf("yyparse=%d\n", yyparse());
+//     outPort.toTextualOutputPort()->putDatum(parsed);
+//     printf("yyparse=%d\n", yyparse());
+//     outPort.toTextualOutputPort()->putDatum(parsed);
+//     if (yyparse()) {
+//         fprintf(stderr, "Error ! Error ! Error !\n");
+//         exit(1);
+//     }
+//    outPort.toTextualOutputPort()->putDatum(parsed);
+//     if (yyparse()) {
+//         fprintf(stderr, "Error ! Error ! Error !\n");
+//         exit(1);
+//     }
+//     outPort.toTextualOutputPort()->putDatum(parsed);
+//     exit(1);
+    exit(1);
 
     // Do not call Symbol::intern before you load precompiled compiler!
 

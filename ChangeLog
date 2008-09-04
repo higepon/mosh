@@ -1,3 +1,9 @@
+2008-09-04  higepon  <higepon@users.sourceforge.jp>
+
+        * reader.lex : Added.
+
+        * reader.y : Added for new reader.
+
 2008-09-01  higepon  <higepon@users.sourceforge.jp>
 
         * example/grass.scm (parse): Applied a patch by IRIE Shinsuke.

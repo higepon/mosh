@@ -568,6 +568,11 @@ public:
         return read(this, errorOccured);
     }
 
+    virtual Object getDatum2()
+    {
+        return read2(this);
+    }
+
     virtual int close()
     {
         return port_->close();
