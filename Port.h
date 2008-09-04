@@ -43,8 +43,9 @@
 #include "TextualByteVectorOutputPort.h"
 #include "Transcoder.h"
 
+
 namespace scheme {
-extern Object read(TextualInputPort* port, bool& errorOccured);
+
 
 //----------------------------------------------------------------------
 //    Binary output port
