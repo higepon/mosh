@@ -33,70 +33,47 @@
 #define __SCHEME_PORT_H__
 
 #include "scheme.h"
+#include "BinaryInputPort.h"
+#include "BinaryOutputPort.h"
+#include "ByteArrayBinaryInputPort.h"
 
 namespace scheme {
 
-//----------------------------------------------------------------------
-//    Binary port Interface
-//----------------------------------------------------------------------
-class BinaryInputPort EXTEND_GC
-{
-public:
-    virtual ~BinaryInputPort() {};
-    virtual int getU8() = 0;
-    virtual ByteVector* getByteVector(int size) = 0;
-    virtual ucs4string toString() = 0;
-    virtual int open() = 0;
-    virtual int close() = 0;
-};
+// //----------------------------------------------------------------------
+// //    Binary input port
+// //----------------------------------------------------------------------
+// class ByteArrayBinaryInputPort : public BinaryInputPort
+// {
+// public:
+//     ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
+//     {
+//     }
+//     ~ByteArrayBinaryInputPort() {}
 
-class BinaryOutputPort EXTEND_GC
-{
-public:
-    virtual ~BinaryOutputPort() {};
-    virtual int putU8(uint8_t v) = 0;
-    virtual int putU8(uint8_t* v, int size) = 0;
-    virtual int putByteVector(ByteVector bv, int start = 0) = 0;
-    virtual int putByteVector(ByteVector bv, int start, int count) = 0;
-    virtual int open() = 0;
-    virtual int close() = 0;
-};
+//     int getU8()
+//     {
+//         if (index_ >= size_) return -1;
+//         return buf_[index_++];
+//     }
 
-//----------------------------------------------------------------------
-//    Binary input port
-//----------------------------------------------------------------------
-class ByteArrayBinaryInputPort : public BinaryInputPort
-{
-public:
-    ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
-    {
-    }
-    ~ByteArrayBinaryInputPort() {}
+//     ucs4string toString() {
+//         return UC("<byte-array-input-port>");
+//     }
 
-    int getU8()
-    {
-        if (index_ >= size_) return -1;
-        return buf_[index_++];
-    }
+//     ByteVector* getByteVector(int size)
+//     {
+//         fprintf(stderr, "get-byte-vector-n not implemented");
+//         exit(-1);
+//     }
 
-    ucs4string toString() {
-        return UC("<byte-array-input-port>");
-    }
+//     int open() { return MOSH_SUCCESS; }
+//     int close() { return MOSH_SUCCESS; }
 
-    ByteVector* getByteVector(int size)
-    {
-        fprintf(stderr, "get-byte-vector-n not implemented");
-        exit(-1);
-    }
-
-    int open() { return MOSH_SUCCESS; }
-    int close() { return MOSH_SUCCESS; }
-
-private:
-    const uint8_t* const buf_;
-    const int size_;
-    int index_;
-};
+// private:
+//     const uint8_t* const buf_;
+//     const int size_;
+//     int index_;
+// };
 
 class FileBinaryInputPort : public BinaryInputPort
 {

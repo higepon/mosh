@@ -30,6 +30,10 @@ Instruction.h        \
 Callable.h        \
 GenericMap.h        \
 Port.h               \
+BinaryInputPort.h    \
+BinaryOutputPort.h    \
+ByteArrayBinaryInputPort.h \
+ByteArrayBinaryInputPort.cpp \
 SString.h            \
 Symbol.h             \
 config.h             \
