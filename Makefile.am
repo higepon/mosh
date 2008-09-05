@@ -17,6 +17,7 @@ mosh_SOURCES =      \
 reader.tab.cpp      \
 reader.tab.hpp      \
 reader.lex.yy.cpp   \
+reader.cpp        \
 main.cpp             \
 scheme.cpp           \
 read.cpp             \

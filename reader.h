@@ -32,6 +32,8 @@
 #ifndef __SCHEME_READER__
 #define __SCHEME_READER__
 
+#include "scheme.h"
+
 typedef struct {
     union {
         bool  boolValue;

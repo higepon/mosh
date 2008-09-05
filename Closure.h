@@ -76,6 +76,14 @@ public:
     const Object sourceInfo;
 };
 
+inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,
+                           const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
+                                                        reinterpret_cast<word>(new Closure(pc, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
+}
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_CLOSURE_H__

@@ -97,23 +97,6 @@ void signal_handler(int signo)
 }
 #endif
 
-static TextualInputPort* in;
-bool parser_input(char* buf, int max_size) {
-    const ucs4char c = in->getChar();
-    buf[0] = c;
-    return c == EOF;
-}
-
-Object scheme::read2(TextualInputPort* port)
-{
-    extern int yyparse(void);
-    extern Object parsed;
-
-    in = port;
-    yyparse();
-    return parsed;
-}
-
 int main(int argc, char *argv[])
 {
     int opt;
@@ -186,15 +169,15 @@ int main(int argc, char *argv[])
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
 
-    extern int yyparse(void);
-    extern FILE *yyin;
-    extern Object parsed;
+//     extern int yyparse(void);
+//     extern FILE *yyin;
+//     extern Object parsed;
 
-    FILE* fp = fopen("./hige.scm", "r");
-    in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
-    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-    outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//     FILE* fp = fopen("./hige.scm", "r");
+//     TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
+//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
 //    yyin = fp;
 
 //     // yyparse の戻り値をしらべる
@@ -216,7 +199,7 @@ int main(int argc, char *argv[])
 //     }
 //     outPort.toTextualOutputPort()->putDatum(parsed);
 //     exit(1);
-    exit(1);
+//    exit(1);
 
     // Do not call Symbol::intern before you load precompiled compiler!
 

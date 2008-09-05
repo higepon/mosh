@@ -54,6 +54,7 @@
 #ifdef MONA_SCHEME
 
 #include "scheme.h"
+#include "SString.h"
 #include "ErrorProcedures.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"

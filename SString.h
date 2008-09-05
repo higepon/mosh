@@ -66,6 +66,22 @@ private:
     ucs4string data_;
 };
 
+inline Object::Object(const ucs4char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+{
+}
+
+
+inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+{
+}
+
+inline Object Object::makeString(int n, ucs4char c /* = ' ' */)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(n, c)))));
+}
+
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_STRING_H__

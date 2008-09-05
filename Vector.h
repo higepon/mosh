@@ -95,6 +95,25 @@ private:
 
 };
 
+inline Object::Object(int n, Object o)
+  : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))
+{
+}
+
+
+inline Object Object::makeVector(int n, Object* objects)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+                                                        (new Vector(n, objects)))));
+}
+
+inline Object Object::makeVector(Object pair)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+                                                        (new Vector(pair)))));
+}
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_VECTOR_H__
