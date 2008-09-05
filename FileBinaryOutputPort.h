@@ -32,7 +32,7 @@
 #ifndef __SCHEME_FILE_BINARY_OUTPUT_PORT__
 #define __SCHEME_FILE_BINARY_OUTPUT_PORT__
 
-#include "scheme.h"
+#include "BinaryOutputPort.h"
 
 namespace scheme {
 

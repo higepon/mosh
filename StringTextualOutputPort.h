@@ -32,7 +32,7 @@
 #ifndef __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
 #define __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
 
-#include "scheme.h"
+#include "TextualOutputPort.h"
 
 namespace scheme {
 

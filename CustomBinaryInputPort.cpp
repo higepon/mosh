@@ -41,14 +41,6 @@ CustomBinaryInputPort::~CustomBinaryInputPort()
 {
 }
 
-int CustomBinaryInputPort::getU8()
-{
-}
-
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
-{
-}
-
 ucs4string CustomBinaryInputPort::toString()
 {
     return UC("<custom port>");
@@ -63,4 +55,23 @@ int CustomBinaryInputPort::close()
 {
     // todo if close! proc exists
     return 0;
+}
+
+
+int CustomBinaryInputPort::getU8()
+{
+    const Object bv = Object::makeByteVector(1);
+    const Object start = Object::makeInt(0);
+    const Object count = Object::makeInt(1);
+    const Object result = theVM->callClosure3(readProc_, bv, start, count);
+    if (0 == result.toInt()) {
+        return EOF;
+    }
+    return bv.toByteVector()->u8RefI(0);
+}
+
+ByteVector* CustomBinaryInputPort::getByteVector(int size)
+{
+    fprintf(stderr, "get-byte-vector-n not implemented");
+    exit(-1);
 }

@@ -56,6 +56,7 @@
 #include "scheme.h"
 #include "ErrorProcedures.h"
 #include "StringProcedures.h"
+#include "TextualInputPort.h"
 
 using namespace scheme;
 

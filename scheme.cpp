@@ -32,6 +32,15 @@
 #include "scheme.h"
 #include "CodeBuilder.h"
 #include "Equivalent.h"
+#include "TextualInputPort.h"
+#include "FileBinaryInputPort.h"
+#include "TextualOutputPort.h"
+#include "StringTextualOutputPort.h"
+#include "StringTextualInputPort.h"
+#include "TextualByteVectorOutputPort.h"
+#include "ByteArrayBinaryInputPort.h"
+#include "Transcoder.h"
+#include "UTF8Codec.h"
 
 using namespace scheme;
 
@@ -44,7 +53,7 @@ const Object Object::False   = Object::makeConst(5);
 
 bool Object::equal(Object o) const
 {
-    return ::equal(*this, o, new EqHashTable());
+    return equal(*this, o, new EqHashTable());
 }
 
 Object Object::makeBinaryInputPort(FILE* in)

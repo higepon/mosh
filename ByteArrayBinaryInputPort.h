@@ -32,7 +32,7 @@
 #ifndef __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
 #define __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
 
-#include "scheme.h"
+#include "BinaryInputPort.h"
 
 namespace scheme {
 

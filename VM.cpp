@@ -41,6 +41,8 @@
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"
 #include "Equivalent.h"
+#include "TextualOutputPort.h"
+#include "TextualInputPort.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

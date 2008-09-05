@@ -34,6 +34,17 @@
 
 using namespace scheme;
 
+bool scheme::fileExistsP(const ucs4string& file)
+{
+    FILE* stream = fopen(file.ascii_c_str(), "rb");
+    if (NULL == stream) {
+        return false;
+    } else {
+        fclose(stream);
+        return true;
+    }
+}
+
 Object scheme::currentErrorPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("current-error-port");

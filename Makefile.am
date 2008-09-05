@@ -44,6 +44,10 @@ TextualOutputPort.h \
 TextualOutputPort.cpp \
 TextualByteVectorOutputPort.h \
 TextualByteVectorOutputPort.cpp \
+TextualInputPort.cpp \
+TextualInputPort.h \
+UTF8Codec.cpp \
+UTF8Codec.h \
 SString.h            \
 Symbol.h             \
 config.h             \

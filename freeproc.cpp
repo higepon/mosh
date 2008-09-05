@@ -33,6 +33,8 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "Equivalent.h"
+#include "ByteArrayBinaryInputPort.h"
+
 using namespace scheme;
 
 Object scheme::numberPEx(int argc, const Object* argv)

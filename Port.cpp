@@ -35,35 +35,6 @@ using namespace scheme;
 
 extern VM* theVM;
 
-bool scheme::fileExistsP(const ucs4string& file)
-{
-    FILE* stream = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return false;
-    } else {
-        fclose(stream);
-        return true;
-    }
-}
 
 
 
-
-
-int CustomBinaryInputPort::getU8()
-{
-    const Object bv = Object::makeByteVector(1);
-    const Object start = Object::makeInt(0);
-    const Object count = Object::makeInt(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
-    if (0 == result.toInt()) {
-        return EOF;
-    }
-    return bv.toByteVector()->u8RefI(0);
-}
-
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
-{
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
-}

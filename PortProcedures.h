@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    bool fileExistsP(const ucs4string& file);
     Object sysDisplayEx(int argc, const Object* argv);
     Object currentErrorPortEx(int argc, const Object* argv);
     Object openStringInputPortEx(int argc, const Object* argv);
