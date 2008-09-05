@@ -30,14 +30,17 @@
  */
 
 #include "TextualInputPort.h"
+#include "Transcoder.h"
 
 using namespace scheme;
+
+Object scheme::read2(TextualInputPort* port);
 
 TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port), codec_(coder->getCodec()), coder_(coder), line_(1)
 {
 }
 
-TextualInputPort()
+TextualInputPort::TextualInputPort()
 {
 }
 

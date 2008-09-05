@@ -653,7 +653,6 @@ inline Object& Object::fifth() const
 #include "GenericHashTable.h"
 #include "CProcedure.h"
 #include "Box.h"
-#include "Port.h"
 #include "Regexp.h"
 #include "freeproc.h"
 #include "Callable.h"

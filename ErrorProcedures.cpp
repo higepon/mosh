@@ -32,6 +32,7 @@
 #include "ErrorProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 

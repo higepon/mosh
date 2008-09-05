@@ -34,6 +34,7 @@
 #include "PortProcedures.h"
 #include "Equivalent.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "UTF8Codec.h"
 
 using namespace scheme;
 

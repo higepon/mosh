@@ -32,13 +32,15 @@
 #include "scheme.h"
 #include "VM.h"
 #include "ErrorProcedures.h"
+#include "BinaryOutputPort.h"
+#include "TextualOutputPort.h"
+#include "FileBinaryOutputPort.h"
+#include "FileBinaryInputPort.h"
+
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
 #include "Builtin.h"
-#include "TextualOutputPort.h"
-#include "FileBinaryOutputPort.h"
-#include "FileBinaryInputPort.h"
 
 using namespace scheme;
 
@@ -102,7 +104,7 @@ bool parser_input(char* buf, int max_size) {
     return c == EOF;
 }
 
-Object read2(TextualInputPort* port)
+Object scheme::read2(TextualInputPort* port)
 {
     extern int yyparse(void);
     extern Object parsed;

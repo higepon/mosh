@@ -20,7 +20,6 @@ reader.lex.yy.cpp   \
 main.cpp             \
 scheme.cpp           \
 read.cpp             \
-Port.cpp             \
 Regexp.cpp           \
 Symbol.cpp           \
 VM.cpp               \
@@ -29,7 +28,6 @@ CProcedure.h         \
 Instruction.h        \
 Callable.h        \
 GenericMap.h        \
-Port.h               \
 BinaryInputPort.h    \
 BinaryOutputPort.h    \
 ByteArrayBinaryInputPort.h \
@@ -46,6 +44,10 @@ TextualByteVectorOutputPort.h \
 TextualByteVectorOutputPort.cpp \
 TextualInputPort.cpp \
 TextualInputPort.h \
+StringTextualOutputPort.h \
+StringTextualOutputPort.cpp \
+StringTextualInputPort.h \
+StringTextualInputPort.cpp \
 UTF8Codec.cpp \
 UTF8Codec.h \
 SString.h            \

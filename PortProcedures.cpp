@@ -31,6 +31,14 @@
 
 #include "PortProcedures.h"
 #include "ProcedureMacro.h"
+#include "TextualOutputPort.h"
+#include "TextualInputPort.h"
+#include "StringTextualOutputPort.h"
+#include "TextualByteVectorOutputPort.h"
+#include "Transcoder.h"
+#include "UTF8Codec.h"
+#include "FileBinaryOutputPort.h"
+#include "FileBinaryInputPort.h"
 
 using namespace scheme;
 

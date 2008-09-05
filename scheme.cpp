@@ -39,6 +39,7 @@
 #include "StringTextualInputPort.h"
 #include "TextualByteVectorOutputPort.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "CustomBinaryInputPort.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 
@@ -53,7 +54,7 @@ const Object Object::False   = Object::makeConst(5);
 
 bool Object::equal(Object o) const
 {
-    return equal(*this, o, new EqHashTable());
+    return ::equal(*this, o, new EqHashTable());
 }
 
 Object Object::makeBinaryInputPort(FILE* in)

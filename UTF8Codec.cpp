@@ -30,6 +30,8 @@
  */
 
 #include "UTF8Codec.h"
+#include "BinaryOutputPort.h"
+#include "BinaryInputPort.h"
 
 using namespace scheme;
 

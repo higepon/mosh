@@ -44,7 +44,7 @@ public:
     TextualInputPort();
     virtual ~TextualInputPort();
     virtual ucs4char getChar();
-    virtual int getLine();
+    virtual int getLine() const;
     virtual void unGetChar(ucs4char c);
     virtual ucs4string toString();
     virtual void setError(Object error);

@@ -30,6 +30,7 @@
  */
 
 #include "TextualOutputPort.h"
+#include "Transcoder.h"
 
 using namespace scheme;
 
@@ -122,7 +123,7 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
                 } else {
                     isErrorOccured_ = true;
                     errorMessage_ = "too few arguments for format string";
-                    irritants_ = L1(Object::makeString(fmt));
+                    irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
                 break;
@@ -136,7 +137,7 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
                 } else {
                     isErrorOccured_ = true;
                     errorMessage_ = "too few arguments for format string";
-                    irritants_ = L1(Object::makeString(fmt));
+                    irritants_ = Pair::list1(Object::makeString(fmt));
                     return;
                 }
                 break;

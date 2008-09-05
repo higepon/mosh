@@ -30,8 +30,11 @@
  */
 
 #include "CustomBinaryInputPort.h"
+#include "VM.h"
 
 using namespace scheme;
+
+extern scheme::VM* theVM;
 
 CustomBinaryInputPort::CustomBinaryInputPort(Object readProc) : readProc_(readProc)
 {

@@ -37,7 +37,7 @@ TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder)
 {
 }
 
-~TextualByteVectorOutputPort::TextualByteVectorOutputPort()
+TextualByteVectorOutputPort::~TextualByteVectorOutputPort()
 {
 }
 
@@ -50,7 +50,7 @@ void TextualByteVectorOutputPort::putChar(ucs4char c)
     }
 }
 
-const gc_vector<uint8_t>& TextualByteVectorOutputPort::getByteVector() const
+const scheme::gc_vector<uint8_t>& TextualByteVectorOutputPort::getByteVector() const
 {
     return v_;
 }

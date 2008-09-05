@@ -71,4 +71,6 @@ private:
     Codec* codec_;
 };
 
+}; // namespace scheme
+
 #endif // __SCHEME_TRANSCODER__
