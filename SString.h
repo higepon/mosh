@@ -80,6 +80,30 @@ inline Object Object::makeString(int n, ucs4char c /* = ' ' */)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(n, c)))));
 }
 
+inline Object Object::makeString(const ucs4char* str)
+{
+    return Object(str);
+}
+
+inline Object Object::makeString(const ucs4string& str)
+{
+    return Object(str.c_str());
+}
+
+inline Object Object::makeString(const char* str)
+{
+    return Object(str);
+}
+
+inline Object::Object(const ucs4string& str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str.data())))))
+{
+
+}
+
+
+// inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+// {
+// }
 
 
 }; // namespace scheme

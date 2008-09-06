@@ -29,6 +29,7 @@
  *  $Id$
  */
 
+#include "Object.h"
 #include "Symbol.h"
 using namespace scheme;
 

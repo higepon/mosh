@@ -32,9 +32,14 @@
 #ifndef __SCHEME_TEXTUAL_OUTPUT_PORT__
 #define __SCHEME_TEXTUAL_OUTPUT_PORT__
 
-#include "BinaryOutputPort.h"
+#include "scheme.h"
 
 namespace scheme {
+
+class String;
+class Codec;
+class Transcoder;
+class BinaryOutputPort;
 
 class TextualOutputPort EXTEND_GC
 {

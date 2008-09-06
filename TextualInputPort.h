@@ -33,9 +33,12 @@
 #define __SCHEME_TEXTUAL_INPUT_PORT__
 
 #include "scheme.h"
-#include "BinaryInputPort.h"
 
 namespace scheme {
+
+class Codec;
+class Transcoder;
+class BinaryInputPort;
 
 class TextualInputPort EXTEND_GC
 {

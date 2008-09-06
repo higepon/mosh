@@ -33,9 +33,10 @@
 #define __SCHEME_TRANSCODER__
 
 #include "scheme.h"
-#include "Codec.h"
 
 namespace scheme {
+
+class Codec;
 
 class Transcoder EXTEND_GC
 {

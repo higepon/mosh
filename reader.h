@@ -34,6 +34,11 @@
 
 #include "scheme.h"
 
+namespace scheme {
+    Object read(TextualInputPort* port, bool& errorOccured);
+    Object read2(TextualInputPort* port);
+};
+
 typedef struct {
     union {
         bool  boolValue;

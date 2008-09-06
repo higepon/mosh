@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object regexpPEx(int argc, const Object* argv);
     Object regexpReplaceEx(int argc, const Object* argv);
     Object regexpReplaceAllEx(int argc, const Object* argv);
     Object rxmatchEx(int argc, const Object* argv);

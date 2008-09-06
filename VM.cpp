@@ -29,7 +29,17 @@
  *  $Id$
  */
 
+#include <sys/time.h>
+#include <signal.h>
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "VM.h"
+#include "Closure.h"
+#include "VM-inl.h"
+#include "Symbol.h"
+#include "EqHashTable.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
 #include "RegexpProcedures.h"
@@ -43,6 +53,12 @@
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
+#include "Vector.h"
+#include "SString.h"
+#include "CProcedure.h"
+#include "Box.h"
+#include "Stack.h"
+#include "freeproc.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;
@@ -1957,3 +1973,71 @@ Object VM::getProfileResult()
 }
 
 #endif // ENABLE_PROFILER
+
+void VM::setTopLevelGlobalValue(Object id, Object val)
+{
+    const Object key = idToTopLevelSymbol(id);
+    nameSpace_.toEqHashTable()->set(idToTopLevelSymbol(id), val);
+}
+
+Object VM::idToTopLevelSymbol(Object id)
+{
+    ucs4string name(UC("top level :$:"));
+    name += id.toSymbol()->c_str();
+    // don't use name variable directly, it is temporary!
+    return Symbol::intern(Object::makeString(name).toString()->data().c_str());
+}
+
+// $library structure accessor.
+// This structure is shared with compiler and VM.
+void VM::setLibraryMacro(Object library, Object macro)
+{
+    library.toVector()->set(5, macro);
+}
+Object VM::getLibraryCompiledBody(Object library)
+{
+    return library.toVector()->ref(7);
+}
+
+Object VM::getTopLevelGlobalValueOrFalse(Object id)
+{
+    const Object key = idToTopLevelSymbol(id);
+    const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
+    if (val != notFound_) {
+        return val;
+    } else {
+        return Object::False;
+    }
+}
+
+void VM::import(Object libname)
+{
+    EqHashTable* const ht = instances_.toEqHashTable();
+    if (ht->ref(libname, Object::False).isFalse()) {
+        ht->set(libname, Object::makeEqHashTable());
+    }
+}
+
+Object VM::getOutputPort()
+{
+    return outputPort_;
+}
+
+Object VM::getErrorPort() {
+    return errorPort_;
+}
+
+void VM::setInputPort(Object port )
+{
+    inputPort_ = port;
+}
+
+Object VM::standardInputPort() const
+{
+    return stdinPort_;
+}
+
+Object VM::currentInputPort()
+{
+    return inputPort_;
+}

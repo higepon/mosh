@@ -32,8 +32,6 @@
 #ifndef __SCHEME_FREE_PROC_H__
 #define __SCHEME_FREE_PROC_H__
 
-#include "scheme.h"
-
 namespace scheme {
 
     Object dummy(Object obj);

@@ -29,6 +29,14 @@
  *  $Id: HashTableProceduures.cpp 213 2008-07-10 15:03:40Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "Symbol.h"
+#include "Vector.h"
+#include "SString.h"
+#include "HashTable.h"
 #include "HashTableProceduures.h"
 #include "ProcedureMacro.h"
 

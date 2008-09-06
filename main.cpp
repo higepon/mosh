@@ -29,8 +29,13 @@
  *  $Id$
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "scheme.h"
 #include "VM.h"
+
 #include "ErrorProcedures.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
@@ -41,6 +46,8 @@
 #include "UTF8Codec.h"
 #include "Transcoder.h"
 #include "Builtin.h"
+#include "SString.h"
+#include "Symbol.h"
 
 using namespace scheme;
 

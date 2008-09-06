@@ -29,6 +29,9 @@
  *  $Id: TextualByteVectorOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "Object.h"
+#include "Codec.h"
+#include "Transcoder.h"
 #include "TextualByteVectorOutputPort.h"
 
 using namespace scheme;

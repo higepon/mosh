@@ -29,8 +29,15 @@
  *  $Id: ConditionProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Vector.h"
+#include "SString.h"
 #include "ConditionProcedures.h"
 #include "ProcedureMacro.h"
+#include "Record.h"
+#include "CompoundCondition.h"
 
 using namespace scheme;
 

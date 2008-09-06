@@ -29,6 +29,7 @@
  *  $Id$
  */
 
+#include "Object.h"
 #include "scheme.h"
 #include "SString.h"
 #include "VM.h"

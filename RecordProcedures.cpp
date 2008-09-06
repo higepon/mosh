@@ -29,8 +29,17 @@
  *  $Id: RecordProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Symbol.h"
+#include "SString.h"
+#include "Record.h"
+#include "RecordConstructorDescriptor.h"
+#include "RecordTypeDescriptor.h"
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"
+#include "EqHashTable.h"
 
 using namespace scheme;
 

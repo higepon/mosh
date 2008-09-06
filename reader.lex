@@ -1,6 +1,8 @@
 %{
 #include <stdio.h>
 #include "scheme.h"
+#include "Object.h"
+#include "Object-inl.h"
 #include "reader.h" // include before reader.tab.hpp is included.
 #include "reader.tab.hpp"
 extern bool parser_input(char* buf, int max_size);

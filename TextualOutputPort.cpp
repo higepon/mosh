@@ -29,8 +29,22 @@
  *  $Id: TextualOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include "TextualOutputPort.h"
+
+#include "Object.h"
+#include "Object-inl.h"
 #include "Transcoder.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "SString.h"
+#include "Vector.h"
+#include "Symbol.h"
+#include "Regexp.h"
+#include "ByteVector.h"
+#include "Record.h"
+#include "Codec.h"
+#include "Transcoder.h"
+#include "BinaryOutputPort.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 

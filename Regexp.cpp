@@ -29,7 +29,10 @@
  *  $Id$
  */
 
+#include "Object.h"
+#include "Pair.h"
 #include "Regexp.h"
+#include "SString.h"
 #include "VM.h"
 
 using namespace scheme;

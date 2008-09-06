@@ -32,7 +32,8 @@
 #ifndef __SCHEME_CONDITION_PROCEDURES__
 #define __SCHEME_CONDITION_PROCEDURES__
 
-#include "scheme.h"
+#include "Scheme.h"
+#include "Callable.h"
 
 namespace scheme {
 

@@ -32,7 +32,7 @@
 #ifndef __SCHEME_RECORD_PROCEDURES__
 #define __SCHEME_RECORD_PROCEDURES__
 
-#include "scheme.h"
+#include "Callable.h"
 
 namespace scheme {
 

@@ -29,10 +29,16 @@
  *  $Id$
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "CompilerProcedures.h"
 #include "ProcedureMacro.h"
 #include "ListProcedures.h"
 #include "CodeBuilder.h"
+#include "EqHashTable.h"
 
 using namespace scheme;
 

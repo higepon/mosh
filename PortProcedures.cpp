@@ -29,6 +29,13 @@
  *  $Id: PortProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <dirent.h>
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "SString.h"
+#include "ByteVector.h"
 #include "PortProcedures.h"
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"

@@ -52,12 +52,29 @@
 #endif
 
 #ifdef MONA_SCHEME
+#include "oniguruma.h"
+#if WORDS_BIGENDIAN
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_BE
+#else
+#define ONIG_ENCODING ONIG_ENCODING_UTF32_LE
+#endif
 
+#include <errno.h>
+#include <setjmp.h>
+#include "Object.h"
+#include "Object-inl.h"
+#include "reader.h"
 #include "scheme.h"
 #include "SString.h"
 #include "ErrorProcedures.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
+#include "Vector.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "ByteVector.h"
+#include "Symbol.h"
+#include "Regexp.h"
 
 using namespace scheme;
 
@@ -149,12 +166,6 @@ ScmObj Scm_ListToVector(ScmObj l, int start, int end)
 
 #define SCM_SYM_STRING_INTERPOLATE ((ScmObj)SOME_VALUE)
 
-#include "oniguruma.h"
-#if WORDS_BIGENDIAN
-#define ONIG_ENCODING ONIG_ENCODING_UTF32_BE
-#else
-#define ONIG_ENCODING ONIG_ENCODING_UTF32_LE
-#endif
 
 bool match(const char* pattern, const char* text)
 {

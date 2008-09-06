@@ -36,6 +36,9 @@
 
 namespace scheme {
 
+class BinaryOutputPort;
+class BinaryInputPort;
+
 class Codec EXTEND_GC
 {
 public:

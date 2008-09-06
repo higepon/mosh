@@ -29,6 +29,11 @@
  *  $Id: ArithmeticProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "ArithmeticProcedures.h"
 #include "ProcedureMacro.h"
 

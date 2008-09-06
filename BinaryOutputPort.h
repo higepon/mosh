@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+class ByteVector;
+
 class BinaryOutputPort EXTEND_GC
 {
 public:

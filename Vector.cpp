@@ -1,5 +1,5 @@
 /*
- * ByteArrayBinaryInputPort.cpp - 
+ * Vector.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,49 +26,52 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ByteArrayBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Vector.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
-#include "ByteVector.h"
-#include "ByteArrayBinaryInputPort.h"
-
+#include "Vector.h"
 
 using namespace scheme;
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
+Vector::Vector(int num) : num_(num)
+{
+    MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
+    objects_ = Object::makeObjectArray(num);
+}
+
+Vector::Vector(int num, Object obj) : num_(num)
+{
+    MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
+    objects_ = Object::makeObjectArray(num);
+    for (int i = 0; i < num; i++) {
+        objects_[i] = obj;
+    }
+}
+
+Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
 {
 }
 
-ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
+Vector::Vector(Object pair) : num_(Pair::length(pair))
 {
-
+    MOSH_ASSERT(pair.isPair() || pair.isNil());
+    objects_ = Object::makeObjectArray(num_);
+    int i = 0;
+    for (Object o = pair; !o.isNil(); o = o.cdr()) {
+        objects_[i] = o.car();
+        i++;
+    }
 }
 
-int ByteArrayBinaryInputPort::getU8()
+Vector::~Vector()
 {
-    if (index_ >= size_) return -1;
-    return buf_[index_++];
 }
 
-ucs4string ByteArrayBinaryInputPort::toString() {
-    return UC("<byte-array-input-port>");
-}
-
-ByteVector* ByteArrayBinaryInputPort::getByteVector(int size)
+Object* Vector::data()
 {
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
-}
-
-int ByteArrayBinaryInputPort::open()
-{
-    return MOSH_SUCCESS;
-}
-
-int ByteArrayBinaryInputPort::close()
-{
-    return MOSH_SUCCESS;
+    return objects_;
 }

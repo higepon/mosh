@@ -33,7 +33,9 @@
 #define __SCHEME_VM_H__
 
 #include "scheme.h"
+#include <setjmp.h>
 #include "Instruction.h"
+//#include "Pair.h"
 
 extern FILE* errOut;
 
@@ -57,10 +59,10 @@ namespace scheme {
 #define TRACE_INSN3(name, fmt, a, b, c) //
 #endif
 
-inline Object L1(Object a) { return Pair::list1(a); }
-inline Object L2(Object a, Object b) { return Pair::list2(a, b); }
-inline Object L3(Object a, Object b, Object c) { return Pair::list3(a, b, c); }
-inline Object L4(Object a, Object b, Object c, Object d) { return Pair::list4(a, b, c, d); }
+#define L1(a) Pair::list1(a)
+#define L2(a, b) Pair::list2(a, b)
+#define L3(a, b, c) Pair::list3(a, b, c)
+#define L4(a, b, c, d) Pair::list4(a, b, c, d)
 
 class TextualOutputPort;
 
@@ -72,11 +74,7 @@ public:
 
     void importTopLevel();
 
-    void copyJmpBuf(jmp_buf dst, jmp_buf src)
-    {
-        memcpy(dst, src, sizeof(jmp_buf));
-    }
-
+    void copyJmpBuf(jmp_buf dst, jmp_buf src);
     void collectProfile();
 
     Object values(int num, const Object* v);
@@ -101,46 +99,17 @@ public:
 
     void initLibraryTable();
     void throwException(Object exception);
-    Object getOutputPort() { return outputPort_; }
-    Object getErrorPort() { return errorPort_; }
-
+    Object getOutputPort();
+    Object getErrorPort();
     Object getStackTrace();
-
     void setOutputPort(Object port);
-    void setInputPort(Object port ) { inputPort_ = port; }
-    Object standardInputPort() const { return stdinPort_; }
-
-    Object currentInputPort() { return inputPort_; }
-
-    Object idToTopLevelSymbol(Object id)
-    {
-        ucs4string name(UC("top level :$:"));
-        name += id.toSymbol()->c_str();
-        // don't use name variable directly, it is temporary!
-        return Symbol::intern(Object::makeString(name).toString()->data().c_str());
-    }
-
-    void setTopLevelGlobalValue(Object id, Object val)
-    {
-        const Object key = idToTopLevelSymbol(id);
-        nameSpace_.toEqHashTable()->set(idToTopLevelSymbol(id), val);
-    }
-
-
+    void setInputPort(Object port);
+    Object standardInputPort() const;
+    Object currentInputPort();
+    Object idToTopLevelSymbol(Object id);
+    void setTopLevelGlobalValue(Object id, Object val);
     Object getTopLevelGlobalValue(Object id);
-
-    Object getTopLevelGlobalValueOrFalse(Object id)
-    {
-        const Object key = idToTopLevelSymbol(id);
-        const Object val = nameSpace_.toEqHashTable()->ref(key, notFound_);
-        if (val != notFound_) {
-            return val;
-        } else {
-            return Object::False;
-        }
-    }
-
-
+    Object getTopLevelGlobalValueOrFalse(Object id);
     Object getClosureName(Object closure);
     bool isR6RSMode() const;
     void activateR6RSMode();
@@ -156,183 +125,32 @@ public:
     void storeCallSample();
     void storeCallSampleToFile();
     Object getCProcedureName(Object proc);
-    void countCall(Object proc)
-    {
-        if (isProfiler_ && profilerRunning_) {
-            static int i = 0;
-            if (i >= SAMPLE_NUM) {
-                stopTimer();
-                storeCallSample();
-                startTimer();
-                i = 0;
-            }
-            callSamples_[i++] = proc;
-        }
-    }
+    void countCall(Object proc);
 #endif
 
 protected:
 
-    void import(Object libname)
-    {
-        EqHashTable* const ht = instances_.toEqHashTable();
-        if (ht->ref(libname, Object::False).isFalse()) {
-            ht->set(libname, Object::makeEqHashTable());
-        }
-    }
-
-    Object fetchOperand() { return *pc_++; }
-
-    void skip(int n) { pc_ = pc_ + n ; }
-
-    void push(Object obj)
-    {
-        *sp_++ = obj;
-    }
-
-    void pushWithCheck(Object obj)
-    {
-        if (sp_ > maxStack_) {
-            maxStack_ = sp_;
-        }
-        *sp_++ = obj;
-    }
-
-
+    void import(Object libname);
+    Object fetchOperand();
+    void skip(int n);
+    void push(Object obj);
+    void pushWithCheck(Object obj);
     Object splitId(Object id);
-
-    Object stackToPairArgs(Object* sp, int nArgs)
-    {
-        Object args = Object::Nil;
-        for (int i = 0; i < nArgs; i++) {
-            args = Object::cons(index(sp, i), args);
-        }
-        return args;
-    }
-
-    void pairArgsToStack(Object* sp, int offset, Object args)
-    {
-        if (args.isNil()) {
-            indexSet(sp, offset, Object::Nil);
-        } else {
-            const int length = Pair::length(args);
-            for (int i =  length - 1; !(args.isNil()); i--, args = args.cdr()) {
-                indexSet(sp, i + offset, args.car());
-            }
-        }
-    }
-
-    void indexSet(Object* sp, int i, Object v)
-    {
-        *(sp - i - 1) = v;
-    }
-
-    Object* shiftArgsToBottom(Object* sp, int depth, int diff)
-    {
-       for (int i = depth - 1; i >= 0; i--) {
-//          stack_[sp - i - diff - 1] = stack_[sp - i - 1];
-           indexSet(sp, i + diff, index(sp, i)); // this is fastest
-       }
-//        memmove(&stack_[sp - diff - depth], &stack_[sp - depth], depth * sizeof(Object));
-        return sp - diff;
-    }
-
-
-// depth is not used
-//    Object* unShiftArgs(Object* sp, int depth, int diff)
-    Object* unShiftArgs(Object* sp, int diff)
-    {
-        for (int i = 0; i < diff; i++) {
-            indexSet(sp + diff - i, 0, index(sp, i));
-        }
-        return sp + diff;
-    }
-
-
-    Object index(Object* sp, int n)
-    {
-        return *(sp - n - 1);
-    }
-
-    // あとで
-    Object referLocal(int n)
-    {
-        return index(fp_ + n + 1, 0);
-    }
-
-    Object referFree(Object n)
-    {
-        return dc_.toClosure()->referFree(n.toInt());
-    }
-
-    Object referFree(int n)
-    {
-        return dc_.toClosure()->referFree(n);
-    }
-
-
-    Object makeContinuation(Object n)
-    {
-        const int codeSize = 7;
-        Object* code = Object::makeObjectArray(codeSize);
-        code[0] = Object::makeRaw(Instruction::REFER_LOCAL);
-        code[1] = Object::makeInt(0);
-        code[2] = Object::makeRaw(Instruction::CONTINUATION_VALUES);
-        code[3] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
-        code[4] = Object::makeStack(stack_, sp_ - stack_);
-        code[5] = Object::makeRaw(Instruction::RETURN);
-        code[6] = n;
-        return Object::makeClosure(getDirectThreadedCode(code, codeSize), 1, true, sp_, 0, 1, Object::False);
-    }
-
-    Object* getDirectThreadedCode(Object* code, int length)
-    {
-#ifdef USE_DIRECT_THREADED_CODE
-        Object* direct = Object::makeObjectArray(length);
-        void** table = (void**)run(NULL, NULL, true).val;
-        for (int i = 0; i < length; i++) {
-            // Direct threaded code
-            // Be careful on using direct threaded code for following case.
-            //   1. pre-compiled compiler has two types of instructions.
-            //      (a) Instruction Object
-            //          index for dispatch_table[].
-            //          this object will be converted into the address of LABEL_XXX for direct jump.
-            //      (b) CompilerInstruction Object
-            //          Only pre-compiled compiler has this object.
-            //          This object represents the instruction code which the compiler outputs.
-            //      For example
-            //          If compiler has a scheme code 'PUSH, it is pre-compiled into '(<Instruction::CONSTANT> <CompilerInstruction::PUSH>).
-            if (code[i].isCompilerInstruction()) {
-                direct[i] = Object::makeInstruction(code[i].toCompilerInstruction());
-            } else if (code[i].isPair()) {
-                // special case on compiler.scm
-                // compiler.scm includes '(0 UNDEF) and UNDEF should be compiled as CompilerInstruction Object.
-                for (Object p = code[i]; !p.isNil(); p = p.cdr()) {
-                    if (p.car().isCompilerInstruction()) {
-                        p.toPair()->car = (Object::makeInstruction(p.car().toCompilerInstruction()));
-                    }
-                    // p can be dotted list.
-                    if (!p.cdr().isPair()) {
-                        break;
-                    }
-                }
-                direct[i] = code[i];
-            } else if (code[i].isInstruction()) {
-                direct[i].val = (word)(table[code[i].val]);
-            } else {
-                direct[i] = code[i];
-            }
-        }
-        return direct;
-#else
-        return code;
-#endif
-    }
-
+    Object stackToPairArgs(Object* sp, int nArgs);
+    void pairArgsToStack(Object* sp, int offset, Object args);
+    void indexSet(Object* sp, int i, Object v);
+    Object* shiftArgsToBottom(Object* sp, int depth, int diff);
+    Object* unShiftArgs(Object* sp, int diff);
+    Object index(Object* sp, int n);
+    Object referLocal(int n);
+    Object referFree(Object n);
+    Object referFree(int n);
+    Object makeContinuation(Object n);
+    Object* getDirectThreadedCode(Object* code, int length);
     // $library structure accessor.
     // This structure is shared with compiler and VM.
-    void setLibraryMacro(Object library, Object macro) { library.toVector()->set(5, macro); }
-    Object getLibraryCompiledBody(Object library) { return library.toVector()->ref(7); }
+    void setLibraryMacro(Object library, Object macro);
+    Object getLibraryCompiledBody(Object library);
 
 public:
     Object ac_;  // accumulator     register

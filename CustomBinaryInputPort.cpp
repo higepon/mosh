@@ -29,6 +29,12 @@
  *  $Id: CustomBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "ByteVector.h"
 #include "CustomBinaryInputPort.h"
 #include "VM.h"
 

@@ -29,7 +29,10 @@
  *  $Id: CompilerProcedures.cpp 213 2008-07-10 15:03:40Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
 #include "GenericHashTable.h"
+#include "Vector.h"
 #include "VM.h"
 
 using namespace scheme;

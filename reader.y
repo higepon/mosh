@@ -2,6 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "scheme.h"
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "reader.h"
 #define YYDEBUG 1
 using namespace scheme;

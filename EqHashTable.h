@@ -32,6 +32,8 @@
 #ifndef __SCHEME_EQ_HASH_TABLE__
 #define __SCHEME_EQ_HASH_TABLE__
 
+#include "HashTable.h"
+
 #if HAVE_EXT_HASHES
 #include <ext/hash_map>
 struct hash_func
@@ -68,120 +70,35 @@ typedef std::map<scheme::Object,
                  gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 #endif
 
-#include "HashTable.h"
 
 namespace scheme {
-
-extern Object eqHashEx(int argc, const Object* argv);
-extern Object eqPEx(int argc, const Object* argv);
 
 class EqHashTable : public HashTable
 {
 
 public:
-    EqHashTable() :
-#if HAVE_EXT_HASHES && HAVE_TR1_HASHES
-        table_(ObjectMap(200))
-#else
-        table_(ObjectMap())
-#endif
-        , mutable_(true) {}
+    EqHashTable();
+    virtual ~EqHashTable();
 
-    virtual ~EqHashTable() {}
-
-    size_t size() const
-    {
-        return table_.size();
-    }
-
-    bool containsP(Object key)
-    {
-        ObjectMap::iterator p = table_.find(key);
-        return p != table_.end();
-    }
-
-    Object ref(Object key, Object defaultVal)
-    {
-        ObjectMap::iterator p = table_.find(key);
-        if (p == table_.end()) {
-            return defaultVal;
-        } else {
-            return p->second;
-        }
-    }
-
-    void set(Object key, Object val)
-    {
-        table_[key] = val;
-    }
-
-    void deleteD(Object key)
-    {
-        table_.erase(key);
-    }
-
-
-    Object hashFunction() const
-    {
-        return Object::False;
-    }
-
-    Object equivalenceFunction() const
-    {
-        return Object::makeCProcedure(eqPEx);
-    }
-
-    void insert(Object key, Object val)
-    {
-        table_.insert(std::pair<const Object, Object>(key, val));
-    }
-
-    void eraseAllExcept(Object key)
-    {
-        const Object o = ref(key, Object::False);
-        table_.clear();
-        set(key, o);
-    }
-
-    Object swap()
-    {
-        // swap (key, value)
-        Object ht = Object::makeEqHashTable();
-        for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it) {
-            ht.toEqHashTable()->set(it->second, it->first);
-        }
-        return ht;
-    }
-
-    void clearD()
-    {
-        table_.clear();
-    }
-
-    Object keys()
-    {
-        Object v = Object::makeVector(table_.size());
-        int i = 0;
-        for (ObjectMap::const_iterator it = table_.begin(); it != table_.end(); ++it, i++) {
-            v.toVector()->set(i, it->first);
-        }
-        return v;
-    }
-
-    Object copy(bool mutableP)
-    {
-        Object ret = Object::makeEqHashTable();
-        ret.toEqHashTable()->setTable(getTable());
-        ret.toEqHashTable()->setMutableP(mutableP);
-        return ret;
-    }
-
-    bool mutableP() const { return mutable_; }
-    void setMutableP(bool mutableP) { mutable_ = mutableP; }
+    size_t size() const;
+    bool containsP(Object key);
+    Object ref(Object key, Object defaultVal);
+    void set(Object key, Object val);
+    void deleteD(Object key);
+    Object hashFunction() const;
+    Object equivalenceFunction() const;
+    void insert(Object key, Object val);
+    void eraseAllExcept(Object key);
+    Object swap();
+    void clearD();
+    Object keys();
+    Object copy(bool mutableP);
+    bool mutableP() const;
+    void setMutableP(bool mutableP);
 
 private:
-    inline void setTable(ObjectMap i) { table_ = i; }
-    inline ObjectMap getTable() const { return table_; }
+    void setTable(ObjectMap i);
+    ObjectMap getTable() const;
 
 private:
     ObjectMap table_;

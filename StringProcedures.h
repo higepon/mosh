@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object stringTosymbol(Object str);
     Object format(const ucs4char* message, Object values);
     Object stringEx(int argc, const Object* argv);
     Object makeStringEx(int argc, const Object* argv);

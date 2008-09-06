@@ -140,6 +140,26 @@ private:
     const int num_;
 };
 
+inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(new ByteVector(v)))));
+}
+
+inline Object Object::makeByteVector(Object pair)
+{
+    MOSH_ASSERT(pair.isPair() || pair.isNil());
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(new ByteVector(pair)))));
+}
+
+
+inline Object Object::makeByteVector(ByteVector* b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<word>(b))));
+}
+
 }; // namespace scheme
 
 #endif // __SCHEME_BYTE_VECTOR_H__

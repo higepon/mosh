@@ -164,6 +164,11 @@
   (define (make-obj i obj)
     (rec obj))
   (print "#include \"Builtin.h\"\n")
+  (print "#include \"Object.h\"")
+  (print "#include \"Object-inl.h\"")
+  (print "#include \"Pair.h\"")
+  (print "#include \"Pair-inl.h\"")
+  (print "#include \"Vector.h\"")
   (print "using namespace scheme;\n")
   (format #t "Object scheme::~a() {\n" name)
   (print "    const Object* builtinSymbols = getBuiltinSymbols();")
@@ -187,6 +192,11 @@
 
 (define (print-symbol-header symbols)
   (print "#include \"Builtin.h\"\n")
+  (print "#include \"Object.h\"")
+  (print "#include \"Pair.h\"")
+  (print "#include \"Pair-inl.h\"")
+  (print "#include \"Symbol.h\"")
+  (print "#include \"Vector.h\"")
   (print "using namespace scheme;\n")
   (print "static const ucs4char* symbolStrings[] = {")
   (for-each

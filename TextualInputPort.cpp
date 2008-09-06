@@ -29,12 +29,15 @@
  *  $Id: TextualInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include "TextualInputPort.h"
+#include "Object.h"
+#include "Codec.h"
 #include "Transcoder.h"
+#include "BinaryInputPort.h"
+#include "TextualInputPort.h"
+#include "reader.h"
 
 using namespace scheme;
 
-Object scheme::read2(TextualInputPort* port);
 
 TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port), codec_(coder->getCodec()), coder_(coder), line_(1)
 {

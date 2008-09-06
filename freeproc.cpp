@@ -29,12 +29,23 @@
  *  $Id$
  */
 
+#include <sys/time.h>
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "scheme.h"
 #include "freeproc.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "Equivalent.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "UTF8Codec.h"
+#include "SString.h"
+#include "Vector.h"
+#include "EqHashTable.h"
+#include "Symbol.h"
+#include "ByteVector.h"
 
 using namespace scheme;
 

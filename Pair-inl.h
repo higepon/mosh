@@ -1,5 +1,5 @@
 /*
- * ByteArrayBinaryInputPort.cpp - 
+ * Pair-inl.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,49 +26,71 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ByteArrayBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Pair-inl.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Pair.h"
-#include "Pair-inl.h"
-#include "ByteVector.h"
-#include "ByteArrayBinaryInputPort.h"
+#ifndef __SCHEME_PAIR_INL__
+#define __SCHEME_PAIR_INL__
 
+#include "scheme.h"
 
-using namespace scheme;
+namespace scheme {
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
+inline Object& Object::car() const
 {
+    return toPair()->car;
 }
 
-ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
+inline Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object::False */)
 {
-
+// this makes Mosh very slow.
+// don't use this.
+//     if (sourceInfo.isFalse() && car.isPair()) {
+//         sourceInfo = car.sourceInfo();
+//     }
+    return Object(reinterpret_cast<word>(new Pair(car, cdr, sourceInfo)));
 }
 
-int ByteArrayBinaryInputPort::getU8()
+inline Object& Object::cdr() const
 {
-    if (index_ >= size_) return -1;
-    return buf_[index_++];
+    return toPair()->cdr;
 }
 
-ucs4string ByteArrayBinaryInputPort::toString() {
-    return UC("<byte-array-input-port>");
-}
-
-ByteVector* ByteArrayBinaryInputPort::getByteVector(int size)
+inline bool Object::isPair() const
 {
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
+    return isPointer() && ((toPair()->car.val & 0x03) != 0x03);
 }
 
-int ByteArrayBinaryInputPort::open()
+inline Object& Object::sourceInfo() const
 {
-    return MOSH_SUCCESS;
+    return toPair()->sourceInfo;
 }
 
-int ByteArrayBinaryInputPort::close()
+inline Object& Object::first() const
 {
-    return MOSH_SUCCESS;
+    return car();
 }
+
+inline Object& Object::second() const
+{
+    return cdr().car();
+}
+
+inline Object& Object::third() const
+{
+    return cdr().cdr().car();
+}
+
+inline Object& Object::fourth() const
+{
+    return cdr().cdr().cdr().car();
+}
+
+inline Object& Object::fifth() const
+{
+    return cdr().cdr().cdr().cdr().car();
+}
+
+}; // namespace scheme
+
+#endif // __SCHEME_PAIR_INL__

@@ -37,63 +37,36 @@ namespace scheme {
 class Vector EXTEND_GC
 {
 public:
-    Vector(int num) : num_(num)
-    {
-        MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
-        objects_ = Object::makeObjectArray(num);
-    }
+    Vector(int num);
+    Vector(int num, Object obj);
+    Vector(int num, Object* objects);
+    Vector(Object pair);
+    ~Vector();
 
-    Vector(int num, Object obj) : num_(num)
-    {
-        MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
-        objects_ = Object::makeObjectArray(num);
-        for (int i = 0; i < num; i++) {
-            objects_[i] = obj;
-        }
-    }
-
-    Vector(int num, Object* objects) : num_(num), objects_(objects)
-    {
-    }
-
-    Vector(Object pair) : num_(Pair::length(pair))
-    {
-        MOSH_ASSERT(pair.isPair() || pair.isNil());
-        objects_ = Object::makeObjectArray(num_);
-        int i = 0;
-        for (Object o = pair; !o.isNil(); o = o.cdr()) {
-            objects_[i] = o.car();
-            i++;
-        }
-    }
-
-    ~Vector() {}
-
-    Object ref(int index) const
-    {
-        return objects_[index];
-    }
-
-    void set(int index, Object obj)
-    {
-        objects_[index] = obj;
-    }
-
-    int length() const
-    {
-        return num_;
-    }
-
-    Object* data()
-    {
-        return objects_;
-    }
+    Object ref(int index) const;
+    void set(int index, Object obj);
+    int length() const;
+    Object* data();
 
 private:
     const int num_;
     Object* objects_;
-
 };
+
+inline Object Vector::ref(int index) const
+{
+    return objects_[index];
+}
+
+inline void Vector::set(int index, Object obj)
+{
+    objects_[index] = obj;
+}
+
+inline int Vector::length() const
+{
+    return num_;
+}
 
 inline Object::Object(int n, Object o)
   : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))

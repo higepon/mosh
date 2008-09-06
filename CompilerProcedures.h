@@ -34,6 +34,7 @@
 
 #include "scheme.h"
 #include "VM.h"
+#include "Vector.h"
 
 namespace scheme {
 
