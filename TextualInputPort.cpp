@@ -39,7 +39,7 @@
 using namespace scheme;
 
 
-TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port), codec_(coder->getCodec()), coder_(coder), line_(1)
+TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port), codec_(coder->codec()), coder_(coder), line_(1)
 {
 }
 
@@ -49,6 +49,12 @@ TextualInputPort::TextualInputPort()
 
 TextualInputPort::~TextualInputPort()
 {
+}
+
+int TextualInputPort::getU8()
+{
+    MOSH_ASSERT(port_);
+    return port_->getU8();
 }
 
 ucs4char TextualInputPort::getChar()
@@ -102,4 +108,14 @@ Object TextualInputPort::getDatum2()
 int TextualInputPort::close()
 {
     return port_->close();
+}
+
+Transcoder* TextualInputPort::transcoder() const
+{
+    return coder_;
+}
+
+Codec* TextualInputPort::codec() const
+{
+    return codec_;
 }

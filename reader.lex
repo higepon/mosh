@@ -55,7 +55,10 @@ peculiar-identifier (([\+\-]|\.\.\.){subsequent}*)
 boolean {true}{false}
 true #[tT]
 false #[fF]
-character  (#\\.+|#\\{character-name}|#\\x{hex-scalar-value})
+
+single-char [^\n ]
+character-literal #\\{single-char}+
+character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
 
@@ -123,12 +126,14 @@ digit-16 {hex-digit}
 <COMMENT><<EOF>>
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
-  //  yylval.string_value = yytext;
-  return IDENTIFIER; }
+  yylval.stringValue = yytext ;
+  return IDENTIFIER;
+}
 {string} {
   // remove dobule quotation.
   yytext[yyleng - 1] = '\0';
-  yylval.stringValue = reinterpret_cast<ucs4char*>(yytext + 1);
+  yylval.stringValue = yytext + 1;
+  yyleng -= 2;
   return STRING;
  }
 
@@ -168,7 +173,11 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
-{character} { printf("character, %s", yytext); }
+{character-literal} {
+    yylval.stringValue = yytext + 2;
+    yyleng -= 2;
+    return CHARACTER;
+}
 {lexme} { printf("lexme, %s", yytext); }
 
 

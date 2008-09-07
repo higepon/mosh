@@ -36,7 +36,7 @@
 
 using namespace scheme;
 
-TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->getCodec())
+TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->codec())
 {
 }
 

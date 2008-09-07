@@ -49,7 +49,7 @@ ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
 
 int ByteArrayBinaryInputPort::getU8()
 {
-    if (index_ >= size_) return -1;
+    if (index_ >= size_) return EOF;
     return buf_[index_++];
 }
 

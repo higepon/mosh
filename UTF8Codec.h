@@ -43,6 +43,7 @@ public:
     int out(uint8_t* buf, ucs4char u);
     bool isUtf8Tail(uint8_t b);
     ucs4char in(BinaryInputPort* port);
+    ucs4string readWholeString(BinaryInputPort* port);
 };
 
 }; // namespace scheme

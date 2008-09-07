@@ -146,3 +146,16 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
         exit(-1);
     }
 }
+
+ucs4string UTF8Codec::readWholeString(BinaryInputPort* port)
+{
+    ucs4string ret;
+    for (;;) {
+        const ucs4char ch = in(port);
+        if (EOF == ch) {
+            break;
+        }
+        ret += ch;
+    }
+    return ret;
+}

@@ -46,6 +46,7 @@ public:
     virtual int out(BinaryOutputPort* port, ucs4char c) = 0;
     virtual int out(uint8_t* buf, ucs4char c) = 0;
     virtual ucs4char in(BinaryInputPort* port) = 0;
+    virtual ucs4string readWholeString(BinaryInputPort* port) = 0;
 };
 
 }; // namespace scheme

@@ -1,3 +1,7 @@
+2008-09-07  higepon  <higepon@users.sourceforge.jp>
+
+        * UTF8Codec.cpp (readWholeString): Added.
+
 2008-09-06  higepon  <higepon@users.sourceforge.jp>
 
         * Object-inl.h : Break all compilation dependencies.

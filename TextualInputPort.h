@@ -47,6 +47,7 @@ public:
     TextualInputPort();
     virtual ~TextualInputPort();
     virtual ucs4char getChar();
+    virtual int getU8();
     virtual int getLine() const;
     virtual void unGetChar(ucs4char c);
     virtual ucs4string toString();
@@ -55,6 +56,8 @@ public:
     virtual Object getDatum(bool& errorOccured);
     virtual Object getDatum2();
     virtual int close();
+    virtual Transcoder* transcoder() const;
+    virtual Codec* codec() const;
 
 private:
     BinaryInputPort* port_;

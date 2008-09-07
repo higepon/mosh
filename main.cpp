@@ -218,11 +218,7 @@ int main(int argc, char *argv[])
     for (Object p = in->getDatum2(); !p.isEof(); p = in->getDatum2()) {
         outPort.toTextualOutputPort()->putDatum(p);
     }
-//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-//    yyin = fp;
     exit(-1);
-    
 
     theVM->evaluate(compiler);
 

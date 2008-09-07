@@ -9,23 +9,29 @@
 #include "Symbol.h"
 #include "SString.h"
 #include "ByteVector.h"
+#include "ByteArrayBinaryInputPort.h"
+#include "Codec.h"
 #include "reader.h"
 #define YYDEBUG 1
 using namespace scheme;
+extern Codec* parser_codec();
 extern int yylex();
 extern int yyerror(const char *);
 extern char* yytext;
+extern int yyleng;
 Object parsed;
 %}
 
-%token <Object> IDENTIFIER
+%token <stringValue> IDENTIFIER
 %token <boolValue> BOOLEAN
 %token <stringValue> STRING
+%token <stringValue> CHARACTER
 %token <intValue> NUMBER
 %token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
-%type <object> datum lexme_datum compound_datum list datum_list top_level vector bytevector abbreviation
+%type <object> datum lexme_datum compound_datum list datum_list top_level
+%type <object> symbol vector bytevector abbreviation
 %start top_level
 
 %%
@@ -35,11 +41,25 @@ datum : lexme_datum    { $$ = $1;}
       ;
 
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
-            | STRING { $$ = $1; }
+            | STRING
+            {
+                $$ = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng));
+            }
             | NUMBER { $$ = Object::makeInt($1); }
+            | symbol
+            | CHARACTER
+            {
+                $$ = Object::makeChar(parser_codec()->in(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng)));
+            }
             | END_OF_FILE { $$ = Object::Eof; }
             ;
-
+symbol : IDENTIFIER
+         {
+             ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1,
+                                                                                            yyleng));
+             $$ = Symbol::intern(text.c_str());
+         }
+       ;
 compound_datum : list { $$ = $1; }
                | vector { $$ = $1; }
                | bytevector { $$ = $1; }

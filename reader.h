@@ -43,7 +43,7 @@ typedef struct {
     union {
         bool  boolValue;
         int   intValue;
-        ucs4char* stringValue;
+        char* stringValue;
     };
     scheme::Object object;
 } YYSTYPE;

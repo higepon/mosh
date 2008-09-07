@@ -53,7 +53,7 @@ TextualOutputPort::TextualOutputPort()
 }
 
 TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
-                                                                                  codec_(coder->getCodec()),
+                                                                                  codec_(coder->codec()),
                                                                                   coder_(coder),
                                                                                   isErrorOccured_(false),
                                                                                   errorMessage_(Object::Nil),

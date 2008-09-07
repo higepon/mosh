@@ -66,7 +66,7 @@ public:
     }
 
 
-    Codec* getCodec() const { return codec_; }
+    Codec* codec() const { return codec_; }
 
 private:
     Codec* codec_;
