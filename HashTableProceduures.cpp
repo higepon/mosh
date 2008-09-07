@@ -89,7 +89,7 @@ int scheme::stringCiHash(const ucs4string& str)
 int scheme::symbolHash(Symbol* symbol)
 {
     // we can use pointer as hash, because symbol is interned.
-    return reinterpret_cast<int>(symbol);
+    return reinterpret_cast<intptr_t>(symbol);
 }
 
 
