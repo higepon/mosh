@@ -35,13 +35,11 @@
 #include "Pair-inl.h"
 #include "scheme.h"
 #include "VM.h"
-
 #include "ErrorProcedures.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
-
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
@@ -180,12 +178,6 @@ int main(int argc, char *argv[])
 //     extern FILE *yyin;
 //     extern Object parsed;
 
-//     FILE* fp = fopen("./hige.scm", "r");
-//     TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
-//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
-//    yyin = fp;
 
 //     // yyparse の戻り値をしらべる
 //     // 文字列やポートから read できなければならない。これを調べる。
@@ -219,6 +211,18 @@ int main(int argc, char *argv[])
         theVM->initProfiler();
     }
 #endif
+
+    FILE* fp = fopen("./hige.scm", "r");
+    TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
+
+    for (Object p = in->getDatum2(); !p.isEof(); p = in->getDatum2()) {
+        outPort.toTextualOutputPort()->putDatum(p);
+    }
+//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//     outPort.toTextualOutputPort()->putDatum(in->getDatum2());
+//    yyin = fp;
+    exit(-1);
+    
 
     theVM->evaluate(compiler);
 

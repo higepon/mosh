@@ -6,6 +6,9 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
+#include "Symbol.h"
+#include "SString.h"
+#include "ByteVector.h"
 #include "reader.h"
 #define YYDEBUG 1
 using namespace scheme;
@@ -16,10 +19,13 @@ Object parsed;
 %}
 
 %token <Object> IDENTIFIER
-%token <Object> STRING
 %token <boolValue> BOOLEAN
-%token LEFT_PAREN RIGHT_PAREN END_OF_FILE
-%type <object> datum lexme_datum compound_datum list datum_list top_level
+%token <stringValue> STRING
+%token <intValue> NUMBER
+%token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT
+%token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
+%token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
+%type <object> datum lexme_datum compound_datum list datum_list top_level vector bytevector abbreviation
 %start top_level
 
 %%
@@ -29,17 +35,38 @@ datum : lexme_datum    { $$ = $1;}
       ;
 
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
+            | STRING { $$ = $1; }
+            | NUMBER { $$ = Object::makeInt($1); }
             | END_OF_FILE { $$ = Object::Eof; }
             ;
 
 compound_datum : list { $$ = $1; }
+               | vector { $$ = $1; }
+               | bytevector { $$ = $1; }
                ;
 
 list : LEFT_PAREN datum_list RIGHT_PAREN { $$ = $2; }
+     | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
+       {
+         $$ = Pair::appendD2($2, Object::cons($3, $5));
+       }
+     | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
+     ;
+vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
+     ;
+bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeByteVector($2); }
      ;
 datum_list : /* empty */ { $$ = Object::Nil; }
            | datum_list datum { $$ = Pair::appendD2($1, Pair::list1($2)); }
            ;
+abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
+| ABBV_UNQUOTESPLICING                             { $$ = Symbol::UNQUOTE_SPLICING; }
+| ABBV_QUASIQUOTE                                  { $$ = Symbol::QUASIQUOTE; }
+| ABBV_UNQUOTE                                     { $$ = Symbol::UNQUOTE; }
+| ABBV_SYNTAX                                      { $$ = Symbol::SYNTAX;}
+| ABBV_UNSYNTAXSPLICING                            { $$ = Symbol::UNSYNTAX_SPLICING; }
+| ABBV_QUASISYNTAX                                 { $$ = Symbol::QUASISYNTAX; }
+| ABBV_UNSYNTAX                                    { $$ = Symbol::UNSYNTAX; }
 
 %%
 int

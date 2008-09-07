@@ -3,9 +3,11 @@
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
+#include "Symbol.h"
 #include "reader.h" // include before reader.tab.hpp is included.
 #include "reader.tab.hpp"
 extern bool parser_input(char* buf, int max_size);
+using namespace scheme;
 #undef YY_INPUT
 #define YY_INPUT(buffer, result, max_size) { const bool isEOF = parser_input(buffer, max_size); if (isEOF) {result= YY_NULL; } else { result = 1;} }
 %}
@@ -40,6 +42,8 @@ constituent {letter}|[\x80-\xffff]
 
 special-initial  [!\$%&\*\/\:\{=\}\?\^\_~]
 
+dot "."{delimiter}?
+
 /* not enough */
 subsequent  {initial}|{digit}|[\x80-\xffff]|{special-subsequent}
 digit  [0-9]
@@ -56,7 +60,7 @@ character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|s
 string  \"{string-element}*\"
 
 /* todo 最初の要素の一文字が怪しい */
-string-element  [^\"^\\]|\\[abtnvfr\"\\\\]|\\{intraline-whitespace}{line-ending}{intraline-whitespace}|{inline-hex-escape}
+string-element  [^\\\"]|\\[abtnvfr\"\\\\]|\\{intraline-whitespace}{line-ending}{intraline-whitespace}|{inline-hex-escape}
 intraline-whitespace  \t
 
 number {num-2}|{num-8}|{num-10}|{num-16}
@@ -105,10 +109,11 @@ digit-10 {digit}
 digit-16 {hex-digit}
 %x COMMENT
 %%
-[)] { return RIGHT_PAREN; }
+[\])] { return RIGHT_PAREN; }
 
-[(] { return LEFT_PAREN; }
-
+[(\[] { return LEFT_PAREN; }
+"#(" { return VECTOR_START; }
+"#vu8(" { return BYTE_VECTOR_START; }
 
 "#|"                     BEGIN(COMMENT);
 <COMMENT>[^|\n]*
@@ -121,9 +126,12 @@ digit-16 {hex-digit}
   //  yylval.string_value = yytext;
   return IDENTIFIER; }
 {string} {
-  yylval.stringValue = yytext;
+  // remove dobule quotation.
+  yytext[yyleng - 1] = '\0';
+  yylval.stringValue = reinterpret_cast<ucs4char*>(yytext + 1);
   return STRING;
  }
+
 {true} {
     yylval.boolValue = true;
     return BOOLEAN;
@@ -133,15 +141,37 @@ digit-16 {hex-digit}
     return BOOLEAN;
  }
 
+{dot} { return DOT; }
+
 <<EOF>> { return END_OF_FILE; }
 
 
 
-{number} { printf("number, %s", yytext); }
+{num-10} {
+    errno = 0;
+    long long ret = strtoll(yytext, NULL, 10);
+    if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
+        || (errno != 0 && ret == 0)) {
+      printf("error num-10");
+    } else {
+      yylval.intValue = ret;
+    }
+    return NUMBER;
+ }
   {delimiter}
+"`"                   { return ABBV_QUASIQUOTE; }
+"'"                   { return ABBV_QUOTE; }
+",@"                  { return ABBV_UNQUOTESPLICING; }
+","                   { return ABBV_UNQUOTE; }
+"#'"                  { return ABBV_SYNTAX; }
+"#`"                  { return ABBV_QUASISYNTAX; }
+"#,"                  { return ABBV_UNSYNTAX; }
+"#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
 {character} { printf("character, %s", yytext); }
 {lexme} { printf("lexme, %s", yytext); }
+
+
 %%
 
 int yywrap()
