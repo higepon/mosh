@@ -56,21 +56,25 @@ hex-digit  {digit}|[aAbBcCdDeEfF]
 special-subsequent [+\-.@]
 inline-hex-escape  (\\x{hex-scalar-value};)
 hex-scalar-value {hex-digit}+
-peculiar-identifier (([\+\-]|\.\.\.){subsequent}*)
+peculiar-identifier [\+\-]|"..."|("->"{subsequent}*)
 boolean {true}{false}
 true #[tT]
 false #[fF]
 
 single-char [^\n ]
-character-literal #\\{single-char}
+character-literal #\\{single-char}+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
-good-charactor {character-literal}{delimiter}
+good-charactor-literal {character-literal}{delimiter}
+good-charactor-name    #\\{character-name}{delimiter}
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
 
 /* todo 最初の要素の一文字が怪しい */
 string-element  [^\\\"]|\\[abtnvfr\"\\\\]|\\{intraline-whitespace}{line-ending}{intraline-whitespace}|{inline-hex-escape}
 intraline-whitespace  \t
+
+regexp-element \\\/|[^/]
+good-regexp "#/"{regexp-element}+"/"{delimiter}
 
 numbepppr {num-2}|{num-8}|{num-10}|{num-16}
 num-2 {prefix-2}{complex-2}
@@ -106,7 +110,7 @@ prefix-16 {radix-16}{exactness}|{exactness}{radix-16}
 suffix ({exponent-marker}{sign}{digit-10}+)?
 exponent-marker [eEsSfFdDlL]
 mantissa-width (\|{digit-10}+)?
-sign [+\-]?
+sign [\+\-]?
 exactness (#[iIeE])?
 radix-2 #[bB]
 radix-8 #[oO]
@@ -132,7 +136,7 @@ digit-16 {hex-digit}
 <COMMENT><<EOF>>
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
-  yylval.stringValue = yytext ;
+  yylval.stringValue = yytext;
   return IDENTIFIER;
 }
 {string} {
@@ -179,14 +183,55 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
+{good-charactor-name} {
+    const int len = yyleng;
+    const char* character = yytext + 2;
+    yyless(yyleng - 1);
+    if (strcmp("nul", character) == 0) {
+        yylval.intValue = 0x00;
+    } else if (strcmp("alarm", character) == 0) {
+        yylval.intValue = 0x07;
+    } else if (strcmp("backspace", character) == 0) {
+        yylval.intValue = 0x08;
+    } else if (strcmp("tab", character) == 0) {
+        yylval.intValue = 0x09;
+    } else if (strcmp("linefeed", character) == 0) {
+        yylval.intValue = 0x0A;
+    } else if (strcmp("newline", character) == 0) {
+        yylval.intValue = 0x0A;
+    } else if (strcmp("vtab", character) == 0) {
+        yylval.intValue = 0x0B;
+    } else if (strcmp("page", character) == 0) {
+        yylval.intValue = 0x0C;
+    } else if (strcmp("return", character) == 0) {
+        yylval.intValue = 0x0D;
+    } else if (strcmp("esc", character) == 0) {
+        yylval.intValue = 0x1B;
+    } else if (strcmp("space", character) == 0) {
+        yylval.intValue = 0x20;
+    } else if (strcmp("delete", character) == 0) {
+        yylval.intValue = 0x7F;
+    }
+    return CHARACTER_NAME;
+}
 
-{good-charactor} {
-  printf("good-charactor<%s>", yytext);
-  fflush(stdout);
-    yylval.stringValue = yytext + 2;
+{good-charactor-literal} {
+    const int len = yyleng;
+    char* character = yytext + 2;
+    yylval.stringValue = character;
     yyleng -= 2;
+    yyless(len - 1); // ungetc the delimiter
     return CHARACTER;
 }
+{good-regexp} {
+    yyless(yyleng - 1); // ungetc the delimiter
+    char* character = yytext + 2;
+    yytext[yyleng - 1] = '\0';
+    yylval.stringValue = character;
+    yyleng -= 3;
+    return REGEXP;
+}
+
 {comment}        {  }
 
 %%

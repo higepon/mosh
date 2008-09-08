@@ -27,6 +27,8 @@ Object parsed;
 %token <boolValue> BOOLEAN
 %token <stringValue> STRING
 %token <stringValue> CHARACTER
+%token <intValue> CHARACTER_NAME
+%token <stringValue> REGEXP
 %token <intValue> NUMBER
 %token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
@@ -47,11 +49,21 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                 ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng));
                 $$ = readString(text);
             }
+            | REGEXP
+            {
+                ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1,
+                                                                                               yyleng));
+                $$ = Object::makeRegexp(text);
+            }
             | NUMBER { $$ = Object::makeInt($1); }
             | symbol
             | CHARACTER
             {
                 $$ = Object::makeChar(parser_codec()->in(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng)));
+            }
+            | CHARACTER_NAME
+            {
+                $$ = Object::makeChar($1);
             }
             | END_OF_FILE { $$ = Object::Eof; }
             ;
