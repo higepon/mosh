@@ -30,6 +30,7 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "RecordTypeDescriptor.h"
 #include "RecordConstructorDescriptor.h"
 #include "RecordProcedures.h"

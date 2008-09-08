@@ -30,6 +30,7 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "Symbol.h"
 using namespace scheme;
 

@@ -30,6 +30,7 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "CompoundCondition.h"

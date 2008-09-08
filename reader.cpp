@@ -1,5 +1,5 @@
 /*
- * ConditionProcedures.h - 
+ * reader.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,49 +26,41 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ConditionProcedures.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: reader.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_CONDITION_PROCEDURES__
-#define __SCHEME_CONDITION_PROCEDURES__
-
-#include "scheme.h"
-#include "Callable.h"
-
-namespace scheme {
-
-    Object conditionAccessorEx(int argc, const Object* argv);
-    Object conditionPredicateEx(int argc, const Object* argv);
-    Object conditionPEx(int argc, const Object* argv);
-    Object simpleConditionsEx(int argc, const Object* argv);
-    Object conditionEx(int argc, const Object* argv);
-
-    class ConditionPredicate : public Callable
-    {
-    public:
-        ConditionPredicate(Object rtd);
-        ~ConditionPredicate();
-
-        Object call(VM* vm, int argc, const Object* argv);
-
-    private:
-        const Object rtd_;
-    };
-
-    class ConditionAccessor : public Callable
-    {
-    public:
-        ConditionAccessor(Object rtd, Object proc);
-        ~ConditionAccessor();
-
-        Object call(VM* vm, int argc, const Object* argv);
-
-    private:
-        const Object rtd_;
-        const Object proc_;
-    };
+#include "Object.h"
+#include "Object-inl.h"
+#include "TextualInputPort.h"
+#include "reader.h"
 
 
-}; // namespace scheme
+using namespace scheme;
 
-#endif // __SCHEME_CONDITION_PROCEDURES__
+static TextualInputPort* in;
+static Codec* codec;
+
+Codec* parser_codec()
+{
+    MOSH_ASSERT(codec);
+    return codec;
+}
+
+
+bool parser_input(char* buf, int max_size)
+{
+    int c = in->getU8();
+    buf[0] = c;
+    return c == EOF;
+}
+
+Object scheme::read2(TextualInputPort* port)
+{
+    extern int yyparse ();
+    extern Object parsed;
+    MOSH_ASSERT(port);
+    in = port;
+    codec = in->codec();
+    yyparse();
+    return parsed;
+}
