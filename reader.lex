@@ -62,7 +62,7 @@ true #[tT]
 false #[fF]
 
 single-char [^\n ]
-character-literal #\\({single-char})+
+character-literal #\\{single-char}
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
 good-charactor {character-literal}{delimiter}
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
@@ -179,8 +179,10 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
+
 {good-charactor} {
-  printf(yytext);
+  printf("good-charactor<%s>", yytext);
+  fflush(stdout);
     yylval.stringValue = yytext + 2;
     yyleng -= 2;
     return CHARACTER;
