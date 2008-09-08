@@ -60,6 +60,11 @@ static bool checkAndSetVisited(EqHashTable* visited, Object object1, Object obje
     }
 }
 
+bool scheme::equal(Object obj1, Object obj2)
+{
+    return equal(obj1, obj2, new EqHashTable);
+}
+
 bool scheme::equal(Object obj1, Object obj2, EqHashTable* visited)
 {
     Object object1 = obj1;

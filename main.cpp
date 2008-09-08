@@ -46,6 +46,8 @@
 #include "Builtin.h"
 #include "SString.h"
 #include "Symbol.h"
+#include "EqHashTable.h"
+#include "Equivalent.h"
 
 using namespace scheme;
 
@@ -211,14 +213,43 @@ int main(int argc, char *argv[])
         theVM->initProfiler();
     }
 #endif
+        bool isErrorOccured;
+//     FILE* fp = fopen("./hige.scm", "r");
+//     TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
 
-    FILE* fp = fopen("./hige.scm", "r");
-    TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
+//     for (Object p = in->getDatum2(isErrorOccured); !p.isEof(); p = in->getDatum2(isErrorOccured)) {
+//         outPort.toTextualOutputPort()->putDatum(p);
+//     }
 
-    for (Object p = in->getDatum2(); !p.isEof(); p = in->getDatum2()) {
-        outPort.toTextualOutputPort()->putDatum(p);
+//     exit(-1);
+
+
+    FILE* fp1 = fopen("./all-tests.scm", "r");
+    FILE* fp2 = fopen("./all-tests.scm", "r");
+    TextualInputPort* const in1 = Object::makeTextualInputPort(new FileBinaryInputPort(fp1), transcoder).toTextualInputPort();
+    TextualInputPort* const in2 = Object::makeTextualInputPort(new FileBinaryInputPort(fp2), transcoder).toTextualInputPort();
+
+    for (;;) {
+        const Object o1 = in1->getDatum(isErrorOccured);
+         Object o2 = in2->getDatum2(isErrorOccured);
+
+        if (o1.isEof()) {
+            break;
+        }
+
+        if (!equal(o1, o2)) {
+            printf("======= error ==============================================================\n");
+            outPort.toTextualOutputPort()->putDatum(o1);
+            printf("\n\n");
+            outPort.toTextualOutputPort()->putDatum(o2);
+            break;
+        } else {
+            printf("=====================================================================\n");
+            outPort.toTextualOutputPort()->putDatum(o1);
+            printf("\n");
+        }
     }
-    exit(-1);
+     exit(-1);
 
     theVM->evaluate(compiler);
 

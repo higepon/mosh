@@ -101,7 +101,7 @@ Object TextualInputPort::getDatum(bool& errorOccured)
     return read(this, errorOccured);
 }
 
-Object TextualInputPort::getDatum2()
+Object TextualInputPort::getDatum2(bool& errorOccured)
 {
     return read2(this);
 }

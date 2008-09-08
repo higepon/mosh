@@ -15,6 +15,7 @@
 #define YYDEBUG 1
 using namespace scheme;
 extern Codec* parser_codec();
+extern ucs4string readString(const ucs4string& s);
 extern int yylex();
 extern int yyerror(const char *);
 extern char* yytext;
@@ -43,7 +44,8 @@ datum : lexme_datum    { $$ = $1;}
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | STRING
             {
-                $$ = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng));
+                ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng));
+                $$ = readString(text);
             }
             | NUMBER { $$ = Object::makeInt($1); }
             | symbol
@@ -93,7 +95,7 @@ int
 yyerror(char const *str)
 {
 /*     extern char *yytext; */
-/*     fprintf(stderr, "parser error near %s\n", yytext); */
+     fprintf(stderr, "parser error near %s\n", yytext); 
     return 0;
 }
 

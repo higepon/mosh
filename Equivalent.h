@@ -35,8 +35,8 @@
 #include "scheme.h"
 
 namespace scheme {
-
     bool equal(Object object1, Object object2, EqHashTable* visited);
+    bool equal(Object object1, Object object2);
     inline bool eqv(Object object1, Object object2) { return object1 == object2; }
 
 }; // namespace scheme

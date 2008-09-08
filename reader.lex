@@ -24,6 +24,9 @@ Zp \x2029
 
 lexme  {identifier}|{boolean}|{number}|{character}|{string}|[()\[\]’‘,\.]|#\(|,@|#vu8\(|#’|#‘|#,|#,@
 delimiter  [()\[\]\";#]|{whitespace}
+not_delimiter   [^\[\]\(\)\";#\r\n\t ]
+
+
 whitespace {character-tabulation}|{linefeed}|{line-tabulation}|{form-feed}|{carriage-return}|{next-line}|{Zs}|{Zl}|{Zp}
 line-ending  {linefeed}|{carriage-return}|{carriage-return}{linefeed}|{next-line}|{carriage-return}{next-line}|{line-separator}
 linefeed \n
@@ -31,7 +34,9 @@ carriage-return \r
 next-line \x85
 
 line-separator \x2028
-comment  (;.*{line-ending})|(;.*{paragraph-separator}|#;{interlexeme-space}{datum}|(#!r6rs)
+comment (";"[^\n]*)|("#!"[^\n]*)
+
+/* (;.*{line-ending})|(;.*{paragraph-separator}|#;{interlexeme-space}{datum}|(#!r6rs) */
 
 identifier  ({initial}{subsequent}*)|{peculiar-identifier}
 initial  {constituent}|{special-initial}|{inline-hex-escape}
@@ -40,7 +45,7 @@ letter  [a-z]|[A-Z]
 /* not enough */
 constituent {letter}|[\x80-\xffff]
 
-special-initial  [!\$%&\*\/\:\{=\}\?\^\_~]
+special-initial  [!\$%&\*\/\:\<=\>\?\^\_~]
 
 dot "."{delimiter}?
 
@@ -57,8 +62,9 @@ true #[tT]
 false #[fF]
 
 single-char [^\n ]
-character-literal #\\{single-char}+
+character-literal #\\({single-char})+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
+good-charactor {character-literal}{delimiter}
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
 
@@ -66,7 +72,7 @@ string  \"{string-element}*\"
 string-element  [^\\\"]|\\[abtnvfr\"\\\\]|\\{intraline-whitespace}{line-ending}{intraline-whitespace}|{inline-hex-escape}
 intraline-whitespace  \t
 
-number {num-2}|{num-8}|{num-10}|{num-16}
+numbepppr {num-2}|{num-8}|{num-10}|{num-16}
 num-2 {prefix-2}{complex-2}
 num-8 {prefix-8}{complex-8}
 num-10 {prefix-10}{complex-10}
@@ -112,7 +118,7 @@ digit-10 {digit}
 digit-16 {hex-digit}
 %x COMMENT
 %%
-[\])] { return RIGHT_PAREN; }
+[\])] { printf(")\n"); return RIGHT_PAREN; }
 
 [(\[] { return LEFT_PAREN; }
 "#(" { return VECTOR_START; }
@@ -173,13 +179,13 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
-{character-literal} {
+{good-charactor} {
+  printf(yytext);
     yylval.stringValue = yytext + 2;
     yyleng -= 2;
     return CHARACTER;
 }
-{lexme} { printf("lexme, %s", yytext); }
-
+{comment}        {  }
 
 %%
 

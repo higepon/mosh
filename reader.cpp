@@ -1,5 +1,5 @@
 /*
- * reader.cpp - 
+ * reader.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -63,4 +63,54 @@ Object scheme::read2(TextualInputPort* port)
     codec = in->codec();
     yyparse();
     return parsed;
+}
+
+ucs4string readString(const ucs4string& s)
+{
+    ucs4string ret;
+    for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        const ucs4char ch = *it;
+        if (ch == '\\') {
+            const ucs4char ch2 = *(++it);
+            if (it == s.end()) break;
+            switch (ch2)
+            {
+            case '"':
+                ret += '"';
+                break;
+            case '\\':
+                ret += '\\';
+                break;
+            case 'a':
+                ret += 0x07;
+                break;
+            case 'b':
+                ret += 0x08;
+                break;
+            case 't':
+                ret += 0x09;
+                break;
+            case 'n':
+                ret += 0x0a;
+                break;
+            case 'v':
+                ret += 0x0b;
+                break;
+            case 'f':
+                ret += 0x0c;
+                break;
+            case 'r':
+                ret += 0x0d;
+                break;
+            default:
+                ret += ch;
+                ret += ch2;
+                break;
+            }
+
+        } else {
+            ret += ch;
+        }
+    }
+    return ret;
 }
