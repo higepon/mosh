@@ -262,9 +262,9 @@ int main(int argc, char *argv[])
             outPort.toTextualOutputPort()->putDatum(o2);
             break;
         } else {
-            printf("=====================================================================\n");
-            outPort.toTextualOutputPort()->putDatum(o1);
-            printf("\n");
+//             printf("=====================================================================\n");
+//             outPort.toTextualOutputPort()->putDatum(o1);
+//             printf("\n");
         }
     }
     printf("higeponz %lld  %lld\n", a1, a2);

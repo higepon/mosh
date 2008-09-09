@@ -31,7 +31,7 @@ Zp \x2029
 lexme  {identifier}|{boolean}|{number}|{character}|{string}|[()\[\]’‘,\.]|#\(|,@|#vu8\(|#’|#‘|#,|#,@
 delimiter  [()\[\]\";#]|{whitespace}
 /* delimiter "\n\r"|[\[\]\(\)\";#\r\n\t ] */
-not_delimiter   [^\[\]\(\)\";#\r\n\t ]
+not-delimiter   [^\[\]\(\)\";#\r\n\t ]
 
 
 whitespace {character-tabulation}|{linefeed}|{line-tabulation}|{form-feed}|{carriage-return}|{next-line}|{Zs}|{Zl}|{Zp}
@@ -73,10 +73,8 @@ character-literal #\\{single-char}+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
                                   /*good-charactor-literal {character-literal}{delimiter}*/
 
-good-charactor-name    #\\{character-name}{delimiter}
-good-charactor-literal #\\[^\\n ]+{delimiter}
+good-charactor-literal #\\{not-delimiter}+{delimiter}
 
-character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
 
 /* todo 最初の要素の一文字が怪しい */
@@ -133,7 +131,7 @@ digit-16 {hex-digit}
 %x COMMENT
 %option yylineno
 %%
-[\])] { printf(")\n"); return RIGHT_PAREN; }
+[\])] { return RIGHT_PAREN; }
 
 [(\[] { return LEFT_PAREN; }
 "#(" { return VECTOR_START; }
@@ -147,10 +145,12 @@ digit-16 {hex-digit}
 <COMMENT><<EOF>>
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
   yylval.stringValue = yytext;
   return IDENTIFIER;
 }
 {string} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
   // remove dobule quotation.
   yytext[yyleng - 1] = '\0';
   yylval.stringValue = yytext + 1;
@@ -159,21 +159,28 @@ digit-16 {hex-digit}
  }
 
 {true} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yylval.boolValue = true;
     return BOOLEAN;
   }
 {false} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yylval.boolValue = false;
     return BOOLEAN;
  }
 
 {dot} { return DOT; }
 
-<<EOF>> { return END_OF_FILE; }
+<<EOF>> { 
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return END_OF_FILE;
+}
 
 
 
 {num-10} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    printf("<%s>", yytext);
     errno = 0;
     long long ret = strtoll(yytext, NULL, 10);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
@@ -194,46 +201,44 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
-{good-charactor-name} {
-    const char* character = yytext + 2;
-    yyless(yyleng - 1);
-    if (strcmp("nul", character) == 0) {
-        yylval.charValue = 0x00;
-    } else if (strcmp("alarm", character) == 0) {
-        yylval.charValue = 0x07;
-    } else if (strcmp("backspace", character) == 0) {
-        yylval.charValue = 0x08;
-    } else if (strcmp("tab", character) == 0) {
-        yylval.charValue = 0x09;
-    } else if (strcmp("linefeed", character) == 0) {
-        yylval.charValue = 0x0A;
-    } else if (strcmp("newline", character) == 0) {
-        yylval.charValue = 0x0A;
-    } else if (strcmp("vtab", character) == 0) {
-        yylval.charValue = 0x0B;
-    } else if (strcmp("page", character) == 0) {
-        yylval.charValue = 0x0C;
-    } else if (strcmp("return", character) == 0) {
-        yylval.charValue = 0x0D;
-    } else if (strcmp("esc", character) == 0) {
-        yylval.charValue = 0x1B;
-    } else if (strcmp("space", character) == 0) {
-        yylval.charValue = 0x20;
-    } else if (strcmp("delete", character) == 0) {
-        yylval.charValue = 0x7F;
-    }
-    return CHARACTER;
-}
-
 {good-charactor-literal} {
-    ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng));
-    yylval.charValue = text[2];
-    const int characterByteSize = yyleng - text.size() + 1;
-    yyless(2 + characterByteSize); // ungetc the delimiter
+    ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng - 1));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    printf(yytext);
+    if (text == UC("#\\nul")) {
+        yylval.charValue = 0x00;
+    } else if (text == UC("#\\alarm")) {
+        yylval.charValue = 0x07;
+    } else if (text == UC("#\\backspace")) {
+        yylval.charValue = 0x08;
+    } else if (text == UC("#\\tab")) {
+        yylval.charValue = 0x09;
+    } else if (text == UC("#\\linefeed")) {
+        yylval.charValue = 0x0A;
+    } else if (text == UC("#\\newline")) {
+        yylval.charValue = 0x0A;
+    } else if (text == UC("#\\vtab")) {
+        yylval.charValue = 0x0B;
+    } else if (text == UC("#\\page")) {
+        yylval.charValue = 0x0C;
+    } else if (text == UC("#\\return")) {
+        yylval.charValue = 0x0D;
+    } else if (text == UC("#\\esc")) {
+        yylval.charValue = 0x1B;
+    } else if (text == UC("#\\space")) {
+        yylval.charValue = 0x20;
+    } else if (text == UC("#\\delete")) {
+        yylval.charValue = 0x7F;
+    } else {
+        yylval.charValue = text[2];
+    }
+    const int charcterLength = yyleng - 1 - text.size() + 2 + 1;
+    yyless(yyleng - 1); // ungetc the delimiter
     return CHARACTER;
 }
 
 {good-regexp} {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yyless(yyleng - 1); // ungetc the delimiter
     char* character = yytext + 2;
     yytext[yyleng - 1] = '\0';
