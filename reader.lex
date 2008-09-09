@@ -74,7 +74,7 @@ character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
                                   /*good-charactor-literal {character-literal}{delimiter}*/
 
 good-charactor-name    #\\{character-name}{delimiter}
-good-charactor-literal #\\([^\\n ])+{delimiter}
+good-charactor-literal #\\[^\\n ]+{delimiter}
 
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
