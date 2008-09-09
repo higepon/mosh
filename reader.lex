@@ -69,7 +69,7 @@ true #[tT]
 false #[fF]
 
 single-char [^\n ]
-character-literal #\\{single-char}+
+character-literal #\\{single-char, 2}
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
                                   /*good-charactor-literal {character-literal}{delimiter}*/
 
