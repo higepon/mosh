@@ -54,15 +54,27 @@ bool parser_input(char* buf, int max_size)
     return c == EOF;
 }
 
-Object scheme::read2(TextualInputPort* port)
+TextualInputPort* parser_port()
+{
+    return in;
+}
+
+
+
+Object scheme::read2(TextualInputPort* port, bool& errorOccured)
 {
     extern int yyparse ();
     extern Object parsed;
     MOSH_ASSERT(port);
     in = port;
     codec = in->codec();
-    yyparse();
-    return parsed;
+    const bool isParseError = yyparse() == 1;
+    if (isParseError) {
+        errorOccured = true;
+        return Object::Undef;
+    } else {
+        return parsed;
+    }
 }
 
 ucs4string readString(const ucs4string& s)

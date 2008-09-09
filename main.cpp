@@ -29,6 +29,11 @@
  *  $Id$
  */
 
+#include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -224,14 +229,27 @@ int main(int argc, char *argv[])
 //     exit(-1);
 
 
-    FILE* fp1 = fopen("./all-tests.scm", "r");
-    FILE* fp2 = fopen("./all-tests.scm", "r");
+    FILE* fp1 = fopen(argv[optind], "r");
+    FILE* fp2 = fopen(argv[optind], "r");
+
+    long long a1 = 0;
+    long long a2 = 0;
+
+    struct timeval tv1, tv2, tv3;
+
     TextualInputPort* const in1 = Object::makeTextualInputPort(new FileBinaryInputPort(fp1), transcoder).toTextualInputPort();
+
     TextualInputPort* const in2 = Object::makeTextualInputPort(new FileBinaryInputPort(fp2), transcoder).toTextualInputPort();
 
+
     for (;;) {
+    gettimeofday(&tv1, NULL);
         const Object o1 = in1->getDatum(isErrorOccured);
+    gettimeofday(&tv2, NULL);
          Object o2 = in2->getDatum2(isErrorOccured);
+    gettimeofday(&tv3, NULL);
+    a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
+    a2 += (tv3.tv_sec * 1000 * 1000 + tv3.tv_usec) - (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec);
 
         if (o1.isEof()) {
             break;
@@ -249,7 +267,8 @@ int main(int argc, char *argv[])
             printf("\n");
         }
     }
-     exit(-1);
+    printf("higeponz %lld  %lld\n", a1, a2);
+     exit(EXIT_FAILURE);
 
     theVM->evaluate(compiler);
 

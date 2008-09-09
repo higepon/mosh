@@ -36,13 +36,14 @@
 
 namespace scheme {
     Object read(TextualInputPort* port, bool& errorOccured);
-    Object read2(TextualInputPort* port);
+    Object read2(TextualInputPort* port, bool& errorOccured);
 };
 
 typedef struct {
     union {
         bool  boolValue;
         int   intValue;
+        ucs4char charValue;
         char* stringValue;
     };
     scheme::Object object;

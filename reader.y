@@ -10,9 +10,12 @@
 #include "SString.h"
 #include "ByteVector.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "StringProcedures.h"
+#include "TextualInputPort.h"
 #include "Codec.h"
 #include "reader.h"
 #define YYDEBUG 1
+#define YYERROR_VERBOSE 1
 using namespace scheme;
 extern Codec* parser_codec();
 extern ucs4string readString(const ucs4string& s);
@@ -20,6 +23,8 @@ extern int yylex();
 extern int yyerror(const char *);
 extern char* yytext;
 extern int yyleng;
+extern int yylineno;
+extern TextualInputPort* parser_port();
 Object parsed;
 %}
 
@@ -38,7 +43,9 @@ Object parsed;
 %start top_level
 
 %%
-top_level: datum { parsed = $$; YYACCEPT; }
+top_level : datum { parsed = $$; YYACCEPT; }
+          | END_OF_FILE { parsed = Object::Eof; YYACCEPT; }
+
 datum : lexme_datum    { $$ = $1;}
       | compound_datum { $$ = $1;}
       ;
@@ -59,14 +66,12 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | symbol
             | CHARACTER
             {
-              //                $$ = Object::makeChar(parser_codec()->in(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng)));
               $$ = Object::makeChar($1);
             }
             | CHARACTER_NAME
             {
                 $$ = Object::makeChar($1);
             }
-            | END_OF_FILE { $$ = Object::Eof; }
             ;
 symbol : IDENTIFIER
          {
@@ -91,8 +96,8 @@ vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
      ;
 bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeByteVector($2); }
      ;
-datum_list : /* empty */ { $$ = Object::Nil; }
-           | datum_list datum { $$ = Pair::appendD2($1, Pair::list1($2)); }
+datum_list : datum_list datum { $$ = Pair::appendD2($1, Pair::list1($2)); }
+           | {$$ = Object::Nil; }
            ;
 abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 | ABBV_UNQUOTESPLICING                             { $$ = Symbol::UNQUOTE_SPLICING; }
@@ -104,23 +109,10 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 | ABBV_UNSYNTAX                                    { $$ = Symbol::UNSYNTAX; }
 
 %%
-int
-yyerror(char const *str)
+int yyerror(char const *str)
 {
-/*     extern char *yytext; */
-     fprintf(stderr, "parser error near %s\n", yytext); 
+    TextualInputPort* const port = parser_port();
+    port->setError(format(UC("~a near ~a at ~a:~d. "),
+                          Pair::list4(str, yytext, port->toString(), Object::makeInt(yylineno))));
     return 0;
 }
-
-/* int main(void) */
-/* { */
-/*     extern int yyparse(void); */
-/*     extern FILE *yyin; */
-
-/*     yyin = stdin; */
-/*     if (yyparse()) { */
-/*         fprintf(stderr, "Error ! Error ! Error !\n"); */
-/*         exit(1); */
-/*     } */
-/*     parsed.print(); */
-/* } */

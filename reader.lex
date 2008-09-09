@@ -131,6 +131,7 @@ digit-8 [0-7]
 digit-10 {digit}
 digit-16 {hex-digit}
 %x COMMENT
+%option yylineno
 %%
 [\])] { printf(")\n"); return RIGHT_PAREN; }
 
@@ -194,48 +195,44 @@ digit-16 {hex-digit}
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
 {good-charactor-name} {
-    const int len = yyleng;
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const char* character = yytext + 2;
     yyless(yyleng - 1);
     if (strcmp("nul", character) == 0) {
-        yylval.intValue = 0x00;
+        yylval.charValue = 0x00;
     } else if (strcmp("alarm", character) == 0) {
-        yylval.intValue = 0x07;
+        yylval.charValue = 0x07;
     } else if (strcmp("backspace", character) == 0) {
-        yylval.intValue = 0x08;
+        yylval.charValue = 0x08;
     } else if (strcmp("tab", character) == 0) {
-        yylval.intValue = 0x09;
+        yylval.charValue = 0x09;
     } else if (strcmp("linefeed", character) == 0) {
-        yylval.intValue = 0x0A;
+        yylval.charValue = 0x0A;
     } else if (strcmp("newline", character) == 0) {
-        yylval.intValue = 0x0A;
+        yylval.charValue = 0x0A;
     } else if (strcmp("vtab", character) == 0) {
-        yylval.intValue = 0x0B;
+        yylval.charValue = 0x0B;
     } else if (strcmp("page", character) == 0) {
-        yylval.intValue = 0x0C;
+        yylval.charValue = 0x0C;
     } else if (strcmp("return", character) == 0) {
-        yylval.intValue = 0x0D;
+        yylval.charValue = 0x0D;
     } else if (strcmp("esc", character) == 0) {
-        yylval.intValue = 0x1B;
+        yylval.charValue = 0x1B;
     } else if (strcmp("space", character) == 0) {
-        yylval.intValue = 0x20;
+        yylval.charValue = 0x20;
     } else if (strcmp("delete", character) == 0) {
-        yylval.intValue = 0x7F;
+        yylval.charValue = 0x7F;
     }
-    return CHARACTER_NAME;
+    return CHARACTER;
 }
 
 {good-charactor-literal} {
     ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng));
-    
-    printf("%s %s:%d <%s>\n", __func__, __FILE__, __LINE__, yytext);fflush(stdout);// debug
-    printf("text.size = %d\n", text.size());
-    yylval.intValue = text[2];
+    yylval.charValue = text[2];
     const int characterByteSize = yyleng - text.size() + 1;
     yyless(2 + characterByteSize); // ungetc the delimiter
     return CHARACTER;
 }
+
 {good-regexp} {
     yyless(yyleng - 1); // ungetc the delimiter
     char* character = yytext + 2;
