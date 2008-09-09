@@ -26,7 +26,7 @@ Object parsed;
 %token <stringValue> IDENTIFIER
 %token <boolValue> BOOLEAN
 %token <stringValue> STRING
-%token <stringValue> CHARACTER
+%token <intValue> CHARACTER
 %token <intValue> CHARACTER_NAME
 %token <stringValue> REGEXP
 %token <intValue> NUMBER
@@ -59,7 +59,8 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | symbol
             | CHARACTER
             {
-                $$ = Object::makeChar(parser_codec()->in(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng)));
+              //                $$ = Object::makeChar(parser_codec()->in(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng)));
+              $$ = Object::makeChar($1);
             }
             | CHARACTER_NAME
             {

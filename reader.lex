@@ -4,10 +4,16 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "Symbol.h"
+#include "Codec.h"
+#include "ByteArrayBinaryInputPort.h"
 #include "reader.h" // include before reader.tab.hpp is included.
+
 #include "reader.tab.hpp"
 extern bool parser_input(char* buf, int max_size);
 using namespace scheme;
+extern Codec* parser_codec();
+extern ucs4string readString(const ucs4string& s);
+
 #undef YY_INPUT
 #define YY_INPUT(buffer, result, max_size) { const bool isEOF = parser_input(buffer, max_size); if (isEOF) {result= YY_NULL; } else { result = 1;} }
 %}
@@ -24,6 +30,7 @@ Zp \x2029
 
 lexme  {identifier}|{boolean}|{number}|{character}|{string}|[()\[\]’‘,\.]|#\(|,@|#vu8\(|#’|#‘|#,|#,@
 delimiter  [()\[\]\";#]|{whitespace}
+/* delimiter "\n\r"|[\[\]\(\)\";#\r\n\t ] */
 not_delimiter   [^\[\]\(\)\";#\r\n\t ]
 
 
@@ -64,8 +71,11 @@ false #[fF]
 single-char [^\n ]
 character-literal #\\{single-char}+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
-good-charactor-literal {character-literal}{delimiter}
+                                  /*good-charactor-literal {character-literal}{delimiter}*/
+
 good-charactor-name    #\\{character-name}{delimiter}
+good-charactor-literal #\\[^\\n ]+{delimiter}
+
 character-name  (nul|alarm|backspace|tab|linefeed|newline|vtab|page|return|esc|space|delete)
 string  \"{string-element}*\"
 
@@ -185,6 +195,7 @@ digit-16 {hex-digit}
 
 {good-charactor-name} {
     const int len = yyleng;
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const char* character = yytext + 2;
     yyless(yyleng - 1);
     if (strcmp("nul", character) == 0) {
@@ -216,11 +227,13 @@ digit-16 {hex-digit}
 }
 
 {good-charactor-literal} {
-    const int len = yyleng;
-    char* character = yytext + 2;
-    yylval.stringValue = character;
-    yyleng -= 2;
-    yyless(len - 1); // ungetc the delimiter
+    ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng));
+    
+    printf("%s %s:%d <%s>\n", __func__, __FILE__, __LINE__, yytext);fflush(stdout);// debug
+    printf("text.size = %d\n", text.size());
+    yylval.intValue = text[2];
+    const int characterByteSize = yyleng - text.size() + 1;
+    yyless(2 + characterByteSize); // ungetc the delimiter
     return CHARACTER;
 }
 {good-regexp} {
