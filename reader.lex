@@ -21,20 +21,26 @@ extern ucs4string readString(const ucs4string& s);
 character-tabulation \t
 line-tabulation \x0B
 form-feed \x0C
-paragraph-separator \x2029
+paragraph-separator \x20\x29
 
 /* Unicode categories */
-Zs \x20|\xA0|\x1680|\x180E|\x2000|\x2001|\x2002|\x2003|\x2004|\x2005|\x2006|\x2007|\x2008|\x2009|\x200A|\x202F|\x205F|\x3000
-Zl \x2028
-Zp \x2029
+/* Zs \x20|\xA0|\x16\x80|\x18\x0E|\x20\x00|\x20\x01|\x20\x02|\x20\x03|\x20\x04|\x20\x05|\x20\x06|\x20\x07|\x20\x08|\x20\x09|\x20\x0A|\x20\x2F|\x20\x5F|\x30\x00
+ */
+/*  ひょっとしてこれは space( では？
+Zl \x20\x28 
+Zp \x20\x29
+*/
+
+Zs \x20|\xA0
 
 lexme  {identifier}|{boolean}|{number}|{character}|{string}|[()\[\]’‘,\.]|#\(|,@|#vu8\(|#’|#‘|#,|#,@
-delimiter  [()\[\]\";#]|{whitespace}
+delimiter  [\(\)\[\]\";#]|{whitespace}
 /* delimiter "\n\r"|[\[\]\(\)\";#\r\n\t ] */
 not-delimiter   [^\[\]\(\)\";#\r\n\t ]
 
+/* |{Zl}|{Zp} */
 
-whitespace {character-tabulation}|{linefeed}|{line-tabulation}|{form-feed}|{carriage-return}|{next-line}|{Zs}|{Zl}|{Zp}
+whitespace [ ]{character-tabulation}|{linefeed}|{line-tabulation}|{form-feed}|{carriage-return}|{next-line}|{Zs}
 line-ending  {linefeed}|{carriage-return}|{carriage-return}{linefeed}|{next-line}|{carriage-return}{next-line}|{line-separator}
 linefeed \n
 carriage-return \r
@@ -50,7 +56,7 @@ initial  {constituent}|{special-initial}|{inline-hex-escape}
 letter  [a-z]|[A-Z]
 
 /* not enough */
-constituent {letter}|[\x80-\xffff]
+constituent {letter}|[\-]|[\x80-\xffff]
 
 special-initial  [!\$%&\*\/\:\<=\>\?\^\_~]
 
@@ -83,6 +89,8 @@ intraline-whitespace  \t
 
 regexp-element \\\/|[^/]
 good-regexp "#/"{regexp-element}+"/"{delimiter}
+
+good-num-10 {num-10}{delimiter}
 
 numbepppr {num-2}|{num-8}|{num-10}|{num-16}
 num-2 {prefix-2}{complex-2}
@@ -131,11 +139,18 @@ digit-16 {hex-digit}
 %x COMMENT
 %option yylineno
 %%
-[\])] { return RIGHT_PAREN; }
+[\])] {
+    return RIGHT_PAREN;
+      }
 
-[(\[] { return LEFT_PAREN; }
-"#(" { return VECTOR_START; }
-"#vu8(" { return BYTE_VECTOR_START; }
+[(\[] {
+        return LEFT_PAREN; }
+"#(" {
+    return VECTOR_START; 
+
+}
+"#vu8(" {
+    return BYTE_VECTOR_START; }
 
 "#|"                     BEGIN(COMMENT);
 <COMMENT>[^|\n]*
@@ -145,12 +160,10 @@ digit-16 {hex-digit}
 <COMMENT><<EOF>>
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
   yylval.stringValue = yytext;
   return IDENTIFIER;
 }
 {string} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
   // remove dobule quotation.
   yytext[yyleng - 1] = '\0';
   yylval.stringValue = yytext + 1;
@@ -159,28 +172,26 @@ digit-16 {hex-digit}
  }
 
 {true} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yylval.boolValue = true;
     return BOOLEAN;
   }
 {false} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yylval.boolValue = false;
     return BOOLEAN;
  }
 
-{dot} { return DOT; }
+{dot} {
+    return DOT; }
 
 <<EOF>> { 
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return END_OF_FILE;
 }
 
 
 
-{num-10} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    printf("<%s>", yytext);
+{good-num-10} {
+//    printf("%s %s:%d<%s>\n", __func__, __FILE__, __LINE__, yytext);fflush(stdout);// debug
+    yyless(yyleng - 1);
     errno = 0;
     long long ret = strtoll(yytext, NULL, 10);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
@@ -201,10 +212,8 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
-{good-charactor-literal} {
+    {good-charactor-literal} {
     ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng - 1));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    printf(yytext);
     if (text == UC("#\\nul")) {
         yylval.charValue = 0x00;
     } else if (text == UC("#\\alarm")) {
@@ -238,7 +247,6 @@ digit-16 {hex-digit}
 }
 
 {good-regexp} {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     yyless(yyleng - 1); // ungetc the delimiter
     char* character = yytext + 2;
     yytext[yyleng - 1] = '\0';
@@ -247,7 +255,8 @@ digit-16 {hex-digit}
     return REGEXP;
 }
 
-{comment}        {  }
+{comment} { 
+}
 
 %%
 
