@@ -153,17 +153,15 @@ void VM::defaultExceptionHandler(Object error)
 // これはいずれ Scheme でおきかえる。
 void VM::loadFile(const ucs4string& file)
 {
-    printf("<%s>", file.ascii_c_str());
     SAVE_REGISTERS();
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         bool readErrorOccured = false;
-        for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
+        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
-            LOG1("obj=~a\n", o);
             const Object compiled = compile(o);
             evaluate(compiled);
         }

@@ -85,7 +85,13 @@ compound_datum : list { $$ = $1; }
                | bytevector { $$ = $1; }
                ;
 
-list : LEFT_PAREN datum_list RIGHT_PAREN { $$ = $2; }
+list : LEFT_PAREN datum_list RIGHT_PAREN
+       {
+           if ($2.isPair()) {
+               $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()), Object::makeInt(yylineno));
+           }
+           $$ = $2;
+       }
      | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
        {
          $$ = Pair::appendD2($2, Object::cons($3, $5));

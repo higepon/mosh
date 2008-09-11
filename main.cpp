@@ -250,7 +250,7 @@ extern "C" void dont_free(void* p)
 // compare "old read" and "new read"
 void compareRead(const char* file)
 {
-#if 1
+#if 0
         TextualInputPort* p =  Object::makeTextualInputFilePort(file).toTextualInputPort();
         bool readErrorOccured = false;
         for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
@@ -313,7 +313,7 @@ void compareRead(const char* file)
             port->putDatum(o2);
             break;
         } else {
-            port->putDatum(o2);
+            //       port->putDatum(o2);
         }
     }
     printf("%lld:%lld :", a1, a2);
