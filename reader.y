@@ -77,7 +77,7 @@ symbol : IDENTIFIER
          {
              ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1,
                                                                                             yyleng));
-             $$ = Symbol::intern(text.c_str());
+             $$ = Symbol::intern(text.strdup());
          }
        ;
 compound_datum : list { $$ = $1; }

@@ -153,6 +153,7 @@ void VM::defaultExceptionHandler(Object error)
 // これはいずれ Scheme でおきかえる。
 void VM::loadFile(const ucs4string& file)
 {
+    printf("<%s>", file.ascii_c_str());
     SAVE_REGISTERS();
     TRY {
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
@@ -162,6 +163,7 @@ void VM::loadFile(const ucs4string& file)
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
+            LOG1("obj=~a\n", o);
             const Object compiled = compile(o);
             evaluate(compiled);
         }
@@ -1985,7 +1987,7 @@ Object VM::idToTopLevelSymbol(Object id)
     ucs4string name(UC("top level :$:"));
     name += id.toSymbol()->c_str();
     // don't use name variable directly, it is temporary!
-    return Symbol::intern(Object::makeString(name).toString()->data().c_str());
+    return Symbol::intern(name.strdup());
 }
 
 // $library structure accessor.

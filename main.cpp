@@ -250,19 +250,37 @@ extern "C" void dont_free(void* p)
 // compare "old read" and "new read"
 void compareRead(const char* file)
 {
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+#if 1
+        TextualInputPort* p =  Object::makeTextualInputFilePort(file).toTextualInputPort();
+        bool readErrorOccured = false;
+        for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
+            VM_LOG1("obj=~a\n", o);
+        }
 
-    FILE* fp1 = fopen(file, "r");
-    FILE* fp2 = fopen(file, "r");
-    TextualInputPort* const in1 = Object::makeTextualInputPort(new FileBinaryInputPort(fp1), transcoder).toTextualInputPort();
-    TextualInputPort* const in2 = Object::makeTextualInputPort(new FileBinaryInputPort(fp2), transcoder).toTextualInputPort();
+#elif 0
+    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
+    TextualInputPort* in2 = Object::makeTextualInputFilePort(file).toTextualInputPort();
+
+
+    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
+    bool isErrorOccured = false;
+    for (;;) {
+        Object o2 = in2->getDatum2(isErrorOccured);
+            if (o2.isEof()) {
+                break;
+            }
+            VM_LOG1("obz=~a\n", o2);
+    }
+
+#else
+
+    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
+    TextualInputPort* in2 = Object::makeTextualInputFilePort(file).toTextualInputPort();
 
 
     long long a1 = 0;
     long long a2 = 0;
-
     struct timeval tv1, tv2, tv3;
-
     TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
     bool isErrorOccured = false;
     for (;;) {
@@ -271,30 +289,33 @@ void compareRead(const char* file)
         gettimeofday(&tv2, NULL);
         Object o2 = in2->getDatum2(isErrorOccured);
         gettimeofday(&tv3, NULL);
+
         a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
         a2 += (tv3.tv_sec * 1000 * 1000 + tv3.tv_usec) - (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec);
-
-        if (o2.isEof()) {
+        if (o1.isEof()) {
+            if (o2.isEof()) {
+            } else {
+                printf("old (read) reached EOF but new (read) doesn't");
+            }
+            break;
+        } else if (o2.isEof()) {
+            if (o1.isEof()) {
+            } else {
+                printf("new (read) reached EOF but old (read) doesn't");
+            }
             break;
         }
 
-//        port->putDatum(o2);
-
-              if (!equal(o1, o2)) {
+        if (!equal(o1, o2)) {
             printf("======= error ==============================================================\n");
-             port->putDatum(o1);
+            port->putDatum(o1);
             printf("\n\n");
             port->putDatum(o2);
             break;
         } else {
-//              outPort.toTextualOutputPort()->putDatum(o1);
-//              outPort.toTextualOutputPort()->putDatum(o2);
-//             printf("=====================================================================\n");
-//             outPort.toTextualOutputPort()->putDatum(o1);
-//             printf("\n");
+            port->putDatum(o2);
         }
     }
     printf("%lld:%lld :", a1, a2);
-
-
+#endif
 }

@@ -163,7 +163,7 @@ digit-16 {hex-digit}
 <COMMENT><<EOF>>
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
-  yylval.stringValue = yytext;
+    yylval.stringValue = yytext;
   return IDENTIFIER;
 }
 {identifier-with-space} {

@@ -71,8 +71,7 @@ void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Objec
 {
     ucs4string name = id.toSymbol()->c_str();
     name += postfix;
-    // N.B. don't use name variable for Symbol::intern!
-    theVM->setTopLevelGlobalValue(Symbol::intern(Object::makeString(name.c_str()).toString()->data().c_str()), value);
+    theVM->setTopLevelGlobalValue(Symbol::intern(name.strdup()), value);
 }
 
 Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
