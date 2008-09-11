@@ -76,21 +76,25 @@ inline bool Object::isChar() const
 
 inline ucs4char Object::toChar() const
 {
+    MOSH_ASSERT(isChar());
     return static_cast<ucs4char>(val) >> 3;
 }
 
 inline signed long int Object::toInt() const
 {
+    MOSH_ASSERT(isInt());
     return static_cast<signed long int>(val) >> 2;
 }
 
 inline int Object::toInstruction() const
 {
+    MOSH_ASSERT(isInstruction());
     return static_cast<int>(val) >> 5;
 }
 
 inline int Object::toCompilerInstruction() const
 {
+    MOSH_ASSERT(isCompilerInstruction());
     return static_cast<int>(val) >> 5;
 }
 
@@ -158,6 +162,7 @@ inline HashTable* Object::toHashTable() const
 inline Object* Object::toObjectPointer() const
 {
 #ifdef DEBUG_VERSION
+    MOSH_ASSERT(isObjectPointer());
     return reinterpret_cast<Object*>(reinterpret_cast<HeapObject*>(val)->obj);
 #else
     return reinterpret_cast<Object*>(val);

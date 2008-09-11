@@ -188,6 +188,7 @@ public:
 #define DECL_TO(type)                                                            \
     type* to##type() const                                                       \
     {                                                                            \
+        MOSH_ASSERT(is##type());                                                 \
         return reinterpret_cast<type*>(reinterpret_cast<HeapObject*>(val)->obj); \
     }
 
