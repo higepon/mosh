@@ -102,15 +102,17 @@ public:
 
     ucs4char* strdup()
     {
-#ifdef USE_BOEHM_GC
-        ucs4char* ret = new (GC) ucs4char[size() + sizeof(ucs4char) + 1];
-#else
-        ucs4char* ret = new ucs4char[size() + sizeof(ucs4char) + 1];
-#endif
         const int length = size();
+#ifdef USE_BOEHM_GC
+        ucs4char* ret = new (GC) ucs4char[length + 1];
+#else
+        ucs4char* ret = new ucs4char[length + 1];
+#endif
+
         for (int i = 0; i < length; i++) {
             ret[i] = (*this)[i];
         }
+        ret[length] = '\0';
         return ret;
     }
 };
