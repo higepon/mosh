@@ -56,65 +56,12 @@ public:
     ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     ucs4string(const ucs4char* s) : ucs4string_base(s) {}
     ucs4string(ucs4string::iterator a, ucs4string::iterator b) : ucs4string_base(a, b) {}
-    const char* ascii_c_str() const
-    {
-        const int sz = size();
-#ifdef USE_BOEHM_GC
-        char* ret = new(PointerFreeGC) char[sz + 1];
-#else
-        char* ret = new char[sz];
-#endif
+    const char* ascii_c_str() const;
+    ucs4string substr(int x, int size) const;
+    void split(ucs4char ch, gc_vector<ucs4string>& v);
+    ucs4char* strdup();
 
-        for (int i = 0; i < sz; i++) {
-            ret[i] = (*this)[i] & 0xff;
-        }
-        ret[sz] = '\0';
-        return ret;
-    }
-
-    static ucs4string from_c_str(const char* s, int size)
-    {
-#ifdef USE_BOEHM_GC
-        ucs4char* ret = new(PointerFreeGC) ucs4char[size + 1];
-#else
-        ucs4char* ret = new ucs4char[sz];
-#endif
-        for (int i = 0; i < size; i++) {
-            ret[i] = s[i];
-        }
-        ret[size] = '\0';
-        return ucs4string(ret);
-    }
-
-    ucs4string substr(int x, int size) const { return ucs4string(ucs4string_base::substr(x, size).data()); }
-
-    void split(ucs4char ch, gc_vector<ucs4string>& v)
-    {
-        size_type index = 0;
-        size_type next = 0;
-        while ((index = find_first_of(ch, next)) != ucs4string::npos)
-        {
-            v.push_back(ucs4string(begin() + next, begin() + index));
-            next = index + 1;
-        }
-        v.push_back(ucs4string(begin() + next, end()));
-    }
-
-    ucs4char* strdup()
-    {
-        const int length = size();
-#ifdef USE_BOEHM_GC
-        ucs4char* ret = new (GC) ucs4char[length + 1];
-#else
-        ucs4char* ret = new ucs4char[length + 1];
-#endif
-
-        for (int i = 0; i < length; i++) {
-            ret[i] = (*this)[i];
-        }
-        ret[length] = '\0';
-        return ret;
-    }
+    static ucs4string from_c_str(const char* s, int size);
 };
 
 }; // namespace scheme

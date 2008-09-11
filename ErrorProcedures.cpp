@@ -34,6 +34,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "SString.h"
+#include "Symbol.h"
 #include "RecordConstructorDescriptor.h"
 #include "ErrorProcedures.h"
 #include "ProcedureMacro.h"
@@ -289,7 +290,7 @@ void raiseAfter(const ucs4char* errorRcdName,
         condition = sysGetOutputStringEx(1, &stringOutputPort);
     }
 
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(UC("raise"));
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {

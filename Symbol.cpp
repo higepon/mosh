@@ -62,3 +62,16 @@ void Symbol::initBuitinSymbols()
     UNSYNTAX          = Symbol::intern(UC("unsyntax"));
     UNSYNTAX_SPLICING = Symbol::intern(UC("unsyntax-splicing"));
 }
+
+const ucs4char* Symbol::c_str()
+{
+
+// N.B. Don't pass the local pointer to Symbol::intern
+#ifdef DEBUG_VERSION
+    ucs4string text(name_);
+    ucs4string text2(savedName_);
+    MOSH_ASSERT(text.size() == text2.size());
+    MOSH_ASSERT(memcmp(savedName_, name_, text.size()) == 0);
+#endif
+    return name_;
+}

@@ -69,6 +69,7 @@ bool isSubTypeOfCondition(Object rtd)
 
 void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object value)
 {
+    MOSH_ASSERT(id.isSymbol());
     ucs4string name = id.toSymbol()->c_str();
     name += postfix;
     theVM->setTopLevelGlobalValue(Symbol::intern(name.strdup()), value);

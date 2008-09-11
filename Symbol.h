@@ -64,7 +64,7 @@ class Symbol EXTEND_GC
 {
 private:
     const ucs4char* const name_;
-    const ucs4char* savedName_;
+    ucs4char* savedName_;
     static Symbols symbols;
 
 public:
@@ -72,26 +72,11 @@ public:
     {
 #ifdef DEBUG_VERSION
         savedName_ = ucs4string(name).strdup();
-#endif
-    }
-    const ucs4char* c_str()
-    {
-
-// N.B. Don't pass the local pointer to Symbol::intern
-#ifdef DEBUG_VERSION
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        ucs4string text(name_);
-        printf("<%s>", name_);fflush(stdout);
+        MOSH_ASSERT(savedName_ != NULL);
         ucs4string text2(savedName_);
-
-        MOSH_ASSERT(text.size() == text2.size());
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        MOSH_ASSERT(memcmp(savedName_, name_, text.size()) == 0);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 #endif
-        return name_;
-
     }
+    const ucs4char* c_str();
     static Object intern(const ucs4char* name)
     {
         Symbols::const_iterator it = symbols.find(name);

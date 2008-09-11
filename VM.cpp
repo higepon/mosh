@@ -158,7 +158,7 @@ void VM::loadFile(const ucs4string& file)
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         bool readErrorOccured = false;
-        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
+        for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
@@ -416,6 +416,7 @@ void VM::applyClosure(Object closure, Object args)
 // we need to save registers.
 Object VM::callClosureByName(Object procSymbol, Object arg)
 {
+    MOSH_ASSERT(procSymbol.isSymbol());
     static Object applyCode[] = {
         Object::makeRaw(Instruction::FRAME),
         Object::makeInt(8),
@@ -1720,6 +1721,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 // id is (format "~a:$:~a" libname symbolname)
 Object VM::splitId(Object id)
 {
+    MOSH_ASSERT(id.isSymbol());
     const ucs4string text = id.toSymbol()->c_str();
     ucs4string::size_type i = text.find(UC(":$:"));
     if (i == ucs4string::npos) {
@@ -1982,6 +1984,7 @@ void VM::setTopLevelGlobalValue(Object id, Object val)
 
 Object VM::idToTopLevelSymbol(Object id)
 {
+    MOSH_ASSERT(id.isSymbol());
     ucs4string name(UC("top level :$:"));
     name += id.toSymbol()->c_str();
     // don't use name variable directly, it is temporary!

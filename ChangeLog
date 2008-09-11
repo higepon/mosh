@@ -1,3 +1,7 @@
+2008-09-12  higepon  <higepon@users.sourceforge.jp>
+
+        * ErrorProcedures.cpp (raiseAfter): Fixed the bug of type.
+
 2008-09-07  higepon  <higepon@users.sourceforge.jp>
 
         * UTF8Codec.cpp (readWholeString): Added.

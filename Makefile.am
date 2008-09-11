@@ -99,7 +99,8 @@ CompoundCondition.cpp\
 Equivalent.h\
 Equivalent.cpp\
 Builtin.h\
-ucs4string.h
+ucs4string.h \
+ucs4string.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall -DDEBUG_VERSION
 #mosh_CFLAGS   = -O1  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
