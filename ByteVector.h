@@ -122,6 +122,7 @@ public:
 
     void s8set(int index, Object obj)
     {
+        MOSH_ASSERT(obj.isInt());
         data_[index] = (int8_t)obj.toInt();
     }
 
