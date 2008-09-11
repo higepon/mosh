@@ -109,6 +109,8 @@ void signal_handler(int signo)
 }
 #endif
 
+void compareRead(const char* file);
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -116,10 +118,11 @@ int main(int argc, char *argv[])
     bool isCompileString = false;
     bool isProfiler      = false;
     bool isR6RSBatchMode = false;
+    bool isCompareRead   = false;
     char* initFile = NULL;
 
 
-    while ((opt = getopt(argc, argv, "htvpVcl:b")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:br")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -144,6 +147,9 @@ int main(int argc, char *argv[])
             break;
         case 'c':
             isCompileString = true;
+            break;
+        case 'r':
+            isCompareRead = true;
             break;
         default:
             fprintf(stderr, "invalid option %c", opt);
@@ -181,34 +187,7 @@ int main(int argc, char *argv[])
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
 
-//     extern int yyparse(void);
-//     extern FILE *yyin;
-//     extern Object parsed;
-
-
-//     // yyparse の戻り値をしらべる
-//     // 文字列やポートから read できなければならない。これを調べる。
-//     printf("yyparse=%d\n", yyparse());
-//     outPort.toTextualOutputPort()->putDatum(parsed);
-//     printf("yyparse=%d\n", yyparse());
-//     outPort.toTextualOutputPort()->putDatum(parsed);
-//     printf("yyparse=%d\n", yyparse());
-//     outPort.toTextualOutputPort()->putDatum(parsed);
-//     if (yyparse()) {
-//         fprintf(stderr, "Error ! Error ! Error !\n");
-//         exit(1);
-//     }
-//    outPort.toTextualOutputPort()->putDatum(parsed);
-//     if (yyparse()) {
-//         fprintf(stderr, "Error ! Error ! Error !\n");
-//         exit(1);
-//     }
-//     outPort.toTextualOutputPort()->putDatum(parsed);
-//     exit(1);
-//    exit(1);
-
     // Do not call Symbol::intern before you load precompiled compiler!
-
     const Object compiler = getBuiltinCompiler();
     Symbol::initBuitinSymbols();
     theVM->importTopLevel();
@@ -218,60 +197,8 @@ int main(int argc, char *argv[])
         theVM->initProfiler();
     }
 #endif
-        bool isErrorOccured;
-//     FILE* fp = fopen("./hige.scm", "r");
-//     TextualInputPort* const in = Object::makeTextualInputPort(new FileBinaryInputPort(fp), transcoder).toTextualInputPort();
-
-//     for (Object p = in->getDatum2(isErrorOccured); !p.isEof(); p = in->getDatum2(isErrorOccured)) {
-//         outPort.toTextualOutputPort()->putDatum(p);
-//     }
-
-//     exit(-1);
-
-
-    FILE* fp1 = fopen(argv[optind], "r");
-    FILE* fp2 = fopen(argv[optind], "r");
-
-    long long a1 = 0;
-    long long a2 = 0;
-
-    struct timeval tv1, tv2, tv3;
-
-    TextualInputPort* const in1 = Object::makeTextualInputPort(new FileBinaryInputPort(fp1), transcoder).toTextualInputPort();
-
-    TextualInputPort* const in2 = Object::makeTextualInputPort(new FileBinaryInputPort(fp2), transcoder).toTextualInputPort();
-
-
-    for (;;) {
-    gettimeofday(&tv1, NULL);
-        const Object o1 = in1->getDatum(isErrorOccured);
-    gettimeofday(&tv2, NULL);
-         Object o2 = in2->getDatum2(isErrorOccured);
-    gettimeofday(&tv3, NULL);
-    a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
-    a2 += (tv3.tv_sec * 1000 * 1000 + tv3.tv_usec) - (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec);
-
-        if (o1.isEof()) {
-            break;
-        }
-
-        if (!equal(o1, o2)) {
-            printf("======= error ==============================================================\n");
-            outPort.toTextualOutputPort()->putDatum(o1);
-            printf("\n\n");
-            outPort.toTextualOutputPort()->putDatum(o2);
-            break;
-        } else {
-//             printf("=====================================================================\n");
-//             outPort.toTextualOutputPort()->putDatum(o1);
-//             printf("\n");
-        }
-    }
-    printf("higeponz %lld  %lld\n", a1, a2);
-     exit(EXIT_FAILURE);
 
     theVM->evaluate(compiler);
-
     theVM->evaluate(getBuiltinMatch());
 
     if (initFile != NULL) {
@@ -292,6 +219,8 @@ int main(int argc, char *argv[])
         }
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode();
+    } else if (isCompareRead) {
+        compareRead(argv[optind]);
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {
@@ -316,4 +245,56 @@ int main(int argc, char *argv[])
 
 extern "C" void dont_free(void* p)
 {
+}
+
+// compare "old read" and "new read"
+void compareRead(const char* file)
+{
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+
+    FILE* fp1 = fopen(file, "r");
+    FILE* fp2 = fopen(file, "r");
+    TextualInputPort* const in1 = Object::makeTextualInputPort(new FileBinaryInputPort(fp1), transcoder).toTextualInputPort();
+    TextualInputPort* const in2 = Object::makeTextualInputPort(new FileBinaryInputPort(fp2), transcoder).toTextualInputPort();
+
+
+    long long a1 = 0;
+    long long a2 = 0;
+
+    struct timeval tv1, tv2, tv3;
+
+    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
+    bool isErrorOccured = false;
+    for (;;) {
+        gettimeofday(&tv1, NULL);
+        const Object o1 = in1->getDatum(isErrorOccured);
+        gettimeofday(&tv2, NULL);
+        Object o2 = in2->getDatum2(isErrorOccured);
+        gettimeofday(&tv3, NULL);
+        a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
+        a2 += (tv3.tv_sec * 1000 * 1000 + tv3.tv_usec) - (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec);
+
+        if (o2.isEof()) {
+            break;
+        }
+
+//        port->putDatum(o2);
+
+              if (!equal(o1, o2)) {
+            printf("======= error ==============================================================\n");
+             port->putDatum(o1);
+            printf("\n\n");
+            port->putDatum(o2);
+            break;
+        } else {
+//              outPort.toTextualOutputPort()->putDatum(o1);
+//              outPort.toTextualOutputPort()->putDatum(o2);
+//             printf("=====================================================================\n");
+//             outPort.toTextualOutputPort()->putDatum(o1);
+//             printf("\n");
+        }
+    }
+    printf("%lld:%lld :", a1, a2);
+
+
 }

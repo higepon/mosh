@@ -55,8 +55,11 @@ identifier  ({initial}{subsequent}*)|{peculiar-identifier}
 initial  {constituent}|{special-initial}|{inline-hex-escape}
 letter  [a-z]|[A-Z]
 
+identifier-with-space \|[^\|]+\|
+
+
 /* not enough */
-constituent {letter}|[\-]|[\x80-\xffff]
+constituent {letter}|[\-\.\+@]
 
 special-initial  [!\$%&\*\/\:\<=\>\?\^\_~]
 
@@ -79,7 +82,7 @@ character-literal #\\{single-char}+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
                                   /*good-charactor-literal {character-literal}{delimiter}*/
 
-good-charactor-literal #\\{not-delimiter}+{delimiter}
+good-charactor-literal #\\[^\n ]{not-delimiter}*{delimiter}
 
 string  \"{string-element}*\"
 
@@ -161,6 +164,12 @@ digit-16 {hex-digit}
 <COMMENT>"|"+"#"         BEGIN(INITIAL);
 {identifier} {
   yylval.stringValue = yytext;
+  return IDENTIFIER;
+}
+{identifier-with-space} {
+    yytext[yyleng - 1] = '\0';
+  yylval.stringValue = yytext + 1;
+
   return IDENTIFIER;
 }
 {string} {

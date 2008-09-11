@@ -375,10 +375,6 @@
  ]
 (eqt #(LET_FRAME CONSTANT 0 PUSH ENTER NOP REFER_LOCAL 0 PUSH CONSTANT 10 NUMBER_EQUAL TEST 4 REFER_LOCAL 0 LOCAL_JMP 15 REDUCE REFER_LOCAL 0 PUSH CONSTANT 1 NUMBER_ADD PUSH SHIFT 1 1 LOCAL_JMP -23 LEAVE 1) (check-compile-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))))
 
-[check-compile-optimize
- (vector? #(3))
- ]
-(eqt #(CONSTANT #0=#(3) VECTOR_P) (check-compile-optimize (vector? #0#)))
 
 
 [check-compile-optimize
