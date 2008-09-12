@@ -1,6 +1,5 @@
-(display "hige")
-(make-record-type-descriptor 'point #f #f #f #f
-                                                 '#((mutable x) (mutable y)))
+(let ([p (open-string-input-port "123 456")])
+  (display (read p)))
 (exit)
 (#\space)
 

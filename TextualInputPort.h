@@ -61,11 +61,15 @@ public:
 
 private:
     BinaryInputPort* port_;
+
+protected:
     Codec* codec_;
+private:
     Transcoder* coder_;
     ucs4string buffer_;
     int line_;
     Object error_;
+
 };
 
 }; // namespace scheme

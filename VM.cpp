@@ -743,6 +743,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(ASSIGN_FREE)
         {
             const Object n = fetchOperand();
+            MOSH_ASSERT(n.isInt());
 #ifdef DUMP_ALL_INSTRUCTIONS
             const int m = n.toInt();
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
@@ -1087,7 +1088,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (operand.toInt() <= DebugInstruction::OPERAND_MAX) logBuf[1] = operand.toInt();
 #endif
             TRACE_INSN1("LEAVE", "(~d)\n", operand);
-
+            MOSH_ASSERT(operand.isInt());
             Object* const sp = sp_ - operand.toInt();
 
             const Object fpObject = index(sp, 0);
@@ -1116,7 +1117,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(LIST)
         {
-            const int num = fetchOperand().toInt();
+            const Object numObject = fetchOperand();
+            MOSH_ASSERT(numObject.isInt());
+            const int num = numObject.toInt();
             Object list = Object::Nil;
             for (int i = 0; i < num; i++) {
                 list = Object::cons(index(sp_, i), list);
@@ -1129,6 +1132,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object n = fetchOperand();
             TRACE_INSN1("LOCAL_JMP", "(~d)\n", n);
+            MOSH_ASSERT(n.isInt());
             pc_ += n.toInt() - 1;
             NEXT;
         }
@@ -1142,6 +1146,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(MAKE_VECTOR)
         {
             const Object n = index(sp_, 0);
+            MOSH_ASSERT(n.isInt());
             ac_ = Object::makeVector(n.toInt(), ac_);
             sp_--;
             NEXT1;
@@ -1275,7 +1280,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             bool errorOccured = false;
             TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
-            ac_ = inputPort->getDatum(errorOccured);
+            ac_ = inputPort->getDatum2(errorOccured);
+            LOG1("read = ~a\n", ac_);
             if (errorOccured) {
                 callLexicalViolationAfter("read", inputPort->error());
             }
@@ -1292,6 +1298,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("REDUCE");
             const Object n = fetchOperand();
+            MOSH_ASSERT(n.isInt());
             sp_ = fp_ + n.toInt();;
             NEXT;
         }
@@ -1304,6 +1311,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
 
+            MOSH_ASSERT(operand.isInt());
             ac_ = referFree(operand);
             TRACE_INSN1("REFER_FREE", "(~d)\n", operand);
             NEXT1;
@@ -1429,7 +1437,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL_PUSH)
         {
-            push(referLocal(fetchOperand().toInt()));
+            const Object n = fetchOperand();
+            MOSH_ASSERT(n.isInt());
+            push(referLocal(n.toInt()));
             TRACE_INSN0("REFER_LOCAL_PUSH0");
             NEXT;
         }
@@ -1541,8 +1551,13 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(SHIFT_CALL)
         {
-            const int depth = fetchOperand().toInt();
-            const int diff  = fetchOperand().toInt();
+            const Object depthObject = fetchOperand();
+            const Object diffObject = fetchOperand();
+
+            MOSH_ASSERT(depthObject.isInt());
+            MOSH_ASSERT(diffObject.isInt());
+            const int depth = depthObject.toInt();
+            const int diff  = diffObject.toInt();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
             operand = fetchOperand();
             goto call_entry;

@@ -54,6 +54,7 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | STRING
             {
                 ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, yyleng));
+                printf("lexme_datum %s", text.data());
                 $$ = readString(text);
             }
             | REGEXP

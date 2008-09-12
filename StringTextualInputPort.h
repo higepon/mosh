@@ -46,10 +46,12 @@ public:
     void unGetChar(ucs4char c);
     ucs4string toString();
     int close();
+    int getU8();
 
 private:
     ucs4string buffer_;
     ucs4string::size_type index_;
+    ucs4string::size_type byteIndex_;
 };
 
 }; // namespace scheme

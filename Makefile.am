@@ -51,6 +51,8 @@ StringTextualInputPort.h \
 StringTextualInputPort.cpp \
 UTF8Codec.cpp \
 UTF8Codec.h \
+UTF32Codec.cpp \
+UTF32Codec.h \
 SString.h            \
 Symbol.h             \
 config.h             \

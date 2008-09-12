@@ -38,12 +38,11 @@
 using namespace scheme;
 
 static TextualInputPort* in;
-static Codec* codec;
 
 Codec* parser_codec()
 {
-    MOSH_ASSERT(codec);
-    return codec;
+    MOSH_ASSERT(in->codec());
+    return in->codec();
 }
 
 
@@ -67,7 +66,6 @@ Object scheme::read2(TextualInputPort* port, bool& errorOccured)
     extern Object parsed;
     MOSH_ASSERT(port);
     in = port;
-    codec = in->codec();
     const bool isParseError = yyparse() == 1;
     if (isParseError) {
         errorOccured = true;
@@ -79,6 +77,7 @@ Object scheme::read2(TextualInputPort* port, bool& errorOccured)
 
 ucs4string readString(const ucs4string& s)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     ucs4string ret;
     for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
         const ucs4char ch = *it;

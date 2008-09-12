@@ -31,16 +31,30 @@
 
 #include "Object.h"
 #include "StringTextualInputPort.h"
+#include "UTF32Codec.h"
 
 using namespace scheme;
 
-StringTextualInputPort::StringTextualInputPort(const ucs4string& str) : buffer_(str), index_(0)
+StringTextualInputPort::StringTextualInputPort(const ucs4string& str) : buffer_(str), index_(0), byteIndex_(0)
 {
+    codec_ = new UTF32Codec;
 }
 
 StringTextualInputPort::~StringTextualInputPort()
 {
 }
+
+int StringTextualInputPort::getU8()
+{
+    if (buffer_.size() * 4 == byteIndex_)
+    {
+        return EOF;
+    }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    const char* p = reinterpret_cast<const char*>(buffer_.data());
+    return p[byteIndex_++];
+}
+
 
 ucs4char StringTextualInputPort::getChar()
 {

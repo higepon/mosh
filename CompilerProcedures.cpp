@@ -633,7 +633,7 @@ Object pass4FixupLabelCollect(Object vec)
             rv->set(j + 1, v->ref(i + 1));
             i += 2;
             j += 2;
-        } else if (insn.isVector() && insn.toVector()->length() > 0 &&
+        } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isInt() &&
                    insn.toVector()->ref(0).toInt() == LABEL) {
             i++;
             table->set(insn, Object::makeInt(j));

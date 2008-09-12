@@ -1,5 +1,7 @@
 2008-09-12  higepon  <higepon@users.sourceforge.jp>
 
+        * CompilerProcedures.cpp (pass4FixupLabelCollect): Fixed wrong type cast.
+
         * Object.h (DECL_TO): Added assert for wrong type cast.
 
         * ErrorProcedures.cpp (raiseAfter): Fixed the bug of type.
