@@ -122,6 +122,7 @@ inline Object VM::referLocal(int n)
 
 inline Object VM::referFree(Object n)
 {
+    MOSH_ASSERT(n.isInt());
     return dc_.toClosure()->referFree(n.toInt());
 }
 

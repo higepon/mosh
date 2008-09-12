@@ -60,10 +60,14 @@ Object getConditionRtd()
 // subtype of &condition ?
 bool isSubTypeOfCondition(Object rtd)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const Object conditionRtd = getConditionRtd();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (conditionRtd.isFalse()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return false;
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return rtd.toRecordTypeDescriptor()->isA(conditionRtd.toRecordTypeDescriptor());
 }
 
@@ -77,6 +81,7 @@ void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Objec
 
 Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     DeclareProcedureName("make-record-type-descriptor");
     checkArgumentLength(6);
     argumentCheckSymbol(0, name);
@@ -85,9 +90,11 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
     argumentCheckBoolean(3, isSealed);
     argumentCheckBoolean(4, isOpaque);
     argumentCheckVector(5, fields);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object rtd;
     // nongenerative
     if (uid.isFalse()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         rtd = Object::makeRecordTypeDescriptor(name,
                                                parent,
                                                uid,
@@ -96,6 +103,7 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
                                                fields);
     // generative
     } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         static ObjectMap generatedRtd;
         ObjectMap::const_iterator found = generatedRtd.find(uid);
         if (found != generatedRtd.end()) {
@@ -110,14 +118,20 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
             generatedRtd[uid] = rtd;
         }
     }
-
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     // psyntax requires &xxx-rtd global defined.
     if (name == Symbol::intern(UC("&condition"))) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("&condition-rtd")), rtd);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (isSubTypeOfCondition(rtd)) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         setTopLevelGlobalValueWithPostfix(name, UC("-rtd"), rtd);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return rtd;
 }
 
@@ -131,10 +145,14 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
 
     const Object rcd =  Object::makeRecordConstructorDescriptor(rtd, parentRcd, protocol);
 
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     // psyntax requires &xxx-rcd global defined.
     if (isSubTypeOfCondition(rtd)) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         setTopLevelGlobalValueWithPostfix(rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return rcd;
 }
 

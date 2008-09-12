@@ -265,6 +265,7 @@ Object findFreeCall(Vector* v, Object l, Object canFrees, Object labelsSeen)
 Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
     Vector* v = i.toVector();
+    MOSH_ASSERT(v->ref(0).isInt());
     switch(v->ref(0).toInt()) {
     case CONST:
         return Object::Nil;
@@ -375,6 +376,7 @@ Object findSets(Object iform, Object lvars)
 Object findSetsRec(Object i, Object lvars)
 {
     Vector* v = i.toVector();
+    MOSH_ASSERT(v->ref(0).isInt());
     switch(v->ref(0).toInt()) {
     case CONST:
         return Object::Nil;

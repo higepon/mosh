@@ -73,6 +73,7 @@ int CustomBinaryInputPort::getU8()
     const Object start = Object::makeInt(0);
     const Object count = Object::makeInt(1);
     const Object result = theVM->callClosure3(readProc_, bv, start, count);
+    MOSH_ASSERT(result.isInt());
     if (0 == result.toInt()) {
         return EOF;
     }

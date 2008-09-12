@@ -257,6 +257,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::LEAVE:
     {
         flush();
+        MOSH_ASSERT(argument1.isInt());
         const int index = argument1.toInt();
         if (1 == index) {
             codePacket.setType(CodePacket::ARGUMENT0);
@@ -270,6 +271,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::REFER_LOCAL:
     {
         flush();
+        MOSH_ASSERT(argument1.isInt());
         const int index = argument1.toInt();
         switch(index) {
         case 0:
@@ -296,6 +298,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     }
     case Instruction::CALL:
     {
+        MOSH_ASSERT(argument1.isInt());
         const int index = argument1.toInt();
         if (index <= 3) {
             flush();
@@ -329,6 +332,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::REFER_FREE:
     {
         flush();
+        MOSH_ASSERT(argument1.isInt());
         const int index = argument1.toInt();
         if (0 == index) {
             codePacket.setType(CodePacket::ARGUMENT0);
@@ -352,6 +356,7 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::RETURN:
     {
         flush();
+        MOSH_ASSERT(argument1.isInt());
         const int index = argument1.toInt();
         switch(index) {
         case 1:

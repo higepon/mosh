@@ -607,8 +607,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     retCode[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     retCode[1] = operand;
 
+                    MOSH_ASSERT(operand.isInt());
                     const int argc = operand.toInt();
                     pc_  = retCode;
+
                     ac_.toCProcedure()->call(argc, sp_ - argc);
                 } else {
                     CProcedure* const cprocedure = ac_.toCProcedure();
@@ -616,7 +618,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     pc_  = cprocedure->returnCode;
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     pc_[1] = operand;
-
+                    MOSH_ASSERT(operand.isInt());
                     const int argc = operand.toInt();
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                 }
@@ -628,6 +630,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeInt(sp_ - stack_)));
                 }
                 COUNT_CALL(ac_);
+                MOSH_ASSERT(operand.isInt());
                 const int argLength = operand.toInt();
                 const int requiredLength = c->argLength;
                 dc_ = ac_;
@@ -661,6 +664,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 COUNT_CALL(ac_);
                 cl_ = ac_;
                 Callable* const callable = ac_.toCallable();
+                MOSH_ASSERT(operand.isInt());
                 const int argc = operand.toInt();
                 // set pc_ before call() for pointing where to return.
                 pc_  = callable->returnCode;
@@ -673,6 +677,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //                goto return_entry;
             } else if (ac_.isRegexp()) {
                 extern Object rxmatchEx(Object args);
+                MOSH_ASSERT(operand.isInt());
                 const int argc = operand.toInt();
                 Object argv[2];
                 argv[0] = ac_;
@@ -686,6 +691,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 ac_ = rxmatchCProc->call(argc + 1, argv);
             } else if (ac_.isRegMatch()) {
                 extern Object regMatchProxy(Object args);
+                MOSH_ASSERT(operand.isInt());
                 const int argc = operand.toInt();
                 Object argv[2];
                 argv[0] = ac_;
@@ -769,6 +775,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #endif
             TRACE_INSN1("ASSIGN_LOCAL", "(~d)\n", n);
 //            index(fp_, n.toInt()).toBox()->set(ac_);
+            MOSH_ASSERT(n.isInt());
             referLocal(n.toInt()).toBox()->set(ac_);
 //            index(fp_ + , n.toInt()).toBox()->set(ac_);
             NEXT;
@@ -781,6 +788,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
             TRACE_INSN1("BOX", "(~a)\n", n);
+            MOSH_ASSERT(n.isInt());
             indexSet(sp_, n.toInt(), Object::makeBox(index(sp_, n.toInt())));
             NEXT;
         }
@@ -880,13 +888,39 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CLOSURE)
         {
-            const int skipSize         = fetchOperand().toInt();
-            const int argLength        = fetchOperand().toInt();
-            const bool isOptionalArg   = !fetchOperand().isFalse();
-            const int freeVariablesNum = fetchOperand().toInt();
-            const int maxStack         = fetchOperand().toInt();
+//             const int skipSize         = fetchOperand().toInt();
+//             const int argLength        = fetchOperand().toInt();
+//             const bool isOptionalArg   = !fetchOperand().isFalse();
+//             const int freeVariablesNum = fetchOperand().toInt();
+//             const int maxStack         = fetchOperand().toInt();
+//             const Object sourceInfo    = fetchOperand();
+// //            LOG1("(CLOSURE) source=~a\n", sourceInfo);
+//             TRACE_INSN1("CLOSURE", "(n => ~d)\n", Object::makeInt(freeVariablesNum));
+//             ac_ = Object::makeClosure(pc_, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
+//             sp_ -= freeVariablesNum;
+//             pc_ += skipSize - 6;
+//             NEXT1;
+            const Object skipSizeObject      = fetchOperand();
+            const Object argLengthObject     = fetchOperand();
+            const Object isOptionalArgObjecg   = fetchOperand();
+            const Object freeVariablesNumObject = fetchOperand();
+            const Object maxStackObject         = fetchOperand();
             const Object sourceInfo    = fetchOperand();
+
+            MOSH_ASSERT(skipSizeObject.isInt());
+            const int skipSize         = skipSizeObject.toInt();
+
+            MOSH_ASSERT(argLengthObject.isInt());
+            const int argLength        = argLengthObject.toInt();
+            const bool isOptionalArg   = !isOptionalArgObjecg.isFalse();
+
+            MOSH_ASSERT(freeVariablesNumObject.isInt());
+            const int freeVariablesNum = freeVariablesNumObject.toInt();
+            MOSH_ASSERT(maxStackObject.isInt());
+            const int maxStack         =maxStackObject.toInt();
+
 //            LOG1("(CLOSURE) source=~a\n", sourceInfo);
+
             TRACE_INSN1("CLOSURE", "(n => ~d)\n", Object::makeInt(freeVariablesNum));
             ac_ = Object::makeClosure(pc_, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
             sp_ -= freeVariablesNum;
@@ -929,6 +963,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(DISPLAY)
         {
             const Object n = fetchOperand();
+            MOSH_ASSERT(n.isInt());
             const int freeVariablesNum = n.toInt();
 
            // create display closure
@@ -941,6 +976,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             TRACE_INSN0("ENTER");
             const Object n = fetchOperand(); // not used
+            MOSH_ASSERT(n.isInt());
             fp_ = sp_ - n.toInt();
             NEXT;
         }
@@ -949,6 +985,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             push(ac_);
             TRACE_INSN0("ENTER");
             const Object n = fetchOperand(); // not used
+            MOSH_ASSERT(n.isInt());
             fp_ = sp_ - n.toInt();
             NEXT;
         }
@@ -989,7 +1026,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int m = n.toInt();
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
-
+            MOSH_ASSERT(n.isInt());
             const int skipSize = n.toInt();
             push(Object::makeObjectPointer(pc_ + skipSize - 1));
             push(dc_);
@@ -1349,6 +1386,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
 
+            MOSH_ASSERT(operand.isInt());
             ac_ = referLocal(operand.toInt());
             TRACE_INSN1("REFER_LOCAL", "(~d)\n", operand);
             NEXT1;
@@ -1443,7 +1481,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (m <= DebugInstruction::OPERAND_MAX) logBuf[1] = m;
 #endif
 
-//            LOG1("RETURN(~d)\n", operand);
+            MOSH_ASSERT(operand.isInt());
             Object* const sp = sp_ - operand.toInt();
 
             const Object fpObject = index(sp, 0);
@@ -1486,8 +1524,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(SHIFT)
         {
-            const int depth = fetchOperand().toInt();
-            const int diff  = fetchOperand().toInt();
+            const Object depthObject = fetchOperand();
+            MOSH_ASSERT(depthObject.isInt());
+
+            const int depth = depthObject.toInt();
+
+            const Object diffObject = fetchOperand();
+            MOSH_ASSERT(diffObject.isInt());
+            const int diff  = diffObject.toInt();
 #ifdef DUMP_ALL_INSTRUCTIONS
             if (depth <= DebugInstruction::OPERAND_MAX) logBuf[1] = depth;
 #endif
@@ -1515,6 +1559,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         test_entry:
             if (ac_.isFalse()) {
                 const Object skipSize = fetchOperand();
+                MOSH_ASSERT(skipSize.isInt());
                 skip(skipSize.toInt() - 1);
             } else {
                 pc_++;
@@ -1528,6 +1573,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_LE_TEST)
         {
+            MOSH_ASSERT(index(sp_, 0).isInt());
+            MOSH_ASSERT(ac_.isInt());
             ac_ = Object::makeBool(index(sp_, 0).toInt() <= ac_.toInt());
             sp_--;
             goto test_entry;
@@ -1570,6 +1617,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
         vector_ref_entry:
             const Object v = index(sp_, 0);
+            MOSH_ASSERT(ac_.isInt());
             if (v.isVector()) {
                 ac_ = v.toVector()->ref(ac_.toInt());
                 sp_--;
@@ -1585,6 +1633,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         vector_set_entry:
             const Object v = index(sp_, 1);
             const Object n = index(sp_, 0);
+            MOSH_ASSERT(n.isInt());
             if (v.isVector()) {
                 v.toVector()->set(n.toInt(), ac_);
                 ac_ = Object::Undef;
@@ -1631,7 +1680,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             //  values are stored in [valuez vector] and [a-reg] like following.
             //  #(b c d)
             //  [ac_] = a
-            const int num = fetchOperand().toInt();
+            const Object numObject = fetchOperand();
+            MOSH_ASSERT(numObject.isInt());
+            const int num = numObject.toInt();
             if (num > maxNumValues_ + 1) {
                 callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeInt(num)));
             } else {
@@ -1653,8 +1704,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RECEIVE)
         {
-            const int reqargs = fetchOperand().toInt();
-            const int optarg  = fetchOperand().toInt();
+            const Object reqargsObject = fetchOperand();
+            const Object optargObject = fetchOperand();
+            MOSH_ASSERT(reqargsObject.isInt());
+            const int reqargs = reqargsObject.toInt();
+            MOSH_ASSERT(optargObject.isInt());
+            const int optarg  = optargObject.toInt();
             if (numValues_ < reqargs) {
                 callAssertionViolationAfter("receive",
                                             "received fewer values than expected",

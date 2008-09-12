@@ -30,6 +30,8 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
+#include "HeapObject.h"
 #include "SString.h"
 #include "Pair.h"
 #include "Pair-inl.h"

@@ -1,3 +1,7 @@
+(display "hige")
+(make-record-type-descriptor 'point #f #f #f #f
+                                                 '#((mutable x) (mutable y)))
+(exit)
 (#\space)
 
 
@@ -34,7 +38,6 @@
 ;; (define-macro (let-values clause . body)
 ;; `(receive ,(car clause
 ;; )
->>>>>>> .r387
 
 ;; quick hack
 (define-macro (let-values clause . body)
@@ -43,7 +46,6 @@
 (define list-head take)
 
 
-<<<<<<< .mine
 
 ;; (let ([hashtable (make-eq-hashtable)])
 ;;   (hashtable-set! hashtable 'red 'apple)

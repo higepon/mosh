@@ -69,6 +69,7 @@ Object scheme::conditionPEx(int argc, const Object* argv)
     const Object object = argv[0];
     if (object.isRecord()) {
         const Object rtd = object.toRecord()->rtd();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::makeBool(isSubTypeOfCondition(rtd));
     } else if (object.isCompoundCondition()) {
         return Object::True;
