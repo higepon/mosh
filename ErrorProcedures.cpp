@@ -234,14 +234,14 @@ Object makeAssertionCondition()
 
 Object makeCondition(const ucs4char* rcdName)
 {
-    const Object rcd = theVM->getTopLevelGlobalValue(rcdName);
+    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
 }
 
 Object makeCondition(const ucs4char* rcdName, Object content)
 {
-    const Object rcd = theVM->getTopLevelGlobalValue(rcdName);
+    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }

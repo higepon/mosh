@@ -96,14 +96,14 @@ Object TextualInputPort::error() const
     return error_;
 }
 
+Object TextualInputPort::getDatumOld(bool& errorOccured)
+{
+    return readOld(this, errorOccured);
+}
+
 Object TextualInputPort::getDatum(bool& errorOccured)
 {
     return read(this, errorOccured);
-}
-
-Object TextualInputPort::getDatum2(bool& errorOccured)
-{
-    return read2(this, errorOccured);
 }
 
 int TextualInputPort::close()

@@ -27,7 +27,7 @@ paragraph-separator \x20\x29
 /* Zs \x20|\xA0|\x16\x80|\x18\x0E|\x20\x00|\x20\x01|\x20\x02|\x20\x03|\x20\x04|\x20\x05|\x20\x06|\x20\x07|\x20\x08|\x20\x09|\x20\x0A|\x20\x2F|\x20\x5F|\x30\x00
  */
 /*  ひょっとしてこれは space( では？
-Zl \x20\x28 
+Zl \x20\x28
 Zp \x20\x29
 */
 
@@ -82,8 +82,8 @@ character-literal #\\{single-char}+
 character  ({character-literal}|#\\{character-name}|#\\x{hex-scalar-value})
                                   /*good-charactor-literal {character-literal}{delimiter}*/
 
-good-charactor-literal #\\[^\n ]{not-delimiter}*{delimiter}
-
+good-charactor-literal (#\\x|#\\[^\n x]{not-delimiter}*){delimiter}
+good-charactor-hex #\\x{hex-scalar-value}{delimiter}
 string  \"{string-element}*\"
 
 /* todo 最初の要素の一文字が怪しい */
@@ -149,7 +149,7 @@ digit-16 {hex-digit}
 [(\[] {
         return LEFT_PAREN; }
 "#(" {
-    return VECTOR_START; 
+    return VECTOR_START;
 
 }
 "#vu8(" {
@@ -192,7 +192,7 @@ digit-16 {hex-digit}
 {dot} {
     return DOT; }
 
-<<EOF>> { 
+<<EOF>> {
     return END_OF_FILE;
 }
 
@@ -221,6 +221,12 @@ digit-16 {hex-digit}
 "#,"                  { return ABBV_UNSYNTAX; }
 "#,@"                 { return ABBV_UNSYNTAXSPLICING; }
 
+{good-charactor-hex} {
+    yyless(yyleng - 1); // ungetc the delimiter
+    // skip three characters '#' '\\' 'x'
+    yylval.charValue = strtol(yytext + 3, NULL, 16);
+    return CHARACTER;
+}
     {good-charactor-literal} {
     ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)yytext, yyleng - 1));
     if (text == UC("#\\nul")) {
@@ -264,7 +270,7 @@ digit-16 {hex-digit}
     return REGEXP;
 }
 
-{comment} { 
+{comment} {
 }
 
 %%

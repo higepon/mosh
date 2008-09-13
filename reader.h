@@ -35,8 +35,8 @@
 #include "scheme.h"
 
 namespace scheme {
+    Object readOld(TextualInputPort* port, bool& errorOccured);
     Object read(TextualInputPort* port, bool& errorOccured);
-    Object read2(TextualInputPort* port, bool& errorOccured);
 };
 
 typedef struct {

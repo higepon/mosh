@@ -60,7 +60,7 @@ TextualInputPort* parser_port()
 
 
 
-Object scheme::read2(TextualInputPort* port, bool& errorOccured)
+Object scheme::read(TextualInputPort* port, bool& errorOccured)
 {
     extern int yyparse ();
     extern Object parsed;
@@ -77,7 +77,6 @@ Object scheme::read2(TextualInputPort* port, bool& errorOccured)
 
 ucs4string readString(const ucs4string& s)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     ucs4string ret;
     for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
         const ucs4char ch = *it;
@@ -113,12 +112,35 @@ ucs4string readString(const ucs4string& s)
             case 'r':
                 ret += 0x0d;
                 break;
+            case 'x':
+            {
+                ucs4char currentChar = 0;
+                for (int i = 0; ; i++) {
+                    const ucs4char hexChar = *(++it);
+                    if (it == s.end()) {
+                        fprintf(stderr, "invalid \\x in string end");
+                        break;
+                    } else if (hexChar == ';') {
+                        ret += currentChar;
+                        break;
+                    } else if (isdigit(hexChar)) {
+                        currentChar = (currentChar << (i * 4)) | (hexChar - '0');
+                    } else if ('a' <= hexChar && hexChar <= 'f') {
+                        currentChar = (currentChar << (i * 4)) | (hexChar - 'a' + 10);
+                    } else if ('A' <= hexChar && hexChar <= 'F') {
+                        currentChar = (currentChar << (i * 4)) | (hexChar - 'A' + 10);
+                    } else {
+                        fprintf(stderr, "invalid \\x in string <%c>", hexChar);
+                        break;
+                    }
+                }
+                break;
+            }
             default:
                 ret += ch;
                 ret += ch2;
                 break;
             }
-
         } else {
             ret += ch;
         }

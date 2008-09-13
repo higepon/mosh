@@ -29,46 +29,44 @@
  *  $Id: StringTextualInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "scheme.h"
 #include "Object.h"
 #include "StringTextualInputPort.h"
-#include "UTF32Codec.h"
+#include "UTF8Codec.h"
+#include "Transcoder.h"
+#include "ByteArrayBinaryInputPort.h"
 
 using namespace scheme;
 
-StringTextualInputPort::StringTextualInputPort(const ucs4string& str) : buffer_(str), index_(0), byteIndex_(0)
+BinaryInputPort* stringToUTF8(const ucs4string& str)
 {
-    codec_ = new UTF32Codec;
+    UTF8Codec codec;
+    ::gc_vector<uint8_t> utf8Data;
+    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
+        uint8_t buffer[sizeof(ucs4char)];
+        const int size = codec.out(buffer, *it);
+        for (int i = 0; i < size; i++) {
+            utf8Data.push_back(buffer[i]);
+        }
+    }
+    uint8_t* ret = new(GC) uint8_t[utf8Data.size()];
+    for (::gc_vector<uint8_t>::size_type i = 0; i < utf8Data.size(); i++) {
+        ret[i] = utf8Data[i];
+    }
+    return new ByteArrayBinaryInputPort(ret, utf8Data.size());
+}
+
+// we can't parse UTF32, so convert into UTF8.
+// ugly, ugly.
+// We need flex for multi byte character.
+StringTextualInputPort::StringTextualInputPort(const ucs4string& str)
+  : TextualInputPort(stringToUTF8(str),
+                     new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR))
+{
 }
 
 StringTextualInputPort::~StringTextualInputPort()
 {
-}
-
-int StringTextualInputPort::getU8()
-{
-    if (buffer_.size() * 4 == byteIndex_)
-    {
-        return EOF;
-    }
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    const char* p = reinterpret_cast<const char*>(buffer_.data());
-    return p[byteIndex_++];
-}
-
-
-ucs4char StringTextualInputPort::getChar()
-{
-    if (buffer_.size() == index_)
-    {
-        return EOF;
-    }
-    return buffer_[index_++];
-}
-
-void StringTextualInputPort::unGetChar(ucs4char c)
-{
-    if (EOF == c) return;
-    index_--;
 }
 
 ucs4string StringTextualInputPort::toString()

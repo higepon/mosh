@@ -42,16 +42,16 @@ public:
     StringTextualInputPort(const ucs4string& str);
     ~StringTextualInputPort();
 
-    ucs4char getChar();
-    void unGetChar(ucs4char c);
+//     ucs4char getChar();
+//     void unGetChar(ucs4char c);
     ucs4string toString();
     int close();
-    int getU8();
+//    int getU8();
 
 private:
-    ucs4string buffer_;
-    ucs4string::size_type index_;
-    ucs4string::size_type byteIndex_;
+//     ucs4string buffer_;
+//     ucs4string::size_type index_;
+//     ucs4string::size_type byteIndex_;
 };
 
 }; // namespace scheme

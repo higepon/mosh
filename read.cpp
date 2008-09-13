@@ -146,7 +146,7 @@ typedef scheme::TextualInputPort ScmPort;
 #define Scm_Intern(s) Symbol::intern(s->data().c_str())
 #define SCM_ASSERT(expr)   {if (!(expr)) printf("assert"#expr);}
 #define SCM_MAKE_CHAR(ch) Object::makeChar(ch)
-#define Scm_Read scheme::read
+#define Scm_Read scheme::readOld
 #define Scm_RegComp(a, b) (a)
 #define SCM_REGEXP_CASE_FOLD      (1L<<0)
 #define makeString(s) Object::makeString(s)

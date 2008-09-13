@@ -51,8 +51,6 @@ StringTextualInputPort.h \
 StringTextualInputPort.cpp \
 UTF8Codec.cpp \
 UTF8Codec.h \
-UTF32Codec.cpp \
-UTF32Codec.h \
 SString.h            \
 Symbol.h             \
 config.h             \
@@ -264,6 +262,7 @@ test:all-tests.scm ./mosh
 	(cd r6rs-examples && ../mosh -b condition-test.ss)
 	(cd r6rs-examples && ../mosh -b exception-test.ss)
 	(cd r6rs-test-suite && $(MAKE) $@)
+	(cd r6rs-examples && ../mosh -b unicode-test.ss)
 
 all-tests.scm: ./test-data.scm
 	@GOSH@ ./scripts/gen-test.scm $< > $@

@@ -1548,6 +1548,7 @@ val
         "("
         (lambda (in)
           (apply read (list in)))))
+(#t (eq? #\A #\x41))
 
 
 ;;     (point2-x (make-point 1 2))))]

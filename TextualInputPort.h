@@ -53,17 +53,16 @@ public:
     virtual ucs4string toString();
     virtual void setError(Object error);
     virtual Object error() const;
+    virtual Object getDatumOld(bool& errorOccured);
     virtual Object getDatum(bool& errorOccured);
-    virtual Object getDatum2(bool& errorOccured);
     virtual int close();
     virtual Transcoder* transcoder() const;
     virtual Codec* codec() const;
 
 private:
-    BinaryInputPort* port_;
 
-protected:
     Codec* codec_;
+    BinaryInputPort* port_;
 private:
     Transcoder* coder_;
     ucs4string buffer_;

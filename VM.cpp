@@ -158,7 +158,7 @@ void VM::loadFile(const ucs4string& file)
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         bool readErrorOccured = false;
-        for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
+        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
@@ -1280,8 +1280,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             bool errorOccured = false;
             TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
-            ac_ = inputPort->getDatum2(errorOccured);
-            LOG1("read = ~a\n", ac_);
+            ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
                 callLexicalViolationAfter("read", inputPort->error());
             }
@@ -2054,6 +2053,9 @@ void VM::setTopLevelGlobalValue(Object id, Object val)
 
 Object VM::idToTopLevelSymbol(Object id)
 {
+    if (!id.isSymbol()) {
+        LOG1("id=~a", id);
+    }
     MOSH_ASSERT(id.isSymbol());
     ucs4string name(UC("top level :$:"));
     name += id.toSymbol()->c_str();

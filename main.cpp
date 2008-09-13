@@ -285,9 +285,9 @@ void compareRead(const char* file)
     bool isErrorOccured = false;
     for (;;) {
         gettimeofday(&tv1, NULL);
-        const Object o1 = in1->getDatum(isErrorOccured);
+        const Object o1 = in1->getDatumOld(isErrorOccured);
         gettimeofday(&tv2, NULL);
-        Object o2 = in2->getDatum2(isErrorOccured);
+        Object o2 = in2->getDatum(isErrorOccured);
         gettimeofday(&tv3, NULL);
 
         a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
