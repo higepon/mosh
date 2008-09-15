@@ -30,7 +30,7 @@ static ucs4char* token = buffer;
 extern YYSTYPE yylval;
 // N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-#define DEBUG_SCANNER 1
+#define DEBUG_SCANNER 0
 
 
 class ScannerHelper {
