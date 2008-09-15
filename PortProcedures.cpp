@@ -117,7 +117,7 @@ Object scheme::readEx(int argc, const Object* argv)
         argumentAsTextualInputPort(0, textualInputPort);
         inputPort = textualInputPort;
     }
-    const Object object = inputPort->getDatum(errorOccured);
+    const Object object = inputPort->getDatumOld(errorOccured);
     if (errorOccured) {
         callLexicalViolationAfter(procedureName, inputPort->error());
         return Object::Undef;

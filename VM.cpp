@@ -158,7 +158,7 @@ void VM::loadFile(const ucs4string& file)
         const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = port.toTextualInputPort();
         bool readErrorOccured = false;
-        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
+        for (Object o = p->getDatumOld(readErrorOccured); !o.isEof(); o = p->getDatumOld(readErrorOccured)) {
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
@@ -1280,7 +1280,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             bool errorOccured = false;
             TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
-            ac_ = inputPort->getDatum(errorOccured);
+            ac_ = inputPort->getDatumOld(errorOccured);
             if (errorOccured) {
                 callLexicalViolationAfter("read", inputPort->error());
             }

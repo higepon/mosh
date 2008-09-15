@@ -124,11 +124,11 @@ ucs4string readString(const ucs4string& s)
                         ret += currentChar;
                         break;
                     } else if (isdigit(hexChar)) {
-                        currentChar = (currentChar << (i * 4)) | (hexChar - '0');
+                        currentChar = (currentChar << 4) | (hexChar - '0');
                     } else if ('a' <= hexChar && hexChar <= 'f') {
-                        currentChar = (currentChar << (i * 4)) | (hexChar - 'a' + 10);
+                        currentChar = (currentChar << 4) | (hexChar - 'a' + 10);
                     } else if ('A' <= hexChar && hexChar <= 'F') {
-                        currentChar = (currentChar << (i * 4)) | (hexChar - 'A' + 10);
+                        currentChar = (currentChar << 4) | (hexChar - 'A' + 10);
                     } else {
                         fprintf(stderr, "invalid \\x in string <%c>", hexChar);
                         break;

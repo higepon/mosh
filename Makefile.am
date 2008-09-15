@@ -14,9 +14,9 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
 bin_PROGRAMS = mosh
 mosh_SOURCES =      \
+scanner.cpp       \
 reader.tab.cpp      \
 reader.tab.hpp      \
-reader.lex.yy.cpp   \
 reader.cpp        \
 main.cpp             \
 scheme.cpp           \
@@ -169,6 +169,10 @@ psyntax-update:
 
 reader.tab.cpp: reader.y
 	bison -d $< -o $@
+
+scanner.cpp : scanner.re
+	/usr/local/bin/re2c -ud $< > $@ # -d is debug option
+## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
 reader.lex.yy.cpp: reader.lex
 	flex -o $@ $<

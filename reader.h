@@ -33,6 +33,7 @@
 #define __SCHEME_READER__
 
 #include "scheme.h"
+#include "ucs4string.h"
 
 namespace scheme {
     Object readOld(TextualInputPort* port, bool& errorOccured);
@@ -44,10 +45,11 @@ typedef struct {
         bool  boolValue;
         int   intValue;
         ucs4char charValue;
-        char* stringValue;
     };
+    scheme::ucs4string stringValue;
     scheme::Object object;
 } YYSTYPE;
+
 
 #define YYSTYPE_IS_DECLARED 1
 

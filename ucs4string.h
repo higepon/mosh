@@ -55,6 +55,7 @@ public:
     ucs4string() {}
     ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     ucs4string(const ucs4char* s) : ucs4string_base(s) {}
+    ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
     ucs4string(ucs4string::iterator a, ucs4string::iterator b) : ucs4string_base(a, b) {}
     const char* ascii_c_str() const;
     ucs4string substr(int x, int size) const;

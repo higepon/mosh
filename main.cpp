@@ -205,12 +205,20 @@ int main(int argc, char *argv[])
         theVM->load(Object::makeString(initFile).toString()->data());
     }
 
+    bool isErrorOccured;
+    TextualInputPort* in1 = Object::makeTextualInputFilePort(argv[optind]).toTextualInputPort();
+    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
+    for (Object p = in1->getDatum(isErrorOccured); !p.isEof(); p = in1->getDatum(isErrorOccured)) { 
+        port->putDatum(p);
+    }
+
+
     if (isTestOption) {
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         bool errorOccured = false;
-        const Object code = port.toTextualInputPort()->getDatum(errorOccured);
+        const Object code = port.toTextualInputPort()->getDatumOld(errorOccured);
         if (errorOccured) {
             callLexicalViolationImmidiaImmediately("read", port.toTextualInputPort()->error());
         } else {
