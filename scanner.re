@@ -22,11 +22,12 @@
 using namespace scheme;
 extern VM* theVM;
 extern TextualInputPort* parser_port();
-static ucs4char buffer[32];
+static ucs4char* buffer = NULL;
 static ucs4char* cursor = buffer;
 static ucs4char* limit = buffer;
 static ucs4char* marker = buffer;
 static ucs4char* token = buffer;
+static int bufferSize = 32;
 extern YYSTYPE yylval;
 // N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
@@ -107,7 +108,25 @@ static void fill(int n)
 #if DEBUG_SCANNER
     printf("restCharCount = %d\n", restCharCount);
 #endif
-    if (restCharCount > 0) {
+
+    if (buffer == NULL) {
+        buffer = new(GC) ucs4char[bufferSize];
+        cursor = buffer;
+        limit = buffer;
+        token = buffer;
+        marker = buffer;
+    }
+
+    if ((restCharCount + n) > bufferSize) {
+        ucs4char* newBuffer = new(GC) ucs4char[restCharCount + n + 1];
+        bufferSize = restCharCount + n + 1;
+        memmove(newBuffer, token, restCharCount * sizeof(ucs4char));
+        cursor = &newBuffer[cursor - buffer];
+        token = &newBuffer[token - buffer];
+        limit = &newBuffer[limit - buffer];
+        marker = &newBuffer[marker - buffer];
+        buffer = newBuffer;
+    } else if (restCharCount > 0) {
         memmove(buffer, token, restCharCount * sizeof(ucs4char));
     }
 
