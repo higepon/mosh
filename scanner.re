@@ -99,6 +99,8 @@ static void fill(int n)
     }
     printf("\n");
 #endif
+
+    // 自動拡張をバグらせたくない。
     TextualInputPort* const inputPort = parser_port();
     const int restCharCount = limit - token;
     const int tokenOffset = token - buffer;
