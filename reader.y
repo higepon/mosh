@@ -43,11 +43,13 @@ Object parsed;
 top_level : datum { parsed = $$; YYACCEPT; }
           | END_OF_FILE { parsed = Object::Eof; YYACCEPT; }
 datum : lexme_datum    { $$ = $1;}
-      | compound_datum { $$ = $1;}
+      | compound_datum
+      {
+          $$ = $1;
+      }
       ;
 
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
-            ;
             | STRING
             {
                 $$ = readString($1);
@@ -65,16 +67,11 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             {
               $$ = Object::makeChar($1);
             }
-;
-/*             ; */
-/* symbol : IDENTIFIER */
-/*          { */
-/*              ucs4string text = parser_codec()->readWholeString(new ByteArrayBinaryInputPort((uint8_t*)$1, */
-/*                                                                                             yyleng)); */
-/*              $$ = Symbol::intern(text.strdup()); */
-/*          } */
-/*        ; */
-compound_datum : list { $$ = $1; }
+            ;
+compound_datum : list
+               {
+                   $$ = $1;
+               }
                | vector { $$ = $1; }
                | bytevector { $$ = $1; }
                ;
@@ -82,13 +79,14 @@ compound_datum : list { $$ = $1; }
 list : LEFT_PAREN datum_list RIGHT_PAREN
        {
            if ($2.isPair()) {
-/*                $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()), Object::makeInt(yylineno)); */
+                $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),
+                                                      Object::makeInt(parser_port()->getLine()));
            }
            $$ = $2;
        }
      | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
        {
-         $$ = Pair::appendD2($2, Object::cons($3, $5));
+           $$ = Pair::appendD2($2, Object::cons($3, $5));
        }
      | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
      ;
@@ -96,7 +94,10 @@ vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
      ;
 bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeByteVector($2); }
      ;
-datum_list : datum_list datum { $$ = Pair::appendD2($1, Pair::list1($2)); }
+datum_list : datum_list datum
+           {
+               $$ = Pair::appendD2($1, Pair::list1($2));
+           }
            | {$$ = Object::Nil; }
            ;
 abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }

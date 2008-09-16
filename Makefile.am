@@ -15,6 +15,8 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 bin_PROGRAMS = mosh
 mosh_SOURCES =      \
 scanner.cpp       \
+ScannerHelper.h \
+ScannerHelper.cpp \
 reader.tab.cpp      \
 reader.tab.hpp      \
 reader.cpp        \
@@ -171,7 +173,7 @@ reader.tab.cpp: reader.y
 	bison -d $< -o $@
 
 scanner.cpp : scanner.re
-	/usr/local/bin/re2c -ud $< > $@ # -d is debug option
+	/usr/local/bin/re2c -ugd $< > $@ # -d is debug option
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
 reader.lex.yy.cpp: reader.lex
@@ -261,6 +263,7 @@ bench:
 check:test
 
 test:all-tests.scm ./mosh
+	./mosh -r test/reader.scm
 	./mosh all-tests.scm
 	(cd r6rs-examples && ../mosh -b record-test.ss)
 	(cd r6rs-examples && ../mosh -b condition-test.ss)

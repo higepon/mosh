@@ -110,6 +110,7 @@ void signal_handler(int signo)
 #endif
 
 void compareRead(const char* file);
+void parrot(const char* file);
 
 int main(int argc, char *argv[])
 {
@@ -119,10 +120,11 @@ int main(int argc, char *argv[])
     bool isProfiler      = false;
     bool isR6RSBatchMode = false;
     bool isCompareRead   = false;
+    bool isParrot        = false;
     char* initFile = NULL;
 
 
-    while ((opt = getopt(argc, argv, "htvpVcl:br")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:brz")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -150,6 +152,9 @@ int main(int argc, char *argv[])
             break;
         case 'r':
             isCompareRead = true;
+            break;
+        case 'z':
+            isParrot = true;
             break;
         default:
             fprintf(stderr, "invalid option %c", opt);
@@ -205,14 +210,6 @@ int main(int argc, char *argv[])
         theVM->load(Object::makeString(initFile).toString()->data());
     }
 
-    bool isErrorOccured;
-    TextualInputPort* in1 = Object::makeTextualInputFilePort(argv[optind]).toTextualInputPort();
-    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-    for (Object p = in1->getDatum(isErrorOccured); !p.isEof(); p = in1->getDatum(isErrorOccured)) { 
-        port->putDatum(p);
-    }
-
-
     if (isTestOption) {
         theVM->load(UC("all-tests.scm"));
     } else if (isCompileString) {
@@ -229,6 +226,8 @@ int main(int argc, char *argv[])
         theVM->activateR6RSMode();
     } else if (isCompareRead) {
         compareRead(argv[optind]);
+    } else if (isParrot) {
+        parrot(argv[optind]);
     } else if (optind < argc) {
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {
@@ -255,36 +254,21 @@ extern "C" void dont_free(void* p)
 {
 }
 
+void parrot(const char* file)
+{
+    bool isErrorOccured;
+    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
+    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
+    for (Object p = in1->getDatum(isErrorOccured); !p.isEof(); p = in1->getDatum(isErrorOccured)) {
+        port->putDatum(p);
+    }
+}
+
 // compare "old read" and "new read"
 void compareRead(const char* file)
 {
-#if 0
-        TextualInputPort* p =  Object::makeTextualInputFilePort(file).toTextualInputPort();
-        bool readErrorOccured = false;
-        for (Object o = p->getDatum2(readErrorOccured); !o.isEof(); o = p->getDatum2(readErrorOccured)) {
-            VM_LOG1("obj=~a\n", o);
-        }
-
-#elif 0
     TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
     TextualInputPort* in2 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-
-
-    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-    bool isErrorOccured = false;
-    for (;;) {
-        Object o2 = in2->getDatum2(isErrorOccured);
-            if (o2.isEof()) {
-                break;
-            }
-            VM_LOG1("obz=~a\n", o2);
-    }
-
-#else
-
-    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-    TextualInputPort* in2 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-
 
     long long a1 = 0;
     long long a2 = 0;
@@ -303,12 +287,14 @@ void compareRead(const char* file)
         if (o1.isEof()) {
             if (o2.isEof()) {
             } else {
+
                 printf("old (read) reached EOF but new (read) doesn't");
             }
             break;
         } else if (o2.isEof()) {
             if (o1.isEof()) {
             } else {
+                port->putDatum(o1);
                 printf("new (read) reached EOF but old (read) doesn't");
             }
             break;
@@ -325,5 +311,4 @@ void compareRead(const char* file)
         }
     }
     printf("%lld:%lld :", a1, a2);
-#endif
 }

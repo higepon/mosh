@@ -1,5 +1,7 @@
 2008-09-16  higepon  <higepon@users.sourceforge.jp>
 
+        * ScannerHelper.cpp : Added.
+
         * test/reader.scm: Added for testing reader.
 
 2008-09-15  higepon  <higepon@users.sourceforge.jp>

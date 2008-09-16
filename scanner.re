@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <errno.h>
 #include "Object.h"
 #include "Pair.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"
 #include "ucs4string.h"
+#include "ScannerHelper.h"
 
 #include "reader.h"
 #include "reader.tab.hpp"
@@ -34,51 +34,10 @@ extern YYSTYPE yylval;
 #define DEBUG_SCANNER 0
 
 
-class ScannerHelper {
-public:
-    static ucs4char hexStringToUCS4Char(ucs4char* start, ucs4char* end)
-    {
-        TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-        ucs4char ret = 0;
-        for (ucs4char* ch = start; ch != end; ch++) {
-            const ucs4char hexChar = *ch;
-            if (isdigit(hexChar)) {
-                ret = (ret << 4) | (hexChar - '0');
-            } else if ('a' <= hexChar && hexChar <= 'f') {
-                ret = (ret << 4) | (hexChar - 'a' + 10);
-            } else if ('A' <= hexChar && hexChar <= 'F') {
-                ret = (ret << 4) | (hexChar - 'A' + 10);
-            } else {
-                MOSH_ASSERT(false); // not reached
-            }
-        }
-        return ret;
-    }
-
-    static int num10StringToInt(ucs4char* start, ucs4char* end)
-    {
-        printf("start = %x, end = %x\n", start, end);
-        char* buf = new(GC) char[end - start];
-        for (int i = 0; i < end - start; i++) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            buf[i] = start[i];
-        }
-        errno = 0;
-        printf("<%s>", buf);fflush(stdout);
-        long long ret = strtoll(buf, NULL, 10);
-        if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
-            || (errno != 0 && ret == 0)) {
-            fprintf(stderr, "error num-10");
-            exit(-1);
-        } else {
-            return (int)ret;
-        }
-    }
-};
 
 static void yydebug(int state, ucs4char ch)
 {
-#if DEBUG_SCANNER
+#if 0
     TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
     port->format(UC("state=~d ch=[~a]\n"), Pair::list2(Object::makeInt(state), Object::makeChar(ch)));
 #endif
@@ -231,7 +190,7 @@ int yylex()
   HEX_SCALAR_VALUE       = HEX_DIGIT +;
   INTRA_LINE_WHITE_SPACE = "\t" | UNICODE_ZS;
   INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
-  STRING_ELEMENT         = [^\"\\] | [\a\b\t\n\v\f\r] | "\\\"" | "\\\\" | ("\\" INTRA_LINE_WHITE_SPACE LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
+  STRING_ELEMENT         = [^\"\\] | ("\\" [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_10               = DIGIT;
   UINTEGER_10            = DIGIT_10 +;
@@ -255,10 +214,9 @@ int yylex()
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*);
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-
+  COMMENT                = (";"[^\n]*) | ("#!"[^\n]*);
 */
 
-scan:
     for(;;)
     {
 #if DEBUG_SCANNER
@@ -267,7 +225,6 @@ scan:
 #endif
 /*!re2c
         "#"[tT] DELMITER {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             yylval.boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
@@ -307,11 +264,11 @@ scan:
         }
         IDENTIFIER DELMITER {
             yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return IDENTIFIER;
         }
         "#/" REGEXP_ELEMENT* "/" DELMITER {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             yylval.stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 4);
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
@@ -319,24 +276,14 @@ scan:
             return REGEXP;
         }
         "\"" STRING_ELEMENT* "\"" DELMITER {
-#if DEBUG_SCANNER
-    for (ucs4char* p = token; p != limit; p++) {
-        if (*p == '\0') {
-            printf("[EOS]");
-        } else if (*p == EOF) {
-            printf("[EOF]");
-        } else {
-            printf("[%c]", *p);
-        }
-    }
-
-    printf("YYCURSOR = %x YYTOKEN=%x <%c>\n", YYCURSOR, YYTOKEN, *YYCURSOR);
-#endif
             yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 3);
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return STRING;
         }
-        "." DELMITER ? { return DOT; }
+        "." {
+            return DOT;
+        }
         "`"   {
             YYTOKEN = YYCURSOR;
             return ABBV_QUASIQUOTE;
@@ -368,12 +315,10 @@ scan:
         }
         [\]\)] {
 
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             YYTOKEN = YYCURSOR;
             return RIGHT_PAREN;
         }
         [\(\[] {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             YYTOKEN = YYCURSOR;
             return LEFT_PAREN;
         }
@@ -387,13 +332,31 @@ scan:
         }
         WHITE_SPACE {
             YYTOKEN = YYCURSOR;
-            goto scan;
+            continue;
+        }
+        COMMENT {
+            YYTOKEN = YYCURSOR;
+            continue;
         }
         "\X0000" {
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
-
+        "#|" {
+            goto comment;
+        }
+*/
+comment:
+        YYTOKEN = YYCURSOR;
+/*!re2c
+        "|#" {
+            YYTOKEN = YYCURSOR;
+            continue;
+        }
+        ANY_CHARACTER
+        {
+            goto comment;
+        }
 */
     }
 }
