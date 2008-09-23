@@ -42,6 +42,8 @@
     "psyntax/expander-mosh.ss"
     "../../lib/mosh/condition.ss"
     "../../lib/mosh/io/conditions.ss"
+    "../../lib/mosh/unicode.ss"
+;    "../../lib/mosh/srfi-8.ss"
     "psyntax/main-mosh.ss"))
 
 
@@ -200,7 +202,7 @@
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
     (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
-;    (srfi-8     (srfi-8)                               #f    #t)  ;; for mosh
+;    (srfi-8     (srfi-8)                               #t    #t)  ;; for mosh
     ))
 
 ;;; required? flag means that said library is required for 

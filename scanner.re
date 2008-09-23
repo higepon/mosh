@@ -128,8 +128,8 @@ int Scanner::scan()
   EXPONENT_MARKER        = [eEsSfFdDlL];
   MANTISSA_WIDTH         = ("|" (DIGIT_10)+)?;
   SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
-  DECIMAL_10             = (UINTEGER_10 SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
-  UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10);
+  DECIMAL_10             = (UINTEGER_10 SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
+  UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
   COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+-\] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   RADIX_10               = ("#"[dD])?;

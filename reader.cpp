@@ -130,7 +130,7 @@ ucs4string readString(const ucs4string& s)
                     } else if ('A' <= hexChar && hexChar <= 'F') {
                         currentChar = (currentChar << 4) | (hexChar - 'A' + 10);
                     } else {
-                        fprintf(stderr, "invalid \\x in string <%c>", hexChar);
+                        fprintf(stderr, "invalid \\x in string <%c>", (char)hexChar);
                         break;
                     }
                 }

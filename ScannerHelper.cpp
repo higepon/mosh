@@ -62,7 +62,7 @@ int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
     long long ret = strtoll(buf, NULL, 10);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
-        fprintf(stderr, "error num-10");
+        fprintf(stderr, "error num-10 buf=<%s>", buf);
         exit(-1);
     } else {
         return (int)ret;

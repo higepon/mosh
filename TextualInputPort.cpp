@@ -1,5 +1,5 @@
 /*
- * TextualInputPort.cpp - 
+ * TextualInputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -40,11 +40,20 @@
 
 using namespace scheme;
 
+    Codec* codec_;
+    BinaryInputPort* port_;
+    Transcoder* coder_;
+    ucs4string buffer_;
+    int line_;
+    Object error_;
+    Scanner* scanner_;
 
-TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port),
-                                                                               codec_(coder->codec()),
+TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec()),
+                                                                               port_(port),
                                                                                coder_(coder),
+                                                                               buffer_(NULL),
                                                                                line_(1),
+                                                                               error_(Object::Nil),
                                                                                scanner_(new Scanner)
 {
 }

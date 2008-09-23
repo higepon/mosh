@@ -1,3 +1,13 @@
+2008-09-23  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am (MAINTAINERCLEANFILES): Added for faster compilation.
+
+        * scanner.re (scan): Added DECIMAL_10 to UREAL_10.
+
+        * lib/srfi/8.ss (internal-srfi-8): Addes srfi-8 (receive ...).
+
+        * lib/mosh/unicode.ss (mosh): Added char-upcase/char-downcase.
+
 2008-09-22  higepon  <higepon@users.sourceforge.jp>
 
         * StringProcedures.cpp (stringTonumberEx): Added base argument support.

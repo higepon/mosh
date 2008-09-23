@@ -193,9 +193,7 @@ bool match(const char* pattern, const char* text)
 
 ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
 {
-    bool exact = false;
     ucs4string str = s->data();
-    int length = str.size();
     const char* p = str.ascii_c_str();
 
     // todo

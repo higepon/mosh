@@ -13,96 +13,69 @@ REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
 bin_PROGRAMS = mosh
-mosh_SOURCES =      \
-scanner.cpp       \
-ScannerHelper.h \
-ScannerHelper.cpp \
-reader.tab.cpp      \
-reader.tab.hpp      \
-reader.cpp        \
-main.cpp             \
-scheme.cpp           \
-read.cpp             \
-Regexp.cpp           \
-Symbol.cpp           \
-VM.cpp               \
-freeproc.cpp         \
-CProcedure.h         \
-Instruction.h        \
-Callable.h        \
-GenericMap.h        \
-BinaryInputPort.h    \
-BinaryOutputPort.h    \
-ByteArrayBinaryInputPort.h \
-ByteArrayBinaryInputPort.cpp \
-FileBinaryInputPort.h\
-FileBinaryInputPort.cpp \
-FileBinaryOutputPort.h\
-FileBinaryOutputPort.cpp \
-CustomBinaryInputPort.h \
-CustomBinaryInputPort.cpp \
-TextualOutputPort.h \
-TextualOutputPort.cpp \
-TextualByteVectorOutputPort.h \
-TextualByteVectorOutputPort.cpp \
-TextualInputPort.cpp \
-TextualInputPort.h \
-StringTextualOutputPort.h \
-StringTextualOutputPort.cpp \
-StringTextualInputPort.h \
-StringTextualInputPort.cpp \
-UTF8Codec.cpp \
-UTF8Codec.h \
-SString.h            \
-Symbol.h             \
-config.h             \
-scheme.h             \
-ByteVector.h         \
-Closure.h            \
-HashTable.h          \
-EqHashTable.h        \
-EqHashTable.cpp      \
-EqvHashTable.h       \
-GenericHashTable.h   \
-GenericHashTable.cpp \
-Object.h               \
-Object.cpp              \
-Pair.h               \
-Regexp.h             \
-Stack.h              \
-VM.h                 \
-Vector.h             \
-Vector.cpp           \
-freeproc.h           \
-Box.h                \
-CodeBuilder.h        \
-CodeBuilder.cpp        \
-ProcedureMacro.h \
-RecordTypeDescriptor.h \
-RecordTypeDescriptor.cpp \
-RecordConstructorDescriptor.h\
-RecordConstructorDescriptor.cpp\
-Record.h \
-Record.cpp \
-RecordProcedures.cpp     RecordProcedures.h \
-ConditionProcedures.cpp  ConditionProcedures.h \
-CompilerProcedures.cpp   CompilerProcedures.h   \
-HashTableProceduures.cpp HashTableProceduures.h   \
-RegexpProcedures.cpp     RegexpProcedures.h   \
-StringProcedures.cpp     StringProcedures.h   \
-PortProcedures.cpp       PortProcedures.h   \
-ListProcedures.cpp       ListProcedures.h   \
-ErrorProcedures.cpp      ErrorProcedures.h \
-ArithmeticProcedures.cpp ArithmeticProcedures.h \
-SString.cpp          \
-BuiltinSymbols.cpp\
-CompoundCondition.h\
-CompoundCondition.cpp\
-Equivalent.h\
-Equivalent.cpp\
-Builtin.h\
-ucs4string.h \
-ucs4string.cpp
+mosh_SOURCES =                                                    \
+main.cpp                                                          \
+read.cpp                                                          \
+CProcedure.h                                                      \
+Instruction.h                                                     \
+Callable.h                                                        \
+GenericMap.h                                                      \
+BinaryInputPort.h                                                 \
+BinaryOutputPort.h                                                \
+config.h                                                          \
+scheme.h                                                          \
+ByteVector.h                                                      \
+Closure.h                                                         \
+HashTable.h                                                       \
+EqvHashTable.h                                                    \
+Pair.h                                                            \
+Stack.h                                                           \
+Box.h                                                             \
+ProcedureMacro.h                                                  \
+BuiltinSymbols.cpp                                                \
+Builtin.h                                                         \
+freeproc.h                    freeproc.cpp                        \
+reader.h                      reader.cpp                          \
+scheme.h                      scheme.cpp                          \
+Regexp.h                      Regexp.cpp                          \
+Symbol.h                      Symbol.cpp                          \
+VM.h                          VM.cpp                              \
+Scanner.h                     Scanner.cpp                         \
+ByteArrayBinaryInputPort.h    ByteArrayBinaryInputPort.cpp        \
+ScannerHelper.h               ScannerHelper.cpp                   \
+reader.tab.hpp                reader.tab.cpp                      \
+FileBinaryInputPort.h         FileBinaryInputPort.cpp             \
+FileBinaryOutputPort.h        FileBinaryOutputPort.cpp            \
+CustomBinaryInputPort.h       CustomBinaryInputPort.cpp           \
+TextualOutputPort.h           TextualOutputPort.cpp               \
+TextualByteVectorOutputPort.h TextualByteVectorOutputPort.cpp     \
+TextualInputPort.cpp          TextualInputPort.h                  \
+StringTextualOutputPort.h     StringTextualOutputPort.cpp         \
+StringTextualInputPort.h      StringTextualInputPort.cpp          \
+UTF8Codec.cpp                 UTF8Codec.h                         \
+EqHashTable.h                 EqHashTable.cpp                     \
+SString.h                     SString.cpp                         \
+GenericHashTable.h            GenericHashTable.cpp                \
+Object.h                      Object.cpp                          \
+RecordTypeDescriptor.h        RecordTypeDescriptor.cpp            \
+RecordConstructorDescriptor.h RecordConstructorDescriptor.cpp     \
+Record.h                      Record.cpp                          \
+RecordProcedures.cpp          RecordProcedures.h                  \
+ConditionProcedures.cpp       ConditionProcedures.h               \
+CompilerProcedures.cpp        CompilerProcedures.h                \
+HashTableProceduures.cpp      HashTableProceduures.h              \
+RegexpProcedures.cpp          RegexpProcedures.h                  \
+StringProcedures.cpp          StringProcedures.h                  \
+PortProcedures.cpp            PortProcedures.h                    \
+ListProcedures.cpp            ListProcedures.h                    \
+ErrorProcedures.cpp           ErrorProcedures.h                   \
+ArithmeticProcedures.cpp      ArithmeticProcedures.h              \
+Equivalent.h                  Equivalent.cpp                      \
+CompoundCondition.h           CompoundCondition.cpp               \
+ucs4string.h                  ucs4string.cpp                      \
+Vector.h                      Vector.cpp                          \
+CodeBuilder.h                 CodeBuilder.cpp
+
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall -DDEBUG_VERSION
 #mosh_CFLAGS   = -O1  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
@@ -123,26 +96,20 @@ libpsyntax_a_SOURCES   = psyntax.cpp
 
 mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) $(noinst_LIBRARIES)
 
-# generated files should be listed here.
-BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
+# # generated files should be listed here.
+# BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
 EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm r6rs-examples/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
 
 GENERATED = \
-Instruction.h \
-compiler.cpp \
-psyntax.cpp \
-match.scmc \
-compiler-with-library.scmc \
-compiler-vm-cpp.scm \
-all-tests.scm \
-labels.cpp \
-DebugInstruction.h \
-BuiltinSymbols.cpp\
-./compiler-gauche.scm \
-./compiler-vm-outer.scm \
-./compiler-vm.scm
-CLEANFILES = $(GENERATED) mosh-compiler.o
+all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
+BuiltinSymbols.cpp DebugInstruction.h cprocedures.cpp      \
+labels.cpp match.cpp compiler.cpp psyntax.scmc             \
+match.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
+compiler-vm.scm compiler-with-library.scm Instruction.h
+
+CLEANFILES =
+MAINTAINERCLEANFILES = $(GENERATED)
 
 PSYNTAX_DIR=tools/psyntax-r6rs
 PSYNTAX_SRC_DIR=$(PSYNTAX_DIR)/psyntax
@@ -172,12 +139,12 @@ psyntax-update:
 reader.tab.cpp: reader.y
 	bison -d $< -o $@
 
-scanner.cpp : scanner.re
+Scanner.cpp : scanner.re
 	/usr/local/bin/re2c -ud $< > $@ # -d is debug option
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-reader.lex.yy.cpp: reader.lex
-	flex -o $@ $<
+# reader.lex.yy.cpp: reader.lex
+# 	flex -o $@ $<
 
 
 # psyntax-mosh-p:

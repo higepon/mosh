@@ -96,6 +96,8 @@ testcu_LDADD = libonig.la
 # [mosh]
 install:
 
+clean:
+
 check:
 
 test:

@@ -205,7 +205,11 @@ include doc/doc.am
 # on HP/UX.  There may be a better fix.
 
 # [mosh]
+clean:
+
 install:
+
 test:
+
 check:
 
