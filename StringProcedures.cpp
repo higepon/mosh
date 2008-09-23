@@ -29,6 +29,7 @@
  *  $Id: StringProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <errno.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -154,9 +155,25 @@ Object scheme::stringTosymbolEx(int argc, const Object* argv)
 Object scheme::stringTonumberEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string->number");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 2);
     argumentAsString(0, text);
-    return Object::makeInt(atoi(text->data().ascii_c_str()));
+    int base;
+    if (2 == argc) {
+        argumentCheckInt(1, baseObject);
+        base = baseObject.toInt();
+        MOSH_ASSERT(base == 16);
+    } else {
+        base = 10;
+    }
+
+    errno = 0;
+    long val = strtol(text->data().ascii_c_str(), NULL, base);
+    if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
+        || (errno != 0 && val == 0)) {
+        return Object::False;
+    } else {
+        return Object::makeInt(val);
+    }
 }
 
 Object scheme::stringAppendEx(int argc, const Object* argv)

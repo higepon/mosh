@@ -50,7 +50,6 @@ typedef struct {
     scheme::Object object;
 } YYSTYPE;
 
-
 #define YYSTYPE_IS_DECLARED 1
 
 #endif // __SCHEME_READER__

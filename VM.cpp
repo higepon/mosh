@@ -155,10 +155,10 @@ void VM::loadFile(const ucs4string& file)
 {
     SAVE_REGISTERS();
     TRY {
-        const Object port = Object::makeTextualInputFilePort(file.ascii_c_str());
-        TextualInputPort* p = port.toTextualInputPort();
+        const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
+        TextualInputPort* p = loadPort.toTextualInputPort();
         bool readErrorOccured = false;
-        for (Object o = p->getDatumOld(readErrorOccured); !o.isEof(); o = p->getDatumOld(readErrorOccured)) {
+        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
@@ -252,7 +252,6 @@ Object VM::evaluate(Object* code, int codeSize)
     dc_ = closure;
     cl_ = closure;
     fp_ = 0;
-
     Object* const direct = getDirectThreadedCode(code, codeSize);
     return run(direct, NULL);
 }
@@ -559,7 +558,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
     Object operand = Object::Undef;;
 
     pc_ = code;
-
     for (;;) {
         const Object insn = *pc_++;
         SWITCH((int)insn.val) {
@@ -1280,7 +1278,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             bool errorOccured = false;
             TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
-            ac_ = inputPort->getDatumOld(errorOccured);
+            ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
                 callLexicalViolationAfter("read", inputPort->error());
             }

@@ -1,4 +1,6 @@
+(let ([p (open-string-input-port "123 456")]) (display (read p)))
 
+(exit)
 
 
 

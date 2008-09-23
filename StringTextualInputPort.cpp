@@ -38,35 +38,28 @@
 
 using namespace scheme;
 
-BinaryInputPort* stringToUTF8(const ucs4string& str)
-{
-    UTF8Codec codec;
-    ::gc_vector<uint8_t> utf8Data;
-    for (ucs4string::const_iterator it = str.begin(); it != str.end(); ++it) {
-        uint8_t buffer[sizeof(ucs4char)];
-        const int size = codec.out(buffer, *it);
-        for (int i = 0; i < size; i++) {
-            utf8Data.push_back(buffer[i]);
-        }
-    }
-    uint8_t* ret = new(GC) uint8_t[utf8Data.size()];
-    for (::gc_vector<uint8_t>::size_type i = 0; i < utf8Data.size(); i++) {
-        ret[i] = utf8Data[i];
-    }
-    return new ByteArrayBinaryInputPort(ret, utf8Data.size());
-}
 
-// we can't parse UTF32, so convert into UTF8.
-// ugly, ugly.
-// We need flex for multi byte character.
-StringTextualInputPort::StringTextualInputPort(const ucs4string& str)
-  : TextualInputPort(stringToUTF8(str),
-                     new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR))
+StringTextualInputPort::StringTextualInputPort(const ucs4string& str) : buffer_(str), index_(0)
 {
 }
 
 StringTextualInputPort::~StringTextualInputPort()
 {
+}
+
+ucs4char StringTextualInputPort::getChar()
+{
+    if (buffer_.size() == index_)
+    {
+        return EOF;
+    }
+    return buffer_[index_++];
+}
+
+void StringTextualInputPort::unGetChar(ucs4char c)
+{
+    if (EOF == c) return;
+    index_--;
 }
 
 ucs4string StringTextualInputPort::toString()

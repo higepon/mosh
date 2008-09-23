@@ -36,16 +36,26 @@
 #include "BinaryInputPort.h"
 #include "TextualInputPort.h"
 #include "reader.h"
+#include "Scanner.h"
 
 using namespace scheme;
 
 
-TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port), codec_(coder->codec()), coder_(coder), line_(1)
+TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : port_(port),
+                                                                               codec_(coder->codec()),
+                                                                               coder_(coder),
+                                                                               line_(1),
+                                                                               scanner_(new Scanner)
 {
 }
 
-TextualInputPort::TextualInputPort()
+TextualInputPort::TextualInputPort() : scanner_(new Scanner)
 {
+}
+
+TextualInputPort::TextualInputPort(const TextualInputPort& o)
+{
+    MOSH_ASSERT(false);
 }
 
 TextualInputPort::~TextualInputPort()
@@ -119,4 +129,9 @@ Transcoder* TextualInputPort::transcoder() const
 Codec* TextualInputPort::codec() const
 {
     return codec_;
+}
+
+Scanner* TextualInputPort::scanner() const
+{
+    return scanner_;
 }

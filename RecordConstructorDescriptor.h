@@ -38,7 +38,7 @@ namespace scheme {
 
 class RecordInitializer;
 
-class RecordConstructorDescriptor
+class RecordConstructorDescriptor EXTEND_GC
 {
 public:
     RecordConstructorDescriptor(Object rtd, Object parentRcd, Object protocol);

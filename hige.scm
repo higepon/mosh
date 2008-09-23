@@ -1,18 +1,22 @@
-#\newline
-"\n" abc
-#t #f #\a #\space #\あ #\x3045 "あいう" "とても長い文字列とても長い文字列とても長い文字列とても長い文字列"
-symbol シンボル 1234 -5678 (#t)
-("あ" "いう" か -123)
-#("あ" "いう" か -123)
-#vu8(123 3) #/あいう/
-(a . b)
-(a . (b . c))
-(a . ())
-"\x3065;"
-;; hige
-(a ,@b)
-moge
-#|
-(a . b)
-|#
-"xyz"
+(define *test-error* '())
+(define *test-ret* '())
+(display '102)
+(set! *test-ret* (((lambda () (lambda () 102)))))(if (equal? *test-ret* '102) (display " ===> ok\n") (begin (set! *test-error* (cons '(((lambda () (lambda () 102)))) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '((((lambda () (lambda () 102))))))))(display "test ")
+(display '((((lambda () (lambda (a) 102))) 101)))
+(display '102)
+(set! *test-ret* (((lambda () (lambda (a) 102))) 101))(if (equal? *test-ret* '102) (display " ===> ok\n") (begin (set! *test-error* (cons '(((lambda () (lambda (a) 102))) 101) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '((((lambda () (lambda (a) 102))) 101)))))(display "test ")
+(set! *test-ret* ((lambda (a) (set! a 12) a) 2))(if (equal? *test-ret* '12) (display " ===> ok\n") (begin (set! *test-error* (cons '((lambda (a) (set! a 12) a) 2) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '(((lambda (a) (set! a 12) a) 2)))))(display "test ")
+(display '(((lambda (a) ((lambda () (set! a 101)))) '())))
+(display '101)
+(set! *test-ret* ((lambda (a) ((lambda () (set! a 101)))) '()))(if (equal? *test-ret* '101) (display " ===> ok\n") (begin (set! *test-error* (cons '((lambda (a) ((lambda () (set! a 101)))) '()) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '(((lambda (a) ((lambda () (set! a 101)))) '())))))(display "test ")
+(display '((call/cc (lambda (c) (c 4)))))
+(display ", expects ")
+(display '4)
+(set! *test-ret* (call/cc (lambda (c) (c 4))))(if (equal? *test-ret* '4) (display " ===> ok\n") (begin (set! *test-error* (cons '(call/cc (lambda (c) (c 4))) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '((call/cc (lambda (c) (c 4)))))))(display "test ")
+(display '((receive a (call/cc (lambda (c) (c 1 2 3))) a)))
+(display ", expects ")
+(display '(1 2 3))
+(set! *test-ret* (receive a (call/cc (lambda (c) (c 1 2 3))) a))(if (equal? *test-ret* '(1 2 3)) (display " ===> ok\n") (begin (set! *test-error* (cons '(receive a (call/cc (lambda (c) (c 1 2 3))) a) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '((receive a (call/cc (lambda (c) (c 1 2 3))) a)))))(display "test ")
+(display '((receive a (call/cc (lambda (c) (c 1 2))) a)))
+(display ", expects ")
+(set! *test-ret* (receive abc (call/cc (lambda (c) (c 1 2))) abc)) (display "hige") (if (equal? *test-ret* '(1 2)) (display " ===> ok\n") (begin (set! *test-error* (cons '(receive a (call/cc (lambda (c) (c 1 2))) a) *test-error*)) (display " ===> NG got ") (write *test-ret*) (display "\n") (error "test" "test failed" '((receive a (call/cc (lambda (c) (c 1 2))) a)))))(display "test ")

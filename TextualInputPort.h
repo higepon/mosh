@@ -39,11 +39,13 @@ namespace scheme {
 class Codec;
 class Transcoder;
 class BinaryInputPort;
+class Scanner;
 
 class TextualInputPort EXTEND_GC
 {
 public:
     TextualInputPort(BinaryInputPort* port, Transcoder* coder);
+    TextualInputPort(const TextualInputPort& o);
     TextualInputPort();
     virtual ~TextualInputPort();
     virtual ucs4char getChar();
@@ -58,6 +60,7 @@ public:
     virtual int close();
     virtual Transcoder* transcoder() const;
     virtual Codec* codec() const;
+    virtual Scanner* scanner() const;
 
 private:
 
@@ -68,7 +71,7 @@ private:
     ucs4string buffer_;
     int line_;
     Object error_;
-
+    Scanner* scanner_;
 };
 
 }; // namespace scheme

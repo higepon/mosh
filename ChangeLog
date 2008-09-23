@@ -1,3 +1,14 @@
+2008-09-22  higepon  <higepon@users.sourceforge.jp>
+
+        * StringProcedures.cpp (stringTonumberEx): Added base argument support.
+
+2008-09-18  higepon  <higepon@users.sourceforge.jp>
+
+        * scanner.re (currentToken): Replaced (read) to newer one which use re2c. It is much faster than it was.
+
+        * Scanner.h (scheme): Fixed a GC bug.
+                              I forgot to set super class of Scanner to gc.
+
 2008-09-16  higepon  <higepon@users.sourceforge.jp>
 
         * ScannerHelper.cpp : Added.

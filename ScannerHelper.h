@@ -36,7 +36,7 @@
 
 namespace scheme {
 
-class ScannerHelper
+class ScannerHelper EXTEND_GC
 {
 public:
     static ucs4char hexStringToUCS4Char(ucs4char* start, ucs4char* end);

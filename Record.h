@@ -36,7 +36,7 @@
 
 namespace scheme {
 
-class Record
+class Record EXTEND_GC
 {
 public:
     Record(Object rtd, const Object* fields, int fieldsLength);

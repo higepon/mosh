@@ -36,7 +36,7 @@
 
 namespace scheme {
 
-class CodePacket
+class CodePacket EXTEND_GC
 {
 public:
     enum Type

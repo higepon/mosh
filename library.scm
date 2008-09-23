@@ -3083,8 +3083,8 @@
   (string->symbol (apply string-append (map symbol->string symbols))))
 
 (define-macro (define-simple-struct name fields)
-  (let ([rtd (symbol-append name '-rtd)]
-        [rcd (symbol-append name '-rcd)]
+  (let ([rtd (symbol-append name '- 'rtd)]
+        [rcd (symbol-append name '- 'rcd)]
         [accessors (map (lambda (field) (symbol-append name '- field)) fields)]
         [field-set (list->vector (map (lambda (field) (list 'mutable field)) fields))]
         [constructor (symbol-append 'make- name)])

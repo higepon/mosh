@@ -145,6 +145,7 @@ inline Object VM::makeContinuation(Object n)
     return Object::makeClosure(getDirectThreadedCode(code, codeSize), 1, true, sp_, 0, 1, Object::False);
 }
 
+
 Object* VM::getDirectThreadedCode(Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
@@ -188,6 +189,7 @@ Object* VM::getDirectThreadedCode(Object* code, int length)
     return code;
 #endif
 }
+
 
 #ifdef ENABLE_PROFILER
 

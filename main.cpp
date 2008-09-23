@@ -215,7 +215,7 @@ int main(int argc, char *argv[])
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         bool errorOccured = false;
-        const Object code = port.toTextualInputPort()->getDatumOld(errorOccured);
+        const Object code = port.toTextualInputPort()->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalViolationImmidiaImmediately("read", port.toTextualInputPort()->error());
         } else {

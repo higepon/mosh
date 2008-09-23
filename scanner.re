@@ -6,33 +6,37 @@
 #include "TextualOutputPort.h"
 #include "ucs4string.h"
 #include "ScannerHelper.h"
+#include "Scanner.h"
 
 #include "reader.h"
 #include "reader.tab.hpp"
 #include "VM.h"
-// re2c definitions
+
 #define YYCTYPE ucs4char
-#define YYCURSOR cursor
-#define YYMARKER marker
-#define YYLIMIT limit
-#define YYTOKEN token
+#define YYCURSOR cursor_
+#define YYMARKER marker_
+#define YYLIMIT limit_
+#define YYTOKEN token_
 #define YYDEBUG(state, ch)  yydebug(state, ch)
 #define YYFILL(n) fill(n)
 
 using namespace scheme;
 extern VM* theVM;
 extern TextualInputPort* parser_port();
-static ucs4char* buffer = NULL;
-static ucs4char* cursor = buffer;
-static ucs4char* limit = buffer;
-static ucs4char* marker = buffer;
-static ucs4char* token = buffer;
-static int bufferSize = 32;
 extern YYSTYPE yylval;
-// N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-#define DEBUG_SCANNER 0
+Scanner::Scanner() : buffer_(NULL),
+                     cursor_(buffer_),
+                     token_(buffer_),
+                     limit_(buffer_),
+                     marker_(buffer_),
+                     bufferSize_(32)
+{
+}
 
+Scanner::~Scanner()
+{
+}
 
 
 static void yydebug(int state, ucs4char ch)
@@ -44,136 +48,61 @@ static void yydebug(int state, ucs4char ch)
 }
 
 
-static void fill(int n)
+void Scanner::fill(int n)
 {
-#if DEBUG_SCANNER
-    printf("[before] token = %x cursor=%x limit = %x : ", token, cursor, limit);
-    for (ucs4char* p = token; p != limit; p++) {
-        if (*p == '\0') {
-            printf("[EOS]");
-        } else if (*p == EOF) {
-            printf("[EOF]");
-        } else {
-            printf("[%c]", *p);
-        }
-    }
-    printf("\n");
-#endif
-
-    // 自動拡張をバグらせたくない。
     TextualInputPort* const inputPort = parser_port();
-    const int restCharCount = limit - token;
-    const int tokenOffset = token - buffer;
-#if DEBUG_SCANNER
-    printf("restCharCount = %d\n", restCharCount);
-#endif
+    const int restCharCount = limit_ - token_;
+    const int tokenOffset = token_ - buffer_;
 
-    if (buffer == NULL) {
-        buffer = new(GC) ucs4char[bufferSize];
-        cursor = buffer;
-        limit = buffer;
-        token = buffer;
-        marker = buffer;
+    if (buffer_ == NULL) {
+        buffer_ = new(GC) ucs4char[bufferSize_];
+        cursor_ = buffer_;
+        limit_ = buffer_;
+        token_ = buffer_;
+        marker_ = buffer_;
     }
 
-    if ((restCharCount + n) > bufferSize) {
+    if ((restCharCount + n) > bufferSize_) {
         ucs4char* newBuffer = new(GC) ucs4char[restCharCount + n + 1];
-        bufferSize = restCharCount + n + 1;
-        memmove(newBuffer, token, restCharCount * sizeof(ucs4char));
-        cursor = &newBuffer[cursor - buffer];
-        token = &newBuffer[token - buffer];
-        limit = &newBuffer[limit - buffer];
-        marker = &newBuffer[marker - buffer];
-        buffer = newBuffer;
+        bufferSize_ = restCharCount + n + 1;
+        memmove(newBuffer, token_, restCharCount * sizeof(ucs4char));
+        cursor_ = &newBuffer[cursor_ - buffer_];
+        token_ = &newBuffer[token_ - buffer_];
+        limit_ = &newBuffer[limit_ - buffer_];
+        marker_ = &newBuffer[marker_ - buffer_];
+        buffer_ = newBuffer;
     } else if (restCharCount > 0) {
-        memmove(buffer, token, restCharCount * sizeof(ucs4char));
+        memmove(buffer_, token_, restCharCount * sizeof(ucs4char));
     }
 
     int i;
     for (i = 0; i < n; i++) {
         const ucs4char ch = inputPort->getChar();
         if (ch == EOF) {
-            buffer[i + restCharCount] = '\0';
+            buffer_[i + restCharCount] = '\0';
             i++;
             break;
         } else {
-#if DEBUG_SCANNER
-            printf("[%d]=[%c] ", i + restCharCount, ch);
-#endif
-            buffer[i + restCharCount] = ch;
+            buffer_[i + restCharCount] = ch;
         }
     }
     const int readSize = i;
-#if DEBUG_SCANNER
-    printf("\nreadSize = %d\n", readSize);
-#endif
-    cursor = cursor - tokenOffset;
-    token = buffer;
-    marker = marker - tokenOffset;
-    limit = limit - tokenOffset + readSize;
-
-#if DEBUG_SCANNER
-    printf("[after] token = %x cursor=%x limit = %x marker = %x \n", token, cursor, limit, marker);
-
-    for (ucs4char* p = token; p != limit; p++) {
-        if (*p == '\0') {
-            printf("[EOS]");
-        } else if (*p == EOF) {
-            printf("[EOF]");
-        } else {
-            printf("[%c]", *p);
-        }
-    }
-#endif
-//     int i = 0;
-//     printf("n= %d, YYMARKER = %x, YYTOKEN = %x YYCURSOR = %x YYLIMIT = %x\n", n, YYMARKER, YYTOKEN, YYCURSOR, YYLIMIT);
-//     MOSH_ASSERT(YYMARKER <= YYCURSOR);
-// //     for (ucs4char* p = YYCURSOR; p != YYLIMIT; ++p, ++i) {
-// //         buffer[i] = *p;
-// //         if (p == YYMARKER) {
-// //            YYMARKER = &(buffer[i]);
-// //            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-// //         }
-// //     }
-
-//     const int diff = YYLIMIT - YYTOKEN;
-//     const int notDoneByteSize = (YYLIMIT - YYTOKEN) * sizeof(ucs4char);
-//     if (notDoneByteSize != 0) {
-//         memmove(buffer, YYCURSOR, notDoneByteSize);
-//         i = (YYLIMIT - YYTOKEN);
-//     }
-// //     const int notDoneByteSize = (YYLIMIT - YYCURSOR) * sizeof(ucs4char);
-// //     if (notDoneByteSize != 0) {
-// //         memmove(buffer, YYCURSOR, notDoneByteSize);
-// //         i = (YYLIMIT - YYCURSOR);
-// //     }
-
-
-//     TextualInputPort* const port = parser_port();
-
-// //    TextualOutputPort* const outputPort = theVM->getOutputPort().toTextualOutputPort();
-//     int realReadSize = 0;
-//     for (realReadSize = 0; realReadSize < n; realReadSize++) {
-//         const ucs4char ch = port->getChar();
-//         if (ch == EOF) {
-//             buffer[diff + realReadSize] = '\0';
-//             realReadSize++;
-//             break;
-//         }
-//         buffer[diff + realReadSize] = ch;
-//     }
-//     cursor -= diff;
-//     token = buffer;
-//     marker -= diff;
-//     printf("diff = %d = %d, %x \n", diff, n,buffer);
-//     YYLIMIT  = buffer + diff + realReadSize;
-//     printf("<2>YYMARKER = %x, YYTOKEN = %x YYCURSOR = %x YYLIMIT = %x\n", YYMARKER, YYTOKEN, YYCURSOR, YYLIMIT);
+    cursor_ = cursor_ - tokenOffset;
+    token_ = buffer_;
+    marker_ = marker_ - tokenOffset;
+    limit_ = limit_ - tokenOffset + readSize;
 }
 
 int yylex()
 {
+    return parser_port()->scanner()->scan();
+}
+
+int Scanner::scan()
+{
 /*!re2c
   LINE_FEED              = "\n";
+  CHARACTER_TABULATION   = "\X0009";
   LINE_TABULATION        = "\X000B";
   LINE_SEPARATOR         = "\X2028";
   FORM_FEED              = "\X000C";
@@ -182,7 +111,7 @@ int yylex()
   UNICODE_ZL_ZP          = [\X2028-\x2029];
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
-  WHITE_SPACE            = LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
+  WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
   DELMITER               = [\(\)\[\]\";#]|WHITE_SPACE;
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
@@ -212,17 +141,13 @@ int yylex()
   CONSTITUENT            = LETTER | [\X0080-\XFFFF]; /* todo: replace \X0080-\XFFFF to Unicode category */
   INITIAL                = CONSTITUENT | SPECIAL_INITIAL | INLINE_HEX_ESCAPE;
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
-  PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*);
+  PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  COMMENT                = (";"[^\n]*) | ("#!"[^\n]*);
+  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!"[^\n]*);
 */
 
     for(;;)
     {
-#if DEBUG_SCANNER
-
-    printf("[1]YYMARKER = %x, YYCURSOR = %x YYLIMIT = %x\n", YYMARKER, YYCURSOR, YYLIMIT);
-#endif
 /*!re2c
         "#"[tT] DELMITER {
             yylval.boolValue = true;
@@ -238,6 +163,72 @@ int yylex()
         }
         "#\\space" DELMITER {
             yylval.charValue = ' ';
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\newline" DELMITER {
+            yylval.charValue = '\n';
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\nul" DELMITER {
+            yylval.charValue = 0x00;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\alerm" DELMITER {
+            yylval.charValue = 0x07;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\backspace" DELMITER {
+            yylval.charValue = 0x08;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\tab" DELMITER {
+            yylval.charValue = 0x09;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\linefeed" DELMITER {
+            yylval.charValue = 0x0A;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\vtab" DELMITER {
+            yylval.charValue = 0x0B;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\page" DELMITER {
+            yylval.charValue = 0x0C;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\return" DELMITER {
+            yylval.charValue = 0x0D;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\esc" DELMITER {
+            yylval.charValue = 0x1B;
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\delete" DELMITER {
+            yylval.charValue = 0x7F;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
@@ -313,8 +304,11 @@ int yylex()
             YYTOKEN = YYCURSOR;
             return ABBV_UNSYNTAXSPLICING;
         }
+        COMMENT {
+            YYTOKEN = YYCURSOR;
+            continue;
+        }
         [\]\)] {
-
             YYTOKEN = YYCURSOR;
             return RIGHT_PAREN;
         }
@@ -334,10 +328,6 @@ int yylex()
             YYTOKEN = YYCURSOR;
             continue;
         }
-        COMMENT {
-            YYTOKEN = YYCURSOR;
-            continue;
-        }
         "\X0000" {
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
@@ -346,6 +336,7 @@ int yylex()
             goto comment;
         }
 */
+
 comment:
         YYTOKEN = YYCURSOR;
 /*!re2c
@@ -359,4 +350,9 @@ comment:
         }
 */
     }
+}
+
+ucs4char* Scanner::currentToken() const
+{
+    return token_;
 }

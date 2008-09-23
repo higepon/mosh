@@ -14,10 +14,8 @@
 #include "TextualInputPort.h"
 #include "Codec.h"
 #include "reader.h"
-#define YYDEBUG 1
-#define YYERROR_VERBOSE 1
+#include "Scanner.h"
 using namespace scheme;
-extern Codec* parser_codec();
 extern ucs4string readString(const ucs4string& s);
 extern int yylex();
 extern int yyerror(const char *);
@@ -65,7 +63,7 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             }
             | CHARACTER
             {
-              $$ = Object::makeChar($1);
+                $$ = Object::makeChar($1);
             }
             ;
 compound_datum : list
@@ -110,10 +108,12 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 | ABBV_UNSYNTAX                                    { $$ = Symbol::UNSYNTAX; }
 
 %%
+
+extern ucs4char* token;
 int yyerror(char const *str)
 {
-/*     TextualInputPort* const port = parser_port(); */
-/*     port->setError(format(UC("~a near ~a at ~a:~d. "), */
-/*                           Pair::list4(str, yytext, port->toString(), Object::makeInt(yylineno)))); */
+    TextualInputPort* const port = parser_port();
+    port->setError(format(UC("~a near ~a at ~a:~d. "),
+                          Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeInt(port->getLine()))));
     return 0;
 }
