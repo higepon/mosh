@@ -963,6 +963,7 @@
     (call-with-string-input-port mosh-string)
     (digit->integer mosh-number)
     (file->string mosh-file)
+    (file->list mosh-file)
     (write-to-file mosh-file)
     (format mosh-string)
     (print mosh-string)

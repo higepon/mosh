@@ -3348,3 +3348,13 @@
 
       (sort! 0 (- n 1)))))
 ;; from Ypsilon Scheme System end.
+
+(define (file->list file)
+  (with-input-from-file file
+    (lambda ()
+      (let loop ([line (read-line)]
+                 [ret '()])
+        (cond
+         [(eof-object? line) (reverse ret)]
+         [else
+          (loop (read-line) (cons line ret))])))))
