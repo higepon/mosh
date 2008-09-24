@@ -1,3 +1,9 @@
+2008-09-24  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/unicode.ss : Added char-ci=?, char-ci>=?, char-ci<=?, char-ci<? and char-ci>?.
+
+        * lib/mosh/unicode.ss : Added char-upcase, char-downcase, char-titlecase and char-foldcase.
+
 2008-09-23  higepon  <higepon@users.sourceforge.jp>
 
         * Makefile.am (MAINTAINERCLEANFILES): Added for faster compilation.

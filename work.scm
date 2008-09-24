@@ -1,1039 +1,782 @@
-(display 2.0)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-(import (rnrs))
-=======
-;; quick hack
-;; (define-macro (let-values clause . body)
-;; `(receive ,(car clause
-;; )
-
-;; quick hack
-(define-macro (let-values clause . body)
-  `(receive ,(caar clause) ,(cadar clause)
-       ,@body))
-(define list-head take)
-
-
-
-;; (let ([hashtable (make-eq-hashtable)])
-;;   (hashtable-set! hashtable 'red 'apple)
-;;   (display (hashtable-ref hashtable 'red)))
-=======
-  (define list-sort
-    (lambda (proc lst)
->>>>>>> .r387
-
-      (define merge
-        (lambda (lst1 lst2)
-          (cond
-           ((null? lst1) lst2)
-           ((null? lst2) lst1)
-           (else
-            (if (proc (car lst2) (car lst1))
-                (cons (car lst2) (merge lst1 (cdr lst2)))
-                (cons (car lst1) (merge (cdr lst1) lst2)))))))
-
-      (define sort
-        (lambda (lst n)
-          (cond ((= n 1)
-                 (list (car lst)))
-                ((= n 2)
-                 (if (proc (cadr lst) (car lst))
-                     (list (cadr lst) (car lst))
-                     (list (car lst) (cadr lst))))
-                (else
-                 (let ((n/2 (div n 2)))
-                   (merge (sort lst n/2)
-                          (sort (list-tail lst n/2) (- n n/2))))))))
-
-      (define divide
-        (lambda (lst)
-          (let loop ((acc 1) (lst lst))
-            (cond ((null? (cdr lst)) (values acc '()))
-                  (else
-                   (if (proc (car lst) (cadr lst))
-                       (loop (+ acc 1) (cdr lst))
-                       (values acc (cdr lst))))))))
-
-      (cond ((null? lst) '())
-            (else
-             (let ((len (length lst)))
-               (let-values (((n rest) (divide lst)))
-                 (cond ((null? rest) lst)
-                       (else
-                        (merge (list-head lst n)
-                               (sort rest (- len n)))))))))))
-
-  (define vector-sort
-    (lambda (proc vect)
-      (let ((lst (vector->list vect)))
-        (let ((lst2 (list-sort proc lst)))
-          (cond ((eq? lst lst2) vect)
-                (else
-                 (list->vector lst2)))))))
-
-  (define vector-sort!
-    (lambda (proc vect)
-      (let* ((n (vector-length vect)) (work (make-vector (+ (div n 2) 1))))
-
-        (define simple-sort!
-          (lambda (first last)
-            (let loop1 ((i first))
-              (cond ((< i last)
-                     (let ((m (vector-ref vect i)) (k i))
-                       (let loop2 ((j (+ i 1)))
-                         (cond ((<= j last)
-                                (if (proc (vector-ref vect j) m)
-                                    (begin
-                                      (set! m (vector-ref vect j))
-                                      (set! k j)))
-                                (loop2 (+ j 1)))
-                               (else
-                                (vector-set! vect k (vector-ref vect i))
-                                (vector-set! vect i m)
-                                (loop1 (+ i 1)))))))))))
-
-        (define sort!
-          (lambda (first last)
-            (cond ((> (- last first) 10)
-                   (let ((middle (div (+ first last) 2)))
-                     (sort! first middle)
-                     (sort! (+ middle 1) last)
-                     (let loop ((i first) (p2size 0))
-                       (cond ((> i middle)
-                              (let loop ((p1 (+ middle 1)) (p2 0) (p3 first))
-                                (cond ((and (<= p1 last) (< p2 p2size))
-                                       (cond ((proc (vector-ref work p2) (vector-ref vect p1))
-                                              (vector-set! vect p3 (vector-ref work p2))
-                                              (loop p1 (+ p2 1) (+ p3 1)))
-                                             (else
-                                              (vector-set! vect p3 (vector-ref vect p1))
-                                              (loop (+ p1 1) p2 (+ p3 1)))))
-                                      (else
-                                       (let loop ((s2 p2)(d3 p3))
-                                         (cond ((< s2 p2size)
-                                                (vector-set! vect d3 (vector-ref work s2))
-                                                (loop (+ s2 1) (+ d3 1)))))))))
-                             (else
-                              (vector-set! work p2size (vector-ref vect i))
-                              (loop (+ i 1) (+ p2size 1)))))))
-                  (else
-                   (simple-sort! first last)))))
-
-        (sort! 0 (- n 1)))))
-
-(display (list-sort > '(1 5 3)))
-
-;; (import (rnrs))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-;; (import (rnrs))
-
-;; (define-record-type (point make-point point?)
-;;   (fields (mutable x)
-;;           (immutable y)))
-
-;; (let ([p (make-point 3 4)])
-;;   (display (point-x p))) ; => 3
-
-;; ;; (let ([hashtable (make-eq-hashtable)])
-;; ;;   (hashtable-set! hashtable 'red 'apple)
-;; ;;   (display (hashtable-ref hashtable 'red)))
-
-;; ;; (import (rnrs))
-;; ;; (guard
-;; ;;  [con
-;; ;;   [(message-condition? con)
-;; ;;    (display (condition-message con))]]
-;; ;;  (car 3))
-
-;; (exit)
-;; ;; ;(display (string? #vu8(1 2)))
-;; ;; (exit)
-;; ;; ;(display #e1e100)
-;; ;; ;#e10e
-;; ;; (exit)
-;; ;; '#vu8(1 2)
-;; ;; (exit)
-;; ;; (call-with-string-input-port "("
-;; ;;      (lambda (in)
-;; ;;        (read in)))
-;; ;; (call-with-input-file "./hige.scm"
-;; ;;   (lambda (in)
-;; ;;     (read in)))
-
-;; ;; (exit)
-
-;; ;; (define (hige) 3)
-
-
-;; ;; (hige)
-;; ;; (exit)
-;; ;; (define (symbol-append . symbols)
-;; ;;   (string->symbol (apply string-append (map symbol->string symbols))))
-
-;; ;; (define-macro (define-simple-struct name fields)
-;; ;;   (let ([rtd (symbol-append name '-rtd)]
-;; ;;         [rcd (symbol-append name '-rcd)]
-;; ;;         [accessors (map (lambda (field) (symbol-append name '- field)) fields)]
-;; ;;         [field-set (list->vector (map (lambda (field) (list 'mutable field)) fields))]
-;; ;;         [constructor (symbol-append 'make- name)])
-;; ;;      `(begin
-;; ;;         (define ,rtd
-;; ;;           (make-record-type-descriptor
-;; ;;            ',name #f #f #f #f
-;; ;;            ',field-set))
-;; ;;         (define ,rcd
-;; ;;           (make-record-constructor-descriptor
-;; ;;            ,rtd #f #f))
-;; ;;         (define ,constructor
-;; ;;           (record-constructor ,rcd))
-;; ;;         ,@(let loop ([i 0]
-;; ;;                      [accessors accessors]
-;; ;;                      [ret '()])
-;; ;;            (if (null? accessors)
-;; ;;                ret
-;; ;;                (loop (+ i 1) (cdr accessors) (cons (list 'define (car accessors) (list 'record-accessor rtd i) ) ret))))
-;; ;;         )))
-
-;; ;; (define-macro (t exp equal expected )
-;; ;;   (let ([val (gensym)])
-;; ;;     `(let ([,val ,exp])
-;; ;;        (unless (equal? ,expected ,val)
-;; ;;          (error 'test (format "~a failed" ',exp) (list ,expected '=> ,val))))))
-
-;; ;; (define-simple-struct enum-set (type members))
-;; ;; (define-simple-struct enum-type (universe indexer))
-
-;; ;; (define (make-enumeration-type symbol-list)
-;; ;;   (let ([ht (make-eq-hashtable)])
-;; ;;     (let loop ([symbol-list symbol-list]
-;; ;;                [i 0])
-;; ;;       (if (null? symbol-list)
-;; ;;           '()
-;; ;;           (begin (hashtable-set! ht (car symbol-list) i)
-;; ;;                  (loop (cdr symbol-list) (+ i 1)))))
-;; ;;     (make-enum-type symbol-list
-;; ;;                     (lambda (symbol)
-;; ;;                       (hashtable-ref ht symbol #f)))))
-
-
-;; ;; (define (make-enumeration symbol-list)
-;; ;;   (make-enum-set (make-enumeration-type symbol-list) symbol-list))
-
-;; ;; (define (enum-set-universe enum-set)
-;; ;;   (make-enum-set (enum-set-type enum-set)
-;; ;;                  (enum-type-universe (enum-set-type enum-set))))
-
-;; ;; (define (enum-set-indexer enum-set)
-;; ;;   (enum-type-indexer (enum-set-type enum-set)))
-
-;; ;; (define (enum-set-constructor enum-set)
-;; ;;   (lambda (symbol-list)
-;; ;;     (let ([universe (enum-type-universe (enum-set-type enum-set))])
-;; ;;       (if (for-all (lambda (x) (memq x universe)) symbol-list)
-;; ;;           (make-enum-set (enum-set-type enum-set) symbol-list)
-;; ;;           (assertion-violation 'enum-set-constructor "the symbol list must all belong to the universe." (list universe symbol-list))))))
-
-;; ;; (define (enum-set->list enum-set)
-;; ;;   (let ([universe (enum-type-universe (enum-set-type enum-set))]
-;; ;;         [members (enum-set-members enum-set)])
-;; ;;     (let loop ([universe universe])
-;; ;;       (cond
-;; ;;        [(null? universe) '()]
-;; ;;        [(memq (car universe) members)
-;; ;;         (cons (car universe) (loop (cdr universe)))]
-;; ;;        [else
-;; ;;         (loop (cdr universe))]))))
-
-;; ;; (define (enum-set-member? symbol enum-set)
-;; ;;   (and (memq symbol (enum-set-members enum-set)) #t))
-
-;; ;; (define (enum-set-subset? enum-set1 enum-set2)
-;; ;;   (and
-;; ;;    (let ([enum-set2-univese (enum-set->list (enum-set-universe enum-set2))])
-;; ;;      (for-all
-;; ;;       (lambda (symbol) (memq symbol enum-set2-univese))
-;; ;;       (enum-set->list (enum-set-universe enum-set1))))
-;; ;;    (for-all
-;; ;;     (lambda (symbol) (enum-set-member? symbol enum-set2))
-;; ;;     (enum-set-members enum-set1))))
-
-;; ;; (define (enum-set=? enum-set1 enum-set2)
-;; ;;   (and (enum-set-subset? enum-set1 enum-set2)
-;; ;;        (enum-set-subset? enum-set2 enum-set1)))
-
-;; ;; (define (enum-set-union enum-set1 enum-set2)
-;; ;;   (define (union lst1 lst2)
-;; ;;     (let loop ([ret lst1]
-;; ;;                [lst lst2])
-;; ;;       (cond
-;; ;;        [(null? lst) ret]
-;; ;;        [(memq (car lst) ret)
-;; ;;         (loop ret (cdr lst))]
-;; ;;        [else
-;; ;;         (loop (cons (car lst) ret) (cdr lst))])))
-;; ;;   (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
-;; ;;       (make-enum-set (enum-set-type enum-set1)
-;; ;;                      (union (enum-set-members enum-set1) (enum-set-members enum-set2)))
-;; ;;       (assertion-violation 'enum-set-union "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
-
-;; ;; (define (enum-set-intersection enum-set1 enum-set2)
-;; ;;   (define (intersection lst1 lst2)
-;; ;;     (let loop ([ret '()]
-;; ;;                [lst lst1])
-;; ;;       (if (null? lst)
-;; ;;           ret
-;; ;;           (cond
-;; ;;            [(memq (car lst) lst2)
-;; ;;              (loop (cons (car lst) ret) (cdr lst))]
-;; ;;            [else
-;; ;;             (loop ret (cdr lst))]))))
-;; ;;   (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
-;; ;;       (make-enum-set (enum-set-type enum-set1)
-;; ;;                      (intersection (enum-set-members enum-set1) (enum-set-members enum-set2)))
-;; ;;       (assertion-violation 'enum-set-intersection "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
-
-;; ;; (define (enum-set-difference enum-set1 enum-set2)
-;; ;;   (define (difference lst1 lst2)
-;; ;;     (let loop ([ret '()]
-;; ;;                [lst lst1])
-;; ;;       (if (null? lst)
-;; ;;           ret
-;; ;;           (cond
-;; ;;            [(memq (car lst) lst2)
-;; ;;             (loop ret (cdr lst))]
-;; ;;            [else
-;; ;;             (loop (cons (car lst) ret) (cdr lst))]))))
-;; ;;   (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
-;; ;;       (make-enum-set (enum-set-type enum-set1)
-;; ;;                      (difference (enum-set-members enum-set1) (enum-set-members enum-set2)))
-;; ;;       (assertion-violation 'enum-set-difference "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
-
-;; ;; (define (enum-set-complement enum-set)
-;; ;;   (let ([members (enum-set-members enum-set)])
-;; ;;     (make-enum-set (enum-set-type enum-set)
-;; ;;                    (filter (lambda (symbol) (not (memq symbol members))) (enum-type-universe (enum-set-type enum-set))))))
-
-;; ;; (define (enum-set-projection enum-set1 enum-set2)
-;; ;;   (if (enum-set-subset? enum-set1 enum-set2)
-;; ;;       enum-set1
-;; ;;       (let ([universe2 (enum-type-universe (enum-set-type enum-set2))]
-;; ;;             [members1 (enum-set-members enum-set1)])
-;; ;;         (make-enum-set (enum-set-type enum-set2)
-;; ;;                        (filter (lambda (symbol) (memq symbol universe2)) members1)))))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (i (enum-set-indexer e)))
-;; ;;      (list (i 'red) (i 'green) (i 'blue) (i 'yellow)))
-;; ;;    =>
-;; ;;    '(0 1 2 #f))
-
-;; ;; (t (enum-set->list (make-enumeration '(red green blue)))
-;; ;;    =>
-;; ;;    '(red green blue))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (enum-set->list (c '(blue red))))
-;; ;;    =>
-;; ;;    '(red blue))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (list
-;; ;;       (enum-set-member? 'blue (c '(red blue)))
-;; ;;       (enum-set-member? 'green (c '(red blue)))
-;; ;;       (enum-set-subset? (c '(red blue)) e)
-;; ;;       (enum-set-subset? (c '(red blue)) (c '(blue red)))
-;; ;;       (enum-set-subset? (c '(red blue)) (c '(red)))
-;; ;;       (enum-set=? (c '(red blue)) (c '(blue red)))))
-;; ;;    =>
-;; ;;    '(#t #f #t #t #f #t))
-
-;; ;; (t (guard [c (#t 'error)]
-;; ;;           (let* ((e (make-enumeration '(red green blue)))
-;; ;;                  (c (enum-set-constructor e)))
-;; ;;             (c '(pink))))
-;; ;;    =>
-;; ;;    'error)
-
-;; ;; (let* ((e (make-enumeration '(red green blue)))
-;; ;;        (r ((enum-set-constructor e) '(red))))
-;; ;;   (t (enum-set->list (enum-set-universe e))
-;; ;;      => '(red green blue))
-
-;; ;;   (t (enum-set->list (enum-set-universe r))
-;; ;;      => '(red green blue))
-
-;; ;;   (t ((enum-set-indexer
-;; ;;           ((enum-set-constructor e) '(red)))
-;; ;;          'green)
-;; ;;      => 1)
-
-;; ;;   (t (enum-set-member? 'red e)
-;; ;;      => #t)
-
-;; ;;   (t (enum-set-member? 'black e)
-;; ;;      => #f)
-
-;; ;;   (t (enum-set-subset? e e)
-;; ;;      => #t)
-
-;; ;;   (t (enum-set-subset? r e)
-;; ;;      => #t)
-
-;; ;;   (t (enum-set-subset? e r)
-;; ;;      => #f)
-
-;; ;;   (t (enum-set-subset? e (make-enumeration '(blue green red)))
-;; ;;      => #t)
-;; ;;   (t (enum-set-subset? e (make-enumeration '(blue green red black)))
-;; ;;      => #t)
-;; ;;   (t (enum-set-subset? (make-enumeration '(blue green red black)) e)
-;; ;;      => #f)
-;; ;;   (t (enum-set-subset? ((enum-set-constructor
-;; ;;                          (make-enumeration '(blue green red black)))
-;; ;;                         '(red))
-;; ;;                        e)
-;; ;;      => #f)
-;; ;;   (t (enum-set-subset? ((enum-set-constructor
-;; ;;                          (make-enumeration '(green red)))
-;; ;;                         '(red))
-;; ;;                        e)
-;; ;;      => #t)
-;; ;;   (t (enum-set=? e e)
-;; ;;      => #t)
-;; ;;   (t (enum-set=? r e)
-;; ;;      => #f)
-;; ;;   (t (enum-set=? e r)
-;; ;;      => #f)
-;; ;;   (t (enum-set=? e (make-enumeration '(blue green red)))
-;; ;;      => #t)
-;; ;; )
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (list
-;; ;;       (enum-set-member? 'blue (c '(red blue)))
-;; ;;       (enum-set-member? 'green (c '(red blue)))
-;; ;;       (enum-set-subset? (c '(red blue)) e)
-;; ;;       (enum-set-subset? (c '(red blue)) (c '(blue red)))
-;; ;;       (enum-set-subset? (c '(red blue)) (c '(red)))
-;; ;;       (enum-set=? (c '(red blue)) (c '(blue red)))))
-;; ;;    => (list #t #f #t #t #f #t))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (enum-set->list (c '(blue red))))
-;; ;;    => '(red blue))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (list
-;; ;;       (enum-set->list
-;; ;;        (enum-set-union (c '(blue)) (c '(red))))
-;; ;;       (enum-set->list
-;; ;;        (enum-set-intersection (c '(red green))
-;; ;;                               (c '(red blue))))
-;; ;;       (enum-set->list
-;; ;;        (enum-set-difference (c '(red green))
-;; ;;                             (c '(red blue))))))
-;; ;;      => '((red blue) (red) (green)))
-
-;; ;; (t (let* ((e (make-enumeration '(red green blue)))
-;; ;;           (c (enum-set-constructor e)))
-;; ;;      (enum-set->list
-;; ;;       (enum-set-complement (c '(red)))))
-;; ;;    =>
-;; ;;    '(green blue))
-
-;; ;; (t (let ((e1 (make-enumeration
-;; ;;               '(red green blue black)))
-;; ;;          (e2 (make-enumeration
-;; ;;               '(red black white))))
-;; ;;      (enum-set->list
-;; ;;       (enum-set-projection e1 e2)))
-;; ;;    =>
-;; ;;    '(red black))
-
-
-;; ;; ;; (define enum-set-rtd
-
-;; ;; ;;   (make-record-type-descriptor
-;; ;; ;;    'enum-set #f #f #f #f
-;; ;; ;;    '#((mutable type) (mutable member))))
-
-;; ;; ;; (define enum-set-rcd
-;; ;; ;;   (make-record-constructor-descriptor
-;; ;; ;;    enum-set-rtd #f #f))
-
-;; ;; ;; (define make-enum-set (record-constructor enum-set-rcd))
-
-;; ;; ;; (define enum-set-type (record-accessor enum-set-rtd 0))
-
-
-;; ;; ;; (define enum-set-rtd
-;; ;; ;;   (make-record-type-descriptor
-;; ;; ;;    'enum-set #f #f #f #f
-;; ;; ;;    '#((mutable type) (mutable member))))
-
-;; ;; ;; (define enum-set-rcd
-;; ;; ;;   (make-record-constructor-descriptor
-;; ;; ;;    enum-set-rtd #f #f))
-
-;; ;; ;; (define make-enum-set (record-constructor enum-set-rcd))
-
-;; ;; ;; (define enum-set-type (record-accessor enum-set-rtd 0))
-
-;; ;; ;; (print (make-enum-set 'color '(hoge hige)))
-;; ;; ;; (print (enum-set-type (make-enum-set 'color '(hoge hige))))
-
-
-
-;; ;; (exit)
-;; ;; (fold-right + 0 '(1 2 3) '(4 5 6))
-;; ;; (exit)
-;; ;; (define (%cars+cdrs+ lists cars-final)
-;; ;;   (call-with-current-continuation
-;; ;;     (lambda (abort)
-;; ;;       (let recur ((lists lists))
-;; ;;         (if (pair? lists)
-;; ;;         (receive (list other-lists) (car+cdr lists)
-;; ;;           (if (null-list? list) (abort '() '()) ; LIST is empty -- bail out
-;; ;;           (receive (a d) (car+cdr list)
-;; ;;             (receive (cars cdrs) (recur other-lists)
-;; ;;               (values (cons a cars) (cons d cdrs))))))
-;; ;;         (values (list cars-final) '()))))))
-
-
-;; ;; (define (fold2 kons knil lis1 . lists)
-;; ;;   (check-arg procedure? kons fold)
-;; ;;   (if (pair? lists)
-;; ;;       (let lp ((lists (cons lis1 lists)) (ans knil))    ; N-ary case
-;; ;;     (receive (cars+ans cdrs) (%cars+cdrs+ lists ans)
-;; ;;       (if (null? cars+ans) ans ; Done.
-;; ;;           (lp cdrs (apply kons cars+ans)))))
-
-;; ;;       (let lp ((lis lis1) (ans knil))           ; Fast path
-;; ;;     (if (null-list? lis) ans
-;; ;;         (lp (cdr lis) (kons (car lis) ans))))))
-
-;; ;; (display  (fold2 + 0 '(1 2 3) '(4 5 6)))
-
-;; ;; (receive a (call/cc (lambda (c) (c 1 2 3))) (display a))
-;; ;; (exit)
-
-
-;; ;; (exit)
-;; ;; (display (fold-left (lambda (max-len s) (max max-len (string-length s))) 0 '("longest" "long" "longer")))
-
-
-
-;; ;; (exit)
-;; ;;  (fold-left (lambda (count x) (if (odd? x) (+ count 1) count)) 0 '(3 1 4 1 5 9 2 6 5 3))
-
-;; ;; (display  (fold-left + 0 '(1 2 3) '(4 5 6)))
-;; ;; (exit)
-;; ;; (define (partition proc lst)
-;; ;;   (let loop ([lst lst]
-;; ;;              [lst1 '()]
-;; ;;              [lst2 '()])
-;; ;;     (if (null? lst)
-;; ;;         (values (reverse lst1) (reverse lst2))
-;; ;;         (let ([var (car lst)])
-;; ;;           (if (proc var)
-;; ;;               (loop (cdr lst) (cons var lst1) lst2)
-;; ;;               (loop (cdr lst) lst1 (cons var lst2)))))))
-
-;; ;; (receive (x y) (partition even? '(3 1 4 1 5 9 2 6))
-;; ;;   (display x)
-;; ;;   (display y))
-
-;; ;; (exit)
-
-;; ;;   (define (exists-1 proc lst1)
-;; ;;     (if (null? lst1)
-;; ;;         #f
-;; ;;         (let loop ([lst lst1])
-;; ;;           (cond
-;; ;;            [(not (pair? lst))
-;; ;;             (assertion-violation 'exists "proper list required" (list lst1))]
-;; ;;            [(proc (car lst))
-;; ;;             => (lambda (ret)
-;; ;;                  ret)]
-;; ;;            [else
-;; ;;             (if (null? (cdr lst))
-;; ;;                 #f
-;; ;;                 (loop (cdr lst)))]))))
-
-;; ;;   (define (exists-n proc list-n)
-;; ;;     (define (map-car l)
-;; ;;       (let loop ([l l])
-;; ;;         (cond
-;; ;;          [(null? l)
-;; ;;           '()]
-;; ;;          [(pair? (car l))
-;; ;;           (cons (caar l) (loop (cdr l)))]
-;; ;;          [else
-;; ;;           (assertion-violation 'exists "the lists all should have the same length" (list list-n))])))
-;; ;;     (if (null*? list-n)
-;; ;;         #f
-;; ;;         (let loop ([head (map-car list-n)]
-;; ;;                    [rest (map cdr list-n)])
-;; ;;           (if (null? (car rest))
-;; ;;               (apply proc head)
-;; ;;               (or (apply proc head)
-;; ;;                    (loop (map-car rest) (map cdr rest)))))))
-
-;; ;; (print (exists-1 even? '(3 1 4 1 5 9)) )
-;; ;;                ; ⇒ #t
-;; ;; (print (exists-1 even? '(3 1 1 5 9)));         ⇒ #f
-;; ;; ;(print ((exists-1 even? '(3 1 1 5 9 . 2)) ))
-;; ;;                ; ⇒  &assertion exception
-;; ;; (print (exists-1 (lambda (n) (and (even? n) n)) '(2 1 4 14)))
-
-;; ;; (print (exists-n < '((1 2 4) (2 3 4))))
-;; ;; (print (exists-n > '((1 2 3) (2 3 4))))
-;; ;; (exit)
-
-;; ;; (= 3 'a)
-;; ;; (exit)
-;; ;; (define ($for-all proc lst . lists)
-;; ;;   (define (for-all-1 proc lst1)
-;; ;;     (if (null? lst1)
-;; ;;         #t
-;; ;;         (let loop ([lst lst1])
-;; ;;           (cond
-;; ;;            [(not (pair? lst))
-;; ;;             (assertion-violation 'for-all "proper list required" (list lst1))]
-;; ;;            [(proc (car lst))
-;; ;;             => (lambda (ret)
-;; ;;                  (if (null? (cdr lst))
-;; ;;                      ret
-;; ;;                      (loop (cdr lst))))]
-;; ;;            [else #f]))))
-;; ;;   (define (for-all-n proc list-n)
-;; ;;     (define (map-car l)
-;; ;;       (let loop ([l l])
-;; ;;         (cond
-;; ;;          [(null? l)
-;; ;;           '()]
-;; ;;          [(pair? (car l))
-;; ;;           (cons (caar l) (loop (cdr l)))]
-;; ;;          [else
-;; ;;           (assertion-violation 'for-all "the lists all should have the same length" (list list-n))])))
-;; ;;     (if (null*? list-n)
-;; ;;         #t
-;; ;;         (let loop ([head (map-car list-n)]
-;; ;;                    [rest (map cdr list-n)])
-;; ;;           (if (null? (car rest))
-;; ;;               (apply proc head)
-;; ;;               (and (apply proc head)
-;; ;;                    (loop (map-car rest) (map cdr rest)))))))
-;; ;;     (if (null? lists)
-;; ;;         (for-all-1 proc lst)
-;; ;;         (for-all-n proc (cons lst lists))))
-
-;; ;; (define (null*? lst)
-;; ;;   (let loop ([lst lst])
-;; ;;     (if (null? lst)
-;; ;;         #t
-;; ;;         (and (null? (car lst))
-;; ;;              (loop (cdr lst))))))
-
-;; ;; (print (null*? '(() ())))
-
-;; ;; (print ($for-all even? '(3 1 4 1 5 9)))
-;; ;; (print ($for-all even? '(3 1 4 1 5 9 . 2)))
-;; ;; (print ($for-all even? '(2 4 14)))
-;; ;; (exit)
-;; ;; ;(print ($for-all even? '(2 4 14 . 9)))
-;; ;; ;; ;                ⇒  &assertion exception
-;; ;; (print ($for-all (lambda (n) (and (even? n) n))
-;; ;;           '(2 4 14)))
-
-;; ;; (print ($for-all even? '()))
-;; ;; (print ($for-all even? '() '()))
-;; ;; ;; ;                ⇒ 14
-;; ;; ;(print (for-all < '(1 2 3) '(2 3 4)))
-;; ;; ;; ;                ⇒ #t
-;; ;; ;; (for-all < '(1 2 4) '(2 3 4))
-
-;; ;; (exit)
-
-;; ;; (display '#(moge))
-;; ;; (exit)
-
-;; ;; (display '(3 #,@3))
-;; ;; (exit)
-
-;; ;; (delete-file "not-cgadad///")
-;; ;; (exit)
-
-;; ;; (define a 3)
-;; ;; (define a 3)
-;; ;; (exit)
-
-;; ;; yyy
-;; ;; (exit)
-;; ;; (define (a y . x)
-;; ;;   x)
-;; ;; (display (a))
-;; ;; (exit)
-;; ;; (define (a x)
-;; ;;   (set! x 1)
-;; ;;   (a x)
-;; ;;   3)
-;; ;; (display (guard [c (#t (display c))]
-;; ;;        (a 3)))
-;; ;; (exit)
-
-;; ;; (#/.*/ "あいうえ")
-;; ;; (exit)
-;; ;; (let1 x '(2)
-;; ;;   (apply set-cdr! (list x 3))
-;; ;;   (display x))
-;; ;; (exit)
-;; ;; (display (apply read-char (current-input-port)))
-
-;; ;; (exit)
-;; ;; (reverse 3)
-;; ;; (exit)
-;; ;; (display 'h (current-error-port))
-;; ;; (apply cdr '(2))
-;; ;; (exit)
-;; ;; (make-record-constructor-descriptor)
-;; ;; (number? 2 2)
-;; ;; (exit)
-;; ;; (apply (lambda (s) (display s)) '(1 2))
-;; ;; (exit)
-;; ;; (car 3)
-;; ;; (display (guard (con [#t 'error])
-;; ;;               (car 3)))
-;; ;; (exit)
-
-;; ;; (call/cc (lambda (cont)
-;; ;;                (with-exception-handler
-;; ;;                 (lambda (c)
-;; ;;                   (cont c))
-;; ;;                 (lambda () (car 3)))))
-;; ;; (exit)
-
-;; ;; (define (a) ((lambda ()
-;; ;;   (throw 3))))
-;; ;; (a)
-;; ;; (exit)
-;; ;; (call/cc
-;; ;;  (lambda (cont)
-;; ;;    (with-exception-handler
-;; ;;     (lambda (c)
-;; ;;       (display c)
-;; ;;       (cont 3))
-;; ;;     (lambda () (hashtable-clear! (hashtable-copy (make-eq-hashtable) #f))))))
-;; ;; (exit)
-
-
-;; ;; (display (equal? '(#(1 2 3)  . #(one two three)) '(#(1 2 3)  . #(one two three))))
-;; ;; (exit)
-;; ;; (display (test-temp 1  2 3))
-;; ;; (display (test-temp 4 5 6))
-
-;; ;; (exit)
-
-;; ;; ;(eval (list 'quote  (cons '1 '2)) '())
-;; ;; ;(eval '(quote  (cons '1 '2)) '())
-;; ;; (eval 3 '())
-;; ;; (display (apply (lambda (x y) (apply y '((3 2)))) `(,car ,cdr)))
-;; ;; (display (apply (lambda (x) (car x)) '((3 2))))
-
-;; ;; (display (test-temp 1  2 3))
-;; ;; (display (test-temp 4 5 6))
-
-;; ;;    (with-exception-handler
-;; ;;     (lambda (e)
-;; ;;       (display e))
-;; ;;     (lambda ()
-;; ;;       (raise-continuable "bokeeeee")))
-
-
-;; ;; ;; (parameterize ((x y))
-;; ;; ;;   body ...)
-
-;; ;; ;; (define-macro (parameterize . sexp)
-;; ;; ;;   (let ([var (caaar sexp)]
-;; ;; ;;         [val (cadaar sexp)]
-;; ;; ;;         [body (cdr sexp)]
-;; ;; ;;         [save (gensym)]
-;; ;; ;;         [new (gensym)])
-;; ;; ;;     `(let ([,save #f]
-;; ;; ;;            [,new ,val])
-;; ;; ;;        (dynamic-wind
-;; ;; ;;            (lambda () (set! ,save ,var) (set! ,var ,new))
-;; ;; ;;            (lambda () ,@body)
-;; ;; ;;            (lambda () (set! ,var ,save))))))
-
-;; ;; (let1 x (make-parameter 3)
-;; ;;   (parameterize ((x 4))
-;; ;;     (display (x)))
-;; ;;     (display (x)))
-
-
-;; ;; (receive x (values)
-;; ;;   (display x))
-
-;; ;; ;(exit)
-
-
-;; ;; ;; (let ([captured '()])
-;; ;; ;;   (dynamic-wind
-;; ;; ;;       (lambda () (print "before"))
-;; ;; ;;       (lambda ()
-;; ;; ;;         (if (call/cc
-;; ;; ;;              (lambda (cont)
-;; ;; ;;                (set! captured cont)))
-;; ;; ;;             '()
-;; ;; ;;             (set! captured #f)))
-;; ;; ;;       (lambda () (print "after")))
-;; ;; ;;   (if captured
-;; ;; ;;       (captured #f)
-;; ;; ;;       (print "done")))
-
-;; ;; ;; (let ([captured '()])
-;; ;; ;;   (dynamic-wind
-;; ;; ;;       (lambda () (print "before1"))
-;; ;; ;;       (lambda ()
-;; ;; ;;         (print "thunk1")
-;; ;; ;;         (if (call/cc
-;; ;; ;;              (lambda (cont)
-;; ;; ;;                (set! captured cont)))
-;; ;; ;;             '()
-;; ;; ;;             (set! captured #f)))
-;; ;; ;;       (lambda () (print "after1")))
-;; ;; ;;   (dynamic-wind
-;; ;; ;;       (lambda () (print "before2"))
-;; ;; ;;       (lambda ()
-;; ;; ;;         (print "thunk2")
-;; ;; ;;         (if captured
-;; ;; ;;             (captured #f)
-;; ;; ;;             (print "done")))
-;; ;; ;;       (lambda () (print "after2"))))
-
-;; ;; ;; (let ([captured '()])
-;; ;; ;;   (dynamic-wind
-;; ;; ;;       (lambda () (print "before1"))
-;; ;; ;;       (lambda ()
-;; ;; ;;         (print "thunk1")
-;; ;; ;;         (dynamic-wind
-;; ;; ;;             (lambda () (print "before1-1"))
-;; ;; ;;             (lambda ()
-;; ;; ;;               (print "thunk1-1")
-;; ;; ;;               (if (call/cc
-;; ;; ;;                    (lambda (cont)
-;; ;; ;;                      (set! captured cont)))
-;; ;; ;;                   '()
-;; ;; ;;                   (set! captured #f)))
-;; ;; ;;             (lambda () (print "after1-1"))))
-;; ;; ;;       (lambda () (print "after1")))
-;; ;; ;;   (dynamic-wind
-;; ;; ;;       (lambda () (print "before2"))
-;; ;; ;;       (lambda ()
-;; ;; ;;         (print "thunk2")
-;; ;; ;;         (if captured
-;; ;; ;;             (captured #f)
-;; ;; ;;             (print "done")))
-;; ;; ;;       (lambda () (print "after2"))))
-
-
-
-
-;; ;; ;; (call-with-values (lambda ()
-;; ;; ;;                     ((call/cc
-;; ;; ;;                       (lambda (outerk)
-;; ;; ;;                         (lambda ()
-;; ;; ;;                           (with-exception-handler
-;; ;; ;;                            (lambda (c)
-;; ;; ;;                              ((call/cc
-;; ;; ;;                                (lambda (gen)
-;; ;; ;;                                  (outerk
-;; ;; ;;                                   (lambda () (if #t (begin #t) (gen (lambda () (raise c))))))))))
-;; ;; ;;                            (lambda () #f (raise #f))))))))
-;; ;; ;;   (lambda x
-;; ;; ;;     x))
-
-;; ;; ;; (call-with-values (lambda ()
-;; ;; ;;                     ((call/cc
-;; ;; ;;                       (lambda (outerk)
-;; ;; ;;                         (lambda ()
-;; ;; ;;                           (with-exception-handler
-;; ;; ;;                            (lambda (c)
-;; ;; ;;                              ((call/cc
-;; ;; ;;                                (lambda (gen)
-;; ;; ;;                                  (outerk
-;; ;; ;;                                   (lambda () #t))))))
-;; ;; ;;                            (lambda () #f (raise #f))))))))
-;; ;; ;;   (lambda x
-;; ;; ;;     x))
-
-;; ;; ;; (call-with-values (lambda ()
-;; ;; ;;                     ((call/cc
-;; ;; ;;                       (lambda (outerk)
-;; ;; ;;                         (lambda ()
-;; ;; ;;                           (with-exception-handler
-;; ;; ;;                            (lambda (c)
-;; ;; ;;                              ((call/cc
-;; ;; ;;                                (lambda (gen)
-;; ;; ;;                                  (outerk
-;; ;; ;;                                   (lambda () #t))))))
-;; ;; ;;                            (lambda () (raise #f))))))))
-;; ;; ;;   (lambda x x))
-
-;; ;; ;; (call-with-values (lambda ()
-;; ;; ;;                     ((call/cc
-;; ;; ;;                       (lambda (outerk)
-;; ;; ;;                         (lambda ()
-;; ;; ;;                           (with-exception-handler
-;; ;; ;;                            (lambda (c)
-;; ;; ;;                              (
-;; ;; ;;                                  (outerk
-;; ;; ;;                                   (lambda () #t))))
-;; ;; ;;                            (lambda () (raise #f))))))))
-;; ;; ;;   (lambda x x))
-
-;; ;; ;; (call-with-values
-;; ;; ;;     (lambda ()
-;; ;; ;;       ((call/cc
-;; ;; ;;         (lambda (outerk)
-;; ;; ;;           (lambda ()
-;; ;; ;;             (with-exception-handler
-;; ;; ;;              (lambda (c)
-;; ;; ;;                (
-;; ;; ;;                 (outerk
-;; ;; ;;                  (lambda () #t))))
-;; ;; ;;              (lambda () (raise #f)))
-;; ;; ;;             )))))
-;; ;; ;;   (lambda x x))
-
-;; ;; ;; (call-with-values
-;; ;; ;;     (lambda ()
-;; ;; ;;       ((call/cc
-;; ;; ;;         (lambda (outerk)
-;; ;; ;;           (lambda ()
-;; ;; ;;             (with-exception-handler
-;; ;; ;;              (lambda (c)
-;; ;; ;;                (
-;; ;; ;;                 (outerk
-;; ;; ;;                  (lambda () #t))))
-;; ;; ;;              (lambda () (raise #f)))
-;; ;; ;;             )))))
-;; ;; ;;   (lambda x x))
-
-;; ;; ;; (display
-;; ;; ;;  ((lambda ()
-;; ;; ;;     ((call/cc
-;; ;; ;;       (lambda (outerk)
-;; ;; ;;         (lambda ()
-;; ;; ;;           (with-exception-handler
-;; ;; ;;            (lambda (c)
-;; ;; ;;              (
-;; ;; ;;               (outerk
-;; ;; ;;                (lambda () #t))))
-;; ;; ;;            (lambda () (raise #f)))
-;; ;; ;;           )))))))
-
-;; ;; ;; (display
-;; ;; ;;  ((call/cc
-;; ;; ;;    (lambda (outerk)
-;; ;; ;;      (lambda ()
-;; ;; ;;        (with-exception-handler
-;; ;; ;;         (lambda (c)
-;; ;; ;;           (
-;; ;; ;;            (outerk
-;; ;; ;;             (lambda () #t))))
-;; ;; ;;         (lambda () (raise #f)))
-;; ;; ;;           )))))
-
-;; ;; ;; (display
-;; ;; ;;  ((call/cc
-;; ;; ;;    (lambda (outerk)
-;; ;; ;;      (lambda ()
-;; ;; ;;        (with-exception-handler
-;; ;; ;;         (lambda (c)
-;; ;; ;;           (
-;; ;; ;;            (outerk
-;; ;; ;;             (lambda () #t))))
-;; ;; ;;         (lambda () (raise #f)))
-;; ;; ;;           )))))
-
-;; ;; ;; (display
-;; ;; ;;  ((call/cc
-;; ;; ;;    (lambda (outerk)
-;; ;; ;;      (lambda ()
-;; ;; ;;        (with-exception-handler
-;; ;; ;;         (lambda (c)
-;; ;; ;;           (
-;; ;; ;;            (outerk
-;; ;; ;;             (lambda () #t))))
-;; ;; ;;         (lambda () (raise #f)))
-;; ;; ;;           )))))
-
-;; ;; ;; (display
-;; ;; ;; (call/cc
-;; ;; ;;  (lambda (cont)
-;; ;; ;;    (with-exception-handler
-;; ;; ;;      (lambda (exception)
-;; ;; ;;        (cont 3))
-;; ;; ;;      (lambda () (raise #f))))))
-
-;; ;; (display
-;; ;; (call/cc
-;; ;;  (lambda (cont)
-;; ;;    (with-exception-handler
-;; ;;      (lambda (exception)
-;; ;;        (cont 3))
-;; ;;      (lambda () (raise #f))))))
+(define general-category-alist '(
+    (Cc . (0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159))
+    (Nd . (48 49 50 51 52 53 54 55 56 57 1632 1633 1634 1635 1636 1637 1638 1639 1640 1641 1776 1777 1778 1779 1780 1781 1782 1783 1784 1785 1984 1985 1986 1987 1988 1989 1990 1991 1992 1993 2406 2407 2408 2409 2410 2411 2412 2413 2414 2415 2534 2535 2536 2537 2538 2539 2540 2541 2542 2543 2662 2663 2664 2665 2666 2667 2668 2669 2670 2671 2790 2791 2792 2793 2794 2795 2796 2797 2798 2799 2918 2919 2920 2921 2922 2923 2924 2925 2926 2927 3046 3047 3048 3049 3050 3051 3052 3053 3054 3055 3174 3175 3176 3177 3178 3179 3180 3181 3182 3183 3302 3303 3304 3305 3306 3307 3308 3309 3310 3311 3430 3431 3432 3433 3434 3435 3436 3437 3438 3439 3664 3665 3666 3667 3668 3669 3670 3671 3672 3673 3792 3793 3794 3795 3796 3797 3798 3799 3800 3801 3872 3873 3874 3875 3876 3877 3878 3879 3880 3881 4160 4161 4162 4163 4164 4165 4166 4167 4168 4169 4240 4241 4242 4243 4244 4245 4246 4247 4248 4249 6112 6113 6114 6115 6116 6117 6118 6119 6120 6121 6160 6161 6162 6163 6164 6165 6166 6167 6168 6169 6470 6471 6472 6473 6474 6475 6476 6477 6478 6479 6608 6609 6610 6611 6612 6613 6614 6615 6616 6617 6992 6993 6994 6995 6996 6997 6998 6999 7000 7001 7088 7089 7090 7091 7092 7093 7094 7095 7096 7097 7232 7233 7234 7235 7236 7237 7238 7239 7240 7241 7248 7249 7250 7251 7252 7253 7254 7255 7256 7257 42528 42529 42530 42531 42532 42533 42534 42535 42536 42537 43216 43217 43218 43219 43220 43221 43222 43223 43224 43225 43264 43265 43266 43267 43268 43269 43270 43271 43272 43273 43600 43601 43602 43603 43604 43605 43606 43607 43608 43609 65296 65297 65298 65299 65300 65301 65302 65303 65304 65305 66720 66721 66722 66723 66724 66725 66726 66727 66728 66729 120782 120783 120784 120785 120786 120787 120788 120789 120790 120791 120792 120793 120794 120795 120796 120797 120798 120799 120800 120801 120802 120803 120804 120805 120806 120807 120808 120809 120810 120811 120812 120813 120814 120815 120816 120817 120818 120819 120820 120821 120822 120823 120824 120825 120826 120827 120828 120829 120830 120831))
+    (Sc . (36 162 163 164 165 1547 2546 2547 2801 3065 3647 6107 8352 8353 8354 8355 8356 8357 8358 8359 8360 8361 8362 8363 8364 8365 8366 8367 8368 8369 8370 8371 8372 8373 65020 65129 65284 65504 65505 65509 65510))
+    (Mc . (2307 2366 2367 2368 2377 2378 2379 2380 2434 2435 2494 2495 2496 2503 2504 2507 2508 2519 2563 2622 2623 2624 2691 2750 2751 2752 2761 2763 2764 2818 2819 2878 2880 2887 2888 2891 2892 2903 3006 3007 3009 3010 3014 3015 3016 3018 3019 3020 3031 3073 3074 3075 3137 3138 3139 3140 3202 3203 3262 3264 3265 3266 3267 3268 3271 3272 3274 3275 3285 3286 3330 3331 3390 3391 3392 3398 3399 3400 3402 3403 3404 3415 3458 3459 3535 3536 3537 3544 3545 3546 3547 3548 3549 3550 3551 3570 3571 3902 3903 3967 4139 4140 4145 4152 4155 4156 4182 4183 4194 4195 4196 4199 4200 4201 4202 4203 4204 4205 4227 4228 4231 4232 4233 4234 4235 4236 4239 6070 6078 6079 6080 6081 6082 6083 6084 6085 6087 6088 6435 6436 6437 6438 6441 6442 6443 6448 6449 6451 6452 6453 6454 6455 6456 6576 6577 6578 6579 6580 6581 6582 6583 6584 6585 6586 6587 6588 6589 6590 6591 6592 6600 6601 6681 6682 6683 6916 6965 6971 6973 6974 6975 6976 6977 6979 6980 7042 7073 7078 7079 7082 7204 7205 7206 7207 7208 7209 7210 7211 7220 7221 43043 43044 43047 43136 43137 43188 43189 43190 43191 43192 43193 43194 43195 43196 43197 43198 43199 43200 43201 43202 43203 43346 43347 43567 43568 43571 43572 43597 119141 119142 119149 119150 119151 119152 119153 119154))
+    (Sk . (94 96 168 175 180 184 706 707 708 709 722 723 724 725 726 727 728 729 730 731 732 733 734 735 741 742 743 744 745 746 747 749 751 752 753 754 755 756 757 758 759 760 761 762 763 764 765 766 767 885 900 901 8125 8127 8128 8129 8141 8142 8143 8157 8158 8159 8173 8174 8175 8189 8190 12443 12444 42752 42753 42754 42755 42756 42757 42758 42759 42760 42761 42762 42763 42764 42765 42766 42767 42768 42769 42770 42771 42772 42773 42774 42784 42785 42889 42890 65342 65344 65507))
+    (Pi . (171 8216 8219 8220 8223 8249 11778 11780 11785 11788 11804 11808))
+    (Sm . (43 60 61 62 124 126 172 177 215 247 1014 1542 1543 1544 8260 8274 8314 8315 8316 8330 8331 8332 8512 8513 8514 8515 8516 8523 8592 8593 8594 8595 8596 8602 8603 8608 8611 8614 8622 8654 8655 8658 8660 8692 8693 8694 8695 8696 8697 8698 8699 8700 8701 8702 8703 8704 8705 8706 8707 8708 8709 8710 8711 8712 8713 8714 8715 8716 8717 8718 8719 8720 8721 8722 8723 8724 8725 8726 8727 8728 8729 8730 8731 8732 8733 8734 8735 8736 8737 8738 8739 8740 8741 8742 8743 8744 8745 8746 8747 8748 8749 8750 8751 8752 8753 8754 8755 8756 8757 8758 8759 8760 8761 8762 8763 8764 8765 8766 8767 8768 8769 8770 8771 8772 8773 8774 8775 8776 8777 8778 8779 8780 8781 8782 8783 8784 8785 8786 8787 8788 8789 8790 8791 8792 8793 8794 8795 8796 8797 8798 8799 8800 8801 8802 8803 8804 8805 8806 8807 8808 8809 8810 8811 8812 8813 8814 8815 8816 8817 8818 8819 8820 8821 8822 8823 8824 8825 8826 8827 8828 8829 8830 8831 8832 8833 8834 8835 8836 8837 8838 8839 8840 8841 8842 8843 8844 8845 8846 8847 8848 8849 8850 8851 8852 8853 8854 8855 8856 8857 8858 8859 8860 8861 8862 8863 8864 8865 8866 8867 8868 8869 8870 8871 8872 8873 8874 8875 8876 8877 8878 8879 8880 8881 8882 8883 8884 8885 8886 8887 8888 8889 8890 8891 8892 8893 8894 8895 8896 8897 8898 8899 8900 8901 8902 8903 8904 8905 8906 8907 8908 8909 8910 8911 8912 8913 8914 8915 8916 8917 8918 8919 8920 8921 8922 8923 8924 8925 8926 8927 8928 8929 8930 8931 8932 8933 8934 8935 8936 8937 8938 8939 8940 8941 8942 8943 8944 8945 8946 8947 8948 8949 8950 8951 8952 8953 8954 8955 8956 8957 8958 8959 8968 8969 8970 8971 8992 8993 9084 9115 9116 9117 9118 9119 9120 9121 9122 9123 9124 9125 9126 9127 9128 9129 9130 9131 9132 9133 9134 9135 9136 9137 9138 9139 9180 9181 9182 9183 9184 9185 9655 9665 9720 9721 9722 9723 9724 9725 9726 9727 9839 10176 10177 10178 10179 10180 10183 10184 10185 10186 10188 10192 10193 10194 10195 10196 10197 10198 10199 10200 10201 10202 10203 10204 10205 10206 10207 10208 10209 10210 10211 10212 10213 10224 10225 10226 10227 10228 10229 10230 10231 10232 10233 10234 10235 10236 10237 10238 10239 10496 10497 10498 10499 10500 10501 10502 10503 10504 10505 10506 10507 10508 10509 10510 10511 10512 10513 10514 10515 10516 10517 10518 10519 10520 10521 10522 10523 10524 10525 10526 10527 10528 10529 10530 10531 10532 10533 10534 10535 10536 10537 10538 10539 10540 10541 10542 10543 10544 10545 10546 10547 10548 10549 10550 10551 10552 10553 10554 10555 10556 10557 10558 10559 10560 10561 10562 10563 10564 10565 10566 10567 10568 10569 10570 10571 10572 10573 10574 10575 10576 10577 10578 10579 10580 10581 10582 10583 10584 10585 10586 10587 10588 10589 10590 10591 10592 10593 10594 10595 10596 10597 10598 10599 10600 10601 10602 10603 10604 10605 10606 10607 10608 10609 10610 10611 10612 10613 10614 10615 10616 10617 10618 10619 10620 10621 10622 10623 10624 10625 10626 10649 10650 10651 10652 10653 10654 10655 10656 10657 10658 10659 10660 10661 10662 10663 10664 10665 10666 10667 10668 10669 10670 10671 10672 10673 10674 10675 10676 10677 10678 10679 10680 10681 10682 10683 10684 10685 10686 10687 10688 10689 10690 10691 10692 10693 10694 10695 10696 10697 10698 10699 10700 10701 10702 10703 10704 10705 10706 10707 10708 10709 10710 10711 10716 10717 10718 10719 10720 10721 10722 10723 10724 10725 10726 10727 10728 10729 10730 10731 10732 10733 10734 10735 10736 10737 10738 10739 10740 10741 10742 10743 10744 10745 10746 10747 10750 10751 10752 10753 10754 10755 10756 10757 10758 10759 10760 10761 10762 10763 10764 10765 10766 10767 10768 10769 10770 10771 10772 10773 10774 10775 10776 10777 10778 10779 10780 10781 10782 10783 10784 10785 10786 10787 10788 10789 10790 10791 10792 10793 10794 10795 10796 10797 10798 10799 10800 10801 10802 10803 10804 10805 10806 10807 10808 10809 10810 10811 10812 10813 10814 10815 10816 10817 10818 10819 10820 10821 10822 10823 10824 10825 10826 10827 10828 10829 10830 10831 10832 10833 10834 10835 10836 10837 10838 10839 10840 10841 10842 10843 10844 10845 10846 10847 10848 10849 10850 10851 10852 10853 10854 10855 10856 10857 10858 10859 10860 10861 10862 10863 10864 10865 10866 10867 10868 10869 10870 10871 10872 10873 10874 10875 10876 10877 10878 10879 10880 10881 10882 10883 10884 10885 10886 10887 10888 10889 10890 10891 10892 10893 10894 10895 10896 10897 10898 10899 10900 10901 10902 10903 10904 10905 10906 10907 10908 10909 10910 10911 10912 10913 10914 10915 10916 10917 10918 10919 10920 10921 10922 10923 10924 10925 10926 10927 10928 10929 10930 10931 10932 10933 10934 10935 10936 10937 10938 10939 10940 10941 10942 10943 10944 10945 10946 10947 10948 10949 10950 10951 10952 10953 10954 10955 10956 10957 10958 10959 10960 10961 10962 10963 10964 10965 10966 10967 10968 10969 10970 10971 10972 10973 10974 10975 10976 10977 10978 10979 10980 10981 10982 10983 10984 10985 10986 10987 10988 10989 10990 10991 10992 10993 10994 10995 10996 10997 10998 10999 11000 11001 11002 11003 11004 11005 11006 11007 11056 11057 11058 11059 11060 11061 11062 11063 11064 11065 11066 11067 11068 11069 11070 11071 11072 11073 11074 11075 11076 11079 11080 11081 11082 11083 11084 64297 65122 65124 65125 65126 65291 65308 65309 65310 65372 65374 65506 65513 65514 65515 65516 120513 120539 120571 120597 120629 120655 120687 120713 120745 120771))
+    (No . (178 179 185 188 189 190 2548 2549 2550 2551 2552 2553 3056 3057 3058 3192 3193 3194 3195 3196 3197 3198 3440 3441 3442 3443 3444 3445 3882 3883 3884 3885 3886 3887 3888 3889 3890 3891 4969 4970 4971 4972 4973 4974 4975 4976 4977 4978 4979 4980 4981 4982 4983 4984 4985 4986 4987 4988 6128 6129 6130 6131 6132 6133 6134 6135 6136 6137 8304 8308 8309 8310 8311 8312 8313 8320 8321 8322 8323 8324 8325 8326 8327 8328 8329 8531 8532 8533 8534 8535 8536 8537 8538 8539 8540 8541 8542 8543 9312 9313 9314 9315 9316 9317 9318 9319 9320 9321 9322 9323 9324 9325 9326 9327 9328 9329 9330 9331 9332 9333 9334 9335 9336 9337 9338 9339 9340 9341 9342 9343 9344 9345 9346 9347 9348 9349 9350 9351 9352 9353 9354 9355 9356 9357 9358 9359 9360 9361 9362 9363 9364 9365 9366 9367 9368 9369 9370 9371 9450 9451 9452 9453 9454 9455 9456 9457 9458 9459 9460 9461 9462 9463 9464 9465 9466 9467 9468 9469 9470 9471 10102 10103 10104 10105 10106 10107 10108 10109 10110 10111 10112 10113 10114 10115 10116 10117 10118 10119 10120 10121 10122 10123 10124 10125 10126 10127 10128 10129 10130 10131 11517 12690 12691 12692 12693 12832 12833 12834 12835 12836 12837 12838 12839 12840 12841 12881 12882 12883 12884 12885 12886 12887 12888 12889 12890 12891 12892 12893 12894 12895 12928 12929 12930 12931 12932 12933 12934 12935 12936 12937 12977 12978 12979 12980 12981 12982 12983 12984 12985 12986 12987 12988 12989 12990 12991 65799 65800 65801 65802 65803 65804 65805 65806 65807 65808 65809 65810 65811 65812 65813 65814 65815 65816 65817 65818 65819 65820 65821 65822 65823 65824 65825 65826 65827 65828 65829 65830 65831 65832 65833 65834 65835 65836 65837 65838 65839 65840 65841 65842 65843 65909 65910 65911 65912 65930 66336 66337 66338 66339 67862 67863 67864 67865 68160 68161 68162 68163 68164 68165 68166 68167 119648 119649 119650 119651 119652 119653 119654 119655 119656 119657 119658 119659 119660 119661 119662 119663 119664 119665))
+    (Zs . (32 160 5760 6158 8192 8193 8194 8195 8196 8197 8198 8199 8200 8201 8202 8239 8287 12288))
+    (Me . (1160 1161 1758 8413 8414 8415 8416 8418 8419 8420 42608 42609 42610))
+    (Ll . (97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 170 181 186 223 224 225 226 227 228 229 230 231 232 233 234 235 236 237 238 239 240 241 242 243 244 245 246 248 249 250 251 252 253 254 255 257 259 261 263 265 267 269 271 273 275 277 279 281 283 285 287 289 291 293 295 297 299 301 303 305 307 309 311 312 314 316 318 320 322 324 326 328 329 331 333 335 337 339 341 343 345 347 349 351 353 355 357 359 361 363 365 367 369 371 373 375 378 380 382 383 384 387 389 392 396 397 402 405 409 410 411 414 417 419 421 424 426 427 429 432 436 438 441 442 445 446 447 454 457 460 462 464 466 468 470 472 474 476 477 479 481 483 485 487 489 491 493 495 496 499 501 505 507 509 511 513 515 517 519 521 523 525 527 529 531 533 535 537 539 541 543 545 547 549 551 553 555 557 559 561 563 564 565 566 567 568 569 572 575 576 578 583 585 587 589 591 592 593 594 595 596 597 598 599 600 601 602 603 604 605 606 607 608 609 610 611 612 613 614 615 616 617 618 619 620 621 622 623 624 625 626 627 628 629 630 631 632 633 634 635 636 637 638 639 640 641 642 643 644 645 646 647 648 649 650 651 652 653 654 655 656 657 658 659 661 662 663 664 665 666 667 668 669 670 671 672 673 674 675 676 677 678 679 680 681 682 683 684 685 686 687 881 883 887 891 892 893 912 940 941 942 943 944 945 946 947 948 949 950 951 952 953 954 955 956 957 958 959 960 961 962 963 964 965 966 967 968 969 970 971 972 973 974 976 977 981 982 983 985 987 989 991 993 995 997 999 1001 1003 1005 1007 1008 1009 1010 1011 1013 1016 1019 1020 1072 1073 1074 1075 1076 1077 1078 1079 1080 1081 1082 1083 1084 1085 1086 1087 1088 1089 1090 1091 1092 1093 1094 1095 1096 1097 1098 1099 1100 1101 1102 1103 1104 1105 1106 1107 1108 1109 1110 1111 1112 1113 1114 1115 1116 1117 1118 1119 1121 1123 1125 1127 1129 1131 1133 1135 1137 1139 1141 1143 1145 1147 1149 1151 1153 1163 1165 1167 1169 1171 1173 1175 1177 1179 1181 1183 1185 1187 1189 1191 1193 1195 1197 1199 1201 1203 1205 1207 1209 1211 1213 1215 1218 1220 1222 1224 1226 1228 1230 1231 1233 1235 1237 1239 1241 1243 1245 1247 1249 1251 1253 1255 1257 1259 1261 1263 1265 1267 1269 1271 1273 1275 1277 1279 1281 1283 1285 1287 1289 1291 1293 1295 1297 1299 1301 1303 1305 1307 1309 1311 1313 1315 1377 1378 1379 1380 1381 1382 1383 1384 1385 1386 1387 1388 1389 1390 1391 1392 1393 1394 1395 1396 1397 1398 1399 1400 1401 1402 1403 1404 1405 1406 1407 1408 1409 1410 1411 1412 1413 1414 1415 7424 7425 7426 7427 7428 7429 7430 7431 7432 7433 7434 7435 7436 7437 7438 7439 7440 7441 7442 7443 7444 7445 7446 7447 7448 7449 7450 7451 7452 7453 7454 7455 7456 7457 7458 7459 7460 7461 7462 7463 7464 7465 7466 7467 7522 7523 7524 7525 7526 7527 7528 7529 7530 7531 7532 7533 7534 7535 7536 7537 7538 7539 7540 7541 7542 7543 7545 7546 7547 7548 7549 7550 7551 7552 7553 7554 7555 7556 7557 7558 7559 7560 7561 7562 7563 7564 7565 7566 7567 7568 7569 7570 7571 7572 7573 7574 7575 7576 7577 7578 7681 7683 7685 7687 7689 7691 7693 7695 7697 7699 7701 7703 7705 7707 7709 7711 7713 7715 7717 7719 7721 7723 7725 7727 7729 7731 7733 7735 7737 7739 7741 7743 7745 7747 7749 7751 7753 7755 7757 7759 7761 7763 7765 7767 7769 7771 7773 7775 7777 7779 7781 7783 7785 7787 7789 7791 7793 7795 7797 7799 7801 7803 7805 7807 7809 7811 7813 7815 7817 7819 7821 7823 7825 7827 7829 7830 7831 7832 7833 7834 7835 7836 7837 7839 7841 7843 7845 7847 7849 7851 7853 7855 7857 7859 7861 7863 7865 7867 7869 7871 7873 7875 7877 7879 7881 7883 7885 7887 7889 7891 7893 7895 7897 7899 7901 7903 7905 7907 7909 7911 7913 7915 7917 7919 7921 7923 7925 7927 7929 7931 7933 7935 7936 7937 7938 7939 7940 7941 7942 7943 7952 7953 7954 7955 7956 7957 7968 7969 7970 7971 7972 7973 7974 7975 7984 7985 7986 7987 7988 7989 7990 7991 8000 8001 8002 8003 8004 8005 8016 8017 8018 8019 8020 8021 8022 8023 8032 8033 8034 8035 8036 8037 8038 8039 8048 8049 8050 8051 8052 8053 8054 8055 8056 8057 8058 8059 8060 8061 8064 8065 8066 8067 8068 8069 8070 8071 8080 8081 8082 8083 8084 8085 8086 8087 8096 8097 8098 8099 8100 8101 8102 8103 8112 8113 8114 8115 8116 8118 8119 8126 8130 8131 8132 8134 8135 8144 8145 8146 8147 8150 8151 8160 8161 8162 8163 8164 8165 8166 8167 8178 8179 8180 8182 8183 8305 8319 8458 8462 8463 8467 8495 8500 8505 8508 8509 8518 8519 8520 8521 8526 8580 11312 11313 11314 11315 11316 11317 11318 11319 11320 11321 11322 11323 11324 11325 11326 11327 11328 11329 11330 11331 11332 11333 11334 11335 11336 11337 11338 11339 11340 11341 11342 11343 11344 11345 11346 11347 11348 11349 11350 11351 11352 11353 11354 11355 11356 11357 11358 11361 11365 11366 11368 11370 11372 11377 11379 11380 11382 11383 11384 11385 11386 11387 11388 11393 11395 11397 11399 11401 11403 11405 11407 11409 11411 11413 11415 11417 11419 11421 11423 11425 11427 11429 11431 11433 11435 11437 11439 11441 11443 11445 11447 11449 11451 11453 11455 11457 11459 11461 11463 11465 11467 11469 11471 11473 11475 11477 11479 11481 11483 11485 11487 11489 11491 11492 11520 11521 11522 11523 11524 11525 11526 11527 11528 11529 11530 11531 11532 11533 11534 11535 11536 11537 11538 11539 11540 11541 11542 11543 11544 11545 11546 11547 11548 11549 11550 11551 11552 11553 11554 11555 11556 11557 42561 42563 42565 42567 42569 42571 42573 42575 42577 42579 42581 42583 42585 42587 42589 42591 42595 42597 42599 42601 42603 42605 42625 42627 42629 42631 42633 42635 42637 42639 42641 42643 42645 42647 42787 42789 42791 42793 42795 42797 42799 42800 42801 42803 42805 42807 42809 42811 42813 42815 42817 42819 42821 42823 42825 42827 42829 42831 42833 42835 42837 42839 42841 42843 42845 42847 42849 42851 42853 42855 42857 42859 42861 42863 42865 42866 42867 42868 42869 42870 42871 42872 42874 42876 42879 42881 42883 42885 42887 42892 64256 64257 64258 64259 64260 64261 64262 64275 64276 64277 64278 64279 65345 65346 65347 65348 65349 65350 65351 65352 65353 65354 65355 65356 65357 65358 65359 65360 65361 65362 65363 65364 65365 65366 65367 65368 65369 65370 66600 66601 66602 66603 66604 66605 66606 66607 66608 66609 66610 66611 66612 66613 66614 66615 66616 66617 66618 66619 66620 66621 66622 66623 66624 66625 66626 66627 66628 66629 66630 66631 66632 66633 66634 66635 66636 66637 66638 66639 119834 119835 119836 119837 119838 119839 119840 119841 119842 119843 119844 119845 119846 119847 119848 119849 119850 119851 119852 119853 119854 119855 119856 119857 119858 119859 119886 119887 119888 119889 119890 119891 119892 119894 119895 119896 119897 119898 119899 119900 119901 119902 119903 119904 119905 119906 119907 119908 119909 119910 119911 119938 119939 119940 119941 119942 119943 119944 119945 119946 119947 119948 119949 119950 119951 119952 119953 119954 119955 119956 119957 119958 119959 119960 119961 119962 119963 119990 119991 119992 119993 119995 119997 119998 119999 120000 120001 120002 120003 120005 120006 120007 120008 120009 120010 120011 120012 120013 120014 120015 120042 120043 120044 120045 120046 120047 120048 120049 120050 120051 120052 120053 120054 120055 120056 120057 120058 120059 120060 120061 120062 120063 120064 120065 120066 120067 120094 120095 120096 120097 120098 120099 120100 120101 120102 120103 120104 120105 120106 120107 120108 120109 120110 120111 120112 120113 120114 120115 120116 120117 120118 120119 120146 120147 120148 120149 120150 120151 120152 120153 120154 120155 120156 120157 120158 120159 120160 120161 120162 120163 120164 120165 120166 120167 120168 120169 120170 120171 120198 120199 120200 120201 120202 120203 120204 120205 120206 120207 120208 120209 120210 120211 120212 120213 120214 120215 120216 120217 120218 120219 120220 120221 120222 120223 120250 120251 120252 120253 120254 120255 120256 120257 120258 120259 120260 120261 120262 120263 120264 120265 120266 120267 120268 120269 120270 120271 120272 120273 120274 120275 120302 120303 120304 120305 120306 120307 120308 120309 120310 120311 120312 120313 120314 120315 120316 120317 120318 120319 120320 120321 120322 120323 120324 120325 120326 120327 120354 120355 120356 120357 120358 120359 120360 120361 120362 120363 120364 120365 120366 120367 120368 120369 120370 120371 120372 120373 120374 120375 120376 120377 120378 120379 120406 120407 120408 120409 120410 120411 120412 120413 120414 120415 120416 120417 120418 120419 120420 120421 120422 120423 120424 120425 120426 120427 120428 120429 120430 120431 120458 120459 120460 120461 120462 120463 120464 120465 120466 120467 120468 120469 120470 120471 120472 120473 120474 120475 120476 120477 120478 120479 120480 120481 120482 120483 120484 120485 120514 120515 120516 120517 120518 120519 120520 120521 120522 120523 120524 120525 120526 120527 120528 120529 120530 120531 120532 120533 120534 120535 120536 120537 120538 120540 120541 120542 120543 120544 120545 120572 120573 120574 120575 120576 120577 120578 120579 120580 120581 120582 120583 120584 120585 120586 120587 120588 120589 120590 120591 120592 120593 120594 120595 120596 120598 120599 120600 120601 120602 120603 120630 120631 120632 120633 120634 120635 120636 120637 120638 120639 120640 120641 120642 120643 120644 120645 120646 120647 120648 120649 120650 120651 120652 120653 120654 120656 120657 120658 120659 120660 120661 120688 120689 120690 120691 120692 120693 120694 120695 120696 120697 120698 120699 120700 120701 120702 120703 120704 120705 120706 120707 120708 120709 120710 120711 120712 120714 120715 120716 120717 120718 120719 120746 120747 120748 120749 120750 120751 120752 120753 120754 120755 120756 120757 120758 120759 120760 120761 120762 120763 120764 120765 120766 120767 120768 120769 120770 120772 120773 120774 120775 120776 120777 120779))
+    (Pf . (187 8217 8221 8250 11779 11781 11786 11789 11805 11809))
+    (Lo . (443 448 449 450 451 660 1488 1489 1490 1491 1492 1493 1494 1495 1496 1497 1498 1499 1500 1501 1502 1503 1504 1505 1506 1507 1508 1509 1510 1511 1512 1513 1514 1520 1521 1522 1569 1570 1571 1572 1573 1574 1575 1576 1577 1578 1579 1580 1581 1582 1583 1584 1585 1586 1587 1588 1589 1590 1591 1592 1593 1594 1595 1596 1597 1598 1599 1601 1602 1603 1604 1605 1606 1607 1608 1609 1610 1646 1647 1649 1650 1651 1652 1653 1654 1655 1656 1657 1658 1659 1660 1661 1662 1663 1664 1665 1666 1667 1668 1669 1670 1671 1672 1673 1674 1675 1676 1677 1678 1679 1680 1681 1682 1683 1684 1685 1686 1687 1688 1689 1690 1691 1692 1693 1694 1695 1696 1697 1698 1699 1700 1701 1702 1703 1704 1705 1706 1707 1708 1709 1710 1711 1712 1713 1714 1715 1716 1717 1718 1719 1720 1721 1722 1723 1724 1725 1726 1727 1728 1729 1730 1731 1732 1733 1734 1735 1736 1737 1738 1739 1740 1741 1742 1743 1744 1745 1746 1747 1749 1774 1775 1786 1787 1788 1791 1808 1810 1811 1812 1813 1814 1815 1816 1817 1818 1819 1820 1821 1822 1823 1824 1825 1826 1827 1828 1829 1830 1831 1832 1833 1834 1835 1836 1837 1838 1839 1869 1870 1871 1872 1873 1874 1875 1876 1877 1878 1879 1880 1881 1882 1883 1884 1885 1886 1887 1888 1889 1890 1891 1892 1893 1894 1895 1896 1897 1898 1899 1900 1901 1902 1903 1904 1905 1906 1907 1908 1909 1910 1911 1912 1913 1914 1915 1916 1917 1918 1919 1920 1921 1922 1923 1924 1925 1926 1927 1928 1929 1930 1931 1932 1933 1934 1935 1936 1937 1938 1939 1940 1941 1942 1943 1944 1945 1946 1947 1948 1949 1950 1951 1952 1953 1954 1955 1956 1957 1969 1994 1995 1996 1997 1998 1999 2000 2001 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 2019 2020 2021 2022 2023 2024 2025 2026 2308 2309 2310 2311 2312 2313 2314 2315 2316 2317 2318 2319 2320 2321 2322 2323 2324 2325 2326 2327 2328 2329 2330 2331 2332 2333 2334 2335 2336 2337 2338 2339 2340 2341 2342 2343 2344 2345 2346 2347 2348 2349 2350 2351 2352 2353 2354 2355 2356 2357 2358 2359 2360 2361 2365 2384 2392 2393 2394 2395 2396 2397 2398 2399 2400 2401 2418 2427 2428 2429 2430 2431 2437 2438 2439 2440 2441 2442 2443 2444 2447 2448 2451 2452 2453 2454 2455 2456 2457 2458 2459 2460 2461 2462 2463 2464 2465 2466 2467 2468 2469 2470 2471 2472 2474 2475 2476 2477 2478 2479 2480 2482 2486 2487 2488 2489 2493 2510 2524 2525 2527 2528 2529 2544 2545 2565 2566 2567 2568 2569 2570 2575 2576 2579 2580 2581 2582 2583 2584 2585 2586 2587 2588 2589 2590 2591 2592 2593 2594 2595 2596 2597 2598 2599 2600 2602 2603 2604 2605 2606 2607 2608 2610 2611 2613 2614 2616 2617 2649 2650 2651 2652 2654 2674 2675 2676 2693 2694 2695 2696 2697 2698 2699 2700 2701 2703 2704 2705 2707 2708 2709 2710 2711 2712 2713 2714 2715 2716 2717 2718 2719 2720 2721 2722 2723 2724 2725 2726 2727 2728 2730 2731 2732 2733 2734 2735 2736 2738 2739 2741 2742 2743 2744 2745 2749 2768 2784 2785 2821 2822 2823 2824 2825 2826 2827 2828 2831 2832 2835 2836 2837 2838 2839 2840 2841 2842 2843 2844 2845 2846 2847 2848 2849 2850 2851 2852 2853 2854 2855 2856 2858 2859 2860 2861 2862 2863 2864 2866 2867 2869 2870 2871 2872 2873 2877 2908 2909 2911 2912 2913 2929 2947 2949 2950 2951 2952 2953 2954 2958 2959 2960 2962 2963 2964 2965 2969 2970 2972 2974 2975 2979 2980 2984 2985 2986 2990 2991 2992 2993 2994 2995 2996 2997 2998 2999 3000 3001 3024 3077 3078 3079 3080 3081 3082 3083 3084 3086 3087 3088 3090 3091 3092 3093 3094 3095 3096 3097 3098 3099 3100 3101 3102 3103 3104 3105 3106 3107 3108 3109 3110 3111 3112 3114 3115 3116 3117 3118 3119 3120 3121 3122 3123 3125 3126 3127 3128 3129 3133 3160 3161 3168 3169 3205 3206 3207 3208 3209 3210 3211 3212 3214 3215 3216 3218 3219 3220 3221 3222 3223 3224 3225 3226 3227 3228 3229 3230 3231 3232 3233 3234 3235 3236 3237 3238 3239 3240 3242 3243 3244 3245 3246 3247 3248 3249 3250 3251 3253 3254 3255 3256 3257 3261 3294 3296 3297 3333 3334 3335 3336 3337 3338 3339 3340 3342 3343 3344 3346 3347 3348 3349 3350 3351 3352 3353 3354 3355 3356 3357 3358 3359 3360 3361 3362 3363 3364 3365 3366 3367 3368 3370 3371 3372 3373 3374 3375 3376 3377 3378 3379 3380 3381 3382 3383 3384 3385 3389 3424 3425 3450 3451 3452 3453 3454 3455 3461 3462 3463 3464 3465 3466 3467 3468 3469 3470 3471 3472 3473 3474 3475 3476 3477 3478 3482 3483 3484 3485 3486 3487 3488 3489 3490 3491 3492 3493 3494 3495 3496 3497 3498 3499 3500 3501 3502 3503 3504 3505 3507 3508 3509 3510 3511 3512 3513 3514 3515 3517 3520 3521 3522 3523 3524 3525 3526 3585 3586 3587 3588 3589 3590 3591 3592 3593 3594 3595 3596 3597 3598 3599 3600 3601 3602 3603 3604 3605 3606 3607 3608 3609 3610 3611 3612 3613 3614 3615 3616 3617 3618 3619 3620 3621 3622 3623 3624 3625 3626 3627 3628 3629 3630 3631 3632 3634 3635 3648 3649 3650 3651 3652 3653 3713 3714 3716 3719 3720 3722 3725 3732 3733 3734 3735 3737 3738 3739 3740 3741 3742 3743 3745 3746 3747 3749 3751 3754 3755 3757 3758 3759 3760 3762 3763 3773 3776 3777 3778 3779 3780 3804 3805 3840 3904 3905 3906 3907 3908 3909 3910 3911 3913 3914 3915 3916 3917 3918 3919 3920 3921 3922 3923 3924 3925 3926 3927 3928 3929 3930 3931 3932 3933 3934 3935 3936 3937 3938 3939 3940 3941 3942 3943 3944 3945 3946 3947 3948 3976 3977 3978 3979 4096 4097 4098 4099 4100 4101 4102 4103 4104 4105 4106 4107 4108 4109 4110 4111 4112 4113 4114 4115 4116 4117 4118 4119 4120 4121 4122 4123 4124 4125 4126 4127 4128 4129 4130 4131 4132 4133 4134 4135 4136 4137 4138 4159 4176 4177 4178 4179 4180 4181 4186 4187 4188 4189 4193 4197 4198 4206 4207 4208 4213 4214 4215 4216 4217 4218 4219 4220 4221 4222 4223 4224 4225 4238 4304 4305 4306 4307 4308 4309 4310 4311 4312 4313 4314 4315 4316 4317 4318 4319 4320 4321 4322 4323 4324 4325 4326 4327 4328 4329 4330 4331 4332 4333 4334 4335 4336 4337 4338 4339 4340 4341 4342 4343 4344 4345 4346 4352 4353 4354 4355 4356 4357 4358 4359 4360 4361 4362 4363 4364 4365 4366 4367 4368 4369 4370 4371 4372 4373 4374 4375 4376 4377 4378 4379 4380 4381 4382 4383 4384 4385 4386 4387 4388 4389 4390 4391 4392 4393 4394 4395 4396 4397 4398 4399 4400 4401 4402 4403 4404 4405 4406 4407 4408 4409 4410 4411 4412 4413 4414 4415 4416 4417 4418 4419 4420 4421 4422 4423 4424 4425 4426 4427 4428 4429 4430 4431 4432 4433 4434 4435 4436 4437 4438 4439 4440 4441 4447 4448 4449 4450 4451 4452 4453 4454 4455 4456 4457 4458 4459 4460 4461 4462 4463 4464 4465 4466 4467 4468 4469 4470 4471 4472 4473 4474 4475 4476 4477 4478 4479 4480 4481 4482 4483 4484 4485 4486 4487 4488 4489 4490 4491 4492 4493 4494 4495 4496 4497 4498 4499 4500 4501 4502 4503 4504 4505 4506 4507 4508 4509 4510 4511 4512 4513 4514 4520 4521 4522 4523 4524 4525 4526 4527 4528 4529 4530 4531 4532 4533 4534 4535 4536 4537 4538 4539 4540 4541 4542 4543 4544 4545 4546 4547 4548 4549 4550 4551 4552 4553 4554 4555 4556 4557 4558 4559 4560 4561 4562 4563 4564 4565 4566 4567 4568 4569 4570 4571 4572 4573 4574 4575 4576 4577 4578 4579 4580 4581 4582 4583 4584 4585 4586 4587 4588 4589 4590 4591 4592 4593 4594 4595 4596 4597 4598 4599 4600 4601 4608 4609 4610 4611 4612 4613 4614 4615 4616 4617 4618 4619 4620 4621 4622 4623 4624 4625 4626 4627 4628 4629 4630 4631 4632 4633 4634 4635 4636 4637 4638 4639 4640 4641 4642 4643 4644 4645 4646 4647 4648 4649 4650 4651 4652 4653 4654 4655 4656 4657 4658 4659 4660 4661 4662 4663 4664 4665 4666 4667 4668 4669 4670 4671 4672 4673 4674 4675 4676 4677 4678 4679 4680 4682 4683 4684 4685 4688 4689 4690 4691 4692 4693 4694 4696 4698 4699 4700 4701 4704 4705 4706 4707 4708 4709 4710 4711 4712 4713 4714 4715 4716 4717 4718 4719 4720 4721 4722 4723 4724 4725 4726 4727 4728 4729 4730 4731 4732 4733 4734 4735 4736 4737 4738 4739 4740 4741 4742 4743 4744 4746 4747 4748 4749 4752 4753 4754 4755 4756 4757 4758 4759 4760 4761 4762 4763 4764 4765 4766 4767 4768 4769 4770 4771 4772 4773 4774 4775 4776 4777 4778 4779 4780 4781 4782 4783 4784 4786 4787 4788 4789 4792 4793 4794 4795 4796 4797 4798 4800 4802 4803 4804 4805 4808 4809 4810 4811 4812 4813 4814 4815 4816 4817 4818 4819 4820 4821 4822 4824 4825 4826 4827 4828 4829 4830 4831 4832 4833 4834 4835 4836 4837 4838 4839 4840 4841 4842 4843 4844 4845 4846 4847 4848 4849 4850 4851 4852 4853 4854 4855 4856 4857 4858 4859 4860 4861 4862 4863 4864 4865 4866 4867 4868 4869 4870 4871 4872 4873 4874 4875 4876 4877 4878 4879 4880 4882 4883 4884 4885 4888 4889 4890 4891 4892 4893 4894 4895 4896 4897 4898 4899 4900 4901 4902 4903 4904 4905 4906 4907 4908 4909 4910 4911 4912 4913 4914 4915 4916 4917 4918 4919 4920 4921 4922 4923 4924 4925 4926 4927 4928 4929 4930 4931 4932 4933 4934 4935 4936 4937 4938 4939 4940 4941 4942 4943 4944 4945 4946 4947 4948 4949 4950 4951 4952 4953 4954 4992 4993 4994 4995 4996 4997 4998 4999 5000 5001 5002 5003 5004 5005 5006 5007 5024 5025 5026 5027 5028 5029 5030 5031 5032 5033 5034 5035 5036 5037 5038 5039 5040 5041 5042 5043 5044 5045 5046 5047 5048 5049 5050 5051 5052 5053 5054 5055 5056 5057 5058 5059 5060 5061 5062 5063 5064 5065 5066 5067 5068 5069 5070 5071 5072 5073 5074 5075 5076 5077 5078 5079 5080 5081 5082 5083 5084 5085 5086 5087 5088 5089 5090 5091 5092 5093 5094 5095 5096 5097 5098 5099 5100 5101 5102 5103 5104 5105 5106 5107 5108 5121 5122 5123 5124 5125 5126 5127 5128 5129 5130 5131 5132 5133 5134 5135 5136 5137 5138 5139 5140 5141 5142 5143 5144 5145 5146 5147 5148 5149 5150 5151 5152 5153 5154 5155 5156 5157 5158 5159 5160 5161 5162 5163 5164 5165 5166 5167 5168 5169 5170 5171 5172 5173 5174 5175 5176 5177 5178 5179 5180 5181 5182 5183 5184 5185 5186 5187 5188 5189 5190 5191 5192 5193 5194 5195 5196 5197 5198 5199 5200 5201 5202 5203 5204 5205 5206 5207 5208 5209 5210 5211 5212 5213 5214 5215 5216 5217 5218 5219 5220 5221 5222 5223 5224 5225 5226 5227 5228 5229 5230 5231 5232 5233 5234 5235 5236 5237 5238 5239 5240 5241 5242 5243 5244 5245 5246 5247 5248 5249 5250 5251 5252 5253 5254 5255 5256 5257 5258 5259 5260 5261 5262 5263 5264 5265 5266 5267 5268 5269 5270 5271 5272 5273 5274 5275 5276 5277 5278 5279 5280 5281 5282 5283 5284 5285 5286 5287 5288 5289 5290 5291 5292 5293 5294 5295 5296 5297 5298 5299 5300 5301 5302 5303 5304 5305 5306 5307 5308 5309 5310 5311 5312 5313 5314 5315 5316 5317 5318 5319 5320 5321 5322 5323 5324 5325 5326 5327 5328 5329 5330 5331 5332 5333 5334 5335 5336 5337 5338 5339 5340 5341 5342 5343 5344 5345 5346 5347 5348 5349 5350 5351 5352 5353 5354 5355 5356 5357 5358 5359 5360 5361 5362 5363 5364 5365 5366 5367 5368 5369 5370 5371 5372 5373 5374 5375 5376 5377 5378 5379 5380 5381 5382 5383 5384 5385 5386 5387 5388 5389 5390 5391 5392 5393 5394 5395 5396 5397 5398 5399 5400 5401 5402 5403 5404 5405 5406 5407 5408 5409 5410 5411 5412 5413 5414 5415 5416 5417 5418 5419 5420 5421 5422 5423 5424 5425 5426 5427 5428 5429 5430 5431 5432 5433 5434 5435 5436 5437 5438 5439 5440 5441 5442 5443 5444 5445 5446 5447 5448 5449 5450 5451 5452 5453 5454 5455 5456 5457 5458 5459 5460 5461 5462 5463 5464 5465 5466 5467 5468 5469 5470 5471 5472 5473 5474 5475 5476 5477 5478 5479 5480 5481 5482 5483 5484 5485 5486 5487 5488 5489 5490 5491 5492 5493 5494 5495 5496 5497 5498 5499 5500 5501 5502 5503 5504 5505 5506 5507 5508 5509 5510 5511 5512 5513 5514 5515 5516 5517 5518 5519 5520 5521 5522 5523 5524 5525 5526 5527 5528 5529 5530 5531 5532 5533 5534 5535 5536 5537 5538 5539 5540 5541 5542 5543 5544 5545 5546 5547 5548 5549 5550 5551 5552 5553 5554 5555 5556 5557 5558 5559 5560 5561 5562 5563 5564 5565 5566 5567 5568 5569 5570 5571 5572 5573 5574 5575 5576 5577 5578 5579 5580 5581 5582 5583 5584 5585 5586 5587 5588 5589 5590 5591 5592 5593 5594 5595 5596 5597 5598 5599 5600 5601 5602 5603 5604 5605 5606 5607 5608 5609 5610 5611 5612 5613 5614 5615 5616 5617 5618 5619 5620 5621 5622 5623 5624 5625 5626 5627 5628 5629 5630 5631 5632 5633 5634 5635 5636 5637 5638 5639 5640 5641 5642 5643 5644 5645 5646 5647 5648 5649 5650 5651 5652 5653 5654 5655 5656 5657 5658 5659 5660 5661 5662 5663 5664 5665 5666 5667 5668 5669 5670 5671 5672 5673 5674 5675 5676 5677 5678 5679 5680 5681 5682 5683 5684 5685 5686 5687 5688 5689 5690 5691 5692 5693 5694 5695 5696 5697 5698 5699 5700 5701 5702 5703 5704 5705 5706 5707 5708 5709 5710 5711 5712 5713 5714 5715 5716 5717 5718 5719 5720 5721 5722 5723 5724 5725 5726 5727 5728 5729 5730 5731 5732 5733 5734 5735 5736 5737 5738 5739 5740 5743 5744 5745 5746 5747 5748 5749 5750 5761 5762 5763 5764 5765 5766 5767 5768 5769 5770 5771 5772 5773 5774 5775 5776 5777 5778 5779 5780 5781 5782 5783 5784 5785 5786 5792 5793 5794 5795 5796 5797 5798 5799 5800 5801 5802 5803 5804 5805 5806 5807 5808 5809 5810 5811 5812 5813 5814 5815 5816 5817 5818 5819 5820 5821 5822 5823 5824 5825 5826 5827 5828 5829 5830 5831 5832 5833 5834 5835 5836 5837 5838 5839 5840 5841 5842 5843 5844 5845 5846 5847 5848 5849 5850 5851 5852 5853 5854 5855 5856 5857 5858 5859 5860 5861 5862 5863 5864 5865 5866 5888 5889 5890 5891 5892 5893 5894 5895 5896 5897 5898 5899 5900 5902 5903 5904 5905 5920 5921 5922 5923 5924 5925 5926 5927 5928 5929 5930 5931 5932 5933 5934 5935 5936 5937 5952 5953 5954 5955 5956 5957 5958 5959 5960 5961 5962 5963 5964 5965 5966 5967 5968 5969 5984 5985 5986 5987 5988 5989 5990 5991 5992 5993 5994 5995 5996 5998 5999 6000 6016 6017 6018 6019 6020 6021 6022 6023 6024 6025 6026 6027 6028 6029 6030 6031 6032 6033 6034 6035 6036 6037 6038 6039 6040 6041 6042 6043 6044 6045 6046 6047 6048 6049 6050 6051 6052 6053 6054 6055 6056 6057 6058 6059 6060 6061 6062 6063 6064 6065 6066 6067 6108 6176 6177 6178 6179 6180 6181 6182 6183 6184 6185 6186 6187 6188 6189 6190 6191 6192 6193 6194 6195 6196 6197 6198 6199 6200 6201 6202 6203 6204 6205 6206 6207 6208 6209 6210 6212 6213 6214 6215 6216 6217 6218 6219 6220 6221 6222 6223 6224 6225 6226 6227 6228 6229 6230 6231 6232 6233 6234 6235 6236 6237 6238 6239 6240 6241 6242 6243 6244 6245 6246 6247 6248 6249 6250 6251 6252 6253 6254 6255 6256 6257 6258 6259 6260 6261 6262 6263 6272 6273 6274 6275 6276 6277 6278 6279 6280 6281 6282 6283 6284 6285 6286 6287 6288 6289 6290 6291 6292 6293 6294 6295 6296 6297 6298 6299 6300 6301 6302 6303 6304 6305 6306 6307 6308 6309 6310 6311 6312 6314 6400 6401 6402 6403 6404 6405 6406 6407 6408 6409 6410 6411 6412 6413 6414 6415 6416 6417 6418 6419 6420 6421 6422 6423 6424 6425 6426 6427 6428 6480 6481 6482 6483 6484 6485 6486 6487 6488 6489 6490 6491 6492 6493 6494 6495 6496 6497 6498 6499 6500 6501 6502 6503 6504 6505 6506 6507 6508 6509 6512 6513 6514 6515 6516 6528 6529 6530 6531 6532 6533 6534 6535 6536 6537 6538 6539 6540 6541 6542 6543 6544 6545 6546 6547 6548 6549 6550 6551 6552 6553 6554 6555 6556 6557 6558 6559 6560 6561 6562 6563 6564 6565 6566 6567 6568 6569 6593 6594 6595 6596 6597 6598 6599 6656 6657 6658 6659 6660 6661 6662 6663 6664 6665 6666 6667 6668 6669 6670 6671 6672 6673 6674 6675 6676 6677 6678 6917 6918 6919 6920 6921 6922 6923 6924 6925 6926 6927 6928 6929 6930 6931 6932 6933 6934 6935 6936 6937 6938 6939 6940 6941 6942 6943 6944 6945 6946 6947 6948 6949 6950 6951 6952 6953 6954 6955 6956 6957 6958 6959 6960 6961 6962 6963 6981 6982 6983 6984 6985 6986 6987 7043 7044 7045 7046 7047 7048 7049 7050 7051 7052 7053 7054 7055 7056 7057 7058 7059 7060 7061 7062 7063 7064 7065 7066 7067 7068 7069 7070 7071 7072 7086 7087 7168 7169 7170 7171 7172 7173 7174 7175 7176 7177 7178 7179 7180 7181 7182 7183 7184 7185 7186 7187 7188 7189 7190 7191 7192 7193 7194 7195 7196 7197 7198 7199 7200 7201 7202 7203 7245 7246 7247 7258 7259 7260 7261 7262 7263 7264 7265 7266 7267 7268 7269 7270 7271 7272 7273 7274 7275 7276 7277 7278 7279 7280 7281 7282 7283 7284 7285 7286 7287 8501 8502 8503 8504 11568 11569 11570 11571 11572 11573 11574 11575 11576 11577 11578 11579 11580 11581 11582 11583 11584 11585 11586 11587 11588 11589 11590 11591 11592 11593 11594 11595 11596 11597 11598 11599 11600 11601 11602 11603 11604 11605 11606 11607 11608 11609 11610 11611 11612 11613 11614 11615 11616 11617 11618 11619 11620 11621 11648 11649 11650 11651 11652 11653 11654 11655 11656 11657 11658 11659 11660 11661 11662 11663 11664 11665 11666 11667 11668 11669 11670 11680 11681 11682 11683 11684 11685 11686 11688 11689 11690 11691 11692 11693 11694 11696 11697 11698 11699 11700 11701 11702 11704 11705 11706 11707 11708 11709 11710 11712 11713 11714 11715 11716 11717 11718 11720 11721 11722 11723 11724 11725 11726 11728 11729 11730 11731 11732 11733 11734 11736 11737 11738 11739 11740 11741 11742 12294 12348 12353 12354 12355 12356 12357 12358 12359 12360 12361 12362 12363 12364 12365 12366 12367 12368 12369 12370 12371 12372 12373 12374 12375 12376 12377 12378 12379 12380 12381 12382 12383 12384 12385 12386 12387 12388 12389 12390 12391 12392 12393 12394 12395 12396 12397 12398 12399 12400 12401 12402 12403 12404 12405 12406 12407 12408 12409 12410 12411 12412 12413 12414 12415 12416 12417 12418 12419 12420 12421 12422 12423 12424 12425 12426 12427 12428 12429 12430 12431 12432 12433 12434 12435 12436 12437 12438 12447 12449 12450 12451 12452 12453 12454 12455 12456 12457 12458 12459 12460 12461 12462 12463 12464 12465 12466 12467 12468 12469 12470 12471 12472 12473 12474 12475 12476 12477 12478 12479 12480 12481 12482 12483 12484 12485 12486 12487 12488 12489 12490 12491 12492 12493 12494 12495 12496 12497 12498 12499 12500 12501 12502 12503 12504 12505 12506 12507 12508 12509 12510 12511 12512 12513 12514 12515 12516 12517 12518 12519 12520 12521 12522 12523 12524 12525 12526 12527 12528 12529 12530 12531 12532 12533 12534 12535 12536 12537 12538 12543 12549 12550 12551 12552 12553 12554 12555 12556 12557 12558 12559 12560 12561 12562 12563 12564 12565 12566 12567 12568 12569 12570 12571 12572 12573 12574 12575 12576 12577 12578 12579 12580 12581 12582 12583 12584 12585 12586 12587 12588 12589 12593 12594 12595 12596 12597 12598 12599 12600 12601 12602 12603 12604 12605 12606 12607 12608 12609 12610 12611 12612 12613 12614 12615 12616 12617 12618 12619 12620 12621 12622 12623 12624 12625 12626 12627 12628 12629 12630 12631 12632 12633 12634 12635 12636 12637 12638 12639 12640 12641 12642 12643 12644 12645 12646 12647 12648 12649 12650 12651 12652 12653 12654 12655 12656 12657 12658 12659 12660 12661 12662 12663 12664 12665 12666 12667 12668 12669 12670 12671 12672 12673 12674 12675 12676 12677 12678 12679 12680 12681 12682 12683 12684 12685 12686 12704 12705 12706 12707 12708 12709 12710 12711 12712 12713 12714 12715 12716 12717 12718 12719 12720 12721 12722 12723 12724 12725 12726 12727 12784 12785 12786 12787 12788 12789 12790 12791 12792 12793 12794 12795 12796 12797 12798 12799 13312 19893 19968 40899 40960 40961 40962 40963 40964 40965 40966 40967 40968 40969 40970 40971 40972 40973 40974 40975 40976 40977 40978 40979 40980 40982 40983 40984 40985 40986 40987 40988 40989 40990 40991 40992 40993 40994 40995 40996 40997 40998 40999 41000 41001 41002 41003 41004 41005 41006 41007 41008 41009 41010 41011 41012 41013 41014 41015 41016 41017 41018 41019 41020 41021 41022 41023 41024 41025 41026 41027 41028 41029 41030 41031 41032 41033 41034 41035 41036 41037 41038 41039 41040 41041 41042 41043 41044 41045 41046 41047 41048 41049 41050 41051 41052 41053 41054 41055 41056 41057 41058 41059 41060 41061 41062 41063 41064 41065 41066 41067 41068 41069 41070 41071 41072 41073 41074 41075 41076 41077 41078 41079 41080 41081 41082 41083 41084 41085 41086 41087 41088 41089 41090 41091 41092 41093 41094 41095 41096 41097 41098 41099 41100 41101 41102 41103 41104 41105 41106 41107 41108 41109 41110 41111 41112 41113 41114 41115 41116 41117 41118 41119 41120 41121 41122 41123 41124 41125 41126 41127 41128 41129 41130 41131 41132 41133 41134 41135 41136 41137 41138 41139 41140 41141 41142 41143 41144 41145 41146 41147 41148 41149 41150 41151 41152 41153 41154 41155 41156 41157 41158 41159 41160 41161 41162 41163 41164 41165 41166 41167 41168 41169 41170 41171 41172 41173 41174 41175 41176 41177 41178 41179 41180 41181 41182 41183 41184 41185 41186 41187 41188 41189 41190 41191 41192 41193 41194 41195 41196 41197 41198 41199 41200 41201 41202 41203 41204 41205 41206 41207 41208 41209 41210 41211 41212 41213 41214 41215 41216 41217 41218 41219 41220 41221 41222 41223 41224 41225 41226 41227 41228 41229 41230 41231 41232 41233 41234 41235 41236 41237 41238 41239 41240 41241 41242 41243 41244 41245 41246 41247 41248 41249 41250 41251 41252 41253 41254 41255 41256 41257 41258 41259 41260 41261 41262 41263 41264 41265 41266 41267 41268 41269 41270 41271 41272 41273 41274 41275 41276 41277 41278 41279 41280 41281 41282 41283 41284 41285 41286 41287 41288 41289 41290 41291 41292 41293 41294 41295 41296 41297 41298 41299 41300 41301 41302 41303 41304 41305 41306 41307 41308 41309 41310 41311 41312 41313 41314 41315 41316 41317 41318 41319 41320 41321 41322 41323 41324 41325 41326 41327 41328 41329 41330 41331 41332 41333 41334 41335 41336 41337 41338 41339 41340 41341 41342 41343 41344 41345 41346 41347 41348 41349 41350 41351 41352 41353 41354 41355 41356 41357 41358 41359 41360 41361 41362 41363 41364 41365 41366 41367 41368 41369 41370 41371 41372 41373 41374 41375 41376 41377 41378 41379 41380 41381 41382 41383 41384 41385 41386 41387 41388 41389 41390 41391 41392 41393 41394 41395 41396 41397 41398 41399 41400 41401 41402 41403 41404 41405 41406 41407 41408 41409 41410 41411 41412 41413 41414 41415 41416 41417 41418 41419 41420 41421 41422 41423 41424 41425 41426 41427 41428 41429 41430 41431 41432 41433 41434 41435 41436 41437 41438 41439 41440 41441 41442 41443 41444 41445 41446 41447 41448 41449 41450 41451 41452 41453 41454 41455 41456 41457 41458 41459 41460 41461 41462 41463 41464 41465 41466 41467 41468 41469 41470 41471 41472 41473 41474 41475 41476 41477 41478 41479 41480 41481 41482 41483 41484 41485 41486 41487 41488 41489 41490 41491 41492 41493 41494 41495 41496 41497 41498 41499 41500 41501 41502 41503 41504 41505 41506 41507 41508 41509 41510 41511 41512 41513 41514 41515 41516 41517 41518 41519 41520 41521 41522 41523 41524 41525 41526 41527 41528 41529 41530 41531 41532 41533 41534 41535 41536 41537 41538 41539 41540 41541 41542 41543 41544 41545 41546 41547 41548 41549 41550 41551 41552 41553 41554 41555 41556 41557 41558 41559 41560 41561 41562 41563 41564 41565 41566 41567 41568 41569 41570 41571 41572 41573 41574 41575 41576 41577 41578 41579 41580 41581 41582 41583 41584 41585 41586 41587 41588 41589 41590 41591 41592 41593 41594 41595 41596 41597 41598 41599 41600 41601 41602 41603 41604 41605 41606 41607 41608 41609 41610 41611 41612 41613 41614 41615 41616 41617 41618 41619 41620 41621 41622 41623 41624 41625 41626 41627 41628 41629 41630 41631 41632 41633 41634 41635 41636 41637 41638 41639 41640 41641 41642 41643 41644 41645 41646 41647 41648 41649 41650 41651 41652 41653 41654 41655 41656 41657 41658 41659 41660 41661 41662 41663 41664 41665 41666 41667 41668 41669 41670 41671 41672 41673 41674 41675 41676 41677 41678 41679 41680 41681 41682 41683 41684 41685 41686 41687 41688 41689 41690 41691 41692 41693 41694 41695 41696 41697 41698 41699 41700 41701 41702 41703 41704 41705 41706 41707 41708 41709 41710 41711 41712 41713 41714 41715 41716 41717 41718 41719 41720 41721 41722 41723 41724 41725 41726 41727 41728 41729 41730 41731 41732 41733 41734 41735 41736 41737 41738 41739 41740 41741 41742 41743 41744 41745 41746 41747 41748 41749 41750 41751 41752 41753 41754 41755 41756 41757 41758 41759 41760 41761 41762 41763 41764 41765 41766 41767 41768 41769 41770 41771 41772 41773 41774 41775 41776 41777 41778 41779 41780 41781 41782 41783 41784 41785 41786 41787 41788 41789 41790 41791 41792 41793 41794 41795 41796 41797 41798 41799 41800 41801 41802 41803 41804 41805 41806 41807 41808 41809 41810 41811 41812 41813 41814 41815 41816 41817 41818 41819 41820 41821 41822 41823 41824 41825 41826 41827 41828 41829 41830 41831 41832 41833 41834 41835 41836 41837 41838 41839 41840 41841 41842 41843 41844 41845 41846 41847 41848 41849 41850 41851 41852 41853 41854 41855 41856 41857 41858 41859 41860 41861 41862 41863 41864 41865 41866 41867 41868 41869 41870 41871 41872 41873 41874 41875 41876 41877 41878 41879 41880 41881 41882 41883 41884 41885 41886 41887 41888 41889 41890 41891 41892 41893 41894 41895 41896 41897 41898 41899 41900 41901 41902 41903 41904 41905 41906 41907 41908 41909 41910 41911 41912 41913 41914 41915 41916 41917 41918 41919 41920 41921 41922 41923 41924 41925 41926 41927 41928 41929 41930 41931 41932 41933 41934 41935 41936 41937 41938 41939 41940 41941 41942 41943 41944 41945 41946 41947 41948 41949 41950 41951 41952 41953 41954 41955 41956 41957 41958 41959 41960 41961 41962 41963 41964 41965 41966 41967 41968 41969 41970 41971 41972 41973 41974 41975 41976 41977 41978 41979 41980 41981 41982 41983 41984 41985 41986 41987 41988 41989 41990 41991 41992 41993 41994 41995 41996 41997 41998 41999 42000 42001 42002 42003 42004 42005 42006 42007 42008 42009 42010 42011 42012 42013 42014 42015 42016 42017 42018 42019 42020 42021 42022 42023 42024 42025 42026 42027 42028 42029 42030 42031 42032 42033 42034 42035 42036 42037 42038 42039 42040 42041 42042 42043 42044 42045 42046 42047 42048 42049 42050 42051 42052 42053 42054 42055 42056 42057 42058 42059 42060 42061 42062 42063 42064 42065 42066 42067 42068 42069 42070 42071 42072 42073 42074 42075 42076 42077 42078 42079 42080 42081 42082 42083 42084 42085 42086 42087 42088 42089 42090 42091 42092 42093 42094 42095 42096 42097 42098 42099 42100 42101 42102 42103 42104 42105 42106 42107 42108 42109 42110 42111 42112 42113 42114 42115 42116 42117 42118 42119 42120 42121 42122 42123 42124 42240 42241 42242 42243 42244 42245 42246 42247 42248 42249 42250 42251 42252 42253 42254 42255 42256 42257 42258 42259 42260 42261 42262 42263 42264 42265 42266 42267 42268 42269 42270 42271 42272 42273 42274 42275 42276 42277 42278 42279 42280 42281 42282 42283 42284 42285 42286 42287 42288 42289 42290 42291 42292 42293 42294 42295 42296 42297 42298 42299 42300 42301 42302 42303 42304 42305 42306 42307 42308 42309 42310 42311 42312 42313 42314 42315 42316 42317 42318 42319 42320 42321 42322 42323 42324 42325 42326 42327 42328 42329 42330 42331 42332 42333 42334 42335 42336 42337 42338 42339 42340 42341 42342 42343 42344 42345 42346 42347 42348 42349 42350 42351 42352 42353 42354 42355 42356 42357 42358 42359 42360 42361 42362 42363 42364 42365 42366 42367 42368 42369 42370 42371 42372 42373 42374 42375 42376 42377 42378 42379 42380 42381 42382 42383 42384 42385 42386 42387 42388 42389 42390 42391 42392 42393 42394 42395 42396 42397 42398 42399 42400 42401 42402 42403 42404 42405 42406 42407 42408 42409 42410 42411 42412 42413 42414 42415 42416 42417 42418 42419 42420 42421 42422 42423 42424 42425 42426 42427 42428 42429 42430 42431 42432 42433 42434 42435 42436 42437 42438 42439 42440 42441 42442 42443 42444 42445 42446 42447 42448 42449 42450 42451 42452 42453 42454 42455 42456 42457 42458 42459 42460 42461 42462 42463 42464 42465 42466 42467 42468 42469 42470 42471 42472 42473 42474 42475 42476 42477 42478 42479 42480 42481 42482 42483 42484 42485 42486 42487 42488 42489 42490 42491 42492 42493 42494 42495 42496 42497 42498 42499 42500 42501 42502 42503 42504 42505 42506 42507 42512 42513 42514 42515 42516 42517 42518 42519 42520 42521 42522 42523 42524 42525 42526 42527 42538 42539 42606 43003 43004 43005 43006 43007 43008 43009 43011 43012 43013 43015 43016 43017 43018 43020 43021 43022 43023 43024 43025 43026 43027 43028 43029 43030 43031 43032 43033 43034 43035 43036 43037 43038 43039 43040 43041 43042 43072 43073 43074 43075 43076 43077 43078 43079 43080 43081 43082 43083 43084 43085 43086 43087 43088 43089 43090 43091 43092 43093 43094 43095 43096 43097 43098 43099 43100 43101 43102 43103 43104 43105 43106 43107 43108 43109 43110 43111 43112 43113 43114 43115 43116 43117 43118 43119 43120 43121 43122 43123 43138 43139 43140 43141 43142 43143 43144 43145 43146 43147 43148 43149 43150 43151 43152 43153 43154 43155 43156 43157 43158 43159 43160 43161 43162 43163 43164 43165 43166 43167 43168 43169 43170 43171 43172 43173 43174 43175 43176 43177 43178 43179 43180 43181 43182 43183 43184 43185 43186 43187 43274 43275 43276 43277 43278 43279 43280 43281 43282 43283 43284 43285 43286 43287 43288 43289 43290 43291 43292 43293 43294 43295 43296 43297 43298 43299 43300 43301 43312 43313 43314 43315 43316 43317 43318 43319 43320 43321 43322 43323 43324 43325 43326 43327 43328 43329 43330 43331 43332 43333 43334 43520 43521 43522 43523 43524 43525 43526 43527 43528 43529 43530 43531 43532 43533 43534 43535 43536 43537 43538 43539 43540 43541 43542 43543 43544 43545 43546 43547 43548 43549 43550 43551 43552 43553 43554 43555 43556 43557 43558 43559 43560 43584 43585 43586 43588 43589 43590 43591 43592 43593 43594 43595 44032 55203 63744 63745 63746 63747 63748 63749 63750 63751 63752 63753 63754 63755 63756 63757 63758 63759 63760 63761 63762 63763 63764 63765 63766 63767 63768 63769 63770 63771 63772 63773 63774 63775 63776 63777 63778 63779 63780 63781 63782 63783 63784 63785 63786 63787 63788 63789 63790 63791 63792 63793 63794 63795 63796 63797 63798 63799 63800 63801 63802 63803 63804 63805 63806 63807 63808 63809 63810 63811 63812 63813 63814 63815 63816 63817 63818 63819 63820 63821 63822 63823 63824 63825 63826 63827 63828 63829 63830 63831 63832 63833 63834 63835 63836 63837 63838 63839 63840 63841 63842 63843 63844 63845 63846 63847 63848 63849 63850 63851 63852 63853 63854 63855 63856 63857 63858 63859 63860 63861 63862 63863 63864 63865 63866 63867 63868 63869 63870 63871 63872 63873 63874 63875 63876 63877 63878 63879 63880 63881 63882 63883 63884 63885 63886 63887 63888 63889 63890 63891 63892 63893 63894 63895 63896 63897 63898 63899 63900 63901 63902 63903 63904 63905 63906 63907 63908 63909 63910 63911 63912 63913 63914 63915 63916 63917 63918 63919 63920 63921 63922 63923 63924 63925 63926 63927 63928 63929 63930 63931 63932 63933 63934 63935 63936 63937 63938 63939 63940 63941 63942 63943 63944 63945 63946 63947 63948 63949 63950 63951 63952 63953 63954 63955 63956 63957 63958 63959 63960 63961 63962 63963 63964 63965 63966 63967 63968 63969 63970 63971 63972 63973 63974 63975 63976 63977 63978 63979 63980 63981 63982 63983 63984 63985 63986 63987 63988 63989 63990 63991 63992 63993 63994 63995 63996 63997 63998 63999 64000 64001 64002 64003 64004 64005 64006 64007 64008 64009 64010 64011 64012 64013 64014 64015 64016 64017 64018 64019 64020 64021 64022 64023 64024 64025 64026 64027 64028 64029 64030 64031 64032 64033 64034 64035 64036 64037 64038 64039 64040 64041 64042 64043 64044 64045 64048 64049 64050 64051 64052 64053 64054 64055 64056 64057 64058 64059 64060 64061 64062 64063 64064 64065 64066 64067 64068 64069 64070 64071 64072 64073 64074 64075 64076 64077 64078 64079 64080 64081 64082 64083 64084 64085 64086 64087 64088 64089 64090 64091 64092 64093 64094 64095 64096 64097 64098 64099 64100 64101 64102 64103 64104 64105 64106 64112 64113 64114 64115 64116 64117 64118 64119 64120 64121 64122 64123 64124 64125 64126 64127 64128 64129 64130 64131 64132 64133 64134 64135 64136 64137 64138 64139 64140 64141 64142 64143 64144 64145 64146 64147 64148 64149 64150 64151 64152 64153 64154 64155 64156 64157 64158 64159 64160 64161 64162 64163 64164 64165 64166 64167 64168 64169 64170 64171 64172 64173 64174 64175 64176 64177 64178 64179 64180 64181 64182 64183 64184 64185 64186 64187 64188 64189 64190 64191 64192 64193 64194 64195 64196 64197 64198 64199 64200 64201 64202 64203 64204 64205 64206 64207 64208 64209 64210 64211 64212 64213 64214 64215 64216 64217 64285 64287 64288 64289 64290 64291 64292 64293 64294 64295 64296 64298 64299 64300 64301 64302 64303 64304 64305 64306 64307 64308 64309 64310 64312 64313 64314 64315 64316 64318 64320 64321 64323 64324 64326 64327 64328 64329 64330 64331 64332 64333 64334 64335 64336 64337 64338 64339 64340 64341 64342 64343 64344 64345 64346 64347 64348 64349 64350 64351 64352 64353 64354 64355 64356 64357 64358 64359 64360 64361 64362 64363 64364 64365 64366 64367 64368 64369 64370 64371 64372 64373 64374 64375 64376 64377 64378 64379 64380 64381 64382 64383 64384 64385 64386 64387 64388 64389 64390 64391 64392 64393 64394 64395 64396 64397 64398 64399 64400 64401 64402 64403 64404 64405 64406 64407 64408 64409 64410 64411 64412 64413 64414 64415 64416 64417 64418 64419 64420 64421 64422 64423 64424 64425 64426 64427 64428 64429 64430 64431 64432 64433 64467 64468 64469 64470 64471 64472 64473 64474 64475 64476 64477 64478 64479 64480 64481 64482 64483 64484 64485 64486 64487 64488 64489 64490 64491 64492 64493 64494 64495 64496 64497 64498 64499 64500 64501 64502 64503 64504 64505 64506 64507 64508 64509 64510 64511 64512 64513 64514 64515 64516 64517 64518 64519 64520 64521 64522 64523 64524 64525 64526 64527 64528 64529 64530 64531 64532 64533 64534 64535 64536 64537 64538 64539 64540 64541 64542 64543 64544 64545 64546 64547 64548 64549 64550 64551 64552 64553 64554 64555 64556 64557 64558 64559 64560 64561 64562 64563 64564 64565 64566 64567 64568 64569 64570 64571 64572 64573 64574 64575 64576 64577 64578 64579 64580 64581 64582 64583 64584 64585 64586 64587 64588 64589 64590 64591 64592 64593 64594 64595 64596 64597 64598 64599 64600 64601 64602 64603 64604 64605 64606 64607 64608 64609 64610 64611 64612 64613 64614 64615 64616 64617 64618 64619 64620 64621 64622 64623 64624 64625 64626 64627 64628 64629 64630 64631 64632 64633 64634 64635 64636 64637 64638 64639 64640 64641 64642 64643 64644 64645 64646 64647 64648 64649 64650 64651 64652 64653 64654 64655 64656 64657 64658 64659 64660 64661 64662 64663 64664 64665 64666 64667 64668 64669 64670 64671 64672 64673 64674 64675 64676 64677 64678 64679 64680 64681 64682 64683 64684 64685 64686 64687 64688 64689 64690 64691 64692 64693 64694 64695 64696 64697 64698 64699 64700 64701 64702 64703 64704 64705 64706 64707 64708 64709 64710 64711 64712 64713 64714 64715 64716 64717 64718 64719 64720 64721 64722 64723 64724 64725 64726 64727 64728 64729 64730 64731 64732 64733 64734 64735 64736 64737 64738 64739 64740 64741 64742 64743 64744 64745 64746 64747 64748 64749 64750 64751 64752 64753 64754 64755 64756 64757 64758 64759 64760 64761 64762 64763 64764 64765 64766 64767 64768 64769 64770 64771 64772 64773 64774 64775 64776 64777 64778 64779 64780 64781 64782 64783 64784 64785 64786 64787 64788 64789 64790 64791 64792 64793 64794 64795 64796 64797 64798 64799 64800 64801 64802 64803 64804 64805 64806 64807 64808 64809 64810 64811 64812 64813 64814 64815 64816 64817 64818 64819 64820 64821 64822 64823 64824 64825 64826 64827 64828 64829 64848 64849 64850 64851 64852 64853 64854 64855 64856 64857 64858 64859 64860 64861 64862 64863 64864 64865 64866 64867 64868 64869 64870 64871 64872 64873 64874 64875 64876 64877 64878 64879 64880 64881 64882 64883 64884 64885 64886 64887 64888 64889 64890 64891 64892 64893 64894 64895 64896 64897 64898 64899 64900 64901 64902 64903 64904 64905 64906 64907 64908 64909 64910 64911 64914 64915 64916 64917 64918 64919 64920 64921 64922 64923 64924 64925 64926 64927 64928 64929 64930 64931 64932 64933 64934 64935 64936 64937 64938 64939 64940 64941 64942 64943 64944 64945 64946 64947 64948 64949 64950 64951 64952 64953 64954 64955 64956 64957 64958 64959 64960 64961 64962 64963 64964 64965 64966 64967 65008 65009 65010 65011 65012 65013 65014 65015 65016 65017 65018 65019 65136 65137 65138 65139 65140 65142 65143 65144 65145 65146 65147 65148 65149 65150 65151 65152 65153 65154 65155 65156 65157 65158 65159 65160 65161 65162 65163 65164 65165 65166 65167 65168 65169 65170 65171 65172 65173 65174 65175 65176 65177 65178 65179 65180 65181 65182 65183 65184 65185 65186 65187 65188 65189 65190 65191 65192 65193 65194 65195 65196 65197 65198 65199 65200 65201 65202 65203 65204 65205 65206 65207 65208 65209 65210 65211 65212 65213 65214 65215 65216 65217 65218 65219 65220 65221 65222 65223 65224 65225 65226 65227 65228 65229 65230 65231 65232 65233 65234 65235 65236 65237 65238 65239 65240 65241 65242 65243 65244 65245 65246 65247 65248 65249 65250 65251 65252 65253 65254 65255 65256 65257 65258 65259 65260 65261 65262 65263 65264 65265 65266 65267 65268 65269 65270 65271 65272 65273 65274 65275 65276 65382 65383 65384 65385 65386 65387 65388 65389 65390 65391 65393 65394 65395 65396 65397 65398 65399 65400 65401 65402 65403 65404 65405 65406 65407 65408 65409 65410 65411 65412 65413 65414 65415 65416 65417 65418 65419 65420 65421 65422 65423 65424 65425 65426 65427 65428 65429 65430 65431 65432 65433 65434 65435 65436 65437 65440 65441 65442 65443 65444 65445 65446 65447 65448 65449 65450 65451 65452 65453 65454 65455 65456 65457 65458 65459 65460 65461 65462 65463 65464 65465 65466 65467 65468 65469 65470 65474 65475 65476 65477 65478 65479 65482 65483 65484 65485 65486 65487 65490 65491 65492 65493 65494 65495 65498 65499 65500 65536 65537 65538 65539 65540 65541 65542 65543 65544 65545 65546 65547 65549 65550 65551 65552 65553 65554 65555 65556 65557 65558 65559 65560 65561 65562 65563 65564 65565 65566 65567 65568 65569 65570 65571 65572 65573 65574 65576 65577 65578 65579 65580 65581 65582 65583 65584 65585 65586 65587 65588 65589 65590 65591 65592 65593 65594 65596 65597 65599 65600 65601 65602 65603 65604 65605 65606 65607 65608 65609 65610 65611 65612 65613 65616 65617 65618 65619 65620 65621 65622 65623 65624 65625 65626 65627 65628 65629 65664 65665 65666 65667 65668 65669 65670 65671 65672 65673 65674 65675 65676 65677 65678 65679 65680 65681 65682 65683 65684 65685 65686 65687 65688 65689 65690 65691 65692 65693 65694 65695 65696 65697 65698 65699 65700 65701 65702 65703 65704 65705 65706 65707 65708 65709 65710 65711 65712 65713 65714 65715 65716 65717 65718 65719 65720 65721 65722 65723 65724 65725 65726 65727 65728 65729 65730 65731 65732 65733 65734 65735 65736 65737 65738 65739 65740 65741 65742 65743 65744 65745 65746 65747 65748 65749 65750 65751 65752 65753 65754 65755 65756 65757 65758 65759 65760 65761 65762 65763 65764 65765 65766 65767 65768 65769 65770 65771 65772 65773 65774 65775 65776 65777 65778 65779 65780 65781 65782 65783 65784 65785 65786 66176 66177 66178 66179 66180 66181 66182 66183 66184 66185 66186 66187 66188 66189 66190 66191 66192 66193 66194 66195 66196 66197 66198 66199 66200 66201 66202 66203 66204 66208 66209 66210 66211 66212 66213 66214 66215 66216 66217 66218 66219 66220 66221 66222 66223 66224 66225 66226 66227 66228 66229 66230 66231 66232 66233 66234 66235 66236 66237 66238 66239 66240 66241 66242 66243 66244 66245 66246 66247 66248 66249 66250 66251 66252 66253 66254 66255 66256 66304 66305 66306 66307 66308 66309 66310 66311 66312 66313 66314 66315 66316 66317 66318 66319 66320 66321 66322 66323 66324 66325 66326 66327 66328 66329 66330 66331 66332 66333 66334 66352 66353 66354 66355 66356 66357 66358 66359 66360 66361 66362 66363 66364 66365 66366 66367 66368 66370 66371 66372 66373 66374 66375 66376 66377 66432 66433 66434 66435 66436 66437 66438 66439 66440 66441 66442 66443 66444 66445 66446 66447 66448 66449 66450 66451 66452 66453 66454 66455 66456 66457 66458 66459 66460 66461 66464 66465 66466 66467 66468 66469 66470 66471 66472 66473 66474 66475 66476 66477 66478 66479 66480 66481 66482 66483 66484 66485 66486 66487 66488 66489 66490 66491 66492 66493 66494 66495 66496 66497 66498 66499 66504 66505 66506 66507 66508 66509 66510 66511 66640 66641 66642 66643 66644 66645 66646 66647 66648 66649 66650 66651 66652 66653 66654 66655 66656 66657 66658 66659 66660 66661 66662 66663 66664 66665 66666 66667 66668 66669 66670 66671 66672 66673 66674 66675 66676 66677 66678 66679 66680 66681 66682 66683 66684 66685 66686 66687 66688 66689 66690 66691 66692 66693 66694 66695 66696 66697 66698 66699 66700 66701 66702 66703 66704 66705 66706 66707 66708 66709 66710 66711 66712 66713 66714 66715 66716 66717 67584 67585 67586 67587 67588 67589 67592 67594 67595 67596 67597 67598 67599 67600 67601 67602 67603 67604 67605 67606 67607 67608 67609 67610 67611 67612 67613 67614 67615 67616 67617 67618 67619 67620 67621 67622 67623 67624 67625 67626 67627 67628 67629 67630 67631 67632 67633 67634 67635 67636 67637 67639 67640 67644 67647 67840 67841 67842 67843 67844 67845 67846 67847 67848 67849 67850 67851 67852 67853 67854 67855 67856 67857 67858 67859 67860 67861 67872 67873 67874 67875 67876 67877 67878 67879 67880 67881 67882 67883 67884 67885 67886 67887 67888 67889 67890 67891 67892 67893 67894 67895 67896 67897 68096 68112 68113 68114 68115 68117 68118 68119 68121 68122 68123 68124 68125 68126 68127 68128 68129 68130 68131 68132 68133 68134 68135 68136 68137 68138 68139 68140 68141 68142 68143 68144 68145 68146 68147 73728 73729 73730 73731 73732 73733 73734 73735 73736 73737 73738 73739 73740 73741 73742 73743 73744 73745 73746 73747 73748 73749 73750 73751 73752 73753 73754 73755 73756 73757 73758 73759 73760 73761 73762 73763 73764 73765 73766 73767 73768 73769 73770 73771 73772 73773 73774 73775 73776 73777 73778 73779 73780 73781 73782 73783 73784 73785 73786 73787 73788 73789 73790 73791 73792 73793 73794 73795 73796 73797 73798 73799 73800 73801 73802 73803 73804 73805 73806 73807 73808 73809 73810 73811 73812 73813 73814 73815 73816 73817 73818 73819 73820 73821 73822 73823 73824 73825 73826 73827 73828 73829 73830 73831 73832 73833 73834 73835 73836 73837 73838 73839 73840 73841 73842 73843 73844 73845 73846 73847 73848 73849 73850 73851 73852 73853 73854 73855 73856 73857 73858 73859 73860 73861 73862 73863 73864 73865 73866 73867 73868 73869 73870 73871 73872 73873 73874 73875 73876 73877 73878 73879 73880 73881 73882 73883 73884 73885 73886 73887 73888 73889 73890 73891 73892 73893 73894 73895 73896 73897 73898 73899 73900 73901 73902 73903 73904 73905 73906 73907 73908 73909 73910 73911 73912 73913 73914 73915 73916 73917 73918 73919 73920 73921 73922 73923 73924 73925 73926 73927 73928 73929 73930 73931 73932 73933 73934 73935 73936 73937 73938 73939 73940 73941 73942 73943 73944 73945 73946 73947 73948 73949 73950 73951 73952 73953 73954 73955 73956 73957 73958 73959 73960 73961 73962 73963 73964 73965 73966 73967 73968 73969 73970 73971 73972 73973 73974 73975 73976 73977 73978 73979 73980 73981 73982 73983 73984 73985 73986 73987 73988 73989 73990 73991 73992 73993 73994 73995 73996 73997 73998 73999 74000 74001 74002 74003 74004 74005 74006 74007 74008 74009 74010 74011 74012 74013 74014 74015 74016 74017 74018 74019 74020 74021 74022 74023 74024 74025 74026 74027 74028 74029 74030 74031 74032 74033 74034 74035 74036 74037 74038 74039 74040 74041 74042 74043 74044 74045 74046 74047 74048 74049 74050 74051 74052 74053 74054 74055 74056 74057 74058 74059 74060 74061 74062 74063 74064 74065 74066 74067 74068 74069 74070 74071 74072 74073 74074 74075 74076 74077 74078 74079 74080 74081 74082 74083 74084 74085 74086 74087 74088 74089 74090 74091 74092 74093 74094 74095 74096 74097 74098 74099 74100 74101 74102 74103 74104 74105 74106 74107 74108 74109 74110 74111 74112 74113 74114 74115 74116 74117 74118 74119 74120 74121 74122 74123 74124 74125 74126 74127 74128 74129 74130 74131 74132 74133 74134 74135 74136 74137 74138 74139 74140 74141 74142 74143 74144 74145 74146 74147 74148 74149 74150 74151 74152 74153 74154 74155 74156 74157 74158 74159 74160 74161 74162 74163 74164 74165 74166 74167 74168 74169 74170 74171 74172 74173 74174 74175 74176 74177 74178 74179 74180 74181 74182 74183 74184 74185 74186 74187 74188 74189 74190 74191 74192 74193 74194 74195 74196 74197 74198 74199 74200 74201 74202 74203 74204 74205 74206 74207 74208 74209 74210 74211 74212 74213 74214 74215 74216 74217 74218 74219 74220 74221 74222 74223 74224 74225 74226 74227 74228 74229 74230 74231 74232 74233 74234 74235 74236 74237 74238 74239 74240 74241 74242 74243 74244 74245 74246 74247 74248 74249 74250 74251 74252 74253 74254 74255 74256 74257 74258 74259 74260 74261 74262 74263 74264 74265 74266 74267 74268 74269 74270 74271 74272 74273 74274 74275 74276 74277 74278 74279 74280 74281 74282 74283 74284 74285 74286 74287 74288 74289 74290 74291 74292 74293 74294 74295 74296 74297 74298 74299 74300 74301 74302 74303 74304 74305 74306 74307 74308 74309 74310 74311 74312 74313 74314 74315 74316 74317 74318 74319 74320 74321 74322 74323 74324 74325 74326 74327 74328 74329 74330 74331 74332 74333 74334 74335 74336 74337 74338 74339 74340 74341 74342 74343 74344 74345 74346 74347 74348 74349 74350 74351 74352 74353 74354 74355 74356 74357 74358 74359 74360 74361 74362 74363 74364 74365 74366 74367 74368 74369 74370 74371 74372 74373 74374 74375 74376 74377 74378 74379 74380 74381 74382 74383 74384 74385 74386 74387 74388 74389 74390 74391 74392 74393 74394 74395 74396 74397 74398 74399 74400 74401 74402 74403 74404 74405 74406 74407 74408 74409 74410 74411 74412 74413 74414 74415 74416 74417 74418 74419 74420 74421 74422 74423 74424 74425 74426 74427 74428 74429 74430 74431 74432 74433 74434 74435 74436 74437 74438 74439 74440 74441 74442 74443 74444 74445 74446 74447 74448 74449 74450 74451 74452 74453 74454 74455 74456 74457 74458 74459 74460 74461 74462 74463 74464 74465 74466 74467 74468 74469 74470 74471 74472 74473 74474 74475 74476 74477 74478 74479 74480 74481 74482 74483 74484 74485 74486 74487 74488 74489 74490 74491 74492 74493 74494 74495 74496 74497 74498 74499 74500 74501 74502 74503 74504 74505 74506 74507 74508 74509 74510 74511 74512 74513 74514 74515 74516 74517 74518 74519 74520 74521 74522 74523 74524 74525 74526 74527 74528 74529 74530 74531 74532 74533 74534 74535 74536 74537 74538 74539 74540 74541 74542 74543 74544 74545 74546 74547 74548 74549 74550 74551 74552 74553 74554 74555 74556 74557 74558 74559 74560 74561 74562 74563 74564 74565 74566 74567 74568 74569 74570 74571 74572 74573 74574 74575 74576 74577 74578 74579 74580 74581 74582 74583 74584 74585 74586 74587 74588 74589 74590 74591 74592 74593 74594 74595 74596 74597 74598 74599 74600 74601 74602 74603 74604 74605 74606 131072 173782 194560 194561 194562 194563 194564 194565 194566 194567 194568 194569 194570 194571 194572 194573 194574 194575 194576 194577 194578 194579 194580 194581 194582 194583 194584 194585 194586 194587 194588 194589 194590 194591 194592 194593 194594 194595 194596 194597 194598 194599 194600 194601 194602 194603 194604 194605 194606 194607 194608 194609 194610 194611 194612 194613 194614 194615 194616 194617 194618 194619 194620 194621 194622 194623 194624 194625 194626 194627 194628 194629 194630 194631 194632 194633 194634 194635 194636 194637 194638 194639 194640 194641 194642 194643 194644 194645 194646 194647 194648 194649 194650 194651 194652 194653 194654 194655 194656 194657 194658 194659 194660 194661 194662 194663 194664 194665 194666 194667 194668 194669 194670 194671 194672 194673 194674 194675 194676 194677 194678 194679 194680 194681 194682 194683 194684 194685 194686 194687 194688 194689 194690 194691 194692 194693 194694 194695 194696 194697 194698 194699 194700 194701 194702 194703 194704 194705 194706 194707 194708 194709 194710 194711 194712 194713 194714 194715 194716 194717 194718 194719 194720 194721 194722 194723 194724 194725 194726 194727 194728 194729 194730 194731 194732 194733 194734 194735 194736 194737 194738 194739 194740 194741 194742 194743 194744 194745 194746 194747 194748 194749 194750 194751 194752 194753 194754 194755 194756 194757 194758 194759 194760 194761 194762 194763 194764 194765 194766 194767 194768 194769 194770 194771 194772 194773 194774 194775 194776 194777 194778 194779 194780 194781 194782 194783 194784 194785 194786 194787 194788 194789 194790 194791 194792 194793 194794 194795 194796 194797 194798 194799 194800 194801 194802 194803 194804 194805 194806 194807 194808 194809 194810 194811 194812 194813 194814 194815 194816 194817 194818 194819 194820 194821 194822 194823 194824 194825 194826 194827 194828 194829 194830 194831 194832 194833 194834 194835 194836 194837 194838 194839 194840 194841 194842 194843 194844 194845 194846 194847 194848 194849 194850 194851 194852 194853 194854 194855 194856 194857 194858 194859 194860 194861 194862 194863 194864 194865 194866 194867 194868 194869 194870 194871 194872 194873 194874 194875 194876 194877 194878 194879 194880 194881 194882 194883 194884 194885 194886 194887 194888 194889 194890 194891 194892 194893 194894 194895 194896 194897 194898 194899 194900 194901 194902 194903 194904 194905 194906 194907 194908 194909 194910 194911 194912 194913 194914 194915 194916 194917 194918 194919 194920 194921 194922 194923 194924 194925 194926 194927 194928 194929 194930 194931 194932 194933 194934 194935 194936 194937 194938 194939 194940 194941 194942 194943 194944 194945 194946 194947 194948 194949 194950 194951 194952 194953 194954 194955 194956 194957 194958 194959 194960 194961 194962 194963 194964 194965 194966 194967 194968 194969 194970 194971 194972 194973 194974 194975 194976 194977 194978 194979 194980 194981 194982 194983 194984 194985 194986 194987 194988 194989 194990 194991 194992 194993 194994 194995 194996 194997 194998 194999 195000 195001 195002 195003 195004 195005 195006 195007 195008 195009 195010 195011 195012 195013 195014 195015 195016 195017 195018 195019 195020 195021 195022 195023 195024 195025 195026 195027 195028 195029 195030 195031 195032 195033 195034 195035 195036 195037 195038 195039 195040 195041 195042 195043 195044 195045 195046 195047 195048 195049 195050 195051 195052 195053 195054 195055 195056 195057 195058 195059 195060 195061 195062 195063 195064 195065 195066 195067 195068 195069 195070 195071 195072 195073 195074 195075 195076 195077 195078 195079 195080 195081 195082 195083 195084 195085 195086 195087 195088 195089 195090 195091 195092 195093 195094 195095 195096 195097 195098 195099 195100 195101))
+    (Pe . (41 93 125 3899 3901 5788 8262 8318 8334 9002 10089 10091 10093 10095 10097 10099 10101 10182 10215 10217 10219 10221 10223 10628 10630 10632 10634 10636 10638 10640 10642 10644 10646 10648 10713 10715 10749 11811 11813 11815 11817 12297 12299 12301 12303 12305 12309 12311 12313 12315 12318 12319 64831 65048 65078 65080 65082 65084 65086 65088 65090 65092 65096 65114 65116 65118 65289 65341 65373 65376 65379))
+    (Zp . (8233))
+    (Cf . (173 1536 1537 1538 1539 1757 1807 6068 6069 8203 8204 8205 8206 8207 8234 8235 8236 8237 8238 8288 8289 8290 8291 8292 8298 8299 8300 8301 8302 8303 65279 65529 65530 65531 119155 119156 119157 119158 119159 119160 119161 119162 917505 917536 917537 917538 917539 917540 917541 917542 917543 917544 917545 917546 917547 917548 917549 917550 917551 917552 917553 917554 917555 917556 917557 917558 917559 917560 917561 917562 917563 917564 917565 917566 917567 917568 917569 917570 917571 917572 917573 917574 917575 917576 917577 917578 917579 917580 917581 917582 917583 917584 917585 917586 917587 917588 917589 917590 917591 917592 917593 917594 917595 917596 917597 917598 917599 917600 917601 917602 917603 917604 917605 917606 917607 917608 917609 917610 917611 917612 917613 917614 917615 917616 917617 917618 917619 917620 917621 917622 917623 917624 917625 917626 917627 917628 917629 917630 917631))
+    (Lu . (65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 192 193 194 195 196 197 198 199 200 201 202 203 204 205 206 207 208 209 210 211 212 213 214 216 217 218 219 220 221 222 256 258 260 262 264 266 268 270 272 274 276 278 280 282 284 286 288 290 292 294 296 298 300 302 304 306 308 310 313 315 317 319 321 323 325 327 330 332 334 336 338 340 342 344 346 348 350 352 354 356 358 360 362 364 366 368 370 372 374 376 377 379 381 385 386 388 390 391 393 394 395 398 399 400 401 403 404 406 407 408 412 413 415 416 418 420 422 423 425 428 430 431 433 434 435 437 439 440 444 452 455 458 461 463 465 467 469 471 473 475 478 480 482 484 486 488 490 492 494 497 500 502 503 504 506 508 510 512 514 516 518 520 522 524 526 528 530 532 534 536 538 540 542 544 546 548 550 552 554 556 558 560 562 570 571 573 574 577 579 580 581 582 584 586 588 590 880 882 886 902 904 905 906 908 910 911 913 914 915 916 917 918 919 920 921 922 923 924 925 926 927 928 929 931 932 933 934 935 936 937 938 939 975 978 979 980 984 986 988 990 992 994 996 998 1000 1002 1004 1006 1012 1015 1017 1018 1021 1022 1023 1024 1025 1026 1027 1028 1029 1030 1031 1032 1033 1034 1035 1036 1037 1038 1039 1040 1041 1042 1043 1044 1045 1046 1047 1048 1049 1050 1051 1052 1053 1054 1055 1056 1057 1058 1059 1060 1061 1062 1063 1064 1065 1066 1067 1068 1069 1070 1071 1120 1122 1124 1126 1128 1130 1132 1134 1136 1138 1140 1142 1144 1146 1148 1150 1152 1162 1164 1166 1168 1170 1172 1174 1176 1178 1180 1182 1184 1186 1188 1190 1192 1194 1196 1198 1200 1202 1204 1206 1208 1210 1212 1214 1216 1217 1219 1221 1223 1225 1227 1229 1232 1234 1236 1238 1240 1242 1244 1246 1248 1250 1252 1254 1256 1258 1260 1262 1264 1266 1268 1270 1272 1274 1276 1278 1280 1282 1284 1286 1288 1290 1292 1294 1296 1298 1300 1302 1304 1306 1308 1310 1312 1314 1329 1330 1331 1332 1333 1334 1335 1336 1337 1338 1339 1340 1341 1342 1343 1344 1345 1346 1347 1348 1349 1350 1351 1352 1353 1354 1355 1356 1357 1358 1359 1360 1361 1362 1363 1364 1365 1366 4256 4257 4258 4259 4260 4261 4262 4263 4264 4265 4266 4267 4268 4269 4270 4271 4272 4273 4274 4275 4276 4277 4278 4279 4280 4281 4282 4283 4284 4285 4286 4287 4288 4289 4290 4291 4292 4293 7680 7682 7684 7686 7688 7690 7692 7694 7696 7698 7700 7702 7704 7706 7708 7710 7712 7714 7716 7718 7720 7722 7724 7726 7728 7730 7732 7734 7736 7738 7740 7742 7744 7746 7748 7750 7752 7754 7756 7758 7760 7762 7764 7766 7768 7770 7772 7774 7776 7778 7780 7782 7784 7786 7788 7790 7792 7794 7796 7798 7800 7802 7804 7806 7808 7810 7812 7814 7816 7818 7820 7822 7824 7826 7828 7838 7840 7842 7844 7846 7848 7850 7852 7854 7856 7858 7860 7862 7864 7866 7868 7870 7872 7874 7876 7878 7880 7882 7884 7886 7888 7890 7892 7894 7896 7898 7900 7902 7904 7906 7908 7910 7912 7914 7916 7918 7920 7922 7924 7926 7928 7930 7932 7934 7944 7945 7946 7947 7948 7949 7950 7951 7960 7961 7962 7963 7964 7965 7976 7977 7978 7979 7980 7981 7982 7983 7992 7993 7994 7995 7996 7997 7998 7999 8008 8009 8010 8011 8012 8013 8025 8027 8029 8031 8040 8041 8042 8043 8044 8045 8046 8047 8120 8121 8122 8123 8136 8137 8138 8139 8152 8153 8154 8155 8168 8169 8170 8171 8172 8184 8185 8186 8187 8450 8455 8459 8460 8461 8464 8465 8466 8469 8473 8474 8475 8476 8477 8484 8486 8488 8490 8491 8492 8493 8496 8497 8498 8499 8510 8511 8517 8579 11264 11265 11266 11267 11268 11269 11270 11271 11272 11273 11274 11275 11276 11277 11278 11279 11280 11281 11282 11283 11284 11285 11286 11287 11288 11289 11290 11291 11292 11293 11294 11295 11296 11297 11298 11299 11300 11301 11302 11303 11304 11305 11306 11307 11308 11309 11310 11360 11362 11363 11364 11367 11369 11371 11373 11374 11375 11378 11381 11392 11394 11396 11398 11400 11402 11404 11406 11408 11410 11412 11414 11416 11418 11420 11422 11424 11426 11428 11430 11432 11434 11436 11438 11440 11442 11444 11446 11448 11450 11452 11454 11456 11458 11460 11462 11464 11466 11468 11470 11472 11474 11476 11478 11480 11482 11484 11486 11488 11490 42560 42562 42564 42566 42568 42570 42572 42574 42576 42578 42580 42582 42584 42586 42588 42590 42594 42596 42598 42600 42602 42604 42624 42626 42628 42630 42632 42634 42636 42638 42640 42642 42644 42646 42786 42788 42790 42792 42794 42796 42798 42802 42804 42806 42808 42810 42812 42814 42816 42818 42820 42822 42824 42826 42828 42830 42832 42834 42836 42838 42840 42842 42844 42846 42848 42850 42852 42854 42856 42858 42860 42862 42873 42875 42877 42878 42880 42882 42884 42886 42891 65313 65314 65315 65316 65317 65318 65319 65320 65321 65322 65323 65324 65325 65326 65327 65328 65329 65330 65331 65332 65333 65334 65335 65336 65337 65338 66560 66561 66562 66563 66564 66565 66566 66567 66568 66569 66570 66571 66572 66573 66574 66575 66576 66577 66578 66579 66580 66581 66582 66583 66584 66585 66586 66587 66588 66589 66590 66591 66592 66593 66594 66595 66596 66597 66598 66599 119808 119809 119810 119811 119812 119813 119814 119815 119816 119817 119818 119819 119820 119821 119822 119823 119824 119825 119826 119827 119828 119829 119830 119831 119832 119833 119860 119861 119862 119863 119864 119865 119866 119867 119868 119869 119870 119871 119872 119873 119874 119875 119876 119877 119878 119879 119880 119881 119882 119883 119884 119885 119912 119913 119914 119915 119916 119917 119918 119919 119920 119921 119922 119923 119924 119925 119926 119927 119928 119929 119930 119931 119932 119933 119934 119935 119936 119937 119964 119966 119967 119970 119973 119974 119977 119978 119979 119980 119982 119983 119984 119985 119986 119987 119988 119989 120016 120017 120018 120019 120020 120021 120022 120023 120024 120025 120026 120027 120028 120029 120030 120031 120032 120033 120034 120035 120036 120037 120038 120039 120040 120041 120068 120069 120071 120072 120073 120074 120077 120078 120079 120080 120081 120082 120083 120084 120086 120087 120088 120089 120090 120091 120092 120120 120121 120123 120124 120125 120126 120128 120129 120130 120131 120132 120134 120138 120139 120140 120141 120142 120143 120144 120172 120173 120174 120175 120176 120177 120178 120179 120180 120181 120182 120183 120184 120185 120186 120187 120188 120189 120190 120191 120192 120193 120194 120195 120196 120197 120224 120225 120226 120227 120228 120229 120230 120231 120232 120233 120234 120235 120236 120237 120238 120239 120240 120241 120242 120243 120244 120245 120246 120247 120248 120249 120276 120277 120278 120279 120280 120281 120282 120283 120284 120285 120286 120287 120288 120289 120290 120291 120292 120293 120294 120295 120296 120297 120298 120299 120300 120301 120328 120329 120330 120331 120332 120333 120334 120335 120336 120337 120338 120339 120340 120341 120342 120343 120344 120345 120346 120347 120348 120349 120350 120351 120352 120353 120380 120381 120382 120383 120384 120385 120386 120387 120388 120389 120390 120391 120392 120393 120394 120395 120396 120397 120398 120399 120400 120401 120402 120403 120404 120405 120432 120433 120434 120435 120436 120437 120438 120439 120440 120441 120442 120443 120444 120445 120446 120447 120448 120449 120450 120451 120452 120453 120454 120455 120456 120457 120488 120489 120490 120491 120492 120493 120494 120495 120496 120497 120498 120499 120500 120501 120502 120503 120504 120505 120506 120507 120508 120509 120510 120511 120512 120546 120547 120548 120549 120550 120551 120552 120553 120554 120555 120556 120557 120558 120559 120560 120561 120562 120563 120564 120565 120566 120567 120568 120569 120570 120604 120605 120606 120607 120608 120609 120610 120611 120612 120613 120614 120615 120616 120617 120618 120619 120620 120621 120622 120623 120624 120625 120626 120627 120628 120662 120663 120664 120665 120666 120667 120668 120669 120670 120671 120672 120673 120674 120675 120676 120677 120678 120679 120680 120681 120682 120683 120684 120685 120686 120720 120721 120722 120723 120724 120725 120726 120727 120728 120729 120730 120731 120732 120733 120734 120735 120736 120737 120738 120739 120740 120741 120742 120743 120744 120778))
+    (Pd . (45 1418 1470 6150 8208 8209 8210 8211 8212 8213 11799 11802 12316 12336 12448 65073 65074 65112 65123 65293))
+    (Cs . (55296 56191 56192 56319 56320 57343))
+    (So . (166 167 169 174 176 182 1154 1550 1551 1769 1789 1790 2038 2554 2928 3059 3060 3061 3062 3063 3064 3066 3199 3313 3314 3449 3841 3842 3843 3859 3860 3861 3862 3863 3866 3867 3868 3869 3870 3871 3892 3894 3896 4030 4031 4032 4033 4034 4035 4036 4037 4039 4040 4041 4042 4043 4044 4046 4047 4254 4255 4960 5008 5009 5010 5011 5012 5013 5014 5015 5016 5017 6464 6624 6625 6626 6627 6628 6629 6630 6631 6632 6633 6634 6635 6636 6637 6638 6639 6640 6641 6642 6643 6644 6645 6646 6647 6648 6649 6650 6651 6652 6653 6654 6655 7009 7010 7011 7012 7013 7014 7015 7016 7017 7018 7028 7029 7030 7031 7032 7033 7034 7035 7036 8448 8449 8451 8452 8453 8454 8456 8457 8468 8470 8471 8472 8478 8479 8480 8481 8482 8483 8485 8487 8489 8494 8506 8507 8522 8524 8525 8527 8597 8598 8599 8600 8601 8604 8605 8606 8607 8609 8610 8612 8613 8615 8616 8617 8618 8619 8620 8621 8623 8624 8625 8626 8627 8628 8629 8630 8631 8632 8633 8634 8635 8636 8637 8638 8639 8640 8641 8642 8643 8644 8645 8646 8647 8648 8649 8650 8651 8652 8653 8656 8657 8659 8661 8662 8663 8664 8665 8666 8667 8668 8669 8670 8671 8672 8673 8674 8675 8676 8677 8678 8679 8680 8681 8682 8683 8684 8685 8686 8687 8688 8689 8690 8691 8960 8961 8962 8963 8964 8965 8966 8967 8972 8973 8974 8975 8976 8977 8978 8979 8980 8981 8982 8983 8984 8985 8986 8987 8988 8989 8990 8991 8994 8995 8996 8997 8998 8999 9000 9003 9004 9005 9006 9007 9008 9009 9010 9011 9012 9013 9014 9015 9016 9017 9018 9019 9020 9021 9022 9023 9024 9025 9026 9027 9028 9029 9030 9031 9032 9033 9034 9035 9036 9037 9038 9039 9040 9041 9042 9043 9044 9045 9046 9047 9048 9049 9050 9051 9052 9053 9054 9055 9056 9057 9058 9059 9060 9061 9062 9063 9064 9065 9066 9067 9068 9069 9070 9071 9072 9073 9074 9075 9076 9077 9078 9079 9080 9081 9082 9083 9085 9086 9087 9088 9089 9090 9091 9092 9093 9094 9095 9096 9097 9098 9099 9100 9101 9102 9103 9104 9105 9106 9107 9108 9109 9110 9111 9112 9113 9114 9140 9141 9142 9143 9144 9145 9146 9147 9148 9149 9150 9151 9152 9153 9154 9155 9156 9157 9158 9159 9160 9161 9162 9163 9164 9165 9166 9167 9168 9169 9170 9171 9172 9173 9174 9175 9176 9177 9178 9179 9186 9187 9188 9189 9190 9191 9216 9217 9218 9219 9220 9221 9222 9223 9224 9225 9226 9227 9228 9229 9230 9231 9232 9233 9234 9235 9236 9237 9238 9239 9240 9241 9242 9243 9244 9245 9246 9247 9248 9249 9250 9251 9252 9253 9254 9280 9281 9282 9283 9284 9285 9286 9287 9288 9289 9290 9372 9373 9374 9375 9376 9377 9378 9379 9380 9381 9382 9383 9384 9385 9386 9387 9388 9389 9390 9391 9392 9393 9394 9395 9396 9397 9398 9399 9400 9401 9402 9403 9404 9405 9406 9407 9408 9409 9410 9411 9412 9413 9414 9415 9416 9417 9418 9419 9420 9421 9422 9423 9424 9425 9426 9427 9428 9429 9430 9431 9432 9433 9434 9435 9436 9437 9438 9439 9440 9441 9442 9443 9444 9445 9446 9447 9448 9449 9472 9473 9474 9475 9476 9477 9478 9479 9480 9481 9482 9483 9484 9485 9486 9487 9488 9489 9490 9491 9492 9493 9494 9495 9496 9497 9498 9499 9500 9501 9502 9503 9504 9505 9506 9507 9508 9509 9510 9511 9512 9513 9514 9515 9516 9517 9518 9519 9520 9521 9522 9523 9524 9525 9526 9527 9528 9529 9530 9531 9532 9533 9534 9535 9536 9537 9538 9539 9540 9541 9542 9543 9544 9545 9546 9547 9548 9549 9550 9551 9552 9553 9554 9555 9556 9557 9558 9559 9560 9561 9562 9563 9564 9565 9566 9567 9568 9569 9570 9571 9572 9573 9574 9575 9576 9577 9578 9579 9580 9581 9582 9583 9584 9585 9586 9587 9588 9589 9590 9591 9592 9593 9594 9595 9596 9597 9598 9599 9600 9601 9602 9603 9604 9605 9606 9607 9608 9609 9610 9611 9612 9613 9614 9615 9616 9617 9618 9619 9620 9621 9622 9623 9624 9625 9626 9627 9628 9629 9630 9631 9632 9633 9634 9635 9636 9637 9638 9639 9640 9641 9642 9643 9644 9645 9646 9647 9648 9649 9650 9651 9652 9653 9654 9656 9657 9658 9659 9660 9661 9662 9663 9664 9666 9667 9668 9669 9670 9671 9672 9673 9674 9675 9676 9677 9678 9679 9680 9681 9682 9683 9684 9685 9686 9687 9688 9689 9690 9691 9692 9693 9694 9695 9696 9697 9698 9699 9700 9701 9702 9703 9704 9705 9706 9707 9708 9709 9710 9711 9712 9713 9714 9715 9716 9717 9718 9719 9728 9729 9730 9731 9732 9733 9734 9735 9736 9737 9738 9739 9740 9741 9742 9743 9744 9745 9746 9747 9748 9749 9750 9751 9752 9753 9754 9755 9756 9757 9758 9759 9760 9761 9762 9763 9764 9765 9766 9767 9768 9769 9770 9771 9772 9773 9774 9775 9776 9777 9778 9779 9780 9781 9782 9783 9784 9785 9786 9787 9788 9789 9790 9791 9792 9793 9794 9795 9796 9797 9798 9799 9800 9801 9802 9803 9804 9805 9806 9807 9808 9809 9810 9811 9812 9813 9814 9815 9816 9817 9818 9819 9820 9821 9822 9823 9824 9825 9826 9827 9828 9829 9830 9831 9832 9833 9834 9835 9836 9837 9838 9840 9841 9842 9843 9844 9845 9846 9847 9848 9849 9850 9851 9852 9853 9854 9855 9856 9857 9858 9859 9860 9861 9862 9863 9864 9865 9866 9867 9868 9869 9870 9871 9872 9873 9874 9875 9876 9877 9878 9879 9880 9881 9882 9883 9884 9885 9888 9889 9890 9891 9892 9893 9894 9895 9896 9897 9898 9899 9900 9901 9902 9903 9904 9905 9906 9907 9908 9909 9910 9911 9912 9913 9914 9915 9916 9920 9921 9922 9923 9985 9986 9987 9988 9990 9991 9992 9993 9996 9997 9998 9999 10000 10001 10002 10003 10004 10005 10006 10007 10008 10009 10010 10011 10012 10013 10014 10015 10016 10017 10018 10019 10020 10021 10022 10023 10025 10026 10027 10028 10029 10030 10031 10032 10033 10034 10035 10036 10037 10038 10039 10040 10041 10042 10043 10044 10045 10046 10047 10048 10049 10050 10051 10052 10053 10054 10055 10056 10057 10058 10059 10061 10063 10064 10065 10066 10070 10072 10073 10074 10075 10076 10077 10078 10081 10082 10083 10084 10085 10086 10087 10132 10136 10137 10138 10139 10140 10141 10142 10143 10144 10145 10146 10147 10148 10149 10150 10151 10152 10153 10154 10155 10156 10157 10158 10159 10161 10162 10163 10164 10165 10166 10167 10168 10169 10170 10171 10172 10173 10174 10240 10241 10242 10243 10244 10245 10246 10247 10248 10249 10250 10251 10252 10253 10254 10255 10256 10257 10258 10259 10260 10261 10262 10263 10264 10265 10266 10267 10268 10269 10270 10271 10272 10273 10274 10275 10276 10277 10278 10279 10280 10281 10282 10283 10284 10285 10286 10287 10288 10289 10290 10291 10292 10293 10294 10295 10296 10297 10298 10299 10300 10301 10302 10303 10304 10305 10306 10307 10308 10309 10310 10311 10312 10313 10314 10315 10316 10317 10318 10319 10320 10321 10322 10323 10324 10325 10326 10327 10328 10329 10330 10331 10332 10333 10334 10335 10336 10337 10338 10339 10340 10341 10342 10343 10344 10345 10346 10347 10348 10349 10350 10351 10352 10353 10354 10355 10356 10357 10358 10359 10360 10361 10362 10363 10364 10365 10366 10367 10368 10369 10370 10371 10372 10373 10374 10375 10376 10377 10378 10379 10380 10381 10382 10383 10384 10385 10386 10387 10388 10389 10390 10391 10392 10393 10394 10395 10396 10397 10398 10399 10400 10401 10402 10403 10404 10405 10406 10407 10408 10409 10410 10411 10412 10413 10414 10415 10416 10417 10418 10419 10420 10421 10422 10423 10424 10425 10426 10427 10428 10429 10430 10431 10432 10433 10434 10435 10436 10437 10438 10439 10440 10441 10442 10443 10444 10445 10446 10447 10448 10449 10450 10451 10452 10453 10454 10455 10456 10457 10458 10459 10460 10461 10462 10463 10464 10465 10466 10467 10468 10469 10470 10471 10472 10473 10474 10475 10476 10477 10478 10479 10480 10481 10482 10483 10484 10485 10486 10487 10488 10489 10490 10491 10492 10493 10494 10495 11008 11009 11010 11011 11012 11013 11014 11015 11016 11017 11018 11019 11020 11021 11022 11023 11024 11025 11026 11027 11028 11029 11030 11031 11032 11033 11034 11035 11036 11037 11038 11039 11040 11041 11042 11043 11044 11045 11046 11047 11048 11049 11050 11051 11052 11053 11054 11055 11077 11078 11088 11089 11090 11091 11092 11493 11494 11495 11496 11497 11498 11904 11905 11906 11907 11908 11909 11910 11911 11912 11913 11914 11915 11916 11917 11918 11919 11920 11921 11922 11923 11924 11925 11926 11927 11928 11929 11931 11932 11933 11934 11935 11936 11937 11938 11939 11940 11941 11942 11943 11944 11945 11946 11947 11948 11949 11950 11951 11952 11953 11954 11955 11956 11957 11958 11959 11960 11961 11962 11963 11964 11965 11966 11967 11968 11969 11970 11971 11972 11973 11974 11975 11976 11977 11978 11979 11980 11981 11982 11983 11984 11985 11986 11987 11988 11989 11990 11991 11992 11993 11994 11995 11996 11997 11998 11999 12000 12001 12002 12003 12004 12005 12006 12007 12008 12009 12010 12011 12012 12013 12014 12015 12016 12017 12018 12019 12032 12033 12034 12035 12036 12037 12038 12039 12040 12041 12042 12043 12044 12045 12046 12047 12048 12049 12050 12051 12052 12053 12054 12055 12056 12057 12058 12059 12060 12061 12062 12063 12064 12065 12066 12067 12068 12069 12070 12071 12072 12073 12074 12075 12076 12077 12078 12079 12080 12081 12082 12083 12084 12085 12086 12087 12088 12089 12090 12091 12092 12093 12094 12095 12096 12097 12098 12099 12100 12101 12102 12103 12104 12105 12106 12107 12108 12109 12110 12111 12112 12113 12114 12115 12116 12117 12118 12119 12120 12121 12122 12123 12124 12125 12126 12127 12128 12129 12130 12131 12132 12133 12134 12135 12136 12137 12138 12139 12140 12141 12142 12143 12144 12145 12146 12147 12148 12149 12150 12151 12152 12153 12154 12155 12156 12157 12158 12159 12160 12161 12162 12163 12164 12165 12166 12167 12168 12169 12170 12171 12172 12173 12174 12175 12176 12177 12178 12179 12180 12181 12182 12183 12184 12185 12186 12187 12188 12189 12190 12191 12192 12193 12194 12195 12196 12197 12198 12199 12200 12201 12202 12203 12204 12205 12206 12207 12208 12209 12210 12211 12212 12213 12214 12215 12216 12217 12218 12219 12220 12221 12222 12223 12224 12225 12226 12227 12228 12229 12230 12231 12232 12233 12234 12235 12236 12237 12238 12239 12240 12241 12242 12243 12244 12245 12272 12273 12274 12275 12276 12277 12278 12279 12280 12281 12282 12283 12292 12306 12307 12320 12342 12343 12350 12351 12688 12689 12694 12695 12696 12697 12698 12699 12700 12701 12702 12703 12736 12737 12738 12739 12740 12741 12742 12743 12744 12745 12746 12747 12748 12749 12750 12751 12752 12753 12754 12755 12756 12757 12758 12759 12760 12761 12762 12763 12764 12765 12766 12767 12768 12769 12770 12771 12800 12801 12802 12803 12804 12805 12806 12807 12808 12809 12810 12811 12812 12813 12814 12815 12816 12817 12818 12819 12820 12821 12822 12823 12824 12825 12826 12827 12828 12829 12830 12842 12843 12844 12845 12846 12847 12848 12849 12850 12851 12852 12853 12854 12855 12856 12857 12858 12859 12860 12861 12862 12863 12864 12865 12866 12867 12880 12896 12897 12898 12899 12900 12901 12902 12903 12904 12905 12906 12907 12908 12909 12910 12911 12912 12913 12914 12915 12916 12917 12918 12919 12920 12921 12922 12923 12924 12925 12926 12927 12938 12939 12940 12941 12942 12943 12944 12945 12946 12947 12948 12949 12950 12951 12952 12953 12954 12955 12956 12957 12958 12959 12960 12961 12962 12963 12964 12965 12966 12967 12968 12969 12970 12971 12972 12973 12974 12975 12976 12992 12993 12994 12995 12996 12997 12998 12999 13000 13001 13002 13003 13004 13005 13006 13007 13008 13009 13010 13011 13012 13013 13014 13015 13016 13017 13018 13019 13020 13021 13022 13023 13024 13025 13026 13027 13028 13029 13030 13031 13032 13033 13034 13035 13036 13037 13038 13039 13040 13041 13042 13043 13044 13045 13046 13047 13048 13049 13050 13051 13052 13053 13054 13056 13057 13058 13059 13060 13061 13062 13063 13064 13065 13066 13067 13068 13069 13070 13071 13072 13073 13074 13075 13076 13077 13078 13079 13080 13081 13082 13083 13084 13085 13086 13087 13088 13089 13090 13091 13092 13093 13094 13095 13096 13097 13098 13099 13100 13101 13102 13103 13104 13105 13106 13107 13108 13109 13110 13111 13112 13113 13114 13115 13116 13117 13118 13119 13120 13121 13122 13123 13124 13125 13126 13127 13128 13129 13130 13131 13132 13133 13134 13135 13136 13137 13138 13139 13140 13141 13142 13143 13144 13145 13146 13147 13148 13149 13150 13151 13152 13153 13154 13155 13156 13157 13158 13159 13160 13161 13162 13163 13164 13165 13166 13167 13168 13169 13170 13171 13172 13173 13174 13175 13176 13177 13178 13179 13180 13181 13182 13183 13184 13185 13186 13187 13188 13189 13190 13191 13192 13193 13194 13195 13196 13197 13198 13199 13200 13201 13202 13203 13204 13205 13206 13207 13208 13209 13210 13211 13212 13213 13214 13215 13216 13217 13218 13219 13220 13221 13222 13223 13224 13225 13226 13227 13228 13229 13230 13231 13232 13233 13234 13235 13236 13237 13238 13239 13240 13241 13242 13243 13244 13245 13246 13247 13248 13249 13250 13251 13252 13253 13254 13255 13256 13257 13258 13259 13260 13261 13262 13263 13264 13265 13266 13267 13268 13269 13270 13271 13272 13273 13274 13275 13276 13277 13278 13279 13280 13281 13282 13283 13284 13285 13286 13287 13288 13289 13290 13291 13292 13293 13294 13295 13296 13297 13298 13299 13300 13301 13302 13303 13304 13305 13306 13307 13308 13309 13310 13311 19904 19905 19906 19907 19908 19909 19910 19911 19912 19913 19914 19915 19916 19917 19918 19919 19920 19921 19922 19923 19924 19925 19926 19927 19928 19929 19930 19931 19932 19933 19934 19935 19936 19937 19938 19939 19940 19941 19942 19943 19944 19945 19946 19947 19948 19949 19950 19951 19952 19953 19954 19955 19956 19957 19958 19959 19960 19961 19962 19963 19964 19965 19966 19967 42128 42129 42130 42131 42132 42133 42134 42135 42136 42137 42138 42139 42140 42141 42142 42143 42144 42145 42146 42147 42148 42149 42150 42151 42152 42153 42154 42155 42156 42157 42158 42159 42160 42161 42162 42163 42164 42165 42166 42167 42168 42169 42170 42171 42172 42173 42174 42175 42176 42177 42178 42179 42180 42181 42182 43048 43049 43050 43051 65021 65508 65512 65517 65518 65532 65533 65794 65847 65848 65849 65850 65851 65852 65853 65854 65855 65913 65914 65915 65916 65917 65918 65919 65920 65921 65922 65923 65924 65925 65926 65927 65928 65929 65936 65937 65938 65939 65940 65941 65942 65943 65944 65945 65946 65947 66000 66001 66002 66003 66004 66005 66006 66007 66008 66009 66010 66011 66012 66013 66014 66015 66016 66017 66018 66019 66020 66021 66022 66023 66024 66025 66026 66027 66028 66029 66030 66031 66032 66033 66034 66035 66036 66037 66038 66039 66040 66041 66042 66043 66044 118784 118785 118786 118787 118788 118789 118790 118791 118792 118793 118794 118795 118796 118797 118798 118799 118800 118801 118802 118803 118804 118805 118806 118807 118808 118809 118810 118811 118812 118813 118814 118815 118816 118817 118818 118819 118820 118821 118822 118823 118824 118825 118826 118827 118828 118829 118830 118831 118832 118833 118834 118835 118836 118837 118838 118839 118840 118841 118842 118843 118844 118845 118846 118847 118848 118849 118850 118851 118852 118853 118854 118855 118856 118857 118858 118859 118860 118861 118862 118863 118864 118865 118866 118867 118868 118869 118870 118871 118872 118873 118874 118875 118876 118877 118878 118879 118880 118881 118882 118883 118884 118885 118886 118887 118888 118889 118890 118891 118892 118893 118894 118895 118896 118897 118898 118899 118900 118901 118902 118903 118904 118905 118906 118907 118908 118909 118910 118911 118912 118913 118914 118915 118916 118917 118918 118919 118920 118921 118922 118923 118924 118925 118926 118927 118928 118929 118930 118931 118932 118933 118934 118935 118936 118937 118938 118939 118940 118941 118942 118943 118944 118945 118946 118947 118948 118949 118950 118951 118952 118953 118954 118955 118956 118957 118958 118959 118960 118961 118962 118963 118964 118965 118966 118967 118968 118969 118970 118971 118972 118973 118974 118975 118976 118977 118978 118979 118980 118981 118982 118983 118984 118985 118986 118987 118988 118989 118990 118991 118992 118993 118994 118995 118996 118997 118998 118999 119000 119001 119002 119003 119004 119005 119006 119007 119008 119009 119010 119011 119012 119013 119014 119015 119016 119017 119018 119019 119020 119021 119022 119023 119024 119025 119026 119027 119028 119029 119040 119041 119042 119043 119044 119045 119046 119047 119048 119049 119050 119051 119052 119053 119054 119055 119056 119057 119058 119059 119060 119061 119062 119063 119064 119065 119066 119067 119068 119069 119070 119071 119072 119073 119074 119075 119076 119077 119078 119081 119082 119083 119084 119085 119086 119087 119088 119089 119090 119091 119092 119093 119094 119095 119096 119097 119098 119099 119100 119101 119102 119103 119104 119105 119106 119107 119108 119109 119110 119111 119112 119113 119114 119115 119116 119117 119118 119119 119120 119121 119122 119123 119124 119125 119126 119127 119128 119129 119130 119131 119132 119133 119134 119135 119136 119137 119138 119139 119140 119146 119147 119148 119171 119172 119180 119181 119182 119183 119184 119185 119186 119187 119188 119189 119190 119191 119192 119193 119194 119195 119196 119197 119198 119199 119200 119201 119202 119203 119204 119205 119206 119207 119208 119209 119214 119215 119216 119217 119218 119219 119220 119221 119222 119223 119224 119225 119226 119227 119228 119229 119230 119231 119232 119233 119234 119235 119236 119237 119238 119239 119240 119241 119242 119243 119244 119245 119246 119247 119248 119249 119250 119251 119252 119253 119254 119255 119256 119257 119258 119259 119260 119261 119296 119297 119298 119299 119300 119301 119302 119303 119304 119305 119306 119307 119308 119309 119310 119311 119312 119313 119314 119315 119316 119317 119318 119319 119320 119321 119322 119323 119324 119325 119326 119327 119328 119329 119330 119331 119332 119333 119334 119335 119336 119337 119338 119339 119340 119341 119342 119343 119344 119345 119346 119347 119348 119349 119350 119351 119352 119353 119354 119355 119356 119357 119358 119359 119360 119361 119365 119552 119553 119554 119555 119556 119557 119558 119559 119560 119561 119562 119563 119564 119565 119566 119567 119568 119569 119570 119571 119572 119573 119574 119575 119576 119577 119578 119579 119580 119581 119582 119583 119584 119585 119586 119587 119588 119589 119590 119591 119592 119593 119594 119595 119596 119597 119598 119599 119600 119601 119602 119603 119604 119605 119606 119607 119608 119609 119610 119611 119612 119613 119614 119615 119616 119617 119618 119619 119620 119621 119622 119623 119624 119625 119626 119627 119628 119629 119630 119631 119632 119633 119634 119635 119636 119637 119638 126976 126977 126978 126979 126980 126981 126982 126983 126984 126985 126986 126987 126988 126989 126990 126991 126992 126993 126994 126995 126996 126997 126998 126999 127000 127001 127002 127003 127004 127005 127006 127007 127008 127009 127010 127011 127012 127013 127014 127015 127016 127017 127018 127019 127024 127025 127026 127027 127028 127029 127030 127031 127032 127033 127034 127035 127036 127037 127038 127039 127040 127041 127042 127043 127044 127045 127046 127047 127048 127049 127050 127051 127052 127053 127054 127055 127056 127057 127058 127059 127060 127061 127062 127063 127064 127065 127066 127067 127068 127069 127070 127071 127072 127073 127074 127075 127076 127077 127078 127079 127080 127081 127082 127083 127084 127085 127086 127087 127088 127089 127090 127091 127092 127093 127094 127095 127096 127097 127098 127099 127100 127101 127102 127103 127104 127105 127106 127107 127108 127109 127110 127111 127112 127113 127114 127115 127116 127117 127118 127119 127120 127121 127122 127123))
+    (Lm . (688 689 690 691 692 693 694 695 696 697 698 699 700 701 702 703 704 705 710 711 712 713 714 715 716 717 718 719 720 721 736 737 738 739 740 748 750 884 890 1369 1600 1765 1766 2036 2037 2042 2417 3654 3782 4348 6103 6211 7288 7289 7290 7291 7292 7293 7468 7469 7470 7471 7472 7473 7474 7475 7476 7477 7478 7479 7480 7481 7482 7483 7484 7485 7486 7487 7488 7489 7490 7491 7492 7493 7494 7495 7496 7497 7498 7499 7500 7501 7502 7503 7504 7505 7506 7507 7508 7509 7510 7511 7512 7513 7514 7515 7516 7517 7518 7519 7520 7521 7544 7579 7580 7581 7582 7583 7584 7585 7586 7587 7588 7589 7590 7591 7592 7593 7594 7595 7596 7597 7598 7599 7600 7601 7602 7603 7604 7605 7606 7607 7608 7609 7610 7611 7612 7613 7614 7615 8336 8337 8338 8339 8340 11389 11631 11823 12293 12337 12338 12339 12340 12341 12347 12445 12446 12540 12541 12542 40981 42508 42623 42775 42776 42777 42778 42779 42780 42781 42782 42783 42864 42888 65392 65438 65439))
+    (Ps . (40 91 123 3898 3900 5787 8218 8222 8261 8317 8333 9001 10088 10090 10092 10094 10096 10098 10100 10181 10214 10216 10218 10220 10222 10627 10629 10631 10633 10635 10637 10639 10641 10643 10645 10647 10712 10714 10748 11810 11812 11814 11816 12296 12298 12300 12302 12304 12308 12310 12312 12314 12317 64830 65047 65077 65079 65081 65083 65085 65087 65089 65091 65095 65113 65115 65117 65288 65339 65371 65375 65378))
+    (Zl . (8232))
+    (Nl . (5870 5871 5872 8544 8545 8546 8547 8548 8549 8550 8551 8552 8553 8554 8555 8556 8557 8558 8559 8560 8561 8562 8563 8564 8565 8566 8567 8568 8569 8570 8571 8572 8573 8574 8575 8576 8577 8578 8581 8582 8583 8584 12295 12321 12322 12323 12324 12325 12326 12327 12328 12329 12344 12345 12346 65856 65857 65858 65859 65860 65861 65862 65863 65864 65865 65866 65867 65868 65869 65870 65871 65872 65873 65874 65875 65876 65877 65878 65879 65880 65881 65882 65883 65884 65885 65886 65887 65888 65889 65890 65891 65892 65893 65894 65895 65896 65897 65898 65899 65900 65901 65902 65903 65904 65905 65906 65907 65908 66369 66378 66513 66514 66515 66516 66517 74752 74753 74754 74755 74756 74757 74758 74759 74760 74761 74762 74763 74764 74765 74766 74767 74768 74769 74770 74771 74772 74773 74774 74775 74776 74777 74778 74779 74780 74781 74782 74783 74784 74785 74786 74787 74788 74789 74790 74791 74792 74793 74794 74795 74796 74797 74798 74799 74800 74801 74802 74803 74804 74805 74806 74807 74808 74809 74810 74811 74812 74813 74814 74815 74816 74817 74818 74819 74820 74821 74822 74823 74824 74825 74826 74827 74828 74829 74830 74831 74832 74833 74834 74835 74836 74837 74838 74839 74840 74841 74842 74843 74844 74845 74846 74847 74848 74849 74850))
+    (Co . (57344 63743 983040 1048573 1048576 1114109))
+    (Mn . (768 769 770 771 772 773 774 775 776 777 778 779 780 781 782 783 784 785 786 787 788 789 790 791 792 793 794 795 796 797 798 799 800 801 802 803 804 805 806 807 808 809 810 811 812 813 814 815 816 817 818 819 820 821 822 823 824 825 826 827 828 829 830 831 832 833 834 835 836 837 838 839 840 841 842 843 844 845 846 847 848 849 850 851 852 853 854 855 856 857 858 859 860 861 862 863 864 865 866 867 868 869 870 871 872 873 874 875 876 877 878 879 1155 1156 1157 1158 1159 1425 1426 1427 1428 1429 1430 1431 1432 1433 1434 1435 1436 1437 1438 1439 1440 1441 1442 1443 1444 1445 1446 1447 1448 1449 1450 1451 1452 1453 1454 1455 1456 1457 1458 1459 1460 1461 1462 1463 1464 1465 1466 1467 1468 1469 1471 1473 1474 1476 1477 1479 1552 1553 1554 1555 1556 1557 1558 1559 1560 1561 1562 1611 1612 1613 1614 1615 1616 1617 1618 1619 1620 1621 1622 1623 1624 1625 1626 1627 1628 1629 1630 1648 1750 1751 1752 1753 1754 1755 1756 1759 1760 1761 1762 1763 1764 1767 1768 1770 1771 1772 1773 1809 1840 1841 1842 1843 1844 1845 1846 1847 1848 1849 1850 1851 1852 1853 1854 1855 1856 1857 1858 1859 1860 1861 1862 1863 1864 1865 1866 1958 1959 1960 1961 1962 1963 1964 1965 1966 1967 1968 2027 2028 2029 2030 2031 2032 2033 2034 2035 2305 2306 2364 2369 2370 2371 2372 2373 2374 2375 2376 2381 2385 2386 2387 2388 2402 2403 2433 2492 2497 2498 2499 2500 2509 2530 2531 2561 2562 2620 2625 2626 2631 2632 2635 2636 2637 2641 2672 2673 2677 2689 2690 2748 2753 2754 2755 2756 2757 2759 2760 2765 2786 2787 2817 2876 2879 2881 2882 2883 2884 2893 2902 2914 2915 2946 3008 3021 3134 3135 3136 3142 3143 3144 3146 3147 3148 3149 3157 3158 3170 3171 3260 3263 3270 3276 3277 3298 3299 3393 3394 3395 3396 3405 3426 3427 3530 3538 3539 3540 3542 3633 3636 3637 3638 3639 3640 3641 3642 3655 3656 3657 3658 3659 3660 3661 3662 3761 3764 3765 3766 3767 3768 3769 3771 3772 3784 3785 3786 3787 3788 3789 3864 3865 3893 3895 3897 3953 3954 3955 3956 3957 3958 3959 3960 3961 3962 3963 3964 3965 3966 3968 3969 3970 3971 3972 3974 3975 3984 3985 3986 3987 3988 3989 3990 3991 3993 3994 3995 3996 3997 3998 3999 4000 4001 4002 4003 4004 4005 4006 4007 4008 4009 4010 4011 4012 4013 4014 4015 4016 4017 4018 4019 4020 4021 4022 4023 4024 4025 4026 4027 4028 4038 4141 4142 4143 4144 4146 4147 4148 4149 4150 4151 4153 4154 4157 4158 4184 4185 4190 4191 4192 4209 4210 4211 4212 4226 4229 4230 4237 4959 5906 5907 5908 5938 5939 5940 5970 5971 6002 6003 6071 6072 6073 6074 6075 6076 6077 6086 6089 6090 6091 6092 6093 6094 6095 6096 6097 6098 6099 6109 6155 6156 6157 6313 6432 6433 6434 6439 6440 6450 6457 6458 6459 6679 6680 6912 6913 6914 6915 6964 6966 6967 6968 6969 6970 6972 6978 7019 7020 7021 7022 7023 7024 7025 7026 7027 7040 7041 7074 7075 7076 7077 7080 7081 7212 7213 7214 7215 7216 7217 7218 7219 7222 7223 7616 7617 7618 7619 7620 7621 7622 7623 7624 7625 7626 7627 7628 7629 7630 7631 7632 7633 7634 7635 7636 7637 7638 7639 7640 7641 7642 7643 7644 7645 7646 7647 7648 7649 7650 7651 7652 7653 7654 7678 7679 8400 8401 8402 8403 8404 8405 8406 8407 8408 8409 8410 8411 8412 8417 8421 8422 8423 8424 8425 8426 8427 8428 8429 8430 8431 8432 11744 11745 11746 11747 11748 11749 11750 11751 11752 11753 11754 11755 11756 11757 11758 11759 11760 11761 11762 11763 11764 11765 11766 11767 11768 11769 11770 11771 11772 11773 11774 11775 12330 12331 12332 12333 12334 12335 12441 12442 42607 42620 42621 43010 43014 43019 43045 43046 43204 43302 43303 43304 43305 43306 43307 43308 43309 43335 43336 43337 43338 43339 43340 43341 43342 43343 43344 43345 43561 43562 43563 43564 43565 43566 43569 43570 43573 43574 43587 43596 64286 65024 65025 65026 65027 65028 65029 65030 65031 65032 65033 65034 65035 65036 65037 65038 65039 65056 65057 65058 65059 65060 65061 65062 66045 68097 68098 68099 68101 68102 68108 68109 68110 68111 68152 68153 68154 68159 119143 119144 119145 119163 119164 119165 119166 119167 119168 119169 119170 119173 119174 119175 119176 119177 119178 119179 119210 119211 119212 119213 119362 119363 119364 917760 917761 917762 917763 917764 917765 917766 917767 917768 917769 917770 917771 917772 917773 917774 917775 917776 917777 917778 917779 917780 917781 917782 917783 917784 917785 917786 917787 917788 917789 917790 917791 917792 917793 917794 917795 917796 917797 917798 917799 917800 917801 917802 917803 917804 917805 917806 917807 917808 917809 917810 917811 917812 917813 917814 917815 917816 917817 917818 917819 917820 917821 917822 917823 917824 917825 917826 917827 917828 917829 917830 917831 917832 917833 917834 917835 917836 917837 917838 917839 917840 917841 917842 917843 917844 917845 917846 917847 917848 917849 917850 917851 917852 917853 917854 917855 917856 917857 917858 917859 917860 917861 917862 917863 917864 917865 917866 917867 917868 917869 917870 917871 917872 917873 917874 917875 917876 917877 917878 917879 917880 917881 917882 917883 917884 917885 917886 917887 917888 917889 917890 917891 917892 917893 917894 917895 917896 917897 917898 917899 917900 917901 917902 917903 917904 917905 917906 917907 917908 917909 917910 917911 917912 917913 917914 917915 917916 917917 917918 917919 917920 917921 917922 917923 917924 917925 917926 917927 917928 917929 917930 917931 917932 917933 917934 917935 917936 917937 917938 917939 917940 917941 917942 917943 917944 917945 917946 917947 917948 917949 917950 917951 917952 917953 917954 917955 917956 917957 917958 917959 917960 917961 917962 917963 917964 917965 917966 917967 917968 917969 917970 917971 917972 917973 917974 917975 917976 917977 917978 917979 917980 917981 917982 917983 917984 917985 917986 917987 917988 917989 917990 917991 917992 917993 917994 917995 917996 917997 917998 917999))
+    (Pc . (95 8255 8256 8276 65075 65076 65101 65102 65103 65343))
+    (Lt . (453 456 459 498 8072 8073 8074 8075 8076 8077 8078 8079 8088 8089 8090 8091 8092 8093 8094 8095 8104 8105 8106 8107 8108 8109 8110 8111 8124 8140 8188))
+    (Po . (33 34 35 37 38 39 42 44 46 47 58 59 63 64 92 161 183 191 894 903 1370 1371 1372 1373 1374 1375 1417 1472 1475 1478 1523 1524 1545 1546 1548 1549 1563 1566 1567 1642 1643 1644 1645 1748 1792 1793 1794 1795 1796 1797 1798 1799 1800 1801 1802 1803 1804 1805 2039 2040 2041 2404 2405 2416 3572 3663 3674 3675 3844 3845 3846 3847 3848 3849 3850 3851 3852 3853 3854 3855 3856 3857 3858 3973 4048 4049 4050 4051 4052 4170 4171 4172 4173 4174 4175 4347 4961 4962 4963 4964 4965 4966 4967 4968 5741 5742 5867 5868 5869 5941 5942 6100 6101 6102 6104 6105 6106 6144 6145 6146 6147 6148 6149 6151 6152 6153 6154 6468 6469 6622 6623 6686 6687 7002 7003 7004 7005 7006 7007 7008 7227 7228 7229 7230 7231 7294 7295 8214 8215 8224 8225 8226 8227 8228 8229 8230 8231 8240 8241 8242 8243 8244 8245 8246 8247 8248 8251 8252 8253 8254 8257 8258 8259 8263 8264 8265 8266 8267 8268 8269 8270 8271 8272 8273 8275 8277 8278 8279 8280 8281 8282 8283 8284 8285 8286 11513 11514 11515 11516 11518 11519 11776 11777 11782 11783 11784 11787 11790 11791 11792 11793 11794 11795 11796 11797 11798 11800 11801 11803 11806 11807 11818 11819 11820 11821 11822 11824 12289 12290 12291 12349 12539 42509 42510 42511 42611 42622 43124 43125 43126 43127 43214 43215 43310 43311 43359 43612 43613 43614 43615 65040 65041 65042 65043 65044 65045 65046 65049 65072 65093 65094 65097 65098 65099 65100 65104 65105 65106 65108 65109 65110 65111 65119 65120 65121 65128 65130 65131 65281 65282 65283 65285 65286 65287 65290 65292 65294 65295 65306 65307 65311 65312 65340 65377 65380 65381 65792 65793 66463 66512 67871 67903 68176 68177 68178 68179 68180 68181 68182 68183 68184 74864 74865 74866 74867))
+))
+
+(define titlecase-alist '(
+    (97 . 65) (98 . 66) (99 . 67) (100 . 68) (101 . 69)
+    (102 . 70) (103 . 71) (104 . 72) (105 . 73) (106 . 74)
+    (107 . 75) (108 . 76) (109 . 77) (110 . 78) (111 . 79)
+    (112 . 80) (113 . 81) (114 . 82) (115 . 83) (116 . 84)
+    (117 . 85) (118 . 86) (119 . 87) (120 . 88) (121 . 89)
+    (122 . 90) (181 . 924) (224 . 192) (225 . 193) (226 . 194)
+    (227 . 195) (228 . 196) (229 . 197) (230 . 198) (231 . 199)
+    (232 . 200) (233 . 201) (234 . 202) (235 . 203) (236 . 204)
+    (237 . 205) (238 . 206) (239 . 207) (240 . 208) (241 . 209)
+    (242 . 210) (243 . 211) (244 . 212) (245 . 213) (246 . 214)
+    (248 . 216) (249 . 217) (250 . 218) (251 . 219) (252 . 220)
+    (253 . 221) (254 . 222) (255 . 376) (257 . 256) (259 . 258)
+    (261 . 260) (263 . 262) (265 . 264) (267 . 266) (269 . 268)
+    (271 . 270) (273 . 272) (275 . 274) (277 . 276) (279 . 278)
+    (281 . 280) (283 . 282) (285 . 284) (287 . 286) (289 . 288)
+    (291 . 290) (293 . 292) (295 . 294) (297 . 296) (299 . 298)
+    (301 . 300) (303 . 302) (305 . 73) (307 . 306) (309 . 308)
+    (311 . 310) (314 . 313) (316 . 315) (318 . 317) (320 . 319)
+    (322 . 321) (324 . 323) (326 . 325) (328 . 327) (331 . 330)
+    (333 . 332) (335 . 334) (337 . 336) (339 . 338) (341 . 340)
+    (343 . 342) (345 . 344) (347 . 346) (349 . 348) (351 . 350)
+    (353 . 352) (355 . 354) (357 . 356) (359 . 358) (361 . 360)
+    (363 . 362) (365 . 364) (367 . 366) (369 . 368) (371 . 370)
+    (373 . 372) (375 . 374) (378 . 377) (380 . 379) (382 . 381)
+    (383 . 83) (384 . 579) (387 . 386) (389 . 388) (392 . 391)
+    (396 . 395) (402 . 401) (405 . 502) (409 . 408) (410 . 573)
+    (414 . 544) (417 . 416) (419 . 418) (421 . 420) (424 . 423)
+    (429 . 428) (432 . 431) (436 . 435) (438 . 437) (441 . 440)
+    (445 . 444) (447 . 503) (452 . 453) (453 . 453) (454 . 453)
+    (455 . 456) (456 . 456) (457 . 456) (458 . 459) (459 . 459)
+    (460 . 459) (462 . 461) (464 . 463) (466 . 465) (468 . 467)
+    (470 . 469) (472 . 471) (474 . 473) (476 . 475) (477 . 398)
+    (479 . 478) (481 . 480) (483 . 482) (485 . 484) (487 . 486)
+    (489 . 488) (491 . 490) (493 . 492) (495 . 494) (497 . 498)
+    (498 . 498) (499 . 498) (501 . 500) (505 . 504) (507 . 506)
+    (509 . 508) (511 . 510) (513 . 512) (515 . 514) (517 . 516)
+    (519 . 518) (521 . 520) (523 . 522) (525 . 524) (527 . 526)
+    (529 . 528) (531 . 530) (533 . 532) (535 . 534) (537 . 536)
+    (539 . 538) (541 . 540) (543 . 542) (547 . 546) (549 . 548)
+    (551 . 550) (553 . 552) (555 . 554) (557 . 556) (559 . 558)
+    (561 . 560) (563 . 562) (572 . 571) (578 . 577) (583 . 582)
+    (585 . 584) (587 . 586) (589 . 588) (591 . 590) (592 . 11375)
+    (593 . 11373) (595 . 385) (596 . 390) (598 . 393) (599 . 394)
+    (601 . 399) (603 . 400) (608 . 403) (611 . 404) (616 . 407)
+    (617 . 406) (619 . 11362) (623 . 412) (625 . 11374) (626 . 413)
+    (629 . 415) (637 . 11364) (640 . 422) (643 . 425) (648 . 430)
+    (649 . 580) (650 . 433) (651 . 434) (652 . 581) (658 . 439)
+    (837 . 921) (881 . 880) (883 . 882) (887 . 886) (891 . 1021)
+    (892 . 1022) (893 . 1023) (940 . 902) (941 . 904) (942 . 905)
+    (943 . 906) (945 . 913) (946 . 914) (947 . 915) (948 . 916)
+    (949 . 917) (950 . 918) (951 . 919) (952 . 920) (953 . 921)
+    (954 . 922) (955 . 923) (956 . 924) (957 . 925) (958 . 926)
+    (959 . 927) (960 . 928) (961 . 929) (962 . 931) (963 . 931)
+    (964 . 932) (965 . 933) (966 . 934) (967 . 935) (968 . 936)
+    (969 . 937) (970 . 938) (971 . 939) (972 . 908) (973 . 910)
+    (974 . 911) (976 . 914) (977 . 920) (981 . 934) (982 . 928)
+    (983 . 975) (985 . 984) (987 . 986) (989 . 988) (991 . 990)
+    (993 . 992) (995 . 994) (997 . 996) (999 . 998) (1001 . 1000)
+    (1003 . 1002) (1005 . 1004) (1007 . 1006) (1008 . 922) (1009 . 929)
+    (1010 . 1017) (1013 . 917) (1016 . 1015) (1019 . 1018) (1072 . 1040)
+    (1073 . 1041) (1074 . 1042) (1075 . 1043) (1076 . 1044) (1077 . 1045)
+    (1078 . 1046) (1079 . 1047) (1080 . 1048) (1081 . 1049) (1082 . 1050)
+    (1083 . 1051) (1084 . 1052) (1085 . 1053) (1086 . 1054) (1087 . 1055)
+    (1088 . 1056) (1089 . 1057) (1090 . 1058) (1091 . 1059) (1092 . 1060)
+    (1093 . 1061) (1094 . 1062) (1095 . 1063) (1096 . 1064) (1097 . 1065)
+    (1098 . 1066) (1099 . 1067) (1100 . 1068) (1101 . 1069) (1102 . 1070)
+    (1103 . 1071) (1104 . 1024) (1105 . 1025) (1106 . 1026) (1107 . 1027)
+    (1108 . 1028) (1109 . 1029) (1110 . 1030) (1111 . 1031) (1112 . 1032)
+    (1113 . 1033) (1114 . 1034) (1115 . 1035) (1116 . 1036) (1117 . 1037)
+    (1118 . 1038) (1119 . 1039) (1121 . 1120) (1123 . 1122) (1125 . 1124)
+    (1127 . 1126) (1129 . 1128) (1131 . 1130) (1133 . 1132) (1135 . 1134)
+    (1137 . 1136) (1139 . 1138) (1141 . 1140) (1143 . 1142) (1145 . 1144)
+    (1147 . 1146) (1149 . 1148) (1151 . 1150) (1153 . 1152) (1163 . 1162)
+    (1165 . 1164) (1167 . 1166) (1169 . 1168) (1171 . 1170) (1173 . 1172)
+    (1175 . 1174) (1177 . 1176) (1179 . 1178) (1181 . 1180) (1183 . 1182)
+    (1185 . 1184) (1187 . 1186) (1189 . 1188) (1191 . 1190) (1193 . 1192)
+    (1195 . 1194) (1197 . 1196) (1199 . 1198) (1201 . 1200) (1203 . 1202)
+    (1205 . 1204) (1207 . 1206) (1209 . 1208) (1211 . 1210) (1213 . 1212)
+    (1215 . 1214) (1218 . 1217) (1220 . 1219) (1222 . 1221) (1224 . 1223)
+    (1226 . 1225) (1228 . 1227) (1230 . 1229) (1231 . 1216) (1233 . 1232)
+    (1235 . 1234) (1237 . 1236) (1239 . 1238) (1241 . 1240) (1243 . 1242)
+    (1245 . 1244) (1247 . 1246) (1249 . 1248) (1251 . 1250) (1253 . 1252)
+    (1255 . 1254) (1257 . 1256) (1259 . 1258) (1261 . 1260) (1263 . 1262)
+    (1265 . 1264) (1267 . 1266) (1269 . 1268) (1271 . 1270) (1273 . 1272)
+    (1275 . 1274) (1277 . 1276) (1279 . 1278) (1281 . 1280) (1283 . 1282)
+    (1285 . 1284) (1287 . 1286) (1289 . 1288) (1291 . 1290) (1293 . 1292)
+    (1295 . 1294) (1297 . 1296) (1299 . 1298) (1301 . 1300) (1303 . 1302)
+    (1305 . 1304) (1307 . 1306) (1309 . 1308) (1311 . 1310) (1313 . 1312)
+    (1315 . 1314) (1377 . 1329) (1378 . 1330) (1379 . 1331) (1380 . 1332)
+    (1381 . 1333) (1382 . 1334) (1383 . 1335) (1384 . 1336) (1385 . 1337)
+    (1386 . 1338) (1387 . 1339) (1388 . 1340) (1389 . 1341) (1390 . 1342)
+    (1391 . 1343) (1392 . 1344) (1393 . 1345) (1394 . 1346) (1395 . 1347)
+    (1396 . 1348) (1397 . 1349) (1398 . 1350) (1399 . 1351) (1400 . 1352)
+    (1401 . 1353) (1402 . 1354) (1403 . 1355) (1404 . 1356) (1405 . 1357)
+    (1406 . 1358) (1407 . 1359) (1408 . 1360) (1409 . 1361) (1410 . 1362)
+    (1411 . 1363) (1412 . 1364) (1413 . 1365) (1414 . 1366) (7545 . 42877)
+    (7549 . 11363) (7681 . 7680) (7683 . 7682) (7685 . 7684) (7687 . 7686)
+    (7689 . 7688) (7691 . 7690) (7693 . 7692) (7695 . 7694) (7697 . 7696)
+    (7699 . 7698) (7701 . 7700) (7703 . 7702) (7705 . 7704) (7707 . 7706)
+    (7709 . 7708) (7711 . 7710) (7713 . 7712) (7715 . 7714) (7717 . 7716)
+    (7719 . 7718) (7721 . 7720) (7723 . 7722) (7725 . 7724) (7727 . 7726)
+    (7729 . 7728) (7731 . 7730) (7733 . 7732) (7735 . 7734) (7737 . 7736)
+    (7739 . 7738) (7741 . 7740) (7743 . 7742) (7745 . 7744) (7747 . 7746)
+    (7749 . 7748) (7751 . 7750) (7753 . 7752) (7755 . 7754) (7757 . 7756)
+    (7759 . 7758) (7761 . 7760) (7763 . 7762) (7765 . 7764) (7767 . 7766)
+    (7769 . 7768) (7771 . 7770) (7773 . 7772) (7775 . 7774) (7777 . 7776)
+    (7779 . 7778) (7781 . 7780) (7783 . 7782) (7785 . 7784) (7787 . 7786)
+    (7789 . 7788) (7791 . 7790) (7793 . 7792) (7795 . 7794) (7797 . 7796)
+    (7799 . 7798) (7801 . 7800) (7803 . 7802) (7805 . 7804) (7807 . 7806)
+    (7809 . 7808) (7811 . 7810) (7813 . 7812) (7815 . 7814) (7817 . 7816)
+    (7819 . 7818) (7821 . 7820) (7823 . 7822) (7825 . 7824) (7827 . 7826)
+    (7829 . 7828) (7835 . 7776) (7841 . 7840) (7843 . 7842) (7845 . 7844)
+    (7847 . 7846) (7849 . 7848) (7851 . 7850) (7853 . 7852) (7855 . 7854)
+    (7857 . 7856) (7859 . 7858) (7861 . 7860) (7863 . 7862) (7865 . 7864)
+    (7867 . 7866) (7869 . 7868) (7871 . 7870) (7873 . 7872) (7875 . 7874)
+    (7877 . 7876) (7879 . 7878) (7881 . 7880) (7883 . 7882) (7885 . 7884)
+    (7887 . 7886) (7889 . 7888) (7891 . 7890) (7893 . 7892) (7895 . 7894)
+    (7897 . 7896) (7899 . 7898) (7901 . 7900) (7903 . 7902) (7905 . 7904)
+    (7907 . 7906) (7909 . 7908) (7911 . 7910) (7913 . 7912) (7915 . 7914)
+    (7917 . 7916) (7919 . 7918) (7921 . 7920) (7923 . 7922) (7925 . 7924)
+    (7927 . 7926) (7929 . 7928) (7931 . 7930) (7933 . 7932) (7935 . 7934)
+    (7936 . 7944) (7937 . 7945) (7938 . 7946) (7939 . 7947) (7940 . 7948)
+    (7941 . 7949) (7942 . 7950) (7943 . 7951) (7952 . 7960) (7953 . 7961)
+    (7954 . 7962) (7955 . 7963) (7956 . 7964) (7957 . 7965) (7968 . 7976)
+    (7969 . 7977) (7970 . 7978) (7971 . 7979) (7972 . 7980) (7973 . 7981)
+    (7974 . 7982) (7975 . 7983) (7984 . 7992) (7985 . 7993) (7986 . 7994)
+    (7987 . 7995) (7988 . 7996) (7989 . 7997) (7990 . 7998) (7991 . 7999)
+    (8000 . 8008) (8001 . 8009) (8002 . 8010) (8003 . 8011) (8004 . 8012)
+    (8005 . 8013) (8017 . 8025) (8019 . 8027) (8021 . 8029) (8023 . 8031)
+    (8032 . 8040) (8033 . 8041) (8034 . 8042) (8035 . 8043) (8036 . 8044)
+    (8037 . 8045) (8038 . 8046) (8039 . 8047) (8048 . 8122) (8049 . 8123)
+    (8050 . 8136) (8051 . 8137) (8052 . 8138) (8053 . 8139) (8054 . 8154)
+    (8055 . 8155) (8056 . 8184) (8057 . 8185) (8058 . 8170) (8059 . 8171)
+    (8060 . 8186) (8061 . 8187) (8064 . 8072) (8065 . 8073) (8066 . 8074)
+    (8067 . 8075) (8068 . 8076) (8069 . 8077) (8070 . 8078) (8071 . 8079)
+    (8080 . 8088) (8081 . 8089) (8082 . 8090) (8083 . 8091) (8084 . 8092)
+    (8085 . 8093) (8086 . 8094) (8087 . 8095) (8096 . 8104) (8097 . 8105)
+    (8098 . 8106) (8099 . 8107) (8100 . 8108) (8101 . 8109) (8102 . 8110)
+    (8103 . 8111) (8112 . 8120) (8113 . 8121) (8115 . 8124) (8126 . 921)
+    (8131 . 8140) (8144 . 8152) (8145 . 8153) (8160 . 8168) (8161 . 8169)
+    (8165 . 8172) (8179 . 8188) (8526 . 8498) (8560 . 8544) (8561 . 8545)
+    (8562 . 8546) (8563 . 8547) (8564 . 8548) (8565 . 8549) (8566 . 8550)
+    (8567 . 8551) (8568 . 8552) (8569 . 8553) (8570 . 8554) (8571 . 8555)
+    (8572 . 8556) (8573 . 8557) (8574 . 8558) (8575 . 8559) (8580 . 8579)
+    (9424 . 9398) (9425 . 9399) (9426 . 9400) (9427 . 9401) (9428 . 9402)
+    (9429 . 9403) (9430 . 9404) (9431 . 9405) (9432 . 9406) (9433 . 9407)
+    (9434 . 9408) (9435 . 9409) (9436 . 9410) (9437 . 9411) (9438 . 9412)
+    (9439 . 9413) (9440 . 9414) (9441 . 9415) (9442 . 9416) (9443 . 9417)
+    (9444 . 9418) (9445 . 9419) (9446 . 9420) (9447 . 9421) (9448 . 9422)
+    (9449 . 9423) (11312 . 11264) (11313 . 11265) (11314 . 11266) (11315 . 11267)
+    (11316 . 11268) (11317 . 11269) (11318 . 11270) (11319 . 11271) (11320 . 11272)
+    (11321 . 11273) (11322 . 11274) (11323 . 11275) (11324 . 11276) (11325 . 11277)
+    (11326 . 11278) (11327 . 11279) (11328 . 11280) (11329 . 11281) (11330 . 11282)
+    (11331 . 11283) (11332 . 11284) (11333 . 11285) (11334 . 11286) (11335 . 11287)
+    (11336 . 11288) (11337 . 11289) (11338 . 11290) (11339 . 11291) (11340 . 11292)
+    (11341 . 11293) (11342 . 11294) (11343 . 11295) (11344 . 11296) (11345 . 11297)
+    (11346 . 11298) (11347 . 11299) (11348 . 11300) (11349 . 11301) (11350 . 11302)
+    (11351 . 11303) (11352 . 11304) (11353 . 11305) (11354 . 11306) (11355 . 11307)
+    (11356 . 11308) (11357 . 11309) (11358 . 11310) (11361 . 11360) (11365 . 570)
+    (11366 . 574) (11368 . 11367) (11370 . 11369) (11372 . 11371) (11379 . 11378)
+    (11382 . 11381) (11393 . 11392) (11395 . 11394) (11397 . 11396) (11399 . 11398)
+    (11401 . 11400) (11403 . 11402) (11405 . 11404) (11407 . 11406) (11409 . 11408)
+    (11411 . 11410) (11413 . 11412) (11415 . 11414) (11417 . 11416) (11419 . 11418)
+    (11421 . 11420) (11423 . 11422) (11425 . 11424) (11427 . 11426) (11429 . 11428)
+    (11431 . 11430) (11433 . 11432) (11435 . 11434) (11437 . 11436) (11439 . 11438)
+    (11441 . 11440) (11443 . 11442) (11445 . 11444) (11447 . 11446) (11449 . 11448)
+    (11451 . 11450) (11453 . 11452) (11455 . 11454) (11457 . 11456) (11459 . 11458)
+    (11461 . 11460) (11463 . 11462) (11465 . 11464) (11467 . 11466) (11469 . 11468)
+    (11471 . 11470) (11473 . 11472) (11475 . 11474) (11477 . 11476) (11479 . 11478)
+    (11481 . 11480) (11483 . 11482) (11485 . 11484) (11487 . 11486) (11489 . 11488)
+    (11491 . 11490) (11520 . 4256) (11521 . 4257) (11522 . 4258) (11523 . 4259)
+    (11524 . 4260) (11525 . 4261) (11526 . 4262) (11527 . 4263) (11528 . 4264)
+    (11529 . 4265) (11530 . 4266) (11531 . 4267) (11532 . 4268) (11533 . 4269)
+    (11534 . 4270) (11535 . 4271) (11536 . 4272) (11537 . 4273) (11538 . 4274)
+    (11539 . 4275) (11540 . 4276) (11541 . 4277) (11542 . 4278) (11543 . 4279)
+    (11544 . 4280) (11545 . 4281) (11546 . 4282) (11547 . 4283) (11548 . 4284)
+    (11549 . 4285) (11550 . 4286) (11551 . 4287) (11552 . 4288) (11553 . 4289)
+    (11554 . 4290) (11555 . 4291) (11556 . 4292) (11557 . 4293) (42561 . 42560)
+    (42563 . 42562) (42565 . 42564) (42567 . 42566) (42569 . 42568) (42571 . 42570)
+    (42573 . 42572) (42575 . 42574) (42577 . 42576) (42579 . 42578) (42581 . 42580)
+    (42583 . 42582) (42585 . 42584) (42587 . 42586) (42589 . 42588) (42591 . 42590)
+    (42595 . 42594) (42597 . 42596) (42599 . 42598) (42601 . 42600) (42603 . 42602)
+    (42605 . 42604) (42625 . 42624) (42627 . 42626) (42629 . 42628) (42631 . 42630)
+    (42633 . 42632) (42635 . 42634) (42637 . 42636) (42639 . 42638) (42641 . 42640)
+    (42643 . 42642) (42645 . 42644) (42647 . 42646) (42787 . 42786) (42789 . 42788)
+    (42791 . 42790) (42793 . 42792) (42795 . 42794) (42797 . 42796) (42799 . 42798)
+    (42803 . 42802) (42805 . 42804) (42807 . 42806) (42809 . 42808) (42811 . 42810)
+    (42813 . 42812) (42815 . 42814) (42817 . 42816) (42819 . 42818) (42821 . 42820)
+    (42823 . 42822) (42825 . 42824) (42827 . 42826) (42829 . 42828) (42831 . 42830)
+    (42833 . 42832) (42835 . 42834) (42837 . 42836) (42839 . 42838) (42841 . 42840)
+    (42843 . 42842) (42845 . 42844) (42847 . 42846) (42849 . 42848) (42851 . 42850)
+    (42853 . 42852) (42855 . 42854) (42857 . 42856) (42859 . 42858) (42861 . 42860)
+    (42863 . 42862) (42874 . 42873) (42876 . 42875) (42879 . 42878) (42881 . 42880)
+    (42883 . 42882) (42885 . 42884) (42887 . 42886) (42892 . 42891) (65345 . 65313)
+    (65346 . 65314) (65347 . 65315) (65348 . 65316) (65349 . 65317) (65350 . 65318)
+    (65351 . 65319) (65352 . 65320) (65353 . 65321) (65354 . 65322) (65355 . 65323)
+    (65356 . 65324) (65357 . 65325) (65358 . 65326) (65359 . 65327) (65360 . 65328)
+    (65361 . 65329) (65362 . 65330) (65363 . 65331) (65364 . 65332) (65365 . 65333)
+    (65366 . 65334) (65367 . 65335) (65368 . 65336) (65369 . 65337) (65370 . 65338)
+    (66600 . 66560) (66601 . 66561) (66602 . 66562) (66603 . 66563) (66604 . 66564)
+    (66605 . 66565) (66606 . 66566) (66607 . 66567) (66608 . 66568) (66609 . 66569)
+    (66610 . 66570) (66611 . 66571) (66612 . 66572) (66613 . 66573) (66614 . 66574)
+    (66615 . 66575) (66616 . 66576) (66617 . 66577) (66618 . 66578) (66619 . 66579)
+    (66620 . 66580) (66621 . 66581) (66622 . 66582) (66623 . 66583) (66624 . 66584)
+    (66625 . 66585) (66626 . 66586) (66627 . 66587) (66628 . 66588) (66629 . 66589)
+    (66630 . 66590) (66631 . 66591) (66632 . 66592) (66633 . 66593) (66634 . 66594)
+    (66635 . 66595) (66636 . 66596) (66637 . 66597) (66638 . 66598) (66639 . 66599)))
+(define downcase-alist '(
+    (65 . 97) (66 . 98) (67 . 99) (68 . 100) (69 . 101)
+    (70 . 102) (71 . 103) (72 . 104) (73 . 105) (74 . 106)
+    (75 . 107) (76 . 108) (77 . 109) (78 . 110) (79 . 111)
+    (80 . 112) (81 . 113) (82 . 114) (83 . 115) (84 . 116)
+    (85 . 117) (86 . 118) (87 . 119) (88 . 120) (89 . 121)
+    (90 . 122) (192 . 224) (193 . 225) (194 . 226) (195 . 227)
+    (196 . 228) (197 . 229) (198 . 230) (199 . 231) (200 . 232)
+    (201 . 233) (202 . 234) (203 . 235) (204 . 236) (205 . 237)
+    (206 . 238) (207 . 239) (208 . 240) (209 . 241) (210 . 242)
+    (211 . 243) (212 . 244) (213 . 245) (214 . 246) (216 . 248)
+    (217 . 249) (218 . 250) (219 . 251) (220 . 252) (221 . 253)
+    (222 . 254) (256 . 257) (258 . 259) (260 . 261) (262 . 263)
+    (264 . 265) (266 . 267) (268 . 269) (270 . 271) (272 . 273)
+    (274 . 275) (276 . 277) (278 . 279) (280 . 281) (282 . 283)
+    (284 . 285) (286 . 287) (288 . 289) (290 . 291) (292 . 293)
+    (294 . 295) (296 . 297) (298 . 299) (300 . 301) (302 . 303)
+    (304 . 105) (306 . 307) (308 . 309) (310 . 311) (313 . 314)
+    (315 . 316) (317 . 318) (319 . 320) (321 . 322) (323 . 324)
+    (325 . 326) (327 . 328) (330 . 331) (332 . 333) (334 . 335)
+    (336 . 337) (338 . 339) (340 . 341) (342 . 343) (344 . 345)
+    (346 . 347) (348 . 349) (350 . 351) (352 . 353) (354 . 355)
+    (356 . 357) (358 . 359) (360 . 361) (362 . 363) (364 . 365)
+    (366 . 367) (368 . 369) (370 . 371) (372 . 373) (374 . 375)
+    (376 . 255) (377 . 378) (379 . 380) (381 . 382) (385 . 595)
+    (386 . 387) (388 . 389) (390 . 596) (391 . 392) (393 . 598)
+    (394 . 599) (395 . 396) (398 . 477) (399 . 601) (400 . 603)
+    (401 . 402) (403 . 608) (404 . 611) (406 . 617) (407 . 616)
+    (408 . 409) (412 . 623) (413 . 626) (415 . 629) (416 . 417)
+    (418 . 419) (420 . 421) (422 . 640) (423 . 424) (425 . 643)
+    (428 . 429) (430 . 648) (431 . 432) (433 . 650) (434 . 651)
+    (435 . 436) (437 . 438) (439 . 658) (440 . 441) (444 . 445)
+    (452 . 454) (453 . 454) (455 . 457) (456 . 457) (458 . 460)
+    (459 . 460) (461 . 462) (463 . 464) (465 . 466) (467 . 468)
+    (469 . 470) (471 . 472) (473 . 474) (475 . 476) (478 . 479)
+    (480 . 481) (482 . 483) (484 . 485) (486 . 487) (488 . 489)
+    (490 . 491) (492 . 493) (494 . 495) (497 . 499) (498 . 499)
+    (500 . 501) (502 . 405) (503 . 447) (504 . 505) (506 . 507)
+    (508 . 509) (510 . 511) (512 . 513) (514 . 515) (516 . 517)
+    (518 . 519) (520 . 521) (522 . 523) (524 . 525) (526 . 527)
+    (528 . 529) (530 . 531) (532 . 533) (534 . 535) (536 . 537)
+    (538 . 539) (540 . 541) (542 . 543) (544 . 414) (546 . 547)
+    (548 . 549) (550 . 551) (552 . 553) (554 . 555) (556 . 557)
+    (558 . 559) (560 . 561) (562 . 563) (570 . 11365) (571 . 572)
+    (573 . 410) (574 . 11366) (577 . 578) (579 . 384) (580 . 649)
+    (581 . 652) (582 . 583) (584 . 585) (586 . 587) (588 . 589)
+    (590 . 591) (880 . 881) (882 . 883) (886 . 887) (902 . 940)
+    (904 . 941) (905 . 942) (906 . 943) (908 . 972) (910 . 973)
+    (911 . 974) (913 . 945) (914 . 946) (915 . 947) (916 . 948)
+    (917 . 949) (918 . 950) (919 . 951) (920 . 952) (921 . 953)
+    (922 . 954) (923 . 955) (924 . 956) (925 . 957) (926 . 958)
+    (927 . 959) (928 . 960) (929 . 961) (931 . 963) (932 . 964)
+    (933 . 965) (934 . 966) (935 . 967) (936 . 968) (937 . 969)
+    (938 . 970) (939 . 971) (975 . 983) (984 . 985) (986 . 987)
+    (988 . 989) (990 . 991) (992 . 993) (994 . 995) (996 . 997)
+    (998 . 999) (1000 . 1001) (1002 . 1003) (1004 . 1005) (1006 . 1007)
+    (1012 . 952) (1015 . 1016) (1017 . 1010) (1018 . 1019) (1021 . 891)
+    (1022 . 892) (1023 . 893) (1024 . 1104) (1025 . 1105) (1026 . 1106)
+    (1027 . 1107) (1028 . 1108) (1029 . 1109) (1030 . 1110) (1031 . 1111)
+    (1032 . 1112) (1033 . 1113) (1034 . 1114) (1035 . 1115) (1036 . 1116)
+    (1037 . 1117) (1038 . 1118) (1039 . 1119) (1040 . 1072) (1041 . 1073)
+    (1042 . 1074) (1043 . 1075) (1044 . 1076) (1045 . 1077) (1046 . 1078)
+    (1047 . 1079) (1048 . 1080) (1049 . 1081) (1050 . 1082) (1051 . 1083)
+    (1052 . 1084) (1053 . 1085) (1054 . 1086) (1055 . 1087) (1056 . 1088)
+    (1057 . 1089) (1058 . 1090) (1059 . 1091) (1060 . 1092) (1061 . 1093)
+    (1062 . 1094) (1063 . 1095) (1064 . 1096) (1065 . 1097) (1066 . 1098)
+    (1067 . 1099) (1068 . 1100) (1069 . 1101) (1070 . 1102) (1071 . 1103)
+    (1120 . 1121) (1122 . 1123) (1124 . 1125) (1126 . 1127) (1128 . 1129)
+    (1130 . 1131) (1132 . 1133) (1134 . 1135) (1136 . 1137) (1138 . 1139)
+    (1140 . 1141) (1142 . 1143) (1144 . 1145) (1146 . 1147) (1148 . 1149)
+    (1150 . 1151) (1152 . 1153) (1162 . 1163) (1164 . 1165) (1166 . 1167)
+    (1168 . 1169) (1170 . 1171) (1172 . 1173) (1174 . 1175) (1176 . 1177)
+    (1178 . 1179) (1180 . 1181) (1182 . 1183) (1184 . 1185) (1186 . 1187)
+    (1188 . 1189) (1190 . 1191) (1192 . 1193) (1194 . 1195) (1196 . 1197)
+    (1198 . 1199) (1200 . 1201) (1202 . 1203) (1204 . 1205) (1206 . 1207)
+    (1208 . 1209) (1210 . 1211) (1212 . 1213) (1214 . 1215) (1216 . 1231)
+    (1217 . 1218) (1219 . 1220) (1221 . 1222) (1223 . 1224) (1225 . 1226)
+    (1227 . 1228) (1229 . 1230) (1232 . 1233) (1234 . 1235) (1236 . 1237)
+    (1238 . 1239) (1240 . 1241) (1242 . 1243) (1244 . 1245) (1246 . 1247)
+    (1248 . 1249) (1250 . 1251) (1252 . 1253) (1254 . 1255) (1256 . 1257)
+    (1258 . 1259) (1260 . 1261) (1262 . 1263) (1264 . 1265) (1266 . 1267)
+    (1268 . 1269) (1270 . 1271) (1272 . 1273) (1274 . 1275) (1276 . 1277)
+    (1278 . 1279) (1280 . 1281) (1282 . 1283) (1284 . 1285) (1286 . 1287)
+    (1288 . 1289) (1290 . 1291) (1292 . 1293) (1294 . 1295) (1296 . 1297)
+    (1298 . 1299) (1300 . 1301) (1302 . 1303) (1304 . 1305) (1306 . 1307)
+    (1308 . 1309) (1310 . 1311) (1312 . 1313) (1314 . 1315) (1329 . 1377)
+    (1330 . 1378) (1331 . 1379) (1332 . 1380) (1333 . 1381) (1334 . 1382)
+    (1335 . 1383) (1336 . 1384) (1337 . 1385) (1338 . 1386) (1339 . 1387)
+    (1340 . 1388) (1341 . 1389) (1342 . 1390) (1343 . 1391) (1344 . 1392)
+    (1345 . 1393) (1346 . 1394) (1347 . 1395) (1348 . 1396) (1349 . 1397)
+    (1350 . 1398) (1351 . 1399) (1352 . 1400) (1353 . 1401) (1354 . 1402)
+    (1355 . 1403) (1356 . 1404) (1357 . 1405) (1358 . 1406) (1359 . 1407)
+    (1360 . 1408) (1361 . 1409) (1362 . 1410) (1363 . 1411) (1364 . 1412)
+    (1365 . 1413) (1366 . 1414) (4256 . 11520) (4257 . 11521) (4258 . 11522)
+    (4259 . 11523) (4260 . 11524) (4261 . 11525) (4262 . 11526) (4263 . 11527)
+    (4264 . 11528) (4265 . 11529) (4266 . 11530) (4267 . 11531) (4268 . 11532)
+    (4269 . 11533) (4270 . 11534) (4271 . 11535) (4272 . 11536) (4273 . 11537)
+    (4274 . 11538) (4275 . 11539) (4276 . 11540) (4277 . 11541) (4278 . 11542)
+    (4279 . 11543) (4280 . 11544) (4281 . 11545) (4282 . 11546) (4283 . 11547)
+    (4284 . 11548) (4285 . 11549) (4286 . 11550) (4287 . 11551) (4288 . 11552)
+    (4289 . 11553) (4290 . 11554) (4291 . 11555) (4292 . 11556) (4293 . 11557)
+    (7680 . 7681) (7682 . 7683) (7684 . 7685) (7686 . 7687) (7688 . 7689)
+    (7690 . 7691) (7692 . 7693) (7694 . 7695) (7696 . 7697) (7698 . 7699)
+    (7700 . 7701) (7702 . 7703) (7704 . 7705) (7706 . 7707) (7708 . 7709)
+    (7710 . 7711) (7712 . 7713) (7714 . 7715) (7716 . 7717) (7718 . 7719)
+    (7720 . 7721) (7722 . 7723) (7724 . 7725) (7726 . 7727) (7728 . 7729)
+    (7730 . 7731) (7732 . 7733) (7734 . 7735) (7736 . 7737) (7738 . 7739)
+    (7740 . 7741) (7742 . 7743) (7744 . 7745) (7746 . 7747) (7748 . 7749)
+    (7750 . 7751) (7752 . 7753) (7754 . 7755) (7756 . 7757) (7758 . 7759)
+    (7760 . 7761) (7762 . 7763) (7764 . 7765) (7766 . 7767) (7768 . 7769)
+    (7770 . 7771) (7772 . 7773) (7774 . 7775) (7776 . 7777) (7778 . 7779)
+    (7780 . 7781) (7782 . 7783) (7784 . 7785) (7786 . 7787) (7788 . 7789)
+    (7790 . 7791) (7792 . 7793) (7794 . 7795) (7796 . 7797) (7798 . 7799)
+    (7800 . 7801) (7802 . 7803) (7804 . 7805) (7806 . 7807) (7808 . 7809)
+    (7810 . 7811) (7812 . 7813) (7814 . 7815) (7816 . 7817) (7818 . 7819)
+    (7820 . 7821) (7822 . 7823) (7824 . 7825) (7826 . 7827) (7828 . 7829)
+    (7838 . 223) (7840 . 7841) (7842 . 7843) (7844 . 7845) (7846 . 7847)
+    (7848 . 7849) (7850 . 7851) (7852 . 7853) (7854 . 7855) (7856 . 7857)
+    (7858 . 7859) (7860 . 7861) (7862 . 7863) (7864 . 7865) (7866 . 7867)
+    (7868 . 7869) (7870 . 7871) (7872 . 7873) (7874 . 7875) (7876 . 7877)
+    (7878 . 7879) (7880 . 7881) (7882 . 7883) (7884 . 7885) (7886 . 7887)
+    (7888 . 7889) (7890 . 7891) (7892 . 7893) (7894 . 7895) (7896 . 7897)
+    (7898 . 7899) (7900 . 7901) (7902 . 7903) (7904 . 7905) (7906 . 7907)
+    (7908 . 7909) (7910 . 7911) (7912 . 7913) (7914 . 7915) (7916 . 7917)
+    (7918 . 7919) (7920 . 7921) (7922 . 7923) (7924 . 7925) (7926 . 7927)
+    (7928 . 7929) (7930 . 7931) (7932 . 7933) (7934 . 7935) (7944 . 7936)
+    (7945 . 7937) (7946 . 7938) (7947 . 7939) (7948 . 7940) (7949 . 7941)
+    (7950 . 7942) (7951 . 7943) (7960 . 7952) (7961 . 7953) (7962 . 7954)
+    (7963 . 7955) (7964 . 7956) (7965 . 7957) (7976 . 7968) (7977 . 7969)
+    (7978 . 7970) (7979 . 7971) (7980 . 7972) (7981 . 7973) (7982 . 7974)
+    (7983 . 7975) (7992 . 7984) (7993 . 7985) (7994 . 7986) (7995 . 7987)
+    (7996 . 7988) (7997 . 7989) (7998 . 7990) (7999 . 7991) (8008 . 8000)
+    (8009 . 8001) (8010 . 8002) (8011 . 8003) (8012 . 8004) (8013 . 8005)
+    (8025 . 8017) (8027 . 8019) (8029 . 8021) (8031 . 8023) (8040 . 8032)
+    (8041 . 8033) (8042 . 8034) (8043 . 8035) (8044 . 8036) (8045 . 8037)
+    (8046 . 8038) (8047 . 8039) (8072 . 8064) (8073 . 8065) (8074 . 8066)
+    (8075 . 8067) (8076 . 8068) (8077 . 8069) (8078 . 8070) (8079 . 8071)
+    (8088 . 8080) (8089 . 8081) (8090 . 8082) (8091 . 8083) (8092 . 8084)
+    (8093 . 8085) (8094 . 8086) (8095 . 8087) (8104 . 8096) (8105 . 8097)
+    (8106 . 8098) (8107 . 8099) (8108 . 8100) (8109 . 8101) (8110 . 8102)
+    (8111 . 8103) (8120 . 8112) (8121 . 8113) (8122 . 8048) (8123 . 8049)
+    (8124 . 8115) (8136 . 8050) (8137 . 8051) (8138 . 8052) (8139 . 8053)
+    (8140 . 8131) (8152 . 8144) (8153 . 8145) (8154 . 8054) (8155 . 8055)
+    (8168 . 8160) (8169 . 8161) (8170 . 8058) (8171 . 8059) (8172 . 8165)
+    (8184 . 8056) (8185 . 8057) (8186 . 8060) (8187 . 8061) (8188 . 8179)
+    (8486 . 969) (8490 . 107) (8491 . 229) (8498 . 8526) (8544 . 8560)
+    (8545 . 8561) (8546 . 8562) (8547 . 8563) (8548 . 8564) (8549 . 8565)
+    (8550 . 8566) (8551 . 8567) (8552 . 8568) (8553 . 8569) (8554 . 8570)
+    (8555 . 8571) (8556 . 8572) (8557 . 8573) (8558 . 8574) (8559 . 8575)
+    (8579 . 8580) (9398 . 9424) (9399 . 9425) (9400 . 9426) (9401 . 9427)
+    (9402 . 9428) (9403 . 9429) (9404 . 9430) (9405 . 9431) (9406 . 9432)
+    (9407 . 9433) (9408 . 9434) (9409 . 9435) (9410 . 9436) (9411 . 9437)
+    (9412 . 9438) (9413 . 9439) (9414 . 9440) (9415 . 9441) (9416 . 9442)
+    (9417 . 9443) (9418 . 9444) (9419 . 9445) (9420 . 9446) (9421 . 9447)
+    (9422 . 9448) (9423 . 9449) (11264 . 11312) (11265 . 11313) (11266 . 11314)
+    (11267 . 11315) (11268 . 11316) (11269 . 11317) (11270 . 11318) (11271 . 11319)
+    (11272 . 11320) (11273 . 11321) (11274 . 11322) (11275 . 11323) (11276 . 11324)
+    (11277 . 11325) (11278 . 11326) (11279 . 11327) (11280 . 11328) (11281 . 11329)
+    (11282 . 11330) (11283 . 11331) (11284 . 11332) (11285 . 11333) (11286 . 11334)
+    (11287 . 11335) (11288 . 11336) (11289 . 11337) (11290 . 11338) (11291 . 11339)
+    (11292 . 11340) (11293 . 11341) (11294 . 11342) (11295 . 11343) (11296 . 11344)
+    (11297 . 11345) (11298 . 11346) (11299 . 11347) (11300 . 11348) (11301 . 11349)
+    (11302 . 11350) (11303 . 11351) (11304 . 11352) (11305 . 11353) (11306 . 11354)
+    (11307 . 11355) (11308 . 11356) (11309 . 11357) (11310 . 11358) (11360 . 11361)
+    (11362 . 619) (11363 . 7549) (11364 . 637) (11367 . 11368) (11369 . 11370)
+    (11371 . 11372) (11373 . 593) (11374 . 625) (11375 . 592) (11378 . 11379)
+    (11381 . 11382) (11392 . 11393) (11394 . 11395) (11396 . 11397) (11398 . 11399)
+    (11400 . 11401) (11402 . 11403) (11404 . 11405) (11406 . 11407) (11408 . 11409)
+    (11410 . 11411) (11412 . 11413) (11414 . 11415) (11416 . 11417) (11418 . 11419)
+    (11420 . 11421) (11422 . 11423) (11424 . 11425) (11426 . 11427) (11428 . 11429)
+    (11430 . 11431) (11432 . 11433) (11434 . 11435) (11436 . 11437) (11438 . 11439)
+    (11440 . 11441) (11442 . 11443) (11444 . 11445) (11446 . 11447) (11448 . 11449)
+    (11450 . 11451) (11452 . 11453) (11454 . 11455) (11456 . 11457) (11458 . 11459)
+    (11460 . 11461) (11462 . 11463) (11464 . 11465) (11466 . 11467) (11468 . 11469)
+    (11470 . 11471) (11472 . 11473) (11474 . 11475) (11476 . 11477) (11478 . 11479)
+    (11480 . 11481) (11482 . 11483) (11484 . 11485) (11486 . 11487) (11488 . 11489)
+    (11490 . 11491) (42560 . 42561) (42562 . 42563) (42564 . 42565) (42566 . 42567)
+    (42568 . 42569) (42570 . 42571) (42572 . 42573) (42574 . 42575) (42576 . 42577)
+    (42578 . 42579) (42580 . 42581) (42582 . 42583) (42584 . 42585) (42586 . 42587)
+    (42588 . 42589) (42590 . 42591) (42594 . 42595) (42596 . 42597) (42598 . 42599)
+    (42600 . 42601) (42602 . 42603) (42604 . 42605) (42624 . 42625) (42626 . 42627)
+    (42628 . 42629) (42630 . 42631) (42632 . 42633) (42634 . 42635) (42636 . 42637)
+    (42638 . 42639) (42640 . 42641) (42642 . 42643) (42644 . 42645) (42646 . 42647)
+    (42786 . 42787) (42788 . 42789) (42790 . 42791) (42792 . 42793) (42794 . 42795)
+    (42796 . 42797) (42798 . 42799) (42802 . 42803) (42804 . 42805) (42806 . 42807)
+    (42808 . 42809) (42810 . 42811) (42812 . 42813) (42814 . 42815) (42816 . 42817)
+    (42818 . 42819) (42820 . 42821) (42822 . 42823) (42824 . 42825) (42826 . 42827)
+    (42828 . 42829) (42830 . 42831) (42832 . 42833) (42834 . 42835) (42836 . 42837)
+    (42838 . 42839) (42840 . 42841) (42842 . 42843) (42844 . 42845) (42846 . 42847)
+    (42848 . 42849) (42850 . 42851) (42852 . 42853) (42854 . 42855) (42856 . 42857)
+    (42858 . 42859) (42860 . 42861) (42862 . 42863) (42873 . 42874) (42875 . 42876)
+    (42877 . 7545) (42878 . 42879) (42880 . 42881) (42882 . 42883) (42884 . 42885)
+    (42886 . 42887) (42891 . 42892) (65313 . 65345) (65314 . 65346) (65315 . 65347)
+    (65316 . 65348) (65317 . 65349) (65318 . 65350) (65319 . 65351) (65320 . 65352)
+    (65321 . 65353) (65322 . 65354) (65323 . 65355) (65324 . 65356) (65325 . 65357)
+    (65326 . 65358) (65327 . 65359) (65328 . 65360) (65329 . 65361) (65330 . 65362)
+    (65331 . 65363) (65332 . 65364) (65333 . 65365) (65334 . 65366) (65335 . 65367)
+    (65336 . 65368) (65337 . 65369) (65338 . 65370) (66560 . 66600) (66561 . 66601)
+    (66562 . 66602) (66563 . 66603) (66564 . 66604) (66565 . 66605) (66566 . 66606)
+    (66567 . 66607) (66568 . 66608) (66569 . 66609) (66570 . 66610) (66571 . 66611)
+    (66572 . 66612) (66573 . 66613) (66574 . 66614) (66575 . 66615) (66576 . 66616)
+    (66577 . 66617) (66578 . 66618) (66579 . 66619) (66580 . 66620) (66581 . 66621)
+    (66582 . 66622) (66583 . 66623) (66584 . 66624) (66585 . 66625) (66586 . 66626)
+    (66587 . 66627) (66588 . 66628) (66589 . 66629) (66590 . 66630) (66591 . 66631)
+    (66592 . 66632) (66593 . 66633) (66594 . 66634) (66595 . 66635) (66596 . 66636)
+    (66597 . 66637) (66598 . 66638) (66599 . 66639)))
+(define upcase-alist '(
+    (97 . 65) (98 . 66) (99 . 67) (100 . 68) (101 . 69)
+    (102 . 70) (103 . 71) (104 . 72) (105 . 73) (106 . 74)
+    (107 . 75) (108 . 76) (109 . 77) (110 . 78) (111 . 79)
+    (112 . 80) (113 . 81) (114 . 82) (115 . 83) (116 . 84)
+    (117 . 85) (118 . 86) (119 . 87) (120 . 88) (121 . 89)
+    (122 . 90) (181 . 924) (224 . 192) (225 . 193) (226 . 194)
+    (227 . 195) (228 . 196) (229 . 197) (230 . 198) (231 . 199)
+    (232 . 200) (233 . 201) (234 . 202) (235 . 203) (236 . 204)
+    (237 . 205) (238 . 206) (239 . 207) (240 . 208) (241 . 209)
+    (242 . 210) (243 . 211) (244 . 212) (245 . 213) (246 . 214)
+    (248 . 216) (249 . 217) (250 . 218) (251 . 219) (252 . 220)
+    (253 . 221) (254 . 222) (255 . 376) (257 . 256) (259 . 258)
+    (261 . 260) (263 . 262) (265 . 264) (267 . 266) (269 . 268)
+    (271 . 270) (273 . 272) (275 . 274) (277 . 276) (279 . 278)
+    (281 . 280) (283 . 282) (285 . 284) (287 . 286) (289 . 288)
+    (291 . 290) (293 . 292) (295 . 294) (297 . 296) (299 . 298)
+    (301 . 300) (303 . 302) (305 . 73) (307 . 306) (309 . 308)
+    (311 . 310) (314 . 313) (316 . 315) (318 . 317) (320 . 319)
+    (322 . 321) (324 . 323) (326 . 325) (328 . 327) (331 . 330)
+    (333 . 332) (335 . 334) (337 . 336) (339 . 338) (341 . 340)
+    (343 . 342) (345 . 344) (347 . 346) (349 . 348) (351 . 350)
+    (353 . 352) (355 . 354) (357 . 356) (359 . 358) (361 . 360)
+    (363 . 362) (365 . 364) (367 . 366) (369 . 368) (371 . 370)
+    (373 . 372) (375 . 374) (378 . 377) (380 . 379) (382 . 381)
+    (383 . 83) (384 . 579) (387 . 386) (389 . 388) (392 . 391)
+    (396 . 395) (402 . 401) (405 . 502) (409 . 408) (410 . 573)
+    (414 . 544) (417 . 416) (419 . 418) (421 . 420) (424 . 423)
+    (429 . 428) (432 . 431) (436 . 435) (438 . 437) (441 . 440)
+    (445 . 444) (447 . 503) (453 . 452) (454 . 452) (456 . 455)
+    (457 . 455) (459 . 458) (460 . 458) (462 . 461) (464 . 463)
+    (466 . 465) (468 . 467) (470 . 469) (472 . 471) (474 . 473)
+    (476 . 475) (477 . 398) (479 . 478) (481 . 480) (483 . 482)
+    (485 . 484) (487 . 486) (489 . 488) (491 . 490) (493 . 492)
+    (495 . 494) (498 . 497) (499 . 497) (501 . 500) (505 . 504)
+    (507 . 506) (509 . 508) (511 . 510) (513 . 512) (515 . 514)
+    (517 . 516) (519 . 518) (521 . 520) (523 . 522) (525 . 524)
+    (527 . 526) (529 . 528) (531 . 530) (533 . 532) (535 . 534)
+    (537 . 536) (539 . 538) (541 . 540) (543 . 542) (547 . 546)
+    (549 . 548) (551 . 550) (553 . 552) (555 . 554) (557 . 556)
+    (559 . 558) (561 . 560) (563 . 562) (572 . 571) (578 . 577)
+    (583 . 582) (585 . 584) (587 . 586) (589 . 588) (591 . 590)
+    (592 . 11375) (593 . 11373) (595 . 385) (596 . 390) (598 . 393)
+    (599 . 394) (601 . 399) (603 . 400) (608 . 403) (611 . 404)
+    (616 . 407) (617 . 406) (619 . 11362) (623 . 412) (625 . 11374)
+    (626 . 413) (629 . 415) (637 . 11364) (640 . 422) (643 . 425)
+    (648 . 430) (649 . 580) (650 . 433) (651 . 434) (652 . 581)
+    (658 . 439) (837 . 921) (881 . 880) (883 . 882) (887 . 886)
+    (891 . 1021) (892 . 1022) (893 . 1023) (940 . 902) (941 . 904)
+    (942 . 905) (943 . 906) (945 . 913) (946 . 914) (947 . 915)
+    (948 . 916) (949 . 917) (950 . 918) (951 . 919) (952 . 920)
+    (953 . 921) (954 . 922) (955 . 923) (956 . 924) (957 . 925)
+    (958 . 926) (959 . 927) (960 . 928) (961 . 929) (962 . 931)
+    (963 . 931) (964 . 932) (965 . 933) (966 . 934) (967 . 935)
+    (968 . 936) (969 . 937) (970 . 938) (971 . 939) (972 . 908)
+    (973 . 910) (974 . 911) (976 . 914) (977 . 920) (981 . 934)
+    (982 . 928) (983 . 975) (985 . 984) (987 . 986) (989 . 988)
+    (991 . 990) (993 . 992) (995 . 994) (997 . 996) (999 . 998)
+    (1001 . 1000) (1003 . 1002) (1005 . 1004) (1007 . 1006) (1008 . 922)
+    (1009 . 929) (1010 . 1017) (1013 . 917) (1016 . 1015) (1019 . 1018)
+    (1072 . 1040) (1073 . 1041) (1074 . 1042) (1075 . 1043) (1076 . 1044)
+    (1077 . 1045) (1078 . 1046) (1079 . 1047) (1080 . 1048) (1081 . 1049)
+    (1082 . 1050) (1083 . 1051) (1084 . 1052) (1085 . 1053) (1086 . 1054)
+    (1087 . 1055) (1088 . 1056) (1089 . 1057) (1090 . 1058) (1091 . 1059)
+    (1092 . 1060) (1093 . 1061) (1094 . 1062) (1095 . 1063) (1096 . 1064)
+    (1097 . 1065) (1098 . 1066) (1099 . 1067) (1100 . 1068) (1101 . 1069)
+    (1102 . 1070) (1103 . 1071) (1104 . 1024) (1105 . 1025) (1106 . 1026)
+    (1107 . 1027) (1108 . 1028) (1109 . 1029) (1110 . 1030) (1111 . 1031)
+    (1112 . 1032) (1113 . 1033) (1114 . 1034) (1115 . 1035) (1116 . 1036)
+    (1117 . 1037) (1118 . 1038) (1119 . 1039) (1121 . 1120) (1123 . 1122)
+    (1125 . 1124) (1127 . 1126) (1129 . 1128) (1131 . 1130) (1133 . 1132)
+    (1135 . 1134) (1137 . 1136) (1139 . 1138) (1141 . 1140) (1143 . 1142)
+    (1145 . 1144) (1147 . 1146) (1149 . 1148) (1151 . 1150) (1153 . 1152)
+    (1163 . 1162) (1165 . 1164) (1167 . 1166) (1169 . 1168) (1171 . 1170)
+    (1173 . 1172) (1175 . 1174) (1177 . 1176) (1179 . 1178) (1181 . 1180)
+    (1183 . 1182) (1185 . 1184) (1187 . 1186) (1189 . 1188) (1191 . 1190)
+    (1193 . 1192) (1195 . 1194) (1197 . 1196) (1199 . 1198) (1201 . 1200)
+    (1203 . 1202) (1205 . 1204) (1207 . 1206) (1209 . 1208) (1211 . 1210)
+    (1213 . 1212) (1215 . 1214) (1218 . 1217) (1220 . 1219) (1222 . 1221)
+    (1224 . 1223) (1226 . 1225) (1228 . 1227) (1230 . 1229) (1231 . 1216)
+    (1233 . 1232) (1235 . 1234) (1237 . 1236) (1239 . 1238) (1241 . 1240)
+    (1243 . 1242) (1245 . 1244) (1247 . 1246) (1249 . 1248) (1251 . 1250)
+    (1253 . 1252) (1255 . 1254) (1257 . 1256) (1259 . 1258) (1261 . 1260)
+    (1263 . 1262) (1265 . 1264) (1267 . 1266) (1269 . 1268) (1271 . 1270)
+    (1273 . 1272) (1275 . 1274) (1277 . 1276) (1279 . 1278) (1281 . 1280)
+    (1283 . 1282) (1285 . 1284) (1287 . 1286) (1289 . 1288) (1291 . 1290)
+    (1293 . 1292) (1295 . 1294) (1297 . 1296) (1299 . 1298) (1301 . 1300)
+    (1303 . 1302) (1305 . 1304) (1307 . 1306) (1309 . 1308) (1311 . 1310)
+    (1313 . 1312) (1315 . 1314) (1377 . 1329) (1378 . 1330) (1379 . 1331)
+    (1380 . 1332) (1381 . 1333) (1382 . 1334) (1383 . 1335) (1384 . 1336)
+    (1385 . 1337) (1386 . 1338) (1387 . 1339) (1388 . 1340) (1389 . 1341)
+    (1390 . 1342) (1391 . 1343) (1392 . 1344) (1393 . 1345) (1394 . 1346)
+    (1395 . 1347) (1396 . 1348) (1397 . 1349) (1398 . 1350) (1399 . 1351)
+    (1400 . 1352) (1401 . 1353) (1402 . 1354) (1403 . 1355) (1404 . 1356)
+    (1405 . 1357) (1406 . 1358) (1407 . 1359) (1408 . 1360) (1409 . 1361)
+    (1410 . 1362) (1411 . 1363) (1412 . 1364) (1413 . 1365) (1414 . 1366)
+    (7545 . 42877) (7549 . 11363) (7681 . 7680) (7683 . 7682) (7685 . 7684)
+    (7687 . 7686) (7689 . 7688) (7691 . 7690) (7693 . 7692) (7695 . 7694)
+    (7697 . 7696) (7699 . 7698) (7701 . 7700) (7703 . 7702) (7705 . 7704)
+    (7707 . 7706) (7709 . 7708) (7711 . 7710) (7713 . 7712) (7715 . 7714)
+    (7717 . 7716) (7719 . 7718) (7721 . 7720) (7723 . 7722) (7725 . 7724)
+    (7727 . 7726) (7729 . 7728) (7731 . 7730) (7733 . 7732) (7735 . 7734)
+    (7737 . 7736) (7739 . 7738) (7741 . 7740) (7743 . 7742) (7745 . 7744)
+    (7747 . 7746) (7749 . 7748) (7751 . 7750) (7753 . 7752) (7755 . 7754)
+    (7757 . 7756) (7759 . 7758) (7761 . 7760) (7763 . 7762) (7765 . 7764)
+    (7767 . 7766) (7769 . 7768) (7771 . 7770) (7773 . 7772) (7775 . 7774)
+    (7777 . 7776) (7779 . 7778) (7781 . 7780) (7783 . 7782) (7785 . 7784)
+    (7787 . 7786) (7789 . 7788) (7791 . 7790) (7793 . 7792) (7795 . 7794)
+    (7797 . 7796) (7799 . 7798) (7801 . 7800) (7803 . 7802) (7805 . 7804)
+    (7807 . 7806) (7809 . 7808) (7811 . 7810) (7813 . 7812) (7815 . 7814)
+    (7817 . 7816) (7819 . 7818) (7821 . 7820) (7823 . 7822) (7825 . 7824)
+    (7827 . 7826) (7829 . 7828) (7835 . 7776) (7841 . 7840) (7843 . 7842)
+    (7845 . 7844) (7847 . 7846) (7849 . 7848) (7851 . 7850) (7853 . 7852)
+    (7855 . 7854) (7857 . 7856) (7859 . 7858) (7861 . 7860) (7863 . 7862)
+    (7865 . 7864) (7867 . 7866) (7869 . 7868) (7871 . 7870) (7873 . 7872)
+    (7875 . 7874) (7877 . 7876) (7879 . 7878) (7881 . 7880) (7883 . 7882)
+    (7885 . 7884) (7887 . 7886) (7889 . 7888) (7891 . 7890) (7893 . 7892)
+    (7895 . 7894) (7897 . 7896) (7899 . 7898) (7901 . 7900) (7903 . 7902)
+    (7905 . 7904) (7907 . 7906) (7909 . 7908) (7911 . 7910) (7913 . 7912)
+    (7915 . 7914) (7917 . 7916) (7919 . 7918) (7921 . 7920) (7923 . 7922)
+    (7925 . 7924) (7927 . 7926) (7929 . 7928) (7931 . 7930) (7933 . 7932)
+    (7935 . 7934) (7936 . 7944) (7937 . 7945) (7938 . 7946) (7939 . 7947)
+    (7940 . 7948) (7941 . 7949) (7942 . 7950) (7943 . 7951) (7952 . 7960)
+    (7953 . 7961) (7954 . 7962) (7955 . 7963) (7956 . 7964) (7957 . 7965)
+    (7968 . 7976) (7969 . 7977) (7970 . 7978) (7971 . 7979) (7972 . 7980)
+    (7973 . 7981) (7974 . 7982) (7975 . 7983) (7984 . 7992) (7985 . 7993)
+    (7986 . 7994) (7987 . 7995) (7988 . 7996) (7989 . 7997) (7990 . 7998)
+    (7991 . 7999) (8000 . 8008) (8001 . 8009) (8002 . 8010) (8003 . 8011)
+    (8004 . 8012) (8005 . 8013) (8017 . 8025) (8019 . 8027) (8021 . 8029)
+    (8023 . 8031) (8032 . 8040) (8033 . 8041) (8034 . 8042) (8035 . 8043)
+    (8036 . 8044) (8037 . 8045) (8038 . 8046) (8039 . 8047) (8048 . 8122)
+    (8049 . 8123) (8050 . 8136) (8051 . 8137) (8052 . 8138) (8053 . 8139)
+    (8054 . 8154) (8055 . 8155) (8056 . 8184) (8057 . 8185) (8058 . 8170)
+    (8059 . 8171) (8060 . 8186) (8061 . 8187) (8064 . 8072) (8065 . 8073)
+    (8066 . 8074) (8067 . 8075) (8068 . 8076) (8069 . 8077) (8070 . 8078)
+    (8071 . 8079) (8080 . 8088) (8081 . 8089) (8082 . 8090) (8083 . 8091)
+    (8084 . 8092) (8085 . 8093) (8086 . 8094) (8087 . 8095) (8096 . 8104)
+    (8097 . 8105) (8098 . 8106) (8099 . 8107) (8100 . 8108) (8101 . 8109)
+    (8102 . 8110) (8103 . 8111) (8112 . 8120) (8113 . 8121) (8115 . 8124)
+    (8126 . 921) (8131 . 8140) (8144 . 8152) (8145 . 8153) (8160 . 8168)
+    (8161 . 8169) (8165 . 8172) (8179 . 8188) (8526 . 8498) (8560 . 8544)
+    (8561 . 8545) (8562 . 8546) (8563 . 8547) (8564 . 8548) (8565 . 8549)
+    (8566 . 8550) (8567 . 8551) (8568 . 8552) (8569 . 8553) (8570 . 8554)
+    (8571 . 8555) (8572 . 8556) (8573 . 8557) (8574 . 8558) (8575 . 8559)
+    (8580 . 8579) (9424 . 9398) (9425 . 9399) (9426 . 9400) (9427 . 9401)
+    (9428 . 9402) (9429 . 9403) (9430 . 9404) (9431 . 9405) (9432 . 9406)
+    (9433 . 9407) (9434 . 9408) (9435 . 9409) (9436 . 9410) (9437 . 9411)
+    (9438 . 9412) (9439 . 9413) (9440 . 9414) (9441 . 9415) (9442 . 9416)
+    (9443 . 9417) (9444 . 9418) (9445 . 9419) (9446 . 9420) (9447 . 9421)
+    (9448 . 9422) (9449 . 9423) (11312 . 11264) (11313 . 11265) (11314 . 11266)
+    (11315 . 11267) (11316 . 11268) (11317 . 11269) (11318 . 11270) (11319 . 11271)
+    (11320 . 11272) (11321 . 11273) (11322 . 11274) (11323 . 11275) (11324 . 11276)
+    (11325 . 11277) (11326 . 11278) (11327 . 11279) (11328 . 11280) (11329 . 11281)
+    (11330 . 11282) (11331 . 11283) (11332 . 11284) (11333 . 11285) (11334 . 11286)
+    (11335 . 11287) (11336 . 11288) (11337 . 11289) (11338 . 11290) (11339 . 11291)
+    (11340 . 11292) (11341 . 11293) (11342 . 11294) (11343 . 11295) (11344 . 11296)
+    (11345 . 11297) (11346 . 11298) (11347 . 11299) (11348 . 11300) (11349 . 11301)
+    (11350 . 11302) (11351 . 11303) (11352 . 11304) (11353 . 11305) (11354 . 11306)
+    (11355 . 11307) (11356 . 11308) (11357 . 11309) (11358 . 11310) (11361 . 11360)
+    (11365 . 570) (11366 . 574) (11368 . 11367) (11370 . 11369) (11372 . 11371)
+    (11379 . 11378) (11382 . 11381) (11393 . 11392) (11395 . 11394) (11397 . 11396)
+    (11399 . 11398) (11401 . 11400) (11403 . 11402) (11405 . 11404) (11407 . 11406)
+    (11409 . 11408) (11411 . 11410) (11413 . 11412) (11415 . 11414) (11417 . 11416)
+    (11419 . 11418) (11421 . 11420) (11423 . 11422) (11425 . 11424) (11427 . 11426)
+    (11429 . 11428) (11431 . 11430) (11433 . 11432) (11435 . 11434) (11437 . 11436)
+    (11439 . 11438) (11441 . 11440) (11443 . 11442) (11445 . 11444) (11447 . 11446)
+    (11449 . 11448) (11451 . 11450) (11453 . 11452) (11455 . 11454) (11457 . 11456)
+    (11459 . 11458) (11461 . 11460) (11463 . 11462) (11465 . 11464) (11467 . 11466)
+    (11469 . 11468) (11471 . 11470) (11473 . 11472) (11475 . 11474) (11477 . 11476)
+    (11479 . 11478) (11481 . 11480) (11483 . 11482) (11485 . 11484) (11487 . 11486)
+    (11489 . 11488) (11491 . 11490) (11520 . 4256) (11521 . 4257) (11522 . 4258)
+    (11523 . 4259) (11524 . 4260) (11525 . 4261) (11526 . 4262) (11527 . 4263)
+    (11528 . 4264) (11529 . 4265) (11530 . 4266) (11531 . 4267) (11532 . 4268)
+    (11533 . 4269) (11534 . 4270) (11535 . 4271) (11536 . 4272) (11537 . 4273)
+    (11538 . 4274) (11539 . 4275) (11540 . 4276) (11541 . 4277) (11542 . 4278)
+    (11543 . 4279) (11544 . 4280) (11545 . 4281) (11546 . 4282) (11547 . 4283)
+    (11548 . 4284) (11549 . 4285) (11550 . 4286) (11551 . 4287) (11552 . 4288)
+    (11553 . 4289) (11554 . 4290) (11555 . 4291) (11556 . 4292) (11557 . 4293)
+    (42561 . 42560) (42563 . 42562) (42565 . 42564) (42567 . 42566) (42569 . 42568)
+    (42571 . 42570) (42573 . 42572) (42575 . 42574) (42577 . 42576) (42579 . 42578)
+    (42581 . 42580) (42583 . 42582) (42585 . 42584) (42587 . 42586) (42589 . 42588)
+    (42591 . 42590) (42595 . 42594) (42597 . 42596) (42599 . 42598) (42601 . 42600)
+    (42603 . 42602) (42605 . 42604) (42625 . 42624) (42627 . 42626) (42629 . 42628)
+    (42631 . 42630) (42633 . 42632) (42635 . 42634) (42637 . 42636) (42639 . 42638)
+    (42641 . 42640) (42643 . 42642) (42645 . 42644) (42647 . 42646) (42787 . 42786)
+    (42789 . 42788) (42791 . 42790) (42793 . 42792) (42795 . 42794) (42797 . 42796)
+    (42799 . 42798) (42803 . 42802) (42805 . 42804) (42807 . 42806) (42809 . 42808)
+    (42811 . 42810) (42813 . 42812) (42815 . 42814) (42817 . 42816) (42819 . 42818)
+    (42821 . 42820) (42823 . 42822) (42825 . 42824) (42827 . 42826) (42829 . 42828)
+    (42831 . 42830) (42833 . 42832) (42835 . 42834) (42837 . 42836) (42839 . 42838)
+    (42841 . 42840) (42843 . 42842) (42845 . 42844) (42847 . 42846) (42849 . 42848)
+    (42851 . 42850) (42853 . 42852) (42855 . 42854) (42857 . 42856) (42859 . 42858)
+    (42861 . 42860) (42863 . 42862) (42874 . 42873) (42876 . 42875) (42879 . 42878)
+    (42881 . 42880) (42883 . 42882) (42885 . 42884) (42887 . 42886) (42892 . 42891)
+    (65345 . 65313) (65346 . 65314) (65347 . 65315) (65348 . 65316) (65349 . 65317)
+    (65350 . 65318) (65351 . 65319) (65352 . 65320) (65353 . 65321) (65354 . 65322)
+    (65355 . 65323) (65356 . 65324) (65357 . 65325) (65358 . 65326) (65359 . 65327)
+    (65360 . 65328) (65361 . 65329) (65362 . 65330) (65363 . 65331) (65364 . 65332)
+    (65365 . 65333) (65366 . 65334) (65367 . 65335) (65368 . 65336) (65369 . 65337)
+    (65370 . 65338) (66600 . 66560) (66601 . 66561) (66602 . 66562) (66603 . 66563)
+    (66604 . 66564) (66605 . 66565) (66606 . 66566) (66607 . 66567) (66608 . 66568)
+    (66609 . 66569) (66610 . 66570) (66611 . 66571) (66612 . 66572) (66613 . 66573)
+    (66614 . 66574) (66615 . 66575) (66616 . 66576) (66617 . 66577) (66618 . 66578)
+    (66619 . 66579) (66620 . 66580) (66621 . 66581) (66622 . 66582) (66623 . 66583)
+    (66624 . 66584) (66625 . 66585) (66626 . 66586) (66627 . 66587) (66628 . 66588)
+    (66629 . 66589) (66630 . 66590) (66631 . 66591) (66632 . 66592) (66633 . 66593)
+    (66634 . 66594) (66635 . 66595) (66636 . 66596) (66637 . 66597) (66638 . 66598)
+    (66639 . 66599)))
+(define upcase-hashtable #f)
+(define downcase-hashtable #f)
+(define titlecase-hashtable #f)
+(define general-category-hashtable #f)
+
+(define (alist->eq-hash-table alist)
+  (let ([hashtable (make-eq-hashtable)])
+    (for-each (lambda (x) (hashtable-set! hashtable (car x) (cdr x)))
+                alist)
+    hashtable))
+
+(define (ralist->eq-hash-table alist)
+  (let ([hashtable (make-eq-hashtable)])
+    (for-each (lambda (x) (hashtable-set! hashtable (cdr x) (car x)))
+                alist)
+    hashtable))
+
+(define (char-upcase char)
+  (unless upcase-hashtable
+    (set! upcase-hashtable (alist->eq-hash-table upcase-alist)))
+  (cond
+   [(hashtable-ref upcase-hashtable (char->integer char)) => integer->char]
+   [else char]))
+
+(define (char-downcase char)
+  (unless downcase-hashtable
+    (set! downcase-hashtable (alist->eq-hash-table downcase-alist)))
+  (cond
+   [(hashtable-ref downcase-hashtable (char->integer char)) => integer->char]
+   [else char]))
+
+(define (char-titlecase char)
+  (unless titlecase-hashtable
+    (set! titlecase-hashtable (alist->eq-hash-table titlecase-alist)))
+  (cond
+   [(hashtable-ref titlecase-hashtable (char->integer char)) => integer->char]
+   [else (char-upcase char])))
+
+  (define (char-foldcase char)
+    (cond
+     [(or (char=? char #\x130)
+          (char=? char #\x131))
+     char]
+     [else
+      (char-downcase (char-upcase char)))))
+
+(define (char-general-category char)
+  (unless general-category-hashtable
+    (let ([hashtable (make-eq-hashtable)])
+      (for-each (lambda (category-set)
+                  (for-each (lambda (char-integer)
+                              (hashtable-set! hashtable (integer->char char-integer) (car category-set)))
+                            (cdr category-set)))
+                general-category-alist)
+      (set! general-category-hashtable hashtable)))
+  (hashtable-ref general-category-hashtable char 'Cn))
+
+
+(define (char-ci=? . char-lst)
+  (apply char=? (map char-titlecase char-lst)))
+
+(define (char-ci<? . char-lst)
+  (apply char<? (map char-titlecase char-lst)))
+
+(define (char-ci>? . char-lst)
+  (apply char>? (map char-titlecase char-lst)))
+
+(define (char-ci<=? . char-lst)
+  (apply char<=? (map char-titlecase char-lst)))
+
+(define (char-ci>=? . char-lst)
+  (apply char>=? (map char-titlecase char-lst)))
+
+
+
+
+(define-macro (test a b)
+  `(if (equal? ,a ,b)
+       '()
+       (format #t "(~a => ~a, ~a => ~a)" (quote ,a) ,a (quote ,b) ,b)))
+
+    (test (char-upcase #\i) #\I)
+    (test (char-downcase #\i) #\i)
+    (test (char-titlecase #\i) #\I)
+    (test (char-foldcase #\i) #\i)
+    
+    (test (char-upcase #\xDF) #\xDF)
+    (test (char-downcase #\xDF) #\xDF)
+    (test (char-titlecase #\xDF) #\xDF)
+    (test (char-foldcase #\xDF) #\xDF)
+    
+    (test (char-upcase #\x3A3) #\x3A3)
+    (test (char-downcase #\x3A3) #\x3C3)
+    (test (char-titlecase #\x3A3) #\x3A3)
+    (test (char-foldcase #\x3A3) #\x3C3)
+
+    (test (char-upcase #\x3C2) #\x3A3)
+    (test (char-downcase #\x3C2) #\x3C2)
+    (test (char-titlecase #\x3C2) #\x3A3)
+    (test (char-foldcase #\x3C2) #\x3C3)
+
+    (test (char-ci<? #\z #\Z) #f)
+    (test (char-ci<? #\Z #\z) #f)
+    (test (char-ci<? #\a #\Z) #t)
+    (test (char-ci<? #\Z #\a) #f)
+    (test (char-ci<=? #\z #\Z) #t)
+    (test (char-ci<=? #\Z #\z) #t)
+    (test (char-ci<=? #\a #\Z) #t)
+    (test (char-ci<=? #\Z #\a) #f)
+    (test (char-ci=? #\z #\a) #f)
+    (test (char-ci=? #\z #\Z) #t)
+    (test (char-ci=? #\x3C2 #\x3C3) #t)
+    (test (char-ci>? #\z #\Z) #f)
+    (test (char-ci>? #\Z #\z) #f)
+    (test (char-ci>? #\a #\Z) #f)
+    (test (char-ci>? #\Z #\a) #t)
+    (test (char-ci>=? #\Z #\z) #t)
+    (test (char-ci>=? #\z #\Z) #t)
+    (test (char-ci>=? #\z #\Z) #t)
+    (test (char-ci>=? #\a #\z) #f)
+    (test (char-general-category #\a) 'Ll)
+    (test (char-general-category #\space) 'Zs)
+    (test (char-general-category #\x10FFFF) 'Cn)
+
+(display (char-general-category #\a))
+(display (char-general-category #\space) )
+(display (char-general-category #\x10FFFF) )
+(newline)
