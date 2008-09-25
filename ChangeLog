@@ -1,5 +1,15 @@
 2008-09-25  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/unicode.ss : Added char-whitespace?, char-alphabetic?, char-upper-case?,
+                                      char-lower-case?, char-title-case?, char-numeric?
+                                      and char-general-category.
+
+        * unicode/make-other-lowercase-property-datum.scm (main): Added.
+
+        * unicode/make-other-uppercase-property-datum.scm (main): Added.
+
+        * unicode/make-whitespace-property-datum.scm (main): Added.
+
         * unicode/make-other-alphabetic-datum.scm: Added for parsing PropList.txt.
 
 2008-09-24  higepon  <higepon@users.sourceforge.jp>
