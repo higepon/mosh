@@ -1,4 +1,9 @@
-all: titlecase-datum-inc.scm upcase-datum-inc.scm downcase-datum-inc.scm general-category-datum-inc.scm other-alphabetic-datum-inc.scm
+all: titlecase-datum-inc.scm \
+upcase-datum-inc.scm \
+downcase-datum-inc.scm \
+general-category-datum-inc.scm \
+other-alphabetic-datum-inc.scm \
+whitespace-property-datum-inc.scm
 
 data/UnicodeData.txt :
 	(cd data && wget "http://www.unicode.org/Public/UNIDATA/UnicodeData.txt")
@@ -20,6 +25,10 @@ general-category-datum-inc.scm: make-general-category-datum.scm data/UnicodeData
 
 other-alphabetic-datum-inc.scm: make-other-alphabetic-datum.scm data/PropList.txt
 	mosh -b $< > $@
+
+whitespace-property-datum-inc.scm: make-whitespace-property-datum.scm data/PropList.txt
+	mosh -b $< > $@
+
 
 clean:
 	rm -rf *-inc.scm
