@@ -2,10 +2,14 @@
   (export
     char-upcase char-downcase char-titlecase char-foldcase
     char-ci=? char-ci>? char-ci<? char-ci>=? char-ci<=?
-    char-whitespace? char-alphabetic? char-upper-case? char-lower-case? char-title-case? char-numeric? char-general-category)
+    char-whitespace? char-alphabetic? char-upper-case?
+    char-lower-case? char-title-case? char-numeric? char-general-category
+    string-upcase)
   (import (except (rnrs) char-upcase char-downcase char-titlecase char-foldcase
                   char-ci=? char-ci>? char-ci<? char-ci>=? char-ci<=?
-                  char-whitespace? char-alphabetic? char-upper-case? char-lower-case? char-title-case? char-numeric? char-general-category))
+                  char-whitespace? char-alphabetic? char-upper-case?
+                  char-lower-case? char-title-case? char-numeric? char-general-category
+                  string-upcase))
 
 (define (alist->eq-hash-table alist)
   (let ([hashtable (make-eq-hashtable)])
@@ -18,6 +22,33 @@
     (for-each (lambda (x) (hashtable-set! hashtable (cdr x) (car x)))
                 alist)
     hashtable))
+
+(define special-uppercase-list '(
+(223 . (83 115)) (775 . (304)) (64256 . (70 102)) (64257 . (70 105)) (64258 . (70 108))
+(64259 . (70 102 105)) (64260 . (70 102 108)) (64261 . (83 116)) (64262 . (83 116)) (1415 . (1333 1410))
+(64275 . (1348 1398)) (64276 . (1348 1381)) (64277 . (1348 1387)) (64278 . (1358 1398)) (64279 . (1348 1389))
+(329 . (700 78)) (912 . (921 776 769)) (944 . (933 776 769)) (496 . (74 780)) (7830 . (72 817))
+(7831 . (84 776)) (7832 . (87 778)) (7833 . (89 778)) (7834 . (65 702)) (8016 . (933 787))
+(8018 . (933 787 768)) (8020 . (933 787 769)) (8022 . (933 787 834)) (8118 . (913 834)) (8134 . (919 834))
+(8146 . (921 776 768)) (8147 . (921 776 769)) (8150 . (921 834)) (8151 . (921 776 834)) (8162 . (933 776 768))
+(8163 . (933 776 769)) (8164 . (929 787)) (8166 . (933 834)) (8167 . (933 776 834)) (8182 . (937 834))
+(837 . (837)) (8064 . (8072)) (8065 . (8073)) (8066 . (8074)) (8067 . (8075))
+(8068 . (8076)) (8069 . (8077)) (8070 . (8078)) (8071 . (8079)) (8072 . (8072))
+(8073 . (8073)) (8074 . (8074)) (8075 . (8075)) (8076 . (8076)) (8077 . (8077))
+(8078 . (8078)) (8079 . (8079)) (8080 . (8088)) (8081 . (8089)) (8082 . (8090))
+(8083 . (8091)) (8084 . (8092)) (8085 . (8093)) (8086 . (8094)) (8087 . (8095))
+(8088 . (8088)) (8089 . (8089)) (8090 . (8090)) (8091 . (8091)) (8092 . (8092))
+(8093 . (8093)) (8094 . (8094)) (8095 . (8095)) (8096 . (8104)) (8097 . (8105))
+(8098 . (8106)) (8099 . (8107)) (8100 . (8108)) (8101 . (8109)) (8102 . (8110))
+(8103 . (8111)) (8104 . (8104)) (8105 . (8105)) (8106 . (8106)) (8107 . (8107))
+(8108 . (8108)) (8109 . (8109)) (8110 . (8110)) (8111 . (8111)) (8115 . (8124))
+(8124 . (8124)) (8131 . (8140)) (8140 . (8140)) (8179 . (8188)) (8188 . (8188))
+(8114 . (8122 837)) (8116 . (902 837)) (8130 . (8138 837)) (8132 . (905 837)) (8178 . (8186 837))
+(8180 . (911 837)) (8119 . (913 834 837)) (8135 . (919 834 837)) (8183 . (937 834 837)) (931 . (931))
+(931 . (931)) (963 . (931)) (962 . (931)) (963 . (931)) (962 . (931))
+(775 . (73)) (775 . (74)) (775 . (302)) (768 . (204)) (769 . (205))
+(771 . (296)) (304 . (304)) (304 . (304)) (73 . (73)) (73 . (73))
+(105 . (304)) (105 . (304)) (305 . (73))))
 
 (define whitespace-property-list '( (9 . 13) 32 133 160 5760 6158 (8192 . 8202) 8232 8233 8239 8287 12288))
 
@@ -688,6 +719,7 @@
 (define other-uppercase-hashtable #f)
 (define other-lowercase-hashtable #f)
 (define whitespace-hashtable #f)
+(define special-uppercase-hashtable #f)
 
 (define (property-list->hashtable property-list)
   (let ([hashtable (make-eq-hashtable)])
@@ -823,5 +855,30 @@
 
 (define (char-ci>=? . char-lst)
   (apply char>=? (map char-titlecase char-lst)))
+
+(define (special-uppercase char)
+  (unless special-uppercase-hashtable
+    (set! special-uppercase-hashtable (alist->eq-hash-table special-uppercase-list)))
+  (cond
+   [(hashtable-ref special-uppercase-hashtable (char->integer char) #f)
+    => (lambda (x) x)]
+   [else #f]))
+
+(define (string-upcase s)
+  (let ([in (open-string-input-port s)])
+    (let-values (((out get-string) (open-string-output-port)))
+      (let ([expanded
+             (let loop ([ch (read-char in)])
+               (cond
+                [(eof-object? ch) (get-string)]
+                [(special-uppercase ch)
+                 => (lambda (lst)
+                      (for-each (lambda (e) (display (char-upcase (integer->char e)) out)) lst)
+                      (loop (read-char in)))]
+                [else
+                 (display (char-upcase ch) out)
+                 (loop (read-char in))]))])
+        (if (string=? s expanded) s expanded)))))
+
 
 )

@@ -717,24 +717,25 @@
   (unless special-uppercase-hashtable
     (set! special-uppercase-hashtable (alist->eq-hash-table special-uppercase-list)))
   (cond
-   [(hashtable-ref special-uppercase-hashtable char #f)
-    => integer => char]
+   [(hashtable-ref special-uppercase-hashtable (char->integer char) #f)
+    => (lambda (x) x)]
    [else #f]))
 
-  (define (string-upcase s)
-    (let ([in (open-string-input-port s)])
-      (receive (out get-string) (open-string-output-port)
+(define (string-upcase s)
+  (let ([in (open-string-input-port s)])
+    (receive (out get-string) (open-string-output-port)
       (let ([expanded
-             (let loop ((ch (read-char in)))
-               (cond ((eof-object? ch) (get-string))
-                       ((special-uppercase ch)
-                        => (lambda (lst)
-                             (for-each (lambda (e) (write (char-upcase (integer->char e)) out )) lst)
-                             (loop (read-char input))))
-                       (else
-                        (write (char-upcase ch)out )
-                        (loop (read in)))))))
-          (if (string=? s expanded) s expanded)))))
+             (let loop ([ch (read-char in)])
+               (cond
+                [(eof-object? ch) (get-string)]
+                [(special-uppercase ch)
+                 => (lambda (lst)
+                      (for-each (lambda (e) (display (char-upcase (integer->char e)) out)) lst)
+                      (loop (read-char in)))]
+                [else
+                 (display (char-upcase ch) out)
+                 (loop (read-char in))]))])
+        (if (string=? s expanded) s expanded)))))
 
 
 
@@ -926,3 +927,7 @@
 (display (char-general-category #\space) )
 (display (char-general-category #\x10FFFF) )
 (newline)
+
+;(display (string-upcase "Hi"))
+
+(format #t "\n\n~a => ~a\n" "Stra\xDF;e" "STRASSE")
