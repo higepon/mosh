@@ -1,5 +1,12 @@
 2008-09-26  higepon  <higepon@users.sourceforge.jp>
 
+        * TextualInputPort.cpp (hasPortPosition, hasSetPortPosition)
+                               (portPosition, setPortPostion): Added.
+
+        * Added lookahead-char procedure.
+
+        * TextualInputPort.cpp (lookaheadChar): Added.
+
         * lib/mosh/unicode.ss (string-upcase): Added.
 
 2008-09-25  higepon  <higepon@users.sourceforge.jp>

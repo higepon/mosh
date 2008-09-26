@@ -90,6 +90,33 @@ ucs4char TextualInputPort::getChar()
     return c;
 }
 
+ucs4char TextualInputPort::lookaheadChar()
+{
+    const ucs4char c = getChar();
+    unGetChar(c);
+    return c;
+}
+
+bool TextualInputPort::hasPortPosition() const
+{
+
+}
+
+bool TextualInputPort::hasSetPortPosition() const
+{
+
+}
+
+int TextualInputPort::portPosition() const
+{
+
+}
+
+bool TextualInputPort::setPortPostion()
+{
+
+}
+
 int TextualInputPort::getLine() const
 {
     return line_;

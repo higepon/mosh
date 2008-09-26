@@ -39,6 +39,7 @@ namespace scheme {
     bool fileExistsP(const ucs4string& file);
     Object standardInputPortEx(int argc, const Object* argv);
     Object bytevectorU8SetDEx(int argc, const Object* argv);
+    Object lookaheadCharEx(int argc, const Object* argv);
     Object readEx(int argc, const Object* argv);
     Object sysDisplayEx(int argc, const Object* argv);
     Object currentErrorPortEx(int argc, const Object* argv);

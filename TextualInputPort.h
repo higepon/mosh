@@ -48,7 +48,12 @@ public:
     TextualInputPort(const TextualInputPort& o);
     TextualInputPort();
     virtual ~TextualInputPort();
+    virtual bool hasPortPosition() const;
+    virtual bool hasSetPortPosition() const;
+    virtual int portPosition() const;
+    virtual bool setPortPostion();
     virtual ucs4char getChar();
+    virtual ucs4char lookaheadChar();
     virtual int getU8();
     virtual int getLine() const;
     virtual void unGetChar(ucs4char c);

@@ -214,6 +214,7 @@
     (/ ,/)
     (max ,max)
     (min ,min)
+    (lookahead-char ,(lambda e "not implemented"))
 
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))

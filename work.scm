@@ -1,3 +1,27 @@
+(define special-lowercase-list '(
+(223 . (223)) (304 . (105 775)) (64256 . (64256)) (64257 . (64257)) (64258 . (64258))
+(64259 . (64259)) (64260 . (64260)) (64261 . (64261)) (64262 . (64262)) (1415 . (1415))
+(64275 . (64275)) (64276 . (64276)) (64277 . (64277)) (64278 . (64278)) (64279 . (64279))
+(329 . (329)) (912 . (912)) (944 . (944)) (496 . (496)) (7830 . (7830))
+(7831 . (7831)) (7832 . (7832)) (7833 . (7833)) (7834 . (7834)) (8016 . (8016))
+(8018 . (8018)) (8020 . (8020)) (8022 . (8022)) (8118 . (8118)) (8134 . (8134))
+(8146 . (8146)) (8147 . (8147)) (8150 . (8150)) (8151 . (8151)) (8162 . (8162))
+(8163 . (8163)) (8164 . (8164)) (8166 . (8166)) (8167 . (8167)) (8182 . (8182))
+(837 . (837)) (8064 . (8064)) (8065 . (8065)) (8066 . (8066)) (8067 . (8067))
+(8068 . (8068)) (8069 . (8069)) (8070 . (8070)) (8071 . (8071)) (8072 . (8064))
+(8073 . (8065)) (8074 . (8066)) (8075 . (8067)) (8076 . (8068)) (8077 . (8069))
+(8078 . (8070)) (8079 . (8071)) (8080 . (8080)) (8081 . (8081)) (8082 . (8082))
+(8083 . (8083)) (8084 . (8084)) (8085 . (8085)) (8086 . (8086)) (8087 . (8087))
+(8088 . (8080)) (8089 . (8081)) (8090 . (8082)) (8091 . (8083)) (8092 . (8084))
+(8093 . (8085)) (8094 . (8086)) (8095 . (8087)) (8096 . (8096)) (8097 . (8097))
+(8098 . (8098)) (8099 . (8099)) (8100 . (8100)) (8101 . (8101)) (8102 . (8102))
+(8103 . (8103)) (8104 . (8096)) (8105 . (8097)) (8106 . (8098)) (8107 . (8099))
+(8108 . (8100)) (8109 . (8101)) (8110 . (8102)) (8111 . (8103)) (8115 . (8115))
+(8124 . (8115)) (8131 . (8131)) (8140 . (8131)) (8179 . (8179)) (8188 . (8179))
+(8114 . (8114)) (8116 . (8116)) (8130 . (8130)) (8132 . (8132)) (8178 . (8178))
+(8180 . (8180)) (8119 . (8119)) (8135 . (8135)) (8183 . (8183)) (931 . (963))
+(963 . (963)) (962 . (962))))
+
 (define special-uppercase-list '(
 (223 . (83 115)) (775 . (304)) (64256 . (70 102)) (64257 . (70 105)) (64258 . (70 108))
 (64259 . (70 102 105)) (64260 . (70 102 108)) (64261 . (83 116)) (64262 . (83 116)) (1415 . (1333 1410))
@@ -694,6 +718,7 @@
 (define other-uppercase-hashtable #f)
 (define whitespace-hashtable #f)
 (define special-uppercase-hashtable #f)
+(define special-lowercase-hashtable #f)
 
 (define (property-list->hashtable property-list)
   (let ([hashtable (make-eq-hashtable)])
@@ -721,6 +746,15 @@
     => (lambda (x) x)]
    [else #f]))
 
+(define (special-lowercase char)
+  (unless special-lowercase-hashtable
+    (set! special-lowercase-hashtable (alist->eq-hash-table special-lowercase-list)))
+  (cond
+   [(hashtable-ref special-lowercase-hashtable (char->integer char) #f)
+    => (lambda (x) x)]
+   [else #f]))
+
+
 (define (string-upcase s)
   (let ([in (open-string-input-port s)])
     (receive (out get-string) (open-string-output-port)
@@ -735,6 +769,28 @@
                 [else
                  (display (char-upcase ch) out)
                  (loop (read-char in))]))])
+        (if (string=? s expanded) s expanded)))))
+
+(define (string-downcase s)
+  (let ([in (open-string-input-port s)])
+    (receive (out get-string) (open-string-output-port)
+      (let ([expanded
+             (let loop ([ch (read-char in)]
+                        [next-char #\space])
+               (cond
+                [(eof-object? ch) (get-string)]
+                ;; when final charcter of form is sigma.
+                [(and (or (char-whitespace? next-char) (eof-object? next-char))
+                      (or (char=? ch #\x03A3) (char=? ch #\x03C3)))
+                 (display #\x03C2 out)
+                 (loop (read-char in) (lookahead-char in))]
+                [(special-lowercase ch)
+                 => (lambda (lst)
+                      (for-each (lambda (e) (display (char-downcase (integer->char e)) out)) lst)
+                      (loop (read-char in) (lookahead-char in)))]
+                [else
+                 (display (char-downcase ch) out)
+                 (loop (read-char in) (lookahead-char in))]))])
         (if (string=? s expanded) s expanded)))))
 
 
@@ -857,12 +913,10 @@
   (apply char>=? (map char-titlecase char-lst)))
 
 
-
-
 (define-macro (test a b)
   `(if (equal? ,a ,b)
        '()
-       (format #t "(~a => ~a, ~a => ~a)" (quote ,a) ,a (quote ,b) ,b)))
+       (format #t "(~a => ~a, ~a)\n" (quote ,a) ,a (quote ,b))))
 
     (test (char-upcase #\i) #\I)
     (test (char-downcase #\i) #\i)
@@ -923,6 +977,15 @@
     (test (string-upcase "Hi") "HI")
     (test (string-upcase "HI") "HI")
     (test (string-upcase "Stra\xDF;e") "STRASSE")
+    (test (string-downcase "Hi") "hi")
+    (test (string-downcase "hi") "hi")
+    (test (string-downcase "Stra\xDF;e") "stra\xDF;e")
+    (test (string-downcase "STRASSE")  "strasse")
+    (test (string-downcase "\x39E;\x391;\x39F;\x3A3;") "\x3BE;\x3B1;\x3BF;\x3C2;")
+    (test (string-downcase "\x39E;\x391;\x39F;\x3A3;\x3A3;") "\x3BE;\x3B1;\x3BF;\x3C3;\x3C2;")
+    (test (string-downcase "\x39E;\x391;\x39F;\x3A3; \x3A3;") "\x3BE;\x3B1;\x3BF;\x3C2; \x3C3;")
+    (test (string-downcase "A\x3A3;'x") "a\x3C3;'x") ; ' is a MidLetter
+
 (display (char-general-category #\a))
 (display (char-general-category #\space) )
 (display (char-general-category #\x10FFFF) )
@@ -931,3 +994,5 @@
 ;(display (string-upcase "Hi"))
 
 (format #t "\n\n~a => ~a\n" "Stra\xDF;e" "STRASSE")
+
+(display #\x03C3)

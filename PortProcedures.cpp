@@ -60,6 +60,16 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+Object scheme::lookaheadCharEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("lookahead-char");
+    checkArgumentLength(1);
+
+    argumentAsTextualInputPort(0, textualInputPort);
+    const ucs4char ch = textualInputPort->lookaheadChar();
+    return ch == EOF ? Object::Eof : Object::makeChar(ch);
+}
+
 Object scheme::currentErrorPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("current-error-port");
