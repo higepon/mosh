@@ -53,6 +53,7 @@ public:
     virtual int portPosition() const;
     virtual bool setPortPostion();
     virtual ucs4char getChar();
+    virtual ucs4char lookaheadChar(int offset);
     virtual ucs4char lookaheadChar();
     virtual int getU8();
     virtual int getLine() const;

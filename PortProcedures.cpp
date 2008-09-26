@@ -63,10 +63,17 @@ bool scheme::fileExistsP(const ucs4string& file)
 Object scheme::lookaheadCharEx(int argc, const Object* argv)
 {
     DeclareProcedureName("lookahead-char");
-    checkArgumentLength(1);
-
+    checkArgumentLengthBetween(1, 2);
     argumentAsTextualInputPort(0, textualInputPort);
-    const ucs4char ch = textualInputPort->lookaheadChar();
+
+    ucs4char ch;
+    if (2 == argc) {
+        // mosh only
+        argumentAsInt(1, offset);
+        ch = textualInputPort->lookaheadChar(offset);
+    } else {
+        ch = textualInputPort->lookaheadChar();
+    }
     return ch == EOF ? Object::Eof : Object::makeChar(ch);
 }
 

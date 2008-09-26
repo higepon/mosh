@@ -23,7 +23,7 @@
 (963 . (963)) (962 . (962))))
 
 (define special-uppercase-list '(
-(223 . (83 115)) (775 . (304)) (64256 . (70 102)) (64257 . (70 105)) (64258 . (70 108))
+(223 . (83 115)) (304 . (304)) (64256 . (70 102)) (64257 . (70 105)) (64258 . (70 108))
 (64259 . (70 102 105)) (64260 . (70 102 108)) (64261 . (83 116)) (64262 . (83 116)) (1415 . (1333 1410))
 (64275 . (1348 1398)) (64276 . (1348 1381)) (64277 . (1348 1387)) (64278 . (1358 1398)) (64279 . (1348 1389))
 (329 . (700 78)) (912 . (921 776 769)) (944 . (933 776 769)) (496 . (74 780)) (7830 . (72 817))
@@ -44,10 +44,7 @@
 (8124 . (8124)) (8131 . (8140)) (8140 . (8140)) (8179 . (8188)) (8188 . (8188))
 (8114 . (8122 837)) (8116 . (902 837)) (8130 . (8138 837)) (8132 . (905 837)) (8178 . (8186 837))
 (8180 . (911 837)) (8119 . (913 834 837)) (8135 . (919 834 837)) (8183 . (937 834 837)) (931 . (931))
-(931 . (931)) (963 . (931)) (962 . (931)) (963 . (931)) (962 . (931))
-(775 . (73)) (775 . (74)) (775 . (302)) (768 . (204)) (769 . (205))
-(771 . (296)) (304 . (304)) (304 . (304)) (73 . (73)) (73 . (73))
-(105 . (304)) (105 . (304)) (305 . (73))))
+(963 . (931)) (962 . (931))))
 
 (define whitespace-property-list '( (9 . 13) 32 133 160 5760 6158 (8192 . 8202) 8232 8233 8239 8287 12288))
 
@@ -776,21 +773,23 @@
     (receive (out get-string) (open-string-output-port)
       (let ([expanded
              (let loop ([ch (read-char in)]
+                        [prev-char #\space]
                         [next-char #\space])
                (cond
                 [(eof-object? ch) (get-string)]
                 ;; when final charcter of form is sigma.
                 [(and (or (char-whitespace? next-char) (eof-object? next-char))
+                      (not (char-whitespace? prev-char))
                       (or (char=? ch #\x03A3) (char=? ch #\x03C3)))
                  (display #\x03C2 out)
-                 (loop (read-char in) (lookahead-char in))]
+                 (loop (read-char in) ch (lookahead-char in))]
                 [(special-lowercase ch)
                  => (lambda (lst)
                       (for-each (lambda (e) (display (char-downcase (integer->char e)) out)) lst)
-                      (loop (read-char in) (lookahead-char in)))]
+                      (loop (read-char in) ch (lookahead-char in)))]
                 [else
                  (display (char-downcase ch) out)
-                 (loop (read-char in) (lookahead-char in))]))])
+                 (loop (read-char in) ch (lookahead-char in))]))])
         (if (string=? s expanded) s expanded)))))
 
 

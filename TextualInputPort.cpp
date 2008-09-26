@@ -90,6 +90,20 @@ ucs4char TextualInputPort::getChar()
     return c;
 }
 
+ucs4char TextualInputPort::lookaheadChar(int offset /* = 1 */)
+{
+    gc_vector<ucs4char> characters;
+    ucs4char ret;
+    for (int i = 0; i < offset; i++) {
+        ret = getChar();
+        characters.push_back(ret);
+    }
+    for (gc_vector<ucs4char>::const_iterator it = characters.begin(); it != characters.end(); ++it) {
+        unGetChar(*it);
+    }
+    return ret;
+}
+
 ucs4char TextualInputPort::lookaheadChar()
 {
     const ucs4char c = getChar();
@@ -99,22 +113,22 @@ ucs4char TextualInputPort::lookaheadChar()
 
 bool TextualInputPort::hasPortPosition() const
 {
-
+    return true;
 }
 
 bool TextualInputPort::hasSetPortPosition() const
 {
-
+    return true;
 }
 
 int TextualInputPort::portPosition() const
 {
-
+    return 0;
 }
 
 bool TextualInputPort::setPortPostion()
 {
-
+    return false;
 }
 
 int TextualInputPort::getLine() const
