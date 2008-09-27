@@ -3349,6 +3349,50 @@
       (sort! 0 (- n 1)))))
 ;; from Ypsilon Scheme System end.
 
+(define (string-compare s1 s2)
+  (define (compare s1 s2 len)
+    (let loop ([index 0])
+      (cond [(= index len) 0]
+            [(char=? (string-ref s1 index) (string-ref s2 index))
+             (loop (+ index 1))]
+            [(char>? (string-ref s1 index) (string-ref s2 index)) 1]
+            [else -1])))
+  (let* ([s1-len (string-length s1)]
+         [s2-len (string-length s2)]
+         [shorter-len (min s1-len s2-len)]
+         [compare-result (compare s1 s2 shorter-len)])
+    (cond
+     [(zero? compare-result)
+      (cond [(= s1-len s2-len) 0]
+            [(> s1-len s2-len) 1]
+            [else -1])]
+     [else compare-result])))
+
+(define (string<? string . strings)
+  (if (null? strings)
+      #t
+      (and (= -1 (string-compare string (car strings)))
+           (apply string<? (car strings) (cdr strings)))))
+
+(define (string>? string . strings)
+  (if (null? strings)
+      #t
+      (and (= 1 (string-compare string (car strings)))
+           (apply string>? (car strings) (cdr strings)))))
+
+(define (string<=? string . strings)
+  (if (null? strings)
+      #t
+      (and (<= (string-compare string (car strings)) 0)
+           (apply string<=? (car strings) (cdr strings)))))
+
+(define (string>=? string . strings)
+  (if (null? strings)
+      #t
+      (and (>= (string-compare string (car strings)) 0)
+           (apply string>=? (car strings) (cdr strings)))))
+
+
 (define (file->list file)
   (with-input-from-file file
     (lambda ()

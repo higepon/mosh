@@ -1042,6 +1042,53 @@
         (if (string=? s expanded) s expanded)))))
 
 
+;; from ypsilon scheme 0.9.5 by Yoshikatsu Fujita start
+(define (string-titlecase s)
+  (let ((input (open-string-input-port s)))
+    (receive (output get-string) (open-string-output-port)
+      (letrec ((titlecase-first-char
+                (lambda ()
+                  (let loop ((ch (read-char input)))
+                    (cond ((eof-object? ch)
+                           (get-string))
+                          (else
+                           (case (char-general-category ch)
+                             ((Ll Lu Lt)
+                              (display (char-titlecase ch) output)
+                              (downcase-subsequence))
+                             (else
+                              (display ch output)
+                              (loop (read-char input)))))))))
+               (downcase-subsequence
+                (lambda ()
+                  (let loop ((ch (read-char input)))
+                    (cond ((eof-object? ch)
+                           (get-string))
+                          (else
+                           (case (char-general-category ch)
+                             ((Ll Lu Lt)
+                              (display (char-downcase ch) output)
+                              (loop (read-char input)))
+                             ((Po Pf)
+                              (case ch
+                                ((#\x0027          ; MidLetter # Po       APOSTROPHE
+                                  #\x003A          ; MidLetter # Po       COLON
+                                  #\x00B7          ; MidLetter # Po       MIDDLE DOT
+                                  #\x05F4          ; MidLetter # Po       HEBREW PUNCTUATION GERSHAYIM
+                                  #\x2019          ; MidLetter # Pf       RIGHT SINGLE QUOTATION MARK
+                                  #\x2027          ; MidLetter # Po       HYPHENATION POINT
+                                  )
+                                 (display ch output)
+                                 (loop (read-char input)))
+                                (else
+                                 (display ch output)
+                                 (titlecase-first-char))))
+                             (else
+                              (display ch output)
+                              (titlecase-first-char)))))))))
+        (let ((new (titlecase-first-char)))
+          (if (string=? s new) s new))))))
+;; from ypsilon scheme 0.9.5 end
 
 (define (whitespace-proprety? char)
   (unless whitespace-hashtable
@@ -1165,16 +1212,127 @@
        '()
        (format #t "(~a => ~a, ~a)\n" (quote ,a) ,a (quote ,b))))
 
+;; (define (string-compare string1 string2)
+;;   (l
+
+;; assume same length
+
+;; (define (string-compare s1 s2)
+;;   (define (compare s1 s2 len)
+;;     (let loop ([index 0])
+;;       (cond [(= index len) 0]
+;;             [(char=? (string-ref s1 index) (string-ref s2 index))
+;;              (loop (+ index 1))]
+;;             [(char>? (string-ref s1 index) (string-ref s2 index)) 1]
+;;             [else -1])))
+;;   (let* ([s1-len (string-length s1)]
+;;          [s2-len (string-length s2)]
+;;          [shorter-len (min s1-len s2-len)]
+;;          [compare-result (compare s1 s2 shorter-len)])
+;;     (cond
+;;      [(zero? compare-result)
+;;       (cond [(= s1-len s2-len) 0]
+;;             [(> s1-len s2-len) 1]
+;;             [else -1])]
+;;      [else compare-result])))
+
+;; (define (string<? string . strings)
+;;   (if (null? strings)
+;;       #t
+;;       (and (= -1 (string-compare string (car strings)))
+;;            (apply string<? (car strings) (cdr strings)))))
+
+;; (define (string>? string . strings)
+;;   (if (null? strings)
+;;       #t
+;;       (and (= 1 (string-compare string (car strings)))
+;;            (apply string>? (car strings) (cdr strings)))))
+
+;; (define (string<=? string . strings)
+;;   (if (null? strings)
+;;       #t
+;;       (and (<= (string-compare string (car strings)) 0)
+;;            (apply string<=? (car strings) (cdr strings)))))
+
+;; (define (string>=? string . strings)
+;;   (if (null? strings)
+;;       #t
+;;       (and (>= (string-compare string (car strings)) 0)
+;;            (apply string>=? (car strings) (cdr strings)))))
+
+(define (string-ci=? . strings)
+  (apply string=? (map string-foldcase strings)))
+
+(define (string-ci<? . strings)
+  (apply string<? (map string-foldcase strings)))
+
+(define (string-ci>? . strings)
+  (apply string>? (map string-foldcase strings)))
+
+(define (string-ci<=? . strings)
+  (apply string<=? (map string-foldcase strings)))
+
+(define (string-ci>=? . strings)
+  (apply string>=? (map string-foldcase strings)))
+
+
+(test (string-compare "abc" "abc") 0)
+(test (string-compare "bbc" "abc") 1)
+(test (string-compare "abd" "abc") 1)
+(test (string-compare "abc" "abd") -1)
+(test (string-compare "abc" "abcd") -1)
+(test (string-compare "ab" "abc") -1)
+(test (string-compare "abcd" "abc") 1)
+(test (string<? "z" "ß") #t)
+(test (string<? "z" "zz") #t)
+(test (string<? "z" "Z") #f)
+(test (string<? "ab" "ac" "acd") #t)
+(test (string<=? "ab" "ac" "acd" "acd") #t)
+(test (string>=? "abc" "ab" "aa" "a") #t)
+    (test (string-ci<? "a" "Z") #t)
+    (test (string-ci<? "A" "z") #t)
+    (test (string-ci<? "Z" "a") #f)
+    (test (string-ci<? "z" "A") #f)
+    (test (string-ci<? "z" "Z") #f)
+    (test (string-ci<? "Z" "z") #f)
+    (test (string-ci>? "a" "Z") #f)
+    (test (string-ci>? "A" "z") #f)
+    (test (string-ci>? "Z" "a") #t)
+    (test (string-ci>? "z" "A") #t)
+    (test (string-ci>? "z" "Z") #f)
+    (test (string-ci>? "Z" "z") #f)
+    (test (string-ci=? "z" "Z") #t)
+    (test (string-ci=? "z" "a") #f)
+    (test (string-ci=? "Stra\xDF;e" "Strasse") #t)
+    (test (string-ci=? "Stra\xDF;e" "STRASSE") #t)
+    (test (string-ci=? "\x39E;\x391;\x39F;\x3A3;" "\x3BE;\x3B1;\x3BF;\x3C2;") #t)
+    (test (string-ci=? "\x39E;\x391;\x39F;\x3A3;" "\x3BE;\x3B1;\x3BF;\x3C3;") #t)
+    (test (string-ci<=? "a" "Z") #t)
+    (test (string-ci<=? "A" "z") #t)
+    (test (string-ci<=? "Z" "a") #f)
+    (test (string-ci<=? "z" "A") #f)
+    (test (string-ci<=? "z" "Z") #t)
+    (test (string-ci<=? "Z" "z") #t)
+    (test (string-ci>=? "a" "Z") #f)
+    (test (string-ci>=? "A" "z") #f)
+    (test (string-ci>=? "Z" "a") #t)
+    (test (string-ci>=? "z" "A") #t)
+    (test (string-ci>=? "z" "Z") #t)
+    (test (string-ci>=? "Z" "z") #t)
+
+(exit)
+
+
     (test (char-upcase #\i) #\I)
     (test (char-downcase #\i) #\i)
     (test (char-titlecase #\i) #\I)
     (test (char-foldcase #\i) #\i)
-    
+
     (test (char-upcase #\xDF) #\xDF)
     (test (char-downcase #\xDF) #\xDF)
     (test (char-titlecase #\xDF) #\xDF)
     (test (char-foldcase #\xDF) #\xDF)
-    
+
     (test (char-upcase #\x3A3) #\x3A3)
     (test (char-downcase #\x3A3) #\x3C3)
     (test (char-titlecase #\x3A3) #\x3A3)
@@ -1237,6 +1395,11 @@
     (test (string-foldcase "hi") "hi")
     (test (string-foldcase "Stra\xDF;e") "strasse")
     (test (string-foldcase "\x39E;\x391;\x39F;\x3A3;") "\x3BE;\x3B1;\x3BF;\x3C3;")
+    (test (string-titlecase "kNock KNoCK") "Knock Knock")
+    (test (string-titlecase "who's there?") "Who's There?")
+    (test (string-titlecase "r6rs") "R6rs") ; this example appears to be wrong in R6RS (Sept 2007 version)
+    (test (string-titlecase "R6RS") "R6rs") ; this one, too
+
 (display (char-general-category #\a))
 (display (char-general-category #\space) )
 (display (char-general-category #\x10FFFF) )

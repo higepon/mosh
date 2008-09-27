@@ -1,7 +1,15 @@
 2008-09-27  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/unicode.ss (string-ci=?, string-ci<?, string-ci>?)
+                              (string-ci<=?): Added.
+
+        * library.scm (string-compare, string<?, string>?, string<=?)
+                      (string>=?): Added.
+
         * lib/mosh/unicode.ss (string-upcase, string-foldcase)
                               (string-downcase): Added.
+
+                              (string-titlecase): Added from Ypsilon Scheme System.
 
 2008-09-26  higepon  <higepon@users.sourceforge.jp>
 
