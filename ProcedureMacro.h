@@ -106,7 +106,7 @@
 
 #define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
 #define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)
-#define argumentAsString(index, variableName) castArgument(index, variableName, isString, regexp, String*, toString)
+#define argumentAsString(index, variableName) castArgument(index, variableName, isString, string, String*, toString)
 
 
 #define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, charcter, ucs4char, toChar)

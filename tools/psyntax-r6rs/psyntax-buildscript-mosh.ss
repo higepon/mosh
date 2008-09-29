@@ -200,6 +200,7 @@
     (mosh-string (mosh string)                         #f    #t)  ;; for mosh
     (mosh-list   (mosh list)                           #f    #t)  ;; for mosh
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
+    (mosh-hashtable (mosh hashtable)                   #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
     (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
 ;    (srfi-8     (srfi-8)                               #t    #t)  ;; for mosh
@@ -954,6 +955,7 @@
     (get-environment-variable sys)
     (get-environment-variables sys)
     (readdir sys)
+    (hashtable-for-each mosh-hashtable)
     (regexp-replace-all mosh-regexp)
     (rxmatch mosh-regexp)
     (string->regexp mosh-string)

@@ -1,3 +1,9 @@
+2008-09-29  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (hashtable-for-each): Added.
+
+        * unicode/make-canonical-decompose-datum.scm : Added.
+
 2008-09-27  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/unicode.ss (string-ci=?, string-ci<?, string-ci>?)

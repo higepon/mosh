@@ -977,10 +977,7 @@
 (define (foldcase char)
   (unless foldcase-hashtable
     (set! foldcase-hashtable (alist->eq-hash-table foldcase-list)))
-  (cond
-   [(hashtable-ref foldcase-hashtable (char->integer char) #f)
-    => (lambda (x) x)]
-   [else #f]))
+   (hashtable-ref foldcase-hashtable (char->integer char) #f))
 
 (define (property-list->hashtable property-list)
   (let ([hashtable (make-eq-hashtable)])
@@ -1120,18 +1117,12 @@
 (define (special-uppercase char)
   (unless special-uppercase-hashtable
     (set! special-uppercase-hashtable (alist->eq-hash-table special-uppercase-list)))
-  (cond
-   [(hashtable-ref special-uppercase-hashtable (char->integer char) #f)
-    => (lambda (x) x)]
-   [else #f]))
+   (hashtable-ref special-uppercase-hashtable (char->integer char) #f))
 
 (define (special-lowercase char)
   (unless special-lowercase-hashtable
     (set! special-lowercase-hashtable (alist->eq-hash-table special-lowercase-list)))
-  (cond
-   [(hashtable-ref special-lowercase-hashtable (char->integer char) #f)
-    => (lambda (x) x)]
-   [else #f]))
+   (hashtable-ref special-lowercase-hashtable (char->integer char) #f))
 
 (define (string-downcase s)
   (let ([in (open-string-input-port s)])

@@ -8,7 +8,10 @@ other-lowercase-property-datum-inc.scm \
 whitespace-property-datum-inc.scm \
 special-uppercase-datum-inc.scm \
 special-lowercase-datum-inc.scm \
-case-folding-datum-inc.scm
+canonical-decompose-datum-inc.scm\
+combination-class-datum-inc.scm 
+#case-folding-datum-inc.scm 
+
 
 data/UnicodeData.txt :
 	(cd data && wget "http://www.unicode.org/Public/UNIDATA/UnicodeData.txt")
@@ -22,8 +25,13 @@ data/SpecialCasing.txt:
 data/CaseFolding.txt:
 	(cd data && wget "http://www.unicode.org/Public/UNIDATA/CaseFolding.txt")
 
+canonical-decompose-datum-inc.scm: make-canonical-decompose-datum.scm data/UnicodeData.txt
+	mosh -b $< > $@
 
-case-folding-datum-inc.scm: make-case-folding-datum.scm data/CaseFolding.txt
+#case-folding-datum-inc.scm: make-case-folding-datum.scm data/CaseFolding.txt
+#	mosh -b $< > $@
+
+combination-class-datum-inc.scm: make-combination-class-datum.scm  data/UnicodeData.txt
 	mosh -b $< > $@
 
 special-uppercase-datum-inc.scm: make-special-uppercase-datum.scm data/SpecialCasing.txt
