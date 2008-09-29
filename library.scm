@@ -3349,6 +3349,15 @@
       (sort! 0 (- n 1)))))
 ;; from Ypsilon Scheme System end.
 
+(define (substring string start end)
+  (let* ([len (- end start)]
+         [ret (make-string len)])
+    (let loop ([i 0])
+      (cond [(= i len) ret]
+            [else
+             (string-set! ret i (string-ref string (+ i start)))
+             (loop (+ i 1))]))))
+
 (define (string-compare s1 s2)
   (define (compare s1 s2 len)
     (let loop ([index 0])

@@ -1,6 +1,7 @@
 2008-09-29  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (hashtable-for-each): Added.
+                               (substring): Added.
 
         * unicode/make-canonical-decompose-datum.scm : Added.
 

@@ -1910,3 +1910,35 @@
 (display #\x03C3)
 (display "******")
 (display (char-combination-class #\x308))
+
+
+(display (substring "higepon" 1 3))
+
+(define (string-sort proc string)
+  (let ((lst (string->list string)))
+      (let ((lst2 (list-sort proc lst)))
+        (cond ((eq? lst lst2) string)
+              (else
+               (list->string lst2))))))
+
+(define (string-stable-sort! proc string)
+  (let ([len (string-length string)])
+    (let loop ([i 0])
+      (cond
+       [(= i (- len 1)) string]
+       [else
+        (let in-loop ([j (- len 1)])
+          (cond
+           [(= i j)
+            (loop (+ i 1))]
+           [else
+            (when (proc (string-ref string j) (string-ref string (- j 1)))
+              (let ([tmp (string-ref string j)])
+                (string-set! string j (string-ref string (- j 1)))
+                (string-set! string (- j 1) tmp)))
+            (in-loop (- j 1))]))]))))
+    
+
+(display (string-sort char<? "dgadkgae"))
+(newline)
+(display (string-stable-sort! char<? "dgadkgae"))
