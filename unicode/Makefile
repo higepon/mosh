@@ -9,8 +9,9 @@ whitespace-property-datum-inc.scm \
 special-uppercase-datum-inc.scm \
 special-lowercase-datum-inc.scm \
 canonical-decompose-datum-inc.scm\
-combination-class-datum-inc.scm 
-#case-folding-datum-inc.scm 
+compatible-decompose-datum-inc.scm\
+combination-class-datum-inc.scm\
+case-folding-datum-inc.scm
 
 
 data/UnicodeData.txt :
@@ -28,8 +29,11 @@ data/CaseFolding.txt:
 canonical-decompose-datum-inc.scm: make-canonical-decompose-datum.scm data/UnicodeData.txt
 	mosh -b $< > $@
 
-#case-folding-datum-inc.scm: make-case-folding-datum.scm data/CaseFolding.txt
-#	mosh -b $< > $@
+compatible-decompose-datum-inc.scm: make-compatible-decompose-datum.scm data/UnicodeData.txt
+	mosh -b $< > $@
+
+case-folding-datum-inc.scm: make-case-folding-datum.scm data/CaseFolding.txt
+	mosh -b $< > $@
 
 combination-class-datum-inc.scm: make-combination-class-datum.scm  data/UnicodeData.txt
 	mosh -b $< > $@
