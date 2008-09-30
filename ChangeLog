@@ -1,3 +1,7 @@
+2008-09-30  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/unicode.ss (string-normalize-nfd): Added.
+
 2008-09-29  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (hashtable-for-each): Added.
