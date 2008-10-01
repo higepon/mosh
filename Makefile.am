@@ -25,7 +25,6 @@ BinaryOutputPort.h                                                \
 config.h                                                          \
 scheme.h                                                          \
 ByteVector.h                                                      \
-Closure.h                                                         \
 HashTable.h                                                       \
 EqvHashTable.h                                                    \
 Pair.h                                                            \
@@ -34,6 +33,7 @@ Box.h                                                             \
 ProcedureMacro.h                                                  \
 BuiltinSymbols.cpp                                                \
 Builtin.h                                                         \
+Closure.h                     Closure.cpp                         \
 freeproc.h                    freeproc.cpp                        \
 reader.h                      reader.cpp                          \
 scheme.h                      scheme.cpp                          \

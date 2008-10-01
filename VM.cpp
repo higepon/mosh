@@ -647,14 +647,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                         fp_ = sp - requiredLength;
                         sp_ = sp;
                     } else {
-                        callWrongNumberOfArgumentsViolationAfter("#<closure>",
+                        callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
                                                                  requiredLength,
                                                                  operand.toInt());
                     }
                 } else if (requiredLength == argLength) {
                     fp_ = sp_ - argLength;
                 } else {
-                    callWrongNumberOfArgumentsViolationAfter("#<closure>",
+                    callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
                                                              requiredLength,
                                                              operand.toInt());
                 }

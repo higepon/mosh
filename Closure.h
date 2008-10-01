@@ -66,6 +66,8 @@ public:
         return freeVariables[n];
     }
 
+    Object sourceInfoString();
+
 public:
     Object* pc;
     const int argLength;

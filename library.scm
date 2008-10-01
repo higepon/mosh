@@ -1053,14 +1053,17 @@
 ;; .form (vector-for-each proc vector1 vector2 ...)
 ;; .pre-condition The vectors must all have the same length. Proc should accept as many arguments as there are vectors.
 ;; .returns unspecified.
-(define (vector-for-each proc v)
-  (let1 len (vector-length v)
-    (let loop ([i 0])
-      (cond
-       [(>= i len) '()]
-       [else
-          (proc (vector-ref v i))
-          (loop (+ i 1))]))))
+(define (vector-for-each proc v1 . v2)
+    (apply for-each proc (vector->list v1)
+           (map vector->list v2)))
+;; (define (vector-for-each proc v)
+;;   (let1 len (vector-length v)
+;;     (let loop ([i 0])
+;;       (cond
+;;        [(>= i len) '()]
+;;        [else
+;;           (proc (vector-ref v i))
+;;           (loop (+ i 1))]))))
 
 ;; Applies proc element-wise to the elements of the vectors and returns a vector of the results, in order.
 ;; .form (vector-map proc vector1 vector2 ...)

@@ -40,6 +40,7 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "TextualOutputPort.h"
+#include "Closure.h"
 
 using namespace scheme;
 
