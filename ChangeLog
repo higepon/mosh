@@ -1,4 +1,15 @@
+2008-10-01  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented all of Unicode procedures.
+
+        * lib/mosh/unicode.ss: Added string-normalize-nfc and string-normalize-nfkc.
+
+        * unicode/make-composition-exclusions-datum.scm : Added.
+
 2008-09-30  higepon  <higepon@users.sourceforge.jp>
+
+        * ArithmeticProcedures.cpp (scheme::minEx):
+                                   (scheme::maxEx): Fixed bug.
 
         * lib/mosh/unicode.ss (string-normalize-nfd): Added.
                               (string-normalize-nfkd): Added.

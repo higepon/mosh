@@ -6,16 +6,19 @@
     char-lower-case? char-title-case? char-numeric? char-general-category
     string-upcase string-downcase string-foldcase string-titlecase
     string-ci=? string-ci<=? string-ci>=? string-ci<? string-ci>?
-    string-normalize-nfd string-normalize-nfkd)
+    string-normalize-nfd string-normalize-nfkd
+    string-normalize-nfc string-normalize-nfkc)
   (import
    (rnrs mutable-strings)
+   (mosh string)
    (except (rnrs) char-upcase char-downcase char-titlecase char-foldcase
                   char-ci=? char-ci>? char-ci<? char-ci>=? char-ci<=?
                   char-whitespace? char-alphabetic? char-upper-case?
                   char-lower-case? char-title-case? char-numeric? char-general-category
                   string-upcase string-downcase string-foldcase string-titlecase
                   string-ci=? string-ci<=? string-ci>=? string-ci<? string-ci>?
-                  string-normalize-nfd string-normalize-nfkd))
+                  string-normalize-nfd string-normalize-nfkd
+                  string-normalize-nfc string-normalize-nfkc))
 
 (define (alist->eq-hash-table alist)
   (let ([hashtable (make-eq-hashtable)])
@@ -28,6 +31,25 @@
     (for-each (lambda (x) (hashtable-set! hashtable (cdr x) (car x)))
               alist)
     hashtable))
+
+(define composition-exclusion-list '(
+ 2392 2393 2394 2395 2396
+ 2397 2398 2399 2524 2525
+ 2527 2611 2614 2649 2650
+ 2651 2654 2908 2909 3907
+ 3917 3922 3927 3932 3945
+ 3958 3960 3987 3997 4002
+ 4007 4012 4025 64285 64287
+ 64298 64299 64300 64301 64302
+ 64303 64304 64305 64306 64307
+ 64308 64309 64310 64312 64313
+ 64314 64315 64316 64318 64320
+ 64321 64323 64324 64326 64327
+ 64328 64329 64330 64331 64332
+ 64333 64334 10972 119134 119135
+ 119136 119137 119138 119139 119140
+ 119227 119228 119229 119230 119231
+ 119232))
 
 (define compatible-decompose-list '( (160 . (32))
  (168 . (32 776)) (170 . (97)) (175 . (32 772)) (178 . (50)) (179 . (51))
@@ -2123,6 +2145,7 @@
 (define canonical-decompose-hashtable #f)
 (define compatible-decompose-hashtable #f)
 (define combination-class-hashtable #f)
+(define compose-hashable #f)
 
 (define (foldcase char)
   (unless foldcase-hashtable
@@ -2376,6 +2399,54 @@
                               (titlecase-first-char)))))))))
         (let ((new (titlecase-first-char)))
           (if (string=? s new) s new))))))
+
+(define (compose string)
+  (define (pair-number->symbol a b)
+    (string->symbol (format "x~d$~d" a b)))
+  (define (try-compose a b)
+    (hashtable-ref compose-hashable (pair-number->symbol (char->integer a) (char->integer b)) #f))
+  (unless compose-hashable
+    (let ([composition-exclusion-hashtable (make-eq-hashtable)])
+      (for-each
+       (lambda (x)
+         (hashtable-set! composition-exclusion-hashtable x #t))
+       composition-exclusion-list)
+    (let ([hashtable (make-eq-hashtable)])
+      (for-each
+       (lambda (compose-set)
+         (cond
+          [(and (= (length (cdr compose-set)) 2)
+                (not (hashtable-ref composition-exclusion-hashtable (cadr compose-set))))
+           (hashtable-set! hashtable (apply pair-number->symbol (cdr compose-set)) (integer->char (car compose-set)))]
+          [else
+           '()
+           ;; Ignore 1:1 mapping for Composition Exclusion.
+           ]))
+       canonical-decompose-list)
+      (set! compose-hashable hashtable))))
+  (let ([len (string-length string)])
+    (let* ([first (string-ref string 0)]
+           [first-class (if (zero? (char-combination-class first)) 0 256)])
+      (let loop ([i 1]
+                 [starter first]
+                 [starter-class first-class]
+                 [starter-pos 0]
+                 [comp-pos 1])
+      (cond ((>= i len)
+             (substring string 0 comp-pos))
+            (else
+             (let* ((this (string-ref string i))
+                    (this-class (char-combination-class this)))
+               (cond ((and (or (= starter-class 0) (< starter-class this-class))
+                           (try-compose starter this))
+                      => (lambda (composit)
+                           (string-set! string starter-pos composit)
+                           (loop (+ i 1) composit (char-combination-class composit) starter-pos comp-pos)))
+                     (else
+                      (string-set! string comp-pos this)
+                      (if (= this-class 0)
+                          (loop (+ i 1) this this-class comp-pos (+ comp-pos 1))
+                          (loop (+ i 1) starter this-class starter-pos (+ comp-pos 1))))))))))))
 ;; from ypsilon scheme 0.9.5 end
 
 (define (string-ci=? . strings)
@@ -2501,5 +2572,14 @@
                  (loop (read-char in))]))])
         (if (string=? s expanded) s expanded)))))
 
+
+
+  (define (string-normalize-nfc string)
+    (compose
+     (string-normalize-nfd string)))
+
+  (define (string-normalize-nfkc string)
+    (compose
+     (string-normalize-nfkd string)))
 
 )

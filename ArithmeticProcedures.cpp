@@ -45,7 +45,7 @@ Object scheme::maxEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
     Object maxNumber = argv[0];
     for (int i = 1; i < argc; i++) {
-        const Object number = argv[1];
+        const Object number = argv[i];
         if (numberGreater(number, maxNumber)) {
             maxNumber = number;
         }
@@ -59,7 +59,7 @@ Object scheme::minEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
     Object minNumber = argv[0];
     for (int i = 1; i < argc; i++) {
-        const Object number = argv[1];
+        const Object number = argv[i];
         if (numberLess(number, minNumber)) {
             minNumber = number;
         }

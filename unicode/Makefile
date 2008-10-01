@@ -11,7 +11,8 @@ special-lowercase-datum-inc.scm \
 canonical-decompose-datum-inc.scm\
 compatible-decompose-datum-inc.scm\
 combination-class-datum-inc.scm\
-case-folding-datum-inc.scm
+case-folding-datum-inc.scm\
+composition-exclusions-datum-inc.scm
 
 
 data/UnicodeData.txt :
@@ -25,6 +26,12 @@ data/SpecialCasing.txt:
 
 data/CaseFolding.txt:
 	(cd data && wget "http://www.unicode.org/Public/UNIDATA/CaseFolding.txt")
+
+data/CompositionExclusions.txt:
+	(cd data && wget "http://www.unicode.org/Public/UNIDATA/CompositionExclusions.txt")
+
+composition-exclusions-datum-inc.scm: make-composition-exclusions-datum.scm data/CompositionExclusions.txt
+	mosh -b $< > $@
 
 canonical-decompose-datum-inc.scm: make-canonical-decompose-datum.scm data/UnicodeData.txt
 	mosh -b $< > $@
