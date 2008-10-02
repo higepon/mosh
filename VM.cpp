@@ -950,6 +950,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(DEFINE_GLOBAL)
         {
             const Object id = fetchOperand();
+//            LOG1("define ~a\n", id);
             const Object found = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (found == notFound_) {
                 nameSpace_.toEqHashTable()->set(id, ac_);
