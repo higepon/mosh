@@ -891,7 +891,9 @@ val
 [#t (list? '(a b c))]
 [#t (list? '())]
 [#f (list? '(a . b))]
-
+["abc" "a\
+        b\
+        c"]
 ;; match
 [mosh-only (0 1 2 3 4 5)
  (match '(0 (1 2) (3 4 5))

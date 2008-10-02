@@ -1,3 +1,11 @@
+2008-10-02  higepon  <higepon@users.sourceforge.jp>
+
+        * test-data.scm: Added a test for new string style.
+
+        * reader.cpp (readString): Added "hoge \ ... style string support.
+
+        * scanner.re (scan): Added "hoge \ ... style string support.
+
 2008-10-01  higepon  <higepon@users.sourceforge.jp>
 
         * Implemented all of Unicode procedures.

@@ -1,3 +1,8 @@
+(display "WARNING: library ~s has an inconsistent dependency \
+                           on library ~s; file ~s will be recompiled from \
+                           source.\n")
+(exit)
+
 (define composition-exclusion-list '(
  2392 2393 2394 2395 2396
  2397 2398 2399 2524 2525

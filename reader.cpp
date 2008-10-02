@@ -136,6 +136,12 @@ ucs4string readString(const ucs4string& s)
                 }
                 break;
             }
+            case '\n':
+                ++it;
+                for (; *it == ' '; ++it) {
+                }
+                --it;
+                break;
             default:
                 ret += ch;
                 ret += ch2;
