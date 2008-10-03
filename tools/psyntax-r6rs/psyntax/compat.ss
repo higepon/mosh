@@ -83,6 +83,7 @@
   ;;;           (nongenerative) ; for sanity
   ;;;           (fields field* ...))]))
 
+  ;; from rev0
   (define-syntax define-record
     (lambda (stx)
       (define (iota i j)
