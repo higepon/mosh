@@ -1,3 +1,7 @@
+2008-10-03  higepon  <higepon@users.sourceforge.jp>
+
+        * freeproc.cpp (bytevectorPEx): Added bytevector?.
+
 2008-10-02  higepon  <higepon@users.sourceforge.jp>
 
         * test-data.scm: Added a test for new string style.

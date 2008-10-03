@@ -56,6 +56,12 @@ Object scheme::numberPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isInt());
 }
 
+Object scheme::bytevectorPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isByteVector());
+}
 
 Object scheme::numberTostringEx(int argc, const Object* argv)
 {

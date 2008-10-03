@@ -36,6 +36,7 @@ namespace scheme {
 
     Object dummy(Object obj);
     Object numberPEx(int argc, const Object* argv);
+    Object bytevectorPEx(int argc, const Object* argv);
     Object regexpPEx(int argc, const Object* argv);
     Object numberTostringEx(int argc, const Object* argv);
     Object charEqPEx(int argc, const Object* argv);
