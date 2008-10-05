@@ -1,3 +1,7 @@
+2008-10-05  higepon  <higepon@users.sourceforge.jp>
+
+        * Closure.cpp (Closure::sourceInfoString): Fixed SEGV when there is no source location information.
+
 2008-10-03  higepon  <higepon@users.sourceforge.jp>
 
         * freeproc.cpp (bytevectorPEx): Added bytevector?.

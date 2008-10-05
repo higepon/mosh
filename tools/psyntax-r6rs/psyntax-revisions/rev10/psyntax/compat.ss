@@ -36,7 +36,7 @@
 
   (define (read-library-source-file file-name)
 		(with-input-from-file file-name read-annotated))
-  
+
   (define make-parameter
     (case-lambda
       ((x) (make-parameter x (lambda (x) x)))
@@ -46,6 +46,22 @@
          (case-lambda
            (() x)
            ((v) (set! x (fender v))))))))
+
+;;   (define (make-parameter . args)
+;;     (cond
+;;      [(= 1 (length args))
+;;       (make-parameter (car args) (lambda (y) y))]
+;;      [(= 2 (length args))
+;;       (let ((x ((cadr args) (car args))))
+;;         (lambda s
+;;           (if (null? s)
+;;               x
+;;               (set! x ((cadr args) (car s))))))]
+;;      [else
+;;       (errror 'make-parameter "err")]))
+
+
+
 
   (define-syntax parameterize 
     (lambda (x)

@@ -38,6 +38,7 @@
 #include "freeproc.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
+#include "StringProcedures.h"
 #include "Equivalent.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "UTF8Codec.h"
@@ -46,6 +47,7 @@
 #include "EqHashTable.h"
 #include "Symbol.h"
 #include "ByteVector.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
@@ -216,7 +218,16 @@ Object scheme::gensymEx(int argc, const Object* argv)
     for (int i = 0; i < len; i++) {
         ibuf[i] = ubuf[i];
     }
-    return Symbol::intern(ibuf);
+    if (1 == argc) {
+        if (argv[1].isCProcedure()) {
+            return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, theVM->getCProcedureName(argv[1]))).toString()->data().c_str());
+        } else {
+            return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
+        }
+    } else {
+       return Object::makeSymbol(ibuf);
+    }
+//    return Symbol::intern(ibuf);
 }
 
 Object scheme::vectorPEx(int argc, const Object* argv)
@@ -376,6 +387,7 @@ Object scheme::evalEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eval");
     checkArgumentLength(2);
+//    VM_LOG1("eval=~a\n", argv[0]);
     return theVM->eval(argv[0], argv[1]);
 }
 

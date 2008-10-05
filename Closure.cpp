@@ -35,6 +35,8 @@
 #include "Pair-inl.h"
 #include "Closure.h"
 #include "StringProcedures.h"
+#include "TextualOutputPort.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 
@@ -42,8 +44,14 @@ Object Closure::sourceInfoString()
 {
     if (sourceInfo.isFalse()) {
         return "#<closure>";
+    } else if (sourceInfo.isPair()) {
+        if (sourceInfo.car().isPair()) {
+            return format(UC("~a :~a:~d"), Pair::list3(sourceInfo.cdr(), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
+        } else {
+            return format(UC("~a : unknown location"), Pair::list1(sourceInfo.cdr()));
+        }
     } else {
-        return format(UC("~a :~a:~d"), Pair::list3(sourceInfo.cdr(), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
+        return "#<closure>";
     }
 }
 
