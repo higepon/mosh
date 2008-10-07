@@ -270,12 +270,12 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         Symbol* symbol = o.toSymbol();
 //        Object s = symbol->toString();
         const ucs4string& content = symbol->c_str();//s.toString()->data();
-        bool special = content.find(' ') != ucs4string::npos;
-        if (special) {
+        bool hasSpecial = content.find(' ') != ucs4string::npos;
+        if (hasSpecial) {
             putChar('|');
         }
         putString(symbol->c_str());
-        if (special) {
+        if (hasSpecial) {
             putChar('|');
         }
     } else if (o.isRegexp()) {

@@ -951,6 +951,7 @@
     ;;; string->regexp のように型を変換するものは source の string の型に合わせたライブラリに
     ;;; => (mosh string)
     ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
+    (get-command-line mosh)
     (sys-display mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)

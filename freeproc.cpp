@@ -221,8 +221,10 @@ Object scheme::gensymEx(int argc, const Object* argv)
     if (1 == argc) {
         if (argv[1].isCProcedure()) {
             return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, theVM->getCProcedureName(argv[1]))).toString()->data().c_str());
+        } else if (argv[1].isClosure()) {
+            return Object::makeSymbol(format(UC("~aLAMBDA"), Pair::list1(ibuf)).toString()->data().c_str());
         } else {
-            return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
+            return Object::makeSymbol(ibuf);
         }
     } else {
        return Object::makeSymbol(ibuf);
