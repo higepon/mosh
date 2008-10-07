@@ -82,7 +82,7 @@ public:
         int i = 0;
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
             MOSH_ASSERT(p.car().isInt());
-            MOSH_ASSERT(p.car().toInt() >= -128 && p.car().toInt() <= 127);
+            MOSH_ASSERT(p.car().toInt() >= -128 && p.car().toInt() <= 255);
             data_[i] = p.car().toInt();
             i++;
         }

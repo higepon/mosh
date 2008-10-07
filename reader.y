@@ -90,7 +90,19 @@ list : LEFT_PAREN datum_list RIGHT_PAREN
      ;
 vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
      ;
-bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeByteVector($2); }
+bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN
+            {
+                for (Object p = $2; p.isPair(); p = p.cdr()) {
+                    const Object num = p.car();
+                    if (num.isInt() && num.toInt() >=0 && num.toInt() <= 255) {
+                        continue;
+                    } else {
+                        yyerror("malformed bytevector literal #vu8(...)");
+                        YYERROR;
+                    }
+                }
+                $$ = Object::makeByteVector($2);
+            }
      ;
 datum_list : datum_list datum
            {
@@ -113,7 +125,7 @@ extern ucs4char* token;
 int yyerror(char const *str)
 {
     TextualInputPort* const port = parser_port();
-    port->setError(format(UC("~a near ~a at ~a:~d. "),
+    port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeInt(port->getLine()))));
     return 0;
 }

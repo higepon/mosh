@@ -52,6 +52,26 @@ ucs4char ScannerHelper::hexStringToUCS4Char(ucs4char* start, ucs4char* end)
     return ret;
 }
 
+int ScannerHelper::num16StringToInt(ucs4char* start, ucs4char* end)
+{
+    MOSH_ASSERT(end - start > 2);
+    ucs4char* p = start + 2; // skip "#x" prefix
+    char* buf = new(GC) char[end - p];
+    for (int i = 0; i < end - p; i++) {
+        buf[i] = p[i];
+    }
+    errno = 0;
+    long long ret = strtoll(buf, NULL, 16);
+    if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
+        || (errno != 0 && ret == 0)) {
+        fprintf(stderr, "error num-16 buf=<%s>", buf);
+        exit(-1);
+    } else {
+        return (int)ret;
+    }
+
+}
+
 int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
 {
     char* buf = new(GC) char[end - start];

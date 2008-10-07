@@ -123,7 +123,9 @@ int Scanner::scan()
   STRING_ELEMENT         = [^\"\\] | ("\\" [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_10               = DIGIT;
+  DIGIT_16               = HEX_DIGIT;
   UINTEGER_10            = DIGIT_10 +;
+  UINTEGER_16            = DIGIT_16 +;
   NAN_INF                = "nan.0" | "inf.0";
   SIGN                   = [\+\-]?;
   EXPONENT_MARKER        = [eEsSfFdDlL];
@@ -131,12 +133,18 @@ int Scanner::scan()
   SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
   DECIMAL_10             = (UINTEGER_10 SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
   UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
+  UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16) | DECIMAL_10;
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
+  REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
   COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+-\] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+-\] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   RADIX_10               = ("#"[dD])?;
+  RADIX_16               = "#"[xX];
   EXACTNESS              = ("#"[iIeE])?;
   PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
+  PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
   NUM_10                 = PREFIX_10 COMPLEX_10;
+  NUM_16                 = PREFIX_16 COMPLEX_16;
   SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
   LETTER                 = [a-z] | [A-Z];
   CONSTITUENT            = LETTER | [\X0080-\XFFFF]; /* todo: replace \X0080-\XFFFF to Unicode category */
@@ -250,6 +258,12 @@ int Scanner::scan()
         /* it causes infinite loop. */
         NUM_10 DELMITER {
             yylval.intValue = ScannerHelper::num10StringToInt(YYTOKEN, YYCURSOR - 1);
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return NUMBER;
+        }
+        NUM_16 DELMITER {
+            yylval.intValue = ScannerHelper::num16StringToInt(YYTOKEN, YYCURSOR - 1);
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return NUMBER;

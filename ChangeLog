@@ -1,3 +1,13 @@
+2008-10-07  higepon  <higepon@users.sourceforge.jp>
+
+        * Scanner.cpp: Added #xff style number.
+
+        * scanner.re (Scanner): RADIX_16.
+
+        * ByteVector.h (scheme): Modified assert.
+
+        * reader.y (RIGHT_PAREN): Added bytevector check.
+
 2008-10-05  higepon  <higepon@users.sourceforge.jp>
 
         * Closure.cpp (Closure::sourceInfoString): Fixed SEGV when there is no source location information.

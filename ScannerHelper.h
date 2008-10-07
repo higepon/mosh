@@ -41,6 +41,7 @@ class ScannerHelper EXTEND_GC
 public:
     static ucs4char hexStringToUCS4Char(ucs4char* start, ucs4char* end);
     static int num10StringToInt(ucs4char* start, ucs4char* end);
+    static int num16StringToInt(ucs4char* start, ucs4char* end);
 };
 
 }; // namespace scheme
