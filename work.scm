@@ -1,3 +1,7 @@
+(display "a\
+        b\
+        c")
+
 (display "WARNING: library ~s has an inconsistent dependency \
                            on library ~s; file ~s will be recompiled from \
                            source.\n")

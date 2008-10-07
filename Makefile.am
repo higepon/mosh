@@ -239,7 +239,7 @@ test:all-tests.scm ./mosh
 	(cd r6rs-examples && ../mosh -b unicode-test.ss)
 
 all-tests.scm: ./test-data.scm
-	@GOSH@ ./scripts/gen-test.scm $< > $@
+	./mosh ./scripts/gen-test.scm $< > $@
 
 doc:
 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"

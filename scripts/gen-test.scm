@@ -1,6 +1,6 @@
-#!/usr/bin/env gosh
-(use gauche.sequence)
-(use util.match)
+;; #!/usr/bin/env gosh
+;; (use gauche.sequence)
+;; (use util.match)
 
 ;; Generate test.scm for C++ from test-data.scm
 
@@ -62,3 +62,5 @@
                (loop (read)))))))
   (print-footer)
   (exit 0))
+
+(main (command-line))
