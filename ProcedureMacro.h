@@ -86,7 +86,7 @@
 #define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
-#define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, symbol, compound-condition)
+#define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, record, compound-condition)
 
 #define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)
 #define argumentCheckClosure(index, variableName) checkType(index, variableName, isClosure, closure)
