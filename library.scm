@@ -1028,15 +1028,15 @@
 ;; The list->vector procedure returns a newly created vector initialized to the elements of the list list.
 ;; .returns The list->vector procedure returns a newly created vector initialized to the elements of the list list.
 ;; .example (list->vector '(dididit dah)) => #(dididit dah)
-(define (list->vector l)
-  (let* ((len (length l))
-         (v (make-vector len)))
-    (let loop ((l l) (pos 0))
-      (if (not (null? l))
-          (begin
-            (vector-set! v pos (car l))
-            (loop (cdr l) (+ pos 1)))))
-    v))
+;; (define (list->vector l)
+;;   (let* ((len (length l))
+;;          (v (make-vector len)))
+;;     (let loop ((l l) (pos 0))
+;;       (if (not (null? l))
+;;           (begin
+;;             (vector-set! v pos (car l))
+;;             (loop (cdr l) (+ pos 1)))))
+;;     v))
 
 ;; Returns a possibly improper list consisting of the elements of the first list followed by the elements of the other lists, with obj as the cdr of the final pair. An improper list results if obj is not a list.
 ;; .returns Returns a possibly improper list consisting of the elements of the first list followed by the elements of the other lists, with obj as the cdr of the final pair. An improper list results if obj is not a list.
@@ -1070,11 +1070,15 @@
 ;; .pre-condition The vectors must all have the same length. Proc should accept as many arguments as there are vectors and return a single value.
 ;; .returns a vectors
 (define (vector-map proc v)
-  (let1 len (vector-length v)
+  (let* ([length (vector-length v)]
+         [ret    (make-vector length)])
     (let loop ([i 0])
-      (if (>= i len)
-          '()
-          (list->vector (cons (proc (vector-ref v i)) (loop (+ i 1))))))))
+      (cond [(>= i length)
+             ret]
+            [else
+             (vector-set! ret i (proc (vector-ref v i)))
+             (loop (+ i 1))]))))
+
 
 ; ==============================================================================================================================================================
 ;;; Bytevectors.
@@ -2874,6 +2878,10 @@
 ;; for psyntax.pp
 (define (void) (if #f #f))
 (define (eval-core x) (eval x '()))
+
+  (define (ellipsis-map proc ls . ls*)
+    (apply map proc ls ls*))
+
 
 (define (exact? n) #t)
 (define (real? n) (number? n))

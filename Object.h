@@ -90,6 +90,7 @@ public:
     bool isProcedure() const;
     bool isHashTable() const;
     bool isPair() const;
+    bool isList() const;
     bool operator==(Object o) const;
     bool operator!=(Object o) const;
     bool isObjectPointer() const;

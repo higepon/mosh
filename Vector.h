@@ -49,7 +49,7 @@ public:
     Object* data();
 
 private:
-    const int num_;
+    int num_;
     Object* objects_;
 };
 

@@ -63,11 +63,10 @@
     const Object variableName = argv[index]; \
     if (!variableName.pred1() && !variableName.pred2()) { \
         callWrongTypeOfArgumentViolationAfter(procedureName, #required1 " or " #required2, variableName); \
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);\
         return Object::Undef; \
     } \
 
-#define argumentCheckList(index, variableName) checkTypeOr(index, variableName, isPair, isNil, pair, ())
+#define argumentCheckList(index, variableName) checkType(index, variableName, isList, list)
 #define argumentAsSymbol(index, variableName) castArgument(index, variableName, isSymbol, symbol, Symbol*, toSymbol)
 #define argumentAsVector(index, variableName) castArgument(index, variableName, isVector, vector, Vector*, toVector)
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)

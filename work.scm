@@ -1,3 +1,16 @@
+(define (vector-map2 proc v)
+  (let* ([length (vector-length v)]
+         [ret    (make-vector length)])
+    (let loop ([i 0])
+      (cond [(>= i length)
+             ret]
+            [else
+             (vector-set! ret i (proc (vector-ref v i)))
+             (loop (+ i 1))]))))
+
+
+(display (vector-map2 (lambda (x) (* x 2)) (make-vector 2 2)))
+
 (display #x11)
 (display "a\
         b\

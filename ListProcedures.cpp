@@ -38,6 +38,7 @@
 #include "Closure.h"
 #include "ListProcedures.h"
 #include "ProcedureMacro.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
@@ -141,20 +142,22 @@ Object scheme::reverseEx(int argc, const Object* argv)
 Object scheme::listPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("list?");
-    Object obj = argv[0];
-    Object seen = obj;
-    for (;;) {
-        if (obj.isNil()) return Object::True;
-        if (!obj.isPair()) return Object::False; // dot pair
-        obj = obj.cdr();
-        if (obj.isNil()) return Object::True;
-        if (!obj.isPair()) return Object::False; // dot pair
-        obj = obj.cdr();
-        seen = seen.cdr();
-        if (obj == seen) return Object::False; // circular
-    }
-    callAssertionViolationAfter(procedureName, "internal bug?");
-    return Object::Undef;
+    checkArgumentLength(1);
+    return Object::makeBool(Pair::isList(argv[0]));
+//     Object obj = argv[0];
+//     Object seen = obj;
+//     for (;;) {
+//         if (obj.isNil()) return Object::True;
+//         if (!obj.isPair()) return Object::False; // dot pair
+//         obj = obj.cdr();
+//         if (obj.isNil()) return Object::True;
+//         if (!obj.isPair()) return Object::False; // dot pair
+//         obj = obj.cdr();
+//         seen = seen.cdr();
+//         if (obj == seen) return Object::False; // circular
+//     }
+//     callAssertionViolationAfter(procedureName, "internal bug?");
+//     return Object::Undef;
 }
 
 Object scheme::memqEx(int argc, const Object* argv)
@@ -254,10 +257,13 @@ Object scheme::lengthEx(int argc, const Object* argv)
 {
     DeclareProcedureName("length");
     checkArgumentLength(1);
-
     argumentCheckList(0, list);
     int ret = 0;
-    for (Object p = list; p.isPair(); p = p.cdr()) {
+    for (Object p = list; !p.isNil(); p = p.cdr()) {
+        if (!p.isPair()) {
+            callAssertionViolationAfter(procedureName, "proper-list required", Pair::list1(list));
+            return Object::Undef;
+        }
         ret++;
     }
     return Object::makeInt(ret);
@@ -269,6 +275,7 @@ Object scheme::listTovectorEx(int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentCheckList(0, list);
+
     if (list.isPair()) {
         return Object::makeVector(list);
     } else {

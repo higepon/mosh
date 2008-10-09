@@ -113,7 +113,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     isProfiler_(isProfiler),
     maxNumValues_(256),
     numValues_(0),
-    isR6RSMode_(false)
+    isR6RSMode_(true) // temp
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -1883,7 +1883,7 @@ void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
     evaluate(getBuiltinPsyntax());
-//    load(UC("r6rs-examples/psyntax.scm"));
+//    load(UC("/Users/taro/repos-mosh/branches/newpsyntax-mosh/tools/rev0_to_10/psyntax.scm"));
 }
 
 

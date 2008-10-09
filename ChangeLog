@@ -1,3 +1,9 @@
+2008-10-09  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (vector-map): Fixed bug.
+
+        * ListProcedures.cpp : (length p) raise error when (not (list? p)).
+
 2008-10-07  higepon  <higepon@users.sourceforge.jp>
 
         * Scanner.cpp: Added #xff style number.

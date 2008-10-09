@@ -34,12 +34,15 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Vector.h"
+#include "ProcedureMacro.h" // temporary
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
 Vector::Vector(int num) : num_(num)
 {
     MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
+    printf("num=%d\n", num);fflush(stdout);
     objects_ = Object::makeObjectArray(num);
 }
 
@@ -56,10 +59,13 @@ Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
 {
 }
 
-Vector::Vector(Object pair) : num_(Pair::length(pair))
+Vector::Vector(Object pair)
 {
     MOSH_ASSERT(pair.isPair() || pair.isNil());
+    num_ = Pair::length(pair);
+    MOSH_ASSERT(num_ >= 0);
     objects_ = Object::makeObjectArray(num_);
+    MOSH_ASSERT(objects_ != NULL);
     int i = 0;
     for (Object o = pair; !o.isNil(); o = o.cdr()) {
         objects_[i] = o.car();

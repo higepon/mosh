@@ -41,8 +41,30 @@ struct Pair EXTEND_GC
     {
         if (!obj.isPair()) return 0;
         int len;
-        for (len = 1; obj.cdr() != Object::Nil; len++, obj = obj.cdr());
+        for (len = 1; obj.cdr() != Object::Nil; len++, obj = obj.cdr())
+        {
+            if (!obj.isNil() && !obj.isPair()) {
+                return -1;
+            }
+        }
         return len;
+    }
+
+    static bool isList(Object p)
+    {
+        Object obj = p;
+        Object seen = obj;
+        for (;;) {
+            if (obj.isNil()) return true;
+            if (!obj.isPair()) return false; // dot pair
+            obj = obj.cdr();
+            if (obj.isNil()) return true;
+            if (!obj.isPair()) return false; // dot pair
+            obj = obj.cdr();
+            seen = seen.cdr();
+            if (obj == seen) return false; // circular
+        }
+        return false;
     }
 
     // append!

@@ -277,6 +277,11 @@ Object Object::makeCompoundCondition(Object conditions)
                                                                                                      conditionsArray)))));
 }
 
+bool Object::isList() const
+{
+    return Pair::isList(*this);
+}
+
 
 Object* Object::makeObjectArray(int size)
 {
