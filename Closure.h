@@ -75,7 +75,7 @@ public:
     Object*  freeVariables;
     const int freeVariablesNum;
     const int maxStack;
-    const Object sourceInfo;
+    Object sourceInfo;
 };
 
 inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,

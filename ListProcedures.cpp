@@ -98,10 +98,16 @@ Object scheme::setSourceInfoDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("set-source-info!");
     checkArgumentLength(2);
-    argumentCheckPair(0, p);
+
+    const Object target = argv[0];
     const Object sourceInfo = argv[1];
-    p.toPair()->sourceInfo = sourceInfo;
-    return p;
+    if (target.isClosure()) {
+        target.toClosure()->sourceInfo = sourceInfo;
+    } else if (target.isPair()) {
+        target.toPair()->sourceInfo = sourceInfo;
+    } else {
+    }
+    return target;
 }
 
 Object scheme::nullPEx(int argc, const Object* argv)
