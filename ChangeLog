@@ -1,3 +1,7 @@
+2008-10-10  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (run): Added kind message for wrong number arguments.
+
 2008-10-09  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (vector-map): Fixed bug.

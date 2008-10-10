@@ -48,6 +48,7 @@
 #include "Symbol.h"
 #include "ByteVector.h"
 #include "TextualOutputPort.h"
+#include "Closure.h"
 
 using namespace scheme;
 
@@ -222,7 +223,10 @@ Object scheme::gensymEx(int argc, const Object* argv)
         if (argv[1].isCProcedure()) {
             return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, theVM->getCProcedureName(argv[1]))).toString()->data().c_str());
         } else if (argv[1].isClosure()) {
+//            return Object::makeSymbol(format(UC("~aLAMBDA~a"), Pair::list2(ibuf, argv[1].toClosure()->sourceInfoString())).toString()->data().c_str());
             return Object::makeSymbol(format(UC("~aLAMBDA"), Pair::list1(ibuf)).toString()->data().c_str());
+        } else if (argv[1].isSymbol()) {
+            return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
         } else {
             return Object::makeSymbol(ibuf);
         }

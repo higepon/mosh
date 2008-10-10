@@ -654,9 +654,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 } else if (requiredLength == argLength) {
                     fp_ = sp_ - argLength;
                 } else {
+                    Object args = Object::Nil;
+                    for (int i = 0; i < operand.toInt(); i++) {
+                        args = Object::cons(index(sp_, i), args);
+                    }
                     callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
                                                              requiredLength,
-                                                             operand.toInt());
+                                                             operand.toInt(),
+                                                             args);
                 }
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);
