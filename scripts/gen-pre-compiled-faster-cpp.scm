@@ -4,6 +4,7 @@
 (use file.util)
 (use gauche.sequence)
 (use gauche.parseopt)
+(use gauche.test)
 
 (define vector->list-table (make-hash-table 'eq?))
 
@@ -31,6 +32,7 @@
      [(null? lst) '()]
      [(number? (car lst))
       (rec (cdr lst))]
+     [(not (pair? lst)) '()]
      [(and (pair? (car lst)) (eq? (caar lst) '*insn*))
       (rec (cdr lst))]
      [(and (pair? (car lst)) (eq? (caar lst) '*compiler-insn*))
@@ -44,10 +46,58 @@
             (append (list vlist) (rec vlist) (rec (cdr lst)))))]
      [(list? (car lst))
       (append (list (car lst)) (rec (car lst)) (rec (cdr lst)))]
+     [(pair? (car lst))
+      (append (rec (list (caar lst))) (rec #?= (cdar lst)))]
      [else
       (rec (cdr lst))]))
   (reverse (rec lst)))
 
+(define (collect-list obj)
+  (define (rec obj)
+  (cond
+   [(and (list? obj) (not (null? obj)) (eq? (car obj) '*insn*))
+    (rec (second obj))]
+   [(and (list? obj) (not (null? obj)) (eq? (car obj) '*compiler-insn*))
+    (rec (second obj))]
+   [(and (list? obj) (not (null? obj)))
+    (append
+     (append-map
+      rec
+      (reverse obj))
+     (list obj))]
+   [(pair? obj)
+;    (display "hoge2")(flush-all-ports)
+    (append (rec (cdr obj)) (rec (car obj)))]
+   [(vector? obj)
+    (let1 vlist (my-vector->list obj)
+        (if (null? vlist)
+            '()
+            (rec vlist)))]
+   [else
+    '()]))
+  (append-map rec (reverse obj)))
+
+(define-syntax eqt
+  (syntax-rules ()
+    ((_ a b)
+     (test* (quote b) a b))))
+
+(cond-expand
+ (test ;; gauche
+  (eqt '((a b c)) (collect-list '((a b c))))
+  (eqt '((d e) (a b c)) (collect-list '((a b c) (d e))))
+  (eqt '((d e) (a b c)) (collect-list '(#(a b c) (d e))))
+  (eqt '((d e) (b c) (a (b c))) (collect-list '(#(a (b c)) (d e))))
+
+  ;; dot pairs
+  (eqt () (collect-list '(a . b)))
+  (eqt () (collect-list '((a . b))))
+  (eqt '((a)) (collect-list '(((a) . b))))
+  (eqt '((each (any any . each-any))) (collect-list '((_ . #(each (any any . each-any))))))
+  )
+ (else '()))
+
+;(exit)
 (define ht (make-hash-table))
 (define inc 0)
 

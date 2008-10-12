@@ -3422,3 +3422,9 @@
          [(eof-object? line) (reverse ret)]
          [else
           (loop (read-line) (cons line ret))])))))
+
+(define-macro (case-lambda . x)
+  `(lambda args
+     ((match-lambda
+          ,@x)
+      args)))

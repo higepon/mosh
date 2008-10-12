@@ -1888,6 +1888,7 @@
                                 defmacro
                                 match-let1
                                 gentemp
+                                case-lambda
                                 match
                                 match-lambda
                                 match-lambda*

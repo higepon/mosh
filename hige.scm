@@ -1,4 +1,5 @@
 (library (hige)
          (export)
          (import (rnrs))
+         (car 3)
 (define a 3))

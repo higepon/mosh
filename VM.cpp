@@ -112,8 +112,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     profilerRunning_(false),
     isProfiler_(isProfiler),
     maxNumValues_(256),
-    numValues_(0),
-    isR6RSMode_(true) // temp
+    numValues_(0)
+//    isR6RSMode_(true) // temp
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);

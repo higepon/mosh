@@ -1,8 +1,16 @@
-2008-10-11  higepon  <higepon@users.sourceforge.jp>
+2008-10-12  higepon  <higepon@users.sourceforge.jp>
 
         * Added let*-values,
 
-        * Added source information to error message of R6RS mode.
+        * Added case-lambda.
+
+        * Added source information to psyntax error message.
+
+        * r6rs-examples/psyntax.scm: Added newest version rev 10 of psyntax.
+
+        * scripts/gen-pre-compiled-faster-cpp.scm (collect-list): Added dot-pair support for (collect-list '(((#(scheme-id else) any . each-any)))).
+
+        * library.scm (case-lambda): Added case-lambda.
 
 2008-10-10  higepon  <higepon@users.sourceforge.jp>
 
