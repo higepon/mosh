@@ -82,7 +82,7 @@ mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 MOSHLIB_CXXFLAGS   = -fomit-frame-pointer $(mosh_OPTS) # compile libraries with -O0
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm r6rs-examples/psyntax.scm
+data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
 
 noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
@@ -99,7 +99,7 @@ mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) $(noinst_LIBRARIES)
 # # generated files should be listed here.
 # BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm r6rs-examples/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
 
 GENERATED = \
 all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
@@ -111,31 +111,6 @@ compiler-vm.scm compiler-with-library.scm Instruction.h
 CLEANFILES =
 MAINTAINERCLEANFILES = $(GENERATED)
 
-PSYNTAX_DIR=tools/psyntax-r6rs
-PSYNTAX_SRC_DIR=$(PSYNTAX_DIR)/psyntax
-
-PSYNTAX_COMMON_SRC= \
-$(PSYNTAX_SRC_DIR)/compat.ss \
-$(PSYNTAX_SRC_DIR)/config.ss \
-$(PSYNTAX_SRC_DIR)/internal.ss \
-$(PSYNTAX_SRC_DIR)/library-manager.ss
-
-PSYNTAX_MOSH_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander-mosh.ss $(PSYNTAX_SRC_DIR)/main-mosh.ss
-
-PSYNTAX_SRC=$(PSYNTAX_COMMON_SRC) $(PSYNTAX_SRC_DIR)/expander.ss $(PSYNTAX_SRC_DIR)/main.ss
-
-r6rs-examples/psyntax.scm: $(PSYNTAX_DIR)/psyntax-buildscript-mosh.ss $(PSYNTAX_MOSH_SRC) $(PSYNTAX_DIR)/psyntax.pp $(PSYNTAX_DIR)/gosh.r6rs.ss
-	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript-mosh.ss)
-	echo "please make install ***** "
-
-$(PSYNTAX_DIR)/psyntax.pp: $(PSYNTAX_DIR)/psyntax-buildscript.ss $(PSYNTAX_SRC)
-	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript.ss)
-
-# update psyntax
-# psyntax-buildscript.ss を更新する
-psyntax-update:
-	(cd $(PSYNTAX_DIR) && gosh gosh.r6rs.ss psyntax-buildscript.ss)
-
 reader.tab.cpp: reader.y
 	bison -d $< -o $@
 
@@ -143,28 +118,10 @@ Scanner.cpp : scanner.re
 	/usr/local/bin/re2c -udg $< > $@ # -d is debug option
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-# reader.lex.yy.cpp: reader.lex
-# 	flex -o $@ $<
-
-
-# psyntax-mosh-p:
-# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh -p ./mosh.r6rs.ss ./hello.scm)
-
-# psyntax-mosh:
-# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && $(HOME)/mosh/mosh ./mosh.r6rs.ss ./hello.scm)
-
-# psyntax-gosh:
-# 	(cd tools/psyntax-r6rs/ && cp pre-built/psyntax-mosh.pp psyntax.pp && gosh ./gosh.r6rs.ss ./hello.scm)
-
 r6rs-test:
 	(cd r6rs-examples && ../mosh -b hello.ss)
 	(cd r6rs-examples && ../mosh -b let-syntax.ss)
 	(cd r6rs-examples && ../mosh -b env.ss)
-
-
-#compiler build without -O2
-# mosh-compiler.o: compiler.cpp
-# 	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(mosh_CXXFLAGS) $(CXXFLAGS) -O0 -fomit-frame-pointer -MT mosh-compiler.o -MD -MP -MF $(DEPDIR)/mosh-compiler.Tpo -c -o mosh-compiler.o `test -f 'compiler.cpp' || echo '$(srcdir)/'`compiler.cpp
 
 #### Instruction.h
 Instruction.h: ./instruction.scm
@@ -177,7 +134,6 @@ BuiltinSymbols.cpp: $(PRECOMPILE_SRC) #compiler-with-library.scmc match.scmc psy
 compiler.cpp: compiler-with-library.scmc $(PRECOMPILE_SRC) #match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
-# あとで svn remove すること
 psyntax.cpp: psyntax.scmc $(PRECOMPILE_SRC) ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinPsyntax" $(PWD)/$< > $(PWD)/$@
 
@@ -193,7 +149,7 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
-psyntax.scmc: r6rs-examples/psyntax.scm ./compiler-vm.scm
+psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
