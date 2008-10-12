@@ -1,5 +1,7 @@
 2008-10-12  higepon  <higepon@users.sourceforge.jp>
 
+        * Addes psyntax/rev0_to10 directory.
+
         * Added let*-values,
 
         * Added case-lambda.
