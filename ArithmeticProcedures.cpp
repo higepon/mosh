@@ -156,6 +156,23 @@ Object scheme::divideEx(int argc, const Object* argv)
     return ret;
 }
 
+Object scheme::quotientEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("quotient");
+    checkArgumentLength(2);
+    return divideEx(argc, argv);
+}
+
+Object scheme::remainderEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("remainder");
+    checkArgumentLength(2);
+    argumentAsInt(0, a);
+    argumentAsInt(1, b);
+    return Object::makeInt(a % b);
+}
+
+
 Object scheme::eqEx(int argc, const Object* argv)
 {
     DeclareProcedureName("=");

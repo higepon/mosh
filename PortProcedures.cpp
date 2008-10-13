@@ -30,6 +30,7 @@
  */
 
 #include <dirent.h>
+#include <unistd.h> // getcwd
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -58,6 +59,25 @@ bool scheme::fileExistsP(const ucs4string& file)
         fclose(stream);
         return true;
     }
+}
+
+Object scheme::currentDirectoryEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("current-directory");
+    checkArgumentLength(0);
+
+    char buf[PATH_MAX];
+    if (getcwd(buf, PATH_MAX) == NULL) {
+        return Object::Undef;
+    }
+    return Object::makeString(buf);
+}
+
+Object scheme::standardLibraryPathEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("standard-library-path");
+    checkArgumentLength(0);
+    return Object::makeString(UC(MOSH_LIB_PATH));
 }
 
 Object scheme::lookaheadCharEx(int argc, const Object* argv)

@@ -41,9 +41,11 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander.ss"
+;;     "psyntax/unicode2.ss"
+;;     "psyntax/unicode.ss"
     "/home/taro/mosh/lib/mosh/condition.ss"
     "/home/taro/mosh/lib/mosh/io/conditions.ss"
-    "/home/taro/mosh/lib/mosh/unicode.ss"
+;    "/home/taro/mosh/lib/mosh/unicode.ss"
     "psyntax/main.ss"))
 
 
@@ -1081,6 +1083,8 @@
     (file->string mosh-file)
     (file->list mosh-file)
     (write-to-file mosh-file)
+    (current-directory mosh-file)
+    (standard-library-path mosh)
     (format mosh-string)
     (print mosh-string)
     (alist-cons srfi-1)

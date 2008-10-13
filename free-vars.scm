@@ -216,6 +216,10 @@
     (min ,min)
     (lookahead-char ,(lambda e "not implemented"))
     (bytevector? ,(lambda e "not implemented"))
+    (current-directory ,(lambda e "not implemented"))
+    (standard-library-path ,(lambda e "not implemented"))
+    (quotient ,(lambda e "not implemented"))
+    (remainder ,(lambda e "not implemented"))
 
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))

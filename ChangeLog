@@ -1,3 +1,7 @@
+2008-10-13  higepon  <higepon@users.sourceforge.jp>
+
+        * PortProcedures.cpp : Added current-directory and standard-library-path.
+
 2008-10-12  higepon  <higepon@users.sourceforge.jp>
 
         * Addes psyntax/rev0_to10 directory.

@@ -37,6 +37,8 @@
 
 namespace scheme {
 
+    Object quotientEx(int argc, const Object* argv);
+    Object remainderEx(int argc, const Object* argv);
     Object maxEx(int argc, const Object* argv);
     Object minEx(int argc, const Object* argv);
     Object eqEx(int argc, const Object* argv);

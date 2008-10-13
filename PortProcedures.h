@@ -37,6 +37,8 @@
 namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
+    Object currentDirectoryEx(int argc, const Object* argv);
+    Object standardLibraryPathEx(int argc, const Object* argv);
     Object standardInputPortEx(int argc, const Object* argv);
     Object bytevectorU8SetDEx(int argc, const Object* argv);
     Object lookaheadCharEx(int argc, const Object* argv);

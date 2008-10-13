@@ -45,6 +45,7 @@
     (psyntax expander)
     (psyntax config)
     (mosh string)
+    (mosh file)
 ;    (only (ironscheme core) get-command-line format)
 ;    (ironscheme files)
 ;    (ironscheme library)
@@ -163,7 +164,9 @@
   (set-symbol-value! 'trace-printer trace-printer)
 
 ;  (library-path (get-library-paths))
-  (library-path '("." "/tmp/"))
+;  (library-path '("." "/tmp/"))
+  (library-path (list (string-append (current-directory) "/lib")
+                  (string-append (standard-library-path) "/lib")))
 
 ;;   (define (print-record x)
 ;;     (display "hige")

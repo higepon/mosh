@@ -1,3 +1,12 @@
+(display (char->integer #\:))
+(newline)
+(display (quotient (char->integer #\:) 16))
+(newline)
+(display (remainder (char->integer #\:) 16))
+
+
+(display (standard-library-path))
+
 (define (vector-map2 proc v)
   (let* ([length (vector-length v)]
          [ret    (make-vector length)])
