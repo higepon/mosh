@@ -109,7 +109,6 @@
           ((closure)   (pre-compile-r6rs-top-level x*))
           ((load)
             (parameterize ([command-line (cons filename (map (lambda (x) (format "~a" x)) args))])
-;              (display (compile-r6rs-top-level x*))
               ((compile-r6rs-top-level x*))))
           ((compile)
               (begin
@@ -162,6 +161,8 @@
   (set-symbol-value! 'expanded2core expanded->core)
 
   (set-symbol-value! 'trace-printer trace-printer)
+  (set-symbol-value! 'compile-r6rs-top-level 'compile-r6rs-top-level)
+
 
 ;  (library-path (get-library-paths))
 ;  (library-path '("." "/tmp/"))

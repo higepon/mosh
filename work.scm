@@ -1,3 +1,5 @@
+(call-with-values (lambda () (values 1 2 3)) (lambda (x y z) (+ x y z)))
+(exit)
 (display (char->integer #\:))
 (newline)
 (display (quotient (char->integer #\:) 16))

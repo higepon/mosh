@@ -1027,6 +1027,7 @@
            (build-void)
            (build-sequence no-source
              (chi-expr* (cons e e*) r mr)))))))
+
   
   (define if-transformer
     (lambda (e r mr)
@@ -1209,6 +1210,10 @@
                 (syntax-match (car lhs*) ()
                   [(x* ...) 
                    (let-values ([(y* old* new*) (rename* x* old* new*)])
+;;                      `(receive
+;;                           ,y*
+;;                           ,(car rhs*)
+;;                         ,(f (cdr lhs*) (cdr rhs*) old* new*)))]
                      `(call-with-values 
                         (lambda () ,(car rhs*))
                         (lambda ,y* 
@@ -4022,6 +4027,8 @@
       (let-values (((lib* invoke-code) (top-level-expander x*)))
         (lambda ()
           (for-each invoke-library lib*)
+          (when (symbol-value 'debug-expand)
+            (format #t "psyntax expanded=~a\n" (expanded->core invoke-code)))
           (eval-core (expanded->core invoke-code))))))
           
   (define pre-compile-r6rs-top-level

@@ -1118,7 +1118,6 @@
     (dotted-list? srfi-1)
     (read-line mosh-file)
     (regexp? r)
-;    (receive srfi-8)
     ;;;
     (char-ready?                                )
     (interaction-environment                    )

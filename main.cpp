@@ -121,10 +121,11 @@ int main(int argc, char *argv[])
     bool isR6RSBatchMode = false;
     bool isCompareRead   = false;
     bool isParrot        = false;
+    bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
 
 
-    while ((opt = getopt(argc, argv, "htvpVcl:brz")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:brze")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -155,6 +156,9 @@ int main(int argc, char *argv[])
             break;
         case 'z':
             isParrot = true;
+            break;
+        case 'e':
+            isDebugExpand = true;
             break;
         default:
             fprintf(stderr, "invalid option %c", opt);
@@ -223,6 +227,7 @@ int main(int argc, char *argv[])
             theVM->getOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
+        theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->activateR6RSMode();
     } else if (isCompareRead) {
         compareRead(argv[optind]);
