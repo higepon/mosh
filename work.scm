@@ -1,4 +1,11 @@
-(call-with-values (lambda () (values 1 2 3)) (lambda (x y z) (+ x y z)))
+;; (receive (a b) (values 1 2 3)
+;;   (display (+ a b)))
+
+;(receive vals (producer) (apply consumer vals)))
+
+(receive vals ((lambda () (values 1 2 3))) (apply (lambda (x y) (+ x y)) vals))
+
+;(call-with-values (lambda () (values 1 2 3)) (lambda (x y) (+ x y)))
 (exit)
 (display (char->integer #\:))
 (newline)
