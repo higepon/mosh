@@ -1,5 +1,8 @@
-(import (rnrs))
+(import (rnrs)
+        (srfi :8))
 
-(let-values (((x y) (values 1 2 3)))
-  (+ x y))
+(display (receive (a b . c) (values 1 2 3 4 5)
+         (apply + a b c)))
+(display "hige")
+
 

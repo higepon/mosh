@@ -1,3 +1,9 @@
+2008-10-14  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/srfi/%3A8.ss: Added srfi-8 support for R6RS.
+
+        * Makefile.am (nobase_data_DATA): Added installation of srfi/%3A8.ss
+
 2008-10-13  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : Added current-directory and standard-library-path.

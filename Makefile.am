@@ -82,7 +82,8 @@ mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 MOSHLIB_CXXFLAGS   = -fomit-frame-pointer $(mosh_OPTS) # compile libraries with -O0
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
+data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/srfi/%3A8.ss
+nobase_data_DATA = lib/srfi/%3A8.ss
 
 noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
@@ -188,11 +189,13 @@ check:test
 test:all-tests.scm ./mosh
 	./mosh -r test/reader.scm
 	./mosh all-tests.scm
-	(cd r6rs-examples && ../mosh -b record-test.ss)
-	(cd r6rs-examples && ../mosh -b condition-test.ss)
-	(cd r6rs-examples && ../mosh -b exception-test.ss)
+	./mosh -b r6rs-examples/srfi8-test.ss
+	./mosh -b r6rs-examples/record-test.ss
+	./mosh -b r6rs-examples/condition-test.ss
+	./mosh -b r6rs-examples/exception-test.ss
+	./mosh -b r6rs-examples/unicode-test.ss
 	(cd r6rs-test-suite && $(MAKE) $@)
-	(cd r6rs-examples && ../mosh -b unicode-test.ss)
+
 
 all-tests.scm: ./test-data.scm
 	./mosh ./scripts/gen-test.scm $< > $@
