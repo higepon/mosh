@@ -49,6 +49,7 @@
     (psyntax compat)
     (psyntax config)
     (psyntax internal)
+    (mosh string)
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
     (prefix (rnrs syntax-case) sys.))
 
@@ -3556,6 +3557,9 @@
         (let-values (((exp-int* exp-ext*) (parse-exports exp*)))
           (let-values (((subst-names subst-labels)
                         (parse-import-spec* imp*)))
+;            (format #t "subst-names=~a\n" subst-names)
+;            (format #t "subst-labels=~a\n" subst-labels)
+;            (format #t "imp*=~a\n" imp*)
             (let ((rib (make-top-rib subst-names subst-labels)))
               (let ((b* (map (lambda (x) 
                                (make-stx x top-mark* (list rib) '()))

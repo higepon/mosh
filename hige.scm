@@ -1,5 +1,5 @@
-(library (hige)
-         (export)
-         (import (rnrs))
-         (car 3)
-(define a 3))
+(import (rnrs))
+
+(let-values (((x y) (values 1 2 3)))
+  (+ x y))
+

@@ -41,11 +41,8 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander.ss"
-;;     "psyntax/unicode2.ss"
-;;     "psyntax/unicode.ss"
-    "/home/taro/mosh/lib/mosh/condition.ss"
-    "/home/taro/mosh/lib/mosh/io/conditions.ss"
-;    "/home/taro/mosh/lib/mosh/unicode.ss"
+    "/Users/taro/mosh/lib/mosh/condition.ss"
+    "/Users/taro/mosh/lib/mosh/io/conditions.ss"
     "psyntax/main.ss"))
 
 
