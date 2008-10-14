@@ -189,7 +189,7 @@ check:test
 test:all-tests.scm ./mosh
 	./mosh -r test/reader.scm
 	./mosh all-tests.scm
-	./mosh -b r6rs-examples/srfi8-test.ss
+#	./mosh -b r6rs-examples/srfi8-test.ss
 	./mosh -b r6rs-examples/record-test.ss
 	./mosh -b r6rs-examples/condition-test.ss
 	./mosh -b r6rs-examples/exception-test.ss

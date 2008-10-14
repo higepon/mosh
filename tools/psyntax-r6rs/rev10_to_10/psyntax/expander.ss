@@ -50,6 +50,7 @@
     (psyntax config)
     (psyntax internal)
     (mosh string)
+;    (mosh backend)
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
     (prefix (rnrs syntax-case) sys.))
 
@@ -1028,6 +1029,22 @@
            (build-sequence no-source
              (chi-expr* (cons e e*) r mr)))))))
 
+;;   (define receive-transformer
+;;     (lambda (e r mr)
+;;       (display "************** in ")
+;;       (format #t "e=~a r=~a mr=~a" e r mr)
+;;       (syntax-match e ()
+;;         ((_ fmls producer b b* ...)
+;;          (let-values (((fmls body)
+;;                        (chi-lambda-clause e fmls
+;;                           (cons b b*) r mr)))
+;;            (build-receive no-source
+;;                           fmls
+;;                           (chi-expr producer r mr)
+;;                           body
+;;                           )))))))
+
+
   
   (define if-transformer
     (lambda (e r mr)
@@ -1210,14 +1227,14 @@
                 (syntax-match (car lhs*) ()
                   [(x* ...) 
                    (let-values ([(y* old* new*) (rename* x* old* new*)])
-                     `(receive
-                          ,y*
-                          ,(car rhs*)
-                        ,(f (cdr lhs*) (cdr rhs*) old* new*)))]
-;;                      `(call-with-values 
-;;                         (lambda () ,(car rhs*))
-;;                         (lambda ,y* 
-;;                           ,(f (cdr lhs*) (cdr rhs*) old* new*))))]
+;;                      `(receive
+;;                           ,y*
+;;                           ,(car rhs*)
+;;                         ,(f (cdr lhs*) (cdr rhs*) old* new*)))]
+                     `(call-with-values 
+                        (lambda () ,(car rhs*))
+                        (lambda ,y* 
+                          ,(f (cdr lhs*) (cdr rhs*) old* new*))))]
                   [(x* ... . x)
                    (let*-values ([(y old* new*) (rename x old* new*)]
                                  [(y* old* new*) (rename* x* old* new*)])
@@ -2630,6 +2647,7 @@
         ((record-type-descriptor) record-type-descriptor-transformer)
         ((record-constructor-descriptor) record-constructor-descriptor-transformer)
         ((fluid-let-syntax)       fluid-let-syntax-transformer)
+;        ((receive)                 receive-transformer) ;; for Mosh
         (else (assertion-violation 
                 'macro-transformer
                 "BUG: cannot find transformer"

@@ -69,7 +69,7 @@
     (unless              (core-macro . unless))
     (parameterize        (core-macro . parameterize))
     (case                (core-macro . case))
-    (receive             (core-macro . receive))
+;    (receive             (core-macro . receive))
     (record-type-descriptor (core-macro . record-type-descriptor))
     (record-constructor-descriptor (core-macro . record-constructor-descriptor))
     (define-struct       (macro . define-struct))
@@ -178,6 +178,7 @@
     (when                (core-macro . when))         
     (unless              (core-macro . unless))
     (parameterize        (core-macro . parameterize))
+;    (receive             (core-macro . receive))
     (case                (core-macro . case))
     (record-type-descriptor (core-macro . record-type-descriptor))
     (record-constructor-descriptor (core-macro . record-constructor-descriptor))
@@ -305,7 +306,7 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
-    (mosh-backend        (mosh-backend)                #f    #t)  ;; for mosh
+    (mosh-backend        (mosh backend)                #f    #t)  ;; for mosh
     (mosh-file   (mosh file)                           #f    #t)  ;; for mosh
     (mosh-bytevector (mosh bytevector)                 #f    #t)  ;; for mosh
     (mosh-number (mosh number)                         #f    #t)  ;; for mosh

@@ -24,7 +24,7 @@
     build-global-assignment build-global-definition build-lambda
     build-case-lambda build-let build-primref build-foreign-call
     build-data build-sequence build-void build-letrec build-letrec*
-    build-global-define build-library-letrec*)
+    build-global-define build-library-letrec* build-receive)
   (import (rnrs) (psyntax compat) (psyntax config))
 
   (define (build-global-define x)
@@ -143,6 +143,11 @@
   (define build-library-letrec*
     (lambda (ae name vars locs val-exps body-exp)
       `(library-letrec* ,name ,(map list vars locs val-exps) ,body-exp)))
+  (define build-receive
+    (lambda (ae vars producer body*)
+      (display "************** in ")
+      `(receive ,vars ,producer ,@body*)))
+
 
   )
 
