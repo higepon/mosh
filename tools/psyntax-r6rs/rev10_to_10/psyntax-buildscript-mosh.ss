@@ -305,6 +305,7 @@
     ($all        (psyntax system $all)                 #f    #t)
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
+    (mosh-backend        (mosh-backend)                #f    #t)  ;; for mosh
     (mosh-file   (mosh file)                           #f    #t)  ;; for mosh
     (mosh-bytevector (mosh bytevector)                 #f    #t)  ;; for mosh
     (mosh-number (mosh number)                         #f    #t)  ;; for mosh
@@ -1062,6 +1063,7 @@
     ;;; string->regexp のように型を変換するものは source の string の型に合わせたライブラリに
     ;;; => (mosh string)
     ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
+    (receive mosh-backend) ;; I want psyntax pass through "receive" to backend(Mosh).
     (set-source-info! mosh)
     (source-info mosh)
     (sys-display mosh)

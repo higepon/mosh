@@ -1210,14 +1210,14 @@
                 (syntax-match (car lhs*) ()
                   [(x* ...) 
                    (let-values ([(y* old* new*) (rename* x* old* new*)])
-;;                      `(receive
-;;                           ,y*
-;;                           ,(car rhs*)
-;;                         ,(f (cdr lhs*) (cdr rhs*) old* new*)))]
-                     `(call-with-values 
-                        (lambda () ,(car rhs*))
-                        (lambda ,y* 
-                          ,(f (cdr lhs*) (cdr rhs*) old* new*))))]
+                     `(receive
+                          ,y*
+                          ,(car rhs*)
+                        ,(f (cdr lhs*) (cdr rhs*) old* new*)))]
+;;                      `(call-with-values 
+;;                         (lambda () ,(car rhs*))
+;;                         (lambda ,y* 
+;;                           ,(f (cdr lhs*) (cdr rhs*) old* new*))))]
                   [(x* ... . x)
                    (let*-values ([(y old* new*) (rename x old* new*)]
                                  [(y* old* new*) (rename* x* old* new*)])
