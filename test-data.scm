@@ -1592,4 +1592,10 @@ val
 (#vu8(1 2 3 4) (u8-list->bytevector '(1 2 3 4)))
 (error (u8-list->bytevector '(1 2 3 -1 4)))
 ((1 2 3 4) (bytevector->u8-list #vu8(1 2 3  4)))
+(#xff00 (bytevector-u16-ref #vu8(#xff 0) 0 'little))
+(#x00ff (bytevector-u16-ref #vu8(#xff 0) 0 'big))
+(error (bytevector-u16-ref #vu8(#xff 0) 1 'little))
+(error (bytevector-u16-ref #vu8(#xff 0) 1 'big))
+(-3 (bytevector-s16-ref #vu8(#xff #xfd) 0 'big))
+(-3 (bytevector-s16-ref #vu8(#xff #xfd) 0 'little))
 

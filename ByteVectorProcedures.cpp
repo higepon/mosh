@@ -76,6 +76,24 @@ Object scheme::bytevectorU16NativeRefEx(int argc, const Object* argv)
 }
 Object scheme::bytevectorS16RefEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("bytevector-s16-ref");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentCheckSymbol(2, endianness);
+    if (!bytevector->isValid16RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        return Object::makeInt(bytevector->s16RefLittle(index));
+    } else if (endianness == Symbol::BIG) {
+        return Object::makeInt(bytevector->s16RefBig(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+        return Object::Undef;
+    }
 }
 
 //(bytevector-u16-ref bytevector k endianness)

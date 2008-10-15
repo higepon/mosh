@@ -1,3 +1,7 @@
+2008-10-16  higepon  <higepon@users.sourceforge.jp>
+
+        * ByteVectorProcedures.cpp (scheme::bytevectorU16RefEx): Added bytevector-u16-ref.
+
 2008-10-15  higepon  <higepon@users.sourceforge.jp>
 
         * ByteVectorProcedures.cpp (bytevectorEqPEx): Added bytevector=?.

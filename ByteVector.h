@@ -121,14 +121,23 @@ public:
 
     uint16_t u16RefLittle(int index)
     {
-        return (data_[index] << 16) | data_[index + 1];
+        return (data_[index] << 8) | data_[index + 1];
     }
 
     uint16_t u16RefBig(int index)
     {
-        return (data_[index + 1] << 16) | data_[index];
+        return (data_[index + 1] << 8) | data_[index];
     }
 
+    int16_t s16RefLittle(int index)
+    {
+        return ((data_[index] << 8) | data_[index + 1]);
+    }
+
+    int16_t s16RefBig(int index)
+    {
+        return ((data_[index + 1] << 8) | data_[index]);
+    }
 
 
     void fill(uint8_t value)
