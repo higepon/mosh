@@ -381,19 +381,6 @@ Object scheme::getU8Ex(int argc, const Object* argv)
     return Object::makeInt(binaryInputPort->getU8());
 }
 
-Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("bytevector-u8-set!");
-    checkArgumentLength(3);
-
-    argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
-
-    bytevector->u8set(index, static_cast<uint8_t>(value));
-    return Object::Undef;
-}
-
 Object scheme::transcodedPortEx(int argc, const Object* argv)
 {
     DeclareProcedureName("transcoded-port");

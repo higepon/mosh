@@ -1,3 +1,9 @@
+(display (native-endianness))
+(display (bytevector? 'a))
+(display (make-bytevector 3))
+(display (make-bytevector 3 4))
+(newline)
+(exit)
 ;; (receive (a b) (values 1 2 3)
 ;;   (display (+ a b)))
 

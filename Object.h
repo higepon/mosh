@@ -159,7 +159,8 @@ public:
     static Object makeEqvHashTable();
     static Object makeCProcedure(Object (*proc)(int, const Object*));
     static Object makeBox(Object o);
-    static Object makeByteVector(int n, int8_t v = 0);
+    static Object makeByteVector(int n);
+    static Object makeByteVector(int n, int8_t v);
     static Object makeByteVector(ByteVector* b);
     static Object makeByteVector(Object pair);
     static Object makeByteVector(const gc_vector<uint8_t>& v);

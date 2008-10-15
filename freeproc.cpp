@@ -327,40 +327,6 @@ Object scheme::initLibraryTableEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("bytevector-u8-ref");
-    checkArgumentLength(2);
-
-    argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    return bytevector->u8Ref(index);
-}
-
-Object scheme::bytevectorLengthEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("bytevector-length");
-    checkArgumentLength(1);
-
-    argumentAsByteVector(0, bytevector);
-    return Object::makeInt(bytevector->length());
-}
-
-Object scheme::getBytevectorNEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("get-byte-vector-n");
-    checkArgumentLength(2);
-
-    argumentAsBinaryInputPort(0, binaryInputPort);
-    argumentAsInt(1, count);
-
-    ByteVector* ret = binaryInputPort->getByteVector(count);
-    if (ret->length() == 0) {
-        return Object::Eof;
-    } else {
-        return Object::makeByteVector(ret);
-    }
-}
 
 Object scheme::utf8TostringEx(int argc, const Object* argv)
 {

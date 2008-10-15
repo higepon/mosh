@@ -62,11 +62,7 @@ namespace scheme {
     Object pairPEx(int argc, const Object* argv);
     Object initLibraryTableEx(int argc, const Object* argv);
     Object map10Ex(int argc, const Object* argv);
-    Object bytevectorU8SetDEx(int argc, const Object* argv);
-    Object bytevectorU8RefEx(int argc, const Object* argv);
-    Object bytevectorLengthEx(int argc, const Object* argv);
     Object standardInputPortEx(int argc, const Object* argv);
-    Object getBytevectorNEx(int argc, const Object* argv);
     Object utf8TostringEx(int argc, const Object* argv);
     Object vectorEx(int argc, const Object* argv);
     //    Object errorfEx(int argc, const Object* argv);

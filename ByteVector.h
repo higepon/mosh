@@ -136,6 +136,21 @@ public:
         return data_;
     }
 
+    bool equal(ByteVector* bytevector) const
+    {
+        if (bytevector->length() == length()) {
+            return memcmp(bytevector->data(), data(), length()) == 0;
+        } else {
+            return false;
+        }
+    }
+
+    static bool isValidValue(int value)
+    {
+        return (value >= -128 && value <= 255);
+    }
+
+
 private:
     int8_t* data_;
     const int num_;

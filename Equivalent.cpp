@@ -39,6 +39,7 @@
 #include "Record.h"
 #include "CProcedure.h"
 #include "EqHashTable.h"
+#include "ByteVector.h"
 #include "Equivalent.h"
 
 using namespace scheme;
@@ -152,6 +153,18 @@ entry:
             return false;
         }
     }
+
+    if (object1.isByteVector()) {
+        if (object2.isByteVector()) {
+            ByteVector* const bv1 = object1.toByteVector();
+            ByteVector* const bv2 = object2.toByteVector();
+            return bv1->equal(bv2);
+        } else {
+            return false;
+        }
+    }
+
+
 
     return eqv(object1, object2);
 }

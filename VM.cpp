@@ -50,6 +50,7 @@
 #include "ErrorProcedures.h"
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"
+#include "ByteVectorProcedures.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"

@@ -1,3 +1,19 @@
+2008-10-15  higepon  <higepon@users.sourceforge.jp>
+
+        * ByteVectorProcedures.cpp (bytevectorEqPEx): Added bytevector=?.
+
+        * ByteVector.h (equal): Added.
+
+        * ByteVectorProcedures.cpp (makeBytevectorEx): Added make-bytevector.
+
+        * Equivalent.cpp (equal): Added bytevector compare.
+
+        * ByteVectorProcedures.cpp (nativeEndiannessEx): Added native-endianness.
+
+        * ByteVectorProcedures.h: Added.
+
+        * ByteVectorProcedures.cpp: Added.
+
 2008-10-14  higepon  <higepon@users.sourceforge.jp>
 
         * main.cpp (main): Added debug-expand mode which shows me the result of psyntax expansion.

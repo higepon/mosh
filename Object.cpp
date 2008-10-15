@@ -177,7 +177,12 @@ Object Object::makeBox(Object o)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Box, reinterpret_cast<word>(new Box(o)))));
 }
 
-   Object Object::makeByteVector(int n, int8_t v)
+Object Object::makeByteVector(int n)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n)))));
+}
+
+Object Object::makeByteVector(int n, int8_t v)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n, v)))));
 }

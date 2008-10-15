@@ -1,5 +1,5 @@
 /*
- * Closure.cpp - 
+ * ByteVectorProcedures.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,33 +26,27 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Closure.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: ByteVectorProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Pair.h"
-#include "Pair-inl.h"
-#include "SString.h"
-#include "Closure.h"
-#include "StringProcedures.h"
-#include "TextualOutputPort.h"
-#include "ProcedureMacro.h"
+#ifndef __SCHEME_BYTEVECTOR_PROCEDURES__
+#define __SCHEME_BYTEVECTOR_PROCEDURES__
 
-using namespace scheme;
+#include "scheme.h"
 
-Object Closure::sourceInfoString()
-{
-    if (sourceInfo.isFalse()) {
-        return "#<closure>";
-    } else if (sourceInfo.isPair()) {
-        if (sourceInfo.car().isPair()) {
-            return format(UC("~a :~a:~d"), Pair::list3(sourceInfo.cdr(), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
-        } else {
-            return format(UC("~a : unknown location"), Pair::list1(sourceInfo.cdr()));
-        }
-    } else {
-        return "#<closure>";
-    }
-}
+namespace scheme {
 
+    Object bytevectorCopyEx(int argc, const Object* argv);
+    Object bytevectorCopyDEx(int argc, const Object* argv);
+    Object bytevectorFillDEx(int argc, const Object* argv);
+    Object bytevectorEqPEx(int argc, const Object* argv);
+    Object makeBytevectorEx(int argc, const Object* argv);
+    Object nativeEndiannessEx(int argc, const Object* argv);
+    Object bytevectorU8SetDEx(int argc, const Object* argv);
+    Object bytevectorU8RefEx(int argc, const Object* argv);
+    Object bytevectorLengthEx(int argc, const Object* argv);
+    Object getBytevectorNEx(int argc, const Object* argv);
+
+}; // namespace scheme
+
+#endif // __SCHEME_BYTEVECTOR_PROCEDURES__
