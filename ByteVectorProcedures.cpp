@@ -44,13 +44,51 @@ using namespace scheme;
 
 Object scheme::bytevectorCopyEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("bytevector-copy");
+    checkArgumentLength(1);
+    argumentAsByteVector(0, bytevector);
+    return Object::makeByteVector(bytevector->copy());
 }
+
 Object scheme::bytevectorCopyDEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("bytevector-copy!");
+    checkArgumentLength(5);
+    argumentAsByteVector(0, source);
+    argumentAsInt(1, sourceStart);
+    argumentAsByteVector(2, target)
+    argumentAsInt(3, targetStart);
+    argumentAsInt(4, k);
+
+    const int sourceLength = source->length();
+    const int targetLength = target->length();
+
+    if ((sourceStart <= sourceStart + k)  &&
+        (sourceStart + k <= sourceLength) &&
+        (0 <= targetStart)                &&
+        (targetStart <= targetStart + k)  &&
+        (targetStart + k <= targetLength)) {
+        memmove(target->data() + targetStart, source->data() + sourceStart, k);
+    } else {
+        callAssertionViolationAfter(procedureName, "invalid range");
+    }
+    return Object::Undef;
 }
+
 Object scheme::bytevectorFillDEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("bytevector-fill!");
+    checkArgumentLength(2);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, value);
+    if (ByteVector::isValidValue(value)) {
+        bytevector->fill(value);
+    } else {
+        callAssertionViolationAfter(procedureName, "invalid bytevector value. should be 0 <= v <= 255", L1(argv[1]));
+    }
+    return Object::Undef;
 }
+
 Object scheme::bytevectorEqPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector=?");
@@ -59,6 +97,7 @@ Object scheme::bytevectorEqPEx(int argc, const Object* argv)
     argumentAsByteVector(1, bv1);
     return Object::makeBool(bv0->equal(bv1));
 }
+
 Object scheme::makeBytevectorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-bytevector");
@@ -71,7 +110,7 @@ Object scheme::makeBytevectorEx(int argc, const Object* argv)
         if (ByteVector::isValidValue(value)) {
             return Object::makeByteVector(length, value);
         } else {
-            callAssertionViolationAfter(procedureName, "invalid bytevector value should be 0 <= v <= 255", L1(argv[1]));
+            callAssertionViolationAfter(procedureName, "invalid bytevector value. should be 0 <= v <= 255", L1(argv[1]));
             return Object::Undef;
         }
     }

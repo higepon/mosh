@@ -1,6 +1,9 @@
 2008-10-15  higepon  <higepon@users.sourceforge.jp>
 
         * ByteVectorProcedures.cpp (bytevectorEqPEx): Added bytevector=?.
+                                   (bytevectorFillDEx): Added bytevector-fill!.
+                                   (bytevectorCopyDEx): Added bytevector-copy!.
+                                   (bytevectorCopyEx): Added bytevector-copy.
 
         * ByteVector.h (equal): Added.
 

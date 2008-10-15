@@ -2,6 +2,7 @@
 (display (bytevector? 'a))
 (display (make-bytevector 3))
 (display (make-bytevector 3 4))
+(display (bytevector-fill! (make-bytevector 3) 300))
 (newline)
 (exit)
 ;; (receive (a b) (values 1 2 3)

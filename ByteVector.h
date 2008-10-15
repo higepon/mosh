@@ -37,7 +37,7 @@ namespace scheme {
 class ByteVector EXTEND_GC
 {
 public:
-    explicit ByteVector(int num) : num_(num)
+    explicit ByteVector(int num) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) int8_t[num];
@@ -46,7 +46,7 @@ public:
 #endif
     }
 
-    ByteVector(int num, int8_t v) : num_(num)
+    ByteVector(int num, int8_t v) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) int8_t[num];
@@ -58,26 +58,26 @@ public:
         }
     }
 
-    ByteVector(const gc_vector<uint8_t>& v) : num_(v.size())
+    ByteVector(const gc_vector<uint8_t>& v) : length_(v.size())
     {
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[num_];
+        data_ = new(PointerFreeGC) int8_t[length_];
 #else
-        data_ = new int8_t[num_];
+        data_ = new int8_t[length_];
 #endif
-        for (int i = 0; i < num_; i++) {
+        for (int i = 0; i < length_; i++) {
             data_[i] = v[i];
         }
     }
 
-    ByteVector(Object pair) : num_(Pair::length(pair))
+    ByteVector(Object pair) : length_(Pair::length(pair))
     {
         MOSH_ASSERT(pair.isPair() || pair.isNil());
 
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[num_];
+        data_ = new(PointerFreeGC) int8_t[length_];
 #else
-        data_ = new int8_t[num_];
+        data_ = new int8_t[length_];
 #endif
         int i = 0;
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
@@ -89,11 +89,11 @@ public:
 
     }
 
-    ByteVector(int num, int8_t* data) : data_(data), num_(num)
+    ByteVector(int num, int8_t* data) : data_(data), length_(num)
     {
     }
 
-    ByteVector(const ByteVector& b) : data_(b.data_), num_(b.num_)
+    ByteVector(const ByteVector& b) : data_(b.data_), length_(b.length_)
     {
     }
 
@@ -120,6 +120,11 @@ public:
         data_[index] = value;
     }
 
+    void fill(uint8_t value)
+    {
+        memset(data_, value, length_);
+    }
+
     void s8set(int index, Object obj)
     {
         MOSH_ASSERT(obj.isInt());
@@ -128,7 +133,7 @@ public:
 
     int length() const
     {
-        return num_;
+        return length_;
     }
 
     int8_t* data() const
@@ -145,6 +150,13 @@ public:
         }
     }
 
+    ByteVector* copy()
+    {
+        ByteVector* bytevector = new ByteVector(length_);
+        memcpy(bytevector->data(), data_, length_);
+        return bytevector;
+    }
+
     static bool isValidValue(int value)
     {
         return (value >= -128 && value <= 255);
@@ -153,7 +165,7 @@ public:
 
 private:
     int8_t* data_;
-    const int num_;
+    const int length_;
 };
 
 inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
