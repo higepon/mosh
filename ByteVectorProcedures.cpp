@@ -42,6 +42,45 @@
 
 using namespace scheme;
 
+Object scheme::u8ListToByteVector(Object list)
+{
+    MOSH_ASSERT(list.isList());
+    for (Object p = list; p.isPair(); p = p.cdr()) {
+        const Object num = p.car();
+        if (num.isInt() && ByteVector::isOctet(num.toInt())) {
+            continue;
+        } else {
+            return Object::Nil;
+        }
+    }
+    return Object::makeByteVector(list);
+}
+
+Object scheme::u8ListTobytevectorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("u8-list->bytevector");
+    checkArgumentLength(1);
+    argumentCheckList(0, list);
+    const Object bytevector = u8ListToByteVector(list);
+    if (bytevector.isNil()) {
+        callAssertionViolationAfter(procedureName, "proper u8 list required", L1(list));
+        return Object::Undef;
+    } else {
+        return bytevector;
+    }
+}
+
+Object scheme::bytevectorTou8ListEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector->u8-list");
+    argumentAsByteVector(0, bytevector);
+    Object ret = Object::Nil;
+    for (int i = bytevector->length() - 1; i >= 0; i--) {
+        ret = Object::cons(Object::makeInt(bytevector->u8Ref(i)), ret);
+    }
+    return ret;
+}
+
 Object scheme::bytevectorCopyEx(int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector-copy");

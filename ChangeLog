@@ -5,6 +5,7 @@
                                    (bytevectorCopyDEx): Added bytevector-copy!.
                                    (bytevectorCopyEx): Added bytevector-copy.
                                    : Added bytevector-u8-set!, bytevector-u8-ref, bytevector-s8-ref and bytevector-s8-set!.
+                                   (u8ListToByteVector): Added u8-list->bytevector and bytevector->u8-list.
 
         * ByteVector.h (equal): Added.
 

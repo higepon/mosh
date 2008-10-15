@@ -1589,4 +1589,7 @@ val
 (error (bytevector-s8-set! 1 (make-bytevector 1)) 1)
 (error (bytevector-u8-set! -1 (make-bytevector 1)) 1)
 (error (bytevector-s8-set! -1 (make-bytevector 1)) 1)
+(#vu8(1 2 3 4) (u8-list->bytevector '(1 2 3 4)))
+(error (u8-list->bytevector '(1 2 3 -1 4)))
+((1 2 3 4) (bytevector->u8-list #vu8(1 2 3  4)))
 

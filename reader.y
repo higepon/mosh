@@ -12,6 +12,7 @@
 #include "ByteArrayBinaryInputPort.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
+#include "ByteVectorProcedures.h"
 #include "Codec.h"
 #include "reader.h"
 #include "Scanner.h"
@@ -92,16 +93,13 @@ vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
      ;
 bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN
             {
-                for (Object p = $2; p.isPair(); p = p.cdr()) {
-                    const Object num = p.car();
-                    if (num.isInt() && num.toInt() >=0 && num.toInt() <= 255) {
-                        continue;
-                    } else {
-                        yyerror("malformed bytevector literal #vu8(...)");
-                        YYERROR;
-                    }
-                }
-                $$ = Object::makeByteVector($2);
+              const Object bytevector = u8ListToByteVector($2);
+              if (bytevector.isNil()) {
+                yyerror("malformed bytevector literal #vu8(...)");
+                YYERROR;
+              } else {
+                $$ = bytevector;
+              }
             }
      ;
 datum_list : datum_list datum

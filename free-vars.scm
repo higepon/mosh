@@ -231,6 +231,8 @@
     (bytevector-u8-set! ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
     (bytevector-s8-ref ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
     (bytevector-s8-set! ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
+    (bytevector->u8-list ,(lambda e "not implemented"))
+    (u8-list->bytevector ,(lambda e "not implemented"))
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))
 
