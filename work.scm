@@ -1,3 +1,5 @@
+(car 3)
+
 (bytevector-u8-set! (make-bytevector 1) 0 -1)
 
 (display (native-endianness))
