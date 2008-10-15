@@ -119,6 +119,18 @@ public:
         data_[index] = static_cast<uint8_t>(value);
     }
 
+    uint16_t u16RefLittle(int index)
+    {
+        return (data_[index] << 16) | data_[index + 1];
+    }
+
+    uint16_t u16RefBig(int index)
+    {
+        return (data_[index + 1] << 16) | data_[index];
+    }
+
+
+
     void fill(uint8_t value)
     {
         memset(data_, value, length_);
@@ -152,6 +164,12 @@ public:
     bool isValidIndex(int index) const
     {
         return (index >= 0 && index < length_);
+    }
+
+    // 16Ref will access k and k + 1
+    bool isValid16RefIndex(int index) const
+    {
+        return (index >= 0 && index < length_ - 1);
     }
 
     ByteVector* copy()

@@ -105,6 +105,8 @@ public:
     static Object QUASISYNTAX;
     static Object UNSYNTAX;
     static Object UNSYNTAX_SPLICING;
+    static Object BIG;
+    static Object LITTLE;
     static void initBuitinSymbols();
 };
 

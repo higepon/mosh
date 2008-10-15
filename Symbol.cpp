@@ -46,6 +46,8 @@ Object Symbol::SYNTAX;
 Object Symbol::QUASISYNTAX;
 Object Symbol::UNSYNTAX;
 Object Symbol::UNSYNTAX_SPLICING;
+Object Symbol::BIG;
+Object Symbol::LITTLE;
 
 
 void Symbol::initBuitinSymbols()
@@ -61,6 +63,8 @@ void Symbol::initBuitinSymbols()
     QUASISYNTAX       = Symbol::intern(UC("quasisyntax"));
     UNSYNTAX          = Symbol::intern(UC("unsyntax"));
     UNSYNTAX_SPLICING = Symbol::intern(UC("unsyntax-splicing"));
+    BIG               = Symbol::intern(UC("big"));
+    LITTLE            = Symbol::intern(UC("little"));
 }
 
 const ucs4char* Symbol::c_str()

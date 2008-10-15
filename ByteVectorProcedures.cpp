@@ -56,6 +56,52 @@ Object scheme::u8ListToByteVector(Object list)
     return Object::makeByteVector(list);
 }
 
+Object scheme::bytevectorS16NativeSetDEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorU16NativeSetDEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorS16SetDEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorU16SetDEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorS16NativeRefEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorU16NativeRefEx(int argc, const Object* argv)
+{
+}
+Object scheme::bytevectorS16RefEx(int argc, const Object* argv)
+{
+}
+
+//(bytevector-u16-ref bytevector k endianness)
+Object scheme::bytevectorU16RefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-u16-ref");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentCheckSymbol(2, endianness);
+    if (!bytevector->isValid16RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        return Object::makeInt(bytevector->u16RefLittle(index));
+    } else if (endianness == Symbol::BIG) {
+        return Object::makeInt(bytevector->u16RefBig(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+        return Object::Undef;
+    }
+}
+
+
 Object scheme::u8ListTobytevectorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("u8-list->bytevector");
@@ -160,15 +206,11 @@ Object scheme::nativeEndiannessEx(int argc, const Object* argv)
     DeclareProcedureName("native-endianness");
     checkArgumentLength(0);
 
-    static Object nativeEndianness = Object::False;
-    if (nativeEndianness.isFalse()) {
 #if WORDS_BIGENDIAN
-        nativeEndianness = Symbol::intern(UC("big"));
+    return Symbol::BIG;
 #else
-        nativeEndianness = Symbol::intern(UC("little"));
+    return Symbol::LITTLE;
 #endif
-    }
-    return nativeEndianness;
 }
 
 Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
