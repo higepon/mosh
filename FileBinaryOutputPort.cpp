@@ -67,7 +67,7 @@ int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
 
 int FileBinaryOutputPort::putByteVector(ByteVector bv, int start, int count)
 {
-    int8_t* buf = bv.data();
+    uint8_t* buf = bv.data();
     return fwrite(&buf[start], 1, count, stream_);
 }
 

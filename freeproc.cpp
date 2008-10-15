@@ -335,7 +335,7 @@ Object scheme::utf8TostringEx(int argc, const Object* argv)
 
     argumentAsByteVector(0, bytevector);
 
-    BinaryInputPort* in = new ByteArrayBinaryInputPort(reinterpret_cast<uint8_t*>(const_cast<int8_t*>(bytevector->data())), bytevector->length());
+    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     ucs4string ret;
     UTF8Codec codec;
     for (ucs4char c = codec.in(in); c != EOF; c = codec.in(in)) {

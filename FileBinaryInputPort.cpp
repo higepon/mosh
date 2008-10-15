@@ -86,9 +86,9 @@ int FileBinaryInputPort::getU8()
 ByteVector* FileBinaryInputPort::getByteVector(int size)
 {
 #ifdef USE_BOEHM_GC
-    int8_t* buf = new(PointerFreeGC) int8_t[size];
+    uint8_t* buf = new(PointerFreeGC) uint8_t[size];
 #else
-    int8_t* buf = new int8_t[size];
+    uint8_t* buf = new uint8_t[size];
 #endif
     int ret = fread(buf, 1, size, stream_);
     return new ByteVector(ret, buf);

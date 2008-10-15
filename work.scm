@@ -1,3 +1,5 @@
+(bytevector-u8-set! (make-bytevector 1) 0 -1)
+
 (display (native-endianness))
 (display (bytevector? 'a))
 (display (make-bytevector 3))

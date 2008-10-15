@@ -96,7 +96,6 @@
     (sys-open-bytevector-output-port, (lambda (transcoder) (display "sys-open-bytevector-output-port not implemented")))
     (sys-get-bytevector ,(lambda (port) (display "sys-get-bytevector not implemented")))
     (bytevector-length ,(lambda (port) (display "bytevector-length not implemented")))
-    (bytevector-u8-ref ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
     (standard-input-port ,standard-input-port)
     (get-bytevector-n ,(lambda (port count) (display "get-bytevector-n not implemented")))
     (utf8->string ,(lambda (port count) (display "utf-8->string not implemented")))
@@ -228,7 +227,10 @@
     (bytevector-fill! ,(lambda e "not implemented"))
     (bytevector-copy! ,(lambda e "not implemented"))
     (bytevector-copy ,(lambda e "not implemented"))
-
+    (bytevector-u8-ref ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
+    (bytevector-u8-set! ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
+    (bytevector-s8-ref ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
+    (bytevector-s8-set! ,(lambda (bv i) (display "bytevector-u8-ref not implemented")))
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))
 

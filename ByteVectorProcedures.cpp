@@ -81,8 +81,8 @@ Object scheme::bytevectorFillDEx(int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
     argumentAsInt(1, value);
-    if (ByteVector::isValidValue(value)) {
-        bytevector->fill(value);
+    if (ByteVector::isByte(value) || ByteVector::isOctet(value)) {
+        bytevector->fill(static_cast<uint8_t>(value));
     } else {
         callAssertionViolationAfter(procedureName, "invalid bytevector value. should be 0 <= v <= 255", L1(argv[1]));
     }
@@ -107,15 +107,14 @@ Object scheme::makeBytevectorEx(int argc, const Object* argv)
         return Object::makeByteVector(length);
     } else {
         argumentAsInt(1, value);
-        if (ByteVector::isValidValue(value)) {
-            return Object::makeByteVector(length, value);
+        if (ByteVector::isByte(value) || ByteVector::isOctet(value)) {
+            return Object::makeByteVector(length, static_cast<uint8_t>(value));
         } else {
             callAssertionViolationAfter(procedureName, "invalid bytevector value. should be 0 <= v <= 255", L1(argv[1]));
             return Object::Undef;
         }
     }
 }
-
 
 Object scheme::nativeEndiannessEx(int argc, const Object* argv)
 {
@@ -142,7 +141,15 @@ Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
     argumentAsInt(1, index);
     argumentAsInt(2, value);
 
-    bytevector->u8set(index, static_cast<uint8_t>(value));
+    if (bytevector->isValidIndex(index)) {
+        if (ByteVector::isOctet(value)) {
+            bytevector->u8Set(index, static_cast<uint8_t>(value));
+        } else {
+            callAssertionViolationAfter(procedureName, "value out of range. should be 0 <= value <= 255", L1(argv[2]));
+        }
+    } else {
+        callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[1]));
+    }
     return Object::Undef;
 }
 
@@ -153,8 +160,50 @@ Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
 
     argumentAsByteVector(0, bytevector);
     argumentAsInt(1, index);
-    return bytevector->u8Ref(index);
+    if (bytevector->isValidIndex(index)) {
+        return Object::makeInt(bytevector->u8Ref(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[2]));
+    }
 }
+
+Object scheme::bytevectorS8SetDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s8-set!");
+    checkArgumentLength(3);
+
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentAsInt(2, value);
+
+    if (bytevector->isValidIndex(index)) {
+        if (ByteVector::isByte(value)) {
+            bytevector->s8Set(index, static_cast<int8_t>(value));
+        } else {
+            callAssertionViolationAfter(procedureName, "value out of range. should be -127 <= value <= 128", L1(argv[2]));
+        }
+    } else {
+        callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[1]));
+    }
+
+    return Object::Undef;
+}
+
+Object scheme::bytevectorS8RefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s8-ref");
+    checkArgumentLength(2);
+
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+
+    if (bytevector->isValidIndex(index)) {
+        return Object::makeInt(bytevector->s8Ref(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[1]));
+    }
+}
+
 
 Object scheme::bytevectorLengthEx(int argc, const Object* argv)
 {

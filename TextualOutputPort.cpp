@@ -301,7 +301,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             if (i != 0) {
                 putString(" ");
             }
-            putDatum(byteVector->s8Ref(i));
+            putDatum(Object::makeInt(byteVector->u8Ref(i)));
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -413,7 +413,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
             if (i != 0) {
                 putString(" ");
             }
-            putDatum(byteVector->s8Ref(i));
+            putDatum(Object::makeInt(byteVector->u8Ref(i)));
         }
         putString(UC(")"));
     } else if (o.isBox()) {

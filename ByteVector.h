@@ -40,18 +40,18 @@ public:
     explicit ByteVector(int num) : length_(num)
     {
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[num];
+        data_ = new(PointerFreeGC) uint8_t[num];
 #else
-        data_ = new int8_t[num];
+        data_ = new uint8_t[num];
 #endif
     }
 
-    ByteVector(int num, int8_t v) : length_(num)
+    ByteVector(int num, uint8_t v) : length_(num)
     {
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[num];
+        data_ = new(PointerFreeGC) uint8_t[num];
 #else
-        data_ = new int8_t[num];
+        data_ = new uint8_t[num];
 #endif
         for (int i = 0; i < num; i++) {
             data_[i] = v;
@@ -61,9 +61,9 @@ public:
     ByteVector(const gc_vector<uint8_t>& v) : length_(v.size())
     {
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[length_];
+        data_ = new(PointerFreeGC) uint8_t[length_];
 #else
-        data_ = new int8_t[length_];
+        data_ = new uint8_t[length_];
 #endif
         for (int i = 0; i < length_; i++) {
             data_[i] = v[i];
@@ -75,9 +75,9 @@ public:
         MOSH_ASSERT(pair.isPair() || pair.isNil());
 
 #ifdef USE_BOEHM_GC
-        data_ = new(PointerFreeGC) int8_t[length_];
+        data_ = new(PointerFreeGC) uint8_t[length_];
 #else
-        data_ = new int8_t[length_];
+        data_ = new uint8_t[length_];
 #endif
         int i = 0;
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
@@ -89,7 +89,7 @@ public:
 
     }
 
-    ByteVector(int num, int8_t* data) : data_(data), length_(num)
+    ByteVector(int num, uint8_t* data) : data_(data), length_(num)
     {
     }
 
@@ -99,25 +99,24 @@ public:
 
     ~ByteVector() {}
 
-    Object u8Ref(int index)
+    uint8_t u8Ref(int index)
     {
-        return Object::makeInt((uint8_t)data_[index]);
+        return data_[index];
     }
 
-    uint8_t u8RefI(int index)
+    int8_t s8Ref(int index)
     {
-        return (uint8_t)data_[index];
+        return static_cast<int8_t>(data_[index]);
     }
 
-
-    Object s8Ref(int index)
-    {
-        return Object::makeInt(data_[index]);
-    }
-
-    void u8set(int index, uint8_t value)
+    void u8Set(int index, uint8_t value)
     {
         data_[index] = value;
+    }
+
+    void s8Set(int index, int8_t value)
+    {
+        data_[index] = static_cast<uint8_t>(value);
     }
 
     void fill(uint8_t value)
@@ -128,7 +127,7 @@ public:
     void s8set(int index, Object obj)
     {
         MOSH_ASSERT(obj.isInt());
-        data_[index] = (int8_t)obj.toInt();
+        data_[index] = (uint8_t)obj.toInt();
     }
 
     int length() const
@@ -136,7 +135,7 @@ public:
         return length_;
     }
 
-    int8_t* data() const
+    uint8_t* data() const
     {
         return data_;
     }
@@ -150,6 +149,11 @@ public:
         }
     }
 
+    bool isValidIndex(int index) const
+    {
+        return (index >= 0 && index < length_);
+    }
+
     ByteVector* copy()
     {
         ByteVector* bytevector = new ByteVector(length_);
@@ -157,14 +161,18 @@ public:
         return bytevector;
     }
 
-    static bool isValidValue(int value)
+    static bool isByte(int value)
     {
-        return (value >= -128 && value <= 255);
+        return (-128 <= value && value <= 127);
     }
 
+    static bool isOctet(int value)
+    {
+        return (0 <= value && value <= 255);
+    }
 
 private:
-    int8_t* data_;
+    uint8_t* data_;
     const int length_;
 };
 

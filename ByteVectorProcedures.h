@@ -36,14 +36,16 @@
 
 namespace scheme {
 
+    Object bytevectorS8SetDEx(int argc, const Object* argv);
+    Object bytevectorS8RefEx(int argc, const Object* argv);
+    Object bytevectorU8SetDEx(int argc, const Object* argv);
+    Object bytevectorU8RefEx(int argc, const Object* argv);
     Object bytevectorCopyEx(int argc, const Object* argv);
     Object bytevectorCopyDEx(int argc, const Object* argv);
     Object bytevectorFillDEx(int argc, const Object* argv);
     Object bytevectorEqPEx(int argc, const Object* argv);
     Object makeBytevectorEx(int argc, const Object* argv);
     Object nativeEndiannessEx(int argc, const Object* argv);
-    Object bytevectorU8SetDEx(int argc, const Object* argv);
-    Object bytevectorU8RefEx(int argc, const Object* argv);
     Object bytevectorLengthEx(int argc, const Object* argv);
     Object getBytevectorNEx(int argc, const Object* argv);
 

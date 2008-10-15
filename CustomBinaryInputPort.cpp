@@ -77,7 +77,7 @@ int CustomBinaryInputPort::getU8()
     if (0 == result.toInt()) {
         return EOF;
     }
-    return bv.toByteVector()->u8RefI(0);
+    return bv.toByteVector()->u8Ref(0);
 }
 
 ByteVector* CustomBinaryInputPort::getByteVector(int size)
