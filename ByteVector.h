@@ -32,6 +32,8 @@
 #ifndef __SCHEME_BYTE_VECTOR_H__
 #define __SCHEME_BYTE_VECTOR_H__
 
+#include <stdint.h>
+
 namespace scheme {
 
 class ByteVector EXTEND_GC
@@ -129,6 +131,48 @@ public:
         return (data_[index + 1] << 8) | data_[index];
     }
 
+    uint32_t u32RefLittle(int index)
+    {
+        return data_[index + 3] << 24 |
+               data_[index + 2] << 16 |
+               data_[index + 1] << 8  |
+               data_[index];
+    }
+
+    int32_t s32RefLittle(int index)
+    {
+        return data_[index + 3] << 24 |
+               data_[index + 2] << 16 |
+               data_[index + 1] << 8  |
+               data_[index];
+    }
+
+    uint32_t u32RefBig(int index)
+    {
+        return data_[index + 0] << 24 |
+               data_[index + 1] << 16 |
+               data_[index + 2] << 8  |
+               data_[index + 3];
+    }
+
+    int32_t s32RefBig(int index)
+    {
+        return data_[index + 0] << 24 |
+               data_[index + 1] << 16 |
+               data_[index + 2] << 8  |
+               data_[index + 3];
+    }
+
+    int32_t s32RefNative(int index)
+    {
+        return *(reinterpret_cast<int32_t*>((&data_[index])));
+    }
+
+    uint32_t u32RefNative(int index)
+    {
+        return *(reinterpret_cast<uint32_t*>((&data_[index])));
+    }
+
     void u16SetLittle(int index, uint16_t value)
     {
         data_[index] = value & 0xff;
@@ -140,6 +184,39 @@ public:
         data_[index] = value >> 8;
         data_[index + 1] = value & 0xff;
     }
+
+    void u32SetLittle(int index, uint32_t value)
+    {
+        data_[index + 3] = value >> 24;
+        data_[index + 2] = value >> 16;
+        data_[index + 1] = value >> 8;
+        data_[index + 0] = value;
+    }
+
+    void u32SetBig(int index, uint32_t value)
+    {
+        data_[index + 0] = value >> 24;
+        data_[index + 1] = value >> 16;
+        data_[index + 2] = value >> 8;
+        data_[index + 3] = value;
+    }
+
+    void s32SetLittle(int index, int32_t value)
+    {
+        data_[index + 3] = value >> 24;
+        data_[index + 2] = value >> 16;
+        data_[index + 1] = value >> 8;
+        data_[index + 0] = value;
+    }
+
+    void s32SetBig(int index, int32_t value)
+    {
+        data_[index + 0] = value >> 24;
+        data_[index + 1] = value >> 16;
+        data_[index + 2] = value >> 8;
+        data_[index + 3] = value;
+    }
+
 
     uint16_t u16RefBig(int index)
     {
@@ -178,9 +255,19 @@ public:
         *(reinterpret_cast<int16_t*>(&data_[index])) = value;
     }
 
+    void s32SetNative(int index, int32_t value)
+    {
+        *(reinterpret_cast<int32_t*>(&data_[index])) = value;
+    }
+
     void u16SetNative(int index, uint16_t value)
     {
         *(reinterpret_cast<uint16_t*>(&data_[index])) = value;
+    }
+
+    void u32SetNative(int index, uint32_t value)
+    {
+        *(reinterpret_cast<uint32_t*>(&data_[index])) = value;
     }
 
     void fill(uint8_t value)
@@ -224,6 +311,13 @@ public:
         return (index >= 0 && index < length_ - 1);
     }
 
+    // 32Ref will access between k and k + 3
+    bool isValid32RefIndex(int index) const
+    {
+        return (index >= 0 && index < length_ - 3);
+    }
+
+
     ByteVector* copy()
     {
         ByteVector* bytevector = new ByteVector(length_);
@@ -233,13 +327,27 @@ public:
 
     static bool inU16Range(int value)
     {
-        return (-32768 <= value) && (value <= 32767);
+        return (0 <= value) && (value <= 65535);
     }
 
     static bool inS16Range(int value)
     {
-        return (0 <= value) && (value <= 65535);
+        return (-32768 <= value) && (value <= 32767);
     }
+
+    // todo
+    static bool inU32Range(long long value)
+    {
+        return (0 <= value) && (value <= 4294967295U);
+    }
+
+    // todo
+    static bool inS32Range(long long value)
+    {
+        // mm..
+        return (-2147483648U <= value) && (value <= 2147483647U);
+    }
+
 
     static bool isByte(int value)
     {

@@ -241,6 +241,15 @@
     (bytevector-s16-set! ,(lambda e "not implemented"))
     (bytevector-u16-native-set! ,(lambda e "not implemented"))
     (bytevector-s16-native-set! ,(lambda e "not implemented"))
+    (bytevector-u32-ref ,(lambda e "not implemented"))
+    (bytevector-s32-ref ,(lambda e "not implemented"))
+    (bytevector-u32-native-ref ,(lambda e "not implemented"))
+    (bytevector-s32-native-ref ,(lambda e "not implemented"))
+    (bytevector-u32-set! ,(lambda e "not implemented"))
+    (bytevector-s32-set! ,(lambda e "not implemented"))
+    (bytevector-u32-native-set! ,(lambda e "not implemented"))
+    (bytevector-s32-native-set! ,(lambda e "not implemented"))
+
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))
 

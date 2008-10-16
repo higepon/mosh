@@ -56,6 +56,179 @@ Object scheme::u8ListToByteVector(Object list)
     return Object::makeByteVector(list);
 }
 
+Object scheme::bytevectorS32NativeSetDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s32-native-set!");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentAsInt(2, value);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (!ByteVector::inS32Range(value)) {
+        callAssertionViolationAfter(procedureName, "value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    bytevector->s32SetNative(index, value);
+    return Object::Undef;
+}
+
+Object scheme::bytevectorU32NativeSetDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s32-native-set!");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentAsInt(2, value);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (!ByteVector::inU32Range(value)) {
+        callAssertionViolationAfter(procedureName, "value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    bytevector->u32SetNative(index, value);
+    return Object::Undef;
+}
+
+Object scheme::bytevectorS32SetDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s32-set!");
+    checkArgumentLength(4);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentAsInt(2, value);
+    argumentCheckSymbol(3, endianness);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (!ByteVector::inS32Range(value)) {
+        callAssertionViolationAfter(procedureName, "value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        bytevector->s32SetLittle(index, value);
+    } else if (endianness == Symbol::BIG) {
+        bytevector->s32SetBig(index, value);
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+    }
+    return Object::Undef;
+}
+Object scheme::bytevectorU32SetDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-u32-set!");
+    checkArgumentLength(4);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentAsInt(2, value);
+    argumentCheckSymbol(3, endianness);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (!ByteVector::inU32Range(value)) {
+        callAssertionViolationAfter(procedureName, "value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        bytevector->u32SetLittle(index, value);
+    } else if (endianness == Symbol::BIG) {
+        bytevector->u32SetBig(index, value);
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+    }
+    return Object::Undef;
+}
+
+Object scheme::bytevectorS32NativeRefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s32-native-ref");
+    checkArgumentLength(2);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    } else if (index % 4 != 0) {
+        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
+        return Object::Undef;
+    }
+    return Object::makeInt(bytevector->s32RefNative(index));
+}
+
+Object scheme::bytevectorU32NativeRefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-u32-native-ref");
+    checkArgumentLength(2);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    } else if (index % 4 != 0) {
+        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
+        return Object::Undef;
+    }
+    return Object::makeInt(bytevector->u32RefNative(index));
+}
+
+Object scheme::bytevectorS32RefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-s32-ref");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentCheckSymbol(2, endianness);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        return Object::makeInt(bytevector->s32RefLittle(index));
+    } else if (endianness == Symbol::BIG) {
+        return Object::makeInt(bytevector->s32RefBig(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+        return Object::Undef;
+    }
+}
+
+Object scheme::bytevectorU32RefEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bytevector-u32-ref");
+    checkArgumentLength(3);
+    argumentAsByteVector(0, bytevector);
+    argumentAsInt(1, index);
+    argumentCheckSymbol(2, endianness);
+    if (!bytevector->isValid32RefIndex(index)) {
+        callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    if (endianness == Symbol::LITTLE) {
+        return Object::makeInt(bytevector->u32RefLittle(index));
+    } else if (endianness == Symbol::BIG) {
+        return Object::makeInt(bytevector->u32RefBig(index));
+    } else {
+        callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
+        return Object::Undef;
+    }
+}
+
 Object scheme::bytevectorS16NativeSetDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector-s16-native-set!");
@@ -229,7 +402,6 @@ Object scheme::bytevectorU16RefEx(int argc, const Object* argv)
     }
 }
 
-
 Object scheme::u8ListTobytevectorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("u8-list->bytevector");
@@ -373,6 +545,7 @@ Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
         return Object::makeInt(bytevector->u8Ref(index));
     } else {
         callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[2]));
+        return Object::Undef;
     }
 }
 
@@ -410,6 +583,7 @@ Object scheme::bytevectorS8RefEx(int argc, const Object* argv)
         return Object::makeInt(bytevector->s8Ref(index));
     } else {
         callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[1]));
+        return Object::Undef;
     }
 }
 

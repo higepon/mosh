@@ -1627,8 +1627,8 @@ val
          (bytevector-s16-set! b 0 12345 'big)
          (bytevector-s16-ref b 0 'big)))
 (error (let ([b #vu8(0 0 0 0 0)])
-         (bytevector-u16-set! b 0 32768 'little)
-         (bytevector-u16-ref b 0 'little)))
+         (bytevector-s16-set! b 0 32768 'little)
+         (bytevector-s16-ref b 0 'little)))
 (#t (let ([b #vu8(0 0 0 0)])
       (bytevector-u16-set! b 0 12345 (native-endianness))
       (bytevector-u16-native-set! b 2 12345)
@@ -1639,3 +1639,26 @@ val
       (bytevector-s16-native-set! b 2 12345)
       (= (bytevector-s16-native-ref b 0)
          (bytevector-s16-native-ref b 2))))
+
+(4261412863 (bytevector-u32-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 12 'little))
+(-33554433 (bytevector-s32-ref #vu8(255 255 255 255 255 255 255 255
+                                   255 255 255 255 255 255 255 253) 12 'little))
+(4294967293 (bytevector-u32-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 12 'big))
+(-3 (bytevector-s32-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 12 'big))
+(#t (= (bytevector-u32-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 12 (native-endianness))
+       (bytevector-u32-native-ref #vu8(255 255 255 255 255 255 255 255
+                                           255 255 255 255 255 255 255 253) 12)))
+(#t (= (bytevector-s32-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 12 (native-endianness))
+       (bytevector-s32-native-ref #vu8(255 255 255 255 255 255 255 255
+                                           255 255 255 255 255 255 255 253) 12)))
+(12345 (let ([b #vu8(0 0 0 0 0)])
+         (bytevector-u32-set! b 0 12345 'little)
+         (bytevector-u32-ref b 0 'little)))
+(12345 (let ([b #vu8(0 0 0 0 0)])
+         (bytevector-u32-set! b 0 12345 'big)
+         (bytevector-u32-ref b 0 'big)))

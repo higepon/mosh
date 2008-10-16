@@ -1,5 +1,10 @@
 2008-10-16  higepon  <higepon@users.sourceforge.jp>
 
+        * Added: bytevector-u32-native-ref, bytevector-s32-native-ref
+               , bytevector-u32-native-set! ,bytevector-s32-native-set!
+               , bytevector-u32-ref, bytevector-s32-ref
+               , bytevector-u32-set! and bytevector-s32-set!.
+
         * Added: bytevector-u16-native-ref, bytevector-s16-native-ref
                , bytevector-u16-native-set! and bytevector-s16-native-set!.
 
