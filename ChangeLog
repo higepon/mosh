@@ -1,5 +1,8 @@
 2008-10-16  higepon  <higepon@users.sourceforge.jp>
 
+        * Added: bytevector-u16-native-ref, bytevector-s16-native-ref
+               , bytevector-u16-native-set! and bytevector-s16-native-set!.
+
         * ByteVectorProcedures.cpp (scheme::bytevectorU16RefEx): Added bytevector-u16-ref.
 
 2008-10-15  higepon  <higepon@users.sourceforge.jp>

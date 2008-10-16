@@ -119,26 +119,69 @@ public:
         data_[index] = static_cast<uint8_t>(value);
     }
 
-    uint16_t u16RefLittle(int index)
+    uint16_t u16RefNative(int index)
     {
-        return (data_[index] << 8) | data_[index + 1];
+        return *(reinterpret_cast<uint16_t*>((&data_[index])));
     }
 
-    uint16_t u16RefBig(int index)
+    uint16_t u16RefLittle(int index)
     {
         return (data_[index + 1] << 8) | data_[index];
     }
 
-    int16_t s16RefLittle(int index)
+    void u16SetLittle(int index, uint16_t value)
     {
-        return ((data_[index] << 8) | data_[index + 1]);
+        data_[index] = value & 0xff;
+        data_[index + 1] = value >> 8;
     }
 
-    int16_t s16RefBig(int index)
+    void u16SetBig(int index, uint16_t value)
+    {
+        data_[index] = value >> 8;
+        data_[index + 1] = value & 0xff;
+    }
+
+    uint16_t u16RefBig(int index)
+    {
+        return (data_[index] << 8) | data_[index + 1];
+    }
+
+    int16_t s16RefLittle(int index)
     {
         return ((data_[index + 1] << 8) | data_[index]);
     }
 
+    int16_t s16RefBig(int index)
+    {
+        return ((data_[index] << 8) | data_[index + 1]);
+    }
+
+    void s16SetLittle(int index, int16_t value)
+    {
+        data_[index] = value & 0xff;
+        data_[index + 1] = value >> 8;
+    }
+
+    void s16SetBig(int index, int16_t value)
+    {
+        data_[index] = value >> 8;
+        data_[index + 1] = value & 0xff;
+    }
+
+    int16_t s16RefNative(int index)
+    {
+        return *(reinterpret_cast<int16_t*>((&data_[index])));
+    }
+
+    void s16SetNative(int index, int16_t value)
+    {
+        *(reinterpret_cast<int16_t*>(&data_[index])) = value;
+    }
+
+    void u16SetNative(int index, uint16_t value)
+    {
+        *(reinterpret_cast<uint16_t*>(&data_[index])) = value;
+    }
 
     void fill(uint8_t value)
     {
@@ -186,6 +229,16 @@ public:
         ByteVector* bytevector = new ByteVector(length_);
         memcpy(bytevector->data(), data_, length_);
         return bytevector;
+    }
+
+    static bool inU16Range(int value)
+    {
+        return (-32768 <= value) && (value <= 32767);
+    }
+
+    static bool inS16Range(int value)
+    {
+        return (0 <= value) && (value <= 65535);
     }
 
     static bool isByte(int value)
