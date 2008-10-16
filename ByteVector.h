@@ -147,6 +147,107 @@ public:
                data_[index];
     }
 
+    void u64SetLittle(int index, uint64_t value)
+    {
+        data_[index + 7] = value >> 56;
+        data_[index + 6] = value >> 48;
+        data_[index + 5] = value >> 40;
+        data_[index + 4] = value >> 32;
+        data_[index + 3] = value >> 24;
+        data_[index + 2] = value >> 16;
+        data_[index + 1] = value >> 8;
+        data_[index + 0] = value & 0xff;
+    }
+
+    void s64SetLittle(int index, int64_t value)
+    {
+        data_[index + 7] = value >> 56;
+        data_[index + 6] = value >> 48;
+        data_[index + 5] = value >> 40;
+        data_[index + 4] = value >> 32;
+        data_[index + 3] = value >> 24;
+        data_[index + 2] = value >> 16;
+        data_[index + 1] = value >> 8;
+        data_[index + 0] = value & 0xff;
+    }
+
+    void u64SetBig(int index, uint64_t value)
+    {
+        data_[index + 0] = value >> 56;
+        data_[index + 1] = value >> 48;
+        data_[index + 2] = value >> 40;
+        data_[index + 3] = value >> 32;
+        data_[index + 4] = value >> 24;
+        data_[index + 5] = value >> 16;
+        data_[index + 6] = value >> 8;
+        data_[index + 7] = value & 0xff;
+    }
+
+    void s64SetBig(int index, int64_t value)
+    {
+        data_[index + 0] = value >> 56;
+        data_[index + 1] = value >> 48;
+        data_[index + 2] = value >> 40;
+        data_[index + 3] = value >> 32;
+        data_[index + 4] = value >> 24;
+        data_[index + 5] = value >> 16;
+        data_[index + 6] = value >> 8;
+        data_[index + 7] = value & 0xff;
+    }
+
+    uint64_t u64RefLittle(int index)
+    {
+        return
+            static_cast<uint64_t>(data_[index + 7]) << 56 |
+            static_cast<uint64_t>(data_[index + 6]) << 48 |
+            static_cast<uint64_t>(data_[index + 5]) << 40 |
+            static_cast<uint64_t>(data_[index + 4]) << 32 |
+            static_cast<uint64_t>(data_[index + 3]) << 24 |
+            static_cast<uint64_t>(data_[index + 2]) << 16 |
+            static_cast<uint64_t>(data_[index + 1]) << 8  |
+            static_cast<uint64_t>(data_[index + 0]);
+    }
+
+    uint64_t u64RefBig(int index)
+    {
+        return
+            static_cast<uint64_t>(data_[index + 0]) << 56 |
+            static_cast<uint64_t>(data_[index + 1]) << 48 |
+            static_cast<uint64_t>(data_[index + 2]) << 40 |
+            static_cast<uint64_t>(data_[index + 3]) << 32 |
+            static_cast<uint64_t>(data_[index + 4]) << 24 |
+            static_cast<uint64_t>(data_[index + 5]) << 16 |
+            static_cast<uint64_t>(data_[index + 6]) << 8  |
+            static_cast<uint64_t>(data_[index + 7]);
+    }
+
+    int64_t s64RefLittle(int index)
+    {
+        return
+            static_cast<int64_t>(data_[index + 7]) << 56 |
+            static_cast<int64_t>(data_[index + 6]) << 48 |
+            static_cast<int64_t>(data_[index + 5]) << 40 |
+            static_cast<int64_t>(data_[index + 4]) << 32 |
+            static_cast<int64_t>(data_[index + 3]) << 24 |
+            static_cast<int64_t>(data_[index + 2]) << 16 |
+            static_cast<int64_t>(data_[index + 1]) << 8  |
+            static_cast<int64_t>(data_[index + 0]);
+    }
+
+    int64_t s64RefBig(int index)
+    {
+        return
+            static_cast<int64_t>(data_[index + 0]) << 56 |
+            static_cast<int64_t>(data_[index + 1]) << 48 |
+            static_cast<int64_t>(data_[index + 2]) << 40 |
+            static_cast<int64_t>(data_[index + 3]) << 32 |
+            static_cast<int64_t>(data_[index + 4]) << 24 |
+            static_cast<int64_t>(data_[index + 5]) << 16 |
+            static_cast<int64_t>(data_[index + 6]) << 8  |
+            static_cast<int64_t>(data_[index + 7]);
+    }
+
+
     uint32_t u32RefBig(int index)
     {
         return data_[index + 0] << 24 |
@@ -172,6 +273,17 @@ public:
     {
         return *(reinterpret_cast<uint32_t*>((&data_[index])));
     }
+
+    int64_t s64RefNative(int index)
+    {
+        return *(reinterpret_cast<int64_t*>((&data_[index])));
+    }
+
+    uint64_t u64RefNative(int index)
+    {
+        return *(reinterpret_cast<uint64_t*>((&data_[index])));
+    }
+
 
     void u16SetLittle(int index, uint16_t value)
     {
@@ -206,7 +318,7 @@ public:
         data_[index + 3] = value >> 24;
         data_[index + 2] = value >> 16;
         data_[index + 1] = value >> 8;
-        data_[index + 0] = value;
+        data_[index + 0] = value & 0xff;
     }
 
     void s32SetBig(int index, int32_t value)
@@ -214,7 +326,7 @@ public:
         data_[index + 0] = value >> 24;
         data_[index + 1] = value >> 16;
         data_[index + 2] = value >> 8;
-        data_[index + 3] = value;
+        data_[index + 3] = value & 0xff;
     }
 
 
@@ -260,6 +372,11 @@ public:
         *(reinterpret_cast<int32_t*>(&data_[index])) = value;
     }
 
+    void s64SetNative(int index, int64_t value)
+    {
+        *(reinterpret_cast<int64_t*>(&data_[index])) = value;
+    }
+
     void u16SetNative(int index, uint16_t value)
     {
         *(reinterpret_cast<uint16_t*>(&data_[index])) = value;
@@ -268,6 +385,11 @@ public:
     void u32SetNative(int index, uint32_t value)
     {
         *(reinterpret_cast<uint32_t*>(&data_[index])) = value;
+    }
+
+    void u64SetNative(int index, uint64_t value)
+    {
+        *(reinterpret_cast<uint64_t*>(&data_[index])) = value;
     }
 
     void fill(uint8_t value)
@@ -317,6 +439,11 @@ public:
         return (index >= 0 && index < length_ - 3);
     }
 
+    // 64Ref will access between k and k + 7
+    bool isValid64RefIndex(int index) const
+    {
+        return (index >= 0 && index < length_ - 7);
+    }
 
     ByteVector* copy()
     {
@@ -345,8 +472,23 @@ public:
     static bool inS32Range(long long value)
     {
         // mm..
-        return (-2147483648U <= value) && (value <= 2147483647U);
+        return (-2147483648LL <= value) && (value <= 2147483647LL);
     }
+
+    // todo
+    static bool inU64Range(uint64_t value)
+    {
+        // wrong
+        return (0 <= value) && (value <= 18446744073709551615ULL);
+    }
+
+    // todo
+    static bool inS64Range(uint64_t value)
+    {
+        // wrong
+        return (-9223372036854775808ULL <= value) && (value <= 9223372036854775807LL);
+    }
+
 
 
     static bool isByte(int value)

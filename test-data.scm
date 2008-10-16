@@ -1662,3 +1662,27 @@ val
 (12345 (let ([b #vu8(0 0 0 0 0)])
          (bytevector-u32-set! b 0 12345 'big)
          (bytevector-u32-ref b 0 'big)))
+
+(18302628885633695743 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 8 'little))
+(-144115188075855873 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
+                                   255 255 255 255 255 255 255 253) 8 'little))
+;; todo
+;; (18446744073709551613 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+;;                                    255 255 255 255 255 255 255 253) 8 'big))
+(-3 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 8 'big))
+(#t (= (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 8 (native-endianness))
+       (bytevector-u64-native-ref #vu8(255 255 255 255 255 255 255 255
+                                           255 255 255 255 255 255 255 253) 8)))
+(#t (= (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
+                                    255 255 255 255 255 255 255 253) 8 (native-endianness))
+       (bytevector-s64-native-ref #vu8(255 255 255 255 255 255 255 255
+                                           255 255 255 255 255 255 255 253) 8)))
+(12345 (let ([b #vu8(0 0 0 0 0 0 0 0)])
+         (bytevector-u64-set! b 0 12345 'little)
+         (bytevector-u64-ref b 0 'little)))
+(12345 (let ([b #vu8(0 0 0 0 0 0 0 0)])
+         (bytevector-u64-set! b 0 12345 'big)
+         (bytevector-u64-ref b 0 'big)))
