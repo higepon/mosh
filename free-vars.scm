@@ -257,6 +257,9 @@
     (bytevector-s64-set! ,(lambda e "not implemented"))
     (bytevector-u64-native-set! ,(lambda e "not implemented"))
     (bytevector-s64-native-set! ,(lambda e "not implemented"))
+    (bytevector->string ,(lambda e "not implemented"))
+    (string->bytevector ,(lambda e "not implemented"))
+
 
 ;    (test-temp ,(lambda e #f))
 ;    (do-nothing ,(lambda () #t))

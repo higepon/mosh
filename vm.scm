@@ -3,6 +3,7 @@
 (use srfi-1)
 (use util.match)
 (use gauche.sequence)
+(use file.util)
 (set! debug-print-width 3000)
 
 (define alist-cons acons)
@@ -69,9 +70,25 @@
 
 (load "./free-vars-decl.scm")
 
-;; pass3 の変更のために一時的に読み込むものを変更している
 (load "./compiler-vm.scm")
-;(load "./compiler-vm-pass3.scm")
+
+(define (load-free-vars)
+  (match (car (file->sexp-list "./free-vars2.scm"))
+    [('define-free-vars . variables)
+     (map
+      (lambda (variable)
+        (match variable
+          [(proc proc-body)
+           variable]
+          [else
+           (variable ',(lambda () (error ',variable "not implemented")))]))
+      variables
+      )]
+    [else
+     (error 'load-free-vars "can't load free-vars")]))
+
+(load-free-vars)
+
 (load "./free-vars.scm")
 
 (define-syntax check-sexp->iform
@@ -1449,7 +1466,7 @@
   (if (eq? (hash-table-get vm-name-space lib-id 'notfound) 'notfound)
       (errorf "can not set! to unbound variable ~a" lib-id)
       (hashtable-set! vm-name-space lib-id val)))
-       
+
 
 (define (vm-import lib)
   (if (fetch-instance lib)

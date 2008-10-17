@@ -37,6 +37,8 @@
 namespace scheme {
 
     Object u8ListToByteVector(Object list);
+    Object stringTobytevectorEx(int argc, const Object* argv);
+    Object bytevectorTostringEx(int argc, const Object* argv);
     Object bytevectorS64NativeSetDEx(int argc, const Object* argv);
     Object bytevectorU64NativeSetDEx(int argc, const Object* argv);
     Object bytevectorS64SetDEx(int argc, const Object* argv);

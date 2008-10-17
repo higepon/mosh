@@ -56,6 +56,16 @@ Object scheme::u8ListToByteVector(Object list)
     return Object::makeByteVector(list);
 }
 
+
+Object scheme::stringTobytevectorEx(int argc, const Object* argv)
+{
+}
+
+// (bytevector->string bytevector transcoder)
+Object scheme::bytevectorTostringEx(int argc, const Object* argv)
+{
+}
+
 Object scheme::bytevectorS64NativeSetDEx(int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector-s64-native-set!");
