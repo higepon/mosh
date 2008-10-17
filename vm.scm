@@ -71,25 +71,26 @@
 (load "./free-vars-decl.scm")
 
 (load "./compiler-vm.scm")
-
+(define *free-vars* '())
 (define (load-free-vars)
-  (match (car (file->sexp-list "./free-vars2.scm"))
+  (match (car (file->sexp-list "./free-vars.scm"))
     [('define-free-vars . variables)
-     (map
-      (lambda (variable)
-        (match variable
-          [(proc proc-body)
-           variable]
-          [else
-           (variable ',(lambda () (error ',variable "not implemented")))]))
-      variables
-      )]
+     (set! *free-vars*
+           (map
+            (lambda (variable)
+              (match variable
+                [(proc proc-body)
+                 `(,proc ,(eval proc-body (interaction-environment)))]
+                [else
+                 (list variable
+                       (eval `(lambda e (error (quote ,variable) "not implemented"))
+                             (interaction-environment)))]))
+            variables
+            ))]
     [else
      (error 'load-free-vars "can't load free-vars")]))
 
 (load-free-vars)
-
-(load "./free-vars.scm")
 
 (define-syntax check-sexp->iform
   (syntax-rules ()
