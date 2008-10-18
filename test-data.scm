@@ -1686,3 +1686,7 @@ val
 (12345 (let ([b #vu8(0 0 0 0 0 0 0 0)])
          (bytevector-u64-set! b 0 12345 'big)
          (bytevector-u64-ref b 0 'big)))
+("あいう" (utf8->string #vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86)))
+("あいう" (bytevector->string #vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86)
+                             (make-transcoder (utf-8-codec))))
+(#vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86) (string->bytevector "あいう" (make-transcoder (utf-8-codec))))

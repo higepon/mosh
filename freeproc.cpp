@@ -328,22 +328,6 @@ Object scheme::initLibraryTableEx(int argc, const Object* argv)
 }
 
 
-Object scheme::utf8TostringEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("utf8->string");
-    checkArgumentLength(1);
-
-    argumentAsByteVector(0, bytevector);
-
-    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
-    ucs4string ret;
-    UTF8Codec codec;
-    for (ucs4char c = codec.in(in); c != EOF; c = codec.in(in)) {
-        ret += c;
-    }
-    return Object::makeString(ret);
-}
-
 Object scheme::vectorEx(int argc, const Object* argv)
 {
     const Object vec = Object::makeVector(argc);

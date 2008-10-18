@@ -36,9 +36,13 @@
 #include "SString.h"
 #include "ByteVector.h"
 #include "ByteVectorProcedures.h"
+#include "ByteArrayBinaryInputPort.h"
 #include "BinaryInputPort.h"
 #include "Symbol.h"
 #include "ProcedureMacro.h"
+#include "Transcoder.h"
+#include "Codec.h"
+#include "UTF8Codec.h"
 
 using namespace scheme;
 
@@ -59,11 +63,48 @@ Object scheme::u8ListToByteVector(Object list)
 
 Object scheme::stringTobytevectorEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("string->bytevector");
+    checkArgumentLength(2);
+    argumentAsString(0, text);
+    argumentAsTranscoder(1, transcoder);
+    gc_vector<uint8_t> accum;
+    uint8_t buf[4];
+    for (ucs4string::const_iterator it = text->data().begin();
+         it != text->data().end(); ++it) {
+        const int length = transcoder->codec()->out(buf, *it);
+        for (int i = 0; i < length; i++) {
+            accum.push_back(buf[i]);
+        }
+    }
+    return Object::makeByteVector(new ByteVector(accum));
 }
 
-// (bytevector->string bytevector transcoder)
 Object scheme::bytevectorTostringEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("bytevector->string");
+    checkArgumentLength(2);
+
+    argumentAsByteVector(0, bytevector);
+    argumentAsTranscoder(1, transcoder);
+
+    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
+    ucs4string ret;
+    Codec* const codec = transcoder->codec();;
+    for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
+        ret += c;
+    }
+    return Object::makeString(ret);
+}
+
+Object scheme::utf8TostringEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("utf8->string");
+    checkArgumentLength(1);
+    Object transcoder = Object::makeTranscoder(new UTF8Codec());
+    Object args[2];
+    args[0] = argv[0];
+    args[1] = transcoder;
+    return bytevectorTostringEx(2, args);
 }
 
 Object scheme::bytevectorS64NativeSetDEx(int argc, const Object* argv)

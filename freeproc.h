@@ -63,7 +63,6 @@ namespace scheme {
     Object initLibraryTableEx(int argc, const Object* argv);
     Object map10Ex(int argc, const Object* argv);
     Object standardInputPortEx(int argc, const Object* argv);
-    Object utf8TostringEx(int argc, const Object* argv);
     Object vectorEx(int argc, const Object* argv);
     //    Object errorfEx(int argc, const Object* argv);
     Object evalEx(int argc, const Object* argv);

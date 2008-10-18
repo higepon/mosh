@@ -1,3 +1,7 @@
+2008-10-18  higepon  <higepon@users.sourceforge.jp>
+
+        * Added: bytevector->string and string->bytevector.
+
 2008-10-16  higepon  <higepon@users.sourceforge.jp>
 
         * Added: bytevector-u64-native-ref, bytevector-s64-native-ref
