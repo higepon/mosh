@@ -50,8 +50,6 @@
 
 using namespace scheme;
 
-jmp_buf ioReturnPoint;
-
 bool scheme::fileExistsP(const ucs4string& file)
 {
     FILE* stream = fopen(file.ascii_c_str(), "rb");

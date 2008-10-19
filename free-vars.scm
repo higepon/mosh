@@ -94,7 +94,6 @@
     bytevector-length
     (standard-input-port standard-input-port)
     get-bytevector-n
-    utf8->string
     (open-file-output-port open-output-file)
     (open-file-input-port open-input-file)
     (close-input-port close-input-port)
@@ -237,4 +236,10 @@
     bytevector-s64-native-set!
     bytevector->string
     string->bytevector
+    string->utf8
+    utf8->string
+    string->utf16
+    string->utf32
+    utf16->string
+    utf32->string
     )

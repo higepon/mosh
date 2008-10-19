@@ -29,9 +29,13 @@
  *  $Id: UTF8Codec.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include "Object.h"
+#include "Object-inl.h"
+#include "SString.h"
 #include "UTF8Codec.h"
 #include "BinaryOutputPort.h"
 #include "BinaryInputPort.h"
+#include "ErrorProcedures.h"
 
 using namespace scheme;
 
@@ -94,10 +98,7 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
         if (isUtf8Tail(second)) {
             return ((first & 0x1f) << 6) | (second & 0x3f);
         } else {
-            // error
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            fprintf(stderr, "%s first = %x error\n", __func__, first);
-            exit(-1);
+            throwIOError("invalid byte sequence");
         }
         // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
         //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
@@ -105,18 +106,14 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
         uint8_t second = port->getU8();
         uint8_t third =  port->getU8();
         if (!isUtf8Tail(third)) {
-            // error
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            fprintf(stderr, "%s first = %x error\n", __func__, first);
-            exit(-1);
+            throwIOError("invalid byte sequence");
         } else if ((0xe0 == first && 0xa0 <= second && second <= 0xbf)    |
                    (0xed == first && 0x80 <= second && second <= 0x9f)    |
                    (0xe1 <= first && first <= 0xec && isUtf8Tail(second)) |
                    (0xee == first || 0xef == first) && isUtf8Tail(second)) {
             return ((first & 0xf) << 12) | ((second & 0x3f) << 6) | (third & 0x3f);
         } else {
-            // error
-            return 0;
+            throwIOError("invalid byte sequence");
         }
         // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
         //          %xF4 %x80-8F 2( UTF8-tail )
@@ -125,25 +122,16 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
         uint8_t third =  port->getU8();
         uint8_t fourth = port->getU8();
         if (!isUtf8Tail(third) || !isUtf8Tail(fourth)) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            // error
-            fprintf(stderr, "%s first = %x error\n", __func__, first);
-            exit(-1);
+            throwIOError("invalid byte sequence");
         } else if ((0xf0 == first && 0x90 <= second && second <= 0xbf)     |
                    (0xf4 == first && 0x80 <= second && second <= 0x8f)     |
                    (0xf1 <= first && first <= 0xf3 && isUtf8Tail(second))) {
             return ((first & 0x7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | fourth;
         } else {
-            // error
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            fprintf(stderr, "%s first = %x error\n", __func__, first);
-            exit(-1);
+            throwIOError("invalid byte sequence");
         }
     } else {
-        // error
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        fprintf(stderr, "%s first = %x error\n", __func__, first);
-        exit(-1);
+        throwIOError("invalid byte sequence");
     }
 }
 

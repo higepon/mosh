@@ -33,9 +33,26 @@
 #define __SCHEME_VIOLATION_PROCEDURES__
 
 #include "scheme.h"
+#include <setjmp.h>
 
 namespace scheme {
 
+    extern jmp_buf ioErrorJmpBuf;
+    extern Object  ioErrorMessage;
+#ifdef DEBUG_VERSION
+    extern bool isErrorBufInitialized;
+#endif
+
+#ifdef DEBUG_VERSION
+
+#define TRY_IO isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
+#else
+#define TRY_IO if (setjmp(ioErrorJmpBuf) == 0)
+#endif
+#define CATCH_IO else
+#define IO_ERROR_MESSAGE ioErrorMessage
+
+    Object throwIOError(Object message);
     Object throwEx(int argc, const Object* argv);
     Object errorEx(int argc, const Object* argv);
     Object assertionViolationEx(int argc, const Object* argv);

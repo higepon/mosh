@@ -44,6 +44,12 @@
 
 using namespace scheme;
 
+jmp_buf scheme::ioErrorJmpBuf;
+Object  scheme::ioErrorMessage;
+#ifdef DEBUG_VERSION
+bool scheme::isErrorBufInitialized = false;
+#endif
+
 static Object makeMessageCondition(Object message);
 static Object makeIrritantsCondition(Object irritants);
 static Object makeWhoCondition(Object who);
@@ -56,6 +62,13 @@ static void raiseAfter(const ucs4char* errorRcdName,
                        Object who,
                        Object message,
                        Object irritants = Object::Nil);
+
+Object scheme::throwIOError(Object message)
+{
+    ioErrorMessage = message;
+    MOSH_ASSERT(isErrorBufInitialized);
+    longjmp(ioErrorJmpBuf, -1);
+}
 
 Object scheme::throwEx(int argc, const Object* argv)
 {

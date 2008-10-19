@@ -32,6 +32,7 @@
 #ifndef __SCHEME_OBJECT__
 #define __SCHEME_OBJECT__
 
+#include <setjmp.h>
 #include "HeapObject.h"
 #include "oniguruma.h"
 

@@ -36,13 +36,14 @@
 #include "SString.h"
 #include "ByteVector.h"
 #include "ByteVectorProcedures.h"
+#include "ErrorProcedures.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "BinaryInputPort.h"
 #include "Symbol.h"
 #include "ProcedureMacro.h"
 #include "Transcoder.h"
-#include "Codec.h"
 #include "UTF8Codec.h"
+#include "UTF32Codec.h"
 
 using namespace scheme;
 
@@ -60,6 +61,100 @@ Object scheme::u8ListToByteVector(Object list)
     return Object::makeByteVector(list);
 }
 
+Object scheme::utf8TostringEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("utf8->string");
+    checkArgumentLength(1);
+    Object transcoder = Object::makeTranscoder(new UTF8Codec());
+    Object args[2];
+    args[0] = argv[0];
+    args[1] = transcoder;
+    return bytevectorTostringEx(2, args);
+}
+
+Object scheme::stringToutf8Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("string->utf8");
+    checkArgumentLength(1);
+    Object transcoder = Object::makeTranscoder(new UTF8Codec());
+    Object args[2];
+    args[0] = argv[0];
+    args[1] = transcoder;
+    return stringTobytevectorEx(2, args);
+}
+
+Object scheme::utf32TostringEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("utf32->string");
+    checkArgumentLengthBetween(2, 3);
+    argumentAsByteVector(0, bytevector);
+    int endianness;
+    bool skipBOM = false;
+    if (argc == 2) {
+        endianness = UTF32Codec::checkBOM(bytevector);
+        if (endianness != UTF32Codec::NO_BOM) {
+            skipBOM = true;
+        }
+    } else {
+    }
+
+    bool endiannessMandatory = (argc == 3 && !argv[2].isFalse());
+    if (endiannessMandatory || endianness == UTF32Codec::NO_BOM) {
+        argumentCheckSymbol(1, endiannessSymbol);
+        if (endiannessSymbol == Symbol::LITTLE) {
+            endianness = UTF32Codec::UTF_32LE;
+        } else if (endiannessSymbol == Symbol::BIG) {
+            endianness = UTF32Codec::UTF_32BE;
+        } else {
+            callAssertionViolationAfter(procedureName, "endianness should be little or big", L1(argv[1]));
+            return Object::Undef;
+        }
+    }
+    const int skipSize = (skipBOM ? 4 : 0);
+    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    ucs4string ret;
+    UTF32Codec codec(endianness);
+    TRY_IO {
+        for (ucs4char c = codec.in(in); c != EOF; c = codec.in(in)) {
+            ret += c;
+        }
+        return Object::makeString(ret);
+    } CATCH_IO {
+        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::utf16TostringEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::stringToutf32Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("string->utf32");
+    checkArgumentLengthBetween(1, 2);
+    Object args[2];
+    args[0] = argv[0];
+    if (argc == 2) {
+        argumentCheckSymbol(1, endianness);
+        if (endianness == Symbol::LITTLE) {
+            args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32LE));
+        } else if (endianness == Symbol::BIG) {
+            args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32BE));
+        } else {
+            callAssertionViolationAfter(procedureName, "endianness should be little or big", L1(argv[1]));
+            return Object::Undef;
+        }
+        return stringTobytevectorEx(2, args);
+    } else {
+        args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32BE));
+        return stringTobytevectorEx(2, args);
+    }
+}
+
+Object scheme::stringToutf16Ex(int argc, const Object* argv)
+{
+}
 
 Object scheme::stringTobytevectorEx(int argc, const Object* argv)
 {
@@ -71,9 +166,14 @@ Object scheme::stringTobytevectorEx(int argc, const Object* argv)
     uint8_t buf[4];
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
-        const int length = transcoder->codec()->out(buf, *it);
-        for (int i = 0; i < length; i++) {
-            accum.push_back(buf[i]);
+        TRY_IO {
+            const int length = transcoder->codec()->out(buf, *it);
+            for (int i = 0; i < length; i++) {
+                accum.push_back(buf[i]);
+            }
+        } CATCH_IO {
+            callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+            return Object::Undef;
         }
     }
     return Object::makeByteVector(new ByteVector(accum));
@@ -89,22 +189,17 @@ Object scheme::bytevectorTostringEx(int argc, const Object* argv)
 
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     ucs4string ret;
-    Codec* const codec = transcoder->codec();;
-    for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
-        ret += c;
+    Codec* const codec = transcoder->codec();
+
+    TRY_IO {
+        for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
+            ret += c;
+        }
+    } CATCH_IO {
+        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        return Object::Undef;
     }
     return Object::makeString(ret);
-}
-
-Object scheme::utf8TostringEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("utf8->string");
-    checkArgumentLength(1);
-    Object transcoder = Object::makeTranscoder(new UTF8Codec());
-    Object args[2];
-    args[0] = argv[0];
-    args[1] = transcoder;
-    return bytevectorTostringEx(2, args);
 }
 
 Object scheme::bytevectorS64NativeSetDEx(int argc, const Object* argv)

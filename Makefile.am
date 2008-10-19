@@ -53,6 +53,7 @@ TextualInputPort.cpp          TextualInputPort.h                  \
 StringTextualOutputPort.h     StringTextualOutputPort.cpp         \
 StringTextualInputPort.h      StringTextualInputPort.cpp          \
 UTF8Codec.cpp                 UTF8Codec.h                         \
+UTF32Codec.cpp                UTF32Codec.h                        \
 EqHashTable.h                 EqHashTable.cpp                     \
 SString.h                     SString.cpp                         \
 GenericHashTable.h            GenericHashTable.cpp                \

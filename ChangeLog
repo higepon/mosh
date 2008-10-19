@@ -1,4 +1,16 @@
+2008-10-19  higepon  <higepon@users.sourceforge.jp>
+
+        * ByteVectorProcedures.cpp : Added utf32->string and string->utf32.
+
+        * UTF32Codec.h : Added.
+
+        * UTF32Codec.cpp : Added.
+
+        * ByteVectorProcedures.cpp : Added string->utf8.
+
 2008-10-18  higepon  <higepon@users.sourceforge.jp>
+
+        * ErrorProcedures.cpp (throwIOError): Added for Codec Error.
 
         * Added: bytevector->string and string->bytevector.
 

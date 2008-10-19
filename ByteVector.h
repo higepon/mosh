@@ -101,12 +101,12 @@ public:
 
     ~ByteVector() {}
 
-    uint8_t u8Ref(int index)
+    uint8_t u8Ref(int index) const
     {
         return data_[index];
     }
 
-    int8_t s8Ref(int index)
+    int8_t s8Ref(int index) const
     {
         return static_cast<int8_t>(data_[index]);
     }
@@ -121,17 +121,17 @@ public:
         data_[index] = static_cast<uint8_t>(value);
     }
 
-    uint16_t u16RefNative(int index)
+    uint16_t u16RefNative(int index) const
     {
         return *(reinterpret_cast<uint16_t*>((&data_[index])));
     }
 
-    uint16_t u16RefLittle(int index)
+    uint16_t u16RefLittle(int index) const
     {
         return (data_[index + 1] << 8) | data_[index];
     }
 
-    uint32_t u32RefLittle(int index)
+    uint32_t u32RefLittle(int index) const
     {
         return data_[index + 3] << 24 |
                data_[index + 2] << 16 |
@@ -139,7 +139,7 @@ public:
                data_[index];
     }
 
-    int32_t s32RefLittle(int index)
+    int32_t s32RefLittle(int index) const
     {
         return data_[index + 3] << 24 |
                data_[index + 2] << 16 |
@@ -195,7 +195,7 @@ public:
         data_[index + 7] = value & 0xff;
     }
 
-    uint64_t u64RefLittle(int index)
+    uint64_t u64RefLittle(int index) const
     {
         return
             static_cast<uint64_t>(data_[index + 7]) << 56 |
@@ -208,7 +208,7 @@ public:
             static_cast<uint64_t>(data_[index + 0]);
     }
 
-    uint64_t u64RefBig(int index)
+    uint64_t u64RefBig(int index) const
     {
         return
             static_cast<uint64_t>(data_[index + 0]) << 56 |
@@ -221,7 +221,7 @@ public:
             static_cast<uint64_t>(data_[index + 7]);
     }
 
-    int64_t s64RefLittle(int index)
+    int64_t s64RefLittle(int index) const
     {
         return
             static_cast<int64_t>(data_[index + 7]) << 56 |
@@ -234,7 +234,7 @@ public:
             static_cast<int64_t>(data_[index + 0]);
     }
 
-    int64_t s64RefBig(int index)
+    int64_t s64RefBig(int index) const
     {
         return
             static_cast<int64_t>(data_[index + 0]) << 56 |
@@ -248,7 +248,7 @@ public:
     }
 
 
-    uint32_t u32RefBig(int index)
+    uint32_t u32RefBig(int index) const
     {
         return data_[index + 0] << 24 |
                data_[index + 1] << 16 |
@@ -256,7 +256,7 @@ public:
                data_[index + 3];
     }
 
-    int32_t s32RefBig(int index)
+    int32_t s32RefBig(int index) const
     {
         return data_[index + 0] << 24 |
                data_[index + 1] << 16 |
@@ -264,22 +264,22 @@ public:
                data_[index + 3];
     }
 
-    int32_t s32RefNative(int index)
+    int32_t s32RefNative(int index) const
     {
         return *(reinterpret_cast<int32_t*>((&data_[index])));
     }
 
-    uint32_t u32RefNative(int index)
+    uint32_t u32RefNative(int index) const
     {
         return *(reinterpret_cast<uint32_t*>((&data_[index])));
     }
 
-    int64_t s64RefNative(int index)
+    int64_t s64RefNative(int index) const
     {
         return *(reinterpret_cast<int64_t*>((&data_[index])));
     }
 
-    uint64_t u64RefNative(int index)
+    uint64_t u64RefNative(int index) const
     {
         return *(reinterpret_cast<uint64_t*>((&data_[index])));
     }
