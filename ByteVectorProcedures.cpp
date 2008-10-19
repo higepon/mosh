@@ -43,6 +43,7 @@
 #include "ProcedureMacro.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
+#include "UTF16Codec.h"
 #include "UTF32Codec.h"
 
 using namespace scheme;
@@ -88,7 +89,7 @@ Object scheme::utf32TostringEx(int argc, const Object* argv)
     DeclareProcedureName("utf32->string");
     checkArgumentLengthBetween(2, 3);
     argumentAsByteVector(0, bytevector);
-    int endianness;
+    int endianness = UTF32Codec::NO_BOM;
     bool skipBOM = false;
     if (argc == 2) {
         endianness = UTF32Codec::checkBOM(bytevector);
@@ -127,6 +128,67 @@ Object scheme::utf32TostringEx(int argc, const Object* argv)
 
 Object scheme::utf16TostringEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("utf16->string");
+    checkArgumentLengthBetween(2, 3);
+    argumentAsByteVector(0, bytevector);
+    int endianness;
+    bool skipBOM = false;
+    if (argc == 2) {
+        endianness = UTF16Codec::checkBOM(bytevector);
+        if (endianness != UTF16Codec::NO_BOM) {
+            skipBOM = true;
+        }
+    } else {
+    }
+
+    bool endiannessMandatory = (argc == 3 && !argv[2].isFalse());
+    if (endiannessMandatory || endianness == UTF16Codec::NO_BOM) {
+        argumentCheckSymbol(1, endiannessSymbol);
+        if (endiannessSymbol == Symbol::LITTLE) {
+            endianness = UTF16Codec::UTF_16LE;
+        } else if (endiannessSymbol == Symbol::BIG) {
+            endianness = UTF16Codec::UTF_16BE;
+        } else {
+            callAssertionViolationAfter(procedureName, "endianness should be little or big", L1(argv[1]));
+            return Object::Undef;
+        }
+    }
+    const int skipSize = (skipBOM ? 2 : 0);
+    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    ucs4string ret;
+    UTF16Codec codec(endianness);
+    TRY_IO {
+        for (ucs4char c = codec.in(in); c != EOF; c = codec.in(in)) {
+            ret += c;
+        }
+        return Object::makeString(ret);
+    } CATCH_IO {
+        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::stringToutf16Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("string->utf16");
+    checkArgumentLengthBetween(1, 2);
+    Object args[2];
+    args[0] = argv[0];
+    if (argc == 2) {
+        argumentCheckSymbol(1, endianness);
+        if (endianness == Symbol::LITTLE) {
+            args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16LE));
+        } else if (endianness == Symbol::BIG) {
+            args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16BE));
+        } else {
+            callAssertionViolationAfter(procedureName, "endianness should be little or big", L1(argv[1]));
+            return Object::Undef;
+        }
+        return stringTobytevectorEx(2, args);
+    } else {
+        args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16BE));
+        return stringTobytevectorEx(2, args);
+    }
 }
 
 Object scheme::stringToutf32Ex(int argc, const Object* argv)
@@ -150,10 +212,6 @@ Object scheme::stringToutf32Ex(int argc, const Object* argv)
         args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32BE));
         return stringTobytevectorEx(2, args);
     }
-}
-
-Object scheme::stringToutf16Ex(int argc, const Object* argv)
-{
 }
 
 Object scheme::stringTobytevectorEx(int argc, const Object* argv)

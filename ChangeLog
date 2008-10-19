@@ -1,6 +1,12 @@
 2008-10-19  higepon  <higepon@users.sourceforge.jp>
 
+        * ByteVectorProcedures.cpp : Added utf16->string and string->utf16.
+
         * ByteVectorProcedures.cpp : Added utf32->string and string->utf32.
+
+        * UTF16Codec.h : Added.
+
+        * UTF16Codec.cpp : Added.
 
         * UTF32Codec.h : Added.
 
