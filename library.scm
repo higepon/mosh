@@ -5981,8 +5981,6 @@
                  (loop (read-char in))]))])
         (if (string=? s expanded) s expanded)))))
 
-
-
   (define (string-normalize-nfc string)
     (compose
      (string-normalize-nfd string)))
@@ -5991,3 +5989,8 @@
     (compose
      (string-normalize-nfkd string)))
 
+(define (call-with-port p proc)
+  (dynamic-wind
+      (lambda () #t)
+      (lambda () (proc p))
+      (lambda () (close-port p))))

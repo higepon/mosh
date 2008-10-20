@@ -1,3 +1,11 @@
+2008-10-20  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp : Removed "set! to unbound variable" check on ASSIGN_GLOBAL for psyntax.
+
+        * library.scm (call-with-port): Added call-with-port.
+
+        * PortProcedures.cpp (getLineEx): Added get-line.
+
 2008-10-19  higepon  <higepon@users.sourceforge.jp>
 
         * ByteVectorProcedures.cpp : Added utf16->string and string->utf16.

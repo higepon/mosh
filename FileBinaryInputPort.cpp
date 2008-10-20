@@ -1,5 +1,5 @@
 /*
- * FileBinaryInputPort.cpp - 
+ * FileBinaryInputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -99,5 +99,3 @@ int FileBinaryInputPort::close()
     fclose(stream_);
     return MOSH_SUCCESS;
 }
-
-

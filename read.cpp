@@ -99,7 +99,7 @@ using namespace scheme;
 #define Scm_VM() ((ScmVM*)SOME_VALUE)
 #define Scm_Error(...) printf(__VA_ARGS__)
 #define Scm_ReadError(port, ...) printf(__VA_ARGS__)
-#define Scm_PortLine(port) port->getLine()
+#define Scm_PortLine(port) port->getLineNo()
 #if 0
 typedef scheme::InputFilePort ScmPort;
 #define SCM_PORTP(port) (port.isInputFilePort())
@@ -450,7 +450,7 @@ void raiseReadError(TextualInputPort* port, const ucs4char* message, Object valu
     port->setError(format(UC("~a at ~a:~d"),
                           Pair::list3(format(message, values),
                                       port->toString(),
-                                      Object::makeInt(port->getLine()))));
+                                      Object::makeInt(port->getLineNo()))));
     longjmp(returnPoint, -1);
 }
 

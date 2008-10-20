@@ -131,9 +131,23 @@ bool TextualInputPort::setPortPostion()
     return false;
 }
 
-int TextualInputPort::getLine() const
+int TextualInputPort::getLineNo() const
 {
     return line_;
+}
+
+ucs4string TextualInputPort::getLine()
+{
+    ucs4string ret;
+    for (;;) {
+        ucs4char ch = getChar();
+        if (ch == '\n' || ch == EOF) {
+            ret += ch;
+            break;
+        }
+        ret += ch;
+    }
+    return ret;
 }
 
 void TextualInputPort::unGetChar(ucs4char c)

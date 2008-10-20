@@ -242,4 +242,6 @@
     string->utf32
     utf16->string
     utf32->string
+    get-line
+    close-port
     )

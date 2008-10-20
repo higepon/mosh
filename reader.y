@@ -79,7 +79,7 @@ list : LEFT_PAREN datum_list RIGHT_PAREN
        {
            if ($2.isPair()) {
                 $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),
-                                                      Object::makeInt(parser_port()->getLine()));
+                                                      Object::makeInt(parser_port()->getLineNo()));
            }
            $$ = $2;
        }
@@ -124,6 +124,6 @@ int yyerror(char const *str)
 {
     TextualInputPort* const port = parser_port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
-                          Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeInt(port->getLine()))));
+                          Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeInt(port->getLineNo()))));
     return 0;
 }

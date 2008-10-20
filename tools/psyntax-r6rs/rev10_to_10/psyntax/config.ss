@@ -41,7 +41,7 @@
   ;;; implementation-specific extensions can be added 
   ;;; to the expander
   
-  (define-option if-wants-global-defines #t)
+  (define-option if-wants-global-defines #f)
   ;;; If the implementation requires that all global 
   ;;; variables be defined before they're set!ed, 
   ;;; then enabling this option causes the expander

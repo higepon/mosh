@@ -25,8 +25,9 @@ extern VM* theVM;
 extern TextualInputPort* parser_port();
 extern YYSTYPE yylval;
 
-Scanner::Scanner() : buffer_(NULL),
-                     cursor_(buffer_),
+Scanner::Scanner() : dummy_('Z'),  // for YYDEBUG
+                     buffer_(NULL),
+                     cursor_(&dummy_),
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),
@@ -41,10 +42,7 @@ Scanner::~Scanner()
 
 static void yydebug(int state, ucs4char ch)
 {
-#if 0
-    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-    port->format(UC("state=~d ch=[~a]\n"), Pair::list2(Object::makeInt(state), Object::makeChar(ch)));
-#endif
+//    printf("state=%d ch=[%c] ch=%x\n", state, ch, ch);
 }
 
 
@@ -85,6 +83,12 @@ void Scanner::fill(int n)
         } else {
             buffer_[i + restCharCount] = ch;
         }
+//         if (!inputPort->isDataReady()) {
+//             i++;
+//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//             break;
+//         }
+
     }
     const int readSize = i;
     cursor_ = cursor_ - tokenOffset;

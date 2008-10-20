@@ -1408,7 +1408,7 @@ val
 [error (receive (a) (values 1 2))]
 [error (receive (a b) (values 1))]
 [error (3)]
-[error (set! my-unbound-variable 3)]
+;[error (set! my-unbound-variable 3)]
 [error (/ 3 0)]
 [error (error "our" "message")]
 [#t (let ([x (list 'a 'b 'c 'a)]

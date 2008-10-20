@@ -119,7 +119,7 @@ reader.tab.cpp: reader.y
 	bison -d $< -o $@
 
 Scanner.cpp : scanner.re
-	/usr/local/bin/re2c -udg $< > $@ # -d is debug option
+	/usr/local/bin/re2c -ud $< > $@ # -d is debug option
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
 r6rs-test:

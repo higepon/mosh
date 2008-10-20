@@ -61,6 +61,39 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+Object scheme::getLineEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("get-line");
+    checkArgumentLength(1);
+    argumentAsTextualInputPort(0, inputPort);
+    TRY_IO {
+        const ucs4string& line = inputPort->getLine();
+        return Object::makeString(line);
+    } CATCH_IO {
+        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::closePortEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("close-port");
+    checkArgumentLength(1);
+    const Object maybePort = argv[0];
+    if (maybePort.isTextualInputPort()) {
+        maybePort.toTextualInputPort()->close();
+    } else if (maybePort.isBinaryInputPort()) {
+        maybePort.toBinaryInputPort()->close();
+    } else if (maybePort.isBinaryOutputPort()) {
+        maybePort.toBinaryOutputPort()->close();
+    } else if (maybePort.isTextualOutputPort()) {
+        maybePort.toTextualOutputPort()->close();
+    } else {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "port", maybePort, L1(maybePort));
+    }
+    return Object::Undef;
+}
+
 Object scheme::currentDirectoryEx(int argc, const Object* argv)
 {
     DeclareProcedureName("current-directory");

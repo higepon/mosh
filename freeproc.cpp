@@ -608,5 +608,6 @@ Object scheme::symbolValueEx(int argc, const Object* argv)
     DeclareProcedureName("symbol-value");
     checkArgumentLength(1);
     argumentCheckSymbol(0, id);
+    fflush(stderr);
     return theVM->getTopLevelGlobalValue(id);
 }

@@ -140,7 +140,7 @@ Object VM::getTopLevelGlobalValue(Object id)
     if (val != notFound_) {
         return val;
     } else {
-        callAssertionViolationAfter("symbol-value", "unbound variable", L1(id));
+        callAssertionViolationAfter("symbol-value2", "unbound variable", L1(id));
         return Object::Undef;
     }
 }
@@ -760,15 +760,16 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object id = fetchOperand();
             TRACE_INSN1("ASSIGN_GLOBAL", "(~a)\n", id);
-            const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
-            if (val == notFound_) {
-                Object e = splitId(id);
-                callAssertionViolationAfter("set!", "can't set! to unbound variable", L1(e.cdr()));
-                NEXT;
-            } else {
+//            const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
+            // "set! to unbound variable" is checked by psyntax.
+//             if (val == notFound_) {
+//                 Object e = splitId(id);
+//                 callAssertionViolationAfter("set!", "can't set! to unbound variable", L1(e.cdr()));
+//                 NEXT;
+//             } else {
                 nameSpace_.toEqHashTable()->set(id, ac_);
                 ac_ = Object::Undef;
-            }
+//             }
             NEXT1;
         }
         CASE(ASSIGN_LOCAL)
