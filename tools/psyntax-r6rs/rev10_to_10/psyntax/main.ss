@@ -92,7 +92,7 @@
            (let ([line (get-line (current-input-port))])
              (if (eof-object? line)
                  (exit)
-                 (display (eval-top-level (call-with-port (open-string-input-port line) read))))))
+                 (display (eval (call-with-port (open-string-input-port line) read) (environment '(rnrs)))))))
     (newline)
     (rec))
   (rec))

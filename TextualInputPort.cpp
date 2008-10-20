@@ -31,6 +31,7 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "SString.h"
 #include "Codec.h"
 #include "Transcoder.h"
 #include "BinaryInputPort.h"
