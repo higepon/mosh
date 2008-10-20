@@ -67,8 +67,7 @@ Object scheme::getLineEx(int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
     TRY_IO {
-        const ucs4string& line = inputPort->getLine();
-        return Object::makeString(line);
+        return inputPort->getLine();
     } CATCH_IO {
         callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
         return Object::Undef;

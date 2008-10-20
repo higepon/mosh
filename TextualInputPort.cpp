@@ -136,18 +136,21 @@ int TextualInputPort::getLineNo() const
     return line_;
 }
 
-ucs4string TextualInputPort::getLine()
+Object TextualInputPort::getLine()
 {
     ucs4string ret;
     for (;;) {
         ucs4char ch = getChar();
+        if (ret.empty() && ch == EOF) {
+            return Object::Eof;
+        }
         if (ch == '\n' || ch == EOF) {
             ret += ch;
             break;
         }
         ret += ch;
     }
-    return ret;
+    return Object::makeString(ret);
 }
 
 void TextualInputPort::unGetChar(ucs4char c)

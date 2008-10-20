@@ -32,8 +32,10 @@
     (rnrs base)
     (rnrs control)
     (rnrs io simple)
+    (rnrs io ports)
     (rnrs records procedural)
     ;(rename (rnrs programs) (command-line get-command-line))
+    (only (rnrs programs) exit)
     (mosh) ;; for get-command-line
     (rnrs lists)
     (only (rnrs conditions) serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
@@ -56,6 +58,44 @@
          (lst lst (cdr lst)))
         ((null? lst))
       (proc i (car lst))))
+
+(define (repl . x)
+  (define (rec)
+    (display "mosh>")
+    (guard (e
+            (#t
+             (for-each-with-index
+              (lambda (i x)
+                (cond
+                 [else
+                  (let ([rtd (record-rtd x)])
+                    (format #t "   ~d. ~a" i (record-type-name rtd))
+                    (let ([v (record-type-field-names rtd)])
+                      (case (vector-length v)
+                        [(0) (newline)]
+                        [(1)
+                         (display ": ")
+                         (write ((record-accessor rtd 0) x))
+                         (newline)]
+                        [else
+                         (display ":\n")
+                         (let f ([i 0])
+                           (unless (= i (vector-length v))
+                             (display "       ")
+                             (display (vector-ref v i))
+                             (display ": ")
+                             (write ((record-accessor rtd i) x))
+                             (newline)
+                             (f (+ i 1))))])))]
+                 ))
+              (simple-conditions e))))
+           (let ([line (get-line (current-input-port))])
+             (if (eof-object? line)
+                 (exit)
+                 (display (eval-top-level (call-with-port (open-string-input-port line) read))))))
+    (newline)
+    (rec))
+  (rec))
 
 
   (define trace-printer (make-parameter write))
@@ -169,6 +209,8 @@
   (library-path (list (string-append (current-directory) "/lib")
                   (string-append (standard-library-path) "/lib")))
 
+
+
 ;;   (define (print-record x)
 ;;     (display "hige")
 ;;     (let ([rtd (record-rtd x)])
@@ -199,14 +241,6 @@
        (for-each-with-index
         (lambda (i x)
           (cond
-;;            [(who-condition? x)
-;;             (format port "   ~d. &who: ~a\n" i (condition-who x))]
-;;            [(message-condition? x)
-;;             (format port "   ~d. &message: ~s\n" i (condition-message x))]
-;;            [(violation? x)
-;;             (format port "   ~d. ~a\n" i (record-type-name (record-rtd x)))]
-;;            [(irritants-condition? x)
-;;             (format port "   ~d. &irritants: ~s\n" i (condition-irritants x))]
            [else
             (let ([rtd (record-rtd x)])
               (format port "   ~d. ~a" i (record-type-name rtd))
@@ -230,7 +264,9 @@
             ))
         (simple-conditions c)))
      (lambda ()
-      (load-r6rs-top-level (car args) 'load))))
+       (if (null? args)
+           (repl)
+           (load-r6rs-top-level (car args) 'load)))))
 
 
 ;;   (display "r6rs psyntax ready\n")
