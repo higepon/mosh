@@ -35,7 +35,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "scheme.h"
-#include "freeproc.h"
+#include "UtilityProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "StringProcedures.h"
@@ -51,6 +51,19 @@
 #include "Closure.h"
 
 using namespace scheme;
+
+Object scheme::unGenSym(Object symbol)
+{
+    MOSH_ASSERT(symbol.isSymbol());
+    ucs4string symbolString = symbol.toSymbol()->c_str();
+    gc_vector<ucs4string> splitted;
+    symbolString.split('@', splitted);
+    if (splitted.size() == 2) {
+        return Symbol::intern(splitted[1].c_str());
+    } else {
+        return symbol;
+    }
+}
 
 Object scheme::numberPEx(int argc, const Object* argv)
 {
@@ -219,21 +232,15 @@ Object scheme::gensymEx(int argc, const Object* argv)
     for (int i = 0; i < len; i++) {
         ibuf[i] = ubuf[i];
     }
-//     if (1 == argc) {
-//         if (argv[1].isCProcedure()) {
-//             return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, theVM->getCProcedureName(argv[1]))).toString()->data().c_str());
-//         } else if (argv[1].isClosure()) {
-// //            return Object::makeSymbol(format(UC("~aLAMBDA~a"), Pair::list2(ibuf, argv[1].toClosure()->sourceInfoString())).toString()->data().c_str());
-//             return Object::makeSymbol(format(UC("~aLAMBDA"), Pair::list1(ibuf)).toString()->data().c_str());
-//         } else if (argv[1].isSymbol()) {
-//             return Object::makeSymbol(format(UC("~a~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
-//         } else {
-//             return Object::makeSymbol(ibuf);
-//         }
-//     } else {
-       return Object::makeSymbol(ibuf);
-//    }
-//    return Symbol::intern(ibuf);
+    if (1 == argc) {
+        if (argv[1].isSymbol()) {
+            return Object::makeSymbol(format(UC("~a@~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
+        } else {
+            return Object::makeSymbol(ibuf);
+        }
+    } else {
+        return Object::makeSymbol(ibuf);
+    }
 }
 
 Object scheme::vectorPEx(int argc, const Object* argv)
@@ -343,7 +350,6 @@ Object scheme::evalEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eval");
     checkArgumentLength(2);
-//    VM_LOG1("eval=~a\n", argv[0]);
     return theVM->eval(argv[0], argv[1]);
 }
 

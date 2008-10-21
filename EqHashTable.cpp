@@ -34,7 +34,7 @@
 #include "Object-inl.h"
 #include "EqHashTable.h"
 #include "Vector.h"
-#include "freeproc.h"
+#include "UtilityProcedures.h"
 
 using namespace scheme;
 

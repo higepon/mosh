@@ -46,7 +46,7 @@
 #include "CProcedure.h"
 #include "Box.h"
 #include "Regexp.h"
-#include "freeproc.h"
+#include "UtilityProcedures.h"
 #include "Callable.h"
 #include "Record.h"
 #include "RecordTypeDescriptor.h"

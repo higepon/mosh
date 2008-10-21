@@ -59,7 +59,7 @@
 #include "CProcedure.h"
 #include "Box.h"
 #include "Stack.h"
-#include "freeproc.h"
+#include "UtilityProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;
@@ -1366,10 +1366,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
+
                 Object e = splitId(id);
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
-                                            L1(e.cdr()));
+                                            // R6RS mode requires demangle of symbol.
+                                            L1(unGenSym(e.cdr())));
             } else {
                 ac_ = val;
             }
@@ -1383,7 +1385,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 Object e = splitId(id);
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
-                                            L1(e.cdr()));
+                                            L1(unGenSym(e.cdr())));
             } else {
                 ac_ = val;
             }
@@ -1803,7 +1805,7 @@ Object VM::splitId(Object id)
         return Object::Nil;
     }
     Object libname = Object::makeString(text.substr(0, i).c_str());
-    Object symbol = Object::makeString(text.substr(i + 3, text.size() - i - 3).c_str());
+    Object symbol = Symbol::intern(text.substr(i + 3, text.size() - i - 3).c_str());
     return Object::cons(libname, symbol);
 }
 

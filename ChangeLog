@@ -1,3 +1,11 @@
+2008-10-21  higepon  <higepon@users.sourceforge.jp>
+
+        * R6RS interactive REPL works well.
+
+        * UtilityProcedures.cpp (unGenSym): Added.
+
+        * UtilityProcedures.h: rename freeproc.h to UtilityProcedures.h.
+
 2008-10-20  higepon  <higepon@users.sourceforge.jp>
 
         * VM.cpp : Removed "set! to unbound variable" check on ASSIGN_GLOBAL for psyntax.

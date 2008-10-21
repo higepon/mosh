@@ -1,5 +1,5 @@
 /*
- * freeproc.h: procedures refereced as free variable.
+ * UtilityProcedures.h:
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -34,6 +34,7 @@
 
 namespace scheme {
 
+    Object unGenSym(Object symbol);
     Object dummy(Object obj);
     Object numberPEx(int argc, const Object* argv);
     Object bytevectorPEx(int argc, const Object* argv);
