@@ -240,7 +240,7 @@ Object VM::evaluate(Object codeVector)
     return ret;
 }
 
-#       include "cprocedures.cpp"
+#include "cprocedures.cpp"
 
 Object VM::evaluate(Object* code, int codeSize)
 {
@@ -1364,10 +1364,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_GLOBAL)
         {
+
             const Object id = fetchOperand();
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
-
                 Object e = splitId(id);
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
@@ -1387,6 +1387,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
                                             L1(unGenSym(e.cdr())));
+                NEXT1; // for error handling
             } else {
                 ac_ = val;
             }

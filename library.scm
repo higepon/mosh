@@ -2840,12 +2840,14 @@
                  (if file (format "~a:~d" file lineno) "")
                  )
         ))
-     (sort
+     (list-sort
+      (lambda (x y) (> (second x) (second y)))
       (hashtable-map
        (lambda (closure sample-count)
          (list closure sample-count (/ (* 100 sample-count) total)))
        sample-table)
-      (lambda (x y) (> (second x) (second y)))))
+      )
+     )
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
       ;; (for-each
 ;;        (lambda (p)
@@ -3071,6 +3073,31 @@
               (new condition)))))
       (thunk))))
 
+(define (condition-printer c)
+  (for-each
+   (lambda (x)
+     (let ([rtd (record-rtd x)])
+       (format #t "   ~d. ~a" 0 (record-type-name rtd))
+       (let ([v (record-type-field-names rtd)])
+         (case (vector-length v)
+           [(0) (newline)]
+           [(1)
+            (display ": ")
+            (write ((record-accessor rtd 0) x))
+            (newline)]
+           [else
+            (display ":\n")
+            (let f ([i 0])
+              (unless (= i (vector-length v))
+                (display "       ")
+                (display (vector-ref v i))
+                (display ": ")
+                (write ((record-accessor rtd i) x))
+                (newline)
+                (f (+ i 1))))]))))
+   (simple-conditions c)))
+
+
 (define (raise c)
   (cond ((current-exception-handler)
          => (lambda (proc)
@@ -3079,7 +3106,7 @@
                      => (lambda (proc)
                           (proc c))))
               (throw "    in raise: returned from non-continuable exception"))))
-    (throw (format "    Unhandled exception\n\n~a" c)))
+    (throw (format "    Unhandled exception\n\n~a" (condition-printer c))))
 
 (define (raise-continuable c)
   (cond ((current-exception-handler)

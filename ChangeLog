@@ -1,5 +1,9 @@
 2008-10-21  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (show-profile): Fixed profiler SEGV.
+
+        * VM.cpp (VM::run): Fixed the bug of REFER_GLOBAL_CALL.
+
         * Equivalent.h (scheme): Fixed bug of equality of Record.
 
         * lib/srfi/%3A98.ss (srfi): Added srfi 98 support.

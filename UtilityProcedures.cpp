@@ -60,7 +60,7 @@ Object scheme::unGenSym(Object symbol)
     gc_vector<ucs4string> splitted;
     symbolString.split('@', splitted);
     if (splitted.size() == 2) {
-        return Symbol::intern(splitted[1].c_str());
+        return Symbol::intern(Object::makeString(splitted[1].c_str()).toString()->data().c_str());
     } else {
         return symbol;
     }
