@@ -1,6 +1,9 @@
 2008-10-21  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/srfi/%3A98.ss (srfi): Added srfi 98 support.
+
         * R6RS interactive REPL works well.
+               : (import ...) on REPL works well also.
 
         * UtilityProcedures.cpp (unGenSym): Added.
 

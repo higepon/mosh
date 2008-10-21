@@ -4060,7 +4060,7 @@
       (lambda ()
         (or the-env 
 ;            (let ([lib (find-library-by-name '(ironscheme))]
-            (let ([lib (find-library-by-name '(rnrs))]
+            (let ([lib (find-library-by-name '(mosh interaction))]
                   [rib (make-empty-rib)])
               (let ([subst (library-subst lib)]) 
                 (set-rib-sym*! rib (map car subst))

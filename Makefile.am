@@ -85,8 +85,8 @@ mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 MOSHLIB_CXXFLAGS   = -fomit-frame-pointer $(mosh_OPTS) # compile libraries with -O0
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/srfi/%3A8.ss
-nobase_data_DATA = lib/srfi/%3A8.ss lib/mosh/test.ss
+data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
+nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/mosh/test.ss
 
 noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
