@@ -51,6 +51,7 @@
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"
 #include "ByteVectorProcedures.h"
+#include "Record.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
@@ -1008,7 +1009,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object o = index(sp_, 0);
             TRACE_INSN0("EQV");
-            ac_ = Object::makeBool(o.eqv(ac_));
+            ac_ = Object::makeBool(eqv(o, ac_));
             sp_--;
             NEXT1;
         }
@@ -1603,7 +1604,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL0_EQV_TEST)
         {
-            ac_ = Object::makeBool(index(sp_, 0).eqv(referLocal(0)));
+            ac_ = Object::makeBool(eqv(index(sp_, 0), referLocal(0)));
             sp_--;
             goto test_entry;
         }

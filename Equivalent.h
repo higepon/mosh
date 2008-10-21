@@ -37,7 +37,20 @@
 namespace scheme {
     bool equal(Object object1, Object object2, EqHashTable* visited);
     bool equal(Object object1, Object object2);
-    inline bool eqv(Object object1, Object object2) { return object1 == object2; }
+
+    inline bool eqv(Object o1, Object o2)
+    {
+        if (o1.isRecord()) {
+            if (o2.isRecord()) {
+                Record* const record1 = o1.toRecord();
+                Record* const record2 = o2.toRecord();
+                return record1->rtd() == record2->rtd();
+            } else {
+                return false;
+            }
+        }
+        return o1.eq(o2);
+    }
 
 }; // namespace scheme
 

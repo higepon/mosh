@@ -144,16 +144,6 @@ entry:
         }
     }
 
-    if (object1.isRecord()) {
-        if (object2.isRecord()) {
-            Record* const record1 = object1.toRecord();
-            Record* const record2 = object2.toRecord();
-            return record1->rtd() == record2->rtd();
-        } else {
-            return false;
-        }
-    }
-
     if (object1.isByteVector()) {
         if (object2.isByteVector()) {
             ByteVector* const bv1 = object1.toByteVector();
@@ -163,8 +153,5 @@ entry:
             return false;
         }
     }
-
-
-
     return eqv(object1, object2);
 }

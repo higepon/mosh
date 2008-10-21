@@ -52,6 +52,7 @@
 #include "SString.h"
 #include "Symbol.h"
 #include "EqHashTable.h"
+#include "Record.h"
 #include "Equivalent.h"
 
 using namespace scheme;

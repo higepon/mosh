@@ -36,6 +36,8 @@
 #include "Vector.h"
 #include "SString.h"
 #include "Closure.h"
+#include "Record.h"
+#include "Equivalent.h"
 #include "ListProcedures.h"
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
@@ -190,7 +192,7 @@ Object scheme::memvEx(int argc, const Object* argv)
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().eqv(arg1)) {
+        if (eqv(o.car(), arg1)) {
             return o;
         }
     }

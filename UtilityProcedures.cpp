@@ -39,6 +39,7 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "StringProcedures.h"
+#include "Record.h"
 #include "Equivalent.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "UTF8Codec.h"
@@ -262,7 +263,7 @@ Object scheme::eqvPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eqv?");
     checkArgumentLength(2);
-    return Object::makeBool(argv[0].eqv(argv[1]));
+    return Object::makeBool(eqv(argv[0], argv[1]));
 }
 
 Object scheme::booleanPEx(int argc, const Object* argv)

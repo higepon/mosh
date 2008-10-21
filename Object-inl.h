@@ -244,11 +244,6 @@ inline Pair* Object::toPair() const
     return reinterpret_cast<Pair*>(val);
 }
 
-inline bool Object::eqv(Object o) const
-{
-    return eq(o);
-}
-
 inline Object Object::makeObjectPointer(Object* p)
 {
 #ifdef DEBUG_VERSION
