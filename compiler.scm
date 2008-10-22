@@ -1272,6 +1272,13 @@
                      (cddr sexp)                ; body
                      (source-info sexp)         ; source-info
                      library lvars tail?)]
+      ;;---------------------------- letrec ------------------------------------
+      [(letrec*)
+       (pass1/letrec ($map1 car (second sexp))  ; vars
+                     ($map1 cadr (second sexp)) ; vals
+                     (cddr sexp)                ; body
+                     (source-info sexp)         ; source-info
+                     library lvars tail?)]
       ;;---------------------------- library -----------------------------------
       [(library)
        (pass1/library->iform sexp library lvars)]

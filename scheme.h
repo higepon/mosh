@@ -82,6 +82,11 @@ class gc_vector : public std::vector<T1> {};
 #define MOSH_ASSERT(condition) /* */
 #endif
 
+#define INIT_TIME_TRACE() struct timeval tv1, tv2
+#define START_TIME_TRACE() gettimeofday(&tv1, NULL)
+#define END_TIME_TRACE(label) gettimeofday(&tv2, NULL);printf("%s %ld usec\n", #label, (tv2.tv_sec - tv1.tv_sec) * 1000000 + (tv2.tv_usec - tv1.tv_usec))
+
+
 enum {
     MOSH_SUCCESS,
     MOSH_FAILURE,

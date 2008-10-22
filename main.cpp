@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
 
-
+    INIT_TIME_TRACE();
+    START_TIME_TRACE();
     while ((opt = getopt(argc, argv, "htvpVcl:brze")) != -1) {
         switch (opt) {
         case 'h':
@@ -168,6 +169,8 @@ int main(int argc, char *argv[])
         }
     }
 
+    END_TIME_TRACE(getopt);
+    START_TIME_TRACE();
     if (isProfiler && argc == optind) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
@@ -196,6 +199,8 @@ int main(int argc, char *argv[])
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
+    END_TIME_TRACE(vm_init);
+    START_TIME_TRACE();
 
     // Do not call Symbol::intern before you load precompiled compiler!
     const Object compiler = getBuiltinCompiler();
@@ -207,10 +212,13 @@ int main(int argc, char *argv[])
         theVM->initProfiler();
     }
 #endif
-
+    END_TIME_TRACE(load_compiler);
+    START_TIME_TRACE();
     theVM->evaluate(compiler);
+    END_TIME_TRACE(eval_compiler);
+    START_TIME_TRACE();
     theVM->evaluate(getBuiltinMatch());
-
+    END_TIME_TRACE(eval_match);
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
     }
@@ -228,8 +236,11 @@ int main(int argc, char *argv[])
             theVM->getOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
+        START_TIME_TRACE();
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->activateR6RSMode();
+        END_TIME_TRACE(r6rs);
+
     } else if (isCompareRead) {
         compareRead(argv[optind]);
     } else if (isParrot) {
