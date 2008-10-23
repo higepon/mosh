@@ -1,3 +1,7 @@
+2008-10-23  higepon  <higepon@users.sourceforge.jp>
+
+        * Fasl.cpp : Added for Fast loading.
+
 2008-10-21  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (show-profile): Fixed profiler SEGV.

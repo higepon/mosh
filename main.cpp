@@ -54,6 +54,7 @@
 #include "EqHashTable.h"
 #include "Record.h"
 #include "Equivalent.h"
+#include "Fasl.h"
 
 using namespace scheme;
 
@@ -113,6 +114,13 @@ void signal_handler(int signo)
 void compareRead(const char* file);
 void parrot(const char* file);
 
+void faslTest()
+{
+    FileBinaryOutputPort outputPort(stdout);
+    FileBinaryInputPort inputPort(stdin);
+
+}
+
 int main(int argc, char *argv[])
 {
     int opt;
@@ -126,7 +134,6 @@ int main(int argc, char *argv[])
     char* initFile = NULL;
 
     INIT_TIME_TRACE();
-    START_TIME_TRACE();
     while ((opt = getopt(argc, argv, "htvpVcl:brze")) != -1) {
         switch (opt) {
         case 'h':
@@ -169,8 +176,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    END_TIME_TRACE(getopt);
-    START_TIME_TRACE();
     if (isProfiler && argc == optind) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
@@ -193,6 +198,10 @@ int main(int argc, char *argv[])
 #else
 
 #endif
+    faslTest();
+    exit(-1);
+
+
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
     Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
 

@@ -77,6 +77,7 @@ Equivalent.h                  Equivalent.cpp                      \
 CompoundCondition.h           CompoundCondition.cpp               \
 ucs4string.h                  ucs4string.cpp                      \
 Vector.h                      Vector.cpp                          \
+Fasl.h                        Fasl.cpp                            \
 CodeBuilder.h                 CodeBuilder.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
