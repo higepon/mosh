@@ -116,9 +116,28 @@ void parrot(const char* file);
 
 void faslTest()
 {
-    FileBinaryOutputPort outputPort(stdout);
-    FileBinaryInputPort inputPort(stdin);
+    TextualInputPort* in = new TextualInputPort(new FileBinaryInputPort(fopen("./all-tests.scm", "rb")),
+                                                new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR));
+    bool isErrorOccured = false;
+    Object list = Object::Nil;
+    for (;;) {
+        const Object o = in->getDatum(isErrorOccured);
+        if (o.isEof()) {
+            list = Pair::reverse(list);
+            break;
+        } else {
+            list = Object::cons(o, list);
+        }
+    }
+    in->close();
 
+    FileBinaryOutputPort* out = new FileBinaryOutputPort(fopen("./tmp.scm", "w"));
+    FaslWriter writer(out);
+    writer.put(list);
+    out->close();
+
+    FaslReader reader(new FileBinaryInputPort(fopen("./tmp.scm", "rb")));
+    printf("%s\n", equal(reader.get(), list) ? "SUCCESS" : "ERROR");
 }
 
 int main(int argc, char *argv[])
@@ -176,6 +195,7 @@ int main(int argc, char *argv[])
         }
     }
 
+
     if (isProfiler && argc == optind) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
@@ -198,8 +218,6 @@ int main(int argc, char *argv[])
 #else
 
 #endif
-    faslTest();
-    exit(-1);
 
 
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
@@ -228,6 +246,11 @@ int main(int argc, char *argv[])
     START_TIME_TRACE();
     theVM->evaluate(getBuiltinMatch());
     END_TIME_TRACE(eval_match);
+
+    faslTest();
+    exit(-1);
+
+
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
     }

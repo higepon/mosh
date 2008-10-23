@@ -35,12 +35,15 @@
 #include "EqHashTable.h"
 #include "Vector.h"
 #include "Symbol.h"
+#include "Regexp.h"
 #include "SString.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "BinaryInputPort.h"
 #include "BinaryOutputPort.h"
+#include "TextualOutputPort.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 
@@ -62,6 +65,8 @@ Object FaslReader::getDatum()
         return Object::Eof;
     case Fasl::TAG_LOOKUP: {
         const uint32_t uid = fetchU32();
+        printf("get uid=%d\n", uid);
+        VM_LOG1("symbolsAndStringsArray_[uid]=~d", symbolsAndStringsArray_[uid]);
         return symbolsAndStringsArray_[uid];
     }
     case Fasl::TAG_FIXNUM: {
@@ -70,9 +75,11 @@ Object FaslReader::getDatum()
     }
     case Fasl::TAG_PLIST: {
         const int count = fetchU32();
+        printf("plist count=%d\n", count);
         Object list = Object::Nil;
         for (int i = 0; i < count; i++) {
-            list = Object::cons(getDatum(), list);
+            const Object datum = getDatum();
+            list = Object::cons(datum, list);
         }
         return list;
     }
@@ -83,6 +90,15 @@ Object FaslReader::getDatum()
             list = Object::cons(getDatum(), list);
         }
         return list;
+    }
+    case Fasl::TAG_REGEXP: {
+        uint32_t len = fetchU32();
+        ucs4string text;
+        for (uint32_t i = 0; i < len; i++) {
+            text += fetchU32();
+        }
+        return Object::makeRegexp(text);
+
     }
     case Fasl::TAG_VECTOR: {
         const int count = fetchU32();
@@ -146,6 +162,7 @@ loop:
         }
         return;
     }
+
     if (obj.isPair()) {
         collectSymbolsAndStrings(obj.car());
         obj = obj.cdr();
@@ -161,10 +178,12 @@ loop:
     }
     if (obj.isChar()       ||
         obj.isByteVector() ||
+        obj.isRegexp()     ||
         obj.isBoolean()    ||
         obj.isInt()) {
         return;
     }
+    VM_LOG1("~a", obj);
     MOSH_ASSERT(false);
 }
 
@@ -172,18 +191,23 @@ loop:
 void FaslReader::getSymbolsAndStrings()
 {
     const int count = fetchU32();
-    Object* symbolsAndStringsArray_ = Object::makeObjectArray(count);
+    printf("getSymbolsAndStrings = %d\n", count);
+    symbolsAndStringsArray_ = Object::makeObjectArray(count);
     for (int i = 0; i < count; i++) {
         uint8_t tag = fetchU8();
         uint32_t uid = fetchU32();
         uint32_t len = fetchU32();
+        printf("tag=%d uid=%d len=%d\n", tag, uid, len);
         ucs4string text;
         for (uint32_t i = 0; i < len; i++) {
             text += fetchU32();
         }
+        printf("ass=<%s>", text.ascii_c_str());
         switch (tag) {
         case Fasl::TAG_SYMBOL:
+            printf("%s %s:%d textsize=%d\n", __func__, __FILE__, __LINE__, text.length());fflush(stdout);// debug
             symbolsAndStringsArray_[uid] = Symbol::intern(text.strdup());
+            VM_LOG1("symbl=~a\n", symbolsAndStringsArray_[uid]);
             break;
         case Fasl::TAG_STRING:
             symbolsAndStringsArray_[uid] = text;
@@ -280,6 +304,11 @@ void FaslWriter::putDatum(Object obj)
         emitU32(id.toInt());
         return;
     }
+    if (obj.isRegexp()) {
+        emitU8(Fasl::TAG_REGEXP);
+        emitString(obj.toRegexp()->pattern());
+        return;
+    }
     if (obj.isInt()) {
         emitU8(Fasl::TAG_FIXNUM);
         emitU32(obj.toInt());
@@ -295,7 +324,7 @@ void FaslWriter::putDatum(Object obj)
         emitU8(Fasl::TAG_VECTOR);
         emitU32(length);
         for (int i = 0; i < length; i++) {
-            putDatum(vector->ref(1));
+            putDatum(vector->ref(i));
         }
         return;
     }
@@ -315,7 +344,7 @@ void FaslWriter::putDatum(Object obj)
         emitU32(ch);
         return;
     }
-    assert(false);
+    MOSH_ASSERT(false);
 }
 
 void FaslWriter::emitU8(uint8_t value)

@@ -50,6 +50,7 @@ public:
         TAG_DLIST,
         TAG_VECTOR,
         TAG_BVECTOR,
+        TAG_REGEXP,
         TAG_CHAR,
         TAG_NIL,
         TAG_T,
