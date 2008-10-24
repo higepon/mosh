@@ -58,14 +58,10 @@ Object scheme::unGenSym(Object symbol)
     MOSH_ASSERT(symbol.isSymbol());
     ucs4string symbolString = symbol.toSymbol()->c_str();
     gc_vector<ucs4string> splitted;
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     symbolString.split('@', splitted);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     if (splitted.size() == 2) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        return Symbol::intern(Object::makeString(splitted[1].c_str()).toString()->data().c_str());
+        return Symbol::intern(splitted[1].strdup());
     } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return symbol;
     }
 }

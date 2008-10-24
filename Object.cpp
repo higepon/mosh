@@ -85,6 +85,12 @@ Object Object::makeBinaryInputPort(FILE* in)
                                                         reinterpret_cast<word>(new FileBinaryInputPort(in)))));
 }
 
+Object Object::makeBinaryInputPort(BinaryInputPort* port)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
+                                                        reinterpret_cast<word>(port))));
+}
+
 Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,

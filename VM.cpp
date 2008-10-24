@@ -169,7 +169,7 @@ void VM::loadFile(const ucs4string& file)
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
             const Object compiled = compile(o);
-            LOG1("compiled = ~a", compiled);
+//            LOG1("compiled = ~a", compiled);
             END_TIME_TRACE("compile");
             evaluate(compiled);
         }
@@ -593,7 +593,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CALL)
         {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             operand = fetchOperand();
         call_entry:
 #ifdef DUMP_ALL_INSTRUCTIONS
@@ -1375,14 +1374,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 Object e = splitId(id);
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
                                             // R6RS mode requires demangle of symbol.
                                             L1(unGenSym(e.cdr())));
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             } else {
                 ac_ = val;
             }
@@ -1393,9 +1389,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
             if (val == notFound_) {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 Object e = splitId(id);
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 callAssertionViolationAfter("eval",
                                             "unbound variable",
                                             L1(unGenSym(e.cdr())));
@@ -1812,26 +1806,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 // id is (format "~a:$:~a" libname symbolname)
 Object VM::splitId(Object id)
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     MOSH_ASSERT(id.isSymbol());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const ucs4string text = id.toSymbol()->c_str();
-    for (int i = 0; i < text.size(); i++) {
-        printf("[%c]", text[i]);
-    }
-    printf("%s %s:%d, text.size= %d\n", __func__, __FILE__, __LINE__, text.size());fflush(stdout);// debug
     ucs4string::size_type i = text.find(UC(":$:"));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    printf("<%d>", i);
     if (i == ucs4string::npos) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return Object::Nil;
     }
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object libname = Object::makeString(text.substr(0, i).c_str());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object symbol = Symbol::intern(text.substr(i + 3, text.size() - i - 3).c_str());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return Object::cons(libname, symbol);
 }
 

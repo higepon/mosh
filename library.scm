@@ -1416,7 +1416,7 @@
 ;; .pre-condition Thunk must be a procedure and must accept zero arguments. The file is opened for input or output using empty file options, and thunk is called with no arguments.
 (define (with-input-from-file filename thunk)
   (let ([org-port (current-input-port)]
-        [inport (open-file-input-port filename)])
+        [inport (open-input-file filename)])
     (set-current-input-port! inport)
     (let1 ret (thunk)
       (set-current-input-port! org-port)
@@ -3076,25 +3076,29 @@
 (define (condition-printer c)
   (for-each
    (lambda (x)
-     (let ([rtd (record-rtd x)])
-       (format #t "   ~d. ~a" 0 (record-type-name rtd))
-       (let ([v (record-type-field-names rtd)])
-         (case (vector-length v)
-           [(0) (newline)]
-           [(1)
-            (display ": ")
-            (write ((record-accessor rtd 0) x))
-            (newline)]
-           [else
-            (display ":\n")
-            (let f ([i 0])
-              (unless (= i (vector-length v))
-                (display "       ")
-                (display (vector-ref v i))
-                (display ": ")
-                (write ((record-accessor rtd i) x))
-                (newline)
-                (f (+ i 1))))]))))
+     (cond 
+      [(record? x)
+       (let ([rtd (record-rtd x)])
+         (format #t "   ~d. ~a" 0 (record-type-name rtd))
+         (let ([v (record-type-field-names rtd)])
+           (case (vector-length v)
+             [(0) (newline)]
+             [(1)
+              (display ": ")
+              (write ((record-accessor rtd 0) x))
+              (newline)]
+             [else
+              (display ":\n")
+              (let f ([i 0])
+                (unless (= i (vector-length v))
+                  (display "       ")
+                  (display (vector-ref v i))
+                  (display ": ")
+                  (write ((record-accessor rtd i) x))
+                  (newline)
+                  (f (+ i 1))))])))]
+      [else
+       (display x)]))
    (simple-conditions c)))
 
 

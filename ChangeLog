@@ -1,5 +1,10 @@
 2008-10-24  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp (getU8Ex): Fixed the EOF bug.
+                     (openInputFileEx): Added open-input-file.
+
+        * library.scm (condition-printer): Fixed the double fault bug.
+
         * UtilityProcedures.cpp (makeInstructionEx): Added make-compiler-instruction and make-instruction.
 
         * reader.y : Not to use append for terrible bad performance.

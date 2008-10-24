@@ -266,7 +266,7 @@
      (lambda ()
        (if (null? args)
            (repl)
-           (load-r6rs-top-level (car args) 'load)))))
+           (load-r6rs-top-level (car args) 'load (cdr args))))))
 
 
 ;;   (display "r6rs psyntax ready\n")

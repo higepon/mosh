@@ -96,6 +96,7 @@
     get-bytevector-n
     (open-file-output-port open-output-file)
     (open-file-input-port open-input-file)
+    (open-input-file open-input-file)
     (close-input-port close-input-port)
     (vector vector)
     (regexp-replace regexp-replace)

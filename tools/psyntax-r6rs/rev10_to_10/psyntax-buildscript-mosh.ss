@@ -316,7 +316,6 @@
     (mosh-hashtable (mosh hashtable)                   #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
     (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
-;    (srfi-8     (srfi-8)                               #t    #t)  ;; for mosh
     ))
 
 ;;; required? flag means that said library is required for 
