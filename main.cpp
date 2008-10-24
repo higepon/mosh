@@ -45,6 +45,7 @@
 #include "TextualOutputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
+#include "ByteArrayBinaryInputPort.h"
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
@@ -114,12 +115,15 @@ void signal_handler(int signo)
 void compareRead(const char* file);
 void parrot(const char* file);
 
+
 void faslTest()
 {
     TextualInputPort* in = new TextualInputPort(new FileBinaryInputPort(fopen("./all-tests.scm", "rb")),
                                                 new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR));
     bool isErrorOccured = false;
     Object list = Object::Nil;
+    INIT_TIME_TRACE();
+    START_TIME_TRACE();
     for (;;) {
         const Object o = in->getDatum(isErrorOccured);
         if (o.isEof()) {
@@ -129,6 +133,7 @@ void faslTest()
             list = Object::cons(o, list);
         }
     }
+    END_TIME_TRACE("read");
     in->close();
 
     FileBinaryOutputPort* out = new FileBinaryOutputPort(fopen("./tmp.scm", "w"));
@@ -137,8 +142,19 @@ void faslTest()
     out->close();
 
     FaslReader reader(new FileBinaryInputPort(fopen("./tmp.scm", "rb")));
-    printf("%s\n", equal(reader.get(), list) ? "SUCCESS" : "ERROR");
+    START_TIME_TRACE();
+    const Object r = reader.get();
+    END_TIME_TRACE("read");
+    printf("%s\n", equal(r, list) ? "SUCCESS" : "ERROR");
+
+//     FaslReader reader2(new ByteArrayBinaryInputPort(s_bootimage, sizeof(s_bootimage)));
+//     START_TIME_TRACE();
+//     const Object r2 = reader2.get();
+//     END_TIME_TRACE("read2");
+//     printf("%s\n", equal(r2, list) ? "SUCCESS" : "ERROR");
+
 }
+
 
 int main(int argc, char *argv[])
 {
@@ -247,8 +263,8 @@ int main(int argc, char *argv[])
     theVM->evaluate(getBuiltinMatch());
     END_TIME_TRACE(eval_match);
 
-    faslTest();
-    exit(-1);
+//     faslTest();
+//     exit(-1);
 
 
     if (initFile != NULL) {

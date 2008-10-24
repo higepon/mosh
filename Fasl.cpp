@@ -65,8 +65,6 @@ Object FaslReader::getDatum()
         return Object::Eof;
     case Fasl::TAG_LOOKUP: {
         const uint32_t uid = fetchU32();
-        printf("get uid=%d\n", uid);
-        VM_LOG1("symbolsAndStringsArray_[uid]=~d", symbolsAndStringsArray_[uid]);
         return symbolsAndStringsArray_[uid];
     }
     case Fasl::TAG_FIXNUM: {
@@ -75,7 +73,6 @@ Object FaslReader::getDatum()
     }
     case Fasl::TAG_PLIST: {
         const int count = fetchU32();
-        printf("plist count=%d\n", count);
         Object list = Object::Nil;
         for (int i = 0; i < count; i++) {
             const Object datum = getDatum();
@@ -191,23 +188,18 @@ loop:
 void FaslReader::getSymbolsAndStrings()
 {
     const int count = fetchU32();
-    printf("getSymbolsAndStrings = %d\n", count);
     symbolsAndStringsArray_ = Object::makeObjectArray(count);
     for (int i = 0; i < count; i++) {
         uint8_t tag = fetchU8();
         uint32_t uid = fetchU32();
         uint32_t len = fetchU32();
-        printf("tag=%d uid=%d len=%d\n", tag, uid, len);
         ucs4string text;
         for (uint32_t i = 0; i < len; i++) {
             text += fetchU32();
         }
-        printf("ass=<%s>", text.ascii_c_str());
         switch (tag) {
         case Fasl::TAG_SYMBOL:
-            printf("%s %s:%d textsize=%d\n", __func__, __FILE__, __LINE__, text.length());fflush(stdout);// debug
             symbolsAndStringsArray_[uid] = Symbol::intern(text.strdup());
-            VM_LOG1("symbl=~a\n", symbolsAndStringsArray_[uid]);
             break;
         case Fasl::TAG_STRING:
             symbolsAndStringsArray_[uid] = text;

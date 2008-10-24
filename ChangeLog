@@ -1,3 +1,7 @@
+2008-10-24  higepon  <higepon@users.sourceforge.jp>
+
+        * scripts/binary2c.scm (main): Added for Fasl.
+
 2008-10-23  higepon  <higepon@users.sourceforge.jp>
 
         * Fasl.cpp : Added for Fast loading.

@@ -160,11 +160,16 @@ void VM::loadFile(const ucs4string& file)
         const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = loadPort.toTextualInputPort();
         bool readErrorOccured = false;
+        INIT_TIME_TRACE();
+        START_TIME_TRACE();
         for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
+            END_TIME_TRACE("read1");
+            START_TIME_TRACE();
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
             const Object compiled = compile(o);
+            END_TIME_TRACE("compile");
             evaluate(compiled);
         }
 
