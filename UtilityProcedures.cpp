@@ -66,6 +66,22 @@ Object scheme::unGenSym(Object symbol)
     }
 }
 
+Object scheme::makeCompilerInstructionEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("make-compiler-instruction");
+    checkArgumentLength(1);
+    argumentAsInt(0, n);
+    return Object::makeCompilerInstruction(n);
+}
+
+Object scheme::makeInstructionEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("make-instruction");
+    checkArgumentLength(1);
+    argumentAsInt(0, n);
+    return Object::makeInstruction(n);
+}
+
 Object scheme::numberPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("number?");

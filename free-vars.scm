@@ -244,4 +244,6 @@
     utf32->string
     get-line
     close-port
+    make-instruction
+    make-compiler-instruction
     )

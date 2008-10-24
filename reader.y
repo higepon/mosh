@@ -77,6 +77,7 @@ compound_datum : list
 
 list : LEFT_PAREN datum_list RIGHT_PAREN
        {
+           // TODO: not to use reverse.
            $2 = Pair::reverse($2);
            if ($2.isPair()) {
                 $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),

@@ -1,5 +1,7 @@
 2008-10-24  higepon  <higepon@users.sourceforge.jp>
 
+        * UtilityProcedures.cpp (makeInstructionEx): Added make-compiler-instruction and make-instruction.
+
         * reader.y : Not to use append for terrible bad performance.
 
         * scripts/binary2c.scm (main): Added for Fasl.
