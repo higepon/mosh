@@ -1,1 +1,1 @@
-(display '*hage)
+(display (car 3))
