@@ -1,5 +1,7 @@
 2008-10-24  higepon  <higepon@users.sourceforge.jp>
 
+        * scripts/binary2c.scm (main): Added for Fasl.
+
         * PortProcedures.cpp (getU8Ex): Fixed the EOF bug.
                      (openInputFileEx): Added open-input-file.
 

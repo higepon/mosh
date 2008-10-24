@@ -143,6 +143,8 @@
   (define (return-dynamic dynamic-value)
     (cons (format "0xcc /* ~a */" (escape-string dynamic-value)) dynamic-value))
   (define (rec obj)
+    ;; for (srfi :1)
+    (let1 obj (if (keyword? obj) (string->symbol (string-append ":" (keyword->string obj))) obj)
     (cond
      [(symbol? obj)
       (receive (index o) (find-with-index (lambda (x) (eq? x obj)) symbols)
@@ -210,7 +212,7 @@
                (if (cdr car-val) (cdr car-val) (car car-val))
                (if (cdr cdr-val) (cdr cdr-val) (car cdr-val)))))]
      [else
-      (error "unknown Object")]))
+      (error "unknown Object")])))
   (define (make-obj i obj)
     (rec obj))
   (print "#include \"Builtin.h\"\n")
@@ -232,7 +234,7 @@
 (define (collect-symbol-from-file file)
   (delete-duplicates
    (append-map (lambda (sexp)
-                 (filter symbol? (flatten (vector->list sexp))))
+                 (filter symbol? (map (lambda (x) (if (keyword? x) (string->symbol (string-append ":" (keyword->string x))) x))(flatten (vector->list sexp)))))
                (file->sexp-list file))))
 
 (define (collect-all-symbols)

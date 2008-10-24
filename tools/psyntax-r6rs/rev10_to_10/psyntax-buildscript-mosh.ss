@@ -30,19 +30,20 @@
   (psyntax compat)
   (psyntax library-manager)
   (psyntax expander)
+  (system)
   )
 
 
 ;; here we put libraries used in psyntax.
 (define scheme-library-files
-  '("psyntax/compat.ss"
+  `("psyntax/compat.ss"
     "psyntax/internal.ss"
     "psyntax/config.ss"
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander.ss"
-    "/Users/taro/mosh/lib/mosh/condition.ss"
-    "/Users/taro/mosh/lib/mosh/io/conditions.ss"
+    ,(string-append (get-environment-variable "HOME") "/mosh/lib/mosh/condition.ss")
+    ,(string-append (get-environment-variable "HOME") "/mosh/lib/mosh/io/conditions.ss")
     "psyntax/main.ss"))
 
 
@@ -315,7 +316,7 @@
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
     (mosh-hashtable (mosh hashtable)                   #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
-    (srfi-1     (srfi-1)                               #f    #t)  ;; for mosh
+    (srfi-1     (srfi :1)                              #f    #t)  ;; for mosh
     ))
 
 ;;; required? flag means that said library is required for 

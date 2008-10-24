@@ -148,7 +148,7 @@
         (case how
           ((closure)   (pre-compile-r6rs-top-level x*))
           ((load)
-            (parameterize ([command-line (cons filename (map (lambda (x) (format "~a" x)) args))])
+            (parameterize ([command-line (cons filename (car args))])
               ((compile-r6rs-top-level x*))))
           ((compile)
               (begin
