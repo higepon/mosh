@@ -77,6 +77,7 @@ compound_datum : list
 
 list : LEFT_PAREN datum_list RIGHT_PAREN
        {
+           $2 = Pair::reverse($2);
            if ($2.isPair()) {
                 $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),
                                                       Object::makeInt(parser_port()->getLineNo()));
@@ -85,15 +86,16 @@ list : LEFT_PAREN datum_list RIGHT_PAREN
        }
      | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
        {
+           $2 = Pair::reverse($2);
            $$ = Pair::appendD2($2, Object::cons($3, $5));
        }
      | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
      ;
-vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector($2); }
+vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector(Pair::reverse($2)); }
      ;
 bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN
             {
-              const Object bytevector = u8ListToByteVector($2);
+              const Object bytevector = u8ListToByteVector(Pair::reverse($2));
               if (bytevector.isNil()) {
                 yyerror("malformed bytevector literal #vu8(...)");
                 YYERROR;
@@ -104,7 +106,7 @@ bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN
      ;
 datum_list : datum_list datum
            {
-               $$ = Pair::appendD2($1, Pair::list1($2));
+                 $$ = Object::cons($2, $1);
            }
            | {$$ = Object::Nil; }
            ;
