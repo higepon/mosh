@@ -311,7 +311,9 @@ int main(int argc, char *argv[])
 
 #if 1
         FaslReader reader(new ByteArrayBinaryInputPort(psyntax_image, sizeof(psyntax_image)));
+        START_TIME_TRACE();
         const Object psyntax = reader.get();
+        END_TIME_TRACE(get-psyntax);
 //         const Object psyntax2 = getBuiltinPsyntax();
 //         Vector* pv1 = psyntax.toVector();
 //         Vector* pv2 = psyntax2.toVector();
@@ -325,8 +327,8 @@ int main(int argc, char *argv[])
 //             }
 //         }
 //        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
-#endif 
-            
+#endif
+        START_TIME_TRACE();
 
          theVM->evaluate(psyntax);
 
