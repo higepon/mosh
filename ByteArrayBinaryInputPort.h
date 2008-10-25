@@ -42,7 +42,13 @@ public:
     ByteArrayBinaryInputPort(const uint8_t* buf, int size);
     ~ByteArrayBinaryInputPort();
 
-    int getU8();
+    // profiler tells that this should be inlined
+    inline int getU8()
+    {
+        if (index_ >= size_) return EOF;
+        return buf_[index_++];
+    }
+
     ucs4string toString();
     ByteVector* getByteVector(int size);
     int open();

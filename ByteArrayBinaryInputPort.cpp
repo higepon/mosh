@@ -47,12 +47,6 @@ ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
 
 }
 
-int ByteArrayBinaryInputPort::getU8()
-{
-    if (index_ >= size_) return EOF;
-    return buf_[index_++];
-}
-
 ucs4string ByteArrayBinaryInputPort::toString() {
     return UC("<byte-array-input-port>");
 }

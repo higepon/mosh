@@ -33,7 +33,8 @@
 #define __SCHEME_FASL__
 
 #include "scheme.h"
-
+#include "Vector.h"
+#include "ByteVector.h"
 namespace scheme {
 
 class EqHashTable;
@@ -71,9 +72,105 @@ public:
 
 private:
     void getSymbolsAndStrings();
-    int fetchU8();
-    uint32_t fetchU32();
-    Object getDatum();
+
+    // profiler tells that this should be inlined
+    uint32_t fetchU32()
+    {
+        return
+            inputPort_->getU8()       |
+            inputPort_->getU8() << 8  |
+            inputPort_->getU8() << 16 |
+            inputPort_->getU8() << 24;
+    }
+
+    // profiler tells that this should be inlined
+    int fetchU8()
+    {
+        return inputPort_->getU8();
+    }
+
+    // profiler tells that this should be inlined
+    Object getDatum()
+    {
+        const int octet = fetchU8();
+        switch (octet) {
+        case EOF:
+            return Object::Eof;
+        case Fasl::TAG_LOOKUP: {
+            const uint32_t uid = fetchU32();
+            return symbolsAndStringsArray_[uid];
+        }
+        case Fasl::TAG_FIXNUM: {
+            const int value = fetchU32();
+            return Object::makeInt(value);
+        }
+        case Fasl::TAG_INSTRUCTION: {
+            const int value = fetchU32();
+            return Object::makeInstruction(value);
+        }
+        case Fasl::TAG_COMPILER_INSTRUCTION: {
+            const int value = fetchU32();
+            return Object::makeCompilerInstruction(value);
+        }
+        case Fasl::TAG_PLIST: {
+            const int count = fetchU32();
+            Object list = Object::Nil;
+            for (int i = 0; i < count; i++) {
+                const Object datum = getDatum();
+                list = Object::cons(datum, list);
+            }
+            return list;
+        }
+        case Fasl::TAG_DLIST: {
+            const int count = fetchU32();
+            Object list = getDatum();
+            for (int i = 0; i < count; i++) {
+                list = Object::cons(getDatum(), list);
+            }
+            return list;
+        }
+        case Fasl::TAG_REGEXP: {
+            uint32_t len = fetchU32();
+            ucs4string text;
+            for (uint32_t i = 0; i < len; i++) {
+                text += fetchU32();
+            }
+            return Object::makeRegexp(text);
+
+        }
+        case Fasl::TAG_VECTOR: {
+            const int count = fetchU32();
+            Object vector = Object::makeVector(count);
+            Vector* const v = vector.toVector();
+            for (int i = 0; i < count; i++) {
+                v->set(i, getDatum());
+            }
+            return vector;
+        }
+        case Fasl::TAG_BVECTOR: {
+            const int count = fetchU32();
+            Object bv = Object::makeByteVector(count);
+            for (int i = 0; i < count; i++) {
+                bv.toByteVector()->u8Set(i, fetchU8());
+            }
+            return bv;
+        }
+        case Fasl::TAG_CHAR:
+            return Object::makeChar(fetchU32());
+        case Fasl::TAG_NIL:
+            return Object::Nil;
+        case Fasl::TAG_T:
+            return Object::True;
+        case Fasl::TAG_F:
+            return Object::False;
+        case Fasl::TAG_SYMBOL:
+        case Fasl::TAG_STRING:
+            break;
+        default:
+            MOSH_ASSERT(false);
+        }
+        MOSH_ASSERT(false);
+    }
 
     Object* symbolsAndStringsArray_;
     BinaryInputPort* inputPort_;

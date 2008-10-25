@@ -44,7 +44,7 @@ AC_PROG_INSTALL
 
 AC_SUBST(CFLAGS)
 #[monar] overwrite
-CFLAGS="-O2 -fomit-frame-pointer"
+CFLAGS="-O2 -fomit-frame-pointer -DUSE_I686_PREFETCH"
 
 GC_CFLAGS=${gc_cflags}
 AC_SUBST(GC_CFLAGS)
