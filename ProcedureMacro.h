@@ -102,6 +102,7 @@
 #define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)
 
 #define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
+#define argumentAsBinaryOutputPort(index, variableName) castArgument(index, variableName, isBinaryOutputPort, binary-output-port, BinaryOutputPort*, toBinaryOutputPort)
 
 #define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
 #define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)

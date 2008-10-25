@@ -1,3 +1,7 @@
+2008-10-25  higepon  <higepon@users.sourceforge.jp>
+
+        * TextualOutputPort.cpp (TextualOutputPort::putDatum): Fixed the bug of writing compiler-insn.
+
 2008-10-24  higepon  <higepon@users.sourceforge.jp>
 
         * scripts/binary2c.scm (main): Added for Fasl.

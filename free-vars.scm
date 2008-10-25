@@ -247,4 +247,5 @@
     close-port
     make-instruction
     make-compiler-instruction
+    fasl-write
     )

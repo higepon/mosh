@@ -1669,7 +1669,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 ac_ = Object::Undef;
                 sp_ -= 2;
             } else {
-                callAssertionViolationAfter("vector-ref",
+                callAssertionViolationAfter("vector-set",
                                             "vector required",
                                             L1(v));
             }

@@ -1069,7 +1069,10 @@
     ;;; => (mosh string)
     ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
     (receive mosh-backend) ;; I want psyntax pass through "receive" to backend(Mosh).
+    (fasl-write mosh)
     (set-source-info! mosh)
+    (make-instruction mosh)
+    (make-compiler-instruction mosh)
     (source-info mosh)
     (sys-display mosh)
     (get-command-line mosh)

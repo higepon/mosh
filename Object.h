@@ -137,6 +137,7 @@ public:
     static Object makeObjectPointer(Object* p);
     static Object makeBinaryInputPort(FILE* file);
     static Object makeBinaryInputPort(BinaryInputPort* port);
+    static Object makeBinaryOutputPort(BinaryOutputPort* port);
     static Object makeTextualInputFilePort(const ucs4char* str);
     static Object makeTextualInputFilePort(const char* str);
     static Object makeTextualInputPort(BinaryInputPort* port, Transcoder* coder);

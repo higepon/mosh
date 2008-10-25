@@ -57,6 +57,8 @@ public:
         TAG_F,
         TAG_SYMBOL,
         TAG_STRING,
+        TAG_INSTRUCTION,
+        TAG_COMPILER_INSTRUCTION,
         forbidden_comma
     };
 };

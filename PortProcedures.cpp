@@ -47,6 +47,7 @@
 #include "UTF8Codec.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
+#include "Fasl.h"
 
 using namespace scheme;
 
@@ -59,6 +60,16 @@ bool scheme::fileExistsP(const ucs4string& file)
         fclose(stream);
         return true;
     }
+}
+
+Object scheme::faslWriteEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fasl-write");
+    checkArgumentLength(2);
+    argumentAsBinaryOutputPort(0, outputPort);
+    FaslWriter writer(outputPort);
+    writer.put(argv[1]);
+    return Object::Undef;
 }
 
 Object scheme::getLineEx(int argc, const Object* argv)
@@ -214,7 +225,20 @@ Object scheme::sysPortSeekEx(int argc, const Object* argv)
 
 Object scheme::openOutputFileEx(int argc, const Object* argv)
 {
-    return openFileOutputPortEx(argc, argv);
+    DeclareProcedureName("open-output-file");
+    checkArgumentLength(1);
+
+    argumentAsString(0, file);
+
+    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
+
+    if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
+        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+    } else {
+        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::closeOutputPortEx(int argc, const Object* argv)
@@ -479,11 +503,10 @@ Object scheme::openFileOutputPortEx(int argc, const Object* argv)
 
     argumentAsString(0, file);
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
+    FileBinaryOutputPort* fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+        return Object::makeBinaryOutputPort(fileBinaryOutputPort);
     } else {
         callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;

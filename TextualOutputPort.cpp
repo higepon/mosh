@@ -45,6 +45,7 @@
 #include "Transcoder.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 
@@ -197,7 +198,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(buf);
     } else if (o.isCompilerInstruction()) {
         static char buf[32];
-        snprintf(buf, 32, "[comp:%d]", o.toInstruction());
+        snprintf(buf, 32, "[comp:%d]", o.toCompilerInstruction());
         putString(buf);
     } else if (o.isChar()) {
         putString(UC("#\\"));
@@ -292,7 +293,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putDatum(Object::makeInt(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        putString(UC("#<subr>"));
+        putDatum(theVM->getCProcedureName(o));
+//        putString(UC("#<subr>"));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -328,6 +330,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
+    } else if (o.isTextualOutputPort()) {
+        putString(UC("#<textual-output-port>"));
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -404,7 +408,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putDatum(Object::makeInt(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        putString(UC("#<subr>"));
+        putDatum(theVM->getCProcedureName(o));
+//        putString(UC("#<subr>"));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -441,7 +446,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
 
-
+    } else if (o.isTextualOutputPort()) {
+        putString(UC("#<textual-output-port>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

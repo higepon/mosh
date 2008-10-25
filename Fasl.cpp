@@ -71,6 +71,14 @@ Object FaslReader::getDatum()
         const int value = fetchU32();
         return Object::makeInt(value);
     }
+    case Fasl::TAG_INSTRUCTION: {
+        const int value = fetchU32();
+        return Object::makeInstruction(value);
+    }
+    case Fasl::TAG_COMPILER_INSTRUCTION: {
+        const int value = fetchU32();
+        return Object::makeCompilerInstruction(value);
+    }
     case Fasl::TAG_PLIST: {
         const int count = fetchU32();
         Object list = Object::Nil;
@@ -173,10 +181,12 @@ loop:
         }
         return;
     }
-    if (obj.isChar()       ||
-        obj.isByteVector() ||
-        obj.isRegexp()     ||
-        obj.isBoolean()    ||
+    if (obj.isChar()                ||
+        obj.isByteVector()          ||
+        obj.isRegexp()              ||
+        obj.isBoolean()             ||
+        obj.isCompilerInstruction() ||
+        obj.isInstruction()         ||
         obj.isInt()) {
         return;
     }
@@ -304,6 +314,16 @@ void FaslWriter::putDatum(Object obj)
     if (obj.isInt()) {
         emitU8(Fasl::TAG_FIXNUM);
         emitU32(obj.toInt());
+        return;
+    }
+    if (obj.isInstruction()) {
+        emitU8(Fasl::TAG_INSTRUCTION);
+        emitU32(obj.toInstruction());
+        return;
+    }
+    if (obj.isCompilerInstruction()) {
+        emitU8(Fasl::TAG_COMPILER_INSTRUCTION);
+        emitU32(obj.toCompilerInstruction());
         return;
     }
     if (obj.isPair()) {

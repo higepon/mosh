@@ -39,6 +39,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "scheme.h"
+#include "Vector.h"
 #include "VM.h"
 #include "ErrorProcedures.h"
 #include "BinaryOutputPort.h"
@@ -115,7 +116,6 @@ void signal_handler(int signo)
 void compareRead(const char* file);
 void parrot(const char* file);
 
-
 void faslTest()
 {
     TextualInputPort* in = new TextualInputPort(new FileBinaryInputPort(fopen("./all-tests.scm", "rb")),
@@ -151,6 +151,7 @@ void faslTest()
 //     START_TIME_TRACE();
 //     const Object r2 = reader2.get();
 //     END_TIME_TRACE("read2");
+
 //     printf("%s\n", equal(r2, list) ? "SUCCESS" : "ERROR");
 
 }
@@ -247,7 +248,11 @@ int main(int argc, char *argv[])
 
     // Do not call Symbol::intern before you load precompiled compiler!
     const Object compiler = getBuiltinCompiler();
+//     FaslReader reader(new FileBinaryInputPort(fopen("./hige.fasl", "rb")));
+//     const Object compiler = reader.get();
+
     Symbol::initBuitinSymbols();
+//    VM_LOG2("~d:<~a>", Object::makeInt(compiler.toVector()->length()), compiler.toVector()->ref(0));
     theVM->importTopLevel();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
 #ifdef ENABLE_PROFILER
