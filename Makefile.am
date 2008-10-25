@@ -158,15 +158,19 @@ match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 
-SUFFIXES: .scmc .fasl
+# SUFFIXES: .scmc .fasl
 
-.scmc.fasl:
-	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
+# .scmc.fasl:
+# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
 
-SUFFIXES: .fasl .h
+# SUFFIXES: .fasl .h
 
-.fasl.h:
-	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
+# .fasl.h:
+# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
+
+SUFFIXES: .scmc .h
+	./mosh -b scripts/scmc2fasl.scm $(PWD)/$<.fasl $(PWD)/$@
+	./mosh -b scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 # match.fasl: ./match.scmc
 # 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
