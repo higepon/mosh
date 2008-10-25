@@ -46,6 +46,7 @@ namespace scheme {
 
 #define VM_LOG1(fmt, a)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L1(a))
 #define VM_LOG2(fmt, a, b)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L2(a, b))
+#define VM_LOG3(fmt, a, b, c)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L3(a, b, c))
 
 #ifdef TRACE_INSN
 #define TRACE_INSN0(name) errorPort_.format(UC("=========================\n~a\n"), L1(name)), fflush(errOut)

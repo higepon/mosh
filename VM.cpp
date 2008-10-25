@@ -1905,7 +1905,9 @@ void VM::activateR6RSMode()
     const Object builtInPsyntax = getBuiltinPsyntax();
     END_TIME_TRACE(load_psyntax);
     START_TIME_TRACE();
+        LOG1("psyntax =<~a>", Object::makeInt(builtInPsyntax.toVector()->length()));
     evaluate(builtInPsyntax);
+
     END_TIME_TRACE(eval_psyntax);
 //    load(UC("/Users/taro/repos-mosh/branches/newpsyntax-mosh/tools/rev0_to_10/psyntax.scm"));
 }

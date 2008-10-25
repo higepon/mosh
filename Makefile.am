@@ -15,6 +15,9 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 bin_PROGRAMS = mosh
 mosh_SOURCES =                                                    \
 main.cpp                                                          \
+psyntax.h                                                         \
+matchBinaryImage.h                                                \
+compilerBinaryImage.h                                             \
 read.cpp                                                          \
 CProcedure.h                                                      \
 Instruction.h                                                     \
@@ -111,7 +114,9 @@ all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
 BuiltinSymbols.cpp DebugInstruction.h cprocedures.cpp      \
 labels.cpp match.cpp compiler.cpp psyntax.scmc             \
 match.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
-compiler-vm.scm compiler-with-library.scm Instruction.h
+compiler-vm.scm compiler-with-library.scm Instruction.h    \
+psyntax.h psyntax.fasl match.h match.fasl                  \
+compiler-with-library.h compiler-with-library.fasl
 
 CLEANFILES =
 MAINTAINERCLEANFILES = $(GENERATED)
@@ -132,6 +137,8 @@ r6rs-test:
 Instruction.h: ./instruction.scm
 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
+#main.cpp: psyntax.h compiler-with-library.h match.h
+
 ##### compiler generation
 BuiltinSymbols.cpp: $(PRECOMPILE_SRC) #compiler-with-library.scmc match.scmc psyntax.scmc
 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm -g > $(PWD)/$@
@@ -150,6 +157,28 @@ match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
 
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+
+# SUFFIXES: .scmc .fasl
+
+# .scmc.fasl:
+# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
+
+# SUFFIXES: .fasl .h
+
+# .fasl.h:
+# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
+
+# match.fasl: ./match.scmc
+# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
+
+# matchBinaryImage.h: ./match.fasl
+# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
+
+# compilerBinaryImage.h: ./compiler-with-library.fasl
+# 	./mosh -b scripts/binary2c.scm  $(PWD)/$< $(PWD)/$@
+
+# psyntaxBinaryImage.h: ./psyntax.fasl
+# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
