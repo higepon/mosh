@@ -31,6 +31,8 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "TextualInputPort.h"
 #include "reader.h"
 

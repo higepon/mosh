@@ -7,6 +7,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Symbol.h"
+#include "Vector.h"
 #include "SString.h"
 #include "ByteVector.h"
 #include "ByteArrayBinaryInputPort.h"

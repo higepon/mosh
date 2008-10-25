@@ -34,8 +34,6 @@ Pair.h                                                            \
 Stack.h                                                           \
 Box.h                                                             \
 ProcedureMacro.h                                                  \
-BuiltinSymbols.cpp                                                \
-Builtin.h                                                         \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
 reader.h                      reader.cpp                          \
@@ -92,17 +90,17 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
 nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/mosh/test.ss
 
-noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
+#noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
 
-libcompiler_a_CXXFLAGS = $(MOSHLIB_CXXFLAGS)
-libmatch_a_CXXFLAGS    = $(MOSHLIB_CXXFLAGS)
-libpsyntax_a_CXXFLAGS  = $(MOSHLIB_CXXFLAGS)
-libcompiler_a_SOURCES  = compiler.cpp
-libmatch_a_SOURCES     = match.cpp
-libpsyntax_a_SOURCES   = psyntax.cpp
+# libcompiler_a_CXXFLAGS = $(MOSHLIB_CXXFLAGS)
+# libmatch_a_CXXFLAGS    = $(MOSHLIB_CXXFLAGS)
+# libpsyntax_a_CXXFLAGS  = $(MOSHLIB_CXXFLAGS)
+# libcompiler_a_SOURCES  = compiler.cpp
+# libmatch_a_SOURCES     = match.cpp
+# libpsyntax_a_SOURCES   = psyntax.cpp
 
-mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) $(noinst_LIBRARIES)
+mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) #$(noinst_LIBRARIES)
 
 # # generated files should be listed here.
 # BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
@@ -111,7 +109,7 @@ EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm s
 
 GENERATED = \
 all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
-BuiltinSymbols.cpp DebugInstruction.h cprocedures.cpp      \
+DebugInstruction.h cprocedures.cpp      \
 labels.cpp match.cpp compiler.cpp psyntax.scmc             \
 match.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
 compiler-vm.scm compiler-with-library.scm Instruction.h    \
@@ -140,17 +138,17 @@ Instruction.h: ./instruction.scm
 #main.cpp: psyntax.h compiler-with-library.h match.h
 
 ##### compiler generation
-BuiltinSymbols.cpp: $(PRECOMPILE_SRC) #compiler-with-library.scmc match.scmc psyntax.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm -g > $(PWD)/$@
+# BuiltinSymbols.cpp: $(PRECOMPILE_SRC) #compiler-with-library.scmc match.scmc psyntax.scmc
+# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm -g > $(PWD)/$@
 
-compiler.cpp: compiler-with-library.scmc $(PRECOMPILE_SRC) #match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
-	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
+# compiler.cpp: compiler-with-library.scmc $(PRECOMPILE_SRC) #match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
+# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
 
-psyntax.cpp: psyntax.scmc $(PRECOMPILE_SRC) ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
-	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinPsyntax" $(PWD)/$< > $(PWD)/$@
+# psyntax.cpp: psyntax.scmc $(PRECOMPILE_SRC) ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
+# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinPsyntax" $(PWD)/$< > $(PWD)/$@
 
-match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
-	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
+# match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
+# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
@@ -169,7 +167,9 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 # 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
 
 SUFFIXES: .scmc .h
-	./mosh -b scripts/scmc2fasl.scm $(PWD)/$<.fasl $(PWD)/$@
+
+.scmc.h:
+	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 	./mosh -b scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 # match.fasl: ./match.scmc
