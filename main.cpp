@@ -50,7 +50,6 @@
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
-#include "Builtin.h"
 #include "SString.h"
 #include "Symbol.h"
 #include "EqHashTable.h"
