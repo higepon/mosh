@@ -223,12 +223,12 @@ void VM::importTopLevel()
     notFound_  = Symbol::intern(UC("vm hash table not found"));
     topLevelInstance_ = Object::makeEqHashTable();
     EqHashTable* ht = instances_.toEqHashTable();
-    ht->set(Symbol::intern(UC("top level ")), topLevelInstance_);
+    ht->set(Symbol::intern(UC("top-level")), topLevelInstance_);
 }
 
 void VM::initLibraryTable()
 {
-    const Object toplevel = Symbol::intern(UC("top level "));
+    const Object toplevel = Symbol::intern(UC("top-level"));
     libraries_.toEqHashTable()->eraseAllExcept(toplevel);
     instances_.toEqHashTable()->eraseAllExcept(toplevel);
 }
@@ -437,7 +437,7 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
         Object::makeRaw(Instruction::HALT),
     };
     //todo
-    ucs4string proc(UC("top level :$:"));
+    ucs4string proc(UC("top-level:$:"));
     proc += procSymbol.toSymbol()->c_str();
     applyCode[3] = arg;
     applyCode[6] = Symbol::intern(proc.c_str());
@@ -2080,7 +2080,7 @@ Object VM::idToTopLevelSymbol(Object id)
         LOG1("id=~a", id);
     }
     MOSH_ASSERT(id.isSymbol());
-    ucs4string name(UC("top level :$:"));
+    ucs4string name(UC("top-level:$:"));
     name += id.toSymbol()->c_str();
     // don't use name variable directly, it is temporary!
     return Symbol::intern(name.strdup());

@@ -1,1 +1,2 @@
-(display (car 3))
+(define a 3)
+(display a)

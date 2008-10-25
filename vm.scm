@@ -65,8 +65,8 @@
   (set! vm-instances (make-hash-table 'eq?))
   (set! vm-libraries (make-hash-table 'eq?))
   (set! vm-name-space (make-hash-table 'eq?))
-  (set! top-level-library (make-empty-library '(top level)))
-  (vm-import (libname->symbol '(top level))))
+  (set! top-level-library (make-empty-library '(top-level)))
+  (vm-import (libname->symbol '(top-level))))
 
 (load "./free-vars-decl.scm")
 
@@ -1497,7 +1497,7 @@
 (define (vm-init args)
   (init-library-table)
   (set! vstack (make-vector 10000))
-  (define-global (merge-libname-sym (libname->symbol '(top level)) '*command-line-args*) args)
+  (define-global (merge-libname-sym (libname->symbol '(top-level)) '*command-line-args*) args)
   (let loop ([i 0]
              [sp  (- (length *free-vars*) 1)])
     (cond [(>= sp 0)

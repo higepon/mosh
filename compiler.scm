@@ -152,7 +152,7 @@
              [ret  ""])
     (if (null? name)
         (string->symbol ret)
-        (loop (cdr name) (string-append ret (symbol->string (car name)) " ")))))
+        (loop (cdr name) (string-append ret (symbol->string (car name)))))))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -524,7 +524,7 @@
 (define (make-empty-library name)
   ($library name '() '() '() '() '() #f))
 
-(define top-level-library (make-empty-library '(top level)))
+(define top-level-library (make-empty-library '(top-level)))
 
 ;; Parse lambda vars and return (optional-arg? . vars).
 ;;   a       => (#t (a))
@@ -840,7 +840,7 @@
     ($local-ref it)]
    [(pass1/lib-refer->iform symbol library)
     it]
-   [#t ($global-ref '(top level) symbol)]))
+   [#t ($global-ref '(top-level) symbol)]))
 
 (define (pass1/assign symbol val library lvars tail?)
   (let1 iform (pass1/sexp->iform val library lvars tail?)
@@ -850,7 +850,7 @@
       ($local-assign it iform)]
      [(pass1/lib-assign->iform symbol library iform)
       it]
-     [#t ($global-assign '(top level) symbol iform)])))
+     [#t ($global-assign '(top-level) symbol iform)])))
 
 (define (pass1/body->iform body library lvars tail?)
   (let1 iforms ($map1-with-tail
@@ -2361,7 +2361,7 @@
         [var-stack-size (pass3/compile-assign cb ($lvar.sym ($local-assign.lvar iform)) locals frees)])
     (+ val-stack-size var-stack-size)))
 
-(define top-level-sym (string->symbol "top level "))
+(define top-level-sym (string->symbol "top-level-"))
 
 (define (merge-libname-sym libname sym)
   (string->symbol

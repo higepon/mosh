@@ -1,5 +1,7 @@
 2008-10-25  higepon  <higepon@users.sourceforge.jp>
 
+        * VM.cpp : Changed top-level prefix for making it valid symbol.
+
         * TextualOutputPort.cpp (TextualOutputPort::putDatum): Fixed the bug of writing compiler-insn.
 
 2008-10-24  higepon  <higepon@users.sourceforge.jp>

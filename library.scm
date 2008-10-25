@@ -1424,7 +1424,7 @@
 
 (define (with-output-to-file filename thunk)
   (let ([org-port (current-output-port)]
-        [inport (open-file-output-port filename)])
+        [inport (open-output-file filename)])
     (set-current-output-port! inport)
     (let1 ret (thunk)
       (set-current-output-port! org-port)
