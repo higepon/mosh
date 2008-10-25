@@ -158,15 +158,15 @@ match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 
-# SUFFIXES: .scmc .fasl
+SUFFIXES: .scmc .fasl
 
-# .scmc.fasl:
-# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
+.scmc.fasl:
+	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
 
-# SUFFIXES: .fasl .h
+SUFFIXES: .fasl .h
 
-# .fasl.h:
-# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
+.fasl.h:
+	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
 
 # match.fasl: ./match.scmc
 # 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
@@ -183,8 +183,11 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
+# we need to replace #\null => #\nul and |...| => ...
+# It is the difference between gauche and mosh.
 psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
 	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@

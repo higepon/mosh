@@ -309,13 +309,14 @@ int main(int argc, char *argv[])
         START_TIME_TRACE();
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->activateR6RSMode();
+
+#if 1
         FaslReader reader(new ByteArrayBinaryInputPort(psyntax_image, sizeof(psyntax_image)));
         const Object psyntax = reader.get();
         const Object psyntax2 = getBuiltinPsyntax();
         Vector* pv1 = psyntax.toVector();
         Vector* pv2 = psyntax2.toVector();
 
-#if 0
         for (int i = 0; i < pv1->length(); i++) {
             if (!equal(pv1->ref(i), pv2->ref(i))) {
                 VM_LOG2("\nbefore =<~a>\n after=~a", pv2->ref(i - 1), pv2->ref(i + 1));
@@ -324,9 +325,10 @@ int main(int argc, char *argv[])
                 exit(-1);
             }
         }
+        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
 #endif 
             
-        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
+
 //         theVM->evaluate(psyntax);
 
         END_TIME_TRACE(r6rs);
