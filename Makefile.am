@@ -90,20 +90,10 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
 nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/mosh/test.ss
 
-#noinst_LIBRARIES = libcompiler.a libmatch.a libpsyntax.a
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
-
-# libcompiler_a_CXXFLAGS = $(MOSHLIB_CXXFLAGS)
-# libmatch_a_CXXFLAGS    = $(MOSHLIB_CXXFLAGS)
-# libpsyntax_a_CXXFLAGS  = $(MOSHLIB_CXXFLAGS)
-# libcompiler_a_SOURCES  = compiler.cpp
-# libmatch_a_SOURCES     = match.cpp
-# libpsyntax_a_SOURCES   = psyntax.cpp
-
-mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) #$(noinst_LIBRARIES)
+mosh_LDADD = $(GC_LIB) $(REGEXP_LIB)
 
 # # generated files should be listed here.
-# BUILT_SOURCES  = Instruction.h compiler.cpp match.cpp BuiltinSymbols.cpp labels.cpp DebugInstruction.h ./compiler-vm.scm cprocedures.cpp ./compiler-gauche.scm
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
 EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
 
@@ -135,20 +125,7 @@ r6rs-test:
 Instruction.h: ./instruction.scm
 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-#main.cpp: psyntax.h compiler-with-library.h match.h
-
-##### compiler generation
-# BuiltinSymbols.cpp: $(PRECOMPILE_SRC) #compiler-with-library.scmc match.scmc psyntax.scmc
-# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm -g > $(PWD)/$@
-
-# compiler.cpp: compiler-with-library.scmc $(PRECOMPILE_SRC) #match.scmc  psyntax.scmc # match.scmc is also required for collecting symbols
-# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinCompiler" $(PWD)/$< > $(PWD)/$@
-
-# psyntax.cpp: psyntax.scmc $(PRECOMPILE_SRC) ./scripts/gen-pre-compiled-faster-cpp.scm # match.scmc is also required for collecting symbols
-# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinPsyntax" $(PWD)/$< > $(PWD)/$@
-
-# match.cpp: match.scmc $(PRECOMPILE_SRC)# compiler-with-library.scmc psyntax.scmc
-# 	@GOSH@ ./scripts/gen-pre-compiled-faster-cpp.scm "getBuiltinMatch" $(PWD)/$< > $(PWD)/$@
+main.cpp: psyntax.h compiler-with-library.h match.h
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
@@ -156,33 +133,11 @@ Instruction.h: ./instruction.scm
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 
-# SUFFIXES: .scmc .fasl
-
-# .scmc.fasl:
-# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
-
-# SUFFIXES: .fasl .h
-
-# .fasl.h:
-# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
-
 SUFFIXES: .scmc .h
 
 .scmc.h:
 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 	./mosh -b scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
-
-# match.fasl: ./match.scmc
-# 	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$@
-
-# matchBinaryImage.h: ./match.fasl
-# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
-
-# compilerBinaryImage.h: ./compiler-with-library.fasl
-# 	./mosh -b scripts/binary2c.scm  $(PWD)/$< $(PWD)/$@
-
-# psyntaxBinaryImage.h: ./psyntax.fasl
-# 	./mosh -b scripts/binary2c.scm $(PWD)/$< $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
