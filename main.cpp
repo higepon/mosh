@@ -33,7 +33,6 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 
-
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -115,49 +114,10 @@ void signal_handler(int signo)
 void compareRead(const char* file);
 void parrot(const char* file);
 
-void faslTest()
-{
-    TextualInputPort* in = new TextualInputPort(new FileBinaryInputPort(fopen("./all-tests.scm", "rb")),
-                                                new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR));
-    bool isErrorOccured = false;
-    Object list = Object::Nil;
-    INIT_TIME_TRACE();
-    START_TIME_TRACE();
-    for (;;) {
-        const Object o = in->getDatum(isErrorOccured);
-        if (o.isEof()) {
-            list = Pair::reverse(list);
-            break;
-        } else {
-            list = Object::cons(o, list);
-        }
-    }
-    END_TIME_TRACE("read");
-    in->close();
-
-    FileBinaryOutputPort* out = new FileBinaryOutputPort(fopen("./tmp.scm", "w"));
-    FaslWriter writer(out);
-    writer.put(list);
-    out->close();
-
-    FaslReader reader(new FileBinaryInputPort(fopen("./tmp.scm", "rb")));
-    START_TIME_TRACE();
-    const Object r = reader.get();
-    END_TIME_TRACE("read");
-    printf("%s\n", equal(r, list) ? "SUCCESS" : "ERROR");
-
-//     FaslReader reader2(new ByteArrayBinaryInputPort(s_bootimage, sizeof(s_bootimage)));
-//     START_TIME_TRACE();
-//     const Object r2 = reader2.get();
-//     END_TIME_TRACE("read2");
-
-//     printf("%s\n", equal(r2, list) ? "SUCCESS" : "ERROR");
-
-}
-
 #include "match.h"
 #include "psyntax.h"
 #include "compiler-with-library.h"
+#define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
 
 int main(int argc, char *argv[])
 {
@@ -171,7 +131,6 @@ int main(int argc, char *argv[])
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
 
-    INIT_TIME_TRACE();
     while ((opt = getopt(argc, argv, "htvpVcl:brze")) != -1) {
         switch (opt) {
         case 'h':
@@ -214,7 +173,6 @@ int main(int argc, char *argv[])
         }
     }
 
-
     if (isProfiler && argc == optind) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
@@ -238,31 +196,14 @@ int main(int argc, char *argv[])
 
 #endif
 
-
     Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
     Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
 
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
     theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
 
-    END_TIME_TRACE(vm_init);
-    START_TIME_TRACE();
-
-    // Do not call Symbol::intern before you load precompiled compiler!
-    START_TIME_TRACE();
-//    const Object compiler = getBuiltinCompiler();
-    END_TIME_TRACE("compiler.get");
     Symbol::initBuitinSymbols();
-
-    START_TIME_TRACE();
-//     FaslReader reader(new FileBinaryInputPort(fopen("./compiler.fasl", "rb")));
-//     const Object compiler = reader.get();
-    FaslReader reader(new ByteArrayBinaryInputPort(compiler_with_library_image, sizeof(compiler_with_library_image)));
-    const Object compiler = reader.get();
-
-    END_TIME_TRACE("compiler.get");
-
-    //  printf("equal?=%d\n", equal(compiler0, compiler));
+    const Object libCompiler = FASL_GET(compiler_with_library_image);
 
     theVM->importTopLevel();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
@@ -271,22 +212,10 @@ int main(int argc, char *argv[])
         theVM->initProfiler();
     }
 #endif
-    END_TIME_TRACE(load_compiler);
-    START_TIME_TRACE();
-    theVM->evaluate(compiler);
-    END_TIME_TRACE(eval_compiler);
-    START_TIME_TRACE();
-//    FaslReader reader2(new FileBinaryInputPort(fopen("./match.fasl", "rb")));
-//    const Object match = reader2.get();
-     FaslReader reader2(new ByteArrayBinaryInputPort(match_image, sizeof(match_image)));
-    const Object match = reader2.get();
-    theVM->evaluate(match);
-//    theVM->evaluate(getBuiltinMatch());
-    END_TIME_TRACE(match);
-
-//     faslTest();
-//     exit(-1);
-
+    theVM->evaluate(libCompiler);
+    FaslReader reader2(new ByteArrayBinaryInputPort(match_image, sizeof(match_image)));
+    const Object libMatch = FASL_GET(match_image);
+    theVM->evaluate(libMatch);
 
     if (initFile != NULL) {
         theVM->load(Object::makeString(initFile).toString()->data());
@@ -305,35 +234,10 @@ int main(int argc, char *argv[])
             theVM->getOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
-        START_TIME_TRACE();
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->activateR6RSMode();
-
-#if 1
-        FaslReader reader(new ByteArrayBinaryInputPort(psyntax_image, sizeof(psyntax_image)));
-        START_TIME_TRACE();
-        const Object psyntax = reader.get();
-        END_TIME_TRACE(get-psyntax);
-//         const Object psyntax2 = getBuiltinPsyntax();
-//         Vector* pv1 = psyntax.toVector();
-//         Vector* pv2 = psyntax2.toVector();
-
-//         for (int i = 0; i < pv1->length(); i++) {
-//             if (!equal(pv1->ref(i), pv2->ref(i))) {
-//                 VM_LOG2("\nbefore =<~a>\n after=~a", pv2->ref(i - 1), pv2->ref(i + 1));
-//                 VM_LOG2("\nbefore =<~a>\n after=~a", pv1->ref(i - 1), pv1->ref(i + 1));
-//                 VM_LOG3("\n num=~d 1=<~a>\n2=<~a>", Object::makeInt(i), pv1->ref(i), pv2->ref(i));
-//                 exit(-1);
-//             }
-//         }
-//        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
-#endif
-        START_TIME_TRACE();
-
-         theVM->evaluate(psyntax);
-
-        END_TIME_TRACE(r6rs);
-
+        const Object libPsyntax = FASL_GET(psyntax_image);
+        theVM->evaluate(libPsyntax);
     } else if (isCompareRead) {
         compareRead(argv[optind]);
     } else if (isParrot) {

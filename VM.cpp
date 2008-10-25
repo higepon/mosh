@@ -160,17 +160,11 @@ void VM::loadFile(const ucs4string& file)
         const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
         TextualInputPort* p = loadPort.toTextualInputPort();
         bool readErrorOccured = false;
-        INIT_TIME_TRACE();
-        START_TIME_TRACE();
         for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
-            END_TIME_TRACE("read1");
-            START_TIME_TRACE();
             if (readErrorOccured) {
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
             const Object compiled = compile(o);
-//            LOG1("compiled = ~a", compiled);
-            END_TIME_TRACE("compile");
             evaluate(compiled);
         }
 
@@ -1899,16 +1893,6 @@ bool VM::isR6RSMode() const
 void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
-//     INIT_TIME_TRACE();
-//     START_TIME_TRACE();
-//     const Object builtInPsyntax = getBuiltinPsyntax();
-//     END_TIME_TRACE(load_psyntax);
-//     START_TIME_TRACE();
-//         LOG1("psyntax =<~a>", Object::makeInt(builtInPsyntax.toVector()->length()));
-//     evaluate(builtInPsyntax);
-
-//     END_TIME_TRACE(eval_psyntax);
-//    load(UC("/Users/taro/repos-mosh/branches/newpsyntax-mosh/tools/rev0_to_10/psyntax.scm"));
 }
 
 
