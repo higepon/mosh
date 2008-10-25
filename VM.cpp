@@ -1900,15 +1900,15 @@ bool VM::isR6RSMode() const
 void VM::activateR6RSMode()
 {
     isR6RSMode_ = true;
-    INIT_TIME_TRACE();
-    START_TIME_TRACE();
-    const Object builtInPsyntax = getBuiltinPsyntax();
-    END_TIME_TRACE(load_psyntax);
-    START_TIME_TRACE();
-        LOG1("psyntax =<~a>", Object::makeInt(builtInPsyntax.toVector()->length()));
-    evaluate(builtInPsyntax);
+//     INIT_TIME_TRACE();
+//     START_TIME_TRACE();
+//     const Object builtInPsyntax = getBuiltinPsyntax();
+//     END_TIME_TRACE(load_psyntax);
+//     START_TIME_TRACE();
+//         LOG1("psyntax =<~a>", Object::makeInt(builtInPsyntax.toVector()->length()));
+//     evaluate(builtInPsyntax);
 
-    END_TIME_TRACE(eval_psyntax);
+//     END_TIME_TRACE(eval_psyntax);
 //    load(UC("/Users/taro/repos-mosh/branches/newpsyntax-mosh/tools/rev0_to_10/psyntax.scm"));
 }
 

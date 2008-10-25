@@ -251,15 +251,15 @@ int main(int argc, char *argv[])
 
     // Do not call Symbol::intern before you load precompiled compiler!
     START_TIME_TRACE();
-    const Object compiler = getBuiltinCompiler();
+//    const Object compiler = getBuiltinCompiler();
     END_TIME_TRACE("compiler.get");
     Symbol::initBuitinSymbols();
 
     START_TIME_TRACE();
 //     FaslReader reader(new FileBinaryInputPort(fopen("./compiler.fasl", "rb")));
 //     const Object compiler = reader.get();
-//     FaslReader reader(new ByteArrayBinaryInputPort(compiler_with_library_image, sizeof(compiler_with_library_image)));
-//     const Object compiler = reader.get();
+    FaslReader reader(new ByteArrayBinaryInputPort(compiler_with_library_image, sizeof(compiler_with_library_image)));
+    const Object compiler = reader.get();
 
     END_TIME_TRACE("compiler.get");
 
@@ -279,10 +279,10 @@ int main(int argc, char *argv[])
     START_TIME_TRACE();
 //    FaslReader reader2(new FileBinaryInputPort(fopen("./match.fasl", "rb")));
 //    const Object match = reader2.get();
-//     FaslReader reader2(new ByteArrayBinaryInputPort(match_image, sizeof(match_image)));
-//     const Object match = reader2.get();
-//     theVM->evaluate(match);
-    theVM->evaluate(getBuiltinMatch());
+     FaslReader reader2(new ByteArrayBinaryInputPort(match_image, sizeof(match_image)));
+    const Object match = reader2.get();
+    theVM->evaluate(match);
+//    theVM->evaluate(getBuiltinMatch());
     END_TIME_TRACE(match);
 
 //     faslTest();
@@ -313,23 +313,23 @@ int main(int argc, char *argv[])
 #if 1
         FaslReader reader(new ByteArrayBinaryInputPort(psyntax_image, sizeof(psyntax_image)));
         const Object psyntax = reader.get();
-        const Object psyntax2 = getBuiltinPsyntax();
-        Vector* pv1 = psyntax.toVector();
-        Vector* pv2 = psyntax2.toVector();
+//         const Object psyntax2 = getBuiltinPsyntax();
+//         Vector* pv1 = psyntax.toVector();
+//         Vector* pv2 = psyntax2.toVector();
 
-        for (int i = 0; i < pv1->length(); i++) {
-            if (!equal(pv1->ref(i), pv2->ref(i))) {
-                VM_LOG2("\nbefore =<~a>\n after=~a", pv2->ref(i - 1), pv2->ref(i + 1));
-                VM_LOG2("\nbefore =<~a>\n after=~a", pv1->ref(i - 1), pv1->ref(i + 1));
-                VM_LOG3("\n num=~d 1=<~a>\n2=<~a>", Object::makeInt(i), pv1->ref(i), pv2->ref(i));
-                exit(-1);
-            }
-        }
-        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
+//         for (int i = 0; i < pv1->length(); i++) {
+//             if (!equal(pv1->ref(i), pv2->ref(i))) {
+//                 VM_LOG2("\nbefore =<~a>\n after=~a", pv2->ref(i - 1), pv2->ref(i + 1));
+//                 VM_LOG2("\nbefore =<~a>\n after=~a", pv1->ref(i - 1), pv1->ref(i + 1));
+//                 VM_LOG3("\n num=~d 1=<~a>\n2=<~a>", Object::makeInt(i), pv1->ref(i), pv2->ref(i));
+//                 exit(-1);
+//             }
+//         }
+//        VM_LOG1("psyntax =<~a>", Object::makeInt(psyntax.toVector()->length()));
 #endif 
             
 
-//         theVM->evaluate(psyntax);
+         theVM->evaluate(psyntax);
 
         END_TIME_TRACE(r6rs);
 
