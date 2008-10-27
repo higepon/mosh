@@ -2267,6 +2267,8 @@
        ,sets
        (hashtable-set-true! (eq-hashtable-copy ,sets) ,new-sets)))
 
+(define-macro (pass3/let-frame-size) 2)
+
 (define (pass3/collect-free cb frees-here locals frees)
   (let loop ([size 0]
              [reversed-frees (reverse frees-here)])
@@ -2621,7 +2623,7 @@
                                       frees-here
                                       (pass3/add-can-frees1 can-frees vars-sym)
                                       (pass3/add-sets! sets sets-for-this-lvars)
-                                      (if tail (+ tail (length vars) 2) #f)) ;; 2 is size of LET_FRAME
+                                      (if tail (+ tail (length vars) (pass3/let-frame-size)) #f))
              (code-builder-put-insn-arg1! cb 'LEAVE args-length)
              (+ args-size body-size free-size)))))]
     [else
@@ -2731,7 +2733,7 @@
                                    frees-here
                                    (pass3/add-can-frees1 can-frees vars-sym)
                                    (pass3/add-sets! sets sets-for-this-lvars)
-                                   (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+                                   (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
           (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ body-size vals-size free-size))))))
 
@@ -2772,7 +2774,7 @@
                                        frees-here
                                        (pass3/add-can-frees1 can-frees vars-sym)
                                        (pass3/add-sets! sets sets-for-this-lvars)
-                                       (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+                                       (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
               (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
               (+ body-size args-size free-size)))))))
 
@@ -2826,7 +2828,7 @@
                                         frees-here
                                         new-can-frees
                                         (pass3/add-sets! sets sets-for-this-lvars)
-                                   (if tail (+ tail vars-length 2) #f)) ;; 2 is size of LET_FRAME
+                                   (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
           (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ free-size assign-size body-size))))))
 

@@ -1,6 +1,7 @@
 2008-10-27  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (cput-shift!): Cut off (SHIFT n m) instruction when m == 0.
+                       (pass3/let-frame-size): Added.
 
         * VM.cpp (VM::expandStack): Added auto stack expansion when stack is overflow.
 
