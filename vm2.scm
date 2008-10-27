@@ -1514,13 +1514,13 @@
 (define (time-diff s sm e em)
   (- (+ (* e 1000000) em) (+ (* s 1000000) sm)))
 
-(define (load-file file)
+(define (load-file file . opt)
   (with-input-from-file file
     (lambda ()
       (let loop ([obj (read)])
         (cond [(eof-object? obj) '()]
               [else
-               (evaluate obj)
+               (apply evaluate obj opt)
                (loop (read))])))))
 
 (define (compile-string s)
@@ -1627,10 +1627,11 @@
             (receive (t3 tm3) (sys-gettimeofday)
               (set! debug-compile-time (+ debug-compile-time (time-diff t1 tm1 t2 tm2)))
               (set! debug-vm-run-time  (+ debug-vm-run-time  (time-diff t2 tm2 t3 tm3))))))))
-    (define (evaluate code)
+    (define (evaluate code . opt)
       (let1 code-c ((if optimize? compile compile-no-optimize) code)
 ;      (let1 code-c ((if optimize? compile compile-no-optimize) code)
-;        (print "====> code-c=>" code-c)
+        (unless (null? opt)
+          (print "====> code-c=>" code-c))
         (set-closure-body-code! vm-outer-closure code-c)
         (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0))))
 
@@ -1979,7 +1980,7 @@
 ;    (load-file "./instruction.scm")
     (load-file "./library.scm")
     (load-file "./match.scm")
-    (load-file (second args))
+    (load-file (second args) #t)
     (dump-vm-debug-info)]
    )
   0)

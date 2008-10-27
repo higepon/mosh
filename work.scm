@@ -1,2 +1,1 @@
-(import (rnrs))
-(display 'hige)
+(lambda (a) a)
