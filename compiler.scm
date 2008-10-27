@@ -692,8 +692,6 @@
               (else
                (make-if (caar clauses) (cdar clauses) (loop (cdr clauses))))))))
 
-;(cond->if '(cond ((null? n)) (else (loop (cdr n)))))
-
   (define (expand-clauses clauses tmpname)
     (let loop ([clauses clauses])
       (if (null? clauses)
@@ -823,14 +821,17 @@
          ($global-assign (second it) (third it) val) ;; bind found on import-syms.
          ($global-assign ($library.name library) symbol val))))
 
-;; moved to CompilerProcedures.cpp
-;; N.B. this procedure is still required by vm.scm
-(define (pass1/find-symbol-in-lvars symbol lvars)
-  (cond
-   [(null? lvars) #f]
-   [(eq? symbol ($lvar.sym (car lvars))) (car lvars)]
-   [else
-    (pass1/find-symbol-in-lvars symbol (cdr lvars))]))
+(cond-expand
+ [vm?
+  ;; moved to CompilerProcedures.cpp
+  ;; N.B. this procedure is still required by vm.scm
+  (define (pass1/find-symbol-in-lvars symbol lvars)
+    (cond
+     [(null? lvars) #f]
+     [(eq? symbol ($lvar.sym (car lvars))) (car lvars)]
+     [else
+      (pass1/find-symbol-in-lvars symbol (cdr lvars))]))]
+ [else #f])
 
 (define (pass1/refer->iform symbol library lvars)
   (acond
@@ -2018,131 +2019,135 @@
 ;;     locals:    local variables as $lvar structure.
 ;;     can-frees: candidates of free variables as $lvar structure.
 ;;
-;; moved to freeproc.cpp
-;; N.B. these procedures are still required by vm.scm
-(define (pass3/find-free iform locals can-frees)
-  (define (rec i l labels-seen)
-    (let1 t (tag i)
-      (cond
-       [(= $CONST t) '()]
-       [(= $LET t)
-        (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
-                 (rec ($let.body i) ($let.lvars i) labels-seen))]
-       [(= $RECEIVE t)
-        (append (rec ($receive.vals i) l labels-seen)
-                (rec ($receive.body i) ($receive.lvars i) labels-seen))]
-       [(= $SEQ t)
-        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
-       [(= $LAMBDA t)
-        (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
-       [(= $LOCAL-ASSIGN t)
-        (let1 sym ($lvar.sym ($local-assign.lvar i))
-          (if (pass3/exists-in-can-frees? sym can-frees)
-              (cons sym (rec ($local-assign.val i) l labels-seen))
-              (rec ($local-assign.val i) l labels-seen)))]
-       [(= $LOCAL-REF t)
-        (let1 sym ($lvar.sym ($local-ref.lvar i))
-          (cond [(memq sym l) '()]
-                [(pass3/exists-in-can-frees? sym can-frees) (list sym)]
-                [else '()]))]
-       [(= $GLOBAL-REF t)
-        (let* ([sym ($global-ref.sym i)]
-               [found (pass3/exists-in-can-frees? sym can-frees)])
-          (if found (list sym) '()))]
-       [(= $UNDEF t)      '()]
-       [(= $IF t)
-        (append (rec ($if.test i) l labels-seen)
-                 (append (rec ($if.then i) l labels-seen)
-                         (rec ($if.else i) l labels-seen)))]
-       [(= $ASM t)
-        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
-       [(= $DEFINE t)
-        (rec ($define.val i) l labels-seen)]
-       [(= $CALL t)
-        ;; N.B.
-        ;; (proc args)
-        ;;   args are evaluate before proc, so you should find free variables of args at first.
-       (append
-         ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
-         (rec ($call.proc i) l labels-seen)
-                )]
-       [(= $CALL-CC t)
-        (rec ($call-cc.proc i) l labels-seen)]
-       [(= $GLOBAL-ASSIGN t)
-        (rec ($global-assign.val i) l labels-seen)]
-       [(= $LIST t)
-        ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($list.args i))]
-       [(= $LABEL t)
-        (if (memq i labels-seen)
-            '()
-            (rec ($label.body i) l (cons i labels-seen)))]
-       [(= $IMPORT t)
-        '() ;; todo 本当?
-        ]
-       [(= $LIBRARY t)
-        '() ;; todo 本当?
-        ]
-       [(= $IT t) '()]
-       [else
-        (error "pass3/find-free unknown iform:" (tag i))])))
-  (uniq (rec iform locals '())))
+(cond-expand
+ [vm?
+  ;; moved to freeproc.cpp
+  ;; N.B. these procedures are still required by vm.scm
+  (define (pass3/find-free iform locals can-frees)
+    (define (rec i l labels-seen)
+      (let1 t (tag i)
+        (cond
+         [(= $CONST t) '()]
+         [(= $LET t)
+          (append ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($let.inits i))
+                  (rec ($let.body i) ($let.lvars i) labels-seen))]
+         [(= $RECEIVE t)
+          (append (rec ($receive.vals i) l labels-seen)
+                  (rec ($receive.body i) ($receive.lvars i) labels-seen))]
+         [(= $SEQ t)
+          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($seq.body i))]
+         [(= $LAMBDA t)
+          (rec ($lambda.body i) ($lambda.lvars i) labels-seen)]
+         [(= $LOCAL-ASSIGN t)
+          (let1 sym ($lvar.sym ($local-assign.lvar i))
+            (if (pass3/exists-in-can-frees? sym can-frees)
+                (cons sym (rec ($local-assign.val i) l labels-seen))
+                (rec ($local-assign.val i) l labels-seen)))]
+         [(= $LOCAL-REF t)
+          (let1 sym ($lvar.sym ($local-ref.lvar i))
+            (cond [(memq sym l) '()]
+                  [(pass3/exists-in-can-frees? sym can-frees) (list sym)]
+                  [else '()]))]
+         [(= $GLOBAL-REF t)
+          (let* ([sym ($global-ref.sym i)]
+                 [found (pass3/exists-in-can-frees? sym can-frees)])
+            (if found (list sym) '()))]
+         [(= $UNDEF t)      '()]
+         [(= $IF t)
+          (append (rec ($if.test i) l labels-seen)
+                  (append (rec ($if.then i) l labels-seen)
+                          (rec ($if.else i) l labels-seen)))]
+         [(= $ASM t)
+          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($asm.args i))]
+         [(= $DEFINE t)
+          (rec ($define.val i) l labels-seen)]
+         [(= $CALL t)
+          ;; N.B.
+          ;; (proc args)
+          ;;   args are evaluate before proc, so you should find free variables of args at first.
+          (append
+           ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($call.args i))
+           (rec ($call.proc i) l labels-seen)
+           )]
+         [(= $CALL-CC t)
+          (rec ($call-cc.proc i) l labels-seen)]
+         [(= $GLOBAL-ASSIGN t)
+          (rec ($global-assign.val i) l labels-seen)]
+         [(= $LIST t)
+          ($append-map1 (lambda (fm) (rec fm l labels-seen)) ($list.args i))]
+         [(= $LABEL t)
+          (if (memq i labels-seen)
+              '()
+              (rec ($label.body i) l (cons i labels-seen)))]
+         [(= $IMPORT t)
+          '() ;; todo 本当?
+          ]
+         [(= $LIBRARY t)
+          '() ;; todo 本当?
+          ]
+         [(= $IT t) '()]
+         [else
+          (error "pass3/find-free unknown iform:" (tag i))])))
+    (uniq (rec iform locals '())))
 
-;; moved to freeproc.cpp
-;; N.B. these procedures are still required by vm.scm
-(define (pass3/find-sets iform lvars)
-  (define (rec i)
-    (let1 t (tag i)
-      (cond
-       [(= $CONST t) '()]
-       [(= $LET t)
-        (append ($append-map1 rec ($let.inits i))
-                (rec ($let.body i)))]
-       [(= $RECEIVE t)
-        (append (rec ($receive.vals i))
-                (rec ($receive.body i)))]
-       [(= $SEQ t)
-        ($append-map1 rec ($seq.body i))]
-       [(= $LAMBDA t)
-        (rec ($lambda.body i))]
-       [(= $LOCAL-ASSIGN t)
-        (let1 lvar ($local-assign.lvar i)
-          (append (if (memq lvar lvars) (list lvar) '())
-                  (rec ($local-assign.val i))))]
-       [(= $LOCAL-REF t)  '()]
-       [(= $GLOBAL-REF t) '()]
-       [(= $UNDEF t)      '()]
-       [(= $IF t)
-        (append (rec ($if.test i))
-                (rec ($if.then i))
-                (rec ($if.else i)))]
-       [(= $ASM t)
-        ($append-map1 rec ($asm.args i))]
-       [(= $DEFINE t)
-        (rec ($define.val i))]
-       [(= $CALL t)
-        (append
-         ($append-map1 rec ($call.args i))
-         (rec ($call.proc i))
-                )]
-       [(= $CALL-CC t)
-        (rec ($call-cc.proc i))]
-       [(= $GLOBAL-ASSIGN t)
-        (rec ($global-assign.val i))]
-       [(= $LIST t)
-        ($append-map1 rec ($list.args i))]
-       [(= $LABEL t)
-        '() ;; todo 本当
-        ]
-       [(= $IMPORT t)
-        '() ;; todo 本当?
-        ]
-       [(= $LIBRARY t)
-        '() ;; todo 本当?
-        ]
-       [(= $IT t) '()]
-       [else
-        (error "pass3/find-sets unknown iform:" i)])))
-  (uniq (rec iform)))
+  ;; moved to freeproc.cpp
+  ;; N.B. these procedures are still required by vm.scm
+  (define (pass3/find-sets iform lvars)
+    (define (rec i)
+      (let1 t (tag i)
+        (cond
+         [(= $CONST t) '()]
+         [(= $LET t)
+          (append ($append-map1 rec ($let.inits i))
+                  (rec ($let.body i)))]
+         [(= $RECEIVE t)
+          (append (rec ($receive.vals i))
+                  (rec ($receive.body i)))]
+         [(= $SEQ t)
+          ($append-map1 rec ($seq.body i))]
+         [(= $LAMBDA t)
+          (rec ($lambda.body i))]
+         [(= $LOCAL-ASSIGN t)
+          (let1 lvar ($local-assign.lvar i)
+            (append (if (memq lvar lvars) (list lvar) '())
+                    (rec ($local-assign.val i))))]
+         [(= $LOCAL-REF t)  '()]
+         [(= $GLOBAL-REF t) '()]
+         [(= $UNDEF t)      '()]
+         [(= $IF t)
+          (append (rec ($if.test i))
+                  (rec ($if.then i))
+                  (rec ($if.else i)))]
+         [(= $ASM t)
+          ($append-map1 rec ($asm.args i))]
+         [(= $DEFINE t)
+          (rec ($define.val i))]
+         [(= $CALL t)
+          (append
+           ($append-map1 rec ($call.args i))
+           (rec ($call.proc i))
+           )]
+         [(= $CALL-CC t)
+          (rec ($call-cc.proc i))]
+         [(= $GLOBAL-ASSIGN t)
+          (rec ($global-assign.val i))]
+         [(= $LIST t)
+          ($append-map1 rec ($list.args i))]
+         [(= $LABEL t)
+          '() ;; todo 本当
+          ]
+         [(= $IMPORT t)
+          '() ;; todo 本当?
+          ]
+         [(= $LIBRARY t)
+          '() ;; todo 本当?
+          ]
+         [(= $IT t) '()]
+         [else
+          (error "pass3/find-sets unknown iform:" i)])))
+    (uniq (rec iform)))
+  ]
+ [else #f])
 
 (cond-expand
  [mosh
@@ -2278,15 +2283,6 @@
       (let1 stack-size (pass3/compile-refer cb (car reversed-frees) locals frees)
         (code-builder-put-insn-arg0! cb 'PUSH)
         (loop (+ size stack-size) (cdr reversed-frees)))])))
-
-;; fold requires anonymous closure
-;; So, if this procedure is called many times, it causes slow compilation.
-;; (define (pass3/collect-free cb frees-here locals frees)
-;;   (fold (lambda (i accum)
-;;           (let1 size (pass3/compile-refer cb i locals frees)
-;;             (cput! cb 'PUSH)
-;;             (+ size accum))) 0 (reverse frees-here)))
-
 
 (define (pass3/symbol-lookup cb lvar locals frees return-local return-free)
   (let next-local ([locals locals] [n 0])
@@ -2449,31 +2445,6 @@
             (+ stack-size (pass3/compile-arg cb (car args) locals frees can-frees sets #f)))])))
 
 (define (pass3/$asm cb iform locals frees can-frees sets tail)
-;;   (define (compile-1arg insn args)
-;;     (begin0
-;;       (pass3/rec cb (first args) locals frees can-frees sets #f)
-;;       (cput! cb insn)))
-;;   (define (compile-2arg insn args)
-;;     (let ([x (pass3/compile-arg cb (first args) locals frees can-frees sets #f)]
-;;           [y (pass3/rec cb (second args) locals frees can-frees sets #f)])
-;;       (cput! cb insn)
-;;       (+ x y)))
-;;   (define (compile-3arg insn args)
-;;     (let ([x (pass3/compile-arg cb (first args) locals frees can-frees sets #f)]
-;;           [y (pass3/compile-arg cb (second args) locals frees can-frees sets #f)]
-;;           [z (pass3/rec cb (third args) locals frees can-frees sets #f)])
-;;       (cput! cb insn)
-;;       (+ x y z)))
-;;   (define (compile-n-args args)
-;;     (let loop ([args args]
-;;                [stack-size 0])
-;;       (cond
-;;        [(null? args) stack-size]
-;;        [(null? (cdr args)) ;; last argument is not pushed.
-;;         (+ stack-size (pass3/rec cb (car args) locals frees can-frees sets #f))]
-;;        [else
-;;         (loop (cdr args)
-;;               (+ stack-size (pass3/compile-arg cb (car args) locals frees can-frees sets #f)))])))
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
       [(APPEND2)           (pass3/$asm-2-arg cb  'APPEND2         (first args) (second args) locals frees can-frees sets)]
@@ -2550,12 +2521,6 @@
     (code-builder-put-insn-arg0! cb 'PUSH)
     (+ size 1)))
 
-;; (define (pass3/compile-args cb args locals frees can-frees sets tail)
-;;   (fold (lambda (i accum)
-;;           (let1 size (pass3/compile-arg cb i locals frees can-frees sets tail)
-;;             (+ size accum)))
-;;         0 args))
-
 ;; fold requires anonymous closure
 ;; So, if this procedure is called many times, it causes slow compilation.
 (define (pass3/compile-args cb args locals frees can-frees sets tail)
@@ -2589,12 +2554,6 @@
          (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)
          (cput-shift! cb args-length args-length)
          (cput! cb 'UNFIXED_JUMP label)
-         ;; (cput! cb
-;;                 'SHIFT
-;;                 args-length
-;;                 args-length
-;;                 'UNFIXED_JUMP
-;;                 label)
          ))]
     [(embed)
      (let* ([label ($lambda.body ($call.proc iform))]
@@ -2645,7 +2604,6 @@
               [args-length (length ($call.args iform))])
          (when tail
            (cput-shift! cb args-length tail))
-;;           (cput! cb 'SHIFT args-length tail))
          (code-builder-put-insn-arg1! cb 'CALL args-length)
          (unless tail
            (cput! cb end-of-frame))
@@ -2662,7 +2620,6 @@
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f)
       (when tail
         (cput-shift! cb 1 tail))
-;        (cput! cb 'SHIFT 1 tail))
       (code-builder-put-insn-arg1! cb 'CALL 1)
       (unless tail
         (cput! cb end-of-frame)))))
@@ -2751,16 +2708,6 @@
              [sets-for-this-lvars (pass3/find-sets body vars)]
              [frees-here-length   (length frees-here)]
              [vars-length         (length vars)])
-        ;; tail-call doesn't work yet
-        ;;       ,@(if tail '() '(LET_FRAME))
-        ;;       ,@(if (> (length frees-here) 0) (pass3/collect-free frees-here locals frees) '())
-        ;;       ,@(if (> (length frees-here) 0) (list 'DISPLAY (length frees-here)) '())
-        ;;       ,@args-code
-        ;;       ,@boxes-code
-        ;;       ENTER
-        ;;       ,@body-code
-        ;;       ,@(if tail (list 'SHIFT (length vars) tail) (list 'LEAVE (length vars))))))
-        ;; non-tail call works fine.
         (cput! cb 'LET_FRAME)
         (let1 free-size (if (> frees-here-length 0) (pass3/collect-free cb frees-here locals frees) 0)
           (when (> frees-here-length 0)
@@ -2774,7 +2721,7 @@
                                        frees-here
                                        (pass3/add-can-frees1 can-frees vars-sym)
                                        (pass3/add-sets! sets sets-for-this-lvars)
-                                       (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
+                                       (if tail (+ tail vars-length (pass3/let-frame-size)) #f)) ;; tail call for let is collect
               (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
               (+ body-size args-size free-size)))))))
 
@@ -2880,7 +2827,6 @@
 (define (pass3 iform)
   (let1 cb (make-code-builder)
     (pass3/rec cb iform '() *free-vars-decl* '() (make-eq-hashtable) #f)
-;    (code-builder-put1! cb 'HALT)
     (code-builder-emit cb)))
 (define (pass4 lst)
   (pass4/fixup-labels (list->vector (append lst '(HALT)))))
@@ -3025,55 +2971,54 @@
       [else
        (loop (+ i 1))])))
 
-;; moved to freeproc.cpp
-;; N.B. this procedure is still required by vm.scm
-(define (pass4/fixup-labels v)
-  (define (collect-labels)
-    (let* ([len (vector-length v)]
-           [ret (make-vector len 'NOP)]
-           [labels (make-eq-hashtable)])
-      (let loop ([i 0]
-                 [j 0])
-        (cond
-         [(= i len) (values ret labels)]
-         [else
-          (let1 insn (vector-ref v i)
-            (cond
-             [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-clollect 'UNFIXED_JUMP)]
-             [(eq? insn 'TEST)                  (pass4/fixup-labels-clollect 'TEST)]
-             [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-clollect 'NUMBER_LE_TEST)]
-             [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-clollect 'NOT_TEST)]
-             [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-clollect 'REFER_LOCAL0_EQV_TEST)]
-             [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
-             [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
-             [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
-             [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
-              (hashtable-set! labels insn j)
-              (loop (+ i 1) j)]  ;; save the location of label)
-             [else
-              (vector-set! ret j insn)
-              (loop (+ i 1) (+ j 1))]))]))))
-  (receive (code labels) (collect-labels)
-    (let1 len (vector-length code)
-    (let loop ([i 0])
-      (cond
-       [(= i len) code]
-       [else
-        (let1 insn (vector-ref code i)
+(cond-expand
+ [vm?
+  ;; moved to freeproc.cpp
+  ;; N.B. this procedure is still required by vm.scm
+  (define (pass4/fixup-labels v)
+    (define (collect-labels)
+      (let* ([len (vector-length v)]
+             [ret (make-vector len 'NOP)]
+             [labels (make-eq-hashtable)])
+        (let loop ([i 0]
+                   [j 0])
           (cond
-           [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
-           [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
-           [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-           [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
-           [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-           [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
-           [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
-           [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-           [else (loop (+ i 1))]))])))))
-
-
-;(define *free-lvars* ($map1 (lambda (p) ($lvar p '() 0 0)) *free-vars-decl*))
-;(define *free-vars-sym* *free-vars-decl*)
+           [(= i len) (values ret labels)]
+           [else
+            (let1 insn (vector-ref v i)
+              (cond
+               [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-clollect 'UNFIXED_JUMP)]
+               [(eq? insn 'TEST)                  (pass4/fixup-labels-clollect 'TEST)]
+               [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-clollect 'NUMBER_LE_TEST)]
+               [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-clollect 'NOT_TEST)]
+               [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-clollect 'REFER_LOCAL0_EQV_TEST)]
+               [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
+               [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
+               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
+               [(and (vector? insn) (> (vector-length insn) 0) (tag? insn $LABEL))
+                (hashtable-set! labels insn j)
+                (loop (+ i 1) j)]  ;; save the location of label)
+               [else
+                (vector-set! ret j insn)
+                (loop (+ i 1) (+ j 1))]))]))))
+    (receive (code labels) (collect-labels)
+      (let1 len (vector-length code)
+        (let loop ([i 0])
+          (cond
+           [(= i len) code]
+           [else
+            (let1 insn (vector-ref code i)
+              (cond
+               [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
+               [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
+               [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
+               [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
+               [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
+               [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
+               [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
+               [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
+               [else (loop (+ i 1))]))])))))]
+ [else #t])
 
 
 (define (compile sexp)
@@ -3081,8 +3026,6 @@
           (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
                    x)
                  ))))
-
-
 
 (define (compile-no-optimize sexp)
   (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f))))
