@@ -818,6 +818,16 @@
                         (index stack sp 3)                 ;; c
                         stack
                         (- sp 4)))))])
+    (define (expand-stack)
+      (let* ([size (vector-length stack)]
+             [next-stack-size (* 2 size)]
+             [next-stack (make-vector next-stack-size)])
+        (let loop ([i 0])
+          (if (>= i size)
+              (set! stack next-stack)
+              (begin
+                (vector-set! next-stack i (vector-ref stack i))
+                (loop (+ i 1)))))))
   (define (refer-local n)
 ;;     (let1 v (index stack (+ fp n 1) 0)
 ;;       (print "REFER_LOCAL" n "=" (if (string? v) v 'none)))
@@ -835,7 +845,9 @@
            (VM `#(RETURN ,args-num HALT) 0 (apply regmatch-proxy (cons a(stack->pair-args stack sp args-num))) fp c stack sp)]
           [else
            (when (>= (+ sp (closure-max-stack a)) (vector-length stack))
-             (errorf "stack over flow sp=~d" sp))
+             (format #t "stack overflow expand stack\n")
+             (expand-stack))
+;             (errorf "stack over flow sp=~d" sp))
            (let ([arg-length args-num]
                  [required-length (closure-arg-length a)])
              (cond [(closure-optional-arg? a)

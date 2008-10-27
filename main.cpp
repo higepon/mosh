@@ -200,8 +200,7 @@ int main(int argc, char *argv[])
     Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
 
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
-//    theVM = new VM(2000000, outPort, errorPort, inPort, isProfiler);
-    theVM = new VM(2000, outPort, errorPort, inPort, isProfiler);
+    theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
 
     Symbol::initBuitinSymbols();
     const Object libCompiler = FASL_GET(compiler_with_library_image);

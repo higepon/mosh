@@ -38,7 +38,7 @@ ucs4char* ucs4string::strdup()
 {
     const int length = size();
 #ifdef USE_BOEHM_GC
-    ucs4char* ret = new (GC) ucs4char[length + 1];
+    ucs4char* ret = new (PointerFreeGC) ucs4char[length + 1];
 #else
     ucs4char* ret = new ucs4char[length + 1];
 #endif

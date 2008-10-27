@@ -1,3 +1,7 @@
+2008-10-27  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (VM::expandStack): Added auto stack expansion when stack is overflow.
+
 2008-10-25  higepon  <higepon@users.sourceforge.jp>
 
         * complation of Mosh and loading speed becomes much Faster with Fasl.

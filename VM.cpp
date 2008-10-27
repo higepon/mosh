@@ -625,9 +625,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (ac_.isClosure()) {
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
-                    // todo
-                    // handle stack overflow with guard
-                    callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeInt(sp_ - stack_)));
+                    expandStack(stackSize_ / 2);
                 }
                 COUNT_CALL(ac_);
                 MOSH_ASSERT(operand.isInt());
@@ -2123,4 +2121,22 @@ Object VM::standardInputPort() const
 Object VM::currentInputPort()
 {
     return inputPort_;
+}
+
+void VM::expandStack(int plusSize)
+{
+    const int nextStackSize = stackSize_ + plusSize;
+    Object* nextStack = Object::makeObjectArray(nextStackSize);
+    if (NULL == nextStack) {
+        // todo
+        // handle stack overflow with guard
+        callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeInt(sp_ - stack_)));
+    }
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    memcpy(nextStack, stack_, sizeof(Object) * stackSize_);
+    fp_ = nextStack + (fp_ - stack_);
+    sp_ = nextStack + (sp_ - stack_);
+    stackEnd_ = nextStack + nextStackSize;
+    stack_ = nextStack;
+    stackSize_ = nextStackSize;
 }

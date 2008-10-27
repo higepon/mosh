@@ -244,7 +244,7 @@ Object scheme::gensymEx(int argc, const Object* argv)
     ucs4char* ibuf = new ucs4char[32];
 #endif
 
-    sprintf(ubuf, "G%d", next++);
+    sprintf(ubuf, "G%x", next++);
     const int len = strlen(ubuf) + 1;
     for (int i = 0; i < len; i++) {
         ibuf[i] = ubuf[i];

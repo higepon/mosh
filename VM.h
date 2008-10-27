@@ -148,6 +148,7 @@ protected:
     Object referFree(int n);
     Object makeContinuation(Object n);
     Object* getDirectThreadedCode(Object* code, int length);
+    void expandStack(int plusSize);
     // $library structure accessor.
     // This structure is shared with compiler and VM.
     void setLibraryMacro(Object library, Object macro);
@@ -161,7 +162,7 @@ public:
     Object* sp_; // stack pointer   register
     Object* pc_; // program counter register
 protected:
-    const int stackSize_;
+    int stackSize_;
     Object* stack_;
     Object* stackEnd_;
     Object* maxStack_;
