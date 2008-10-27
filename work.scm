@@ -1,1 +1,2 @@
-(lambda (a) a)
+(define (a) 3)
+(lambda () (a))

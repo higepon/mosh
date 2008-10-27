@@ -106,7 +106,7 @@
 (define debug-max-sp       0)
 (define debug-vm-run-time  0)
 (define debug-compile-time 0)
-(define optimize?          #t)
+(define optimize?          #f)
 
 (cond [#f
 (eqt '(1 2 3) (remove-tail '(1 2 3 4) even?))
