@@ -2220,6 +2220,10 @@
      `(begin (code-builder-put-extra1! ,cb ,a)
              (cput! ,cb ,@b))]))
 
+(define-macro (cput-shift! cb n m)
+  `(when (> ,m 0)
+    (cput! ,cb 'SHIFT ,n ,m)))
+
 (define-macro (pass3/add-sets! sets new-sets)
   `(if (null? ,new-sets)
        ,sets
@@ -2543,12 +2547,15 @@
        (cput! cb 'REDUCE args-length)
        (begin0
          (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f)
-         (cput! cb
-                'SHIFT
-                args-length
-                args-length
-                'UNFIXED_JUMP
-                label)))]
+         (cput-shift! cb args-length args-length)
+         (cput! cb 'UNFIXED_JUMP label)
+         ;; (cput! cb
+;;                 'SHIFT
+;;                 args-length
+;;                 args-length
+;;                 'UNFIXED_JUMP
+;;                 label)
+         ))]
     [(embed)
      (let* ([label ($lambda.body ($call.proc iform))]
             [body ($label.body label)]
@@ -2597,7 +2604,8 @@
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f)]
               [args-length (length ($call.args iform))])
          (when tail
-           (cput! cb 'SHIFT args-length tail))
+           (cput-shift! cb args-length tail))
+;;           (cput! cb 'SHIFT args-length tail))
          (code-builder-put-insn-arg1! cb 'CALL args-length)
          (unless tail
            (cput! cb end-of-frame))
@@ -2613,7 +2621,8 @@
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f)
       (when tail
-        (cput! cb 'SHIFT 1 tail))
+        (cput-shift! cb 1 tail))
+;        (cput! cb 'SHIFT 1 tail))
       (code-builder-put-insn-arg1! cb 'CALL 1)
       (unless tail
         (cput! cb end-of-frame)))))
