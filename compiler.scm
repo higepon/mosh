@@ -1050,7 +1050,7 @@
 (define (pass1/macroexpand sexp)
   (let1 proc (first sexp)
     (acond
-     [(and (symbol? proc) (assoc proc ($library.macro top-level-library)))
+     [(and (symbol? proc) (assq proc ($library.macro top-level-library)))
       (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
      [#t sexp])))
 
@@ -1087,12 +1087,12 @@
 (define (pass1/call proc args library lvars tail?)
   (acond
    [(and (symbol? proc)
-         (assoc proc ($library.macro library)))
+         (assq proc ($library.macro library)))
     (pass1/s->i (vm/apply (cdr it) args))]
    [(and (symbol? proc) (find-with-car proc ($library.import-syms library)))
          ;(find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
     (let* ([lib (hashtable-ref libraries (second it) #f)]
-           [macro (assoc (third it) ($library.macro lib))])
+           [macro (assq (third it) ($library.macro lib))])
       (if macro
           (pass1/s->i (vm/apply (cdr macro) args))
           ($call (pass1/s->i proc)
