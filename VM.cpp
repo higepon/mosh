@@ -462,7 +462,7 @@ Object VM::apply(Object proc, Object args)
 
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
-#       include "cprocedures.cpp"
+//#       include "cprocedures.cpp"
         closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, outerSourceInfo_);
     }
     closure.toClosure()->pc = code;
