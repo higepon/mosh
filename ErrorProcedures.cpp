@@ -215,6 +215,8 @@ Object scheme::errorEx(int argc, const Object* argv)
         callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
         return Object::Undef;
     }
+    VM_LOG1("<~a>", argv[0]);
+    VM_LOG1("<~a>", argv[1]);
     argumentCheckString(1, message);
     Object irritants = Object::Nil;
     for (int i = 2; i < argc; i++) {
@@ -240,11 +242,6 @@ Object makeIrritantsCondition(Object irritants)
 {
     return makeCondition(UC("&irritants-rcd"), irritants);
 }
-
-// Object makeAssertionCondition()
-// {
-//     return makeCondition(UC("&assertion-rcd"));
-// }
 
 Object makeCondition(const ucs4char* rcdName)
 {

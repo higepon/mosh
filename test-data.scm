@@ -439,198 +439,198 @@
 ;; ;;
 ;; ;; library
 ;; ;;
-[lib "hello higepon\n"
-(library (higepon)
-         (export hello)
-         (import)
-         (define hello "hello higepon\n"))
-(import (higepon))
-hello
-]
+;; [lib "hello higepon\n"
+;; (library (higepon)
+;;          (export hello)
+;;          (import)
+;;          (define hello "hello higepon\n"))
+;; (import (higepon))
+;; hello
+;; ]
 
-[lib "hello higepon\n"
-(library (higepon2)
-         (export hello)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (higepon2))
-hello
-]
+;; [lib "hello higepon\n"
+;; (library (higepon2)
+;;          (export hello)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (higepon2))
+;; hello
+;; ]
 
-[lib "goodbye higepon\n"
-(library (higepon3)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (higepon3))
-hello
-goodbye
-]
+;; [lib "goodbye higepon\n"
+;; (library (higepon3)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (higepon3))
+;; hello
+;; goodbye
+;; ]
 
-[lib "hello higepon\n"
-(library (higepon4)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (only (higepon4) hello))
-hello
-]
-
-
-[lib "goodbye higepon\n"
-(library (higepon5)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (except (higepon5) hello))
-goodbye
-]
+;; [lib "hello higepon\n"
+;; (library (higepon4)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (only (higepon4) hello))
+;; hello
+;; ]
 
 
-[lib "hello higepon\n"
-(library (higepon6)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (rename (higepon6) (hello hige:hello)))
-hige:hello
-]
-
-[lib "goodbye higepon\n"
-(library (higepon7)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (prefix (higepon7) higepon.))
-higepon.goodbye
-]
+;; [lib "goodbye higepon\n"
+;; (library (higepon5)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (except (higepon5) hello))
+;; goodbye
+;; ]
 
 
-[lib "lulululuhello higepon\n"
-(library (higepon8)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(library (ipod (3))
-         (export play)
-         (import)
-         (define play "lulululu"))
-(import (prefix (higepon8) higepon.)
-        (ipod))
-(string-append play higepon.hello)
-]
+;; [lib "hello higepon\n"
+;; (library (higepon6)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (rename (higepon6) (hello hige:hello)))
+;; hige:hello
+;; ]
+
+;; [lib "goodbye higepon\n"
+;; (library (higepon7)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (prefix (higepon7) higepon.))
+;; higepon.goodbye
+;; ]
 
 
-;; we now ignore version
-[lib "goodbye higepon\n"
-(library (higepon9 (7))
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (prefix (higepon9 (6)) higepon.))
-higepon.goodbye
-]
+;; [lib "lulululuhello higepon\n"
+;; (library (higepon8)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (library (ipod (3))
+;;          (export play)
+;;          (import)
+;;          (define play "lulululu"))
+;; (import (prefix (higepon8) higepon.)
+;;         (ipod))
+;; (string-append play higepon.hello)
+;; ]
 
 
-[lib "goodbye higepon\n"
-(library (higepon10)
-         (export hello goodbye)
-         (import)
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (prefix (higepon10) higepon.))
-higepon.goodbye
-]
+;; ;; we now ignore version
+;; [lib "goodbye higepon\n"
+;; (library (higepon9 (7))
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (prefix (higepon9 (6)) higepon.))
+;; higepon.goodbye
+;; ]
 
 
-[lib "goodbye higepon\nhi higepon\ncall\n"
-(library (higepon11)
-         (export hi
-                 hello
-                 (rename (goodbye bye) (call c)))
-         (import)
-         (define hello   "hello higepon\n")
-         (define hi      "hi higepon\n")
-         (define goodbye "goodbye higepon\n")
-         (define call    "call\n"))
-(import (higepon11))
-(string-append bye hi c)
-]
+;; [lib "goodbye higepon\n"
+;; (library (higepon10)
+;;          (export hello goodbye)
+;;          (import)
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (prefix (higepon10) higepon.))
+;; higepon.goodbye
+;; ]
 
 
-[lib "lulululuhello higepon\n"
-(library (ipod0 (3))
-         (export play)
-         (import)
-         (define play "lulululu"))
-(library (higepon12)
-         (export hello goodby play)
-         (import (ipod0))
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (higepon12))
-(string-append play hello)
-]
+;; [lib "goodbye higepon\nhi higepon\ncall\n"
+;; (library (higepon11)
+;;          (export hi
+;;                  hello
+;;                  (rename (goodbye bye) (call c)))
+;;          (import)
+;;          (define hello   "hello higepon\n")
+;;          (define hi      "hi higepon\n")
+;;          (define goodbye "goodbye higepon\n")
+;;          (define call    "call\n"))
+;; (import (higepon11))
+;; (string-append bye hi c)
+;; ]
 
 
-;; (ipod) library imported twice.
-;; Body of ipod must not be instatiated twice!
-[lib "hello higepon\n"
-(library (ipod2 (3))
-         (export play)
-         (import)
-         (define play "lulululu"))
-(library (higepon13)
-         (export hello goodby play)
-         (import (ipod2))
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(library (hagepon)
-         (export hello)
-         (import (ipod2)
-                 (higepon13)))
-
-(import (hagepon))
-(string-append hello)
-]
-
-[lib "lulululuhello higepon\n"
-(library (ipod4 (3))
-         (export play)
-         (import)
-         (define play "lulululu"))
-(library (higepon14)
-         (export hello goodby play)
-         (import (for (ipod4) run))
-         (define hello "hello higepon\n")
-         (define goodbye "goodbye higepon\n"))
-(import (higepon14))
-(string-append play hello)
-]
+;; [lib "lulululuhello higepon\n"
+;; (library (ipod0 (3))
+;;          (export play)
+;;          (import)
+;;          (define play "lulululu"))
+;; (library (higepon12)
+;;          (export hello goodby play)
+;;          (import (ipod0))
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (higepon12))
+;; (string-append play hello)
+;; ]
 
 
-[lib 5
-(library (my-macro-lib)
-         (export add3)
-         (import)
-         (define-macro (add3 v) `(+ 3 ,v)))
+;; ;; (ipod) library imported twice.
+;; ;; Body of ipod must not be instatiated twice!
+;; [lib "hello higepon\n"
+;; (library (ipod2 (3))
+;;          (export play)
+;;          (import)
+;;          (define play "lulululu"))
+;; (library (higepon13)
+;;          (export hello goodby play)
+;;          (import (ipod2))
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (library (hagepon)
+;;          (export hello)
+;;          (import (ipod2)
+;;                  (higepon13)))
 
-(library (test)
-         (export val)
-         (import (my-macro-lib))
-         (define val (add3 2)))
+;; (import (hagepon))
+;; (string-append hello)
+;; ]
 
-(import (test))
-val
-]
+;; [lib "lulululuhello higepon\n"
+;; (library (ipod4 (3))
+;;          (export play)
+;;          (import)
+;;          (define play "lulululu"))
+;; (library (higepon14)
+;;          (export hello goodby play)
+;;          (import (for (ipod4) run))
+;;          (define hello "hello higepon\n")
+;;          (define goodbye "goodbye higepon\n"))
+;; (import (higepon14))
+;; (string-append play hello)
+;; ]
+
+
+;; [lib 5
+;; (library (my-macro-lib)
+;;          (export add3)
+;;          (import)
+;;          (define-macro (add3 v) `(+ 3 ,v)))
+
+;; (library (test)
+;;          (export val)
+;;          (import (my-macro-lib))
+;;          (define val (add3 2)))
+
+;; (import (test))
+;; val
+;; ]
 
 ;; from R6RS
 ;;; cons

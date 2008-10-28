@@ -932,120 +932,118 @@
        (error 'compiler "syntax-error: malformed or:" sexp)]))
   (rec (cdr sexp)))
 
-(define (pass1/library->iform sexp library lvars)
-  (define (get-identifier symbol libname imports)
-    (aif (find-with-car symbol imports)
-     ;(find10 (lambda (import) (eq? symbol (first import))) imports)
-         (copy-identifier it)
-         (make-identifier symbol libname symbol)))
-  (define (get-rename-identifier rename-set libname imports)
-    (aif (find-with-car (car rename-set) imports)
-     ;(find10 (lambda (import) (eq? (first rename-set) (first import))) imports)
-         (let1 identifier (copy-identifier it)
-           (set-car! identifier (second rename-set))
-           identifier)
-         (make-identifier (second rename-set) libname (first rename-set))))
-  (define (extract-exports imports libname form)
-    (let loop ([export (cdr form)]
-               [ret    '()])
-      (cond
-       [(null? export) ret]
-       [(and (pair? (car export)) (eq? (caar export) 'rename))
-        (loop (cdr export)
-              (append ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
-       [else
-        (loop (cdr export) (cons (get-identifier (car export) libname imports) ret))])))
-  (let1 lib ($library (library-name sexp) '() '() '() '() '() #f)
-    ;; We parse (library ...) with following order.
-    ;; 1. parse (import ...), then we know all impoted symbols and their name.
-    ;; 2. parse (export ...).
-    ;;    When the library exports symbol which is imported from another library, we link these by using imported symbols information got above.
-    ;; 3. set body.
-    ($library.set-import! lib (pass1/import->iform (fourth sexp) lib))
-    ($library.set-export-syms! lib (extract-exports ($library.import-syms lib) ($library.name lib) (third sexp)))
-    ;; We compile body at runtime.
-    ($library.set-body! lib (cddddr sexp))
-    (hashtable-set! libraries ($library.name lib) lib)
-    lib))
+;; (define (pass1/library->iform sexp library lvars)
+;;   (define (get-identifier symbol libname imports)
+;;     (aif (find-with-car symbol imports)
+;;          (copy-identifier it)
+;;          (make-identifier symbol libname symbol)))
+;;   (define (get-rename-identifier rename-set libname imports)
+;;     (aif (find-with-car (car rename-set) imports)
+;;          (let1 identifier (copy-identifier it)
+;;            (set-car! identifier (second rename-set))
+;;            identifier)
+;;          (make-identifier (second rename-set) libname (first rename-set))))
+;;   (define (extract-exports imports libname form)
+;;     (let loop ([export (cdr form)]
+;;                [ret    '()])
+;;       (cond
+;;        [(null? export) ret]
+;;        [(and (pair? (car export)) (eq? (caar export) 'rename))
+;;         (loop (cdr export)
+;;               (append ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
+;;        [else
+;;         (loop (cdr export) (cons (get-identifier (car export) libname imports) ret))])))
+;;   (let1 lib ($library (library-name sexp) '() '() '() '() '() #f)
+;;     ;; We parse (library ...) with following order.
+;;     ;; 1. parse (import ...), then we know all impoted symbols and their name.
+;;     ;; 2. parse (export ...).
+;;     ;;    When the library exports symbol which is imported from another library, we link these by using imported symbols information got above.
+;;     ;; 3. set body.
+;;     ($library.set-import! lib (pass1/import->iform (fourth sexp) lib))
+;;     ($library.set-export-syms! lib (extract-exports ($library.import-syms lib) ($library.name lib) (third sexp)))
+;;     ;; We compile body at runtime.
+;;     ($library.set-body! lib (cddddr sexp))
+;;     (hashtable-set! libraries ($library.name lib) lib)
+;;     lib))
 
-(define (pass1/import->iform sexp library)
-  ;; ignore <version>.
-  (define (library-name form)
-    (libname->symbol (remove-tail form pair?)))
-  (define (parse-level form)
-    (cond
-     [(symbol? form)
-      (case form
-        [(expand) 1]
-        [(run)    0]
-        [else (error 'compiler "unknown for")])]
-     [(and (pair? form) (= (length form) 2) (eq? (first form) 'meta))
-      (second form)]
-     [else
-      (error 'compiler "unknown level on meta")]))
-  ;; todo cleanup this code. (uhaaaa)
-  (define (import-iter form level)
-    (case (first form)
-      [(for)
-       (import-iter (second form) (parse-level (third form)))]
-      [(only)
-       (let1 only-binds (cddr form)
-         (acond
-          [(hashtable-ref libraries (library-name (second form)) #f)
-           ($library.add-import-syms! library ($filter-map1 (lambda (x)
-                                                              (if (memq (car x) only-binds)
-                                                                  (copy-identifier x)
-                                                                  #f)) ;; not imported
-                                                            ($library.export-syms it)))
-           ($import-spec ($library.name it) level)]
-          [#t
-           (error "library " (library-name (second form)) " not found")]))]
-      [(except)
-       (let1 except-binds (cddr form)
-         (acond
-          [(hashtable-ref libraries (library-name (second form)) #f)
-           ($library.add-import-syms! library ($filter-map1 (lambda (x)
-                                                              (if (memq (car x) except-binds)
-                                                                  #f ;; not imported
-                                                                  (copy-identifier x)))
-                                                            ($library.export-syms it)))
-           ($import-spec ($library.name it) level)]
-          [#t
-           (error "library " (library-name (second form)) " not found")]))]
-      [(rename)
-       (let1 renames (cddr form)
-         (acond
-          [(hashtable-ref libraries (library-name (second form)) #f)
-           ($library.add-import-syms! library ($filter-map1 (lambda (x)
-                                                              (aif (find-with-car (first x) renames)
-                                                               ;(find10 (lambda (rename) (eq? (first x) (first rename))) renames)
-                                                                   (make-identifier (second it) (second x) (third x))
-                                                                   (copy-identifier x)))
-                                                            ($library.export-syms it)))
-           ($import-spec ($library.name it) level)]
-          [#t
-           (error "library " (library-name (second form)) " not found")]))]
-      [(prefix)
-       (let1 prefix (symbol->string (third form))
-         (acond
-          [(hashtable-ref libraries (library-name (second form)) #f)
-           ($library.add-import-syms! library ($filter-map1 (lambda (x) (make-identifier
-                                                                         (string->symbol (string-append prefix (symbol->string (first x))))
-                                                                         (second x)
-                                                                         (third x)))
-                                                            ($library.export-syms it)))
-           ($import-spec ($library.name it) level)]
-          [#t
-           (error "library " (library-name (second form)) " not found")]))]
-      [else
-       (acond
-        [(hashtable-ref libraries (library-name form) #f)
-         ($library.add-import-syms! library ($map1 copy-identifier ($library.export-syms it)))
-         ($import-spec ($library.name it) level)]
-        [#t
-         (error "library " (library-name form) " not found")])]))
-  ;; default import level is zero.
-  ($import ($map1 (lambda (i) (import-iter i 0)) (cdr sexp))))
+;; (define (pass1/import->iform sexp library)
+;;   ;; ignore <version>.
+;;   (define (library-name form)
+;;     (libname->symbol (remove-tail form pair?)))
+;;   (define (parse-level form)
+;;     (cond
+;;      [(symbol? form)
+;;       (case form
+;;         [(expand) 1]
+;;         [(run)    0]
+;;         [else (error 'compiler "unknown for")])]
+;;      [(and (pair? form) (= (length form) 2) (eq? (first form) 'meta))
+;;       (second form)]
+;;      [else
+;;       (error 'compiler "unknown level on meta")]))
+;;   ;; todo cleanup this code. (uhaaaa)
+;;   (define (import-iter form level)
+;;     (case (first form)
+;;       [(for)
+;;        (import-iter (second form) (parse-level (third form)))]
+;;       [(only)
+;;        (let1 only-binds (cddr form)
+;;          (acond
+;;           [(hashtable-ref libraries (library-name (second form)) #f)
+;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
+;;                                                               (if (memq (car x) only-binds)
+;;                                                                   (copy-identifier x)
+;;                                                                   #f)) ;; not imported
+;;                                                             ($library.export-syms it)))
+;;            ($import-spec ($library.name it) level)]
+;;           [#t
+;;            (error "library " (library-name (second form)) " not found")]))]
+;;       [(except)
+;;        (let1 except-binds (cddr form)
+;;          (acond
+;;           [(hashtable-ref libraries (library-name (second form)) #f)
+;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
+;;                                                               (if (memq (car x) except-binds)
+;;                                                                   #f ;; not imported
+;;                                                                   (copy-identifier x)))
+;;                                                             ($library.export-syms it)))
+;;            ($import-spec ($library.name it) level)]
+;;           [#t
+;;            (error "library " (library-name (second form)) " not found")]))]
+;;       [(rename)
+;;        (let1 renames (cddr form)
+;;          (acond
+;;           [(hashtable-ref libraries (library-name (second form)) #f)
+;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
+;;                                                               (aif (find-with-car (first x) renames)
+;;                                                                ;(find10 (lambda (rename) (eq? (first x) (first rename))) renames)
+;;                                                                    (make-identifier (second it) (second x) (third x))
+;;                                                                    (copy-identifier x)))
+;;                                                             ($library.export-syms it)))
+;;            ($import-spec ($library.name it) level)]
+;;           [#t
+;;            (error "library " (library-name (second form)) " not found")]))]
+;;       [(prefix)
+;;        (let1 prefix (symbol->string (third form))
+;;          (acond
+;;           [(hashtable-ref libraries (library-name (second form)) #f)
+;;            ($library.add-import-syms! library ($filter-map1 (lambda (x) (make-identifier
+;;                                                                          (string->symbol (string-append prefix (symbol->string (first x))))
+;;                                                                          (second x)
+;;                                                                          (third x)))
+;;                                                             ($library.export-syms it)))
+;;            ($import-spec ($library.name it) level)]
+;;           [#t
+;;            (error "library " (library-name (second form)) " not found")]))]
+;;       [else
+;;        (acond
+;;         [(hashtable-ref libraries (library-name form) #f)
+;;          ($library.add-import-syms! library ($map1 copy-identifier ($library.export-syms it)))
+;;          ($import-spec ($library.name it) level)]
+;;         [#t
+;;          (error "library " (library-name form) " not found")])]))
+;;   ;; default import level is zero.
+;;   ($import ($map1 (lambda (i) (import-iter i 0)) (cdr sexp))))
 
 ;; N.B.
 ;; this procedure is called from freeproc.cpp
@@ -1281,11 +1279,12 @@
                      (source-info sexp)         ; source-info
                      library lvars tail?)]
       ;;---------------------------- library -----------------------------------
-      [(library)
-       (pass1/library->iform sexp library lvars)]
+;;       [(library)
+;;        (pass1/library->iform sexp library lvars)]
       ;;---------------------------- import ------------------------------------
-      [(import)
-       (pass1/import->iform sexp library)]
+;;
+;;       [(import)
+;;        (pass1/import->iform sexp library)]
       ;;---------------------------- set! --------------------------------------
       [(set!)
        (pass1/assign (second sexp)                ;; symbol
@@ -1572,7 +1571,7 @@
 (pass2/register $CALL-CC       pass2/empty)
 (pass2/register $LET           pass2/$let)
 (pass2/register $LIST          pass2/empty)
-(pass2/register $LIBRARY       pass2/empty)
+;(pass2/register $LIBRARY       pass2/empty)
 (pass2/register $IMPORT        pass2/empty)
 (pass2/register $IT            pass2/empty)
 (pass2/register $RECEIVE       pass2/$receive)
@@ -2079,12 +2078,12 @@
           (if (memq i labels-seen)
               '()
               (rec ($label.body i) l (cons i labels-seen)))]
-         [(= $IMPORT t)
-          '() ;; todo 本当?
-          ]
-         [(= $LIBRARY t)
-          '() ;; todo 本当?
-          ]
+;;          [(= $IMPORT t)
+;;           '() ;; todo 本当?
+;;           ]
+;;          [(= $LIBRARY t)
+;;           '() ;; todo 本当?
+;;           ]
          [(= $IT t) '()]
          [else
           (error "pass3/find-free unknown iform:" (tag i))])))
@@ -2136,12 +2135,12 @@
          [(= $LABEL t)
           '() ;; todo 本当
           ]
-         [(= $IMPORT t)
-          '() ;; todo 本当?
-          ]
-         [(= $LIBRARY t)
-          '() ;; todo 本当?
-          ]
+;;          [(= $IMPORT t)
+;;           '() ;; todo 本当?
+;;           ]
+;;          [(= $LIBRARY t)
+;;           '() ;; todo 本当?
+;;           ]
          [(= $IT t) '()]
          [else
           (error "pass3/find-sets unknown iform:" i)])))
@@ -2779,23 +2778,23 @@
           (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
           (+ free-size assign-size body-size))))))
 
-(define (pass3/$import cb iform locals frees can-frees sets tail)
-  (define (rec form)
-    (for-each
-     (lambda (s)
-       (let* ([libname      ($import-spec.libname s)]
-              [lib          (hashtable-ref libraries libname)]
-              [end-of-frame (make-label)])
-         (rec ($library.import lib))
-         (code-builder-put-insn-arg1! cb 'FRAME  ;; We execute (RETURN 0) in library body
-                                      (ref-label end-of-frame))
-         (cput! cb
-                'IMPORT
-                libname
-                end-of-frame)))
-     ($import.import-specs form))
-    0)
-  (rec iform))
+;; (define (pass3/$import cb iform locals frees can-frees sets tail)
+;;   (define (rec form)
+;;     (for-each
+;;      (lambda (s)
+;;        (let* ([libname      ($import-spec.libname s)]
+;;               [lib          (hashtable-ref libraries libname)]
+;;               [end-of-frame (make-label)])
+;;          (rec ($library.import lib))
+;;          (code-builder-put-insn-arg1! cb 'FRAME  ;; We execute (RETURN 0) in library body
+;;                                       (ref-label end-of-frame))
+;;          (cput! cb
+;;                 'IMPORT
+;;                 libname
+;;                 end-of-frame)))
+;;      ($import.import-specs form))
+;;     0)
+;;   (rec iform))
 
 (define (pass3/$library cb iform locals frees can-frees sets tail)
   (cput! cb 'LIBRARY ($library.name iform) iform)
@@ -2817,7 +2816,7 @@
 (pass3/register $LET           pass3/$let)
 (pass3/register $LIST          pass3/$list)
 (pass3/register $LIBRARY       pass3/$library)
-(pass3/register $IMPORT        pass3/$import)
+;(pass3/register $IMPORT        pass3/$import)
 (pass3/register $IT            pass3/$it)
 (pass3/register $RECEIVE       pass3/$receive)
 

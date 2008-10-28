@@ -1042,26 +1042,26 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(IMPORT)
         {
-            const Object libname = fetchOperand();
-            TRACE_INSN1("IMPORT", "(~a)\n", libname);
-            const Object instance = instances_.toEqHashTable()->ref(libname, notFound_);
-            if (instance == notFound_){
-                instances_.toEqHashTable()->set(libname, Object::makeEqHashTable());
-                const Object lib = libraries_.toEqHashTable()->ref(libname, notFound_);
-                if (getLibraryCompiledBody(lib).isFalse()) {
-                    static const Object proc = Symbol::intern(UC("compile-library-body!"));
-                    callClosureByName(proc, lib);
-                }
-                // todo more efficient code
-                Vector* const v = getLibraryCompiledBody(lib).toVector();
-                Object* code = v->data();
-                pc_ = getDirectThreadedCode(code, v->length());
-            } else {
-//                 returnCode_[1] = Object::makeInt(0);
-//                 pc_  = returnCode_;
-                goto return_entry;
-            }
-            NEXT;
+//             const Object libname = fetchOperand();
+//             TRACE_INSN1("IMPORT", "(~a)\n", libname);
+//             const Object instance = instances_.toEqHashTable()->ref(libname, notFound_);
+//             if (instance == notFound_){
+//                 instances_.toEqHashTable()->set(libname, Object::makeEqHashTable());
+//                 const Object lib = libraries_.toEqHashTable()->ref(libname, notFound_);
+//                 if (getLibraryCompiledBody(lib).isFalse()) {
+//                     static const Object proc = Symbol::intern(UC("compile-library-body!"));
+//                     callClosureByName(proc, lib);
+//                 }
+//                 // todo more efficient code
+//                 Vector* const v = getLibraryCompiledBody(lib).toVector();
+//                 Object* code = v->data();
+//                 pc_ = getDirectThreadedCode(code, v->length());
+//             } else {
+// //                 returnCode_[1] = Object::makeInt(0);
+// //                 pc_  = returnCode_;
+//                 goto return_entry;
+//             }
+//            NEXT;
         }
         CASE(REFER_FREE0_INDIRECT)
         {
@@ -1115,10 +1115,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(LIBRARY)
         {
-            const Object libname = fetchOperand();
-            const Object library = fetchOperand();
-            libraries_.toEqHashTable()->set(libname, library);
-            NEXT;
+//             const Object libname = fetchOperand();
+//             const Object library = fetchOperand();
+//             libraries_.toEqHashTable()->set(libname, library);
+//             NEXT;
         }
         CASE(LIST)
         {
@@ -1813,6 +1813,7 @@ Object VM::splitId(Object id)
 Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;
+
     const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
@@ -1850,6 +1851,9 @@ Object VM::getStackTrace()
             break;
         }
         cl = fp - 2;
+        if (!cl->isClosure() && !cl->isCProcedure() && !cl->isRegexp() && !cl->isRegexp()) {
+            break;
+        }
         if (fp > stack_) {
             fp = (fp - 1)->toObjectPointer();
         } else {
@@ -1862,7 +1866,6 @@ Object VM::getStackTrace()
 void VM::throwException(Object exception)
 {
     const Object stackTrace = getStackTrace();
-
     const Object stringOutputPort = Object::makeStringOutputPort();
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
     textualOutputPort->format(UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));

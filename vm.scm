@@ -1388,21 +1388,21 @@
                 (define-global (next 1) a)
                 (VM codes (skip 1) a fp c stack sp)]
                ;;---------------------------- LIBRARY --------------------------
-               [(LIBRARY)
-                (hashtable-set! vm-libraries (next 1) (next 2))
-                (VM codes (skip 2) a fp c stack sp)]
+;;                [(LIBRARY)
+;;                 (hashtable-set! vm-libraries (next 1) (next 2))
+;;                 (VM codes (skip 2) a fp c stack sp)]
                ;;---------------------------- IMPORT -----------------------------
-               [(IMPORT)
-                (cond
-                 [(fetch-instance (next 1))
-                  (VM `#(RETURN 0 HALT) 0 a fp c stack sp)]
-                 [else
-                  (vm-import (next 1))
-                  (let1 lib (hash-table-get vm-libraries (next 1))
-;                    ($library.set-macro! lib (make-hash-table 'eq?))
-                    (unless ($library.compiled-body lib)
-                      (compile-library-body! lib))
-                    (VM ($library.compiled-body lib) 0 a fp c stack sp))])]
+;;                [(IMPORT)
+;;                 (cond
+;;                  [(fetch-instance (next 1))
+;;                   (VM `#(RETURN 0 HALT) 0 a fp c stack sp)]
+;;                  [else
+;;                   (vm-import (next 1))
+;;                   (let1 lib (hash-table-get vm-libraries (next 1))
+;; ;                    ($library.set-macro! lib (make-hash-table 'eq?))
+;;                     (unless ($library.compiled-body lib)
+;;                       (compile-library-body! lib))
+;;                     (VM ($library.compiled-body lib) 0 a fp c stack sp))])]
                ;;---------------------------- REFER_GLOBAL  ----------------------
                [(REFER_GLOBAL)
                 (val1)
