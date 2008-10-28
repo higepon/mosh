@@ -534,7 +534,7 @@ Object scheme::openInputFileEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
     } else {
-        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        callErrorAfter(procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -549,7 +549,7 @@ Object scheme::openFileInputPortEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeBinaryInputPort(fileBinaryInputPort);
     } else {
-        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        callErrorAfter(procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 

@@ -1850,8 +1850,13 @@ Object VM::getStackTrace()
             port->display(UC("      ... (more stack dump truncated)\n"));
             break;
         }
+
+        if (fp->isString()) {
+            // tail call?
+            break;
+        }
         cl = fp - 2;
-        if (!cl->isClosure() && !cl->isCProcedure() && !cl->isRegexp() && !cl->isRegexp()) {
+        if (cl->isObjectPointer() && !cl->isClosure() && !cl->isCProcedure() && !cl->isRegexp() && !cl->isRegexp()) {
             break;
         }
         if (fp > stack_) {
@@ -2135,7 +2140,6 @@ void VM::expandStack(int plusSize)
         // handle stack overflow with guard
         callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeInt(sp_ - stack_)));
     }
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     memcpy(nextStack, stack_, sizeof(Object) * stackSize_);
     fp_ = nextStack + (fp_ - stack_);
     sp_ = nextStack + (sp_ - stack_);

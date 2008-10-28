@@ -43,6 +43,7 @@ namespace scheme {
 
 #define LOG1(fmt, a)       errorPort_.toTextualOutputPort()->format(UC(fmt), L1(a))
 #define LOG2(fmt, a, b)    errorPort_.toTextualOutputPort()->format(UC(fmt), L2(a, b))
+#define LOG3(fmt, a, b, c)    errorPort_.toTextualOutputPort()->format(UC(fmt), L3(a, b, c))
 
 #define VM_LOG1(fmt, a)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L1(a))
 #define VM_LOG2(fmt, a, b)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L2(a, b))

@@ -1420,6 +1420,7 @@
     (set-current-input-port! inport)
     (let1 ret (thunk)
       (set-current-input-port! org-port)
+      (close-port inport)
       ret)))
 
 (define (with-output-to-file filename thunk)
@@ -1428,6 +1429,7 @@
     (set-current-output-port! inport)
     (let1 ret (thunk)
       (set-current-output-port! org-port)
+      (close-port inport)
       ret)))
 
 ;; Raises a non-continuable exception by invoking the current exception handler on obj.
@@ -3074,32 +3076,34 @@
       (thunk))))
 
 (define (condition-printer c)
-  (for-each
-   (lambda (x)
-     (cond 
-      [(record? x)
-       (let ([rtd (record-rtd x)])
-         (format #t "   ~d. ~a" 0 (record-type-name rtd))
-         (let ([v (record-type-field-names rtd)])
-           (case (vector-length v)
-             [(0) (newline)]
-             [(1)
-              (display ": ")
-              (write ((record-accessor rtd 0) x))
-              (newline)]
-             [else
-              (display ":\n")
-              (let f ([i 0])
-                (unless (= i (vector-length v))
-                  (display "       ")
-                  (display (vector-ref v i))
-                  (display ": ")
-                  (write ((record-accessor rtd i) x))
-                  (newline)
-                  (f (+ i 1))))])))]
-      [else
-       (display x)]))
-   (simple-conditions c)))
+  (receive (out get-string) (open-string-output-port)
+    (for-each
+     (lambda (x)
+       (cond
+        [(record? x)
+         (let ([rtd (record-rtd x)])
+           (format out "   ~d. ~a" 0 (record-type-name rtd))
+           (let ([v (record-type-field-names rtd)])
+             (case (vector-length v)
+               [(0) (newline out)]
+               [(1)
+                (display ": " out)
+                (write ((record-accessor rtd 0) x) out)
+                (newline out)]
+               [else
+                (display ":\n" out)
+                (let f ([i 0])
+                  (unless (= i (vector-length v))
+                    (display "       " out)
+                    (display (vector-ref v i) out)
+                    (display ": " out)
+                    (write ((record-accessor rtd i) x) out)
+                    (newline out)
+                    (f (+ i 1))))])))]
+        [else
+         (display x out)]))
+     (simple-conditions c))
+    (get-string)))
 
 
 (define (raise c)
@@ -3111,6 +3115,7 @@
                           (proc c))))
               (throw "    in raise: returned from non-continuable exception"))))
     (throw (format "    Unhandled exception\n\n~a" (condition-printer c))))
+
 
 (define (raise-continuable c)
   (cond ((current-exception-handler)

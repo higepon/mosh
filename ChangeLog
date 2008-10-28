@@ -1,5 +1,7 @@
 2008-10-28  higepon  <higepon@users.sourceforge.jp>
 
+        * VM.cpp (getStackTrace): Fixed the getStackTrace() bug.
+
         * PortProcedures.cpp (getStringNEx): Added get-string-n.
 
 2008-10-27  higepon  <higepon@users.sourceforge.jp>
