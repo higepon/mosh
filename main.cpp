@@ -88,8 +88,8 @@ void showUsage()
     fprintf(stderr,
             "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
-            "  -l       Loads <file> before executing the script file or entering repl.\n"
-            "  -b       [experimental] R6RS batch mode. Loads R6RS top-level program file\n"
+//            "  -l       Loads <file> before executing the script file or entering repl.\n"
+            "  -5       Run with safe mode (Almost R5RS).\n"
             "  -V       Prints version and exits.\n"
             "  -v       Prints version and exits.\n"
             "  -h       Prints this help.\n"
@@ -125,13 +125,13 @@ int main(int argc, char *argv[])
     bool isTestOption    = false;
     bool isCompileString = false;
     bool isProfiler      = false;
-    bool isR6RSBatchMode = false;
+    bool isR6RSBatchMode = true;
     bool isCompareRead   = false;
     bool isParrot        = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
 
-    while ((opt = getopt(argc, argv, "htvpVcl:brze")) != -1) {
+    while ((opt = getopt(argc, argv, "htvpVcl:5rze")) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
@@ -165,6 +165,9 @@ int main(int argc, char *argv[])
             break;
         case 'e':
             isDebugExpand = true;
+            break;
+        case '5':
+            isR6RSBatchMode = false;
             break;
         default:
             fprintf(stderr, "invalid option %c", opt);
@@ -217,9 +220,9 @@ int main(int argc, char *argv[])
     const Object libMatch = FASL_GET(match_image);
     theVM->evaluate(libMatch);
 
-    if (initFile != NULL) {
-        theVM->load(Object::makeString(initFile).toString()->data());
-    }
+//     if (initFile != NULL) {
+//         theVM->load(Object::makeString(initFile).toString()->data());
+//     }
 
     if (isTestOption) {
         theVM->load(UC("all-tests.scm"));

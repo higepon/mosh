@@ -117,9 +117,9 @@ Scanner.cpp : scanner.re
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
 r6rs-test:
-	(cd r6rs-examples && ../mosh -b hello.ss)
-	(cd r6rs-examples && ../mosh -b let-syntax.ss)
-	(cd r6rs-examples && ../mosh -b env.ss)
+	(cd r6rs-examples && ../mosh hello.ss)
+	(cd r6rs-examples && ../mosh let-syntax.ss)
+	(cd r6rs-examples && ../mosh env.ss)
 
 #### Instruction.h
 Instruction.h: ./instruction.scm
@@ -136,8 +136,8 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 SUFFIXES: .scmc .h
 
 .scmc.h:
-	./mosh -b scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	./mosh -b scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
@@ -182,18 +182,18 @@ bench:
 check:test
 
 test:all-tests.scm ./mosh
-	./mosh -r test/reader.scm
-	./mosh all-tests.scm
-	./mosh -b r6rs-examples/srfi8-test.ss
-	./mosh -b r6rs-examples/record-test.ss
-	./mosh -b r6rs-examples/condition-test.ss
-	./mosh -b r6rs-examples/exception-test.ss
-	./mosh -b r6rs-examples/unicode-test.ss
+	./mosh -r5 test/reader.scm
+	./mosh -5 all-tests.scm
+	./mosh r6rs-examples/srfi8-test.ss
+	./mosh r6rs-examples/record-test.ss
+	./mosh r6rs-examples/condition-test.ss
+	./mosh r6rs-examples/exception-test.ss
+	./mosh r6rs-examples/unicode-test.ss
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
 all-tests.scm: ./test-data.scm
-	./mosh ./scripts/gen-test.scm $< > $@
+	./mosh -5 ./scripts/gen-test.scm $< > $@
 
 doc:
 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"

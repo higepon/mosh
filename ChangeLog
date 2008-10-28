@@ -1,5 +1,7 @@
 2008-10-28  higepon  <higepon@users.sourceforge.jp>
 
+        * Remove -b option. It becomes default behavior of Mosh.
+
         * VM.cpp (getStackTrace): Fixed the getStackTrace() bug.
 
         * PortProcedures.cpp (getStringNEx): Added get-string-n.

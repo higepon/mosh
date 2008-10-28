@@ -1,1 +1,2 @@
-(define (get-s
+(import (rnrs))
+(guard "hige")
