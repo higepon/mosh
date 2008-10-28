@@ -15,9 +15,13 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 bin_PROGRAMS = mosh
 mosh_SOURCES =                                                    \
 main.cpp                                                          \
+HeapObject.h                                                      \
+Object-inl.h                                                      \
+Pair-inl.h                                                        \
+VM-inl.h                                                          \
 psyntax.h                                                         \
-matchBinaryImage.h                                                \
-compilerBinaryImage.h                                             \
+match.h                                                           \
+compiler-with-library.h                                           \
 read.cpp                                                          \
 CProcedure.h                                                      \
 Instruction.h                                                     \
@@ -33,6 +37,8 @@ EqvHashTable.h                                                    \
 Pair.h                                                            \
 Stack.h                                                           \
 Box.h                                                             \
+Codec.h                                                           \
+Transcoder.h                                                      \
 ProcedureMacro.h                                                  \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
@@ -95,7 +101,7 @@ mosh_LDADD = $(GC_LIB) $(REGEXP_LIB)
 
 # # generated files should be listed here.
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test
 
 GENERATED = \
 all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
@@ -109,68 +115,74 @@ compiler-with-library.h compiler-with-library.fasl
 CLEANFILES =
 MAINTAINERCLEANFILES = $(GENERATED)
 
-reader.tab.cpp: reader.y
-	bison -d $< -o $@
+# reader.tab.cpp: reader.y
+# 	bison -d $< -o $@
 
-Scanner.cpp : scanner.re
-	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
-## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
+# Scanner.cpp : scanner.re
+# 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
+# ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-r6rs-test:
-	(cd r6rs-examples && ../mosh hello.ss)
-	(cd r6rs-examples && ../mosh let-syntax.ss)
-	(cd r6rs-examples && ../mosh env.ss)
+# r6rs-test:
+# 	(cd r6rs-examples && ../mosh hello.ss)
+# 	(cd r6rs-examples && ../mosh let-syntax.ss)
+# 	(cd r6rs-examples && ../mosh env.ss)
 
-#### Instruction.h
-Instruction.h: ./instruction.scm
-	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+# #### Instruction.h
+# Instruction.h: ./instruction.scm
+# 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-main.cpp: psyntax.h compiler-with-library.h match.h
+# main.cpp: psyntax.h compiler-with-library.h match.h
 
-./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
-	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+# ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
+# 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
-compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+# compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 
-SUFFIXES: .scmc .h
+# SUFFIXES: .scmc .h
 
-.scmc.h:
-	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# .scmc.h:
+# 	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
-match.scmc: ./match.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# match.scmc: ./match.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
-# we need to replace #\null => #\nul and |...| => ...
-# It is the difference between gauche and mosh.
-psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+# # we need to replace #\null => #\nul and |...| => ...
+# # It is the difference between gauche and mosh.
+# psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
-	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+# ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
+# 	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
 
-./free-vars-decl.scm: ./free-vars.scm
-	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+# ./free-vars-decl.scm: ./free-vars.scm
+# 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+# ./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# ./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# ./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-labels.cpp: ./instruction.scm
-	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@
+# labels.cpp: ./instruction.scm
+# 	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@
 
-DebugInstruction.h: instruction.scm
-	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+# DebugInstruction.h: instruction.scm
+# 	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
-./cprocedures.cpp: ./free-vars.scm ./scripts/gen-cproc.scm
-	@GOSH@ ./scripts/gen-cproc.scm > $@
+# VM.cpp: cprocedures.cpp labels.cpp
+
+# ./cprocedures.cpp: ./free-vars.scm ./scripts/gen-cproc.scm
+# 	@GOSH@ ./scripts/gen-cproc.scm > $@
+
+# all-tests.scm: ./mosh ./test-data.scm
+# 	./mosh -5 ./scripts/gen-test.scm $< > $@
+
 
 #### benchmark
 .PHONY: bench doc
@@ -181,7 +193,7 @@ bench:
 #### test
 check:test
 
-test:all-tests.scm ./mosh
+test:./mosh all-tests.scm 
 	./mosh -r5 test/reader.scm
 	./mosh -5 all-tests.scm
 	./mosh r6rs-examples/srfi8-test.ss
@@ -192,12 +204,10 @@ test:all-tests.scm ./mosh
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
-all-tests.scm: ./test-data.scm
-	./mosh -5 ./scripts/gen-test.scm $< > $@
 
-doc:
-	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
+# doc:
+# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
+# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
 fulltest:
 	./mosh -t
