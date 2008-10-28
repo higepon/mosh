@@ -236,10 +236,7 @@ int main(int argc, char *argv[])
     } else if (isR6RSBatchMode) {
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->activateR6RSMode();
-        INIT_TIME_TRACE();
-        START_TIME_TRACE();
         const Object libPsyntax = FASL_GET(psyntax_image);
-        END_TIME_TRACE("get");
         theVM->evaluate(libPsyntax);
     } else if (isCompareRead) {
         compareRead(argv[optind]);
