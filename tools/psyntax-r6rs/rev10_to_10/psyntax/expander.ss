@@ -552,7 +552,7 @@
 
   (define self-evaluating?
     (lambda (x) ;;; am I missing something here?
-      (or (number? x) (string? x) (char? x) (boolean? x)
+      (or (number? x) (string? x) (char? x) (boolean? x) (regexp? x) ; mosh
           (bytevector? x))))
 
   ;;; strip is used to remove the wrap of a syntax object.

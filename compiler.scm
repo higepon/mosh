@@ -490,7 +490,7 @@
   `(vector-ref ,iform 0))
 
 (define-macro (tag? iform t)
-  `(equal? ,t (tag ,iform)))
+  `(eqv? ,t (tag ,iform)))
 
 (define-macro (set-tag! iform t)
   `(vector-set! ,iform 0 ,t))
@@ -783,7 +783,7 @@
   (define (descend-quasiquote-vector x level return)
     (descend-quasiquote (vector->list x) level
                         (lambda (mode arg)
-                          (if (equal? mode 'quote)
+                          (if (eq? mode 'quote)
                               (return 'quote x)
                               (return 'list->vector
                                       (list (finalize-quasiquote mode arg)))))))

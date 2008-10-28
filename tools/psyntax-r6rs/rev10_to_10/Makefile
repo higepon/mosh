@@ -1,3 +1,3 @@
 all:
-	~/mosh/mosh psyntax10.scm psyntax-buildscript-mosh.ss
+	~/mosh/mosh -5 psyntax10.scm psyntax-buildscript-mosh.ss
 

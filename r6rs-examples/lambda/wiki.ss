@@ -7,8 +7,8 @@
           (only (mosh string) string-split format call-with-string-input-port string->regexp)
           (only (system) readdir get-environment-variable)
           (only (mosh regexp) rxmatch)
-          (only (srfi-1) first second third alist-cons)
-          (only (srfi-8) receive)
+          (only (srfi :1) first second third alist-cons)
+          (only (srfi :8) receive)
           (prefix (cgi) cgi:))
 
 (define (print msg)

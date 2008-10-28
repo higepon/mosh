@@ -6,7 +6,7 @@
           (only (mosh bytevector) bytevector-for-each)
           (only (mosh string) string-split format call-with-string-io)
           (only (mosh number) digit->integer)
-          (only (srfi-1) second)
+          (only (srfi :1) second)
           )
 
 (define header-out? #f)
@@ -16,7 +16,7 @@
         '((#/</ . "&lt;")
           (#/>/ . "&gt;")
           (#/\"/ . "&quot;")
-          (#/[^\\]'/ . "\'")
+          (#/[^\\]'/ . "'")
           (#/&/ . "&amp;")
           )))
 
@@ -70,7 +70,9 @@
            (loop (read-char p))]))))))
 
 
-(define (request-method) (if (equal? (get-environment-variable "REQUEST_METHOD") "GET") 'GET 'POST))
+(define (request-method)
+  (and (get-environment-variable "REQUEST_METHOD")
+       (if (string=? (get-environment-variable "REQUEST_METHOD") "GET") 'GET 'POST)))
 
 (define (request-body method)
   (case method
@@ -88,7 +90,7 @@
      (get-environment-variable "QUERY_STRING")]))
 
 (define (parse-query-string input)
-  (if (or (not (string? input)) (equal? "" input)) '()
+  (if (or (not (string? input)) (string=? "" input)) '()
   (fold-right
    (lambda (a b)
      (let [(params (string-split a #\=))]
