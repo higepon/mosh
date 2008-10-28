@@ -241,10 +241,10 @@ Object makeIrritantsCondition(Object irritants)
     return makeCondition(UC("&irritants-rcd"), irritants);
 }
 
-Object makeAssertionCondition()
-{
-    return makeCondition(UC("&assertion-rcd"));
-}
+// Object makeAssertionCondition()
+// {
+//     return makeCondition(UC("&assertion-rcd"));
+// }
 
 Object makeCondition(const ucs4char* rcdName)
 {

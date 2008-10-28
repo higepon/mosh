@@ -133,6 +133,7 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
     } else {
         throwIOError("invalid byte sequence");
     }
+    return ' ';
 }
 
 ucs4string UTF8Codec::readWholeString(BinaryInputPort* port)

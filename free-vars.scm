@@ -248,4 +248,5 @@
     make-instruction
     make-compiler-instruction
     fasl-write
+    get-string-n
     )

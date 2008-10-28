@@ -131,7 +131,7 @@ Object scheme::utf16TostringEx(int argc, const Object* argv)
     DeclareProcedureName("utf16->string");
     checkArgumentLengthBetween(2, 3);
     argumentAsByteVector(0, bytevector);
-    int endianness;
+    int endianness = UTF16Codec::NO_BOM;
     bool skipBOM = false;
     if (argc == 2) {
         endianness = UTF16Codec::checkBOM(bytevector);

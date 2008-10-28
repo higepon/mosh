@@ -55,6 +55,7 @@ public:
     virtual ucs4char getChar();
     virtual ucs4char lookaheadChar(int offset);
     virtual ucs4char lookaheadChar();
+    virtual Object getStringN(int n);
     virtual int getU8();
     virtual int getLineNo() const;
     virtual Object getLine();

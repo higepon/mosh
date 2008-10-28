@@ -62,6 +62,15 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+Object scheme::getStringNEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("get-string-n");
+    checkArgumentLength(2);
+    argumentAsTextualInputPort(0, inputPort);
+    argumentAsInt(1, size);
+    return inputPort->getStringN(size);
+}
+
 Object scheme::faslWriteEx(int argc, const Object* argv)
 {
     DeclareProcedureName("fasl-write");

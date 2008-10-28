@@ -1618,7 +1618,7 @@
 ;; If proc does not return, the port is not closed automatically, unless it is possible to prove that the port will never again be used for an I/O operation.</p>
 ;; .returns the values returned by proc.
 (define (call-with-output-file filename proc)
-  (let* ((port (open-file-output-port filename))
+  (let* ((port (open-output-file filename))
          (ret (proc port)))
     (close-output-port port)
     ret))
@@ -1629,7 +1629,7 @@
 ;; If proc does not return, the port is not closed automatically, unless it is possible to prove that the port will never again be used for an I/O operation.</p>
 ;; .returns the values returned by proc.
 (define (call-with-input-file filename proc)
-  (let* ([port (open-file-input-port filename)]
+  (let* ([port (open-input-file filename)]
          [ret (proc port)])
     (close-input-port port)
     ret))

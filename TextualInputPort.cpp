@@ -78,6 +78,23 @@ int TextualInputPort::getU8()
     return port_->getU8();
 }
 
+Object TextualInputPort::getStringN(int n)
+{
+    ucs4string accum;
+    for (int size = 0; size < n; size++) {
+        const ucs4char ch = getChar();
+        if (EOF == ch) {
+            break;
+        }
+        accum += ch;
+    }
+    if (accum.empty()) {
+        return Object::Eof;
+    } else {
+        return Object::makeString(accum);
+    }
+}
+
 ucs4char TextualInputPort::getChar()
 {
     ucs4char c;
