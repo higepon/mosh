@@ -33,6 +33,8 @@
 ;;    (ironscheme serialization)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
+
+
   
   ;; defined for mosh
   (define read-annotated read)
@@ -67,7 +69,7 @@
     (case-lambda
       ((x) (make-parameter x (lambda (x) x)))
       ((x fender)
-       (assert (procedure? fender))
+;       (assert (procedure? fender))
        (let ((x (fender x)))
          (case-lambda
            (() x)

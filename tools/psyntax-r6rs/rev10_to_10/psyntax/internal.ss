@@ -29,7 +29,7 @@
     (make-parameter 
       (lambda (x) #f)
       (lambda (p)
-        (assert (procedure? p))
+;        (assert (procedure? p))
         p)))
   
   (define (mutable? x) 
