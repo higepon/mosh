@@ -208,8 +208,8 @@
 ;  (library-path (get-library-paths))
 ;  (library-path '("." "/tmp/"))
   (library-path (list (string-append (current-directory) "/lib")
-                  (string-append (standard-library-path) "/lib")))
-
+                      (string-append (standard-library-path) "/lib")
+                  ))
 
 
 ;;   (define (print-record x)

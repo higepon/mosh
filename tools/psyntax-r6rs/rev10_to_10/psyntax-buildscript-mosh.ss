@@ -1030,7 +1030,7 @@
     (void                     $boot)
     (gensym                   $boot)
     (symbol-value             $boot mosh)
-    (set-symbol-value!        $boot)
+    (set-symbol-value!        $boot mosh)
     (eval-core                $boot)
     (pretty-print             $boot)
     (module                   cm)

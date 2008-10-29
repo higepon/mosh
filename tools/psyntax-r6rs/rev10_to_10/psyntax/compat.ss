@@ -50,40 +50,36 @@
     (if (pair? x)
         (cons (car x) (cdr x))
         (display "line:46\n")))
-  (define (serialize-library . x)
-    (display x)
-    #f)
-  (define (load-serialized-library filename obj)
-    (let ([fasl-file (string-append filename ".fasl")])
-    (cond
-     [(string=? "./m.scm" filename)
-      (if (file-exists? fasl-file)
-          (let* ([expanded2core (symbol-value 'expanded2core)]
-                 [dummy2 (display 'moge)]
-                 [code (call-with-port (open-input-file fasl-file) read)]
-                 [dummy4 (display 'mogi)]
-                 [pivot (cddddr (cddddr code))]
-                 [dummy (display (car pivot))]
-                 [visit (expanded2core (car pivot))]
-                 [dummy (display 'done2)]
-                 [visit-proc (lambda () (eval-core visit))])
-            (display 'done3)
-            (set-car! pivot visit-proc)
-            (let* ([pivot (cdr pivot)]
-                   [dummy (display 'done4)]
-                   [invoke (expanded2core (car pivot))])
-              (display 'done5)
-              (set-car! pivot (lambda () (eval-core invoke)))
-              (format #t "apply code=~a\n" code)
-              (apply obj code))
-            #t
-            )
-          #f)
-      ]
-     [else
-      (format #t "filename=~a obj=~a" filename obj)
-      #f
-      ])))
+
+(define (scm->fasl filename)
+  (string-append filename ".fasl"))
+
+(define (serialize-library filename obj)
+  (format #t "serialize-library ~a\n..." filename)
+  (let ([fasl-file (scm->fasl filename)])
+    (when (file-exists? fasl-file)
+      (delete-file fasl-file))
+    (guard [c (#t (format #t "Warning:serialize-library failed " filename) #f)]
+           (call-with-port (open-output-file fasl-file) (lambda (port) (write obj port)))
+           (display "OK\n"))))
+
+(define (load-serialized-library filename obj)
+  (let ([fasl-file (scm->fasl filename)])
+    (if (file-exists? fasl-file)
+        (let* ([expanded2core (symbol-value 'expanded2core)]
+               [code (call-with-port (open-input-file fasl-file) read)]
+               [pivot (cddddr (cddddr code))]
+               [visit (expanded2core (car pivot))]
+               [visit-proc (lambda () (eval-core visit))])
+          (set-car! pivot visit-proc)
+          (let* ([pivot (cdr pivot)]
+                 [invoke (expanded2core (car pivot))])
+            (set-car! pivot (lambda () (eval-core invoke)))
+            (apply obj code))
+          #t)
+        #f)))
+
+
   (define (make-record-printer name printer)
     (lambda x
       (display "record printer")
