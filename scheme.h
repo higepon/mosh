@@ -51,7 +51,10 @@
 // #include <sys/time.h>
 // #include <stdio.h>
 // #include <signal.h>
-
+#include <inttypes.h>
+#include <stdlib.h>
+#include <limits.h>
+#include <string.h>
 //#define DUMP_ALL_INSTRUCTIONS
 //#define TRACE_INSN
 #define INSN_LOG_FILE "/tmp/mosh-insn.log"
