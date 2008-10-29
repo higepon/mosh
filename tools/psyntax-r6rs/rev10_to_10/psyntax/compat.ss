@@ -1,22 +1,22 @@
 ;;; Copyright (c) 2006, 2007 Abdulaziz Ghuloum and Kent Dybvig
-;;; 
+;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
 ;;; to deal in the Software without restriction, including without limitation
 ;;; the rights to use, copy, modify, merge, publish, distribute, sublicense,
 ;;; and/or sell copies of the Software, and to permit persons to whom the
 ;;; Software is furnished to do so, subject to the following conditions:
-;;; 
+;;;
 ;;; The above copyright notice and this permission notice shall be included in
 ;;; all copies or substantial portions of the Software.
-;;; 
+;;;
 ;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ;;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ;;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
 ;;; THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 ;;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-;;; DEALINGS IN THE SOFTWARE. 
+;;; DEALINGS IN THE SOFTWARE.
 
 (library (psyntax compat)
   (export make-parameter parameterize define-record compile-core
@@ -24,9 +24,11 @@
           read-annotated annotation? annotation-expression annotation-source
           load-serialized-library serialize-library
           annotation-stripped make-record-printer read-library-source-file)
-  (import 
+  (import
     (rnrs)
+    (rnrs mutable-pairs)
     (mosh) ;; for source-info
+    (mosh string)
 ;; comment out for mosh
 ;;    (ironscheme reader)
 ;;    (ironscheme records printer)
@@ -35,7 +37,7 @@
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
 
-  
+
   ;; defined for mosh
   (define read-annotated read)
 ;  (define (annotation-stripped x) (set-source-info! x #f))
@@ -51,8 +53,37 @@
   (define (serialize-library . x)
     (display x)
     #f)
-  (define (load-serialized-library . x)
-    #f)
+  (define (load-serialized-library filename obj)
+    (let ([fasl-file (string-append filename ".fasl")])
+    (cond
+     [(string=? "./m.scm" filename)
+      (if (file-exists? fasl-file)
+          (let* ([expanded2core (symbol-value 'expanded2core)]
+                 [dummy2 (display 'moge)]
+                 [code (call-with-port (open-input-file fasl-file) read)]
+                 [dummy4 (display 'mogi)]
+                 [pivot (cddddr (cddddr code))]
+                 [dummy (display (car pivot))]
+                 [visit (expanded2core (car pivot))]
+                 [dummy (display 'done2)]
+                 [visit-proc (lambda () (eval-core visit))])
+            (display 'done3)
+            (set-car! pivot visit-proc)
+            (let* ([pivot (cdr pivot)]
+                   [dummy (display 'done4)]
+                   [invoke (expanded2core (car pivot))])
+              (display 'done5)
+              (set-car! pivot (lambda () (eval-core invoke)))
+              (format #t "apply code=~a\n" code)
+              (apply obj code))
+            #t
+            )
+          #f)
+      ]
+     [else
+      (format #t "filename=~a obj=~a" filename obj)
+      #f
+      ])))
   (define (make-record-printer name printer)
     (lambda x
       (display "record printer")
@@ -63,8 +94,8 @@
     (apply error 'comile-core "not implementated" x))
 
   (define (read-library-source-file file-name)
-		(with-input-from-file file-name read-annotated))
-  
+        (with-input-from-file file-name read-annotated))
+
   (define make-parameter
     (case-lambda
       ((x) (make-parameter x (lambda (x) x)))
@@ -75,7 +106,7 @@
            (() x)
            ((v) (set! x (fender v))))))))
 
-  (define-syntax parameterize 
+  (define-syntax parameterize
     (lambda (x)
       (syntax-case x ()
         ((_ () b b* ...) (syntax (let () b b* ...)))
@@ -84,22 +115,22 @@
                        ((rhs* ...) (generate-temporaries (syntax (olhs* ...)))))
            (syntax (let ((lhs* olhs*) ...
                    (rhs* orhs*) ...)
-               (let ((swap 
-                      (lambda () 
+               (let ((swap
+                      (lambda ()
                         (let ((t (lhs*)))
                           (lhs* rhs*)
                           (set! rhs* t))
                         ...)))
-                 (dynamic-wind 
+                 (dynamic-wind
                    swap
                    (lambda () b b* ...)
                    swap)))))))))
-                       
+
 (define-syntax define-record
   (lambda (x)
-	  (define (syn->str s)
-		  (symbol->string
-			  (syntax->datum s)))
+      (define (syn->str s)
+          (symbol->string
+              (syntax->datum s)))
     (define (gen-getter id)
       (lambda (fld)
         (datum->syntax id
@@ -124,12 +155,7 @@
              (sealed #t) ; for better performance
              (opaque #t) ; for security
              (nongenerative) ; for sanity
-             (fields (mutable field* getter* setter*) ...)))])))                       
+             (fields (mutable field* getter* setter*) ...)))])))
 
   (define (file-options-spec x) x)
 )
-
-
-
-
-

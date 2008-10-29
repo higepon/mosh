@@ -194,6 +194,7 @@
 ;;           (newline)])))
 
   (set-symbol-value! 'load load)
+  (set-symbol-value! 'load-r6rs-top-level load-r6rs-top-level)
 ;;   (set-symbol-value! 'compile compile)
 ;;   (set-symbol-value! 'compile->closure compile->closure)
   (set-symbol-value! 'eval-r6rs eval-top-level)

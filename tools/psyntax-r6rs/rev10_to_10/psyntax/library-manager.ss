@@ -257,8 +257,8 @@
                        (format (current-error-port)
                           "WARNING: library ~s has an inconsistent dependency \
                            on library ~s; file ~s will be recompiled from \
-                           source.\n"
-                         name dname filename)
+                           source. l=~a label=~a (library-id l)=~a\n"
+                         name dname filename l label (library-id l))
                        #f]))))]))]
         [others #f])))
 
