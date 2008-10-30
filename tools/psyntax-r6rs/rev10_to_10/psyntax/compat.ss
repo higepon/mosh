@@ -51,6 +51,12 @@
 (define (scm->fasl filename)
   (string-append filename ".fasl"))
 
+(define (fasl-save filename obj)
+  (call-with-port (open-file-output-port filename) (lambda (port) ((symbol-value 'fasl-write!) obj port))))
+
+(define (fasl-load filename)
+  (call-with-port (open-file-input-port filename) (symbol-value 'fasl-read!)))
+
 (define (serialize-library filename obj)
   (format #t "serialize-library ~a\n..." filename)
   (let ([fasl-file (scm->fasl filename)])
