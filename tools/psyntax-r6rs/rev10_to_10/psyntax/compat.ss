@@ -57,6 +57,13 @@
 (define (fasl-load filename)
   (call-with-port (open-file-input-port filename) (symbol-value 'fasl-read!)))
 
+;; (define (fasl-save filename obj)
+;;   (call-with-port (open-output-file filename) (lambda (port) (write obj port))))
+
+;; (define (fasl-load filename)
+;;   (call-with-port (open-input-file filename) read))
+
+
 (define (serialize-library filename obj)
   (format #t "serialize-library ~a\n..." filename)
   (let ([fasl-file (scm->fasl filename)])
@@ -66,14 +73,14 @@
                   (when (file-exists? fasl-file)
                     (delete-file fasl-file))
                   #f)]
-           (call-with-port (open-file-output-port fasl-file) (lambda (port) ((symbol-value 'fasl-write!) obj port)))
+           (fasl-save fasl-file obj)
            (display "OK\n"))))
 
 (define (load-serialized-library filename obj)
   (let ([fasl-file (scm->fasl filename)])
     (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename)) ;; todo we may use file-newer? directory.
         (let* ([expanded2core (symbol-value 'expanded2core)]
-               [code (call-with-port (open-file-input-port fasl-file) (symbol-value 'fasl-read!))]
+               [code (fasl-load fasl-file)]
                [pivot (cddddr (cddddr code))]
                           [visit (expanded2core (car pivot))]
                           [visit-proc (lambda () (eval-core visit))])

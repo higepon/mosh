@@ -965,10 +965,12 @@
 (define (map proc . ll)
   (if (null? (car ll))
       '()
-      (let ((tetes (map1 car ll))
-            (queues (map1 cdr ll)))
-        (cons (apply proc tetes)
-              (apply map (cons proc queues))))))
+      (if (null? (cdr ll))
+          (map1 proc (car ll))
+          (let ((tetes (map1 car ll))
+                (queues (map1 cdr ll)))
+            (cons (apply proc tetes)
+                  (apply map (cons proc queues)))))))
 
 ;; Returns the length of list.
 ;; .returns the length of list.
@@ -1020,10 +1022,20 @@
 (define (for-each proc . ll)
   (if (null? (car ll))
       #f
-      (let* ((tetes (map car ll))
-             (queues (map cdr ll)))
-        (apply proc tetes)
-        (apply for-each (cons proc queues)))))
+      (if (null? (cdr ll))
+          (for-each-1 proc (car ll))
+          (let* ((tetes (map car ll))
+                 (queues (map cdr ll)))
+            (apply proc tetes)
+            (apply for-each (cons proc queues))))))
+
+(define (for-each-1 proc lst)
+  (if (null? lst)
+      #f
+      (begin
+        (proc (car lst))
+        (for-each-1 proc (cdr lst)))))
+
 
 ;; The list->vector procedure returns a newly created vector initialized to the elements of the list list.
 ;; .returns The list->vector procedure returns a newly created vector initialized to the elements of the list list.

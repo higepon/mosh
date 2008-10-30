@@ -8,7 +8,6 @@
           (only (system) readdir get-environment-variable)
           (only (mosh regexp) rxmatch)
           (only (srfi :1) first second third alist-cons)
-          (only (srfi :8) receive)
           (prefix (mosh cgi) cgi:))
 
 (define (print msg)
@@ -410,8 +409,8 @@
   (unless (file-exists? data-dir)
      (cgi:header)
      (format #t "lambda wiki data-dir ~s not found\n" data-dir))
-  (receive (get-parameter get-request-method) (cgi:init)
-    (receive (page-name cmd) (get-page-cmd)
+  (let-values (([get-parameter get-request-method] (cgi:init))
+               ([page-name cmd] (get-page-cmd)))
       (cond
        [(equal? "post" cmd)
          (when (eq? 'POST (get-request-method))
@@ -440,7 +439,7 @@
           [(equal? "list" cmd) (list-page)]
           [else
            (print-page get-parameter page-name)])
-        (print-footer)]))))
+        (print-footer)])))
 
 (register-plugin (define-plugin "ls2"
                    (lambda (get-parameter page-name . args)
