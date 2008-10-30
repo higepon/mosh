@@ -38,7 +38,9 @@ namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
     Object getStringNEx(int argc, const Object* argv);
+    Object statMtimeEx(int argc, const Object* argv);
     Object faslWriteEx(int argc, const Object* argv);
+    Object faslReadEx(int argc, const Object* argv);
     Object openInputFileEx(int argc, const Object* argv);
     Object closePortEx(int argc, const Object* argv);
     Object getLineEx(int argc, const Object* argv);

@@ -20,7 +20,7 @@
     (lambda ()
       (call-with-port (open-file-output-port (third args))
          (lambda (port)
-           (fasl-write port (extract (read)))))))
+           (fasl-write (extract (read)) port)))))
   0)
 
 (main (command-line))

@@ -93,8 +93,7 @@ loop:
         obj.isInt()) {
         return;
     }
-    VM_LOG1("~a", obj);
-    MOSH_ASSERT(false);
+    throwIOError("not supported serialization");
 }
 
 

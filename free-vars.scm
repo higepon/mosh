@@ -248,5 +248,7 @@
     make-instruction
     make-compiler-instruction
     fasl-write
+    fasl-read
     get-string-n
+    stat-mtime
     )

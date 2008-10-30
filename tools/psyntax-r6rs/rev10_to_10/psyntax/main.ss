@@ -135,6 +135,9 @@
   (define (compile->closure filename)
     (load-r6rs-top-level filename 'closure))
 
+  (define (pre-compile-r6rs-file filename)
+    (load-r6rs-top-level filename 'compile))
+
   (define (load-r6rs-top-level filename how . args)
     (parameterize ([library-path (local-library-path filename)])
       (let ((x*
@@ -194,7 +197,8 @@
 ;;           (newline)])))
 
   (set-symbol-value! 'load load)
-  (set-symbol-value! 'load-r6rs-top-level load-r6rs-top-level)
+;  (set-symbol-value! 'load-r6rs-top-level load-r6rs-top-level)
+  (set-symbol-value! 'pre-compile-r6rs-file pre-compile-r6rs-file)
 ;;   (set-symbol-value! 'compile compile)
 ;;   (set-symbol-value! 'compile->closure compile->closure)
   (set-symbol-value! 'eval-r6rs eval-top-level)

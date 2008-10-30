@@ -1,3 +1,9 @@
+2008-10-30  higepon  <higepon@users.sourceforge.jp>
+
+        * PortProcedures.cpp (statMtimeEx): Added stat-mtime.
+
+        * scripts/pre-compile-r6rs.scm: Added.
+
 2008-10-29  higepon  <higepon@users.sourceforge.jp>
 
         * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (psyntax): Updated to newest version which is found on IronScheme.

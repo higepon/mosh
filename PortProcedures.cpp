@@ -31,6 +31,7 @@
 
 #include <dirent.h>
 #include <unistd.h> // getcwd
+#include <sys/stat.h> // stat
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -62,6 +63,20 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
+Object scheme::statMtimeEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("stat-mtime");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    struct stat sb;
+    if (-1 == stat(path->data().ascii_c_str(), &sb)) {
+        callAssertionViolationAfter(procedureName, "failed", L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return Object::makeInt(sb.st_mtime);
+    }
+}
+
 Object scheme::getStringNEx(int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-n");
@@ -75,10 +90,24 @@ Object scheme::faslWriteEx(int argc, const Object* argv)
 {
     DeclareProcedureName("fasl-write");
     checkArgumentLength(2);
-    argumentAsBinaryOutputPort(0, outputPort);
+    argumentAsBinaryOutputPort(1, outputPort);
     FaslWriter writer(outputPort);
-    writer.put(argv[1]);
+    TRY_IO {
+        writer.put(argv[0]);
+    } CATCH_IO {
+        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        return Object::Undef;
+    }
     return Object::Undef;
+}
+
+Object scheme::faslReadEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fasl-read");
+    checkArgumentLength(1);
+    argumentAsBinaryInputPort(0, inputPort);
+    FaslReader reader(inputPort);
+    return reader.get();
 }
 
 Object scheme::getLineEx(int argc, const Object* argv)
@@ -314,15 +343,8 @@ Object scheme::fileExistsPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("file-exists?");
     checkArgumentLength(1);
-
-    argumentAsString(0, text);
-    FILE* stream = fopen(text->data().ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return Object::False;
-    } else {
-        fclose(stream);
-        return Object::True;;
-    }
+    argumentAsString(0, path);
+    return Object::makeBool(access(path->data().ascii_c_str(), F_OK) == 0);
 }
 
 // todo cleanup

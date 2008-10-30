@@ -32,6 +32,8 @@
           (mosh string) ;; format
           )
 
+
+
   (define (make-collection)
     (let ((set '()))
       (define (set-cons x ls)
@@ -271,6 +273,7 @@
              (assertion-violation #f "cannot file library" x)]
             [(try-load-from-file file-name)]
             [else
+             (display file-name)
              ((current-library-expander)
               (read-library-source-file file-name)
               file-name
@@ -313,7 +316,9 @@
                     (cons name (external-pending-libraries))))
       ((library-loader) name)
       (or (find-library-by
-            (lambda (x) (equal? (library-name x) name)))
+            (lambda (x)
+;              (format #t "library-name=~a name=~a\n" (library-name x) name)
+              (equal? (library-name x) name)))
           (assertion-violation #f
             "handling external library did not yield the correct library"
              name))))

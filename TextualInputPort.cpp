@@ -90,7 +90,6 @@ Object TextualInputPort::getStringN(int n)
         }
         accum += ch;
     }
-    printf("[[%s]]", accum.ascii_c_str());
     if (accum.empty()) {
         return Object::Eof;
     } else {

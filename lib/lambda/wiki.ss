@@ -9,7 +9,7 @@
           (only (mosh regexp) rxmatch)
           (only (srfi :1) first second third alist-cons)
           (only (srfi :8) receive)
-          (prefix (cgi) cgi:))
+          (prefix (mosh cgi) cgi:))
 
 (define (print msg)
   (display msg)

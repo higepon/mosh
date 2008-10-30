@@ -6030,3 +6030,9 @@
       (lambda () #t)
       (lambda () (proc p))
       (lambda () (close-port p))))
+
+(define (file-newer? a b)
+  (> (stat-mtime a) (stat-mtime b)))
+
+(define fasl-write! fasl-write)
+(define fasl-read! fasl-read)

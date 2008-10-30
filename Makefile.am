@@ -115,6 +115,10 @@ compiler-with-library.h compiler-with-library.fasl
 CLEANFILES =
 MAINTAINERCLEANFILES = $(GENERATED)
 
+update:
+	find . -name "*.ss.fasl" | xargs rm
+	./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
+
 # when you release comment out start
 
 reader.tab.cpp: reader.y
@@ -179,7 +183,7 @@ DebugInstruction.h: instruction.scm
 
 VM.cpp: cprocedures.cpp labels.cpp
 
-./cprocedures.cpp: ./free-vars.scm ./scripts/gen-cproc.scm
+./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
 all-tests.scm: ./test-data.scm

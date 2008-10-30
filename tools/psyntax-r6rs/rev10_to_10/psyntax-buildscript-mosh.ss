@@ -31,6 +31,7 @@
   (psyntax library-manager)
   (psyntax expander)
   (system)
+  (mosh)
   )
 
 
@@ -963,6 +964,7 @@
     ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
     (receive mosh-backend) ;; I want psyntax pass through "receive" to backend(Mosh).
     (fasl-write mosh)
+    (fasl-read mosh)
     (set-source-info! mosh)
     (make-instruction mosh)
     (make-compiler-instruction mosh)
@@ -985,6 +987,8 @@
     (file->list mosh-file)
     (write-to-file mosh-file)
     (current-directory mosh-file)
+    (stat-mtime mosh-file)
+    (file-newer? mosh-file)
     (standard-library-path mosh)
     (format mosh-string)
     (print mosh-string)
