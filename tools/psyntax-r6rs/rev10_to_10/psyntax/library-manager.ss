@@ -273,7 +273,6 @@
              (assertion-violation #f "cannot file library" x)]
             [(try-load-from-file file-name)]
             [else
-             (display file-name)
              ((current-library-expander)
               (read-library-source-file file-name)
               file-name
