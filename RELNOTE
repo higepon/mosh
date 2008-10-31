@@ -1,3 +1,61 @@
+Mosh 0.0.7 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Implemented R6RS Sorting.
+
+Implemented R6RS Unicode.
+
+Implemented R6RS Bytevectors(Almost).
+
+Updated psyntax to the newest version. (Thanks to Leppie)
+
+Added library loading support.
+
+Added SRFI 8 and SRFI 98 support.
+
+Added UTF16/UTF32 Codec.
+
+Added R6RS Read Eval Print Loop.
+
+Added stack auto expansion system for stack over flow.
+
+Improved load speed by Fasl(Fast loading).
+
+Improved read speed by rewriting read using bison and re2c.
+It becomes much faster.
+
+Improved g++ compilation speed of Mosh.
+
+Added library serialization system.(experimental)
+
+Added many procedures.
+
+Fixed many bugs.
+
+Now Mosh passes following "R6RS test suite".
+
+    mutable-strings, mutable-pairs,
+    contrib, programs, control, hashtables,
+    records/procedural, lists, enums
+    records/syntactic, sorting and unicode.
+
+  R6RS test suite written by PLT Scheme project.
+    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
+  Run like following.
+    mosh tests/r6rs/run/mutable-strings.sps
+
 Mosh 0.0.6 Release Note
 ============================
 

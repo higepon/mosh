@@ -121,73 +121,73 @@ update:
 
 # when you release comment out start
 
-reader.tab.cpp: reader.y
-	bison -d $< -o $@
+# reader.tab.cpp: reader.y
+# 	bison -d $< -o $@
 
-Scanner.cpp : scanner.re
-	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
-## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
+# Scanner.cpp : scanner.re
+# 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
+# ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
-r6rs-test:
-	(cd r6rs-examples && ../mosh hello.ss)
-	(cd r6rs-examples && ../mosh let-syntax.ss)
-	(cd r6rs-examples && ../mosh env.ss)
+# r6rs-test:
+# 	(cd r6rs-examples && ../mosh hello.ss)
+# 	(cd r6rs-examples && ../mosh let-syntax.ss)
+# 	(cd r6rs-examples && ../mosh env.ss)
 
-#### Instruction.h
-Instruction.h: ./instruction.scm
-	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+# #### Instruction.h
+# Instruction.h: ./instruction.scm
+# 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-main.cpp: psyntax.h compiler-with-library.h match.h
+# main.cpp: psyntax.h compiler-with-library.h match.h
 
-./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
-	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+# ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
+# 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
-compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+# compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 
-SUFFIXES: .scmc .h
+# SUFFIXES: .scmc .h
 
-.scmc.h:
-	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# .scmc.h:
+# 	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
-match.scmc: ./match.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# match.scmc: ./match.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 
-# we need to replace #\null => #\nul and |...| => ...
-# It is the difference between gauche and mosh.
-psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+# # we need to replace #\null => #\nul and |...| => ...
+# # It is the difference between gauche and mosh.
+# psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
+# 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
-	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+# ./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
+# 	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
 
-./free-vars-decl.scm: ./free-vars.scm
-	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+# ./free-vars-decl.scm: ./free-vars.scm
+# 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+# ./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# ./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# ./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
+# 	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-labels.cpp: ./instruction.scm
-	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@
+# labels.cpp: ./instruction.scm
+# 	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@
 
-DebugInstruction.h: instruction.scm
-	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+# DebugInstruction.h: instruction.scm
+# 	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
-VM.cpp: cprocedures.cpp labels.cpp
+# VM.cpp: cprocedures.cpp labels.cpp
 
-./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
-	@GOSH@ ./scripts/gen-cproc.scm > $@
+# ./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
+# 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
-all-tests.scm: ./test-data.scm
-	./mosh -5 ./scripts/gen-test.scm $< > $@
+# all-tests.scm: ./test-data.scm
+# 	./mosh -5 ./scripts/gen-test.scm $< > $@
 
 # when you release comment out end
 
