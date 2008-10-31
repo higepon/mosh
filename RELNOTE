@@ -44,6 +44,8 @@ Improved g++ compilation speed of Mosh.
 
 Added library serialization system.(experimental)
 
+Now we can build Mosh without help of gosh.
+
 Added many procedures.
 
 Fixed many bugs.
