@@ -28,6 +28,10 @@ Added SRFI 8 and SRFI 98 support.
 Added UTF16/UTF32 Codec.
 
 Added R6RS Read Eval Print Loop.
+  mosh>(import (srfi :98))
+  #<unspecified>
+  mosh>(get-environment-variable "HOME")
+  "/Users/taro"
 
 Added stack auto expansion system for stack over flow.
 
