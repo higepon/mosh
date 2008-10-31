@@ -1,3 +1,7 @@
+2008-10-31  higepon  <higepon@users.sourceforge.jp>
+
+        * 0.0.7 released.
+
 2008-10-30  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp (statMtimeEx): Added stat-mtime.
