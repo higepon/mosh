@@ -44,6 +44,7 @@ public:
     ~Rational();
 
     char* toString();
+    double toDouble() const;
     bool equal(int number);
     bool equal(Rational* number);
 

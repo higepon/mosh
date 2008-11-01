@@ -52,6 +52,11 @@ char* Rational::toString()
     return mpq_get_str(NULL, 10, r);
 }
 
+double Rational::toDouble() const
+{
+    return mpq_get_d(r);
+}
+
 Rational* Rational::fromFixnum(int num)
 {
     return new Rational(num, 1);

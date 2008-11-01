@@ -252,4 +252,6 @@
     get-string-n
     stat-mtime
     rational?
+    flonum?
+    inexact
     )

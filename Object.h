@@ -67,6 +67,7 @@ class RecordTypeDescriptor;
 class RecordConstructorDescriptor;
 class CompoundCondition;
 class Rational;
+class Flonum;
 
 class Object
 {
@@ -123,6 +124,7 @@ public:
 
     static Object* makeObjectArray(int size);
     static Object makeFixnum(signed long int n);
+    static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
     static Object makeInstruction(int n);
@@ -239,6 +241,7 @@ public:
     DECL_ACCESSOR(RecordConstructorDescriptor)
     DECL_ACCESSOR(CompoundCondition)
     DECL_ACCESSOR(Rational)
+    DECL_ACCESSOR(Flonum)
 
     static const Object Nil;
     static const Object Eof;

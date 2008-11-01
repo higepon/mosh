@@ -1,3 +1,9 @@
+2008-11-02  higepon  <higepon@users.sourceforge.jp>
+
+        * Added: (inexact ...).
+
+        * Flonum.cpp: Added Flonum.
+
 2008-11-01  higepon  <higepon@users.sourceforge.jp>
 
         * Arithmetic.cpp : Implemented +, -, *, /, >, >=, <, <=, = between Fixnum and Rational.

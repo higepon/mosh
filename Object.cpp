@@ -65,6 +65,7 @@
 #include "TextualByteVectorOutputPort.h"
 #include "CodeBuilder.h"
 #include "Rational.h"
+#include "Flonum.h"
 
 using namespace scheme;
 
@@ -306,6 +307,12 @@ Object Object::makeRational(mpq_t r)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Rational,
                                                         reinterpret_cast<word>(new Rational(r)))));
+}
+
+Object Object::makeFlonum(double value)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Flonum,
+                                                        reinterpret_cast<word>(new Flonum(value)))));
 }
 
 bool Object::isList() const

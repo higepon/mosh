@@ -87,6 +87,7 @@ Vector.h                      Vector.cpp                          \
 Fasl.h                        Fasl.cpp                            \
 Arithmetic.h                  Arithmetic.cpp                      \
 Rational.h                    Rational.cpp                        \
+Flonum.h                      Flonum.cpp                          \
 CodeBuilder.h                 CodeBuilder.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""

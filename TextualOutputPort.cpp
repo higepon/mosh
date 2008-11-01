@@ -47,6 +47,7 @@
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
 #include "Rational.h"
+#include "Flonum.h"
 
 using namespace scheme;
 
@@ -192,6 +193,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isFixnum()) {
         static char buf[32];
         snprintf(buf, 32, "%ld", o.toFixnum());
+        putString(buf);
+    } else if (o.isFlonum()) {
+        static char buf[32];
+        snprintf(buf, 32, "%f", o.toFlonum()->value());
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
@@ -362,6 +367,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isFixnum()) {
         static char buf[32];
         snprintf(buf, 32, "%ld", o.toFixnum());
+        putString(buf);
+    } else if (o.isFlonum()) {
+        static char buf[32];
+        snprintf(buf, 32, "%f", o.toFlonum()->value());
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];

@@ -37,6 +37,7 @@
 #include "ArithmeticProcedures.h"
 #include "ProcedureMacro.h"
 #include "Arithmetic.h"
+#include "Rational.h"
 
 using namespace scheme;
 
@@ -55,6 +56,28 @@ Object scheme::rationalPEx(int argc, const Object* argv)
     const Object obj = argv[0];
     return Object::makeBool(obj.isFixnum() || obj.isRational());
 }
+
+Object scheme::flonumPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flonum?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isFlonum());
+}
+
+Object scheme::inexactEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("inexact");
+    const Object obj = argv[0];
+    if (obj.isFixnum()) {
+        return Object::makeFlonum(obj.toFixnum());
+    } else if (obj.isFlonum()) {
+        return obj;
+    } else if (obj.isRational()) {
+        return Object::makeFlonum(obj.toRational()->toDouble());
+    }
+    MOSH_ASSERT(false);
+}
+
 
 Object scheme::maxEx(int argc, const Object* argv)
 {

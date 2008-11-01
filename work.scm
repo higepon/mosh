@@ -1,5 +1,3 @@
 (import (rnrs))
-(display (/ 5))
-
-(display (+ (+ (/ 12 144) (/ 1 6)) 3))
-(display (+ (/ 2 6) (/ 2 6)))
+(display (/ 1 3))
+(display (inexact (/ 1 3)))

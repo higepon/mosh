@@ -39,6 +39,8 @@ namespace scheme {
 
     Object numberPEx(int argc, const Object* argv);
     Object rationalPEx(int argc, const Object* argv);
+    Object flonumPEx(int argc, const Object* argv);
+    Object inexactEx(int argc, const Object* argv);
     Object quotientEx(int argc, const Object* argv);
     Object remainderEx(int argc, const Object* argv);
     Object maxEx(int argc, const Object* argv);
