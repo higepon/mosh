@@ -66,7 +66,7 @@ loop:
         if (symbolsAndStringsTable_->containsP(obj)) {
             return;
         } else {
-            symbolsAndStringsTable_->set(obj, Object::makeInt(symbolsAndStringsTable_->size()));
+            symbolsAndStringsTable_->set(obj, Object::makeFixnum(symbolsAndStringsTable_->size()));
         }
         return;
     }
@@ -90,7 +90,7 @@ loop:
         obj.isBoolean()             ||
         obj.isCompilerInstruction() ||
         obj.isInstruction()         ||
-        obj.isInt()) {
+        obj.isFixnum()) {
         return;
     }
     throwIOError("not supported serialization");
@@ -165,9 +165,9 @@ void FaslWriter::putSymbolsAndStrings()
         const Object key = keys->ref(i);
         const Object value = symbolsAndStringsTable_->ref(key, Object::False);
         MOSH_ASSERT(!value.isFalse());
-        MOSH_ASSERT(value.isInt());
-        MOSH_ASSERT(value.toInt() < size);
-        objects[value.toInt()] = key;
+        MOSH_ASSERT(value.isFixnum());
+        MOSH_ASSERT(value.toFixnum() < size);
+        objects[value.toFixnum()] = key;
     }
     emitU32(size);
     for (int i = 0; i < size; i++) {
@@ -206,7 +206,7 @@ void FaslWriter::putDatum(Object obj)
         emitU8(Fasl::TAG_LOOKUP);
         const Object id = symbolsAndStringsTable_->ref(obj, Object::False);
         MOSH_ASSERT(!id.isFalse());
-        emitU32(id.toInt());
+        emitU32(id.toFixnum());
         return;
     }
     if (obj.isRegexp()) {
@@ -214,9 +214,9 @@ void FaslWriter::putDatum(Object obj)
         emitString(obj.toRegexp()->pattern());
         return;
     }
-    if (obj.isInt()) {
+    if (obj.isFixnum()) {
         emitU8(Fasl::TAG_FIXNUM);
-        emitU32(obj.toInt());
+        emitU32(obj.toFixnum());
         return;
     }
     if (obj.isInstruction()) {

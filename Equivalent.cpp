@@ -40,6 +40,7 @@
 #include "CProcedure.h"
 #include "EqHashTable.h"
 #include "ByteVector.h"
+#include "Arithmetic.h"
 #include "Equivalent.h"
 
 using namespace scheme;
@@ -86,6 +87,14 @@ entry:
             } else {
                 return false;
             }
+        } else {
+            return false;
+        }
+    }
+
+    if (object1.isNumber()) {
+        if (object2.isNumber()) {
+            return Arithmetic::eq(object1, object2);
         } else {
             return false;
         }

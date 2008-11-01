@@ -78,6 +78,7 @@ public:
         RecordConstructorDescriptor = Type<26>::VALUE,
         CompoundCondition           = Type<27>::VALUE,
         ObjectPointer               = Type<28>::VALUE, // used only debug mode
+        Rational                    = Type<29>::VALUE,
         forbidden_comma
     };
 };

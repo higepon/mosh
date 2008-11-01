@@ -64,6 +64,7 @@
 #include "CustomBinaryInputPort.h"
 #include "TextualByteVectorOutputPort.h"
 #include "CodeBuilder.h"
+#include "Rational.h"
 
 using namespace scheme;
 
@@ -293,6 +294,18 @@ Object Object::makeCompoundCondition(Object conditions)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CompoundCondition,
                                                         reinterpret_cast<word>(new CompoundCondition(conditionCounts,
                                                                                                      conditionsArray)))));
+}
+
+Object Object::makeRational(int numerator, int denominator)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Rational,
+                                                        reinterpret_cast<word>(new Rational(numerator, denominator)))));
+}
+
+Object Object::makeRational(mpq_t r)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Rational,
+                                                        reinterpret_cast<word>(new Rational(r)))));
 }
 
 bool Object::isList() const

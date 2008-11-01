@@ -70,7 +70,7 @@ Object scheme::makeCompilerInstructionEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-compiler-instruction");
     checkArgumentLength(1);
-    argumentAsInt(0, n);
+    argumentAsFixnum(0, n);
     return Object::makeCompilerInstruction(n);
 }
 
@@ -78,15 +78,8 @@ Object scheme::makeInstructionEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-instruction");
     checkArgumentLength(1);
-    argumentAsInt(0, n);
+    argumentAsFixnum(0, n);
     return Object::makeInstruction(n);
-}
-
-Object scheme::numberPEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("number?");
-    checkArgumentLength(1);
-    return Object::makeBool(argv[0].isInt());
 }
 
 Object scheme::bytevectorPEx(int argc, const Object* argv)
@@ -100,9 +93,9 @@ Object scheme::numberTostringEx(int argc, const Object* argv)
 {
     DeclareProcedureName("number->string");
     checkArgumentLengthBetween(1, 2);
-    argumentAsInt(0, number);
+    argumentAsFixnum(0, number);
     if (2 == argc) {
-        argumentAsInt(1, radix);
+        argumentAsFixnum(1, radix);
 
         if (16 == radix) {
             static char buf[32];
@@ -183,20 +176,20 @@ Object scheme::digitTointegerEx(int argc, const Object* argv)
 {
     DeclareProcedureName("digit->integer");
     argumentAsChar(0, ch);
-    argumentAsInt(1, radix);
+    argumentAsFixnum(1, radix);
     if (ch < '0') {
         return Object::False;
     }
     if (radix <= 10) {
         if (ch < '0' + radix) {
-            return Object::makeInt(ch - '0');
+            return Object::makeFixnum(ch - '0');
         }
     } else {
-        if (ch <= '9') return Object::makeInt(ch - '0');
+        if (ch <= '9') return Object::makeFixnum(ch - '0');
         if (ch < 'A') return Object::False;
-        if (ch < 'A' + radix - 10) return Object::makeInt(ch - 'A' + 10);
+        if (ch < 'A' + radix - 10) return Object::makeFixnum(ch - 'A' + 10);
         if (ch < 'a') return Object::False;
-        if (ch < 'a' + radix - 10) return Object::makeInt(ch - 'a' + 10);
+        if (ch < 'a' + radix - 10) return Object::makeFixnum(ch - 'a' + 10);
     }
     return Object::False;
 }
@@ -213,14 +206,14 @@ Object scheme::charTointegerEx(int argc, const Object* argv)
     DeclareProcedureName("char->integer");
     checkArgumentLength(1);
     argumentAsChar(0, ch);
-    return Object::makeInt(ch);
+    return Object::makeFixnum(ch);
 }
 
 Object scheme::integerTocharEx(int argc, const Object* argv)
 {
     DeclareProcedureName("integer->char");
     checkArgumentLength(1);
-    argumentAsInt(0, integer);
+    argumentAsFixnum(0, integer);
     return Object::makeChar(integer);
 }
 
@@ -326,7 +319,7 @@ Object scheme::getTimeofdayEx(int argc, const Object* argv)
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    return Object::cons(Object::makeInt(tv.tv_sec), Object::makeInt(tv.tv_usec));
+    return Object::cons(Object::makeFixnum(tv.tv_sec), Object::makeFixnum(tv.tv_usec));
 }
 
 Object scheme::vmApplyEx(int argc, const Object* argv)
@@ -417,14 +410,14 @@ Object scheme::modEx(int argc, const Object* argv)
     DeclareProcedureName("mod");
     checkArgumentLength(2);
 
-    argumentAsInt(0, number1);
-    argumentAsInt(1, number2);
+    argumentAsFixnum(0, number1);
+    argumentAsFixnum(1, number2);
 
     if (0 == number2) {
         callAssertionViolationAfter(procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeInt(mod(number1, number2));
+    return Object::makeFixnum(mod(number1, number2));
 }
 
 Object scheme::divEx(int argc, const Object* argv)
@@ -432,13 +425,13 @@ Object scheme::divEx(int argc, const Object* argv)
     DeclareProcedureName("div");
     checkArgumentLength(2);
 
-    argumentAsInt(0, number1);
-    argumentAsInt(1, number2);
+    argumentAsFixnum(0, number1);
+    argumentAsFixnum(1, number2);
     if (0 == number2) {
         callAssertionViolationAfter(procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeInt(div(number1, number2));
+    return Object::makeFixnum(div(number1, number2));
 }
 
 
@@ -451,8 +444,8 @@ Object scheme::exitEx(int argc, const Object* argv)
     }
 
     const Object exitValue = argv[0];
-    if (exitValue.isInt()) {
-        exit(exitValue.toInt());
+    if (exitValue.isFixnum()) {
+        exit(exitValue.toFixnum());
     } else if (exitValue.isFalse()) {
         exit(EXIT_FAILURE);
     } else {

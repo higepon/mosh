@@ -83,9 +83,9 @@ public:
 #endif
         int i = 0;
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
-            MOSH_ASSERT(p.car().isInt());
-            MOSH_ASSERT(p.car().toInt() >= -128 && p.car().toInt() <= 255);
-            data_[i] = p.car().toInt();
+            MOSH_ASSERT(p.car().isFixnum());
+            MOSH_ASSERT(p.car().toFixnum() >= -128 && p.car().toFixnum() <= 255);
+            data_[i] = p.car().toFixnum();
             i++;
         }
 
@@ -399,8 +399,8 @@ public:
 
     void s8set(int index, Object obj)
     {
-        MOSH_ASSERT(obj.isInt());
-        data_[index] = (uint8_t)obj.toInt();
+        MOSH_ASSERT(obj.isFixnum());
+        data_[index] = (uint8_t)obj.toFixnum();
     }
 
     int length() const

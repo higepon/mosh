@@ -48,7 +48,7 @@ inline Object::~Object()
 {
 }
 
-inline bool Object::isInt() const
+inline bool Object::isFixnum() const
 {
     return tag() == 1;
 }
@@ -80,9 +80,9 @@ inline ucs4char Object::toChar() const
     return static_cast<ucs4char>(val) >> 3;
 }
 
-inline signed long int Object::toInt() const
+inline signed long int Object::toFixnum() const
 {
-    MOSH_ASSERT(isInt());
+    MOSH_ASSERT(isFixnum());
     return static_cast<signed long int>(val) >> 2;
 }
 
@@ -189,7 +189,7 @@ inline bool Object::eq(Object o) const
     return operator==(o);
 }
 
-inline Object Object::makeInt(signed long int n)
+inline Object Object::makeFixnum(signed long int n)
 {
     return Object((n << 2) + 1);
 }
@@ -252,6 +252,11 @@ inline Object Object::makeObjectPointer(Object* p)
 #else
     return Object(reinterpret_cast<word>(p));
 #endif
+}
+
+inline bool Object::isNumber() const
+{
+    return isFixnum() || isRational();
 }
 
 // private

@@ -128,7 +128,7 @@ Object scheme::hashtableSizeEx(int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsHashTable(0, hashtable);
-    return Object::makeInt(hashtable->size());
+    return Object::makeFixnum(hashtable->size());
 }
 
 Object scheme::hashtablePEx(int argc, const Object* argv)
@@ -145,7 +145,7 @@ Object scheme::stringHashEx(int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsString(0, text);
-    return Object::makeInt(stringHash(text->data()));
+    return Object::makeFixnum(stringHash(text->data()));
 }
 
 Object scheme::symbolHashEx(int argc, const Object* argv)
@@ -156,7 +156,7 @@ Object scheme::symbolHashEx(int argc, const Object* argv)
     argumentAsSymbol(0, symbol);
 
     // we can use pointer as hash, because symbol is interned.
-    return Object::makeInt(symbolHash(symbol));
+    return Object::makeFixnum(symbolHash(symbol));
 }
 
 Object scheme::stringCiHashEx(int argc, const Object* argv)
@@ -165,7 +165,7 @@ Object scheme::stringCiHashEx(int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsString(0, text);
-    return Object::makeInt(stringCiHash(text->data()));
+    return Object::makeFixnum(stringCiHash(text->data()));
 }
 
 
@@ -173,7 +173,7 @@ Object scheme::equalHashEx(int argc, const Object* argv)
 {
     DeclareProcedureName("equal-hash");
     checkArgumentLength(1);
-    return Object::makeInt(equalHash(argv[0]));
+    return Object::makeFixnum(equalHash(argv[0]));
 }
 
 

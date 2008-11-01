@@ -159,9 +159,9 @@ Object scheme::recordAccessorEx(int argc, const Object* argv)
     DeclareProcedureName("record-accessor");
     checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
-        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeInt(index)));
+        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
@@ -172,16 +172,16 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
     DeclareProcedureName("record-mutator");
     checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
     if (index < 0 || index >= recordTypeDescriptor->fieldsLength()) {
-        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeInt(index)));
+        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     if (recordTypeDescriptor->isFieldMutable(index)) {
         return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
     } else {
-        callAssertionViolationAfter(procedureName, "required mutable field, but got immutable field index", L1(Object::makeInt(index)));
+        callAssertionViolationAfter(procedureName, "required mutable field, but got immutable field index", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     return Object::Undef;
@@ -304,7 +304,7 @@ Object scheme::recordFieldMutablePEx(int argc, const Object* argv)
     DeclareProcedureName("record-field-mutable?");
     checkArgumentLength(2);
     argumentAsRecordTypeDescriptor(0, recordTypeDescriptor);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     return Object::makeBool(recordTypeDescriptor->isFieldMutable(index));
 }
 

@@ -106,10 +106,10 @@ Object scheme::rxmatchStartEx(int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsInt(1, index);
-        returnValue = Object::makeInt(regMatch->matchStart(index));
+        argumentAsFixnum(1, index);
+        returnValue = Object::makeFixnum(regMatch->matchStart(index));
     } else {
-        returnValue = Object::makeInt(regMatch->matchStart(0));
+        returnValue = Object::makeFixnum(regMatch->matchStart(0));
     }
     if (regMatch->isErrorOccured()) {
         callAssertionViolationAfter(procedureName,
@@ -132,10 +132,10 @@ Object scheme::rxmatchEndEx(int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsInt(1, index);
-        returnValue = Object::makeInt(regMatch->matchEnd(index));
+        argumentAsFixnum(1, index);
+        returnValue = Object::makeFixnum(regMatch->matchEnd(index));
     } else {
-        returnValue = Object::makeInt(regMatch->matchEnd(0));
+        returnValue = Object::makeFixnum(regMatch->matchEnd(0));
     }
 
     if (regMatch->isErrorOccured()) {
@@ -159,7 +159,7 @@ Object scheme::rxmatchAfterEx(int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsInt(1, index);
+        argumentAsFixnum(1, index);
         returnValue = regMatch->matchAfter(index);
     } else {
         returnValue = regMatch->matchAfter(0);
@@ -186,7 +186,7 @@ Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsInt(1, index);
+        argumentAsFixnum(1, index);
         returnValue = regMatch->matchBefore(index);
     } else {
         returnValue = regMatch->matchBefore(0);
@@ -213,7 +213,7 @@ Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
     argumentAsRegMatch(0, regMatch);
     Object returnValue;
     if (argc == 2) {
-        argumentAsInt(1, index);
+        argumentAsFixnum(1, index);
         returnValue = regMatch->matchSubString(index);
     } else {
         returnValue = regMatch->matchSubString(0);

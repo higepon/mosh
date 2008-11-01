@@ -72,9 +72,9 @@
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
 
-#define argumentAsInt(index, variableName) castArgument(index, variableName, isInt, number, int, toInt)
+#define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
-#define argumentCheckInt(index, variableName) checkType(index, variableName, isInt, number)
+#define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 

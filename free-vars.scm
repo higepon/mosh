@@ -251,4 +251,5 @@
     fasl-read
     get-string-n
     stat-mtime
+    rational?
     )

@@ -258,8 +258,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::LEAVE:
     {
         flush();
-        MOSH_ASSERT(argument1.isInt());
-        const int index = argument1.toInt();
+        MOSH_ASSERT(argument1.isFixnum());
+        const int index = argument1.toFixnum();
         if (1 == index) {
             codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstructionImmediate(Instruction::LEAVE1);
@@ -272,8 +272,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::REFER_LOCAL:
     {
         flush();
-        MOSH_ASSERT(argument1.isInt());
-        const int index = argument1.toInt();
+        MOSH_ASSERT(argument1.isFixnum());
+        const int index = argument1.toFixnum();
         switch(index) {
         case 0:
             codePacket.setType(CodePacket::ARGUMENT0);
@@ -299,8 +299,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     }
     case Instruction::CALL:
     {
-        MOSH_ASSERT(argument1.isInt());
-        const int index = argument1.toInt();
+        MOSH_ASSERT(argument1.isFixnum());
+        const int index = argument1.toFixnum();
         if (index <= 3) {
             flush();
             switch(index) {
@@ -333,8 +333,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::REFER_FREE:
     {
         flush();
-        MOSH_ASSERT(argument1.isInt());
-        const int index = argument1.toInt();
+        MOSH_ASSERT(argument1.isFixnum());
+        const int index = argument1.toFixnum();
         if (0 == index) {
             codePacket.setType(CodePacket::ARGUMENT0);
             codePacket.setInstructionImmediate(Instruction::REFER_FREE0);
@@ -357,8 +357,8 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
     case Instruction::RETURN:
     {
         flush();
-        MOSH_ASSERT(argument1.isInt());
-        const int index = argument1.toInt();
+        MOSH_ASSERT(argument1.isFixnum());
+        const int index = argument1.toFixnum();
         switch(index) {
         case 1:
             codePacket.setType(CodePacket::ARGUMENT0);

@@ -203,7 +203,7 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
         match("\\+inf\\.0", p) ||
         match("-inf\\.0", p)
         ) {
-        return Object::makeInt(0);
+        return Object::makeFixnum(0);
     }
 
     // strtol returns no error for "." or "...".
@@ -219,7 +219,7 @@ ScmObj Scm_StringToNumber(ScmString* s, int base, int dummy)
         || (errno != 0 && ret == 0)) {
         return SCM_FALSE;
     } else {
-        return Object::makeInt(ret);
+        return Object::makeFixnum(ret);
     }
 }
 
@@ -450,7 +450,7 @@ void raiseReadError(TextualInputPort* port, const ucs4char* message, Object valu
     port->setError(format(UC("~a at ~a:~d"),
                           Pair::list3(format(message, values),
                                       port->toString(),
-                                      Object::makeInt(port->getLineNo()))));
+                                      Object::makeFixnum(port->getLineNo()))));
     longjmp(returnPoint, -1);
 }
 
@@ -740,7 +740,7 @@ static void read_nested_comment(ScmPort *port, ScmReadContext *ctx)
             continue;
         case EOF:
           eof:
-            RAISE_READ_ERROR1("encountered EOF inside nested multi-line comment (comment begins at line ~d)", Object::makeInt(line));
+            RAISE_READ_ERROR1("encountered EOF inside nested multi-line comment (comment begins at line ~d)", Object::makeFixnum(line));
         default:
             break;
         }
@@ -785,8 +785,8 @@ static ScmObj read_bytevector(ScmPort* port, ScmReadContext *ctx)
                 const Object list = read_list(port, ')', ctx);
                 for (Object p = list; !p.isNil(); p = p.cdr()) {
                     const Object number = p.car();
-                    if (p.car().isInt()) {
-                        const int value = p.car().toInt();
+                    if (p.car().isFixnum()) {
+                        const int value = p.car().toFixnum();
                         if (value < -128 || value > 127) {
                             RAISE_READ_ERROR0("malformed bytevector");
                         }
@@ -1055,7 +1055,7 @@ static ScmObj read_list_int(ScmPort *port, ScmChar closer,
     }
   eoferr:
     if (start_line >= 0) {
-        RAISE_READ_ERROR1("EOF inside a list (starting from line ~d)", Object::makeInt(start_line));
+        RAISE_READ_ERROR1("EOF inside a list (starting from line ~d)", Object::makeFixnum(start_line));
     } else {
         RAISE_READ_ERROR0("EOF inside a list");
     }
@@ -1080,7 +1080,7 @@ static ScmObj read_list(ScmPort *port, ScmChar closer, ScmReadContext *ctx)
 
 #ifdef MONA_SCHEME
     if (r.isPair() && line >= 0) {
-        r = Object::cons(r.car(), r.cdr(), Pair::list2(Object::makeString(port->toString()), Object::makeInt(line)));
+        r = Object::cons(r.car(), r.cdr(), Pair::list2(Object::makeString(port->toString()), Object::makeFixnum(line)));
     }
 #else
     if (SCM_PAIRP(r) && (ctx->flags & SCM_READ_SOURCE_INFO) && line >= 0) {
@@ -1128,7 +1128,7 @@ static ScmObj read_quoted(ScmPort *port, ScmObj quoter, ScmReadContext *ctx)
     if (SCM_EOFP(item)) RAISE_READ_ERROR0("unterminated quote");
 #ifdef MONA_SCHEME
     if (line >= 0) {
-        r = Object::cons(quoter, Object::cons(item, Object::Nil), Pair::list2(Object::makeString(port->toString()), Object::makeInt(line)));
+        r = Object::cons(quoter, Object::cons(item, Object::Nil), Pair::list2(Object::makeString(port->toString()), Object::makeFixnum(line)));
     }
 #else
     if (line >= 0) {
@@ -1611,7 +1611,7 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
         }
         if (ch != '#' && ch != '=') {
             RAISE_READ_ERROR2("invalid reference form (must be either #digits# or #digits=) : #~d~a",
-                              Object::makeInt(refnum),
+                              Object::makeFixnum(refnum),
                               Object::makeChar(ch));
         }
         break;
@@ -1620,7 +1620,7 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
         /* #digit# - back reference */
         if (ctx->table == NULL
             || (e = Scm_HashTableGet(ctx->table, Scm_MakeInteger(refnum))) == NULL) {
-            RAISE_READ_ERROR1("invalid reference number in #~d#", Object::makeInt(refnum));
+            RAISE_READ_ERROR1("invalid reference number in #~d#", Object::makeFixnum(refnum));
         }
         if (SCM_READ_REFERENCE_P(e->value)
             && SCM_READ_REFERENCE_REALIZED(e->value)) {
@@ -1638,7 +1638,7 @@ static ScmObj read_reference(ScmPort *port, ScmChar ch, ScmReadContext *ctx)
                 SCM_HASH_TABLE(Scm_MakeHashTableSimple(SCM_HASH_EQV, 0));
         }
         if (Scm_HashTableGet(ctx->table, Scm_MakeInteger(refnum)) != NULL) {
-            RAISE_READ_ERROR1("duplicate back-reference number in #~d=", Object::makeInt(refnum));
+            RAISE_READ_ERROR1("duplicate back-reference number in #~d=", Object::makeFixnum(refnum));
         }
         ref_register(ctx, ref, refnum);
         val = read_item(port, ctx);

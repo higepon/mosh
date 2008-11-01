@@ -1,3 +1,11 @@
+2008-11-01  higepon  <higepon@users.sourceforge.jp>
+
+        * Arithmetic.cpp : Implemented +, -, *, /, >, >=, <, <=, = between Fixnum and Rational.
+
+        * Rational.h : Added.
+
+        * configure.ac: Added GMP lib check.
+
 2008-10-31  higepon  <higepon@users.sourceforge.jp>
 
         * 0.0.7 released.

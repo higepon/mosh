@@ -30,6 +30,9 @@ AC_CHECK_PROG(GOSH, gosh, gosh, no)
 dnl if test "$GOSH" != "gosh"
 dnl     then AC_MSG_ERROR([gosh not found. Gauche (http://practical-scheme.net/gauche/) is required to build.])
 dnl fi
+AC_CHECK_LIB(gmp, __gmpz_init, ,
+  [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/])])
+
 
 AC_ARG_ENABLE(profiler, [  --disable-profiler trun off profiler [default no]],,disable_profiler=no)
 AC_MSG_CHECKING(whether to enable profiler)

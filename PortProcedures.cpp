@@ -73,7 +73,7 @@ Object scheme::statMtimeEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "failed", L1(argv[0]));
         return Object::Undef;
     } else {
-        return Object::makeInt(sb.st_mtime);
+        return Object::makeFixnum(sb.st_mtime);
     }
 }
 
@@ -82,7 +82,7 @@ Object scheme::getStringNEx(int argc, const Object* argv)
     DeclareProcedureName("get-string-n");
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
-    argumentAsInt(1, size);
+    argumentAsFixnum(1, size);
     return inputPort->getStringN(size);
 }
 
@@ -170,7 +170,7 @@ Object scheme::lookaheadCharEx(int argc, const Object* argv)
     ucs4char ch;
     if (2 == argc) {
         // mosh only
-        argumentAsInt(1, offset);
+        argumentAsFixnum(1, offset);
         ch = textualInputPort->lookaheadChar(offset);
     } else {
         ch = textualInputPort->lookaheadChar();
@@ -469,7 +469,7 @@ Object scheme::getU8Ex(int argc, const Object* argv)
     if (EOF == b) {
         return Object::Eof;
     } else {
-        return Object::makeInt(b);
+        return Object::makeFixnum(b);
     }
 }
 

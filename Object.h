@@ -66,6 +66,7 @@ class Record;
 class RecordTypeDescriptor;
 class RecordConstructorDescriptor;
 class CompoundCondition;
+class Rational;
 
 class Object
 {
@@ -77,7 +78,8 @@ public:
     Object(const ucs4string& str);
     Object(const char* str);
 
-    bool isInt() const;
+    bool isFixnum() const;
+    bool isNumber() const;
     bool isBoolean() const;
     bool isInstruction() const;
     bool isCompilerInstruction() const;
@@ -99,7 +101,7 @@ public:
     bool isHeapObject() const;
 
     ucs4char toChar() const;
-    signed long int toInt() const;
+    signed long int toFixnum() const;
     int toInstruction() const;
     int toCompilerInstruction() const;
     Pair* toPair() const;
@@ -120,7 +122,7 @@ public:
     bool eqv(Object o) const;
 
     static Object* makeObjectArray(int size);
-    static Object makeInt(signed long int n);
+    static Object makeFixnum(signed long int n);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
     static Object makeInstruction(int n);
@@ -176,6 +178,8 @@ public:
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
+    static Object makeRational(int numerator, int denominator);
+    static Object makeRational(mpq_t r);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,
@@ -234,6 +238,7 @@ public:
     DECL_ACCESSOR(RecordTypeDescriptor)
     DECL_ACCESSOR(RecordConstructorDescriptor)
     DECL_ACCESSOR(CompoundCondition)
+    DECL_ACCESSOR(Rational)
 
     static const Object Nil;
     static const Object Eof;

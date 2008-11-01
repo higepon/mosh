@@ -79,7 +79,7 @@ Object scheme::labelEx(int argc, const Object* argv)
     DeclareProcedureName("$label");
     checkArgumentLength(1);
     const Object label = Object::makeVector(2);
-    label.toVector()->set(0, Object::makeInt(LABEL));
+    label.toVector()->set(0, Object::makeFixnum(LABEL));
     label.toVector()->set(1, argv[0]);
     return label;
 }
@@ -89,7 +89,7 @@ Object scheme::localRefEx(int argc, const Object* argv)
     DeclareProcedureName("$localRefEx");
     checkArgumentLength(1);
     const Object label = Object::makeVector(2);
-    label.toVector()->set(0, Object::makeInt(LOCAL_REF));
+    label.toVector()->set(0, Object::makeFixnum(LOCAL_REF));
     label.toVector()->set(1, argv[0]);
     return label;
 }
@@ -120,8 +120,8 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = localVariablesList; p.isPair(); p = p.cdr(), localsIndex++) {
         const Object localVariable = p.car();
         if (localVariable == variable) {
-            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeInt(localsIndex));
-            return Object::makeInt(0);
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_LOCAL), Object::makeFixnum(localsIndex));
+            return Object::makeFixnum(0);
         }
     }
 
@@ -130,8 +130,8 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
     for (Object p = freeVariablesList; p.isPair(); p = p.cdr(), freesIndex++) {
         const Object freeVariable = p.car();
         if (freeVariable == variable) {
-            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE), Object::makeInt(freesIndex));
-            return Object::makeInt(0);
+            codeBuilder.toCodeBuilder()->putInstructionArgument1(Object::makeRaw(Instruction::REFER_FREE), Object::makeFixnum(freesIndex));
+            return Object::makeFixnum(0);
         }
     }
     callAssertionViolationAfter(procedureName, "bug? Unknown lvar", L1(variable));
@@ -265,8 +265,8 @@ Object findFreeCall(Vector* v, Object l, Object canFrees, Object labelsSeen)
 Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
 {
     Vector* v = i.toVector();
-    MOSH_ASSERT(v->ref(0).isInt());
-    switch(v->ref(0).toInt()) {
+    MOSH_ASSERT(v->ref(0).isFixnum());
+    switch(v->ref(0).toFixnum()) {
     case CONST:
         return Object::Nil;
     case LET:
@@ -376,8 +376,8 @@ Object findSets(Object iform, Object lvars)
 Object findSetsRec(Object i, Object lvars)
 {
     Vector* v = i.toVector();
-    MOSH_ASSERT(v->ref(0).isInt());
-    switch(v->ref(0).toInt()) {
+    MOSH_ASSERT(v->ref(0).isFixnum());
+    switch(v->ref(0).toFixnum()) {
     case CONST:
         return Object::Nil;
     case LET:
@@ -633,10 +633,10 @@ Object pass4FixupLabelCollect(Object vec)
             rv->set(j + 1, v->ref(i + 1));
             i += 2;
             j += 2;
-        } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isInt() &&
-                   insn.toVector()->ref(0).toInt() == LABEL) {
+        } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isFixnum() &&
+                   insn.toVector()->ref(0).toFixnum() == LABEL) {
             i++;
-            table->set(insn, Object::makeInt(j));
+            table->set(insn, Object::makeFixnum(j));
         } else {
             rv->set(j, insn);
             i++;
@@ -670,7 +670,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, LOCAL_JMP);
-                code->set(i + 1, Object::makeInt(label.toInt() - i - 1));
+                code->set(i + 1, Object::makeFixnum(label.toFixnum() - i - 1));
                 i += 2;
             } else {
                 i++;
@@ -685,7 +685,7 @@ Object pass4FixupLabel(Object vec)
             const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
-                code->set(i + 1, Object::makeInt(label.toInt() - i - 1));
+                code->set(i + 1, Object::makeFixnum(label.toFixnum() - i - 1));
                 i += 2;
             } else {
                 i++;

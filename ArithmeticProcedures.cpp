@@ -36,8 +36,25 @@
 #include "Pair-inl.h"
 #include "ArithmeticProcedures.h"
 #include "ProcedureMacro.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
+
+Object scheme::numberPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("number?");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    return Object::makeBool(obj.isFixnum() || obj.isRational());
+}
+
+Object scheme::rationalPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("rational?");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    return Object::makeBool(obj.isFixnum() || obj.isRational());
+}
 
 Object scheme::maxEx(int argc, const Object* argv)
 {
@@ -46,7 +63,7 @@ Object scheme::maxEx(int argc, const Object* argv)
     Object maxNumber = argv[0];
     for (int i = 1; i < argc; i++) {
         const Object number = argv[i];
-        if (numberGreater(number, maxNumber)) {
+        if (Arithmetic::gt(number, maxNumber)) {
             maxNumber = number;
         }
     }
@@ -60,7 +77,7 @@ Object scheme::minEx(int argc, const Object* argv)
     Object minNumber = argv[0];
     for (int i = 1; i < argc; i++) {
         const Object number = argv[i];
-        if (numberLess(number, minNumber)) {
+        if (Arithmetic::lt(number, minNumber)) {
             minNumber = number;
         }
     }
@@ -71,15 +88,15 @@ Object scheme::addEx(int argc, const Object* argv)
 {
     DeclareProcedureName("+");
     if (0 == argc) {
-        return Object::makeInt(0);
+        return Object::makeFixnum(0);
     } else if (1 == argc) {
-        argumentCheckInt(0, number);
+        argumentCheckFixnum(0, number);
         return number;
     }
 
-    Object ret = Object::makeInt(0);
+    Object ret = Object::makeFixnum(0);
     for (int i = 0; i < argc; i++) {
-        ret = numberAdd(ret, argv[i]);
+        ret = Arithmetic::add(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -95,13 +112,13 @@ Object scheme::subEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
-        argumentAsInt(0, number);
-        return Object::makeInt(-1 * number);
+        argumentAsFixnum(0, number);
+        return Object::makeFixnum(-1 * number);
     }
 
     Object ret = argv[0];
     for (int i = 1; i < argc; i++) {
-        ret = numberSub(ret, argv[i]);
+        ret = Arithmetic::sub(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -116,15 +133,15 @@ Object scheme::mulEx(int argc, const Object* argv)
     DeclareProcedureName("*");
 
     if (0 == argc) {
-        return Object::makeInt(1);
+        return Object::makeFixnum(1);
     } else if (1 == argc) {
-        argumentCheckInt(0, number);
+        argumentCheckFixnum(0, number);
         return number;
     }
 
-    Object ret = Object::makeInt(1);
+    Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
-        ret = numberMul(ret, argv[i]);
+        ret = Arithmetic::mul(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -140,13 +157,13 @@ Object scheme::divideEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
-        argumentCheckInt(0, number);
-        return numberDiv(Object::makeInt(1), number);
+        argumentCheckFixnum(0, number);
+        return Arithmetic::div(Object::makeFixnum(1), number);
     }
 
     Object ret = argv[0];
     for (int i = 1; i < argc; i++) {
-        ret = numberDiv(ret, argv[i]);
+        ret = Arithmetic::div(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -167,9 +184,9 @@ Object scheme::remainderEx(int argc, const Object* argv)
 {
     DeclareProcedureName("remainder");
     checkArgumentLength(2);
-    argumentAsInt(0, a);
-    argumentAsInt(1, b);
-    return Object::makeInt(a % b);
+    argumentAsFixnum(0, a);
+    argumentAsFixnum(1, b);
+    return Object::makeFixnum(a % b);
 }
 
 
@@ -180,7 +197,7 @@ Object scheme::eqEx(int argc, const Object* argv)
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (numberEqual(number1, number2)) {
+        if (Arithmetic::eq(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -196,7 +213,7 @@ Object scheme::gtEx(int argc, const Object* argv)
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (numberGreater(number1, number2)) {
+        if (Arithmetic::gt(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -212,7 +229,7 @@ Object scheme::geEx(int argc, const Object* argv)
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (numberGreaterEqual(number1, number2)) {
+        if (Arithmetic::ge(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -228,7 +245,7 @@ Object scheme::ltEx(int argc, const Object* argv)
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (numberLess(number1, number2)) {
+        if (Arithmetic::lt(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -244,7 +261,7 @@ Object scheme::leEx(int argc, const Object* argv)
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (numberLessEqual(number1, number2)) {
+        if (Arithmetic::le(number1, number2)) {
             continue;
         } else {
             return Object::False;

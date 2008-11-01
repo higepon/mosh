@@ -46,6 +46,7 @@
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
+#include "Rational.h"
 
 using namespace scheme;
 
@@ -188,9 +189,9 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<unbound variable>"));
     } else if (o.isEof()) {
         putString(UC("#<eof>"));
-    } else if (o.isInt()) {
+    } else if (o.isFixnum()) {
         static char buf[32];
-        snprintf(buf, 32, "%ld", o.toInt());
+        snprintf(buf, 32, "%ld", o.toFixnum());
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
@@ -290,7 +291,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<eq-hash-table>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        putDatum(Object::makeInt(o.val));
+        putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
         putDatum(theVM->getCProcedureName(o));
@@ -303,7 +304,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             if (i != 0) {
                 putString(" ");
             }
-            putDatum(Object::makeInt(byteVector->u8Ref(i)));
+            putDatum(Object::makeFixnum(byteVector->u8Ref(i)));
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -332,6 +333,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<object pointer>"));
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
+    } else if (o.isRational()) {
+        putDatum(o.toRational()->toString());
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -356,9 +359,9 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<unbound variable>"));
     } else if (o.isEof()) {
         putString(UC("#<eof>"));
-    } else if (o.isInt()) {
+    } else if (o.isFixnum()) {
         static char buf[32];
-        snprintf(buf, 32, "%ld", o.toInt());
+        snprintf(buf, 32, "%ld", o.toFixnum());
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
@@ -405,7 +408,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<eq-hash-table>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        putDatum(Object::makeInt(o.val));
+        putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
         putDatum(theVM->getCProcedureName(o));
@@ -418,7 +421,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
             if (i != 0) {
                 putString(" ");
             }
-            putDatum(Object::makeInt(byteVector->u8Ref(i)));
+            putDatum(Object::makeFixnum(byteVector->u8Ref(i)));
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -445,9 +448,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
-
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
+    } else if (o.isRational()) {
+        putString(o.toRational()->toString());
     } else {
         putString(UC("#<unknown datum>"));
     }

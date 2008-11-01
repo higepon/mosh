@@ -44,8 +44,8 @@ extern scheme::VM* theVM;
 int callHashFunction(Object hashFunction, Object key)
 {
     const Object hashValue =  theVM->callClosure1(hashFunction, key);
-    MOSH_ASSERT(hashValue.isInt());
-    const int r = hashValue.toInt();;
+    MOSH_ASSERT(hashValue.isFixnum());
+    const int r = hashValue.toFixnum();;
     return r;
 }
 

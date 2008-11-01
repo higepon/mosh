@@ -39,7 +39,6 @@ namespace scheme {
 
     Object makeCompilerInstructionEx(int argc, const Object* argv);
     Object makeInstructionEx(int argc, const Object* argv);
-    Object numberPEx(int argc, const Object* argv);
     Object bytevectorPEx(int argc, const Object* argv);
     Object regexpPEx(int argc, const Object* argv);
     Object numberTostringEx(int argc, const Object* argv);

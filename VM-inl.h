@@ -122,8 +122,8 @@ inline Object VM::referLocal(int n)
 
 inline Object VM::referFree(Object n)
 {
-    MOSH_ASSERT(n.isInt());
-    return dc_.toClosure()->referFree(n.toInt());
+    MOSH_ASSERT(n.isFixnum());
+    return dc_.toClosure()->referFree(n.toFixnum());
 }
 
 inline Object VM::referFree(int n)
@@ -136,7 +136,7 @@ inline Object VM::makeContinuation(Object n)
     const int codeSize = 7;
     Object* code = Object::makeObjectArray(codeSize);
     code[0] = Object::makeRaw(Instruction::REFER_LOCAL);
-    code[1] = Object::makeInt(0);
+    code[1] = Object::makeFixnum(0);
     code[2] = Object::makeRaw(Instruction::CONTINUATION_VALUES);
     code[3] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
     code[4] = Object::makeStack(stack_, sp_ - stack_);

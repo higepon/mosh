@@ -53,7 +53,7 @@ Object scheme::u8ListToByteVector(Object list)
     MOSH_ASSERT(list.isList());
     for (Object p = list; p.isPair(); p = p.cdr()) {
         const Object num = p.car();
-        if (num.isInt() && ByteVector::isOctet(num.toInt())) {
+        if (num.isFixnum() && ByteVector::isOctet(num.toFixnum())) {
             continue;
         } else {
             return Object::Nil;
@@ -265,8 +265,8 @@ Object scheme::bytevectorS64NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s64-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -286,8 +286,8 @@ Object scheme::bytevectorU64NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s64-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -307,8 +307,8 @@ Object scheme::bytevectorS64SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s64-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -335,8 +335,8 @@ Object scheme::bytevectorU64SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u64-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -363,7 +363,7 @@ Object scheme::bytevectorS64NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s64-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -371,7 +371,7 @@ Object scheme::bytevectorS64NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->s64RefNative(index));
+    return Object::makeFixnum(bytevector->s64RefNative(index));
 }
 
 Object scheme::bytevectorU64NativeRefEx(int argc, const Object* argv)
@@ -379,7 +379,7 @@ Object scheme::bytevectorU64NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u64-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -387,7 +387,7 @@ Object scheme::bytevectorU64NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->u64RefNative(index));
+    return Object::makeFixnum(bytevector->u64RefNative(index));
 }
 
 Object scheme::bytevectorS64RefEx(int argc, const Object* argv)
@@ -395,7 +395,7 @@ Object scheme::bytevectorS64RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s64-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -403,9 +403,9 @@ Object scheme::bytevectorS64RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->s64RefLittle(index));
+        return Object::makeFixnum(bytevector->s64RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->s64RefBig(index));
+        return Object::makeFixnum(bytevector->s64RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -417,7 +417,7 @@ Object scheme::bytevectorU64RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u64-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -425,9 +425,9 @@ Object scheme::bytevectorU64RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->u64RefLittle(index));
+        return Object::makeFixnum(bytevector->u64RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->u64RefBig(index));
+        return Object::makeFixnum(bytevector->u64RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -439,8 +439,8 @@ Object scheme::bytevectorS32NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s32-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -460,8 +460,8 @@ Object scheme::bytevectorU32NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s32-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -481,8 +481,8 @@ Object scheme::bytevectorS32SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s32-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -508,8 +508,8 @@ Object scheme::bytevectorU32SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u32-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -536,7 +536,7 @@ Object scheme::bytevectorS32NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s32-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -544,7 +544,7 @@ Object scheme::bytevectorS32NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->s32RefNative(index));
+    return Object::makeFixnum(bytevector->s32RefNative(index));
 }
 
 Object scheme::bytevectorU32NativeRefEx(int argc, const Object* argv)
@@ -552,7 +552,7 @@ Object scheme::bytevectorU32NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u32-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -560,7 +560,7 @@ Object scheme::bytevectorU32NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->u32RefNative(index));
+    return Object::makeFixnum(bytevector->u32RefNative(index));
 }
 
 Object scheme::bytevectorS32RefEx(int argc, const Object* argv)
@@ -568,7 +568,7 @@ Object scheme::bytevectorS32RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s32-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -576,9 +576,9 @@ Object scheme::bytevectorS32RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->s32RefLittle(index));
+        return Object::makeFixnum(bytevector->s32RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->s32RefBig(index));
+        return Object::makeFixnum(bytevector->s32RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -590,7 +590,7 @@ Object scheme::bytevectorU32RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u32-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -598,9 +598,9 @@ Object scheme::bytevectorU32RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->u32RefLittle(index));
+        return Object::makeFixnum(bytevector->u32RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->u32RefBig(index));
+        return Object::makeFixnum(bytevector->u32RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -612,8 +612,8 @@ Object scheme::bytevectorS16NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s16-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -633,8 +633,8 @@ Object scheme::bytevectorU16NativeSetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s16-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -654,8 +654,8 @@ Object scheme::bytevectorS16SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s16-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -681,8 +681,8 @@ Object scheme::bytevectorU16SetDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u16-set!");
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -709,7 +709,7 @@ Object scheme::bytevectorS16NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s16-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -717,7 +717,7 @@ Object scheme::bytevectorS16NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->s16RefNative(index));
+    return Object::makeFixnum(bytevector->s16RefNative(index));
 }
 
 Object scheme::bytevectorU16NativeRefEx(int argc, const Object* argv)
@@ -725,7 +725,7 @@ Object scheme::bytevectorU16NativeRefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u16-native-ref");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
@@ -733,7 +733,7 @@ Object scheme::bytevectorU16NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeInt(bytevector->u16RefNative(index));
+    return Object::makeFixnum(bytevector->u16RefNative(index));
 }
 
 Object scheme::bytevectorS16RefEx(int argc, const Object* argv)
@@ -741,7 +741,7 @@ Object scheme::bytevectorS16RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-s16-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -749,9 +749,9 @@ Object scheme::bytevectorS16RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->s16RefLittle(index));
+        return Object::makeFixnum(bytevector->s16RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->s16RefBig(index));
+        return Object::makeFixnum(bytevector->s16RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -763,7 +763,7 @@ Object scheme::bytevectorU16RefEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-u16-ref");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentCheckSymbol(2, endianness);
     if (!bytevector->isValid16RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
@@ -771,9 +771,9 @@ Object scheme::bytevectorU16RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeInt(bytevector->u16RefLittle(index));
+        return Object::makeFixnum(bytevector->u16RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeInt(bytevector->u16RefBig(index));
+        return Object::makeFixnum(bytevector->u16RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;
@@ -800,7 +800,7 @@ Object scheme::bytevectorTou8ListEx(int argc, const Object* argv)
     argumentAsByteVector(0, bytevector);
     Object ret = Object::Nil;
     for (int i = bytevector->length() - 1; i >= 0; i--) {
-        ret = Object::cons(Object::makeInt(bytevector->u8Ref(i)), ret);
+        ret = Object::cons(Object::makeFixnum(bytevector->u8Ref(i)), ret);
     }
     return ret;
 }
@@ -818,10 +818,10 @@ Object scheme::bytevectorCopyDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-copy!");
     checkArgumentLength(5);
     argumentAsByteVector(0, source);
-    argumentAsInt(1, sourceStart);
+    argumentAsFixnum(1, sourceStart);
     argumentAsByteVector(2, target)
-    argumentAsInt(3, targetStart);
-    argumentAsInt(4, k);
+    argumentAsFixnum(3, targetStart);
+    argumentAsFixnum(4, k);
 
     const int sourceLength = source->length();
     const int targetLength = target->length();
@@ -843,7 +843,7 @@ Object scheme::bytevectorFillDEx(int argc, const Object* argv)
     DeclareProcedureName("bytevector-fill!");
     checkArgumentLength(2);
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, value);
+    argumentAsFixnum(1, value);
     if (ByteVector::isByte(value) || ByteVector::isOctet(value)) {
         bytevector->fill(static_cast<uint8_t>(value));
     } else {
@@ -865,11 +865,11 @@ Object scheme::makeBytevectorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-bytevector");
     checkArgumentLengthBetween(1, 2);
-    argumentAsInt(0, length);
+    argumentAsFixnum(0, length);
     if (1 == argc) {
         return Object::makeByteVector(length);
     } else {
-        argumentAsInt(1, value);
+        argumentAsFixnum(1, value);
         if (ByteVector::isByte(value) || ByteVector::isOctet(value)) {
             return Object::makeByteVector(length, static_cast<uint8_t>(value));
         } else {
@@ -897,8 +897,8 @@ Object scheme::bytevectorU8SetDEx(int argc, const Object* argv)
     checkArgumentLength(3);
 
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
 
     if (bytevector->isValidIndex(index)) {
         if (ByteVector::isOctet(value)) {
@@ -918,9 +918,9 @@ Object scheme::bytevectorU8RefEx(int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     if (bytevector->isValidIndex(index)) {
-        return Object::makeInt(bytevector->u8Ref(index));
+        return Object::makeFixnum(bytevector->u8Ref(index));
     } else {
         callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[2]));
         return Object::Undef;
@@ -933,8 +933,8 @@ Object scheme::bytevectorS8SetDEx(int argc, const Object* argv)
     checkArgumentLength(3);
 
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
-    argumentAsInt(2, value);
+    argumentAsFixnum(1, index);
+    argumentAsFixnum(2, value);
 
     if (bytevector->isValidIndex(index)) {
         if (ByteVector::isByte(value)) {
@@ -955,10 +955,10 @@ Object scheme::bytevectorS8RefEx(int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsByteVector(0, bytevector);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
 
     if (bytevector->isValidIndex(index)) {
-        return Object::makeInt(bytevector->s8Ref(index));
+        return Object::makeFixnum(bytevector->s8Ref(index));
     } else {
         callAssertionViolationAfter(procedureName, "index out of range.", L1(argv[1]));
         return Object::Undef;
@@ -972,7 +972,7 @@ Object scheme::bytevectorLengthEx(int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsByteVector(0, bytevector);
-    return Object::makeInt(bytevector->length());
+    return Object::makeFixnum(bytevector->length());
 }
 
 Object scheme::getBytevectorNEx(int argc, const Object* argv)
@@ -981,7 +981,7 @@ Object scheme::getBytevectorNEx(int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsBinaryInputPort(0, binaryInputPort);
-    argumentAsInt(1, count);
+    argumentAsFixnum(1, count);
 
     ByteVector* ret = binaryInputPort->getByteVector(count);
     if (ret->length() == 0) {

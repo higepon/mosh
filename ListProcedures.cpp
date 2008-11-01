@@ -274,7 +274,7 @@ Object scheme::lengthEx(int argc, const Object* argv)
         }
         ret++;
     }
-    return Object::makeInt(ret);
+    return Object::makeFixnum(ret);
 }
 
 Object scheme::listTovectorEx(int argc, const Object* argv)

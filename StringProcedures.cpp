@@ -71,14 +71,14 @@ Object scheme::stringRefEx(int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsString(0, text);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
 
     if (index < text->length()) {
         return Object::makeChar(text->charAt(index));
     } else {
         callAssertionViolationAfter(procedureName,
                                     "index out of range",
-                                    L2(Object::makeInt(text->length()),
+                                    L2(Object::makeFixnum(text->length()),
                                        argv[1]
                                        ));
         return Object::Undef;
@@ -107,7 +107,7 @@ Object scheme::makeStringEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-string");
     checkArgumentLengthBetween(1, 2);
-    argumentAsInt(0, stringSize);
+    argumentAsFixnum(0, stringSize);
 
     if (2 == argc) {
         argumentAsChar(1, ch);
@@ -123,7 +123,7 @@ Object scheme::stringSetDEx(int argc, const Object* argv)
     checkArgumentLength(3);
 
     argumentAsString(0, text);
-    argumentAsInt(1, index);
+    argumentAsFixnum(1, index);
     argumentAsChar(2, ch);
 
     text->data()[index] = ch;
@@ -135,7 +135,7 @@ Object scheme::stringLengthEx(int argc, const Object* argv)
     DeclareProcedureName("string-length");
     checkArgumentLength(1);
     argumentAsString(0, text);
-    return Object::makeInt(text->data().length());
+    return Object::makeFixnum(text->data().length());
 }
 
 Object scheme::stringTosymbol(Object str)
@@ -159,8 +159,8 @@ Object scheme::stringTonumberEx(int argc, const Object* argv)
     argumentAsString(0, text);
     int base;
     if (2 == argc) {
-        argumentCheckInt(1, baseObject);
-        base = baseObject.toInt();
+        argumentCheckFixnum(1, baseObject);
+        base = baseObject.toFixnum();
         MOSH_ASSERT(base == 16);
     } else {
         base = 10;
@@ -172,7 +172,7 @@ Object scheme::stringTonumberEx(int argc, const Object* argv)
         || (errno != 0 && val == 0)) {
         return Object::False;
     } else {
-        return Object::makeInt(val);
+        return Object::makeFixnum(val);
     }
 }
 

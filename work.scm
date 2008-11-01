@@ -1,7 +1,5 @@
-(import (rnrs)
-        (mosh file)
-        (srfi :98))
+(import (rnrs))
+(display (/ 5))
 
-(display (get-environment-variable "HOME"))
-(newline)
-;(display (file-newer? "lib/srfi/%3A98.ss.fasl" "lib/srfi/%3A98.ss"))
+(display (+ (+ (/ 12 144) (/ 1 6)) 3))
+(display (+ (/ 2 6) (/ 2 6)))

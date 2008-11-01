@@ -55,6 +55,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <gmp.h>
 //#define DUMP_ALL_INSTRUCTIONS
 //#define TRACE_INSN
 #define INSN_LOG_FILE "/tmp/mosh-insn.log"

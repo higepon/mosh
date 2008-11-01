@@ -117,7 +117,20 @@ void parrot(const char* file);
 #include "match.h"
 #include "psyntax.h"
 #include "compiler-with-library.h"
+
 #define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
+
+//#include <glog/logging.h>
+#include <gmp.h>
+#include <gc.h>
+void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
+{
+    return GC_REALLOC(ptr, newSize);
+}
+
+void my_dont_free(void *ptr, size_t size)
+{
+}
 
 int main(int argc, char *argv[])
 {
@@ -188,6 +201,7 @@ int main(int argc, char *argv[])
 
 #ifdef USE_BOEHM_GC
     GC_INIT();
+    mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
 #endif
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);

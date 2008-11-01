@@ -102,7 +102,7 @@ private:
         }
         case Fasl::TAG_FIXNUM: {
             const int value = fetchU32();
-            return Object::makeInt(value);
+            return Object::makeFixnum(value);
         }
         case Fasl::TAG_INSTRUCTION: {
             const int value = fetchU32();

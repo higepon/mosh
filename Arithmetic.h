@@ -1,5 +1,5 @@
 /*
- * CustomBinaryInputPort.cpp -
+ * Arithmetic.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,62 +26,34 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: CustomBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Arithmetic.h 261 2008-07-25 06:16:44Z higepon $
  */
 
+#ifndef __SCHEME_ARITHMETIC__
+#define __SCHEME_ARITHMETIC__
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Pair.h"
-#include "Pair-inl.h"
-#include "ByteVector.h"
-#include "CustomBinaryInputPort.h"
-#include "VM.h"
+#include "scheme.h"
 
-using namespace scheme;
+namespace scheme {
 
-extern scheme::VM* theVM;
-
-CustomBinaryInputPort::CustomBinaryInputPort(Object readProc) : readProc_(readProc)
+class Arithmetic EXTEND_GC
 {
-}
+public:
+    Arithmetic();
+    ~Arithmetic();
 
-CustomBinaryInputPort::~CustomBinaryInputPort()
-{
-}
+    static Object add(Object number1, Object number2);
+    static Object sub(Object number1, Object number2);
+    static Object mul(Object number1, Object number2);
+    static Object div(Object number1, Object number2);
+    static bool gt(Object number1, Object number2);
+    static bool ge(Object number1, Object number2);
+    static bool lt(Object number1, Object number2);
+    static bool le(Object number1, Object number2);
+    static bool eq(Object number1, Object number2);
 
-ucs4string CustomBinaryInputPort::toString()
-{
-    return UC("<custom port>");
-}
+};
 
-int CustomBinaryInputPort::open()
-{
-    return 0;
-}
+}; // namespace scheme
 
-int CustomBinaryInputPort::close()
-{
-    // todo if close! proc exists
-    return 0;
-}
-
-
-int CustomBinaryInputPort::getU8()
-{
-    const Object bv = Object::makeByteVector(1);
-    const Object start = Object::makeFixnum(0);
-    const Object count = Object::makeFixnum(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
-    MOSH_ASSERT(result.isFixnum());
-    if (0 == result.toFixnum()) {
-        return EOF;
-    }
-    return bv.toByteVector()->u8Ref(0);
-}
-
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
-{
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
-}
+#endif // __SCHEME_ARITHMETIC__

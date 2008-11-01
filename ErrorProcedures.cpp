@@ -100,9 +100,9 @@ void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int sta
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
 
     textualOutputPort->format(UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
-                              Pair::list3(Object::makeInt(startCounts),
-                                          Object::makeInt(endCounts),
-                                          Object::makeInt(gotCounts)));
+                              Pair::list3(Object::makeFixnum(startCounts),
+                                          Object::makeFixnum(endCounts),
+                                          Object::makeFixnum(gotCounts)));
     const Object message = sysGetOutputStringEx(1, &stringOutputPort);
     callAssertionViolationAfter(who, message, irritants);
 }
@@ -113,8 +113,8 @@ void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCo
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
 
     textualOutputPort->format(UC("wrong number of arguments (required ~d, got ~d)"),
-                              Pair::list2(Object::makeInt(requiredCounts),
-                                          Object::makeInt(gotCounts)));
+                              Pair::list2(Object::makeFixnum(requiredCounts),
+                                          Object::makeFixnum(gotCounts)));
     const Object message = sysGetOutputStringEx(1, &stringOutputPort);
     callAssertionViolationAfter(who, message, irritants);
 }
@@ -125,8 +125,8 @@ void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int req
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
 
     textualOutputPort->format(UC("wrong number of arguments (required at least ~d, got ~d)"),
-                              Pair::list2(Object::makeInt(requiredCounts),
-                                          Object::makeInt(gotCounts)));
+                              Pair::list2(Object::makeFixnum(requiredCounts),
+                                          Object::makeFixnum(gotCounts)));
     const Object message = sysGetOutputStringEx(1, &stringOutputPort);
     callAssertionViolationAfter(who, message, irritants);
 }
