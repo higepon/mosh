@@ -66,8 +66,9 @@ class Record;
 class RecordTypeDescriptor;
 class RecordConstructorDescriptor;
 class CompoundCondition;
-class Rational;
+class Ratnum;
 class Flonum;
+class Bignum;
 
 class Object
 {
@@ -124,6 +125,8 @@ public:
 
     static Object* makeObjectArray(int size);
     static Object makeFixnum(signed long int n);
+    static Object makeBignum(signed long int n);
+    static Object makeBignum(Bignum* b);
     static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
@@ -180,8 +183,8 @@ public:
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
-    static Object makeRational(int numerator, int denominator);
-    static Object makeRational(mpq_t r);
+    static Object makeRatnum(int numerator, int denominator);
+    static Object makeRatnum(mpq_t r);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,
@@ -240,8 +243,9 @@ public:
     DECL_ACCESSOR(RecordTypeDescriptor)
     DECL_ACCESSOR(RecordConstructorDescriptor)
     DECL_ACCESSOR(CompoundCondition)
-    DECL_ACCESSOR(Rational)
+    DECL_ACCESSOR(Ratnum)
     DECL_ACCESSOR(Flonum)
+    DECL_ACCESSOR(Bignum)
 
     static const Object Nil;
     static const Object Eof;

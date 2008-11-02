@@ -64,8 +64,9 @@
 #include "CustomBinaryInputPort.h"
 #include "TextualByteVectorOutputPort.h"
 #include "CodeBuilder.h"
-#include "Rational.h"
+#include "Ratnum.h"
 #include "Flonum.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -297,22 +298,34 @@ Object Object::makeCompoundCondition(Object conditions)
                                                                                                      conditionsArray)))));
 }
 
-Object Object::makeRational(int numerator, int denominator)
+Object Object::makeRatnum(int numerator, int denominator)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Rational,
-                                                        reinterpret_cast<word>(new Rational(numerator, denominator)))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<word>(new Ratnum(numerator, denominator)))));
 }
 
-Object Object::makeRational(mpq_t r)
+Object Object::makeRatnum(mpq_t r)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Rational,
-                                                        reinterpret_cast<word>(new Rational(r)))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<word>(new Ratnum(r)))));
 }
 
 Object Object::makeFlonum(double value)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Flonum,
                                                         reinterpret_cast<word>(new Flonum(value)))));
+}
+
+Object Object::makeBignum(long n)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(new Bignum(n)))));
+}
+
+Object Object::makeBignum(Bignum* b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(b))));
 }
 
 bool Object::isList() const

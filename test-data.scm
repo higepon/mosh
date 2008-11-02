@@ -905,8 +905,9 @@
 [mosh-only #t (= (/ 2 2) 1)]
 [mosh-only #t (= 1 (/ 2 2))]
 [mosh-only #t (= (/ 1 2) (/ 2 4))]
-
-
+[mosh-only #t (>= (/ 1 2) (inexact (/ 1 3)))]
+[mosh-only #t (> (/ 3 2) (+ (inexact (/ 1 3)) (inexact (/ 1 3)) (inexact (/ 1 3))) (/ 99 100))]
+[mosh-only #t (> 1 (/ (inexact 98) 100) (/ 97 100))]
 [mosh-only #t  (rational? 3)]
 [mosh-only #t  (rational? (/ 1 4))]
 ;[mosh-only 1/2 (/ 2)]

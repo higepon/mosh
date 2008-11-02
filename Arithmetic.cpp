@@ -34,146 +34,129 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
-#include "Rational.h"
+#include "Bignum.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+#include "Fixnum.h"
 #include "ErrorProcedures.h"
 
 using namespace scheme;
 
-bool Arithmetic::lt(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return number1.toFixnum() < number2.toFixnum();
-        } else if (number2.isRational()) {
-            return Rational::lt(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::lt(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::lt(number1.toRational(), number2.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter("<", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return false;
-}
-
-bool Arithmetic::le(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return number1.toFixnum() <= number2.toFixnum();
-        } else if (number2.isRational()) {
-            return Rational::le(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::le(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::le(number1.toRational(), number2.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter("<=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return false;
-}
-
-bool Arithmetic::gt(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return number1.toFixnum() > number2.toFixnum();
-        } else if (number2.isRational()) {
-            return Rational::gt(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::gt(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::gt(number1.toRational(), number2.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter(">", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return false;
-}
-
-bool Arithmetic::ge(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return number1.toFixnum() >= number2.toFixnum();
-        } else if (number2.isRational()) {
-            return Rational::ge(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::ge(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::ge(number1.toRational(), number2.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter(">=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return false;
-}
-
-Object Arithmetic::add(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return Object::makeFixnum(number1.toFixnum() + number2.toFixnum());
-        } else if (number2.isRational()) {
-            return Rational::add(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-
-        if (number2.isFixnum()) {
-            return Rational::add(number1.toRational(), new Rational(number2.toFixnum(), 1));
-        } else if (number2.isRational()) {
-            return Rational::add(number1.toRational(), number2.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter("+", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return Object::False;
-}
-
-Object Arithmetic::sub(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return Object::makeFixnum(number1.toFixnum() - number2.toFixnum());
-        } else if (number2.isRational()) {
-            return Rational::sub(new Rational(number1.toFixnum(), 1), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::sub(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::sub(number1.toRational(), number2.toRational());
-        }
-
-    }
-    callWrongTypeOfArgumentViolationAfter("-", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return Object::False;
-}
-
-Object Arithmetic::mul(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return Object::makeFixnum(number1.toFixnum() * number2.toFixnum());
-        } else if (number2.isRational()) {
-            return Rational::mul(Rational::fromFixnum(number1.toFixnum()), number2.toRational());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return Rational::mul(number1.toRational(), Rational::fromFixnum(number2.toFixnum()));
-        } else if (number2.isRational()) {
-            return Rational::mul(number1.toRational(), number2.toRational());
-        }
+#define MAKE_COMPARE_FUNC(compare, symbol)          \
+    bool Arithmetic::compare(Object number1, Object number2) \
+    { \
+        if (number1.isFixnum()) {\
+            if (number2.isFixnum()) {\
+                return Fixnum::compare(number1.toFixnum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Ratnum::compare(number1.toFixnum(), number2.toRatnum());\
+            } else if (number2.isFlonum()) {\
+                return Flonum::compare(number1.toFixnum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Bignum::compare(number1.toFixnum(), number2.toBignum());\
+            }\
+        } else if (number1.isBignum()) {\
+            if (number2.isFixnum()) {\
+                return Bignum::compare(number1.toBignum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Ratnum::compare(number1.toBignum(), number2.toRatnum()); \
+            } else if (number2.isFlonum()) {\
+                return Flonum::compare(number1.toBignum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Bignum::compare(number1.toBignum(), number2.toBignum());\
+            }\
+        } else if (number1.isRatnum()) {\
+            if (number2.isFixnum()) {\
+                return Ratnum::compare(number1.toRatnum(), number2.toFixnum());\
+            } else if (number2.isRatnum()) {\
+                return Ratnum::compare(number1.toRatnum(), number2.toRatnum());\
+            } else if (number2.isFlonum()) {\
+                return Flonum::compare(number1.toRatnum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Ratnum::compare(number1.toRatnum(), number2.toBignum());\
+            }\
+        } else if (number1.isFlonum()) {\
+            if (number2.isFixnum()) {\
+                return Flonum::compare(number1.toFlonum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Flonum::compare(number1.toFlonum(), number2.toRatnum()); \
+            } else if (number2.isFlonum()) {\
+                return Flonum::compare(number1.toFlonum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Flonum::compare(number1.toFlonum(), number2.toBignum());\
+            }\
+        }\
+        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(number1, number2), Pair::list2(number1, number2));\
+        return false;\
     }
 
-    callWrongTypeOfArgumentViolationAfter("*", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return Object::False;
-}
+MAKE_COMPARE_FUNC(lt, <)
+MAKE_COMPARE_FUNC(le, <=)
+MAKE_COMPARE_FUNC(gt, >)
+MAKE_COMPARE_FUNC(ge, >=)
+MAKE_COMPARE_FUNC(eq, =)
+
+#define MAKE_OP_FUNC(op, symbol)\
+    Object Arithmetic::op(Object number1, Object number2)\
+    {\
+        if (number1.isFixnum()) {\
+            if (number2.isFixnum()) {\
+                return Fixnum::op(number1.toFixnum(), number2.toFixnum());\
+            } else if (number2.isRatnum()) {\
+                return Ratnum::op(number1.toFixnum(), number2.toRatnum());\
+            } else if (number2.isFlonum()) {\
+                return Flonum::op(number1.toFixnum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Bignum::op(number1.toFixnum(), number2.toBignum());\
+            }\
+        } else if (number1.isBignum()) {\
+            if (number2.isFixnum()) {\
+                return Bignum::op(number1.toBignum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Ratnum::op(number1.toBignum(), number2.toRatnum()); \
+            } else if (number2.isFlonum()) {\
+                return Flonum::op(number1.toBignum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Bignum::op(number1.toBignum(), number2.toBignum());\
+            }\
+        } else if (number1.isBignum()) {\
+            if (number2.isFixnum()) {\
+                return Bignum::op(number1.toBignum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Ratnum::op(number1.toBignum(), number2.toRatnum()); \
+            } else if (number2.isFlonum()) {\
+                return Flonum::op(number1.toBignum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Bignum::op(number1.toBignum(), number2.toBignum());\
+            }\
+        } else if (number1.isRatnum()) {\
+            if (number2.isFixnum()) {\
+                return Ratnum::op(number1.toRatnum(), new Ratnum(number2.toFixnum(), 1));\
+            } else if (number2.isRatnum()) {\
+                return Ratnum::op(number1.toRatnum(), number2.toRatnum());\
+            } else if (number2.isFlonum()) {\
+                return Flonum::op(number1.toRatnum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Ratnum::op(number1.toRatnum(), number2.toBignum());\
+            }\
+        } else if (number1.isFlonum()) {\
+            if (number2.isFixnum()) {\
+                return Flonum::op(number1.toFlonum(), number2.toFixnum()); \
+            } else if (number2.isRatnum()) {\
+                return Flonum::op(number1.toFlonum(), number2.toRatnum()); \
+            } else if (number2.isFlonum()) {\
+                return Flonum::op(number1.toFlonum(), number2.toFlonum());\
+            } else if (number2.isBignum()) {\
+                return Flonum::op(number1.toFlonum(), number2.toBignum());\
+            }\
+        }\
+        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(number1, number2), Pair::list2(number1, number2));\
+        return Object::False;\
+    }
+
+MAKE_OP_FUNC(add, +)
+MAKE_OP_FUNC(sub, -)
+MAKE_OP_FUNC(mul, *)
 
 Object Arithmetic::div(Object number1, Object number2)
 {
@@ -183,52 +166,61 @@ Object Arithmetic::div(Object number1, Object number2)
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
                 return Object::False;
             } else {
-                return Object::makeRational(number1.toFixnum(), number2.toFixnum());
+                return Object::makeRatnum(number1.toFixnum(), number2.toFixnum());
             }
-        } else if (number2.isRational()) {
-            if (number2.toRational()->equal(0)) {
+        } else if (number2.isRatnum()) {
+            if (number2.toRatnum()->equal(0)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
                 return Object::False;
             } else {
-                return Rational::div(Rational::fromFixnum(number1.toFixnum()),
-                                     number2.toRational());
+                return Ratnum::div(number1.toFixnum(), number2.toRatnum());
+            }
+        } else if (number2.isFlonum()) {
+            if (number2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+                return Object::False;
+            } else {
+                return Flonum::div(number1.toFixnum(), number2.toFlonum());
             }
         }
-    } else if (number1.isRational()) {
+    } else if (number1.isRatnum()) {
         if (number2.isFixnum()) {
             if (number2.toFixnum() == 0) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
                 return Object::False;
             } else {
-                return Rational::div(number1.toRational(),
-                                     Rational::fromFixnum(number2.toFixnum()));
+                return Ratnum::div(number1.toRatnum(), number2.toFixnum());
             }
-        } else if (number2.isRational()) {
-            return Rational::div(number1.toRational(), number2.toRational());
+        } else if (number2.isRatnum()) {
+            return Ratnum::div(number1.toRatnum(), number2.toRatnum());
+        } else if (number2.isFlonum()) {
+            if (number2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+                return Object::False;
+            } else {
+                return Flonum::div(number1.toRatnum(), number2.toFlonum());
+            }
+        }
+    } else if (number1.isFlonum()) {
+        if (number2.isFixnum()) {
+            if (number2.toFixnum() == 0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+                return Object::False;
+            } else {
+                return Flonum::div(number1.toFlonum(), number2.toFixnum());
+            }
+        } else if (number2.isRatnum()) {
+            return Flonum::div(number1.toFlonum(), number2.toRatnum());
+        } else if (number2.isFlonum()) {
+            if (number2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+                return Object::False;
+            } else {
+                return Flonum::div(number1.toFlonum(), number2.toFlonum());
+            }
         }
     }
 
     callWrongTypeOfArgumentViolationAfter("/", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
     return Object::False;
-}
-
-
-bool Arithmetic::eq(Object number1, Object number2)
-{
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            return number1.toFixnum() == number2.toFixnum();
-        } else if (number2.isRational()) {
-            return number2.toRational()->equal(number1.toFixnum());
-        }
-    } else if (number1.isRational()) {
-        if (number2.isFixnum()) {
-            return number1.toRational()->equal(number2.toFixnum());
-        } else if (number2.isRational()) {
-            return number2.toRational()->equal(number1.toRational());
-        }
-    }
-    callWrongTypeOfArgumentViolationAfter("=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-    return false;
-
 }

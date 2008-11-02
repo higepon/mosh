@@ -1,3 +1,5 @@
 (import (rnrs))
-(display (/ 1 3))
-(display (inexact (/ 1 3)))
+;; (display (/ 1 3))
+;; (display (/ (inexact 2) 3))
+;; (newline)
+(display (inexact (* 1000000 10000000 10000000 10000000)))

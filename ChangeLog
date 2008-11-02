@@ -1,8 +1,18 @@
+2008-11-03  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented +, -, *, /, >, >=, <, <=, = between Bignum and (Rational, Fixnum ,Flonum and Bignum).
+
+        * Added Bignum.
+
 2008-11-02  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented +, -, *, /, >, >=, <, <=, = between Flonum and (Rational, Fixnum and Flonum).
+
+        * Fixnum.h: Added Fixnum utility functions.
 
         * Added: (inexact ...).
 
-        * Flonum.cpp: Added Flonum.
+        * Flonum.h: Added Flonum.
 
 2008-11-01  higepon  <higepon@users.sourceforge.jp>
 

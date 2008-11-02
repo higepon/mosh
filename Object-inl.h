@@ -256,7 +256,7 @@ inline Object Object::makeObjectPointer(Object* p)
 
 inline bool Object::isNumber() const
 {
-    return isFixnum() || isRational();
+    return isFixnum() || isRatnum();
 }
 
 // private

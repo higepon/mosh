@@ -40,6 +40,7 @@ Box.h                                                             \
 Codec.h                                                           \
 Transcoder.h                                                      \
 ProcedureMacro.h                                                  \
+Fixnum.h                                                          \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
 reader.h                      reader.cpp                          \
@@ -86,7 +87,8 @@ ucs4string.h                  ucs4string.cpp                      \
 Vector.h                      Vector.cpp                          \
 Fasl.h                        Fasl.cpp                            \
 Arithmetic.h                  Arithmetic.cpp                      \
-Rational.h                    Rational.cpp                        \
+Ratnum.h                      Ratnum.cpp                          \
+Bignum.h                      Bignum.cpp                          \
 Flonum.h                      Flonum.cpp                          \
 CodeBuilder.h                 CodeBuilder.cpp
 

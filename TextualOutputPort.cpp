@@ -46,8 +46,9 @@
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
-#include "Rational.h"
+#include "Ratnum.h"
 #include "Flonum.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -338,8 +339,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<object pointer>"));
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
-    } else if (o.isRational()) {
-        putDatum(o.toRational()->toString());
+    } else if (o.isRatnum()) {
+        putDatum(o.toRatnum()->toString());
+    } else if (o.isBignum()) {
+        putString(o.toBignum()->toString());
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -370,7 +373,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(buf);
     } else if (o.isFlonum()) {
         static char buf[32];
-        snprintf(buf, 32, "%f", o.toFlonum()->value());
+        snprintf(buf, 32, "%.20f", o.toFlonum()->value());
         putString(buf);
     } else if (o.isInstruction()) {
         static char buf[32];
@@ -459,8 +462,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("#<object pointer>"));
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
-    } else if (o.isRational()) {
-        putString(o.toRational()->toString());
+    } else if (o.isRatnum()) {
+        putString(o.toRatnum()->toString());
+    } else if (o.isBignum()) {
+        putString(o.toBignum()->toString());
     } else {
         putString(UC("#<unknown datum>"));
     }

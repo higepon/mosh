@@ -37,7 +37,8 @@
 #include "ArithmeticProcedures.h"
 #include "ProcedureMacro.h"
 #include "Arithmetic.h"
-#include "Rational.h"
+#include "Ratnum.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -46,7 +47,7 @@ Object scheme::numberPEx(int argc, const Object* argv)
     DeclareProcedureName("number?");
     checkArgumentLength(1);
     const Object obj = argv[0];
-    return Object::makeBool(obj.isFixnum() || obj.isRational());
+    return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum() || obj.isFlonum());
 }
 
 Object scheme::rationalPEx(int argc, const Object* argv)
@@ -54,7 +55,7 @@ Object scheme::rationalPEx(int argc, const Object* argv)
     DeclareProcedureName("rational?");
     checkArgumentLength(1);
     const Object obj = argv[0];
-    return Object::makeBool(obj.isFixnum() || obj.isRational());
+    return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum());
 }
 
 Object scheme::flonumPEx(int argc, const Object* argv)
@@ -70,10 +71,12 @@ Object scheme::inexactEx(int argc, const Object* argv)
     const Object obj = argv[0];
     if (obj.isFixnum()) {
         return Object::makeFlonum(obj.toFixnum());
+    } else if (obj.isBignum()) {
+        return Object::makeFlonum(obj.toBignum()->toDouble());
     } else if (obj.isFlonum()) {
         return obj;
-    } else if (obj.isRational()) {
-        return Object::makeFlonum(obj.toRational()->toDouble());
+    } else if (obj.isRatnum()) {
+        return Object::makeFlonum(obj.toRatnum()->toDouble());
     }
     MOSH_ASSERT(false);
 }

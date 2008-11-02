@@ -1,5 +1,5 @@
 /*
- * Rational.h -
+ * Fixnum.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,41 +26,71 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Rational.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Fixnum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RATIONAL__
-#define __SCHEME_RATIONAL__
+#ifndef __SCHEME_FIXNUM__
+#define __SCHEME_FIXNUM__
 
 #include "scheme.h"
 
 namespace scheme {
 
-class Rational EXTEND_GC
+class Fixnum EXTEND_GC
 {
 public:
-    Rational(int numerator, int denominator);
-    Rational(mpq_t r);
-    ~Rational();
 
-    char* toString();
-    double toDouble() const;
-    bool equal(int number);
-    bool equal(Rational* number);
+    static bool canFit(long n)
+    {
+        const int FIXNUM_BITS = 29;
+        const long MAX = (1L << FIXNUM_BITS) - 1;
+        const long MIN = -MAX - 1;
+        return MIN <= n && n <= MAX;
+    }
 
-    static Rational* fromFixnum(int num);
-    static Object add(Rational* number1, Rational* number2);
-    static Object sub(Rational* number1, Rational* number2);
-    static Object mul(Rational* number1, Rational* number2);
-    static Object div(Rational* number1, Rational* number2);
-    static bool gt(Rational* number1, Rational* number2);
-    static bool ge(Rational* number1, Rational* number2);
-    static bool lt(Rational* number1, Rational* number2);
-    static bool le(Rational* number1, Rational* number2);
+#define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
+    static bool compare(int n1, int n2)\
+    {\
+        return n1 symbol n2;\
+    }\
 
-    mpq_t r;
+    MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(gt, >)
+    MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(ge, >=)
+    MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(lt, <)
+    MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(le, <=)
+    MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(eq, ==)
+
+    static Object add(int n1, int n2)
+    {
+        const long ret = n1 + n2;
+        if (canFit(ret)) {
+            return Object::makeFixnum(ret);
+        } else {
+            return Object::makeBignum(ret);
+        }
+    }
+    static Object sub(int n1, int n2)
+    {
+        const long ret = n1 - n2;
+        if (canFit(ret)) {
+            return Object::makeFixnum(ret);
+        } else {
+            return Object::makeBignum(ret);
+        }
+    }
+    static Object mul(int n1, int n2)
+    {
+        const long ret = n1 * n2;
+
+        /* Overflow check from Gauche */
+        if ((n1 != 0 && ret / n2 != n1) || !canFit(ret)) {
+            return Bignum::mul(n1, n2);
+        } else {
+            return Object::makeFixnum(ret);
+        }
+    }
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_RATIONAL__
+#endif // __SCHEME_FIXNUM__
