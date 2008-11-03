@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(mosh-only ("all-tests.scm"  12) (source-info '(3)))
+(mosh-only ("./all-tests.scm" 2) (source-info '(3)))
 ;; don't edit end
 
 ;; test start
@@ -908,11 +908,29 @@
 [mosh-only #t (>= (/ 1 2) (inexact (/ 1 3)))]
 [mosh-only #t (> (/ 3 2) (+ (inexact (/ 1 3)) (inexact (/ 1 3)) (inexact (/ 1 3))) (/ 99 100))]
 [mosh-only #t (> 1 (/ (inexact 98) 100) (/ 97 100))]
-[mosh-only #t  (rational? 3)]
-[mosh-only #t  (rational? (/ 1 4))]
+[mosh-only #t (rational? 3)]
+[mosh-only #t (rational? (/ 1 4))]
+[mosh-only #t (rational? (/ (/ 1 2) (+ (greatest-fixnum) 1)))]
+[mosh-only #t (flonum? (/ (inexact (/ 1 3)) (+ (greatest-fixnum) 1)))]
+[mosh-only #t (= (/ (+ (greatest-fixnum) 1) 1) (+ (greatest-fixnum) 1))]
+[mosh-only #t (rational? (/ (+ (greatest-fixnum) 1) (/ 1 3)))]
+[mosh-only #t (flonum? (/ (+ (greatest-fixnum) 1) (inexact (/ 1 3) )))]
+[mosh-only 1 (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1))]
+[mosh-only #t (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))] ;; normalization
 ;[mosh-only 1/2 (/ 2)]
 ;[mosh-only 1/3 (/ 3)]
 ;[mosh-only 0 (/ 0)] -> division by zero
+
+[#t (fixnum? (least-fixnum))]
+[#t (fixnum? (greatest-fixnum))]
+[#f (fixnum? (+ (greatest-fixnum) 1))]
+[#f (fixnum? (- (least-fixnum) 1))]
+[#t (number? (+ (greatest-fixnum) 1))]
+[#t (number? (- (least-fixnum) 1))]
+[#t (> (+ (greatest-fixnum) 1) (greatest-fixnum))]
+[#t (< (- (least-fixnum) 1) (least-fixnum))]
+[#t (fixnum? (- (+ (greatest-fixnum) 1) 1))] ;; normalization
+[#t (fixnum? (+ (- (least-fixnum) 1) 1))] ;; normalization
 
 [mosh-only #t  (number? 3)]
 [mosh-only #t  (number? (/ 1 4))]

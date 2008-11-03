@@ -69,6 +69,7 @@ class CompoundCondition;
 class Ratnum;
 class Flonum;
 class Bignum;
+class Compnum;
 
 class Object
 {
@@ -80,6 +81,7 @@ public:
     Object(const ucs4string& str);
     Object(const char* str);
 
+    bool isReal() const;
     bool isFixnum() const;
     bool isNumber() const;
     bool isBoolean() const;
@@ -127,6 +129,7 @@ public:
     static Object makeFixnum(signed long int n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
+    static Object makeBignum(mpz_t v);
     static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
@@ -185,6 +188,8 @@ public:
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRatnum(int numerator, int denominator);
     static Object makeRatnum(mpq_t r);
+    static Object makeRatnum(Ratnum* r);
+    static Object makeCompnum(Object real, Object imag);
     static Object makeRecordTypeDescriptor(Object name,
                                            Object parent,
                                            Object uid,
@@ -246,6 +251,7 @@ public:
     DECL_ACCESSOR(Ratnum)
     DECL_ACCESSOR(Flonum)
     DECL_ACCESSOR(Bignum)
+    DECL_ACCESSOR(Compnum)
 
     static const Object Nil;
     static const Object Eof;

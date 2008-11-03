@@ -38,6 +38,7 @@
 #include "ProcedureMacro.h"
 #include "Arithmetic.h"
 #include "Ratnum.h"
+#include "Fixnum.h"
 #include "Bignum.h"
 
 using namespace scheme;
@@ -58,6 +59,14 @@ Object scheme::rationalPEx(int argc, const Object* argv)
     return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum());
 }
 
+Object scheme::bignumPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bignum?");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    return Object::makeBool(obj.isBignum());
+}
+
 Object scheme::flonumPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("flonum?");
@@ -65,9 +74,47 @@ Object scheme::flonumPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isFlonum());
 }
 
+Object scheme::fixnumPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fixnum?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isFixnum());
+}
+
+Object scheme::makeComplexEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("make-complex");
+    checkArgumentLength(2);
+    argumentCheckReal(0, real);
+    argumentCheckReal(1, imag);
+    return Object::makeCompnum(real, imag);
+}
+
+Object scheme::fixnumWidthEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fixnum-width");
+    checkArgumentLength(0);
+    return Object::makeFixnum(Fixnum::BITS);
+}
+
+Object scheme::leastFixnumEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("least-fixnum");
+    checkArgumentLength(0);
+    return Object::makeFixnum(Fixnum::MIN);
+}
+
+Object scheme::greatestFixnumEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("greatest-fixnum");
+    checkArgumentLength(0);
+    return Object::makeFixnum(Fixnum::MAX);
+}
+
 Object scheme::inexactEx(int argc, const Object* argv)
 {
     DeclareProcedureName("inexact");
+    checkArgumentLength(1);
     const Object obj = argv[0];
     if (obj.isFixnum()) {
         return Object::makeFlonum(obj.toFixnum());

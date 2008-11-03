@@ -49,6 +49,8 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Bignum.h"
+#include "Compnum.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
 
@@ -343,6 +345,19 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putDatum(o.toRatnum()->toString());
     } else if (o.isBignum()) {
         putString(o.toBignum()->toString());
+    } else if (o.isCompnum()) {
+        Compnum* const c = o.toCompnum();
+        const Object real = c->real();
+        const Object imag = c->imag();
+        putDatum(real);
+        if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
+            putString(UC("+"));
+        } else {
+            putString(UC("-"));
+        }
+        putDatum(imag);
+        putString(UC("i"));
+
     } else {
         putString(UC("#<unknown datum>"));
     }
@@ -466,6 +481,18 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(o.toRatnum()->toString());
     } else if (o.isBignum()) {
         putString(o.toBignum()->toString());
+    } else if (o.isCompnum()) {
+        Compnum* const c = o.toCompnum();
+        const Object real = c->real();
+        const Object imag = c->imag();
+        putDatum(real);
+        if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
+            putString(UC("+"));
+        } else {
+            putString(UC("-"));
+        }
+        putDatum(imag);
+        putString(UC("i"));
     } else {
         putString(UC("#<unknown datum>"));
     }

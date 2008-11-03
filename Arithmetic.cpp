@@ -43,50 +43,50 @@
 using namespace scheme;
 
 #define MAKE_COMPARE_FUNC(compare, symbol)          \
-    bool Arithmetic::compare(Object number1, Object number2) \
+    bool Arithmetic::compare(Object n1, Object n2) \
     { \
-        if (number1.isFixnum()) {\
-            if (number2.isFixnum()) {\
-                return Fixnum::compare(number1.toFixnum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Ratnum::compare(number1.toFixnum(), number2.toRatnum());\
-            } else if (number2.isFlonum()) {\
-                return Flonum::compare(number1.toFixnum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Bignum::compare(number1.toFixnum(), number2.toBignum());\
+        if (n1.isFixnum()) {\
+            if (n2.isFixnum()) {\
+                return Fixnum::compare(n1.toFixnum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toFixnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::compare(n1.toFixnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::compare(n1.toFixnum(), n2.toBignum());\
             }\
-        } else if (number1.isBignum()) {\
-            if (number2.isFixnum()) {\
-                return Bignum::compare(number1.toBignum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Ratnum::compare(number1.toBignum(), number2.toRatnum()); \
-            } else if (number2.isFlonum()) {\
-                return Flonum::compare(number1.toBignum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Bignum::compare(number1.toBignum(), number2.toBignum());\
+        } else if (n1.isBignum()) {\
+            if (n2.isFixnum()) {\
+                return Bignum::compare(n1.toBignum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toBignum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::compare(n1.toBignum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::compare(n1.toBignum(), n2.toBignum());\
             }\
-        } else if (number1.isRatnum()) {\
-            if (number2.isFixnum()) {\
-                return Ratnum::compare(number1.toRatnum(), number2.toFixnum());\
-            } else if (number2.isRatnum()) {\
-                return Ratnum::compare(number1.toRatnum(), number2.toRatnum());\
-            } else if (number2.isFlonum()) {\
-                return Flonum::compare(number1.toRatnum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Ratnum::compare(number1.toRatnum(), number2.toBignum());\
+        } else if (n1.isRatnum()) {\
+            if (n2.isFixnum()) {\
+                return Ratnum::compare(n1.toRatnum(), n2.toFixnum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toRatnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::compare(n1.toRatnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Ratnum::compare(n1.toRatnum(), n2.toBignum());\
             }\
-        } else if (number1.isFlonum()) {\
-            if (number2.isFixnum()) {\
-                return Flonum::compare(number1.toFlonum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Flonum::compare(number1.toFlonum(), number2.toRatnum()); \
-            } else if (number2.isFlonum()) {\
-                return Flonum::compare(number1.toFlonum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Flonum::compare(number1.toFlonum(), number2.toBignum());\
+        } else if (n1.isFlonum()) {\
+            if (n2.isFixnum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toBignum());\
             }\
         }\
-        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(number1, number2), Pair::list2(number1, number2));\
+        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(n1, n2), Pair::list2(n1, n2));\
         return false;\
     }
 
@@ -97,60 +97,50 @@ MAKE_COMPARE_FUNC(ge, >=)
 MAKE_COMPARE_FUNC(eq, =)
 
 #define MAKE_OP_FUNC(op, symbol)\
-    Object Arithmetic::op(Object number1, Object number2)\
+    Object Arithmetic::op(Object n1, Object n2)\
     {\
-        if (number1.isFixnum()) {\
-            if (number2.isFixnum()) {\
-                return Fixnum::op(number1.toFixnum(), number2.toFixnum());\
-            } else if (number2.isRatnum()) {\
-                return Ratnum::op(number1.toFixnum(), number2.toRatnum());\
-            } else if (number2.isFlonum()) {\
-                return Flonum::op(number1.toFixnum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Bignum::op(number1.toFixnum(), number2.toBignum());\
+        if (n1.isFixnum()) {\
+            if (n2.isFixnum()) {\
+                return Bignum::op(n1.toFixnum(), n2.toFixnum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toFixnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toFixnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::op(n1.toFixnum(), n2.toBignum());\
             }\
-        } else if (number1.isBignum()) {\
-            if (number2.isFixnum()) {\
-                return Bignum::op(number1.toBignum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Ratnum::op(number1.toBignum(), number2.toRatnum()); \
-            } else if (number2.isFlonum()) {\
-                return Flonum::op(number1.toBignum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Bignum::op(number1.toBignum(), number2.toBignum());\
+        } else if (n1.isBignum()) {\
+            if (n2.isFixnum()) {\
+                return Bignum::op(n1.toBignum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toBignum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toBignum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::op(n1.toBignum(), n2.toBignum());\
             }\
-        } else if (number1.isBignum()) {\
-            if (number2.isFixnum()) {\
-                return Bignum::op(number1.toBignum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Ratnum::op(number1.toBignum(), number2.toRatnum()); \
-            } else if (number2.isFlonum()) {\
-                return Flonum::op(number1.toBignum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Bignum::op(number1.toBignum(), number2.toBignum());\
+        } else if (n1.isRatnum()) {\
+            if (n2.isFixnum()) {\
+                return Ratnum::op(n1.toRatnum(), new Ratnum(n2.toFixnum(), 1));\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toRatnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toRatnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Ratnum::op(n1.toRatnum(), n2.toBignum());\
             }\
-        } else if (number1.isRatnum()) {\
-            if (number2.isFixnum()) {\
-                return Ratnum::op(number1.toRatnum(), new Ratnum(number2.toFixnum(), 1));\
-            } else if (number2.isRatnum()) {\
-                return Ratnum::op(number1.toRatnum(), number2.toRatnum());\
-            } else if (number2.isFlonum()) {\
-                return Flonum::op(number1.toRatnum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Ratnum::op(number1.toRatnum(), number2.toBignum());\
-            }\
-        } else if (number1.isFlonum()) {\
-            if (number2.isFixnum()) {\
-                return Flonum::op(number1.toFlonum(), number2.toFixnum()); \
-            } else if (number2.isRatnum()) {\
-                return Flonum::op(number1.toFlonum(), number2.toRatnum()); \
-            } else if (number2.isFlonum()) {\
-                return Flonum::op(number1.toFlonum(), number2.toFlonum());\
-            } else if (number2.isBignum()) {\
-                return Flonum::op(number1.toFlonum(), number2.toBignum());\
+        } else if (n1.isFlonum()) {\
+            if (n2.isFixnum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toBignum());\
             }\
         }\
-        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(number1, number2), Pair::list2(number1, number2));\
+        callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(n1, n2), Pair::list2(n1, n2));\
         return Object::False;\
     }
 
@@ -158,69 +148,115 @@ MAKE_OP_FUNC(add, +)
 MAKE_OP_FUNC(sub, -)
 MAKE_OP_FUNC(mul, *)
 
-Object Arithmetic::div(Object number1, Object number2)
+Object Arithmetic::div(Object n1, Object n2)
 {
-    if (number1.isFixnum()) {
-        if (number2.isFixnum()) {
-            if (number2.toFixnum() == 0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+    if (n1.isFixnum()) {
+        if (n2.isFixnum()) {
+            if (n2.toFixnum() == 0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Object::makeRatnum(number1.toFixnum(), number2.toFixnum());
+                return Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
             }
-        } else if (number2.isRatnum()) {
-            if (number2.toRatnum()->equal(0)) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+        } else if (n2.isRatnum()) {
+            if (n2.toRatnum()->equal(0)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Ratnum::div(number1.toFixnum(), number2.toRatnum());
+                return Ratnum::div(n1.toFixnum(), n2.toRatnum());
             }
-        } else if (number2.isFlonum()) {
-            if (number2.toFlonum()->value() == 0.0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+        } else if (n2.isFlonum()) {
+            if (n2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Flonum::div(number1.toFixnum(), number2.toFlonum());
+                return Flonum::div(n1.toFixnum(), n2.toFlonum());
             }
-        }
-    } else if (number1.isRatnum()) {
-        if (number2.isFixnum()) {
-            if (number2.toFixnum() == 0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+        } else if (n2.isBignum()) {
+            if (n2.toBignum()->isZero()) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Ratnum::div(number1.toRatnum(), number2.toFixnum());
-            }
-        } else if (number2.isRatnum()) {
-            return Ratnum::div(number1.toRatnum(), number2.toRatnum());
-        } else if (number2.isFlonum()) {
-            if (number2.toFlonum()->value() == 0.0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
-                return Object::False;
-            } else {
-                return Flonum::div(number1.toRatnum(), number2.toFlonum());
+                return Ratnum::div(n1.toFixnum(), n2.toBignum());
             }
         }
-    } else if (number1.isFlonum()) {
-        if (number2.isFixnum()) {
-            if (number2.toFixnum() == 0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+    } else if (n1.isRatnum()) {
+        if (n2.isFixnum()) {
+            if (n2.toFixnum() == 0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Flonum::div(number1.toFlonum(), number2.toFixnum());
+                return Ratnum::div(n1.toRatnum(), n2.toFixnum());
             }
-        } else if (number2.isRatnum()) {
-            return Flonum::div(number1.toFlonum(), number2.toRatnum());
-        } else if (number2.isFlonum()) {
-            if (number2.toFlonum()->value() == 0.0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
+        } else if (n2.isRatnum()) {
+            return Ratnum::div(n1.toRatnum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            if (n2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
-                return Flonum::div(number1.toFlonum(), number2.toFlonum());
+                return Flonum::div(n1.toRatnum(), n2.toFlonum());
+            }
+        } else if (n2.isBignum()) {
+            if (n2.toBignum()->isZero()) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Ratnum::div(n1.toRatnum(), n2.toBignum());
+            }
+        }
+    } else if (n1.isFlonum()) {
+        if (n2.isFixnum()) {
+            if (n2.toFixnum() == 0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Flonum::div(n1.toFlonum(), n2.toFixnum());
+            }
+        } else if (n2.isRatnum()) {
+            return Flonum::div(n1.toFlonum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            if (n2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Flonum::div(n1.toFlonum(), n2.toFlonum());
+            }
+        } else if (n2.isBignum()) {
+            if (n2.toBignum()->isZero()) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Flonum::div(n1.toFlonum(), n2.toBignum());
+            }
+        }
+    } else if (n1.isBignum()) {
+        if (n2.isFixnum()) {
+            if (n2.toFixnum() == 0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Ratnum::div(n1.toBignum(), n2.toFixnum());
+            }
+        } else if (n2.isRatnum()) {
+            return Ratnum::div(n1.toBignum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            if (n2.toFlonum()->value() == 0.0) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Flonum::div(n1.toBignum(), n2.toFlonum());
+            }
+        } else if (n2.isBignum()) {
+            if (n2.toBignum()->isZero()) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Ratnum::div(n1.toBignum(), n2.toBignum());
             }
         }
     }
 
-    callWrongTypeOfArgumentViolationAfter("/", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
+    callWrongTypeOfArgumentViolationAfter("/", "number", Pair::list2(n1, n2), Pair::list2(n1, n2));
     return Object::False;
 }

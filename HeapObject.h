@@ -81,6 +81,7 @@ public:
         Ratnum                      = Type<29>::VALUE,
         Flonum                      = Type<30>::VALUE,
         Bignum                      = Type<31>::VALUE,
+        Compnum                     = Type<32>::VALUE,
         forbidden_comma
     };
 };

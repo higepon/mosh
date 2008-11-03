@@ -256,7 +256,12 @@ inline Object Object::makeObjectPointer(Object* p)
 
 inline bool Object::isNumber() const
 {
-    return isFixnum() || isRatnum();
+    return isReal() || isCompnum();
+}
+
+inline bool Object::isReal() const
+{
+    return isFixnum() || isBignum() || isFlonum() || isRatnum();
 }
 
 // private

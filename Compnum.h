@@ -1,5 +1,5 @@
 /*
- * Bignum.cpp - 
+ * Compnum.h - Complex number
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,33 +26,36 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Bignum.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Compnum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Bignum.h"
+#ifndef __SCHEME_COMPNUM__
+#define __SCHEME_COMPNUM__
 
-using namespace scheme;
+#include "scheme.h"
 
-Bignum::Bignum(long value)
+namespace scheme {
+
+class Compnum EXTEND_GC
 {
-    mpz_init(this->value);
-    mpz_set_si(this->value, value);
-}
+public:
+    Compnum(Object real, Object imag) : real_(real), imag_(imag)
+    {
 
-Bignum::Bignum(mpz_t value)
-{
-    mpz_init_set(this->value, value);
-}
+    }
 
+    ~Compnum()
+    {
+    }
 
-char* Bignum::toString() const
-{
-    return mpz_get_str(NULL, 10, value);
-}
+    Object real() const { return real_; }
+    Object imag() const { return imag_; }
 
-double Bignum::toDouble() const
-{
-    return mpz_get_d(value);
-}
+private:
+    Object real_;
+    Object imag_;
+};
+
+}; // namespace scheme
+
+#endif // __SCHEME_COMPNUM__

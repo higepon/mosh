@@ -39,13 +39,16 @@ namespace scheme {
 class Fixnum EXTEND_GC
 {
 public:
+    enum
+    {
+        BITS = 29,
+        MAX = (1L << BITS) - 1,
+        MIN = -MAX - 1,
+    };
 
     static bool canFit(long n)
     {
-        const int FIXNUM_BITS = 29;
-        const long MAX = (1L << FIXNUM_BITS) - 1;
-        const long MIN = -MAX - 1;
-        return MIN <= n && n <= MAX;
+        return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
@@ -60,35 +63,6 @@ public:
     MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(le, <=)
     MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(eq, ==)
 
-    static Object add(int n1, int n2)
-    {
-        const long ret = n1 + n2;
-        if (canFit(ret)) {
-            return Object::makeFixnum(ret);
-        } else {
-            return Object::makeBignum(ret);
-        }
-    }
-    static Object sub(int n1, int n2)
-    {
-        const long ret = n1 - n2;
-        if (canFit(ret)) {
-            return Object::makeFixnum(ret);
-        } else {
-            return Object::makeBignum(ret);
-        }
-    }
-    static Object mul(int n1, int n2)
-    {
-        const long ret = n1 * n2;
-
-        /* Overflow check from Gauche */
-        if ((n1 != 0 && ret / n2 != n1) || !canFit(ret)) {
-            return Bignum::mul(n1, n2);
-        } else {
-            return Object::makeFixnum(ret);
-        }
-    }
 };
 
 }; // namespace scheme

@@ -67,6 +67,7 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Bignum.h"
+#include "Compnum.h"
 
 using namespace scheme;
 
@@ -322,10 +323,28 @@ Object Object::makeBignum(long n)
                                                         reinterpret_cast<word>(new Bignum(n)))));
 }
 
+Object Object::makeBignum(mpz_t b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(new Bignum(b)))));
+}
+
 Object Object::makeBignum(Bignum* b)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
                                                         reinterpret_cast<word>(b))));
+}
+
+Object Object::makeRatnum(Ratnum* r)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<word>(r))));
+}
+
+Object Object::makeCompnum(Object real, Object imag)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Compnum,
+                                                        reinterpret_cast<word>(new Compnum(real, imag)))));
 }
 
 bool Object::isList() const

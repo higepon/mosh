@@ -40,6 +40,12 @@ namespace scheme {
     Object numberPEx(int argc, const Object* argv);
     Object rationalPEx(int argc, const Object* argv);
     Object flonumPEx(int argc, const Object* argv);
+    Object bignumPEx(int argc, const Object* argv);
+    Object fixnumPEx(int argc, const Object* argv);
+    Object makeComplexEx(int argc, const Object* argv);
+    Object fixnumWidthEx(int argc, const Object* argv);
+    Object leastFixnumEx(int argc, const Object* argv);
+    Object greatestFixnumEx(int argc, const Object* argv);
     Object inexactEx(int argc, const Object* argv);
     Object quotientEx(int argc, const Object* argv);
     Object remainderEx(int argc, const Object* argv);
@@ -54,93 +60,6 @@ namespace scheme {
     Object subEx(int argc, const Object* argv);
     Object mulEx(int argc, const Object* argv);
     Object divideEx(int argc, const Object* argv);
-
-//     inline bool numberEqual(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return number1.toFixnum() == number2.toFixnum();
-//         }
-//         callWrongTypeOfArgumentViolationAfter("=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return false;
-//     }
-
-//     inline bool numberGreater(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return number1.toFixnum() > number2.toFixnum();
-//         }
-//         callWrongTypeOfArgumentViolationAfter(">", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return false;
-//     }
-
-//     inline bool numberGreaterEqual(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return number1.toFixnum() >= number2.toFixnum();
-//         }
-//         callWrongTypeOfArgumentViolationAfter(">=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return false;
-//     }
-
-//     inline bool numberLess(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return number1.toFixnum() < number2.toFixnum();
-//         }
-//         callWrongTypeOfArgumentViolationAfter("<", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return false;
-//     }
-
-//     inline bool numberLessEqual(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return number1.toFixnum() <= number2.toFixnum();
-//         }
-//         callWrongTypeOfArgumentViolationAfter("<=", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return false;
-//     }
-
-//     inline Object numberAdd(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return Object::makeFixnum(number1.toFixnum() + number2.toFixnum());
-//         }
-//         callWrongTypeOfArgumentViolationAfter("+", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return Object::False;
-//     }
-
-//     inline Object numberSub(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return Object::makeFixnum(number1.toFixnum() - number2.toFixnum());
-//         }
-//         callWrongTypeOfArgumentViolationAfter("-", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return Object::False;
-//     }
-
-//     inline Object numberMul(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             return Object::makeFixnum(number1.toFixnum() * number2.toFixnum());
-//         }
-//         callWrongTypeOfArgumentViolationAfter("*", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return Object::False;
-//     }
-
-//     inline Object numberDiv(Object number1, Object number2)
-//     {
-//         if (number1.isFixnum() && number2.isFixnum()) {
-//             if (number2.toFixnum() == 0) {
-//                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(number1, number2));
-//                 return Object::Undef;
-//             } else {
-//                 return Object::makeFixnum(number1.toFixnum() / number2.toFixnum());
-//             }
-//         }
-//         callWrongTypeOfArgumentViolationAfter("/", "number", Pair::list2(number1, number2), Pair::list2(number1, number2));
-//         return Object::False;
-//     }
-
 
 }; // namespace scheme
 

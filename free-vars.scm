@@ -253,5 +253,11 @@
     stat-mtime
     rational?
     flonum?
+    fixnum?
+    bignum?
+    fixnum-width
+    least-fixnum
+    greatest-fixnum
     inexact
+    make-complex
     )

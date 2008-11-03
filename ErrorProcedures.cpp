@@ -53,7 +53,7 @@ bool scheme::isErrorBufInitialized = false;
 static Object makeMessageCondition(Object message);
 static Object makeIrritantsCondition(Object irritants);
 static Object makeWhoCondition(Object who);
-static Object makeAssertionCondition();
+//static Object makeAssertionCondition();
 static Object makeCondition(const ucs4char* rcdName);
 static Object makeCondition(const ucs4char* rcdName, Object conent);
 static void raiseAfter(const ucs4char* errorRcdName,

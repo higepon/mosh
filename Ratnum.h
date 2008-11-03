@@ -72,13 +72,53 @@ public:
         return mpq_cmp(value, number->value) == 0;
     }
 
+    static Object div(int n1, Bignum* n2)
+    {
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_set_si(ret, n1, 1);
+
+        mpq_t num2;
+        mpq_init(num2);
+        mpq_set_z(num2, n2->value);
+        mpq_div(ret, ret, num2);
+        return makeNumber(ret);
+    }
+
+    static Object div(Bignum* n1, int n2)
+    {
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_set_z(ret, n1->value);
+
+        mpq_t num2;
+        mpq_init(num2);
+        mpq_set_si(num2, n2, 1);
+        mpq_div(ret, ret, num2);
+        return makeNumber(ret);
+    }
+
+    static Object div(Bignum* n1, Bignum* n2)
+    {
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_set_z(ret, n1->value);
+
+        mpq_t num2;
+        mpq_init(num2);
+        mpq_set_z(num2, n2->value);
+        mpq_div(ret, ret, num2);
+        return makeNumber(ret);
+    }
+
+
 #define MAKE_RATNUM_OP(op)\
     static Object op(Ratnum* number1, Ratnum* number2)\
     {\
         mpq_t ret;\
         mpq_init(ret);\
         mpq_##op(ret, number1->value, number2->value);\
-        return Object::makeRatnum(ret);\
+        return makeNumber(ret);\
     }\
     static Object op(Ratnum* number1, Bignum* number2)\
     {\
@@ -86,7 +126,7 @@ public:
         mpq_init(ret);\
         mpq_set_z(ret, number2->value);\
         mpq_##op(ret, number1->value, ret);\
-        return Object::makeRatnum(ret);\
+        return makeNumber(ret);\
     }\
     static Object op(Bignum* number1, Ratnum* number2)\
     {\
@@ -94,23 +134,25 @@ public:
         mpq_init(ret);\
         mpq_set_z(ret, number1->value);\
         mpq_##op(ret, ret, number2->value);\
-        return Object::makeRatnum(ret);\
+        return makeNumber(ret);\
     }\
     static Object op(Ratnum* number1, int number2)\
     {\
         mpq_t ret;\
         mpq_init(ret);\
-        mpq_set_si(ret, number2, 1);              \
+        mpq_set_si(ret, number2, 1);\
+        mpq_canonicalize(ret);\
         mpq_##op(ret, number1->value, ret);\
-        return Object::makeRatnum(ret);\
+        return makeNumber(ret);\
     }\
     static Object op(int number1, Ratnum* number2)\
     {\
         mpq_t ret;\
         mpq_init(ret);\
-        mpq_set_si(ret, number1, 1);       \
+        mpq_set_si(ret, number1, 1);\
+        mpq_canonicalize(ret);\
         mpq_##op(ret, ret, number2->value);\
-        return Object::makeRatnum(ret);\
+        return makeNumber(ret);\
     }
 
     MAKE_RATNUM_OP(add)
@@ -121,6 +163,7 @@ public:
 #define MAKE_RATNUM_COMPARE(compare, symbol)\
     static bool compare(Ratnum* number1, Ratnum* number2)\
     {\
+       printf("[2]%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);\
         return mpq_cmp(number1->value, number2->value) symbol;\
     }\
     static bool compare(Ratnum* number1, Bignum* number2)\
@@ -142,13 +185,15 @@ public:
         mpq_t n2;\
         mpq_init(n2);\
         mpq_set_si(n2, number2, 1);\
+        mpq_canonicalize(n2);\
         return mpq_cmp(number1->value, n2) symbol;\
     }\
     static bool compare(int number1, Ratnum* number2)\
     {\
         mpq_t n1;\
-        mpq_init(n1);                            \
-        mpq_set_si(n1, number1, 1);                   \
+        mpq_init(n1);\
+        mpq_set_si(n1, number1, 1);\
+        mpq_canonicalize(n1);\
         return mpq_cmp(n1, number2->value) symbol;\
     }
 
@@ -159,6 +204,23 @@ public:
     MAKE_RATNUM_COMPARE(eq, ==0);
 
     mpq_t value;
+
+private:
+    static Object makeNumber(mpq_t r)
+    {
+        if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
+            if (mpz_cmp_si(mpq_numref(r), Fixnum::MIN) >= 0 &&
+                mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                return Object::makeFixnum(mpz_get_si(mpq_numref(r)));
+            } else {
+                return Object::makeBignum(mpq_numref(r));
+            }
+        } else {
+            return Object::makeRatnum(r);
+        }
+    }
+
 };
 
 }; // namespace scheme

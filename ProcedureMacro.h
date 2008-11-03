@@ -75,6 +75,7 @@
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
+#define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 

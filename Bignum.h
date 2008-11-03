@@ -33,6 +33,7 @@
 #define __SCHEME_BIGNUM__
 
 #include "scheme.h"
+#include "Fixnum.h"
 
 namespace scheme {
 
@@ -40,29 +41,35 @@ class Bignum EXTEND_GC
 {
 public:
     Bignum(long value);
+    Bignum(mpz_t value);
     ~Bignum();
 
     char* toString() const;
     double toDouble() const;
+
+    bool isZero() const
+    {
+        return mpz_cmp_si(value, 0) == 0;
+    }
 
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
     {\
         Bignum* b = new Bignum(n1);\
         mpz_##op(b->value, b->value, n2->value);\
-        return Object::makeBignum(b);\
+        return makeNumber(b);\
     }\
     static Object op(Bignum* n1, int n2)\
     {\
         Bignum* b = new Bignum(n2);\
         mpz_##op(b->value, n1->value, b->value);\
-        return Object::makeBignum(b);\
+        return makeNumber(b);\
     }\
     static Object op(Bignum* n1, Bignum* n2)\
     {\
         Bignum* ret = new Bignum(1);\
         mpz_##op(ret->value, n1->value, n2->value);\
-        return Object::makeBignum(ret);\
+        return makeNumber(ret);\
     }
 
     MAKE_BIGNUM_OP(add)
@@ -80,7 +87,7 @@ public:
     }\
     static bool compare(Bignum* n1, Bignum* n2)\
     {\
-        return mpz_cmp(n1->value, n2->value);\
+        return mpz_cmp(n1->value, n2->value) symbol;\
     }
 
     MAKE_BIGNUM_COMPARE(gt, >0)
@@ -89,15 +96,50 @@ public:
     MAKE_BIGNUM_COMPARE(le, <=0)
     MAKE_BIGNUM_COMPARE(eq, ==0)
 
+    static Object add(int n1, int n2)
+    {
+        const long ret = n1 + n2;
+        if (Fixnum::canFit(ret)) {
+            return Object::makeFixnum(ret);
+        } else {
+            return Object::makeBignum(ret);
+        }
+    }
+    static Object sub(int n1, int n2)
+    {
+        const long ret = n1 - n2;
+        if (Fixnum::canFit(ret)) {
+            return Object::makeFixnum(ret);
+        } else {
+            return Object::makeBignum(ret);
+        }
+    }
+
     static Object mul(int n1, int n2)
     {
-        Bignum* b = new Bignum(n1);
-        mpz_mul_si(b->value, b->value, n2);
-        return Object::makeBignum(b);
+        const long ret = n1 * n2;
+
+        /* Overflow check from Gauche */
+        if ((n1 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
+            return Bignum::mul(n1, n2);
+        } else {
+            return Object::makeFixnum(ret);
+        }
     }
 
 
     mpz_t value;
+
+private:
+    static Object makeNumber(Bignum* b)
+    {
+        if (mpz_cmp_si(b->value, Fixnum::MIN) >= 0 &&
+            mpz_cmp_si(b->value, Fixnum::MAX) <= 0) {
+            return Object::makeFixnum(mpz_get_si(b->value));
+        } else {
+            return Object::makeBignum(b);
+        }
+    }
 };
 
 }; // namespace scheme
