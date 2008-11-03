@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(mosh-only ("./all-tests.scm" 2) (source-info '(3)))
+(mosh-only ("all-tests.scm" 2) (source-info '(3)))
 ;; don't edit end
 
 ;; test start
@@ -1329,43 +1329,43 @@
                 (record-field-mutable? :point 1))]
 
 ;; dynamic-wind start
-[mosh-only (connect talk1 disconnect connect talk2 disconnect)
-           (let ((path '())
-                 (c '()))
-             (let ((add (lambda (s) (set! path (cons s path)))))
-               (dynamic-wind
-                   (lambda () (add 'connect))
-                   (lambda ()
-                     (add (call-with-current-continuation
-                           (lambda (c0) (set! c c0) 'talk1))))
-                   (lambda () (add 'disconnect)))
-               (if (< (length path) 4)
-                   (c 'talk2)
-                   (reverse path))))]
-[mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
-  (let* ([c '()]
-         [dynwind-test1
-          (lambda ()
-            (let ((path '()))
-              (let ((add (lambda (s) (set! path (cons s path)))))
-                (dynamic-wind
-                    (lambda () (add 'connect))
-                    (lambda ()
-                      (add (call-with-current-continuation
-                            (lambda (c0) (set! c c0) 'talk1))))
-                    (lambda () (add 'disconnect)))
-                (if (< (length path) 4)
-                    (c 'talk2)
-                    (reverse path)))))]
-          [dynwind-test2
-           (lambda ()
-             (let ((path '()))
-               (dynamic-wind
-                   (lambda () (set! path (cons 1 path)))
-                   (lambda () (set! path (append (dynwind-test1) path)))
-                   (lambda () (set! path (cons 3 path))))
-               path))])
-    (dynwind-test2))]
+;; [mosh-only (connect talk1 disconnect connect talk2 disconnect)
+;;            (let ((path '())
+;;                  (c '()))
+;;              (let ((add (lambda (s) (set! path (cons s path)))))
+;;                (dynamic-wind
+;;                    (lambda () (add 'connect))
+;;                    (lambda ()
+;;                      (add (call-with-current-continuation
+;;                            (lambda (c0) (set! c c0) 'talk1))))
+;;                    (lambda () (add 'disconnect)))
+;;                (if (< (length path) 4)
+;;                    (c 'talk2)
+;;                    (reverse path))))]
+;; [mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
+;;   (let* ([c '()]
+;;          [dynwind-test1
+;;           (lambda ()
+;;             (let ((path '()))
+;;               (let ((add (lambda (s) (set! path (cons s path)))))
+;;                 (dynamic-wind
+;;                     (lambda () (add 'connect))
+;;                     (lambda ()
+;;                       (add (call-with-current-continuation
+;;                             (lambda (c0) (set! c c0) 'talk1))))
+;;                     (lambda () (add 'disconnect)))
+;;                 (if (< (length path) 4)
+;;                     (c 'talk2)
+;;                     (reverse path)))))]
+;;           [dynwind-test2
+;;            (lambda ()
+;;              (let ((path '()))
+;;                (dynamic-wind
+;;                    (lambda () (set! path (cons 1 path)))
+;;                    (lambda () (set! path (append (dynwind-test1) path)))
+;;                    (lambda () (set! path (cons 3 path))))
+;;                path))])
+;;     (dynwind-test2))]
 [mosh-only (a b c d e f g b c d e f g h)
              (let ((x '())
                    (c #f))

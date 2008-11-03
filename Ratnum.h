@@ -163,7 +163,6 @@ public:
 #define MAKE_RATNUM_COMPARE(compare, symbol)\
     static bool compare(Ratnum* number1, Ratnum* number2)\
     {\
-       printf("[2]%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);\
         return mpq_cmp(number1->value, number2->value) symbol;\
     }\
     static bool compare(Ratnum* number1, Bignum* number2)\
@@ -211,7 +210,6 @@ private:
         if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
             if (mpz_cmp_si(mpq_numref(r), Fixnum::MIN) >= 0 &&
                 mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 return Object::makeFixnum(mpz_get_si(mpq_numref(r)));
             } else {
                 return Object::makeBignum(mpq_numref(r));
