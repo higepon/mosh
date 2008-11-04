@@ -217,7 +217,7 @@ Object scheme::errorEx(int argc, const Object* argv)
     }
     argumentCheckString(1, message);
     Object irritants = Object::Nil;
-    for (int i = 2; i < argc; i++) {
+    for (int i = argc - 1; i >= 2; i--) {
         irritants = Object::cons(argv[i], irritants);
     }
     callErrorAfter(who, message, irritants);
