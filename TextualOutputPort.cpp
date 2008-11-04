@@ -353,7 +353,6 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
             putString(UC("+"));
         } else {
-            putString(UC("-"));
         }
         putDatum(imag);
         putString(UC("i"));
@@ -485,13 +484,12 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         Compnum* const c = o.toCompnum();
         const Object real = c->real();
         const Object imag = c->imag();
-        putDatum(real);
+        display(real);
         if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
             putString(UC("+"));
         } else {
-            putString(UC("-"));
         }
-        putDatum(imag);
+        display(imag);
         putString(UC("i"));
     } else {
         putString(UC("#<unknown datum>"));

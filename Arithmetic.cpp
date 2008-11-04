@@ -220,14 +220,20 @@ MAKE_OP_FUNC(add, +)
 MAKE_OP_FUNC(sub, -)
 MAKE_OP_FUNC(mul, *)
 
+#include "ProcedureMacro.h"
+#include "TextualOutputPort.h"
 Object Arithmetic::div(Object n1, Object n2)
 {
+    VM_LOG2("num=~a denon=~a\n", n1, n2);
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
             if (n2.toFixnum() == 0) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                const Object temp = Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
+                VM_LOG1("ratnam = ~a", temp);
                 return Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
             }
         } else if (n2.isRatnum()) {
@@ -329,7 +335,14 @@ Object Arithmetic::div(Object n1, Object n2)
         }
     } else if (n1.isCompnum()) {
         if (n2.isFixnum()) {
-            return Compnum::div(n1.toCompnum(), n2);
+            fflush(stdout);
+            fflush(stderr);
+            VM_LOG1("n1=~a\n", n1);
+            VM_LOG1("n2=~a\n", n2);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            const Object temp =  Compnum::div(n1.toCompnum(), n2);
+            VM_LOG1("temp=~a\n", temp);
+            return temp;
         } else if (n2.isCompnum()) {
             return Compnum::div(n1.toCompnum(), n2.toCompnum());
         }

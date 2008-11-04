@@ -101,9 +101,10 @@ public:
         const Object denon = Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()),
                                              Arithmetic::mul(n1->imag(), n2->imag()));
         const Object nume = Object::makeCompnum(Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
-                                                Arithmetic::sub(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n2->real(), n1->imag())));
+                                                Arithmetic::sub(Arithmetic::mul(n1->imag(), n2->real()), Arithmetic::mul(n1->real(), n2->imag())));
         return Arithmetic::div(nume, denon);
     }
+
 
     static Object div(Compnum* n1, Object n2)
     {

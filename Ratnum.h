@@ -43,8 +43,15 @@ public:
     Ratnum(int numerator, int denominator)
     {
         mpq_init(value);
-        mpq_set_si(value, numerator, denominator);
+        if (numerator >= 0 && denominator < 0) {
+            mpq_set_si(value, -numerator, abs(denominator));
+        } else if (numerator < 0 && denominator< 0) {
+            mpq_set_si(value, abs(numerator), abs(denominator));
+        } else {
+            mpq_set_si(value, numerator, denominator);
+        }
         mpq_canonicalize(value);
+        printf("numerator=%d<%s>\n\n", numerator, mpq_get_str(NULL, 10, value));
     }
 
     Ratnum(mpq_t rational)
