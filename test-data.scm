@@ -18,7 +18,7 @@
 (10 (((lambda (a) (lambda () a)) 10)))
 (12 ((lambda (a) (set! a 12) a) 2))
 (101  ((lambda (a) ((lambda () (set! a 101)))) '()))
-;(2 ((lambda (g) ((lambda (f) (f 2)) (lambda (a) (g a)))) (lambda (x) x)))
+(todo 2 ((lambda (g) ((lambda (f) (f 2)) (lambda (a) (g a)))) (lambda (x) x)))
 (4 (call/cc (lambda (c) (c 4))))
 ((1 2 3) (receive a (call/cc (lambda (c) (c 1 2 3))) a))
 ((1 2) (receive a (call/cc (lambda (c) (c 1 2))) a))
