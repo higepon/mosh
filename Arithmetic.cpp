@@ -39,10 +39,11 @@
 #include "Flonum.h"
 #include "Fixnum.h"
 #include "ErrorProcedures.h"
+#include "Compnum.h"
 
 using namespace scheme;
 
-#define MAKE_COMPARE_FUNC(compare, symbol)          \
+#define MAKE_REAL_COMPARE_FUNC(compare, symbol)          \
     bool Arithmetic::compare(Object n1, Object n2) \
     { \
         if (n1.isFixnum()) {\
@@ -90,11 +91,78 @@ using namespace scheme;
         return false;\
     }
 
-MAKE_COMPARE_FUNC(lt, <)
-MAKE_COMPARE_FUNC(le, <=)
-MAKE_COMPARE_FUNC(gt, >)
-MAKE_COMPARE_FUNC(ge, >=)
-MAKE_COMPARE_FUNC(eq, =)
+MAKE_REAL_COMPARE_FUNC(lt, <)
+MAKE_REAL_COMPARE_FUNC(le, <=)
+MAKE_REAL_COMPARE_FUNC(gt, >)
+MAKE_REAL_COMPARE_FUNC(ge, >=)
+
+bool Arithmetic::eq(Object n1, Object n2)
+{
+    if (n1.isFixnum()) {
+        if (n2.isFixnum()) {
+            return Fixnum::eq(n1.toFixnum(), n2.toFixnum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toFixnum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            return Flonum::eq(n1.toFixnum(), n2.toFlonum());
+        } else if (n2.isBignum()) {
+            return Bignum::eq(n1.toFixnum(), n2.toBignum());
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1, n2.toCompnum());
+        }
+    } else if (n1.isBignum()) {
+        if (n2.isFixnum()) {
+            return Bignum::eq(n1.toBignum(), n2.toFixnum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toBignum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            return Flonum::eq(n1.toBignum(), n2.toFlonum());
+        } else if (n2.isBignum()) {
+            return Bignum::eq(n1.toBignum(), n2.toBignum());
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1, n2.toCompnum());
+        }
+    } else if (n1.isRatnum()) {
+        if (n2.isFixnum()) {
+            return Ratnum::eq(n1.toRatnum(), n2.toFixnum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toRatnum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            return Flonum::eq(n1.toRatnum(), n2.toFlonum());
+        } else if (n2.isBignum()) {
+            return Ratnum::eq(n1.toRatnum(), n2.toBignum());
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1, n2.toCompnum());
+        }
+    } else if (n1.isFlonum()) {
+        if (n2.isFixnum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toFixnum());
+        } else if (n2.isRatnum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toRatnum());
+        } else if (n2.isFlonum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toFlonum());
+        } else if (n2.isBignum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toBignum());
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1, n2.toCompnum());
+        }
+    } else if (n1.isCompnum()) {
+        if (n2.isFixnum()) {
+            return Compnum::eq(n1.toCompnum(), n2);
+        } else if (n2.isRatnum()) {
+            return Compnum::eq(n1.toCompnum(), n2);
+        } else if (n2.isFlonum()) {
+            return Compnum::eq(n1.toCompnum(), n2);
+        } else if (n2.isBignum()) {
+            return Compnum::eq(n1.toCompnum(), n2);
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1.toCompnum(), n2.toCompnum());
+        }
+    }
+    callWrongTypeOfArgumentViolationAfter("=", "number", Pair::list2(n1, n2), Pair::list2(n1, n2));
+    return false;
+}
+
 
 #define MAKE_OP_FUNC(op, symbol)\
     Object Arithmetic::op(Object n1, Object n2)\
@@ -138,6 +206,10 @@ MAKE_COMPARE_FUNC(eq, =)
                 return Flonum::op(n1.toFlonum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Flonum::op(n1.toFlonum(), n2.toBignum());\
+            }\
+        } else if (n1.isCompnum()) {\
+            if (n2.isCompnum()) {\
+                return Compnum::op(n1.toCompnum(), n2.toCompnum());\
             }\
         }\
         callWrongTypeOfArgumentViolationAfter(#symbol, "number", Pair::list2(n1, n2), Pair::list2(n1, n2));\
@@ -254,6 +326,12 @@ Object Arithmetic::div(Object n1, Object n2)
             } else {
                 return Ratnum::div(n1.toBignum(), n2.toBignum());
             }
+        }
+    } else if (n1.isCompnum()) {
+        if (n2.isFixnum()) {
+            return Compnum::div(n1.toCompnum(), n2);
+        } else if (n2.isCompnum()) {
+            return Compnum::div(n1.toCompnum(), n2.toCompnum());
         }
     }
 

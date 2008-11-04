@@ -69,10 +69,10 @@
 (5 (let1 a 3 (set! a (+ a 1)) (+ a 1)))
 (3 (let1 a 3 (let1 b 4 (set! b a) b)))
 (2 (let ([a 2] [b 3]) a))
-;(3 (let1 a 3
-;     (let1 b (lambda () a)
-;       (b))))
-;(3 (let ([a 3]) (let ([b (lambda () a)]) (b))))
+(3 (let1 a 3
+    (let1 b (lambda () a)
+      (b))))
+(3 (let ([a 3]) (let ([b (lambda () a)]) (b))))
 (2 (let ([a 0]
          [b 1]
          [c 2])
@@ -428,210 +428,13 @@
 (mosh-only x (receive (a . b) (values 'x 'y 'z) a))
 (mosh-only (1 2 3) (receive x (apply values '(1 2 3)) x))
 (mosh-only (1 . 2) (call-with-values (lambda () (values 1 2)) cons))
-;(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
+(error (call-with-values (lambda () (values 1 2)) (lambda (a b c) (+ a b c))))
 (mosh-only "higepon" (receive (port proc) (open-string-output-port)
              (display "hige" port)
              (display "pon" port)
              (proc)))
 ("\"string\"" (call-with-string-output-port (lambda (port) (write "string" port))))
 ("123ABC456" (regexp-replace #/abc/ "123abc456" "ABC"))
-;; ;;--------------------------------------------------------------------
-;; ;;
-;; ;; library
-;; ;;
-;; [lib "hello higepon\n"
-;; (library (higepon)
-;;          (export hello)
-;;          (import)
-;;          (define hello "hello higepon\n"))
-;; (import (higepon))
-;; hello
-;; ]
-
-;; [lib "hello higepon\n"
-;; (library (higepon2)
-;;          (export hello)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (higepon2))
-;; hello
-;; ]
-
-;; [lib "goodbye higepon\n"
-;; (library (higepon3)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (higepon3))
-;; hello
-;; goodbye
-;; ]
-
-;; [lib "hello higepon\n"
-;; (library (higepon4)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (only (higepon4) hello))
-;; hello
-;; ]
-
-
-;; [lib "goodbye higepon\n"
-;; (library (higepon5)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (except (higepon5) hello))
-;; goodbye
-;; ]
-
-
-;; [lib "hello higepon\n"
-;; (library (higepon6)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (rename (higepon6) (hello hige:hello)))
-;; hige:hello
-;; ]
-
-;; [lib "goodbye higepon\n"
-;; (library (higepon7)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (prefix (higepon7) higepon.))
-;; higepon.goodbye
-;; ]
-
-
-;; [lib "lulululuhello higepon\n"
-;; (library (higepon8)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (library (ipod (3))
-;;          (export play)
-;;          (import)
-;;          (define play "lulululu"))
-;; (import (prefix (higepon8) higepon.)
-;;         (ipod))
-;; (string-append play higepon.hello)
-;; ]
-
-
-;; ;; we now ignore version
-;; [lib "goodbye higepon\n"
-;; (library (higepon9 (7))
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (prefix (higepon9 (6)) higepon.))
-;; higepon.goodbye
-;; ]
-
-
-;; [lib "goodbye higepon\n"
-;; (library (higepon10)
-;;          (export hello goodbye)
-;;          (import)
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (prefix (higepon10) higepon.))
-;; higepon.goodbye
-;; ]
-
-
-;; [lib "goodbye higepon\nhi higepon\ncall\n"
-;; (library (higepon11)
-;;          (export hi
-;;                  hello
-;;                  (rename (goodbye bye) (call c)))
-;;          (import)
-;;          (define hello   "hello higepon\n")
-;;          (define hi      "hi higepon\n")
-;;          (define goodbye "goodbye higepon\n")
-;;          (define call    "call\n"))
-;; (import (higepon11))
-;; (string-append bye hi c)
-;; ]
-
-
-;; [lib "lulululuhello higepon\n"
-;; (library (ipod0 (3))
-;;          (export play)
-;;          (import)
-;;          (define play "lulululu"))
-;; (library (higepon12)
-;;          (export hello goodby play)
-;;          (import (ipod0))
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (higepon12))
-;; (string-append play hello)
-;; ]
-
-
-;; ;; (ipod) library imported twice.
-;; ;; Body of ipod must not be instatiated twice!
-;; [lib "hello higepon\n"
-;; (library (ipod2 (3))
-;;          (export play)
-;;          (import)
-;;          (define play "lulululu"))
-;; (library (higepon13)
-;;          (export hello goodby play)
-;;          (import (ipod2))
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (library (hagepon)
-;;          (export hello)
-;;          (import (ipod2)
-;;                  (higepon13)))
-
-;; (import (hagepon))
-;; (string-append hello)
-;; ]
-
-;; [lib "lulululuhello higepon\n"
-;; (library (ipod4 (3))
-;;          (export play)
-;;          (import)
-;;          (define play "lulululu"))
-;; (library (higepon14)
-;;          (export hello goodby play)
-;;          (import (for (ipod4) run))
-;;          (define hello "hello higepon\n")
-;;          (define goodbye "goodbye higepon\n"))
-;; (import (higepon14))
-;; (string-append play hello)
-;; ]
-
-
-;; [lib 5
-;; (library (my-macro-lib)
-;;          (export add3)
-;;          (import)
-;;          (define-macro (add3 v) `(+ 3 ,v)))
-
-;; (library (test)
-;;          (export val)
-;;          (import (my-macro-lib))
-;;          (define val (add3 2)))
-
-;; (import (test))
-;; val
-;; ]
-
 ;; from R6RS
 ;;; cons
 ((a) (cons 'a '()))
@@ -644,12 +447,10 @@
 (a (car '(a b c)))
 ((a) (car '((a) b c d)))
 (1 (car '(1 . 2)))
-;(&assertion exception (car '()))
 
 ;;; cdr
 ((b c d) (cdr '((a) b c d)))
 (2 (cdr '(1 . 2)))
-;(&assertion exception (cdr '()))
 
 ;;; reverse
 ((c b a) (reverse '(a b c)))
@@ -763,99 +564,42 @@
 (1 (*))
 
 ;; Exceptions
-;; [mosh-only "no-error"
-;;   (with-exception-handler
-;;     (lambda (e)
-;;       "error")
-;;     (lambda () "no-error"))]
-;; [mosh-only "error"
-;;   (with-exception-handler
-;;     (lambda (e)
-;;       e)
-;;     (lambda () (raise "error") 5))]
-;; [mosh-only "error-is-string"
-;;   (guard (con
-;;           [(string? con)
-;;            "error-is-string"]
-;;           [else
-;;            "error-is-not-string"])
-;;          (raise "raise"))]
-;; [mosh-only 3
-;;   (guard (con
-;;           [(string? con)
-;;            "error-is-string"]
-;;           [else
-;;            "error-is-not-string"])
-;;          3)]
-;; [mosh-only "catched at parent"
-;;  (guard (e
-;;          [(symbol? e)
-;;           "catched at parent"]
-;;          [else
-;;           "error"])
-;;    (guard (con
-;;            [(string? con)
-;;             "error-is-string"]) ;; no else clause
-;;           (raise 'symbol-error)))]
-;; [mosh-only 7
-;;   (guard (con
-;;           [con
-;;            4]
-;;           [else
-;;            "error-is-not-string"])
-;;          (+ 3 (raise-continuable "warn continuation")))]
-;; [mosh-only #t
-;;   (vector-type?
-;;    (make-vector-type 'test
-;;                      #f
-;;                      '()
-;;                      '(#f #f)
-;;                      #f))]
-;; [mosh-only 1234
-;;   (vector-type-data
-;;    (make-vector-type 'test
-;;                      #f
-;;                      1234
-;;                      '(#f #f)
-;;                      #f))]
-;; [mosh-only #t
-;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [pred?       (vector-type-predicate vt)])
-;;     (pred? (constructor 3 4)))]
-;; [mosh-only #t
-;;   (let* ([parent (make-vector-type 'test-parent #f #f '(#f #f) #f)]
-;;          [vt (make-vector-type 'test parent #f '(#f #f) #f)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [pred?       (vector-type-predicate parent)])
-;;     (pred? (constructor 3 4)))]
-;; [mosh-only 12
-;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-;;          [get-0 (typed-vector-accessor vt 0)]
-;;          [get-1 (typed-vector-accessor vt 1)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [v (constructor 3 9)])
-;;     (+ (get-0 v) (get-1 v)))]
-;; [mosh-only 16
-;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-;;          [get-0 (typed-vector-accessor vt 0)]
-;;          [get-1 (typed-vector-accessor vt 1)]
-;;          [set-0 (typed-vector-mutator vt 0)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [v (constructor 3 9)])
-;;     (set-0 v 7)
-;;     (+ (get-0 v) (get-1 v)))]
-;; [mosh-only #t
-;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [v (constructor 3 9)])
-;;     (typed-vector? v))]
-;; [mosh-only #t
-;;   (let* ([vt (make-vector-type 'test #f #f '(#f #f) #f)]
-;;          [constructor (typed-vector-constructor vt)]
-;;          [v (constructor 3 9)])
-;;     (eq? vt (typed-vector-type v)))]
-
+[mosh-only "no-error"
+  (with-exception-handler
+    (lambda (e)
+      "error")
+    (lambda () "no-error"))]
+[mosh-only "error-is-string"
+  (guard (con
+          [(string? con)
+           "error-is-string"]
+          [else
+           "error-is-not-string"])
+         (raise "raise"))]
+[mosh-only 3
+  (guard (con
+          [(string? con)
+           "error-is-string"]
+          [else
+           "error-is-not-string"])
+         3)]
+[todo mosh-only "catched at parent"
+ (guard (e
+         [(symbol? e)
+          "catched at parent"]
+         [else
+          "error"])
+   (guard (con
+           [(string? con)
+            "error-is-string"]) ;; no else clause
+          (raise 'symbol-error)))]
+[todo mosh-only 7
+  (guard (con
+          [con
+           4]
+          [else
+           "error-is-not-string"])
+         (+ 3 (raise-continuable "warn continuation")))]
 [6
   (apply (lambda (a b c) (+ a b c)) 1 2 '(3))]
 [6
@@ -871,8 +615,8 @@
 [mosh-only #f (for-all even? '(3 1 4 1 5 9))]
 [mosh-only #f (for-all even? '(3 1 4 1 5 9 . 2))]
 [mosh-only #t (for-all even? '(2 4 14))]
-;[14 (for-all (lambda (n) (and (even? n) n))
-;             '(2 4 14))]
+[14 (for-all (lambda (n) (and (even? n) n))
+            '(2 4 14))]
 [mosh-only #t (for-all (lambda (a b) (< a b)) '(1 2 3) '(2 3 4))]
 [mosh-only #f (for-all (lambda (a b) (< a b)) '(1 2 4) '(2 3 4))]
 
@@ -917,9 +661,9 @@
 [mosh-only #t (flonum? (/ (+ (greatest-fixnum) 1) (inexact (/ 1 3) )))]
 [mosh-only 1 (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1))]
 [mosh-only #t (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))] ;; normalization
-;[mosh-only 1/2 (/ 2)]
-;[mosh-only 1/3 (/ 3)]
-;[mosh-only 0 (/ 0)] -> division by zero
+[todo mosh-only 1/2 (/ 2)]
+[todo mosh-only 1/3 (/ 3)]
+[todo mosh-only 0 (/ 0)] -> division by zero
 
 [#t (fixnum? (least-fixnum))]
 [#t (fixnum? (greatest-fixnum))]
@@ -1329,43 +1073,43 @@
                 (record-field-mutable? :point 1))]
 
 ;; dynamic-wind start
-;; [mosh-only (connect talk1 disconnect connect talk2 disconnect)
-;;            (let ((path '())
-;;                  (c '()))
-;;              (let ((add (lambda (s) (set! path (cons s path)))))
-;;                (dynamic-wind
-;;                    (lambda () (add 'connect))
-;;                    (lambda ()
-;;                      (add (call-with-current-continuation
-;;                            (lambda (c0) (set! c c0) 'talk1))))
-;;                    (lambda () (add 'disconnect)))
-;;                (if (< (length path) 4)
-;;                    (c 'talk2)
-;;                    (reverse path))))]
-;; [mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
-;;   (let* ([c '()]
-;;          [dynwind-test1
-;;           (lambda ()
-;;             (let ((path '()))
-;;               (let ((add (lambda (s) (set! path (cons s path)))))
-;;                 (dynamic-wind
-;;                     (lambda () (add 'connect))
-;;                     (lambda ()
-;;                       (add (call-with-current-continuation
-;;                             (lambda (c0) (set! c c0) 'talk1))))
-;;                     (lambda () (add 'disconnect)))
-;;                 (if (< (length path) 4)
-;;                     (c 'talk2)
-;;                     (reverse path)))))]
-;;           [dynwind-test2
-;;            (lambda ()
-;;              (let ((path '()))
-;;                (dynamic-wind
-;;                    (lambda () (set! path (cons 1 path)))
-;;                    (lambda () (set! path (append (dynwind-test1) path)))
-;;                    (lambda () (set! path (cons 3 path))))
-;;                path))])
-;;     (dynwind-test2))]
+[todo mosh-only (connect talk1 disconnect connect talk2 disconnect)
+           (let ((path '())
+                 (c '()))
+             (let ((add (lambda (s) (set! path (cons s path)))))
+               (dynamic-wind
+                   (lambda () (add 'connect))
+                   (lambda ()
+                     (add (call-with-current-continuation
+                           (lambda (c0) (set! c c0) 'talk1))))
+                   (lambda () (add 'disconnect)))
+               (if (< (length path) 4)
+                   (c 'talk2)
+                   (reverse path))))]
+[todo mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
+  (let* ([c '()]
+         [dynwind-test1
+          (lambda ()
+            (let ((path '()))
+              (let ((add (lambda (s) (set! path (cons s path)))))
+                (dynamic-wind
+                    (lambda () (add 'connect))
+                    (lambda ()
+                      (add (call-with-current-continuation
+                            (lambda (c0) (set! c c0) 'talk1))))
+                    (lambda () (add 'disconnect)))
+                (if (< (length path) 4)
+                    (c 'talk2)
+                    (reverse path)))))]
+          [dynwind-test2
+           (lambda ()
+             (let ((path '()))
+               (dynamic-wind
+                   (lambda () (set! path (cons 1 path)))
+                   (lambda () (set! path (append (dynwind-test1) path)))
+                   (lambda () (set! path (cons 3 path))))
+               path))])
+    (dynwind-test2))]
 [mosh-only (a b c d e f g b c d e f g h)
              (let ((x '())
                    (c #f))
@@ -1454,7 +1198,7 @@
 
 [error (apply read-char (current-input-port))] ;; the argument should be a list.
 [error (rxmatch-start (rxmatch #/\d+/ "a345a") 5)]
-;[error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
+[todo error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
 [error (string-ref "hige" 5)]
 [error (open-file-input-port "not-exist-path/////xxx")]
 [error (open-file-output-port "not-exist-path/////xxx")]
@@ -1492,7 +1236,7 @@
 (#t (apply <= '(1 2 3)))
 (#t (apply <= '(1 3 3)))
 (#f (apply <= '(1 5 3)))
-;(error (+ 1 2 'a))
+(todo error (+ 1 2 'a))
 (error (/ 1 0))
 (4  (apply + '(4)))
 (7  (apply + '(4 3)))
@@ -1720,13 +1464,12 @@
          (bytevector-u32-set! b 0 12345 'big)
          (bytevector-u32-ref b 0 'big)))
 
-(18302628885633695743 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+(todo 18302628885633695743 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
                                     255 255 255 255 255 255 255 253) 8 'little))
-(-144115188075855873 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
+(todo -144115188075855873 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
                                    255 255 255 255 255 255 255 253) 8 'little))
-;; todo
-;; (18446744073709551613 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
-;;                                    255 255 255 255 255 255 255 253) 8 'big))
+(todo 18446744073709551613 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+                                                        255 255 255 255 255 255 255 253) 8 'big))
 (-3 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
                                     255 255 255 255 255 255 255 253) 8 'big))
 (#t (= (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
@@ -1919,3 +1662,22 @@
                      (string-append "\xFEFF;" str))
            (string=? (utf16->string (bv-append #vu8(#xFF #xFE) (string->utf16 str 'big)) 'big #t)
                      (string-append "\xFFFE;" str)))))
+
+;; complex
+(#t (= (make-complex 1 1) (make-complex 1 1)))
+(#t (= 3 (make-complex 3 0)))
+(#t (= (+ (greatest-fixnum) 1) (make-complex (+ (greatest-fixnum) 1) 0)))
+(#t (= (/ 1 3) (make-complex (/ 2 6) 0)))
+(#t (= (inexact (/ 1 3)) (make-complex (inexact (/ 2 6)) 0))) ;; may be equal?
+(#t (= (make-complex 3 0) 3))
+(#t (= (make-complex (+ (greatest-fixnum) 1) 0) (+ (greatest-fixnum) 1)))
+(#t (= (make-complex (/ 2 6) 0) (/ 1 3)))
+(#t (= (make-complex (inexact (/ 2 6)) 0) (inexact (/ 1 3)))) ;; may be equal?
+(#t (= (make-complex 2 3) (+ (make-complex 1 2) (make-complex 1 1))))
+(#t (= (make-complex 0 1) (- (make-complex 1 2) (make-complex 1 1))))
+(#t (= (make-complex 0 -1) (- (make-complex 1 1) (make-complex 1 2))))
+(#t (= (make-complex -5 10) (* (make-complex 1 2) (make-complex 3 4))))
+(#t (= (make-complex 1 0)  (/ (make-complex 1 2) (make-complex 1 2))))
+(#t (= (make-complex 1 1) (/ (make-complex 2 2) 2)))
+(todo 1 (/ (make-complex 1 2) (make-complex 1 2)))
+(todo 2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize

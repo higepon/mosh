@@ -33,6 +33,7 @@
 #define __SCHEME_COMPNUM__
 
 #include "scheme.h"
+#include "Arithmetic.h"
 
 namespace scheme {
 
@@ -50,6 +51,65 @@ public:
 
     Object real() const { return real_; }
     Object imag() const { return imag_; }
+
+    static bool eq(Compnum* n1, Compnum* n2)
+    {
+        return Arithmetic::eq(n1->real(), n2->real()) &&
+               Arithmetic::eq(n2->imag(), n2->imag());
+    }
+
+    static bool eq(Object n1, Compnum* n2)
+    {
+        MOSH_ASSERT(n1.isFixnum() || n1.isBignum() || n1.isFlonum() || n1.isRatnum());
+        if (Arithmetic::eq(n2->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(n1, n2->real());
+        } else {
+            return false;
+        }
+    }
+
+    static bool eq(Compnum* n1, Object n2)
+    {
+        MOSH_ASSERT(n2.isFixnum() || n2.isBignum() || n2.isFlonum() || n2.isRatnum());
+        if (Arithmetic::eq(n1->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(n1->real(), n2);
+        } else {
+            return false;
+        }
+    }
+
+    static Object add(Compnum* n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::add(n1->real(), n2->real()),
+                                   Arithmetic::add(n2->imag(), n2->imag()));
+    }
+
+    static Object sub(Compnum* n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(n1->real(), n2->real()),
+                                   Arithmetic::sub(n2->imag(), n2->imag()));
+    }
+
+    static Object mul(Compnum* n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
+                                   Arithmetic::add(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n1->real(), n2->imag())));
+    }
+
+    static Object div(Compnum* n1, Compnum* n2)
+    {
+        const Object denon = Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()),
+                                             Arithmetic::mul(n1->imag(), n2->imag()));
+        const Object nume = Object::makeCompnum(Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
+                                                Arithmetic::sub(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n2->real(), n1->imag())));
+        return Arithmetic::div(nume, denon);
+    }
+
+    static Object div(Compnum* n1, Object n2)
+    {
+        return Object::makeCompnum(Arithmetic::div(n1->real(), n2),
+                                   Arithmetic::div(n1->imag(), n2));
+    }
 
 private:
     Object real_;
