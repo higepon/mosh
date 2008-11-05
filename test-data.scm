@@ -1682,45 +1682,70 @@
 (todo 1 (/ (make-complex 1 2) (make-complex 1 2)))
 (todo 2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize
 (#t (= (make-complex (/ -1 2) (/ 3 2)) (/ (make-complex 1 2) (make-complex 1 -1))))
-; fixnum + compnum
-(#t (= (make-complex 2 1) (+ (make-complex 1 1) + 1)))
-; compnum + fixnum
-; bignum + compnum
-; compnum + bignum
-; ratnum + compnum
-; compnum + ratnum
-; compnum + flonum
-; flonum + compnum
-; compnum + compnum
+(#t (= (make-complex 2 1) (+ 1 (make-complex 1 1))))                                               ; fixnum + compnum
+(#t (= (make-complex 3 1) (+ (make-complex 1 1) 2)))                                               ; compnum + fixnum
+(#t (= (make-complex (+ (greatest-fixnum) 2) 1)(+ (+ (greatest-fixnum) 1) (make-complex 1 1))))    ; bignum + compnum
+(#t (= (make-complex (+ (greatest-fixnum) 2) 1)(+ (make-complex 1 1) (+ (greatest-fixnum) 1) )))   ; compnum + bignum
+(#t (= (make-complex 1 3) (+ (/ 1 2) (make-complex (/ 1 2) 3))))                                   ; ratnum + compnum
+(#t (= (make-complex 1 3) (+ (make-complex (/ 1 2) 3) (/ 1 2))))                                   ; compnum + ratnum
+(#t (let1 sum (+ (make-complex 1 2) (inexact (/ 1 2)))                                             ; compnum + flonum
+      (and (< (inexact (/ 2 2)) (real-part sum) (inexact (/ 4 2)))
+           (= (imag-part sum) 2))))
+(#t (let1 sum (+ (inexact (/ 1 2)) (make-complex 1 2))                                             ; flonum + compnum
+      (and (< (inexact (/ 2 2)) (real-part sum) (inexact (/ 4 2)))
+           (= (imag-part sum) 2))))
+(#t (= (make-complex 3 3) (+ (make-complex 1 1) (make-complex 2 2))))                              ; compnum + compnum
+(#t (= (make-complex 0 -1) (- 1 (make-complex 1 1))))                                              ; fixnum - compnum
+(#t (= (make-complex -1 1) (- (make-complex 1 1) 2)))                                              ; compnum - fixnum
+(#t (= (make-complex (+ (greatest-fixnum) 1) -1) (- (+ (greatest-fixnum) 2) (make-complex 1 1))))  ; bignum - compnum
+(#t (= (make-complex (least-fixnum) -1) (- (make-complex 1 1) (+ (greatest-fixnum) 2) )))          ; compnum - bignum
+(#t (= (make-complex 0 3) (- (/ 1 2) (make-complex (/ 1 2) 3))))                                   ; ratnum - compnum
+(#t (= (make-complex 0 3) (- (make-complex (/ 1 2) 3) (/ 1 2))))                                   ; compnum - ratnum
+(#t (let1 sum (- (make-complex 1 2) (inexact (/ 1 2)))                                             ; compnum - flonum
+      (and (< (inexact (/ 1 4)) (real-part sum) (inexact (/ 2 3)))
+           (= (imag-part sum) 2))))
+(#t (let1 sum (- (inexact (/ 1 2)) (make-complex 1 2))                                             ; flonum - compnum
+      (and (< (inexact (- 0 (/ 3 4))) (real-part sum) (inexact (- 0 (/ 1 4))))
+           (= (imag-part sum) -2))))
+(#t (= (make-complex -1 -1) (- (make-complex 1 1) (make-complex 2 2))))                            ; compnum - compnum
+(#t (= (make-complex 6 3) (* 3 (make-complex 2 1))))                                               ; fixnum * compnum
+(#t (= (make-complex 6 3) (* (make-complex 2 1) 3)))                                               ; compnum * fixnum
+(#t (= (make-complex (+ (greatest-fixnum) (greatest-fixnum) 2)
+                     (+ 1 (greatest-fixnum)))
+       (* (+ 1 (greatest-fixnum)) (make-complex 2 2))))                                            ; bignum * compnum
+(#t (= (make-complex (+ (greatest-fixnum) (greatest-fixnum) 2)                                     ; compnum * bignum
+                     (+ 1 (greatest-fixnum)))
+       (* (make-complex 2 2) (+ 1 (greatest-fixnum)))))
+(#t (= (make-complex (/ 1 3) (/ 2 6)) (* (/ 1 3) (make-complex 1 1))))                             ; ratnum * compnum
+(#t (= (make-complex (/ 1 3) (/ 2 6)) (* (make-complex 1 1) (/ 1 3))))                             ; compnum * ratnum
+(#t (let1 val (* (make-complex 2 3) (inexact (/ 1 3)))                                             ; compnum * flonum
+      (and (< (/ 1 4) (real-part val) 1)
+           (< (/ 99 100) (imag-part val) (inexact (/ 101 100))))))
+(#t (let1 val (* (inexact (/ 1 3)) (make-complex 2 3))                                             ; flonum * compnum
+      (and (< (/ 1 4) (real-part val) 1)
+           (< (/ 99 100) (imag-part val) (inexact (/ 101 100))))))
+(#t (= (make-complex -7 -27) (* (make-complex 2 3) (make-complex 4 5))))                           ; compnum * compnum
+(#t (= (make-complex (/ 3 17) (/ 5 17)) (/ 2 (make-complex 3 5))))                                 ; fixnum / compnum
+(#t (= (make-complex (/ 3 2) (/ 5 2)) (/ (make-complex 3 5) 2)))                                   ; compnum / fixnum
+(#t (= (make-complex (/ (+ 1 (greatest-fixnum)) 2) (- 0 (/ (+ 1 (greatest-fixnum)) 2)))            ; bignum / compnum
+       (/ (+ (greatest-fixnum) 1) (make-complex 1 1))))
 
-; fixnum + compnum
-; compnum + fixnum
-; bignum + compnum
-; compnum + bignum
-; ratnum + compnum
-; compnum + ratnum
-; compnum + flonum
-; flonum + compnum
-; compnum + compnum
-
-; fixnum + compnum
-; compnum + fixnum
-; bignum + compnum
-; compnum + bignum
-; ratnum + compnum
-; compnum + ratnum
-; compnum + flonum
-; flonum + compnum
-; compnum + compnum
-
-; fixnum + compnum
-; compnum + fixnum
-; bignum + compnum
-; compnum + bignum
-; ratnum + compnum
-; compnum + ratnum
-; compnum + flonum
-; flonum + compnum
-; compnum + compnum
-
-; normalize fixnum
+(#t (= (make-complex 1 2)                                                                          ; compnum / bignum
+       (/ (make-complex (+ (greatest-fixnum) 1) (* 2 (+ (greatest-fixnum) 1)))
+          (+ (greatest-fixnum) 1))))
+(#t (= (make-complex (/ 1 6) (/ -1 6)) (/ (/ 1 3) (make-complex 1 1))))                            ; ratnum / compnum
+(#t (= (make-complex 3 3) (/ (make-complex 1 1) (/ 1 3))))                                         ; compnum / ratnum
+(#t (> (/ 7 2) (real-part (/ (make-complex 1 1) (inexact (/ 1 3)))) (/ 5 2)))                      ; compnum / flonum
+(#t (> (/ 2 6) (real-part (/ (inexact (/ 1 3)) (make-complex 1 1))) (/ 1 7)))                      ; flonum / compnum
+(#t (= (make-complex (/ 5 13) (/ -1 13)) (/ (make-complex 1 1) (make-complex 2 3))))               ; compnum / compnum
+; zero div
+(error (/ 1 0))
+(error (/ (/ 1 3) 0))
+(error (/ (+ (greatest-fixnum) 1) 0))
+(error (/ (inexact (/ 1 3)) 0))
+(error (/ (make-complex 1 1) 0))
+(error (/ 3 (inexact 0)))
+; normalize compnum
+(#t (let1 v (make-complex 3 0)
+        (and (fixnum? v)
+             (= v 3))))

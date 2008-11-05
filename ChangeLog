@@ -1,5 +1,9 @@
 2008-11-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Implemented : Complex number normalization.
+
+        * Implemented  +, -, *, /, >, >=, <, <=, = between Compnum and (Rational, Fixnum ,Flonum, Bignum and Compnum).
+
         * vm.cpp (setAfterTrigger1): Fixed stack bug.
 
 2008-11-04  higepon  <higepon@users.sourceforge.jp>

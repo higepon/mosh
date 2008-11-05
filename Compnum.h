@@ -42,7 +42,6 @@ class Compnum EXTEND_GC
 public:
     Compnum(Object real, Object imag) : real_(real), imag_(imag)
     {
-
     }
 
     ~Compnum()
@@ -78,16 +77,58 @@ public:
         }
     }
 
+    static Object add(Object n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::add(n1, n2->real()),
+                                   n2->imag());
+    }
+
+    static Object sub(Object n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(n1, n2->real()),
+                                   Arithmetic::sub(Object::makeFixnum(0), n2->imag()));
+    }
+
+    static Object mul(Object n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::mul(n1, n2->real()),
+                                   Arithmetic::mul(n1, n2->imag()));
+    }
+
+    static Object add(Compnum* n1, Object n2)
+    {
+        return Object::makeCompnum(Arithmetic::add(n1->real(), n2),
+                                   n1->imag());
+    }
+
+    static Object sub(Compnum* n1, Object n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(n1->real(), n2),
+                                   n1->imag());
+    }
+
+    static Object mul(Compnum* n1, Object n2)
+    {
+        return Object::makeCompnum(Arithmetic::mul(n1->real(), n2),
+                                   Arithmetic::mul(n1->imag(), n2));
+    }
+
+    static Object div(Object n1, Compnum* n2)
+    {
+        return div(new Compnum(n1, Object::makeFixnum(0)), n2);
+    }
+
+
     static Object add(Compnum* n1, Compnum* n2)
     {
         return Object::makeCompnum(Arithmetic::add(n1->real(), n2->real()),
-                                   Arithmetic::add(n2->imag(), n2->imag()));
+                                   Arithmetic::add(n1->imag(), n2->imag()));
     }
 
     static Object sub(Compnum* n1, Compnum* n2)
     {
         return Object::makeCompnum(Arithmetic::sub(n1->real(), n2->real()),
-                                   Arithmetic::sub(n2->imag(), n2->imag()));
+                                   Arithmetic::sub(n1->imag(), n2->imag()));
     }
 
     static Object mul(Compnum* n1, Compnum* n2)

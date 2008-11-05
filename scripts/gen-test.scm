@@ -62,7 +62,7 @@
                         ""
                         )))
     (write '(when (> (length errors) 0)
-              (write '(newline))
+              (newline)
               (format #t "    === ~d error(s) =========\n" (length errors))
               (for-each
                (lambda (error)

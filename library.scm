@@ -3121,7 +3121,7 @@
 
 
 (define (raise c)
-  (when (not (condition? c))
+  (when (and (not (condition? c)) (not (string? c)))
     (format #t "Warning: raise arguments is wrong. condition expected but got ~a\n" c))
   (cond ((current-exception-handler)
          => (lambda (proc)

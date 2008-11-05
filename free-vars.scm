@@ -260,4 +260,6 @@
     greatest-fixnum
     inexact
     make-complex
+    real-part
+    imag-part
     )

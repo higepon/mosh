@@ -37,6 +37,8 @@
 
 namespace scheme {
 
+    Object realPartEx(int argc, const Object* argv);
+    Object imagPartEx(int argc, const Object* argv);
     Object numberPEx(int argc, const Object* argv);
     Object rationalPEx(int argc, const Object* argv);
     Object flonumPEx(int argc, const Object* argv);

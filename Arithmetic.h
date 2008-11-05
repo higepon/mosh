@@ -42,6 +42,7 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static bool isExactZero(Object n1);
     static Object add(Object number1, Object number2);
     static Object sub(Object number1, Object number2);
     static Object mul(Object number1, Object number2);

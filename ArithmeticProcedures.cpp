@@ -40,8 +40,25 @@
 #include "Ratnum.h"
 #include "Fixnum.h"
 #include "Bignum.h"
+#include "Compnum.h"
 
 using namespace scheme;
+
+Object scheme::realPartEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("real-part");
+    checkArgumentLength(1);
+    argumentAsCompnum(0, compnum);
+    return compnum->real();
+}
+
+Object scheme::imagPartEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("imag-part");
+    checkArgumentLength(1);
+    argumentAsCompnum(0, compnum);
+    return compnum->imag();
+}
 
 Object scheme::numberPEx(int argc, const Object* argv)
 {

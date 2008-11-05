@@ -47,11 +47,6 @@ public:
     char* toString() const;
     double toDouble() const;
 
-    bool isZero() const
-    {
-        return mpz_cmp_si(value, 0) == 0;
-    }
-
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
     {\

@@ -128,7 +128,7 @@ public:
 
     MAKE_FLONUM_OP_FUNC(add, +);
     MAKE_FLONUM_OP_FUNC(sub, -);
-    MAKE_FLONUM_OP_FUNC(mul, /);
+    MAKE_FLONUM_OP_FUNC(mul, *);
     MAKE_FLONUM_OP_FUNC(div, /);
 
     static Object add(Bignum* n1, Flonum* n2);

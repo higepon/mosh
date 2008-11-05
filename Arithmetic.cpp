@@ -43,6 +43,11 @@
 
 using namespace scheme;
 
+bool Arithmetic::isExactZero(Object n)
+{
+    return Arithmetic::eq(Object::makeFixnum(0), n);
+}
+
 #define MAKE_REAL_COMPARE_FUNC(compare, symbol)          \
     bool Arithmetic::compare(Object n1, Object n2) \
     { \
@@ -176,6 +181,8 @@ bool Arithmetic::eq(Object n1, Object n2)
                 return Flonum::op(n1.toFixnum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Bignum::op(n1.toFixnum(), n2.toBignum());\
+            } else if (n2.isCompnum()) {\
+                return Compnum::op(n1, n2.toCompnum());\
             }\
         } else if (n1.isBignum()) {\
             if (n2.isFixnum()) {\
@@ -186,6 +193,8 @@ bool Arithmetic::eq(Object n1, Object n2)
                 return Flonum::op(n1.toBignum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Bignum::op(n1.toBignum(), n2.toBignum());\
+            } else if (n2.isCompnum()) {\
+                return Compnum::op(n1, n2.toCompnum());\
             }\
         } else if (n1.isRatnum()) {\
             if (n2.isFixnum()) {\
@@ -196,6 +205,8 @@ bool Arithmetic::eq(Object n1, Object n2)
                 return Flonum::op(n1.toRatnum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Ratnum::op(n1.toRatnum(), n2.toBignum());\
+            } else if (n2.isCompnum()) { \
+                return Compnum::op(n1, n2.toCompnum());\
             }\
         } else if (n1.isFlonum()) {\
             if (n2.isFixnum()) {\
@@ -206,9 +217,13 @@ bool Arithmetic::eq(Object n1, Object n2)
                 return Flonum::op(n1.toFlonum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Flonum::op(n1.toFlonum(), n2.toBignum());\
+            } else if (n2.isCompnum()) { \
+                return Compnum::op(n1, n2.toCompnum());\
             }\
         } else if (n1.isCompnum()) {\
-            if (n2.isCompnum()) {\
+            if (n2.isFixnum() || n2.isBignum() || n2.isRatnum() || n2.isFlonum()) { \
+                 return Compnum::op(n1.toCompnum(), n2);\
+            } else if (n2.isCompnum()) {\
                 return Compnum::op(n1.toCompnum(), n2.toCompnum());\
             }\
         }\
@@ -226,14 +241,14 @@ Object Arithmetic::div(Object n1, Object n2)
 {
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
-            if (n2.toFixnum() == 0) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
                 return Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
             }
         } else if (n2.isRatnum()) {
-            if (n2.toRatnum()->equal(0)) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
@@ -247,16 +262,23 @@ Object Arithmetic::div(Object n1, Object n2)
                 return Flonum::div(n1.toFixnum(), n2.toFlonum());
             }
         } else if (n2.isBignum()) {
-            if (n2.toBignum()->isZero()) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
                 return Ratnum::div(n1.toFixnum(), n2.toBignum());
             }
+        } else if (n2.isCompnum()) {
+            if (isExactZero(n2)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Compnum::div(n1, n2.toCompnum());
+            }
         }
     } else if (n1.isRatnum()) {
         if (n2.isFixnum()) {
-            if (n2.toFixnum() == 0) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
@@ -272,16 +294,23 @@ Object Arithmetic::div(Object n1, Object n2)
                 return Flonum::div(n1.toRatnum(), n2.toFlonum());
             }
         } else if (n2.isBignum()) {
-            if (n2.toBignum()->isZero()) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
                 return Ratnum::div(n1.toRatnum(), n2.toBignum());
             }
+        } else if (n2.isCompnum()) {
+            if (isExactZero(n2)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Compnum::div(n1, n2.toCompnum());
+            }
         }
     } else if (n1.isFlonum()) {
         if (n2.isFixnum()) {
-            if (n2.toFixnum() == 0) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
@@ -297,16 +326,23 @@ Object Arithmetic::div(Object n1, Object n2)
                 return Flonum::div(n1.toFlonum(), n2.toFlonum());
             }
         } else if (n2.isBignum()) {
-            if (n2.toBignum()->isZero()) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
                 return Flonum::div(n1.toFlonum(), n2.toBignum());
             }
+        } else if (n2.isCompnum()) {
+            if (isExactZero(n2)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Compnum::div(n1, n2.toCompnum());
+            }
         }
     } else if (n1.isBignum()) {
         if (n2.isFixnum()) {
-            if (n2.toFixnum() == 0) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
@@ -322,16 +358,28 @@ Object Arithmetic::div(Object n1, Object n2)
                 return Flonum::div(n1.toBignum(), n2.toFlonum());
             }
         } else if (n2.isBignum()) {
-            if (n2.toBignum()->isZero()) {
+            if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
                 return Object::False;
             } else {
                 return Ratnum::div(n1.toBignum(), n2.toBignum());
             }
+        } else if (n2.isCompnum()) {
+            if (isExactZero(n2)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Compnum::div(n1, n2.toCompnum());
+            }
         }
     } else if (n1.isCompnum()) {
-        if (n2.isFixnum()) {
-            return Compnum::div(n1.toCompnum(), n2);
+        if (n2.isFixnum() || n2.isBignum() || n2.isRatnum() || n2.isFlonum()) {
+            if (isExactZero(n2)) {
+                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                return Object::False;
+            } else {
+                return Compnum::div(n1.toCompnum(), n2);
+            }
         } else if (n2.isCompnum()) {
             return Compnum::div(n1.toCompnum(), n2.toCompnum());
         }

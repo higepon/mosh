@@ -343,8 +343,12 @@ Object Object::makeRatnum(Ratnum* r)
 
 Object Object::makeCompnum(Object real, Object imag)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Compnum,
-                                                        reinterpret_cast<word>(new Compnum(real, imag)))));
+    if (Arithmetic::isExactZero(imag)) {
+        return real;
+    } else {
+        return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Compnum,
+                                                            reinterpret_cast<word>(new Compnum(real, imag)))));
+    }
 }
 
 bool Object::isList() const
