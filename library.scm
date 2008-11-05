@@ -3088,6 +3088,7 @@
       (thunk))))
 
 (define (condition-printer c)
+  (if (condition? c)
   (receive (out get-string) (open-string-output-port)
     (for-each
      (lambda (x)
@@ -3115,10 +3116,13 @@
         [else
          (display x out)]))
      (simple-conditions c))
-    (get-string)))
+    (get-string))
+  c))
 
 
 (define (raise c)
+  (when (not (condition? c))
+    (format #t "Warning: raise arguments is wrong. condition expected but got ~a\n" c))
   (cond ((current-exception-handler)
          => (lambda (proc)
               (proc c)

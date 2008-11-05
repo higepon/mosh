@@ -1681,3 +1681,46 @@
 (#t (= (make-complex 1 1) (/ (make-complex 2 2) 2)))
 (todo 1 (/ (make-complex 1 2) (make-complex 1 2)))
 (todo 2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize
+(#t (= (make-complex (/ -1 2) (/ 3 2)) (/ (make-complex 1 2) (make-complex 1 -1))))
+; fixnum + compnum
+(#t (= (make-complex 2 1) (+ (make-complex 1 1) + 1)))
+; compnum + fixnum
+; bignum + compnum
+; compnum + bignum
+; ratnum + compnum
+; compnum + ratnum
+; compnum + flonum
+; flonum + compnum
+; compnum + compnum
+
+; fixnum + compnum
+; compnum + fixnum
+; bignum + compnum
+; compnum + bignum
+; ratnum + compnum
+; compnum + ratnum
+; compnum + flonum
+; flonum + compnum
+; compnum + compnum
+
+; fixnum + compnum
+; compnum + fixnum
+; bignum + compnum
+; compnum + bignum
+; ratnum + compnum
+; compnum + ratnum
+; compnum + flonum
+; flonum + compnum
+; compnum + compnum
+
+; fixnum + compnum
+; compnum + fixnum
+; bignum + compnum
+; compnum + bignum
+; ratnum + compnum
+; compnum + ratnum
+; compnum + flonum
+; flonum + compnum
+; compnum + compnum
+
+; normalize fixnum

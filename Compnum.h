@@ -98,8 +98,8 @@ public:
 
     static Object div(Compnum* n1, Compnum* n2)
     {
-        const Object denon = Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()),
-                                             Arithmetic::mul(n1->imag(), n2->imag()));
+        const Object denon = Arithmetic::add(Arithmetic::mul(n2->real(), n2->real()),
+                                             Arithmetic::mul(n2->imag(), n2->imag()));
         const Object nume = Object::makeCompnum(Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
                                                 Arithmetic::sub(Arithmetic::mul(n1->imag(), n2->real()), Arithmetic::mul(n1->real(), n2->imag())));
         return Arithmetic::div(nume, denon);

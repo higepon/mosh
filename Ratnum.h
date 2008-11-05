@@ -51,7 +51,6 @@ public:
             mpq_set_si(value, numerator, denominator);
         }
         mpq_canonicalize(value);
-        printf("numerator=%d<%s>\n\n", numerator, mpq_get_str(NULL, 10, value));
     }
 
     Ratnum(mpq_t rational)

@@ -115,8 +115,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     profilerRunning_(false),
     isProfiler_(isProfiler),
     maxNumValues_(256),
-    numValues_(0)
-//    isR6RSMode_(true) // temp
+    numValues_(0),
+    isR6RSMode_(false)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -370,6 +370,9 @@ Object VM::setAfterTrigger1(Object closure, Object arg1)
     static Object callCode[] = {
         Object::makeRaw(Instruction::CONSTANT),
         Object::Undef,
+        Object::makeRaw(Instruction::PUSH),
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
         Object::makeRaw(Instruction::CALL),
         Object::makeFixnum(1),
         Object::makeRaw(Instruction::RETURN),
@@ -382,8 +385,8 @@ Object VM::setAfterTrigger1(Object closure, Object arg1)
     push(dc_);
     push(cl_);
     push(Object::makeObjectPointer(fp_));
-    push(arg1);
-    pc_[1]= closure;
+    pc_[4]= closure;
+    pc_[1]= arg1;
 
     return ac_;
 }

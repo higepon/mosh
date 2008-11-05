@@ -39,6 +39,7 @@
 #include "ProcedureMacro.h"
 #include "Record.h"
 #include "CompoundCondition.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 

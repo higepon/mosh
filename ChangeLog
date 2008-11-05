@@ -1,3 +1,7 @@
+2008-11-05  higepon  <higepon@users.sourceforge.jp>
+
+        * vm.cpp (setAfterTrigger1): Fixed stack bug.
+
 2008-11-04  higepon  <higepon@users.sourceforge.jp>
 
         * Implemented = between Compnum and Compnum.
