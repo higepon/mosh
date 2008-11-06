@@ -1258,10 +1258,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_SUB_PUSH)
         {
+            printf("<%d>", sp_ - stack_);fflush(stdout);
             const Object n = index(sp_, 0);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             TRACE_INSN0("NUMBER_SUB");
             sp_--;
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             ac_ = Arithmetic::sub(n, ac_);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             push(ac_);
             NEXT1;
         }
