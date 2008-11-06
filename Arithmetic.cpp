@@ -176,6 +176,7 @@ bool Arithmetic::eq(Object n1, Object n2)
         MOSH_ASSERT(n2.isNumber()); \
         if (n1.isFixnum()) {\
             if (n2.isFixnum()) {\
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);\
                 return Bignum::op(n1.toFixnum(), n2.toFixnum());\
             } else if (n2.isRatnum()) {\
                 return Ratnum::op(n1.toFixnum(), n2.toRatnum());\

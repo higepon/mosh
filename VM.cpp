@@ -1267,6 +1267,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Arithmetic::sub(n, ac_);
             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             push(ac_);
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             NEXT1;
         }
         CASE(REFER_LOCAL0_NUMBER_ADD_PUSH)

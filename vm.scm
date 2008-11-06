@@ -1642,7 +1642,7 @@
     (define (evaluate code)
       (let1 code-c ((if optimize? compile compile-no-optimize) code)
 ;      (let1 code-c ((if optimize? compile compile-no-optimize) code)
-        (print "====> code-c=>" code-c)
+;        (print "====> code-c=>" code-c)
         (set-closure-body-code! vm-outer-closure code-c)
         (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0))))
 
