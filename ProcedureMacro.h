@@ -76,6 +76,7 @@
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
+#define argumentCheckNumber(index, variableName) checkType(index, variableName, isNumber, number)
 #define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)

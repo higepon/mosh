@@ -37,6 +37,13 @@
 
 namespace scheme {
 
+    Object infinitePEx(int argc, const Object* argv);
+    Object finitePEx(int argc, const Object* argv);
+    Object nanPEx(int argc, const Object* argv);
+    Object inexactEx(int argc, const Object* argv);
+    Object exactEx(int argc, const Object* argv);
+    Object exactPEx(int argc, const Object* argv);
+    Object inexactPEx(int argc, const Object* argv);
     Object realPartEx(int argc, const Object* argv);
     Object imagPartEx(int argc, const Object* argv);
     Object numberPEx(int argc, const Object* argv);
@@ -48,7 +55,6 @@ namespace scheme {
     Object fixnumWidthEx(int argc, const Object* argv);
     Object leastFixnumEx(int argc, const Object* argv);
     Object greatestFixnumEx(int argc, const Object* argv);
-    Object inexactEx(int argc, const Object* argv);
     Object quotientEx(int argc, const Object* argv);
     Object remainderEx(int argc, const Object* argv);
     Object maxEx(int argc, const Object* argv);

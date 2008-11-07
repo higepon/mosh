@@ -258,8 +258,14 @@
     fixnum-width
     least-fixnum
     greatest-fixnum
-    inexact
     make-complex
     real-part
     imag-part
+    exact?
+    inexact?
+    exact
+    inexact
+    nan?
+    infinite?
+    finite?
     )

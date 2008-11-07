@@ -52,3 +52,10 @@ MAKE_LOCAL_OP(sub, -)
 MAKE_LOCAL_OP(mul, *)
 MAKE_LOCAL_OP(div, /)
 
+Object Flonum::toRatnum() const
+{
+    mpq_t v;
+    mpq_init(v);
+    mpq_set_d(v, value_);
+    return Object::makeRatnum(v);
+}

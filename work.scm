@@ -1,5 +1,5 @@
-;; (import (rnrs)
-;;         (mosh))
+(import (rnrs)
+        (mosh))
 
 ;(display (/ (make-complex 1 2) (make-complex 1 2)))
 
@@ -20,5 +20,8 @@
 ;; (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))] 
 ;;          [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))
 
-(display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
-                  [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 2)))
+;; (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
+;;                   [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 2)))
+
+(display (let ([plus-inf (/ (inexact 1) (inexact 0))])
+      plus-inf))

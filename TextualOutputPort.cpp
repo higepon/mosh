@@ -198,9 +198,18 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         snprintf(buf, 32, "%ld", o.toFixnum());
         putString(buf);
     } else if (o.isFlonum()) {
+        Flonum* const flonum = o.toFlonum();
         static char buf[32];
-        snprintf(buf, 32, "%f", o.toFlonum()->value());
-        putString(buf);
+        if (flonum->isNan()) {
+            putString(UC("+nan.0"));
+        } else if (flonum->isPlusInfinite()) {
+            putString(UC("+inf.0"));
+        } else if (flonum->isMinusInfinite()) {
+            putString(UC("-inf.0"));
+        } else {
+            snprintf(buf, 32, "%f", flonum->value());
+            putString(buf);
+        }
     } else if (o.isInstruction()) {
         static char buf[32];
         snprintf(buf, 32, "[insn %d]", o.toInstruction());
@@ -386,9 +395,18 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         snprintf(buf, 32, "%ld", o.toFixnum());
         putString(buf);
     } else if (o.isFlonum()) {
+        Flonum* const flonum = o.toFlonum();
         static char buf[32];
-        snprintf(buf, 32, "%.20f", o.toFlonum()->value());
-        putString(buf);
+        if (flonum->isNan()) {
+            putString(UC("+nan.0"));
+        } else if (flonum->isPlusInfinite()) {
+            putString(UC("+inf.0"));
+        } else if (flonum->isMinusInfinite()) {
+            putString(UC("-inf.0"));
+        } else {
+            snprintf(buf, 32, "%f", flonum->value());
+            putString(buf);
+        }
     } else if (o.isInstruction()) {
         static char buf[32];
         snprintf(buf, 32, "[insn %d]", o.toInstruction());

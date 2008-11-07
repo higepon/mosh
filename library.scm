@@ -939,6 +939,12 @@
 (define (zero? n)
   (= 0 n))
 
+(define (positive? x)
+  (> x 0))
+
+(define (negative? x)
+  (< x 0))
+
 ;; Returns a newly allocated list of its arguments.
 ;; .returns a newly allocated list of its arguments.
 ;; .form (list obj ...)

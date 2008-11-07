@@ -48,6 +48,57 @@ bool Arithmetic::isExactZero(Object n)
     return Arithmetic::eq(Object::makeFixnum(0), n);
 }
 
+Object Arithmetic::exact(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum() || n.isBignum() || n.isRatnum()) {
+        return n;
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->toRatnum();
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return Object::makeCompnum(exact(c->real()), exact(c->imag()));
+    } else {
+        MOSH_ASSERT(false);
+    }
+}
+
+Object Arithmetic::inexact(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Object::makeFlonum(n.toFixnum());
+    } else if (n.isBignum()) {
+        return Object::makeFlonum(n.toBignum()->toDouble());
+    } else if (n.isFlonum()) {
+        return n;
+    } else if (n.isRatnum()) {
+        return Object::makeFlonum(n.toRatnum()->toDouble());
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return Object::makeCompnum(inexact(c->real()), inexact(c->imag()));
+    } else {
+        MOSH_ASSERT(false);
+    }
+}
+
+bool Arithmetic::isExact(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum() || n.isBignum() || n.isRatnum()) {
+        return true;
+    } else if (n.isFlonum()) {
+        return false;
+    } else if (n.isCompnum()) {
+        return
+            isExact(n.toCompnum()->real()) &&
+            isExact(n.toCompnum()->imag());
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
 #define MAKE_REAL_COMPARE_FUNC(compare, symbol)          \
     bool Arithmetic::compare(Object n1, Object n2) \
     { \
@@ -321,12 +372,8 @@ Object Arithmetic::div(Object n1, Object n2)
         } else if (n2.isRatnum()) {
             return Flonum::div(n1.toFlonum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
-            if (n2.toFlonum()->value() == 0.0) {
-                callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
-                return Object::False;
-            } else {
-                return Flonum::div(n1.toFlonum(), n2.toFlonum());
-            }
+            // we don't check division by zero.
+            return Flonum::div(n1.toFlonum(), n2.toFlonum());
         } else if (n2.isBignum()) {
             if (isExactZero(n2)) {
                 callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));

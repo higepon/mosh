@@ -32,6 +32,8 @@
 #ifndef __SCHEME_FLONUM__
 #define __SCHEME_FLONUM__
 
+#include <stdlib.h>
+#include <math.h> // isnan
 #include "scheme.h"
 #include "Bignum.h"
 
@@ -49,6 +51,11 @@ public:
     }
 
     double value() const { return value_; }
+    Object toRatnum() const;
+    bool isNan() const { return isnan(value_); }
+    bool isInfinite() const { return isinf(value_); }
+    bool isPlusInfinite() const { return isinf(value_) == 1; }
+    bool isMinusInfinite() const { return isinf(value_) == -1; }
 
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(Flonum* n1, Flonum* n2)\

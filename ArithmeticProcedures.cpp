@@ -39,10 +39,63 @@
 #include "Arithmetic.h"
 #include "Ratnum.h"
 #include "Fixnum.h"
+#include "Flonum.h"
 #include "Bignum.h"
 #include "Compnum.h"
 
 using namespace scheme;
+
+Object scheme::infinitePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("infinite?");
+    checkArgumentLength(1);
+    argumentCheckReal(0, real);
+    if (real.isFlonum()) {
+        return Object::makeBool(real.toFlonum()->isInfinite());
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::finitePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("finite?");
+    checkArgumentLength(1);
+    argumentCheckReal(0, real);
+    if (real.isFlonum()) {
+        return Object::makeBool(!real.toFlonum()->isInfinite());
+    } else {
+        return Object::True;
+    }
+}
+
+Object scheme::nanPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("nan?");
+    checkArgumentLength(1);
+    argumentCheckReal(0, real);
+    if (real.isFlonum()) {
+        return Object::makeBool(real.toFlonum()->isNan());
+    } else {
+        return Object::False;
+    }
+}
+
+Object scheme::exactPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("exact?");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Object::makeBool(Arithmetic::isExact(number));
+}
+
+Object scheme::inexactPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("inexact?");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Object::makeBool(!Arithmetic::isExact(number));
+}
 
 Object scheme::realPartEx(int argc, const Object* argv)
 {
@@ -65,7 +118,7 @@ Object scheme::numberPEx(int argc, const Object* argv)
     DeclareProcedureName("number?");
     checkArgumentLength(1);
     const Object obj = argv[0];
-    return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum() || obj.isFlonum());
+    return Object::makeBool(obj.isNumber());
 }
 
 Object scheme::rationalPEx(int argc, const Object* argv)
@@ -132,19 +185,17 @@ Object scheme::inexactEx(int argc, const Object* argv)
 {
     DeclareProcedureName("inexact");
     checkArgumentLength(1);
-    const Object obj = argv[0];
-    if (obj.isFixnum()) {
-        return Object::makeFlonum(obj.toFixnum());
-    } else if (obj.isBignum()) {
-        return Object::makeFlonum(obj.toBignum()->toDouble());
-    } else if (obj.isFlonum()) {
-        return obj;
-    } else if (obj.isRatnum()) {
-        return Object::makeFlonum(obj.toRatnum()->toDouble());
-    }
-    MOSH_ASSERT(false);
+    argumentCheckNumber(0, number);
+    return Arithmetic::inexact(number);
 }
 
+Object scheme::exactEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("exact");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Arithmetic::exact(number);
+}
 
 Object scheme::maxEx(int argc, const Object* argv)
 {

@@ -1749,6 +1749,80 @@
 (#t (let1 v (make-complex 3 0)
         (and (fixnum? v)
              (= v 3))))
+;; number predicate
+(#t (number? 3))
+(#t (number? (/ 3 4)))
+(#t (number? (inexact (/ 3 4))))
+(#t (number? (+ (greatest-fixnum) 1)))
+(#t (number? (make-complex 3 2)))
+(#f (number? "string"))
+(#f (number? #vu8(1 2)))
+(#t (exact? 3))
+(#t (exact? (+ (greatest-fixnum) 1)))
+(#t (exact? (/ 1 3)))
+(#f (exact? (inexact (/ 1 3))))
+(#t (exact? (make-complex 1 2)))
+(#f (exact? (make-complex (inexact (/ 1 3)) 3)))
+(#f (inexact? 3))
+(#f (inexact? (+ (greatest-fixnum) 1)))
+(#f (inexact? (/ 1 3)))
+(#t (inexact? (inexact (/ 1 3))))
+(#f (inexact? (make-complex 1 2)))
+(#t (inexact? (make-complex (inexact (/ 1 3)) 3)))
+
+;; exact/inexact
+(2 (exact 2))
+(#t (= (exact (+ (greatest-fixnum) 1)) (+ (greatest-fixnum) 1)))
+(#t (= (exact (/ 1 3)) (/ 1 3)))
+(#t (= (make-complex 1 2)  (make-complex 1 (inexact (/ 2 1)))))
+(2 (exact (inexact (/ 4 2))))
+
+;; zero?/positive?/negative?
+(#t (zero? 0))
+(#t (zero? (inexact 0))) ; 0.0
+(#t (zero? (make-complex 0 0)))
+(#f (let ([my-nan (/ (inexact 0) (inexact 0))])
+      (zero? my-nan)))
+(#t (positive? 3))
+(#t (positive? (+ (greatest-fixnum) 1)))
+(#t (positive? (/ 1 3)))
+(#t (positive? (inexact (/ 1 3))))
+(error (positive? (make-complex 1 1)))
+(#f (negative? 3))
+(#f (negative? (+ (greatest-fixnum) 1)))
+(#f (negative? (/ 1 3)))
+(#f (negative? (inexact (/ 1 3))))
+(error (negative? (make-complex 1 1)))
+(#f (let ([my-nan (/ (inexact 0) (inexact 0))])
+      (negative? my-nan)))
+(#f (let ([my-nan (/ (inexact 0) (inexact 0))])
+      (positive? my-nan)))
+(#t (let ([plus-inf (/ (inexact 1) (inexact 0))])
+      (positive? plus-inf)))
+(#t (let ([minus-inf (/ (inexact -1) (inexact 0))])
+      (negative? minus-inf)))
+
+;; nan?/finite?/infinite?
+(#t (nan? (/ (inexact 0) (inexact 0))))
+(#t (finite? 5))
+(#t (finite? (inexact 5))) ; (finite? 5.0)
+(#f (infinite? (inexact 5))) ; (infinite? 5.0)
+(#f (let ([plus-inf (/ (inexact 1) (inexact 0))])
+      (finite? plus-inf)))
+(#t (let ([plus-inf (/ (inexact 1) (inexact 0))])
+      (infinite? plus-inf)))
+
+;; +0.0 -0.0
+;(todo todo todo)
+
+;; write flonum
+("+inf.0" (let ([plus-inf (/ (inexact 1) (inexact 0))])
+            (format "~a" plus-inf)))
+("-inf.0" (let ([minus-inf (/ (inexact -1) (inexact 0))])
+            (format "~a" minus-inf)))
+("+nan.0" (let ([my-nan (/ (inexact 0) (inexact 0))])
+            (format "~a" my-nan)))
+
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
