@@ -630,7 +630,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
                     printf("CALL: stack expansion\n");
-                    expandStack(stackSize_ / 2);
+                    expandStack(stackSize_ / 10);
                 }
                 COUNT_CALL(ac_);
                 MOSH_ASSERT(operand.isFixnum());
@@ -1117,7 +1117,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object maxStack = fetchOperand();
             if (maxStack.toFixnum() + sp_ >= stackEnd_) {
                 printf("LET_FRAME: stack expansion\n");
-                expandStack(stackSize_ / 2);
+                expandStack(stackSize_ / 10);
             }
             push(dc_);
             push(Object::makeObjectPointer(fp_));

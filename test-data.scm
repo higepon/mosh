@@ -1750,6 +1750,6 @@
         (and (fixnum? v)
              (= v 3))))
 
-;; missing stack overflow
-(todo (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))] 
-         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000)))
+;; optimize miss
+(todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
+                        [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))

@@ -17,6 +17,8 @@
 
 ;(letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]        [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 5000000))
 
-(letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))] 
-         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))
+;; (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))] 
+;;          [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))
 
+(display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
+                  [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 2)))
