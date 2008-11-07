@@ -629,6 +629,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (ac_.isClosure()) {
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
+                    printf("CALL: stack expansion\n");
                     expandStack(stackSize_ / 2);
                 }
                 COUNT_CALL(ac_);
@@ -1113,6 +1114,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(LET_FRAME)
         {
             TRACE_INSN0("LET_FRAME");
+            const Object maxStack = fetchOperand();
+            if (maxStack.toFixnum() + sp_ >= stackEnd_) {
+                printf("LET_FRAME: stack expansion\n");
+                expandStack(stackSize_ / 2);
+            }
             push(dc_);
             push(Object::makeObjectPointer(fp_));
             NEXT;

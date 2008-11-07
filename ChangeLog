@@ -1,3 +1,9 @@
+2008-11-07  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp : Check max-stack. If stack overflows, expand it.
+
+        * compiler.scm: Added max-stack operand to LET_FRAME.
+
 2008-11-05  higepon  <higepon@users.sourceforge.jp>
 
         * Implemented : Complex number normalization.

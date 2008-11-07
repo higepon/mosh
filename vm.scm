@@ -1046,7 +1046,10 @@
                ;;  ======================
                ;;
                [(LET_FRAME)
-                (VM codes (skip 0) a fp c stack
+                (when (>= (+ sp (next 1)) (vector-length stack))
+                  (format #t "LET_FRAME:stack overflow expand stack\n")
+                  (expand-stack))
+                (VM codes (skip 1) a fp c stack
                     (push stack (push stack sp fp) c))]
                ;;---------------------------- PUSH ---------------------------
                [(PUSH)

@@ -10,9 +10,9 @@
 ;(display (/ (+ (greatest-fixnum) 1) (make-complex 1 1)))
 ;(newline)
 
-(define (fxzero2? x) (= 0 x))
-(define (fxsub1 x) (- x 1))
-(letrec ([e (lambda (x) (if (fxzero2? x) #t (o (fxsub1 x))))]        [o (lambda (x) (if (fxzero2? x) #f (e (fxsub1 x))))])  (e 5000000))
+;; (define (fxzero2? x) (= 0 x))
+;; (define (fxsub1 x) (- x 1))
+;; (letrec ([e (lambda (x) (if (fxzero2? x) #t (o (fxsub1 x))))]        [o (lambda (x) (if (fxzero2? x) #f (e (fxsub1 x))))])  (e 5000000))
 
 
 ;(letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]        [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 5000000))

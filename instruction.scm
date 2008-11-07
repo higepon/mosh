@@ -25,7 +25,7 @@
 (define-insn IMPORT 1)
 (define-insn INDIRECT 0)
 (define-insn LEAVE 1)
-(define-insn LET_FRAME 0)
+(define-insn LET_FRAME 1)
 (define-insn LIBRARY 2)
 (define-insn LIST 1)
 (define-insn LOCAL_JMP 1)    ;; (TEST N(to local_jmp) then ... LOCAL_JMP x else endof if

@@ -2562,27 +2562,30 @@
             [frees-here (pass3/find-free body
                                          vars-sym
                                          (pass3/add-can-frees2 can-frees locals frees))]
-            [sets-for-this-lvars (pass3/find-sets body vars)])
+            [sets-for-this-lvars (pass3/find-sets body vars)]
+            [let-cb (make-code-builder)])
        (cput! cb 'LET_FRAME)
        (let* ([frees-here-length (length frees-here)]
               [free-size (if (> frees-here-length 0)
-                             (pass3/collect-free cb frees-here locals frees)
+                             (pass3/collect-free let-cb frees-here locals frees)
                              0)])
          (when (> frees-here-length 0)
-           (cput! cb 'DISPLAY frees-here-length))
-         (let ([args-size (pass3/compile-args cb ($call.args iform) locals frees-here can-frees sets #f)]
+           (cput! let-cb 'DISPLAY frees-here-length))
+         (let ([args-size (pass3/compile-args let-cb ($call.args iform) locals frees-here can-frees sets #f)]
                [args-length (length ($call.args iform))])
-           (pass3/make-boxes cb sets-for-this-lvars vars)
-           (code-builder-put-insn-arg1! cb 'ENTER args-length)
-           (cput! cb label)
-           (let1 body-size (pass3/rec cb
+           (pass3/make-boxes let-cb sets-for-this-lvars vars)
+           (code-builder-put-insn-arg1! let-cb 'ENTER args-length)
+           (cput! let-cb label)
+           (let1 body-size (pass3/rec let-cb
                                       body
                                       vars-sym
                                       frees-here
                                       (pass3/add-can-frees1 can-frees vars-sym)
                                       (pass3/add-sets! sets sets-for-this-lvars)
                                       (if tail (+ tail (length vars) (pass3/let-frame-size)) #f))
-             (code-builder-put-insn-arg1! cb 'LEAVE args-length)
+             (code-builder-put-insn-arg1! let-cb 'LEAVE args-length)
+             (cput! cb (+ args-size body-size free-size))
+             (code-builder-append! cb let-cb)
              (+ args-size body-size free-size)))))]
     [else
      (let1 end-of-frame (make-label)
@@ -2607,7 +2610,6 @@
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
-
 
 (define (pass3/$call-cc cb iform locals frees can-frees sets tail)
   (let1 end-of-frame (make-label)
@@ -2670,27 +2672,30 @@
                       (pass3/find-free body
                                        vars-sym
                                        (pass3/add-can-frees2 can-frees locals frees)))]
-         [sets-for-this-lvars (pass3/find-sets body vars)])
+         [sets-for-this-lvars (pass3/find-sets body vars)]
+         [let-cb (make-code-builder)])
     (cput! cb 'LET_FRAME)
     (let* ([frees-here-length (length frees-here)]
            [free-size (if (> frees-here-length 0)
-                          (pass3/collect-free cb frees-here locals frees)
+                          (pass3/collect-free let-cb frees-here locals frees)
                           0)])
       (when (> frees-here-length 0)
-        (cput! cb 'DISPLAY frees-here-length))
-      (let ([vals-size (pass3/rec cb ($receive.vals iform) locals frees-here can-frees sets #f)]
+        (cput! let-cb 'DISPLAY frees-here-length))
+      (let ([vals-size (pass3/rec let-cb ($receive.vals iform) locals frees-here can-frees sets #f)]
             [vars-length (length vars)])
-        (cput! cb 'RECEIVE ($receive.reqargs iform) ($receive.optarg  iform))
-        (pass3/make-boxes cb sets-for-this-lvars vars)
-        (code-builder-put-insn-arg1! cb 'ENTER vars-length)
-        (let1 body-size (pass3/rec cb
+        (cput! let-cb 'RECEIVE ($receive.reqargs iform) ($receive.optarg  iform))
+        (pass3/make-boxes let-cb sets-for-this-lvars vars)
+        (code-builder-put-insn-arg1! let-cb 'ENTER vars-length)
+        (let1 body-size (pass3/rec let-cb
                                    body
                                    vars-sym
                                    frees-here
                                    (pass3/add-can-frees1 can-frees vars-sym)
                                    (pass3/add-sets! sets sets-for-this-lvars)
                                    (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
-          (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
+          (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
+          (cput! cb (+ body-size vals-size free-size))
+          (code-builder-append! cb let-cb)
           (+ body-size vals-size free-size))))))
 
 (define (pass3/$let cb iform locals frees can-frees sets tail)
@@ -2706,22 +2711,25 @@
                                            (pass3/add-can-frees2 can-frees frees locals)))]
              [sets-for-this-lvars (pass3/find-sets body vars)]
              [frees-here-length   (length frees-here)]
-             [vars-length         (length vars)])
+             [vars-length         (length vars)]
+             [let-cb (make-code-builder)])
         (cput! cb 'LET_FRAME)
-        (let1 free-size (if (> frees-here-length 0) (pass3/collect-free cb frees-here locals frees) 0)
+        (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
           (when (> frees-here-length 0)
-            (cput! cb 'DISPLAY frees-here-length))
-          (let1 args-size (pass3/compile-args cb ($let.inits iform) locals frees-here can-frees sets tail)
-            (pass3/make-boxes cb sets-for-this-lvars vars)
-            (code-builder-put-insn-arg1! cb 'ENTER vars-length)
-            (let1 body-size (pass3/rec cb
+            (cput! let-cb 'DISPLAY frees-here-length))
+          (let1 args-size (pass3/compile-args let-cb ($let.inits iform) locals frees-here can-frees sets tail)
+            (pass3/make-boxes let-cb sets-for-this-lvars vars)
+            (code-builder-put-insn-arg1! let-cb 'ENTER vars-length)
+            (let1 body-size (pass3/rec let-cb
                                        body
                                        vars-sym
                                        frees-here
                                        (pass3/add-can-frees1 can-frees vars-sym)
                                        (pass3/add-sets! sets sets-for-this-lvars)
                                        (if tail (+ tail vars-length (pass3/let-frame-size)) #f)) ;; tail call for let is collect
-              (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
+              (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
+              (cput! cb (+ body-size args-size free-size))
+              (code-builder-append! cb let-cb)
               (+ body-size args-size free-size)))))))
 
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
@@ -2738,20 +2746,21 @@
          [sets-for-this-lvars  (append vars (pass3/find-sets body vars) ($append-map1 (lambda (i) (pass3/find-sets i vars)) ($let.inits iform)))]
          [args ($let.inits iform)]
          [frees-here-length (length frees-here)]
-         [vars-length (length vars)])
+         [vars-length (length vars)]
+         [let-cb (make-code-builder)])
     (cput! cb 'LET_FRAME)
-    (let1 free-size (if (> frees-here-length 0) (pass3/collect-free cb frees-here locals frees) 0)
+    (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
       (when (> frees-here-length 0)
-        (cput! cb 'DISPLAY frees-here-length))
+        (cput! let-cb 'DISPLAY frees-here-length))
       (let loop ([args args]) ;; init code
         (cond
          [(null? args) '()]
          [else
-          (cput! cb 'UNDEF)
-          (code-builder-put-insn-arg0! cb 'PUSH)
+          (cput! let-cb 'UNDEF)
+          (code-builder-put-insn-arg0! let-cb 'PUSH)
           (loop (cdr args))]))
-      (pass3/make-boxes cb sets-for-this-lvars vars)
-      (code-builder-put-insn-arg1! cb 'ENTER vars-length)
+      (pass3/make-boxes let-cb sets-for-this-lvars vars)
+      (code-builder-put-insn-arg1! let-cb 'ENTER vars-length)
       (let* ([new-can-frees (pass3/add-can-frees1 can-frees vars-sym)]
              [assign-size
               (let loop ([args  args]
@@ -2760,22 +2769,24 @@
                 (cond
                  [(null? args) size]
                  [else
-                  (let1 stack-size (pass3/rec cb (car args) vars-sym frees-here
+                  (let1 stack-size (pass3/rec let-cb (car args) vars-sym frees-here
                                               new-can-frees
                                               (pass3/add-sets! sets sets-for-this-lvars)
                                               #f)
-                    (code-builder-put-insn-arg1! cb 'ASSIGN_LOCAL index)
+                    (code-builder-put-insn-arg1! let-cb 'ASSIGN_LOCAL index)
                     (loop (cdr args)
                           (+ stack-size size)
                           (+ index 1)))]))])
-             (let1 body-size (pass3/rec cb
+             (let1 body-size (pass3/rec let-cb
                                         body
                                         vars-sym
                                         frees-here
                                         new-can-frees
                                         (pass3/add-sets! sets sets-for-this-lvars)
                                    (if tail (+ tail vars-length (pass3/let-frame-size)) #f))
-          (code-builder-put-insn-arg1! cb 'LEAVE vars-length)
+          (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
+          (cput! cb (+ free-size assign-size body-size))
+          (code-builder-append! cb let-cb)
           (+ free-size assign-size body-size))))))
 
 ;; (define (pass3/$import cb iform locals frees can-frees sets tail)
