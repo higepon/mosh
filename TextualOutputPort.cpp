@@ -202,10 +202,12 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         static char buf[32];
         if (flonum->isNan()) {
             putString(UC("+nan.0"));
-        } else if (flonum->isPlusInfinite()) {
-            putString(UC("+inf.0"));
-        } else if (flonum->isMinusInfinite()) {
-            putString(UC("-inf.0"));
+        } else if (flonum->isInfinite()) {
+            if (flonum->value() > 0.0) {
+                putString(UC("+inf.0"));
+            } else {
+                putString(UC("-inf.0"));
+            }
         } else {
             snprintf(buf, 32, "%f", flonum->value());
             putString(buf);
@@ -399,10 +401,12 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         static char buf[32];
         if (flonum->isNan()) {
             putString(UC("+nan.0"));
-        } else if (flonum->isPlusInfinite()) {
-            putString(UC("+inf.0"));
-        } else if (flonum->isMinusInfinite()) {
-            putString(UC("-inf.0"));
+        } else if (flonum->isInfinite()) {
+            if (flonum->value() > 0.0) {
+                putString(UC("+inf.0"));
+            } else {
+                putString(UC("-inf.0"));
+            }
         } else {
             snprintf(buf, 32, "%f", flonum->value());
             putString(buf);
