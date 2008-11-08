@@ -58,6 +58,16 @@ public:
         mpq_set(value, rational);
     }
 
+    Object numerator() const
+    {
+        return Bignum::makeInteger(mpq_numref(value));
+    }
+
+    Object denominator() const
+    {
+        return Bignum::makeInteger(mpq_denref(value));
+    }
+
     char* toString() const
     {
         return mpq_get_str(NULL, 10, value);

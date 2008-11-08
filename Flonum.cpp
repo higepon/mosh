@@ -37,6 +37,17 @@
 
 using namespace scheme;
 
+Object Flonum::POSITIVE_INF;
+Object Flonum::NEGATIVE_INF;
+Object Flonum::NOT_A_NUMBER;
+
+void Flonum::initialize()
+{
+    POSITIVE_INF = Object::makeFlonum(1.0 / 0.0);
+    NEGATIVE_INF = Object::makeFlonum(-1.0 / 0.0);
+    NOT_A_NUMBER = Object::makeFlonum(0.0 / 0.0);
+}
+
 #define MAKE_LOCAL_OP(op, symbol)\
 Object Flonum::op(Bignum* n1, Flonum* n2)\
 {\

@@ -1,3 +1,14 @@
+2008-11-08  higepon  <higepon@users.sourceforge.jp>
+
+        * scripts/gen-cproc.scm (proc-name->c-proc-name): Added special case for fl/ and fl-.
+
+        * Added fl=?, fl>?, fl>=?, fl<?, fl<=?, real->flonum, flodd?, fleven?
+                flfinite?, flinfinite?, flnan?, flmax, flmin, fl+, fl-, fl*, fl/.
+
+        * test-data.scm : Added definition syntax. You can pre-define something necessary for test.
+
+        * Added : denominator and numerator.
+
 2008-11-07  higepon  <higepon@users.sourceforge.jp>
 
         * Added : nan?, finite? and infinite?

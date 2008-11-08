@@ -43,6 +43,46 @@
 
 using namespace scheme;
 
+Object Arithmetic::toFlonum(Object real)
+{
+    MOSH_ASSERT(real.isReal());
+    if (real.isFlonum()) {
+        return real;
+    } else if (real.isFixnum()) {
+        return Object::makeFlonum(real.toFixnum());
+    } else if (real.isBignum()) {
+        return Object::makeFlonum(real.toBignum()->toDouble());
+    } else if (real.isRatnum()) {
+        return Object::makeFlonum(real.toRatnum()->toDouble());
+    } else {
+        MOSH_ASSERT(false);
+        return Object::Nil;
+    }
+}
+
+Object Arithmetic::numerator(Object n)
+{
+    MOSH_ASSERT(n.isRational());
+    if (n.isRatnum()) {
+        return n.toRatnum()->numerator();
+    } else {
+        return n;
+    }
+}
+
+Object Arithmetic::denominator(Object n)
+{
+    MOSH_ASSERT(n.isRational());
+    if (n.isRatnum()) {
+        return n.toRatnum()->denominator();
+    } else if (n.isFlonum()) {
+        Object ratnum = n.toFlonum()->toRatnum();
+        return inexact(ratnum.toRatnum()->denominator());
+    } else {
+        return Object::makeFixnum(1);
+    }
+}
+
 bool Arithmetic::isExactZero(Object n)
 {
     return Arithmetic::eq(Object::makeFixnum(0), n);

@@ -72,11 +72,14 @@
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
 
+#define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
+#define argumentCheckFlonum(index, variableName) checkType(index, variableName, isFlonum, flonum)
 #define argumentCheckNumber(index, variableName) checkType(index, variableName, isNumber, number)
+#define argumentCheckRational(index, variableName) checkType(index, variableName, isRational, rational number)
 #define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)

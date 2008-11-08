@@ -1,5 +1,5 @@
 /*
- * Arithmetic.h - 
+ * FlonumProcedures.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,41 +26,38 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Arithmetic.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: FlonumProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_ARITHMETIC__
-#define __SCHEME_ARITHMETIC__
+#ifndef __SCHEME_FLONUM_PROCEDURES__
+#define __SCHEME_FLONUM_PROCEDURES__
 
 #include "scheme.h"
 
 namespace scheme {
 
-class Arithmetic EXTEND_GC
-{
-public:
-    Arithmetic();
-    ~Arithmetic();
-
-    static Object numerator(Object n);
-    static Object denominator(Object n);
-    static Object exact(Object n);
-    static Object inexact(Object n);
-    static bool isExact(Object n);
-    static bool isExactZero(Object n1);
-    static Object toFlonum(Object real);
-    static Object add(Object number1, Object number2);
-    static Object sub(Object number1, Object number2);
-    static Object mul(Object number1, Object number2);
-    static Object div(Object number1, Object number2);
-    static bool gt(Object number1, Object number2);
-    static bool ge(Object number1, Object number2);
-    static bool lt(Object number1, Object number2);
-    static bool le(Object number1, Object number2);
-    static bool eq(Object number1, Object number2);
-
-};
+    Object flAddEx(int argc, const Object* argv);
+    Object flSubEx(int argc, const Object* argv);
+    Object flMulEx(int argc, const Object* argv);
+    Object flDivEx(int argc, const Object* argv);
+    Object flmaxEx(int argc, const Object* argv);
+    Object flminEx(int argc, const Object* argv);
+    Object flnanPEx(int argc, const Object* argv);
+    Object flinfinitePEx(int argc, const Object* argv);
+    Object flfinitePEx(int argc, const Object* argv);
+    Object flevenPEx(int argc, const Object* argv);
+    Object floddPEx(int argc, const Object* argv);
+    Object flnegativePEx(int argc, const Object* argv);
+    Object flpositivePEx(int argc, const Object* argv);
+    Object flzeroPEx(int argc, const Object* argv);
+    Object flintegerPEx(int argc, const Object* argv);
+    Object flLePEx(int argc, const Object* argv);
+    Object flGePEx(int argc, const Object* argv);
+    Object flGtPEx(int argc, const Object* argv);
+    Object flLtPEx(int argc, const Object* argv);
+    Object flEqPEx(int argc, const Object* argv);
+    Object realToflonumEx(int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_ARITHMETIC__
+#endif // __SCHEME_FLONUM_PROCEDURES__

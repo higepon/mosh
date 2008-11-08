@@ -33,10 +33,11 @@
 #define __SCHEME_ARITHMETIC_PROCEDURES__
 
 #include "scheme.h"
-#include "ErrorProcedures.h"
 
 namespace scheme {
 
+    Object numeratorEx(int argc, const Object* argv);
+    Object denominatorEx(int argc, const Object* argv);
     Object infinitePEx(int argc, const Object* argv);
     Object finitePEx(int argc, const Object* argv);
     Object nanPEx(int argc, const Object* argv);

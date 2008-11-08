@@ -45,6 +45,23 @@
 
 using namespace scheme;
 
+
+Object scheme::numeratorEx(int argc, const Object* argv)
+{
+   DeclareProcedureName("numerator");
+   checkArgumentLength(1);
+   argumentCheckRational(0, rational);
+   return Arithmetic::numerator(rational);
+}
+
+Object scheme::denominatorEx(int argc, const Object* argv)
+{
+   DeclareProcedureName("denominator");
+   checkArgumentLength(1);
+   argumentCheckRational(0, rational);
+   return Arithmetic::denominator(rational);
+}
+
 Object scheme::infinitePEx(int argc, const Object* argv)
 {
     DeclareProcedureName("infinite?");

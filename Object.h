@@ -82,6 +82,7 @@ public:
     Object(const char* str);
 
     bool isReal() const;
+    bool isRational() const;
     bool isFixnum() const;
     bool isNumber() const;
     bool isBoolean() const;
@@ -129,7 +130,7 @@ public:
     static Object makeFixnum(signed long int n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
-    static Object makeBignum(mpz_t v);
+    static Object makeBignum(const mpz_t v);
     static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);

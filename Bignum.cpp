@@ -41,7 +41,7 @@ Bignum::Bignum(long value)
     mpz_set_si(this->value, value);
 }
 
-Bignum::Bignum(mpz_t value)
+Bignum::Bignum(const mpz_t value)
 {
     mpz_init_set(this->value, value);
 }

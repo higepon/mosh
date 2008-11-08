@@ -23,5 +23,12 @@
 ;; (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
 ;;                   [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 2)))
 
-(display (let ([plus-inf (/ (inexact 1) (inexact 0))])
-      plus-inf))
+;; (display (let ([plus-inf (/ (inexact 1) (inexact 0))])
+;;       plus-inf))
+
+;; (display (inexact 2))
+;; (display  (denominator (inexact (/ 6 4))))
+
+;(display (= (/ (inexact 0) (inexact 0)) (flmax (inexact 3) (/ (inexact 0) (inexact 0)))))
+
+(display (fl+ (/ (inexact 1) (inexact 0)) (inexact 2)))

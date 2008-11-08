@@ -80,6 +80,7 @@ PortProcedures.cpp            PortProcedures.h                    \
 ListProcedures.cpp            ListProcedures.h                    \
 ErrorProcedures.cpp           ErrorProcedures.h                   \
 ArithmeticProcedures.cpp      ArithmeticProcedures.h              \
+FlonumProcedures.cpp          FlonumProcedures.h                  \
 ByteVectorProcedures.cpp      ByteVectorProcedures.h              \
 Equivalent.h                  Equivalent.cpp                      \
 CompoundCondition.h           CompoundCondition.cpp               \

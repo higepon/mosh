@@ -323,7 +323,7 @@ Object Object::makeBignum(long n)
                                                         reinterpret_cast<word>(new Bignum(n)))));
 }
 
-Object Object::makeBignum(mpz_t b)
+Object Object::makeBignum(const mpz_t b)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
                                                         reinterpret_cast<word>(new Bignum(b)))));

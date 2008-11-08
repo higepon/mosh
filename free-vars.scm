@@ -268,4 +268,27 @@
     nan?
     infinite?
     finite?
+    denominator
+    numerator
+    real->flonum
+    fl=?
+    fl<?
+    fl>?
+    fl>=?
+    fl<=?
+    flinteger?
+    flzero?
+    flpositive?
+    flnegative?
+    flodd?
+    fleven?
+    flfinite?
+    flinfinite?
+    flnan?
+    flmax
+    flmin
+    fl+
+    fl*
+    fl-
+    fl/
     )

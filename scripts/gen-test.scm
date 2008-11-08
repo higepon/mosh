@@ -40,6 +40,8 @@
                     (if (equal? (quote ,expected) val)
                       (format #t " Running ~d/~d" ,index ,test-num)
                         (add-error (quote ,@test) (quote ,expected) val))))]
+         [('definition . definitions)
+          (for-each write definitions)]
          [('todo . test)
           (write '(set! todo-num (+ todo-num 1)))]
          [(expected . test)

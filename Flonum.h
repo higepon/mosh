@@ -54,6 +54,24 @@ public:
     Object toRatnum() const;
     bool isNan() const { return isnan(value_); }
     bool isInfinite() const { return isinf(value_); }
+    bool isInteger() const
+    {
+        if (isinf(value_) || isnan(value_)) {
+            return false;
+        }
+        return value_ == round(value_);
+    }
+
+
+    bool isEven() const
+    {
+        return (value_ * 0.5 == floor(value_ * 0.5));
+    }
+
+    bool isOdd() const
+    {
+        return !isEven();
+    }
 
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(Flonum* n1, Flonum* n2)\
@@ -136,6 +154,11 @@ public:
     MAKE_FLONUM_OP_FUNC(mul, *);
     MAKE_FLONUM_OP_FUNC(div, /);
 
+    static void initialize();
+    static Object NEGATIVE_INF;
+    static Object POSITIVE_INF;
+    static Object NOT_A_NUMBER;
+
     static Object add(Bignum* n1, Flonum* n2);
     static Object add(Flonum* n1, Bignum* n2);
     static Object sub(Bignum* n1, Flonum* n2);
@@ -144,17 +167,6 @@ public:
     static Object mul(Flonum* n1, Bignum* n2);
     static Object div(Bignum* n1, Flonum* n2);
     static Object div(Flonum* n1, Bignum* n2);
-
-//     static bool gt(Flonum* n1, Bignum* n2);
-//     static bool ge(Flonum* n1, Bignum* n2);
-//     static bool lt(Flonum* n1, Bignum* n2);
-//     static bool le(Flonum* n1, Bignum* n2);
-//     static bool eq(Flonum* n1, Bignum* n2);
-//     static bool gt(Bignum* n1, Flonum* n2);
-//     static bool ge(Bignum* n1, Flonum* n2);
-//     static bool lt(Bignum* n1, Flonum* n2);
-//     static bool le(Bignum* n1, Flonum* n2);
-//     static bool eq(Bignum* n1, Flonum* n2);
 
 private:
     double value_;

@@ -264,6 +264,11 @@ inline bool Object::isReal() const
     return isFixnum() || isBignum() || isFlonum() || isRatnum();
 }
 
+inline bool Object::isRational() const
+{
+    return isFixnum() || isBignum() || isFlonum() || isRatnum();
+}
+
 // private
 inline uint8_t Object::tag() const
 {

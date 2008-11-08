@@ -64,17 +64,28 @@
                   (rec c)]))]
              [(#\!)
               (rec (read-char in))]
-             [(#\/)
-              (display (char-upcase (read-char in)) out)
-              (rec (read-char in))]
              [(#\=)
               (display "Eq" out)
               (rec (read-char in))]
+             [(#\+)
+              (display "Add" out)
+              (rec (read-char in))]
+             [(#\/)
+              (let1 c (read-char in)
+                (if (eof-object? c)
+                    (display "Div" out)
+                    (display (char-upcase c) out)))
+                (rec (read-char in))]
+             [(#\*)
+              (display "Mul" out)
+              (rec (read-char in))]
              [(#\-)
               (let1 c  (read-char in)
-                (if (char=? #\> c)
-                    (display "To" out)
-                    (display (char-upcase c) out)))
+                (if (eof-object? c)
+                    (display "Sub" out)
+                    (if (char=? #\> c)
+                        (display "To" out)
+                        (display (char-upcase c) out))))
               (rec (read-char in))]
              [else
               (display c out)

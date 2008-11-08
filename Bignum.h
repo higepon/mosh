@@ -41,7 +41,7 @@ class Bignum EXTEND_GC
 {
 public:
     Bignum(long value);
-    Bignum(mpz_t value);
+    Bignum(const mpz_t value);
     ~Bignum();
 
     char* toString() const;
@@ -52,19 +52,19 @@ public:
     {\
         Bignum* b = new Bignum(n1);\
         mpz_##op(b->value, b->value, n2->value);\
-        return makeNumber(b);\
+        return makeInteger(b);\
     }\
     static Object op(Bignum* n1, int n2)\
     {\
         Bignum* b = new Bignum(n2);\
         mpz_##op(b->value, n1->value, b->value);\
-        return makeNumber(b);\
+        return makeInteger(b);\
     }\
     static Object op(Bignum* n1, Bignum* n2)\
     {\
         Bignum* ret = new Bignum(1);\
         mpz_##op(ret->value, n1->value, n2->value);\
-        return makeNumber(ret);\
+        return makeInteger(ret);\
     }
 
     MAKE_BIGNUM_OP(add)
@@ -125,16 +125,31 @@ public:
 
     mpz_t value;
 
-private:
-    static Object makeNumber(Bignum* b)
+    static Object makeInteger(const mpz_t n)
     {
-        if (mpz_cmp_si(b->value, Fixnum::MIN) >= 0 &&
-            mpz_cmp_si(b->value, Fixnum::MAX) <= 0) {
-            return Object::makeFixnum(mpz_get_si(b->value));
+        if (mpz_cmp_si(n, Fixnum::MIN) >= 0 &&
+            mpz_cmp_si(n, Fixnum::MAX) <= 0) {
+            return Object::makeFixnum(mpz_get_si(n));
         } else {
-            return Object::makeBignum(b);
+            return Object::makeBignum(n);
         }
     }
+
+    static Object makeInteger(Bignum* b)
+    {
+        return makeInteger(b->value);
+    }
+
+private:
+//     static Object makeNumber(Bignum* b)
+//     {
+//         if (mpz_cmp_si(b->value, Fixnum::MIN) >= 0 &&
+//             mpz_cmp_si(b->value, Fixnum::MAX) <= 0) {
+//             return Object::makeFixnum(mpz_get_si(b->value));
+//         } else {
+//             return Object::makeBignum(b);
+//         }
+//     }
 };
 
 }; // namespace scheme

@@ -55,6 +55,8 @@
 #include "Record.h"
 #include "Equivalent.h"
 #include "Fasl.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 
 using namespace scheme;
 
@@ -203,6 +205,8 @@ int main(int argc, char *argv[])
     GC_INIT();
     mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
 #endif
+
+    Flonum::initialize();
 
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
 
