@@ -291,4 +291,26 @@
     fl*
     fl-
     fl/
+    flabs
+    fldiv
+    flmod
+    fldiv0
+    flmod0
+    flnumerator
+    fldenominator
+    flfloor
+    flceiling
+    fltruncate
+    flround
+    flexp
+    fllog
+    flsin
+    flcos
+    fltan
+    flasin
+    flacos
+    flatan
+    flsqrt
+    flexpt
+    fixnum->flonum
     )

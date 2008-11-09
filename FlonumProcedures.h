@@ -1,5 +1,5 @@
 /*
- * FlonumProcedures.h - 
+ * FlonumProcedures.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -36,6 +36,28 @@
 
 namespace scheme {
 
+    Object fixnumToflonumEx(int argc, const Object* argv);
+    Object flexptEx(int argc, const Object* argv);
+    Object flsqrtEx(int argc, const Object* argv);
+    Object flatanEx(int argc, const Object* argv);
+    Object flacosEx(int argc, const Object* argv);
+    Object flasinEx(int argc, const Object* argv);
+    Object fltanEx(int argc, const Object* argv);
+    Object flcosEx(int argc, const Object* argv);
+    Object flsinEx(int argc, const Object* argv);
+    Object fllogEx(int argc, const Object* argv);
+    Object flexpEx(int argc, const Object* argv);
+    Object flroundEx(int argc, const Object* argv);
+    Object fltruncateEx(int argc, const Object* argv);
+    Object flceilingEx(int argc, const Object* argv);
+    Object flfloorEx(int argc, const Object* argv);
+    Object fldenominatorEx(int argc, const Object* argv);
+    Object flnumeratorEx(int argc, const Object* argv);
+    Object flIntegerDiv0Ex(int argc, const Object* argv);
+    Object flIntegerMod0Ex(int argc, const Object* argv);
+    Object flIntegerDivEx(int argc, const Object* argv);
+    Object flIntegerModEx(int argc, const Object* argv);
+    Object flabsEx(int argc, const Object* argv);
     Object flAddEx(int argc, const Object* argv);
     Object flSubEx(int argc, const Object* argv);
     Object flMulEx(int argc, const Object* argv);

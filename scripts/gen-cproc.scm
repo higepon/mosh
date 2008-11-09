@@ -19,6 +19,14 @@
     "geEx"]
    [(string=? name "<=")
     "leEx"]
+   [(string=? name "fldiv")
+    "flIntegerDivEx"]
+   [(string=? name "flmod")
+    "flIntegerModEx"]
+   [(string=? name "fldiv0")
+    "flIntegerDiv0Ex"]
+   [(string=? name "flmod0")
+    "flIntegerMod0Ex"]
    [else
     (call-with-string-io
      name

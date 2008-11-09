@@ -54,18 +54,136 @@ public:
     Object toRatnum() const;
     bool isNan() const { return isnan(value_); }
     bool isInfinite() const { return isinf(value_); }
+
+    Object numerator() const;
+    Object denominator() const;
+
+
     bool isInteger() const
     {
         if (isinf(value_) || isnan(value_)) {
             return false;
         }
-        return value_ == round(value_);
+        return value_ == ::round(value_);
+    }
+
+    static Object expt(Flonum* f1, Flonum* f2)
+    {
+        return Object::makeFlonum(pow(f1->value(), f2->value()));
+    }
+
+    Object abs() const
+    {
+        return Object::makeFlonum(fabs(value_));
+    }
+
+    Object exp() const
+    {
+        return Object::makeFlonum(::exp(value_));
+    }
+
+    Object log() const
+    {
+        return Object::makeFlonum(::log(value_));
+    }
+
+    Object cos() const
+    {
+        return Object::makeFlonum(::cos(value_));
+    }
+
+    Object sin() const
+    {
+        return Object::makeFlonum(::sin(value_));
+    }
+
+    Object tan() const
+    {
+        return Object::makeFlonum(::tan(value_));
+    }
+
+    Object acos() const
+    {
+        return Object::makeFlonum(::acos(value_));
+    }
+
+    Object asin() const
+    {
+        return Object::makeFlonum(::asin(value_));
+    }
+
+    Object atan() const
+    {
+        return Object::makeFlonum(::atan(value_));
+    }
+
+    static Object atan(Flonum* f1, Flonum* f2)
+    {
+        return Object::makeFlonum(::atan2(f1->value(), f2->value()));
+    }
+
+    Object sqrt() const
+    {
+        return Object::makeFlonum(::sqrt(value_));
+    }
+
+    static Object log(Flonum* f1, Flonum* f2)
+    {
+        return Object::makeFlonum(::log(f1->value()) / ::log(f2->value()));
+    }
+
+    Object floor() const
+    {
+        return Object::makeFlonum(::floor(value_));
+    }
+
+    Object ceiling() const
+    {
+        return Object::makeFlonum(ceil(value_));
+    }
+
+    Object truncate() const
+    {
+        return Object::makeFlonum(trunc(value_));
+    }
+
+    Object round() const
+    {
+        return Object::makeFlonum(::round(value_));
     }
 
 
+    static Object integerDiv(Flonum* n1, Flonum* n2)
+    {
+        const double f1 = n1->value();
+        const double f2 = n2->value();
+        return Object::makeFlonum(iDiv(f1, f2));
+    }
+
+    static Object integerMod(Flonum* n1, Flonum* n2)
+    {
+        const double f1 = n1->value();
+        const double f2 = n2->value();
+        return Object::makeFlonum(iMod(f1, f2));
+    }
+
+    static Object integerDiv0(Flonum* n1, Flonum* n2)
+    {
+        const double f1 = n1->value();
+        const double f2 = n2->value();
+        return Object::makeFlonum(iDiv0(f1, f2));
+    }
+
+    static Object integerMod0(Flonum* n1, Flonum* n2)
+    {
+        const double f1 = n1->value();
+        const double f2 = n2->value();
+        return Object::makeFlonum(iMod0(f1, f2));
+    }
+
     bool isEven() const
     {
-        return (value_ * 0.5 == floor(value_ * 0.5));
+        return (value_ * 0.5 == ::floor(value_ * 0.5));
     }
 
     bool isOdd() const
@@ -74,7 +192,7 @@ public:
     }
 
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
-    static bool compare(Flonum* n1, Flonum* n2)\
+    static bool compare(const Flonum* n1, const Flonum* n2)\
     {\
         return n1->value() symbol n2->value();\
     }\
@@ -169,6 +287,34 @@ public:
     static Object div(Flonum* n1, Bignum* n2);
 
 private:
+    static double iDiv(double f1, double f2)
+    {
+        return f2 > 0.0 ? ::floor(f1 / f2) : - ::floor(f1 / (-f2));
+    }
+
+    static double iMod(double f1, double f2)
+    {
+        return f1 - f2 * iDiv(f1, f2);
+    }
+
+    static double iDiv0(double f1, double f2)
+    {
+        const double div = iDiv(f1, f2);
+        const double mod = iMod(f1, f2);
+        if (mod < (fabs(f2) / 2.0)) {
+            return div;
+        } else if (f2 > 0) {
+            return div + 1.0;
+        } else {
+            return div - 1.0;
+        }
+    }
+
+    static double iMod0(double f1, double f2)
+    {
+        return f1 - f2 * iDiv0(f1, f2);
+    }
+
     double value_;
 };
 

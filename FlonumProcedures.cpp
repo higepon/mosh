@@ -1,5 +1,5 @@
 /*
- * FlonumProcedures.cpp - 
+ * FlonumProcedures.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -42,6 +42,204 @@
 #include "Bignum.h"
 
 using namespace scheme;
+
+Object scheme::fixnumToflonumEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fixnum->flonum");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeFlonum(fixnum);
+}
+
+Object scheme::flexptEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flexp");
+    checkArgumentLength(2);
+    argumentAsFlonum(0, flonum0);
+    argumentAsFlonum(1, flonum1);
+    return Flonum::expt(flonum0, flonum1);
+}
+
+Object scheme::flsqrtEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flexp");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->sqrt();
+
+}
+
+Object scheme::flatanEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flatan");
+    checkArgumentLengthBetween(1, 2);
+    if (argc == 1) {
+        argumentAsFlonum(0, flonum);
+        return flonum->atan();
+    } else {
+        argumentAsFlonum(0, flonum0);
+        argumentAsFlonum(1, flonum1);
+        return Flonum::atan(flonum0, flonum1);
+    }
+}
+
+Object scheme::flacosEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flacos");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->acos();
+
+}
+
+Object scheme::flasinEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flasin");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->asin();
+
+}
+
+Object scheme::fltanEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fltan");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->tan();
+
+}
+
+Object scheme::flcosEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flcos");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->cos();
+
+}
+
+Object scheme::flsinEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flsin");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->sin();
+}
+
+Object scheme::fllogEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fllog");
+    checkArgumentLengthBetween(1, 2);
+    if (argc == 1) {
+        argumentAsFlonum(0, flonum);
+        return flonum->log();
+    } else {
+        argumentAsFlonum(0, flonum0);
+        argumentAsFlonum(1, flonum1);
+        return Flonum::log(flonum0, flonum1);
+    }
+}
+
+Object scheme::flexpEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flexp");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->exp();
+}
+
+Object scheme::flroundEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flround");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->round();
+}
+
+Object scheme::fltruncateEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fltruncate");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->truncate();
+}
+
+Object scheme::flceilingEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flceiling");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->ceiling();
+}
+
+Object scheme::flfloorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flfloor");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->floor();
+}
+
+Object scheme::flnumeratorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flnumerator");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->numerator();
+}
+
+Object scheme::fldenominatorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fldenominator");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->denominator();
+}
+
+Object scheme::flIntegerDiv0Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("fldiv0");
+    checkArgumentLength(2);
+    argumentAsFlonum(0, flonum1);
+    argumentAsFlonum(1, flonum2);
+    return Flonum::integerDiv0(flonum1, flonum2);
+}
+
+Object scheme::flIntegerMod0Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("flmod0");
+    checkArgumentLength(2);
+    argumentAsFlonum(0, flonum1);
+    argumentAsFlonum(1, flonum2);
+    return Flonum::integerMod0(flonum1, flonum2);
+}
+
+Object scheme::flIntegerDivEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fldiv");
+    checkArgumentLength(2);
+    argumentAsFlonum(0, flonum1);
+    argumentAsFlonum(1, flonum2);
+    return Flonum::integerDiv(flonum1, flonum2);
+}
+
+Object scheme::flIntegerModEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flmod");
+    checkArgumentLength(2);
+    argumentAsFlonum(0, flonum1);
+    argumentAsFlonum(1, flonum2);
+    return Flonum::integerMod(flonum1, flonum2);
+}
+
+Object scheme::flabsEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("flabs");
+    checkArgumentLength(1);
+    argumentAsFlonum(0, flonum);
+    return flonum->abs();
+}
 
 Object scheme::flAddEx(int argc, const Object* argv)
 {
@@ -320,4 +518,3 @@ Object scheme::realToflonumEx(int argc, const Object* argv)
     argumentCheckReal(0, real);
     return Arithmetic::toFlonum(real);
 }
-

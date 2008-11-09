@@ -34,6 +34,7 @@
 #include "Bignum.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
 
@@ -69,4 +70,28 @@ Object Flonum::toRatnum() const
     mpq_init(v);
     mpq_set_d(v, value_);
     return Object::makeRatnum(v);
+}
+
+Object Flonum::numerator() const
+{
+    if (Flonum::eq(this, POSITIVE_INF.toFlonum())) {
+        return POSITIVE_INF;
+    } else if (Flonum::eq(this, NEGATIVE_INF.toFlonum())) {
+        return NEGATIVE_INF;
+    } else if (value_ == 0.0) {
+        return Object::makeFlonum(0.0);
+    }
+    return Arithmetic::inexact(toRatnum().toRatnum()->numerator());
+}
+
+Object Flonum::denominator() const
+{
+    if (Flonum::eq(this, POSITIVE_INF.toFlonum())) {
+        return Object::makeFlonum(1.0);
+    } else if (Flonum::eq(this, NEGATIVE_INF.toFlonum())) {
+        return Object::makeFlonum(1.0);
+    } else if (value_ == 0.0) {
+        return Object::makeFlonum(1.0);
+    }
+    return Arithmetic::inexact(toRatnum().toRatnum()->denominator());
 }
