@@ -51,6 +51,7 @@
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"
 #include "FlonumProcedures.h"
+#include "BitwiseProcedures.h"
 #include "ByteVectorProcedures.h"
 #include "Record.h"
 #include "Equivalent.h"

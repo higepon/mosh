@@ -6059,9 +6059,3 @@
 (define fasl-write! fasl-write)
 (define fasl-read! fasl-read)
 
-;; flonums
-(define (fldiv-and-mod f1 f2)
-  (values (fldiv f1 f2) (flmod f1 f2)))
-
-(define (fldiv0-and-mod0 f1 f2)
-  (values (fldiv0 f1 f2) (flmod0 f1 f2)))

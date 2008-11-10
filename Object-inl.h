@@ -269,6 +269,11 @@ inline bool Object::isRational() const
     return isFixnum() || isBignum() || isFlonum() || isRatnum();
 }
 
+inline bool Object::isExactInteger() const
+{
+    return isFixnum() || isBignum();
+}
+
 // private
 inline uint8_t Object::tag() const
 {

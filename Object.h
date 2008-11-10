@@ -85,6 +85,7 @@ public:
     bool isRational() const;
     bool isFixnum() const;
     bool isNumber() const;
+    bool isExactInteger() const;
     bool isBoolean() const;
     bool isInstruction() const;
     bool isCompilerInstruction() const;

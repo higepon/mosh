@@ -43,6 +43,126 @@
 
 using namespace scheme;
 
+Object Arithmetic::bitwiseNot(Object e)
+{
+    MOSH_ASSERT(e.isExactInteger());
+    if (e.isFixnum()) {
+        return Bignum::makeInteger(~(e.toFixnum()));
+    } else if (e.isBignum()) {
+        return e.toBignum()->bitwiseNot();
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseAnd(Object e1, Object e2)
+{
+    MOSH_ASSERT(e1.isExactInteger());
+    MOSH_ASSERT(e2.isExactInteger());
+    if (e1.isFixnum()) {
+        if (e2.isFixnum()) {
+            return Object::makeFixnum(e1.toFixnum() & e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e2.toBignum()->bitwiseAnd(e1.toFixnum());
+        }
+    } else if (e1.isBignum()) {
+        if (e2.isFixnum()) {
+            return e1.toBignum()->bitwiseAnd(e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e1.toBignum()->bitwiseAnd(e2.toBignum());
+        }
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseIor(Object e1, Object e2)
+{
+    MOSH_ASSERT(e1.isExactInteger());
+    MOSH_ASSERT(e2.isExactInteger());
+    if (e1.isFixnum()) {
+        if (e2.isFixnum()) {
+            return Object::makeFixnum(e1.toFixnum() | e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e2.toBignum()->bitwiseIor(e1.toFixnum());
+        }
+    } else if (e1.isBignum()) {
+        if (e2.isFixnum()) {
+            return e1.toBignum()->bitwiseIor(e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e1.toBignum()->bitwiseIor(e2.toBignum());
+        }
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseXor(Object e1, Object e2)
+{
+    MOSH_ASSERT(e1.isExactInteger());
+    MOSH_ASSERT(e2.isExactInteger());
+    if (e1.isFixnum()) {
+        if (e2.isFixnum()) {
+            return Object::makeFixnum(e1.toFixnum() ^ e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e2.toBignum()->bitwiseXor(e1.toFixnum());
+        }
+    } else if (e1.isBignum()) {
+        if (e2.isFixnum()) {
+            return e1.toBignum()->bitwiseXor(e2.toFixnum());
+        } else if (e2.isBignum()) {
+            return e1.toBignum()->bitwiseXor(e2.toBignum());
+        }
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseBitCount(Object e)
+{
+    MOSH_ASSERT(e.isExactInteger());
+    if (e.isFixnum()) {
+        const int n = e.toFixnum();
+        if (n > 0) {
+            return Object::makeFixnum(nbits(n));
+        } else {
+            return Object::makeFixnum(~nbits(~n));
+        }
+    } else if (e.isBignum()){
+        return e.toBignum()->bitwiseBitCount();
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseLength(Object e)
+{
+    MOSH_ASSERT(e.isExactInteger());
+    if (e.isFixnum()) {
+        const int n = e.toFixnum();
+        if (n == 0) {
+            return Object::makeFixnum(0);
+        }
+        const uint32_t un = (n < 0) ? ~n : n;
+        return Object::makeFixnum(32 - nlz(un));
+    } else if (e.isBignum()){
+        return e.toBignum()->bitwiseLength();
+    }
+    MOSH_ASSERT(false);
+}
+
+Object Arithmetic::bitwiseFirstBitSet(Object e)
+{
+    MOSH_ASSERT(e.isExactInteger());
+    if (e.isFixnum()) {
+        const int n = e.toFixnum();
+        if (n == 0) {
+            return Object::makeFixnum(-1);
+        }
+        int bit = 0;
+        bit += ntz(n);
+        return Object::makeFixnum(bit);
+    } else if (e.isBignum()){
+        return e.toBignum()->bitwiseFirstBitSet();
+    }
+    MOSH_ASSERT(false);
+}
+
 Object Arithmetic::toFlonum(Object real)
 {
     MOSH_ASSERT(real.isReal());

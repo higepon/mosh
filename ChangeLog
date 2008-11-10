@@ -1,3 +1,14 @@
+2008-11-10  higepon  <higepon@users.sourceforge.jp>
+
+        * Added : bitwise-not, bitwise-and, bitwise-ior, bitwise-xor, bitwise-bit-count
+                  bitwise-length, bitwise-first-bit-set and bitwise-if.
+
+        * lib/core/flonum.scm, lib/core/bitwise.scm: Added.
+
+        * lib/core: Added. We place base library here.
+
+        * BitwiseProcedures.cpp/.h: Added.
+
 2008-11-09  higepon  <higepon@users.sourceforge.jp>
 
         * Implemented All of procedures defined in R6RS lib 11.3  Flonums.

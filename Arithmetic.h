@@ -42,6 +42,13 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static Object bitwiseNot(Object e);
+    static Object bitwiseAnd(Object e1, Object e2);
+    static Object bitwiseIor(Object e1, Object e2);
+    static Object bitwiseXor(Object e1, Object e2);
+    static Object bitwiseBitCount(Object e);
+    static Object bitwiseLength(Object e);
+    static Object bitwiseFirstBitSet(Object e);
     static Object numerator(Object n);
     static Object denominator(Object n);
     static Object exact(Object n);
@@ -58,6 +65,38 @@ public:
     static bool lt(Object number1, Object number2);
     static bool le(Object number1, Object number2);
     static bool eq(Object number1, Object number2);
+
+    // Originally from Ypsilon Scheme
+    static uint32_t nbits(uint32_t x)
+    {
+        uint32_t t;
+        x = x - ((x >> 1) & 0x55555555);
+        t = ((x >> 2) & 0x33333333);
+        x = (x & 0x33333333) + t;
+        x = (x + (x >> 4)) & 0x0F0F0F0F;
+        x = x + (x << 8);
+        x = x + (x << 16);
+        return(x >> 24);
+    }
+
+    // Originally from Ypsilon Scheme
+    static uint32_t nlz(uint32_t x)
+    {
+        uint32_t t;
+        int n = 32;
+        t = x >> 16; if (t) { n -= 16 ; x = t; }
+        t = x >>  8; if (t) { n -=  8 ; x = t; }
+        t = x >>  4; if (t) { n -=  4 ; x = t; }
+        t = x >>  2; if (t) { n -=  2 ; x = t; }
+        t = x >>  1; if (t) { return n - 2; }
+        return n - x;
+    }
+
+    // Originally from Ypsilon Scheme
+    static uint32_t ntz(uint32_t x)
+    {
+        return nbits(~x & (x - 1));
+    }
 
 };
 

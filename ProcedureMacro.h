@@ -78,6 +78,7 @@
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
 #define argumentCheckFlonum(index, variableName) checkType(index, variableName, isFlonum, flonum)
+#define argumentCheckExactInteger(index, variableName) checkType(index, variableName, isExactInteger, exact integer)
 #define argumentCheckNumber(index, variableName) checkType(index, variableName, isNumber, number)
 #define argumentCheckRational(index, variableName) checkType(index, variableName, isRational, rational number)
 #define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)

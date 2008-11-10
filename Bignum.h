@@ -40,12 +40,84 @@ namespace scheme {
 class Bignum EXTEND_GC
 {
 public:
+    Bignum();
     Bignum(long value);
     Bignum(const mpz_t value);
     ~Bignum();
 
     char* toString() const;
     double toDouble() const;
+
+    Object bitwiseNot() const
+    {
+        Bignum* b = new Bignum;
+        mpz_com(b->value, value);
+        return Object::makeBignum(b);
+    }
+
+    Object bitwiseAnd(int n)
+    {
+        return bitwiseAnd(new Bignum(n));
+    }
+
+    Object bitwiseAnd(Bignum* b)
+    {
+        Bignum* ret = new Bignum();
+        mpz_and(ret->value, value, b->value);
+        return Object::makeBignum(ret);
+    }
+
+    Object bitwiseIor(int n)
+    {
+        return bitwiseIor(new Bignum(n));
+    }
+
+    Object bitwiseIor(Bignum* b)
+    {
+        Bignum* ret = new Bignum();
+        mpz_ior(ret->value, value, b->value);
+        return Object::makeBignum(ret);
+    }
+
+    Object bitwiseXor(int n)
+    {
+        return bitwiseIor(new Bignum(n));
+    }
+
+    Object bitwiseXor(Bignum* b)
+    {
+        Bignum* ret = new Bignum();
+        mpz_xor(ret->value, value, b->value);
+        return Object::makeBignum(ret);
+    }
+
+    Object bitwiseBitCount()
+    {
+        if (gt(this, 0)) {
+            return makeInteger(mpz_popcount(value));
+        } else {
+            Bignum* b = new Bignum;
+            mpz_com(b->value, value);
+            const unsigned long ret = mpz_popcount(b->value);
+            return makeInteger(~ret);
+        }
+    }
+
+    Object bitwiseLength()
+    {
+        const size_t size = mpz_sizeinbase(value, 2);
+        return makeInteger(size);
+    }
+
+    Object bitwiseFirstBitSet()
+    {
+        const unsigned long int found = mpz_scan1(value, 0);
+        if (found == ULONG_MAX) {
+            return Object::makeFixnum(-1);
+        } else {
+            return makeInteger(found);
+        }
+    }
 
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
@@ -115,15 +187,21 @@ public:
         const long ret = n1 * n2;
 
         /* Overflow check from Gauche */
-        if ((n1 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
-            return Bignum::mul(n1, n2);
+        if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
+            return Bignum::mul(new Bignum(n1), n2);
         } else {
             return Object::makeFixnum(ret);
         }
     }
 
-
-    mpz_t value;
+    static Object makeInteger(long n)
+    {
+        if (Fixnum::canFit(n)) {
+            return Object::makeFixnum(n);
+        } else {
+            return Object::makeBignum(n);
+        }
+    }
 
     static Object makeInteger(const mpz_t n)
     {
@@ -140,16 +218,9 @@ public:
         return makeInteger(b->value);
     }
 
+    mpz_t value;
+
 private:
-//     static Object makeNumber(Bignum* b)
-//     {
-//         if (mpz_cmp_si(b->value, Fixnum::MIN) >= 0 &&
-//             mpz_cmp_si(b->value, Fixnum::MAX) <= 0) {
-//             return Object::makeFixnum(mpz_get_si(b->value));
-//         } else {
-//             return Object::makeBignum(b);
-//         }
-//     }
 };
 
 }; // namespace scheme

@@ -81,6 +81,7 @@ ListProcedures.cpp            ListProcedures.h                    \
 ErrorProcedures.cpp           ErrorProcedures.h                   \
 ArithmeticProcedures.cpp      ArithmeticProcedures.h              \
 FlonumProcedures.cpp          FlonumProcedures.h                  \
+BitwiseProcedures.cpp         BitwiseProcedures.h                 \
 ByteVectorProcedures.cpp      ByteVectorProcedures.h              \
 Equivalent.h                  Equivalent.cpp                      \
 CompoundCondition.h           CompoundCondition.cpp               \
@@ -166,8 +167,8 @@ psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm
-	cat ./library.scm ./compiler-vm-cpp.scm > $(PWD)/$@
+./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm lib/core/flonum.scm lib/core/bitwise.scm
+	cat ./library.scm ./compiler-vm-cpp.scm lib/core/flonum.scm lib/core/bitwise.scm > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm
 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@

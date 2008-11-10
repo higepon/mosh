@@ -1,5 +1,5 @@
 /*
- * Bignum.cpp - 
+ * BitwiseProcedures.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,38 +26,24 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Bignum.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: BitwiseProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Bignum.h"
+#ifndef __SCHEME_BITWISE_PROCEDURES__
+#define __SCHEME_BITWISE_PROCEDURES__
 
-using namespace scheme;
+#include "scheme.h"
 
-Bignum::Bignum()
-{
-    mpz_init(this->value);
-}
+namespace scheme {
 
-Bignum::Bignum(long value)
-{
-    mpz_init(this->value);
-    mpz_set_si(this->value, value);
-}
+    Object bitwiseNotEx(int argc, const Object* argv);
+    Object bitwiseAndEx(int argc, const Object* argv);
+    Object bitwiseIorEx(int argc, const Object* argv);
+    Object bitwiseXorEx(int argc, const Object* argv);
+    Object bitwiseBitCountEx(int argc, const Object* argv);
+    Object bitwiseLengthEx(int argc, const Object* argv);
+    Object bitwiseFirstBitSetEx(int argc, const Object* argv);
 
-Bignum::Bignum(const mpz_t value)
-{
-    mpz_init_set(this->value, value);
-}
+}; // namespace scheme
 
-
-char* Bignum::toString() const
-{
-    return mpz_get_str(NULL, 10, value);
-}
-
-double Bignum::toDouble() const
-{
-    return mpz_get_d(value);
-}
+#endif // __SCHEME_BITWISE_PROCEDURES__
