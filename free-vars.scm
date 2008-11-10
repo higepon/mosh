@@ -320,4 +320,6 @@
     bitwise-bit-count
     bitwise-length
     bitwise-first-bit-set
+    bitwise-arithmetic-shift-left
+    bitwise-arithmetic-shift-right
     )

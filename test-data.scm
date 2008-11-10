@@ -2048,6 +2048,16 @@
 (-1 (bitwise-first-bit-set 0))
 (32 (bitwise-first-bit-set (* 256 256 256 256)))
 (40 (bitwise-first-bit-set (* 256 256 256 256 256)))
+(error (bitwise-arithmetic-shift-left 1 -1))
+(2 (bitwise-arithmetic-shift-left 1 1))
+(4 (bitwise-arithmetic-shift-left 1 2))
+(8 (bitwise-arithmetic-shift-left 1 3))
+(16 (bitwise-arithmetic-shift-left 1 4))
+(32 (bitwise-arithmetic-shift-left 1 5))
+(#t (fixnum? (bitwise-arithmetic-shift-left 1 5)))
+(#t (= (bitwise-arithmetic-shift-left (* 256 256 256 256) 1) (* 256 256 256 256 2)))
+
+
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

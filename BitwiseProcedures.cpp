@@ -121,3 +121,33 @@ Object scheme::bitwiseFirstBitSetEx(int argc, const Object* argv)
     argumentCheckExactInteger(0, e);
     return Arithmetic::bitwiseFirstBitSet(e);
 }
+
+Object scheme::bitwiseArithmeticShiftLeftEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bitwise-bit-set?");
+    checkArgumentLength(2);
+    argumentCheckExactInteger(0, e1);
+    argumentAsFixnum(1, e2);
+
+    if (e2 < 0) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "fixnum greater than zero", argv[1]);
+        return Object::Undef;
+    } else {
+        return Arithmetic::bitwiseShiftLeft(e1, static_cast<unsigned long>(e2));
+    }
+}
+
+Object scheme::bitwiseArithmeticShiftRightEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bitwise-bit-set?");
+    checkArgumentLength(2);
+    argumentCheckExactInteger(0, e1);
+    argumentCheckExactInteger(1, e2);
+
+    if (Arithmetic::lt(e2, Object::makeFixnum(0))) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "exact integer greater than zero", e2);
+        return Object::Undef;
+    } else {
+//        return Object::makeBool(Arithmetic::bitwiseIsBitSet(e1, e2));
+    }
+}

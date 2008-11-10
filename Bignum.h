@@ -119,6 +119,21 @@ public:
         }
     }
 
+    static Object bitwiseShiftLeft(const Bignum* n1, unsigned long n2)
+    {
+        Bignum* ret = new Bignum;
+        mpz_mul_2exp(ret->value, n1->value, n2);
+        return makeInteger(ret);
+    }
+
+    static Object bitwiseShiftLeft(int n1, unsigned long n2)
+    {
+        Bignum* ret = new Bignum(n1);
+        mpz_mul_2exp(ret->value, ret->value, n2);
+        return makeInteger(ret);
+    }
+
+
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
     {\

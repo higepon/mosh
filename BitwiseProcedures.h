@@ -43,7 +43,8 @@ namespace scheme {
     Object bitwiseBitCountEx(int argc, const Object* argv);
     Object bitwiseLengthEx(int argc, const Object* argv);
     Object bitwiseFirstBitSetEx(int argc, const Object* argv);
-
+    Object bitwiseArithmeticShiftLeftEx(int argc, const Object* argv);
+    Object bitwiseArithmeticShiftRightEx(int argc, const Object* argv);
 }; // namespace scheme
 
 #endif // __SCHEME_BITWISE_PROCEDURES__

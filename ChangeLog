@@ -1,5 +1,7 @@
 2008-11-10  higepon  <higepon@users.sourceforge.jp>
 
+        * Added : bitwise-arithmetic-shift-left.
+
         * Added : bitwise-not, bitwise-and, bitwise-ior, bitwise-xor, bitwise-bit-count
                   bitwise-length, bitwise-first-bit-set and bitwise-if.
 

@@ -49,6 +49,7 @@ public:
     static Object bitwiseBitCount(Object e);
     static Object bitwiseLength(Object e);
     static Object bitwiseFirstBitSet(Object e);
+    static Object bitwiseShiftLeft(Object e1, unsigned long e2);
     static Object numerator(Object n);
     static Object denominator(Object n);
     static Object exact(Object n);

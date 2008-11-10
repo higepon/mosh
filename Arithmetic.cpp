@@ -161,7 +161,21 @@ Object Arithmetic::bitwiseFirstBitSet(Object e)
         return e.toBignum()->bitwiseFirstBitSet();
     }
     MOSH_ASSERT(false);
+    return Object::False;
 }
+
+Object Arithmetic::bitwiseShiftLeft(Object e1, unsigned long e2)
+{
+    MOSH_ASSERT(e1.isExactInteger());
+    if (e1.isFixnum()) {
+        return Bignum::bitwiseShiftLeft(e1.toFixnum(), e2);
+    } else if (e1.isBignum()) {
+        return Bignum::bitwiseShiftLeft(e1.toBignum(), e2);
+    }
+    MOSH_ASSERT(false);
+    return Object::False;
+}
+
 
 Object Arithmetic::toFlonum(Object real)
 {
