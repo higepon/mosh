@@ -42,6 +42,10 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static bool isInteger(Object n);
+    static bool isRealValued(Object n);
+    static bool isRationalValued(Object n);
+    static bool isIntegerValued(Object n);
     static Object bitwiseNot(Object e);
     static Object bitwiseAnd(Object e1, Object e2);
     static Object bitwiseIor(Object e1, Object e2);
@@ -57,6 +61,7 @@ public:
     static Object inexact(Object n);
     static bool isExact(Object n);
     static bool isExactZero(Object n1);
+    static bool isZero(Object n1);
     static Object toFlonum(Object real);
     static Object add(Object number1, Object number2);
     static Object sub(Object number1, Object number2);

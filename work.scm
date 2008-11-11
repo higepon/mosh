@@ -80,6 +80,6 @@
 ;; (format #t "<~a> ~a" (flatan t0.0 t-1.0) (* t1.570796 t2.0))
 
 ;
-(display (* 256 256 256 256))
-(newline)
-(display (bitwise-not (* 256 256 256 256)))
+;(display (flonum? (/ (inexact -1) (inexact 0))))
+;(display (integer? (/ (inexact -1) (inexact 0))))
+(display (integer-valued? (make-complex 3 (inexact 0))))

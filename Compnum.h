@@ -51,6 +51,11 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    bool isReal()
+    {
+        return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
+    }
+
     static bool eq(Compnum* n1, Compnum* n2)
     {
         return Arithmetic::eq(n1->real(), n2->real()) &&

@@ -81,10 +81,12 @@ public:
     Object(const ucs4string& str);
     Object(const char* str);
 
+    bool isComplex() const;
     bool isReal() const;
     bool isRational() const;
     bool isFixnum() const;
     bool isNumber() const;
+    bool isInteger() const;
     bool isExactInteger() const;
     bool isBoolean() const;
     bool isInstruction() const;

@@ -215,8 +215,12 @@ Object Arithmetic::numerator(Object n)
     }
 }
 
+#include "ProcedureMacro.h"
+#include "TextualOutputPort.h"
+
 Object Arithmetic::denominator(Object n)
 {
+//    VM_LOG1("n=~a", n);
     MOSH_ASSERT(n.isRational());
     if (n.isRatnum()) {
         return n.toRatnum()->denominator();
@@ -228,7 +232,70 @@ Object Arithmetic::denominator(Object n)
     }
 }
 
+bool Arithmetic::isInteger(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFlonum()) {
+        if (n.toFlonum()->isNan() ||
+            n.toFlonum()->isInfinite()) {
+            return false;
+        }
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return isZero(c->imag()) && isInteger(c->real());
+    }
+    return Arithmetic::eq(denominator(n), Object::makeFixnum(1));
+}
+
+bool Arithmetic::isRealValued(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isReal()) {
+        return true;
+    } else if (n.isCompnum()) {
+        if (isZero(n.toCompnum()->imag())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    MOSH_ASSERT(false);
+    return false;
+}
+
+bool Arithmetic::isRationalValued(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isRational()) {
+        return true;
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return isZero(c->imag()) && isRationalValued(c->real());
+    } else {
+        // +nan.0 +inf.0
+        return false;
+    }
+}
+
+bool Arithmetic::isIntegerValued(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isInteger()) {
+        return true;
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return isZero(c->imag()) && isIntegerValued(c->real());
+    } else {
+        return false;
+    }
+}
+
 bool Arithmetic::isExactZero(Object n)
+{
+    return isZero(n) && isExact(n);
+}
+
+bool Arithmetic::isZero(Object n)
 {
     return Arithmetic::eq(Object::makeFixnum(0), n);
 }

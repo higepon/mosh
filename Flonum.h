@@ -58,6 +58,10 @@ public:
     Object numerator() const;
     Object denominator() const;
 
+    bool isRational() const
+    {
+        return !isinf(value_) && !isnan(value_);
+    }
 
     bool isInteger() const
     {

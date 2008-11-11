@@ -42,11 +42,15 @@ Object Flonum::POSITIVE_INF;
 Object Flonum::NEGATIVE_INF;
 Object Flonum::NOT_A_NUMBER;
 
+static double zero(void) { return 0.0; }
+static double one (void) { return 1.0; }
+static double mone (void) { return -1.0; }
+
 void Flonum::initialize()
 {
-    POSITIVE_INF = Object::makeFlonum(1.0 / 0.0);
-    NEGATIVE_INF = Object::makeFlonum(-1.0 / 0.0);
-    NOT_A_NUMBER = Object::makeFlonum(0.0 / 0.0);
+    POSITIVE_INF = Object::makeFlonum(one() / zero());
+    NEGATIVE_INF = Object::makeFlonum(mone() / zero());
+    NOT_A_NUMBER = Object::makeFlonum(zero() / zero());
 }
 
 #define MAKE_LOCAL_OP(op, symbol)\

@@ -47,26 +47,59 @@ using namespace scheme;
 
 Object scheme::complexPEx(int argc, const Object* argv)
 {
+   DeclareProcedureName("complex?");
+   checkArgumentLength(1);
+   return Object::makeBool(argv[0].isComplex());
 }
 
 Object scheme::realPEx(int argc, const Object* argv)
 {
+   DeclareProcedureName("real?");
+   checkArgumentLength(1);
+   return Object::makeBool(argv[0].isReal());
 }
 
 Object scheme::integerPEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("integer?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isInteger());
 }
 
 Object scheme::realValuedPEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("real-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isRealValued(n));
+    } else {
+        return Object::False;
+    }
 }
 
 Object scheme::rationalValuedPEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("rational-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isRationalValued(n));
+    } else {
+        return Object::False;
+    }
 }
 
 Object scheme::integerValuedPEx(int argc, const Object* argv)
 {
+    DeclareProcedureName("integer-valued?");
+    checkArgumentLength(1);
+    const Object n = argv[0];
+    if (n.isNumber()) {
+        return Object::makeBool(Arithmetic::isIntegerValued(n));
+    } else {
+        return Object::False;
+    }
 }
 
 Object scheme::numeratorEx(int argc, const Object* argv)

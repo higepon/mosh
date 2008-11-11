@@ -1,5 +1,7 @@
 2008-11-11  higepon  <higepon@users.sourceforge.jp>
 
+        * Added : complex?, real?, integer?, real-valued?, rational-valued? adn integer-valued?.
+
         * Implemented All of procedures defined in R6RS lib 11.4 Exact bitwise arithmetic.
 
         * Added : bitwise-arithmetic-shift-right, bitwise-arithmetic-shift.

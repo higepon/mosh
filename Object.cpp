@@ -68,6 +68,7 @@
 #include "Flonum.h"
 #include "Bignum.h"
 #include "Compnum.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
 
@@ -77,6 +78,22 @@ const Object Object::Undef   = Object::makeConst(2);
 const Object Object::UnBound = Object::makeConst(3);
 const Object Object::True    = Object::makeConst(4);
 const Object Object::False   = Object::makeConst(5);
+
+bool Object::isRational() const
+{
+    return isFixnum() || isBignum() || (isFlonum() && toFlonum()->isRational()) || isRatnum();
+}
+
+
+bool Object::isReal() const
+{
+    return isFixnum() || isBignum() || isFlonum() || isRatnum() || (isCompnum() && toCompnum()->isReal());
+}
+
+bool Object::isInteger() const
+{
+    return isFixnum() || isBignum() || (isNumber() && Arithmetic::isInteger(*this));
+}
 
 bool Object::equal(Object o) const
 {

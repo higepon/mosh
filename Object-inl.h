@@ -259,14 +259,9 @@ inline bool Object::isNumber() const
     return isReal() || isCompnum();
 }
 
-inline bool Object::isReal() const
+inline bool Object::isComplex() const
 {
-    return isFixnum() || isBignum() || isFlonum() || isRatnum();
-}
-
-inline bool Object::isRational() const
-{
-    return isFixnum() || isBignum() || isFlonum() || isRatnum();
+    return isReal() || isCompnum();
 }
 
 inline bool Object::isExactInteger() const
