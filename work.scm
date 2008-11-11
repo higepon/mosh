@@ -17,7 +17,7 @@
 
 ;; ;(letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]        [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 5000000))
 
-;; ;; (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))] 
+;; ;; (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
 ;; ;;          [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))
 
 ;; ;; (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
@@ -79,7 +79,25 @@
 
 ;; (format #t "<~a> ~a" (flatan t0.0 t-1.0) (* t1.570796 t2.0))
 
+<<<<<<< .mine
+(define-syntax time
+  (syntax-rules ()
+    [(_ call)
+     (let ([start (get-timeofday)])
+       call
+       (let ([end (get-timeofday)])
+         (format #t "~d\n" (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start))))))]))
+
+
+
+(time
+  (* 256 256 256 256))
+;;   (newline)
+;;   (display (bitwise-not (* 256 256 256 256)))
+;;   (display (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start)))))
+=======
 ;
 ;(display (flonum? (/ (inexact -1) (inexact 0))))
 ;(display (integer? (/ (inexact -1) (inexact 0))))
 (display (integer-valued? (make-complex 3 (inexact 0))))
+>>>>>>> .r626

@@ -315,11 +315,11 @@ Object scheme::symbolTostringEx(int argc, const Object* argv)
 Object scheme::getTimeofdayEx(int argc, const Object* argv)
 {
     DeclareProcedureName("get-timeofday");
-    checkArgumentLength(1);
+    checkArgumentLength(0);
     struct timeval tv;
     struct timezone tz;
     gettimeofday(&tv, &tz);
-    return Object::cons(Object::makeFixnum(tv.tv_sec), Object::makeFixnum(tv.tv_usec));
+    return Object::cons(Object::makeBignum(tv.tv_sec), Object::makeBignum(tv.tv_usec));
 }
 
 Object scheme::vmApplyEx(int argc, const Object* argv)

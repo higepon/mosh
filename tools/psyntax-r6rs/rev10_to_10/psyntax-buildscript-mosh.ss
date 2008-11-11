@@ -209,6 +209,7 @@
     (mosh-list   (mosh list)                           #f    #t)  ;; for mosh
     (mosh-regexp (mosh regexp)                         #f    #t)  ;; for mosh
     (mosh-hashtable (mosh hashtable)                   #f    #t)  ;; for mosh
+    (mosh-parameters (mosh parameters)                  #f    #t)
     (sys         (system)                              #f    #t)  ;; for mosh
     (srfi-1     (srfi :1)                              #f    #t)  ;; for mosh
     ))
@@ -962,6 +963,8 @@
     ;;; string->regexp のように型を変換するものは source の string の型に合わせたライブラリに
     ;;; => (mosh string)
     ;;;  操作の中心的な対象が何であるか？で所属のライブラリを決める
+    (make-parameter mosh-parameters)
+    (parameterize mosh-parameters)
     (receive mosh-backend) ;; I want psyntax pass through "receive" to backend(Mosh).
     (fasl-write mosh)
     (fasl-read mosh)
@@ -973,6 +976,7 @@
     (source-info mosh)
     (sys-display mosh)
     (get-command-line mosh)
+    (get-timeofday mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)
     (readdir sys)
