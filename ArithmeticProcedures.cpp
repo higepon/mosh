@@ -45,6 +45,29 @@
 
 using namespace scheme;
 
+Object scheme::complexPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::realPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::integerPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::realValuedPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::rationalValuedPEx(int argc, const Object* argv)
+{
+}
+
+Object scheme::integerValuedPEx(int argc, const Object* argv)
+{
+}
 
 Object scheme::numeratorEx(int argc, const Object* argv)
 {

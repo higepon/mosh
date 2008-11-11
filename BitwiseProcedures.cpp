@@ -124,7 +124,7 @@ Object scheme::bitwiseFirstBitSetEx(int argc, const Object* argv)
 
 Object scheme::bitwiseArithmeticShiftLeftEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("bitwise-bit-set?");
+    DeclareProcedureName("bitwise-arithmetic-shift-left");
     checkArgumentLength(2);
     argumentCheckExactInteger(0, e1);
     argumentAsFixnum(1, e2);
@@ -139,15 +139,29 @@ Object scheme::bitwiseArithmeticShiftLeftEx(int argc, const Object* argv)
 
 Object scheme::bitwiseArithmeticShiftRightEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("bitwise-bit-set?");
+    DeclareProcedureName("bitwise-arithmetic-shift-right");
     checkArgumentLength(2);
     argumentCheckExactInteger(0, e1);
-    argumentCheckExactInteger(1, e2);
+    argumentAsFixnum(1, e2);
 
-    if (Arithmetic::lt(e2, Object::makeFixnum(0))) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "exact integer greater than zero", e2);
+    if (e2 < 0) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "fixnum greater than zero", argv[1]);
         return Object::Undef;
     } else {
-//        return Object::makeBool(Arithmetic::bitwiseIsBitSet(e1, e2));
+        return Arithmetic::bitwiseShiftRight(e1, static_cast<unsigned long>(e2));
+    }
+}
+
+Object scheme::bitwiseArithmeticShiftEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("bitwise-arithmetic-shift");
+    checkArgumentLength(2);
+    argumentCheckExactInteger(0, e1);
+    argumentAsFixnum(1, e2);
+
+    if (e2 >= 0) {
+        return Arithmetic::bitwiseShiftLeft(e1, static_cast<unsigned long>(e2));
+    } else {
+        return Arithmetic::bitwiseShiftRight(e1, static_cast<unsigned long>(abs(e2)));
     }
 }

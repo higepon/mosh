@@ -1,3 +1,9 @@
+2008-11-11  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented All of procedures defined in R6RS lib 11.4 Exact bitwise arithmetic.
+
+        * Added : bitwise-arithmetic-shift-right, bitwise-arithmetic-shift.
+
 2008-11-10  higepon  <higepon@users.sourceforge.jp>
 
         * Added : bitwise-arithmetic-shift-left.
@@ -13,7 +19,7 @@
 
 2008-11-09  higepon  <higepon@users.sourceforge.jp>
 
-        * Implemented All of procedures defined in R6RS lib 11.3  Flonums.
+        * Implemented All of procedures defined in R6RS lib 11.3 Flonums.
 
         * Added : fldiv, flmod, fldiv-and-mod, fldiv0, flmod0, fldiv0-and-mod0
                   flnumerator, fldenominator, flfloor, flceiling, fltruncate, flround

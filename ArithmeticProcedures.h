@@ -36,6 +36,12 @@
 
 namespace scheme {
 
+    Object complexPEx(int argc, const Object* argv);
+    Object realPEx(int argc, const Object* argv);
+    Object integerPEx(int argc, const Object* argv);
+    Object realValuedPEx(int argc, const Object* argv);
+    Object rationalValuedPEx(int argc, const Object* argv);
+    Object integerValuedPEx(int argc, const Object* argv);
     Object numeratorEx(int argc, const Object* argv);
     Object denominatorEx(int argc, const Object* argv);
     Object infinitePEx(int argc, const Object* argv);

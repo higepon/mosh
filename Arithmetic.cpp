@@ -176,6 +176,17 @@ Object Arithmetic::bitwiseShiftLeft(Object e1, unsigned long e2)
     return Object::False;
 }
 
+Object Arithmetic::bitwiseShiftRight(Object e1, unsigned long e2)
+{
+    MOSH_ASSERT(e1.isExactInteger());
+    if (e1.isFixnum()) {
+        return Bignum::bitwiseShiftRight(e1.toFixnum(), e2);
+    } else if (e1.isBignum()) {
+        return Bignum::bitwiseShiftRight(e1.toBignum(), e2);
+    }
+    MOSH_ASSERT(false);
+    return Object::False;
+}
 
 Object Arithmetic::toFlonum(Object real)
 {

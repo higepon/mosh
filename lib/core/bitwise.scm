@@ -30,3 +30,65 @@
 (define (bitwise-if ei1 ei2 ei3)
   (bitwise-ior (bitwise-and ei1 ei2)
                (bitwise-and (bitwise-not ei1) ei3)))
+
+(define (bitwise-bit-set? ei1 ei2)
+  (not (zero? (bitwise-and (bitwise-arithmetic-shift-left 1 ei2) ei1))))
+
+(define  (bitwise-copy-bit ei1 ei2 ei3)
+  (let* ((mask (bitwise-arithmetic-shift-left 1 ei2)))
+    (bitwise-if mask (bitwise-arithmetic-shift-left ei3 ei2) ei1)))
+
+(define (bitwise-bit-field ei1 ei2 ei3)
+  (let ((mask (bitwise-not (bitwise-arithmetic-shift-left -1 ei3))))
+    (bitwise-arithmetic-shift-right (bitwise-and ei1 mask) ei2)))
+
+(define (bitwise-copy-bit-field ei1 ei2 ei3 ei4)
+  (let* ((to    ei1)
+         (start ei2)
+         (end   ei3)
+         (from  ei4)
+         (mask1 (bitwise-arithmetic-shift-left -1 start))
+         (mask2 (bitwise-not (bitwise-arithmetic-shift-left -1 end)))
+         (mask (bitwise-and mask1 mask2)))
+    (bitwise-if mask (bitwise-arithmetic-shift-left from start) to)))
+
+(define (bitwise-rotate-bit-field ei1 ei2 ei3 ei4)
+  (let* ((n     ei1)
+         (start ei2)
+         (end   ei3)
+         (count ei4)
+         (width (- end start)))
+    (if (positive? width)
+        (let* ((count (mod count width))
+               (field0
+                (bitwise-bit-field n start end))
+               (field1 (bitwise-arithmetic-shift-left
+                        field0 count))
+               (field2 (bitwise-arithmetic-shift-right
+                        field0
+                        (- width count)))
+               (field (bitwise-ior field1 field2)))
+          (bitwise-copy-bit-field n start end field))
+        n)))
+
+;; Originally from Ypsilon Scheme
+(define (bitwise-reverse-bit-field ei1 ei2 ei3)
+  (let* ((n ei1)
+         (start ei2)
+         (end ei3)
+         (width (- end start)))
+    (if (positive? width)
+        (let loop ((reversed 0) (field (bitwise-bit-field n start end)) (width width))
+          (if (zero? width)
+              (bitwise-copy-bit-field n start end reversed)
+              (if (zero? (bitwise-and field 1))
+                  (loop (bitwise-arithmetic-shift reversed 1)
+                        (bitwise-arithmetic-shift-right field 1)
+                        (- width 1))
+                  (loop (bitwise-ior (bitwise-arithmetic-shift reversed 1) 1)
+                        (bitwise-arithmetic-shift-right field 1)
+                        (- width 1)))))
+        n)))
+
+
+

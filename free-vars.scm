@@ -322,4 +322,12 @@
     bitwise-first-bit-set
     bitwise-arithmetic-shift-left
     bitwise-arithmetic-shift-right
+    bitwise-arithmetic-shift
+    complex?
+    real?
+    rational?
+    integer?
+    real-valued?
+    rational-valued?
+    integer-valued?
     )

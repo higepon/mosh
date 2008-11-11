@@ -133,6 +133,20 @@ public:
         return makeInteger(ret);
     }
 
+    static Object bitwiseShiftRight(const Bignum* n1, unsigned long n2)
+    {
+        Bignum* ret = new Bignum;
+        mpz_fdiv_q_2exp(ret->value, n1->value, n2);
+        return makeInteger(ret);
+    }
+
+    static Object bitwiseShiftRight(int n1, unsigned long n2)
+    {
+        Bignum* ret = new Bignum(n1);
+        mpz_fdiv_q_2exp(ret->value, ret->value, n2);
+        return makeInteger(ret);
+    }
+
 
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
