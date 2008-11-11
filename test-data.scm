@@ -2109,6 +2109,13 @@
 (#t (integer-valued? (make-complex t3.0 t0.0)))
 (#t (integer-valued? (/ 8 4)))
 
+;; max, min
+(4   (max 3 4))
+(4.0 (max 3.9 4))
+(3   (min 3 4))
+(3.9 (min 3.9 4))
+(#t  (fl=? plus-inf (max plus-inf my-nan)))
+(#t  (fl=? minus-inf (min minus-inf my-nan)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
