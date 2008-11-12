@@ -155,7 +155,7 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 %%
 
 extern ucs4char* token;
-int numbererror(char const *str)
+int number_yyerror(char const *str)
 {
     TextualInputPort* const port = parser_port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),

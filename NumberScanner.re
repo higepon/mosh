@@ -97,7 +97,7 @@ void NumberScanner::fill(int n)
     limit_ = limit_ - tokenOffset + readSize;
 }
 
-int numberlex()
+int number_yylex()
 {
 //    return parser_port()->scanner()->scan();
 }
