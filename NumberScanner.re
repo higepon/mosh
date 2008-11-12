@@ -9,6 +9,7 @@
 #include "NumberScanner.h"
 
 #include "reader.h"
+#include "NumberReader.h"
 #include "reader.tab.hpp"
 #include "VM.h"
 
@@ -22,7 +23,7 @@
 
 using namespace scheme;
 extern VM* theVM;
-extern TextualInputPort* parser_port();
+//extern TextualInputPort* parser_port();
 extern YYSTYPE yylval;
 
 NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
@@ -45,10 +46,27 @@ static void yydebug(int state, ucs4char ch)
 //    printf("state=%d ch=[%c] ch=%x\n", state, ch, ch);
 }
 
+// Object applyExactness(int exactness, Object num)
+// {
+//     switch(exactness)
+//     {
+//     case 0:
+//         return num;
+//     case 1:
+//         return Arithmetic::exact(num);
+//     case -1:
+//         return Arithmetic::inexact(num);
+//     default:
+//         MOSH_ASSERT(false);
+
+//     }
+
+// }
+
 
 void NumberScanner::fill(int n)
 {
-    TextualInputPort* const inputPort = parser_port();
+    TextualInputPort* const inputPort = NumberReader::port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
 
@@ -83,11 +101,6 @@ void NumberScanner::fill(int n)
         } else {
             buffer_[i + restCharCount] = ch;
         }
-//         if (!inputPort->isDataReady()) {
-//             i++;
-//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//             break;
-//         }
 
     }
     const int readSize = i;
@@ -99,7 +112,7 @@ void NumberScanner::fill(int n)
 
 int number_yylex()
 {
-//    return parser_port()->scanner()->scan();
+    return NumberReader::port()->numberScanner()->scan();
 }
 
 int NumberScanner::scan()

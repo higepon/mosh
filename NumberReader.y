@@ -24,7 +24,7 @@ extern Object applyExactness(int exactness, Object num);
 extern int yylex();
 extern int yyerror(const char *);
 extern TextualInputPort* parser_port();
-Object parsed2;
+Object number_parsed;
 %}
 
 %token <stringValue> IDENTIFIER
@@ -46,8 +46,8 @@ Object parsed2;
 %start top_level
 
 %%
-top_level : datum { parsed2 = $$; YYACCEPT; }
-          | END_OF_FILE { parsed2 = Object::Eof; YYACCEPT; }
+top_level : datum { number_parsed = $$; YYACCEPT; }
+          | END_OF_FILE { number_parsed = Object::Eof; YYACCEPT; }
 datum : lexme_datum    { $$ = $1;}
       | compound_datum
       {
@@ -58,7 +58,7 @@ datum : lexme_datum    { $$ = $1;}
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | STRING
             {
-                $$ = readString($1);
+              $$ = Reader::readString($1);
             }
             | REGEXP
             {
@@ -88,8 +88,8 @@ list : LEFT_PAREN datum_list RIGHT_PAREN
            // TODO: not to use reverse.
            $2 = Pair::reverse($2);
            if ($2.isPair()) {
-                $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),
-                                                      Object::makeFixnum(parser_port()->getLineNo()));
+             $2.toPair()->sourceInfo = Pair::list2(Object::makeString(Reader::port()->toString()),
+                                                      Object::makeFixnum(Reader::port()->getLineNo()));
            }
            $$ = $2;
        }
@@ -157,7 +157,7 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 extern ucs4char* token;
 int number_yyerror(char const *str)
 {
-    TextualInputPort* const port = parser_port();
+  TextualInputPort* const port = Reader::port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));
     return 0;

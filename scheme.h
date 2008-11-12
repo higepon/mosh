@@ -125,8 +125,6 @@ class Object;
 typedef std::vector<Object> ObjectVector;
 #endif
 
-
-
 };
 
 #endif // __SCHEME_SCHEME_H__

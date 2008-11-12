@@ -17,6 +17,7 @@
 #include "Arithmetic.h"
 #include "Codec.h"
 #include "reader.h"
+#include "NumberReader.h"
 #include "Scanner.h"
 using namespace scheme;
 extern ucs4string readString(const ucs4string& s);
@@ -24,7 +25,6 @@ extern Object applyExactness(int exactness, Object num);
 extern int yylex();
 extern int yyerror(const char *);
 extern TextualInputPort* parser_port();
-Object parsed;
 %}
 
 %token <stringValue> IDENTIFIER
@@ -47,8 +47,9 @@ Object parsed;
 %start top_level
 
 %%
-top_level : datum { parsed = $$; YYACCEPT; }
-          | END_OF_FILE { parsed = Object::Eof; YYACCEPT; }
+
+top_level : datum { Reader::parsed = $$; YYACCEPT; }
+          | END_OF_FILE { Reader::parsed = Object::Eof; YYACCEPT; }
 datum : lexme_datum    { $$ = $1;}
       | compound_datum
       {
@@ -59,14 +60,17 @@ datum : lexme_datum    { $$ = $1;}
 lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | STRING
             {
-                $$ = readString($1);
+              $$ = Reader::readString($1);
             }
             | REGEXP
             {
                 $$ = Object::makeRegexp($1);
             }
             | NUMBER { $$ = Object::makeFixnum($1); }
-            | NUMBER2 { $$ = Object::makeString($1); }
+            | NUMBER2 {
+                bool isErrorOccured = false;
+                $$ = NumberReader::read($1, isErrorOccured);
+            }
             | IDENTIFIER
             {
                 $$ = Symbol::intern($1.strdup());
@@ -89,8 +93,8 @@ list : LEFT_PAREN datum_list RIGHT_PAREN
            // TODO: not to use reverse.
            $2 = Pair::reverse($2);
            if ($2.isPair()) {
-                $2.toPair()->sourceInfo = Pair::list2(Object::makeString(parser_port()->toString()),
-                                                      Object::makeFixnum(parser_port()->getLineNo()));
+               $2.toPair()->sourceInfo = Pair::list2(Object::makeString(Reader::port()->toString()),
+                                                     Object::makeFixnum(Reader::port()->getLineNo()));
            }
            $$ = $2;
        }
@@ -158,7 +162,7 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 extern ucs4char* token;
 int yyerror(char const *str)
 {
-    TextualInputPort* const port = parser_port();
+  TextualInputPort* const port = Reader::port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));
     return 0;

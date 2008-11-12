@@ -1,5 +1,5 @@
 /*
- * reader.h - 
+ * NumberReader.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,44 +26,39 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: reader.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: NumberReader.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_READER__
-#define __SCHEME_READER__
+#include "Object.h"
+#include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "SString.h"
+#include "TextualInputPort.h"
+#include "StringTextualInputPort.h"
+#include "NumberReader.h"
 
-#include "scheme.h"
-#include "ucs4string.h"
+using namespace scheme;
 
-namespace scheme {
+Object NumberReader::parsed;
+TextualInputPort* NumberReader::in_;
 
-    Object readOld(TextualInputPort* port, bool& errorOccured);
-    Object readNumber(const ucs4string& text, bool& errorOccured);
-    Object read(TextualInputPort* port, bool& errorOccured);
+Object NumberReader::read(TextualInputPort* port, bool& errorOccured)
+{
+    extern int number_yyparse ();
+    MOSH_ASSERT(port);
+    in_ = port;
+    const bool isParseError = number_yyparse() == 1;
+    if (isParseError) {
+        errorOccured = true;
+        return Object::Undef;
+    } else {
+        return parsed;
+    }
+}
 
-    class Reader EXTEND_GC
-    {
-    public:
-        static Object read(TextualInputPort* port, bool& isErrorOccured);
-        static ucs4string readString(const ucs4string& s);
-        static TextualInputPort* port() { return in_; }
-        static Object parsed;
-    private:
-        static TextualInputPort* in_;
-    };
-};
+Object NumberReader::read(const ucs4string& text, bool& isErrorOccured)
+{
+    return read(new StringTextualInputPort(text), isErrorOccured);
+}
 
-typedef struct {
-    union {
-        bool  boolValue;
-        int   exactValue;
-        int   intValue;
-        ucs4char charValue;
-    };
-    scheme::ucs4string stringValue;
-    scheme::Object object;
-} YYSTYPE;
-
-#define YYSTYPE_IS_DECLARED 1
-
-#endif // __SCHEME_READER__

@@ -38,16 +38,9 @@
 #include "TextualInputPort.h"
 #include "reader.h"
 #include "Scanner.h"
+#include "NumberScanner.h"
 
 using namespace scheme;
-
-    Codec* codec_;
-    BinaryInputPort* port_;
-    Transcoder* coder_;
-    ucs4string buffer_;
-    int line_;
-    Object error_;
-    Scanner* scanner_;
 
 TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec()),
                                                                                port_(port),
@@ -55,11 +48,12 @@ TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : c
                                                                                buffer_(NULL),
                                                                                line_(1),
                                                                                error_(Object::Nil),
-                                                                               scanner_(new Scanner)
+                                                                               scanner_(new Scanner),
+                                                                               numberScanner_(new NumberScanner)
 {
 }
 
-TextualInputPort::TextualInputPort() : scanner_(new Scanner)
+TextualInputPort::TextualInputPort() : scanner_(new Scanner), numberScanner_(new NumberScanner())
 {
 }
 
@@ -200,7 +194,7 @@ Object TextualInputPort::getDatumOld(bool& errorOccured)
 
 Object TextualInputPort::getDatum(bool& errorOccured)
 {
-    return read(this, errorOccured);
+    return Reader::read(this, errorOccured);
 }
 
 int TextualInputPort::close()
@@ -221,4 +215,9 @@ Codec* TextualInputPort::codec() const
 Scanner* TextualInputPort::scanner() const
 {
     return scanner_;
+}
+
+NumberScanner* TextualInputPort::numberScanner() const
+{
+    return numberScanner_;
 }

@@ -48,7 +48,7 @@ static void yydebug(int state, ucs4char ch)
 
 void Scanner::fill(int n)
 {
-    TextualInputPort* const inputPort = parser_port();
+    TextualInputPort* const inputPort = Reader::port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
 
@@ -99,7 +99,7 @@ void Scanner::fill(int n)
 
 int yylex()
 {
-    return parser_port()->scanner()->scan();
+    return Reader::port()->scanner()->scan();
 }
 
 int Scanner::scan()

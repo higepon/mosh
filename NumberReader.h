@@ -1,5 +1,5 @@
 /*
- * reader.h - 
+ * NumberReader.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,44 +26,27 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: reader.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: NumberReader.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_READER__
-#define __SCHEME_READER__
+#ifndef __SCHEME_NUMBER_READER__
+#define __SCHEME_NUMBER_READER__
 
 #include "scheme.h"
-#include "ucs4string.h"
 
 namespace scheme {
 
-    Object readOld(TextualInputPort* port, bool& errorOccured);
-    Object readNumber(const ucs4string& text, bool& errorOccured);
-    Object read(TextualInputPort* port, bool& errorOccured);
-
-    class Reader EXTEND_GC
-    {
-    public:
-        static Object read(TextualInputPort* port, bool& isErrorOccured);
-        static ucs4string readString(const ucs4string& s);
-        static TextualInputPort* port() { return in_; }
-        static Object parsed;
-    private:
-        static TextualInputPort* in_;
-    };
+class NumberReader EXTEND_GC
+{
+public:
+    static Object read(const ucs4string& text, bool& isErrorOccured);
+    static TextualInputPort* port() { return in_; }
+    static Object parsed;
+private:
+    static Object read(TextualInputPort* port, bool& isErrorOccured);
+    static TextualInputPort* in_;
 };
 
-typedef struct {
-    union {
-        bool  boolValue;
-        int   exactValue;
-        int   intValue;
-        ucs4char charValue;
-    };
-    scheme::ucs4string stringValue;
-    scheme::Object object;
-} YYSTYPE;
+}; // namespace scheme
 
-#define YYSTYPE_IS_DECLARED 1
-
-#endif // __SCHEME_READER__
+#endif // __SCHEME_NUMBER_READER__

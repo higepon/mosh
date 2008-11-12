@@ -33,42 +33,20 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
+#include "SString.h"
 #include "TextualInputPort.h"
 #include "reader.h"
-#include "Arithmetic.h"
-
 
 using namespace scheme;
 
-static TextualInputPort* in;
+Object Reader::parsed;
+TextualInputPort* Reader::in_;
 
-Codec* parser_codec()
-{
-    MOSH_ASSERT(in->codec());
-    return in->codec();
-}
-
-
-bool parser_input(char* buf, int max_size)
-{
-    int c = in->getU8();
-    buf[0] = c;
-    return c == EOF;
-}
-
-TextualInputPort* parser_port()
-{
-    return in;
-}
-
-
-
-Object scheme::read(TextualInputPort* port, bool& errorOccured)
+Object Reader::read(TextualInputPort* port, bool& errorOccured)
 {
     extern int yyparse ();
-    extern Object parsed;
     MOSH_ASSERT(port);
-    in = port;
+    in_ = port;
     const bool isParseError = yyparse() == 1;
     if (isParseError) {
         errorOccured = true;
@@ -78,24 +56,7 @@ Object scheme::read(TextualInputPort* port, bool& errorOccured)
     }
 }
 
-Object applyExactness(int exactness, Object num)
-{
-    switch(exactness)
-    {
-    case 0:
-        return num;
-    case 1:
-        return Arithmetic::exact(num);
-    case -1:
-        return Arithmetic::inexact(num);
-    default:
-        MOSH_ASSERT(false);
-
-    }
-
-}
-
-ucs4string readString(const ucs4string& s)
+ucs4string Reader::readString(const ucs4string& s)
 {
     ucs4string ret;
     for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {

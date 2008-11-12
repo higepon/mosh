@@ -44,6 +44,7 @@ Fixnum.h                                                          \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
 reader.h                      reader.cpp                          \
+NumberReader.h                NumberReader.cpp                    \
 scheme.h                      scheme.cpp                          \
 Regexp.h                      Regexp.cpp                          \
 Symbol.h                      Symbol.cpp                          \

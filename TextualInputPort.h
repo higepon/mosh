@@ -40,6 +40,7 @@ class Codec;
 class Transcoder;
 class BinaryInputPort;
 class Scanner;
+class NumberScanner;
 
 class TextualInputPort EXTEND_GC
 {
@@ -69,6 +70,7 @@ public:
     virtual Transcoder* transcoder() const;
     virtual Codec* codec() const;
     virtual Scanner* scanner() const;
+    virtual NumberScanner* numberScanner() const;
 
 private:
     Codec* codec_;
@@ -78,6 +80,7 @@ private:
     int line_;
     Object error_;
     Scanner* scanner_;
+    NumberScanner* numberScanner_;
 };
 
 }; // namespace scheme
