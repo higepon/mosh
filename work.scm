@@ -1,8 +1,8 @@
-;; (import (rnrs)
-;;         (mosh))
+(import (rnrs)
+        (mosh))
 
 ;; ;(print #i#B100)
-(print #B-1001)
+
 ;; ;(display (/ (make-complex 1 2) (make-complex 1 2)))
 
 ;; ;; (display (least-fixnum))
@@ -81,23 +81,24 @@
 
 ;; (format #t "<~a> ~a" (flatan t0.0 t-1.0) (* t1.570796 t2.0))
 
-<<<<<<< .mine
-(define-syntax time
-  (syntax-rules ()
-    [(_ call)
-     (let ([start (get-timeofday)])
-       call
-       (let ([end (get-timeofday)])
-         (format #t "~d\n" (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start))))))]))
+;; (define-syntax time
+;;   (syntax-rules ()
+;;     [(_ call)
+;;      (let ([start (get-timeofday)])
+;;        call
+;;        (let ([end (get-timeofday)])
+;;          (format #t "~d\n" (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start))))))]))
 
 
 
-(time
-  (* 256 256 256 256))
-;;   (newline)
-;;   (display (bitwise-not (* 256 256 256 256)))
-;;   (display (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start)))))
-;
-;(display (flonum? (/ (inexact -1) (inexact 0))))
-;(display (integer? (/ (inexact -1) (inexact 0))))
-(display (integer-valued? (make-complex 3 (inexact 0))))
+;; (time
+;;   (* 256 256 256 256))
+;; ;;   (newline)
+;; ;;   (display (bitwise-not (* 256 256 256 256)))
+;; ;;   (display (+ (* (- (car end) (car start)) 1000000) (- (cdr end) (cdr start)))))
+;; ;
+;; ;(display (flonum? (/ (inexact -1) (inexact 0))))
+;; ;(display (integer? (/ (inexact -1) (inexact 0))))
+;; (display (integer-valued? (make-complex 3 (inexact 0))))
+
+(print #B-1001)

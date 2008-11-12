@@ -34,6 +34,7 @@ Object parsed;
 %token <intValue> CHARACTER_NAME
 %token <stringValue> REGEXP
 %token <intValue> NUMBER
+%token <stringValue> NUMBER2
  //%token <intValue> DIGIT_2
  //%token RADIX_2 EXACT INEXACT MINUS PLUS
  //%type <exactValue> exactness prefix2
@@ -65,7 +66,7 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                 $$ = Object::makeRegexp($1);
             }
             | NUMBER { $$ = Object::makeFixnum($1); }
-//            | num2 { $$ = $1; }
+            | NUMBER2 { $$ = Object::makeString($1); }
             | IDENTIFIER
             {
                 $$ = Symbol::intern($1.strdup());

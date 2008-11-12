@@ -1,3 +1,9 @@
+2008-11-12  higepon  <higepon@users.sourceforge.jp>
+
+        * NumberScanner.re : Added.
+
+        * NumberReader.y: Added.
+
 2008-11-11  higepon  <higepon@users.sourceforge.jp>
 
         * Added : complex?, real?, integer?, real-valued?, rational-valued? adn integer-valued?.

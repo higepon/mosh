@@ -138,10 +138,13 @@ int Scanner::scan()
   MANTISSA_WIDTH         = ("|" (DIGIT_10)+)?;
   SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
   DECIMAL_10             = (UINTEGER_10 SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
+  UREAL_2                = UINTEGER_2 | (UINTEGER_2 "/" UINTEGER_2);
   UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
   UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16) | DECIMAL_10;
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
   REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
+  REAL_2                 = (SIGN UREAL_2) | ([\+\-] NAN_INF);
+  COMPLEX_2             = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 "i") | (REAL_2 [\+\-] NAN_INF "i") | (REAL_2 [\+\-] "i") | ([\+-\] UREAL_2 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+-\] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+-\] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   RADIX_2                = ("#"[bB]);
@@ -150,8 +153,10 @@ int Scanner::scan()
   EXACTNESS              = ("#"[iIeE])?;
   EXACT                  = "#"[eE];
   INEXACT                = "#"[iI];
+  PREFIX_2               = (RADIX_2 EXACTNESS) | (EXACTNESS RADIX_2);
   PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
   PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
+  NUM_2                  = PREFIX_2 COMPLEX_2;
   NUM_10                 = PREFIX_10 COMPLEX_10;
   NUM_16                 = PREFIX_16 COMPLEX_16;
   SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
@@ -294,6 +299,12 @@ int Scanner::scan()
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
             }*/
+       NUM_2 DELMITER {
+            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            return NUMBER2;
+       }
        NUM_10 DELMITER {
             yylval.intValue = ScannerHelper::num10StringToInt(YYTOKEN, YYCURSOR - 1);
             YYCURSOR--;
