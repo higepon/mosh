@@ -139,7 +139,7 @@ NumberReader.tab.cpp: NumberReader.y
 Scanner.cpp : scanner.re
 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
 
-NumberScanner.cpp : numberScanner.re
+NumberScanner.cpp : NumberScanner.re
 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
 
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
