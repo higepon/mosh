@@ -274,10 +274,13 @@ Object scheme::maxEx(int argc, const Object* argv)
 {
     DeclareProcedureName("max");
     checkArgumentLengthAtLeast(1);
-    Object maxNumber = argv[0];
-    for (int i = 1; i < argc; i++) {
-        const Object number = argv[i];
-        if (Arithmetic::gt(number, maxNumber)) {
+    Object maxNumber = Flonum::NEGATIVE_INF;
+    for (int i = 0; i < argc; i++) {
+	argumentCheckReal(i, number);
+	if (number.isFlonum() && (number.toFlonum())->isNan()) {
+	    return number;
+	}
+	if (Arithmetic::gt(number, maxNumber)) {
             maxNumber = number;
         }
     }
