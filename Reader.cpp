@@ -35,7 +35,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "TextualInputPort.h"
-#include "reader.h"
+#include "Reader.h"
 
 using namespace scheme;
 

@@ -16,7 +16,7 @@
 #include "ByteVectorProcedures.h"
 #include "Arithmetic.h"
 #include "Codec.h"
-#include "reader.h"
+#include "Reader.h"
 #include "NumberReader.h"
 #include "Scanner.h"
 using namespace scheme;

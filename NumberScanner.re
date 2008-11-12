@@ -8,9 +8,9 @@
 #include "ScannerHelper.h"
 #include "NumberScanner.h"
 
-#include "reader.h"
+#include "Reader.h"
 #include "NumberReader.h"
-#include "reader.tab.hpp"
+#include "Reader.tab.hpp"
 #include "VM.h"
 
 #define YYCTYPE ucs4char

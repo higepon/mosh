@@ -36,7 +36,7 @@
 #include "Transcoder.h"
 #include "BinaryInputPort.h"
 #include "TextualInputPort.h"
-#include "reader.h"
+#include "Reader.h"
 #include "Scanner.h"
 #include "NumberScanner.h"
 

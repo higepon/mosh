@@ -63,7 +63,7 @@
 #include <setjmp.h>
 #include "Object.h"
 #include "Object-inl.h"
-#include "reader.h"
+#include "Reader.h"
 #include "scheme.h"
 #include "SString.h"
 #include "ErrorProcedures.h"

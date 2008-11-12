@@ -43,7 +43,7 @@ ProcedureMacro.h                                                  \
 Fixnum.h                                                          \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
-reader.h                      reader.cpp                          \
+Reader.h                      Reader.cpp                          \
 NumberReader.h                NumberReader.cpp                    \
 scheme.h                      scheme.cpp                          \
 Regexp.h                      Regexp.cpp                          \
@@ -53,7 +53,7 @@ Scanner.h                     Scanner.cpp                         \
 NumberScanner.h               NumberScanner.cpp                   \
 ByteArrayBinaryInputPort.h    ByteArrayBinaryInputPort.cpp        \
 ScannerHelper.h               ScannerHelper.cpp                   \
-reader.tab.hpp                reader.tab.cpp                      \
+Reader.tab.hpp                Reader.tab.cpp                      \
 NumberReader.tab.hpp          NumberReader.tab.cpp                \
 FileBinaryInputPort.h         FileBinaryInputPort.cpp             \
 FileBinaryOutputPort.h        FileBinaryOutputPort.cpp            \
@@ -131,7 +131,7 @@ update:
 
 # when you release comment out start
 
-reader.tab.cpp: reader.y
+Reader.tab.cpp: Reader.y
 	bison -d $< -o $@
 
 NumberReader.tab.cpp: NumberReader.y
