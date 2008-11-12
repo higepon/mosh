@@ -49,9 +49,11 @@ Regexp.h                      Regexp.cpp                          \
 Symbol.h                      Symbol.cpp                          \
 VM.h                          VM.cpp                              \
 Scanner.h                     Scanner.cpp                         \
+NumberScanner.h               NumberScanner.cpp                   \
 ByteArrayBinaryInputPort.h    ByteArrayBinaryInputPort.cpp        \
 ScannerHelper.h               ScannerHelper.cpp                   \
 reader.tab.hpp                reader.tab.cpp                      \
+NumberReader.tab.hpp          NumberReader.tab.cpp                \
 FileBinaryInputPort.h         FileBinaryInputPort.cpp             \
 FileBinaryOutputPort.h        FileBinaryOutputPort.cpp            \
 CustomBinaryInputPort.h       CustomBinaryInputPort.cpp           \
@@ -111,7 +113,7 @@ INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
 EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test
 
 GENERATED = \
-all-tests.scm Scanner.cpp psyntax.cpp  compiler-gauche.scm \
+all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \
 DebugInstruction.h cprocedures.cpp      \
 labels.cpp match.cpp compiler.cpp psyntax.scmc             \
 match.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
@@ -131,8 +133,15 @@ update:
 reader.tab.cpp: reader.y
 	bison -d $< -o $@
 
+NumberReader.tab.cpp: NumberReader.y
+	bison -pnumber -d $< -o $@
+
 Scanner.cpp : scanner.re
 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
+
+NumberScanner.cpp : numberScanner.re
+	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
+
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 
 r6rs-test:

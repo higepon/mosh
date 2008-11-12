@@ -1,5 +1,5 @@
 /*
- * reader.h - 
+ * Numberscanner.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,31 +26,35 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: reader.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Numberscanner.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_READER__
-#define __SCHEME_READER__
+#ifndef __SCHEME_NUMBERSCANNER__
+#define __SCHEME_NUMBERSCANNER__
 
 #include "scheme.h"
-#include "ucs4string.h"
 
 namespace scheme {
-    Object readOld(TextualInputPort* port, bool& errorOccured);
-    Object read(TextualInputPort* port, bool& errorOccured);
+
+class NumberScanner EXTEND_GC {
+public:
+    NumberScanner();
+    virtual ~NumberScanner();
+
+    void fill(int n);
+    int scan();
+    ucs4char* currentToken() const;
+
+private:
+    ucs4char dummy_;
+    ucs4char* buffer_;
+    ucs4char* cursor_;
+    ucs4char* token_;
+    ucs4char* limit_;
+    ucs4char* marker_;
+    int bufferSize_;
 };
 
-typedef struct {
-    union {
-        bool  boolValue;
-        int   exactValue;
-        int   intValue;
-        ucs4char charValue;
-    };
-    scheme::ucs4string stringValue;
-    scheme::Object object;
-} YYSTYPE;
+}; // namespace scheme
 
-#define YYSTYPE_IS_DECLARED 1
-
-#endif // __SCHEME_READER__
+#endif // __SCHEME_NUMBERSCANNER__

@@ -24,7 +24,7 @@ extern Object applyExactness(int exactness, Object num);
 extern int yylex();
 extern int yyerror(const char *);
 extern TextualInputPort* parser_port();
-Object parsed;
+Object parsed2;
 %}
 
 %token <stringValue> IDENTIFIER
@@ -46,8 +46,8 @@ Object parsed;
 %start top_level
 
 %%
-top_level : datum { parsed = $$; YYACCEPT; }
-          | END_OF_FILE { parsed = Object::Eof; YYACCEPT; }
+top_level : datum { parsed2 = $$; YYACCEPT; }
+          | END_OF_FILE { parsed2 = Object::Eof; YYACCEPT; }
 datum : lexme_datum    { $$ = $1;}
       | compound_datum
       {
@@ -155,7 +155,7 @@ abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
 %%
 
 extern ucs4char* token;
-int yyerror(char const *str)
+int numbererror(char const *str)
 {
     TextualInputPort* const port = parser_port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),

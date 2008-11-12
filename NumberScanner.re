@@ -6,7 +6,7 @@
 #include "TextualOutputPort.h"
 #include "ucs4string.h"
 #include "ScannerHelper.h"
-#include "Scanner.h"
+#include "NumberScanner.h"
 
 #include "reader.h"
 #include "reader.tab.hpp"
@@ -25,7 +25,7 @@ extern VM* theVM;
 extern TextualInputPort* parser_port();
 extern YYSTYPE yylval;
 
-Scanner::Scanner() : dummy_('Z'),  // for YYDEBUG
+NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
                      buffer_(NULL),
                      cursor_(&dummy_),
                      token_(buffer_),
@@ -35,7 +35,7 @@ Scanner::Scanner() : dummy_('Z'),  // for YYDEBUG
 {
 }
 
-Scanner::~Scanner()
+NumberScanner::~NumberScanner()
 {
 }
 
@@ -46,7 +46,7 @@ static void yydebug(int state, ucs4char ch)
 }
 
 
-void Scanner::fill(int n)
+void NumberScanner::fill(int n)
 {
     TextualInputPort* const inputPort = parser_port();
     const int restCharCount = limit_ - token_;
@@ -97,12 +97,12 @@ void Scanner::fill(int n)
     limit_ = limit_ - tokenOffset + readSize;
 }
 
-int yylex()
+int numberlex()
 {
-    return parser_port()->scanner()->scan();
+//    return parser_port()->scanner()->scan();
 }
 
-int Scanner::scan()
+int NumberScanner::scan()
 {
 /*!re2c
   LINE_FEED              = "\n";
@@ -405,7 +405,7 @@ comment:
     }
 }
 
-ucs4char* Scanner::currentToken() const
+ucs4char* NumberScanner::currentToken() const
 {
     return token_;
 }

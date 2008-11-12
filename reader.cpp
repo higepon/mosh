@@ -35,6 +35,7 @@
 #include "Pair-inl.h"
 #include "TextualInputPort.h"
 #include "reader.h"
+#include "Arithmetic.h"
 
 
 using namespace scheme;
@@ -75,6 +76,23 @@ Object scheme::read(TextualInputPort* port, bool& errorOccured)
     } else {
         return parsed;
     }
+}
+
+Object applyExactness(int exactness, Object num)
+{
+    switch(exactness)
+    {
+    case 0:
+        return num;
+    case 1:
+        return Arithmetic::exact(num);
+    case -1:
+        return Arithmetic::inexact(num);
+    default:
+        MOSH_ASSERT(false);
+
+    }
+
 }
 
 ucs4string readString(const ucs4string& s)
