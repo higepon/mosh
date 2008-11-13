@@ -70,6 +70,10 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
             | NUMBER2 {
                 bool isErrorOccured = false;
                 $$ = NumberReader::read($1, isErrorOccured);
+                if (isErrorOccured) {
+                    yyerror("invalid number sequence");
+                    YYERROR;
+                }
             }
             | IDENTIFIER
             {
