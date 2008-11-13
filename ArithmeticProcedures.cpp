@@ -2,6 +2,7 @@
  * ArithmeticProcedures.cpp - arithmetic procedures.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2008  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -276,11 +277,11 @@ Object scheme::maxEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
     Object maxNumber = Flonum::NEGATIVE_INF;
     for (int i = 0; i < argc; i++) {
-	argumentCheckReal(i, number);
-	if (number.isFlonum() && (number.toFlonum())->isNan()) {
-	    return number;
-	}
-	if (Arithmetic::gt(number, maxNumber)) {
+        argumentCheckReal(i, number);
+        if (number.isFlonum() && (number.toFlonum())->isNan()) {
+            return number;
+        }
+        if (Arithmetic::gt(number, maxNumber)) {
             maxNumber = number;
         }
     }
@@ -291,9 +292,12 @@ Object scheme::minEx(int argc, const Object* argv)
 {
     DeclareProcedureName("min");
     checkArgumentLengthAtLeast(1);
-    Object minNumber = argv[0];
-    for (int i = 1; i < argc; i++) {
-        const Object number = argv[i];
+    Object minNumber = Flonum::POSITIVE_INF;
+    for (int i = 0; i < argc; i++) {
+        argumentCheckReal(i, number);
+        if (number.isFlonum() && (number.toFlonum())->isNan()) {
+            return number;
+        }
         if (Arithmetic::lt(number, minNumber)) {
             minNumber = number;
         }
