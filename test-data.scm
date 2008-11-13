@@ -1,5 +1,5 @@
 ;; don't edit start
-(#t #t)
+n(#t #t)
 (mosh-only ("all-tests.scm" 2) (source-info '(3)))
 ;; don't edit end
 
@@ -2121,17 +2121,17 @@
 (#t         (nan? (max my-nan 3.9 4 (/ 1 2) t4.0)))
 (#f         (fl=? plus-inf (max plus-inf my-nan)))
 (#t         (fl=? plus-inf (max plus-inf 3.9 4 (/ 1 2) t4.0)))
-;(error      (min))
-;(3          (min 3))
-;(3          (min 3 4))
-;(3          (min 3 5 4))
-;(536870912  (min 1073741824 536870912 2147483648)) ; (min 2^30 2^29 2^31)
-;(0          (- (/ 1 4) (min (/ 1 2) (/ 1 4) (/ 1 3))))
-;(#t         (= t-3.1 (min t3.0 t-3.1 t4.0)))
-;(3.9        (min 3.9 4))
-;(#t         (nan? (min my-nan 3.9 4 (/ 1 2) t4.0)))
-;(#f         (fl=? minus-inf (min minus-inf my-nan)))
-;(#t         (fl=? minus-inf (min minus-inf 3.9 4 (/ 1 2) t4.0)))
+(error      (min))
+(3          (min 3))
+(3          (min 3 4))
+(3          (min 3 5 4))
+(536870912  (min 1073741824 536870912 2147483648)) ; (min 2^30 2^29 2^31)
+(0          (- (/ 1 4) (min (/ 1 2) (/ 1 4) (/ 1 3))))
+(#t         (= t-3.1 (min t3.0 t-3.1 t4.0)))
+(3.9        (min 3.9 4))
+(#t         (nan? (min my-nan 3.9 4 (/ 1 2) t4.0)))
+(#f         (fl=? minus-inf (min minus-inf my-nan)))
+(#t         (fl=? minus-inf (min minus-inf 3.9 4 (/ 1 2) t4.0)))
 
 ;; number reader
 (1 #b1)
