@@ -353,7 +353,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
     } else if (o.isRatnum()) {
-        putDatum(o.toRatnum()->toString());
+        putString(o.toRatnum()->toString());
     } else if (o.isBignum()) {
         putString(o.toBignum()->toString());
     } else if (o.isCompnum()) {
@@ -499,7 +499,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
     } else if (o.isRatnum()) {
-        putString(o.toRatnum()->toString());
+        display(o.toRatnum()->toString());
     } else if (o.isBignum()) {
         putString(o.toBignum()->toString());
     } else if (o.isCompnum()) {

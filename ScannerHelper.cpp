@@ -30,6 +30,9 @@
  */
 
 #include <errno.h>
+#include "Object.h"
+#include "Object-inl.h"
+#include "Arithmetic.h"
 #include "ScannerHelper.h"
 
 using namespace scheme;
@@ -86,5 +89,20 @@ int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
         exit(-1);
     } else {
         return (int)ret;
+    }
+}
+
+Object ScannerHelper::applyExactness(int exactness, Object num)
+{
+    switch(exactness)
+    {
+    case 0:
+        return num;
+    case 1:
+        return Arithmetic::exact(num);
+    case -1:
+        return Arithmetic::inexact(num);
+    default:
+        MOSH_ASSERT(false);
     }
 }

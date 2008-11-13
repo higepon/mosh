@@ -43,6 +43,35 @@
 
 using namespace scheme;
 
+double Arithmetic::realToDouble(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum()) {
+        return n.toFixnum();
+    } else if (n.isBignum()) {
+        return n.toBignum()->toDouble();
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->value();
+    } else {
+        MOSH_ASSERT(false);
+        return 0.0;
+    }
+}
+
+Object Arithmetic::makePolar(Object n1, Object n2)
+{
+    MOSH_ASSERT(isRealValued(n1));
+    MOSH_ASSERT(isRealValued(n2));
+    const Object real = n1.isCompnum() ? n1.toCompnum()->real() : n1;
+    const Object imag = n2.isCompnum() ? n2.toCompnum()->real() : n2;
+    if (eq(imag, Object::makeFixnum(0))) {
+            return real;
+    }
+    const double r = realToDouble(real);
+    const double a = realToDouble(imag);
+    return Object::makeCompnum(Object::makeFixnum(r * cos(a)), Object::makeFlonum(r * sin(a)));
+}
+
 Object Arithmetic::bitwiseNot(Object e)
 {
     MOSH_ASSERT(e.isExactInteger());
@@ -539,6 +568,11 @@ bool Arithmetic::eq(Object n1, Object n2)
 MAKE_OP_FUNC(add, +)
 MAKE_OP_FUNC(sub, -)
 MAKE_OP_FUNC(mul, *)
+
+Object Arithmetic::mul(int number1, Object number2)
+{
+    return mul(Object::makeFixnum(number1), number2);
+}
 
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"

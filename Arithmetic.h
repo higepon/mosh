@@ -42,6 +42,8 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static double realToDouble(Object n);
+    static Object makePolar(Object n1, Object n2);
     static bool isInteger(Object n);
     static bool isRealValued(Object n);
     static bool isRationalValued(Object n);
@@ -67,6 +69,7 @@ public:
     static Object sub(Object number1, Object number2);
     static Object mul(Object number1, Object number2);
     static Object div(Object number1, Object number2);
+    static Object mul(int number1, Object number2);
     static bool gt(Object number1, Object number2);
     static bool ge(Object number1, Object number2);
     static bool lt(Object number1, Object number2);

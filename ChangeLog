@@ -1,3 +1,13 @@
+2008-11-13  higepon  <higepon@users.sourceforge.jp>
+
+        * Implemented all of reading number2.
+
+        * Added read of #i#b-01 style.
+
+        * Added read of #i#b01 style.
+
+        * Added read of #b01 style.
+
 2008-11-12  higepon  <higepon@users.sourceforge.jp>
 
         * NumberScanner.re : Added.

@@ -2133,7 +2133,27 @@
 ;(#f         (fl=? minus-inf (min minus-inf my-nan)))
 ;(#t         (fl=? minus-inf (min minus-inf 3.9 4 (/ 1 2) t4.0)))
 
+;; number reader
+(1 #b1)
+(0 #b0)
+(1 #b1)
+(5 #b101)
+(5 #e#b101)
+(#t (= (inexact 5) #i#b101))
+(-3 #b-11)
+(-3 #e#b-11)
+(#t (= (inexact -5) #i#b-101))
+(todo #t (= (/ 3 2) #b11/10))              ;; number10の 3/2 が read できるようになったら
+(todo #t (= #b11+10i (make-complex 3 2)))  ;; number10の 3+2i が read できるようになったら
+(todo #t (= #b11-10i (make-complex 3 -2))) ;; number10の 3-2i が read できるようになったら
+(todo #t (= #b11+i (make-complex 3 1)))
+(todo #t (= #b+i (make-complex 0 1)))
+(todo #t (= #b-i (make-complex 0 -1)))
+(todo #t (= #b11+nan.0i (make-complex 3 my-nan)))
+(todo #t (= #b+nan.0i (make-complex 0 my-nan)))
+(todo #t (almost=? #b1@1 (make-polar 1 1)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
+

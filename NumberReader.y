@@ -6,152 +6,88 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
-#include "Symbol.h"
-#include "Vector.h"
 #include "SString.h"
-#include "ByteVector.h"
-#include "ByteArrayBinaryInputPort.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
-#include "ByteVectorProcedures.h"
 #include "Arithmetic.h"
-#include "Codec.h"
 #include "Reader.h"
+#include "NumberReader.h"
+#include "ScannerHelper.h"
 #include "Scanner.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+
 using namespace scheme;
-extern ucs4string readString(const ucs4string& s);
-extern Object applyExactness(int exactness, Object num);
-extern int yylex();
-extern int yyerror(const char *);
-extern TextualInputPort* parser_port();
-Object number_parsed;
+extern int number_yylex();
+extern int number_yyerror(const char *);
 %}
 
-%token <stringValue> IDENTIFIER
-%token <boolValue> BOOLEAN
-%token <stringValue> STRING
-%token <intValue> CHARACTER
-%token <intValue> CHARACTER_NAME
-%token <stringValue> REGEXP
-%token <intValue> NUMBER
- //%token <intValue> DIGIT_2
- //%token RADIX_2 EXACT INEXACT MINUS PLUS
- //%type <exactValue> exactness prefix2
-%token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT
-%token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
-%token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
-%type <object> datum lexme_datum top_level compound_datum list datum_list
-%type <object> /* symbol*/ vector bytevector abbreviation //num2 uinteger2 complex2 real2 ureal2 sreal2
- //%type <intValue> digit2
+%token END_OF_FILE PLUS MINUS SLASH AT NAN INF IMAG
+%token RADIX_2
+
+%token <intValue> EXACT INEXACT
+%token <intValue> DIGIT_2
+
+%type <exactValue> exactness prefix2
+%type <intValue> digit2
+%type <object> top_level datum num2 complex2 real2 ureal2 sreal2 uinteger2 naninf
+
 %start top_level
 
 %%
-top_level : datum { number_parsed = $$; YYACCEPT; }
-          | END_OF_FILE { number_parsed = Object::Eof; YYACCEPT; }
-datum : lexme_datum    { $$ = $1;}
-      | compound_datum
-      {
-          $$ = $1;
-      }
+top_level : datum { NumberReader::parsed = $$; YYACCEPT; }
+          | END_OF_FILE { NumberReader::parsed = Object::Eof; YYACCEPT; }
+datum : num2
+      ;
+num2  : prefix2 complex2 { $$ = ScannerHelper::applyExactness($1, $2); }
       ;
 
-lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
-            | STRING
-            {
-              $$ = Reader::readString($1);
+complex2  : real2
+          | real2 AT real2           { $$ = Arithmetic::makePolar($1, $3); }
+          | sreal2 IMAG             { $$ = Object::makeCompnum(Object::makeFixnum(0), $1); }
+          | real2 PLUS ureal2 IMAG  { $$ = Object::makeCompnum($1, $3); }
+          | real2 MINUS ureal2 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real2 PLUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
+          | real2 MINUS IMAG        { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
+          | PLUS IMAG               { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
+          | MINUS IMAG              { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
+          | real2 PLUS naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
+          | real2 MINUS naninf IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | PLUS naninf IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
+          | MINUS naninf IMAG       { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+
+
+
+real2     : ureal2
+          | sreal2
+          | PLUS naninf   { $$ = Arithmetic::mul(1, $2); }
+          | MINUS naninf  { $$ = Arithmetic::mul(-1, $2); }
+
+
+ureal2 : uinteger2
+       | uinteger2 SLASH uinteger2     { $$ = Arithmetic::div($1, $3); }
+sreal2 : PLUS ureal2                   { $$ = $2; }
+       | MINUS ureal2                  { $$ = Arithmetic::mul(-1, $2); }
+       ;
+
+
+uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
+          | uinteger2 digit2  {
+                $$ = Arithmetic::add(Arithmetic::mul(2, $1), Object::makeFixnum($2));
             }
-            | REGEXP
-            {
-                $$ = Object::makeRegexp($1);
-            }
-            | NUMBER { $$ = Object::makeFixnum($1); }
-//            | num2 { $$ = $1; }
-            | IDENTIFIER
-            {
-                $$ = Symbol::intern($1.strdup());
-            }
-            | CHARACTER
-            {
-                $$ = Object::makeChar($1);
-            }
-            ;
-compound_datum : list
-               {
-                   $$ = $1;
-               }
-               | vector { $$ = $1; }
-               | bytevector { $$ = $1; }
-               ;
+          ;
 
-list : LEFT_PAREN datum_list RIGHT_PAREN
-       {
-           // TODO: not to use reverse.
-           $2 = Pair::reverse($2);
-           if ($2.isPair()) {
-             $2.toPair()->sourceInfo = Pair::list2(Object::makeString(Reader::port()->toString()),
-                                                      Object::makeFixnum(Reader::port()->getLineNo()));
-           }
-           $$ = $2;
-       }
-     | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN
-       {
-           $2 = Pair::reverse($2);
-           $$ = Pair::appendD2($2, Object::cons($3, $5));
-       }
-     | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
-     ;
-vector : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector(Pair::reverse($2)); }
-     ;
-bytevector : BYTE_VECTOR_START datum_list RIGHT_PAREN
-            {
-              const Object bytevector = u8ListToByteVector(Pair::reverse($2));
-              if (bytevector.isNil()) {
-                yyerror("malformed bytevector literal #vu8(...)");
-                YYERROR;
-              } else {
-                $$ = bytevector;
-              }
-            }
-     ;
-datum_list : datum_list datum
-           {
-                 $$ = Object::cons($2, $1);
-           }
-           | {$$ = Object::Nil; }
-           ;
-abbreviation : ABBV_QUOTE                          { $$ = Symbol::QUOTE; }
-| ABBV_UNQUOTESPLICING                             { $$ = Symbol::UNQUOTE_SPLICING; }
-| ABBV_QUASIQUOTE                                  { $$ = Symbol::QUASIQUOTE; }
-| ABBV_UNQUOTE                                     { $$ = Symbol::UNQUOTE; }
-| ABBV_SYNTAX                                      { $$ = Symbol::SYNTAX;}
-| ABBV_UNSYNTAXSPLICING                            { $$ = Symbol::UNSYNTAX_SPLICING; }
-| ABBV_QUASISYNTAX                                 { $$ = Symbol::QUASISYNTAX; }
-| ABBV_UNSYNTAX                                    { $$ = Symbol::UNSYNTAX; }
+digit2 : DIGIT_2;
+exactness : /* empty */     { $$ = 0; }
+          | EXACT           { $$ = 1; }
+          | INEXACT         { $$ = -1; }
+          ;
+prefix2 : RADIX_2 exactness { $$ = $2;}
+        | exactness RADIX_2 { $$ = $1;}
+        ;
 
-// /*exactness : /* empty */     { printf("<empty>");$$ = 0; }
-//           | EXACT           { printf("<exact>");$$ = 1; }
-//           | INEXACT         { printf("<inexact>");$$ = -1; }
-//           ;
-
-// num2      : prefix2 complex2    { printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);$$ = applyExactness($1, $2); }//Object::Nil;/*ApplyExactness($1, $2);*/ }
-// complex2  : real2 { $$ = $1; }
-// real2     : ureal2 { $$ = $1; }
-//           | sreal2 { $$ = $1; }
-// ureal2    : uinteger2 { printf("<ureal>");$$ = $1; }
-// sreal2    : PLUS ureal2                   { $$ = $2; }
-//           | MINUS ureal2                  { $$ = Arithmetic::mul(Object::makeFixnum(-1), $2); }
-//           ;
-
-// digit2    : DIGIT_2 { printf("<digit2>");$$ = $1; }
-// uinteger2 : digit2  { printf("<uinteger2>");$$ = Object::makeFixnum($1); }
-//           | uinteger2 digit2  { printf("<uinteger2>2");$$ = Arithmetic::add(Arithmetic::mul(Object::makeFixnum(2), $1), Object::makeFixnum($2)); }
-//           ;
-
-// prefix2   : RADIX_2 exactness            { printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout); $$ = $2;}
-//           | exactness RADIX_2            { printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);$$ = $1;}
-//           ;
-
-// */
+naninf : NAN { $$ = Flonum::NOT_A_NUMBER; }
+       | INF { $$ = Flonum::POSITIVE_INF; }
 %%
 
 extern ucs4char* token;

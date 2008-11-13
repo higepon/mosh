@@ -204,7 +204,8 @@ VM.cpp: cprocedures.cpp labels.cpp
 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
 all-tests.scm: ./test-data.scm
-	./mosh -5 ./scripts/gen-test.scm $< > $@
+	./mosh -5 ./scripts/gen-test.scm $< $@
+#	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
 # when you release comment out end
 
