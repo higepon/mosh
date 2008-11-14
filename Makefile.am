@@ -135,7 +135,7 @@ Reader.tab.cpp: Reader.y
 	bison -d $< -o $@
 
 NumberReader.tab.cpp: NumberReader.y
-	bison -p "number_yy" -d $< -o $@
+	bison -p "number_yy" -d $< -o $@ -t -v
 
 Scanner.cpp : scanner.re
 	/usr/local/bin/re2c -ug $< > $@ # -d is debug option
