@@ -83,18 +83,11 @@ void NumberScanner::fill(int n)
         }
 
     }
-    printf("cursor=<%c>\n", *cursor_);
     const int readSize = i;
     cursor_ = cursor_ - tokenOffset;
     token_ = buffer_;
     marker_ = marker_ - tokenOffset;
     limit_ = limit_ - tokenOffset + readSize;
-    printf("fill :");
-    for (int k = 0; k < i; k++) {
-        printf("<%c>", buffer_[k]);
-    }
-    printf("\n limit - cursor = %d\n", limit_ - cursor_);
-    printf("after cursor=<%c>\n", *(cursor_ + 1));
 
 }
 
@@ -154,18 +147,15 @@ int NumberScanner::scan()
             return AT;
         }
         RADIX_2 {
-            printf("TOKEN:RADIX_2\n");
             YYTOKEN = YYCURSOR;
             return RADIX_2;
         }
         DIGIT_2 {
             yylval.intValue = YYTOKEN[0] - '0';
-            printf("TOKEN:DIGIT_2=%d\n", yylval.intValue);
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
         }
         "\X0000" {
-            printf("TOKEN:END_OF_FILE\n");
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }

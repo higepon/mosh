@@ -1,3 +1,7 @@
+2008-11-14  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am (mosh_CFLAGS): Changed -O3 => -O2. Because it causes miss compilation of NumberReader.tab.cpp with g++ 4.1.3.
+
 2008-11-13  kokosabu  <kokosabu@gmail.com>
 
         * Fixed max, min.

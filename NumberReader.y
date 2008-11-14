@@ -21,7 +21,8 @@
 using namespace scheme;
 extern int number_yylex();
 extern int number_yyerror(const char *);
-#define YYDEBUG 1
+//#define YYDEBUG 1
+// yydebug = 1
 %}
 
 %token END_OF_FILE PLUS MINUS SLASH AT MY_NAN MY_INF IMAG
@@ -45,7 +46,7 @@ num2  : prefix2 complex2 { $$ = ScannerHelper::applyExactness($1, $2); }
       ;
 
 complex2  : real2
-          | real2 AT real2           { $$ = Arithmetic::makePolar($1, $3); }
+          | real2 AT real2          { $$ = Arithmetic::makePolar($1, $3); }
           | sreal2 IMAG             { $$ = Object::makeCompnum(Object::makeFixnum(0), $1); }
           | real2 PLUS ureal2 IMAG  { $$ = Object::makeCompnum($1, $3); }
           | real2 MINUS ureal2 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
@@ -76,18 +77,17 @@ sreal2 : PLUS ureal2                   { $$ = $2; }
 uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
           | uinteger2 digit2  {
                 $$ = Arithmetic::add(Arithmetic::mul(2, $1), Object::makeFixnum($2));
-            }
+          }
           ;
 
-digit2 : DIGIT_2 { $$ = $1; printf("digit2=%d\n", $1); }
-       ;
+digit2 : DIGIT_2;
 
-exactness : /* empty */     { yydebug=1; $$ = 0; printf("exactness empty \n");}
+exactness : /* empty */     { $$ = 0; }
           | EXACT           { $$ = 1; }
           | INEXACT         { $$ = -1; }
           ;
-prefix2 : RADIX_2 exactness { $$ = $2; printf("radix[1]=%d\n", $2);}
-        | exactness RADIX_2 { $$ = $1; printf("radix[2]=%d\n", $1);}
+prefix2 : RADIX_2 exactness { $$ = $2; }
+        | exactness RADIX_2 { $$ = $1; }
         ;
 
 naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
