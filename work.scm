@@ -1,3 +1,6 @@
 (import (rnrs))
 
-(display (bytevector-u32-ref #vu8(255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 253) 12 'little))
+(display (flonum? +nan.0))
+(display (flonum? (/ (inexact 0) (inexact 0))))
+
+(display 2/3)

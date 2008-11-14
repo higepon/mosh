@@ -63,7 +63,7 @@ complex2  : real2
 
 real2     : ureal2
           | sreal2
-          | PLUS naninf   { $$ = Arithmetic::mul(1, $2); }
+          | PLUS naninf   { $$ = $2; }
           | MINUS naninf  { $$ = Arithmetic::mul(-1, $2); }
 
 
@@ -101,17 +101,17 @@ complex10 : real10;
 
 real10    : ureal10
           | sreal10
-/*           | PLUS naninf                   { $$ = Builtins.Multiply(1, $2); } */
-/*           | MINUS naninf                  { $$ = Builtins.Multiply(-1, $2); } */
+          | PLUS naninf  { $$ = $2; }
+          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
           ;
 
 ureal10   : decimal10
-/*           | uinteger10 SLASH uinteger10   { $$ = Fraction($1,$3); } */
-/*           ; */
+          | uinteger10 SLASH uinteger10   { $$ = Arithmetic::div($1, $3); }
+          ;
 
 sreal10 : PLUS ureal10  { $$ = $2; }
-       | MINUS ureal10  { $$ = Arithmetic::mul(-1, $2); }
-       ;
+        | MINUS ureal10  { $$ = Arithmetic::mul(-1, $2); }
+        ;
 
 
 decimal10 : uinteger10 suffix     { $$ = $1; }      /*    { $$ = ($2.Length == 0) ? $1 : ConvertToDouble($1 + $2); } */

@@ -2143,7 +2143,7 @@ n(#t #t)
 (-3 #b-11)
 (-3 #e#b-11)
 (#t (= (inexact -5) #i#b-101))
-(todo #t (= (/ 3 2) #b11/10))              ;; number10の 3/2 が read できるようになったら
+(#t (= (/ 3 2) #b11/10))              ;; number10の 3/2 が read できるようになったら
 (todo #t (= #b11+10i (make-complex 3 2)))  ;; number10の 3+2i が read できるようになったら
 (todo #t (= #b11-10i (make-complex 3 -2))) ;; number10の 3-2i が read できるようになったら
 (todo #t (= #b11+i (make-complex 3 1)))
@@ -2157,6 +2157,9 @@ n(#t #t)
 (101 101)
 (-101 -101)
 (-10000000000000001 -10000000000000001)
+(#t (nan? +nan.0))
+(#t (infinite? +inf.0))
+(2/3 (/ 2 3))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
