@@ -102,7 +102,9 @@ int NumberScanner::scan()
     EXACT    = "#"[eE];
     INEXACT  = "#"[iI];
     RADIX_2  = "#" [bB];
+    RADIX_10 = "#" [dD];
     DIGIT_2  = [01];
+    DIGIT_10 = [0-9];
     MY_NAN   = "nan.0";
     MY_INF   = "inf.0";
 */
@@ -150,10 +152,19 @@ int NumberScanner::scan()
             YYTOKEN = YYCURSOR;
             return RADIX_2;
         }
+        RADIX_10 {
+            YYTOKEN = YYCURSOR;
+            return RADIX_10;
+        }
         DIGIT_2 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
+        }
+        DIGIT_10 {
+            yylval.intValue = YYTOKEN[0] - '0';
+            YYTOKEN = YYCURSOR;
+            return DIGIT_10;
         }
         "\X0000" {
             YYTOKEN = YYCURSOR;

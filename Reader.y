@@ -34,7 +34,7 @@ extern TextualInputPort* parser_port();
 %token <intValue> CHARACTER_NAME
 %token <stringValue> REGEXP
 %token <intValue> NUMBER
-%token <stringValue> NUMBER2
+%token <stringValue> NUMBER2 NUMBER10
  //%token <intValue> DIGIT_2
  //%token RADIX_2 EXACT INEXACT MINUS PLUS
  //%type <exactValue> exactness prefix2
@@ -67,6 +67,14 @@ lexme_datum : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                 $$ = Object::makeRegexp($1);
             }
             | NUMBER { $$ = Object::makeFixnum($1); }
+            | NUMBER10 {
+                bool isErrorOccured = false;
+                $$ = NumberReader::read($1, isErrorOccured);
+                if (isErrorOccured) {
+                    yyerror("invalid number sequence");
+                    YYERROR;
+                }
+            }
             | NUMBER2 {
                 bool isErrorOccured = false;
                 $$ = NumberReader::read($1, isErrorOccured);

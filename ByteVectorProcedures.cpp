@@ -45,6 +45,7 @@
 #include "UTF8Codec.h"
 #include "UTF16Codec.h"
 #include "UTF32Codec.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -560,7 +561,7 @@ Object scheme::bytevectorU32NativeRefEx(int argc, const Object* argv)
         callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
-    return Object::makeFixnum(bytevector->u32RefNative(index));
+    return Bignum::makeIntegerFromU32(bytevector->u32RefNative(index));
 }
 
 Object scheme::bytevectorS32RefEx(int argc, const Object* argv)
@@ -598,9 +599,9 @@ Object scheme::bytevectorU32RefEx(int argc, const Object* argv)
     }
 
     if (endianness == Symbol::LITTLE) {
-        return Object::makeFixnum(bytevector->u32RefLittle(index));
+        return Bignum::makeIntegerFromU32(bytevector->u32RefLittle(index));
     } else if (endianness == Symbol::BIG) {
-        return Object::makeFixnum(bytevector->u32RefBig(index));
+        return Bignum::makeIntegerFromU32((uint32_t)bytevector->u32RefBig(index));
     } else {
         callAssertionViolationAfter(procedureName, "unsupporeted endianness", L1(endianness));
         return Object::Undef;

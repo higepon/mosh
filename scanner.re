@@ -301,15 +301,19 @@ int Scanner::scan()
             }*/
        NUM_2 DELMITER {
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-            YYCURSOR--;
-            YYTOKEN = YYCURSOR;
-            return NUMBER2;
+           YYCURSOR--;
+           YYTOKEN = YYCURSOR;
+           return NUMBER2;
        }
        NUM_10 DELMITER {
-            yylval.intValue = ScannerHelper::num10StringToInt(YYTOKEN, YYCURSOR - 1);
-            YYCURSOR--;
-            YYTOKEN = YYCURSOR;
-            return NUMBER;
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+           YYCURSOR--;
+           YYTOKEN = YYCURSOR;
+           return NUMBER10;
+//             yylval.intValue = ScannerHelper::num10StringToInt(YYTOKEN, YYCURSOR - 1);
+//             YYCURSOR--;
+//             YYTOKEN = YYCURSOR;
+//             return NUMBER;
             }
        NUM_16 DELMITER {
             yylval.intValue = ScannerHelper::num16StringToInt(YYTOKEN, YYCURSOR - 1);

@@ -48,6 +48,11 @@ public:
     char* toString() const;
     double toDouble() const;
 
+    void setU(unsigned long value)
+    {
+        mpz_set_ui(this->value, value);
+    }
+
     Object bitwiseNot() const
     {
         Bignum* b = new Bignum;
@@ -222,6 +227,18 @@ public:
             return Object::makeFixnum(ret);
         }
     }
+
+    static Object makeIntegerFromU32(uint32_t n)
+    {
+        if (Fixnum::canFit(n)) {
+            return Object::makeFixnum(n);
+        } else {
+            Bignum* const b = new Bignum();
+            b->setU(n);
+            return Object::makeBignum(b);
+        }
+    }
+
 
     static Object makeInteger(long n)
     {

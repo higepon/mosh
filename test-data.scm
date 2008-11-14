@@ -2133,7 +2133,7 @@ n(#t #t)
 (#f         (fl=? minus-inf (min minus-inf my-nan)))
 (#t         (fl=? minus-inf (min minus-inf 3.9 4 (/ 1 2) t4.0)))
 
-;; number reader
+;; number reader 2
 (1 #b1)
 (0 #b0)
 (1 #b1)
@@ -2152,6 +2152,11 @@ n(#t #t)
 (todo #t (= #b11+nan.0i (make-complex 3 my-nan)))
 (todo #t (= #b+nan.0i (make-complex 0 my-nan)))
 (todo #t (almost=? #b1@1 (make-polar 1 1)))
+
+;; number reader 10
+(101 101)
+(-101 -101)
+(-10000000000000001 -10000000000000001)
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
