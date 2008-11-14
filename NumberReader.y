@@ -8,6 +8,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "StringProcedures.h"
+#include "NumberScanner.h"
 #include "TextualInputPort.h"
 #include "Arithmetic.h"
 #include "Reader.h"
@@ -22,7 +23,7 @@ extern int number_yylex();
 extern int number_yyerror(const char *);
 %}
 
-%token END_OF_FILE PLUS MINUS SLASH AT NAN INF IMAG
+%token END_OF_FILE PLUS MINUS SLASH AT MY_NAN MY_INF IMAG
 %token RADIX_2
 
 %token <intValue> EXACT INEXACT
@@ -86,8 +87,8 @@ prefix2 : RADIX_2 exactness { $$ = $2;}
         | exactness RADIX_2 { $$ = $1;}
         ;
 
-naninf : NAN { $$ = Flonum::NOT_A_NUMBER; }
-       | INF { $$ = Flonum::POSITIVE_INF; }
+naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
+       | MY_INF { $$ = Flonum::POSITIVE_INF; }
 %%
 
 extern ucs4char* token;

@@ -102,8 +102,8 @@ int NumberScanner::scan()
     INEXACT  = "#"[iI];
     RADIX_2  = "#" [bB];
     DIGIT_2  = [01];
-    NAN      = "nan.0";
-    INF      = "inf.0";
+    MY_NAN   = "nan.0";
+    MY_INF   = "inf.0";
 */
 
     for(;;)
@@ -117,13 +117,13 @@ int NumberScanner::scan()
             YYTOKEN = YYCURSOR;
             return INEXACT;
         }
-        NAN {
+        MY_NAN {
             YYTOKEN = YYCURSOR;
-            return NAN;
+            return MY_NAN;
         }
-        INF {
+        MY_INF {
             YYTOKEN = YYCURSOR;
-            return INF;
+            return MY_INF;
         }
         "+" {
             YYTOKEN = YYCURSOR;
