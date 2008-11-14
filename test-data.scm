@@ -661,9 +661,9 @@ n(#t #t)
 [mosh-only #t (flonum? (/ (+ (greatest-fixnum) 1) (inexact (/ 1 3) )))]
 [mosh-only 1 (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1))]
 [mosh-only #t (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))] ;; normalization
-[todo mosh-only 1/2 (/ 2)]
-[todo mosh-only 1/3 (/ 3)]
-[todo mosh-only 0 (/ 0)] -> division by zero
+[mosh-only 1/2 (/ 2)]
+[mosh-only 1/3 (/ 3)]
+[todo mosh-only error (/ 0)] -> division by zero
 
 [#t (fixnum? (least-fixnum))]
 [#t (fixnum? (greatest-fixnum))]
