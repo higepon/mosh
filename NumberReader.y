@@ -21,6 +21,7 @@
 using namespace scheme;
 extern int number_yylex();
 extern int number_yyerror(const char *);
+#define YYDEBUG 1
 %}
 
 %token END_OF_FILE PLUS MINUS SLASH AT MY_NAN MY_INF IMAG
@@ -81,7 +82,7 @@ uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
 digit2 : DIGIT_2 { $$ = $1; printf("digit2=%d\n", $1); }
        ;
 
-exactness : /* empty */     { $$ = 0; printf("exactness empty \n");}
+exactness : /* empty */     { yydebug=1; $$ = 0; printf("exactness empty \n");}
           | EXACT           { $$ = 1; }
           | INEXACT         { $$ = -1; }
           ;
