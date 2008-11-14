@@ -83,16 +83,17 @@ void NumberScanner::fill(int n)
         }
 
     }
-    printf("fill :");
-    for (int k = 0; k < i; k++) {
-        printf("<%c>", buffer_[k]);
-    }
-    printf("\n");
     const int readSize = i;
     cursor_ = cursor_ - tokenOffset;
     token_ = buffer_;
     marker_ = marker_ - tokenOffset;
     limit_ = limit_ - tokenOffset + readSize;
+    printf("fill :");
+    for (int k = 0; k < i; k++) {
+        printf("<%c>", buffer_[k]);
+    }
+    printf("\n limit - token = %d\n", limit_ - token_);
+
 }
 
 int number_yylex()
