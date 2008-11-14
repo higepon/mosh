@@ -11,8 +11,7 @@
 #include "NumberScanner.h"
 #include "TextualInputPort.h"
 #include "Arithmetic.h"
-#include "hoge.h"
-#include "NumberReader.tab.hpp"
+#include "Reader.h"
 #include "NumberReader.h"
 #include "ScannerHelper.h"
 #include "Scanner.h"
@@ -22,8 +21,6 @@
 using namespace scheme;
 extern int number_yylex();
 extern int number_yyerror(const char *);
-#define YYDEBUG 1
-
 %}
 
 %token END_OF_FILE PLUS MINUS SLASH AT MY_NAN MY_INF IMAG
@@ -84,7 +81,7 @@ uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
 digit2 : DIGIT_2 { $$ = $1; printf("digit2=%d\n", $1); }
        ;
 
-exactness : /* empty */     { $$ = 0; printf("exactness empty \n");  yydebug = 1;}
+exactness : /* empty */     { $$ = 0; printf("exactness empty \n");}
           | EXACT           { $$ = 1; }
           | INEXACT         { $$ = -1; }
           ;
@@ -99,8 +96,7 @@ naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
 extern ucs4char* token;
 int number_yyerror(char const *str)
 {
-  TextualInputPort* const port = NumberReader::port();
-  printf(str);
+  TextualInputPort* const port = Reader::port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));
     return 0;
