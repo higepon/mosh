@@ -146,15 +146,18 @@ int NumberScanner::scan()
             return AT;
         }
         RADIX_2 {
+            printf("TOKEN:RADIX_2\n");
             YYTOKEN = YYCURSOR;
             return RADIX_2;
         }
         DIGIT_2 {
             yylval.intValue = YYTOKEN[0] - '0';
+            printf("TOKEN:DIGIT_2=%d\n", yylval.intValue);
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
         }
         "\X0000" {
+            printf("TOKEN:END_OF_FILE\n");
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
