@@ -78,13 +78,13 @@ uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
             }
           ;
 
-digit2 : DIGIT_2;
-exactness : /* empty */     { $$ = 0; }
+digit2 : DIGIT_2 { $$ = $1; printf("digit2=%d\n", $1); }
+exactness : /* empty */     { $$ = 0; printf("exactness empty \n");}
           | EXACT           { $$ = 1; }
           | INEXACT         { $$ = -1; }
           ;
-prefix2 : RADIX_2 exactness { $$ = $2;}
-        | exactness RADIX_2 { $$ = $1;}
+prefix2 : RADIX_2 exactness { $$ = $2; printf("radix[1]=%d\n", $2);}
+        | exactness RADIX_2 { $$ = $1; printf("radix[2]=%d\n", $1);}
         ;
 
 naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
