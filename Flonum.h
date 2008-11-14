@@ -50,6 +50,13 @@ public:
     {
     }
 
+    static Object fromString(const ucs4string& text)
+    {
+        const double ret = strtod(text.ascii_c_str(), NULL);
+        // should check errno?
+        return Object::makeFlonum(ret);
+    }
+
     double value() const { return value_; }
     Object toRatnum() const;
     bool isNan() const { return isnan(value_); }

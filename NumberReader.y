@@ -25,14 +25,16 @@ extern int number_yyerror(const char *);
 // yydebug = 1
 %}
 
-%token END_OF_FILE PLUS MINUS SLASH AT MY_NAN MY_INF IMAG
+%token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
 %token RADIX_2 RADIX_10
 
 %token <intValue> EXACT INEXACT
 %token <intValue> DIGIT_2 DIGIT_10
 
+
 %type <exactValue> exactness prefix2 prefix10
 %type <intValue> digit2 digit10
+%type <stringValue> uinteger10String
 %type <object> top_level datum  naninf
 %type <object> num2  complex2  real2  ureal2  sreal2  uinteger2
 %type <object> num10 complex10 real10 ureal10 sreal10 uinteger10 decimal10
@@ -93,10 +95,14 @@ complex10 : real10;
 /*           | MINUS ureal10 IMAG            { $$ = Builtins.MakeRectangular(0, Builtins.Multiply(-1, $2)); } */
 /*           | PLUS IMAG                     { $$ = Builtins.MakeRectangular(0,1); } */
 /*           | MINUS IMAG                    { $$ = Builtins.MakeRectangular(0,-1); } */
-/* | real10 PLUS naninf IMAG       { $$ = Builtins.MakeRectangular($1, $3); } */
+
+          | real10 PLUS naninf IMAG  { $$ = Object::makeCompnum($1, $3); }/* | real10 PLUS naninf IMAG       { $$ = Builtins.MakeRectangular($1, $3); } */
 /*           | real10 MINUS naninf IMAG      { $$ = Builtins.MakeRectangular($1, Builtins.Multiply(-1, $3)); } */
 /*           | PLUS naninf IMAG              { $$ = Builtins.MakeRectangular(0, $2); } */
 /*           | MINUS naninf IMAG             { $$ = Builtins.MakeRectangular(0, Builtins.Multiply(-1, $2)); } */
+          | PLUS naninf IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
+          | MINUS naninf IMAG       { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+
 /*           ; */
 
 real10    : ureal10
@@ -115,13 +121,28 @@ sreal10 : PLUS ureal10  { $$ = $2; }
 
 
 decimal10 : uinteger10 suffix     { $$ = $1; }      /*    { $$ = ($2.Length == 0) ? $1 : ConvertToDouble($1 + $2); } */
-/*           | DOT uinteger10 suffix           { $$ = ConvertToDouble("." + $2 + $3); } */
-/*           | uinteger10 DOT digit10x suffix  { $$ = ConvertToDouble($1 + "." + $3 + $4); } */
-/*           ; */
+          | DOT uinteger10String suffix {
+              ucs4string ret = UC(".");
+              ret += $2;
+              $$ = Flonum::fromString(ret); /*{ $$ = ConvertToDouble("." + $2 + $3); } */
+          }
+          | uinteger10String DOT uinteger10String suffix {  /* { $$ = ConvertToDouble($1 + "." + $3 + $4); } */
+              ucs4string ret = $1;
+              ret += UC(".") + $3;
+              $$ = Flonum::fromString(ret); /*{ $$ = ConvertToDouble("." + $2 + $3); } */
+          }
+          ;
 
-uinteger10 : digit10  { $$ = Object::makeFixnum($1); }
-           | uinteger10 digit10  {
-                $$ = Arithmetic::add(Arithmetic::mul(10, $1), Object::makeFixnum($2));
+uinteger10 : uinteger10String { $$ = Bignum::makeInteger($1); }
+
+uinteger10String : digit10  {
+                const ucs4char ch = '0' + $1;
+                $$ += ch;
+             }
+           | uinteger10String digit10  {
+               const ucs4char ch = '0' + $2;
+               $$ = $1;
+               $$ += ch;
           }
           ;
 

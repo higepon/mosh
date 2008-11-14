@@ -360,7 +360,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         Compnum* const c = o.toCompnum();
         const Object real = c->real();
         const Object imag = c->imag();
-        putDatum(real);
+        if (!Arithmetic::isExactZero(real)) {
+            putDatum(real);
+        }
+
         if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
             putString(UC("+"));
         } else {
@@ -506,7 +509,9 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         Compnum* const c = o.toCompnum();
         const Object real = c->real();
         const Object imag = c->imag();
-        display(real);
+        if (!Arithmetic::isExactZero(real)) {
+            display(real);
+        }
         if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
             putString(UC("+"));
         } else {

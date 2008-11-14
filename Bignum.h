@@ -264,6 +264,15 @@ public:
         return makeInteger(b->value);
     }
 
+    static Object makeInteger(const ucs4string& text)
+    {
+        mpz_t v;
+        mpz_init(v);
+        mpz_init_set_str(v, text.ascii_c_str(), 10);
+        return makeInteger(v);
+    }
+
+
     mpz_t value;
 
 private:

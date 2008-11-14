@@ -148,6 +148,10 @@ int NumberScanner::scan()
             YYTOKEN = YYCURSOR;
             return AT;
         }
+        "." {
+            YYTOKEN = YYCURSOR;
+            return DOT;
+        }
         RADIX_2 {
             YYTOKEN = YYCURSOR;
             return RADIX_2;

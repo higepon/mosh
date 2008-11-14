@@ -2160,6 +2160,10 @@ n(#t #t)
 (#t (nan? +nan.0))
 (#t (infinite? +inf.0))
 (2/3 (/ 2 3))
+(todo (fl=? .45 (inexact 45/100)))
+(0.45 .45)
+(1.45 (inexact 145/100))
+(todo #t (infinite? +inf.0i))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
