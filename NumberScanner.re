@@ -20,10 +20,10 @@
 #define YYTOKEN token_
 #define YYDEBUG(state, ch)  yydebug(state, ch)
 #define YYFILL(n) fill(n)
+extern YYSTYPE number_yylval;
 #define yylval number_yylval
 using namespace scheme;
 extern VM* theVM;
-extern YYSTYPE yylval;
 
 NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
                      buffer_(NULL),
@@ -83,6 +83,11 @@ void NumberScanner::fill(int n)
         }
 
     }
+    printf("fill :");
+    for (int k = 0; k < i; k++) {
+        printf("<%c>", buffer_[k]);
+    }
+    printf("\n");
     const int readSize = i;
     cursor_ = cursor_ - tokenOffset;
     token_ = buffer_;
