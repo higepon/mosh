@@ -83,6 +83,7 @@ void NumberScanner::fill(int n)
         }
 
     }
+    printf("cursor=<%c>\n", *cursor_);
     const int readSize = i;
     cursor_ = cursor_ - tokenOffset;
     token_ = buffer_;
@@ -92,7 +93,8 @@ void NumberScanner::fill(int n)
     for (int k = 0; k < i; k++) {
         printf("<%c>", buffer_[k]);
     }
-    printf("\n limit - token = %d\n", limit_ - token_);
+    printf("\n limit - cursor = %d\n", limit_ - cursor_);
+    printf("after cursor=<%c>\n", *cursor_);
 
 }
 
