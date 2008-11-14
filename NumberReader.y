@@ -11,7 +11,8 @@
 #include "NumberScanner.h"
 #include "TextualInputPort.h"
 #include "Arithmetic.h"
-#include "Reader.h"
+#include "hoge.h"
+#include "NumberReader.tab.hpp"
 #include "NumberReader.h"
 #include "ScannerHelper.h"
 #include "Scanner.h"
@@ -98,7 +99,7 @@ naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
 extern ucs4char* token;
 int number_yyerror(char const *str)
 {
-  TextualInputPort* const port = Reader::port();
+  TextualInputPort* const port = NumberReader::port();
   printf(str);
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));

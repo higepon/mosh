@@ -8,8 +8,8 @@
 #include "ScannerHelper.h"
 #include "Scanner.h"
 
-#include "reader.h"
-#include "reader.tab.hpp"
+#include "Reader.h"
+#include "Reader.tab.hpp"
 #include "VM.h"
 
 #define YYCTYPE ucs4char
@@ -300,7 +300,7 @@ int Scanner::scan()
             return DIGIT_2;
             }*/
        NUM_2 DELMITER {
-            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return NUMBER2;

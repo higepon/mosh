@@ -53,7 +53,7 @@ namespace scheme {
     };
 };
 
-typedef struct {
+typedef struct EXTEND_GC {
     union {
         bool  boolValue;
         int   exactValue;

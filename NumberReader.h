@@ -47,6 +47,7 @@ private:
     static TextualInputPort* in_;
 };
 
+
 }; // namespace scheme
 
 #endif // __SCHEME_NUMBER_READER__
