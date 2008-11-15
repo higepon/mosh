@@ -95,7 +95,8 @@ Arithmetic.h                  Arithmetic.cpp                      \
 Ratnum.h                      Ratnum.cpp                          \
 Bignum.h                      Bignum.cpp                          \
 Flonum.h                      Flonum.cpp                          \
-CodeBuilder.h                 CodeBuilder.cpp
+CodeBuilder.h                 CodeBuilder.cpp                     \
+FinxumProcedures.h            FixnumProcedures.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2  $(mosh_OPTS) -g -fomit-frame-pointer -D_FILE_OFFSET_BITS=64 -Wall -DDEBUG_VERSION # -O3 causes miss compile of NumberReader.tab.cpp. see http://d.hatena.ne.jp/higepon/20081114/1226645373

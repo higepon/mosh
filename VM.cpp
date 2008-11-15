@@ -64,6 +64,7 @@
 #include "Stack.h"
 #include "UtilityProcedures.h"
 #include "Arithmetic.h"
+#include "FixnumProcedures.h"
 
 #ifdef DUMP_ALL_INSTRUCTIONS
     extern FILE* stream;

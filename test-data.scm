@@ -2133,6 +2133,15 @@ n(#t #t)
 (#f         (fl=? minus-inf (min minus-inf my-nan)))
 (#t         (fl=? minus-inf (min minus-inf 3.9 4 (/ 1 2) t4.0)))
 
+;; flonums
+(error (fx=?))
+(error (fx=? 3))
+(#t (fx=? 3 3))
+(#f (fx=? 3 4))
+(#t (fx=? 3 3 3))
+(error (fx=? 3.0 3))
+(error (fx=? (+ (greatest-fixnum) 1) (greatest-fixnum) 1))
+
 ;; number reader 2
 (1 #b1)
 (0 #b0)

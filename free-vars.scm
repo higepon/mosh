@@ -330,4 +330,5 @@
     real-valued?
     rational-valued?
     integer-valued?
+    fx=?
     )
