@@ -52,6 +52,8 @@ double Arithmetic::realToDouble(Object n)
         return n.toBignum()->toDouble();
     } else if (n.isFlonum()) {
         return n.toFlonum()->value();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->toDouble();
     } else {
         MOSH_ASSERT(false);
         return 0.0;
@@ -69,7 +71,7 @@ Object Arithmetic::makePolar(Object n1, Object n2)
     }
     const double r = realToDouble(real);
     const double a = realToDouble(imag);
-    return Object::makeCompnum(Object::makeFixnum(r * cos(a)), Object::makeFlonum(r * sin(a)));
+    return Object::makeCompnum(Object::makeFlonum(r * cos(a)), Object::makeFlonum(r * sin(a)));
 }
 
 Object Arithmetic::bitwiseNot(Object e)

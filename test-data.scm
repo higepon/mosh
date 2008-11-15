@@ -1679,8 +1679,8 @@ n(#t #t)
 (#t (= (make-complex -5 10) (* (make-complex 1 2) (make-complex 3 4))))
 (#t (= (make-complex 1 0)  (/ (make-complex 1 2) (make-complex 1 2))))
 (#t (= (make-complex 1 1) (/ (make-complex 2 2) 2)))
-(todo 1 (/ (make-complex 1 2) (make-complex 1 2)))
-(todo 2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize
+(1 (/ (make-complex 1 2) (make-complex 1 2)))
+(2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize
 (#t (= (make-complex (/ -1 2) (/ 3 2)) (/ (make-complex 1 2) (make-complex 1 -1))))
 (#t (= (make-complex 2 1) (+ 1 (make-complex 1 1))))                                               ; fixnum + compnum
 (#t (= (make-complex 3 1) (+ (make-complex 1 1) 2)))                                               ; compnum + fixnum
@@ -2152,15 +2152,15 @@ n(#t #t)
 (-3 #b-11)
 (-3 #e#b-11)
 (#t (= (inexact -5) #i#b-101))
-(#t (= (/ 3 2) #b11/10))              ;; number10の 3/2 が read できるようになったら
-(todo #t (= #b11+10i (make-complex 3 2)))  ;; number10の 3+2i が read できるようになったら
-(todo #t (= #b11-10i (make-complex 3 -2))) ;; number10の 3-2i が read できるようになったら
-(todo #t (= #b11+i (make-complex 3 1)))
-(todo #t (= #b+i (make-complex 0 1)))
-(todo #t (= #b-i (make-complex 0 -1)))
+(#t (= (/ 3 2) #b11/10))
+(#t (= #b11+10i (make-complex 3 2)))
+(#t (= #b11-10i (make-complex 3 -2)))
+(#t (= #b11+i (make-complex 3 1)))
+(#t (= #b+i (make-complex 0 1)))
+(#t (= #b-i (make-complex 0 -1)))
 (todo #t (= #b11+nan.0i (make-complex 3 my-nan)))
 (todo #t (= #b+nan.0i (make-complex 0 my-nan)))
-(todo #t (almost=? #b1@1 (make-polar 1 1)))
+(#t (almost=? (real-part #b1@1) (real-part 1@1)))
 
 ;; number reader 10
 (101 101)
@@ -2199,16 +2199,15 @@ n(#t #t)
 (0.02 .2e-1)
 (50 5e+1)
 (500000000000 5e+11)
-;("+1i" (format "~a" +1i))
-;; ("-1i" (format "~a" -1i))
-;; ("1" (format "~a" 1+0i))
-;; ("1" (format "~a" 1-0i))
-;; ("+1i" (format "~a" 0+i))
-
-(todo polar test)
+("+1i" (format "~a" +1i))
+("-1i" (format "~a" -1i))
+("1" (format "~a" 1+0i))
+("1" (format "~a" 1-0i))
+("+1i" (format "~a" 0+i))
+(#t (almost=? 1 (real-part 2@1.047))) ;pi/3
+(#t (almost=? -1 (real-part 2@2.0943))) ;2pi/3
 
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
-
