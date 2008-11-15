@@ -17,5 +17,14 @@
 ;; (newline)
 ;; (display -i)
 
-(format #t "+1i")
+  (with-input-from-file "./hage.scm"
+    (lambda ()
+      (let loop ([obj (read)]
+                 [ret '()])
+        (cond
+         [(eof-object? obj)
+          (reverse ret)]
+         [else
+          (write obj)
+          (loop (read) (cons obj ret))]))))
 ;(newline)

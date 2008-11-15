@@ -147,8 +147,9 @@ uinteger10 : uinteger10String { $$ = Bignum::makeInteger($1); }
 
 uinteger10String : digit10  {
                 const ucs4char ch = '0' + $1;
+                $$ = UC("");
                 $$ += ch;
-             }
+           }
            | uinteger10String digit10  {
                const ucs4char ch = '0' + $2;
                $$ = $1;
