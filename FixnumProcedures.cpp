@@ -43,9 +43,9 @@ Object scheme::fxEqPEx(int argc, const Object* argv)
     DeclareProcedureName("fx=?");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        argumentAsFixnum(i, n1);
-        argumentAsFixnum(i + 1, n2);
-        if (Fixnum::eq(n1, n2)) {
+        argumentAsFixnum(i, fx1);
+        argumentAsFixnum(i + 1, fx2);
+        if (Fixnum::eq(fx1, fx2)) {
             continue;
         } else {
             return Object::False;
@@ -54,10 +54,70 @@ Object scheme::fxEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-//Object scheme::fxGtPEx(int argc, const Object* argv);
-//Object scheme::fxLtPEx(int argc, const Object* argv);
-//Object scheme::fxGePEx(int argc, const Object* argv);
-//Object scheme::fxLePEx(int argc, const Object* argv);
+Object scheme::fxGtPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx>?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentAsFixnum(i, fx1);
+        argumentAsFixnum(i + 1, fx2);
+        if (Fixnum::gt(fx1, fx2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
+Object scheme::fxLtPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx<?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentAsFixnum(i, fx1);
+        argumentAsFixnum(i + 1, fx2);
+        if (Fixnum::lt(fx1, fx2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
+Object scheme::fxGePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx>=?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentAsFixnum(i, fx1);
+        argumentAsFixnum(i + 1, fx2);
+        if (Fixnum::ge(fx1, fx2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
+Object scheme::fxLePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx<=?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentAsFixnum(i, fx1);
+        argumentAsFixnum(i + 1, fx2);
+        if (Fixnum::le(fx1, fx2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
 //Object scheme::fxzeroPEx(int argc, const Object* argv);
 //Object scheme::fxpositivePEx(int argc, const Object* argv);
 //Object scheme::fxnegativePEx(int argc, const Object* argv);

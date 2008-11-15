@@ -331,4 +331,8 @@
     rational-valued?
     integer-valued?
     fx=?
+    fx>?
+    fx<?
+    fx>=?
+    fx<=?
     )

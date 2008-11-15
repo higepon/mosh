@@ -37,10 +37,10 @@
 namespace scheme {
 
     Object fxEqPEx(int argc, const Object* argv);
-    //Object fxGtPEx(int argc, const Object* argv);
-    //Object fxLtPEx(int argc, const Object* argv);
-    //Object fxGePEx(int argc, const Object* argv);
-    //Object fxLePEx(int argc, const Object* argv);
+    Object fxGtPEx(int argc, const Object* argv);
+    Object fxLtPEx(int argc, const Object* argv);
+    Object fxGePEx(int argc, const Object* argv);
+    Object fxLePEx(int argc, const Object* argv);
     //Object fxzeroPEx(int argc, const Object* argv);
     //Object fxpositivePEx(int argc, const Object* argv);
     //Object fxnegativePEx(int argc, const Object* argv);
