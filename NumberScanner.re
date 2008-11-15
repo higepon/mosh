@@ -99,14 +99,15 @@ int number_yylex()
 int NumberScanner::scan()
 {
 /*!re2c
-    EXACT    = "#"[eE];
-    INEXACT  = "#"[iI];
-    RADIX_2  = "#" [bB];
-    RADIX_10 = "#" [dD];
-    DIGIT_2  = [01];
-    DIGIT_10 = [0-9];
-    MY_NAN   = "nan.0";
-    MY_INF   = "inf.0";
+    DIGIT_10        = [0-9];
+    EXPONENT_MARKER = [eEsSfFdDlL] [\+\-] DIGIT_10+;
+    EXACT           = "#"[eE];
+    INEXACT         = "#"[iI];
+    RADIX_2         = "#" [bB];
+    RADIX_10        = "#" [dD];
+    DIGIT_2         = [01];
+    MY_NAN          = "nan.0";
+    MY_INF          = "inf.0";
 */
 
     for(;;)
@@ -115,6 +116,11 @@ int NumberScanner::scan()
         EXACT {
             YYTOKEN = YYCURSOR;
             return EXACT;
+        }
+        EXPONENT_MARKER {
+            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+            YYTOKEN = YYCURSOR;
+            return EXPONENT_MARKER;
         }
         INEXACT {
             YYTOKEN = YYCURSOR;

@@ -144,9 +144,9 @@ int Scanner::scan()
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
   REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
   REAL_2                 = (SIGN UREAL_2) | ([\+\-] NAN_INF);
-  COMPLEX_2             = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 "i") | (REAL_2 [\+\-] NAN_INF "i") | (REAL_2 [\+\-] "i") | ([\+-\] UREAL_2 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
-  COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+-\] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
-  COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+-\] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  COMPLEX_2             = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 "i") | (REAL_2 [\+\-] NAN_INF "i") | (REAL_2 [\+\-] "i") | ([\+\-] UREAL_2 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+\-] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+\-] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   RADIX_2                = ("#"[bB]);
   RADIX_10               = ("#"[dD])?;
   RADIX_16               = "#"[xX];

@@ -30,11 +30,11 @@ extern int number_yyerror(const char *);
 
 %token <intValue> EXACT INEXACT
 %token <intValue> DIGIT_2 DIGIT_10
-
+%token <stringValue> EXPONENT_MARKER
 
 %type <exactValue> exactness prefix2 prefix10
 %type <intValue> digit2 digit10
-%type <stringValue> uinteger10String
+%type <stringValue> uinteger10String suffix
 %type <object> top_level datum  naninf
 %type <object> num2  complex2  real2  ureal2  sreal2  uinteger2
 %type <object> num10 complex10 real10 ureal10 sreal10 uinteger10 decimal10
@@ -67,71 +67,81 @@ real2     : ureal2
           | sreal2
           | PLUS naninf   { $$ = $2; }
           | MINUS naninf  { $$ = Arithmetic::mul(-1, $2); }
-
+          ;
 
 ureal2 : uinteger2
        | uinteger2 SLASH uinteger2     { $$ = Arithmetic::div($1, $3); }
+       ;
 sreal2 : PLUS ureal2                   { $$ = $2; }
        | MINUS ureal2                  { $$ = Arithmetic::mul(-1, $2); }
        ;
 
-uinteger2 : digit2  { $$ = Object::makeFixnum($1); }
-          | uinteger2 digit2  {
-                $$ = Arithmetic::add(Arithmetic::mul(2, $1), Object::makeFixnum($2));
-          }
-          ;
+uinteger2  : digit2  { $$ = Object::makeFixnum($1); }
+           | uinteger2 digit2  {
+                 $$ = Arithmetic::add(Arithmetic::mul(2, $1), Object::makeFixnum($2));
+           }
+           ;
 
-digit2 : DIGIT_2;
+digit2     : DIGIT_2;
 
-num10 : prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
+num10      : prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
 
-complex10 : real10;
-/*           | real10 AT real10              { $$ = Builtins.MakePolar($1,$3); } */
-/*           | real10 PLUS  ureal10 IMAG     { $$ = Builtins.MakeRectangular($1,$3); } */
-/*           | real10 MINUS ureal10 IMAG     { $$ = Builtins.MakeRectangular($1, Builtins.Multiply(-1, $3)); } */
-/*           | real10 PLUS IMAG              { $$ = Builtins.MakeRectangular($1,1); } */
-/*           | real10 MINUS IMAG             { $$ = Builtins.MakeRectangular($1,-1); } */
-/*           | PLUS ureal10 IMAG             { $$ = Builtins.MakeRectangular(0,$2); } */
-/*           | MINUS ureal10 IMAG            { $$ = Builtins.MakeRectangular(0, Builtins.Multiply(-1, $2)); } */
-/*           | PLUS IMAG                     { $$ = Builtins.MakeRectangular(0,1); } */
-/*           | MINUS IMAG                    { $$ = Builtins.MakeRectangular(0,-1); } */
+complex10  : real10
+           | real10 AT    real10       { $$ = Arithmetic::makePolar($1, $3); }
+           | real10 PLUS  ureal10 IMAG { $$ = Object::makeCompnum($1, $3); }
+           | real10 MINUS ureal10 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+           | real10 PLUS  IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
+           | real10 MINUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
+           | PLUS  ureal10 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
+           | MINUS ureal10 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+           | PLUS  IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
+           | MINUS IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
+           | real10 PLUS  naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
+           | real10 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+           | PLUS  naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
+           | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+           ;
 
-          | real10 PLUS naninf IMAG  { $$ = Object::makeCompnum($1, $3); }/* | real10 PLUS naninf IMAG       { $$ = Builtins.MakeRectangular($1, $3); } */
-/*           | real10 MINUS naninf IMAG      { $$ = Builtins.MakeRectangular($1, Builtins.Multiply(-1, $3)); } */
-/*           | PLUS naninf IMAG              { $$ = Builtins.MakeRectangular(0, $2); } */
-/*           | MINUS naninf IMAG             { $$ = Builtins.MakeRectangular(0, Builtins.Multiply(-1, $2)); } */
-          | PLUS naninf IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS naninf IMAG       { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+real10     : ureal10
+           | sreal10
+           | PLUS naninf  { $$ = $2; }
+           | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
+           ;
 
-/*           ; */
+ureal10    : decimal10
+           | uinteger10 SLASH uinteger10 { $$ = Arithmetic::div($1, $3); }
+           ;
 
-real10    : ureal10
-          | sreal10
-          | PLUS naninf  { $$ = $2; }
-          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
-          ;
+sreal10    : PLUS  ureal10 { $$ = $2; }
+           | MINUS ureal10 { $$ = Arithmetic::mul(-1, $2); }
+           ;
 
-ureal10   : decimal10
-          | uinteger10 SLASH uinteger10   { $$ = Arithmetic::div($1, $3); }
-          ;
-
-sreal10 : PLUS ureal10  { $$ = $2; }
-        | MINUS ureal10  { $$ = Arithmetic::mul(-1, $2); }
-        ;
-
-
-decimal10 : uinteger10 suffix     { $$ = $1; }      /*    { $$ = ($2.Length == 0) ? $1 : ConvertToDouble($1 + $2); } */
-          | DOT uinteger10String suffix {
-              ucs4string ret = UC(".");
-              ret += $2;
-              $$ = Flonum::fromString(ret); /*{ $$ = ConvertToDouble("." + $2 + $3); } */
-          }
-          | uinteger10String DOT uinteger10String suffix {  /* { $$ = ConvertToDouble($1 + "." + $3 + $4); } */
-              ucs4string ret = $1;
-              ret += UC(".") + $3;
-              $$ = Flonum::fromString(ret); /*{ $$ = ConvertToDouble("." + $2 + $3); } */
-          }
-          ;
+decimal10  : uinteger10String suffix{
+                if ($2.empty()) {
+                    $$ = Bignum::makeInteger($1);
+                } else {
+                    ucs4string ret = $1;
+                    ret += $2;
+                    $$ = Flonum::fromString(ret);
+                }
+           }
+           | DOT uinteger10String suffix {
+               ucs4string ret = UC(".");
+               ret += $2;
+               if (!$3.empty()) {
+                   ret += $3;
+               }
+               $$ = Flonum::fromString(ret);
+           }
+           | uinteger10String DOT uinteger10String suffix {
+               ucs4string ret = $1;
+               ret += UC(".") + $3;
+               if (!$4.empty()) {
+                   ret += $4;
+               }
+               $$ = Flonum::fromString(ret);
+           }
+           ;
 
 uinteger10 : uinteger10String { $$ = Bignum::makeInteger($1); }
 
@@ -155,8 +165,12 @@ exactness : /* empty */     { $$ = 0; }
           | INEXACT         { $$ = -1; }
           ;
 
-suffix    : /* empty */         /*        { $$ = string.Empty; } */
-/*           | EXPMARKER                   { $$ = "e" + $1.text.Substring(1); /\* always e *\/ } */
+suffix    : /* empty */     { $$ = UC(""); }
+          | EXPONENT_MARKER {
+              ucs4string ret = UC("e");
+              ret += $1.substr(1, $1.size() - 1);
+              $$ = ret;
+          }
           ;
 
 prefix2 : RADIX_2 exactness { $$ = $2; }
@@ -165,7 +179,7 @@ prefix2 : RADIX_2 exactness { $$ = $2; }
 
 prefix10  : RADIX_10 exactness  { $$ = $2;}
           | exactness RADIX_10  { $$ = $1;}
-          | exactness
+          | exactness /* {yydebug = 1; }*/
           ;
 
 naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
@@ -175,6 +189,7 @@ naninf : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
 extern ucs4char* token;
 int number_yyerror(char const *str)
 {
+  printf(str);
   TextualInputPort* const port = Reader::port();
     port->setError(format(UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));

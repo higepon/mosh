@@ -512,7 +512,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         if (!Arithmetic::isExactZero(real)) {
             display(real);
         }
-        if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
+        if (Arithmetic::ge(imag, Object::makeFixnum(0)) && !(imag.isFlonum() && imag.toFlonum()->isInfinite())) {
             putString(UC("+"));
         } else {
         }

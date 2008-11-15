@@ -1,3 +1,7 @@
+2008-11-15  higepon  <higepon@users.sourceforge.jp>
+
+        * readingnumber10 works fine(Almost). But it needs more and more tests.
+
 2008-11-15  kokosabu  <kokosabu@gmail.com>
 
         * FixnumProcedures.cpp, FixnumProcedures.h : Added.
