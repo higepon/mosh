@@ -1,30 +1,7 @@
 (import (rnrs)
         (mosh string))
 
-;; (display (flonum? +nan.0))
-;; (display (flonum? (/ (inexact 0) (inexact 0))))
-
-;; (display 2/3)
-;; (display 10.45)
-
-;; (display (flonum? .45))
-;; (display (flonum? (inexact 45/100)))
-
-;; (fl=? .45 (inexact 45/100))
-
-;; (display 10+inf.0i)
-;; (display 10-inf.0i)
-;; (newline)
-;; (display -i)
-
-  (with-input-from-file "./hage.scm"
-    (lambda ()
-      (let loop ([obj (read)]
-                 [ret '()])
-        (cond
-         [(eof-object? obj)
-          (reverse ret)]
-         [else
-          (write obj)
-          (loop (read) (cons obj ret))]))))
-;(newline)
+(let ([b (make-bytevector 8)])
+  (bytevector-s64-set! b 0 -144115188075855873 'little)
+                                         b)
+(display (bytevector-ieee-single-native-ref #vu8(#xc3 #xf5 #x48 #x40) 0))

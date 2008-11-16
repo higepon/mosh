@@ -1,3 +1,15 @@
+2008-11-16  higepon  <higepon@users.sourceforge.jp>
+
+        * Added: bytevector-ieee-single-native-ref and bytevector-ieee-double-native-ref.
+
+        * Modified bytevector 64bit ref/set! procedures using new numeric tower.
+
+        * Reading all kind of numbers works fine.
+
+        * NumberReader.y: Implemented read8 / read16.
+
+        * compiler.scm (pass1/asm-n-args): Fixed (- obj) quotation bug.
+
 2008-11-16  kokosabu  <kokosabu@gmail.com>
 
         * Added : fx>?, fx<?, fx>=?, fx<=?.
@@ -6,7 +18,7 @@
 
         * fixed suffix bug of read number.
 
-        * readingnumber10 works fine(Almost). But it needs more and more tests.
+        * reading number10 works fine(Almost). But it needs more and more tests.
 
 2008-11-15  kokosabu  <kokosabu@gmail.com>
 

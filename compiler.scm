@@ -1215,7 +1215,7 @@
      [(= 1 len)
       (case operator
         [(-)
-         (pass1/s->i (* -1 (car args)))]
+         (pass1/s->i `(* -1 ,(car args)))]
         [(/)
          (pass1/s->i `(/ 1 ,(car args)))]
         [else

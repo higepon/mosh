@@ -364,7 +364,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             putDatum(real);
         }
 
-        if (Arithmetic::ge(imag, Object::makeFixnum(0))) {
+        if (Arithmetic::ge(imag, Object::makeFixnum(0)) && !(imag.isFlonum() && imag.toFlonum()->isInfinite())) {
             putString(UC("+"));
         } else {
         }

@@ -1,3 +1,33 @@
+/*
+ * scanner.re
+ *
+ *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions
+ *   are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ *   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ *   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  $Id: Reader.y 183 2008-07-04 06:19:28Z higepon $
+ */
 #include <stdio.h>
 #include "Object.h"
 #include "Pair.h"
@@ -127,9 +157,11 @@ int Scanner::scan()
   STRING_ELEMENT         = [^\"\\] | ("\\" [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_2                = [0-1];
+  DIGIT_8                = [0-7];
   DIGIT_10               = DIGIT;
   DIGIT_16               = HEX_DIGIT;
   UINTEGER_2             = DIGIT_2 +;
+  UINTEGER_8             = DIGIT_8 +;
   UINTEGER_10            = DIGIT_10 +;
   UINTEGER_16            = DIGIT_16 +;
   NAN_INF                = "nan.0" | "inf.0";
@@ -139,25 +171,31 @@ int Scanner::scan()
   SUFFIX                 = (EXPONENT_MARKER SIGN (DIGIT_10)+)?;
   DECIMAL_10             = (UINTEGER_10 SUFFIX) | ((DIGIT_10)+ "." (DIGIT_10)* SUFFIX) | ("." (DIGIT_10)+ SUFFIX) | ((DIGIT_10)+ "." SUFFIX);
   UREAL_2                = UINTEGER_2 | (UINTEGER_2 "/" UINTEGER_2);
+  UREAL_8                = UINTEGER_8 | (UINTEGER_8 "/" UINTEGER_8);
   UREAL_10               = UINTEGER_10 | (UINTEGER_10 "/" UINTEGER_10) | DECIMAL_10;
   UREAL_16               = UINTEGER_16 | (UINTEGER_16 "/" UINTEGER_16) | DECIMAL_10;
   REAL_10                = (SIGN UREAL_10) | ([\+\-] NAN_INF);
   REAL_16                = (SIGN UREAL_16) | ([\+\-] NAN_INF);
   REAL_2                 = (SIGN UREAL_2) | ([\+\-] NAN_INF);
+  REAL_8                 = (SIGN UREAL_8) | ([\+\-] NAN_INF);
   COMPLEX_2             = REAL_2 | (REAL_2 "@" REAL_2) | (REAL_2 [\+\-] UREAL_2 "i") | (REAL_2 [\+\-] NAN_INF "i") | (REAL_2 [\+\-] "i") | ([\+\-] UREAL_2 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
+  COMPLEX_8             = REAL_8 | (REAL_8 "@" REAL_8) | (REAL_8 [\+\-] UREAL_8 "i") | (REAL_8 [\+\-] NAN_INF "i") | (REAL_8 [\+\-] "i") | ([\+\-] UREAL_8 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   COMPLEX_10             = REAL_10 | (REAL_10 "@" REAL_10) | (REAL_10 [\+\-] UREAL_10 "i") | (REAL_10 [\+\-] NAN_INF "i") | (REAL_10 [\+\-] "i") | ([\+\-] UREAL_10 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   COMPLEX_16             = REAL_16 | (REAL_16 "@" REAL_16) | (REAL_16 [\+\-] UREAL_16 "i") | (REAL_16 [\+\-] NAN_INF "i") | (REAL_16 [\+\-] "i") | ([\+\-] UREAL_16 "i") | ([\+\-] NAN_INF "i") | ([\+\-] "i");
   RADIX_2                = ("#"[bB]);
+  RADIX_8                = "#"[oO];
   RADIX_10               = ("#"[dD])?;
   RADIX_16               = "#"[xX];
   EXACTNESS              = ("#"[iIeE])?;
   EXACT                  = "#"[eE];
   INEXACT                = "#"[iI];
   PREFIX_2               = (RADIX_2 EXACTNESS) | (EXACTNESS RADIX_2);
+  PREFIX_8               = (RADIX_8 EXACTNESS) | (EXACTNESS RADIX_8);
   PREFIX_10              = (RADIX_10 EXACTNESS) | (EXACTNESS RADIX_10);
   PREFIX_16              = (RADIX_16 EXACTNESS) | (EXACTNESS RADIX_16);
   NUM_2                  = PREFIX_2 COMPLEX_2;
   NUM_10                 = PREFIX_10 COMPLEX_10;
+  NUM_8                  = PREFIX_8 COMPLEX_8;
   NUM_16                 = PREFIX_16 COMPLEX_16;
   SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
   LETTER                 = [a-z] | [A-Z];
@@ -270,57 +308,30 @@ int Scanner::scan()
         }
         /* we now omit "(DECIMAL_10 MANTISSA_WIDTH)" for UREAL_10. */
         /* it causes infinite loop. */
-/*        RADIX_2 {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            YYTOKEN = YYCURSOR;
-            return RADIX_2;
-        }
-        "+" {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            YYTOKEN = YYCURSOR;
-            return PLUS;
-        }
-        "-" {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            YYTOKEN = YYCURSOR;
-            return MINUS;
-        }
-        EXACT {
-            YYTOKEN = YYCURSOR;
-            return EXACT;
-        }
-        INEXACT {
-            YYTOKEN = YYCURSOR;
-            return INEXACT;
-        }
-        DIGIT_2 {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-            yylval.intValue = YYTOKEN[0] - '0';
-            YYTOKEN = YYCURSOR;
-            return DIGIT_2;
-            }*/
        NUM_2 DELMITER {
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
            YYCURSOR--;
            YYTOKEN = YYCURSOR;
-           return NUMBER2;
+           return NUMBER;
        }
        NUM_10 DELMITER {
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
            YYCURSOR--;
            YYTOKEN = YYCURSOR;
-           return NUMBER10;
-//             yylval.intValue = ScannerHelper::num10StringToInt(YYTOKEN, YYCURSOR - 1);
-//             YYCURSOR--;
-//             YYTOKEN = YYCURSOR;
-//             return NUMBER;
-            }
+           return NUMBER;
+       }
+       NUM_8 DELMITER {
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+           YYCURSOR--;
+           YYTOKEN = YYCURSOR;
+           return NUMBER;
+       }
        NUM_16 DELMITER {
-            yylval.intValue = ScannerHelper::num16StringToInt(YYTOKEN, YYCURSOR - 1);
-            YYCURSOR--;
-            YYTOKEN = YYCURSOR;
-            return NUMBER;
-            }
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
+           YYCURSOR--;
+           YYTOKEN = YYCURSOR;
+           return NUMBER;
+       }
        IDENTIFIER DELMITER {
             yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
             YYCURSOR--;

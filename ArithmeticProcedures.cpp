@@ -362,7 +362,8 @@ Object scheme::mulEx(int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
-        ret = Arithmetic::mul(ret, argv[i]);
+        argumentCheckFixnum(i, num);
+        ret = Arithmetic::mul(ret, num);
 
         // error occured
         if (ret.isFalse()) {

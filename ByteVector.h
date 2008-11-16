@@ -392,6 +392,16 @@ public:
         *(reinterpret_cast<uint64_t*>(&data_[index])) = value;
     }
 
+    float ieeeSingleNativeRef(int index)
+    {
+        return *((float*)&data_[index]);
+    }
+
+    double ieeeDoubleNativeRef(int index)
+    {
+        return *((double*)&data_[index]);
+    }
+
     void fill(uint8_t value)
     {
         memset(data_, value, length_);
@@ -475,19 +485,19 @@ public:
         return (-2147483648LL <= value) && (value <= 2147483647LL);
     }
 
-    // todo
-    static bool inU64Range(uint64_t value)
-    {
-        // wrong
-        return (0 <= value) && (value <= 18446744073709551615ULL);
-    }
+//     // todo
+//     static bool inU64Range(uint64_t value)
+//     {
+//         // wrong
+//         return (0 <= value) && (value <= 18446744073709551615ULL);
+//     }
 
-    // todo
-    static bool inS64Range(uint64_t value)
-    {
-        // wrong
-        return (-9223372036854775808ULL <= value) && (value <= 9223372036854775807LL);
-    }
+//     // todo
+//     static bool inS64Range(uint64_t value)
+//     {
+//         // wrong
+//         return (-9223372036854775808ULL <= value) && (value <= 9223372036854775807LL);
+//     }
 
 
 

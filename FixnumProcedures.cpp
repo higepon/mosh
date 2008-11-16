@@ -31,6 +31,7 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "SString.h"
 #include "FixnumProcedures.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"

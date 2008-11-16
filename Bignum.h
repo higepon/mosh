@@ -48,6 +48,51 @@ public:
     char* toString() const;
     double toDouble() const;
 
+    bool fitsU64() const
+    {
+        return mpz_cmp_si(value, 0)
+            && mpz_popcount(value) <= 64;
+    }
+
+    // todo fix me
+    bool fitsS64() const
+    {
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_abs(temp, value);
+        return mpz_popcount(temp) <= 63;
+    }
+
+    uint64_t toU64() const
+    {
+        MOSH_ASSERT(fitsU64());
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_ui(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        return ret;
+    }
+
+    int64_t toS64() const
+    {
+        MOSH_ASSERT(fitsS64());
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_si(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        return ret;
+    }
+
     void setU(unsigned long value)
     {
         mpz_set_ui(this->value, value);
@@ -239,6 +284,23 @@ public:
         }
     }
 
+    static Object makeIntegerFromU64(uint64_t n)
+    {
+        Bignum* const b = new Bignum();
+        b->setU(n >> 32);
+        mpz_mul_2exp(b->value, b->value, 32);
+        mpz_add_ui(b->value, b->value, (n & 0xffffffff));
+        return makeInteger(b);
+    }
+
+    static Object makeIntegerFromS64(int64_t n)
+    {
+        Bignum* const b = new Bignum();
+        mpz_set_si(b->value, n >> 32);
+        mpz_mul_2exp(b->value, b->value, 32);
+        mpz_add_ui(b->value, b->value, (n & 0xffffffff));
+        return makeInteger(b);
+    }
 
     static Object makeInteger(long n)
     {

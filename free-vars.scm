@@ -335,4 +335,12 @@
     fx<?
     fx>=?
     fx<=?
+    bytevector-ieee-single-native-ref
+    bytevector-ieee-single-ref
+    bytevector-ieee-double-native-ref
+    bytevector-ieee-double-ref
+    bytevector-ieee-single-native-set!
+    bytevector-ieee-single-set!
+    bytevector-ieee-double-native-set!
+    bytevector-ieee-double-set!
     )

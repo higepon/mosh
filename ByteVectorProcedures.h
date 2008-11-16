@@ -37,6 +37,14 @@
 namespace scheme {
 
     Object u8ListToByteVector(Object list);
+    Object bytevectorIeeeDoubleSetDEx(int argc, const Object* argv);
+    Object bytevectorIeeeDoubleNativeSetDEx(int argc, const Object* argv);
+    Object bytevectorIeeeSingleSetDEx(int argc, const Object* argv);
+    Object bytevectorIeeeSingleNativeSetDEx(int argc, const Object* argv);
+    Object bytevectorIeeeDoubleRefEx(int argc, const Object* argv);
+    Object bytevectorIeeeDoubleNativeRefEx(int argc, const Object* argv);
+    Object bytevectorIeeeSingleRefEx(int argc, const Object* argv);
+    Object bytevectorIeeeSingleNativeRefEx(int argc, const Object* argv);
     Object utf8TostringEx(int argc, const Object* argv);
     Object stringToutf8Ex(int argc, const Object* argv);
     Object utf32TostringEx(int argc, const Object* argv);

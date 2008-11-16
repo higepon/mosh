@@ -1,3 +1,34 @@
+/*
+ * NumberScanner.re
+ *
+ *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *
+ *   Redistribution and use in source and binary forms, with or without
+ *   modification, are permitted provided that the following conditions
+ *   are met:
+ *
+ *   1. Redistributions of source code must retain the above copyright
+ *      notice, this list of conditions and the following disclaimer.
+ *
+ *   2. Redistributions in binary form must reproduce the above copyright
+ *      notice, this list of conditions and the following disclaimer in the
+ *      documentation and/or other materials provided with the distribution.
+ *
+ *   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ *   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ *   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ *   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ *   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ *   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ *   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ *   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ *   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *  $Id: Reader.y 183 2008-07-04 06:19:28Z higepon $
+ */
+
 #include <stdio.h>
 #include "Object.h"
 #include "Pair.h"
@@ -37,12 +68,6 @@ NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
 
 NumberScanner::~NumberScanner()
 {
-}
-
-
-static void yydebug(int state, ucs4char ch)
-{
-//    printf("state=%d ch=[%c] ch=%x\n", state, ch, ch);
 }
 
 void NumberScanner::fill(int n)
@@ -104,8 +129,13 @@ int NumberScanner::scan()
     EXACT           = "#"[eE];
     INEXACT         = "#"[iI];
     RADIX_2         = "#" [bB];
+    RADIX_8         = "#" [oO];
     RADIX_10        = "#" [dD];
+    RADIX_16        = "#" [xX];
     DIGIT_2         = [01];
+    DIGIT_8         = [0-7];
+    DIGIT_16_1      = [A-F];
+    DIGIT_16_2      = [a-f];
     MY_NAN          = "nan.0";
     MY_INF          = "inf.0";
 */
@@ -162,26 +192,49 @@ int NumberScanner::scan()
             YYTOKEN = YYCURSOR;
             return RADIX_2;
         }
+        RADIX_8 {
+            YYTOKEN = YYCURSOR;
+            return RADIX_8;
+        }
         RADIX_10 {
             YYTOKEN = YYCURSOR;
             return RADIX_10;
+        }
+        RADIX_16 {
+            YYTOKEN = YYCURSOR;
+            return RADIX_16;
         }
         DIGIT_2 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
         }
+        DIGIT_8 {
+            yylval.intValue = YYTOKEN[0] - '0';
+            YYTOKEN = YYCURSOR;
+            return DIGIT_8;
+        }
         DIGIT_10 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_10;
         }
+        DIGIT_16_1 {
+            const ucs4char ch = YYTOKEN[0];
+            yylval.intValue = ch - 'A' + 10;
+            YYTOKEN = YYCURSOR;
+            return DIGIT_16;
+        }
+        DIGIT_16_2 {
+            const ucs4char ch = YYTOKEN[0];
+            yylval.intValue = ch - 'a' + 10;
+            YYTOKEN = YYCURSOR;
+            return DIGIT_16;
+        }
         "\X0000" {
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
-
-
 */
 
     }

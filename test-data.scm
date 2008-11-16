@@ -1464,11 +1464,23 @@
          (bytevector-u32-set! b 0 12345 'big)
          (bytevector-u32-ref b 0 'big)))
 
-(todo 18302628885633695743 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+(#vu8(255 255 255 255 255 255 255 253) (let1 b (make-bytevector 8)
+                                         (bytevector-u64-set! b 0 18302628885633695743 'little)
+                                         b))
+(#vu8(0 0 0 0 0 0 0 0 255 255 255 255 255 255 255 253) (let1 b (make-bytevector 16 0)
+                                         (bytevector-u64-set! b 8 18302628885633695743 'little)
+                                         b))
+(#vu8(255 255 255 255 255 255 255 253) (let1 b (make-bytevector 8)
+                                         (bytevector-s64-set! b 0 -144115188075855873 'little)
+                                         b))
+(#vu8(0 0 0 0 0 0 0 0 255 255 255 255 255 255 255 253) (let1 b (make-bytevector 16 0)
+                                         (bytevector-s64-set! b 8 -144115188075855873 'little)
+                                         b))
+(18302628885633695743 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
                                     255 255 255 255 255 255 255 253) 8 'little))
-(todo -144115188075855873 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
+(-144115188075855873 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
                                    255 255 255 255 255 255 255 253) 8 'little))
-(todo 18446744073709551613 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
+(18446744073709551613 (bytevector-u64-ref #vu8(255 255 255 255 255 255 255 255
                                                         255 255 255 255 255 255 255 253) 8 'big))
 (-3 (bytevector-s64-ref #vu8(255 255 255 255 255 255 255 255
                                     255 255 255 255 255 255 255 253) 8 'big))
@@ -1663,6 +1675,35 @@
            (string=? (utf16->string (bv-append #vu8(#xFF #xFE) (string->utf16 str 'big)) 'big #t)
                      (string-append "\xFFFE;" str)))))
 
+[definition
+  (define (almost=? x y)
+    (cond ((infinite? x)
+           (=   x (* t2.0 y)))
+          ((infinite? y)
+           (= (* t2.0 x) y))
+          ((nan? y)
+           (nan? x))
+          ((> (flabs y) (inexact (/ 1 1000000)))
+           (< (/ (flabs (- x y))
+                 (flabs y))
+              (inexact (/ 1 1000))))
+          (else
+           (< (flabs (- x y)) (inexact (/ 1 1000000))))))
+
+(define t7.389 (inexact (/ 7389 1000)))
+(define t1024.0 (inexact 1024))
+(define t1.570796 (inexact (/ 1570796 1000000)))
+(define t-1.570796 (inexact (/ -1570796 1000000)))
+(define t1.47113 (inexact (/ 147113 100000)))
+(define t0.1 (inexact (/ 1 10)))
+(define t8.0 (inexact 8))
+(define t1000.0 (inexact 1000))
+(define t0.0996687 (inexact (/ 00996687 10000000)))
+(define t2.23607 (inexact (/ 223607 100000)))
+]
+
+(#t (almost=? 3.14 (bytevector-ieee-single-native-ref #vu8(#xc3 #xf5 #x48 #x40) 0)))
+(#t (almost=? 3.14 (bytevector-ieee-double-native-ref #vu8(0 0 0 0 0 0 0 0 #x1f #x85 #xeb #x51 #xb8 #x1e #x9 #x40) 8)))
 ;; complex
 (#t (= (make-complex 1 1) (make-complex 1 1)))
 (#t (= 3 (make-complex 3 0)))
@@ -1965,32 +2006,6 @@
 (#t (fl=? (flceiling minus-inf) minus-inf))
 (#t (nan? (fltruncate my-nan)))
 
-[definition
-  (define (almost=? x y)
-    (cond ((infinite? x)
-           (=   x (* t2.0 y)))
-          ((infinite? y)
-           (= (* t2.0 x) y))
-          ((nan? y)
-           (nan? x))
-          ((> (flabs y) (inexact (/ 1 1000000)))
-           (< (/ (flabs (- x y))
-                 (flabs y))
-              (inexact (/ 1 1000))))
-          (else
-           (< (flabs (- x y)) (inexact (/ 1 1000000))))))
-
-(define t7.389 (inexact (/ 7389 1000)))
-(define t1024.0 (inexact 1024))
-(define t1.570796 (inexact (/ 1570796 1000000)))
-(define t-1.570796 (inexact (/ -1570796 1000000)))
-(define t1.47113 (inexact (/ 147113 100000)))
-(define t0.1 (inexact (/ 1 10)))
-(define t8.0 (inexact 8))
-(define t1000.0 (inexact 1000))
-(define t0.0996687 (inexact (/ 00996687 10000000)))
-(define t2.23607 (inexact (/ 223607 100000)))
-]
 (#t (almost=? (flexp t2.0) t7.389))
 (#t (almost=? (fllog t7.389) t2.0))
 (#t (almost=? (fllog t1024.0 t2.0) t10.0))
@@ -2188,9 +2203,33 @@
 (#t (= #b11+i (make-complex 3 1)))
 (#t (= #b+i (make-complex 0 1)))
 (#t (= #b-i (make-complex 0 -1)))
-(todo #t (= #b11+nan.0i (make-complex 3 my-nan)))
-(todo #t (= #b+nan.0i (make-complex 0 my-nan)))
+(#t (and (nan? (imag-part #b11+nan.0i))
+         (= 3 (real-part #b11+nan.0i))))
+(#t (and (nan? (imag-part #b+nan.0i))
+         (zero? (real-part #b+nan.0i))))
 (#t (almost=? (real-part #b1@1) (real-part 1@1)))
+
+;; number reader 8
+(1 #o1)
+(0 #o0)
+(1 #o1)
+(65 #o101)
+(65 #e#o101)
+(#t (= (inexact 65) #i#o101))
+(-9 #o-11)
+(-9 #e#o-11)
+(#t (= (inexact -65) #i#o-101))
+(#t (= (/ 9 8) #o11/10))
+(#t (= #o11+10i (make-complex 9 8)))
+(#t (= #o11-10i (make-complex 9 -8)))
+(#t (= #o11+i (make-complex 9 1)))
+(#t (= #o+i (make-complex 0 1)))
+(#t (= #o-i (make-complex 0 -1)))
+(#t (and (nan? (imag-part #o11+nan.0i))
+         (= 9 (real-part #o11+nan.0i))))
+(#t (and (nan? (imag-part #o+nan.0i))
+         (zero? (real-part #o+nan.0i))))
+(#t (almost=? (real-part #o1@1) (real-part 1@1)))
 
 ;; number reader 10
 (101 101)
@@ -2199,10 +2238,11 @@
 (#t (nan? +nan.0))
 (#t (infinite? +inf.0))
 (2/3 (/ 2 3))
-(todo (fl=? .45 (inexact 45/100)))
+(#t (almost=? .45 (inexact 45/100)))
+(#t (fl=? .45 0.45))
 (0.45 .45)
 (1.45 (inexact 145/100))
-(todo #t (infinite? +inf.0i))
+(#t (infinite? (imag-part +inf.0i)))
 (#t (= 10+11i (make-complex 10 11)))
 (#t (= 10-11i (make-complex 10 -11)))
 (#t (= 10+i (make-complex 10 1)))
@@ -2234,9 +2274,31 @@
 ("1" (format "~a" 1+0i))
 ("1" (format "~a" 1-0i))
 ("+1i" (format "~a" 0+i))
+("+inf.0i" (format "~a" +inf.0i))
 (#t (almost=? 1 (real-part 2@1.047))) ;pi/3
 (#t (almost=? -1 (real-part 2@2.0943))) ;2pi/3
 
+;; number reader 16
+(1 #x1)
+(0 #x0)
+(1 #x1)
+(257 #x101)
+(257 #e#x101)
+(#t (= (inexact 257) #i#x101))
+(-17 #x-11)
+(-17 #e#x-11)
+(#t (= (inexact -257) #i#x-101))
+(#t (= (/ 17 16) #x11/10))
+(#t (= #x11+10i (make-complex 17 16)))
+(#t (= #x11-10i (make-complex 17 -16)))
+(#t (= #x11+i (make-complex 17 1)))
+(#t (= #x+i (make-complex 0 1)))
+(#t (= #x-i (make-complex 0 -1)))
+(#t (and (nan? (imag-part #x11+nan.0i))
+         (= 17 (real-part #x11+nan.0i))))
+(#t (and (nan? (imag-part #x+nan.0i))
+         (zero? (real-part #x+nan.0i))))
+(#t (almost=? (real-part #x1@1) (real-part 1@1)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

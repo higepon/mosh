@@ -75,6 +75,10 @@ public:
     static bool lt(Object number1, Object number2);
     static bool le(Object number1, Object number2);
     static bool eq(Object number1, Object number2);
+    static bool fitsU64(Object n);
+    static uint64_t toU64(Object n);
+    static bool fitsS64(Object n);
+    static int64_t toS64(Object n);
 
     // Originally from Ypsilon Scheme
     static uint32_t nbits(uint32_t x)

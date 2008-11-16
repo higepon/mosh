@@ -43,6 +43,58 @@
 
 using namespace scheme;
 
+bool Arithmetic::fitsU64(Object n)
+{
+    MOSH_ASSERT(n.isExactInteger());
+    if (n.isFixnum()) {
+        return n.toFixnum() >= 0;
+    } else if (n.isBignum()) {
+        return n.toBignum()->fitsU64();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+uint64_t Arithmetic::toU64(Object n)
+{
+    MOSH_ASSERT(fitsU64(n));
+    if (n.isFixnum()) {
+        return n.toFixnum();
+    } else if (n.isBignum()) {
+        return n.toBignum()->toU64();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+bool Arithmetic::fitsS64(Object n)
+{
+    MOSH_ASSERT(n.isExactInteger());
+    if (n.isFixnum()) {
+        return true;
+    } else if (n.isBignum()) {
+        return n.toBignum()->fitsS64();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+int64_t Arithmetic::toS64(Object n)
+{
+    MOSH_ASSERT(fitsS64(n));
+    if (n.isFixnum()) {
+        return n.toFixnum();
+    } else if (n.isBignum()) {
+        return n.toBignum()->toS64();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
 double Arithmetic::realToDouble(Object n)
 {
     MOSH_ASSERT(n.isReal());
