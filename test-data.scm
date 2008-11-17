@@ -2528,6 +2528,13 @@
          (zero? (real-part #x+nan.0i))))
 (#t (almost=? (real-part #x1@1) (real-part 1@1)))
 
+;; even?
+(#t (even? 2))
+(#t (even? 100000000000000000000000000000000000000000000000))
+(#t (even? 4+0i))
+(#t (even? 4.0))
+
+
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))

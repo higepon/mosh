@@ -406,6 +406,21 @@ bool Arithmetic::isRationalValued(Object n)
     }
 }
 
+bool Arithmetic::isEven(Object n)
+{
+    MOSH_ASSERT(isIntegerValued(n));
+    if (n.isFixnum()) {
+        return (n.toFixnum() & 1) == 0;
+    } else if (n.isBignum()) {
+        return n.toBignum()->isEven();
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->isEven();
+    } else if (n.isCompnum()) {
+        return isEven(n.toCompnum()->real());
+    }
+    MOSH_ASSERT(false);
+}
+
 bool Arithmetic::isIntegerValued(Object n)
 {
     MOSH_ASSERT(n.isNumber());

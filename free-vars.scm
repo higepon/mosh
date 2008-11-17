@@ -344,4 +344,5 @@
     bytevector-ieee-double-native-set!
     bytevector-ieee-double-set!
     magnitude
+    even?
     )

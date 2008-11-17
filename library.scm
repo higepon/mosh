@@ -860,8 +860,8 @@
 
 ;; Returns whether x is even.
 ;; .returns whether x is even
-(define (even? x)
-  (zero? (mod x 2)))
+;; (define (even? x)
+;;   (zero? (mod x 2)))
 
 (define (odd? x)
   (= (mod x 2) 1))

@@ -368,6 +368,11 @@ Object Object::makeCompnum(Object real, Object imag)
     }
 }
 
+bool Object::isIntegerValued() const
+{
+    return Arithmetic::isIntegerValued(*this);
+}
+
 bool Object::isList() const
 {
     return Pair::isList(*this);

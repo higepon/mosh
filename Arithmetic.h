@@ -46,6 +46,7 @@ public:
     static double realToDouble(Object n);
     static Object maginude(Object n);
     static Object makePolar(Object n1, Object n2);
+    static bool isEven(Object n);
     static bool isInteger(Object n);
     static bool isRealValued(Object n);
     static bool isRationalValued(Object n);

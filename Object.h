@@ -87,6 +87,7 @@ public:
     bool isFixnum() const;
     bool isNumber() const;
     bool isInteger() const;
+    bool isIntegerValued() const;
     bool isExactInteger() const;
     bool isBoolean() const;
     bool isInstruction() const;

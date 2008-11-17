@@ -47,6 +47,10 @@ public:
 
     char* toString() const;
     double toDouble() const;
+    bool isEven() const
+    {
+        return mpz_even_p(value) != 0;
+    }
     Object sqrt() const;
 
     bool isNegative() const

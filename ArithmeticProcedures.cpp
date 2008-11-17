@@ -46,6 +46,14 @@
 
 using namespace scheme;
 
+Object scheme::evenPEx(int argc, const Object* argv)
+{
+   DeclareProcedureName("even?");
+   checkArgumentLength(1);
+   argumentCheckIntegerValued(0, n);
+   return Object::makeBool(Arithmetic::isEven(n));
+}
+
 Object scheme::magnitudeEx(int argc, const Object* argv)
 {
    DeclareProcedureName("maginude");
