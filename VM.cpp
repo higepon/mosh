@@ -1609,8 +1609,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(NUMBER_LE_TEST)
         {
             MOSH_ASSERT(index(sp_, 0).isFixnum());
-            MOSH_ASSERT(ac_.isFixnum());
-            ac_ = Object::makeBool(index(sp_, 0).toFixnum() <= ac_.toFixnum());
+            MOSH_ASSERT(ac_.isNumber());
+            ac_ = Object::makeBool(Arithmetic::le(index(sp_, 0), ac_));
             sp_--;
             goto test_entry;
         }

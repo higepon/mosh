@@ -1,5 +1,7 @@
 2008-11-17  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/srfi/%3A26.ss (srfi): Added srfi :26.
+
         * Implemented R6RS ByteVectors.
 
         * ArithmeticProcedures.cpp : Added magnitude.

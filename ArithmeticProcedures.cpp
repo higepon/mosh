@@ -403,11 +403,16 @@ Object scheme::divideEx(int argc, const Object* argv)
     return ret;
 }
 
+// todo
 Object scheme::quotientEx(int argc, const Object* argv)
 {
     DeclareProcedureName("quotient");
     checkArgumentLength(2);
-    return divideEx(argc, argv);
+    if (argv[0].isFixnum() && argv[1].isFixnum()) {
+        return Object::makeFixnum(argv[0].toFixnum() / argv[1].toFixnum());
+    } else {
+        return divideEx(argc, argv);
+    }
 }
 
 Object scheme::remainderEx(int argc, const Object* argv)
