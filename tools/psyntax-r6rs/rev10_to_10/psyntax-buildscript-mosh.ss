@@ -550,8 +550,6 @@
     (bytevector-ieee-double-native-set!         interaction r bv)
     (bytevector-ieee-double-ref                 interaction r bv)
     (bytevector-ieee-single-native-ref          interaction r bv)
-    (bytevector-ieee-single-native-set!         interaction r bv)
-    (bytevector-ieee-single-ref                 interaction r bv)
     (bytevector-length                          interaction r bv)
     (bytevector-s16-native-ref                  interaction r bv)
     (bytevector-s16-native-set!                 interaction r bv)

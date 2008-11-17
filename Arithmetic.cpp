@@ -40,6 +40,7 @@
 #include "Fixnum.h"
 #include "ErrorProcedures.h"
 #include "Compnum.h"
+#include "SString.h"
 
 using namespace scheme;
 
