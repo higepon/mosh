@@ -44,6 +44,51 @@
 
 using namespace scheme;
 
+Object Arithmetic::sqrt(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::sqrt(n);
+    } else if (n.isBignum()) {
+        return n.toBignum()->sqrt();
+    } else if (n.isFixnum()) {
+        return n.toFlonum()->sqrt();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->sqrt();
+    }
+
+    MOSH_ASSERT(false); // todo Compnum
+}
+
+Object Arithmetic::negate(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    return Arithmetic::mul(n, Object::makeFixnum(-1));
+}
+
+bool Arithmetic::isNegative(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    return Arithmetic::gt(n, Object::makeFixnum(0));
+}
+
+Object Arithmetic::maginude(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isReal()) {
+        if (isNegative(n)) {
+            return negate(n);
+        } else {
+            return n;
+        }
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->maginude();
+    } else {
+        MOSH_ASSERT(false);
+        return Object::Undef;
+    }
+}
+
 bool Arithmetic::fitsU64(Object n)
 {
     MOSH_ASSERT(n.isExactInteger());

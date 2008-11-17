@@ -1011,10 +1011,8 @@ Object scheme::bytevectorIeeeSingleRefEx(int argc, const Object* argv)
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
-    } else if (index % 4 != 0) {
-        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
-        return Object::Undef;
     }
+
     if (endianness == Symbol::LITTLE) {
         return Object::makeFlonum(bytevector->ieeeSingleRefLittle(index));
     } else if (endianness == Symbol::BIG) {
@@ -1054,9 +1052,6 @@ Object scheme::bytevectorIeeeSingleSetDEx(int argc, const Object* argv)
 
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
-        return Object::Undef;
-    } else if (index % 4 != 0) {
-        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
     const double v = Arithmetic::realToDouble(value);
@@ -1102,9 +1097,6 @@ Object scheme::bytevectorIeeeDoubleRefEx(int argc, const Object* argv)
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
-    } else if (index % 8 != 0) {
-        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
-        return Object::Undef;
     }
 
     if (endianness == Symbol::LITTLE) {
@@ -1145,9 +1137,6 @@ Object scheme::bytevectorIeeeDoubleSetDEx(int argc, const Object* argv)
 
     if (!bytevector->isValid64RefIndex(index)) {
         callAssertionViolationAfter(procedureName, "index out of range", L1(argv[1]));
-        return Object::Undef;
-    } else if (index % 8 != 0) {
-        callAssertionViolationAfter(procedureName, "index not aligned", L1(argv[1]));
         return Object::Undef;
     }
 

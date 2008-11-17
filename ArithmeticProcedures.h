@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object magnitudeEx(int argc, const Object* argv);
     Object complexPEx(int argc, const Object* argv);
     Object realPEx(int argc, const Object* argv);
     Object integerPEx(int argc, const Object* argv);

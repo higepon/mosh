@@ -56,6 +56,12 @@ public:
         return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
     }
 
+    Object maginude() const
+    {
+        return Arithmetic::sqrt(Arithmetic::add(Arithmetic::mul(real(), real()),
+                                                Arithmetic::mul(imag(), imag())));
+    }
+
     static bool eq(Compnum* n1, Compnum* n2)
     {
         return Arithmetic::eq(n1->real(), n2->real()) &&

@@ -6059,3 +6059,6 @@
 (define fasl-write! fasl-write)
 (define fasl-read! fasl-read)
 
+;; temporary
+(define (fxand x y)
+  (bitwise-and x y))

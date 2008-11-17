@@ -1,5 +1,5 @@
 /*
- * Fixnum.h - 
+ * Fixnum.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -50,6 +50,9 @@ public:
     {
         return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
+
+    static Object sqrt(Object n);
+
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(int n1, int n2)\

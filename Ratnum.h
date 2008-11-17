@@ -58,6 +58,8 @@ public:
         mpq_set(value, rational);
     }
 
+    Object sqrt() const;
+
     Object numerator() const
     {
         return Bignum::makeInteger(mpq_numref(value));
@@ -234,6 +236,8 @@ private:
             return Object::makeRatnum(r);
         }
     }
+
+    Object sqrtUnsigned(const mpq_t r) const;
 
 };
 

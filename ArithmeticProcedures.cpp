@@ -46,6 +46,14 @@
 
 using namespace scheme;
 
+Object scheme::magnitudeEx(int argc, const Object* argv)
+{
+   DeclareProcedureName("maginude");
+   checkArgumentLength(1);
+   argumentCheckNumber(0, number);
+   return Arithmetic::maginude(number);
+}
+
 Object scheme::complexPEx(int argc, const Object* argv)
 {
    DeclareProcedureName("complex?");

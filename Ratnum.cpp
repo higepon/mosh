@@ -37,3 +37,31 @@
 
 using namespace scheme;
 
+Object Ratnum::sqrt() const
+{
+    if (mpq_sgn(value) >= 0) {
+        return sqrtUnsigned(value);
+    } else {
+        mpq_t neg;
+        mpq_init(neg);
+        mpq_neg(neg, value);
+        return Object::makeCompnum(Object::makeFixnum(0),
+                                   sqrtUnsigned(neg));
+    }
+}
+
+Object Ratnum::sqrtUnsigned(const mpq_t r) const
+{
+    MOSH_ASSERT(mpq_sgn(value) >= 0);
+    mpz_t num;
+    mpz_t den;
+    mpz_init(num);
+    mpz_init(den);
+    mpz_sqrt(num, mpq_numref(value));
+    mpz_sqrt(den, mpq_denref(value));
+    mpq_t ret;
+    mpq_init(ret);
+    mpq_set_num(ret, num);
+    mpq_set_den(ret, den);
+    return makeNumber(ret);
+}

@@ -61,6 +61,7 @@ public:
     Object toRatnum() const;
     bool isNan() const { return isnan(value_); }
     bool isInfinite() const { return isinf(value_); }
+    Object sqrt() const;
 
     Object numerator() const;
     Object denominator() const;
@@ -131,11 +132,6 @@ public:
     static Object atan(Flonum* f1, Flonum* f2)
     {
         return Object::makeFlonum(::atan2(f1->value(), f2->value()));
-    }
-
-    Object sqrt() const
-    {
-        return Object::makeFlonum(::sqrt(value_));
     }
 
     static Object log(Flonum* f1, Flonum* f2)

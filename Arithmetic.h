@@ -42,12 +42,16 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static Object sqrt(Object n);
     static double realToDouble(Object n);
+    static Object maginude(Object n);
     static Object makePolar(Object n1, Object n2);
     static bool isInteger(Object n);
     static bool isRealValued(Object n);
     static bool isRationalValued(Object n);
     static bool isIntegerValued(Object n);
+    static bool isNegative(Object n);
+    static Object negate(Object n);
     static Object bitwiseNot(Object e);
     static Object bitwiseAnd(Object e1, Object e2);
     static Object bitwiseIor(Object e1, Object e2);

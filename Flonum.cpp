@@ -99,3 +99,13 @@ Object Flonum::denominator() const
     }
     return Arithmetic::inexact(toRatnum().toRatnum()->denominator());
 }
+
+Object Flonum::sqrt() const
+{
+    if (value_ < 0.0) {
+        return Object::makeCompnum(Object::makeFlonum(0.0),
+                                   Object::makeFlonum(::sqrt(fabs(value_))));
+    } else {
+        return Object::makeFlonum(::sqrt(value_));
+    }
+}

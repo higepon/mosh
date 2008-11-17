@@ -1,5 +1,5 @@
 /*
- * Bignum.cpp - 
+ * Fixnum.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,51 +26,41 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Bignum.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Fixnum.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
 #include "Object.h"
 #include "Object-inl.h"
-#include "Bignum.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+#include "Compnum.h"
+#include "Fixnum.h"
 
 using namespace scheme;
 
-Bignum::Bignum()
+Object Fixnum::sqrt(Object n)
 {
-    mpz_init(this->value);
-}
-
-Bignum::Bignum(long value)
-{
-    mpz_init(this->value);
-    mpz_set_si(this->value, value);
-}
-
-Bignum::Bignum(const mpz_t value)
-{
-    mpz_init_set(this->value, value);
-}
-
-Object Bignum::sqrt() const
-{
-    Bignum* const b = new Bignum;
-    if (isNegative()) {
-        mpz_neg(b->value, value);
-        mpz_sqrt(b->value, b->value);
-        return makeInteger(b);
-    } else {
-        mpz_sqrt(b->value, value);
-        return makeInteger(b);
+    MOSH_ASSERT(n.isFixnum());
+    const int value = n.toFixnum();
+    if (value == 0) {
+        return n;
+    } else if (value > 0) {
+        const double root = ::sqrt(static_cast<double>(value));
+        const int rootAsInt = floor(root);
+        // exact
+        if (rootAsInt * rootAsInt == value) {
+            return Object::makeFixnum(rootAsInt);
+        } else {
+            return Object::makeFlonum(root);
+        }
+    } else { // negative
+        const double root = ::sqrt(static_cast<double>(-value));
+        const int rootAsInt = floor(root);
+        // exact
+        if (rootAsInt * rootAsInt == -value) {
+            return Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(rootAsInt));
+        } else {
+            return Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFixnum(rootAsInt));
+        }
     }
-}
-
-
-char* Bignum::toString() const
-{
-    return mpz_get_str(NULL, 10, value);
-}
-
-double Bignum::toDouble() const
-{
-    return mpz_get_d(value);
 }

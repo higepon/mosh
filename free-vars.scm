@@ -343,4 +343,5 @@
     bytevector-ieee-single-set!
     bytevector-ieee-double-native-set!
     bytevector-ieee-double-set!
+    magnitude
     )

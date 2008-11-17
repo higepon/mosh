@@ -4,7 +4,6 @@ test:
 #	$(MOSH) tests/r6rs/run/eval.sps
 #	$(MOSH) tests/r6rs/run/base.sps
 #	$(MOSH) tests/r6rs/run/syntax-case.sps
-#	$(MOSH) tests/r6rs/run/bytevectors.sps
 #	$(MOSH) tests/r6rs/run/r5rs.sps
 #	$(MOSH) tests/r6rs/run/conditions.sps
 #	$(MOSH) tests/r6rs/run/reader.sps
@@ -22,3 +21,4 @@ test:
 	$(MOSH) tests/r6rs/run/enums.sps
 	$(MOSH) tests/r6rs/run/sorting.sps
 	$(MOSH) tests/r6rs/run/records/syntactic.sps
+	$(MOSH) tests/r6rs/run/bytevectors.sps

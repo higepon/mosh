@@ -1,5 +1,11 @@
 2008-11-17  higepon  <higepon@users.sourceforge.jp>
 
+        * Implemented R6RS ByteVectors.
+
+        * ArithmeticProcedures.cpp : Added magnitude.
+
+        * Added : Fixnum.cpp
+
         * lib/core/bytevector.scm : Added bytevector-uint-ref, bytevector-sint-ref, bytevector-uint-set!
                                           bytevector-sint-set!, bytevector->uint-list, bytevector->sint-list
                                           uint-list->bytevector and sint-list->bytevector.

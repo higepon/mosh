@@ -47,6 +47,12 @@ public:
 
     char* toString() const;
     double toDouble() const;
+    Object sqrt() const;
+
+    bool isNegative() const
+    {
+        return mpz_cmp_si(value, 0) < 0;
+    }
 
     bool fitsU64() const
     {
