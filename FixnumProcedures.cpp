@@ -119,11 +119,46 @@ Object scheme::fxLePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-//Object scheme::fxzeroPEx(int argc, const Object* argv);
-//Object scheme::fxpositivePEx(int argc, const Object* argv);
-//Object scheme::fxnegativePEx(int argc, const Object* argv);
-//Object scheme::fxoddPEx(int argc, const Object* argv);
-//Object scheme::fxevenPEx(int argc, const Object* argv);
+Object scheme::fxzeroPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxzero?");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeBool(Fixnum::eq(fixnum, 0));
+}
+
+Object scheme::fxpositivePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxpositive?");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeBool(Fixnum::gt(fixnum, 0));
+}
+
+Object scheme::fxnegativePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxnegative?");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeBool(Fixnum::lt(fixnum, 0));
+}
+
+Object scheme::fxoddPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxodd?");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeBool(Fixnum::isOdd(fixnum));
+}
+
+Object scheme::fxevenPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxeven?");
+    checkArgumentLength(1);
+    argumentAsFixnum(0, fixnum);
+    return Object::makeBool(Fixnum::isEven(fixnum));
+}
+
 //Object scheme::fxmaxEx(int argc, const Object* argv);
 //Object scheme::fxminEx(int argc, const Object* argv);
 //Object scheme::fxAddEx(int argc, const Object* argv);

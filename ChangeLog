@@ -1,3 +1,7 @@
+2008-11-18  kokosabu  <kokosabu@gmail.com>
+
+        * Added : fxzero?, fxpositive?, fxnegative?, fxodd?, fxeven?.
+
 2008-11-17  higepon  <higepon@users.sourceforge.jp>
 
         * Rewrote even? for new numeric tower.

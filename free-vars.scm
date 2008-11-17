@@ -335,6 +335,11 @@
     fx<?
     fx>=?
     fx<=?
+    fxzero?
+    fxpositive?
+    fxnegative?
+    fxodd?
+    fxeven?
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref

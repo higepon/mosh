@@ -53,7 +53,15 @@ public:
 
     static Object sqrt(Object n);
 
+    static bool isEven(int n)
+    {
+        return (n & 1) == 0;
+    }
 
+    static bool isOdd(int n)
+    {
+        return !isEven(n);
+    }
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(int n1, int n2)\
     {\
