@@ -30,6 +30,15 @@
         (for-each-with-index
          (lambda (index test)
            (match test
+             [('test test . expected)
+              (write '(display "\r"))
+              (write `(let1 val (begin ,test)
+                        (if (equal? ,@expected val)
+                            (format #t " Running ~d/~d" ,index ,test-num)
+                            (begin
+                              (add-error (quote ,test) (quote ,@expected) val)))))
+              (newline)
+              ]
              [('error . test)
               (write '(display "\r"))
               (write `(if (equal? 'error (guard (con [#t 'error])

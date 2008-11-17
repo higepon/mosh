@@ -1,5 +1,9 @@
 2008-11-17  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/core/bytevector.scm : Added bytevector-uint-ref, bytevector-sint-ref, bytevector-uint-set!
+                                          bytevector-sint-set!, bytevector->uint-list, bytevector->sint-list
+                                          uint-list->bytevector and sint-list->bytevector.
+
         * Added: bytevector-ieee-single-ref, bytevector-ieee-double-ref,
                  bytevector-ieee-single-set!, bytevector-ieee-double-set!,
                  bytevector-ieee-single-native-set! and bytevector-ieee-double-native-set!.

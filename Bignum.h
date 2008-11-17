@@ -114,7 +114,7 @@ public:
     {
         Bignum* ret = new Bignum();
         mpz_and(ret->value, value, b->value);
-        return Object::makeBignum(ret);
+        return makeInteger(ret);
     }
 
     Object bitwiseIor(int n)

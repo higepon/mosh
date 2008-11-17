@@ -180,8 +180,8 @@ psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -ie "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-./compiler-with-library.scm: ./compiler-vm-cpp.scm ./library.scm lib/core/flonum.scm lib/core/bitwise.scm
-	cat ./library.scm ./compiler-vm-cpp.scm lib/core/flonum.scm lib/core/bitwise.scm > $(PWD)/$@
+./compiler-with-library.scm: ./library.scm ./compiler-vm-cpp.scm lib/core/flonum.scm lib/core/bitwise.scm lib/core/bytevector.scm
+	cat $^ > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm
 	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@

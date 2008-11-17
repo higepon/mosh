@@ -47,6 +47,7 @@
 #include "UTF32Codec.h"
 #include "Bignum.h"
 #include "Arithmetic.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
