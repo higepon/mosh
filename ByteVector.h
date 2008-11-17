@@ -394,13 +394,136 @@ public:
 
     float ieeeSingleNativeRef(int index)
     {
-        return *((float*)&data_[index]);
+        return *(reinterpret_cast<float*>(&data_[index]));
+    }
+
+    float ieeeSingleRefLittle(int index)
+    {
+#if WORDS_BIGENDIAN
+        const int size = sizeof(float);
+        uint8_t data[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = data_[index + size - i - 1];
+        }
+        return *(reinterpret_cast<float*>(data));
+#else
+        return *(reinterpret_cast<float*>(&data_[index]));
+#endif
+    }
+
+    float ieeeSingleRefBig(int index)
+    {
+#if WORDS_BIGENDIAN
+        return *(reinterpret_cast<float*>(&data_[index]));
+#else
+        const int size = sizeof(float);
+        uint8_t data[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = data_[index + size - i - 1];
+        }
+        return *(reinterpret_cast<float*>(data));
+#endif
+    }
+
+    void ieeeSingleNativeSet(int index, float value)
+    {
+        *(reinterpret_cast<float*>((&data_[index]))) = value;
+    }
+
+    void ieeeSingleSetBig(int index, float value)
+    {
+#if WORDS_BIGENDIAN
+        *(reinterpret_cast<float*>((&data_[index]))) = value;
+#else
+        const int size = sizeof(float);
+        uint8_t data[size];
+        *(reinterpret_cast<float*>(data)) = value;
+        for (int i = 0; i < size; i++) {
+            data_[index + size - i - 1] = data[i];
+        }
+#endif
+    }
+
+    void ieeeSingleSetLittle(int index, float value)
+    {
+#if WORDS_BIGENDIAN
+        const int size = sizeof(float);
+        uint8_t data[size];
+        *(reinterpret_cast<float*>(data)) = value;
+        for (int i = 0; i < size; i++) {
+            data_[index + size - i - 1] = data[i];
+        }
+#else
+        *(reinterpret_cast<float*>((&data_[index]))) = value;
+#endif
     }
 
     double ieeeDoubleNativeRef(int index)
     {
-        return *((double*)&data_[index]);
+        return *(reinterpret_cast<double*>(&data_[index]));
     }
+
+    double ieeeDoubleRefBig(int index)
+    {
+#if WORDS_BIGENDIAN
+        return *(reinterpret_cast<double*>(&data_[index]));
+#else
+        const int size = sizeof(double);
+        uint8_t data[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = data_[index + size - i - 1];
+        }
+        return *(reinterpret_cast<double*>(data));
+#endif
+    }
+
+    double ieeeDoubleRefLittle(int index)
+    {
+#if WORDS_BIGENDIAN
+        const int size = sizeof(double);
+        uint8_t data[size];
+        for (int i = 0; i < size; i++) {
+            data[i] = data_[index + size - i - 1];
+        }
+        return *(reinterpret_cast<double*>(data));
+#else
+        return *(reinterpret_cast<double*>(&data_[index]));
+#endif
+    }
+
+    void ieeeDoubleNativeSet(int index, double value)
+    {
+        *(reinterpret_cast<double*>((&data_[index]))) = value;
+    }
+
+    void ieeeDoubleSetBig(int index, double value)
+    {
+#if WORDS_BIGENDIAN
+        *(reinterpret_cast<double*>((&data_[index]))) = value;
+#else
+        const int size = sizeof(double);
+        uint8_t data[size];
+        *(reinterpret_cast<double*>(data)) = value;
+        for (int i = 0; i < size; i++) {
+            data_[index + size - i - 1] = data[i];
+        }
+#endif
+    }
+
+    void ieeeDoubleSetLittle(int index, double value)
+    {
+#if WORDS_BIGENDIAN
+        const int size = sizeof(double);
+        uint8_t data[size];
+        *(reinterpret_cast<double*>(data)) = value;
+        for (int i = 0; i < size; i++) {
+            data_[index + size - i - 1] = data[i];
+        }
+#else
+        *(reinterpret_cast<double*>((&data_[index]))) = value;
+#endif
+    }
+
 
     void fill(uint8_t value)
     {

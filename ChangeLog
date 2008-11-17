@@ -1,3 +1,9 @@
+2008-11-17  higepon  <higepon@users.sourceforge.jp>
+
+        * Added: bytevector-ieee-single-ref, bytevector-ieee-double-ref,
+                 bytevector-ieee-single-set!, bytevector-ieee-double-set!,
+                 bytevector-ieee-single-native-set! and bytevector-ieee-double-native-set!.
+
 2008-11-16  higepon  <higepon@users.sourceforge.jp>
 
         * Added: bytevector-ieee-single-native-ref and bytevector-ieee-double-native-ref.
