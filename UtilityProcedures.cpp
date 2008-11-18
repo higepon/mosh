@@ -420,19 +420,19 @@ Object scheme::modEx(int argc, const Object* argv)
     return Object::makeFixnum(mod(number1, number2));
 }
 
-Object scheme::divEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("div");
-    checkArgumentLength(2);
+// Object scheme::divEx(int argc, const Object* argv)
+// {
+//     DeclareProcedureName("div");
+//     checkArgumentLength(2);
 
-    argumentAsFixnum(0, number1);
-    argumentAsFixnum(1, number2);
-    if (0 == number2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
-        return Object::Undef;
-    }
-    return Object::makeFixnum(div(number1, number2));
-}
+//     argumentAsFixnum(0, number1);
+//     argumentAsFixnum(1, number2);
+//     if (0 == number2) {
+//         callAssertionViolationAfter(procedureName, "Dividing by zero");
+//         return Object::Undef;
+//     }
+//     return Object::makeFixnum(div(number1, number2));
+// }
 
 
 Object scheme::exitEx(int argc, const Object* argv)

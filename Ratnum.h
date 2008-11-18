@@ -44,9 +44,9 @@ public:
     {
         mpq_init(value);
         if (numerator >= 0 && denominator < 0) {
-            mpq_set_si(value, -numerator, abs(denominator));
+            mpq_set_si(value, -numerator, ::abs(denominator));
         } else if (numerator < 0 && denominator< 0) {
-            mpq_set_si(value, abs(numerator), abs(denominator));
+            mpq_set_si(value, ::abs(numerator), ::abs(denominator));
         } else {
             mpq_set_si(value, numerator, denominator);
         }
@@ -59,6 +59,15 @@ public:
     }
 
     Object sqrt() const;
+    Object floor() const;
+
+    Object abs() const
+    {
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_abs(ret, value);
+        return makeNumber(ret);
+    }
 
     Object numerator() const
     {

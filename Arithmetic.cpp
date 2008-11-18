@@ -44,6 +44,74 @@
 
 using namespace scheme;
 
+Object Arithmetic::floor(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum() || n.isBignum()) {
+        return n;
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->floor();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->floor();
+    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
+Object Arithmetic::integerDiv(Object n1, Object n2)
+{
+    MOSH_ASSERT(n1.isReal());
+    MOSH_ASSERT(n2.isReal());
+    MOSH_ASSERT(!Arithmetic::isExactZero(n2));
+    MOSH_ASSERT(!(n1.isFlonum() && n1.toFlonum()->isInfinite()));
+    MOSH_ASSERT(!(n1.isFlonum() && n1.toFlonum()->isNan()));
+    if (n1.isFixnum() && n2.isFixnum()) {
+        return Fixnum::integerDiv(n1.toFixnum(), n2.toFixnum());
+    } else if (n1.isFlonum() && n2.isFlonum()) {
+        return Flonum::integerDiv(n1.toFlonum(), n2.toFlonum());
+    } else {
+        if (isNegative(n2)) {
+            return negate(floor(div(n1, negate(n2))));
+        } else {
+            return floor(div(n1, n2));
+        }
+    }
+}
+
+Object Arithmetic::integerDiv0(Object n1, Object n2)
+{
+    MOSH_ASSERT(n1.isReal());
+    MOSH_ASSERT(n2.isReal());
+    Object div = integerDiv(n1, n2);
+    Object mod = sub(n1, mul(div, n2));
+    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2))))) {
+        return div;
+    } else {
+        if (isNegative(n2)) {
+            return sub(div, Object::makeFixnum(1));
+        } else {
+            return add(div, Object::makeFixnum(1));
+        }
+    }
+}
+
+Object Arithmetic::abs(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum()) {
+        return Fixnum::abs(n.toFixnum());
+    } else if (n.isBignum()) {
+        return n.toBignum()->abs();
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->abs();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->abs();
+    }
+
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
 Object Arithmetic::sqrt(Object n)
 {
     MOSH_ASSERT(n.isNumber());
@@ -51,7 +119,7 @@ Object Arithmetic::sqrt(Object n)
         return Fixnum::sqrt(n);
     } else if (n.isBignum()) {
         return n.toBignum()->sqrt();
-    } else if (n.isFixnum()) {
+    } else if (n.isFlonum()) {
         return n.toFlonum()->sqrt();
     } else if (n.isRatnum()) {
         return n.toRatnum()->sqrt();
@@ -69,7 +137,7 @@ Object Arithmetic::negate(Object n)
 bool Arithmetic::isNegative(Object n)
 {
     MOSH_ASSERT(n.isReal());
-    return Arithmetic::gt(n, Object::makeFixnum(0));
+    return Arithmetic::lt(n, Object::makeFixnum(0));
 }
 
 Object Arithmetic::maginude(Object n)

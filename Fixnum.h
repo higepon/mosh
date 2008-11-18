@@ -62,6 +62,27 @@ public:
     {
         return !isEven(n);
     }
+
+    static Object abs(int n)
+    {
+        return Object::makeFixnum(::abs(n));
+    }
+
+    static Object integerDiv(int x, int y)
+    {
+        int div;
+        if (x == 0) {
+            div = 0;
+        } else if (x > 0) {
+            div = x / y;
+        } else if (y > 0) {
+            div = (x - y + 1) / y;
+        } else {
+            div = (x + y + 1) / y;
+        }
+        return Object::makeFixnum(div);
+    }
+
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(int n1, int n2)\
     {\

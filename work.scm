@@ -2,5 +2,5 @@
         (srfi :26)
         (mosh string))
 
-(display ((cut cons 1 <>) 3))
+(display (div 1000000000000000000 3))
 

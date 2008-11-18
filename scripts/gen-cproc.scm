@@ -19,6 +19,10 @@
     "geEx"]
    [(string=? name "<=")
     "leEx"]
+   [(string=? name "div")
+    "integerDivEx"]
+   [(string=? name "div0")
+    "integerDiv0Ex"]
    [(string=? name "fldiv")
     "flIntegerDivEx"]
    [(string=? name "flmod")

@@ -46,42 +46,90 @@
 
 using namespace scheme;
 
+Object scheme::integerDivEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("div");
+    checkArgumentLength(2);
+    argumentCheckReal(0, n1);
+    argumentCheckReal(1, n2);
+    if (Arithmetic::isExactZero(n2)) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", n2);
+        return Object::Undef;
+    }
+    if (n1.isFlonum()) {
+        Flonum* const flonum = n1.toFlonum();
+        if (flonum->isInfinite() || flonum->isNan()) {
+            callWrongTypeOfArgumentViolationAfter(procedureName, "neither infinite nor a NaN", n1);
+            return Object::Undef;
+        }
+    }
+    return Arithmetic::integerDiv(n1, n2);
+}
+
+Object scheme::integerDiv0Ex(int argc, const Object* argv)
+{
+    DeclareProcedureName("div0");
+    checkArgumentLength(2);
+    argumentCheckReal(0, n1);
+    argumentCheckReal(1, n2);
+    if (Arithmetic::isExactZero(n2)) {
+        callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", n2);
+        return Object::Undef;
+    }
+    if (n1.isFlonum()) {
+        Flonum* const flonum = n1.toFlonum();
+        if (flonum->isInfinite() || flonum->isNan()) {
+            callWrongTypeOfArgumentViolationAfter(procedureName, "neither infinite nor a NaN", n1);
+            return Object::Undef;
+        }
+    }
+    return Arithmetic::integerDiv0(n1, n2);
+}
+
+Object scheme::absEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("even?");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::abs(n);
+}
+
 Object scheme::evenPEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("even?");
-   checkArgumentLength(1);
-   argumentCheckIntegerValued(0, n);
-   return Object::makeBool(Arithmetic::isEven(n));
+    DeclareProcedureName("even?");
+    checkArgumentLength(1);
+    argumentCheckIntegerValued(0, n);
+    return Object::makeBool(Arithmetic::isEven(n));
 }
 
 Object scheme::oddPEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("odd?");
-   checkArgumentLength(1);
-   argumentCheckIntegerValued(0, n);
-   return Object::makeBool(!Arithmetic::isEven(n));
+    DeclareProcedureName("odd?");
+    checkArgumentLength(1);
+    argumentCheckIntegerValued(0, n);
+    return Object::makeBool(!Arithmetic::isEven(n));
 }
 
 Object scheme::magnitudeEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("maginude");
-   checkArgumentLength(1);
-   argumentCheckNumber(0, number);
-   return Arithmetic::maginude(number);
+    DeclareProcedureName("maginude");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Arithmetic::maginude(number);
 }
 
 Object scheme::complexPEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("complex?");
-   checkArgumentLength(1);
-   return Object::makeBool(argv[0].isComplex());
+    DeclareProcedureName("complex?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isComplex());
 }
 
 Object scheme::realPEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("real?");
-   checkArgumentLength(1);
-   return Object::makeBool(argv[0].isReal());
+    DeclareProcedureName("real?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isReal());
 }
 
 Object scheme::integerPEx(int argc, const Object* argv)
@@ -129,18 +177,18 @@ Object scheme::integerValuedPEx(int argc, const Object* argv)
 
 Object scheme::numeratorEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("numerator");
-   checkArgumentLength(1);
-   argumentCheckRational(0, rational);
-   return Arithmetic::numerator(rational);
+    DeclareProcedureName("numerator");
+    checkArgumentLength(1);
+    argumentCheckRational(0, rational);
+    return Arithmetic::numerator(rational);
 }
 
 Object scheme::denominatorEx(int argc, const Object* argv)
 {
-   DeclareProcedureName("denominator");
-   checkArgumentLength(1);
-   argumentCheckRational(0, rational);
-   return Arithmetic::denominator(rational);
+    DeclareProcedureName("denominator");
+    checkArgumentLength(1);
+    argumentCheckRational(0, rational);
+    return Arithmetic::denominator(rational);
 }
 
 Object scheme::infinitePEx(int argc, const Object* argv)

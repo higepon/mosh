@@ -42,6 +42,10 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static Object integerDiv(Object n1, Object n2);
+    static Object integerDiv0(Object n1, Object n2);
+    static Object floor(Object n);
+    static Object abs(Object n);
     static Object sqrt(Object n);
     static double realToDouble(Object n);
     static Object maginude(Object n);

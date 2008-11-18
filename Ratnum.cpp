@@ -65,3 +65,11 @@ Object Ratnum::sqrtUnsigned(const mpq_t r) const
     mpq_set_den(ret, den);
     return makeNumber(ret);
 }
+
+Object Ratnum::floor() const
+{
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_fdiv_q(ret,  mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
+}

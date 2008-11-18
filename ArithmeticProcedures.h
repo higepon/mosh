@@ -36,6 +36,9 @@
 
 namespace scheme {
 
+    Object integerDiv0Ex(int argc, const Object* argv);
+    Object integerDivEx(int argc, const Object* argv);
+    Object absEx(int argc, const Object* argv);
     Object evenPEx(int argc, const Object* argv);
     Object oddPEx(int argc, const Object* argv);
     Object magnitudeEx(int argc, const Object* argv);

@@ -51,7 +51,15 @@ public:
     {
         return mpz_even_p(value) != 0;
     }
+
     Object sqrt() const;
+
+    Object abs() const
+    {
+        Bignum* const b = new Bignum;
+        mpz_abs(b->value, value);
+        return makeInteger(b);
+    }
 
     bool isNegative() const
     {

@@ -104,8 +104,6 @@
     (source-info (lambda (x) #f))
     (eval (lambda a (evaluate (car a))))
     (apply apply-proc)
-    mod
-    div
     (assq assq)
     (exit exit)
     (macroexpand-1 pass1/macroexpand)
@@ -351,4 +349,7 @@
     magnitude
     even?
     odd?
+    abs
+    div
+    div0
     )
