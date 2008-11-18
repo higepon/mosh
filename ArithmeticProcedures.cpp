@@ -335,7 +335,7 @@ Object scheme::addEx(int argc, const Object* argv)
     if (0 == argc) {
         return Object::makeFixnum(0);
     } else if (1 == argc) {
-        argumentCheckFixnum(0, number);
+        argumentCheckNumber(0, number);
         return number;
     }
 
@@ -357,8 +357,8 @@ Object scheme::subEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
-        argumentAsFixnum(0, number);
-        return Object::makeFixnum(-1 * number);
+        argumentCheckNumber(0, number);
+        return Arithmetic::mul(-1, number);
     }
 
     Object ret = argv[0];
