@@ -2674,7 +2674,10 @@
 (-4 (div0 -139/10 35/10))
 (1/10 (mod0 -139/10 35/10))
 
-
+;; gcd/lcm
+(4 (gcd 32 -36))
+(0 (gcd))
+(10 (gcd -10))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

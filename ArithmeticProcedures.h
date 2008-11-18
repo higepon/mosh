@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object gcdEx(int argc, const Object* argv);
+    Object lcmEx(int argc, const Object* argv);
     Object integerDiv0Ex(int argc, const Object* argv);
     Object integerDivEx(int argc, const Object* argv);
     Object absEx(int argc, const Object* argv);
