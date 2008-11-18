@@ -380,13 +380,13 @@ Object scheme::mulEx(int argc, const Object* argv)
     if (0 == argc) {
         return Object::makeFixnum(1);
     } else if (1 == argc) {
-        argumentCheckFixnum(0, number);
+        argumentCheckNumber(0, number);
         return number;
     }
 
     Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
-        argumentCheckFixnum(i, num);
+        argumentCheckNumber(i, num);
         ret = Arithmetic::mul(ret, num);
 
         // error occured
@@ -403,7 +403,7 @@ Object scheme::divideEx(int argc, const Object* argv)
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
-        argumentCheckFixnum(0, number);
+        argumentCheckNumber(0, number);
         return Arithmetic::div(Object::makeFixnum(1), number);
     }
 
