@@ -1,6 +1,6 @@
 2008-11-18  higepon  <higepon@users.sourceforge.jp>
 
-        * Added : gcd.
+        * Added : gcd and lcm.
 
         * Rewrote : odd?, +, -, *, /, abs, div, mod, div0, mod0, div-and-mod div0-and-mod0.
 

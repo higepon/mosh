@@ -1,48 +1,16 @@
-;; (import (except (rnrs) gcd)
-;;         (srfi :1)
-;;         (mosh string))
+(define (lcm2 a b)
+  (/ (* a b) (gcd2 a b)))
 
-;; ;; N.B. We can implement much faster version for Bignum using GMP.
-;; (define (gcd2 m n)
-;;   (if (zero? n)
-;;       (abs m)
-;;       (gcd2 n (mod m n))))
+(define (lcm . n*)
+  (unless (for-all integer-valued? n*)
+    (assertion-violation 'lcm "integer valued numbers required"))
+  (case (length n*)
+    [(0) 1]
+    [(1) (abs (first n*))]
+    [(2) (lcm2 (first n*) (second n*))]
+    [else
+     (apply lcm (lcm2 (first n*) (second n*)) (cddr n*))]))
 
-;; (define (gcd . n*)
-;;   (unless (for-all integer-valued? n*)
-;;     (assertion-violation 'gcd "integer valued numbers required"))
-;;   (case (length n*)
-;;     [(0) 0]
-;;     [(1) (abs (first n*))]
-;;     [(2) (gcd2 (first n*) (second n*))]
-;;     [else
-;;      (apply gcd (gcd2 (first n*) (second n*)) (cddr n*))]))
-;; (define (gcd2 m n)
-;;   (if (zero? n)
-;;       (abs m)
-;;       (gcd2 n (mod m n))))
 
-;; (define (gcd1 . n)
-;;     (cond
-;;      [(= (length n) 2) (display 'hoge) (gcd2 (first n) (second n))]
-;;     [else
-;;      (apply gcd (gcd2 (first n) (second n)) (cddr n))]))
-(define (gcd2 m n)
-  (if (zero? n)
-      (abs m)
-      (gcd2 n (mod m n))))
-
-(define (gcd n m)
-)
-;;   (unless (for-all integer-valued? n*)
-;;     (assertion-violation 'gcd "integer valued numbers required"))
-;;   (case (length n*)
-;;     [(0) 0]
-;;     [(1) (abs (first n*))]
-;;     [(2) (gcd2 (first n*) (second n*))]
-;;     [else
-;;      (apply gcd (gcd2 (first n*) (second n*)) (cddr n*))]))
-
-(display (gcd 16 4))
-(newline)
+(display (lcm 3 2 4.0))
 

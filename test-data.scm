@@ -2678,6 +2678,10 @@
 (4 (gcd 32 -36))
 (0 (gcd))
 (10 (gcd -10))
+(#t (flonum? (gcd 9.0 3)))
+(288 (lcm 32 -36))
+(288.0 (lcm 32.0 -36))
+(1 (lcm))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
