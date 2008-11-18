@@ -266,8 +266,6 @@
     nan?
     infinite?
     finite?
-    denominator
-    numerator
     real->flonum
     fl=?
     fl<?
@@ -352,4 +350,10 @@
     abs
     div
     div0
+    numerator
+    denominator
+    floor
+    ceiling
+    truncate
+    round
     )

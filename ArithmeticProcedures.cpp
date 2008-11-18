@@ -46,6 +46,38 @@
 
 using namespace scheme;
 
+Object scheme::floorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("floor");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::floor(n);
+}
+
+Object scheme::ceilingEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("ceiling");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::ceiling(n);
+}
+
+Object scheme::truncateEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("truncate");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::truncate(n);
+}
+
+Object scheme::roundEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("round");
+    checkArgumentLength(1);
+    argumentCheckReal(0, n);
+    return Arithmetic::round(n);
+}
+
 Object scheme::integerDivEx(int argc, const Object* argv)
 {
     DeclareProcedureName("div");

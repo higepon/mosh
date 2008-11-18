@@ -2683,6 +2683,27 @@
 (288.0 (lcm 32.0 -36))
 (1 (lcm))
 
+;; denominator/numerator
+(3 (numerator (/ 6 4)))
+(2 (denominator (/ 6 4)))
+(2.0 (denominator
+      (inexact (/ 6 4))))
+
+(-5.0 (floor -4.3))
+(-4.0 (ceiling -4.3))
+(-4.0 (truncate -4.3))
+(-4.0 (round -4.3))
+(3.0 (floor 3.5))
+(4.0 (ceiling 3.5))
+(3.0 (truncate 3.5))
+(4.0 (round 3.5))
+(4 (round 7/2))
+(7 (round 7))
+(+inf.0 (floor +inf.0))
+(-inf.0 (ceiling -inf.0))
+(#t (nan? (round +nan.0)))
+
+(123456789123456789123456789 (floor 123456789123456789123456789))
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))

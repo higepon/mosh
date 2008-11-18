@@ -58,6 +58,49 @@ Object Arithmetic::floor(Object n)
     return Object::Undef;
 }
 
+Object Arithmetic::ceiling(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum() || n.isBignum()) {
+        return n;
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->ceiling();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->ceiling();
+    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
+Object Arithmetic::truncate(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum() || n.isBignum()) {
+        return n;
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->truncate();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->truncate();
+    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
+Object Arithmetic::round(Object n)
+{
+    MOSH_ASSERT(n.isReal());
+    if (n.isFixnum() || n.isBignum()) {
+        return n;
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->round();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->round();
+    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
+
 Object Arithmetic::integerDiv(Object n1, Object n2)
 {
     MOSH_ASSERT(n1.isReal());

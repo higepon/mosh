@@ -36,6 +36,10 @@
 
 namespace scheme {
 
+    Object floorEx(int argc, const Object* argv);
+    Object ceilingEx(int argc, const Object* argv);
+    Object truncateEx(int argc, const Object* argv);
+    Object roundEx(int argc, const Object* argv);
     Object gcdEx(int argc, const Object* argv);
     Object lcmEx(int argc, const Object* argv);
     Object integerDiv0Ex(int argc, const Object* argv);

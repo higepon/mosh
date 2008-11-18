@@ -60,6 +60,9 @@ public:
 
     Object sqrt() const;
     Object floor() const;
+    Object ceiling() const;
+    Object round() const;
+    Object truncate() const;
 
     Object abs() const
     {

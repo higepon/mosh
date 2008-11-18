@@ -73,3 +73,27 @@ Object Ratnum::floor() const
     mpz_fdiv_q(ret,  mpq_numref(value), mpq_denref(value));
     return Bignum::makeInteger(ret);
 }
+
+Object Ratnum::ceiling() const
+{
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_cdiv_q(ret, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
+}
+
+Object Ratnum::truncate() const
+{
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_tdiv_q(ret, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
+}
+
+Object Ratnum::round() const
+{
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_cdiv_q(ret, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
+}
