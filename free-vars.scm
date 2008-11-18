@@ -336,6 +336,8 @@
     fxnegative?
     fxodd?
     fxeven?
+    fxmax
+    fxmin
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref

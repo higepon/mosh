@@ -46,8 +46,8 @@ namespace scheme {
     Object fxnegativePEx(int argc, const Object* argv);
     Object fxoddPEx(int argc, const Object* argv);
     Object fxevenPEx(int argc, const Object* argv);
-    //Object fxmaxEx(int argc, const Object* argv);
-    //Object fxminEx(int argc, const Object* argv);
+    Object fxmaxEx(int argc, const Object* argv);
+    Object fxminEx(int argc, const Object* argv);
     //Object fxAddEx(int argc, const Object* argv);
     //Object fxMulEx(int argc, const Object* argv);
     //Object fxSubEx(int argc, const Object* argv);

@@ -2448,6 +2448,18 @@
 (#t    (fxeven? 2))
 (error (fxeven?))
 (error (fxeven? -2 2))
+(error (fxmax))
+(1     (fxmax 1))
+(1     (fxmax 1 -1))
+(2     (fxmax 1 2 -1))
+(error (fxmax (+ (greatest-fixnum) 1)))
+(error (fxmax 1.0))
+(error (fxmin))
+(1     (fxmin 1))
+(-1    (fxmin 1 -1))
+(-1    (fxmin 1 -1 2))
+(error (fxmin (- (least-fixnum) 1)))
+(error (fxmin 1.0))
 
 ;; number reader 2
 (1 #b1)

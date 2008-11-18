@@ -1,3 +1,7 @@
+2008-11-19  kokosabu  <kokosabu@gmail.com>
+
+        * Added : fxmax, fxmin.
+
 2008-11-18  higepon  <higepon@users.sourceforge.jp>
 
         * Added : floor, ceiling, round and truncate.

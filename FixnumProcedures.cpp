@@ -159,8 +159,34 @@ Object scheme::fxevenPEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::isEven(fixnum));
 }
 
-//Object scheme::fxmaxEx(int argc, const Object* argv);
-//Object scheme::fxminEx(int argc, const Object* argv);
+Object scheme::fxmaxEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxmax");
+    checkArgumentLengthAtLeast(1);
+    Object maxFixnum = Object::makeFixnum(Fixnum::MIN);
+    for (int i = 0; i < argc; i++) {
+        argumentAsFixnum(i, fixnum);
+        if (Fixnum::gt(fixnum, maxFixnum.toFixnum())) {
+            maxFixnum = argv[i];
+        }
+    }
+    return maxFixnum;
+}
+
+Object scheme::fxminEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxmin");
+    checkArgumentLengthAtLeast(1);
+    Object minFixnum = Object::makeFixnum(Fixnum::MAX);
+    for (int i = 0; i < argc; i++) {
+        argumentAsFixnum(i, fixnum);
+        if (Fixnum::lt(fixnum, minFixnum.toFixnum())) {
+            minFixnum = argv[i];
+        }
+    }
+    return minFixnum;
+}
+
 //Object scheme::fxAddEx(int argc, const Object* argv);
 //Object scheme::fxMulEx(int argc, const Object* argv);
 //Object scheme::fxSubEx(int argc, const Object* argv);
