@@ -410,7 +410,7 @@ bool Arithmetic::isEven(Object n)
 {
     MOSH_ASSERT(isIntegerValued(n));
     if (n.isFixnum()) {
-        return (n.toFixnum() & 1) == 0;
+        return Fixnum::isEven(n.toFixnum());
     } else if (n.isBignum()) {
         return n.toBignum()->isEven();
     } else if (n.isFlonum()) {

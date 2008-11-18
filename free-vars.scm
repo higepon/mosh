@@ -350,4 +350,5 @@
     bytevector-ieee-double-set!
     magnitude
     even?
+    odd?
     )

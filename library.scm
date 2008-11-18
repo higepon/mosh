@@ -858,15 +858,6 @@
 ;; .returns (cdr (cdr (cdr (cdr (cdr p)))))
 (define (cdddddr p) (cdr (cdr (cdr (cdr (cdr p))))))
 
-;; Returns whether x is even.
-;; .returns whether x is even
-;; (define (even? x)
-;;   (zero? (mod x 2)))
-
-(define (odd? x)
-  (= (mod x 2) 1))
-
-
 ;; (define (gen-cxxr n)
 ;;   (define (association lst1 lst2)
 ;;     (fold-right (lambda (x y) (append (map (cut cons x <>) lst2) y)) '() lst1))

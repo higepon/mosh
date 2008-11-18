@@ -37,6 +37,7 @@
 namespace scheme {
 
     Object evenPEx(int argc, const Object* argv);
+    Object oddPEx(int argc, const Object* argv);
     Object magnitudeEx(int argc, const Object* argv);
     Object complexPEx(int argc, const Object* argv);
     Object realPEx(int argc, const Object* argv);
