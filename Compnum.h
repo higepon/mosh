@@ -51,11 +51,20 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    Object log() const
+    {
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        const double r = sqrt(re * re + im * im);
+        const double theta = atan2(im, re);
+        return Object::makeCompnum(Object::makeFlonum(r), Object::makeFlonum(theta));
+    }
+
     Object exp() const
     {
-        double re = Arithmetic::realToDouble(real());
-        double im = Arithmetic::realToDouble(imag());
-        double r = ::exp(re);
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        const double r = ::exp(re);
         return Object::makeCompnum(Object::makeFlonum(r * cos(im)),  Object::makeFlonum(r * sin(im)));
     }
 

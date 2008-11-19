@@ -58,8 +58,6 @@ Object Fixnum::log(int n)
     }
 }
 
-
-
 Object Fixnum::sqrt(Object n)
 {
     MOSH_ASSERT(n.isFixnum());
@@ -68,7 +66,7 @@ Object Fixnum::sqrt(Object n)
         return n;
     } else if (value > 0) {
         const double root = ::sqrt(static_cast<double>(value));
-        const int rootAsInt = floor(root);
+        const int rootAsInt = static_cast<int>(floor(root));
         // exact
         if (rootAsInt * rootAsInt == value) {
             return Object::makeFixnum(rootAsInt);
@@ -77,7 +75,7 @@ Object Fixnum::sqrt(Object n)
         }
     } else { // negative
         const double root = ::sqrt(static_cast<double>(-value));
-        const int rootAsInt = floor(root);
+        const int rootAsInt = static_cast<int>(floor(root));
         // exact
         if (rootAsInt * rootAsInt == -value) {
             return Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(rootAsInt));

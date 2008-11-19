@@ -50,9 +50,14 @@ Object Arithmetic::log(Object n)
     if (n.isFixnum()) {
         return Fixnum::log(n.toFixnum());
     } else if (n.isCompnum()) {
-//        return n.toCompnum()->log();
+        return n.toCompnum()->log();
     } else {
-        return Object::makeFlonum(::log(realToDouble(n)));
+        const double value = realToDouble(n);
+        if (value >= 0) {
+            return Object::makeFlonum(::log(realToDouble(n)));
+        } else {
+            return Object::makeCompnum(Object::makeFlonum(::log(-value)), Object::makeFlonum(::atan2(0.0, value)));
+        }
     }
 }
 
@@ -306,7 +311,7 @@ Object Arithmetic::makePolar(Object n1, Object n2)
     const Object real = n1.isCompnum() ? n1.toCompnum()->real() : n1;
     const Object imag = n2.isCompnum() ? n2.toCompnum()->real() : n2;
     if (eq(imag, Object::makeFixnum(0))) {
-            return real;
+        return real;
     }
     const double r = realToDouble(real);
     const double a = realToDouble(imag);

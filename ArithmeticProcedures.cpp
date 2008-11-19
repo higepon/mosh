@@ -52,10 +52,18 @@ Object scheme::logEx(int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     if (argc == 1) {
         argumentCheckNumber(0, n);
+        if (Arithmetic::isExactZero(n)) {
+            callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", L1(n));
+            return Object::Undef;
+        }
         return Arithmetic::log(n);
     } else {
         argumentCheckNumber(0, n1);
         argumentCheckNumber(1, n2);
+        if (Arithmetic::isExactZero(n1) || Arithmetic::isExactZero(n2)) {
+            callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", L2(n1, n2));
+            return Object::Undef;
+        }
         return Arithmetic::log(n1, n2);
     }
 
