@@ -1,3 +1,9 @@
+2008-11-19  higepon  <higepon@users.sourceforge.jp>
+
+        * Added : ratinalize originally from Ypsilon Scheme.
+
+        * Fasl.cpp : Added Flonum support.
+
 2008-11-19  kokosabu  <kokosabu@gmail.com>
 
         * Added : fxmax, fxmin.

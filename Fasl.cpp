@@ -42,6 +42,8 @@
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Fasl.h"
 
 using namespace scheme;
@@ -90,6 +92,7 @@ loop:
         obj.isBoolean()             ||
         obj.isCompilerInstruction() ||
         obj.isInstruction()         ||
+        obj.isFlonum()              ||
         obj.isFixnum()) {
         return;
     }
@@ -214,6 +217,16 @@ void FaslWriter::putDatum(Object obj)
         emitString(obj.toRegexp()->pattern());
         return;
     }
+    if (obj.isFlonum()) {
+        union {
+            double   dvalue;
+            uint64_t uvalue;
+        } n;
+        n.dvalue = obj.toFlonum()->value();
+        emitU8(Fasl::TAG_FLONUM);
+        emitU64(n.uvalue);
+        return;
+    }
     if (obj.isFixnum()) {
         emitU8(Fasl::TAG_FIXNUM);
         emitU32(obj.toFixnum());
@@ -273,6 +286,12 @@ void FaslWriter::emitU32(uint32_t value)
     outputPort_->putU8(value >> 8);
     outputPort_->putU8(value >> 16);
     outputPort_->putU8(value >> 24);
+}
+
+void FaslWriter::emitU64(uint64_t value)
+{
+    emitU32(value);
+    emitU32(value >> 32);
 }
 
 void FaslWriter::put(Object obj)

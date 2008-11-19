@@ -60,6 +60,7 @@ public:
         TAG_STRING,
         TAG_INSTRUCTION,
         TAG_COMPILER_INSTRUCTION,
+        TAG_FLONUM,
         forbidden_comma
     };
 };
@@ -83,6 +84,11 @@ private:
             inputPort_->getU8() << 24;
     }
 
+    uint64_t fetchU64()
+    {
+        return fetchU32() | (((uint64_t)fetchU32()) << 32);
+    }
+
     // profiler tells that this should be inlined
     int fetchU8()
     {
@@ -103,6 +109,14 @@ private:
         case Fasl::TAG_FIXNUM: {
             const int value = fetchU32();
             return Object::makeFixnum(value);
+        }
+        case Fasl::TAG_FLONUM: {
+            union {
+                double   f64;
+                uint64_t u64;
+            } n;
+            n.u64 = fetchU64();
+            return Object::makeFlonum(n.f64);
         }
         case Fasl::TAG_INSTRUCTION: {
             const int value = fetchU32();
@@ -188,6 +202,7 @@ private:
     void putList(Object list);
     void emitU8(uint8_t value);
     void emitU32(uint32_t value);
+    void emitU64(uint64_t value);
     void emitString(const ucs4string& string);
     void putDatum(Object obj);
 

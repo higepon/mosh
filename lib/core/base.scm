@@ -12,6 +12,28 @@
     (let ([d0 (div0 x y)])
       (values d0 (- x (* d0 y)))))
 
+;; Originally from Ypsilon Scheme start
+(define (rationalize x e)
+  (or (real? x) (assertion-violation 'rationalize (format "expected real, but got ~s as argument 1" x) (list x e)))
+  (or (real? e) (assertion-violation 'rationalize (format "expected real, but got ~s as argument 2" e) (list x e)))
+  (cond ((infinite? e)
+         (if (infinite? x) +nan.0 0.0))
+        ((= x 0) x)
+        ((= x e) (- x e))
+        ((negative? x)
+         (- (rationalize (- x) e)))
+        (else
+         (let ((e (abs e)))
+           (let loop ((bottom (- x e)) (top (+ x e)))
+             (cond ((= bottom top) bottom)
+                   (else
+                    (let ((x (ceiling bottom)))
+                      (cond ((< x top) x)
+                            (else
+                             (let ((a (- x 1)))
+                               (+ a (/ 1 (loop (/ 1 (- top a)) (/ 1 (- bottom a))))))))))))))))
+;; Originally from Ypsilon Scheme end
+
 ;; N.B. We can implement much faster version for Bignum using GMP.
 (define (gcd2 m n)
   (if (zero? n)

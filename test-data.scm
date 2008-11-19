@@ -1746,42 +1746,42 @@
         (bytevector-copy! b 0 b 3 4)
         (bytevector->u8-list b))
       '(1 2 3 1 2 3 4 8))
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector '(17))
        0 'little 1)
       17)
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector '(17))
        0 'big 1)
       17)
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector '(17 54))
        0 'little 2)
       (+ 17 (* 54 256)))
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector (reverse '(17 54)))
        0 'big 2)
       (+ 17 (* 54 256)))
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector '(17 54 98))
        0 'little 3)
       (+ 17 (* 54 256) (* 98 256 256)))
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector (reverse '(17 54 98)))
        0 'big 3)
       (+ 17 (* 54 256) (* 98 256 256)))
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector '(17 54 98 120))
        0 'little 4)
       (+ 17 (* 54 256) (* 98 256 256) (* 120 256 256 256)))
 
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector
         '(#x89 #x04 #x39 #x82 #x49 #x20 #x93 #x48 #x17
                #x83 #x79 #x94 #x38 #x87 #x34 #x97 #x38 #x12))
        0 'little 18)
       #x123897348738947983174893204982390489)
-(test (bytevector-uint-ref 
+(test (bytevector-uint-ref
        (u8-list->bytevector
         (reverse
          '(#x89 #x04 #x39 #x82 #x49 #x20 #x93 #x48 #x17
@@ -1811,7 +1811,7 @@
       '(513 -253 513 513))
 (test (let ((b (make-bytevector 16 -127)))
         (bytevector-uint-set! b 0 (- (expt 2 128) 3) 'little 16)
-        (list 
+        (list
          (bytevector-uint-ref b 0 'little 16)
          (bytevector-sint-ref b 0 'little 16)
          (bytevector->u8-list b)))
@@ -1821,7 +1821,7 @@
              255 255 255 255 255 255 255 255)))
 (test (let ((b (make-bytevector 16 -127)))
         (bytevector-uint-set! b 0 (- (expt 2 128) 3) 'big 16)
-        (list 
+        (list
          (bytevector-uint-ref b 0 'big 16)
          (bytevector-sint-ref b 0 'big 16)
          (bytevector->u8-list b)))
@@ -2714,6 +2714,12 @@
 (+inf.0 (floor +inf.0))
 (-inf.0 (ceiling -inf.0))
 (#t (nan? (round +nan.0)))
+
+(1/3 (rationalize (exact .3) 1/10))
+(#t (almost=? #i1/3 (rationalize .3 1/10)))
+(+inf.0 (rationalize +inf.0 3))
+(#t (nan? (rationalize +inf.0 +inf.0)))
+(0.0 (rationalize 3 +inf.0))
 
 (123456789123456789123456789 (floor 123456789123456789123456789))
 ;; optimize miss
