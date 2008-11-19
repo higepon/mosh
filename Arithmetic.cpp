@@ -44,6 +44,24 @@
 
 using namespace scheme;
 
+Object Arithmetic::log(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::log(n.toFixnum());
+    } else if (n.isCompnum()) {
+//        return n.toCompnum()->log();
+    } else {
+        return Object::makeFlonum(::log(realToDouble(n)));
+    }
+}
+
+Object Arithmetic::log(Object n1, Object n2)
+{
+    return Arithmetic::div(log(n1), log(n2));
+}
+
+
 Object Arithmetic::exp(Object n)
 {
     MOSH_ASSERT(n.isNumber());

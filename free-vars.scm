@@ -359,4 +359,5 @@
     truncate
     round
     exp
+    log
     )

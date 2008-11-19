@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    Object logEx(int argc, const Object* argv);
     Object expEx(int argc, const Object* argv);
     Object floorEx(int argc, const Object* argv);
     Object ceilingEx(int argc, const Object* argv);

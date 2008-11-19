@@ -64,6 +64,7 @@ public:
     }
 
     static Object exp(int n);
+    static Object log(int n);
 
     static Object abs(int n)
     {

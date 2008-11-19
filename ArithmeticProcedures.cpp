@@ -46,6 +46,21 @@
 
 using namespace scheme;
 
+Object scheme::logEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("log");
+    checkArgumentLengthBetween(1, 2);
+    if (argc == 1) {
+        argumentCheckNumber(0, n);
+        return Arithmetic::log(n);
+    } else {
+        argumentCheckNumber(0, n1);
+        argumentCheckNumber(1, n2);
+        return Arithmetic::log(n1, n2);
+    }
+
+}
+
 Object scheme::expEx(int argc, const Object* argv)
 {
     DeclareProcedureName("exp");

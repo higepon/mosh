@@ -48,6 +48,17 @@ Object Fixnum::exp(int n)
     }
 }
 
+Object Fixnum::log(int n)
+{
+    if (n == 1) {
+        // exact 0
+        return Object::makeFixnum(0);
+    } else {
+        return Object::makeFlonum(::log(static_cast<double>(n)));
+    }
+}
+
+
 
 Object Fixnum::sqrt(Object n)
 {
