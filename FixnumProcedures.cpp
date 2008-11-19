@@ -36,6 +36,7 @@
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
 #include "Fixnum.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -187,7 +188,21 @@ Object scheme::fxminEx(int argc, const Object* argv)
     return minFixnum;
 }
 
-//Object scheme::fxAddEx(int argc, const Object* argv);
+Object scheme::fxAddEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx+");
+    checkArgumentLength(2);
+
+    argumentAsFixnum(0, fx1);
+    argumentAsFixnum(1, fx2);
+    Object ret = Bignum::add(fx1, fx2);
+
+    if (!ret.isFixnum()) {
+        callImplementationRestrictionViolationImmidiaImmediately("fx+", "sum is not a fixnum");
+    }
+    return ret;
+}
+
 //Object scheme::fxMulEx(int argc, const Object* argv);
 //Object scheme::fxSubEx(int argc, const Object* argv);
 //Object scheme::fxdivAndModEx(int argc, const Object* argv);
