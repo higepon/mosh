@@ -38,6 +38,17 @@
 
 using namespace scheme;
 
+Object Fixnum::exp(int n)
+{
+    if (n == 0) {
+        // exact 1
+        return Object::makeFixnum(1);
+    } else {
+        return Object::makeFlonum(::exp(static_cast<double>(n)));
+    }
+}
+
+
 Object Fixnum::sqrt(Object n)
 {
     MOSH_ASSERT(n.isFixnum());

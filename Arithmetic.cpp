@@ -44,6 +44,18 @@
 
 using namespace scheme;
 
+Object Arithmetic::exp(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::exp(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->exp();
+    } else {
+        return Object::makeFlonum(::exp(realToDouble(n)));
+    }
+}
+
 Object Arithmetic::floor(Object n)
 {
     MOSH_ASSERT(n.isReal());

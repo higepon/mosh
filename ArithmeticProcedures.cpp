@@ -46,6 +46,14 @@
 
 using namespace scheme;
 
+Object scheme::expEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("exp");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::exp(n);
+}
+
 Object scheme::floorEx(int argc, const Object* argv)
 {
     DeclareProcedureName("floor");

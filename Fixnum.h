@@ -63,6 +63,8 @@ public:
         return !isEven(n);
     }
 
+    static Object exp(int n);
+
     static Object abs(int n)
     {
         return Object::makeFixnum(::abs(n));

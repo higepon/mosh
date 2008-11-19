@@ -2720,6 +2720,11 @@
 (+inf.0 (rationalize +inf.0 3))
 (#t (nan? (rationalize +inf.0 +inf.0)))
 (0.0 (rationalize 3 +inf.0))
+(+inf.0 (exp +inf.0))
+(0.0 (exp -inf.0))
+(#t (almost=? 2.718 (exp 1)))
+(#t (almost=? 2.718 (exp 1.0)))
+
 
 (123456789123456789123456789 (floor 123456789123456789123456789))
 ;; optimize miss

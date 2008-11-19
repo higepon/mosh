@@ -51,6 +51,14 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    Object exp() const
+    {
+        double re = Arithmetic::realToDouble(real());
+        double im = Arithmetic::realToDouble(imag());
+        double r = ::exp(re);
+        return Object::makeCompnum(Object::makeFlonum(r * cos(im)),  Object::makeFlonum(r * sin(im)));
+    }
+
     bool isReal()
     {
         return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());

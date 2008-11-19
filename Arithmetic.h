@@ -44,6 +44,7 @@ public:
 
     static Object integerDiv(Object n1, Object n2);
     static Object integerDiv0(Object n1, Object n2);
+    static Object exp(Object n);
     static Object floor(Object n);
     static Object ceiling(Object n);
     static Object truncate(Object n);

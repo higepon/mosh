@@ -358,4 +358,5 @@
     ceiling
     truncate
     round
+    exp
     )
