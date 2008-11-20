@@ -83,6 +83,7 @@ public:
 
     Object tan() const
     {
+        return Arithmetic::div(sin(), cos());
     }
 
     Object log() const

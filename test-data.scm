@@ -2754,7 +2754,8 @@
 (#t (almost=? 0.6349 (imag-part (sin 1+1i))))
 (#t (almost=? 1.09252 (real-part (cos 12.0+3/4i))))
 (#t (almost=? 0.44123 (imag-part (cos 12.0+3/4i))))
-
+(#t (almost=? -0.08039 (real-part (tan 2+1.5i))))
+(#t (almost=? 1.0641 (imag-part (tan 2+1.5i))))
 
 
 (123456789123456789123456789 (floor 123456789123456789123456789))
