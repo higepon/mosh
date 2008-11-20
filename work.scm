@@ -17,4 +17,4 @@
 ;; (display (log -1.000000-0.000000i))
 
 (import (rnrs))
-(display 1e2)
+(display #xff0)
