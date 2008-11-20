@@ -71,6 +71,12 @@ public:
         return !isinf(value_) && !isnan(value_);
     }
 
+    bool isNegativeZero() const
+    {
+        return value_ == 0.0 && ((*(uint64_t*)&value_) >> 63);
+    }
+
+
     bool isInteger() const
     {
         if (isinf(value_) || isnan(value_)) {

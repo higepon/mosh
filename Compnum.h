@@ -56,8 +56,8 @@ public:
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
         const double r = sqrt(re * re + im * im);
-        const double theta = atan2(im, re);
-        return Object::makeCompnum(Object::makeFlonum(r), Object::makeFlonum(theta));
+        const double theta = ::atan2(im, re);
+        return Object::makeCompnum(Object::makeFlonum(::log(r)), Object::makeFlonum(theta));
     }
 
     Object exp() const

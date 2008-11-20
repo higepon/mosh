@@ -2738,11 +2738,10 @@
 (error (log 0))
 (+inf.0 (real-part (log -inf.0)))
 (#t (almost=? 3.1415  (imag-part (log -inf.0))))
-;(0.0 (real-part (log -1.0+0.0i)))
-;; (#t (almost=? 3.145 (imag-part (log -1.0+0.0i))))
-;; (0.0 (real-part (log -1.0-0.0i)))
-;; (#t (almost=? -3.1415 (imag-part (log -1.0-0.0i))))
-
+(0.0 (real-part (log -1.0+0.0i)))
+(#t (almost=? 3.1415 (imag-part (log -1.0+0.0i))))
+(0.0 (real-part (log -1.0-0.0i)))
+(#t (almost=? -3.1415 (imag-part (log -1.0-0.0i))))
 
 (123456789123456789123456789 (floor 123456789123456789123456789))
 ;; optimize miss

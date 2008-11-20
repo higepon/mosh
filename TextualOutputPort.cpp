@@ -364,7 +364,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             putDatum(real);
         }
 
-        if (Arithmetic::ge(imag, Object::makeFixnum(0)) && !(imag.isFlonum() && imag.toFlonum()->isInfinite())) {
+        if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
+            !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
         }
@@ -512,7 +513,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         if (!Arithmetic::isExactZero(real)) {
             display(real);
         }
-        if (Arithmetic::ge(imag, Object::makeFixnum(0)) && !(imag.isFlonum() && imag.toFlonum()->isInfinite())) {
+        if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
+            !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
         }

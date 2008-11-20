@@ -1,3 +1,10 @@
+2008-11-20  higepon  <higepon@users.sourceforge.jp>
+
+        * Flonum.h : Added isNegativeZero().
+                     This can distinguish between 0.0 and -0.0.
+
+        * Added : log.
+
 2008-11-20  kokosabu  <kokosabu@gmail.com>
 
         * Added : fx+.
