@@ -155,24 +155,6 @@ void scheme::callAssertionViolationAfter(Object who, Object message, Object irri
 }
 
 // we can't catch this!
-void scheme::callImplementationRestrictionViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
-{
-    MOSH_ASSERT(theVM);
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC(" Condition components:\n"
-                                 "    1. &implementation-restriction\n"
-                                 "    2. &who: ~a\n"
-                                 "    3. &message: ~s\n"
-                                 "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-    const Object condition = sysGetOutputStringEx(1, &stringOutputPort);
-    theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
-    theVM->throwException(condition);
-}
-
-// we can't catch this!
 void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
@@ -190,6 +172,10 @@ void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, 
     theVM->throwException(condition);
 }
 
+void scheme::callImplementationRestrictionAfter(Object who, Object message, Object irritants)
+{
+    raiseAfter(UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
+}
 
 void scheme::callLexicalViolationAfter(Object who, Object message, Object irritants)
 {

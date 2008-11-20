@@ -32,6 +32,8 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "FixnumProcedures.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
@@ -195,12 +197,15 @@ Object scheme::fxAddEx(int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-    Object ret = Bignum::add(fx1, fx2);
+    const int ret = fx1 + fx2;
 
-    if (!ret.isFixnum()) {
-        callImplementationRestrictionViolationImmidiaImmediately("fx+", "sum is not a fixnum");
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
+    } else {
+        //callImplementationRestrictionAfter(procedureName, "sum is not a fixnum");
+        callImplementationRestrictionAfter(procedureName, "sum is not a fixnum", Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
     }
-    return ret;
 }
 
 //Object scheme::fxMulEx(int argc, const Object* argv);

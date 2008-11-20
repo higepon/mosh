@@ -2466,8 +2466,8 @@
 (-5    (fx+ -2 -3))
 (error (fx+ 4 5 6))
 (error (fx+ 2.0 3))
-(todo (error (fx+ (greatest-fixnum) 1)))
-(todo (error (fx+ (least-fixnum) -1)))
+(error (fx+ (greatest-fixnum) 1))
+(error (fx+ (least-fixnum) -1))
 
 ;; number reader 2
 (1 #b1)
