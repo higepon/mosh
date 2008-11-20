@@ -46,6 +46,22 @@
 
 using namespace scheme;
 
+Object scheme::sinEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("sin");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::sin(n);
+}
+
+Object scheme::cosEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("cos");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::cos(n);
+}
+
 Object scheme::logEx(int argc, const Object* argv)
 {
     DeclareProcedureName("log");
@@ -66,7 +82,6 @@ Object scheme::logEx(int argc, const Object* argv)
         }
         return Arithmetic::log(n1, n2);
     }
-
 }
 
 Object scheme::expEx(int argc, const Object* argv)

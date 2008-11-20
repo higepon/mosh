@@ -2743,6 +2743,20 @@
 (0.0 (real-part (log -1.0-0.0i)))
 (#t (almost=? -3.1415 (imag-part (log -1.0-0.0i))))
 
+;; cos/sin
+(1 (cos 0))
+(0 (sin 0))
+(0.0 (sin 0.0))
+(#t (almost=? 1.0 (sin 1.570796)))
+(#t (almost=? 0.0 (cos 1.570796)))
+(1.0 (cos 0.0))
+(#t (almost=? 1.2984 (real-part (sin 1+1i))))
+(#t (almost=? 0.6349 (imag-part (sin 1+1i))))
+(#t (almost=? 1.09252 (real-part (cos 12.0+3/4i))))
+(#t (almost=? 0.44123 (imag-part (cos 12.0+3/4i))))
+
+
+
 (123456789123456789123456789 (floor 123456789123456789123456789))
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

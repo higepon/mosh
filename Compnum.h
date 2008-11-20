@@ -51,6 +51,36 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    Object sin() const
+    {
+        // cos(iy) = (e^-y + e^y) / 2
+        // sin(iy) = (e^-y - e^y) / 2i
+        // sin(z)  = sin(x+iy) = sin(x)cos(iy) + sin(iy)cos(x)
+        //         = sin(x) * ((e^-y + e^y) / 2) + cos(x) * ((e^-y - e^y) / 2i)
+        //         = sin(x) * ((e^-y + e^y) / 2) + cos(x) * ((e^y - e^-y) / 2) * i
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        const double a = ::exp(im);
+        const double b = 1.0 / a;
+        return Object::makeCompnum(Object::makeFlonum(::sin(re) * (b + a) * 0.5),
+                                   Object::makeFlonum(::cos(re) * (a - b) * 0.5));
+    }
+
+    Object cos() const
+    {
+        // cos(iy) = (e^-y + e^y) / 2
+        // sin(iy) = (e^-y - e^y) / 2i
+        // cos(z)  = sin(x+iy) = cos(x)cos(iy) - sin(x)sin(iy)
+        //         = cos(x) * (e^-y + e^y) / 2 - sin(x) * (e^-y - e^y) / 2i
+        //         = cos(x) * (e^-y + e^y) / 2 + sin(x) * ((e^-y - e^y) / 2) * i
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        const double a = ::exp(im);
+        const double b = 1.0 / a;
+        return Object::makeCompnum(Object::makeFlonum(::cos(re) * (b + a) * 0.5),
+                                   Object::makeFlonum(::sin(re) * (b - a) * 0.5));
+    }
+
     Object log() const
     {
         const double re = Arithmetic::realToDouble(real());
@@ -65,7 +95,7 @@ public:
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
         const double r = ::exp(re);
-        return Object::makeCompnum(Object::makeFlonum(r * cos(im)),  Object::makeFlonum(r * sin(im)));
+        return Object::makeCompnum(Object::makeFlonum(r * ::cos(im)),  Object::makeFlonum(r * ::sin(im)));
     }
 
     bool isReal()

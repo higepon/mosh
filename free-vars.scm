@@ -361,4 +361,6 @@
     round
     exp
     log
+    sin
+    cos
     )

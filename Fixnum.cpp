@@ -38,6 +38,26 @@
 
 using namespace scheme;
 
+Object Fixnum::sin(int n)
+{
+    if (n == 0) {
+        // exact 0
+        return Object::makeFixnum(0);
+    } else {
+        return Object::makeFlonum(::sin(static_cast<double>(n)));
+    }
+}
+
+Object Fixnum::cos(int n)
+{
+    if (n == 0) {
+        // exact 1
+        return Object::makeFixnum(1);
+    } else {
+        return Object::makeFlonum(::cos(static_cast<double>(n)));
+    }
+}
+
 Object Fixnum::exp(int n)
 {
     if (n == 0) {

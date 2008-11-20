@@ -42,6 +42,8 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static Object sin(Object n);
+    static Object cos(Object n);
     static Object integerDiv(Object n1, Object n2);
     static Object integerDiv0(Object n1, Object n2);
     static Object exp(Object n);

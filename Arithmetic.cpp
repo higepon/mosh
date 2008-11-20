@@ -44,6 +44,32 @@
 
 using namespace scheme;
 
+Object Arithmetic::cos(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::cos(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->cos();
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::cos(value));
+    }
+}
+
+Object Arithmetic::sin(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::sin(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->sin();
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::sin(value));
+    }
+}
+
 Object Arithmetic::log(Object n)
 {
     MOSH_ASSERT(n.isNumber());
@@ -315,7 +341,7 @@ Object Arithmetic::makePolar(Object n1, Object n2)
     }
     const double r = realToDouble(real);
     const double a = realToDouble(imag);
-    return Object::makeCompnum(Object::makeFlonum(r * cos(a)), Object::makeFlonum(r * sin(a)));
+    return Object::makeCompnum(Object::makeFlonum(r * ::cos(a)), Object::makeFlonum(r * ::sin(a)));
 }
 
 Object Arithmetic::bitwiseNot(Object e)
