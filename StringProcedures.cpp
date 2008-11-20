@@ -40,6 +40,7 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "TextualOutputPort.h"
+#include "NumberReader.h"
 
 using namespace scheme;
 
@@ -80,7 +81,7 @@ Object scheme::stringRefEx(int argc, const Object* argv)
                                     "index out of range",
                                     L2(Object::makeFixnum(text->length()),
                                        argv[1]
-                                       ));
+                                        ));
         return Object::Undef;
     }
 }
@@ -152,28 +153,70 @@ Object scheme::stringTosymbolEx(int argc, const Object* argv)
     return stringTosymbol(text);
 }
 
+Object stringToNumber(const ucs4string& text)
+{
+    bool isErrorOccured = false;
+    const Object number = NumberReader::read(text, isErrorOccured);
+    if (isErrorOccured) {
+        return Object::False;
+    } else {
+        return number;
+    }
+}
+
 Object scheme::stringTonumberEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string->number");
     checkArgumentLengthBetween(1, 2);
     argumentAsString(0, text);
-    int base;
-    if (2 == argc) {
-        argumentCheckFixnum(1, baseObject);
-        base = baseObject.toFixnum();
-        MOSH_ASSERT(base == 16);
+    const ucs4string& numberString = text->data();
+//    int base;
+    if (argc == 1) {
+        return stringToNumber(numberString);
     } else {
-        base = 10;
+        argumentAsFixnum(1, radix);
+        switch (radix) {
+            case 2:
+            {
+                ucs4string text = UC("#b");
+                text += numberString;
+                return stringToNumber(text);
+            }
+            case 8:
+            {
+                ucs4string text = UC("#o");
+                text += numberString;
+                return stringToNumber(text);
+            }
+            case 10:
+                return stringToNumber(numberString);
+            case 16:
+            {
+                ucs4string text = UC("#x");
+                text += numberString;
+                return stringToNumber(text);
+            }
+            default:
+                callAssertionViolationAfter(procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+                return Object::Undef;
+        }
     }
+//     if (2 == argc) {
+//         argumentCheckFixnum(1, baseObject);
+//         base = baseObject.toFixnum();
+//         MOSH_ASSERT(base == 16);
+//     } else {
+//         base = 10;
+//     }
 
-    errno = 0;
-    long val = strtol(text->data().ascii_c_str(), NULL, base);
-    if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
-        || (errno != 0 && val == 0)) {
-        return Object::False;
-    } else {
-        return Object::makeFixnum(val);
-    }
+//     errno = 0;
+//     long val = strtol(text->data().ascii_c_str(), NULL, base);
+//     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
+//         || (errno != 0 && val == 0)) {
+//         return Object::False;
+//     } else {
+//         return Object::makeFixnum(val);
+//     }
 }
 
 Object scheme::stringAppendEx(int argc, const Object* argv)

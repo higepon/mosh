@@ -235,7 +235,7 @@ sreal10   : PLUS  ureal10 { $$ = $2; }
           | MINUS ureal10 { $$ = Arithmetic::mul(-1, $2); }
           ;
 
-decimal10 : uinteger10String suffix{
+decimal10 : uinteger10String suffix {
                if ($2.empty()) {
                    $$ = Bignum::makeInteger($1);
                } else {

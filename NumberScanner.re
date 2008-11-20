@@ -148,7 +148,7 @@ int NumberScanner::scan()
             return EXACT;
         }
         EXPONENT_MARKER {
-            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR  - YYTOKEN));
             YYTOKEN = YYCURSOR;
             return EXPONENT_MARKER;
         }

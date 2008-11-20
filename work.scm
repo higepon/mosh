@@ -17,4 +17,4 @@
 ;; (display (log -1.000000-0.000000i))
 
 (import (rnrs))
-(display (inexact (/ 2 3)))
+(display 1e2)

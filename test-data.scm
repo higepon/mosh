@@ -2756,9 +2756,27 @@
 (#t (almost=? 0.44123 (imag-part (cos 12.0+3/4i))))
 (#t (almost=? -0.08039 (real-part (tan 2+1.5i))))
 (#t (almost=? 1.0641 (imag-part (tan 2+1.5i))))
-
-
 (123456789123456789123456789 (floor 123456789123456789123456789))
+
+;; string->number
+(10 (string->number "10"))
+(123456789123456789123456789 (string->number "123456789123456789123456789"))
+(#f (string->number "hige"))
+(10 (string->number "10" 10))
+(123456789123456789123456789 (string->number "123456789123456789123456789" 10))
+(#f (string->number "hige" 10))
+(error (string->number "hige" 11))
+(2 (string->number "10" 2))
+
+(100 (string->number "100"))
+(256 (string->number "100" 16))
+(todo 100.0 (string->number "1e2"))
+;(#f (string->number "0/0"))
+;; (string->number "+inf.0")                      ⇒  +inf.0
+;; (string->number "-inf.0")                      ⇒  -inf.0
+;; (string->number "+nan.0")                      ⇒  +nan.0
+
+
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
