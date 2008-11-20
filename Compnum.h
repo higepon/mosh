@@ -81,6 +81,10 @@ public:
                                    Object::makeFlonum(::sin(re) * (b - a) * 0.5));
     }
 
+    Object tan() const
+    {
+    }
+
     Object log() const
     {
         const double re = Arithmetic::realToDouble(real());

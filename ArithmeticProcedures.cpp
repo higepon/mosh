@@ -46,6 +46,14 @@
 
 using namespace scheme;
 
+Object scheme::tanEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("tan");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::tan(n);
+}
+
 Object scheme::sinEx(int argc, const Object* argv)
 {
     DeclareProcedureName("sin");

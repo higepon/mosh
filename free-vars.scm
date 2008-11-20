@@ -363,4 +363,5 @@
     log
     sin
     cos
+    tan
     )

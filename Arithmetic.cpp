@@ -44,6 +44,19 @@
 
 using namespace scheme;
 
+Object Arithmetic::tan(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::tan(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->tan();
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::tan(value));
+    }
+}
+
 Object Arithmetic::cos(Object n)
 {
     MOSH_ASSERT(n.isNumber());
