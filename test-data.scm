@@ -2770,10 +2770,10 @@
 (100 (string->number "100"))
 (256 (string->number "100" 16))
 (100.0 (string->number "1e2"))
-;(#f (string->number "0/0"))
-;; (string->number "+inf.0")                      ⇒  +inf.0
-;; (string->number "-inf.0")                      ⇒  -inf.0
-;; (string->number "+nan.0")                      ⇒  +nan.0
+(#f (string->number "0/0"))
+(+inf.0 (string->number "+inf.0"))
+(-inf.0 (string->number "-inf.0"))
+(#t (nan? (string->number "+nan.0")))
 
 
 ;; optimize miss

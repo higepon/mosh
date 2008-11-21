@@ -39,6 +39,10 @@
 #include "Reader.h"
 #include "Scanner.h"
 #include "NumberScanner.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "TextualOutputPort.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 
@@ -53,7 +57,9 @@ TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : c
 {
 }
 
-TextualInputPort::TextualInputPort() : scanner_(new Scanner), numberScanner_(new NumberScanner())
+TextualInputPort::TextualInputPort() : error_(Object::Nil),
+                                       scanner_(new Scanner),
+                                       numberScanner_(new NumberScanner())
 {
 }
 

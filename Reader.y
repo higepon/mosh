@@ -159,7 +159,20 @@ extern ucs4char* token;
 int yyerror(char const *str)
 {
     TextualInputPort* const port = Reader::port();
-    port->setError(format(UC("~a near [~a] at ~a:~d. "),
-                          Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));
+    const Object prevError = port->error();
+    if (prevError.isNil()) {
+        port->setError(format(UC("~a: ~a near [~a] at ~a:~d. "),
+                              Pair::list5(prevError,
+                                          str,
+                                          Object::makeString(port->scanner()->currentToken()),
+                                          port->toString(),
+                                          Object::makeFixnum(port->getLineNo()))));
+    } else {
+        port->setError(format(UC("~a near [~a] at ~a:~d. "),
+                              Pair::list4(str,
+                                          Object::makeString(port->scanner()->currentToken()),
+                                          port->toString(),
+                                          Object::makeFixnum(port->getLineNo()))));
+    }
     return 0;
 }

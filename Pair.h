@@ -159,6 +159,12 @@ struct Pair EXTEND_GC
         return Object::cons(a, list3(b, c, d));
     }
 
+    static Object list5(Object a, Object b, Object c, Object d, Object e)
+    {
+        return Object::cons(a, list4(b, c, d, e));
+    }
+
+
     static Object objectVectorToList(const ObjectVector& objectVector)
     {
         Object ret = Object::Nil;

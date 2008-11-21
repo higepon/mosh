@@ -86,7 +86,7 @@ public:
     static Object add(Object number1, Object number2);
     static Object sub(Object number1, Object number2);
     static Object mul(Object number1, Object number2);
-    static Object div(Object number1, Object number2);
+    static Object div(Object number1, Object number2, bool noRaise = false);
     static Object mul(int number1, Object number2);
     static bool gt(Object number1, Object number2);
     static bool ge(Object number1, Object number2);

@@ -104,7 +104,12 @@ real2     : ureal2
           ;
 
 ureal2    : uinteger2
-          | uinteger2 SLASH uinteger2 { $$ = Arithmetic::div($1, $3); }
+          | uinteger2 SLASH uinteger2 {
+               $$ = Arithmetic::div($1, $3, true);
+               if ($$.isFalse()) {
+                   YYERROR;
+               }
+          }
           ;
 
 sreal2    : PLUS ureal2  { $$ = $2; }
@@ -144,7 +149,12 @@ real8    : ureal8
           ;
 
 ureal8   : uinteger8
-          | uinteger8 SLASH uinteger8 { $$ = Arithmetic::div($1, $3); }
+          | uinteger8 SLASH uinteger8 {
+               $$ = Arithmetic::div($1, $3, true);
+               if ($$.isFalse()) {
+                   YYERROR;
+               }
+          }
           ;
 
 sreal8   : PLUS  ureal8 { $$ = $2; }
@@ -186,7 +196,13 @@ real16    : ureal16
           ;
 
 ureal16   : uinteger16
-          | uinteger16 SLASH uinteger16 { $$ = Arithmetic::div($1, $3); }
+          | uinteger16 SLASH uinteger16 {
+               $$ = Arithmetic::div($1, $3, true);
+               if ($$.isFalse()) {
+                   YYERROR;
+               }
+
+          }
           ;
 
 sreal16   : PLUS  ureal16 { $$ = $2; }
@@ -228,7 +244,13 @@ real10    : ureal10
           ;
 
 ureal10   : decimal10
-          | uinteger10 SLASH uinteger10 { $$ = Arithmetic::div($1, $3); }
+          | uinteger10 SLASH uinteger10 {
+               $$ = Arithmetic::div($1, $3, true);
+               if ($$.isFalse()) {
+                   yyerror("division by zero");
+                   YYERROR;
+               }
+          }
           ;
 
 sreal10   : PLUS  ureal10 { $$ = $2; }

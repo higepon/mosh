@@ -170,7 +170,6 @@ Object scheme::stringTonumberEx(int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     argumentAsString(0, text);
     const ucs4string& numberString = text->data();
-//    int base;
     if (argc == 1) {
         return stringToNumber(numberString);
     } else {
@@ -201,22 +200,6 @@ Object scheme::stringTonumberEx(int argc, const Object* argv)
                 return Object::Undef;
         }
     }
-//     if (2 == argc) {
-//         argumentCheckFixnum(1, baseObject);
-//         base = baseObject.toFixnum();
-//         MOSH_ASSERT(base == 16);
-//     } else {
-//         base = 10;
-//     }
-
-//     errno = 0;
-//     long val = strtol(text->data().ascii_c_str(), NULL, base);
-//     if ((errno == ERANGE && (val == LONG_MAX || val == LONG_MIN))
-//         || (errno != 0 && val == 0)) {
-//         return Object::False;
-//     } else {
-//         return Object::makeFixnum(val);
-//     }
 }
 
 Object scheme::stringAppendEx(int argc, const Object* argv)

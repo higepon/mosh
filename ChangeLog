@@ -1,6 +1,8 @@
 2008-11-21  higepon  <higepon@users.sourceforge.jp>
 
-        * NumberScanner.re Fixed heavy bug. It can distinguish between "1e2" and "#xe3".
+        * Rewrote string->number.
+
+        * NumberScanner.re Fixed a heavy bug. It can distinguish between "1e2" and "#xe3".
 
 2008-11-20  higepon  <higepon@users.sourceforge.jp>
 
