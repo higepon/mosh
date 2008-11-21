@@ -2475,6 +2475,14 @@
 (#t    (fx=? -268435456 (fx* -134217728 2))) ; -(2^28) (fx* -(2^27) 2)
 (error (fx* (greatest-fixnum) 2))
 (error (fx* 3.0 3))
+(error (fx-))
+(3     (fx- -3))
+(-7    (fx- 7))
+(error (fx- 1.0))
+(error (fx- (least-fixnum)))
+(4     (fx- 7 3))
+(error (fx- 7 3.0))
+(error (fx- (least-fixnum) 1))
 
 ;; number reader 2
 (1 #b1)

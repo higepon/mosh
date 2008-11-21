@@ -340,6 +340,7 @@
     fxmin
     fx+
     fx*
+    fx-
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref

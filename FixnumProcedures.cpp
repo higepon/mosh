@@ -226,7 +226,28 @@ Object scheme::fxMulEx(int argc, const Object* argv)
     }
 }
 
-//Object scheme::fxSubEx(int argc, const Object* argv);
+Object scheme::fxSubEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx-");
+    checkArgumentLengthBetween(1, 2);
+
+    if (argc == 1) {
+        argumentAsFixnum(0, fixnum);
+        return Object::makeFixnum(-fixnum);
+    } else {
+        argumentAsFixnum(0, fx1);
+        argumentAsFixnum(1, fx2);
+        const int32_t ret = fx1 - fx2;
+
+        if (Fixnum::canFit(ret)) {
+            return Object::makeFixnum(ret);
+        } else {
+            callImplementationRestrictionAfter(procedureName, UC("difference is not a fixnum"), Pair::list2(argv[0], argv[1]));
+            return Object::Undef;
+        }
+    }
+}
+
 //Object scheme::fxdivAndModEx(int argc, const Object* argv);
 //Object scheme::fxdivEx(int argc, const Object* argv);
 //Object scheme::fxmodEx(int argc, const Object* argv);

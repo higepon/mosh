@@ -50,7 +50,7 @@ namespace scheme {
     Object fxminEx(int argc, const Object* argv);
     Object fxAddEx(int argc, const Object* argv);
     Object fxMulEx(int argc, const Object* argv);
-    //Object fxSubEx(int argc, const Object* argv);
+    Object fxSubEx(int argc, const Object* argv);
     //Object fxdivAndModEx(int argc, const Object* argv);
     //Object fxdivEx(int argc, const Object* argv);
     //Object fxmodEx(int argc, const Object* argv);

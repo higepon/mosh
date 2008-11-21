@@ -1,5 +1,7 @@
 2008-11-22  kokosabu  <kokosabu@gmail.com>
 
+        * Added : fix-.
+
         * Fixnum.h : fixed BITS.
 
 2008-11-21  kokosabu  <kokosabu@gmail.com>
