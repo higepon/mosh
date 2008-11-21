@@ -2767,10 +2767,9 @@
 (#f (string->number "hige" 10))
 (error (string->number "hige" 11))
 (2 (string->number "10" 2))
-
 (100 (string->number "100"))
 (256 (string->number "100" 16))
-(todo 100.0 (string->number "1e2"))
+(100.0 (string->number "1e2"))
 ;(#f (string->number "0/0"))
 ;; (string->number "+inf.0")                      ⇒  +inf.0
 ;; (string->number "-inf.0")                      ⇒  -inf.0

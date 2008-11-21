@@ -49,6 +49,9 @@
 #define YYMARKER marker_
 #define YYLIMIT limit_
 #define YYTOKEN token_
+#define YYGETCONDITION()  condition_
+#define YYSETCONDITION(s) condition_ = s
+#define YYCONDTYPE int
 #define YYDEBUG(state, ch)  yydebug(state, ch)
 #define YYFILL(n) fill(n)
 extern YYSTYPE number_yylval;
@@ -62,7 +65,8 @@ NumberScanner::NumberScanner() : dummy_('Z'),  // for YYDEBUG
                      token_(buffer_),
                      limit_(buffer_),
                      marker_(buffer_),
-                     bufferSize_(32)
+                     bufferSize_(32),
+                    condition_(INITIAL)
 {
 }
 
@@ -125,7 +129,7 @@ int NumberScanner::scan()
 {
 /*!re2c
     DIGIT_10        = [0-9];
-    EXPONENT_MARKER = [eEsSfFdDlL] [\+\-] DIGIT_10+;
+    EXPONENT_MARKER = [eEsSfFdDlL] [\+\-]? DIGIT_10+;
     EXACT           = "#"[eE];
     INEXACT         = "#"[iI];
     RADIX_2         = "#" [bB];
@@ -143,95 +147,97 @@ int NumberScanner::scan()
     for(;;)
     {
 /*!re2c
-        EXACT {
+        <INITIAL,IN_HEX>EXACT {
             YYTOKEN = YYCURSOR;
             return EXACT;
         }
-        EXPONENT_MARKER {
+        <INITIAL>EXPONENT_MARKER {
             yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR  - YYTOKEN));
             YYTOKEN = YYCURSOR;
             return EXPONENT_MARKER;
         }
-        INEXACT {
+        <INITIAL,IN_HEX>INEXACT {
             YYTOKEN = YYCURSOR;
             return INEXACT;
         }
-        MY_NAN {
+        <INITIAL,IN_HEX>MY_NAN {
             YYTOKEN = YYCURSOR;
             return MY_NAN;
         }
-        MY_INF {
+        <INITIAL,IN_HEX>MY_INF {
             YYTOKEN = YYCURSOR;
             return MY_INF;
         }
-        "+" {
+        <INITIAL,IN_HEX>"+" {
             YYTOKEN = YYCURSOR;
             return PLUS;
         }
-        "-" {
+        <INITIAL,IN_HEX>"-" {
             YYTOKEN = YYCURSOR;
             return MINUS;
         }
-        "/" {
+        <INITIAL,IN_HEX>"/" {
             YYTOKEN = YYCURSOR;
             return SLASH;
         }
-        "i" {
+        <INITIAL,IN_HEX>"i" {
             YYTOKEN = YYCURSOR;
             return IMAG;
         }
-        "@" {
+        <INITIAL,IN_HEX>"@" {
             YYTOKEN = YYCURSOR;
             return AT;
         }
-        "." {
+        <INITIAL,IN_HEX>"." {
             YYTOKEN = YYCURSOR;
             return DOT;
         }
-        RADIX_2 {
+        <INITIAL,IN_HEX>RADIX_2 {
             YYTOKEN = YYCURSOR;
             return RADIX_2;
         }
-        RADIX_8 {
+        <INITIAL,IN_HEX>RADIX_8 {
             YYTOKEN = YYCURSOR;
             return RADIX_8;
         }
-        RADIX_10 {
+        <INITIAL,IN_HEX>RADIX_10 {
             YYTOKEN = YYCURSOR;
             return RADIX_10;
         }
-        RADIX_16 {
+        <INITIAL>RADIX_16 {
+            YYSETCONDITION(IN_HEX);
             YYTOKEN = YYCURSOR;
             return RADIX_16;
         }
-        DIGIT_2 {
+        <INITIAL,IN_HEX>DIGIT_2 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
         }
-        DIGIT_8 {
+        <INITIAL,IN_HEX>DIGIT_8 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_8;
         }
-        DIGIT_10 {
+        <INITIAL,IN_HEX>DIGIT_10 {
             yylval.intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_10;
         }
-        DIGIT_16_1 {
+        <INITIAL,IN_HEX>DIGIT_16_1 {
             const ucs4char ch = YYTOKEN[0];
             yylval.intValue = ch - 'A' + 10;
             YYTOKEN = YYCURSOR;
             return DIGIT_16;
         }
-        DIGIT_16_2 {
+        <INITIAL,IN_HEX>DIGIT_16_2 {
             const ucs4char ch = YYTOKEN[0];
             yylval.intValue = ch - 'a' + 10;
             YYTOKEN = YYCURSOR;
             return DIGIT_16;
         }
-        "\X0000" {
+        <*>"\X0000" {
+            YYSETCONDITION(INITIAL);
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }

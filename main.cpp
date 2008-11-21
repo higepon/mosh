@@ -133,8 +133,7 @@ void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
 void my_dont_free(void *ptr, size_t size)
 {
 }
-
-
+    
 int main(int argc, char *argv[])
 {
     int opt;
@@ -347,4 +346,4 @@ void compareRead(const char* file)
         }
     }
     printf("%lld:%lld :", a1, a2);
-}
+}    
