@@ -1,3 +1,11 @@
+2008-11-21  kokosabu  <kokosabu@gmail.com>
+
+        * Added : fix*.
+
+        * Fixnum.h : fixed MAX.
+
+        * Makefile.am : fix sed option.
+
 2008-11-21  higepon  <higepon@users.sourceforge.jp>
 
         * Rewrote string->number.

@@ -40,6 +40,8 @@
 #include "Fixnum.h"
 #include "Bignum.h"
 
+#include "Arithmetic.h"
+
 using namespace scheme;
 
 Object scheme::fxEqPEx(int argc, const Object* argv)
@@ -197,18 +199,33 @@ Object scheme::fxAddEx(int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-    const int ret = fx1 + fx2;
+    const int32_t ret = fx1 + fx2;
 
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        //callImplementationRestrictionAfter(procedureName, "sum is not a fixnum");
-        callImplementationRestrictionAfter(procedureName, "sum is not a fixnum", Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(procedureName, UC("sum is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-//Object scheme::fxMulEx(int argc, const Object* argv);
+Object scheme::fxMulEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fx*");
+    checkArgumentLength(2);
+
+    argumentCheckFixnum(0, fx1);
+    argumentCheckFixnum(1, fx2);
+    Object ret = Fixnum::mul(fx1, fx2);
+
+    if (ret.isFixnum()) {
+        return ret;
+    } else {
+        callImplementationRestrictionAfter(procedureName, UC("product is not a fixnum"), Pair::list2(fx1, fx2));
+        return Object::Undef;
+    }
+}
+
 //Object scheme::fxSubEx(int argc, const Object* argv);
 //Object scheme::fxdivAndModEx(int argc, const Object* argv);
 //Object scheme::fxdivEx(int argc, const Object* argv);

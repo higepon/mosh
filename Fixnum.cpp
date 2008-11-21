@@ -35,6 +35,7 @@
 #include "Flonum.h"
 #include "Compnum.h"
 #include "Fixnum.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -118,5 +119,16 @@ Object Fixnum::sqrt(Object n)
         } else {
             return Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFixnum(rootAsInt));
         }
+    }
+}
+
+Object Fixnum::mul(Object n1, Object n2)
+{
+    const Object len1 = Arithmetic::bitwiseLength(n1);
+    const Object len2 = Arithmetic::bitwiseLength(n2);
+    if (len1.toFixnum() + len2.toFixnum() <= Fixnum::BITS) {
+        return Object::makeFixnum(n1.toFixnum() * n2.toFixnum());
+    } else {
+        return Bignum::mul(n1.toFixnum(), n2.toFixnum());
     }
 }
