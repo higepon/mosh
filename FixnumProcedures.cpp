@@ -214,14 +214,14 @@ Object scheme::fxMulEx(int argc, const Object* argv)
     DeclareProcedureName("fx*");
     checkArgumentLength(2);
 
-    argumentCheckFixnum(0, fx1);
-    argumentCheckFixnum(1, fx2);
-    Object ret = Fixnum::mul(fx1, fx2);
+    argumentAsFixnum(0, fx1);
+    argumentAsFixnum(1, fx2);
+    const int64_t ret = fx1 + fx2;
 
-    if (ret.isFixnum()) {
-        return ret;
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("product is not a fixnum"), Pair::list2(fx1, fx2));
+        callImplementationRestrictionAfter(procedureName, UC("product is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }

@@ -122,13 +122,3 @@ Object Fixnum::sqrt(Object n)
     }
 }
 
-Object Fixnum::mul(Object n1, Object n2)
-{
-    const Object len1 = Arithmetic::bitwiseLength(n1);
-    const Object len2 = Arithmetic::bitwiseLength(n2);
-    if (len1.toFixnum() + len2.toFixnum() <= Fixnum::BITS) {
-        return Object::makeFixnum(n1.toFixnum() * n2.toFixnum());
-    } else {
-        return Bignum::mul(n1.toFixnum(), n2.toFixnum());
-    }
-}

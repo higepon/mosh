@@ -41,7 +41,7 @@ class Fixnum EXTEND_GC
 public:
     enum
     {
-        BITS = 29,
+        BITS = 30,
         MAX = (1L << (BITS - 1)) - 1,
         MIN = -MAX - 1,
     };
@@ -69,7 +69,6 @@ public:
     static Object cos(int n);
     static Object tan(int n);
     static Object asin(int n);
-    static Object mul(Object n1, Object n2);
 
     static Object abs(int n)
     {
