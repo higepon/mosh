@@ -38,6 +38,12 @@
 
 using namespace scheme;
 
+Object Fixnum::asin(int n)
+{
+    return Object::makeFlonum(::asin(static_cast<double>(n)));
+}
+
+
 Object Fixnum::tan(int n)
 {
     if (n == 0) {

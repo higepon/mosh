@@ -46,6 +46,23 @@
 
 using namespace scheme;
 
+Object scheme::sqrtEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("sqrt");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::sqrt(n);
+}
+
+
+Object scheme::asinEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("asin");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::asin(n);
+}
+
 Object scheme::tanEx(int argc, const Object* argv)
 {
     DeclareProcedureName("tan");

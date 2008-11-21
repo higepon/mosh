@@ -51,6 +51,17 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    Object asin() const
+    {
+//         const double re = Arithmetic::realToDouble(real());
+//         const double im = Arithmetic::realToDouble(imag());
+//         const double a = ::exp(im);
+//         const double b = 1.0 / a;
+// //we need sqt
+//         return Object::makeCompnum(Object::makeFlonum(0.0)
+//                                    Arithmetic::log(::sqrt /
+    }
+
     Object sin() const
     {
         // cos(iy) = (e^-y + e^y) / 2

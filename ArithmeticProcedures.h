@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object sqrtEx(int argc, const Object* argv);
+    Object asinEx(int argc, const Object* argv);
     Object tanEx(int argc, const Object* argv);
     Object sinEx(int argc, const Object* argv);
     Object cosEx(int argc, const Object* argv);

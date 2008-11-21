@@ -68,6 +68,7 @@ public:
     static Object sin(int n);
     static Object cos(int n);
     static Object tan(int n);
+    static Object asin(int n);
 
     static Object abs(int n)
     {

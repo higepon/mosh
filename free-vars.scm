@@ -364,5 +364,6 @@
     sin
     cos
     tan
-    
+    asin
+    sqrt
     )

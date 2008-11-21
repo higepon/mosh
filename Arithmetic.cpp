@@ -44,6 +44,36 @@
 
 using namespace scheme;
 
+Object Arithmetic::sqrt(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::sqrt(n);
+    } else if (n.isBignum()) {
+        return n.toBignum()->sqrt();
+    } else if (n.isFlonum()) {
+        return n.toFlonum()->sqrt();
+    } else if (n.isRatnum()) {
+        return n.toRatnum()->sqrt();
+    }
+
+    MOSH_ASSERT(false); // todo Compnum
+}
+
+Object Arithmetic::asin(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::asin(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->sin();
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::asin(value));
+    }
+}
+
+
 Object Arithmetic::tan(Object n)
 {
     MOSH_ASSERT(n.isNumber());
@@ -229,21 +259,6 @@ Object Arithmetic::abs(Object n)
     return Object::Undef;
 }
 
-Object Arithmetic::sqrt(Object n)
-{
-    MOSH_ASSERT(n.isNumber());
-    if (n.isFixnum()) {
-        return Fixnum::sqrt(n);
-    } else if (n.isBignum()) {
-        return n.toBignum()->sqrt();
-    } else if (n.isFlonum()) {
-        return n.toFlonum()->sqrt();
-    } else if (n.isRatnum()) {
-        return n.toRatnum()->sqrt();
-    }
-
-    MOSH_ASSERT(false); // todo Compnum
-}
 
 Object Arithmetic::negate(Object n)
 {
