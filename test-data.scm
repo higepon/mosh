@@ -2285,7 +2285,7 @@
 (-1 (bitwise-bit-count -1))
 (1 (bitwise-length 1))
 (2 (bitwise-length 3))
-(#t (= (+ 1 (fixnum-width)) (bitwise-length (+ (greatest-fixnum) 1))))
+(#t (= (fixnum-width) (bitwise-length (+ (greatest-fixnum) 1))))
 (1 (bitwise-first-bit-set 2))
 (2 (bitwise-first-bit-set 4))
 (-1 (bitwise-first-bit-set 0))

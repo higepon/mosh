@@ -216,7 +216,7 @@ Object scheme::fxMulEx(int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-    const int64_t ret = fx1 + fx2;
+    const int64_t ret = fx1 * fx2;
 
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
@@ -233,7 +233,12 @@ Object scheme::fxSubEx(int argc, const Object* argv)
 
     if (argc == 1) {
         argumentAsFixnum(0, fixnum);
-        return Object::makeFixnum(-fixnum);
+        if (fixnum != Fixnum::MIN) {
+            return Object::makeFixnum(-fixnum);
+        } else {
+            callAssertionViolationAfter(procedureName, UC("result is not a fixnum"), Pair::list1(argv[0]));
+            return Object::Undef;
+        }
     } else {
         argumentAsFixnum(0, fx1);
         argumentAsFixnum(1, fx2);
