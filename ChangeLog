@@ -1,5 +1,7 @@
 2008-11-22  higepon  <higepon@users.sourceforge.jp>
 
+        * Rewrote sqrt for Complex number.
+
         * Added angle procedure and tests.
 
         * Added test for magnitude.

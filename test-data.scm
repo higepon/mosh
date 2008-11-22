@@ -2802,6 +2802,12 @@
 (0.0 (angle 0.0))
 (#t (almost=? 3.14159 (angle -3)))
 (#t (almost=? (/ 3.141592 4) (angle 1+1i)))
+;; sqrt
+(2 (sqrt 4))
+(2.0 (sqrt 4.0))
+(1/2 (sqrt 1/4))
+(#t (almost=? 1.0986 (real-part (sqrt 1+1i))))
+(#t (almost=? 0.455 (imag-part (sqrt 1+1i))))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

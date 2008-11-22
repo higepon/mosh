@@ -55,9 +55,11 @@ Object Arithmetic::sqrt(Object n)
         return n.toFlonum()->sqrt();
     } else if (n.isRatnum()) {
         return n.toRatnum()->sqrt();
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->sqrt();
     }
 
-    MOSH_ASSERT(false); // todo Compnum
+    MOSH_ASSERT(false);
 }
 
 Object Arithmetic::asin(Object n)

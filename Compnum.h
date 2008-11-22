@@ -101,7 +101,7 @@ public:
     {
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
-        const double r = sqrt(re * re + im * im);
+        const double r = ::sqrt(re * re + im * im);
         const double theta = ::atan2(im, re);
         return Object::makeCompnum(Object::makeFlonum(::log(r)), Object::makeFlonum(theta));
     }
@@ -131,6 +131,18 @@ public:
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
         return Object::makeFlonum(::atan2(im, re));
+    }
+
+    // \sqrt{r}e^{\frac{i\theta}{2}}
+    Object sqrt() const
+    {
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        const double r = ::sqrt(re * re + im * im);
+        const double theta = ::atan2(im, re);
+        return Arithmetic::mul(Object::makeFlonum(::sqrt(r)),
+                               Arithmetic::exp(Object::makeCompnum(Object::makeFixnum(0),
+                                                                   Object::makeFlonum(0.5 * theta))));
     }
 
     static bool eq(Compnum* n1, Compnum* n2)
