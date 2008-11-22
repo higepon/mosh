@@ -10,7 +10,7 @@
 
 2008-11-22  kokosabu  <kokosabu@gmail.com>
 
-        * Added : fix-.
+        * Added : fix-, fxdiv-and-mod, fxdiv, fxmod, fxdiv0-and-mod0, fxdiv0, fxmod0.
 
         * Fixnum.h : fixed BITS.
 

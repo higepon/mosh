@@ -75,7 +75,7 @@ public:
         return Object::makeFixnum(::abs(n));
     }
 
-    static Object integerDiv(int x, int y)
+    static int div(int x, int y)
     {
         int div;
         if (x == 0) {
@@ -87,7 +87,35 @@ public:
         } else {
             div = (x + y + 1) / y;
         }
-        return Object::makeFixnum(div);
+        return div;
+    }
+
+    static int mod(int x, int y)
+    {
+        return x - div(x, y) * y;
+    }
+
+    static int div0(int x, int y)
+    {
+        const int d = div(x, y);
+        const int m = mod(x, y);
+        if (m < (::abs(y) / 2)) {
+            return d;
+        } else if (y > 0) {
+            return d + 1;
+        } else {
+            return d - 1;
+        }
+    }
+
+    static int mod0(int x, int y)
+    {
+        return x - y * div0(x, y);
+    }
+
+    static Object integerDiv(int x, int y)
+    {
+        return Object::makeFixnum(div(x, y));
     }
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \

@@ -121,4 +121,3 @@ Object Fixnum::sqrt(Object n)
         }
     }
 }
-

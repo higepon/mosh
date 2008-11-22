@@ -50,6 +50,7 @@
 #include "ByteVector.h"
 #include "TextualOutputPort.h"
 #include "Closure.h"
+#include "Fixnum.h"
 
 using namespace scheme;
 
