@@ -39,6 +39,11 @@
 
 using namespace scheme;
 
+Object Fixnum::atan(int n)
+{
+    return Object::makeFlonum(::atan(static_cast<double>(n)));
+}
+
 Object Fixnum::asin(int n)
 {
     return Object::makeFlonum(::asin(static_cast<double>(n)));

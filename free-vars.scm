@@ -374,4 +374,5 @@
     sqrt
     magnitude
     angle
+    atan
     )

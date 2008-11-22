@@ -2863,11 +2863,18 @@
 (#t (almost=? 1.0986 (real-part (sqrt 1+1i))))
 (#t (almost=? 0.455 (imag-part (sqrt 1+1i))))
 
-;; asin, acos
+;; asin, acos, atan
 (#t (almost=? 0.666239 (real-part (asin 1+i))))
 (#t (almost=? 1.061275 (imag-part (asin 1+i))))
 (#t (almost=? 0.904557 (real-part (acos 1+i))))
 (#t (almost=? -1.061275 (imag-part (acos 1+i))))
+(#t (almost=? 1.017222 (real-part (atan 1+i))))
+(#t (almost=? 0.402359 (imag-part (atan 1+i))))
+(0 (atan 0 1))
+(error (atan 1+i 3))
+(#t (almost=? 0.785398 (atan 1 1)))
+
+
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

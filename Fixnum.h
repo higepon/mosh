@@ -70,6 +70,7 @@ public:
     static Object tan(int n);
     static Object asin(int n);
     static Object acos(int n);
+    static Object atan(int n);
 
     static Object abs(int n)
     {

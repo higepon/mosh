@@ -87,6 +87,28 @@ Object Arithmetic::acos(Object n)
     }
 }
 
+Object Arithmetic::atan(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::atan(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return Compnum::atan(n);
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::atan(value));
+    }
+}
+
+Object Arithmetic::atan2(Object n1, Object n2)
+{
+    MOSH_ASSERT(n1.isReal());
+    MOSH_ASSERT(n2.isReal());
+    if (Arithmetic::isExactZero(n1)) {
+        return Object::makeFixnum(0);
+    }
+    return Object::makeFlonum(::atan2(realToDouble(n1), realToDouble(n2)));
+}
 
 Object Arithmetic::tan(Object n)
 {

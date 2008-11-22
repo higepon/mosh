@@ -63,6 +63,20 @@ Object scheme::acosEx(int argc, const Object* argv)
     return Arithmetic::acos(n);
 }
 
+Object scheme::atanEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("atan");
+    checkArgumentLengthBetween(1, 2);
+    if (argc == 1) {
+        argumentCheckNumber(0, n);
+        return Arithmetic::atan(n);
+    } else {
+        argumentCheckReal(0, n1);
+        argumentCheckReal(0, n2);
+        return Arithmetic::atan2(n1, n2);
+    }
+}
+
 Object scheme::asinEx(int argc, const Object* argv)
 {
     DeclareProcedureName("asin");

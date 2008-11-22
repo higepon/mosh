@@ -84,6 +84,20 @@ public:
         return Arithmetic::mul(e, d);
     }
 
+    // atan(z) = (i/2)*log((i+z)/(i-z))
+    static Object atan(Object z)
+    {
+        MOSH_ASSERT(z.isCompnum());
+        const Object a = Object::makeCompnum(Object::makeFixnum(0),
+                                             Object::makeFixnum(1));
+        const Object b = Arithmetic::add(a, z);
+        const Object c = Arithmetic::sub(a, z);
+        const Object d = Arithmetic::log(Arithmetic::div(b, c));
+
+        const Object e = Object::makeCompnum(Object::makeFixnum(0),
+                                             Arithmetic::div(Object::makeFixnum(1), Object::makeFixnum(2)));
+        return Arithmetic::mul(e, d);
+    }
 
     Object sin() const
     {

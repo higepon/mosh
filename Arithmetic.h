@@ -44,6 +44,8 @@ public:
 
     static Object asin(Object n);
     static Object acos(Object n);
+    static Object atan(Object n);
+    static Object atan2(Object n1, Object n2);
     static Object sin(Object n);
     static Object cos(Object n);
     static Object tan(Object n);
