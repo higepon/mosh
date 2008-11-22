@@ -272,7 +272,7 @@ bool Arithmetic::isNegative(Object n)
     return Arithmetic::lt(n, Object::makeFixnum(0));
 }
 
-Object Arithmetic::maginude(Object n)
+Object Arithmetic::magnitude(Object n)
 {
     MOSH_ASSERT(n.isNumber());
     if (n.isReal()) {
@@ -282,7 +282,7 @@ Object Arithmetic::maginude(Object n)
             return n;
         }
     } else if (n.isCompnum()) {
-        return n.toCompnum()->maginude();
+        return n.toCompnum()->magnitude();
     } else {
         MOSH_ASSERT(false);
         return Object::Undef;

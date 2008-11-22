@@ -349,7 +349,6 @@
     bytevector-ieee-single-set!
     bytevector-ieee-double-native-set!
     bytevector-ieee-double-set!
-    magnitude
     even?
     odd?
     abs
@@ -368,4 +367,6 @@
     tan
     asin
     sqrt
+    magnitude
+    angle
     )

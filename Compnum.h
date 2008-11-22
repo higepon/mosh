@@ -81,7 +81,7 @@ public:
     {
         // cos(iy) = (e^-y + e^y) / 2
         // sin(iy) = (e^-y - e^y) / 2i
-        // cos(z)  = sin(x+iy) = cos(x)cos(iy) - sin(x)sin(iy)
+        // cos(z)  = cos(x+iy) = cos(x)cos(iy) - sin(x)sin(iy)
         //         = cos(x) * (e^-y + e^y) / 2 - sin(x) * (e^-y - e^y) / 2i
         //         = cos(x) * (e^-y + e^y) / 2 + sin(x) * ((e^-y - e^y) / 2) * i
         const double re = Arithmetic::realToDouble(real());
@@ -119,7 +119,7 @@ public:
         return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
     }
 
-    Object maginude() const
+    Object magnitude() const
     {
         return Arithmetic::sqrt(Arithmetic::add(Arithmetic::mul(real(), real()),
                                                 Arithmetic::mul(imag(), imag())));

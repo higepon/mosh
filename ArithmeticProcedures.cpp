@@ -215,10 +215,10 @@ Object scheme::oddPEx(int argc, const Object* argv)
 
 Object scheme::magnitudeEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("maginude");
+    DeclareProcedureName("magnitude");
     checkArgumentLength(1);
     argumentCheckNumber(0, number);
-    return Arithmetic::maginude(number);
+    return Arithmetic::magnitude(number);
 }
 
 Object scheme::complexPEx(int argc, const Object* argv)

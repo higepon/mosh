@@ -2790,6 +2790,13 @@
 (-inf.0 (string->number "-inf.0"))
 (#t (nan? (string->number "+nan.0")))
 
+;; magnitude
+(10 (magnitude 10))
+(10.0 (magnitude 10.0))
+(10.0 (magnitude -10.0))
+(2/3 (magnitude -2/3))
+(#xfffffffffffffffffffffff (magnitude #x-fffffffffffffffffffffff))
+(#t (almost=? 5.3851 (magnitude 2+5i)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
