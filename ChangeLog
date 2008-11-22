@@ -1,3 +1,7 @@
+2008-11-23  kokosabu  <kokosabu@gmail.com>
+
+        * Added : fx+/carry, fx-/carry, fx*/carry.
+
 2008-11-22  higepon  <higepon@users.sourceforge.jp>
 
         * lib/core/base.scm (exact-integer-sqrt): Added.
@@ -12,7 +16,7 @@
 
 2008-11-22  kokosabu  <kokosabu@gmail.com>
 
-        * Added : fix-, fxdiv-and-mod, fxdiv, fxmod, fxdiv0-and-mod0, fxdiv0, fxmod0.
+        * Added : fx-, fxdiv-and-mod, fxdiv, fxmod, fxdiv0-and-mod0, fxdiv0, fxmod0.
 
         * Fixnum.h : fixed BITS.
 

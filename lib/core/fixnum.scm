@@ -32,3 +32,31 @@
 
 (define (fxdiv0-and-mod0 fx1 fx2)
   (values (fxdiv0 fx1 fx2) (fxmod0 fx1 fx2)))
+
+(define (fx+/carry fx1 fx2 fx3)
+  (or (fixnum? fx1) (assertion-violation 'fx+/carry (format "fixnum required, but got ~a" fx1) fx1 fx2 fx3))
+  (or (fixnum? fx2) (assertion-violation 'fx+/carry (format "fixnum required, but got ~a" fx2) fx1 fx2 fx3))
+  (or (fixnum? fx3) (assertion-violation 'fx+/carry (format "fixnum required, but got ~a" fx3) fx1 fx2 fx3))
+  (let* ((s (+ fx1 fx2 fx3))
+         (s0 (mod0 s (expt 2 (fixnum-width))))
+         (s1 (div0 s (expt 2 (fixnum-width)))))
+    (values s0 s1)))
+
+(define (fx-/carry fx1 fx2 fx3)
+  (or (fixnum? fx1) (assertion-violation 'fx-/carry (format "fixnum required, but got ~a" fx1) fx1 fx2 fx3))
+  (or (fixnum? fx2) (assertion-violation 'fx-/carry (format "fixnum required, but got ~a" fx2) fx1 fx2 fx3))
+  (or (fixnum? fx3) (assertion-violation 'fx-/carry (format "fixnum required, but got ~a" fx3) fx1 fx2 fx3))
+  (let* ((d (- fx1 fx2 fx3))
+         (d0 (mod0 d (expt 2 (fixnum-width))))
+         (d1 (div0 d (expt 2 (fixnum-width)))))
+    (values d0 d1)))
+
+(define (fx*/carry fx1 fx2 fx3)
+  (or (fixnum? fx1) (assertion-violation 'fx*/carry (format "fixnum required, but got ~a" fx1) fx1 fx2 fx3))
+  (or (fixnum? fx2) (assertion-violation 'fx*/carry (format "fixnum required, but got ~a" fx2) fx1 fx2 fx3))
+  (or (fixnum? fx3) (assertion-violation 'fx*/carry (format "fixnum required, but got ~a" fx3) fx1 fx2 fx3))
+  (let* ((s (+ (* fx1 fx2) fx3))
+         (s0 (mod0 s (expt 2 (fixnum-width))))
+         (s1 (div0 s (expt 2 (fixnum-width)))))
+    (values s0 s1)))
+
