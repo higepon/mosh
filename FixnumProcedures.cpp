@@ -252,25 +252,6 @@ Object scheme::fxSubEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::fxdivAndModEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("fxdiv-and-mod");
-    checkArgumentLength(2);
-
-    argumentAsFixnum(0, fx1);
-    argumentAsFixnum(1, fx2);
-
-    if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
-        return Object::Undef;
-    }
-
-    Object results[2];
-    results[0] = Object::makeFixnum(Fixnum::div(fx1, fx2));
-    results[1] = Object::makeFixnum(Fixnum::mod(fx1, fx2));
-    return theVM->values(2, results);
-}
-
 Object scheme::fxdivEx(int argc, const Object* argv)
 {
     DeclareProcedureName("fxdiv");
@@ -299,25 +280,6 @@ Object scheme::fxmodEx(int argc, const Object* argv)
         return Object::Undef;
     }
     return Object::makeFixnum(Fixnum::mod(fx1, fx2));
-}
-
-Object scheme::fxdiv0AndMod0Ex(int argc, const Object* argv)
-{
-    DeclareProcedureName("fxdiv0-and-mod0");
-    checkArgumentLength(2);
-
-    argumentAsFixnum(0, fx1);
-    argumentAsFixnum(1, fx2);
-
-    if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
-        return Object::Undef;
-    }
-
-    Object results[2];
-    results[0] = Object::makeFixnum(Fixnum::div0(fx1, fx2));
-    results[1] = Object::makeFixnum(Fixnum::mod0(fx1, fx2));
-    return theVM->values(2, results);
 }
 
 Object scheme::fxdiv0Ex(int argc, const Object* argv)

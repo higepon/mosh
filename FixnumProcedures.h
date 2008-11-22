@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #ifndef __SCHEME_FIXNUM_PROCEDURES__
@@ -51,10 +51,8 @@ namespace scheme {
     Object fxAddEx(int argc, const Object* argv);
     Object fxMulEx(int argc, const Object* argv);
     Object fxSubEx(int argc, const Object* argv);
-    Object fxdivAndModEx(int argc, const Object* argv);
     Object fxdivEx(int argc, const Object* argv);
     Object fxmodEx(int argc, const Object* argv);
-    Object fxdiv0AndMod0Ex(int argc, const Object* argv);
     Object fxdiv0Ex(int argc, const Object* argv);
     Object fxmod0Ex(int argc, const Object* argv);
     ////fx+/carry
