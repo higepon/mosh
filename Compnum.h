@@ -125,6 +125,14 @@ public:
                                                 Arithmetic::mul(imag(), imag())));
     }
 
+    // theta = atan2(imaginary, real)
+    Object angle() const
+    {
+        const double re = Arithmetic::realToDouble(real());
+        const double im = Arithmetic::realToDouble(imag());
+        return Object::makeFlonum(::atan2(im, re));
+    }
+
     static bool eq(Compnum* n1, Compnum* n2)
     {
         return Arithmetic::eq(n1->real(), n2->real()) &&

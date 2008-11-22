@@ -59,6 +59,7 @@ public:
     static Object sqrt(Object n);
     static double realToDouble(Object n);
     static Object magnitude(Object n);
+    static Object angle(Object n);
     static Object makePolar(Object n1, Object n2);
     static bool isEven(Object n);
     static bool isInteger(Object n);

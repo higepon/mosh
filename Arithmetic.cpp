@@ -272,6 +272,28 @@ bool Arithmetic::isNegative(Object n)
     return Arithmetic::lt(n, Object::makeFixnum(0));
 }
 
+Object Arithmetic::angle(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isReal()) {
+        if (isNegative(n)) {
+            // pi
+            return Object::makeFlonum(::acos(-1));
+        } else {
+            if (n.isFlonum()) {
+                return Object::makeFlonum(0.0);
+            } else {
+                return Object::makeFixnum(0);
+            }
+        }
+    } else if (n.isCompnum()) {
+        return n.toCompnum()->angle();
+    } else {
+        MOSH_ASSERT(false);
+        return Object::Undef;
+    }
+}
+
 Object Arithmetic::magnitude(Object n)
 {
     MOSH_ASSERT(n.isNumber());

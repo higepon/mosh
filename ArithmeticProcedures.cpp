@@ -221,6 +221,14 @@ Object scheme::magnitudeEx(int argc, const Object* argv)
     return Arithmetic::magnitude(number);
 }
 
+Object scheme::angleEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("angle");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, number);
+    return Arithmetic::angle(number);
+}
+
 Object scheme::complexPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("complex?");

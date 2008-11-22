@@ -2797,6 +2797,11 @@
 (2/3 (magnitude -2/3))
 (#xfffffffffffffffffffffff (magnitude #x-fffffffffffffffffffffff))
 (#t (almost=? 5.3851 (magnitude 2+5i)))
+;; angle
+(0 (angle 0))
+(0.0 (angle 0.0))
+(#t (almost=? 3.14159 (angle -3)))
+(#t (almost=? (/ 3.141592 4) (angle 1+1i)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
