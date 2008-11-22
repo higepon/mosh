@@ -67,6 +67,23 @@ public:
         return Arithmetic::mul(e, d);
     }
 
+    // arccos(z) = -i * log(z + sqrt(1-z*z)i)
+    static Object acos(Object z)
+    {
+        MOSH_ASSERT(z.isCompnum());
+        const Object a = Arithmetic::sub(Object::makeFixnum(1),
+                                         Arithmetic::mul(z, z));
+
+        const Object b = Arithmetic::sqrt(a);
+        const Object c = Arithmetic::mul(Object::makeCompnum(Object::makeFixnum(0),
+                                                             Object::makeFixnum(1)),
+                                         b);
+        const Object d = Arithmetic::log(Arithmetic::add(z, c));
+        const Object e = Object::makeCompnum(Object::makeFixnum(0),
+                                             Object::makeFixnum(-1));
+        return Arithmetic::mul(e, d);
+    }
+
 
     Object sin() const
     {

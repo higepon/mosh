@@ -1,6 +1,6 @@
 2008-11-22  higepon  <higepon@users.sourceforge.jp>
 
-        * Added asin for Complex number.
+        * Added asin, acos for Complex number.
 
         * Rewrote sqrt for Complex number.
 

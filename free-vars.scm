@@ -370,6 +370,7 @@
     cos
     tan
     asin
+    acos
     sqrt
     magnitude
     angle

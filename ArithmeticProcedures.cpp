@@ -55,6 +55,13 @@ Object scheme::sqrtEx(int argc, const Object* argv)
     return Arithmetic::sqrt(n);
 }
 
+Object scheme::acosEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("acos");
+    checkArgumentLength(1);
+    argumentCheckNumber(0, n);
+    return Arithmetic::acos(n);
+}
 
 Object scheme::asinEx(int argc, const Object* argv)
 {

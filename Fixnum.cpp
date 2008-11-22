@@ -44,6 +44,10 @@ Object Fixnum::asin(int n)
     return Object::makeFlonum(::asin(static_cast<double>(n)));
 }
 
+Object Fixnum::acos(int n)
+{
+    return Object::makeFlonum(::acos(static_cast<double>(n)));
+}
 
 Object Fixnum::tan(int n)
 {

@@ -74,6 +74,19 @@ Object Arithmetic::asin(Object n)
     }
 }
 
+Object Arithmetic::acos(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isFixnum()) {
+        return Fixnum::acos(n.toFixnum());
+    } else if (n.isCompnum()) {
+        return Compnum::acos(n);
+    } else {
+        const double value = realToDouble(n);
+        return Object::makeFlonum(::acos(value));
+    }
+}
+
 
 Object Arithmetic::tan(Object n)
 {
