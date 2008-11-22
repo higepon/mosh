@@ -1,3 +1,10 @@
+(define (exact-integer-sqrt k)
+  (unless (and (integer? k) (>= k 0))
+    (assertion-violation 'exact-integer-sqrt "exact integer number required" (list k)))
+  (let* ([s (exact (truncate (sqrt k)))]
+         [r (- k (* s s))])
+    (values s r)))
+
 (define (mod x y)
   (- x (* (div x y) y)))
 

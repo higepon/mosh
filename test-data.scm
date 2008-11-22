@@ -2873,7 +2873,15 @@
 (0 (atan 0 1))
 (error (atan 1+i 3))
 (#t (almost=? 0.785398 (atan 1 1)))
-
+(#t (let1 val 5
+      (receive (s r) (exact-integer-sqrt val)
+        (= val (+ r (* s s))))))
+(#t (let1 val 4
+      (receive (s r) (exact-integer-sqrt val)
+        (= val (+ r (* s s))))))
+(#t (let1 val 3
+      (receive (s r) (exact-integer-sqrt val)
+        (= val (+ r (* s s))))))
 
 
 ;; optimize miss

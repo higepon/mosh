@@ -1,5 +1,7 @@
 2008-11-22  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/core/base.scm (exact-integer-sqrt): Added.
+
         * Added asin, acos for Complex number.
 
         * Rewrote sqrt for Complex number.
