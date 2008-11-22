@@ -40,6 +40,7 @@ Box.h                                                             \
 Codec.h                                                           \
 Transcoder.h                                                      \
 ProcedureMacro.h                                                  \
+Compnum.h                     Compnum.cpp                         \
 Fixnum.h                      Fixnum.cpp                          \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \

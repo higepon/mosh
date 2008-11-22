@@ -67,6 +67,7 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Bignum.h"
+#include "ProcedureMacro.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
 

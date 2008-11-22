@@ -51,16 +51,22 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
-    Object asin() const
+    static Object asin(Object z)
     {
-//         const double re = Arithmetic::realToDouble(real());
-//         const double im = Arithmetic::realToDouble(imag());
-//         const double a = ::exp(im);
-//         const double b = 1.0 / a;
-// //we need sqt
-//         return Object::makeCompnum(Object::makeFlonum(0.0)
-//                                    Arithmetic::log(::sqrt /
+        MOSH_ASSERT(z.isCompnum());
+        const Object a = Arithmetic::sub(Object::makeFixnum(1),
+                                         Arithmetic::mul(z, z));
+
+        const Object b = Arithmetic::sqrt(a);
+        const Object c = Arithmetic::mul(Object::makeCompnum(Object::makeFixnum(0),
+                                                             Object::makeFixnum(1)),
+                                         z);
+        const Object d = Arithmetic::log(Arithmetic::add(b, c));
+        const Object e = Object::makeCompnum(Object::makeFixnum(0),
+                                             Object::makeFixnum(-1));
+        return Arithmetic::mul(e, d);
     }
+
 
     Object sin() const
     {
@@ -228,7 +234,7 @@ public:
     static Object mul(Compnum* n1, Compnum* n2)
     {
         return Object::makeCompnum(Arithmetic::sub(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
-                                   Arithmetic::add(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n1->real(), n2->imag())));
+                                   Arithmetic::add(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n2->real(), n1->imag())));
     }
 
     static Object div(Compnum* n1, Compnum* n2)

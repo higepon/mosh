@@ -42,6 +42,7 @@
 #include "Fixnum.h"
 #include "Flonum.h"
 #include "Bignum.h"
+#include "ProcedureMacro.h"
 #include "Compnum.h"
 
 using namespace scheme;

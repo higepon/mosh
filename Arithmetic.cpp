@@ -38,7 +38,6 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Fixnum.h"
-#include "ErrorProcedures.h"
 #include "Compnum.h"
 #include "SString.h"
 
@@ -68,7 +67,7 @@ Object Arithmetic::asin(Object n)
     if (n.isFixnum()) {
         return Fixnum::asin(n.toFixnum());
     } else if (n.isCompnum()) {
-        return n.toCompnum()->sin();
+        return Compnum::asin(n);
     } else {
         const double value = realToDouble(n);
         return Object::makeFlonum(::asin(value));

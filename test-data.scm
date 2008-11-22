@@ -2809,6 +2809,9 @@
 (#t (almost=? 1.0986 (real-part (sqrt 1+1i))))
 (#t (almost=? 0.455 (imag-part (sqrt 1+1i))))
 
+;; asin
+(#t (almost=? 0.666239 (real-part (asin 1+i))))
+(#t (almost=? 1.061275 (imag-part (asin 1+i))))
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
