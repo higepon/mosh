@@ -312,13 +312,65 @@ Object scheme::fxmod0Ex(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::mod0(fx1, fx2));
 }
 
-////fx+/carry
-////fx-/carry
-//Object scheme::fxnotEx(int argc, const Object* argv);
-//Object scheme::fxandEx(int argc, const Object* argv);
-//Object scheme::fxiorEx(int argc, const Object* argv);
-//Object scheme::fxxorEx(int argc, const Object* argv);
-//Object scheme::fxifEx(int argc, const Object* argv);
+Object scheme::fxnotEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxnot");
+    checkArgumentLength(1);
+
+    argumentAsFixnum(0, fx);
+    return Object::makeFixnum(Fixnum::fxnot(fx));
+}
+
+// -1 is identity element
+Object scheme::fxandEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxand");
+
+    int ret = -1;
+    for (int i = 0; i < argc; i++) {
+        argumentAsFixnum(i, fx);
+        ret = Fixnum::fxand(ret, fx);
+    }
+    return Object::makeFixnum(ret);
+}
+
+// 0 is identity element
+Object scheme::fxiorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxior");
+
+    int ret = 0;
+    for (int i = 0; i < argc; i++) {
+        argumentAsFixnum(i, fx);
+        ret = Fixnum::fxior(ret, fx);
+    }
+    return Object::makeFixnum(ret);
+}
+
+// 0 is identity element
+Object scheme::fxxorEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxxor");
+
+    int ret = 0;
+    for (int i = 0; i < argc; i++) {
+        argumentAsFixnum(i, fx);
+        ret = Fixnum::fxxor(ret, fx);
+    }
+    return Object::makeFixnum(ret);
+}
+
+Object scheme::fxifEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxif");
+    checkArgumentLength(3);
+
+    argumentAsFixnum(0, fx1);
+    argumentAsFixnum(1, fx2);
+    argumentAsFixnum(2, fx3);
+    return Object::makeFixnum(Fixnum::fxif(fx1, fx2, fx3));
+}
+
 //Object scheme::fxbitCountEx(int argc, const Object* argv);
 //Object scheme::fxlengthEx(int argc, const Object* argv);
 //Object scheme::fxfirstBitSetEx(int argc, const Object* argv);

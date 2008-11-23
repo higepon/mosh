@@ -55,13 +55,11 @@ namespace scheme {
     Object fxmodEx(int argc, const Object* argv);
     Object fxdiv0Ex(int argc, const Object* argv);
     Object fxmod0Ex(int argc, const Object* argv);
-    ////fx+/carry
-    ////fx-/carry
-    //Object fxnotEx(int argc, const Object* argv);
-    //Object fxandEx(int argc, const Object* argv);
-    //Object fxiorEx(int argc, const Object* argv);
-    //Object fxxorEx(int argc, const Object* argv);
-    //Object fxifEx(int argc, const Object* argv);
+    Object fxnotEx(int argc, const Object* argv);
+    Object fxandEx(int argc, const Object* argv);
+    Object fxiorEx(int argc, const Object* argv);
+    Object fxxorEx(int argc, const Object* argv);
+    Object fxifEx(int argc, const Object* argv);
     //Object fxbitCountEx(int argc, const Object* argv);
     //Object fxlengthEx(int argc, const Object* argv);
     //Object fxfirstBitSetEx(int argc, const Object* argv);

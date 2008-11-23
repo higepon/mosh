@@ -115,6 +115,26 @@ public:
         return x - y * div0(x, y);
     }
 
+    static int fxnot(int fx) {
+        return ~fx;
+    }
+
+    static int fxand(int fx1, int fx2) {
+        return fx1 & fx2;
+    }
+
+    static int fxior(int fx1, int fx2) {
+        return fx1 | fx2;
+    }
+
+    static int fxxor(int fx1, int fx2) {
+        return fx1 ^ fx2;
+    }
+
+    static int fxif(int fx1, int fx2, int fx3) {
+        return fxior(fxand(fx1, fx2), fxand(fxnot(fx1), fx3));
+    }
+
     static Object integerDiv(int x, int y)
     {
         return Object::makeFixnum(div(x, y));

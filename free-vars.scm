@@ -345,6 +345,11 @@
     fxmod
     fxdiv0
     fxmod0
+    fxnot
+    fxand
+    fxior
+    fxxor
+    fxif
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref
