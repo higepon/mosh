@@ -1,5 +1,7 @@
 2008-11-23  higepon  <higepon@users.sourceforge.jp>
 
+        * Fixed 1e10 style read for decimal.
+
         * lib/mosh/condition.ss : Added &no-nans and &no-infinities.
 
         * Passed all of syntax-case tests of R6RS test suite.

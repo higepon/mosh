@@ -18,5 +18,4 @@
 
 (import (rnrs))
 
-(display #; 3 1234
- )
+(display (string->number "#e1e-2")); (expt 10 1000))

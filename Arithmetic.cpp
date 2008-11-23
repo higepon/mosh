@@ -42,6 +42,8 @@
 #include "SString.h"
 #include "ErrorProcedures.h"
 #include "StringProcedures.h"
+#include "ProcedureMacro.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
@@ -1196,14 +1198,20 @@ Object Arithmetic::div(Object n1, Object n2, bool noRaise /* = false */)
             }
         } else if (n2.isRatnum()) {
             if (isExactZero(n2)) {
-                if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                if (!noRaise) {
+                    callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                    return Object::makeFixnum(0);
+                }
                 return Object::False;
             } else {
                 return Ratnum::div(n1.toFixnum(), n2.toRatnum());
             }
         } else if (n2.isFlonum()) {
             if (n2.toFlonum()->value() == 0.0) {
-                if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                if (!noRaise) {
+                    callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+                    return Object::makeFixnum(0);
+                }
                 return Object::False;
             } else {
                 return Flonum::div(n1.toFixnum(), n2.toFlonum());

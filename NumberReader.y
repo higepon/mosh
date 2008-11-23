@@ -41,6 +41,7 @@
 #include "StringProcedures.h"
 #include "NumberScanner.h"
 #include "TextualInputPort.h"
+#include "TextualOutputPort.h"
 #include "Arithmetic.h"
 #include "Reader.h"
 #include "NumberReader.h"
@@ -48,6 +49,7 @@
 #include "Scanner.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 extern int number_yylex();
@@ -258,13 +260,25 @@ sreal10   : PLUS  ureal10 { $$ = $2; }
           ;
 
 decimal10 : uinteger10String suffix {
-               if ($2.empty()) {
-                   $$ = Bignum::makeInteger($1);
-               } else {
-                   ucs4string ret = $1;
-                   ret += $2;
-                   $$ = Flonum::fromString(ret);
-               }
+              if ($2.empty()) {
+                  $$ = Bignum::makeInteger($1);
+              } else {
+                  int sign = 1;
+                  uint32_t start = 1;
+                  if ($2[1] == '-') {
+                      sign = -1;
+                      start = 2;
+                  } else if ($2[1] == '+') {
+                      start = 2;
+                  }
+                  Object ret = Object::makeFixnum(1);
+                  for (int i = static_cast<int>($2.size() - 1); i >= start; i--) {
+                      ret = Arithmetic::mul(Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum($2.size() - i - 1)),
+                                            Object::makeFixnum($2[i] - '0'));
+                  }
+                  $$ = Arithmetic::mul(Bignum::makeInteger($1), Arithmetic::expt(Object::makeFixnum(10),
+                                                                                 sign == -1 ? Arithmetic::negate(ret) : ret));
+              }
           }
           | DOT uinteger10String suffix {
               ucs4string ret = UC(".");
@@ -280,6 +294,7 @@ decimal10 : uinteger10String suffix {
               if (!$4.empty()) {
                   ret += $4;
               }
+
               $$ = Flonum::fromString(ret);
           }
           ;

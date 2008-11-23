@@ -157,6 +157,7 @@ Object stringToNumber(const ucs4string& text)
 {
     bool isErrorOccured = false;
     const Object number = NumberReader::read(text, isErrorOccured);
+
     if (isErrorOccured) {
         return Object::False;
     } else {
