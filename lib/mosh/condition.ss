@@ -64,6 +64,14 @@
     &undefined
     make-undefined-violation
     undefined-violation?
+
+    &no-infinities
+    make-no-infinities-violation
+    no-infinities-violation?
+
+    &no-nans
+    make-no-nans-violation
+    no-nans-violation?
  )
   (import
     (rnrs base)
@@ -125,4 +133,11 @@
 
   (define-condition-type &undefined &violation
     make-undefined-violation undefined-violation?)
+
+  (define-condition-type &no-infinities &implementation-restriction
+    make-no-infinities-violation no-infinities-violation?)
+
+  (define-condition-type &no-nans &implementation-restriction
+    make-no-nans-violation no-nans-violation?)
+
 )

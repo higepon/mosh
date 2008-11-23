@@ -45,7 +45,7 @@ public:
     Bignum(const mpz_t value);
     ~Bignum();
 
-    char* toString() const;
+    char* toString(int radix = 10) const;
     double toDouble() const;
     bool isEven() const
     {
@@ -149,7 +149,7 @@ public:
 
     Object bitwiseXor(int n)
     {
-        return bitwiseIor(new Bignum(n));
+        return bitwiseXor(new Bignum(n));
     }
 
     Object bitwiseXor(Bignum* b)
@@ -173,8 +173,12 @@ public:
 
     Object bitwiseLength()
     {
-        const size_t size = mpz_sizeinbase(value, 2);
-        return makeInteger(size);
+        if (mpz_cmp_si(value, 0) < 0) {
+            return bitwiseNot().toBignum()->bitwiseLength();
+        } else {
+            size_t size = mpz_sizeinbase(value, 2);
+            return makeInteger(size);
+        }
     }
 
     Object bitwiseFirstBitSet()
@@ -186,6 +190,8 @@ public:
             return makeInteger(found);
         }
     }
+
+    static Object expt(int n1, const Bignum* n2);
 
     static Object bitwiseShiftLeft(const Bignum* n1, unsigned long n2)
     {

@@ -51,6 +51,12 @@ public:
     Object real() const { return real_; }
     Object imag() const { return imag_; }
 
+    // e^(z2log(z1))
+    static Object expt(Object z1, Object z2)
+    {
+        return Arithmetic::exp(Arithmetic::mul(z2, Arithmetic::log(z1)));
+    }
+
     static Object asin(Object z)
     {
         MOSH_ASSERT(z.isCompnum());

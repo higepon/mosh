@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object makePolarEx(int argc, const Object* argv);
+    Object exptEx(int argc, const Object* argv);
     Object sqrtEx(int argc, const Object* argv);
     Object asinEx(int argc, const Object* argv);
     Object acosEx(int argc, const Object* argv);
@@ -80,7 +82,7 @@ namespace scheme {
     Object flonumPEx(int argc, const Object* argv);
     Object bignumPEx(int argc, const Object* argv);
     Object fixnumPEx(int argc, const Object* argv);
-    Object makeComplexEx(int argc, const Object* argv);
+    Object makeRectangularEx(int argc, const Object* argv);
     Object fixnumWidthEx(int argc, const Object* argv);
     Object leastFixnumEx(int argc, const Object* argv);
     Object greatestFixnumEx(int argc, const Object* argv);

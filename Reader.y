@@ -62,7 +62,7 @@ extern int yyerror(const char *);
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
 
-%token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT
+%token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
 
@@ -73,11 +73,13 @@ extern int yyerror(const char *);
 
 %%
 
-top_level      : datum { Reader::parsed = $$; YYACCEPT; }
-               | END_OF_FILE { Reader::parsed = Object::Eof; YYACCEPT; }
+top_level      : END_OF_FILE { Reader::parsed = Object::Eof; YYACCEPT; }
+               | datum { Reader::parsed = $$; YYACCEPT; }
 
 datum          : lexme_datum
                | compound_datum
+               | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
+               | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
 
 lexme_datum    : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
@@ -139,7 +141,11 @@ bytevector     : BYTE_VECTOR_START datum_list RIGHT_PAREN {
                ;
 
 datum_list     : datum_list datum {
-                    $$ = Object::cons($2, $1);
+                    if ($2 == Object::Ignore) {
+                        $$ = $1;
+                    } else {
+                        $$ = Object::cons($2, $1);
+                    }
                }
                | {$$ = Object::Nil; }
                ;

@@ -51,6 +51,7 @@
 #include "TextualOutputPort.h"
 #include "Closure.h"
 #include "Fixnum.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
 
@@ -93,24 +94,20 @@ Object scheme::bytevectorPEx(int argc, const Object* argv)
 Object scheme::numberTostringEx(int argc, const Object* argv)
 {
     DeclareProcedureName("number->string");
-    checkArgumentLengthBetween(1, 2);
-    argumentAsFixnum(0, number);
-    if (2 == argc) {
-        argumentAsFixnum(1, radix);
+    checkArgumentLengthBetween(1, 3);
+    argumentCheckNumber(0, z);
 
-        if (16 == radix) {
-            static char buf[32];
-            snprintf(buf, 32, "%x", number);
-            return Object::makeString(buf);
+    if (2 == argc || 3 == argc) {
+        // we ignore precision parameter
+        argumentAsFixnum(1, radix);
+        if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
+            return Arithmetic::numberToString(z, radix);
         } else {
-            callAssertionViolationAfter(procedureName, "unsupported radix", L1(argv[1]));
+            callAssertionViolationAfter(procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
             return Object::Undef;
         }
-    }
-    else {
-        static char buf[32];
-        snprintf(buf, 32, "%d", number);
-        return Object::makeString(buf);
+    } else {
+        return Arithmetic::numberToString(z, 10);
     }
 }
 

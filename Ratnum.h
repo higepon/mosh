@@ -82,9 +82,9 @@ public:
         return Bignum::makeInteger(mpq_denref(value));
     }
 
-    char* toString() const
+    char* toString(int radix = 10) const
     {
-        return mpq_get_str(NULL, 10, value);
+        return mpq_get_str(NULL, radix, value);
     }
 
     double toDouble() const

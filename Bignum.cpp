@@ -65,12 +65,13 @@ Object Bignum::sqrt() const
 }
 
 
-char* Bignum::toString() const
+char* Bignum::toString(int radix /* = 10 */) const
 {
-    return mpz_get_str(NULL, 10, value);
+    return mpz_get_str(NULL, radix, value);
 }
 
 double Bignum::toDouble() const
 {
     return mpz_get_d(value);
 }
+

@@ -42,6 +42,10 @@ public:
     Arithmetic();
     ~Arithmetic();
 
+    static Object numberToString(Object n, int radix);
+    static Object real(Object n);
+    static Object imag(Object n);
+    static Object expt(Object n1, Object n2);
     static Object asin(Object n);
     static Object acos(Object n);
     static Object atan(Object n);

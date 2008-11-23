@@ -79,6 +79,7 @@ const Object Object::Undef   = Object::makeConst(2);
 const Object Object::UnBound = Object::makeConst(3);
 const Object Object::True    = Object::makeConst(4);
 const Object Object::False   = Object::makeConst(5);
+const Object Object::Ignore  = Object::makeConst(6);
 
 bool Object::isRational() const
 {

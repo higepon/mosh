@@ -1933,89 +1933,89 @@
       12345)
 ;; Tests originally from Ikarus END
 ;; complex
-(#t (= (make-complex 1 1) (make-complex 1 1)))
-(#t (= 3 (make-complex 3 0)))
-(#t (= (+ (greatest-fixnum) 1) (make-complex (+ (greatest-fixnum) 1) 0)))
-(#t (= (/ 1 3) (make-complex (/ 2 6) 0)))
-(#t (= (inexact (/ 1 3)) (make-complex (inexact (/ 2 6)) 0))) ;; may be equal?
-(#t (= (make-complex 3 0) 3))
-(#t (= (make-complex (+ (greatest-fixnum) 1) 0) (+ (greatest-fixnum) 1)))
-(#t (= (make-complex (/ 2 6) 0) (/ 1 3)))
-(#t (= (make-complex (inexact (/ 2 6)) 0) (inexact (/ 1 3)))) ;; may be equal?
-(#t (= (make-complex 2 3) (+ (make-complex 1 2) (make-complex 1 1))))
-(#t (= (make-complex 0 1) (- (make-complex 1 2) (make-complex 1 1))))
-(#t (= (make-complex 0 -1) (- (make-complex 1 1) (make-complex 1 2))))
-(#t (= (make-complex -5 10) (* (make-complex 1 2) (make-complex 3 4))))
-(#t (= (make-complex 1 0)  (/ (make-complex 1 2) (make-complex 1 2))))
-(#t (= (make-complex 1 1) (/ (make-complex 2 2) 2)))
-(1 (/ (make-complex 1 2) (make-complex 1 2)))
-(2 (+ (make-complex 1 -1) (make-complex 1 1))) ;; normalize
-(#t (= (make-complex (/ -1 2) (/ 3 2)) (/ (make-complex 1 2) (make-complex 1 -1))))
-(#t (= (make-complex 2 1) (+ 1 (make-complex 1 1))))                                               ; fixnum + compnum
-(#t (= (make-complex 3 1) (+ (make-complex 1 1) 2)))                                               ; compnum + fixnum
-(#t (= (make-complex (+ (greatest-fixnum) 2) 1)(+ (+ (greatest-fixnum) 1) (make-complex 1 1))))    ; bignum + compnum
-(#t (= (make-complex (+ (greatest-fixnum) 2) 1)(+ (make-complex 1 1) (+ (greatest-fixnum) 1) )))   ; compnum + bignum
-(#t (= (make-complex 1 3) (+ (/ 1 2) (make-complex (/ 1 2) 3))))                                   ; ratnum + compnum
-(#t (= (make-complex 1 3) (+ (make-complex (/ 1 2) 3) (/ 1 2))))                                   ; compnum + ratnum
-(#t (let1 sum (+ (make-complex 1 2) (inexact (/ 1 2)))                                             ; compnum + flonum
+(#t (= (make-rectangular 1 1) (make-rectangular 1 1)))
+(#t (= 3 (make-rectangular 3 0)))
+(#t (= (+ (greatest-fixnum) 1) (make-rectangular (+ (greatest-fixnum) 1) 0)))
+(#t (= (/ 1 3) (make-rectangular (/ 2 6) 0)))
+(#t (= (inexact (/ 1 3)) (make-rectangular (inexact (/ 2 6)) 0))) ;; may be equal?
+(#t (= (make-rectangular 3 0) 3))
+(#t (= (make-rectangular (+ (greatest-fixnum) 1) 0) (+ (greatest-fixnum) 1)))
+(#t (= (make-rectangular (/ 2 6) 0) (/ 1 3)))
+(#t (= (make-rectangular (inexact (/ 2 6)) 0) (inexact (/ 1 3)))) ;; may be equal?
+(#t (= (make-rectangular 2 3) (+ (make-rectangular 1 2) (make-rectangular 1 1))))
+(#t (= (make-rectangular 0 1) (- (make-rectangular 1 2) (make-rectangular 1 1))))
+(#t (= (make-rectangular 0 -1) (- (make-rectangular 1 1) (make-rectangular 1 2))))
+(#t (= (make-rectangular -5 10) (* (make-rectangular 1 2) (make-rectangular 3 4))))
+(#t (= (make-rectangular 1 0)  (/ (make-rectangular 1 2) (make-rectangular 1 2))))
+(#t (= (make-rectangular 1 1) (/ (make-rectangular 2 2) 2)))
+(1 (/ (make-rectangular 1 2) (make-rectangular 1 2)))
+(2 (+ (make-rectangular 1 -1) (make-rectangular 1 1))) ;; normalize
+(#t (= (make-rectangular (/ -1 2) (/ 3 2)) (/ (make-rectangular 1 2) (make-rectangular 1 -1))))
+(#t (= (make-rectangular 2 1) (+ 1 (make-rectangular 1 1))))                                               ; fixnum + compnum
+(#t (= (make-rectangular 3 1) (+ (make-rectangular 1 1) 2)))                                               ; compnum + fixnum
+(#t (= (make-rectangular (+ (greatest-fixnum) 2) 1)(+ (+ (greatest-fixnum) 1) (make-rectangular 1 1))))    ; bignum + compnum
+(#t (= (make-rectangular (+ (greatest-fixnum) 2) 1)(+ (make-rectangular 1 1) (+ (greatest-fixnum) 1) )))   ; compnum + bignum
+(#t (= (make-rectangular 1 3) (+ (/ 1 2) (make-rectangular (/ 1 2) 3))))                                   ; ratnum + compnum
+(#t (= (make-rectangular 1 3) (+ (make-rectangular (/ 1 2) 3) (/ 1 2))))                                   ; compnum + ratnum
+(#t (let1 sum (+ (make-rectangular 1 2) (inexact (/ 1 2)))                                             ; compnum + flonum
       (and (< (inexact (/ 2 2)) (real-part sum) (inexact (/ 4 2)))
            (= (imag-part sum) 2))))
-(#t (let1 sum (+ (inexact (/ 1 2)) (make-complex 1 2))                                             ; flonum + compnum
+(#t (let1 sum (+ (inexact (/ 1 2)) (make-rectangular 1 2))                                             ; flonum + compnum
       (and (< (inexact (/ 2 2)) (real-part sum) (inexact (/ 4 2)))
            (= (imag-part sum) 2))))
-(#t (= (make-complex 3 3) (+ (make-complex 1 1) (make-complex 2 2))))                              ; compnum + compnum
-(#t (= (make-complex 0 -1) (- 1 (make-complex 1 1))))                                              ; fixnum - compnum
-(#t (= (make-complex -1 1) (- (make-complex 1 1) 2)))                                              ; compnum - fixnum
-(#t (= (make-complex (+ (greatest-fixnum) 1) -1) (- (+ (greatest-fixnum) 2) (make-complex 1 1))))  ; bignum - compnum
-(#t (= (make-complex (least-fixnum) -1) (- (make-complex 1 1) (+ (greatest-fixnum) 2) )))          ; compnum - bignum
-(#t (= (make-complex 0 3) (- (/ 1 2) (make-complex (/ 1 2) 3))))                                   ; ratnum - compnum
-(#t (= (make-complex 0 3) (- (make-complex (/ 1 2) 3) (/ 1 2))))                                   ; compnum - ratnum
-(#t (let1 sum (- (make-complex 1 2) (inexact (/ 1 2)))                                             ; compnum - flonum
+(#t (= (make-rectangular 3 3) (+ (make-rectangular 1 1) (make-rectangular 2 2))))                              ; compnum + compnum
+(#t (= (make-rectangular 0 -1) (- 1 (make-rectangular 1 1))))                                              ; fixnum - compnum
+(#t (= (make-rectangular -1 1) (- (make-rectangular 1 1) 2)))                                              ; compnum - fixnum
+(#t (= (make-rectangular (+ (greatest-fixnum) 1) -1) (- (+ (greatest-fixnum) 2) (make-rectangular 1 1))))  ; bignum - compnum
+(#t (= (make-rectangular (least-fixnum) -1) (- (make-rectangular 1 1) (+ (greatest-fixnum) 2) )))          ; compnum - bignum
+(#t (= (make-rectangular 0 3) (- (/ 1 2) (make-rectangular (/ 1 2) 3))))                                   ; ratnum - compnum
+(#t (= (make-rectangular 0 3) (- (make-rectangular (/ 1 2) 3) (/ 1 2))))                                   ; compnum - ratnum
+(#t (let1 sum (- (make-rectangular 1 2) (inexact (/ 1 2)))                                             ; compnum - flonum
       (and (< (inexact (/ 1 4)) (real-part sum) (inexact (/ 2 3)))
            (= (imag-part sum) 2))))
-(#t (let1 sum (- (inexact (/ 1 2)) (make-complex 1 2))                                             ; flonum - compnum
+(#t (let1 sum (- (inexact (/ 1 2)) (make-rectangular 1 2))                                             ; flonum - compnum
       (and (< (inexact (- 0 (/ 3 4))) (real-part sum) (inexact (- 0 (/ 1 4))))
            (= (imag-part sum) -2))))
-(#t (= (make-complex -1 -1) (- (make-complex 1 1) (make-complex 2 2))))                            ; compnum - compnum
-(#t (= (make-complex 6 3) (* 3 (make-complex 2 1))))                                               ; fixnum * compnum
-(#t (= (make-complex 6 3) (* (make-complex 2 1) 3)))                                               ; compnum * fixnum
-(#t (= (make-complex (+ (greatest-fixnum) (greatest-fixnum) 2)
+(#t (= (make-rectangular -1 -1) (- (make-rectangular 1 1) (make-rectangular 2 2))))                            ; compnum - compnum
+(#t (= (make-rectangular 6 3) (* 3 (make-rectangular 2 1))))                                               ; fixnum * compnum
+(#t (= (make-rectangular 6 3) (* (make-rectangular 2 1) 3)))                                               ; compnum * fixnum
+(#t (= (make-rectangular (+ (greatest-fixnum) (greatest-fixnum) 2)
                      (+ 1 (greatest-fixnum)))
-       (* (+ 1 (greatest-fixnum)) (make-complex 2 2))))                                            ; bignum * compnum
-(#t (= (make-complex (+ (greatest-fixnum) (greatest-fixnum) 2)                                     ; compnum * bignum
+       (* (+ 1 (greatest-fixnum)) (make-rectangular 2 2))))                                            ; bignum * compnum
+(#t (= (make-rectangular (+ (greatest-fixnum) (greatest-fixnum) 2)                                     ; compnum * bignum
                      (+ 1 (greatest-fixnum)))
-       (* (make-complex 2 2) (+ 1 (greatest-fixnum)))))
-(#t (= (make-complex (/ 1 3) (/ 2 6)) (* (/ 1 3) (make-complex 1 1))))                             ; ratnum * compnum
-(#t (= (make-complex (/ 1 3) (/ 2 6)) (* (make-complex 1 1) (/ 1 3))))                             ; compnum * ratnum
-(#t (let1 val (* (make-complex 2 3) (inexact (/ 1 3)))                                             ; compnum * flonum
+       (* (make-rectangular 2 2) (+ 1 (greatest-fixnum)))))
+(#t (= (make-rectangular (/ 1 3) (/ 2 6)) (* (/ 1 3) (make-rectangular 1 1))))                             ; ratnum * compnum
+(#t (= (make-rectangular (/ 1 3) (/ 2 6)) (* (make-rectangular 1 1) (/ 1 3))))                             ; compnum * ratnum
+(#t (let1 val (* (make-rectangular 2 3) (inexact (/ 1 3)))                                             ; compnum * flonum
       (and (< (/ 1 4) (real-part val) 1)
            (< (/ 99 100) (imag-part val) (inexact (/ 101 100))))))
-(#t (let1 val (* (inexact (/ 1 3)) (make-complex 2 3))                                             ; flonum * compnum
+(#t (let1 val (* (inexact (/ 1 3)) (make-rectangular 2 3))                                             ; flonum * compnum
       (and (< (/ 1 4) (real-part val) 1)
            (< (/ 99 100) (imag-part val) (inexact (/ 101 100))))))
-(#t (= (make-complex -7 -27) (* (make-complex 2 3) (make-complex 4 5))))                           ; compnum * compnum
-(#t (= (make-complex (/ 3 17) (/ 5 17)) (/ 2 (make-complex 3 5))))                                 ; fixnum / compnum
-(#t (= (make-complex (/ 3 2) (/ 5 2)) (/ (make-complex 3 5) 2)))                                   ; compnum / fixnum
-(#t (= (make-complex (/ (+ 1 (greatest-fixnum)) 2) (- 0 (/ (+ 1 (greatest-fixnum)) 2)))            ; bignum / compnum
-       (/ (+ (greatest-fixnum) 1) (make-complex 1 1))))
+(#t (= (make-rectangular -7 -27) (* (make-rectangular 2 3) (make-rectangular 4 5))))                           ; compnum * compnum
+(#t (= (make-rectangular (/ 3 17) (/ 5 17)) (/ 2 (make-rectangular 3 5))))                                 ; fixnum / compnum
+(#t (= (make-rectangular (/ 3 2) (/ 5 2)) (/ (make-rectangular 3 5) 2)))                                   ; compnum / fixnum
+(#t (= (make-rectangular (/ (+ 1 (greatest-fixnum)) 2) (- 0 (/ (+ 1 (greatest-fixnum)) 2)))            ; bignum / compnum
+       (/ (+ (greatest-fixnum) 1) (make-rectangular 1 1))))
 
-(#t (= (make-complex 1 2)                                                                          ; compnum / bignum
-       (/ (make-complex (+ (greatest-fixnum) 1) (* 2 (+ (greatest-fixnum) 1)))
+(#t (= (make-rectangular 1 2)                                                                          ; compnum / bignum
+       (/ (make-rectangular (+ (greatest-fixnum) 1) (* 2 (+ (greatest-fixnum) 1)))
           (+ (greatest-fixnum) 1))))
-(#t (= (make-complex (/ 1 6) (/ -1 6)) (/ (/ 1 3) (make-complex 1 1))))                            ; ratnum / compnum
-(#t (= (make-complex 3 3) (/ (make-complex 1 1) (/ 1 3))))                                         ; compnum / ratnum
-(#t (> (/ 7 2) (real-part (/ (make-complex 1 1) (inexact (/ 1 3)))) (/ 5 2)))                      ; compnum / flonum
-(#t (> (/ 2 6) (real-part (/ (inexact (/ 1 3)) (make-complex 1 1))) (/ 1 7)))                      ; flonum / compnum
-(#t (= (make-complex (/ 5 13) (/ -1 13)) (/ (make-complex 1 1) (make-complex 2 3))))               ; compnum / compnum
+(#t (= (make-rectangular (/ 1 6) (/ -1 6)) (/ (/ 1 3) (make-rectangular 1 1))))                            ; ratnum / compnum
+(#t (= (make-rectangular 3 3) (/ (make-rectangular 1 1) (/ 1 3))))                                         ; compnum / ratnum
+(#t (> (/ 7 2) (real-part (/ (make-rectangular 1 1) (inexact (/ 1 3)))) (/ 5 2)))                      ; compnum / flonum
+(#t (> (/ 2 6) (real-part (/ (inexact (/ 1 3)) (make-rectangular 1 1))) (/ 1 7)))                      ; flonum / compnum
+(#t (= (make-rectangular (/ 5 13) (/ -1 13)) (/ (make-rectangular 1 1) (make-rectangular 2 3))))               ; compnum / compnum
 ; zero div
 (error (/ 1 0))
 (error (/ (/ 1 3) 0))
 (error (/ (+ (greatest-fixnum) 1) 0))
 (error (/ (inexact (/ 1 3)) 0))
-(error (/ (make-complex 1 1) 0))
+(error (/ (make-rectangular 1 1) 0))
 (error (/ 3 (inexact 0)))
 ; normalize compnum
-(#t (let1 v (make-complex 3 0)
+(#t (let1 v (make-rectangular 3 0)
         (and (fixnum? v)
              (= v 3))))
 ;; number predicate
@@ -2023,27 +2023,27 @@
 (#t (number? (/ 3 4)))
 (#t (number? (inexact (/ 3 4))))
 (#t (number? (+ (greatest-fixnum) 1)))
-(#t (number? (make-complex 3 2)))
+(#t (number? (make-rectangular 3 2)))
 (#f (number? "string"))
 (#f (number? #vu8(1 2)))
 (#t (exact? 3))
 (#t (exact? (+ (greatest-fixnum) 1)))
 (#t (exact? (/ 1 3)))
 (#f (exact? (inexact (/ 1 3))))
-(#t (exact? (make-complex 1 2)))
-(#f (exact? (make-complex (inexact (/ 1 3)) 3)))
+(#t (exact? (make-rectangular 1 2)))
+(#f (exact? (make-rectangular (inexact (/ 1 3)) 3)))
 (#f (inexact? 3))
 (#f (inexact? (+ (greatest-fixnum) 1)))
 (#f (inexact? (/ 1 3)))
 (#t (inexact? (inexact (/ 1 3))))
-(#f (inexact? (make-complex 1 2)))
-(#t (inexact? (make-complex (inexact (/ 1 3)) 3)))
+(#f (inexact? (make-rectangular 1 2)))
+(#t (inexact? (make-rectangular (inexact (/ 1 3)) 3)))
 
 ;; exact/inexact
 (2 (exact 2))
 (#t (= (exact (+ (greatest-fixnum) 1)) (+ (greatest-fixnum) 1)))
 (#t (= (exact (/ 1 3)) (/ 1 3)))
-(#t (= (make-complex 1 2)  (make-complex 1 (inexact (/ 2 1)))))
+(#t (= (make-rectangular 1 2)  (make-rectangular 1 (inexact (/ 2 1)))))
 (2 (exact (inexact (/ 4 2))))
 
 [definition
@@ -2067,19 +2067,19 @@
 ;; zero?/positive?/negative?
 (#t (zero? 0))
 (#t (zero? t0.0)) ; 0.0
-(#t (zero? (make-complex 0 0)))
+(#t (zero? (make-rectangular 0 0)))
 (#f (let ([my-nan (/ t0.0 t0.0)])
       (zero? my-nan)))
 (#t (positive? 3))
 (#t (positive? (+ (greatest-fixnum) 1)))
 (#t (positive? (/ 1 3)))
 (#t (positive? (inexact (/ 1 3))))
-(error (positive? (make-complex 1 1)))
+(error (positive? (make-rectangular 1 1)))
 (#f (negative? 3))
 (#f (negative? (+ (greatest-fixnum) 1)))
 (#f (negative? (/ 1 3)))
 (#f (negative? (inexact (/ 1 3))))
-(error (negative? (make-complex 1 1)))
+(error (negative? (make-rectangular 1 1)))
 (#f  (negative? my-nan))
 (#f (positive? my-nan))
 (#t (positive? plus-inf))
@@ -2112,7 +2112,7 @@
 (#t (= t3.0 (real->flonum 3)))
 (#t (= t3.0 (real->flonum (/ 3 1))))
 (#t (= t3.0 (real->flonum t3.0)))
-(error (real->flonum (make-complex 1 1)))
+(error (real->flonum (make-rectangular 1 1)))
 (#t (fl=? t3.0 t3.0 t3.0))
 (#f (fl=? t3.0 t3.1 t3.0))
 (error (fl=? t3.0 3 t3.0))
@@ -2313,16 +2313,16 @@
 (#f (bitwise-bit-set? -2 0))
 
 ;; Numerical type predicates
-(#t (complex? (make-complex 3 4)))
+(#t (complex? (make-rectangular 3 4)))
 (#t (complex? 3))
 (#t (real? 3))
-(#f (real? (make-complex t3.1 t0.0)))
-(#t (real? (make-complex t3.1 0)))
+(#f (real? (make-rectangular t3.1 t0.0)))
+(#t (real? (make-rectangular t3.1 0)))
 (#t (real? t-3.1))
 (#t (rational? (/ 6 10)))
 (#t (rational? (/ 6 3)))
 (#t (rational? 2))
-(#t (integer? (make-complex 3 0)))
+(#t (integer? (make-rectangular 3 0)))
 (#t (integer? t3.0))
 (#t (integer? (/ 8 4)))
 (#t (number? my-nan))
@@ -2334,22 +2334,22 @@
 (#f (rational? minus-inf))
 (#f (integer? minus-inf))
 (#t (real-valued? my-nan))
-(#t (real-valued? (make-complex my-nan 0)))
+(#t (real-valued? (make-rectangular my-nan 0)))
 (#t (real-valued? minus-inf))
 (#t (real-valued? 3))
-(#t (real-valued? (make-complex t3.1 t0.0)))
-(#t (real-valued? (make-complex t3.1 0)))
+(#t (real-valued? (make-rectangular t3.1 t0.0)))
+(#t (real-valued? (make-rectangular t3.1 0)))
 (#t (real-valued? t-3.1))
 (#f (rational-valued? my-nan))
 (#f (rational-valued? minus-inf))
 (#t (rational-valued? (/ 6 10)))
-(#t (rational-valued? (make-complex (/ 6 10) t0.0)))
-(#t (rational-valued? (make-complex (/ 6 10) t0.0)))
+(#t (rational-valued? (make-rectangular (/ 6 10) t0.0)))
+(#t (rational-valued? (make-rectangular (/ 6 10) t0.0)))
 (#t (rational-valued? (/ 6 3)))
-(#t (integer-valued? (make-complex 3 0)))
-(#t (integer-valued? (make-complex 3 t0.0)))
+(#t (integer-valued? (make-rectangular 3 0)))
+(#t (integer-valued? (make-rectangular 3 t0.0)))
 (#t (integer-valued? t3.0))
-(#t (integer-valued? (make-complex t3.0 t0.0)))
+(#t (integer-valued? (make-rectangular t3.0 t0.0)))
 (#t (integer-valued? (/ 8 4)))
 
 ;; max, min
@@ -2599,11 +2599,11 @@
 (-3 #e#b-11)
 (#t (= (inexact -5) #i#b-101))
 (#t (= (/ 3 2) #b11/10))
-(#t (= #b11+10i (make-complex 3 2)))
-(#t (= #b11-10i (make-complex 3 -2)))
-(#t (= #b11+i (make-complex 3 1)))
-(#t (= #b+i (make-complex 0 1)))
-(#t (= #b-i (make-complex 0 -1)))
+(#t (= #b11+10i (make-rectangular 3 2)))
+(#t (= #b11-10i (make-rectangular 3 -2)))
+(#t (= #b11+i (make-rectangular 3 1)))
+(#t (= #b+i (make-rectangular 0 1)))
+(#t (= #b-i (make-rectangular 0 -1)))
 (#t (and (nan? (imag-part #b11+nan.0i))
          (= 3 (real-part #b11+nan.0i))))
 (#t (and (nan? (imag-part #b+nan.0i))
@@ -2621,11 +2621,11 @@
 (-9 #e#o-11)
 (#t (= (inexact -65) #i#o-101))
 (#t (= (/ 9 8) #o11/10))
-(#t (= #o11+10i (make-complex 9 8)))
-(#t (= #o11-10i (make-complex 9 -8)))
-(#t (= #o11+i (make-complex 9 1)))
-(#t (= #o+i (make-complex 0 1)))
-(#t (= #o-i (make-complex 0 -1)))
+(#t (= #o11+10i (make-rectangular 9 8)))
+(#t (= #o11-10i (make-rectangular 9 -8)))
+(#t (= #o11+i (make-rectangular 9 1)))
+(#t (= #o+i (make-rectangular 0 1)))
+(#t (= #o-i (make-rectangular 0 -1)))
 (#t (and (nan? (imag-part #o11+nan.0i))
          (= 9 (real-part #o11+nan.0i))))
 (#t (and (nan? (imag-part #o+nan.0i))
@@ -2644,16 +2644,16 @@
 (0.45 .45)
 (1.45 (inexact 145/100))
 (#t (infinite? (imag-part +inf.0i)))
-(#t (= 10+11i (make-complex 10 11)))
-(#t (= 10-11i (make-complex 10 -11)))
-(#t (= 10+i (make-complex 10 1)))
-(#t (= 10-i (make-complex 10 -1)))
-(#t (= 3.1+i (make-complex 3.1 1)))
-(#t (= 3.1-i (make-complex 3.1 -1)))
-(#t (= +3.25i (make-complex 0 3.25)))
-(#t (= -3.25i (make-complex 0 -3.25)))
-(#t (= +i (make-complex 0 1)))
-(#t (= -i (make-complex 0 -1)))
+(#t (= 10+11i (make-rectangular 10 11)))
+(#t (= 10-11i (make-rectangular 10 -11)))
+(#t (= 10+i (make-rectangular 10 1)))
+(#t (= 10-i (make-rectangular 10 -1)))
+(#t (= 3.1+i (make-rectangular 3.1 1)))
+(#t (= 3.1-i (make-rectangular 3.1 -1)))
+(#t (= +3.25i (make-rectangular 0 3.25)))
+(#t (= -3.25i (make-rectangular 0 -3.25)))
+(#t (= +i (make-rectangular 0 1)))
+(#t (= -i (make-rectangular 0 -1)))
 (#t (nan? (imag-part 10+nan.0i)))
 (10 (real-part 10+nan.0i))
 (#t (nan? (imag-part 10-nan.0i)))
@@ -2690,11 +2690,11 @@
 (-17 #e#x-11)
 (#t (= (inexact -257) #i#x-101))
 (#t (= (/ 17 16) #x11/10))
-(#t (= #x11+10i (make-complex 17 16)))
-(#t (= #x11-10i (make-complex 17 -16)))
-(#t (= #x11+i (make-complex 17 1)))
-(#t (= #x+i (make-complex 0 1)))
-(#t (= #x-i (make-complex 0 -1)))
+(#t (= #x11+10i (make-rectangular 17 16)))
+(#t (= #x11-10i (make-rectangular 17 -16)))
+(#t (= #x11+i (make-rectangular 17 1)))
+(#t (= #x+i (make-rectangular 0 1)))
+(#t (= #x-i (make-rectangular 0 -1)))
 (#t (and (nan? (imag-part #x11+nan.0i))
          (= 17 (real-part #x11+nan.0i))))
 (#t (and (nan? (imag-part #x+nan.0i))
@@ -2933,6 +2933,67 @@
       (receive (s r) (exact-integer-sqrt val)
         (= val (+ r (* s s))))))
 
+;; expt
+[definition
+  (define unspec (if #f #f))
+  (define (unspec? x) (eq? unspec x))
+]
+(125 (expt 5 3))
+(1 (expt 5 0))
+(0 (expt 0 5))
+(1 (expt 0 0))
+(#t (unspec? (expt 0 -5)))
+(1/125 (expt 5 -3))
+(#b1000000000000000000000000000000000 (expt 2 33)) ;; fixnum, fixnum => bignum
+(#b1/1000000000000000000000000000000000 (expt 2 -33)) ;; fixnum, fixnum => bignum
+(#t (almost=? 2.0 (expt 4 0.5)))
+(#t (almost=? 0.25 (expt 4 -1.0)))
+(0 (expt 0 5+.0000312i))
+(#t (unspec? (expt 0 -5+.0000312i)))
+(error (expt 2 (+ (greatest-fixnum) 1)))
+(#t (almost=? 2.0 (expt 4 1/2)))
+(#t (almost=? -1.8958 (real-part (expt 2 1+5i))))
+(#t (almost=? -0.6369 (imag-part (expt 2 1+5i))))
+(1 (expt 1 1+5i))
+(1.0 (expt 0.0 0.0))
+(#t (almost=? 4.0 (expt 2.0 2)))
+(#t (almost=? 4.0 (expt 2.0 2.0)))
+(#t (almost=? 2.0 (expt 4.0 1/2)))
+(10000000000000000000000000000000000000000000000000000000000 (expt 100000000000000000000000000000 2))
+(#t (= (* (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)) (expt (+ (greatest-fixnum) 1) 2)))
+(1/4 (expt 1/2 2))
+(4 (expt 1/2 -2))
+
+;; complex things
+[definition
+  (define (complex-almost=? a b)
+    (and (almost=? (real-part a) (real-part b))
+         (almost=? (imag-part a) (imag-part b))))
+]
+(#t (complex-almost=? 1.1+2.2i (make-rectangular 1.1 2.2)))
+(#t (complex-almost=? 1.1@2.2 (make-polar 1.1 2.2)))
+(#t (almost=? 1.1 (real-part 1.1+2.2i)))
+(#t (almost=? 2.2 (imag-part 1.1+2.2i)))
+(#t (almost=? 1.1 (magnitude 1.1@2.2)))
+(#t (almost=? 2.2 (angle 1.1@2.2)))
+(#t (almost=? 3.141592653589793 (angle -1)))
+(#t (almost=? 3.141592653589793 (angle -1.0)))
+(#t (almost=? 3.141592653589793 (angle -1.0+0.0i)))
+(#t (almost=? -3.141592653589793 (angle -1.0-0.0i)))
+(#t (almost=? 0.0 (angle +inf.0)))
+(#t (almost=? 3.141592653589793 (angle -inf.0)))
+
+;; number->string
+("123" (number->string 123))
+("123" (number->string 123 10))
+("10" (number->string 2 2))
+("2" (number->string 2 16))
+("a" (number->string 10 16))
+("12" (number->string 10 8))
+(error (number->string 1.0 8))
+("1.000000" (number->string 1.0))
+("1/a" (number->string 1/10 16))
+("1+1i" (number->string 1+i))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

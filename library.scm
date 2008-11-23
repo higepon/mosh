@@ -2948,15 +2948,6 @@
               (loop (cdr lst) (cons var lst1) lst2)
               (loop (cdr lst) lst1 (cons var lst2)))))))
 
-
-(define (expt n m)
-  (let loop ([i m]
-             [ret 1])
-    (if (>= 0 i)
-        ret
-        (loop (- i 1) (* ret n)))))
-
-
 ;; dynamic-wind implementation
 ;;   The Scheme Programming Language
 ;;   Third Edition by R. Kent Dybvig.

@@ -40,8 +40,242 @@
 #include "Fixnum.h"
 #include "Compnum.h"
 #include "SString.h"
+#include "ErrorProcedures.h"
+#include "StringProcedures.h"
 
 using namespace scheme;
+
+Object Arithmetic::numberToString(Object n, int radix)
+{
+    MOSH_ASSERT(n.isNumber());
+    MOSH_ASSERT(radix == 2 || radix == 8 || radix == 10 || radix == 16);
+    if (n.isFixnum()) {
+        const int fn = n.toFixnum();
+        char buf[64];
+        switch(radix) {
+        case 16:
+            snprintf(buf, 64, "%x", fn);
+            break;
+        case 8:
+            snprintf(buf, 64, "%o", fn);
+            break;
+        case 2:
+        {
+            Bignum* const b = new Bignum(fn);
+            snprintf(buf, 64, "%s", b->toString(2));
+            break;
+        }
+        case 10: // fallthrough
+        default:
+            snprintf(buf, 64, "%d", fn);
+            break;
+        }
+        return Object::makeString(buf);
+    } else if (n.isFlonum()) {
+        if (radix != 10) {
+            callAssertionViolationAfter("number->string", "radix 10 is required for inexact number", Pair::list1(Object::makeFixnum(radix)));
+            return Object::Undef;
+        } else {
+            char buf[64];
+            snprintf(buf, 64, "%f", n.toFlonum()->value());
+            return Object::makeString(buf);
+        }
+    } else if (n.isBignum()) {
+        return Object::makeString(n.toBignum()->toString(radix));
+    } else if (n.isRatnum()) {
+        Ratnum* const r = n.toRatnum();
+        return Object::makeString(r->toString(radix));
+    } else if (n.isCompnum()) {
+        Compnum* const c = n.toCompnum();
+        return format(UC("~d+~di"), Pair::list2(numberToString(c->real(), radix), numberToString(c->imag(), radix)));
+    } else {
+        MOSH_ASSERT(false);
+        return Object::Undef;
+    }
+}
+
+Object Arithmetic::real(Object n)
+{
+    MOSH_ASSERT(n.isNumber());
+    if (n.isCompnum()) {
+        return n.toCompnum()->real();
+    } else {
+        return n;
+    }
+}
+
+Object Arithmetic::imag(Object n)
+{
+    if (n.isCompnum()) {
+        return n.toCompnum()->imag();
+    } else if (n.isFlonum()) {
+        return Object::makeFlonum(0.0);
+    } else {
+        return Object::makeFixnum(0);
+    }
+}
+
+Object Arithmetic::expt(Object n1, Object n2)
+{
+    MOSH_ASSERT(n1.isNumber());
+    MOSH_ASSERT(n2.isNumber());
+    if (n1.isFixnum()) {
+        if (n2.isFixnum()) {
+            const int fn2 = n2.toFixnum();
+            if (fn2 > 0) {
+                Object ret = n1;
+                for (int i = 0; i < fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return ret;
+            } else if (fn2 == 0) {
+                return Object::makeFixnum(1);
+            } else {
+                const int fn1 = n1.toFixnum();
+                if (0 == fn1) {
+                    return Object::Undef;
+                }
+                // inverse
+                Object ret = n1;
+                for (int i = 0; i < -fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return Arithmetic::div(Object::makeFixnum(1), ret);
+            }
+        } else if (n2.isFlonum()) {
+            const double fn1 = static_cast<double>(n1.toFixnum());
+            const double fn2 = n2.toFlonum()->value();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isBignum()) {
+            // too large
+            callImplementationRestrictionAfter("expt", "too large", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else if (n2.isRatnum()) {
+            const double fn1 = static_cast<double>(n1.toFixnum());
+            const double fn2 = n2.toRatnum()->toDouble();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isCompnum()) {
+            const int fn1 = n1.toFixnum();
+            Compnum* const compnum = n2.toCompnum();
+            if (0 == fn1) {
+                if (Arithmetic::isNegative(compnum->real())) {
+                    return Object::Undef;
+                } else {
+                    return Object::makeFixnum(0);
+                }
+            } else {
+                return Compnum::expt(n1, n2);
+            }
+        } else {
+            MOSH_ASSERT(false);
+            return Object::Undef;
+        }
+    } else if (n1.isFlonum()) {
+        if (n2.isFixnum()) {
+            const double fn1 = n1.toFlonum()->value();
+            const double fn2 = static_cast<double>(n2.toFixnum());
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isFlonum()) {
+            const double fn1 = n1.toFlonum()->value();
+            const double fn2 = n2.toFlonum()->value();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isBignum()) {
+            // too large
+            callImplementationRestrictionAfter("expt", "too large", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else if (n2.isRatnum()) {
+            const double fn1 = n1.toFlonum()->value();
+            const double fn2 = n2.toRatnum()->toDouble();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isCompnum()) {
+            return Compnum::expt(n1, n2);
+        } else {
+            MOSH_ASSERT(false);
+            return Object::Undef;
+        }
+    } else if (n1.isBignum()) {
+        if (n2.isFixnum()) {
+            const int fn2 = n2.toFixnum();
+            if (fn2 > 0) {
+                // can be much faster using gmp
+                Object ret = n1;
+                for (int i = 0; i < fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return ret;
+            } else if (fn2 == 0) {
+                return Object::makeFixnum(1);
+            } else {
+                // inverse
+                Object ret = n1;
+                for (int i = 0; i < -fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return Arithmetic::div(Object::makeFixnum(1), ret);
+            }
+        } else if (n2.isFlonum()) {
+            const double fn1 = n1.toBignum()->toDouble();
+            const double fn2 = n2.toFlonum()->value();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isBignum()) {
+            // too large
+            callImplementationRestrictionAfter("expt", "too large", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else if (n2.isRatnum()) {
+            const double fn1 = n1.toBignum()->toDouble();
+            const double fn2 = n2.toRatnum()->toDouble();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isCompnum()) {
+            return Compnum::expt(n1, n2);
+        } else {
+            MOSH_ASSERT(false);
+            return Object::Undef;
+        }
+    } else if (n1.isRatnum()) {
+        if (n2.isFixnum()) {
+            const int fn2 = n2.toFixnum();
+            if (fn2 > 0) {
+                // can be much faster using gmp
+                Object ret = n1;
+                for (int i = 0; i < fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return ret;
+            } else if (fn2 == 0) {
+                return Object::makeFixnum(1);
+            } else {
+                // inverse
+                Object ret = n1;
+                for (int i = 0; i < -fn2 - 1; i++) {
+                    ret = Arithmetic::mul(ret, n1);
+                }
+                return Arithmetic::div(Object::makeFixnum(1), ret);
+            }
+        } else if (n2.isFlonum()) {
+            const double fn1 = n1.toRatnum()->toDouble();
+            const double fn2 = n2.toFlonum()->value();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isBignum()) {
+            // too large
+            callImplementationRestrictionAfter("expt", "too large", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else if (n2.isRatnum()) {
+            const double fn1 = n1.toRatnum()->toDouble();
+            const double fn2 = n2.toRatnum()->toDouble();
+            return Object::makeFlonum(::pow(fn1, fn2));
+        } else if (n2.isCompnum()) {
+            return Compnum::expt(n1, n2);
+        } else {
+            MOSH_ASSERT(false);
+            return Object::Undef;
+        }
+    } else if (n1.isCompnum()) {
+        return Compnum::expt(n1, n2);
+    } else {
+        MOSH_ASSERT(false);
+        return Object::Undef;
+    }
+}
 
 Object Arithmetic::sqrt(Object n)
 {
@@ -57,8 +291,8 @@ Object Arithmetic::sqrt(Object n)
     } else if (n.isCompnum()) {
         return n.toCompnum()->sqrt();
     }
-
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::asin(Object n)
@@ -531,6 +765,7 @@ Object Arithmetic::bitwiseLength(Object e)
         return e.toBignum()->bitwiseLength();
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseFirstBitSet(Object e)

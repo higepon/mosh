@@ -1,3 +1,23 @@
+2008-11-23  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/condition.ss : Added &no-nans and &no-infinities.
+
+        * Passed all of syntax-case tests of R6RS test suite.
+
+        * Passed all of flonums tests of R6RS test suite.
+
+        * Passed all of bitwise tests of R6RS test suite.
+
+        * Bignum.h : Fixed the bug of bitwise-length when number is negative.
+
+        * Added: number->string.
+
+        * Rewrote: real-part and imag-part.
+
+        * Added: make-rectangular, make-polar, angle and magnitude.
+
+        * Rewrote: expt for Complex numbers.
+
 2008-11-23  kokosabu  <kokosabu@gmail.com>
 
         * Added : fx+/carry, fx-/carry, fx*/carry, fxnot, fxand, fxior, fxxor, fxif.

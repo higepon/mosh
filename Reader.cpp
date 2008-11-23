@@ -35,7 +35,9 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "TextualInputPort.h"
+#include "TextualOutputPort.h"
 #include "Reader.h"
+#include "ProcedureMacro.h"
 
 using namespace scheme;
 
@@ -47,12 +49,16 @@ Object Reader::read(TextualInputPort* port, bool& errorOccured)
     extern int yyparse ();
     MOSH_ASSERT(port);
     in_ = port;
-    const bool isParseError = yyparse() == 1;
-    if (isParseError) {
-        errorOccured = true;
-        return Object::Undef;
-    } else {
-        return parsed;
+    for (;;) {
+        const bool isParseError = yyparse() == 1;
+        if (isParseError) {
+            errorOccured = true;
+            return Object::Undef;
+        }
+        // undef means #; ignored datum
+        if (!parsed.isUndef()) {
+            return parsed;
+        }
     }
 }
 

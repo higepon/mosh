@@ -411,6 +411,10 @@ int Scanner::scan()
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
+        "#;" {
+            YYTOKEN = YYCURSOR;
+            return DATUM_COMMENT;
+        }
         "#|" {
             goto comment;
         }

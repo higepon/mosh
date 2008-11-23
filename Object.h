@@ -264,6 +264,7 @@ public:
     static const Object UnBound;
     static const Object True;
     static const Object False;
+    static const Object Ignore;
 
 private:
     Object(word n) : val(n) {}

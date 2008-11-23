@@ -18,15 +18,5 @@
 
 (import (rnrs))
 
-(define (hoge-sqrt k)
-  (unless (and (integer? k) (>= k 0))
-    (assertion-violation 'integer-sqrt "exact integer number required" (list k)))
-  (let* ([s (exact (truncate (sqrt k)))]
-         [r (- k (* s s))])
-    (values s r)))
-
-(let-values (((s r) (hoge-sqrt 5)))
-  (display s)
-  (display r))
-;(hoge-sqrt 5)
-
+(display #; 3 1234
+ )

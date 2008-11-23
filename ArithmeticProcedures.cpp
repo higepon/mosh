@@ -47,6 +47,24 @@
 
 using namespace scheme;
 
+Object scheme::makePolarEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("make-polar");
+    checkArgumentLength(2);
+    argumentCheckNumber(0, n1);
+    argumentCheckNumber(1, n2);
+    return Arithmetic::makePolar(n1, n2);
+}
+
+Object scheme::exptEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("expt");
+    checkArgumentLength(2);
+    argumentCheckNumber(0, n1);
+    argumentCheckNumber(1, n2);
+    return Arithmetic::expt(n1, n2);
+}
+
 Object scheme::sqrtEx(int argc, const Object* argv)
 {
     DeclareProcedureName("sqrt");
@@ -380,16 +398,16 @@ Object scheme::realPartEx(int argc, const Object* argv)
 {
     DeclareProcedureName("real-part");
     checkArgumentLength(1);
-    argumentAsCompnum(0, compnum);
-    return compnum->real();
+    argumentCheckNumber(0, n);
+    return Arithmetic::real(n);
 }
 
 Object scheme::imagPartEx(int argc, const Object* argv)
 {
     DeclareProcedureName("imag-part");
     checkArgumentLength(1);
-    argumentAsCompnum(0, compnum);
-    return compnum->imag();
+    argumentCheckNumber(0, n);
+    return Arithmetic::imag(n);
 }
 
 Object scheme::numberPEx(int argc, const Object* argv)
@@ -430,9 +448,9 @@ Object scheme::fixnumPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isFixnum());
 }
 
-Object scheme::makeComplexEx(int argc, const Object* argv)
+Object scheme::makeRectangularEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("make-complex");
+    DeclareProcedureName("make-rectangular");
     checkArgumentLength(2);
     argumentCheckReal(0, real);
     argumentCheckReal(1, imag);

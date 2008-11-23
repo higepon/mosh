@@ -256,7 +256,7 @@
     fixnum-width
     least-fixnum
     greatest-fixnum
-    make-complex
+    make-rectangular
     real-part
     imag-part
     exact?
@@ -380,4 +380,6 @@
     magnitude
     angle
     atan
+    expt
+    make-polar
     )
