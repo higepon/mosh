@@ -40,6 +40,7 @@
 #include "Fixnum.h"
 #include "Bignum.h"
 #include "VM.h"
+#include "Arithmetic.h"
 
 using namespace scheme;
 
@@ -371,9 +372,46 @@ Object scheme::fxifEx(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::fxif(fx1, fx2, fx3));
 }
 
-//Object scheme::fxbitCountEx(int argc, const Object* argv);
-//Object scheme::fxlengthEx(int argc, const Object* argv);
-//Object scheme::fxfirstBitSetEx(int argc, const Object* argv);
+Object scheme::fxbitCountEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxbit-count");
+    checkArgumentLength(1);
+    argumentCheckFixnum(0, fx);
+    return Arithmetic::bitwiseBitCount(fx);
+}
+
+Object scheme::fxlengthEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxlength");
+    checkArgumentLength(1);
+    argumentCheckFixnum(0, fx);
+    return Arithmetic::bitwiseLength(fx);
+}
+
+Object scheme::fxfirstBitSetEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxfirst-bit-set");
+    checkArgumentLength(1);
+    argumentCheckFixnum(0, fx);
+    return Arithmetic::bitwiseFirstBitSet(fx);
+}
+
+Object scheme::fxbitSetPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fxbit-set?");
+    checkArgumentLength(2);
+
+    argumentAsFixnum(0, fx1);
+    argumentAsFixnum(1, fx2);
+
+    if (fx2 < 0 || fx2 >= Fixnum::BITS) {
+        callAssertionViolationAfter(procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
+
+    return Object::makeBool(Fixnum::fxbitSetP(fx1, fx2));
+}
+
 //Object scheme::fxcopyBitEx(int argc, const Object* argv);
 //Object scheme::fxbitFieldEx(int argc, const Object* argv);
 //Object scheme::fxcopyBitFieldEx(int argc, const Object* argv);

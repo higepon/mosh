@@ -132,6 +132,10 @@ public:
         return fxior(fxand(fx1, fx2), fxand(fxnot(fx1), fx3));
     }
 
+    static bool fxbitSetP(int fx1, unsigned int fx2) {
+        return ((unsigned int)fx1 >> fx2) & 1;
+    }
+
     static Object integerDiv(int x, int y);
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \

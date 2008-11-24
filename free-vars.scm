@@ -352,6 +352,10 @@
     fxior
     fxxor
     fxif
+    fxbit-count
+    fxlength
+    fxfirst-bit-set
+    fxbit-set?
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref

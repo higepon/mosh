@@ -1,3 +1,7 @@
+2008-11-25  kokosabu  <kokosabu@gmail.com>
+
+        * Added : fxbit-count, fxlength, fxfirst-bit-set, fxbit-set?.
+
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass1/letrec): Added uninitialized value detection.

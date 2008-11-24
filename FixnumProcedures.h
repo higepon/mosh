@@ -60,9 +60,10 @@ namespace scheme {
     Object fxiorEx(int argc, const Object* argv);
     Object fxxorEx(int argc, const Object* argv);
     Object fxifEx(int argc, const Object* argv);
-    //Object fxbitCountEx(int argc, const Object* argv);
-    //Object fxlengthEx(int argc, const Object* argv);
-    //Object fxfirstBitSetEx(int argc, const Object* argv);
+    Object fxbitCountEx(int argc, const Object* argv);
+    Object fxlengthEx(int argc, const Object* argv);
+    Object fxfirstBitSetEx(int argc, const Object* argv);
+    Object fxbitSetPEx(int argc, const Object* argv);
     //Object fxcopyBitEx(int argc, const Object* argv);
     //Object fxbitFieldEx(int argc, const Object* argv);
     //Object fxcopyBitFieldEx(int argc, const Object* argv);
