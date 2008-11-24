@@ -1,3 +1,7 @@
+(define (string-for-each proc str1 . str2)
+  (apply for-each proc (string->list str1)
+           (map string->list str2)))
+
 (define (exact-integer-sqrt k)
   (unless (and (integer? k) (>= k 0))
     (assertion-violation 'exact-integer-sqrt "exact integer number required" (list k)))

@@ -1078,15 +1078,21 @@
 ;; .form (vector-map proc vector1 vector2 ...)
 ;; .pre-condition The vectors must all have the same length. Proc should accept as many arguments as there are vectors and return a single value.
 ;; .returns a vectors
-(define (vector-map proc v)
-  (let* ([length (vector-length v)]
-         [ret    (make-vector length)])
-    (let loop ([i 0])
-      (cond [(>= i length)
-             ret]
-            [else
-             (vector-set! ret i (proc (vector-ref v i)))
-             (loop (+ i 1))]))))
+(define (vector-map proc vec1 . vec2)
+  (list->vector
+   (apply map proc (vector->list vec1)
+          (map vector->list vec2))))
+
+
+;; (define (vector-map proc v)
+;;   (let* ([length (vector-length v)]
+;;          [ret    (make-vector length)])
+;;     (let loop ([i 0])
+;;       (cond [(>= i length)
+;;              ret]
+;;             [else
+;;              (vector-set! ret i (proc (vector-ref v i)))
+;;              (loop (+ i 1))]))))
 
 
 ; ==============================================================================================================================================================

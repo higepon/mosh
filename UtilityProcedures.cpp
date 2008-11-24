@@ -244,6 +244,11 @@ Object scheme::integerTocharEx(int argc, const Object* argv)
     DeclareProcedureName("integer->char");
     checkArgumentLength(1);
     argumentAsFixnum(0, integer);
+    if  (integer > 0x10ffff || (integer >= 0xd800 && integer <= 0xdfff)) {
+        callAssertionViolationAfter(procedureName, "code point out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
     return Object::makeChar(integer);
 }
 
@@ -290,6 +295,15 @@ Object scheme::vectorPEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isVector());
 }
 
+Object scheme::vectorFillDEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("vector-fill!");
+    checkArgumentLength(2);
+    argumentAsVector(0, v);
+    v->fill(argv[1]);
+    return Object::Undef;
+
+}
 
 Object scheme::eqPEx(int argc, const Object* argv)
 {

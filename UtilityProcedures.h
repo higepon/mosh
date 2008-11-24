@@ -36,6 +36,7 @@ namespace scheme {
 
     Object unGenSym(Object symbol);
     Object dummy(Object obj);
+    Object vectorFillDEx(int argc, const Object* argv);
     Object symbolEqPEx(int argc, const Object* argv);
     Object booleanEqPEx(int argc, const Object* argv);
     Object makeCompilerInstructionEx(int argc, const Object* argv);

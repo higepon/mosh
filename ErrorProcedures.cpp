@@ -273,9 +273,9 @@ void raiseAfter(const ucs4char* errorRcdName,
     Object condition = Object::Nil;
     if (theVM->isR6RSMode()) {
         Object conditions = Object::Nil;
-        if (irritants.isPair()) {
-            conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
-        }
+
+        // even if irritants is nil, we create irritants condition.
+        conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
 
         conditions = Object::cons(makeMessageCondition(message), conditions);
 
@@ -313,4 +313,3 @@ void raiseAfter(const ucs4char* errorRcdName,
         theVM->setAfterTrigger1(raiseProcedure, condition);
     }
 }
-

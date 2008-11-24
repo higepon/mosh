@@ -73,6 +73,14 @@ Vector::Vector(Object pair)
     }
 }
 
+void Vector::fill(Object obj)
+{
+    for (int i = 0; i < num_; i++) {
+        objects_[i] = obj;
+    }
+}
+
+
 Vector::~Vector()
 {
 }

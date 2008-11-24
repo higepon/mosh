@@ -45,6 +45,7 @@ public:
 
     Object ref(int index) const;
     void set(int index, Object obj);
+    void fill(Object obj);
     int length() const;
     Object* data();
 
