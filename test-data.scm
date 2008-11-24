@@ -2011,9 +2011,9 @@
 (error (/ 1 0))
 (error (/ (/ 1 3) 0))
 (error (/ (+ (greatest-fixnum) 1) 0))
-(error (/ (inexact (/ 1 3)) 0))
+(+inf.0 (/ (inexact (/ 1 3)) 0))
 (error (/ (make-rectangular 1 1) 0))
-(error (/ 3 (inexact 0)))
+(+inf.0 (/ 3 (inexact 0)))
 ; normalize compnum
 (#t (let1 v (make-rectangular 3 0)
         (and (fixnum? v)
@@ -2893,6 +2893,10 @@
 (+inf.0 (string->number "+inf.0"))
 (-inf.0 (string->number "-inf.0"))
 (#t (nan? (string->number "+nan.0")))
+(#t (fl=? (inexact (expt 10 100)) (string->number "1.0e100")))
+;(#t (fl=? (inexact (expt 10 99)) (string->number ".1e100")))
+(#t (fl=? (inexact (expt 10 100)) (string->number "1.e100")))
+;(#t (almost=? (inexact (expt 10 99)) (string->number "0.1e100")))
 
 ;; magnitude
 (10 (magnitude 10))
@@ -2949,6 +2953,7 @@
 (#t (almost=? 2.0 (expt 4 0.5)))
 (#t (almost=? 0.25 (expt 4 -1.0)))
 (0 (expt 0 5+.0000312i))
+(#t (almost=? 0.0 (expt 0.0 5+.0000312i)))
 (#t (unspec? (expt 0 -5+.0000312i)))
 (error (expt 2 (+ (greatest-fixnum) 1)))
 (#t (almost=? 2.0 (expt 4 1/2)))
@@ -2994,6 +2999,7 @@
 ("1.000000" (number->string 1.0))
 ("1/a" (number->string 1/10 16))
 ("1+1i" (number->string 1+i))
+(-5 (string->number (number->string -5 16)))
 
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]

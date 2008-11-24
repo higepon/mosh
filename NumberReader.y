@@ -56,6 +56,26 @@ extern int number_yylex();
 extern int number_yyerror(const char *);
 //#define YYDEBUG 1
 // yydebug = 1
+
+// text => "e100", "e+100" or "e-100" style
+static Object suffixToNumber(const ucs4string& text)
+{
+    int sign = 1;
+    ucs4string decimal10(UC(""));
+    if (text[1] == '-') {
+        sign = -1;
+        decimal10 = text.substr(2, text.size() - 2);
+    } else if (text[1] == '+') {
+        decimal10 = text.substr(2, text.size() - 2);
+    } else {
+        decimal10 = text.substr(1, text.size() - 1);
+    }
+    Object exponent = Bignum::makeInteger(decimal10);
+    if (sign == -1) {
+        exponent = Arithmetic::negate(exponent);
+    }
+    return Arithmetic::expt(Object::makeFixnum(10), exponent);
+}
 %}
 
 %token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
@@ -263,40 +283,41 @@ decimal10 : uinteger10String suffix {
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
-                  int sign = 1;
-                  uint32_t start = 1;
-                  if ($2[1] == '-') {
-                      sign = -1;
-                      start = 2;
-                  } else if ($2[1] == '+') {
-                      start = 2;
-                  }
-                  Object ret = Object::makeFixnum(1);
-                  for (int i = static_cast<int>($2.size() - 1); i >= start; i--) {
-                      ret = Arithmetic::mul(Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum($2.size() - i - 1)),
-                                            Object::makeFixnum($2[i] - '0'));
-                  }
-                  $$ = Arithmetic::mul(Bignum::makeInteger($1), Arithmetic::expt(Object::makeFixnum(10),
-                                                                                 sign == -1 ? Arithmetic::negate(ret) : ret));
+                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumber($2));
               }
           }
           | DOT uinteger10String suffix {
               ucs4string ret = UC(".");
               ret += $2;
               if (!$3.empty()) {
-                  ret += $3;
+
+                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+              } else {
+                  $$ = Flonum::fromString(ret);
               }
-              $$ = Flonum::fromString(ret);
+
           }
           | uinteger10String DOT uinteger10String suffix {
               ucs4string ret = $1;
               ret += UC(".") + $3;
               if (!$4.empty()) {
-                  ret += $4;
+//                  VM_LOG2("from~a: ~a\n", Flonum::fromString(ret), suffixToNumber($4));
+                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($4));
+//                  VM_LOG1("$$~a: n", $$);
+              } else {
+                  $$ = Flonum::fromString(ret);
               }
-
-              $$ = Flonum::fromString(ret);
           }
+          | uinteger10String DOT suffix {
+              ucs4string ret = $1;
+              ret += UC(".0");
+              if (!$3.empty()) {
+                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+              } else {
+                  $$ = Flonum::fromString(ret);
+              }
+          }
+
           ;
 
 uinteger10 : uinteger10String { $$ = Bignum::makeInteger($1); }

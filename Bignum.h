@@ -116,6 +116,11 @@ public:
         mpz_set_ui(this->value, value);
     }
 
+    void setDouble(double value)
+    {
+        mpz_set_d(this->value, value);
+    }
+
     Object bitwiseNot() const
     {
         Bignum* b = new Bignum;

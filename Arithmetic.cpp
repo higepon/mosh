@@ -54,22 +54,27 @@ Object Arithmetic::numberToString(Object n, int radix)
     if (n.isFixnum()) {
         const int fn = n.toFixnum();
         char buf[64];
+        char* start = buf;
+        if (fn < 0) {
+            *start++ = '-';
+        }
+        long unsigned ufn = ::abs(fn);
         switch(radix) {
         case 16:
-            snprintf(buf, 64, "%x", fn);
+            snprintf(start, 64, "%lx", ufn);
             break;
         case 8:
-            snprintf(buf, 64, "%o", fn);
+            snprintf(start, 64, "%lo", ufn);
             break;
         case 2:
         {
-            Bignum* const b = new Bignum(fn);
-            snprintf(buf, 64, "%s", b->toString(2));
+            Bignum* const b = new Bignum(ufn);
+            snprintf(start, 64, "%s", b->toString(2));
             break;
         }
         case 10: // fallthrough
         default:
-            snprintf(buf, 64, "%d", fn);
+            snprintf(start, 64, "%ld", ufn);
             break;
         }
         return Object::makeString(buf);
@@ -110,8 +115,6 @@ Object Arithmetic::imag(Object n)
 {
     if (n.isCompnum()) {
         return n.toCompnum()->imag();
-    } else if (n.isFlonum()) {
-        return Object::makeFlonum(0.0);
     } else {
         return Object::makeFixnum(0);
     }
@@ -190,7 +193,17 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toRatnum()->toDouble();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isCompnum()) {
-            return Compnum::expt(n1, n2);
+            const double fn1 = n1.toFlonum()->value();
+            Compnum* const compnum = n2.toCompnum();
+            if (0.0 == fn1) {
+                if (Arithmetic::isNegative(compnum->real())) {
+                    return Object::Undef;
+                } else {
+                    return Object::makeFlonum(0.0);
+                }
+            } else {
+                return Compnum::expt(n1, n2);
+            }
         } else {
             MOSH_ASSERT(false);
             return Object::Undef;
@@ -481,9 +494,29 @@ Object Arithmetic::integerDiv(Object n1, Object n2)
 {
     MOSH_ASSERT(n1.isReal());
     MOSH_ASSERT(n2.isReal());
-    MOSH_ASSERT(!Arithmetic::isExactZero(n2));
-    MOSH_ASSERT(!(n1.isFlonum() && n1.toFlonum()->isInfinite()));
-    MOSH_ASSERT(!(n1.isFlonum() && n1.toFlonum()->isNan()));
+    if (n1.isFlonum()) {
+        Flonum* const flonum = n1.toFlonum();
+        if (flonum->isInfinite() || flonum->isNan()) {
+            callWrongTypeOfArgumentViolationAfter("div", "neither infinite nor a NaN", n1);
+            return Object::makeFixnum(0);
+        }
+    }
+
+    if (n2.isFixnum()) {
+        const int fn2 = n2.toFixnum();
+        if (0 == fn2) {
+            callAssertionViolationAfter("div", "div by 0 is not defined", Pair::list2(n1, n2));
+            return Object::makeFixnum(0);
+        }
+    }
+    if (n2.isFlonum()) {
+        const double fn2 = n2.toFlonum()->value();
+        if (0.0 == fn2) {
+            callAssertionViolationAfter("div", "div by 0.0 is not defined", Pair::list2(n1, n2));
+            return Object::makeFixnum(0);
+        }
+    }
+
     if (n1.isFixnum() && n2.isFixnum()) {
         return Fixnum::integerDiv(n1.toFixnum(), n2.toFixnum());
     } else if (n1.isFlonum() && n2.isFlonum()) {
@@ -1207,15 +1240,15 @@ Object Arithmetic::div(Object n1, Object n2, bool noRaise /* = false */)
                 return Ratnum::div(n1.toFixnum(), n2.toRatnum());
             }
         } else if (n2.isFlonum()) {
-            if (n2.toFlonum()->value() == 0.0) {
-                if (!noRaise) {
-                    callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
-                    return Object::makeFixnum(0);
-                }
-                return Object::False;
-            } else {
+//             if (n2.toFlonum()->value() == 0.0) {
+//                 if (!noRaise) {
+//                     callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+//                     return Object::makeFixnum(0);
+//                 }
+//                 return Object::False;
+//             } else {
                 return Flonum::div(n1.toFixnum(), n2.toFlonum());
-            }
+//            }
         } else if (n2.isBignum()) {
             if (isExactZero(n2)) {
                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
@@ -1242,12 +1275,12 @@ Object Arithmetic::div(Object n1, Object n2, bool noRaise /* = false */)
         } else if (n2.isRatnum()) {
             return Ratnum::div(n1.toRatnum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
-            if (n2.toFlonum()->value() == 0.0) {
-                if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
-                return Object::False;
-            } else {
+  //           if (n2.toFlonum()->value() == 0.0) {
+//                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+//                 return Object::False;
+//             } else {
                 return Flonum::div(n1.toRatnum(), n2.toFlonum());
-            }
+                //          }
         } else if (n2.isBignum()) {
             if (isExactZero(n2)) {
                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
@@ -1265,12 +1298,12 @@ Object Arithmetic::div(Object n1, Object n2, bool noRaise /* = false */)
         }
     } else if (n1.isFlonum()) {
         if (n2.isFixnum()) {
-            if (isExactZero(n2)) {
-                if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
-                return Object::False;
-            } else {
+//             if (isExactZero(n2)) {
+//                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+//                 return Object::False;
+//             } else {
                 return Flonum::div(n1.toFlonum(), n2.toFixnum());
-            }
+//            }
         } else if (n2.isRatnum()) {
             return Flonum::div(n1.toFlonum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
@@ -1302,12 +1335,12 @@ Object Arithmetic::div(Object n1, Object n2, bool noRaise /* = false */)
         } else if (n2.isRatnum()) {
             return Ratnum::div(n1.toBignum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
-            if (n2.toFlonum()->value() == 0.0) {
-                if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
-                return Object::False;
-            } else {
+//             if (n2.toFlonum()->value() == 0.0) {
+//                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));
+//                 return Object::False;
+//             } else {
                 return Flonum::div(n1.toBignum(), n2.toFlonum());
-            }
+//            }
         } else if (n2.isBignum()) {
             if (isExactZero(n2)) {
                 if (!noRaise) callAssertionViolationAfter("/", "Dividing by zero", Pair::list2(n1, n2));

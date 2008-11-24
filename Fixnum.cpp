@@ -104,6 +104,11 @@ Object Fixnum::log(int n)
     }
 }
 
+Object Fixnum::integerDiv(int x, int y)
+{
+    return Bignum::makeInteger(div(x, y));
+}
+
 Object Fixnum::sqrt(Object n)
 {
     MOSH_ASSERT(n.isFixnum());
@@ -126,7 +131,13 @@ Object Fixnum::sqrt(Object n)
         if (rootAsInt * rootAsInt == -value) {
             return Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(rootAsInt));
         } else {
-            return Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFixnum(rootAsInt));
+            return Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFlonum(root));
         }
     }
+}
+
+// N.B. the result of abs can be Bignum
+Object Fixnum::abs(int n)
+{
+    return Bignum::makeInteger(::abs(n));
 }

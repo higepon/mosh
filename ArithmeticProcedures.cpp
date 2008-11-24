@@ -195,17 +195,6 @@ Object scheme::integerDivEx(int argc, const Object* argv)
     checkArgumentLength(2);
     argumentCheckReal(0, n1);
     argumentCheckReal(1, n2);
-    if (Arithmetic::isExactZero(n2)) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", n2);
-        return Object::Undef;
-    }
-    if (n1.isFlonum()) {
-        Flonum* const flonum = n1.toFlonum();
-        if (flonum->isInfinite() || flonum->isNan()) {
-            callWrongTypeOfArgumentViolationAfter(procedureName, "neither infinite nor a NaN", n1);
-            return Object::Undef;
-        }
-    }
     return Arithmetic::integerDiv(n1, n2);
 }
 

@@ -72,10 +72,7 @@ public:
     static Object acos(int n);
     static Object atan(int n);
 
-    static Object abs(int n)
-    {
-        return Object::makeFixnum(::abs(n));
-    }
+    static Object abs(int n);
 
     static int div(int x, int y)
     {
@@ -135,10 +132,7 @@ public:
         return fxior(fxand(fx1, fx2), fxand(fxnot(fx1), fx3));
     }
 
-    static Object integerDiv(int x, int y)
-    {
-        return Object::makeFixnum(div(x, y));
-    }
+    static Object integerDiv(int x, int y);
 
 #define MAKE_FIXNUM_FIXNUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(int n1, int n2)\

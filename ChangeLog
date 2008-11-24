@@ -1,5 +1,15 @@
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 
+        * Fixnum.cpp (Fixnum::integerDiv): Fixed the bug. 
+                                           The result of integerDiv can be Bignum,
+                                           So use Bignum::makeInteger().
+
+        * Fixed (/ 0.000 0) => +inf.0.
+
+        * Fixed (sqrt -5).
+
+        * NumberReader.y (naninf): Fixed imag-part of +inf.
+
         * Fixed : string=? for arguments length >= 3.
 
         * Improved : write and display of compound-condition and record.
