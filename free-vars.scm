@@ -384,4 +384,5 @@
     atan
     expt
     make-polar
+    string-copy
     )

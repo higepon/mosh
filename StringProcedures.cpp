@@ -66,6 +66,16 @@ Object scheme::stringEx(int argc, const Object* argv)
     return Object::makeString(ret);
 }
 
+Object scheme::stringCopyEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("string-copy");
+    checkArgumentLength(1);
+
+    argumentAsString(0, text);
+    return Object::makeString(text->data());
+}
+
+
 Object scheme::stringRefEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string-ref");

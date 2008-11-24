@@ -1,5 +1,7 @@
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 
+        * Added string-copy.    
+
         * Fixnum.cpp (Fixnum::integerDiv): Fixed the bug. 
                                            The result of integerDiv can be Bignum,
                                            So use Bignum::makeInteger().
