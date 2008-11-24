@@ -1,5 +1,7 @@
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (pass1/letrec): Added uninitialized value detection.
+
         * Fixed error procedure.
 
         * Fixed integer->char bug.

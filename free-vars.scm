@@ -386,4 +386,5 @@
     make-polar
     string-copy
     vector-fill!
+    ungensym
     )

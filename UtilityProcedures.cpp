@@ -100,6 +100,15 @@ Object scheme::unGenSym(Object symbol)
     }
 }
 
+
+Object scheme::ungensymEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("ungensym");
+    checkArgumentLength(1);
+    argumentCheckSymbol(0, symbol);
+    return unGenSym(symbol);
+}
+
 Object scheme::makeCompilerInstructionEx(int argc, const Object* argv)
 {
     DeclareProcedureName("make-compiler-instruction");

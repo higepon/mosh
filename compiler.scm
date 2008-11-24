@@ -1147,6 +1147,12 @@
   (let* ([this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
          [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
     (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
+    (for-each
+     (lambda (init)
+       (when (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))
+         (error 'letrec "reference for uninitialized value" (ungensym ($lvar.sym ($local-ref.lvar init))))))
+     inits)
+
     ($let 'rec
           this-lvars
           inits

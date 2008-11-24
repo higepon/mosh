@@ -55,6 +55,7 @@ namespace scheme {
     Object integerTocharEx(int argc, const Object* argv);
     Object charPEx(int argc, const Object* argv);
     Object gensymEx(int argc, const Object* argv);
+    Object ungensymEx(int argc, const Object* argv);
     Object vectorPEx(int argc, const Object* argv);
     Object eqPEx(int argc, const Object* argv);
     Object eqvPEx(int argc, const Object* argv);
