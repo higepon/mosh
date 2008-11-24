@@ -55,6 +55,8 @@
     (write write)
     (gensym gensym)
     (string=? string=?)
+    symbol=?
+    boolean=?
     (vector? vector?)
     (list? list?)
     (memq memq)

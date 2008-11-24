@@ -89,11 +89,17 @@ Object scheme::stringRefEx(int argc, const Object* argv)
 Object scheme::stringEqPEx(int argc, const Object* argv)
 {
     DeclareProcedureName("string=?");
-    checkArgumentLength(2);
-
-    argumentAsString(0, string1);
-    argumentAsString(1, string2);
-    return Object::makeBool(*string1 == *string2);
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentAsString(i, string1);
+        argumentAsString(i + 1, string2);
+        if (*string1 == *string2) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
 }
 
 Object scheme::stringToregexpEx(int argc, const Object* argv)

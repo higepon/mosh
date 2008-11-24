@@ -73,3 +73,8 @@ bool Record::isA(const RecordTypeDescriptor* rtd) const
 {
     return recordTypeDescriptor()->isA(rtd);
 }
+
+int Record::fieldsLength() const
+{
+    return fieldsLength_;
+}

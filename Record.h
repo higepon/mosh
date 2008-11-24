@@ -47,6 +47,7 @@ public:
     Object rtd() const;
     RecordTypeDescriptor* recordTypeDescriptor() const;
     bool isA(const RecordTypeDescriptor* rtd) const;
+    int fieldsLength() const;
 
 private:
     Object rtd_;

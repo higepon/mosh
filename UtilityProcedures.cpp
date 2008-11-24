@@ -55,6 +55,38 @@
 
 using namespace scheme;
 
+Object scheme::booleanEqPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("boolean=?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentCheckBoolean(i, s1);
+        argumentCheckBoolean(i + 1, s2);
+        if (s1.eq(s2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
+Object scheme::symbolEqPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("symbol=?");
+    checkArgumentLengthAtLeast(2);
+    for (int i = 0; i < argc - 1; i++) {
+        argumentCheckSymbol(i, s1);
+        argumentCheckSymbol(i + 1, s2);
+        if (s1.eq(s2)) {
+            continue;
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}
+
 Object scheme::unGenSym(Object symbol)
 {
     MOSH_ASSERT(symbol.isSymbol());

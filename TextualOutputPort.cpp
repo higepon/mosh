@@ -51,6 +51,7 @@
 #include "Bignum.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
+#include "CompoundCondition.h"
 
 using namespace scheme;
 
@@ -343,10 +344,23 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isRecordTypeDescriptor()) {
         putString(UC("#<record-type-descriptor>"));
     } else if (o.isCompoundCondition()) {
-        putString(UC("#<compound-condition>"));
+        putString(UC("#<compound-condition "));
+        CompoundCondition* const c = o.toCompoundCondition();
+        const ObjectVector& conditions = c->conditions();
+        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            putDatum(*it);
+            putString(UC(" "));
+        }
+        putString(UC(">"));
     } else if (o.isRecord()) {
+        Record* const record = o.toRecord();
         putString(UC("#<record "));
-        putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
+        putDatum(record->recordTypeDescriptor()->name(), inList);
+        putString(UC(" "));
+        for (int i = 0; i < record->fieldsLength(); i++) {
+            putDatum(record->fieldAt(i));
+            putString(UC(" "));
+        }
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
@@ -493,10 +507,23 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isRecordTypeDescriptor()) {
         putString(UC("#<record-type-descriptor>"));
     } else if (o.isCompoundCondition()) {
-        putString(UC("#<compound-condition>"));
+        putString(UC("#<compound-condition "));
+        CompoundCondition* const c = o.toCompoundCondition();
+        const ObjectVector& conditions = c->conditions();
+        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            putDatum(*it);
+            putString(UC(" "));
+        }
+        putString(UC(">"));
     } else if (o.isRecord()) {
+        Record* const record = o.toRecord();
         putString(UC("#<record "));
-        putDatum(o.toRecord()->recordTypeDescriptor()->name(), inList);
+        putDatum(record->recordTypeDescriptor()->name(), inList);
+        putString(UC(" "));
+        for (int i = 0; i < record->fieldsLength(); i++) {
+            putDatum(record->fieldAt(i));
+            putString(UC(" "));
+        }
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
