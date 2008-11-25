@@ -2244,6 +2244,25 @@
     (receive (prefix suffix) (recur (cdr lis) (- k 1))
       (values (cons (car lis) prefix) suffix)))))
 
+(define (iota count . maybe-start+step)
+  (check-arg integer? count iota)
+  (if (< count 0) (error "Negative step count" iota count))
+;  (let-optionals maybe-start+step ((start 0) (step 1))
+  (let ([start (if (pair? maybe-start+step)
+                  (car maybe-start+step)
+                  0)]
+        [step (if (and (pair? maybe-start+step)
+                       (pair? (cdr maybe-start+step)))
+                  (cadr maybe-start+step)
+                  1)])
+    (check-arg number? start iota)
+    (check-arg number? step iota)
+    (let loop ((n 0) (r '()))
+      (if (= n count)
+      (reverse r)
+      (loop (+ 1 n)
+        (cons (+ start (* n step)) r))))))
+
 ;; split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result.
 ;; .returns split-at! is the linear-update variant. It is allowed, but not required, to alter the argument list to produce the result.
 (define (split-at! x k)
@@ -2276,6 +2295,26 @@
                         (and (not (null-list? list-b))
                              (pred (car list-a) (car list-b))
                              (lp2 (cdr list-a) (cdr list-b)))))))))))
+
+(define (every pred lis1 . lists)
+  (check-arg procedure? pred every)
+  (if (pair? lists)
+
+      ;; N-ary case
+      (receive (heads tails) (%cars+cdrs (cons lis1 lists))
+    (or (not (pair? heads))
+        (let lp ((heads heads) (tails tails))
+          (receive (next-heads next-tails) (%cars+cdrs tails)
+        (if (pair? next-heads)
+            (and (apply pred heads) (lp next-heads next-tails))
+            (apply pred heads)))))) ; Last PRED app is tail call.
+
+      ;; Fast path
+      (or (null-list? lis1)
+      (let lp ((head (car lis1))  (tail (cdr lis1)))
+        (if (null-list? tail)
+        (pred head) ; Last PRED app is tail call.
+        (and (pred head) (lp (car tail) (cdr tail))))))))
 
 
 ;; Of utility only as a value to be conveniently passed to higher-order procedures.

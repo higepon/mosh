@@ -2,7 +2,6 @@ MOSH=../mosh
 
 test:
 #	$(MOSH) tests/r6rs/run/eval.sps
-#	$(MOSH) tests/r6rs/run/base.sps
 	$(MOSH) tests/r6rs/run/syntax-case.sps
 #	$(MOSH) tests/r6rs/run/r5rs.sps
 #	$(MOSH) tests/r6rs/run/conditions.sps
@@ -24,3 +23,4 @@ test:
 	$(MOSH) tests/r6rs/run/bytevectors.sps
 	$(MOSH) tests/r6rs/run/arithmetic/bitwise.sps
 	$(MOSH) tests/r6rs/run/arithmetic/flonums.sps
+	$(MOSH) tests/r6rs/run/base.sps

@@ -1002,6 +1002,8 @@
     (print mosh-string mosh)
     (alist-cons srfi-1 mosh)
     (assoc-ref mosh-list mosh)
+    (every srfi-1)
+    (iota srfi-1)
     (first srfi-1)
     (second srfi-1)
     (third srfi-1)

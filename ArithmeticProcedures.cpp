@@ -220,7 +220,7 @@ Object scheme::integerDiv0Ex(int argc, const Object* argv)
 
 Object scheme::absEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("even?");
+    DeclareProcedureName("abs");
     checkArgumentLength(1);
     argumentCheckReal(0, n);
     return Arithmetic::abs(n);
