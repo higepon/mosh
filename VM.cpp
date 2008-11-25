@@ -1686,13 +1686,17 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeFixnum(num)));
             } else {
                 numValues_ = num;
-                Object p = ac_.cdr();
-                if (num >= 0) {
-                    for (int i = 0; i < num - 1; i++) {
-                        values_[i] = p.car();
-                        p = p.cdr();
+                if (ac_.isPair()) {
+                    Object p = ac_.cdr();
+                    if (num >= 0) {
+                        for (int i = 0; i < num - 1; i++) {
+                            values_[i] = p.car();
+                            p = p.cdr();
+                        }
+                        ac_ = ac_.car();
                     }
-                    ac_ = ac_.car();
+                } else { // isNil()
+                    /* do nothing */
                 }
             }
             NEXT;

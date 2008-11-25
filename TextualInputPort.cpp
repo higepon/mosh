@@ -83,9 +83,7 @@ Object TextualInputPort::getStringN(int n)
     ucs4string accum;
     for (int size = 0; size < n; size++) {
         const ucs4char ch = getChar();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         if (EOF == ch) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             break;
         }
         accum += ch;
