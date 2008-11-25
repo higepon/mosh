@@ -1,3 +1,4 @@
+(define-insn COMPILE_ERROR 3)
 (define-insn APPEND2 0) ;; APPEND(stack0, ac)
 (define-insn CALL 1)  ;; CALL(op0)
 (define-insn APPLY 0) ;; APPLY2(stack0)

@@ -21,6 +21,7 @@
   (define syntax-error error)
   (define (set-source-info! a b) a)]
  [vm?
+  (define (ungensym x) x)
   (define-macro (import-only module . syms)
     `(begin
        ,@(map (lambda (sym) `(define ,sym (with-module ,module ,sym))) syms)))
@@ -247,8 +248,8 @@
 
 ;; struct $let
 (define $LET 2)
-(define ($let type lvars inits body tail? src)
-  `#(,$LET ,type ,lvars ,inits ,body ,tail? ,src))
+(define ($let type lvars inits body tail? src . error)
+  `#(,$LET ,type ,lvars ,inits ,body ,tail? ,src ,(if (null? error) #f (car error))))
 
 (define-macro ($let.type iform) `(vector-ref ,iform 1))
 (define-macro ($let.lvars iform) `(vector-ref ,iform 2))
@@ -256,12 +257,14 @@
 (define-macro ($let.body iform) `(vector-ref ,iform 4))
 (define-macro ($let.tail? iform) `(vector-ref ,iform 5))
 (define-macro ($let.src iform) `(vector-ref ,iform 6))
+(define-macro ($let.error iform) `(vector-ref ,iform 7))
 (define-macro ($let.set-type! iform type) `(vector-set! ,iform 1 ,type))
 (define-macro ($let.set-lvars! iform lvars) `(vector-set! ,iform 2 ,lvars))
 (define-macro ($let.set-inits! iform inits) `(vector-set! ,iform 3 ,inits))
 (define-macro ($let.set-body! iform body) `(vector-set! ,iform 4 ,body))
 (define-macro ($let.set-tail?! iform tail?) `(vector-set! ,iform 5 ,tail?))
 (define-macro ($let.set-src! iform src) `(vector-set! ,iform 6 ,src))
+(define-macro ($let.set-src! iform error) `(vector-set! ,iform 7 ,error))
 
 ;; struct $seq
 (define $SEQ 3)
@@ -1147,12 +1150,8 @@
   (let* ([this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
          [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
     (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
-    (for-each
-     (lambda (init)
-       (when (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))
-         (error 'letrec "reference for uninitialized value" (ungensym ($lvar.sym ($local-ref.lvar init))))))
-     inits)
-
+    (let1 found-error (find (lambda (init)
+                              (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))) inits)
     ($let 'rec
           this-lvars
           inits
@@ -1160,7 +1159,9 @@
           (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
           tail?
           source-info
-          )))
+          (if found-error `(letrec "reference to uninitialized variable on letrec"
+                             ,(list (ungensym ($lvar.sym ($local-ref.lvar found-error))))) #f)
+          ))))
 
 (define (pass1/if test then more library lvars tail?)
   ($if
@@ -1499,12 +1500,15 @@
 (define pass2/dispatch-table (make-vector $INSN-NUM))
 
 (define (pass2/$let iform closures)
-  ($let.set-body! iform (pass2/optimize ($let.body iform) closures))
-  ($let.set-inits! iform ($map1 (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
-  (let1 o (pass2/eliminate-let iform)
-    (if (eq? o iform)
-        o
-        (pass2/optimize o closures))))
+  (cond
+   [($let.error iform) iform]
+   [else
+    ($let.set-body! iform (pass2/optimize ($let.body iform) closures))
+    ($let.set-inits! iform ($map1 (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
+    (let1 o (pass2/eliminate-let iform)
+      (if (eq? o iform)
+          o
+          (pass2/optimize o closures)))]))
 
 (define (pass2/$receive iform closures)
   ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
@@ -2754,6 +2758,12 @@
          [frees-here-length (length frees-here)]
          [vars-length (length vars)]
          [let-cb (make-code-builder)])
+    (when ($let.error iform)
+      (cput! cb
+             'COMPILE_ERROR
+             (first ($let.error iform))
+             (second ($let.error iform))
+             (third ($let.error iform))))
     (cput! cb 'LET_FRAME)
     (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
       (when (> frees-here-length 0)

@@ -1,3 +1,7 @@
+2008-11-25  higepon  <higepon@users.sourceforge.jp>
+
+        * Added: COMPILE_ERROR instruction for error detection of letrec.
+
 2008-11-25  kokosabu  <kokosabu@gmail.com>
 
         * Added : fxbit-count, fxlength, fxfirst-bit-set, fxbit-set?.

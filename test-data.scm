@@ -122,6 +122,11 @@
 (1 (letrec ([a 1]
             [b (lambda () a)])
      (b)))
+(error (letrec ([a 3]
+                [b a])
+         (display b)
+         (newline)))
+
 ((#t . #f) (letrec ((even?
                      (lambda (n)
                        (if (= 0 n)

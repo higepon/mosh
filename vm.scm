@@ -1463,6 +1463,9 @@
                [(UNDEF)
                 (val1)
                 (VM codes (skip 0) undef fp c stack sp)]
+               ;;---------------------------- COMPILE_ERROR ----------------------
+               [(COMPILE_ERROR)
+                (error (next 1) (next 2) (next 3))]
                [else
                 (error "unknown instruction on vm:" code)]))])))
 

@@ -1787,6 +1787,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             }
             NEXT1;
         }
+        CASE(COMPILE_ERROR)
+        {
+            const Object who = fetchOperand();
+            const Object message = fetchOperand();
+            const Object irritants = fetchOperand();
+            callAssertionViolationAfter(who, message, irritants);
+            NEXT;
+        }
         CASE(UNFIXED_JUMP)
         {
             callAssertionViolationAfter("UNFIXED_JUMP", "bug of VM");
