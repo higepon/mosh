@@ -1,5 +1,7 @@
 2008-11-25  higepon  <higepon@users.sourceforge.jp>
 
+        * Passed all of base tests of R6RS test suite.
+
         * VM.cpp (run): Fixed the bug when continuation is called without argument.
 
         * Added: COMPILE_ERROR instruction for error detection of letrec.
