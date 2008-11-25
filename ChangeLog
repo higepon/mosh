@@ -1,3 +1,7 @@
+2008-11-26  kokosabu  <kokosabu@gmail.com>
+
+        * Implemented All of procedures defined in R6RS lib 11.2 Fixnums.
+
 2008-11-25  higepon  <higepon@users.sourceforge.jp>
 
         * Flonum.h : Fixed dereferencing type-punned pointer will break strict-aliasing rules.

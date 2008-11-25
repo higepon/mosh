@@ -217,23 +217,24 @@ public:
 
     static int fxreverseBitField(int fx1, unsigned fx2, unsigned fx3)
     {
-        int start = fx2;
-        int end   = fx3 - 1;
+        uint32_t bits  = (unsigned int)fx1;
+        int      start = fx2;
+        int      end   = fx3 - 1;
 
         while (start < end) {
-            int sbit = (fx1 >> start) & 1;
-            int ebit = (fx1 >> end  ) & 1;
+            int sbit = (bits >> start) & 1;
+            int ebit = (bits >> end  ) & 1;
 
-            fx1 &= (uint32_t)-1 - (1 << end);
-            fx1 |= sbit << end;
-            fx1 &= (uint32_t)-1 - (1 << start);
-            fx1 |= ebit << start;
+            bits &= (uint32_t)-1 - (1 << end);
+            bits |= sbit << end;
+            bits &= (uint32_t)-1 - (1 << start);
+            bits |= ebit << start;
 
             start++;
             end--;
         }
 
-        return fx1;
+        return bits;
     }
 
     static Object integerDiv(int x, int y);
