@@ -236,7 +236,7 @@ Object scheme::fxSubEx(int argc, const Object* argv)
         if (fixnum != Fixnum::MIN) {
             return Object::makeFixnum(-fixnum);
         } else {
-            callAssertionViolationAfter(procedureName, UC("result is not a fixnum"), Pair::list1(argv[0]));
+            callImplementationRestrictionAfter(procedureName, UC("result is not a fixnum"), Pair::list1(argv[0]));
             return Object::Undef;
         }
     } else {

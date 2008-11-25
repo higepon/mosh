@@ -16,6 +16,8 @@
                   fxcopy-bit-field, fxarithmetic-shift, fxarithmetic-shift-left, fxarithmetic-shift-right,
                   fxrotate-bit-field, fxreverse-bit-field.
 
+        * Fixed : fx-.
+
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass1/letrec): Added uninitialized value detection.
