@@ -22,5 +22,6 @@ test:
 	$(MOSH) tests/r6rs/run/records/syntactic.sps
 	$(MOSH) tests/r6rs/run/bytevectors.sps
 	$(MOSH) tests/r6rs/run/arithmetic/bitwise.sps
+	$(MOSH) tests/r6rs/run/arithmetic/fixnums.sps
 	$(MOSH) tests/r6rs/run/arithmetic/flonums.sps
 	$(MOSH) tests/r6rs/run/base.sps
