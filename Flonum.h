@@ -73,7 +73,12 @@ public:
 
     bool isNegativeZero() const
     {
-        return value_ == 0.0 && ((*(uint64_t*)&value_) >> 63);
+        union {
+            double   dvalue;
+            uint64_t uvalue;
+        } v;
+        v.dvalue = value_;
+        return value_ == 0.0 && (v.uvalue >> 63);
     }
 
 
