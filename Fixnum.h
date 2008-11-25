@@ -33,6 +33,7 @@
 #define __SCHEME_FIXNUM__
 
 #include "scheme.h"
+#include "Arithmetic.h"
 
 namespace scheme {
 
@@ -74,7 +75,7 @@ public:
 
     static Object abs(int n);
 
-    static int div(int x, int y)
+    static int fxdiv(int x, int y)
     {
         int div;
         if (x == 0) {
@@ -89,15 +90,15 @@ public:
         return div;
     }
 
-    static int mod(int x, int y)
+    static int fxmod(int x, int y)
     {
-        return x - div(x, y) * y;
+        return x - fxdiv(x, y) * y;
     }
 
-    static int div0(int x, int y)
+    static int fxdiv0(int x, int y)
     {
-        const int d = div(x, y);
-        const int m = mod(x, y);
+        const int d = fxdiv(x, y);
+        const int m = fxmod(x, y);
         if (m < (::abs(y) / 2)) {
             return d;
         } else if (y > 0) {
@@ -107,33 +108,132 @@ public:
         }
     }
 
-    static int mod0(int x, int y)
+    static int fxmod0(int x, int y)
     {
-        return x - y * div0(x, y);
+        return x - y * fxdiv0(x, y);
     }
 
-    static int fxnot(int fx) {
+    static int fxnot(int fx)
+    {
         return ~fx;
     }
 
-    static int fxand(int fx1, int fx2) {
+    static int fxand(int fx1, int fx2)
+    {
         return fx1 & fx2;
     }
 
-    static int fxior(int fx1, int fx2) {
+    static int fxior(int fx1, int fx2)
+    {
         return fx1 | fx2;
     }
 
-    static int fxxor(int fx1, int fx2) {
+    static int fxxor(int fx1, int fx2)
+    {
         return fx1 ^ fx2;
     }
 
-    static int fxif(int fx1, int fx2, int fx3) {
+    static int fxif(int fx1, int fx2, int fx3)
+    {
         return fxior(fxand(fx1, fx2), fxand(fxnot(fx1), fx3));
     }
 
-    static bool fxbitSetP(int fx1, unsigned int fx2) {
+    static int fxbitCount(int fx)
+    {
+        if (fx > 0) {
+            return Arithmetic::nbits(fx);
+        } else {
+            return ~Arithmetic::nbits(~fx);
+        }
+    }
+
+    static int fxlength(int fx)
+    {
+        if (fx == 0) {
+            return 0;
+        }
+        const uint32_t ufx = (fx < 0) ? ~fx : fx;
+        return 32 - Arithmetic::nlz(ufx);
+    }
+
+    static int fxfirstBitSet(int fx)
+    {
+        if (fx == 0) {
+            return -1;
+        }
+        return Arithmetic::ntz(fx);
+    }
+
+    static bool fxbitSetP(int fx1, unsigned int fx2)
+    {
         return ((unsigned int)fx1 >> fx2) & 1;
+    }
+
+    static int fxarithmeticShiftLeft(int fx1, unsigned int fx2)
+    {
+        return fx1 << fx2;
+    }
+
+    static int fxarithmeticShiftRight(int fx1, unsigned int fx2)
+    {
+        return fx1 >> fx2;
+    }
+
+    static int fxcopyBit(int fx1, unsigned int fx2, int fx3)
+    {
+        const int mask = fxarithmeticShiftLeft(1, fx2);
+        return fxif(mask, fxarithmeticShiftLeft(fx3, fx2), fx1);
+    }
+
+    static int fxbitField(int fx1, unsigned int fx2, unsigned int fx3)
+    {
+        const int mask = fxnot(fxarithmeticShiftLeft(-1, fx3));
+        return fxarithmeticShiftRight(fxand(fx1, mask), fx2);
+    }
+
+    static int fxcopyBitField(int fx1, unsigned int fx2, unsigned int fx3, int fx4)
+    {
+        const int mask1 = fxarithmeticShiftLeft(-1, fx2);
+        const int mask2 = fxnot(fxarithmeticShiftLeft(-1, fx3));
+        const int mask  = fxand(mask1, mask2);
+        return fxif(mask, fxarithmeticShiftLeft(fx4, fx2), fx1);
+    }
+
+    static int fxrotateBitField(int fx1, unsigned int fx2, unsigned int fx3, unsigned int fx4)
+    {
+        const int width = fx3 - fx2;
+        if (width > 0) {
+            const int count  = fxmod(fx4, width);
+            const int field0 = fxbitField(fx1, fx2, fx3);
+            const int field1 = fxarithmeticShiftLeft(field0, fx4);
+            const int field2 = fxarithmeticShiftRight(field0, width - count);
+            const int field  = fxior(field1, field2);
+
+            return fxcopyBitField(fx1, fx2, fx3, field);
+        } else {
+            return fx1;
+        }
+    }
+
+    static int fxreverseBitField(int fx1, unsigned fx2, unsigned fx3)
+    {
+        int start = fx2;
+        int end   = fx3 - 1;
+
+        while (start < end) {
+            int sbit = (fx1 >> start) & 1;
+            int ebit = (fx1 >> end  ) & 1;
+
+            fx1 &= (uint32_t)-1 - (1 << end);
+            fx1 |= sbit << end;
+            fx1 &= (uint32_t)-1 - (1 << start);
+            fx1 |= ebit << start;
+
+            start++;
+            end--;
+        }
+
+        return fx1;
     }
 
     static Object integerDiv(int x, int y);

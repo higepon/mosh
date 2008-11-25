@@ -12,7 +12,9 @@
 
 2008-11-25  kokosabu  <kokosabu@gmail.com>
 
-        * Added : fxbit-count, fxlength, fxfirst-bit-set, fxbit-set?.
+        * Added : fxbit-count, fxlength, fxfirst-bit-set, fxbit-set?, fxcopy-bit, fxbit-field,
+                  fxcopy-bit-field, fxarithmetic-shift, fxarithmetic-shift-left, fxarithmetic-shift-right,
+                  fxrotate-bit-field, fxreverse-bit-field.
 
 2008-11-24  higepon  <higepon@users.sourceforge.jp>
 

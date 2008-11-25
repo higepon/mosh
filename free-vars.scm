@@ -356,6 +356,14 @@
     fxlength
     fxfirst-bit-set
     fxbit-set?
+    fxcopy-bit
+    fxbit-field
+    fxcopy-bit-field
+    fxarithmetic-shift
+    fxarithmetic-shift-left
+    fxarithmetic-shift-right
+    fxrotate-bit-field
+    fxreverse-bit-field
     bytevector-ieee-single-native-ref
     bytevector-ieee-single-ref
     bytevector-ieee-double-native-ref

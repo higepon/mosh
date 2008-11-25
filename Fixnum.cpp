@@ -106,7 +106,7 @@ Object Fixnum::log(int n)
 
 Object Fixnum::integerDiv(int x, int y)
 {
-    return Bignum::makeInteger(div(x, y));
+    return Bignum::makeInteger(fxdiv(x, y));
 }
 
 Object Fixnum::sqrt(Object n)

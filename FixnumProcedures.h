@@ -64,14 +64,14 @@ namespace scheme {
     Object fxlengthEx(int argc, const Object* argv);
     Object fxfirstBitSetEx(int argc, const Object* argv);
     Object fxbitSetPEx(int argc, const Object* argv);
-    //Object fxcopyBitEx(int argc, const Object* argv);
-    //Object fxbitFieldEx(int argc, const Object* argv);
-    //Object fxcopyBitFieldEx(int argc, const Object* argv);
-    //Object fxarithmeticShiftEx(int argc, const Object* argv);
-    //Object fxarithmeticShiftLeftEx(int argc, const Object* argv);
-    //Object fxarithmeticShiftRightEx(int argc, const Object* argv);
-    //Object fxrotateBitFieldEx(int argc, const Object* argv);
-    //Object fxreverseBitFieldEx(int argc, const Object* argv);
+    Object fxcopyBitEx(int argc, const Object* argv);
+    Object fxbitFieldEx(int argc, const Object* argv);
+    Object fxcopyBitFieldEx(int argc, const Object* argv);
+    Object fxarithmeticShiftEx(int argc, const Object* argv);
+    Object fxarithmeticShiftLeftEx(int argc, const Object* argv);
+    Object fxarithmeticShiftRightEx(int argc, const Object* argv);
+    Object fxrotateBitFieldEx(int argc, const Object* argv);
+    Object fxreverseBitFieldEx(int argc, const Object* argv);
 
 }; // namespace scheme
 
