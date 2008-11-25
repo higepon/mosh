@@ -7,11 +7,9 @@
 ;; ;; Error
 
 (guard
- (c
-  [#t
-   ])
-(letrec ([a 3]
-         [b a])
-  (display b)
-  (newline))
-)
+ (c [#t #f])
+ (letrec ([a 3]
+          [b a])
+   (display b)
+   (newline))
+ )

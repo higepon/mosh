@@ -1146,6 +1146,9 @@
           source-info
           )))
 
+(define (make-compile-error who message . irritants)
+  (list who message irritants))
+
 (define (pass1/letrec vars vals body source-info library lvars tail?)
   (let* ([this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
          [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
@@ -1159,8 +1162,11 @@
           (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
           tail?
           source-info
-          (if found-error `(letrec "reference to uninitialized variable on letrec"
-                             ,(list (ungensym ($lvar.sym ($local-ref.lvar found-error))))) #f)
+          (if found-error (make-compile-error
+                           'letrec
+                           "reference to uninitialized variable on letrec"
+                           (ungensym ($lvar.sym ($local-ref.lvar found-error))))
+              #f)
           ))))
 
 (define (pass1/if test then more library lvars tail?)
@@ -2742,6 +2748,9 @@
               (code-builder-append! cb let-cb)
               (+ body-size args-size free-size)))))))
 
+(define (raise-compile-error cb who message irritants)
+  (cput! cb 'COMPILE_ERROR who message irritants))
+
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
          [vars-sym ($map1 $lvar.sym-proc vars)]
@@ -2759,11 +2768,9 @@
          [vars-length (length vars)]
          [let-cb (make-code-builder)])
     (when ($let.error iform)
-      (cput! cb
-             'COMPILE_ERROR
-             (first ($let.error iform))
-             (second ($let.error iform))
-             (third ($let.error iform))))
+      (raise-compile-error cb (first ($let.error iform))
+                              (second ($let.error iform))
+                              (third ($let.error iform))))
     (cput! cb 'LET_FRAME)
     (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
       (when (> frees-here-length 0)
