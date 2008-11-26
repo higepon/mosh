@@ -46,3 +46,19 @@
 
 (define (modulo n1 n2)
   (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
+
+(define (force object)
+  (object))
+
+(define (make-promise proc)
+  (let ((result-ready? #f)
+        (result #f))
+    (lambda ()
+      (if result-ready?
+          result
+          (let ((x (proc)))
+            (if result-ready?
+                result
+                (begin (set! result-ready? #t)
+                       (set! result x)
+                       result)))))))

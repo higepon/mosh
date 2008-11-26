@@ -721,6 +721,7 @@
     (exit                                       interaction r pr)
     ;;;
     (delay                                      r5 se ne)
+    (make-promise                               r5 se ne)
     (exact->inexact                             r5 se)
     (force                                      r5 se)
     (inexact->exact                             r5 se)
