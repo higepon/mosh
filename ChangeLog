@@ -1,5 +1,7 @@
 2008-11-26  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/internal.ss (psyntax): Tuning.
+
         * Added: tiny clos.
 
 2008-11-26  kokosabu  <kokosabu@gmail.com>

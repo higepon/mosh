@@ -32,16 +32,23 @@
 ;        (assert (procedure? p))
         p)))
   
+;;   (define (mutable? x) 
+;;     (define (simple? x)
+;;       (or (null? x) 
+;;           (char? x) 
+;;           (symbol? x)
+;;           (boolean? x)
+;;           (string? x)
+;;           (bytevector? x)
+;;           (number? x)))
+;;     (not (simple? x)))
+
+;;  faster
   (define (mutable? x) 
-    (define (simple? x)
-      (or (null? x) 
-          (char? x) 
-          (symbol? x)
-          (boolean? x)
-          (string? x)
-          (bytevector? x)
-          (number? x)))
-    (not (simple? x)))
+      (or (pair? x) 
+          (vector? x) 
+          (hashtable? x)))
+
 
   (define (rewriter quote-hack?)
     (define (f x)

@@ -231,7 +231,7 @@
 ;; struct $lvar
 (define $LVAR 1)
 (define ($lvar sym init-val ref-count set-count)
-  `#(,$LVAR ,sym ,init-val ,ref-count ,set-count ))
+  (vector $LVAR sym init-val ref-count set-count))
 
 (define ($lvar.sym-proc iform) (vector-ref iform 1))
 (define-macro ($lvar.sym iform) `(vector-ref ,iform 1))
@@ -249,7 +249,7 @@
 ;; struct $let
 (define $LET 2)
 (define ($let type lvars inits body tail? src . error)
-  `#(,$LET ,type ,lvars ,inits ,body ,tail? ,src ,(if (null? error) #f (car error))))
+  (vector $LET type lvars inits body tail? src (if (null? error) #f (car error))))
 
 (define-macro ($let.type iform) `(vector-ref ,iform 1))
 (define-macro ($let.lvars iform) `(vector-ref ,iform 2))
@@ -269,7 +269,7 @@
 ;; struct $seq
 (define $SEQ 3)
 (define ($seq body tail?)
-  `#(,$SEQ ,body ,tail? ))
+  (vector $SEQ body tail?))
 
 (define-macro ($seq.body iform) `(vector-ref ,iform 1))
 (define-macro ($seq.tail? iform) `(vector-ref ,iform 2))
@@ -279,7 +279,7 @@
 ;; struct $lambda
 (define $LAMBDA 4)
 (define ($lambda src name reqargs optarg lvars body flag calls)
-  `#(,$LAMBDA ,src ,name ,reqargs ,optarg ,lvars ,body ,flag ,calls ))
+  (vector $LAMBDA src name reqargs optarg lvars body flag calls))
 
 (define-macro ($lambda.src iform) `(vector-ref ,iform 1))
 (define-macro ($lambda.name iform) `(vector-ref ,iform 2))
@@ -301,7 +301,7 @@
 ;; struct $local-ref
 (define $LOCAL-REF 5)
 (define ($local-ref lvar)
-  `#(,$LOCAL-REF ,lvar ))
+  (vector $LOCAL-REF lvar))
 
 (define-macro ($local-ref.lvar iform) `(vector-ref ,iform 1))
 (define-macro ($local-ref.set-lvar! iform lvar) `(vector-set! ,iform 1 ,lvar))
@@ -310,7 +310,7 @@
 ;; struct $local-assign
 (define $LOCAL-ASSIGN 6)
 (define ($local-assign lvar val)
-  `#(,$LOCAL-ASSIGN ,lvar ,val ))
+  (vector $LOCAL-ASSIGN lvar val))
 
 (define-macro ($local-assign.lvar iform) `(vector-ref ,iform 1))
 (define-macro ($local-assign.val iform) `(vector-ref ,iform 2))
@@ -320,7 +320,7 @@
 ;; struct $global-ref
 (define $GLOBAL-REF 7)
 (define ($global-ref libname sym)
-  `#(,$GLOBAL-REF ,libname ,sym ))
+  (vector $GLOBAL-REF libname sym))
 
 (define-macro ($global-ref.libname iform) `(vector-ref ,iform 1))
 (define-macro ($global-ref.sym iform) `(vector-ref ,iform 2))
@@ -330,7 +330,7 @@
 ;; struct $global-assign
 (define $GLOBAL-ASSIGN 8)
 (define ($global-assign libname sym val)
-  `#(,$GLOBAL-ASSIGN ,libname ,sym ,val ))
+  (vector $GLOBAL-ASSIGN libname sym val))
 
 (define-macro ($global-assign.libname iform) `(vector-ref ,iform 1))
 (define-macro ($global-assign.sym iform) `(vector-ref ,iform 2))
@@ -346,7 +346,7 @@
 ;; struct $if
 (define $IF 10)
 (define ($if test then else)
-  `#(,$IF ,test ,then ,else ))
+  (vector $IF test then else))
 
 (define-macro ($if.test iform) `(vector-ref ,iform 1))
 (define-macro ($if.then iform) `(vector-ref ,iform 2))
@@ -358,7 +358,7 @@
 ;; struct $asm
 (define $ASM 11)
 (define ($asm insn args)
-  `#(,$ASM ,insn ,args ))
+  (vector $ASM insn args))
 
 (define-macro ($asm.insn iform) `(vector-ref ,iform 1))
 (define-macro ($asm.args iform) `(vector-ref ,iform 2))
@@ -368,7 +368,7 @@
 ;; struct $define
 (define $DEFINE 12)
 (define ($define libname sym val)
-  `#(,$DEFINE ,libname ,sym ,val ))
+  (vector $DEFINE libname sym val))
 
 (define-macro ($define.libname iform) `(vector-ref ,iform 1))
 (define-macro ($define.sym iform) `(vector-ref ,iform 2))
@@ -380,7 +380,7 @@
 ;; struct $call-cc
 (define $CALL-CC 13)
 (define ($call-cc proc tail?)
-  `#(,$CALL-CC ,proc ,tail? ))
+  (vector $CALL-CC proc tail?))
 
 (define-macro ($call-cc.proc iform) `(vector-ref ,iform 1))
 (define-macro ($call-cc.tail? iform) `(vector-ref ,iform 2))
@@ -405,7 +405,7 @@
 
 ;; moved to C++
 (define ($label body)
-  `#(,$LABEL ,body ))
+  (vector $LABEL body))
 
 (define-macro ($label.body iform) `(vector-ref ,iform 1))
 (define-macro ($label.set-body! iform body) `(vector-set! ,iform 1 ,body))
@@ -415,7 +415,7 @@
 ;; struct $list
 (define $LIST 16)
 (define ($list args)
-  `#(,$LIST ,args ))
+  (vector $LIST args))
 
 (define-macro ($list.args iform) `(vector-ref ,iform 1))
 (define-macro ($list.set-args! iform args) `(vector-set! ,iform 1 ,args))
@@ -424,7 +424,7 @@
 ;; struct $library
 (define $LIBRARY 17)
 (define ($library name export-syms import-syms import macro body compiled-body)
-  `#(,$LIBRARY ,(libname->symbol name) ,export-syms ,import-syms ,import ,macro ,body ,compiled-body ))
+  (vector $LIBRARY (libname->symbol name) export-syms import-syms import macro body compiled-body))
 
 (define-macro ($library.name iform) `(vector-ref ,iform 1))
 (define-macro ($library.export-syms iform) `(vector-ref ,iform 2))
@@ -446,12 +446,11 @@
 ;; struct $import
 (define $IMPORT 18)
 (define ($import import-specs)
-  (let1 v (make-vector 2)
-    (vector-set! v 0 $IMPORT)
-    (vector-set! v 1 import-specs)
-    v))
-
-;  `#(,$IMPORT ,import-specs ))
+;;   (let1 v (make-vector 2)
+;;     (vector-set! v 0 $IMPORT)
+;;     (vector-set! v 1 import-specs)
+;;     v))
+  (vecto $IMPORT import-specs ))
 
 (define-macro ($import.import-specs iform) `(vector-ref ,iform 1))
 (define-macro ($import.set-import-specs! iform import-specs) `(vector-set! ,iform 1 ,import-specs))
@@ -460,7 +459,7 @@
 ;; struct $import-spec
 (define $IMPORT-SPEC 19)
 (define ($import-spec libname level)
-  `#(,$IMPORT-SPEC ,libname ,level ))
+  (vector $IMPORT-SPEC libname level))
 
 (define-macro ($import-spec.libname iform) `(vector-ref ,iform 1))
 (define-macro ($import-spec.level iform) `(vector-ref ,iform 2))
@@ -474,7 +473,7 @@
 ;; struct $receive
 (define $RECEIVE 21)
 (define ($receive lvars reqargs optarg vals body tail?)
-  `#(,$RECEIVE ,lvars ,reqargs ,optarg ,vals ,body ,tail?))
+  (vector $RECEIVE lvars reqargs optarg vals body tail?))
 
 (define-macro ($receive.lvars iform) `(vector-ref ,iform 1))
 (define-macro ($receive.reqargs iform) `(vector-ref ,iform 2))
