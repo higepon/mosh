@@ -1,42 +1,22 @@
-;; OK
-;; (letrec ([a (lambda () b)]
-;;          [b (lambda () 3)])
-;;   (display ((a)))
-;;   (newline))
-;; (display "***********\n")
-;; ;; Error
+(import (rnrs)
+        (clos user)
+        (mosh string))
 
-;; (guard
-;;  (c [#t #f])
-;;  (letrec ([a 3]
-;;           [b a])
-;;    (display b)
-;;    (newline))
-;;  )
+(define-class <point> () x y)
 
-  (call-with-current-continuation
-   (lambda (k)
-     (dynamic-wind
-         (lambda ()
-           (k))
-         (lambda () #f)
-         (lambda () #f))))
+(define-method initialize 'after ((point <point>) init-args)
+  (initialize-direct-slots point <point> init-args))
 
-(let ((n 0))
-            (call-with-current-continuation
-             (lambda (k)
-               (dynamic-wind
-                   values
-                   (lambda ()
-                     (dynamic-wind
-                         values
-                         (lambda ()
-                           (set! n (+ n 1))
-                           (k))
-                         (lambda ()
-                           (set! n (+ n 2))
-                           (k))))
-                   (lambda ()
-                     (set! n (+ n 4))))))
-            n) 
-;;           7
+(define-method print-object ((point <point>) port)
+  (print-object-with-slots point port))
+
+(define-generic distance-to-origin)
+
+(define-method distance-to-origin ((point <point>))
+  (sqrt (+ (expt (slot-ref point 'x) 2)
+           (expt (slot-ref point 'y) 2))))
+
+(define p1 (make <point> 'x 3 'y 4))
+
+(format #t "distance of ~a to origin: ~a~%" p1 (distance-to-origin p1))
+

@@ -1000,6 +1000,7 @@
     (standard-library-path mosh)
     (format mosh-string mosh)
     (print mosh-string mosh)
+    (append-map srfi-1)
     (alist-cons srfi-1 mosh)
     (assoc-ref mosh-list mosh)
     (every srfi-1)

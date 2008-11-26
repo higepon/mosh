@@ -2540,6 +2540,31 @@
         (cons x (recur (car rest) (cdr rest)))
         x)))
 
+(define (append-map f lis1 . lists)
+  (really-append-map append-map  append  f lis1 lists))
+(define (append-map! f lis1 . lists) 
+  (really-append-map append-map! append! f lis1 lists))
+
+(define (really-append-map who appender f lis1 lists)
+  (check-arg procedure? f who)
+  (if (pair? lists)
+      (receive (cars cdrs) (%cars+cdrs (cons lis1 lists))
+	(if (null? cars) '()
+	    (let recur ((cars cars) (cdrs cdrs))
+	      (let ((vals (apply f cars)))
+		(receive (cars2 cdrs2) (%cars+cdrs cdrs)
+		  (if (null? cars2) vals
+		      (appender vals (recur cars2 cdrs2))))))))
+
+      ;; Fast path
+      (if (null-list? lis1) '()
+	  (let recur ((elt (car lis1)) (rest (cdr lis1)))
+	    (let ((vals (f elt)))
+	      (if (null-list? rest) vals
+		  (appender vals (recur (car rest) (cdr rest)))))))))
+
+
+
 ;The fundamental pair deconstructor:
 
 ;; same as (lambda (p) (values (car p) (cdr p)))
@@ -2900,7 +2925,7 @@
       (lambda (x y) (> (second x) (second y)))
       (hashtable-map
        (lambda (closure sample-count)
-         (list closure sample-count (/ (* 100 sample-count) total)))
+         (list closure sample-count (exact (round (/ (* 100 sample-count) total)))))
        sample-table)
       )
      )

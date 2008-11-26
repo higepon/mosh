@@ -357,10 +357,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<record "));
         putDatum(record->recordTypeDescriptor()->name(), inList);
         putString(UC(" "));
-        for (int i = 0; i < record->fieldsLength(); i++) {
+//         for (int i = 0; i < record->fieldsLength(); i++) {
 //             putDatum(record->fieldAt(i));
 //             putString(UC(" "));
-        }
+//         }
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
