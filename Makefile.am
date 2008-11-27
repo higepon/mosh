@@ -217,7 +217,8 @@ all-tests.scm: ./test-data.scm
 .PHONY: bench doc
 
 bench:
-	@GOSH@ ./scripts/bench.scm > /dev/null
+#	@GOSH@ ./scripts/bench.scm > /dev/null
+	LANG=C @GOSH@ ./scripts/bench2.scm
 
 #### test
 check:test

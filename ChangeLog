@@ -1,5 +1,7 @@
 2008-11-27  higepon  <higepon@users.sourceforge.jp>
 
+        * scripts/bench2.scm: Added.
+
         * lib/mosh/condition.ss : Changed see https://ironscheme.svn.codeplex.com/svn/IronScheme/IronSchemeConsole/build/conditions.ss
                                   and https://bugs.launchpad.net/ikarus/+bug/302023.
 
