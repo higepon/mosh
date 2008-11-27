@@ -492,9 +492,20 @@ Object scheme::utf8CodecEx(int argc, const Object* argv)
 
 Object scheme::makeTranscoderEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("make-trans-coder");
-    checkArgumentLength(1);
+    DeclareProcedureName("make-transcoder");
+    checkArgumentLengthBetween(1, 3);
+
     argumentAsCodec(0, codec);
+    if (argc == 1) {
+        return Object::makeTranscoder(codec);
+    }
+    // todo: argumentAsXXXX(1, eolStyle);
+    if (argc == 2) {
+        // todo: return Object::makeTranscoder(codec, eolStyle);
+        return Object::makeTranscoder(codec);
+    }
+    // todo: argumentAsXXXX(2, handlingMode);
+    // todo: return Object::makeTranscoder(codec, eolStyle, handlingMode);
     return Object::makeTranscoder(codec);
 }
 

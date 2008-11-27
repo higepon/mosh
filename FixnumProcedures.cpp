@@ -462,7 +462,7 @@ Object scheme::fxcopyBitFieldEx(int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
@@ -550,7 +550,7 @@ Object scheme::fxrotateBitFieldEx(int argc, const Object* argv)
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     const bool isFx4OutOfRange = fx4 < 0 || fx4 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || isFx4OutOfRange || fx2 > fx3 || fx4 >= (fx3 - fx2) ) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
