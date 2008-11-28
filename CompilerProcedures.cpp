@@ -716,7 +716,8 @@ Object pass4FixupLabel(Object vec)
             const int offset = code->ref(i + 1).toFixnum() + 1;
             const int destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
-            if (code->ref(destinationIndex) == TEST) {
+            if (code->ref(destinationIndex) == TEST ||
+                code->ref(destinationIndex) == LOCAL_JMP) {
                 code->set(i + 1, Object::makeFixnum(offset + code->ref(destinationIndex + 1).toFixnum()));
             }
         }

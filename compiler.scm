@@ -3024,7 +3024,7 @@
                [(and (eq? insn 'TEST) (number? (vector-ref v (+ i 1))))
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
-                  (when (eq? (vector-ref v destination-index) 'TEST)
+                  (when (or (eq? (vector-ref v destination-index) 'TEST) (eq? (vector-ref v destination-index) 'LOCAL_JMP))
                     (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
                     )])
               (loop (+ i 1)))))))
