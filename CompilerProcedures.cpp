@@ -694,5 +694,32 @@ Object pass4FixupLabel(Object vec)
             i++;
         }
     }
+    // Peephole optimization
+    for (int i = 0; i < length; i++) {
+        const Object insn = code->ref(i);
+
+        // when jump destination is jump.
+        if (insn == LOCAL_JMP || insn == FRAME) {
+            MOSH_ASSERT(i + 1 < length);
+            MOSH_ASSERT(code->ref(i + 1).isFixnum());
+            const int offset = code->ref(i + 1).toFixnum() + 1;
+            const int destinationIndex = i + offset;
+            MOSH_ASSERT(i + offset < length);
+            if (code->ref(destinationIndex) == LOCAL_JMP) {
+                code->set(i + 1, Object::makeFixnum(offset + code->ref(destinationIndex + 1).toFixnum()));
+            }
+        // when test destination is test
+        // if ac_ == #f, test in destination is also #f.
+        } else if (insn == TEST) {
+            MOSH_ASSERT(i + 1 < length);
+            MOSH_ASSERT(code->ref(i + 1).isFixnum());
+            const int offset = code->ref(i + 1).toFixnum() + 1;
+            const int destinationIndex = i + offset;
+            MOSH_ASSERT(i + offset < length);
+            if (code->ref(destinationIndex) == TEST) {
+                code->set(i + 1, Object::makeFixnum(offset + code->ref(destinationIndex + 1).toFixnum()));
+            }
+        }
+    }
     return collected.car();
 }

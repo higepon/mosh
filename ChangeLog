@@ -1,3 +1,9 @@
+2008-11-28  higepon  <higepon@users.sourceforge.jp>
+
+        * CompilerProcedures.cpp (pass4FixupLabel): Added peephole-optimization for VM on C++.
+
+        * compiler.scm: Added peephole-optimization for VM on gauche.
+
 2008-11-27  higepon  <higepon@users.sourceforge.jp>
 
         * scripts/bench2.scm: Added.

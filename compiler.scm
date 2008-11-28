@@ -3005,8 +3005,30 @@
 
 (cond-expand
  [vm?
-  ;; moved to freeproc.cpp
+  ;; moved to CompilerProcedures.cpp
   ;; N.B. this procedure is still required by vm.scm
+  (define (peephole-optimization v)
+    (let ([len (vector-length v)])
+      (let loop ([i 0])
+        (if (= i len)
+            '()
+            (let1 insn (vector-ref v i)
+              (cond
+               [(or (eq? insn 'LOCAL_JMP)
+                    (and (eq? insn 'FRAME) (number? (vector-ref v (+ i 1))))) ;; avoid compile-instruction
+                (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
+                       [destination-index (+ i offset)])
+                  (when (eq? (vector-ref v destination-index) 'LOCAL_JMP)
+                    (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
+                    )]
+               [(and (eq? insn 'TEST) (number? (vector-ref v (+ i 1))))
+                (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
+                       [destination-index (+ i offset)])
+                  (when (eq? (vector-ref v destination-index) 'TEST)
+                    (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
+                    )])
+              (loop (+ i 1)))))))
+
   (define (pass4/fixup-labels v)
     (define (collect-labels)
       (let* ([len (vector-length v)]
@@ -3049,7 +3071,10 @@
                [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
                [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
                [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
-               [else (loop (+ i 1))]))])))))]
+               [else (loop (+ i 1))]))])))
+      (peephole-optimization code)
+      code
+    ))]
  [else #t])
 
 
