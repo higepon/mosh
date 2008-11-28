@@ -1,3 +1,7 @@
+2008-11-29  higepon  <higepon@users.sourceforge.jp>
+
+        * Psyntax pass throuh the and/or to backend.
+
 2008-11-28  higepon  <higepon@users.sourceforge.jp>
 
         * lib/lambda/wiki.ss: Applied a patch by xsloader.

@@ -1053,6 +1053,21 @@
            (chi-expr e1 r mr)
            (build-void))))))
 
+
+
+  (define and-transformer
+    (lambda (e r mr)
+      (syntax-match e ()
+        ((_ e* ...)
+         (build-and no-source (chi-expr* e* r mr))))))
+
+  (define or-transformer
+    (lambda (e r mr)
+      (syntax-match e ()
+        ((_ e* ...)
+         (build-or no-source (chi-expr* e* r mr))))))
+
+
   (define case-macro
     (lambda (e)
       (define (build-last cls)
@@ -2588,6 +2603,8 @@
         ((letrec)                 letrec-transformer)
         ((letrec*)                letrec*-transformer)
         ((if)                     if-transformer)
+        ((and)                    and-transformer)
+        ((or)                    or-transformer)
         ((foreign-call)           foreign-call-transformer)
         ((syntax-case)            syntax-case-transformer)
         ((syntax)                 syntax-transformer)

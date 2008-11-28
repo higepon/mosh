@@ -24,7 +24,7 @@
     build-global-assignment build-global-definition build-lambda
     build-case-lambda build-let build-primref build-foreign-call
     build-data build-sequence build-void build-letrec build-letrec*
-    build-global-define build-library-letrec* build-receive)
+    build-global-define build-library-letrec* build-and build-or)
   (import (rnrs) (psyntax compat) (psyntax config))
 
   (define (build-global-define x)
@@ -35,6 +35,17 @@
     (syntax-rules ()
       ((_ ae fun-exp arg-exps)
        `(,fun-exp . ,arg-exps))))
+
+  (define-syntax build-and
+    (syntax-rules ()
+      ((_ ae exp*)
+       `(and . ,exp*))))
+
+  (define-syntax build-or
+    (syntax-rules ()
+      ((_ ae exp*)
+       `(or . ,exp*))))
+
   (define-syntax build-conditional
     (syntax-rules ()
       ((_ ae test-exp then-exp else-exp)
