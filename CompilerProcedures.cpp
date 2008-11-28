@@ -657,6 +657,7 @@ Object pass4FixupLabel(Object vec)
     static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
     static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
     static const Object LOCAL_JMP             = Object::makeRaw(Instruction::LOCAL_JMP);
+    static const Object RETURN                = Object::makeRaw(Instruction::RETURN);
 
     const Object collected = pass4FixupLabelCollect(vec);
     Vector* const code = collected.car().toVector();
@@ -705,12 +706,26 @@ Object pass4FixupLabel(Object vec)
             const int offset = code->ref(i + 1).toFixnum() + 1;
             const int destinationIndex = i + offset;
             MOSH_ASSERT(i + offset < length);
-            if (code->ref(destinationIndex) == LOCAL_JMP) {
+            const Object dest = code->ref(destinationIndex);
+            if (dest == LOCAL_JMP) {
                 code->set(i + 1, Object::makeFixnum(offset + code->ref(destinationIndex + 1).toFixnum()));
+            } else if (dest == RETURN) {
+                //  jump LABEL
+                //  ...
+                // LABEL:
+                //  return or leave
+                // =>
+                //  leave
+                //  ...
+                // LABEL:
+                //  return or leave
+                code->set(i, RETURN);
+                code->set(i + 1, code->ref(destinationIndex + 1));
             }
-        // when test destination is test
-        // if ac_ == #f, test in destination is also #f.
+
         } else if (insn == TEST) {
+            // when test destination is test
+            // if ac_ == #f, test in destination is also #f.
             MOSH_ASSERT(i + 1 < length);
             MOSH_ASSERT(code->ref(i + 1).isFixnum());
             const int offset = code->ref(i + 1).toFixnum() + 1;

@@ -3018,9 +3018,14 @@
                     (and (eq? insn 'FRAME) (number? (vector-ref v (+ i 1))))) ;; avoid compile-instruction
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
-                  (when (eq? (vector-ref v destination-index) 'LOCAL_JMP)
-                    (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1)))))
-                    )]
+                  (cond
+                   [(eq? (vector-ref v destination-index) 'LOCAL_JMP)
+                    (vector-set! v (+ i 1) (+ offset (vector-ref v (+ destination-index 1))))]
+                   [(eq? (vector-ref v destination-index) 'RETURN)
+                    (vector-set! v i 'RETURN)
+                    (vector-set! v (+ i 1) (vector-ref v (+ destination-index 1)))
+                    ]
+                    ))]
                [(and (eq? insn 'TEST) (number? (vector-ref v (+ i 1))))
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
