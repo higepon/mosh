@@ -248,11 +248,11 @@
           [(wiki-name)
            (let ([page-name (second wiki)])
              (cond [(page-exist? page-name)
-                    (print-a (format "/wiki/~a" (cgi:encode page-name)) page-name)]
+                    (print-a (format "~a/~a" wiki-top-url (cgi:encode page-name)) page-name)]
                    [else
                     (display "<span class=\"no-exist\">")
                     (print page-name)
-                    (print-a (format "/wiki/~a" (cgi:encode page-name)) "?")
+                    (print-a (format "~a/~a" wiki-top-url (cgi:encode page-name)) "?")
                     (print "</span>")]))]
           [(link)
            (format #t "<a href='~a'>~a</a>" (second wiki) (third wiki))]
@@ -294,7 +294,7 @@
 
 (define (print-edit-form page-name)
   (format #t "<h1>Edit ~a</h1>" (cgi:escape page-name))
-  (format #t "<form method='POST' action='/wiki/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n  <input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" (cgi:encode page-name) (read-raw-page page-name) page-name))
+  (format #t "<form method='POST' action='~a/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n  <input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" wiki-top-url (cgi:encode page-name) (read-raw-page page-name) page-name))
 
 (define (print-page get-parameter page-name)
   (let ([path (page-name->path page-name)])
@@ -323,12 +323,12 @@
   <h1>L<span class=\"first\">a</span>mbd<span class=\"second\">a</span> Wiki</h1>
   <div id=\"topmenu\">
     <ul>")
-  (top-menu "/wiki" "Top")
-  (top-menu "/wiki/page/create" "Create")
+  (top-menu wiki-top-url "Top")
+  (top-menu (format "~a/page/create" wiki-top-url) "Create")
   (unless (null? args)
-    (top-menu (format "/wiki/~a/edit" (car args)) "Edit")
-    (top-menu (format "/wiki/~a" (car args)) "Reload"))
-  (print "<li id=\"menu_left\"><a href=\"/wiki/page/list\">List</a></li>")
+    (top-menu (format "~a/~a/edit" wiki-top-url (car args)) "Edit")
+    (top-menu (format "~a/~a" wiki-top-url (car args)) "Reload"))
+  (print (format "<li id=\"menu_left\"><a href=\"~a/page/list\">List</a></li>" wiki-top-url))
   (print "</ul>
   </div><!-- topmenu -->
 </div>
@@ -357,7 +357,7 @@
       (display content port))))
 
 (define (print-new-page-form page-name)
-  (format #t "<form method='GET' action='/wiki/page/create'>" page-name)
+  (format #t "<form method='GET' action='~a/page/create'>" wiki-top-url page-name)
   (print "<input type='text' name='page' value=''><input class='submit' type='submit' value='next'></form>"))
 
 (define (list-page . reg)
@@ -366,7 +366,7 @@
     (print "<ul>")
     (for-each (lambda (f)
                 (print "<li>")
-                (print-a (format "/wiki/~a" (cgi:encode f)) f)
+                (print-a (format "~a/~a" wiki-top-url (cgi:encode f)) f)
                 (print "</li>"))
               pages)
     (print "</ul>")))
@@ -450,12 +450,12 @@
 (register-plugin (define-plugin "comment"
               (lambda (get-parameter page-name . args)
                 (let ([comment-page (format "comment/~a" page-name)])
-                  (print-a (format "/wiki/~a" (cgi:encode comment-page))
+                  (print-a (format "~a/~a" wiki-top-url (cgi:encode comment-page))
                            "See comment page")
                   (print
                    (string-append
                     "<br><br>"
-                    "<form method='POST' action='/wiki/" page-name "/plugin'>\n"
+                    "<form method='POST' action='" wiki-top-url "/" page-name "/plugin'>\n"
                     "<input type='hidden' name='cmd' value='plugin'>\n"
                     "<input type='hidden' name='plugin' value='comment'>\n"
                     "<input type='hidden' name='page' value='" page-name "'>\n"
@@ -485,11 +485,11 @@
                       (cond [(equal? parent "")
                              (print-a "/wiki" "Top")
                              (print " / ")
-                             (print-a (format "/wiki/~a" (cgi:encode (car paths))) (car paths))
+                             (print-a (format "~a/~a" wiki-top-url (cgi:encode (car paths))) (car paths))
                              (loop (car paths) (cdr paths))]
                             [else
                              (print " / ")
-                             (print-a (format "/wiki/~a" (cgi:encode (format "~a/~a" parent (car paths)))) (car paths))
+                             (print-a (format "~a/~a" wiki-top-url (cgi:encode (format "~a/~a" parent (car paths)))) (car paths))
                              (loop (format "~a/~a" parent (car paths)) (cdr paths))]))))
 
               (lambda (get-parameter page-name) #f)
