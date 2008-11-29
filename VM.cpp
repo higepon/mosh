@@ -564,7 +564,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         Object::makeRaw(INSTRUCTION(HALT)),
     };
 
-    Object operand = Object::Undef;;
+    Object operand = Object::Undef;
+
+    // shourt cut pointers
+    EqHashTable* const nameSpace = nameSpace_.toEqHashTable();
 
     pc_ = code;
     for (;;) {
@@ -724,7 +727,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_  = callCode;
                 sp_--;
             } else {
-                if (!args.isPair()) {
+                if (! args.isPair()) {
                     callAssertionViolationAfter("apply", "bug?", L1(ac_));
                     NEXT;
                 }
@@ -774,7 +777,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //                 callAssertionViolationAfter("set!", "can't set! to unbound variable", L1(e.cdr()));
 //                 NEXT;
 //             } else {
-                nameSpace_.toEqHashTable()->set(id, ac_);
+                nameSpace->set(id, ac_);
                 ac_ = Object::Undef;
 //             }
             NEXT1;
@@ -965,9 +968,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object id = fetchOperand();
 //            LOG1("define ~a\n", id);
-            const Object found = nameSpace_.toEqHashTable()->ref(id, notFound_);
+            const Object found = nameSpace->ref(id, notFound_);
             if (found == notFound_) {
-                nameSpace_.toEqHashTable()->set(id, ac_);
+                nameSpace->set(id, ac_);
             } else {
                 Object e = splitId(id);
                 callErrorAfter("define", "defined twice", L1(e.cdr()));
@@ -1377,7 +1380,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
 
             const Object id = fetchOperand();
-            const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
+            const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
                 Object e = splitId(id);
                 callAssertionViolationAfter("eval",
@@ -1392,7 +1395,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(REFER_GLOBAL_CALL)
         {
             const Object id = fetchOperand();
-            const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
+            const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
                 Object e = splitId(id);
                 callAssertionViolationAfter("eval",
