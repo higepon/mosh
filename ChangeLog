@@ -1,3 +1,7 @@
+2008-11-30  higepon  <higepon@users.sourceforge.jp>
+
+        * tools/psyntax-r6rs/rev10_to_10/Makefile (all): Added normal mode and rescue mode.
+
 2008-11-29  higepon  <higepon@users.sourceforge.jp>
 
         * example/affine.scm : Added.

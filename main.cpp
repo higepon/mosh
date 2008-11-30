@@ -264,6 +264,7 @@ int main(int argc, char *argv[])
     } else if (isParrot) {
         parrot(argv[optind]);
     } else if (optind < argc) {
+        theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->load(Object::makeString(argv[optind]).toString()->data());
     } else {
         theVM->load(UC("repl.scm"));
