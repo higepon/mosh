@@ -191,7 +191,7 @@
       (cons (f (car l) (null? (cdr l))) ($map1-with-tail f (cdr l)))))
 
 (define-macro ($append-map1 f l)
-  `(apply append ($map1 ,f ,l)))
+  `(apply append (imap ,f ,l)))
 
 (define (uniq lst)
   (let loop ([lst lst]
@@ -1570,6 +1570,10 @@
         [else-c (pass2/optimize ($if.else iform) closures)])
   ($if test-c then-c else-c)))
 
+(define (pass2/$local-assign iform closures)
+  ($local-assign.set-val! iform (pass2/optimize ($local-assign.val iform) closures))
+  iform)
+
 (define (pass2/$call iform closures)
   (pass2/collect-call iform closures))
 
@@ -1582,6 +1586,7 @@
 (pass2/register $CONST         pass2/empty)
 (pass2/register $LAMBDA        pass2/$lambda)
 (pass2/register $LOCAL-REF     pass2/$local-ref)
+;(pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
 (pass2/register $LOCAL-ASSIGN  pass2/empty)
 (pass2/register $GLOBAL-ASSIGN pass2/empty)
 (pass2/register $GLOBAL-REF    pass2/empty)
