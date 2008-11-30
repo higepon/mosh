@@ -65,6 +65,17 @@
   (define (get-command-line) *command-line-args*) ;; required for psyntax
   ])
 
+;; inline map
+(define-macro (imap proc lis)
+  (let ([p (gensym)]
+        [r (gensym)]
+        [loop (gensym)])
+    `(let ,loop ([,r '()]
+                 [,p ,lis])
+          (if (null? ,p)
+              (reverse ,r)
+              (,loop (cons (,proc (car ,p)) ,r) (cdr ,p))))))
+
 (define (eq-hashtable-copy ht)
   (let1 ret (make-eq-hashtable)
     (hashtable-for-each
@@ -223,7 +234,7 @@
 ;; struct $const
 (define $CONST 0)
 (define ($const val)
-  `#(,$CONST ,val ))
+  (vector $CONST val))
 
 (define-macro ($const.val iform) `(vector-ref ,iform 1))
 (define-macro ($const.set-val! iform val) `(vector-set! ,iform 1 ,val))
@@ -579,7 +590,7 @@
       [(define)
        (if (define-is-lambda? sexp)
            (pass1/expand (define->lambda sexp))
-           ($src ($map1 (lambda (s) (pass1/expand s)) sexp) sexp))]
+           ($src (imap (lambda (s) (pass1/expand s)) sexp) sexp))]
       [(let1)
        ($src (pass1/expand (let1->let sexp)) sexp)]
       [(let)
@@ -656,9 +667,6 @@
         (body (cddr sexp)))
       `(define ,(car args) ,($src (append! (list 'lambda (cdr args)) body) sexp))))
 
-(define (unless->cond sexp)
-  `(cond ((not ,(cadr sexp)) ,@(cddr sexp))))
-
 (define (let*->let sexp)
   (let ([args (cadr sexp)]
         [body (cddr sexp)])
@@ -716,8 +724,8 @@
 (define (named-let->letrec sexp)
   (let* ((name (cadr sexp))
          (args (caddr sexp))
-         (vars ($map1 car args))
-         (vals ($map1 cadr args))
+         (vars (imap car args))
+         (vals (imap cadr args))
          (body (cdddr sexp))
          (lambda-body ($src `(lambda ,vars ,@body) sexp)))
     ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
@@ -880,7 +888,7 @@
          [parsed-vars   (parse-lambda-vars vars)]
          [optional-arg? (first parsed-vars)]
          [vars          (second parsed-vars)]
-         [this-lvars    ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)]
+         [this-lvars    (imap (lambda (sym) ($lvar sym #f 0 0)) vars)]
          [vars-length  (length vars)])
     ($lambda (cons (source-info sexp) (cons name (dotpair->list (second sexp))))
              name
@@ -1084,7 +1092,7 @@
   `(pass1/sexp->iform (pass1/expand ,sexp) library lvars tail?))
 
 (define-macro (pass1/map-s->i sexp)
-  `($map1 (lambda (s) (pass1/s->i s)) ,sexp))
+  `(imap (lambda (s) (pass1/s->i s)) ,sexp))
 
 (define (pass1/call proc args library lvars tail?)
   (acond
@@ -1120,7 +1128,7 @@
   (match sexp
     [('receive vars vals . body)
      (receive (vars reqargs optarg) (parse-lambda-args vars)
-       (let1 this-lvars ($map1 (lambda (sym) ($lvar sym #f 0 0)) vars)
+       (let1 this-lvars (imap (lambda (sym) ($lvar sym #f 0 0)) vars)
          ($receive
           this-lvars
           reqargs
@@ -1149,8 +1157,8 @@
   (list who message irritants))
 
 (define (pass1/letrec vars vals body source-info library lvars tail?)
-  (let* ([this-lvars ($map1 (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
-         [inits      ($map1 (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
+  (let* ([this-lvars (imap (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
+         [inits      (imap (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
     (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
     (let1 found-error (find (lambda (init)
                               (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))) inits)
@@ -1271,22 +1279,22 @@
        (pass1/receive sexp library lvars tail?)]
       ;;---------------------------- let ---------------------------------------
       [(let)
-       (pass1/let ($map1 car (second sexp))  ; vars
-                  ($map1 cadr (second sexp)) ; vals
+       (pass1/let (imap car (second sexp))  ; vars
+                  (imap cadr (second sexp)) ; vals
                   (cddr sexp)                ; body
                   (source-info sexp)         ; source-info
                   library lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
       [(letrec)
-       (pass1/letrec ($map1 car (second sexp))  ; vars
-                     ($map1 cadr (second sexp)) ; vals
+       (pass1/letrec (imap car (second sexp))  ; vars
+                     (imap cadr (second sexp)) ; vals
                      (cddr sexp)                ; body
                      (source-info sexp)         ; source-info
                      library lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
       [(letrec*)
-       (pass1/letrec ($map1 car (second sexp))  ; vars
-                     ($map1 cadr (second sexp)) ; vals
+       (pass1/letrec (imap car (second sexp))  ; vars
+                     (imap cadr (second sexp)) ; vals
                      (cddr sexp)                ; body
                      (source-info sexp)         ; source-info
                      library lvars tail?)]
@@ -1483,7 +1491,7 @@
 ;; =============================================================================
 ;;
 ;;     Known Bug
-;;     jump with embedded call, miss over the let boundary.
+;;     jump with embedded call misses over the let boundary.
 ;;
 ;;      (define *plugins* '())
 ;;      (define (register-plugin plugin)
@@ -1509,7 +1517,7 @@
    [($let.error iform) iform]
    [else
     ($let.set-body! iform (pass2/optimize ($let.body iform) closures))
-    ($let.set-inits! iform ($map1 (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
+    ($let.set-inits! iform (imap (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
     (let1 o (pass2/eliminate-let iform)
       (if (eq? o iform)
           o
@@ -1525,7 +1533,7 @@
   iform)
 
 (define (pass2/$seq iform closures)
-  ($seq.set-body! iform ($map1 (lambda (x) (pass2/optimize x closures)) ($seq.body iform)))
+  ($seq.set-body! iform (imap (lambda (x) (pass2/optimize x closures)) ($seq.body iform)))
   iform)
 
 (define (pass2/const-inliner iform)
@@ -1547,7 +1555,7 @@
       [else #f])))
 
 (define (pass2/$asm iform closures)
-  ($asm.set-args! iform ($map1 (lambda (x) (pass2/optimize x closures)) ($asm.args iform)))
+  ($asm.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) ($asm.args iform)))
   (pass2/const-inliner iform)
   iform)
 
@@ -1641,7 +1649,7 @@
              iform)))))
 
 (define (iform-copy-zip-lvs orig-lvars lv-alist)
-  (let1 new-lvars ($map1 (lambda (lv) (make-lvar ($lvar.sym lv))) orig-lvars)
+  (let1 new-lvars (imap (lambda (lv) (make-lvar ($lvar.sym lv))) orig-lvars)
     (cons new-lvars
           (foldr2 alist-cons lv-alist orig-lvars new-lvars)))) ;; todo foldr2
 
@@ -1682,7 +1690,7 @@
               (let1 al (case ($let.type iform)
                          ((let) lv-alist)
                          ((rec) newalist))
-                ($map1 (lambda (x) (iform-copy x al)) ($let.inits iform)))
+                (imap (lambda (x) (iform-copy x al)) ($let.inits iform)))
               (iform-copy ($let.body iform) newalist)
               ($let.tail? iform)
               ($let.src iform)
@@ -1700,15 +1708,15 @@
                  ($lambda.flag iform)
                  ($lambda.calls iform)))]
      [(= $SEQ t)
-      ($seq ($map1 (lambda (x) (iform-copy x lv-alist)) ($seq.body iform)) ($seq.tail? iform))]
+      ($seq (imap (lambda (x) (iform-copy x lv-alist)) ($seq.body iform)) ($seq.tail? iform))]
      [(= $CALL t)
       ($call (iform-copy ($call.proc iform) lv-alist)
-             ($map1 (lambda (x) (iform-copy x lv-alist)) ($call.args iform))
+             (imap (lambda (x) (iform-copy x lv-alist)) ($call.args iform))
              #f
              ($call.type iform))]
      [(= $ASM t)
       ($asm ($asm.insn iform)
-            ($map1 (lambda (x) (iform-copy x lv-alist)) ($asm.args iform)))]
+            (imap (lambda (x) (iform-copy x lv-alist)) ($asm.args iform)))]
      [else iform])))
 
 ;; based on Gauche/src/compiler.scm by Shiro Kawai start.
@@ -2005,10 +2013,10 @@
                                                 ($lambda.calls lambda-iform)))
                       ;; todo
                       ;; args の最適化 see Gauche
-                      ($call.set-args! iform ($map1 (lambda (x) (pass2/optimize x closures)) args))
+                      ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
                       iform)]))]
             [else
-             ($call.set-args! iform ($map1 (lambda (x) (pass2/optimize x closures)) args))
+             ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
              iform]))]))
 
 ;;--------------------------------------------------------------------
@@ -2573,7 +2581,7 @@
      (let* ([label ($lambda.body ($call.proc iform))]
             [body ($label.body label)]
             [vars ($lambda.lvars ($call.proc iform))]
-            [vars-sym ($map1 $lvar.sym-proc vars)]
+            [vars-sym (imap $lvar.sym-proc vars)]
             [frees-here (pass3/find-free body
                                          vars-sym
                                          (pass3/add-can-frees2 can-frees locals frees))]
@@ -2642,7 +2650,7 @@
 
 (define (pass3/$lambda cb iform locals frees can-frees sets tail)
   (let* ([vars ($lambda.lvars iform)]
-         [vars-sym ($map1 $lvar.sym-proc vars)]
+         [vars-sym (imap $lvar.sym-proc vars)]
          [body ($lambda.body iform)]
          [frees-here (pass3/find-free body
                                       vars
@@ -2680,7 +2688,7 @@
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail)
   (let* ([vars ($receive.lvars iform)]
-         [vars-sym ($map1 $lvar.sym-proc vars)]
+         [vars-sym (imap $lvar.sym-proc vars)]
          [body ($receive.body iform)]
          [frees-here (append
                       (pass3/find-free ($receive.vals iform) locals (pass3/add-can-frees2 can-frees locals frees))
@@ -2717,7 +2725,7 @@
   (if (eq? ($let.type iform) 'rec)
       (pass3/letrec cb iform locals frees can-frees sets tail)
       (let* ([vars ($let.lvars iform)]
-             [vars-sym ($map1 $lvar.sym-proc vars)]
+             [vars-sym (imap $lvar.sym-proc vars)]
              [body ($let.body iform)]
              [frees-here (append
                           ($append-map1 (lambda (i) (pass3/find-free i locals (pass3/add-can-frees2 can-frees frees locals))) ($let.inits iform))
@@ -2752,7 +2760,7 @@
 
 (define (pass3/letrec cb iform locals frees can-frees sets tail)
   (let* ([vars ($let.lvars iform)]
-         [vars-sym ($map1 $lvar.sym-proc vars)]
+         [vars-sym (imap $lvar.sym-proc vars)]
          [body ($let.body iform)]
          [frees-here (append
                       ($append-map1 (lambda (i) (pass3/find-free i vars
