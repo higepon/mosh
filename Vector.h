@@ -42,10 +42,9 @@ public:
     Vector(int num, Object* objects);
     Vector(Object pair);
     ~Vector();
-
+    void fill(Object obj);
     Object ref(int index) const;
     void set(int index, Object obj);
-    void fill(Object obj);
     int length() const;
     Object* data();
 
@@ -53,6 +52,19 @@ private:
     int num_;
     Object* objects_;
 };
+
+inline Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
+{
+}
+
+inline void Vector::fill(Object obj)
+{
+    {
+        for (int i = 0; i < num_; i++) {
+            objects_[i] = obj;
+        }
+    }
+}
 
 inline Object Vector::ref(int index) const
 {

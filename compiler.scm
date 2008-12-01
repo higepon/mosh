@@ -580,7 +580,7 @@
     (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
       `(let ,expanded-vars ,@(pass1/expand body))))
 
-;; don't use internal define, if proc is called many times.
+;; don't use internal define, if proc is supposed to be called so many times.
 (define (pass1/expand sexp)
   (cond
    ((pair? sexp)
@@ -1464,6 +1464,8 @@
       (display "($LABEL ")
       (rec 0 ($label.body iform))
       (display ")")]
+     [(tag? iform $IT)
+      (display "it")]
      [(tag? iform $CALL)
       (let1 pre
           (cond (($call.tail? iform) => (lambda (x) "($call[tail] "))
@@ -1654,9 +1656,13 @@
              iform)))))
 
 (define (iform-copy-zip-lvs orig-lvars lv-alist)
-  (let1 new-lvars (imap (lambda (lv) (make-lvar ($lvar.sym lv))) orig-lvars)
+  (let1 new-lvars (imap (lambda (lv)
+                          (let1 new-lvar (make-lvar ($lvar.sym lv))
+                            ($lvar.set-ref-count! new-lvar ($lvar.ref-count lv))
+                            new-lvar))
+                            orig-lvars)
     (cons new-lvars
-          (foldr2 alist-cons lv-alist orig-lvars new-lvars)))) ;; todo foldr2
+          (foldr2 alist-cons lv-alist orig-lvars new-lvars))))
 
 (define (iform-copy-lvar lvar lv-alist)
   ;; NB: using extra lambda after => is a kludge for the current optimizer
@@ -1815,6 +1821,15 @@
 ;; in order to hold the $LET node.  It breaks the invariance that $seq
 ;; contains zero or two or more nodes---this may prevent Pass 3 from
 ;; doing some optimization.
+
+;; Input
+;;   lvar is $lvar which points to the lambda to be called.
+;;   lambda-node is $lambda-node which is to be called.
+;;   calls if list of ($call $lambda-node ...) nodes.
+;; Output
+;;   local-ref to lambda-node in call-node will be replaced into $lambda-node.
+;;   lambda-node will be marked as 'dissolved.
+;;   ref-count of lvar become 0.
 (define (pass2/local-call-inliner lvar lambda-node calls)
   (define (inline-it call-node lambda-node)
     (let1 inlined (pass2/expand-inlined-procedure lambda-node

@@ -1,3 +1,8 @@
+2008-12-01  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (iform-copy-zip-lvs): Fixed the bug of miss copying of $lambda.lvars.ref-count.
+                                             See http://d.hatena.ne.jp/higepon/20081201/1228113798.
+
 2008-11-30  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (imap): Adde inlinable map.

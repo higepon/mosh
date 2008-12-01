@@ -55,9 +55,6 @@ Vector::Vector(int num, Object obj) : num_(num)
     }
 }
 
-Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
-{
-}
 
 Vector::Vector(Object pair)
 {
@@ -73,12 +70,6 @@ Vector::Vector(Object pair)
     }
 }
 
-void Vector::fill(Object obj)
-{
-    for (int i = 0; i < num_; i++) {
-        objects_[i] = obj;
-    }
-}
 
 
 Vector::~Vector()

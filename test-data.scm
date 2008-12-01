@@ -3114,6 +3114,16 @@
 ("1+1i" (number->string 1+i))
 (-5 (string->number (number->string -5 16)))
 
+[definition
+  (define path 3)]
+;; test for miss copy $lambda-node
+(1
+ (let ((add (lambda (s)
+              (set! path s))))
+   (add #f)
+   (add #f)
+   1))
+
 ;; optimize miss
 (todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
                         [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
