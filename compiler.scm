@@ -1437,6 +1437,7 @@
       (rec (+ ind 5) ($if.test iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.then iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.else iform)) (display ")")]
+     [(tag? iform $RECEIVE) #f]
      [(tag? iform $LABEL)
       (cond ((assq iform labels)
              => (lambda (p) (format #t "label#~a" (cdr p))))
@@ -3113,12 +3114,13 @@
 
 (define (compile sexp)
   (pass4 (merge-insn
-          (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f) '())
+          ;; default is tail context == #t
+          (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #t) '())
                    x)
                  ))))
 
 (define (compile-no-optimize sexp)
-  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #f))))
+  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #t))))
 
 (cond-expand
  [vm-outer?
