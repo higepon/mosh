@@ -23,11 +23,9 @@
 (define-insn EQV 0)
 (define-insn EQUAL 0)
 (define-insn FRAME 1)   ;; (FRAME pcToEndOfBody body ...)
-(define-insn IMPORT 1)
 (define-insn INDIRECT 0)
 (define-insn LEAVE 1)
 (define-insn LET_FRAME 1)
-(define-insn LIBRARY 2)
 (define-insn LIST 1)
 (define-insn LOCAL_JMP 1)    ;; (TEST N(to local_jmp) then ... LOCAL_JMP x else endof if
 (define-insn MAKE_CONTINUATION 1)
@@ -112,3 +110,4 @@
 (define-insn UNFIXED_JUMP 1)
 (define-insn STOP 0)
 (define-insn CONTINUATION_VALUES 0)
+(define-insn SHIFTJ 2)

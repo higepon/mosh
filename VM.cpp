@@ -451,6 +451,8 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
 
 Object VM::apply(Object proc, Object args)
 {
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     LOG1("<~a>", proc);
     const int procLength = Pair::length(proc);
     const int length  = procLength + 7;
     Object* code = Object::makeObjectArray(length);
@@ -477,7 +479,9 @@ Object VM::apply(Object proc, Object args)
     Object* const direct = getDirectThreadedCode(code, length);
     dc_ = closure;
     cl_ = closure;
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const Object ret = run(direct, NULL);
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     RESTORE_REGISTERS();
     return ret;
 }
@@ -983,8 +987,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(n.isFixnum());
             const int freeVariablesNum = n.toFixnum();
 
-           // create display closure
-            dc_ = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
+            // create display closure
+            const Object display = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
+            if (dc_.isClosure()) {
+                dc_.toClosure()->child = display;
+            }
+            dc_ = display;
             TRACE_INSN0("DISPLAY");
             sp_ = sp_ - freeVariablesNum;
             NEXT;
@@ -1051,29 +1059,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             push(Object::makeObjectPointer(fp_));
             NEXT;
         }
-        CASE(IMPORT)
-        {
-//             const Object libname = fetchOperand();
-//             TRACE_INSN1("IMPORT", "(~a)\n", libname);
-//             const Object instance = instances_.toEqHashTable()->ref(libname, notFound_);
-//             if (instance == notFound_){
-//                 instances_.toEqHashTable()->set(libname, Object::makeEqHashTable());
-//                 const Object lib = libraries_.toEqHashTable()->ref(libname, notFound_);
-//                 if (getLibraryCompiledBody(lib).isFalse()) {
-//                     static const Object proc = Symbol::intern(UC("compile-library-body!"));
-//                     callClosureByName(proc, lib);
-//                 }
-//                 // todo more efficient code
-//                 Vector* const v = getLibraryCompiledBody(lib).toVector();
-//                 Object* code = v->data();
-//                 pc_ = getDirectThreadedCode(code, v->length());
-//             } else {
-// //                 returnCode_[1] = Object::makeFixnum(0);
-// //                 pc_  = returnCode_;
-//                 goto return_entry;
-//             }
-//            NEXT;
-        }
         CASE(REFER_FREE0_INDIRECT)
         {
             ac_ = referFree(0);
@@ -1128,13 +1113,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             push(dc_);
             push(Object::makeObjectPointer(fp_));
             NEXT;
-        }
-        CASE(LIBRARY)
-        {
-//             const Object libname = fetchOperand();
-//             const Object library = fetchOperand();
-//             libraries_.toEqHashTable()->set(libname, library);
-//             NEXT;
         }
         CASE(LIST)
         {
@@ -1378,7 +1356,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_GLOBAL)
         {
-
             const Object id = fetchOperand();
             const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
@@ -1554,6 +1531,32 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Object::Undef;
             sp_--;
             NEXT1;
+        }
+        //---------------------------- SHIFTJ -----------------------------
+        //
+        // SHIFT for embedded jump which appears in named let optimization.
+        //   Two things happens.
+        //   1. SHIFT the stack (same as SHIFT operation)
+        //   2. Restore fp and c registers.
+        //      This is necessary for jump which is across let or closure boundary.
+        //      new-fp => new-sp - arg-length
+        //
+        CASE(SHIFTJ)
+        {
+            const Object depthObject = fetchOperand();
+            MOSH_ASSERT(depthObject.isFixnum());
+
+            const int depth = depthObject.toFixnum();
+
+            const Object diffObject = fetchOperand();
+            MOSH_ASSERT(diffObject.isFixnum());
+            const int diff  = diffObject.toFixnum();
+            sp_ = shiftArgsToBottom(sp_, depth, diff);
+
+            fp_ = sp_ - depth;
+            MOSH_ASSERT(index(fp_, 1).isClosure());
+            dc_ = index(fp_, 1).toClosure()->child;
+            NEXT;
         }
         CASE(SHIFT)
         {

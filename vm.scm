@@ -70,7 +70,7 @@
 
 (load "./free-vars-decl.scm")
 
-(load "./compiler-vm.scm")
+(load "./compiler-vm-renv.scm")
 (define *free-vars* '())
 (define (load-free-vars)
   (match (car (file->sexp-list "./free-vars.scm"))
@@ -591,25 +591,26 @@
   (syntax-rules ()
     ((_ body-code body-pc arg-length optional-arg? n max-stack stack sp source-info)
      ;; we don't use source-info in vm.scm.
-     (let ([v (make-vector (+ n 5))])
+     (let ([v (make-vector (+ n 6))])
        (vector-set! v 0 body-code)
        (vector-set! v 1 body-pc)
        (vector-set! v 2 arg-length)
        (vector-set! v 3 optional-arg?)
        (vector-set! v 4 max-stack)
+       (vector-set! v 5 #f) ;; child display
        (let f ([i 0])
          (unless (= i n)
-           (vector-set! v (+ i 5) (index stack sp i))
+           (vector-set! v (+ i 6) (index stack sp i))
            (f (+ i 1))))
        v))))
 
 (define-syntax make-display
   (syntax-rules ()
     ((_ n stack sp)
-     (let1 v (make-vector (+ n 5))
+     (let1 v (make-vector (+ n 6) #f)
        (let f ([i 0])
          (unless (= i n)
-           (vector-set! v (+ i 5) (index stack sp i))
+           (vector-set! v (+ i 6) (index stack sp i))
            (f (+ i 1))))
        v))))
 
@@ -641,11 +642,29 @@
     ((_ c)
      (vector-ref c 4))))
 
+(define-syntax closure-child
+  (syntax-rules ()
+    ((_ c)
+     (vector-ref c 5))))
+
+(define-syntax closure-set-child!
+  (syntax-rules ()
+    ((_ c child)
+     (begin
+       (vector-set! c 5 child)
+       child))))
+
+
+
 (define-syntax index-closure
   (syntax-rules ()
     ((_ c n)
-                                        ;(define (index-closure c n)
-     (vector-ref c (+ n 5)))))
+     (begin
+       (unless (vector? c)
+         (errorf "closure should be vector but got ~a\n" c))
+       (when (>= (+ n 6) (vector-length c))
+         (errorf "out of range [~d] ~d / ~d" n (+ n 6) (vector-length c)))
+       (vector-ref c (+ n 6))))))
 
 (define (make-continuation stack sp n)
   (make-closure
@@ -1028,7 +1047,9 @@
                     (skip 1)
                     a
                     fp
-                    (make-display (next 1) stack sp)
+                    (if c
+                        (closure-set-child! c (make-display (next 1) stack sp))
+                        (make-display (next 1) stack sp))
                     stack
                     (- sp (next 1))
                     )]
@@ -1086,6 +1107,17 @@
                       stack
                       (- sp 2) ;; size of "let frame"
                       ))]
+               ;; pass2 で行われる
+               [(LIGHT_LEAVE)
+                (let1 new-fp (- sp (next 1)) ; (next 1) is arg-length
+                  (VM codes
+                      (skip 1)
+                      a
+                      new-fp
+                      (index stack new-fp 0) ;; restored display
+                      stack
+                      sp
+                      ))]
                [(LEAVE1)
                 (let ([sp (- sp 1)])
                   (VM codes
@@ -1141,7 +1173,6 @@
 ;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
                [(REFER_LOCAL0_PUSH_CONSTANT)
                 (val1)
-;                (print "REFER_LOCAL0_PUSH_CONSTANT " (next 1))
                 (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 0)))]
                [(REFER_LOCAL1_PUSH_CONSTANT)
                 (val1)
@@ -1162,7 +1193,7 @@
                 (val1)
                 (check-vm-paranoia (vector? c))
                 (check-vm-paranoia (number? (next 1)))
-;                (print "refer free" (index-closure c (next 1)))
+;                (format #t "refer free ~a\n" (next 1))
                 (VM codes (skip 1) (index-closure c (next 1)) fp c stack sp)]
                [(REFER_FREE0)
                 (val1)
@@ -1199,7 +1230,7 @@
                ;;---------------------------- REDUCE ---------------------------
                ;; reduce sp to fp
                [(REDUCE)
-                (VM codes (skip 1) a fp c stack (+ fp (next 1)))]
+                (VM codes (skip 1) a fp c stack (- sp (next 1)))]
                ;;---------------------------- CALL ------------------------------
                [(CALL)
                 (val1)
@@ -1287,6 +1318,25 @@
                ;;---------------------------- SHIFT ------------------------------
                [(SHIFT)
                 (VM codes (skip 2) a fp c stack (shift-args-to-bottom stack sp (next 1) (next 2)))]
+               ;;---------------------------- SHIFTJ -----------------------------
+               ;;
+               ;; SHIFT for embedded jump which appears in named let optimization.
+               ;;   Two things happens.
+               ;;   1. SHIFT the stack (same as SHIFT operation)
+               ;;   2. Restore fp and c registers.
+               ;;      This is necessary for jump which is across let or closure boundary.
+               ;;      new-fp => new-sp - arg-length
+               ;;
+               [(SHIFTJ)
+                (let* ([new-sp (shift-args-to-bottom stack sp (next 1) (next 2))]
+                       [new-fp (- new-sp (next 1))]
+                       [new-c (closure-child (index stack new-fp 0))])
+                  (unless (vector? new-c)
+                    (error 'SHIFTJ "new-c should be vector"))
+                  (unless (number? new-fp)
+                    (error 'SHIFTJ "new-fp should be number"))
+;                  (format #t "shiftj ************\n")
+                  (VM codes (skip 2) a new-fp new-c stack new-sp))]
                [(SHIFT_CALL)
                 (let1 sp (shift-args-to-bottom stack sp (next 1) (next 2))
                   (apply-body a (next 3) sp))]

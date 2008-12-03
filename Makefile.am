@@ -169,8 +169,8 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 SUFFIXES: .scmc .h
 
 .scmc.h:
-	./mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	./mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
@@ -208,7 +208,7 @@ VM.cpp: cprocedures.cpp labels.cpp
 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
 all-tests.scm: ./test-data.scm
-	./mosh -5 ./scripts/gen-test.scm $< $@
+	mosh -5 ./scripts/gen-test.scm $< $@
 #	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
 # when you release comment out end

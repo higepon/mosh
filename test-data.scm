@@ -18,7 +18,7 @@
 (10 (((lambda (a) (lambda () a)) 10)))
 (12 ((lambda (a) (set! a 12) a) 2))
 (101  ((lambda (a) ((lambda () (set! a 101)))) '()))
-(todo 2 ((lambda (g) ((lambda (f) (f 2)) (lambda (a) (g a)))) (lambda (x) x)))
+(2 ((lambda (g) ((lambda (f) (f 2)) (lambda (a) (g a)))) (lambda (x) x)))
 (4 (call/cc (lambda (c) (c 4))))
 ((1 2 3) (receive a (call/cc (lambda (c) (c 1 2 3))) a))
 ((1 2) (receive a (call/cc (lambda (c) (c 1 2))) a))
@@ -3123,7 +3123,78 @@
    (add #f)
    (add #f)
    1))
-
-;; optimize miss
-(todo (display (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
-                        [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000))))
+;; testing jump optimize
+[definition
+  (define aa 1)
+  (define xx 0)]
+[done (let loop ([i 1])
+        (if (= i 10)
+            'done
+            (loop (+ i 1))))]
+[done
+ (let loop ([i 1])
+   (if (= i 10)
+       'done
+       (let1 b aa
+         (loop (+ i b)))))]
+[done
+ (let loop ([i 1])
+   (if (= i 10)
+       'done
+       (let1 b aa
+         (let1 c xx
+         (loop (+ i b c))))))]
+[done
+ (let loop ([i 1])
+   (if (= i 10)
+       'done
+       (let ([b aa]
+             [c xx])
+         (loop (+ i b c)))))]
+[9
+ (let loop ([i 1]
+            [j 0])
+   (if (= i 10)
+       j
+       (let ([b aa]
+             [c xx])
+         (loop (+ i b c) (+ j b)))))]
+[9
+ (let loop ([i 1]
+            [j 0])
+   (if (= i 10)
+       j
+       (letrec ([b aa]
+                [c xx])
+         (loop (+ i b c) (+ j b)))))]
+[9
+ (let loop ([i 1]
+            [j 0])
+   (if (= i 10)
+       j
+       (let* ([b aa]
+              [c xx])
+         (loop (+ i b c) (+ j b)))))]
+[9 (let loop ([i 1]
+              [j 0])
+     (if (= i 10)
+         j
+         ((lambda (b c)
+                    (loop (+ i b c) (+ j b))) aa xx)))]
+[9 (let loop ([i 1]
+              [j 0])
+     (if (= i 10)
+         j
+         (if aa
+             (let* ([b aa]
+                    [c xx])
+               (loop (+ i b c) (+ j b))))))]
+[9
+ (let loop ([i 1]
+            [j 0])
+   (if (= i 10)
+       j
+       (receive (b c) (values aa xx)
+         (loop (+ i b c) (+ j b)))))]
+(#t (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
+             [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000)))

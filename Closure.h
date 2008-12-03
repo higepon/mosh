@@ -44,6 +44,7 @@ public:
         ,freeVariablesNum(freeVariablesNum)
         ,maxStack(maxStack)
         ,sourceInfo(sourceInfo)
+        ,child(Object::False)
     {
         freeVariables = Object::makeObjectArray(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
@@ -76,6 +77,7 @@ public:
     const int freeVariablesNum;
     const int maxStack;
     Object sourceInfo;
+    Object child;
 };
 
 inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,

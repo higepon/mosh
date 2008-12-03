@@ -1,3 +1,12 @@
+2008-12-03  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am: ./mosh => mosh.
+
+        * VM.cpp (VM::run): Added SHIFTJ Instruction.
+
+        * compiler.scm: Fixed the bug of embedded/jump optimization which is across the let boundary.
+                        See the comment on pass3/$call.
+
 2008-12-01  higepon  <higepon@users.sourceforge.jp>
 
         * tail-context => #t when starting compilation.
