@@ -1565,6 +1565,11 @@
   ($local-assign.set-val! iform (pass2/optimize ($local-assign.val iform) closures))
   iform)
 
+;; (define (pass2/$global-assign iform closures)
+;;   ($global-assign.set-val! iform (pass2/optimize ($global-assign.val iform) closures))
+;;   iform)
+
+
 (define (pass2/$call iform closures)
   (pass2/collect-call iform closures))
 
