@@ -1588,8 +1588,8 @@
 (pass2/register $CONST         pass2/empty)
 (pass2/register $LAMBDA        pass2/$lambda)
 (pass2/register $LOCAL-REF     pass2/$local-ref)
-;(pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
-(pass2/register $LOCAL-ASSIGN  pass2/empty)
+(pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
+;(pass2/register $LOCAL-ASSIGN  pass2/empty)
 (pass2/register $GLOBAL-ASSIGN pass2/empty)
 (pass2/register $GLOBAL-REF    pass2/empty)
 (pass2/register $SEQ           pass2/$seq)
@@ -1951,22 +1951,41 @@
 ;  (find10 (lambda (c) (eq? closure c)) closures))
   (memq closure closures))
 
+;; (define (pass2/classify-local-ref-call iform closures tail?)
+;;   (let1 lvar ($local-ref.lvar iform)
+;;     (if (> ($lvar.set-count lvar) 0)
+;;         'local)
+;;     (let1 init-val ($lvar.init-val lvar)
+;;       (cond [(and init-val (tag? init-val $LAMBDA))
+;;              (cond [(pass2/self-recursing? init-val closures)
+;;                     (if tail? 'tail-rec 'rec)]
+;;                    [(= ($lvar.ref-count lvar) 1)
+;;                     ($lvar.ref-count--! lvar)
+;;                     ($lvar.set-init-val! lvar '())
+;;                     init-val]
+;;                    [else
+;;                     'local])]
+;;             [else
+;;              #f]))))
+
 (define (pass2/classify-local-ref-call iform closures tail?)
-  (let1 lvar ($local-ref.lvar iform)
-    (if (> ($lvar.set-count lvar) 0)
-        'local)
-    (let1 init-val ($lvar.init-val lvar)
-      (cond [(and init-val (tag? init-val $LAMBDA))
-             (cond [(pass2/self-recursing? init-val closures)
-                    (if tail? 'tail-rec 'rec)]
-                   [(= ($lvar.ref-count lvar) 1)
-                    ($lvar.ref-count--! lvar)
-                    ($lvar.set-init-val! lvar '())
-                    init-val]
-                   [else
-                    'local])]
-            [else
-             #f]))))
+  (let* ([lvar ($local-ref.lvar iform)]
+         [zerop (zero? ($lvar.set-count lvar))]
+         [init-val ($lvar.init-val lvar)]
+         [vectorp (vector? init-val)])
+    (if vectorp
+        (let1 lambdap (tag? init-val $LAMBDA)
+          (if (and lvar zerop init-val lambdap)
+              (cond [(pass2/self-recursing? init-val closures)
+                     (if tail? 'tail-rec 'rec)]
+                    [(= ($lvar.ref-count lvar) 1)
+                     ($lvar.ref-count--! lvar)
+                     ($lvar.set-init-val! lvar '())
+                     init-val]
+                    [else
+                     'local])
+              #f))
+        #f)))
 
 (define (pass2/expand-inlined-procedure iform iargs)
   (let ((lvars ($lambda.lvars iform))
