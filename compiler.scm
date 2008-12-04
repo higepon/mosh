@@ -1571,10 +1571,13 @@
   ($local-assign.set-val! iform (pass2/optimize ($local-assign.val iform) closures))
   iform)
 
-;; (define (pass2/$global-assign iform closures)
-;;   ($global-assign.set-val! iform (pass2/optimize ($global-assign.val iform) closures))
-;;   iform)
+(define (pass2/$global-assign iform closures)
+  ($global-assign.set-val! iform (pass2/optimize ($global-assign.val iform) closures))
+  iform)
 
+(define (pass2/$define iform closures)
+  ($define.set-val! iform (pass2/optimize ($define.val iform) closures))
+  iform)
 
 (define (pass2/$call iform closures)
   (pass2/collect-call iform closures))
@@ -1589,8 +1592,7 @@
 (pass2/register $LAMBDA        pass2/$lambda)
 (pass2/register $LOCAL-REF     pass2/$local-ref)
 (pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
-;(pass2/register $LOCAL-ASSIGN  pass2/empty)
-(pass2/register $GLOBAL-ASSIGN pass2/empty)
+(pass2/register $GLOBAL-ASSIGN pass2/$global-assign)
 (pass2/register $GLOBAL-REF    pass2/empty)
 (pass2/register $SEQ           pass2/$seq)
 (pass2/register $UNDEF         pass2/empty)

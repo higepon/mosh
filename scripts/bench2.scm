@@ -62,25 +62,6 @@
 ;; ./bench/empty.scm        :  0.065
 ;; ./bench/load-library.scm :  0.105
 
-;; after pass2/assign-local and fixed pass3/$call jump optimization
-;; Linux sewashi 2.6.22-16-generic #1 SMP Mon Nov 24 18:28:27 GMT 2008 i686 GNU/Linux
-;; Path: .
-;; URL: https://mosh-scheme.googlecode.com/svn/trunk
-;; Repository Root: https://mosh-scheme.googlecode.com/svn
-;; Repository UUID: 3dc39933-274d-0410-bf6f-2fa8959f7829
-;; Revision: 756
-;; Node Kind: directory
-;; Schedule: normal
-;; Last Changed Author: higepon
-;; Last Changed Rev: 756
-;; Last Changed Date: 2008-12-01 19:12:50 +0900 (Mon, 01 Dec 2008)
-
-;; ./bench/clos.scm         :  0.594
-;; ./bench/empty.scm        :  0.066
-;; ./bench/load-library.scm :  0.106
-
-
-
 ;; Darwin dorami.local 9.5.0 Darwin Kernel Version 9.5.0: Wed Sep  3 11:29:43 PDT 2008; root:xnu-1228.7.58~1/RELEASE_I386 i386
 ;; Path: .
 ;; URL: https://mosh-scheme.googlecode.com/svn/trunk
@@ -114,3 +95,21 @@
 ;; ./bench/clos.scm         :  0.669
 ;; ./bench/empty.scm        :  0.071
 ;; ./bench/load-library.scm :  0.117
+
+;; after pass2/assign-local and fixed pass3/$call jump optimization
+;; Darwin dorami.local 9.5.0 Darwin Kernel Version 9.5.0: Wed Sep  3 11:29:43 PDT 2008; root:xnu-1228.7.58~1/RELEASE_I386 i386
+;; Path: .
+;; URL: https://mosh-scheme.googlecode.com/svn/trunk
+;; Repository Root: https://mosh-scheme.googlecode.com/svn
+;; Repository UUID: 3dc39933-274d-0410-bf6f-2fa8959f7829
+;; Revision: 780
+;; Node Kind: directory
+;; Schedule: normal
+;; Last Changed Author: higepon
+;; Last Changed Rev: 780
+;; Last Changed Date: 2008-12-04 00:00:14 +0900 (Thu, 04 Dec 2008)
+
+;; ./bench/clos.scm         :  0.618
+;; ./bench/empty.scm        :  0.066
+;; ./bench/load-library.scm :  0.115
+;; dorami% 
