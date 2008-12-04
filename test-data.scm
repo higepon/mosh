@@ -3205,3 +3205,9 @@
                            (if (pair? lst)
                                (+ (loop (cdr lst)) '1))))))
         (loop '(1 2 3 3))))]
+;; set-count suppress optimization
+[#t
+(procedure?
+ (letrec ((loop (lambda (x)
+                  ((lambda (y) (set! loop '())) (display x)))))
+   (lambda (z) (loop z))))]
