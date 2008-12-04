@@ -3198,3 +3198,10 @@
          (loop (+ i b c) (+ j b)))))]
 (#t (letrec ([e (lambda (x) (if (= 0 x) #t (o (- x 1))))]
              [o (lambda (x) (if (= 0 x) #f (e (- x 1))))])  (e 50000)))
+[5
+ (+ 1 (letrec ((loop (lambda (lst)
+                       (if (null? lst)
+                           '0
+                           (if (pair? lst)
+                               (+ (loop (cdr lst)) '1))))))
+        (loop '(1 2 3 3))))]

@@ -1,3 +1,7 @@
+2008-12-04  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm : Fixed: pass1/asm-1-arg passes wrong "tail?" flag to later process.
+
 2008-12-03  higepon  <higepon@users.sourceforge.jp>
 
         * Makefile.am: ./mosh => mosh.
