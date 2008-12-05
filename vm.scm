@@ -2016,6 +2016,7 @@
    ;; test
    [(= (length args) 1)
     (vm-init '())
+;    (load-file "./hage.scm")
     (load-file "./library.scm")
     (load-file "./match.scm")
     (vm-test)

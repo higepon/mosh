@@ -1509,16 +1509,51 @@
 
 (define pass2/dispatch-table (make-vector $INSN-NUM))
 
+;; (define (pass2/$let iform closures)
+;;   (cond
+;;    [($let.error iform) iform]
+;;    [else
+;;     ($let.set-body! iform (pass2/optimize ($let.body iform) closures))
+;;     ($let.set-inits! iform (imap (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
+;;     (let1 o (pass2/eliminate-let iform)
+;;       (if (eq? o iform)
+;;           o
+;;           (pass2/optimize o closures)))]))
+
 (define (pass2/$let iform closures)
   (cond
-   [($let.error iform) iform]
+   [($let.error iform ) iform]
    [else
-    ($let.set-body! iform (pass2/optimize ($let.body iform) closures))
-    ($let.set-inits! iform (imap (lambda (i) (pass2/optimize i closures)) ($let.inits iform)))
-    (let1 o (pass2/eliminate-let iform)
-      (if (eq? o iform)
-          o
-          (pass2/optimize o closures)))]))
+    (let ([lvars ($let.lvars iform)]
+          [inits (imap (lambda (init) (pass2/optimize init closures)) ($let.inits iform))]
+          [obody (pass2/optimize ($let.body iform) closures)])
+      (for-each pass2/optimize-closure lvars inits)
+      (let* ([v (pass2/remove-vars lvars inits)]
+             [new-lvars (vector-ref v 0)]
+             [new-inits (vector-ref v 1)]
+             [removed-inits (vector-ref v 2)])
+        (cond
+         [(null? new-lvars)
+          (if (null? removed-inits)
+              obody
+              ($seq (append! removed-inits (list obody)) ($let.tail? iform)))]
+         [else
+          ($let.set-lvars! iform new-lvars)
+          ($let.set-inits! iform new-inits)
+          ($let.set-body! iform obody)
+          (unless (null? removed-inits)
+            (if (tag? obody $SEQ)
+                (begin
+                  ($seq.set-body! obody
+                                  (append! removed-inits
+                                           ($seq.body obody))))
+                (begin
+                  ($let.set-body! iform
+                                  ($seq (append removed-inits
+                                                (list obody))
+                                        ($let.tail? iform))))))
+          iform])))]))
+
 
 (define (pass2/$receive iform closures)
   ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
@@ -1607,26 +1642,52 @@
 (pass2/register $IMPORT        pass2/empty)
 (pass2/register $IT            pass2/empty)
 (pass2/register $RECEIVE       pass2/$receive)
+(pass2/register $LABEL         pass2/empty)
 
 (define (pass2/optimize iform closures)
   ((vector-ref pass2/dispatch-table (vector-ref iform 0)) iform closures))
 
+;; (define (pass2/optimize-local-ref iform)
+;;   (let* ([lvar     ($local-ref.lvar iform)]
+;;          [init-val ($lvar.init-val lvar)]) ;; init-val = #f if lvar belongs to $LAMBDA.
+;;     ;; if lvar is never set! and initial value is constant.
+;;     (cond [(and init-val (zero? ($lvar.set-count lvar)) (tag? init-val $CONST))
+;;            ;; We re-use the vector.
+;;            (set-tag! iform $CONST)
+;;            ($lvar.ref-count--! lvar)
+;;            ($const.set-val! iform ($const.val init-val))]
+;;           [(and init-val (tag? init-val $LOCAL-REF)
+;;                 (zero? ($lvar.set-count ($local-ref.lvar init-val))))
+;;            ($lvar.ref-count--! lvar)
+;;            ($lvar.ref-count++! ($local-ref.lvar init-val))
+;;            ($local-ref.copy iform init-val)
+;;            (pass2/optimize-local-ref iform)]
+;;           [else iform])))
+
 (define (pass2/optimize-local-ref iform)
-  (let* ([lvar     ($local-ref.lvar iform)]
-         [init-val ($lvar.init-val lvar)]) ;; init-val = #f if lvar belongs to $LAMBDA.
-    ;; if lvar is never set! and initial value is constant.
-    (cond [(and init-val (zero? ($lvar.set-count lvar)) (tag? init-val $CONST))
-           ;; We re-use the vector.
-           (set-tag! iform $CONST)
-           ($lvar.ref-count--! lvar)
-           ($const.set-val! iform ($const.val init-val))]
-          [(and init-val (tag? init-val $LOCAL-REF)
-                (zero? ($lvar.set-count ($local-ref.lvar init-val))))
-           ($lvar.ref-count--! lvar)
-           ($lvar.ref-count++! ($local-ref.lvar init-val))
-           ($local-ref.copy iform init-val)
-           (pass2/optimize-local-ref iform)]
-          [else iform])))
+  (let1 lvar ($local-ref.lvar iform)
+    (if (zero? ($lvar.set-count lvar))
+        (let1 init-val ($lvar.init-val lvar)
+          (cond
+           [(not (vector? init-val)) iform]
+           [(tag? init-val $CONST)
+            ($lvar.ref-count--! lvar)
+            (set-tag! iform $CONST)
+            ($const.set-val! iform ($const.val init-val))
+            iform]
+           [(and (tag? init-val $LOCAL-REF)
+                 (zero? ($lvar.set-count ($local-ref.lvar init-val))))
+               (when (eq? iform init-val)
+                 (error "mosh" "circular reference appeared in letrec bindings:"
+                        (lvar.sym lvar)))
+               ($lvar.ref-count--! lvar)
+               ($lvar.ref-count++! ($local-ref.lvar init-val))
+               ($local-ref.copy iform init-val)
+               (pass2/optimize-local-ref iform)]
+           [else iform]))
+    iform)))
+
+
 
 (define (pass2/eliminate-let iform)
   (let ([vars ($let.lvars  iform)]
@@ -1756,6 +1817,7 @@
                                                        locals))))))
         (pass2/local-call-optimizer lvar lambda-node))
     ))
+
 
 (define-macro (sum-items cnt . items)
   (if (null? items)
@@ -1928,26 +1990,44 @@
 
 
 
-(define (pass2/remove-vars vars init-iforms)
-  (let loop ([vars vars]
-             [init-iforms init-iforms]
-             [rl '()]
-             [ri '()]
-             [rr '()])
-    (cond [(null? vars)
-           `#(,(reverse rl) ,(reverse ri) ,(reverse rr))]
-          [(and (= 0 ($lvar.ref-count (car vars)))
-                (zero? ($lvar.set-count (car vars))))
-           (cond [(tag? (car init-iforms) $LOCAL-REF) ;; if removed inits is $LOCAL-REF, decrement ref-count.
-                  ($lvar.ref-count--! ($local-ref.lvar (car init-iforms)))])
-           (loop (cdr vars) (cdr init-iforms) rl ri
-                 (if (memq (tag (car init-iforms))
+;; (define (pass2/remove-vars vars init-iforms)
+;;   (let loop ([vars vars]
+;;              [init-iforms init-iforms]
+;;              [rl '()]
+;;              [ri '()]
+;;              [rr '()])
+;;     (cond [(null? vars)
+;;            `#(,(reverse rl) ,(reverse ri) ,(reverse rr))]
+;;           [(and (= 0 ($lvar.ref-count (car vars)))
+;;                 (zero? ($lvar.set-count (car vars))))
+;;            (cond [(tag? (car init-iforms) $LOCAL-REF) ;; if removed inits is $LOCAL-REF, decrement ref-count.
+;;                   ($lvar.ref-count--! ($local-ref.lvar (car init-iforms)))])
+;;            (loop (cdr vars) (cdr init-iforms) rl ri
+;;                  (if (memq (tag (car init-iforms))
+;;                            `(,$CONST ,$LOCAL-REF ,$LAMBDA))
+;;                      rr
+;;                      (cons (car init-iforms) rr)))]
+;;           (else
+;;            (loop (cdr vars) (cdr init-iforms)
+;;                  (cons (car vars) rl) (cons (car init-iforms) ri) rr)))))
+
+(define (pass2/remove-vars lvars inits)
+  (let loop ((lvars lvars) (inits inits) (rl '()) (ri '()) (rr '()))
+    (cond ((null? lvars)
+           (vector (reverse rl) (reverse ri) (reverse rr)))
+          ((and (zero? ($lvar.ref-count (car lvars)))
+                (zero? ($lvar.set-count (car lvars))))
+           ;; TODO: if we remove $LREF from inits, we have to decrement
+           ;; refcount?
+           (loop (cdr lvars) (cdr inits) rl ri
+                 (if (memv (tag (car inits))
                            `(,$CONST ,$LOCAL-REF ,$LAMBDA))
-                     rr
-                     (cons (car init-iforms) rr)))]
+                   rr
+                   (cons (car inits) rr))))
           (else
-           (loop (cdr vars) (cdr init-iforms)
-                 (cons (car vars) rl) (cons (car init-iforms) ri) rr)))))
+           (loop (cdr lvars) (cdr inits)
+                 (cons (car lvars) rl) (cons (car inits) ri) rr)))))
+
 
 (define (pass2/self-recursing? closure closures)
 ;  (find10 (lambda (c) (eq? closure c)) closures))

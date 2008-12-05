@@ -1,4 +1,10 @@
+2008-12-05  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed optimization bug. Rewrote pass2/optimize-local-ref, pass2/remove-vars and pass2/$let.
+
 2008-12-04  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm : pass2/$label to pass2/dispatch-table.
 
         * compiler.scm : Fixed: pass1/asm-1-arg passes wrong "tail?" flag to later process.
                         (pass2/classify-local-ref-call): Fixed for set-count != 0 condition.

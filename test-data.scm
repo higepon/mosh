@@ -3205,6 +3205,10 @@
                            (if (pair? lst)
                                (+ (loop (cdr lst)) '1))))))
         (loop '(1 2 3 3))))]
+[1
+ (let1 yy (lambda (ww) ww)
+   (let1 zz (min 1)
+     (yy zz)))]
 ;; set-count suppress optimization
 [#t
 (procedure?
