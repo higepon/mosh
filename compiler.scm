@@ -275,7 +275,7 @@
 (define-macro ($let.set-body! iform body) `(vector-set! ,iform 4 ,body))
 (define-macro ($let.set-tail?! iform tail?) `(vector-set! ,iform 5 ,tail?))
 (define-macro ($let.set-src! iform src) `(vector-set! ,iform 6 ,src))
-(define-macro ($let.set-src! iform error) `(vector-set! ,iform 7 ,error))
+(define-macro ($let.set-error! iform error) `(vector-set! ,iform 7 ,error))
 
 ;; struct $seq
 (define $SEQ 3)
@@ -1384,7 +1384,7 @@
 ;;
 ;;    based on Gauche/src/compiler.scm by Shiro Kawai start.
 ;;
-(define (pretty-iform iform)
+(define (pp-iform iform)
   (define labels '()) ;; alist of label node and count
 
   (define (indent count)
@@ -1478,7 +1478,11 @@
       (display ")")]
      [(tag? iform $IT)
       (display "it")]
-     [(tag? iform $RECEIVE) 'todo]
+     [(tag? iform $RECEIVE)
+      (format #t "($receive ~a" (map lvar->string ($receive.lvars iform)))
+      (nl (+ ind 4))
+      (rec (+ ind 4) ($receive.vals iform)) (nl (+ ind 2))
+      (rec (+ ind 2) ($receive.body iform)) (display ")")]
      [(tag? iform $CALL)
       (let1 pre
           (cond (($call.tail? iform) => (lambda (x) "($call[tail] "))
@@ -1490,7 +1494,7 @@
                   ($call.args iform))
         (display ")"))]
      (else
-      (error "pretty-iform: unknown tag:" (tag iform)))
+      (error "pp-iform: unknown tag:" (tag iform)))
      ))
   (rec 0 iform)
   (newline))
@@ -1553,7 +1557,6 @@
                                                 (list obody))
                                         ($let.tail? iform))))))
           iform])))]))
-
 
 (define (pass2/$receive iform closures)
   ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
@@ -1689,34 +1692,34 @@
 
 
 
-(define (pass2/eliminate-let iform)
-  (let ([vars ($let.lvars  iform)]
-        [inits ($let.inits iform)]
-        [body ($let.body iform)])
-    (for-each pass2/optimize-closure vars inits)
-    (let* ([v (pass2/remove-vars vars inits)]
-           [new-vars      (vector-ref v 0)]
-           [new-inits     (vector-ref v 1)]
-           [removed-inits (vector-ref v 2)])
+;; (define (pass2/eliminate-let iform)
+;;   (let ([vars ($let.lvars  iform)]
+;;         [inits ($let.inits iform)]
+;;         [body ($let.body iform)])
+;;     (for-each pass2/optimize-closure vars inits)
+;;     (let* ([v (pass2/remove-vars vars inits)]
+;;            [new-vars      (vector-ref v 0)]
+;;            [new-inits     (vector-ref v 1)]
+;;            [removed-inits (vector-ref v 2)])
 
-      (cond ((null? new-vars)
-             (if (null? removed-inits)
-                 body
-                 ($seq (append removed-inits (list body)) ($let.tail? iform))))
-            (else
-             ($let.set-lvars! iform new-vars)
-             ($let.set-inits! iform new-inits)
-             ($let.set-body! iform body)
-             (unless (null? removed-inits)
-               (if (tag? body $SEQ)
-                   ($seq.set-body! body
-                                   (append removed-inits
-                                            ($seq.body body)))
-                   ($let.set-body! iform
-                                   ($seq (append removed-inits
-                                                 (list body))
-                                         ($let.tail? iform)))))
-             iform)))))
+;;       (cond ((null? new-vars)
+;;              (if (null? removed-inits)
+;;                  body
+;;                  ($seq (append removed-inits (list body)) ($let.tail? iform))))
+;;             (else
+;;              ($let.set-lvars! iform new-vars)
+;;              ($let.set-inits! iform new-inits)
+;;              ($let.set-body! iform body)
+;;              (unless (null? removed-inits)
+;;                (if (tag? body $SEQ)
+;;                    ($seq.set-body! body
+;;                                    (append removed-inits
+;;                                             ($seq.body body)))
+;;                    ($let.set-body! iform
+;;                                    ($seq (append removed-inits
+;;                                                  (list body))
+;;                                          ($let.tail? iform)))))
+;;              iform)))))
 
 (define (iform-copy-zip-lvs orig-lvars lv-alist)
   (let1 new-lvars (imap (lambda (lv)
@@ -1846,6 +1849,7 @@
        [(= $SEQ t)           (sum-items cnt (* ($seq.body iform)))]
        [(= $CALL t)          (sum-items (+ cnt 1) ($call.proc iform) (* ($call.args iform)))]
        [(= $ASM t)           (sum-items (+ cnt 1) (* ($asm.args iform)))]
+       [(= $IT t)            cnt]
        [else
         (error "[internal error] iform-count-size-upto: unknown iform tag:"
                (tag iform))]
@@ -1911,8 +1915,6 @@
           (else
            (inline-it (car calls) (iform-copy lambda-node '()))
            (loop (cdr calls))))))
-
-
 
 ;; Called when the local function (lambda-node) isn't needed to be a closure
 ;; and can be embedded.
@@ -2104,6 +2106,8 @@
    [else
     (let ([proc ($call.proc iform)]
           [args ($call.args iform)])
+      ;; scan OP first to give an opportunity of variable renaming
+      ($call.set-proc! iform (pass2/optimize ($call.proc iform) closures))
       (cond [(tag? proc $LAMBDA)
              (pass2/optimize (pass2/expand-inlined-procedure proc args)
                              closures)]
@@ -3065,6 +3069,19 @@
   (cput! cb 'LIBRARY ($library.name iform) iform)
   0)
 
+(define (pass3/$label cb iform locals frees can-frees sets tail depth)
+;;   (let ((label ($label-label iform)))
+;;     ;; NB: $LABEL node in the PROC position of $CALL node is handled by $CALL.
+;;     (cond
+;;      (label
+;;       (compiled-code-emit0oi! ccb JUMP label ($*-src iform))
+;;       0)
+;;      (else
+;;       (compiled-code-set-label! ccb (pass3/ensure-label ccb iform))
+  (cput! cb iform) ;; place the label.
+  (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth))
+
+
 (pass3/register $CONST         pass3/$const)
 (pass3/register $LAMBDA        pass3/$lambda)
 (pass3/register $LOCAL-REF     pass3/$local-ref)
@@ -3084,6 +3101,7 @@
 ;(pass3/register $IMPORT        pass3/$import)
 (pass3/register $IT            pass3/$it)
 (pass3/register $RECEIVE       pass3/$receive)
+(pass3/register $LABEL       pass3/$label)
 
 ;; depth is the depth of frame, used for 'jump' and 'embeded' call and indicate the size of frame to discard.
 (define (pass3/rec cb iform locals frees can-frees sets tail depth)

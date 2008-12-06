@@ -1459,6 +1459,7 @@
                ;;---------------------------- REFER_GLOBAL  ----------------------
                [(REFER_GLOBAL)
                 (val1)
+;                (format #t "refer-global ~a\n" (next 1))
                 (VM codes (skip 1) (refer-global (next 1)) fp c stack sp)]
                ;;---------------------------- ASSIGN_GLOBAL  ---------------------
                [(ASSIGN_GLOBAL)
@@ -1523,13 +1524,14 @@
 
 (define (define-global lib-id val)
   (if (hash-table-get vm-name-space lib-id #f)
-      '();      (errorf "~a defined twice" lib-id)
+      '();(errorf "~a defined twice" lib-id)
       (hashtable-set! vm-name-space lib-id val)))
 
 (define (refer-global lib-id)
-  (aif (hash-table-get vm-name-space lib-id #f)
-       it
-       (errorf "unbound variable ~a" lib-id)))
+  (let1 val (hash-table-get vm-name-space lib-id 'unbound-variable)
+  (if (eq?  val 'unbound-variable)
+       (errorf "unbound variable ~a" lib-id)
+       val)))
 
 (define (assign-global lib-id val)
   (if (eq? (hash-table-get vm-name-space lib-id 'notfound) 'notfound)
@@ -2016,17 +2018,20 @@
    ;; test
    [(= (length args) 1)
     (vm-init '())
-;    (load-file "./hage.scm")
-    (load-file "./library.scm")
-    (load-file "./match.scm")
-    (vm-test)
-    (set! optimize? (not optimize?))
-    (vm-init '())
-    (load-file "./library.scm")
-    (load-file "./match.scm")
+;     (load-file "./library.scm")
 
-    (vm-test)
-    (test-end)
+    (load-file "./hage.scm")
+;;     (load-file "./match.scm")
+
+
+;;     (vm-test)
+;;     (set! optimize? (not optimize?))
+;;     (vm-init '())
+;;     (load-file "./library.scm")
+;;     (load-file "./match.scm")
+
+;;     (vm-test)
+;;     (test-end)
 
     ]
    ;; compile string
