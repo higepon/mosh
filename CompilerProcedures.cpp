@@ -78,9 +78,10 @@ Object scheme::labelEx(int argc, const Object* argv)
 {
     DeclareProcedureName("$label");
     checkArgumentLength(1);
-    const Object label = Object::makeVector(2);
+    const Object label = Object::makeVector(3);
     label.toVector()->set(0, Object::makeFixnum(LABEL));
     label.toVector()->set(1, argv[0]);
+    label.toVector()->set(2, Object::False);
     return label;
 }
 

@@ -3209,6 +3209,16 @@
  (let1 yy (lambda (ww) ww)
    (let1 zz (min 1)
      (yy zz)))]
+[done
+(letrec ((x
+            (lambda () (y)))
+           (y
+            (lambda ()
+              (let loop ((ch 3))
+                (if (= ch 3)
+                    (loop 4)
+                    'done)))))
+    (x))]
 ;; set-count suppress optimization
 [#t
 (procedure?

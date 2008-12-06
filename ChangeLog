@@ -1,6 +1,11 @@
 2008-12-07  higepon  <higepon@users.sourceforge.jp>
 
+        * CompilerProcedures.cpp (scheme::labelEx): Added visited.
+
+        * vm.scm (VM): Fixed the error check of SHIFTJ.
+
         * compiler.scm (define-pass2/tracable): Added for debug.
+                       (pass3/$label): Added visited? check.
 
 2008-12-06  higepon  <higepon@users.sourceforge.jp>
 

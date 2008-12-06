@@ -1331,8 +1331,8 @@
                 (let* ([new-sp (shift-args-to-bottom stack sp (next 1) (next 2))]
                        [new-fp (- new-sp (next 1))]
                        [new-c (closure-child (index stack new-fp 0))])
-                  (unless (vector? new-c)
-                    (error 'SHIFTJ "new-c should be vector"))
+                  (unless (or (vector? new-c) (not new-c)) ;; vector? or #f
+                    (error 'SHIFTJ "new-c should be vector" new-c))
                   (unless (number? new-fp)
                     (error 'SHIFTJ "new-fp should be number"))
 ;                  (format #t "shiftj ************\n")

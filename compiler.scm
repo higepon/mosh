@@ -418,10 +418,13 @@
 
 ;; moved to C++
 (define ($label body)
-  (vector $LABEL body))
+  (vector $LABEL body #f))
 
 (define-macro ($label.body iform) `(vector-ref ,iform 1))
 (define-macro ($label.set-body! iform body) `(vector-set! ,iform 1 ,body))
+(define-macro ($label.visited? iform) `(vector-ref ,iform 2))
+(define-macro ($label.set-visited?! iform body) `(vector-set! ,iform 2 ,body))
+
 (define-macro (make-label) `($label #f))
 (define-macro (ref-label l) l)
 
@@ -2811,6 +2814,7 @@
          ;;   Then we restore fp and display registers, and finally jump to [jump destination]
          ;;
          (cput! cb 'SHIFTJ args-length (- depth ($call.depth ($call.proc iform))))
+         ($label.set-visited?! label #t)
          (cput! cb 'UNFIXED_JUMP label)))]
     [(embed)
      (let* ([label ($lambda.body ($call.proc iform))]
@@ -2835,6 +2839,7 @@
            (pass3/make-boxes let-cb sets-for-this-lvars vars)
            (code-builder-put-insn-arg1! let-cb 'ENTER args-length)
            (cput! let-cb label)
+           ($label.set-visited?! label #t)
            (let1 body-size (pass3/rec let-cb
                                       body
                                       vars-sym
@@ -3083,17 +3088,18 @@
   (cput! cb 'LIBRARY ($library.name iform) iform)
   0)
 
+
 (define (pass3/$label cb iform locals frees can-frees sets tail depth)
-;;   (let ((label ($label-label iform)))
-;;     ;; NB: $LABEL node in the PROC position of $CALL node is handled by $CALL.
-;;     (cond
-;;      (label
-;;       (compiled-code-emit0oi! ccb JUMP label ($*-src iform))
-;;       0)
-;;      (else
-;;       (compiled-code-set-label! ccb (pass3/ensure-label ccb iform))
-  (cput! cb iform) ;; place the label.
-  (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth))
+  (cond
+   [($label.visited? iform)
+    (cput! cb UNFIXED_JUMP iform)
+    0]
+   [else
+    ;; As far as I know, any code doesn't come here.
+    ;; So, not *tested*.
+    ($label.set-visited?! iform #t)
+    (cput! cb iform) ;; place the label.
+    (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth)]))
 
 
 (pass3/register $CONST         pass3/$const)
