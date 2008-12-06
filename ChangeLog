@@ -1,5 +1,7 @@
 2008-12-07  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (with-input-from-file): Fixed for multiple values. (thx leque)
+
         * CompilerProcedures.cpp (scheme::labelEx): Added visited.
 
         * vm.scm (VM): Fixed the error check of SHIFTJ.

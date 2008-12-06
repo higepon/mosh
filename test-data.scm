@@ -3225,3 +3225,8 @@
  (letrec ((loop (lambda (x)
                   ((lambda (y) (set! loop '())) (display x)))))
    (lambda (z) (loop z))))]
+;; with-input-from-file multiple values
+[3
+ (receive (a b)
+     (with-input-from-file "all-tests.scm" (lambda () (values 1 2)))
+   (+ a b))]

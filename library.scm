@@ -1433,19 +1433,21 @@
   (let ([org-port (current-input-port)]
         [inport (open-input-file filename)])
     (set-current-input-port! inport)
-    (let1 ret (thunk)
+    (receive ret (thunk)
       (set-current-input-port! org-port)
       (close-port inport)
-      ret)))
+      (apply values ret))))
+
+
 
 (define (with-output-to-file filename thunk)
   (let ([org-port (current-output-port)]
         [inport (open-output-file filename)])
     (set-current-output-port! inport)
-    (let1 ret (thunk)
+    (receive ret (thunk)
       (set-current-output-port! org-port)
       (close-port inport)
-      ret)))
+      (apply values ret))))
 
 ;; Raises a non-continuable exception by invoking the current exception handler on obj.
 ;; .form (raise obj)
