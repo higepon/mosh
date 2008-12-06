@@ -1,3 +1,7 @@
+2008-12-07  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (define-pass2/tracable): Added for debug.
+
 2008-12-06  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass2/collect-call): Added an opportunity of varialbe renaming.

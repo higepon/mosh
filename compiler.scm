@@ -1524,7 +1524,26 @@
 ;;           o
 ;;           (pass2/optimize o closures)))]))
 
-(define (pass2/$let iform closures)
+;; Used with logging.
+;; This macro will be work on Gauche compiler.
+(define-macro (define-pass2/tracable init . body)
+  (if #f
+      (match init
+        [(name . var)
+         (let1 ret (gensym)
+           `(define ,init
+              (format #t "[~a] IN  =>\n" ',name)
+              (pp-iform ,(car var))
+              (let1 ,ret (begin ,@body)
+                (format #t "[~a] OUT =>\n" ',name)
+                (pp-iform ,(car var))
+                (display "\n")
+                ,ret)))]
+        [else
+         (error 'define-pass2/tracable "invalid syntax")])
+      `(define ,init ,@body)))
+
+(define-pass2/tracable (pass2/$let iform closures)
   (cond
    [($let.error iform ) iform]
    [else
@@ -1558,20 +1577,39 @@
                                         ($let.tail? iform))))))
           iform])))]))
 
-(define (pass2/$receive iform closures)
+(define-pass2/tracable (pass2/$receive iform closures)
   ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
   ($receive.set-vals! iform (pass2/optimize ($receive.vals iform) closures))
   iform)
 
-(define (pass2/$local-ref iform closures)
-  (pass2/optimize-local-ref iform)
-  iform)
+(define-pass2/tracable (pass2/$local-ref iform closures)
+  (let1 lvar ($local-ref.lvar iform)
+    (if (zero? ($lvar.set-count lvar))
+        (let1 init-val ($lvar.init-val lvar)
+          (cond
+           [(not (vector? init-val)) iform]
+           [(tag? init-val $CONST)
+            ($lvar.ref-count--! lvar)
+            (set-tag! iform $CONST)
+            ($const.set-val! iform ($const.val init-val))
+            iform]
+           [(and (tag? init-val $LOCAL-REF)
+                 (zero? ($lvar.set-count ($local-ref.lvar init-val))))
+               (when (eq? iform init-val)
+                 (error "mosh" "circular reference appeared in letrec bindings:"
+                        (lvar.sym lvar)))
+               ($lvar.ref-count--! lvar)
+               ($lvar.ref-count++! ($local-ref.lvar init-val))
+               ($local-ref.copy iform init-val)
+               (pass2/$local-ref iform closures)]
+           [else iform]))
+    iform)))
 
-(define (pass2/$seq iform closures)
+(define-pass2/tracable (pass2/$seq iform closures)
   ($seq.set-body! iform (imap (lambda (x) (pass2/optimize x closures)) ($seq.body iform)))
   iform)
 
-(define (pass2/const-inliner iform)
+(define-pass2/tracable (pass2/const-inliner iform)
   (let ([insn ($asm.insn iform)]
         [args ($asm.args iform)])
     (case insn
@@ -1589,35 +1627,35 @@
          ($const.set-val! iform (- ($const.val (first args)) ($const.val (second args)))))]
       [else #f])))
 
-(define (pass2/$asm iform closures)
+(define-pass2/tracable (pass2/$asm iform closures)
   ($asm.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) ($asm.args iform)))
   (pass2/const-inliner iform)
   iform)
 
-(define (pass2/$lambda iform closures)
+(define-pass2/tracable (pass2/$lambda iform closures)
   ($lambda.set-body! iform
                      (pass2/optimize ($lambda.body iform) (cons iform closures)))
   iform)
 
-(define (pass2/$if iform closures)
+(define-pass2/tracable (pass2/$if iform closures)
   (let ([test-c (pass2/optimize ($if.test iform) closures)]
         [then-c (pass2/optimize ($if.then iform) closures)]
         [else-c (pass2/optimize ($if.else iform) closures)])
   ($if test-c then-c else-c)))
 
-(define (pass2/$local-assign iform closures)
+(define-pass2/tracable (pass2/$local-assign iform closures)
   ($local-assign.set-val! iform (pass2/optimize ($local-assign.val iform) closures))
   iform)
 
-(define (pass2/$global-assign iform closures)
+(define-pass2/tracable (pass2/$global-assign iform closures)
   ($global-assign.set-val! iform (pass2/optimize ($global-assign.val iform) closures))
   iform)
 
-(define (pass2/$define iform closures)
+(define-pass2/tracable (pass2/$define iform closures)
   ($define.set-val! iform (pass2/optimize ($define.val iform) closures))
   iform)
 
-(define (pass2/$call iform closures)
+(define-pass2/tracable (pass2/$call iform closures)
   (pass2/collect-call iform closures))
 
 (define (pass2/empty iform closures)
@@ -1666,30 +1704,6 @@
 ;;            ($local-ref.copy iform init-val)
 ;;            (pass2/optimize-local-ref iform)]
 ;;           [else iform])))
-
-(define (pass2/optimize-local-ref iform)
-  (let1 lvar ($local-ref.lvar iform)
-    (if (zero? ($lvar.set-count lvar))
-        (let1 init-val ($lvar.init-val lvar)
-          (cond
-           [(not (vector? init-val)) iform]
-           [(tag? init-val $CONST)
-            ($lvar.ref-count--! lvar)
-            (set-tag! iform $CONST)
-            ($const.set-val! iform ($const.val init-val))
-            iform]
-           [(and (tag? init-val $LOCAL-REF)
-                 (zero? ($lvar.set-count ($local-ref.lvar init-val))))
-               (when (eq? iform init-val)
-                 (error "mosh" "circular reference appeared in letrec bindings:"
-                        (lvar.sym lvar)))
-               ($lvar.ref-count--! lvar)
-               ($lvar.ref-count++! ($local-ref.lvar init-val))
-               ($local-ref.copy iform init-val)
-               (pass2/optimize-local-ref iform)]
-           [else iform]))
-    iform)))
-
 
 
 ;; (define (pass2/eliminate-let iform)
@@ -2052,7 +2066,7 @@
 ;;             [else
 ;;              #f]))))
 
-(define (pass2/classify-local-ref-call iform closures tail?)
+(define-pass2/tracable (pass2/classify-local-ref-call iform closures tail?)
   (let* ([lvar ($local-ref.lvar iform)]
          [zerop (zero? ($lvar.set-count lvar))]
          [init-val ($lvar.init-val lvar)]
@@ -2071,7 +2085,7 @@
               #f))
         #f)))
 
-(define (pass2/expand-inlined-procedure iform iargs)
+(define-pass2/tracable (pass2/expand-inlined-procedure iform iargs)
   (let ((lvars ($lambda.lvars iform))
         (args  (pass2/adjust-arglist ($lambda.reqargs iform) ($lambda.optarg iform)
                                      iargs ($lambda.name iform))))
@@ -2100,7 +2114,7 @@
           ((null? rest) (error "given list is too short:" args))
           (else (loop (- i 1) (cdr rest) (cons (car rest) r))))))
 
-(define (pass2/collect-call iform closures)
+(define-pass2/tracable (pass2/collect-call iform closures)
   (cond
    [($call.type iform) iform]
    [else
@@ -2125,7 +2139,7 @@
                     ;;                ($call-proc-set! iform result)
                     (let1 o (pass2/expand-inlined-procedure type args)
                       (pass2/optimize o closures)
-                      o)
+                    )
                     ;;                           penv tail?))
                     ]
                    [(not type)
