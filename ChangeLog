@@ -1,3 +1,9 @@
+2008-12-07  kokosabu  <kokosabu@gmail.com>
+
+        * Symbol.cpp, Symbol.h: Added <eol-style symbol>.
+
+        * EolStyle.h: Added.
+
 2008-12-07  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (with-input-from-file): Fixed for multiple values. (thx leque)
@@ -52,7 +58,7 @@
         * example/affine.scm : Added.
 
         * Psyntax pass through the and/or to backend.
-
+p
 2008-11-28  higepon  <higepon@users.sourceforge.jp>
 
         * lib/lambda/wiki.ss: Applied a patch by xsloader.

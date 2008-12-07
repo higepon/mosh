@@ -107,6 +107,15 @@ public:
     static Object UNSYNTAX_SPLICING;
     static Object BIG;
     static Object LITTLE;
+
+    // <eol-style symbols>
+    static Object LF;
+    static Object CR;
+    static Object CRLF;
+    static Object NEL;
+    static Object CRNEL;
+    static Object LS;
+
     static void initBuitinSymbols();
 };
 

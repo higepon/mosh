@@ -48,6 +48,12 @@ Object Symbol::UNSYNTAX;
 Object Symbol::UNSYNTAX_SPLICING;
 Object Symbol::BIG;
 Object Symbol::LITTLE;
+Object Symbol::LF;
+Object Symbol::CR;
+Object Symbol::CRLF;
+Object Symbol::NEL;
+Object Symbol::CRNEL;
+Object Symbol::LS;
 
 
 void Symbol::initBuitinSymbols()
@@ -65,6 +71,14 @@ void Symbol::initBuitinSymbols()
     UNSYNTAX_SPLICING = Symbol::intern(UC("unsyntax-splicing"));
     BIG               = Symbol::intern(UC("big"));
     LITTLE            = Symbol::intern(UC("little"));
+
+    // <eol-style symbols>
+    LF                = Symbol::intern(UC("lf"));
+    CR                = Symbol::intern(UC("cr"));
+    CRLF              = Symbol::intern(UC("crlf"));
+    NEL               = Symbol::intern(UC("nel"));
+    CRNEL             = Symbol::intern(UC("crnel"));
+    LS                = Symbol::intern(UC("ls"));
 }
 
 const ucs4char* Symbol::c_str()
