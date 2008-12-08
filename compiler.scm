@@ -1269,7 +1269,7 @@
        (pass1/lambda->iform 'lambda sexp library lvars)]
       ;;---------------------------- cons --------------------------------------
       [(cons)
-       ($asm 'CONS (pass1/map-s->i (cdr sexp)))]
+       (pass1/asm-2-arg 'CONS (second sexp) (third sexp) library lvars)]
       ;;---------------------------- and ---------------------------------------
       [(and)
        (pass1/and->iform sexp library lvars tail?)]
@@ -1281,7 +1281,7 @@
        (pass1/body->iform (pass1/expand (cdr sexp)) library lvars tail?)]
       ;;---------------------------- values ------------------------------------
       [(values)
-       ($asm 'VALUES (pass1/map-s->i (cdr sexp)))]
+       ($asm 'VALUES (pass1/map-s->i-non-tail (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
        (pass1/define sexp library lvars tail?)]
