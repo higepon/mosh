@@ -75,7 +75,7 @@ public:
     ~VM();
 
     void importTopLevel();
-
+    void dumpCompiledCode(Object code) const;
     void copyJmpBuf(jmp_buf dst, jmp_buf src);
     void collectProfile();
 

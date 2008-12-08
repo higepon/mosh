@@ -1403,6 +1403,8 @@
     (cond
      [(tag? iform $CONST)
       (format #t "($CONST ~s)" ($const.val iform))]
+     [(tag? iform $LIST)
+      (format #t "($LIST)")]
      [(tag? iform $UNDEF)
       (display "($UNDEF)")]
      [(tag? iform $LAMBDA)
@@ -2761,12 +2763,14 @@
 
 (define (pass3/compile-arg cb arg locals frees can-frees sets tail depth)
   (let1 size (pass3/rec cb arg locals frees can-frees sets #f depth)
+;  (format (current-error-port) "\nPUSH!\n")
     (code-builder-put-insn-arg0! cb 'PUSH)
     (+ size 1)))
 
 ;; fold requires anonymous closure
 ;; So, if this procedure is called many times, it causes slow compilation.
 (define (pass3/compile-args cb args locals frees can-frees sets tail depth)
+;  (format (current-error-port) "\npass3/compile-args<~a>\n" (length args))
   (let loop ([size 0]
              [iform args])
     (cond
@@ -3200,8 +3204,6 @@
            (iter `(RETURN2 ,@rest))]
           [('RETURN 3 . rest) ;;done
            (iter `(RETURN3 ,@rest))]
-          [('CALL 2 . rest)
-           (iter `(CALL2 ,@rest))]
           [('REFER_LOCAL0 'EQV 'TEST . rest)
            (iter `(REFER_LOCAL0_EQV_TEST ,@rest))]
           [('PUSH 'CONSTANT . rest)
@@ -3236,6 +3238,8 @@
            (iter `(NOT_TEST ,@rest))]
           [('REFER_GLOBAL lib-id 'CALL n . rest)
            (iter `(REFER_GLOBAL_CALL ,lib-id ,n ,@rest))]
+          [('CALL 2 . rest)
+           (iter `(CALL2 ,@rest))]
           [('REFER_LOCAL0 'NUMBER_ADD_PUSH . rest)
            (iter (cons 'REFER_LOCAL0_NUMBER_ADD_PUSH rest))]
           [('REFER_LOCAL0 'VECTOR_SET . rest)

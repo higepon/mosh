@@ -155,6 +155,20 @@ void VM::defaultExceptionHandler(Object error)
     errorPort_.toTextualOutputPort()->format(UC("\n Exception:\n~a\n"), L1(error));
 }
 
+void VM::dumpCompiledCode(Object code) const
+{
+    MOSH_ASSERT(code.isVector());
+    Vector* const v = code.toVector();
+    for (int i = 0; i < v->length(); i++) {
+        const Object c = v->ref(i);
+        if (c.isInstruction()) {
+            LOG1("~a ", Instruction::toString(c.val));
+        } else {
+            LOG1("~a ", c);
+        }
+    }
+}
+
 
 // これはいずれ Scheme でおきかえる。
 void VM::loadFile(const ucs4string& file)
@@ -169,6 +183,7 @@ void VM::loadFile(const ucs4string& file)
                 callLexicalViolationImmidiaImmediately("read", p->error());
             }
             const Object compiled = compile(o);
+//            dumpCompiledCode(compiled);
             evaluate(compiled);
         }
 
@@ -855,6 +870,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (ac_.isPair()) {
                 push(ac_.car());
             } else {
+                // todo エラーにこれを入れれば便利じゃ？
+//                LOG1("cl=~a\n", dc_.toClosure()->sourceInfoString());
                 callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
             }
             NEXT1;

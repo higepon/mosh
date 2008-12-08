@@ -1,5 +1,9 @@
 2008-12-08  higepon  <higepon@users.sourceforge.jp>
 
+        * VM.cpp (dumpCompiledCode): Added for debug.
+
+        * scripts/gen-insn.scm (print-to-string): Added generation of toSourceString().
+
         * compiler.scm (pass1/sexp->iform): Fixed wrong tail? flag for cons and values.
 
 2008-12-07  kokosabu  <kokosabu@gmail.com>

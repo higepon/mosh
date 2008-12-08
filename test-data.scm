@@ -3230,3 +3230,5 @@
  (receive (a b)
      (with-input-from-file "all-tests.scm" (lambda () (values 1 2)))
    (+ a b))]
+
+(todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")

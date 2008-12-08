@@ -44,7 +44,7 @@
               (write `(if (equal? 'error (guard (con [#t 'error])
                                                 ,@test))
                           (format #t " Running ~d/~d" ,index ,test-num)
-                          (add-error (quote ,@test) 'error val)))]
+                          (add-error (quote ,@test) 'error 'not-error)))]
              [('mosh-only expected . test)
               (write '(display "\r"))
               (write `(let1 val (begin ,@test)

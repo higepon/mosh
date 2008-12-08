@@ -23,6 +23,23 @@
                          (print (format "        ~a = ~d," l (+ (ash i 5) 14)))) lst) ;; same as Object::makeInstruction2
   (print "    };"))
 
+(define (print-to-string lst)
+  (print "    static const ucs4char* toString(int val) {")
+  (print "        switch(val) {")
+  (for-each (lambda (insn)
+              (format #t "        case ~a:\n" insn)
+              (format #t "           return UC(\"~a\");\n"  insn)
+              (format #t "           break;\n")
+              )
+            lst)
+  (format #t "        default:\n")
+  (format #t "           return UC(\"Unkown Instruction\");\n")
+  (format #t "           break;\n")
+  (print "        }")
+  (print "        return UC(\"\");")
+  (print "    }")
+  (print "\n"))
+
 (define (print-footer)
   (print "};")
   (print "}; // namespace scheme\n")
@@ -31,16 +48,18 @@
 
 (define (main args)
   (print-header)
-  (print-enum
-   (with-input-from-file (second args)
-     (lambda ()
-       (let loop ([obj (read)]
-                  [ret '()])
-         (if (eof-object? obj)
-             (reverse ret)
-             (match obj
-               [('define-insn name n)
-                (loop (read) (cons name ret))]))))))
+   (let1 lst
+       (with-input-from-file (second args)
+         (lambda ()
+           (let loop ([obj (read)]
+                      [ret '()])
+             (if (eof-object? obj)
+                 (reverse ret)
+                 (match obj
+                   [('define-insn name n)
+                    (loop (read) (cons name ret))])))))
+       (print-enum lst)
+       (print-to-string lst))
   (print-footer)
   0
 )
