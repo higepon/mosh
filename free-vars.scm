@@ -399,4 +399,5 @@
     string-copy
     vector-fill!
     ungensym
+    disasm
     )

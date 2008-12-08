@@ -1391,7 +1391,12 @@
   (define labels '()) ;; alist of label node and count
 
   (define (indent count)
-    (dotimes (i count) (write-char #\space)))
+    (let loop ([i 0])
+      (if (= i count)
+          '()
+          (begin
+            (display #\space (current-error-port))
+          (loop (+ i 1))))))
   (define (nl ind)
     (newline) (indent ind))
   (define (lvar->string lvar)
@@ -1402,102 +1407,102 @@
   (define (rec ind iform)
     (cond
      [(tag? iform $CONST)
-      (format #t "($CONST ~s)" ($const.val iform))]
+      (format (current-error-port) "($CONST ~s)" ($const.val iform))]
      [(tag? iform $LIST)
-      (format #t "($LIST)")]
+      (format (current-error-port) "($LIST)")]
      [(tag? iform $UNDEF)
-      (display "($UNDEF)")]
+      (display "($UNDEF)" (current-error-port))]
      [(tag? iform $LAMBDA)
-      (format #t "($LAMBDA[~a ~a ~a]" ($lambda.name iform)
+      (format (current-error-port) "($LAMBDA[~a ~a ~a]" ($lambda.name iform)
               (map lvar->string ($lambda.lvars iform)) ($lambda.flag iform))
       (nl (+ ind 2))
-      (rec (+ ind 2) ($lambda.body iform)) (display ")")]
+      (rec (+ ind 2) ($lambda.body iform)) (display ")" (current-error-port))]
      [(tag? iform $SEQ)
-      (format #t "($SEQ")
+      (format (current-error-port) "($SEQ")
       (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                 ($seq.body iform))
-      (display ")")]
+      (display ")" (current-error-port))]
      [(tag? iform $LIBRARY)
-      (format #t "($LIBRARY ~a export [~a] import [~a]"
+      (format (current-error-port) "($LIBRARY ~a export [~a] import [~a]"
               ($library.name iform)
               ($library.export-syms iform)
               ($library.import-syms iform))
       (nl (+ ind 2))
                                         ;      (rec ind ($library.body iform))
-      (display ")")]
+      (display ")" (current-error-port))]
      [(tag? iform $LOCAL-REF)
-      (format #t "($LOCAL-REF ~a)" (lvar->string ($local-ref.lvar iform)))]
+      (format (current-error-port) "($LOCAL-REF ~a)" (lvar->string ($local-ref.lvar iform)))]
      [(tag? iform $GLOBAL-REF)
-      (format #t "($GLOBAL-REF ~a ~a)" ($global-ref.libname iform) ($global-ref.sym iform))]
+      (format (current-error-port) "($GLOBAL-REF ~a ~a)" ($global-ref.libname iform) ($global-ref.sym iform))]
      [(tag? iform $LOCAL-ASSIGN)
-      (format #t "($LOCAL-ASSIGN ~a"  (lvar->string ($local-assign.lvar iform)))
+      (format (current-error-port) "($LOCAL-ASSIGN ~a"  (lvar->string ($local-assign.lvar iform)))
       (nl (+ ind 2))
-      (rec (+ ind 2) ($local-assign.val iform)) (display ")")]
+      (rec (+ ind 2) ($local-assign.val iform)) (display ")" (current-error-port))]
      [(tag? iform $GLOBAL-ASSIGN)
-      (format #t "($GLOBAL-ASSIGN ~a ~a)" ($global-assign.sym iform) ($global-assign.val iform))]
+      (format (current-error-port) "($GLOBAL-ASSIGN ~a ~a)" ($global-assign.sym iform) ($global-assign.val iform))]
      [(tag? iform $LET)
       (let* ((hdr  (format "($LET ("))
              (xind (+ ind (string-length hdr))))
-        (display hdr)
+        (display hdr (current-error-port))
         (for-each (lambda (var init)
                     (let1 z (format "(~a " (lvar->string var))
-                      (display z)
+                      (display z (current-error-port))
                       (rec (+ xind  (string-length z)) init)
-                      (display ")")
+                      (display ")" (current-error-port))
                       (nl xind)))
                   ($let.lvars iform) ($let.inits iform))
-        (display ")") (nl (+ ind 2))
-        (rec (+ ind 2) ($let.body iform)) (display ")"))]
+        (display ")" (current-error-port)) (nl (+ ind 2))
+        (rec (+ ind 2) ($let.body iform)) (display ")" (current-error-port)))]
      [(tag? iform $IF)
-      (display "($IF ")
+      (display "($IF " (current-error-port))
       (rec (+ ind 5) ($if.test iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.then iform)) (nl (+ ind 2))
-      (rec (+ ind 2) ($if.else iform)) (display ")")]
+      (rec (+ ind 2) ($if.else iform)) (display ")" (current-error-port))]
      [(tag? iform $RECEIVE) #f]
      [(tag? iform $LABEL)
       (cond ((assq iform labels)
-             => (lambda (p) (format #t "label#~a" (cdr p))))
+             => (lambda (p) (format (current-error-port) "label#~a" (cdr p))))
             (else
              (let1 num (length labels)
                (push! labels (cons iform num))
-               (format #t "($label #~a" num)
+               (format (current-error-port) "($label #~a" num)
                (nl (+ ind 2))
-               (rec (+ ind 2) ($label.body iform)) (display ")"))))]
+               (rec (+ ind 2) ($label.body iform)) (display ")" (current-error-port)))))]
      [(tag? iform $ASM)
       (let1 insn ($asm.insn iform)
-        (format #t "($asm ~a" insn))
+        (format (current-error-port) "($asm ~a" insn))
       (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                 ($asm.args iform))
-      (display ")")]
+      (display ")" (current-error-port))]
      [(tag? iform $DEFINE)
-      (format #t "($DEFINE ~a:~a" ($define.libname iform) ($define.sym iform))
+      (format (current-error-port) "($DEFINE ~a:~a" ($define.libname iform) ($define.sym iform))
       (nl (+ ind 2))
-      (rec (+ ind 2) ($define.val iform)) (display ")")]
+      (rec (+ ind 2) ($define.val iform)) (display ")" (current-error-port))]
      [(tag? iform $CALL-CC)
-      (display "($CALL-CC ")
+      (display "($CALL-CC " (current-error-port))
       (rec 0 ($call-cc.proc iform))
-      (display ")")]
+      (display ")" (current-error-port))]
      [(tag? iform $LABEL)
-      (display "($LABEL ")
+      (display "($LABEL " (current-error-port))
       (rec 0 ($label.body iform))
-      (display ")")]
+      (display ")" (current-error-port))]
      [(tag? iform $IT)
-      (display "it")]
+      (display "it" (current-error-port))]
      [(tag? iform $RECEIVE)
-      (format #t "($receive ~a" (map lvar->string ($receive.lvars iform)))
+      (format (current-error-port) "($receive ~a" (map lvar->string ($receive.lvars iform)))
       (nl (+ ind 4))
       (rec (+ ind 4) ($receive.vals iform)) (nl (+ ind 2))
-      (rec (+ ind 2) ($receive.body iform)) (display ")")]
+      (rec (+ ind 2) ($receive.body iform)) (display ")" (current-error-port))]
      [(tag? iform $CALL)
       (let1 pre
           (cond (($call.tail? iform) => (lambda (x) "($call[tail] "))
                 (else "($call "))
-        (format #t pre)
-        (format #t "[~a]" ($call.type iform))
+        (format (current-error-port) pre)
+        (format (current-error-port) "[~a]" ($call.type iform))
         (rec (+ ind (string-length pre)) ($call.proc iform))
         (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                   ($call.args iform))
-        (display ")"))]
+        (display ")" (current-error-port)))]
      (else
       (error "pp-iform: unknown tag:" (tag iform)))
      ))
@@ -2581,6 +2586,9 @@
   (vector-set! pass3/dispatch-table insn proc))
 
 (define (pass3/$const cb iform locals frees can-frees sets tail depth)
+;;   (display "pass3/$const\n" (current-error-port))
+;;   (pp-iform iform)
+
   (code-builder-put-insn-arg1! cb 'CONSTANT ($const.val iform))
   0)
 
@@ -2762,6 +2770,8 @@
                                                 ($define.sym iform)))))
 
 (define (pass3/compile-arg cb arg locals frees can-frees sets tail depth)
+;;   (display "pass3/compile-arg\n" (current-error-port))
+;;   (pp-iform arg)
   (let1 size (pass3/rec cb arg locals frees can-frees sets #f depth)
 ;  (format (current-error-port) "\nPUSH!\n")
     (code-builder-put-insn-arg0! cb 'PUSH)
@@ -2868,6 +2878,8 @@
        ;;   So we don't have to execute FRAME, instead we can use FRAME informtion which is saved before applying ((lambda () ...)).
        ;;   To access the FRAME informtion, we remove arguments for a, so we do this SHIFT.
        ;;
+;;        (display "pass3/$call\n" (current-error-port))
+;;        (pp-iform iform)
        (unless tail
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth)]
@@ -3363,6 +3375,7 @@
   (pass4 (merge-insn
           ;; default is tail context == #t
           (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #t) '())
+;                   (pp-iform x)
                    x)
                  ))))
 

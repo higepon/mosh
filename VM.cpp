@@ -266,7 +266,7 @@ Object VM::evaluate(Object* code, int codeSize)
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
 
-        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 0, outerSourceInfo_);
+        closure = Object::makeClosure(NULL, 0, 0, false, cProcs, cProcNum, 0, outerSourceInfo_);
     }
     closure.toClosure()->pc = code;
     ac_ = closure;
@@ -487,7 +487,7 @@ Object VM::apply(Object proc, Object args)
     static Object closure = Object::Undef;
     if (Object::Undef == closure) {
 //#       include "cprocedures.cpp"
-        closure = Object::makeClosure(NULL, 0, false, cProcs, cProcNum, 1, outerSourceInfo_);
+        closure = Object::makeClosure(NULL, 0, 0, false, cProcs, cProcNum, 1, outerSourceInfo_);
     }
     closure.toClosure()->pc = code;
     SAVE_REGISTERS();
@@ -959,7 +959,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //            LOG1("(CLOSURE) source=~a\n", sourceInfo);
 
             TRACE_INSN1("CLOSURE", "(n => ~d)\n", Object::makeFixnum(freeVariablesNum));
-            ac_ = Object::makeClosure(pc_, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
+            ac_ = Object::makeClosure(pc_, skipSize, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
             sp_ -= freeVariablesNum;
             pc_ += skipSize - 6;
             NEXT1;
@@ -1005,7 +1005,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int freeVariablesNum = n.toFixnum();
 
             // create display closure
-            const Object display = Object::makeClosure(NULL, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
+            const Object display = Object::makeClosure(NULL, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
             if (dc_.isClosure()) {
                 dc_.toClosure()->child = display;
             }

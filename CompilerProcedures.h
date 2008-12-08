@@ -45,6 +45,7 @@ namespace scheme {
 
     Object pass1FindSymbolInLvarsEx(int argc, const Object* argv);
 
+    Object disasmEx(int argc, const Object* argv);
     Object labelEx(int argc, const Object* argv);
     Object localRefEx(int argc, const Object* argv);
     Object pass3FindFreeEx(int argc, const Object* argv);

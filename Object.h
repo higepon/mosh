@@ -164,6 +164,7 @@ public:
     static Object makeCustomBinaryInputPort(Object readProc);
     static Object makeString(int n, ucs4char c = ' ');
     static Object makeClosure(Object* pc,
+                              int size,
                               int argLength,
                               bool isOptionalArg,
                               const Object* freeVars,

@@ -142,7 +142,7 @@ inline Object VM::makeContinuation(Object n)
     code[4] = Object::makeStack(stack_, sp_ - stack_);
     code[5] = Object::makeRaw(Instruction::RETURN);
     code[6] = n;
-    return Object::makeClosure(getDirectThreadedCode(code, codeSize), 1, true, sp_, 0, 1, Object::False);
+    return Object::makeClosure(getDirectThreadedCode(code, codeSize), codeSize, 1, true, sp_, 0, 1, Object::False);
 }
 
 

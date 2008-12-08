@@ -34,6 +34,7 @@
                   APPLY
                   HALT)
     (set-closure-body-code! vm-outer-closure code-c)
+;    (write/ss proc-c)
     (VM code-c  0 vm-outer-closure 0 vm-outer-closure vstack 0)))
 
 (define (apply-proc . args)

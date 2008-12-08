@@ -1,5 +1,7 @@
 2008-12-08  higepon  <higepon@users.sourceforge.jp>
 
+        * CompilerProcedures.cpp (scheme::disasmEx): Added disasm, but it doesn't work yet!
+
         * VM.cpp (dumpCompiledCode): Added for debug.
 
         * scripts/gen-insn.scm (print-to-string): Added generation of toSourceString().

@@ -84,6 +84,7 @@
 #define argumentCheckRational(index, variableName) checkType(index, variableName, isRational, rational number)
 #define argumentCheckReal(index, variableName) checkType(index, variableName, isReal, real)
 #define argumentAsRecord(index, variableName) castArgument(index, variableName, isRecord, record, Record*, toRecord)
+#define argumentAsClosure(index, variableName) castArgument(index, variableName, isClosure, closure, Closure*, toClosure)
 #define argumentCheckRecord(index, variableName) checkType(index, variableName, isRecord, record)
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)

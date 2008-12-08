@@ -3,6 +3,9 @@
 
 (define-record-type point (fields x y z w))
 
+(define (point->list p)
+  (list (point-x p) (point-y p) (point-z p) (point-w p)))
+
 (define pi 3.14159)
 
 (define-syntax negate
@@ -10,7 +13,7 @@
     [(_ x)
      (* -1 x)]))
 
-(define (make-transform-matrix tx ty tz)
+(define (make-translation-matrix tx ty tz)
   `#(1 0 0 ,tx
      0 1 0 ,ty
      0 0 1 ,tz
@@ -34,6 +37,12 @@
      0 0 1  0
      0 0 0  1))
 
+(define (make-shear-xy-matrix s)
+  `#(1 ,s 0  0
+     0 1 0  0
+     0 0 1  0
+     0 0 0  1))
+
 
 (define (mul m p)
   (let ([x (point-x p)]
@@ -45,11 +54,20 @@
                 (+ (* x (vector-ref m 8)) (* y (vector-ref m 9)) (* z (vector-ref m 10)) (* w (vector-ref m 11)))
                 (+ (* x (vector-ref m 12)) (* y (vector-ref m 13)) (* z (vector-ref m 14)) (* w (vector-ref m 15))))))
 
-(let ([org-point (make-point 1 2 3 1)])
-  (format #t "simple-transformation: org-point ~a => ~a\n" org-point (mul (make-transform-matrix 5 0 0) org-point ))
-  (format #t "pi/2 rotation around z axis: org-point ~a => ~a\n" org-point (mul (make-rotate-z-matrix (/ pi 2)) org-point ))
-  (format #t "scaling: org-point ~a => ~a\n" org-point (mul (make-scale-matrix 1 1 3) org-point ))
-  (format #t "shearing: org-point ~a => ~a\n" org-point (mul (make-shear-xz-matrix 2) org-point ))
-  (format #t "concatenation of rotation & scaling ~a => ~a\n" org-point (mul (make-scale-matrix 3 1 1) (mul (make-rotate-z-matrix (/ pi 2)) org-point)))
-  (format #t "concatenation of scaling & rotation ~a => ~a\n" org-point (mul (make-rotate-z-matrix (/ pi 2)) (mul (make-scale-matrix 3 1 1) org-point)))
-)
+(define before '((1.0 1.0 0.0 1.0) (1.0 2.0 0.0 1.0) (2.0 2.0 0.0 1.0) (2.0 1.0 0.0 1.0)))
+
+;(define t (make-translation-matrix-matrix 1 2 3))
+
+;(define t (make-rotate-z-matrix (/ pi 4)))
+
+;(define t (make-scale-matrix 1 3 1))
+
+(define t (make-shear-xy-matrix 1.2))
+
+
+(format #t "(define rect-before '~a)\n" before)
+(format #t "(define rect-after '~a)\n"
+        (map point->list
+             (map (lambda (p) (mul t (apply make-point p))) before)))
+
+

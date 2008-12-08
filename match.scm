@@ -1779,7 +1779,8 @@
   match
   args
   (cond
-    ((and (list? args)
+    ((and
+      (list? args)
           (<= 1 (length args))
           (match:andmap
             (lambda (y) (and (list? y) (<= 2 (length y))))

@@ -39,6 +39,8 @@
 #include "ListProcedures.h"
 #include "CodeBuilder.h"
 #include "EqHashTable.h"
+#include "Closure.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
@@ -739,4 +741,24 @@ Object pass4FixupLabel(Object vec)
         }
     }
     return collected.car();
+}
+
+Object scheme::disasmEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("disasm");
+    checkArgumentLength(1);
+    argumentAsClosure(0, closure);
+    Object* code = closure->pc;
+    for (int i = 0; i < closure->size; i++) {
+        const Object c = code[i];
+        if (c.isInstruction()) {
+            VM_LOG1("~a ", Instruction::toString(c.val));
+            if (c.val == Instruction::NOP) {
+                break;
+            }
+        } else {
+            VM_LOG1("~a ", c);
+        }
+    }
+    return Object::Undef;
 }

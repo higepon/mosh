@@ -37,8 +37,9 @@ namespace scheme {
 class Closure EXTEND_GC
 {
 public:
-    Closure(Object* pc, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
+    Closure(Object* pc, int size, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
         : pc(pc)
+        ,size(size)
         ,argLength(argLength)
         ,isOptionalArg(isOptionalArg)
         ,freeVariablesNum(freeVariablesNum)
@@ -72,6 +73,7 @@ public:
 public:
     Object* pc;
     const int argLength;
+    const int size;
     bool isOptionalArg;
     Object*  freeVariables;
     const int freeVariablesNum;
@@ -80,11 +82,11 @@ public:
     Object child;
 };
 
-inline Object Object::makeClosure(Object* pc, int argLength, bool isOptionalArg,
+    inline Object Object::makeClosure(Object* pc, int size, int argLength, bool isOptionalArg,
                            const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
-                                                        reinterpret_cast<word>(new Closure(pc, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
+                                                        reinterpret_cast<word>(new Closure(pc, size, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
 }
 
 
