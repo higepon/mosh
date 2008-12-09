@@ -67,23 +67,23 @@ CodeBuilder::CodeBuilder() : previousCodePacket_(CodePacket()),
 
 void CodeBuilder::putExtra(Object object)
 {
-   printf("[%x] %s ", this, __func__);
-   VM_LOG1("<~a>\n", object);fflush(stdout); fflush(stderr);
+//    printf("[%x] %s ", this, __func__);
+//    VM_LOG1("<~a>\n", object);fflush(stdout); fflush(stderr);
     put(CodePacket(CodePacket::EXTRA, object, Object::Undef, Object::Undef));
 }
 
 void CodeBuilder::putInstructionArgument0(Object instruction)
 {
-   printf("[%x] %s ", this, __func__);fflush(stdout);
-   VM_LOG1("<~a>\n", Instruction::toString(instruction.val));fflush(stderr);
+//    printf("[%x] %s ", this, __func__);fflush(stdout);
+//    VM_LOG1("<~a>\n", Instruction::toString(instruction.val));fflush(stderr);
     put(CodePacket(CodePacket::ARGUMENT0, instruction, Object::Undef, Object::Undef));
 }
 
 void CodeBuilder::putInstructionArgument1(Object instruction, Object argument)
 {
-    printf("[%x] %s ", this, __func__);fflush(stdout);
-    VM_LOG2("~a ~a\n", Instruction::toString(instruction.val), argument);
-    VM_LOG1("E previousCodePacket_.instructionImmediate() =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));fflush(stdout); fflush(stderr);
+//     printf("[%x] %s ", this, __func__);fflush(stdout);
+//     VM_LOG2("~a ~a\n", Instruction::toString(instruction.val), argument);
+//     VM_LOG1("E previousCodePacket_.instructionImmediate() =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));fflush(stdout); fflush(stderr);
     put(CodePacket(CodePacket::ARGUMENT1, instruction, argument, Object::Undef));
 }
 

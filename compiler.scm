@@ -1686,7 +1686,7 @@
 (pass2/register $UNDEF         pass2/empty)
 (pass2/register $IF            pass2/$if)
 (pass2/register $ASM           pass2/$asm)
-(pass2/register $DEFINE        pass2/$define)
+(pass2/register $DEFINE        pass2/empty)
 (pass2/register $CALL          pass2/$call)
 (pass2/register $CALL-CC       pass2/empty)
 (pass2/register $LET           pass2/$let)
@@ -2884,15 +2884,15 @@
 ;;        (pp-iform iform)
        (unless tail
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
-       (df (current-error-port) "code-builder1 = ~a\n" cb)
+;       (df (current-error-port) "code-builder1 = ~a\n" cb)
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth)]
-              [dummy        (df (current-error-port) "code-builder2 = ~a\n" cb)]
+;              [dummy        (df (current-error-port) "code-builder2 = ~a\n" cb)]
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth)]
-              [dummy2        (df (current-error-port) "code-builder3 = ~a\n" cb)]
+;              [dummy2        (df (current-error-port) "code-builder3 = ~a\n" cb)]
               [args-length (length ($call.args iform))])
          (when tail
            (cput-shift! cb args-length tail))
-(df (current-error-port) "code-builder4 = ~a\n" cb)
+;(df (current-error-port) "code-builder4 = ~a\n" cb)
          (code-builder-put-insn-arg1! cb 'CALL args-length)
          (unless tail
            (cput! cb end-of-frame))
