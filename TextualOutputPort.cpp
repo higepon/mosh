@@ -385,6 +385,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         }
         putDatum(imag);
         putString(UC("i"));
+    } else if (o.isCodeBuilder()) {
+        putString(UC("<code-builder "));
+        putDatum(Object::makeFixnum(o.val));
+        putString(UC(">"));
 
     } else {
         putString(UC("#<unknown datum>"));
@@ -547,6 +551,11 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         }
         display(imag);
         putString(UC("i"));
+    } else if (o.isCodeBuilder()) {
+        putString(UC("<code-builder "));
+        putDatum(Bignum::makeInteger(o.val));
+        putString(UC(">"));
+
     } else {
         putString(UC("#<unknown datum>"));
     }

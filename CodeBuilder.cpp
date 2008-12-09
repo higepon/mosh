@@ -31,9 +31,11 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "SString.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "CodeBuilder.h"
+#include "TextualOutputPort.h"
 #include "VM.h"
 
 extern scheme::VM* theVM;
@@ -65,16 +67,23 @@ CodeBuilder::CodeBuilder() : previousCodePacket_(CodePacket()),
 
 void CodeBuilder::putExtra(Object object)
 {
+   printf("[%x] %s ", this, __func__);
+   VM_LOG1("<~a>\n", object);fflush(stdout); fflush(stderr);
     put(CodePacket(CodePacket::EXTRA, object, Object::Undef, Object::Undef));
 }
 
 void CodeBuilder::putInstructionArgument0(Object instruction)
 {
+   printf("[%x] %s ", this, __func__);fflush(stdout);
+   VM_LOG1("<~a>\n", Instruction::toString(instruction.val));fflush(stderr);
     put(CodePacket(CodePacket::ARGUMENT0, instruction, Object::Undef, Object::Undef));
 }
 
 void CodeBuilder::putInstructionArgument1(Object instruction, Object argument)
 {
+    printf("[%x] %s ", this, __func__);fflush(stdout);
+    VM_LOG2("~a ~a\n", Instruction::toString(instruction.val), argument);
+    VM_LOG1("E previousCodePacket_.instructionImmediate() =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));fflush(stdout); fflush(stderr);
     put(CodePacket(CodePacket::ARGUMENT1, instruction, argument, Object::Undef));
 }
 
@@ -139,6 +148,8 @@ void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)
             break;
         case Instruction::CONSTANT:
             previousCodePacket_.setInstructionImmediate(Instruction::CONSTANT_PUSH);
+//             VM_LOG1("B previousCodePacket_.instructionImmediate() =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));
+//             fflush(stderr);
             break;
         case Instruction::REFER_LOCAL:
             previousCodePacket_.setInstructionImmediate(Instruction::REFER_LOCAL_PUSH);
@@ -414,26 +425,34 @@ void CodeBuilder::put(CodePacket codePacket)
 
 void CodeBuilder::flush()
 {
+//    printf("[%x] ** FLUSH **\n", this);fflush(stdout);
     switch(previousCodePacket_.type()) {
     case CodePacket::EMPTY:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return;
     case CodePacket::EXTRA:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         code_.push_back(previousCodePacket_.instruction());
         break;
     case CodePacket::ARGUMENT0:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         code_.push_back(previousCodePacket_.instruction());
         break;
     case CodePacket::ARGUMENT1:
+//         printf("[%x] %s ", this, __func__);fflush(stdout);
+//         VM_LOG2("~a ~a\n", Instruction::toString(previousCodePacket_.instruction().val),previousCodePacket_.argument1());fflush(stdout);
         code_.push_back(previousCodePacket_.instruction());
         code_.push_back(previousCodePacket_.argument1());
         break;
     case CodePacket::ARGUMENT2:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         code_.push_back(previousCodePacket_.instruction());
         code_.push_back(previousCodePacket_.argument1());
         code_.push_back(previousCodePacket_.argument2());
         break;
 
     default:
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         MOSH_ASSERT("not reached now! all packet should be EXTRA");
         break;
     }
@@ -443,6 +462,9 @@ void CodeBuilder::flush()
 Object CodeBuilder::emit()
 {
     flush();
+//     for (ObjectVector::iterator it = code_.begin(); it != code_.end(); ++it) {
+//         VM_LOG1("<~a>", *it);
+//     }
     const Object ret = Pair::objectVectorToList(code_);
     return ret;
 }
@@ -452,4 +474,9 @@ void CodeBuilder::append(CodeBuilder* sourcCodeBuilder)
     flush();
     ObjectVector& sourceCode = sourcCodeBuilder->code();
     code_.insert(code_.end(), sourceCode.begin(), sourceCode.end());
+}
+
+void CodeBuilder::printPrevious()
+{
+    VM_LOG1("previous =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));
 }

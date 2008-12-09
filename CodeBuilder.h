@@ -82,9 +82,13 @@ public:
     // accessors
     ObjectVector& code()
     {
+        printf("[%x] code called\n", this);
         flush();
         return code_;
     }
+
+    // debug
+    void printPrevious();
 
 private:
     void flush();
