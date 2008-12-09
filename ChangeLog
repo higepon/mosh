@@ -1,3 +1,7 @@
+2008-12-09  higepon  <higepon@users.sourceforge.jp>
+
+        * CompilerProcedures.cpp (disasmEx): disasm works.
+
 2008-12-08  higepon  <higepon@users.sourceforge.jp>
 
         * CompilerProcedures.cpp (scheme::disasmEx): Added disasm, but it doesn't work yet!

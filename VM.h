@@ -115,7 +115,8 @@ public:
     Object getClosureName(Object closure);
     bool isR6RSMode() const;
     void activateR6RSMode();
-
+    Object* disasm(Object* code, int length);
+    Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
     // Profiler
     void initProfiler();

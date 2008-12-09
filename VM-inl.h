@@ -145,6 +145,34 @@ inline Object VM::makeContinuation(Object n)
     return Object::makeClosure(getDirectThreadedCode(code, codeSize), codeSize, 1, true, sp_, 0, 1, Object::False);
 }
 
+Object* VM::disasm(Closure* closure)
+{
+    return disasm(closure->pc, closure->size);
+}
+
+Object* VM::disasm(Object* code, int length)
+{
+#ifdef USE_DIRECT_THREADED_CODE
+    Object* ret = Object::makeObjectArray(length);
+    void** table = (void**)run(NULL, NULL, true).val;
+    for (int i = 0; i < length; i++) {
+        const Object c = code[i];
+        bool isInsn = false;
+        for (int j = 0; j < Instruction::INSTRUCTION_COUNT; j++) {
+            if (c.val == (word)(table[Object::makeInstruction(j).val])) {
+                isInsn = true;
+                ret[i] = Object::makeInstruction(j);
+            }
+        }
+        if (!isInsn) {
+            ret[i] = c;
+        }
+    }
+    return ret;
+#else
+    return code;
+#endif
+}
 
 Object* VM::getDirectThreadedCode(Object* code, int length)
 {

@@ -748,7 +748,7 @@ Object scheme::disasmEx(int argc, const Object* argv)
     DeclareProcedureName("disasm");
     checkArgumentLength(1);
     argumentAsClosure(0, closure);
-    Object* code = closure->pc;
+    Object* code = theVM->disasm(closure);
     for (int i = 0; i < closure->size; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {

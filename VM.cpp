@@ -2193,3 +2193,4 @@ void VM::expandStack(int plusSize)
     stack_ = nextStack;
     stackSize_ = nextStackSize;
 }
+

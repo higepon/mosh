@@ -21,6 +21,7 @@
   (print "    enum {")
   (for-each-with-index (lambda (i l)
                          (print (format "        ~a = ~d," l (+ (ash i 5) 14)))) lst) ;; same as Object::makeInstruction2
+  (format #t "        INSTRUCTION_COUNT = ~d,\n" (length lst))
   (print "    };"))
 
 (define (print-to-string lst)
