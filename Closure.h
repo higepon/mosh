@@ -37,6 +37,10 @@ namespace scheme {
 class Closure EXTEND_GC
 {
 public:
+    enum {
+        HEADER_SIZE = 9,
+    };
+
     Closure(Object* pc, int size, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
         : pc(pc)
         ,size(size)
@@ -72,8 +76,8 @@ public:
 
 public:
     Object* pc;
-    const int argLength;
     const int size;
+    const int argLength;
     bool isOptionalArg;
     Object*  freeVariables;
     const int freeVariablesNum;

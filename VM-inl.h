@@ -147,7 +147,7 @@ inline Object VM::makeContinuation(Object n)
 
 Object* VM::disasm(Closure* closure)
 {
-    return disasm(closure->pc - 9 /* magic word is bad! */, closure->size + 9);
+    return disasm(closure->pc - Closure::HEADER_SIZE, closure->size + Closure::HEADER_SIZE);
 }
 
 Object* VM::disasm(Object* code, int length)

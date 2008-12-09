@@ -399,5 +399,9 @@
     string-copy
     vector-fill!
     ungensym
-    (disasm (lambda (closure) (display (vector-ref closure 0))))
+    (disasm (lambda (closure)
+              (for-each
+               (lambda (c)
+                 (format #t "~a " c))
+              (vector->list (vector-ref closure 0)))))
     )
