@@ -399,5 +399,5 @@
     string-copy
     vector-fill!
     ungensym
-    disasm
+    (disasm (lambda (closure) (display (vector-ref closure 0))))
     )

@@ -749,13 +749,13 @@ Object scheme::disasmEx(int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsClosure(0, closure);
     Object* code = theVM->disasm(closure);
-    for (int i = 0; i < closure->size; i++) {
+    for (int i = 0; i < closure->size + 9; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {
             VM_LOG1("~a ", Instruction::toString(c.val));
-            if (c.val == Instruction::NOP) {
-                break;
-            }
+//             if (c.val == Instruction::NOP) {
+//                 break;
+//             }
         } else {
             VM_LOG1("~a ", c);
         }
