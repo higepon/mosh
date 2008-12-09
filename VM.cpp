@@ -1344,7 +1344,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(REFER_FREE1_PUSH)
         {
             const Object p = referFree(1);
-            if (p.isCodeBuilder()) LOG1("refer_free = ~a \n", p);
+            // if (p.isCodeBuilder())
+                LOG1("refer_free = ~a \n", p);
             push(referFree(1));
             NEXT;
         }

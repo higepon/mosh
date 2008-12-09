@@ -2588,8 +2588,8 @@
   (vector-set! pass3/dispatch-table insn proc))
 
 (define (pass3/$const cb iform locals frees can-frees sets tail depth)
-;;   (display "pass3/$const\n" (current-error-port))
-;;   (pp-iform iform)
+  (display "pass3/$const\n" (current-error-port))
+  (pp-iform iform)
 
   (code-builder-put-insn-arg1! cb 'CONSTANT ($const.val iform))
   0)
