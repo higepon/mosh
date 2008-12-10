@@ -97,6 +97,14 @@ Object scheme::localRefEx(int argc, const Object* argv)
     return label;
 }
 
+Object scheme::currentDisplayClosureEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("current-display-closure");
+    checkArgumentLength(0);
+    theVM->printDisplayClosure();
+    return Object::False;
+}
+
 Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
 {
     DeclareProcedureName("pass1/find-symbol-in-lvars");
@@ -757,5 +765,13 @@ Object scheme::disasmEx(int argc, const Object* argv)
             VM_LOG1("~a ", c);
         }
     }
+    return Object::Undef;
+}
+
+Object scheme::showStackEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("show-stack");
+    checkArgumentLength(0);
+    theVM->showStack();
     return Object::Undef;
 }

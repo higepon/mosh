@@ -41,6 +41,7 @@
   (define appendA append)
   (define memq2 memq)
   (define df (lambda a '#f))
+  (define current-display-closure (lambda a '#f))
   (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
@@ -1686,7 +1687,7 @@
 (pass2/register $UNDEF         pass2/empty)
 (pass2/register $IF            pass2/$if)
 (pass2/register $ASM           pass2/$asm)
-(pass2/register $DEFINE        pass2/$define)
+(pass2/register $DEFINE        pass2/empty)
 (pass2/register $CALL          pass2/$call)
 (pass2/register $CALL-CC       pass2/empty)
 (pass2/register $LET           pass2/$let)
@@ -2588,9 +2589,8 @@
   (vector-set! pass3/dispatch-table insn proc))
 
 (define (pass3/$const cb iform locals frees can-frees sets tail depth)
-  (display "pass3/$const\n" (current-error-port))
-  (pp-iform iform)
-
+;  (display "pass3/$const\n" (current-error-port))
+;  (pp-iform iform)
   (code-builder-put-insn-arg1! cb 'CONSTANT ($const.val iform))
   0)
 
@@ -2772,13 +2772,13 @@
                                                 ($define.sym iform)))))
 
 (define (pass3/compile-arg cb arg locals frees can-frees sets tail depth)
-;;   (display "pass3/compile-arg\n" (current-error-port))
+;   (display "pass3/compile-arg\n" (current-error-port))
 ;;   (pp-iform arg)
-  (df (current-error-port) "pass3/compile-arg code-builder = ~a\n" cb)
-   (pp-iform arg)
+;  (df (current-error-port) "pass3/compile-arg code-builder = ~a\n" cb)
+;   (pp-iform arg)
   (let1 size (pass3/rec cb arg locals frees can-frees sets #f depth)
 ;  (format (current-error-port) "\nPUSH!\n")
-  (df (current-error-port) "pass3/compile-arg2 code-builder = ~a\n" cb)
+;  (df (current-error-port) "pass3/compile-arg2 code-builder = ~a\n" cb)
     (code-builder-put-insn-arg0! cb 'PUSH)
     (+ size 1)))
 
@@ -2790,6 +2790,8 @@
 ;  (for-each pp-iform args)
   (let loop ([size 0]
              [iform args])
+;    (display "pass3/compile-args" (current-error-port))
+;    (current-display-closure)
     (cond
      [(null? iform) size]
      [else
@@ -2809,11 +2811,11 @@
   `(append (append ,can-frees (list ,vars1)) (list ,vars2)))
 
 (define (pass3/$call cb iform locals frees can-frees sets tail depth)
-  (df (current-error-port) "pass3/$call ~a\n" cb)
-  (pp-iform iform)
+;  (df (current-error-port) "pass3/$call ~a\n" cb)
+;  (pp-iform iform)
   (case ($call.type iform)
     [(jump)
-     (display "jump" (current-error-port))
+;     (display "jump" (current-error-port))
      (let ([label ($lambda.body ($call.proc ($call.proc iform)))]
            [args-length (length ($call.args iform))])
        (begin0
@@ -2841,7 +2843,7 @@
          ($label.set-visited?! label #t)
          (cput! cb 'UNFIXED_JUMP label)))]
     [(embed)
-     (display "embed" (current-error-port))
+;     (display "embed" (current-error-port))
      (let* ([label ($lambda.body ($call.proc iform))]
             [body ($label.body label)]
             [vars ($lambda.lvars ($call.proc iform))]
@@ -2878,7 +2880,7 @@
              (code-builder-append! cb let-cb)
              (+ args-size body-size free-size)))))]
     [else
-     (display "else" (current-error-port))
+;     (display "else" (current-error-port))
      (let1 end-of-frame (make-label)
        ;;
        ;; How tail context call be optimized.

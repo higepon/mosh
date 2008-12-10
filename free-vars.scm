@@ -404,4 +404,6 @@
                (lambda (c)
                  (format #t "~a " c))
               (vector->list (vector-ref closure 0)))))
+    current-display-closure ;; debug
+    show-stack ;; debug
     )

@@ -109,7 +109,7 @@ inline Object* VM::unShiftArgs(Object* sp, int diff)
 }
 
 
-inline Object VM::index(Object* sp, int n)
+inline Object VM::index(Object* sp, int n) const
 {
     return *(sp - n - 1);
 }
