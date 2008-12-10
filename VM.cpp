@@ -1007,9 +1007,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             // create display closure
             const Object display = Object::makeClosure(NULL, 0, 0, false, sp_ - freeVariablesNum, freeVariablesNum, 0, Object::False);
             if (dc_.isClosure()) {
-//                printf("dc<%x>->child = dc<%x>\n", dc_.toClosure(), display.toClosure());
                 dc_.toClosure()->child = display;
-            } else {
             }
             dc_ = display;
             TRACE_INSN0("DISPLAY");
@@ -1345,9 +1343,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_FREE1_PUSH)
         {
-            const Object p = referFree(1);
-            // if (p.isCodeBuilder())
-//                LOG1("refer_free = ~a \n", p);
             push(referFree(1));
             NEXT;
         }
@@ -1577,9 +1572,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             fp_ = sp_ - depth;
             MOSH_ASSERT(index(fp_, 1).isClosure());
-//            printf("dc is restored %x => %x (source = %x)\n", dc_.toClosure(), index(fp_, 1).toClosure()->child.toClosure(), index(fp_, 1).toClosure());
             dc_ = index(fp_, 1).toClosure()->child;
-
             NEXT;
         }
         CASE(SHIFT)
@@ -2201,21 +2194,3 @@ void VM::expandStack(int plusSize)
     stackSize_ = nextStackSize;
 }
 
-
-void VM::printDisplayClosure() const
-{
-    fprintf(stderr, "dc_ = %x\n", dc_.toClosure());
-    fflush(stderr);
-
-}
-
-void VM::showStack() const
-{
-    for (int i = 5; i >= 0; i--) {
-        if (sp_ + i >= stackEnd_) {
-            break;
-        }
-        LOG1("    ======= ~d =======\n", Object::makeFixnum(i));
-        LOG1("    ~a\n", index(sp_, i));
-    }
-}

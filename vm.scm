@@ -2021,7 +2021,7 @@
     (vm-init '())
 ;     (load-file "./library.scm")
 
-    (load-file "./hage.scm")
+    (load-file "./work.scm")
 ;;     (load-file "./match.scm")
 
 ;;     (vm-test)
