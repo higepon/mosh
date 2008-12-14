@@ -73,6 +73,7 @@ namespace scheme {
     Object getU8Ex(int argc, const Object* argv);
     Object transcodedPortEx(int argc, const Object* argv);
     Object utf8CodecEx(int argc, const Object* argv);
+    Object nativeEolStyleEx(int argc, const Object* argv);
     Object makeTranscoderEx(int argc, const Object* argv);
     Object eofObjectEx(int argc, const Object* argv);
     Object sysOpenBytevectorOutputPortEx(int argc, const Object* argv);

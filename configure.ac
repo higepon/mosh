@@ -3,6 +3,8 @@
 
 AC_PREREQ(2.61)
 AC_INIT(mosh, 0.0.7, higepon@users.sourceforge.jp)
+AC_CANONICAL_SYSTEM
+
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([VM.h])
 AC_CONFIG_HEADER([config.h])
@@ -98,6 +100,17 @@ AC_C_VOLATILE
 # Checks for library functions.
 AC_FUNC_ALLOCA
 AC_CHECK_FUNCS([gettimeofday memmove memset strtol])
+
+# Check system type
+# todo: added another system type
+case "$target_in" in
+    cygwin* | mingw*)
+        AC_DEFINE(LINE_FEED_CODE_CRLF, 1, system line feed code is CRLF)
+        ;;
+    *)
+        AC_DEFINE(LINE_FEED_CODE_LF, 1, system line feed code is LF)
+        ;;
+esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1alpha3 onig-5.7.0])

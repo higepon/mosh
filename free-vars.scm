@@ -404,4 +404,5 @@
                (lambda (c)
                  (format #t "~a " c))
               (vector->list (vector-ref closure 0)))))
+    native-eol-style
     )

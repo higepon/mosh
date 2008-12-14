@@ -49,6 +49,7 @@
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
 #include "Fasl.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -488,6 +489,19 @@ Object scheme::utf8CodecEx(int argc, const Object* argv)
     DeclareProcedureName("utf8-codec");
     checkArgumentLength(0);
     return Object::makeUTF8Codec();
+}
+
+Object scheme::nativeEolStyleEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("native-eol-style");
+    checkArgumentLength(0);
+
+#if LINE_FEED_CODE_LF
+    return Symbol::LF;
+#elif LINE_FEED_CODE_CRLF
+    return Symbol::CRLF;
+/* todo: #elif ... */
+#endif
 }
 
 Object scheme::makeTranscoderEx(int argc, const Object* argv)

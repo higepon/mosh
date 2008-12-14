@@ -236,7 +236,7 @@ inline Object Object::makeBool(bool a)
 
 inline bool Object::isHeapObject() const
 {
-    return isPointer() && (reinterpret_cast<HeapObject*>(val)->type & 0x03 == 0x03);
+    return isPointer() && ((reinterpret_cast<HeapObject*>(val)->type & 0x03) == 0x03);
 }
 
 inline Pair* Object::toPair() const

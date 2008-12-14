@@ -1,3 +1,13 @@
+2008-12-14  kokosabu  <kokosabu@gmail.com>
+
+        * EolStyle.h: Removed.
+
+        * Added: native-eol-style.
+
+        * config.sub: Added.
+
+        * config.guess: Added.
+
 2008-12-09  higepon  <higepon@users.sourceforge.jp>
 
         * CompilerProcedures.cpp (disasmEx): disasm works.
