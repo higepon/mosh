@@ -500,6 +500,8 @@ Object scheme::nativeEolStyleEx(int argc, const Object* argv)
     return Symbol::LF;
 #elif LINE_FEED_CODE_CRLF
     return Symbol::CRLF;
+#elif LINE_FEED_CODE_CR
+    return Symbol::CR;
 /* todo: #elif ... */
 #endif
 }
@@ -513,12 +515,12 @@ Object scheme::makeTranscoderEx(int argc, const Object* argv)
     if (argc == 1) {
         return Object::makeTranscoder(codec);
     }
-    // todo: argumentAsXXXX(1, eolStyle);
+    argumentAsSymbol(1, eolStyle);
     if (argc == 2) {
         // todo: return Object::makeTranscoder(codec, eolStyle);
         return Object::makeTranscoder(codec);
     }
-    // todo: argumentAsXXXX(2, handlingMode);
+    argumentAsSymbol(2, handlingMode);
     // todo: return Object::makeTranscoder(codec, eolStyle, handlingMode);
     return Object::makeTranscoder(codec);
 }

@@ -2,6 +2,7 @@
  * Symbol.h - <symbol>
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2008  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -108,13 +109,23 @@ public:
     static Object BIG;
     static Object LITTLE;
 
-    // <eol-style symbols>
+    // <buffer-mode symbol>
+    static Object NONE;
+    static Object LINE;
+    static Object BLOCK;
+
+    // <eol-style symbol>
     static Object LF;
     static Object CR;
     static Object CRLF;
     static Object NEL;
     static Object CRNEL;
     static Object LS;
+
+    // <error-handling symbol>
+    static Object IGNORE;
+    static Object RAISE;
+    static Object REPLACE;
 
     static void initBuitinSymbols();
 };

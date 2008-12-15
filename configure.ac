@@ -104,8 +104,11 @@ AC_CHECK_FUNCS([gettimeofday memmove memset strtol])
 # Check system type
 # todo: added another system type
 case "$target_in" in
-    cygwin* | mingw*)
+    cygwin* | mingw* | amigados* | msdos* | rdos*)
         AC_DEFINE(LINE_FEED_CODE_CRLF, 1, system line feed code is CRLF)
+        ;;
+    mac*)
+        AC_DEFINE(LINE_FEED_CODE_CR, 1, system line feed code is CR)
         ;;
     *)
         AC_DEFINE(LINE_FEED_CODE_LF, 1, system line feed code is LF)

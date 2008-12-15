@@ -2,6 +2,7 @@
  * Symbol.cpp - Builtin Symbols.
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2008  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -54,7 +55,12 @@ Object Symbol::CRLF;
 Object Symbol::NEL;
 Object Symbol::CRNEL;
 Object Symbol::LS;
-
+Object Symbol::IGNORE;
+Object Symbol::RAISE;
+Object Symbol::REPLACE;
+Object Symbol::NONE;
+Object Symbol::LINE;
+Object Symbol::BLOCK;
 
 void Symbol::initBuitinSymbols()
 {
@@ -72,13 +78,23 @@ void Symbol::initBuitinSymbols()
     BIG               = Symbol::intern(UC("big"));
     LITTLE            = Symbol::intern(UC("little"));
 
-    // <eol-style symbols>
+    // <buffer-mode symbol>
+    NONE              = Symbol::intern(UC("none"));
+    LINE              = Symbol::intern(UC("line"));
+    BLOCK             = Symbol::intern(UC("block"));
+
+    // <eol-style symbol>
     LF                = Symbol::intern(UC("lf"));
     CR                = Symbol::intern(UC("cr"));
     CRLF              = Symbol::intern(UC("crlf"));
     NEL               = Symbol::intern(UC("nel"));
     CRNEL             = Symbol::intern(UC("crnel"));
     LS                = Symbol::intern(UC("ls"));
+
+    // <error-handling-mode symbol>
+    IGNORE            = Symbol::intern(UC("ignore"));
+    RAISE             = Symbol::intern(UC("raise"));
+    REPLACE           = Symbol::intern(UC("replace"));
 }
 
 const ucs4char* Symbol::c_str()
