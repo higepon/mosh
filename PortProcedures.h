@@ -81,6 +81,7 @@ namespace scheme {
     Object openFileOutputPortEx(int argc, const Object* argv);
     Object openFileInputPortEx(int argc, const Object* argv);
     Object eofObjectPEx(int argc, const Object* argv);
+    Object bufferModePEx(int argc, const Object* argv);
 
 }; // namespace scheme
 

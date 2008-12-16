@@ -1,3 +1,7 @@
+2008-12-17  kokosabu  <kokosabu@gmail.com>
+
+        * Added: buffer-mode?.
+
 2008-12-16  kokosabu  <kokosabu@gmail.com>
 
         * Added: <buffer-mode symbol>, <error-handling-mode symbol>.

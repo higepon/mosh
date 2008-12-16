@@ -671,3 +671,18 @@ Object scheme::readdirEx(int argc, const Object* argv)
     }
     return ret;
 }
+
+Object scheme::bufferModePEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("buffer-mode?");
+    checkArgumentLength(1);
+    argumentCheckSymbol(0, bufferMode);
+
+    if (bufferMode == Symbol::NONE ||
+        bufferMode == Symbol::LINE ||
+        bufferMode == Symbol::BLOCK) {
+        return Object::True;
+    }
+
+    return Object::False;
+}

@@ -3231,4 +3231,12 @@
      (with-input-from-file "all-tests.scm" (lambda () (values 1 2)))
    (+ a b))]
 
+;; port i/o
+(error (buffer-mode?))
+(todo  (#t (buffer-mode? (buffer-mode none))))
+(#t    (buffer-mode? 'none))
+(#t    (buffer-mode? 'line))
+(#t    (buffer-mode? 'block))
+(#f    (buffer-mode? 'lf))
+
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
