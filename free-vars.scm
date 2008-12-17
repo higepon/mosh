@@ -89,6 +89,7 @@
     bytevector-u8-set!
     transcoded-port
     utf-8-codec
+    utf-16-codec
     make-transcoder
     (eof-object (lambda () (if #f #f)))
     sys-open-bytevector-output-port

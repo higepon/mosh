@@ -1,3 +1,7 @@
+2008-12-18  kokosabu  <kokosabu@gmail.com>
+
+        * Added: utf-16-codec.
+
 2008-12-17  kokosabu  <kokosabu@gmail.com>
 
         * Added: buffer-mode?.

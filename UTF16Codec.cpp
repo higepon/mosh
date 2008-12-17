@@ -42,6 +42,15 @@
 
 using namespace scheme;
 
+UTF16Codec::UTF16Codec()
+{
+#if WORDS_BIGENDIAN
+    isLittleEndian_ = false;
+#else
+    isLittleEndian_ = true;
+#endif
+}
+
 UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);

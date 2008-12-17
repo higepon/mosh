@@ -46,6 +46,7 @@ public:
         UTF_16LE,
         NO_BOM
     };
+    UTF16Codec();
     UTF16Codec(int endianness);
     int out(BinaryOutputPort* port, ucs4char u);
     int out(uint8_t* buf, ucs4char u);

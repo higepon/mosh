@@ -57,6 +57,7 @@
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
+#include "UTF16Codec.h"
 #include "Transcoder.h"
 #include "StringTextualInputPort.h"
 #include "StringTextualOutputPort.h"
@@ -172,6 +173,12 @@ Object Object::makeUTF8Codec()
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
                                                         reinterpret_cast<word>(new UTF8Codec()))));
+}
+
+Object Object::makeUTF16Codec()
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
+                                                        reinterpret_cast<word>(new UTF16Codec()))));
 }
 
 Object Object::makeTranscoder(Codec* codec)

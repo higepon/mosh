@@ -486,9 +486,16 @@ Object scheme::transcodedPortEx(int argc, const Object* argv)
 
 Object scheme::utf8CodecEx(int argc, const Object* argv)
 {
-    DeclareProcedureName("utf8-codec");
+    DeclareProcedureName("utf-8-codec");
     checkArgumentLength(0);
     return Object::makeUTF8Codec();
+}
+
+Object scheme::utf16CodecEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("utf-16-codec");
+    checkArgumentLength(0);
+    return Object::makeUTF16Codec();
 }
 
 Object scheme::nativeEolStyleEx(int argc, const Object* argv)
