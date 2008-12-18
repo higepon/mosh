@@ -56,6 +56,7 @@
 #include "FileBinaryInputPort.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
+#include "Latin1Codec.h"
 #include "UTF8Codec.h"
 #include "UTF16Codec.h"
 #include "Transcoder.h"
@@ -167,6 +168,12 @@ Object Object::makeCustomBinaryInputPort(Object readProc)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
                                                         reinterpret_cast<word>(new CustomBinaryInputPort(readProc)))));
+}
+
+Object Object::makeLatin1Codec()
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
+                                                        reinterpret_cast<word>(new Latin1Codec()))));
 }
 
 Object Object::makeUTF8Codec()

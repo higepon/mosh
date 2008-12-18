@@ -186,6 +186,7 @@ public:
     static Object makeBool(bool a);
     static Object makeRegexp(const ucs4string& pattern, bool caseFold = false);
     static Object makeRegMatch(OnigRegion* region, const ucs4string& text);
+    static Object makeLatin1Codec();
     static Object makeUTF8Codec();
     static Object makeUTF16Codec();
     static Object makeTranscoder(Codec* codec);

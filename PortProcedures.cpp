@@ -484,6 +484,13 @@ Object scheme::transcodedPortEx(int argc, const Object* argv)
     return Object::makeTextualInputPort(binaryInputPort, transcoder);
 }
 
+Object scheme::latin1CodecEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("latin-1-codec");
+    checkArgumentLength(0);
+    return Object::makeLatin1Codec();
+}
+
 Object scheme::utf8CodecEx(int argc, const Object* argv)
 {
     DeclareProcedureName("utf-8-codec");

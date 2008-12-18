@@ -72,6 +72,7 @@ namespace scheme {
     Object makeCustomBinaryInputPortEx(int argc, const Object* argv);
     Object getU8Ex(int argc, const Object* argv);
     Object transcodedPortEx(int argc, const Object* argv);
+    Object latin1CodecEx(int argc, const Object* argv);
     Object utf8CodecEx(int argc, const Object* argv);
     Object utf16CodecEx(int argc, const Object* argv);
     Object nativeEolStyleEx(int argc, const Object* argv);

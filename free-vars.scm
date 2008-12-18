@@ -88,6 +88,7 @@
     get-u8
     bytevector-u8-set!
     transcoded-port
+    latin-1-codec
     utf-8-codec
     utf-16-codec
     make-transcoder

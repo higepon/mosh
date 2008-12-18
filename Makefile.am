@@ -97,7 +97,8 @@ Ratnum.h                      Ratnum.cpp                          \
 Bignum.h                      Bignum.cpp                          \
 Flonum.h                      Flonum.cpp                          \
 CodeBuilder.h                 CodeBuilder.cpp                     \
-FinxumProcedures.h            FixnumProcedures.cpp
+FinxumProcedures.h            FixnumProcedures.cpp                \
+Latin1Codec.h                 Latin1Codec.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O2 $(mosh_OPTS) -fomit-frame-pointer -g -D_FILE_OFFSET_BITS=64 -Wall # -DDEBUG_VERSION 
