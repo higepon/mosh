@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Transcoder.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_TRANSCODER__
@@ -57,19 +57,27 @@ public:
         RAISE,
         REPLACE,
     };
+
     Transcoder(Codec* codec, enum EolStyle e, enum ErrorHandlingMode m) : codec_(codec)
     {
     }
-
     Transcoder(Codec* codec) : codec_(codec)
     {
     }
+    Transcoder(Codec* codec, const Object eolStyle);
+    Transcoder(Codec* codec, const Object eolStyle, const Object handlingMode);
+
 
 
     Codec* codec() const { return codec_; }
 
 private:
     Codec* codec_;
+    enum EolStyle eolStyle_;
+    enum ErrorHandlingMode errorhandlingMode_;
+
+    enum EolStyle symbolToEolStyle(const Object symbol);
+    enum ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
 };
 
 }; // namespace scheme

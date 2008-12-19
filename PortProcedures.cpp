@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: PortProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id$
  */
 
 #include <dirent.h>
@@ -529,14 +529,12 @@ Object scheme::makeTranscoderEx(int argc, const Object* argv)
     if (argc == 1) {
         return Object::makeTranscoder(codec);
     }
-    argumentAsSymbol(1, eolStyle);
+    argumentCheckSymbol(1, eolStyle);
     if (argc == 2) {
-        // todo: return Object::makeTranscoder(codec, eolStyle);
-        return Object::makeTranscoder(codec);
+        return Object::makeTranscoder(codec, eolStyle);
     }
-    argumentAsSymbol(2, handlingMode);
-    // todo: return Object::makeTranscoder(codec, eolStyle, handlingMode);
-    return Object::makeTranscoder(codec);
+    argumentCheckSymbol(2, errorHandlingMode);
+    return Object::makeTranscoder(codec, eolStyle, errorHandlingMode);
 }
 
 Object scheme::eofObjectEx(int argc, const Object* argv)

@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Object.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id$
  */
 
 #include "Object.h"
@@ -192,6 +192,18 @@ Object Object::makeTranscoder(Codec* codec)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
                                                         reinterpret_cast<word>(new Transcoder(codec)))));
+}
+
+Object Object::makeTranscoder(Codec* codec, const Object eolStyle)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<word>(new Transcoder(codec, eolStyle)))));
+}
+
+Object Object::makeTranscoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<word>(new Transcoder(codec, eolStyle, errorHandlingMode)))));
 }
 
 Object Object::makeTextualInputPort(BinaryInputPort* port, Transcoder* transcoder)

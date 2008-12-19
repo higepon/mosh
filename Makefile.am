@@ -38,7 +38,7 @@ Pair.h                                                            \
 Stack.h                                                           \
 Box.h                                                             \
 Codec.h                                                           \
-Transcoder.h                                                      \
+Transcoder.h                  Transcoder.cpp                      \
 ProcedureMacro.h                                                  \
 Compnum.h                     Compnum.cpp                         \
 Fixnum.h                      Fixnum.cpp                          \

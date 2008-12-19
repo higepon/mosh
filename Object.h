@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Object.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_OBJECT__
@@ -190,6 +190,8 @@ public:
     static Object makeUTF8Codec();
     static Object makeUTF16Codec();
     static Object makeTranscoder(Codec* codec);
+    static Object makeTranscoder(Codec* codec, const Object eolStyle);
+    static Object makeTranscoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode);
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
