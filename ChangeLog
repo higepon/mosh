@@ -1,16 +1,93 @@
+2008-12-21  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am: Merged branch/pass2define-bug to trunk.
+
+        * call.inc.cpp: Added for better performance. (L1 cache miss)
+
+2008-12-20  higepon  <higepon@users.sourceforge.jp>
+
+        * Added checking index out of range vector-set! and vector-ref.
+
+        * Use NUMBER_ADD instead of NUMBER_SUB on some situation.
+
+        * instruction.scm: Removed some compound instruction.
+
+2008-12-19  higepon  <higepon@users.sourceforge.jp>
+
+        * Fasl.h (scheme): Changed data structure for better performance.
+
+        * VM-inl.h (pop): Added pop();
+
+        * (define-insn VECTOR_REF_PUSH 0)
+        * (define-insn REFER_LOCAL_CALL 2)
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/library-manager.ss (psyntax): Added fast-equal?.
+
+        * Fasl.h (scheme): Changed Fasl for Instruction. It fits 8 bit.
+
+        * Added (define-insn REFER_FREE_CALL 2)
+        * Added (define-insn REFER_GLOBAL_PUSH 1)
+        * Added (define-insn REFER_LOCAL_VECTOR_REF 1)
+        * Added (define-insn REFER_LOCAL_VECTOR_SET 1)
+        * Added (define-insn PUSH_CONSTANT_VECTOR_SET 1)
+
+2008-12-18  higepon  <higepon@users.sourceforge.jp>
+
+        * Removed some compound instructions.
+
+        * Added (define-insn REFER_LOCAL_BRANCH_NOT_LT 2).
+
+        * Added (define-insn REFER_LOCAL_BRANCH_NOT_NULL 2).
+
+        * Added (define-insn REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE 3)
+                (define-insn REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE 3)
+                (define-insn REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL 3)
+
+        * Added graph.
+
 2008-12-18  kokosabu  <kokosabu@gmail.com>
 
         * Added: utf-16-codec.
 
         * Added: latin-1-codec.
 
+
+2008-12-17  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (run): Removed NUMBER_LE_TEST and REFER_LOCAL0_EQV_TEST.
+
+        * CompilerProcedures.cpp (pass4FixupLabel): Added peep hole optimization for instructions below.
+
+        * VM.cpp : Added new Instructions BRANCH_NOT_(LE|LT|GE|GT).
+                   Added BRANCH_NOT_NULL, BRANCH_NOT_NUMBER_EQUAL, BRANCH_NOT_EQ, BRANCH_NOT_EQV and BRANCH_NOT_EQUAL.
+
 2008-12-17  kokosabu  <kokosabu@gmail.com>
 
         * Added: buffer-mode?.
 
+2008-12-16  higepon  <higepon@users.sourceforge.jp>
+
+        * CodeBuilder.cpp (CodeBuilder::combineInstructionsArgument1): Enabled REFER_GLOBAL_CALL.
+
 2008-12-16  kokosabu  <kokosabu@gmail.com>
 
         * Added: <buffer-mode symbol>, <error-handling-mode symbol>.
+
+
+2008-12-15  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/$if): Omit the jump after then clause.
+                       (pass2/$if): Omit "if" when (if const then else) appears.
+                       (pass3/$if): (if a b #f) => (if a b IT).
+
+2008-12-14  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (parse-lambda-vars): Return values.
+                       (lambda-has-define?): Rewrote.
+                       (pass1/cond->iform): Added cond expansion.
+                       (pass2/$if): Ported pass2/$if from Gauche.
+
+        * Removed library support which is not used.
 
 2008-12-14  kokosabu  <kokosabu@gmail.com>
 
@@ -21,6 +98,26 @@
         * config.sub: Added.
 
         * config.guess: Added.
+
+2008-12-13  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass1/call): Fixed tail? flag for arguments of $call.
+                       (pass3/$if): optimization for (if (not x) a b) => (if x b a).
+
+        * VM.cpp (VM_ASSERT): Added VM_ASSERT. It shows dc and cl register.
+
+        * CompilerProcedures.cpp (findSetsLabel): Fixed findSets for searching in $LABEL.
+
+        * compiler.scm : Fixed pass3/find-sets for searching in $LABEL.
+
+2008-12-12  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/$receive): Fixed the bug of counting depth of vals clause.
+                       (pass1/receive): Fixed wrong tail? flag.
+
+2008-12-11  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/$call): Fixed the bug for nested name loop.
 
 2008-12-09  higepon  <higepon@users.sourceforge.jp>
 

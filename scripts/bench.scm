@@ -45,7 +45,7 @@
 
 (define (benchmark command verbose?)
   (sys-system "make")
-  (let ([our-results (apply min (ntimes-map (lambda () (exec-with-time `("./mosh" ,@command))) 10))]
+  (let ([our-results (apply min (ntimes-map (lambda () (exec-with-time `("./mosh -5" ,@command))) 10))]
         [gosh-results (apply min (ntimes-map (lambda () (exec-with-time `("gosh" ,@command))) 10))])
     (format (current-error-port) "\n|*~a|~a|~a|" (first command) gosh-results our-results)
     (if verbose? (count-insns command))))

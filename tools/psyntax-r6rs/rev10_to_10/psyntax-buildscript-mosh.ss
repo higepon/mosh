@@ -973,6 +973,7 @@
     (receive mosh-backend) ;; I want psyntax pass through "receive" to backend(Mosh).
     (fasl-write mosh)
     (fasl-read mosh)
+    (fast-equal? mosh)
     (make-complex mosh)
     (bignum? mosh)
     (set-source-info! mosh)

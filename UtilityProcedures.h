@@ -49,6 +49,7 @@ namespace scheme {
     Object getEnvironmentVariableEx(int argc, const Object* argv);
     Object getEnvironmentVariablesEx(int argc, const Object* argv);
     Object equalPEx(int argc, const Object* argv);
+    Object fastEqualPEx(int argc, const Object* argv);
     Object digitTointegerEx(int argc, const Object* argv);
     Object getRemainingInputStringEx(int argc, const Object* argv);
     Object charTointegerEx(int argc, const Object* argv);

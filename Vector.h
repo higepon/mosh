@@ -46,6 +46,7 @@ public:
     Object ref(int index) const;
     void set(int index, Object obj);
     int length() const;
+    bool isValidIndex(int index) const;
     Object* data();
 
 private:
@@ -81,6 +82,11 @@ inline int Vector::length() const
     return num_;
 }
 
+inline bool Vector::isValidIndex(int index) const
+{
+    return num_ >= 0 && index < num_;
+}
+
 inline Object::Object(int n, Object o)
   : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))
 {
@@ -98,6 +104,7 @@ inline Object Object::makeVector(Object pair)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
                                                         (new Vector(pair)))));
 }
+
 
 
 }; // namespace scheme

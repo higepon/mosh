@@ -49,7 +49,7 @@ using namespace scheme;
 TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec()),
                                                                                port_(port),
                                                                                coder_(coder),
-                                                                               buffer_(NULL),
+                                                                               buffer_(UC("")),
                                                                                line_(1),
                                                                                error_(Object::Nil),
                                                                                scanner_(new Scanner),

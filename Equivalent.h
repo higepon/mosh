@@ -37,6 +37,7 @@
 namespace scheme {
     bool equal(Object object1, Object object2, EqHashTable* visited);
     bool equal(Object object1, Object object2);
+    bool fastEqual(Object object1, Object object2);
 
     inline bool eqv(Object o1, Object o2)
     {

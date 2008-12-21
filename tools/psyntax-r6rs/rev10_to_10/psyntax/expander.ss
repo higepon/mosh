@@ -37,12 +37,12 @@
 
   (import
     (except (rnrs)
-      environment environment? identifier?
+      environment environment? identifier? equal?
       eval generate-temporaries free-identifier=?
       bound-identifier=? datum->syntax syntax-error
       syntax-violation syntax->datum make-variable-transformer
       null-environment scheme-report-environment)
-    (rnrs base)
+    (except (rnrs base) equal?)
     (rnrs lists)
     (rnrs control)
     (rnrs io simple)
@@ -53,6 +53,7 @@
     (psyntax config)
     (psyntax internal)
     (mosh string)
+    (rename (mosh) (fast-equal? equal?)) ;; ignore circular list
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
     (prefix (rnrs syntax-case) sys.))
 

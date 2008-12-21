@@ -210,6 +210,14 @@ Object scheme::equalPEx(int argc, const Object* argv)
 //    return argv[0].equal(argv[1]);
 }
 
+Object scheme::fastEqualPEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("fast-equal?");
+    checkArgumentLength(2);
+    return Object::makeBool(fastEqual(argv[0], argv[1]));
+}
+
+
 // todo from gauche
 Object scheme::digitTointegerEx(int argc, const Object* argv)
 {
@@ -253,7 +261,7 @@ Object scheme::integerTocharEx(int argc, const Object* argv)
     DeclareProcedureName("integer->char");
     checkArgumentLength(1);
     argumentAsFixnum(0, integer);
-    if  (integer > 0x10ffff || (integer >= 0xd800 && integer <= 0xdfff)) {
+    if  (integer > 0x10ffff) {// || (integer >= 0xd800 && integer <= 0xdfff)) {
         callAssertionViolationAfter(procedureName, "code point out of range", L1(argv[1]));
         return Object::Undef;
     }
@@ -388,15 +396,6 @@ Object scheme::pairPEx(int argc, const Object* argv)
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isPair());
 }
-
-Object scheme::initLibraryTableEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("init-library-table");
-    checkArgumentLength(0);
-    theVM->initLibraryTable();
-    return Object::Undef;
-}
-
 
 Object scheme::vectorEx(int argc, const Object* argv)
 {

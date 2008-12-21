@@ -96,3 +96,15 @@ ucs4string ucs4string::from_c_str(const char* s, int size)
     ret[size] = '\0';
     return ucs4string(ret);
 }
+
+bool ucs4string::is_ascii() const
+{
+    const int length = size();
+    for (int i = 0; i < length; i++) {
+        const ucs4char ch = (*this)[i];
+        if (ch < 0 && ch > 255) {
+            return false;
+        }
+    }
+    return true;
+}

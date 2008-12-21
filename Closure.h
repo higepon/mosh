@@ -49,7 +49,7 @@ public:
         ,freeVariablesNum(freeVariablesNum)
         ,maxStack(maxStack)
         ,sourceInfo(sourceInfo)
-        ,child(Object::False)
+        ,prev(Object::False)
     {
         freeVariables = Object::makeObjectArray(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
@@ -69,6 +69,7 @@ public:
             exit(-1);
         }
 #endif
+        MOSH_ASSERT(n < freeVariablesNum);
         return freeVariables[n];
     }
 
@@ -83,7 +84,7 @@ public:
     const int freeVariablesNum;
     const int maxStack;
     Object sourceInfo;
-    Object child;
+    Object prev;
 };
 
     inline Object Object::makeClosure(Object* pc, int size, int argLength, bool isOptionalArg,

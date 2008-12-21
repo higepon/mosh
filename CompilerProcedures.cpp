@@ -49,9 +49,9 @@ static Object pass4FixupLabel(Object vec);
 static Object findFree(Object iform, Object locals, Object canFrees);
 static Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
 static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
-static Object findSetsRecMap(Object lvars, Object list);
+static Object findSetsRecMap(Object lvars, Object list, Object labelsSeen);
 static Object findSets(Object iform, Object lvars);
-static Object findSetsRec(Object i, Object lvars);
+static Object findSetsRec(Object i, Object lvars, Object labelsSeen);
 
 enum {
     CONST         = 0,
@@ -70,10 +70,8 @@ enum {
     CALL          = 14,
     LABEL         = 15,
     LIST          = 16,
-    LIBRARY       = 17,
-    IMPORT        = 18,
-    IT            = 20,
-    RECEIVE       = 21
+    IT            = 17,
+    RECEIVE       = 18
 };
 
 Object scheme::labelEx(int argc, const Object* argv)
@@ -92,8 +90,14 @@ Object scheme::localRefEx(int argc, const Object* argv)
     DeclareProcedureName("$localRefEx");
     checkArgumentLength(1);
     const Object label = Object::makeVector(2);
+    const Object lvar = argv[0];
     label.toVector()->set(0, Object::makeFixnum(LOCAL_REF));
-    label.toVector()->set(1, argv[0]);
+    label.toVector()->set(1, lvar);
+    MOSH_ASSERT(lvar.isVector());
+    Vector* const v = lvar.toVector();
+    const Object refCount = v->ref(3);
+    MOSH_ASSERT(refCount.isFixnum());
+    v->set(3, Object::makeFixnum(refCount.toFixnum() + 1));
     return label;
 }
 
@@ -229,7 +233,7 @@ Object findFreeLocalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
 
 Object findFreeGlobalRef(Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
-        const Object sym = v->ref(2);
+        const Object sym = v->ref(1);
         if (existsInCanFrees(sym, canFrees)) {
             return Pair::list1(sym);
         } else {
@@ -257,7 +261,6 @@ Object findFreeLabel(Object i, Vector* v, Object l, Object canFrees, Object labe
 
 Object findFreeCall(Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
-
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
         return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, callArgs),
@@ -313,7 +316,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case DEFINE:
     {
-        const Object defineVal = v->ref(3);
+        const Object defineVal = v->ref(2);
         return findFreeRec(defineVal, l, canFrees, labelsSeen);
     }
     case CALL:
@@ -327,7 +330,7 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     }
     case GLOBAL_ASSIGN:
     {
-        const Object globalAssignVal = v->ref(3);
+        const Object globalAssignVal = v->ref(2);
         return findFreeRec(globalAssignVal, l, canFrees, labelsSeen);
     }
     case LIST:
@@ -339,10 +342,6 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
     {
         return findFreeLabel(i, v, l, canFrees, labelsSeen);
     }
-    case IMPORT:
-        return Object::Nil;
-    case LIBRARY:
-        return Object::Nil;
     case IT:
         return Object::Nil;
     default:
@@ -362,21 +361,32 @@ Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
     return ret;
 }
 
-Object findSetsRecMap(Object lvars, Object list)
+Object findSetsRecMap(Object lvars, Object list, Object labelsSeen)
 {
     Object ret = Object::Nil;
     for (Object p = list; p.isPair(); p = p.cdr()) {
-        ret = Pair::append2(ret, findSetsRec(p.car(), lvars));
+        ret = Pair::append2(ret, findSetsRec(p.car(), lvars, labelsSeen));
     }
     return ret;
 }
 
 Object findSets(Object iform, Object lvars)
 {
-    return uniq(findSetsRec(iform, lvars));
+    return uniq(findSetsRec(iform, lvars, Object::Nil));
 }
 
-Object findSetsRec(Object i, Object lvars)
+Object findSetsLabel(Object i, Object lvars, Object labelsSeen)
+{
+    Vector* v = i.toVector();
+    const Object labelBody = v->ref(1);
+    if (!memq(i, labelsSeen).isFalse()) {
+        return Object::Nil;
+    } else {
+        return findSetsRec(labelBody, lvars, Object::cons(i, labelsSeen));
+    }
+}
+
+Object findSetsRec(Object i, Object lvars, Object labelsSeen)
 {
     Vector* v = i.toVector();
     MOSH_ASSERT(v->ref(0).isFixnum());
@@ -387,34 +397,34 @@ Object findSetsRec(Object i, Object lvars)
     {
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
-        return Pair::append2(findSetsRecMap(lvars, letInits),
-                             findSetsRec(letBody, lvars));
+        return Pair::append2(findSetsRecMap(lvars, letInits, labelsSeen),
+                             findSetsRec(letBody, lvars, labelsSeen));
     }
     case RECEIVE:
     {
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
-        return Pair::append2(findSetsRec(receiveVals, lvars),
-                             findSetsRec(receiveBody, lvars));
+        return Pair::append2(findSetsRec(receiveVals, lvars, labelsSeen),
+                             findSetsRec(receiveBody, lvars, labelsSeen));
     }
     case SEQ:
     {
         const Object seqBody = v->ref(1);
-        return findSetsRecMap(lvars, seqBody);
+        return findSetsRecMap(lvars, seqBody, labelsSeen);
     }
     case LAMBDA:
     {
         const Object lambdaBody = v->ref(6);
-        return findSetsRec(lambdaBody, lvars);
+        return findSetsRec(lambdaBody, lvars, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
         if (memq(localAssignLvar, lvars).isFalse()) {
-            return findSetsRec(localAssignVal, lvars);
+            return findSetsRec(localAssignVal, lvars, labelsSeen);
         } else {
-            return Object::cons(localAssignLvar, findSetsRec(localAssignVal, lvars));
+            return Object::cons(localAssignLvar, findSetsRec(localAssignVal, lvars, labelsSeen));
         }
     }
     case LOCAL_REF:
@@ -429,51 +439,47 @@ Object findSetsRec(Object i, Object lvars)
         return Object::Nil;
     case IF:
     {
-        const Object testF = findSetsRec(v->ref(1), lvars);
-        const Object thenF = findSetsRec(v->ref(2), lvars);
-        const Object elseF = findSetsRec(v->ref(3), lvars);
+        const Object testF = findSetsRec(v->ref(1), lvars, labelsSeen);
+        const Object thenF = findSetsRec(v->ref(2), lvars, labelsSeen);
+        const Object elseF = findSetsRec(v->ref(3), lvars, labelsSeen);
         return Pair::append2(testF, Pair::append2(thenF, elseF));
     }
     case ASM:
     {
         const Object asmArgs = v->ref(2);
-        return findSetsRecMap(lvars, asmArgs);
+        return findSetsRecMap(lvars, asmArgs, labelsSeen);
     }
     case DEFINE:
     {
         const Object defineVal = v->ref(3);
-        return findSetsRec(defineVal, lvars);
+        return findSetsRec(defineVal, lvars, labelsSeen);
     }
     case CALL:
     {
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
-        return Pair::append2(findSetsRecMap(lvars, callArgs),
-                             findSetsRec(callProc, lvars));
+        return Pair::append2(findSetsRecMap(lvars, callArgs, labelsSeen),
+                             findSetsRec(callProc, lvars, labelsSeen));
     }
     case CALL_CC:
     {
         const Object callccProc = v->ref(1);
-        return findSetsRec(callccProc, lvars);
+        return findSetsRec(callccProc, lvars, labelsSeen);
     }
     case GLOBAL_ASSIGN:
     {
-        const Object globalAssignVal = v->ref(3);
-        return findSetsRec(globalAssignVal, lvars);
+        const Object globalAssignVal = v->ref(2);
+        return findSetsRec(globalAssignVal, lvars, labelsSeen);
     }
     case LIST:
     {
         const Object listArgs = v->ref(1);
-        return findSetsRecMap(lvars, listArgs);
+        return findSetsRecMap(lvars, listArgs, labelsSeen);
     }
     case LABEL:
     {
-        return Object::Nil;
+        return findSetsLabel(i, lvars, labelsSeen);
     }
-    case IMPORT:
-        return Object::Nil;
-    case LIBRARY:
-        return Object::Nil;
     case IT:
         return Object::Nil;
     default:
@@ -577,6 +583,20 @@ Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
     return codeBuilder->emit();
 }
 
+Object scheme::codeBuilderPutInsnArg2DEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("code-builder-put-insn-arg2!");
+    checkArgumentLength(4);
+
+    argumentAsCodeBuilder(0, codeBuilder);
+    const Object instruction = argv[1];
+    const Object argument1 = argv[2];
+    const Object argument2 = argv[3];
+
+    codeBuilder->putInstructionArgument2(instruction, argument1, argument2);
+    return Object::Undef;
+}
+
 Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put-insn-arg1!");
@@ -603,18 +623,34 @@ Object scheme::codeBuilderPutInsnArg0DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-
 Object pass4FixupLabelCollect(Object vec)
 {
-    static const Object NOP                   = Object::makeRaw(Instruction::NOP);
-    static const Object UNFIXED_JUMP          = Object::makeRaw(Instruction::UNFIXED_JUMP);
-    static const Object TEST                  = Object::makeRaw(Instruction::TEST);
-    static const Object NUMBER_LE_TEST        = Object::makeRaw(Instruction::NUMBER_LE_TEST);
-    static const Object NOT_TEST              = Object::makeRaw(Instruction::NOT_TEST);
-    static const Object REFER_LOCAL0_EQV_TEST = Object::makeRaw(Instruction::REFER_LOCAL0_EQV_TEST);
-    static const Object FRAME                 = Object::makeRaw(Instruction::FRAME);
-    static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
-    static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
+    static const Object NOP                     = Object::makeRaw(Instruction::NOP);
+    static const Object UNFIXED_JUMP            = Object::makeRaw(Instruction::UNFIXED_JUMP);
+    static const Object TEST                    = Object::makeRaw(Instruction::TEST);
+    static const Object BRANCH_NOT_NUMBER_EQUAL = Object::makeRaw(Instruction::BRANCH_NOT_NUMBER_EQUAL);
+    static const Object BRANCH_NOT_NULL         = Object::makeRaw(Instruction::BRANCH_NOT_NULL);
+    static const Object BRANCH_NOT_LE           = Object::makeRaw(Instruction::BRANCH_NOT_LE);
+    static const Object BRANCH_NOT_LT           = Object::makeRaw(Instruction::BRANCH_NOT_LT);
+    static const Object BRANCH_NOT_GE           = Object::makeRaw(Instruction::BRANCH_NOT_GE);
+    static const Object BRANCH_NOT_GT           = Object::makeRaw(Instruction::BRANCH_NOT_GT);
+    static const Object BRANCH_NOT_EQ           = Object::makeRaw(Instruction::BRANCH_NOT_EQ);
+    static const Object BRANCH_NOT_EQV          = Object::makeRaw(Instruction::BRANCH_NOT_EQV);
+    static const Object BRANCH_NOT_EQUAL        = Object::makeRaw(Instruction::BRANCH_NOT_EQUAL);
+    static const Object NOT_TEST                = Object::makeRaw(Instruction::NOT_TEST);
+    static const Object FRAME                   = Object::makeRaw(Instruction::FRAME);
+    static const Object PUSH_FRAME              = Object::makeRaw(Instruction::PUSH_FRAME);
+    static const Object CLOSURE                 = Object::makeRaw(Instruction::CLOSURE);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL);
+    static const Object REFER_LOCAL_BRANCH_NOT_NULL =
+        Object::makeRaw(Instruction::REFER_LOCAL_BRANCH_NOT_NULL);
+    static const Object REFER_LOCAL_BRANCH_NOT_LT =
+        Object::makeRaw(Instruction::REFER_LOCAL_BRANCH_NOT_LT);
 
     const Vector* const v = vec.toVector();
     const int length = v->length();
@@ -624,18 +660,41 @@ Object pass4FixupLabelCollect(Object vec)
     EqHashTable* const table = labels.toEqHashTable();
     for (int i = 0, j = 0; i < length;) {
         const Object insn = v->ref(i);
-        if (insn == UNFIXED_JUMP          ||
-            insn == TEST                  ||
-            insn == NUMBER_LE_TEST        ||
-            insn == NOT_TEST              ||
-            insn == REFER_LOCAL0_EQV_TEST ||
-            insn == FRAME                 ||
-            insn == PUSH_FRAME            ||
+        if (insn == UNFIXED_JUMP              ||
+            insn == TEST                      ||
+            insn == BRANCH_NOT_NULL           ||
+            insn == BRANCH_NOT_NUMBER_EQUAL   ||
+            insn == BRANCH_NOT_LE             ||
+            insn == BRANCH_NOT_LT             ||
+            insn == BRANCH_NOT_GE             ||
+            insn == BRANCH_NOT_GT             ||
+            insn == BRANCH_NOT_EQ             ||
+            insn == BRANCH_NOT_EQV            ||
+            insn == BRANCH_NOT_EQUAL          ||
+            insn == NOT_TEST                  ||
+            insn == FRAME                     ||
+            insn == PUSH_FRAME                ||
             insn == CLOSURE) {
             rv->set(j, insn);
             rv->set(j + 1, v->ref(i + 1));
             i += 2;
             j += 2;
+        } else if (insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE ||
+                   insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE ||
+                   insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL) {
+            rv->set(j, insn);
+            rv->set(j + 1, v->ref(i + 1));
+            rv->set(j + 2, v->ref(i + 2));
+            rv->set(j + 3, v->ref(i + 3));
+            i += 4;
+            j += 4;
+        } else if (insn == REFER_LOCAL_BRANCH_NOT_NULL ||
+                   insn == REFER_LOCAL_BRANCH_NOT_LT) {
+            rv->set(j, insn);
+            rv->set(j + 1, v->ref(i + 1));
+            rv->set(j + 2, v->ref(i + 2));
+            i += 3;
+            j += 3;
         } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isFixnum() &&
                    insn.toVector()->ref(0).toFixnum() == LABEL) {
             i++;
@@ -651,16 +710,33 @@ Object pass4FixupLabelCollect(Object vec)
 
 Object pass4FixupLabel(Object vec)
 {
-    static const Object UNFIXED_JUMP          = Object::makeRaw(Instruction::UNFIXED_JUMP);
-    static const Object TEST                  = Object::makeRaw(Instruction::TEST);
-    static const Object NUMBER_LE_TEST        = Object::makeRaw(Instruction::NUMBER_LE_TEST);
-    static const Object NOT_TEST              = Object::makeRaw(Instruction::NOT_TEST);
-    static const Object REFER_LOCAL0_EQV_TEST = Object::makeRaw(Instruction::REFER_LOCAL0_EQV_TEST);
-    static const Object FRAME                 = Object::makeRaw(Instruction::FRAME);
-    static const Object PUSH_FRAME            = Object::makeRaw(Instruction::PUSH_FRAME);
-    static const Object CLOSURE               = Object::makeRaw(Instruction::CLOSURE);
-    static const Object LOCAL_JMP             = Object::makeRaw(Instruction::LOCAL_JMP);
-    static const Object RETURN                = Object::makeRaw(Instruction::RETURN);
+    static const Object UNFIXED_JUMP            = Object::makeRaw(Instruction::UNFIXED_JUMP);
+    static const Object TEST                    = Object::makeRaw(Instruction::TEST);
+    static const Object BRANCH_NOT_NULL         = Object::makeRaw(Instruction::BRANCH_NOT_NULL);
+    static const Object BRANCH_NOT_NUMBER_EQUAL = Object::makeRaw(Instruction::BRANCH_NOT_NUMBER_EQUAL);
+    static const Object BRANCH_NOT_LE           = Object::makeRaw(Instruction::BRANCH_NOT_LE);
+    static const Object BRANCH_NOT_LT           = Object::makeRaw(Instruction::BRANCH_NOT_LT);
+    static const Object BRANCH_NOT_GE           = Object::makeRaw(Instruction::BRANCH_NOT_GE);
+    static const Object BRANCH_NOT_GT           = Object::makeRaw(Instruction::BRANCH_NOT_GT);
+    static const Object BRANCH_NOT_EQ           = Object::makeRaw(Instruction::BRANCH_NOT_EQ);
+    static const Object BRANCH_NOT_EQV          = Object::makeRaw(Instruction::BRANCH_NOT_EQV);
+    static const Object BRANCH_NOT_EQUAL        = Object::makeRaw(Instruction::BRANCH_NOT_EQUAL);
+    static const Object NOT_TEST                = Object::makeRaw(Instruction::NOT_TEST);
+    static const Object FRAME                   = Object::makeRaw(Instruction::FRAME);
+    static const Object PUSH_FRAME              = Object::makeRaw(Instruction::PUSH_FRAME);
+    static const Object CLOSURE                 = Object::makeRaw(Instruction::CLOSURE);
+    static const Object LOCAL_JMP               = Object::makeRaw(Instruction::LOCAL_JMP);
+    static const Object RETURN                  = Object::makeRaw(Instruction::RETURN);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE);
+    static const Object REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL =
+        Object::makeRaw(Instruction::REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL);
+    static const Object REFER_LOCAL_BRANCH_NOT_NULL =
+        Object::makeRaw(Instruction::REFER_LOCAL_BRANCH_NOT_NULL);
+    static const Object REFER_LOCAL_BRANCH_NOT_LT =
+        Object::makeRaw(Instruction::REFER_LOCAL_BRANCH_NOT_LT);
 
     const Object collected = pass4FixupLabelCollect(vec);
     Vector* const code = collected.car().toVector();
@@ -679,18 +755,46 @@ Object pass4FixupLabel(Object vec)
             } else {
                 i++;
             }
-        } else if (insn == TEST                  ||
-                   insn == NUMBER_LE_TEST        ||
-                   insn == NOT_TEST              ||
-                   insn == REFER_LOCAL0_EQV_TEST ||
-                   insn == FRAME                 ||
-                   insn == PUSH_FRAME            ||
+        } else if (insn == TEST                           ||
+                   insn == BRANCH_NOT_NUMBER_EQUAL        ||
+                   insn == BRANCH_NOT_NULL                ||
+                   insn == BRANCH_NOT_LE                  ||
+                   insn == BRANCH_NOT_LT                  ||
+                   insn == BRANCH_NOT_GE                  ||
+                   insn == BRANCH_NOT_GT                  ||
+                   insn == BRANCH_NOT_EQ                  ||
+                   insn == BRANCH_NOT_EQV                 ||
+                   insn == BRANCH_NOT_EQUAL               ||
+                   insn == NOT_TEST                       ||
+                   insn == FRAME                          ||
+                   insn == PUSH_FRAME                     ||
                    insn == CLOSURE) {
             const Object label = table->ref(code->ref(i + 1), Object::False);
             if (!labels.isFalse()) {
                 code->set(i, insn);
                 code->set(i + 1, Object::makeFixnum(label.toFixnum() - i - 1));
                 i += 2;
+            } else {
+                i++;
+            }
+        } else if (insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE ||
+                   insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE ||
+                   insn == REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL) {
+            const Object label = table->ref(code->ref(i + 3), Object::False);
+            if (!labels.isFalse()) {
+                code->set(i, insn);
+                code->set(i + 3, Object::makeFixnum(label.toFixnum() - i - 3));
+                i += 4;
+            } else {
+                i++;
+            }
+        } else if (insn == REFER_LOCAL_BRANCH_NOT_NULL ||
+                   insn == REFER_LOCAL_BRANCH_NOT_LT) {
+            const Object label = table->ref(code->ref(i + 2), Object::False);
+            if (!labels.isFalse()) {
+                code->set(i, insn);
+                code->set(i + 2, Object::makeFixnum(label.toFixnum() - i - 2));
+                i += 3;
             } else {
                 i++;
             }
@@ -726,7 +830,17 @@ Object pass4FixupLabel(Object vec)
                 code->set(i + 1, code->ref(destinationIndex + 1));
             }
 
-        } else if (insn == TEST) {
+        } else if (insn == TEST ||
+                   insn == BRANCH_NOT_NULL ||
+                   insn == BRANCH_NOT_LE ||
+                   insn == BRANCH_NOT_LT ||
+                   insn == BRANCH_NOT_GT ||
+                   insn == BRANCH_NOT_GE ||
+                   insn == BRANCH_NOT_NUMBER_EQUAL ||
+                   insn == BRANCH_NOT_EQ ||
+                   insn == BRANCH_NOT_EQV ||
+                   insn == BRANCH_NOT_EQUAL
+            ) {
             // when test destination is test
             // if ac_ == #f, test in destination is also #f.
             MOSH_ASSERT(i + 1 < length);
@@ -757,5 +871,13 @@ Object scheme::disasmEx(int argc, const Object* argv)
             VM_LOG1("~a ", c);
         }
     }
+    return Object::Undef;
+}
+
+Object scheme::printStackEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("print-stack");
+    checkArgumentLength(0);
+    theVM->printStack();
     return Object::Undef;
 }

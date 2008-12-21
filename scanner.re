@@ -70,10 +70,10 @@ Scanner::~Scanner()
 }
 
 
-static void yydebug(int state, ucs4char ch)
-{
-//    printf("state=%d ch=[%c] ch=%x\n", state, ch, ch);
-}
+// static void yydebug(int state, ucs4char ch)
+// {
+// //    printf("state=%d ch=[%c] ch=%x\n", state, ch, ch);
+// }
 
 
 void Scanner::fill(int n)

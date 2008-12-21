@@ -708,6 +708,7 @@ Object Arithmetic::bitwiseNot(Object e)
         return e.toBignum()->bitwiseNot();
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseAnd(Object e1, Object e2)
@@ -728,6 +729,7 @@ Object Arithmetic::bitwiseAnd(Object e1, Object e2)
         }
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseIor(Object e1, Object e2)
@@ -748,6 +750,7 @@ Object Arithmetic::bitwiseIor(Object e1, Object e2)
         }
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseXor(Object e1, Object e2)
@@ -768,6 +771,7 @@ Object Arithmetic::bitwiseXor(Object e1, Object e2)
         }
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseBitCount(Object e)
@@ -780,6 +784,7 @@ Object Arithmetic::bitwiseBitCount(Object e)
         return e.toBignum()->bitwiseBitCount();
     }
     MOSH_ASSERT(false);
+    return Object::Undef;
 }
 
 Object Arithmetic::bitwiseLength(Object e)
@@ -934,6 +939,7 @@ bool Arithmetic::isEven(Object n)
         return isEven(n.toCompnum()->real());
     }
     MOSH_ASSERT(false);
+    return false;
 }
 
 bool Arithmetic::isIntegerValued(Object n)
@@ -972,6 +978,7 @@ Object Arithmetic::exact(Object n)
     } else {
         MOSH_ASSERT(false);
     }
+    return Object::Undef;
 }
 
 Object Arithmetic::inexact(Object n)
@@ -991,6 +998,7 @@ Object Arithmetic::inexact(Object n)
     } else {
         MOSH_ASSERT(false);
     }
+    return Object::Undef;
 }
 
 bool Arithmetic::isExact(Object n)

@@ -45,11 +45,12 @@ public:
         ARGUMENT0,
         ARGUMENT1,
         ARGUMENT2,
+        ARGUMENT3,
         EXTRA
     };
 
     CodePacket();
-    CodePacket(Type packetType, Object instruction, Object argument1, Object argument2);
+    CodePacket(Type packetType, Object instruction, Object argument1, Object argument2, Object argument3);
 
     // accessors
     Type type() const { return packetType_; }
@@ -57,16 +58,19 @@ public:
     void setInstructionImmediate(int instruction) { instruction_ = Object::makeRaw(instruction); }
     void setArgument1(Object argument) { argument1_ = argument; }
     void setArgument2(Object argument) { argument2_ = argument; }
+    void setArgument3(Object argument) { argument3_ = argument; }
     Object instruction() const { return instruction_; }
     word instructionImmediate() const { return instruction_.val; }
     Object argument1() const { return argument1_; }
     Object argument2() const { return argument2_; }
+    Object argument3() const { return argument3_; }
 
 private:
     Type packetType_;
     Object instruction_;
     Object argument1_;
     Object argument2_;
+    Object argument3_;
 };
 
 class CodeBuilder EXTEND_GC
@@ -74,6 +78,7 @@ class CodeBuilder EXTEND_GC
 public:
     CodeBuilder();
     void putExtra(Object object);
+    void putInstructionArgument2(Object instruction, Object argument1, Object argument2);
     void putInstructionArgument1(Object instruction, Object argument1);
     void putInstructionArgument0(Object instruction);
     Object emit();
@@ -93,6 +98,7 @@ public:
 private:
     void flush();
     void put(CodePacket codePacket);
+    void combineInstructionsArgument2(CodePacket codePacket);
     void combineInstructionsArgument1(CodePacket codePacket);
     void combineInstructionsArgument0(CodePacket codePacket);
 
@@ -101,35 +107,6 @@ private:
     Object labelReferences_;
     ObjectVector code_;
 };
-
-
-// class CodeBuilder EXTEND_GC
-// {
-// public:
-//     CodeBuilder() {}
-
-//     void put(Object a) { code.push_back(a); }
-//     void put(Object a, Object b) { code.push_back(a); code.push_back(b); }
-//     void put(Object a, Object b, Object c) { code.push_back(a); code.push_back(b); code.push_back(c); }
-//     void put(Object a, Object b, Object c, Object d) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); }
-//     void put(Object a, Object b, Object c, Object d, Object e) { code.push_back(a); code.push_back(b); code.push_back(c); code.push_back(d); code.push_back(e); }
-
-//     void append(CodeBuilder* cb)
-//     {
-//         code.insert(code.end(), cb->code.begin(), cb->code.end());
-//     }
-
-//     Object emit()
-//     {
-//         Object ret = Object::Nil;
-//         for (int i = code.size() - 1; i >= 0; i--) {
-//             ret = Object::cons(code[i], ret);
-//         }
-//         return ret;
-//     }
-
-//     ObjectVector code;
-// };
 
 }; // namespace scheme
 

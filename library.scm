@@ -2910,10 +2910,10 @@
      (lambda (x)
        (let* ([closure  (first x)]
               [src      (source-info closure)]
-              [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
-              [location (if src (car src) #f)]
-              [file     (if location (car location) #f)]
-              [lineno   (if location (second location) #f)]
+              [name     (string-chop (format "~a" (if (pair? src) (cdr src) (get-closure-name closure))) 25 "...)")]
+              [location (if (pair? src) (car src) #f)]
+              [file     (if (pair? location) (car location) #f)]
+              [lineno   (if (pair? location) (second location) #f)]
               [count    (aif (hashtable-ref calls-hash closure #f) it "-")])
          (format #t " ~a   ~a ~a   ~a    ~a\n"
                  (lpad (third x) " " 3)
@@ -2932,33 +2932,7 @@
       )
      )
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
-      ;; (for-each
-;;        (lambda (p)
-;;          (let* ([closure (car p)]
-;;                 [count  (cdr p)]
-;;                 [src      (source-info closure)]
-;;                 [name     (string-chop (format "~a" (if src (cdr src) (get-closure-name closure))) 25 "...)")]
-;;                 [location (if src (car src) #f)]
-;;                 [file     (if location (car location) #f)]
-;;                 [lineno   (if location (second location) #f)])
-;;          (format #t "   0            0 ~a   ~a    ~a\n"
-;;                  (lpad count " " 10)
-;;                  (rpad name " " 30)
-;;                  (if file (format "~a:~d" file lineno) "")
-;;                  )))
-;;        (let1 filterd (filter (lambda (x) (not (memq (car x) seen-syms))) (hashtable->alist calls-hash))
-;;          (let1 sorted (sort filterd (lambda (a b) (> (cdr a) (cdr b))))
-;;        ($take  sorted 30))))
     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
-
-;; ;; temp
-;; (define (append! l1 l2)
-;;   (cond ((pair? l1)
-;;          (if (pair? (cdr l1))
-;;              (append! (cdr l1) l2)
-;;              (set-cdr! l1 l2) )
-;;          l1 )
-;;         (else l2) ) )
 
 ;; for psyntax.pp
 (define (void) (if #f #f))

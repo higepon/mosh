@@ -44,7 +44,7 @@ namespace scheme {
     }
 
     Object pass1FindSymbolInLvarsEx(int argc, const Object* argv);
-
+    Object printStackEx(int argc, const Object* argv);
     Object disasmEx(int argc, const Object* argv);
     Object labelEx(int argc, const Object* argv);
     Object localRefEx(int argc, const Object* argv);
@@ -64,6 +64,7 @@ namespace scheme {
     Object codeBuilderEmitEx(int argc, const Object* argv);
     Object codeBuilderPutInsnArg0DEx(int argc, const Object* argv);
     Object codeBuilderPutInsnArg1DEx(int argc, const Object* argv);
+    Object codeBuilderPutInsnArg2DEx(int argc, const Object* argv);
 
 }; // namespace scheme
 

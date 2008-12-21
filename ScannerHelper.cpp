@@ -105,4 +105,5 @@ Object ScannerHelper::applyExactness(int exactness, Object num)
     default:
         MOSH_ASSERT(false);
     }
+    return Object::Undef;
 }

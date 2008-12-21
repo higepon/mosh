@@ -25,14 +25,11 @@
     current-library-expander
     current-library-collection library-path library-extensions
     serialize-all current-precompiled-library-loader)
-  (import (except (rnrs) library) (psyntax compat) (rnrs r5rs)
-; comment out for mosh
-;          (only (ironscheme) format fprintf)
-; for mosh
-          (mosh string) ;; format
+  (import (except (rnrs) library equal?)
+          (psyntax compat) (rnrs r5rs)
+          (mosh string)
+          (rename (mosh) (fast-equal? equal?)) ;; ignore circular list
           )
-
-
 
   (define (make-collection)
     (let ((set '()))
@@ -316,7 +313,7 @@
       ((library-loader) name)
       (or (find-library-by
             (lambda (x)
-;              (format #t "library-name=~a name=~a\n" (library-name x) name)
+;              (format (current-error-port) "library-name=~a name=~a\n" (library-name x) name)
               (equal? (library-name x) name)))
           (assertion-violation #f
             "handling external library did not yield the correct library"

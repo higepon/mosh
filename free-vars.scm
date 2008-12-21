@@ -83,7 +83,6 @@
     values
     (vm/apply vm/apply)
     (pair? pair?)
-    (init-library-table init-library-table) ;; for test
     (make-custom-binary-input-port (lambda (id read! get-position set-position! close) (display "make-custom-binary-input-port not implemented")))
     get-u8
     bytevector-u8-set!
@@ -140,6 +139,7 @@
     (code-builder-emit code-builder-emit)
     (code-builder-put-insn-arg0! code-builder-put-insn-arg0!)
     (code-builder-put-insn-arg1! code-builder-put-insn-arg1!)
+    (code-builder-put-insn-arg2! code-builder-put-insn-arg2!)
     (length length)
     (list->vector list->vector)
     (pass3/compile-refer pass3/compile-refer)
@@ -377,7 +377,7 @@
     even?
     odd?
     abs
-    div
+    (div quotient)
     div0
     numerator
     denominator
@@ -402,10 +402,41 @@
     vector-fill!
     ungensym
     (disasm (lambda (closure)
-              (for-each
-               (lambda (c)
-                 (format #t "~a " c))
-              (vector->list (vector-ref closure 0)))))
+              (let ([code (vector-ref closure 0)]
+                    [ht (make-hash-table)])
+                (print code)
+                (let loop ([i 0])
+                  (if (= i (vector-length code))
+                      '()
+                      (cond
+                       [(eq? (vector-ref code i) 'LOCAL_JMP)
+                        (let1 n (vector-ref code (+ i 1))
+                          (hash-table-put! ht (+ i n 1) (format "<LABEL~a>" (+ i n 1)))
+                          (vector-set! code (+ i 1) (format "<To~a>" (+ i n 1)))
+                          (loop (+ i 2)))]
+                       [(eq? (vector-ref code i) 'TEST)
+                        (let1 n (vector-ref code (+ i 1))
+                          (hash-table-put! ht (+ i n 1) (format "<LABEL~a>" (+ i n 1)))
+                          (vector-set! code (+ i 1) (format "<To~a>" (+ i n 1)))
+                          (loop (+ i 2)))]
+                       [else
+                        (loop (+ i 1))])))
+                (let loop ([i 0])
+                  (if (= i (vector-length code))
+                      '()
+                      (begin
+                        (when (hash-table-get ht i #f)
+                            (format #t "~a " (hash-table-get ht i)))
+                        (format #t "~a " (vector-ref code i))
+                        (loop (+ i 1))))))))
+
+;;     (disasm (lambda (closure)
+;;               (for-each
+;;                (lambda (c)
+;;                  (format #t "~a " c))
+;;               (vector->list (vector-ref closure 0)))))
+    print-stack
+    fast-equal?
     native-eol-style
     buffer-mode?
     )

@@ -109,15 +109,18 @@ inline Object* VM::unShiftArgs(Object* sp, int diff)
 }
 
 
-inline Object VM::index(Object* sp, int n)
+inline Object VM::index(Object* sp, int n) const
 {
     return *(sp - n - 1);
 }
 
-    // あとで
-inline Object VM::referLocal(int n)
+inline Object VM::pop()
 {
-    return index(fp_ + n + 1, 0);
+    return *(--sp_);
+}
+inline Object VM::referLocal(int n) const
+{
+    return *(fp_ + n);
 }
 
 inline Object VM::referFree(Object n)

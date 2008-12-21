@@ -59,15 +59,10 @@
         (make-vector 1000)
         0)))
 
-;(define (VM codes pc a fp c stack sp)
-
 
 (define (init-library-table)
   (set! vm-instances (make-hash-table 'eq?))
-  (set! vm-libraries (make-hash-table 'eq?))
-  (set! vm-name-space (make-hash-table 'eq?))
-  (set! top-level-library (make-empty-library '(top-level)))
-  (vm-import (libname->symbol '(top-level))))
+  (set! vm-name-space (make-hash-table 'eq?)))
 
 (load "./free-vars-decl.scm")
 
@@ -93,11 +88,6 @@
 
 (load-free-vars)
 
-(define-syntax check-sexp->iform
-  (syntax-rules ()
-    ((_ sexp)
-     (pretty-iform (pass1/sexp->iform (quote sexp) top-level-library () #f)))))
-
 (define-syntax eqt
   (syntax-rules ()
     ((_ a b)
@@ -109,397 +99,7 @@
 (define debug-compile-time 0)
 (define optimize?          #t)
 
-(cond [#f
-(eqt '(1 2 3) (remove-tail '(1 2 3 4) even?))
-(eqt '(1 2 3 4) (remove-tail '(1 2 3 4) odd?))
 
-(define-syntax check-sexp->iform
-  (syntax-rules ()
-    ((_ sexp)
-     (pretty-iform (pass1/sexp->iform (quote sexp) top-level-library () #f)))))
-
-(test-start "vm")
-
-[check-sexp->iform
- (let ([a 0])
-   0)
- ]
-(eqt "($LET ((a[0 0] ($CONST 0))\n       )\n  ($CONST 0))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) 0)))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   a)
- ]
-(eqt "($LET ((a[1 0] ($CONST 0))\n       )\n  ($LOCAL-REF a[1 0]))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) a)))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 0])
-     a))
- ]
-(eqt "($LET ((a[1 0] ($CONST 0))\n       )\n  ($LET ((b[0 0] ($CONST 0))\n         )\n    ($LOCAL-REF a[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 0)) a))))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 0])
-     b))
- ]
-(eqt "($LET ((a[0 0] ($CONST 0))\n       )\n  ($LET ((b[1 0] ($CONST 0))\n         )\n    ($LOCAL-REF b[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 0)) b))))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 0])
-     (let ([c b])
-       c)))
- ]
-(eqt "($LET ((a[0 0] ($CONST 0))\n       )\n  ($LET ((b[1 0] ($CONST 0))\n         )\n    ($LET ((c[1 0] ($LOCAL-REF b[1 0]))\n           )\n      ($LOCAL-REF c[1 0]))))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 0)) (let ((c b)) c)))))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 0])
-     (let ([c b])
-       b)))
- ]
-(eqt "($LET ((a[0 0] ($CONST 0))\n       )\n  ($LET ((b[2 0] ($CONST 0))\n         )\n    ($LET ((c[0 0] ($LOCAL-REF b[2 0]))\n           )\n      ($LOCAL-REF b[2 0]))))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 0)) (let ((c b)) b)))))))
-
-
-[check-sexp->iform
- (let ([a 0])
-   (set! a 1))
- ]
-(eqt "($LET ((a[0 1] ($CONST 0))\n       )\n  ($LOCAL-ASSIGN a[0 1]\n    ($CONST 1)))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (set! a 1))))))
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 1])
-     (set! b 1)))
- ]
-(eqt "($LET ((a[0 0] ($CONST 0))\n       )\n  ($LET ((b[0 1] ($CONST 1))\n         )\n    ($LOCAL-ASSIGN b[0 1]\n      ($CONST 1))))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 1)) (set! b 1)))))))
-
-[check-sexp->iform
- (let ([a 0])
-   (let ([b 1])
-     (set! a 1)))
- ]
-(eqt "($LET ((a[0 1] ($CONST 0))\n       )\n  ($LET ((b[0 0] ($CONST 1))\n         )\n    ($LOCAL-ASSIGN a[0 1]\n      ($CONST 1))))\n" (with-output-to-string (lambda () (check-sexp->iform (let ((a 0)) (let ((b 1)) (set! a 1)))))))
-
-
-[check-sexp->iform
- (lambda (x) x)
- ]
-(eqt "($LAMBDA[anonymous (x[1 0]) ()]\n  ($LOCAL-REF x[1 0]))\n" (with-output-to-string (lambda () (check-sexp->iform (lambda (x) x)))))
-
-
-
-[check-sexp->iform
- (lambda (x)
-   x
-   (lambda (y)
-     y))
- ]
-(eqt "($LAMBDA[anonymous (x[1 0]) ()]\n  ($SEQ\n    ($LOCAL-REF x[1 0])\n    ($LAMBDA[anonymous (y[1 0]) ()]\n      ($LOCAL-REF y[1 0]))))\n" (with-output-to-string (lambda () (check-sexp->iform (lambda (x) x (lambda (y) y))))))
-
-[check-sexp->iform
- (lambda (x)
-   x
-   (lambda (y)
-     (set! x y)))
- ]
-(eqt "($LAMBDA[anonymous (x[1 1]) ()]\n  ($SEQ\n    ($LOCAL-REF x[1 1])\n    ($LAMBDA[anonymous (y[1 0]) ()]\n      ($LOCAL-ASSIGN x[1 1]\n        ($LOCAL-REF y[1 0])))))\n" (with-output-to-string (lambda () (check-sexp->iform (lambda (x) x (lambda (y) (set! x y)))))))
-
-
-[check-sexp->iform
- (if 3 4 5)
- ]
-(eqt "($IF ($CONST 3)\n  ($CONST 4)\n  ($CONST 5))\n" (with-output-to-string (lambda () (check-sexp->iform (if 3 4 5)))))
-
-
-[check-sexp->iform
- (if 3 4)
- ]
-(eqt "($IF ($CONST 3)\n  ($CONST 4)\n  ($UNDEF))\n" (with-output-to-string (lambda () (check-sexp->iform (if 3 4)))))
-
-
-[check-sexp->iform
- (if 3
-     (let ([a 0])
-       a))
- ]
-(eqt "($IF ($CONST 3)\n  ($LET ((a[1 0] ($CONST 0))\n         )\n    ($LOCAL-REF a[1 0]))\n  ($UNDEF))\n" (with-output-to-string (lambda () (check-sexp->iform (if 3 (let ((a 0)) a))))))
-
-
-[check-sexp->iform
- (cons 1 2)
- ]
-(eqt "($asm CONS\n  ($CONST 1)\n  ($CONST 2))\n" (with-output-to-string (lambda () (check-sexp->iform (cons 1 2)))))
-
-[check-sexp->iform
- (begin 3)
- ]
-(eqt "($CONST 3)\n" (with-output-to-string (lambda () (check-sexp->iform (begin 3)))))
-
-
-[check-sexp->iform
- (begin 3 4)
- ]
-(eqt "($SEQ\n  ($CONST 3)\n  ($CONST 4))\n" (with-output-to-string (lambda () (check-sexp->iform (begin 3 4)))))
-
-
-[check-sexp->iform
- (define a 3)
- ]
-
-(eqt "($DEFINE top level :a\n  ($CONST 3))\n" (with-output-to-string (lambda () (check-sexp->iform (define a 3)))))
-
-[check-sexp->iform
- (define (func x) x)
- ]
-(eqt "($DEFINE top level :func\n  ($LAMBDA[func (x[1 0]) ()]\n    ($LOCAL-REF x[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (define (func x) x)))))
-
-
-[check-sexp->iform
- (call/cc (lambda (c) c))
- ]
-(eqt "($CALL-CC ($LAMBDA[anonymous (c[1 0]) ()]\n  ($LOCAL-REF c[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (call/cc (lambda (c) c))))))
-
-[check-sexp->iform
- '(a b)
- ]
-(eqt "($CONST (a b))\n" (with-output-to-string (lambda () (check-sexp->iform '(a b)))))
-
-
-[check-sexp->iform
- (+ 1 2 3)
- ]
-(eqt "($asm NUMBER_ADD\n  ($asm NUMBER_ADD\n    ($CONST 1)\n    ($CONST 2))\n  ($CONST 3))\n" (with-output-to-string (lambda () (check-sexp->iform (+ 1 2 3)))))
-
-
-[check-sexp->iform
- (= 1 2 3)
- ]
-(eqt "($IF ($asm NUMBER_EQUAL\n       ($CONST 1)\n       ($CONST 2))\n  ($asm NUMBER_EQUAL\n    ($CONST 2)\n    ($CONST 3))\n  ($CONST #f))\n" (with-output-to-string (lambda () (check-sexp->iform (= 1 2 3)))))
-
-
-[check-sexp->iform
- (car 3)
- ]
-(eqt "($asm CAR\n  ($CONST 3))\n" (with-output-to-string (lambda () (check-sexp->iform (car 3)))))
-
-
-[check-sexp->iform
- func
- ]
-(eqt "($GLOBAL-REF top level  func)\n" (with-output-to-string (lambda () (check-sexp->iform func))))
-
-
-[check-sexp->iform
- (func 3 4)
- ]
-(eqt "($call [#f]($GLOBAL-REF top level  func)\n  ($CONST 3)\n  ($CONST 4))\n" (with-output-to-string (lambda () (check-sexp->iform (func 3 4)))))
-
-[check-sexp->iform
- (lambda (a)
-   (func a))
- ]
-(eqt "($LAMBDA[anonymous (a[1 0]) ()]\n  ($call[tail] [#f]($GLOBAL-REF top level  func)\n    ($LOCAL-REF a[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (lambda (a) (func a))))))
-
-[check-sexp->iform
- (letrec ([a 1])
-   a)
- ]
-(eqt "($LET ((a[1 0] ($CONST 1))\n       )\n  ($LOCAL-REF a[1 0]))\n" (with-output-to-string (lambda () (check-sexp->iform (letrec ((a 1)) a)))))
-
-;; refer-count of a should be 1.
-[check-sexp->iform
- (letrec ([a 1]
-          [b (lambda () a)])
-   (b))
- ]
-(eqt "($LET ((a[1 0] ($CONST 1))\n       (b[1 0] ($LAMBDA[anonymous () ()]\n                 ($LOCAL-REF a[1 0])))\n       )\n  ($call [#f]($LOCAL-REF b[1 0])))\n" (with-output-to-string (lambda () (check-sexp->iform (letrec ((a 1) (b (lambda () a))) (b))))))
-
-[check-sexp->iform
- (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
-   (a 0))
- ]
-(eqt "($LET ((a[2 0] ($LAMBDA[anonymous (i[3 0]) ()]\n                 ($IF ($asm NUMBER_EQUAL\n                        ($LOCAL-REF i[3 0])\n                        ($CONST 10))\n                   ($LOCAL-REF i[3 0])\n                   ($call[tail] [#f]($LOCAL-REF a[2 0])\n                     ($asm NUMBER_ADD\n                       ($LOCAL-REF i[3 0])\n                       ($CONST 1))))))\n       )\n  ($call [#f]($LOCAL-REF a[2 0])\n    ($CONST 0)))\n" (with-output-to-string (lambda () (check-sexp->iform (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))))))
-
-
-;; letrec の tail-call
-[check-sexp->iform
- (letrec ([a (lambda (i) (if (= i 10) 10 (a (+ i 1))))])
-   (a 0))
- ]
-(eqt "($LET ((a[2 0] ($LAMBDA[anonymous (i[2 0]) ()]\n                 ($IF ($asm NUMBER_EQUAL\n                        ($LOCAL-REF i[2 0])\n                        ($CONST 10))\n                   ($CONST 10)\n                   ($call[tail] [#f]($LOCAL-REF a[2 0])\n                     ($asm NUMBER_ADD\n                       ($LOCAL-REF i[2 0])\n                       ($CONST 1))))))\n       )\n  ($call [#f]($LOCAL-REF a[2 0])\n    ($CONST 0)))\n" (with-output-to-string (lambda () (check-sexp->iform (letrec ((a (lambda (i) (if (= i 10) 10 (a (+ i 1)))))) (a 0))))))
-
-;; pass2 tests
-(define-syntax check-optimize
-  (syntax-rules ()
-    ((_ sexp)
-     (pretty-iform (pass2/optimize (pass1/sexp->iform (pass1/expand (quote sexp)) top-level-library () #f) '())))))
-
-[check-optimize
- (let ([a 0])
-   a)
- ]
-(eqt "($CONST 0)\n" (with-output-to-string (lambda () (check-optimize (let ((a 0)) a)))))
-
-
-[check-optimize
- (let1 a (lambda (x) (let1 b x (+ b 1)))
-   (a 3))
- ]
-(eqt "($CONST 4)\n" (with-output-to-string (lambda () (check-optimize (let1 a (lambda (x) (let1 b x (+ b 1))) (a 3))))))
-
-
-[check-optimize
- (let1 a (lambda () 3)
-   (a)
-   (a))
- ]
-(eqt "($SEQ\n  ($SEQ\n    ($CONST 3))\n  ($SEQ\n    ($CONST 3)))\n" (with-output-to-string (lambda () (check-optimize (let1 a (lambda () 3) (a) (a))))))
-
-[check-optimize
- 3
- ]
-
-
-[check-optimize
- (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
-   (print (a 0)))
- ]
-(eqt "($call [#f]($GLOBAL-REF top level  print)\n  ($call [embed]($LAMBDA[anonymous (i[3 0]) dissolved]\n           ($label #0\n             ($IF ($asm NUMBER_EQUAL\n                    ($LOCAL-REF i[3 0])\n                    ($CONST 10))\n               ($LOCAL-REF i[3 0])\n               ($call[tail] [jump]($call [embed]($LAMBDA[anonymous (i[3 0]) dissolved]\n                                     label#0)\n                              ($CONST 0))\n                 ($asm NUMBER_ADD\n                   ($LOCAL-REF i[3 0])\n                   ($CONST 1))))))\n    ($CONST 0)))\n" (with-output-to-string (lambda () (check-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (print (a 0)))))))
-
-
-(eqt "($call [embed]($LAMBDA[anonymous (i[3 0]) dissolved]\n         ($label #0\n           ($IF ($asm NUMBER_EQUAL\n                  ($LOCAL-REF i[3 0])\n                  ($CONST 10))\n             ($LOCAL-REF i[3 0])\n             ($call[tail] [jump]($call [embed]($LAMBDA[anonymous (i[3 0]) dissolved]\n                                   label#0)\n                            ($CONST 0))\n               ($asm NUMBER_ADD\n                 ($LOCAL-REF i[3 0])\n                 ($CONST 1))))))\n  ($CONST 0))\n" (with-output-to-string (lambda () (check-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))))))
-
-(define-syntax check-compile-no-optimize
-  (syntax-rules ()
-    ((_ sexp)
-     (pass3 (pass1/sexp->iform (quote sexp) top-level-library () #f) '() '() '() '() #f))))
-
-(define-syntax check-compile-optimize
-  (syntax-rules ()
-    ((_ sexp)
-     (pass4 (pass3 (pass2/optimize (pass1/sexp->iform (quote sexp) top-level-library () #f) '()) '() '() '() '() #f)))))
-
-;; pass3 tests with optimize
-[check-compile-optimize
- (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
-   (a 0))
- ]
-(eqt #(LET_FRAME CONSTANT 0 PUSH ENTER NOP REFER_LOCAL 0 PUSH CONSTANT 10 NUMBER_EQUAL TEST 4 REFER_LOCAL 0 LOCAL_JMP 15 REDUCE REFER_LOCAL 0 PUSH CONSTANT 1 NUMBER_ADD PUSH SHIFT 1 1 LOCAL_JMP -23 LEAVE 1) (check-compile-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (a 0))))
-
-
-
-[check-compile-optimize
- (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
-   (print (a 0)))
- ]
-(eqt #(FRAME 40 LET_FRAME CONSTANT 0 PUSH ENTER NOP REFER_LOCAL 0 PUSH CONSTANT 10 NUMBER_EQUAL TEST 4 REFER_LOCAL 0 LOCAL_JMP 15 REDUCE REFER_LOCAL 0 PUSH CONSTANT 1 NUMBER_ADD PUSH SHIFT 1 1 LOCAL_JMP -23 LEAVE 1 PUSH REFER_GLOBAL |top level | print CALL 1) (check-compile-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (print (a 0)))))
-
-[check-compile-optimize
- (letrec ([a (lambda (i) (if (= i 10) i (a (+ i 1))))])
-   (begin (a 0)))
- ]
-(eqt #(LET_FRAME CONSTANT 0 PUSH ENTER NOP REFER_LOCAL 0 PUSH CONSTANT 10 NUMBER_EQUAL TEST 4 REFER_LOCAL 0 LOCAL_JMP 15 REDUCE REFER_LOCAL 0 PUSH CONSTANT 1 NUMBER_ADD PUSH SHIFT 1 1 LOCAL_JMP -23 LEAVE 1) (check-compile-optimize (letrec ((a (lambda (i) (if (= i 10) i (a (+ i 1)))))) (begin (a 0)))))
-
-
-;; pass3 tests without optimize
-[check-compile-no-optimize
- 3
- ]
-(eqt '(CONSTANT 3) (check-compile-no-optimize 3))
-
-
-[check-compile-no-optimize
- (lambda () 3)
- ]
-(eqt '(CLOSURE 8 0 #f 0 CONSTANT 3 RETURN 0) (check-compile-no-optimize (lambda () 3)))
-
-
-[check-compile-no-optimize
- (lambda (x) x)
- ]
-(eqt '(CLOSURE 8 1 #f 0 REFER_LOCAL 0 RETURN 1) (check-compile-no-optimize (lambda (x) x)))
-
-[check-compile-no-optimize
- (lambda (x) (lambda () x))
- ]
-(eqt '(CLOSURE 18 1 #f 0 REFER_LOCAL 0 PUSH CLOSURE 8 0 #f 1 REFER_FREE 0 RETURN 0 RETURN 1) (check-compile-no-optimize (lambda (x) (lambda () x))))
-
-
-[check-compile-no-optimize
- (lambda (x) (set! x 3))
- ]
-(eqt '(CLOSURE 12 1 #f 0 BOX 0 CONSTANT 3 ASSIGN_LOCAL 0 RETURN 1) (check-compile-no-optimize (lambda (x) (set! x 3))))
-
-
-[check-compile-no-optimize
- (begin 1 2)
- ]
-(eqt '(CONSTANT 1 CONSTANT 2) (check-compile-no-optimize (begin 1 2)))
-
-
-[check-compile-no-optimize
- a
- ]
-(eqt '(REFER_GLOBAL |top level | a) (check-compile-no-optimize a))
-
-
-[check-compile-no-optimize
- (if #f 3)
- ]
-(eqt '(CONSTANT #f TEST 4 CONSTANT 3 LOCAL_JMP 3 UNDEF) (check-compile-no-optimize (if #f 3)))
-
-
-[check-compile-no-optimize
- (+ 1 2)
- ]
-(eqt '(CONSTANT 1 PUSH CONSTANT 2 NUMBER_ADD) (check-compile-no-optimize (+ 1 2)))
-
-
-[check-compile-no-optimize
- (define a 3)
- ]
-(eqt '(CONSTANT 3 DEFINE_GLOBAL |top level | a) (check-compile-no-optimize (define a 3)))
-
-
-[check-compile-no-optimize
- (func 3)
- ]
-(eqt '(FRAME 9 CONSTANT 3 PUSH REFER_GLOBAL |top level | func CALL 1) (check-compile-no-optimize (func 3)))
-
-
-[check-compile-no-optimize
- (call/cc (lambda (c) c))
- ]
-(eqt '(FRAME 15 MAKE_CONTINUATION 0 PUSH CLOSURE 8 1 #f 0 REFER_LOCAL 0 RETURN 1 CALL 1) (check-compile-no-optimize (call/cc (lambda (c) c))))
-
-
-[check-compile-no-optimize
- (let ([a 0]) a)
- ]
-(eqt '(LET_FRAME CONSTANT 0 PUSH ENTER REFER_LOCAL 0 LEAVE 1) (check-compile-no-optimize (let ((a 0)) a)))
-
-
-[check-compile-no-optimize
- (let ([a 0]) (let ([b 1]) b))
- ]
-(eqt '(LET_FRAME CONSTANT 0 PUSH ENTER LET_FRAME CONSTANT 1 PUSH ENTER REFER_LOCAL 0 LEAVE 1 LEAVE 1) (check-compile-no-optimize (let ((a 0)) (let ((b 1)) b))))
-
-
-[check-compile-no-optimize
- (lambda () (func 3))
- ]
-(eqt '(CLOSURE 17 0 #f 0 CONSTANT 3 PUSH REFER_GLOBAL |top level | func SHIFT 1 0 CALL 1 RETURN 0) (check-compile-no-optimize (lambda () (func 3))))
-
-
-])
 ;;--------------------------------------------------------------------
 ;;
 ;;  VM
@@ -598,7 +198,7 @@
        (vector-set! v 2 arg-length)
        (vector-set! v 3 optional-arg?)
        (vector-set! v 4 max-stack)
-       (vector-set! v 5 #f) ;; child display
+       (vector-set! v 5 #f) ;; prev display
        (let f ([i 0])
          (unless (= i n)
            (vector-set! v (+ i 6) (index stack sp i))
@@ -643,17 +243,17 @@
     ((_ c)
      (vector-ref c 4))))
 
-(define-syntax closure-child
+(define-syntax closure-prev
   (syntax-rules ()
     ((_ c)
      (vector-ref c 5))))
 
-(define-syntax closure-set-child!
+(define-syntax closure-set-prev!
   (syntax-rules ()
-    ((_ c child)
+    ((_ c prev)
      (begin
-       (vector-set! c 5 child)
-       child))))
+       (vector-set! c 5 prev)
+       prev))))
 
 
 
@@ -764,7 +364,7 @@
 
 (define-macro (check-vm-paranoia pred)
   `(unless ,pred
-     (error "** vm check paranoia " (quote ,pred) " on " debug-clause)))
+     (errorf "** vm check paranoia ~a on ~a : ~a" (quote ,pred) debug-clause c)))
 
 ;; (debug-case val
 ;;   ((a)
@@ -924,6 +524,7 @@
     (cond [#f a];(>= pc len) a]
           [else
            (let1 code (vector-ref codes pc)
+;           (format (current-error-port) "~a\n" code)
              (if (not (number? fp)) (error "fp error"))
              (if (not (number? sp)) (error "sp error"))
              (if (not (number? pc)) (error "pc error"))
@@ -936,6 +537,7 @@
                     ]
                    [else
                     '()])
+;             (format (current-error-port) "~a\n" code)
              (debug-case code
                ;;---------------------------- HALT -------------------------------
                [(HALT) a]
@@ -1048,9 +650,10 @@
                     (skip 1)
                     a
                     fp
-                    (if c
-                        (closure-set-child! c (make-display (next 1) stack sp))
-                        (make-display (next 1) stack sp))
+                    (let1 new-c (make-display (next 1) stack sp)
+                      (closure-set-prev! new-c c)
+;                      (format (current-error-port) "DISPLAY=~a\n" (index-closure new-c 0))
+                      new-c)
                     stack
                     (- sp (next 1))
                     )]
@@ -1119,112 +722,77 @@
                       stack
                       sp
                       ))]
-               [(LEAVE1)
-                (let ([sp (- sp 1)])
-                  (VM codes
-                      (skip 0)
-                      a
-                      (index stack sp 1) ;; fp
-                      (index stack sp 0) ;; display
-                      stack
-                      (- sp 2) ;; size of "let frame"
-                      ))]
+;;                [(LEAVE1)
+;;                 (let ([sp (- sp 1)])
+;;                   (VM codes
+;;                       (skip 0)
+;;                       a
+;;                       (index stack sp 1) ;; fp
+;;                       (index stack sp 0) ;; display
+;;                       stack
+;;                       (- sp 2) ;; size of "let frame"
+;;                       ))]
                ;;---------------------------- REFER_LOCAL ----------------------
                [(REFER_LOCAL)
                 (check-vm-paranoia (number? (next 1)))
                 (val1)
                 (VM codes (skip 1) (refer-local (next 1)) fp c stack sp)]
-               ;;---------------------------- REFER_LOCAL0 ----------------------
-               [(REFER_LOCAL0)
+               [(REFER_LOCAL_CAR)
+                (check-vm-paranoia (number? (next 1)))
                 (val1)
-                (VM codes (skip 0) (refer-local 0) fp c stack sp)]
-               [(REFER_LOCAL1)
+                (VM codes (skip 1) (car (refer-local (next 1))) fp c stack sp)]
+               [(REFER_LOCAL_CDR)
+                (check-vm-paranoia (number? (next 1)))
                 (val1)
-                (VM codes (skip 0) (refer-local 1) fp c stack sp)]
-               [(REFER_LOCAL2)
+                (VM codes (skip 1) (cdr (refer-local (next 1))) fp c stack sp)]
+               [(REFER_LOCAL_CONS)
+                (check-vm-paranoia (number? (next 1)))
                 (val1)
-                (VM codes (skip 0) (refer-local 2) fp c stack sp)]
-               [(REFER_LOCAL3)
-                (val1)
-                (VM codes (skip 0) (refer-local 3) fp c stack sp)]
-               [(REFER_LOCAL0_EQV_TEST)
-                (val1)
-                (if (eqv? (index stack sp 0) (refer-local 0))
-                    (VM codes (skip 1) a fp c stack (- sp 1))
-                    (VM codes (skip (next 1)) a fp c stack (- sp 1)))]
-                [(REFER_LOCAL0_PUSH)
-                 (val1)
-                 (VM codes (skip 0) a fp c stack (push stack sp (refer-local 0)))]
-
-;;                 [(REFER_LOCAL0_PUSH_DISPLAY)
-;;                  (let1 sp (push stack sp (index stack fp 0))
-;;                  (VM codes (skip 1) a fp (make-display (next 1) stack sp) stack (- sp (next 1))))]
-;;                ;;---------------------------- REFER_LOCAL1 ---------------------
+                (VM codes (skip 1) (cons (index stack sp 0) (refer-local (next 1))) fp c stack (- sp 1))]
+;;                ;;---------------------------- REFER_LOCAL0 ----------------------
+;;                [(REFER_LOCAL0)
+;;                 (val1)
+;;                 (VM codes (skip 0) (refer-local 0) fp c stack sp)]
 ;;                [(REFER_LOCAL1)
-;;                 (VM codes (skip 0) (index stack fp 1) fp c stack sp)]
-;;                ;;---------------------------- REFER_LOCAL2 ---------------------
+;;                 (val1)
+;;                 (VM codes (skip 0) (refer-local 1) fp c stack sp)]
 ;;                [(REFER_LOCAL2)
-;;                 (VM codes (skip 0) (index stack fp 2) fp c stack sp)]
-;;                ;;---------------------------- REFER_LOCAL_PUSH -----------------
+;;                 (val1)
+;;                 (VM codes (skip 0) (refer-local 2) fp c stack sp)]
+;;                [(REFER_LOCAL3)
+;;                 (val1)
+;;                 (VM codes (skip 0) (refer-local 3) fp c stack sp)]
+;; ;;                [(REFER_LOCAL0_EQV_TEST)
+;; ;;                 (val1)
+;; ;;                 (if (eqv? (index stack sp 0) (refer-local 0))
+;; ;;                     (VM codes (skip 1) a fp c stack (- sp 1))
+;; ;;                     (VM codes (skip (next 1)) a fp c stack (- sp 1)))]
+;;                 [(REFER_LOCAL0_PUSH)
+;;                  (val1)
+;;                  (VM codes (skip 0) a fp c stack (push stack sp (refer-local 0)))]
+
+;; ;;                 [(REFER_LOCAL0_PUSH_DISPLAY)
+;; ;;                  (let1 sp (push stack sp (index stack fp 0))
+;; ;;                  (VM codes (skip 1) a fp (make-display (next 1) stack sp) stack (- sp (next 1))))]
+;; ;;                ;;---------------------------- REFER_LOCAL1 ---------------------
+;; ;;                [(REFER_LOCAL1)
+;; ;;                 (VM codes (skip 0) (index stack fp 1) fp c stack sp)]
+;; ;;                ;;---------------------------- REFER_LOCAL2 ---------------------
+;; ;;                [(REFER_LOCAL2)
+;; ;;                 (VM codes (skip 0) (index stack fp 2) fp c stack sp)]
+;; ;;                ;;---------------------------- REFER_LOCAL_PUSH -----------------
                [(REFER_LOCAL_PUSH)
                 (val1)
                 (VM codes (skip 1) a fp c stack (push stack sp (refer-local (next 1))))]
-;;                ;;---------------------------- REFER_LOCAL0_PUSH ----------------
-;;                [(REFER_LOCAL0_PUSH)
-;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 0)))]
-               [(REFER_LOCAL0_PUSH_CONSTANT)
-                (val1)
-                (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 0)))]
-               [(REFER_LOCAL1_PUSH_CONSTANT)
-                (val1)
-                (VM codes (skip 1) (next 1) fp c stack (push stack sp (refer-local 1)))]
-;;                ;;---------------------------- REFER_LOCAL1_PUSH ----------------
-               [(REFER_LOCAL1_PUSH)
-                (val1)
-                (VM codes (skip 0) a fp c stack (push stack sp (refer-local 1)))]
-               [(REFER_LOCAL2_PUSH)
-                (val1)
-                (VM codes (skip 0) a fp c stack (push stack sp (refer-local 2)))]
-
-;;                ;;---------------------------- REFER_LOCAL2_PUSH ----------------
-;;                [(REFER_LOCAL2_PUSH)
-;;                 (VM codes (skip 0) a fp c stack (push stack sp (index stack fp 2)))]
-               ;;---------------------------- REFER_FREE -----------------------
                [(REFER_FREE)
                 (val1)
                 (check-vm-paranoia (vector? c))
                 (check-vm-paranoia (number? (next 1)))
-;                (format #t "refer free ~a\n" (next 1))
                 (VM codes (skip 1) (index-closure c (next 1)) fp c stack sp)]
-               [(REFER_FREE0)
-                (val1)
-                (VM codes (skip 0) (index-closure c 0) fp c stack sp)]
-               [(REFER_FREE1)
-                (val1)
-                (VM codes (skip 0) (index-closure c 1) fp c stack sp)]
-               [(REFER_FREE2)
-                (val1)
-                (VM codes (skip 0) (index-closure c 2) fp c stack sp)]
-               [(REFER_FREE3)
-                (val1)
-                (VM codes (skip 0) (index-closure c 3) fp c stack sp)]
-               [(PUSH_REFER_FREE0)
-                (val1)
-                (VM codes (skip 0) (index-closure c 0) fp c stack (push stack sp (index-closure c 0)))]
                ;;---------------------------- REFER_FREE_PUSH ------------------
                [(REFER_FREE_PUSH)
                 (val1)
                 (VM codes (skip 1) a fp c stack (push stack sp (index-closure c (next 1))))]
-               [(REFER_FREE0_PUSH)
-                (val1)
-                (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 0)))]
-               [(REFER_FREE1_PUSH)
-                (val1)
-                (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 1)))]
-               [(REFER_FREE2_PUSH)
-                (val1)
-                (VM codes (skip 0) a fp c stack (push stack sp (index-closure c 2)))]
-
                ;;---------------------------- NOP ------------------------------
                [(NOP)
                 (VM codes (skip 0) a fp c stack sp)]
@@ -1236,27 +804,15 @@
                [(CALL)
                 (val1)
                 (apply-body a (next 1) sp)]
-               [(CALL1)
-                (val1)
-                (apply-body a 1 sp)]
-               [(CALL2)
-                (val1)
-                (apply-body a 2 sp)]
-               [(CALL3)
-                (val1)
-                (apply-body a 3 sp)]
-               [(PUSH_REFER_GLOBAL_CALL1)
-                (val1)
-                (let* ([lib (next 1)]
-                       [new-sp (push stack sp a)]
-                       [v (refer-global lib)])
-                  (apply-body v 1 new-sp))]
-               [(REFER_GLOBAL_CALL1)
-                (val1)
-                (apply-body (refer-global (next 1)) 1 sp)]
                [(REFER_GLOBAL_CALL)
                 (val1)
                 (apply-body (refer-global (next 1)) (next 2) sp)]
+               [(REFER_FREE_CALL)
+                (val1)
+                (apply-body (index-closure c (next 1)) (next 2) sp)]
+               [(REFER_LOCAL_CALL)
+                (val1)
+                (apply-body (refer-local (next 1)) (next 2) sp)]
                ;;---------------------------- APPLY ----------------------------
                [(APPLY) ;; (apply proc args)
                 (val1)
@@ -1309,12 +865,12 @@
 ;;                       (index stack sp 3)                 ;; c
 ;;                       stack
 ;;                       (- sp 4)))]
-               [(RETURN1)
-                (return 1)]
-               [(RETURN2)
-                (return 2)]
-               [(RETURN3)
-                (return 3)]
+;;                [(RETURN1)
+;;                 (return 1)]
+;;                [(RETURN2)
+;;                 (return 2)]
+;;                [(RETURN3)
+;;                 (return 3)]
 
                ;;---------------------------- SHIFT ------------------------------
                [(SHIFT)
@@ -1329,15 +885,20 @@
                ;;      new-fp => new-sp - arg-length
                ;;
                [(SHIFTJ)
+;                (format (current-error-port) "SHIFTJ\n")
                 (let* ([new-sp (shift-args-to-bottom stack sp (next 1) (next 2))]
-                       [new-fp (- new-sp (next 1))]
-                       [new-c (closure-child (index stack new-fp 0))])
-                  (unless (or (vector? new-c) (not new-c)) ;; vector? or #f
-                    (error 'SHIFTJ "new-c should be vector" new-c))
+                       [new-fp (- new-sp (next 1))])
+;                       [new-c (closure-prev (index stack new-fp 0))])
+;;                   (unless (or (vector? new-c) (not new-c)) ;; vector? or #f
+;;                     (error 'SHIFTJ "new-c should be vector" new-c))
                   (unless (number? new-fp)
                     (error 'SHIFTJ "new-fp should be number"))
-;                  (format #t "shiftj ************\n")
-                  (VM codes (skip 2) a new-fp new-c stack new-sp))]
+;                  (format #t "********** (next 3) =~a\n" (next 3))
+                  (let loop ([i (next 3)]
+                             [new-c c])
+                    (if (= i 0)
+                        (VM codes (skip 3) a new-fp new-c stack new-sp)
+                        (loop (- i 1) (closure-prev new-c)))))]
                [(SHIFT_CALL)
                 (let1 sp (shift-args-to-bottom stack sp (next 1) (next 2))
                   (apply-body a (next 3) sp))]
@@ -1358,12 +919,95 @@
                 (if a
                     (VM codes (skip 1) a fp c stack sp)
                     (VM codes (skip (next 1)) a fp c stack sp))]
-               [(NUMBER_LE_TEST)
+               [(REFER_LOCAL_PUSH_CONSTANT)
+                (val1)
+                (VM codes (skip 2) (next 2) fp c stack (push stack sp (refer-local (next 1))))]
+               [(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)
+                (let1 val (<= (refer-local (next 1)) (next 2))
+                  (if val
+                      (VM codes (skip 3) val fp c stack sp)
+                      (VM codes (skip (next 3)) val fp c stack sp)))]
+               [(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL)
+                (let1 val (= (refer-local (next 1)) (next 2))
+                  (if val
+                      (VM codes (skip 3) val fp c stack sp)
+                      (VM codes (skip (next 3)) val fp c stack sp)))]
+               [(REFER_LOCAL_BRANCH_NOT_NULL)
+                (let1 val (null? (refer-local (next 1)))
+                  (if val
+                      (VM codes (skip 2) val fp c stack sp)
+                      (VM codes (skip (+ 1 (next 2))) val fp c stack sp)))]
+               [(REFER_LOCAL_BRANCH_NOT_LT)
+                (let1 val (<  (index stack sp 0) (refer-local (next 1)))
+                  (if val
+                      (VM codes (skip 2) val fp c stack (- sp 1))
+                      (VM codes (skip (+ 1 (next 2))) val fp c stack (- sp 1))))]
+               [(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE)
+                (let1 val (>= (refer-local (next 1)) (next 2))
+                  (if val
+                      (VM codes (skip 3) val fp c stack sp)
+                      (VM codes (skip (next 3)) val fp c stack sp)))]
+               [(BRANCH_NOT_NULL)
+                (val1)
+                (let1 val (null? a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack sp)
+                      (VM codes (skip (next 1)) val fp c stack sp)))]
+               [(BRANCH_NOT_LT)
+                (val1)
+                (let1 val (< (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_EQ)
+                (val1)
+                (let1 val (eq? (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_EQV)
+                (val1)
+                (let1 val (eqv? (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_EQUAL)
+                (val1)
+                (let1 val (equal? (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_NUMBER_EQUAL)
+                (val1)
+                (let1 val (= (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_LE)
                 (val1)
                 (let1 val (<= (index stack sp 0) a)
-                (if val
-                    (VM codes (skip 1) val fp c stack (- sp 1))
-                    (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_GT)
+                (val1)
+                (let1 val (> (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+               [(BRANCH_NOT_GE)
+                (val1)
+                (let1 val (>= (index stack sp 0) a)
+                  (if val
+                      (VM codes (skip 1) val fp c stack (- sp 1))
+                      (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
+
+;;                [(NUMBER_LE_TEST)
+;;                 (val1)
+;;                 (let1 val (<= (index stack sp 0) a)
+;;                 (if val
+;;                     (VM codes (skip 1) val fp c stack (- sp 1))
+;;                     (VM codes (skip (next 1)) val fp c stack (- sp 1))))]
                [(NOT_TEST)
                 (val1)
                 (let1 val (not a)
@@ -1372,46 +1016,6 @@
                     (VM codes (skip (next 1)) val fp c stack sp)))]
 
 
-;;                ;;---------------------------- BRANCH_NULLP  ----------------------
-;;                [(BRANCH_NULLP)
-;;                 (if (null? a)
-;;                     (VM codes (skip 1) a fp c stack sp)
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack sp))]
-;;                ;;---------------------------- BRANCH_PAIRP  ----------------------
-;;                [(BRANCH_PAIRP)
-;;                 (if (pair? a)
-;;                     (VM codes (skip 1) a fp c stack sp)
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack sp))]
-;;                ;;---------------------------- BRANCH_EQ  -------------------------
-;;                [(BRANCH_EQ)
-;;                 (if (eq? (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
-;;                ;;---------------------------- BRANCH_NUMBER_EQUAL  ---------------
-;;                [(BRANCH_NUMBER_EQUAL)
-;;                 (if (= (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
-;;                ;;---------------------------- BRANCH_NUMBER_GT  ------------------
-;;                [(BRANCH_NUMBER_GT)
-;;                 (if (> (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
-;;                ;;---------------------------- BRANCH_NUMBER_GE  ------------------
-;;                [(BRANCH_NUMBER_GE)
-;;                 (if (>= (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
-;;                ;;---------------------------- BRANCH_NUMBER_LT  ------------------
-;;                [(BRANCH_NUMBER_LT)
-;;                 (if (< (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
-;;                ;;---------------------------- BRANCH_NUMBER_LE  ------------------
-;;                [(BRANCH_NUMBER_LE)
-;;                 (if (<= (index stack sp 0) a)
-;;                     (VM codes (skip 1) a fp c stack (- sp 1))
-;;                     (VM codes (skip (+ (next 1) 1)) a fp c stack (- sp 1)))]
                ;;---------------------------- LOCAL_JMP  -------------------------
                [(LOCAL_JMP)
                 (VM codes (+ pc (next 1) 1) a fp c stack sp)]
@@ -1423,12 +1027,12 @@
                [(INDIRECT)
                 (val1)
                 (VM codes (skip 0) (unbox a) fp c stack sp)]
-               [(REFER_FREE0_INDIRECT)
-                (val1)
-                (VM codes (skip 0) (unbox (index-closure c 0)) fp c stack sp)]
-               [(REFER_FREE1_INDIRECT)
-                (val1)
-                (VM codes (skip 0) (unbox (index-closure c 1)) fp c stack sp)]
+;;                [(REFER_FREE0_INDIRECT)
+;;                 (val1)
+;;                 (VM codes (skip 0) (unbox (index-closure c 0)) fp c stack sp)]
+;;                [(REFER_FREE1_INDIRECT)
+;;                 (val1)
+;;                 (VM codes (skip 0) (unbox (index-closure c 1)) fp c stack sp)]
                ;;---------------------------- ASSIGN_BIND  -----------------------
                [(ASSIGN_LOCAL)
                 (set-box! (refer-local (next 1)) a)
@@ -1441,27 +1045,14 @@
                [(DEFINE_GLOBAL)
                 (define-global (next 1) a)
                 (VM codes (skip 1) a fp c stack sp)]
-               ;;---------------------------- LIBRARY --------------------------
-;;                [(LIBRARY)
-;;                 (hashtable-set! vm-libraries (next 1) (next 2))
-;;                 (VM codes (skip 2) a fp c stack sp)]
-               ;;---------------------------- IMPORT -----------------------------
-;;                [(IMPORT)
-;;                 (cond
-;;                  [(fetch-instance (next 1))
-;;                   (VM `#(RETURN 0 HALT) 0 a fp c stack sp)]
-;;                  [else
-;;                   (vm-import (next 1))
-;;                   (let1 lib (hash-table-get vm-libraries (next 1))
-;; ;                    ($library.set-macro! lib (make-hash-table 'eq?))
-;;                     (unless ($library.compiled-body lib)
-;;                       (compile-library-body! lib))
-;;                     (VM ($library.compiled-body lib) 0 a fp c stack sp))])]
                ;;---------------------------- REFER_GLOBAL  ----------------------
                [(REFER_GLOBAL)
                 (val1)
-;                (format #t "refer-global ~a\n" (next 1))
                 (VM codes (skip 1) (refer-global (next 1)) fp c stack sp)]
+               [(REFER_GLOBAL_PUSH)
+                (val1)
+                (let1 val (refer-global (next 1))
+                (VM codes (skip 1) val fp c stack (push stack sp val)))]
                ;;---------------------------- ASSIGN_GLOBAL  ---------------------
                [(ASSIGN_GLOBAL)
                 (assign-global (next 1) a)
@@ -1477,7 +1068,7 @@
                [(NUMBER_SUB)   (apply-native-2arg -)]
                [(NUMBER_SUB_PUSH) (apply-native-2arg-push -)]
                [(NUMBER_ADD_PUSH) (apply-native-2arg-push +)]
-               [(REFER_LOCAL0_NUMBER_ADD_PUSH) (apply-native-2arg-push-a + (refer-local 0))]
+;               [(REFER_LOCAL0_NUMBER_ADD_PUSH) (apply-native-2arg-push-a + (refer-local 0))]
                [(NUMBER_MUL)   (apply-native-2arg *)]
                ;;---------------------------- Pair  ------------------------------
                [(APPEND2) (apply-native-2arg append)]
@@ -1501,8 +1092,8 @@
                [(VECTOR_LENGTH) (apply-native-1arg vector-length)]
                [(VECTOR_REF)    (apply-native-2arg vector-ref)]
                [(VECTOR_SET)    (apply-native-3arg vector-set!)]
-               [(REFER_LOCAL0_VECTOR_SET (apply-native-3arg-ac (index fp 0) vector-ref))]
-               [(REFER_LOCAL0_VECTOR_REF (apply-native-2arg-ac (index fp 0) vector-ref))]
+;;                [(REFER_LOCAL0_VECTOR_SET (apply-native-3arg-ac (index fp 0) vector-ref))]
+;;                [(REFER_LOCAL0_VECTOR_REF (apply-native-2arg-ac (index fp 0) vector-ref))]
                ;;---------------------------- Port  ------------------------------
                [(READ)            (apply-native-1arg-optional read)]
                [(READ_CHAR)       (apply-native-1arg-optional read-char)]
@@ -1568,7 +1159,7 @@
 (define (vm-init args)
   (init-library-table)
   (set! vstack (make-vector 10000))
-  (define-global (merge-libname-sym (libname->symbol '(top-level)) '*command-line-args*) args)
+  (define-global '*command-line-args* args)
   (let loop ([i 0]
              [sp  (- (length *free-vars*) 1)])
     (cond [(>= sp 0)
@@ -1968,8 +1559,7 @@
     [else
      (syntax-error "malformed do on mosh")]))
 
-(define default-allowed-macro '($library.append-macro!
-                                define-simple-struct
+(define default-allowed-macro '(define-simple-struct
                                 do
                                 acond
                                 guard
@@ -1998,8 +1588,8 @@
                  [ret '()])
         (cond [(eof-object? obj)
                (let* ([v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
-                              (assq-multi ($library.macro top-level-library) allowed-macro))]
-                      [c (compile-partial `($library.append-macro! top-level-library (quote ,v)))])
+                              #?= (assq-multi top-level-macros allowed-macro))]
+                      [c (compile-partial `(set! top-level-macros (append top-level-macros (quote ,v))))])
                (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
                    (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
                    (pass4 ret)))]
@@ -2018,12 +1608,11 @@
   (cond
    ;; test
    [(= (length args) 1)
-    (vm-init '())
+;    (vm-init '())
 ;     (load-file "./library.scm")
 
     (load-file "./work.scm")
 ;;     (load-file "./match.scm")
-
 ;;     (vm-test)
 ;;     (set! optimize? (not optimize?))
 ;;     (vm-init '())

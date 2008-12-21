@@ -101,11 +101,10 @@ FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O2 $(mosh_OPTS) -fomit-frame-pointer -g -D_FILE_OFFSET_BITS=64 -Wall # -DDEBUG_VERSION 
+mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer # -DDEBUG_VERSION
 # -O3 causes miss compile of NumberReader.tab.cpp. see http://d.hatena.ne.jp/higepon/20081114/1226645373
 #mosh_CFLAGS   = -O2  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-MOSHLIB_CXXFLAGS   = -fomit-frame-pointer $(mosh_OPTS) # compile libraries with -O0
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
 nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/srfi/%3A26.ss lib/mosh/test.ss
@@ -169,9 +168,9 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 
 SUFFIXES: .scmc .h
 
-.scmc.h:
-	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# .scmc.h:
+# 	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@

@@ -3225,11 +3225,26 @@
  (letrec ((loop (lambda (x)
                   ((lambda (y) (set! loop '())) (display x)))))
    (lambda (z) (loop z))))]
+;; nested named let optimization
+[done
+(let loop1 ([i 0])
+  (if (= i 1)
+      'done
+      (let loop2 ([j 0])
+        (if (= j 1)
+            (loop1 (+ i 1))
+            (loop2 (+ j 1))))))]
 ;; with-input-from-file multiple values
 [3
  (receive (a b)
      (with-input-from-file "all-tests.scm" (lambda () (values 1 2)))
    (+ a b))]
+[7
+ (let ([x 3])
+   (define a 4)
+   (+ x a))]
+[error (vector-ref '#(1) 300)]
+[error (vector-set! '#(1) 300 #f)]
 
 ;; port i/o
 (error (buffer-mode?))
@@ -3240,3 +3255,4 @@
 (#f    (buffer-mode? 'lf))
 
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
+(todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")

@@ -19,6 +19,7 @@
   (define foldr2 fold-right)
   (define source-info debug-source-info)
   (define syntax-error error)
+  (define for-all every)
   (define (set-source-info! a b) a)]
  [vm?
   (define (ungensym x) x)
@@ -35,12 +36,14 @@
   (define hashtable-for-each (lambda (proc ht) (hash-table-for-each ht proc)))
   (define dd (lambda a '()))
   (define pp (lambda a '()))
+  (define for-all every)
   (define syntax-error error)
   (define find10 find)
   (define append2 append)
   (define appendA append)
   (define memq2 memq)
   (define df (lambda a '#f))
+  (define print-stack (lambda a '#f))
   (define (source-info p) (let1 src (debug-source-info p) (if (pair? src) (cons (sys-basename (car src)) (cdr src)) src)))
   (define (make-list-with-src-slot lst) (apply extended-list lst))
   (define (set-source-info! a b)
@@ -161,13 +164,6 @@
 
 (define (alist-cons obj1 obj2 obj3) (cons (cons obj1 obj2) obj3))
 
-(define (libname->symbol name)
-  (let loop ([name name]
-             [ret  ""])
-    (if (null? name)
-        (string->symbol ret)
-        (loop (cdr name) (string-append ret (symbol->string (car name)))))))
-
 ;;--------------------------------------------------------------------
 ;;
 ;; Generic
@@ -180,12 +176,13 @@
       l
       (cons (f (car l)) ($map1 f (cdr l)))))
 
-(define ($filter-map1 f l)
-  (if (null? l)
-      l
-      (aif (f (car l))
-           (cons it ($filter-map1 f (cdr l)))
-           ($filter-map1 f (cdr l)))))
+;; not used?
+;; (define ($filter-map1 f l)
+;;   (if (null? l)
+;;       l
+;;       (aif (f (car l))
+;;            (cons it ($filter-map1 f (cdr l)))
+;;            ($filter-map1 f (cdr l)))))
 
 (define ($map1-with-tail f l)
   (if (null? l)
@@ -311,9 +308,24 @@
 (define-macro ($lambda.set-flag! iform flag) `(vector-set! ,iform 7 ,flag))
 (define-macro ($lambda.set-calls! iform calls) `(vector-set! ,iform 8 ,calls))
 
+(define-macro ($lvar.ref-count++! lvar)
+  `($lvar.set-ref-count! ,lvar (+ ($lvar.ref-count ,lvar) 1)))
+
+(define-macro ($lvar.ref-count--! lvar)
+  `($lvar.set-ref-count! ,lvar (- ($lvar.ref-count ,lvar) 1)))
+
+(define-macro ($lvar.set-count++! lvar)
+  `($lvar.set-set-count! ,lvar (+ 1 ($lvar.set-count ,lvar))))
+
+(define-macro ($local-ref.copy dst src)
+  `($local-ref.set-lvar! ,dst ($local-ref.lvar ,src)))
+
 ;; struct $local-ref
 (define $LOCAL-REF 5)
+
+;; moved to C++
 (define ($local-ref lvar)
+  ($lvar.ref-count++! lvar)
   (vector $LOCAL-REF lvar))
 
 (define-macro ($local-ref.lvar iform) `(vector-ref ,iform 1))
@@ -332,25 +344,21 @@
 
 ;; struct $global-ref
 (define $GLOBAL-REF 7)
-(define ($global-ref libname sym)
-  (vector $GLOBAL-REF libname sym))
+(define ($global-ref sym)
+  (vector $GLOBAL-REF sym))
 
-(define-macro ($global-ref.libname iform) `(vector-ref ,iform 1))
-(define-macro ($global-ref.sym iform) `(vector-ref ,iform 2))
-(define-macro ($global-ref.set-libname! iform libname) `(vector-set! ,iform 1 ,libname))
-(define-macro ($global-ref.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
+(define-macro ($global-ref.sym iform) `(vector-ref ,iform 1))
+(define-macro ($global-ref.set-sym! iform sym) `(vector-set! ,iform 1 ,sym))
 
 ;; struct $global-assign
 (define $GLOBAL-ASSIGN 8)
-(define ($global-assign libname sym val)
-  (vector $GLOBAL-ASSIGN libname sym val))
+(define ($global-assign sym val)
+  (vector $GLOBAL-ASSIGN sym val))
 
-(define-macro ($global-assign.libname iform) `(vector-ref ,iform 1))
-(define-macro ($global-assign.sym iform) `(vector-ref ,iform 2))
-(define-macro ($global-assign.val iform) `(vector-ref ,iform 3))
-(define-macro ($global-assign.set-libname! iform libname) `(vector-set! ,iform 1 ,libname))
-(define-macro ($global-assign.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
-(define-macro ($global-assign.set-val! iform val) `(vector-set! ,iform 3 ,val))
+(define-macro ($global-assign.sym iform) `(vector-ref ,iform 1))
+(define-macro ($global-assign.val iform) `(vector-ref ,iform 2))
+(define-macro ($global-assign.set-sym! iform sym) `(vector-set! ,iform 1 ,sym))
+(define-macro ($global-assign.set-val! iform val) `(vector-set! ,iform 2 ,val))
 
 ;; struct $undef
 (define $UNDEF 9)
@@ -380,15 +388,13 @@
 
 ;; struct $define
 (define $DEFINE 12)
-(define ($define libname sym val)
-  (vector $DEFINE libname sym val))
+(define ($define sym val)
+  (vector $DEFINE sym val))
 
-(define-macro ($define.libname iform) `(vector-ref ,iform 1))
-(define-macro ($define.sym iform) `(vector-ref ,iform 2))
-(define-macro ($define.val iform) `(vector-ref ,iform 3))
-(define-macro ($define.set-libname! iform libname) `(vector-set! ,iform 1 ,libname))
-(define-macro ($define.set-sym! iform sym) `(vector-set! ,iform 2 ,sym))
-(define-macro ($define.set-val! iform val) `(vector-set! ,iform 3 ,val))
+(define-macro ($define.sym iform) `(vector-ref ,iform 1))
+(define-macro ($define.val iform) `(vector-ref ,iform 2))
+(define-macro ($define.set-sym! iform sym) `(vector-set! ,iform 1 ,sym))
+(define-macro ($define.set-val! iform val) `(vector-set! ,iform 2 ,val))
 
 ;; struct $call-cc
 (define $CALL-CC 13)
@@ -403,18 +409,20 @@
 ;; struct $call
 (define $CALL 14)
 (define ($call proc args tail? type)
-  (vector $CALL proc args tail? type 0))
+  (vector $CALL proc args tail? type 0 0))
 
 (define-macro ($call.proc iform) `(vector-ref ,iform 1))
 (define-macro ($call.args iform) `(vector-ref ,iform 2))
 (define-macro ($call.tail? iform) `(vector-ref ,iform 3))
 (define-macro ($call.type iform) `(vector-ref ,iform 4))
 (define-macro ($call.depth iform) `(vector-ref ,iform 5))
+(define-macro ($call.display-count iform) `(vector-ref ,iform 6))
 (define-macro ($call.set-proc! iform proc) `(vector-set! ,iform 1 ,proc))
 (define-macro ($call.set-args! iform args) `(vector-set! ,iform 2 ,args))
 (define-macro ($call.set-tail?! iform tail?) `(vector-set! ,iform 3 ,tail?))
 (define-macro ($call.set-type! iform type) `(vector-set! ,iform 4 ,type))
 (define-macro ($call.set-depth! iform type) `(vector-set! ,iform 5 ,type))
+(define-macro ($call.set-display-count! iform type) `(vector-set! ,iform 6 ,type))
 
 (define $LABEL 15)
 
@@ -438,58 +446,12 @@
 (define-macro ($list.args iform) `(vector-ref ,iform 1))
 (define-macro ($list.set-args! iform args) `(vector-set! ,iform 1 ,args))
 
-
-;; struct $library
-(define $LIBRARY 17)
-(define ($library name export-syms import-syms import macro body compiled-body)
-  (vector $LIBRARY (libname->symbol name) export-syms import-syms import macro body compiled-body))
-
-(define-macro ($library.name iform) `(vector-ref ,iform 1))
-(define-macro ($library.export-syms iform) `(vector-ref ,iform 2))
-(define-macro ($library.import-syms iform) `(vector-ref ,iform 3))
-(define-macro ($library.import iform) `(vector-ref ,iform 4))
-(define-macro ($library.macro iform) `(vector-ref ,iform 5))
-(define-macro ($library.body iform) `(vector-ref ,iform 6))
-(define-macro ($library.compiled-body iform) `(vector-ref ,iform 7))
-(define-macro ($library.set-name! iform name) `(vector-set! ,iform 1 ,name))
-(define-macro ($library.set-export-syms! iform export-syms) `(vector-set! ,iform 2 ,export-syms))
-(define-macro ($library.set-import-syms! iform import-syms) `(vector-set! ,iform 3 ,import-syms))
-(define-macro ($library.set-import! iform import) `(vector-set! ,iform 4 ,import))
-(define-macro ($library.set-macro! iform macro) `(vector-set! ,iform 5 ,macro))
-(define-macro ($library.append-macro! iform macro) `(vector-set! ,iform 5 (append ($library.macro ,iform) ,macro)))
-(define-macro ($library.set-body! iform body) `(vector-set! ,iform 6 ,body))
-(define-macro ($library.set-compiled-body! iform compiled-body) `(vector-set! ,iform 7 ,compiled-body))
-
-
-;; struct $import
-(define $IMPORT 18)
-(define ($import import-specs)
-;;   (let1 v (make-vector 2)
-;;     (vector-set! v 0 $IMPORT)
-;;     (vector-set! v 1 import-specs)
-;;     v))
-  (vecto $IMPORT import-specs ))
-
-(define-macro ($import.import-specs iform) `(vector-ref ,iform 1))
-(define-macro ($import.set-import-specs! iform import-specs) `(vector-set! ,iform 1 ,import-specs))
-
-
-;; struct $import-spec
-(define $IMPORT-SPEC 19)
-(define ($import-spec libname level)
-  (vector $IMPORT-SPEC libname level))
-
-(define-macro ($import-spec.libname iform) `(vector-ref ,iform 1))
-(define-macro ($import-spec.level iform) `(vector-ref ,iform 2))
-(define-macro ($import-spec.set-libname! iform libname) `(vector-set! ,iform 1 ,libname))
-(define-macro ($import-spec.set-level! iform level) `(vector-set! ,iform 2 ,level))
-
-(define $IT 20)
+(define $IT 17)
 (define ($it)
   (make-vector 1 $IT))
 
 ;; struct $receive
-(define $RECEIVE 21)
+(define $RECEIVE 18)
 (define ($receive lvars reqargs optarg vals body tail?)
   (vector $RECEIVE lvars reqargs optarg vals body tail?))
 
@@ -504,7 +466,7 @@
 (define-macro ($receive.set-body! iform body) `(vector-set! ,iform 5 ,body))
 (define-macro ($receive.set-tail?! iform tail?) `(vector-set! ,iform 6 ,tail?))
 
-(define $INSN-NUM 22)
+(define $INSN-NUM 19)
 
 (define-macro (tag iform)
   `(vector-ref ,iform 0))
@@ -518,33 +480,11 @@
 (define-macro (make-lvar sym)
   `($lvar ,sym '() 0 0))
 
-(define-macro ($lvar.ref-count++! lvar)
-  `($lvar.set-ref-count! ,lvar (+ ($lvar.ref-count ,lvar) 1)))
-
-(define-macro ($lvar.ref-count--! lvar)
-  `($lvar.set-ref-count! ,lvar (- ($lvar.ref-count ,lvar) 1)))
-
-(define-macro ($lvar.set-count++! lvar)
-  `($lvar.set-set-count! ,lvar (+ 1 ($lvar.set-count ,lvar))))
-
-(define-macro ($local-ref.copy dst src)
-  `($local-ref.set-lvar! ,dst ($local-ref.lvar ,src)))
-
-(define-macro ($library.add-import-syms! library import-syms)
-  `($library.set-import-syms! ,library (append ($library.import-syms ,library) ,import-syms)))
-
-(define-macro ($library.add-import! library import)
-  `($library.set-import! ,library (append ($library.import ,library) (list ,import))))
 
 ;;--------------------------------------------------------------------
 ;;
 ;; Pass1
 ;;
-
-(define (make-empty-library name)
-  ($library name '() '() '() '() '() #f))
-
-(define top-level-library (make-empty-library '(top-level)))
 
 ;; Parse lambda vars and return (optional-arg? . vars).
 ;;   a       => (#t (a))
@@ -553,16 +493,15 @@
 (define (parse-lambda-vars vars)
   (cond ((pair? vars)
          (let loop ((p vars) (ret '()))
-           (cond ((null? p) (list #f vars))
+           (cond ((null? p) (values #f vars))
                  ((pair? p) (loop (cdr p) (cons (car p) ret)))
                  (else
-                  (list #t (reverse (cons p ret)))))))
+                  (values #t (reverse (cons p ret)))))))
         ((null? vars)
-         (list #f '()))
+         (values #f '()))
         (else
-         (list #t (list vars)))))
+         (values #t (list vars)))))
 
-;; 後でこれに統一
 (define (parse-lambda-args formals)
   (let loop ((formals formals) (args '()))
     (cond ((null? formals) (values (reverse args) (length args) 0))
@@ -576,16 +515,29 @@
 (define-macro ($src x sexp)
   `(set-source-info! (make-list-with-src-slot ,x) (source-info ,sexp)))
 
-  (define (lambda-has-define? sexp)
-    (and (not (null? (cddr sexp)))
-         (pair? (third sexp))
-         (eq? (car (third sexp)) 'define)))
-  (define (let1->let sexp)
-    `(let ((,(second sexp) ,(third sexp)))
-       ,@(cdddr sexp)))
-  (define (expand-let vars body)
-    (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
-      `(let ,expanded-vars ,@(pass1/expand body))))
+(define (lambda-has-define? sexp)
+  (match sexp
+    [(_ _ ('define . _) . _) #t]
+    [else #f]))
+
+(define (let1->let sexp)
+  `(let ((,(second sexp) ,(third sexp)))
+     ,@(cdddr sexp)))
+
+(define (expand-let vars body)
+  (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
+    `(let ,expanded-vars ,@(imap pass1/expand body))))
+
+(define (let-internal-define->letrec sexp)
+  (let* ([body (cddr sexp)]
+         [args (second sexp)]
+         [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
+         [defines (first ret)]
+         [rest (second ret)]
+         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+                         ,@rest) sexp)])
+    ($src `(let ,args
+             ,letrec-body) sexp)))
 
 ;; don't use internal define, if proc is supposed to be called so many times.
 (define (pass1/expand sexp)
@@ -603,16 +555,23 @@
       [(let)
        (if (let-is-named? sexp)
            ($src (pass1/expand (named-let->letrec sexp)) sexp)
-           ($src (expand-let (second sexp) (cddr sexp)) sexp))]
+           (match sexp
+             [('let vars ('define a . b) . more)
+              ($src (pass1/expand ($src (let-internal-define->letrec sexp) sexp)) sexp)]
+             [else
+              ($src (expand-let (second sexp) (cddr sexp)) sexp)]))]
       [(let*)
        ($src (pass1/expand (let*->let sexp)) sexp)]
-      [(cond)
-       ($src (pass1/expand (cond->if sexp)) sexp)]
+      ;; use receive instead of call-with-values.
+      [(call-with-values)
+       ($src (pass1/expand ($src `(receive vals (,(second sexp)) (apply ,(third sexp) vals)) sexp)) sexp)]
+;;       [(cond)
+;;        ($src (pass1/expand (cond->if sexp)) sexp)]
       [(lambda)
        (cond [(lambda-has-define? sexp)
               ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
              [else
-              ($src (append! (list 'lambda (cadr sexp)) (pass1/expand (cddr sexp))) sexp)])]
+              ($src (append! (list 'lambda (cadr sexp)) (imap pass1/expand (cddr sexp))) sexp)])]
       [(when)
        (match sexp
          [('when pred body . more)
@@ -682,42 +641,42 @@
                body
                ($src `((let (,(car args)) ,@(loop (cdr args)))) sexp))))))
 
-(define (cond->if sexp)
-  (define (make-if test then else)
-    ;; don't use unquote splicing, it uses append
-    (let ([then (if (> (length then) 1) (cons 'begin then) (car then))])
-      `(if ,test ,then ,else)))
-  (let loop ((clauses (cdr sexp)))
-    (if (null? clauses)
-        '#f
-        (cond ((and (null? (cdr clauses)) (eq? 'else (caar clauses)))
-               (if (> (length (cdar clauses)) 1)
-                   (cons 'begin (cdar clauses))
-                   (cadar clauses)))
-              ((and (= 3 (length (car clauses))) (eq? '=> (cadar clauses)))
-               (let ((tmp (gensym)))
-                 `(let ((,tmp ,(caar clauses)))
-                    (if ,tmp
-                        (,(caddar clauses) ,tmp)
-                        ,(loop (cdr clauses))))))
-              ((= 1 (length (car clauses)))
-               (let ((tmp (gensym)))
-                 `(let ((,tmp ,(caar clauses)))
-                    (if ,tmp
-                        ,tmp
-                        ,(loop (cdr clauses))))))
-              (else
-               (make-if (caar clauses) (cdar clauses) (loop (cdr clauses))))))))
+;; (define (cond->if sexp)
+;;   (define (make-if test then else)
+;;     ;; don't use unquote splicing, it uses append
+;;     (let ([then (if (> (length then) 1) (cons 'begin then) (car then))])
+;;       `(if ,test ,then ,else)))
+;;   (let loop ((clauses (cdr sexp)))
+;;     (if (null? clauses)
+;;         '(undef)
+;;         (cond ((and (null? (cdr clauses)) (eq? 'else (caar clauses)))
+;;                (if (> (length (cdar clauses)) 1)
+;;                    (cons 'begin (cdar clauses))
+;;                    (cadar clauses)))
+;;               ((and (= 3 (length (car clauses))) (eq? '=> (cadar clauses)))
+;;                (let ((tmp (gensym)))
+;;                  `(let ((,tmp ,(caar clauses)))
+;;                     (if ,tmp
+;;                         (,(caddar clauses) ,tmp)
+;;                         ,(loop (cdr clauses))))))
+;;               ((= 1 (length (car clauses)))
+;;                (let ((tmp (gensym)))
+;;                  `(let ((,tmp ,(caar clauses)))
+;;                     (if ,tmp
+;;                         ,tmp
+;;                         ,(loop (cdr clauses))))))
+;;               (else
+;;                (make-if (caar clauses) (cdar clauses) (loop (cdr clauses))))))))
 
-  (define (expand-clauses clauses tmpname)
-    (let loop ([clauses clauses])
-      (if (null? clauses)
-          '()
-          (if (eq? 'else (caar clauses))
-              clauses
-              (if (= 1 (length (caar clauses)))
-                  (cons `((eqv? ',(caaar clauses) ,tmpname) ,@(cdar clauses)) (loop (cdr clauses)))
-                  (cons `((memv ,tmpname ',(caar clauses)) ,@(cdar clauses)) (loop (cdr clauses))))))))
+(define (expand-clauses clauses tmpname)
+  (let loop ([clauses clauses])
+    (if (null? clauses)
+        '()
+        (if (eq? 'else (caar clauses))
+            clauses
+            (if (= 1 (length (caar clauses)))
+                (cons `((eqv? ',(caaar clauses) ,tmpname) ,@(cdar clauses)) (loop (cdr clauses)))
+                (cons `((memv ,tmpname ',(caar clauses)) ,@(cdar clauses)) (loop (cdr clauses))))))))
 
 (define (case->cond sexp)
   (let* ([pred (cadr sexp)]
@@ -819,24 +778,12 @@
 ;;
 
 ;; same as (find (lambbda (l) (eq? object (car l))) lst), but it doesn't need to create closure
-(define (find-with-car object lst)
-  (if (null? lst)
-      #f
-      (if (eq? object (caar lst))
-          (car lst)
-          (find-with-car object (cdr lst)))))
-
-(define (pass1/lib-refer->iform symbol library)
-  (let1 import-syms ($library.import-syms library)
-    (aif (find-with-car symbol import-syms)
-         ($global-ref (second it) (third it)) ;; bind found on import-syms.
-         ($global-ref ($library.name library) symbol))))
-
-(define (pass1/lib-assign->iform symbol library val)
-  (let1 import-syms ($library.import-syms library)
-    (aif (find-with-car symbol import-syms)
-         ($global-assign (second it) (third it) val) ;; bind found on import-syms.
-         ($global-assign ($library.name library) symbol val))))
+;; (define (find-with-car object lst)
+;;   (if (null? lst)
+;;       #f
+;;       (if (eq? object (caar lst))
+;;           (car lst)
+;;           (find-with-car object (cdr lst)))))
 
 (cond-expand
  [vm?
@@ -850,29 +797,24 @@
       (pass1/find-symbol-in-lvars symbol (cdr lvars))]))]
  [else #f])
 
-(define (pass1/refer->iform symbol library lvars)
+(define (pass1/refer->iform symbol lvars)
   (acond
-;   [(find10 (lambda (lvar) (eq? ($lvar.sym lvar) symbol)) lvars)
    [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
-    ($lvar.ref-count++! it)
+;    ($lvar.ref-count++! it)
     ($local-ref it)]
-   [(pass1/lib-refer->iform symbol library)
-    it]
-   [#t ($global-ref '(top-level) symbol)]))
+   [#t ($global-ref symbol)]))
 
-(define (pass1/assign symbol val library lvars tail?)
-  (let1 iform (pass1/sexp->iform val library lvars tail?)
+(define (pass1/assign symbol val lvars tail?)
+  (let1 iform (pass1/sexp->iform val lvars tail?)
     (acond
      [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
       ($lvar.set-count++! it)
       ($local-assign it iform)]
-     [(pass1/lib-assign->iform symbol library iform)
-      it]
-     [#t ($global-assign '(top-level) symbol iform)])))
+     [#t ($global-assign symbol iform)])))
 
-(define (pass1/body->iform body library lvars tail?)
+(define (pass1/body->iform body lvars tail?)
   (let1 iforms ($map1-with-tail
-                (lambda (b t?) (pass1/sexp->iform (pass1/expand b) library lvars (and t? tail?))) body)
+                (lambda (b t?) (pass1/sexp->iform (pass1/expand b) lvars (and t? tail?))) body)
     (if (= 1 (length iforms))
         (car iforms)
         ($seq iforms tail?))))
@@ -889,185 +831,119 @@
 
 ;; Closure source info format
 ;; ((file . lineno) (proc args))
-(define (pass1/lambda->iform name sexp library lvars)
-  (let* ([vars          (second sexp)]
-         [body          (cddr sexp)]
-         [parsed-vars   (parse-lambda-vars vars)]
-         [optional-arg? (first parsed-vars)]
-         [vars          (second parsed-vars)]
-         [this-lvars    (imap (lambda (sym) ($lvar sym #f 0 0)) vars)]
-         [vars-length  (length vars)])
-    ($lambda (cons (source-info sexp) (cons name (dotpair->list (second sexp))))
-             name
-             (if optional-arg? (- vars-length 1) vars-length)
-             (if optional-arg? 1 0)
-             this-lvars
-             ;; the inner lvar comes first.
-             (pass1/body->iform body library (append this-lvars lvars) #t)
-             '()
-             '())))
+(define (pass1/lambda->iform name sexp lvars)
+  (match sexp
+    [('lambda vars . body)
+     (receive (optional-arg? vars) (parse-lambda-vars vars)
+       (let ([this-lvars    (imap (lambda (sym) ($lvar sym #f 0 0)) vars)]
+             [vars-length  (length vars)])
+       ($lambda (cons (source-info sexp) (cons name (dotpair->list (second sexp))))
+                name
+                (if optional-arg? (- vars-length 1) vars-length)
+                (if optional-arg? 1 0)
+                this-lvars
+                ;; the inner lvar comes first.
+                (pass1/body->iform body (append this-lvars lvars) #t)
+                '()
+                '())))]
+    [else
+     (error 'compiler "malformed lambda" sexp)]))
 
-;; Store <libname . $library> for compiler.
-;; You can't use this for VM.
-(define libraries (make-eq-hashtable))
+;; (define (pass1/lambda->iform name sexp lvars)
+;;   (let* ([vars          (second sexp)]
+;;          [body          (cddr sexp)])
+;;          [parsed-vars   (parse-lambda-vars vars)]
+;;          [optional-arg? (first parsed-vars)]
+;;          [vars          (second parsed-vars)]
+;;          [this-lvars    (imap (lambda (sym) ($lvar sym #f 0 0)) vars)]
+;;          [vars-length  (length vars)])
+;;     ($lambda (cons (source-info sexp) (cons name (dotpair->list (second sexp))))
+;;              name
+;;              (if optional-arg? (- vars-length 1) vars-length)
+;;              (if optional-arg? 1 0)
+;;              this-lvars
+;;              ;; the inner lvar comes first.
+;;              (pass1/body->iform body (append this-lvars lvars) #t)
+;;              '()
+;;              '())))
 
-(define-macro (make-identifier alias libname name)
-  `(list ,alias ,libname ,name))
-
-(define (copy-identifier i)
-  (list (first i) (second i) (third i)))
-
-;; Now, we ignore version.
-(define (library-name form)
-  (remove-tail (second form) pair?))
-
-(define (pass1/and->iform sexp library lvars tail?)
+(define (pass1/and->iform sexp lvars tail?)
   (define (rec s)
     (match s
       [() ($const #t)]
       [(s)
-       (pass1/sexp->iform (pass1/expand s) library lvars tail?)]
+       (pass1/sexp->iform (pass1/expand s) lvars tail?)]
       [(e . more)
-       ($if (pass1/sexp->iform (pass1/expand e) library lvars tail?)
+       ($if (pass1/sexp->iform (pass1/expand e) lvars tail?)
             (rec more)
             ($it))]
       [else
        (error 'compiler "syntax-error: malformed and:" sexp)]))
   (rec (cdr sexp)))
 
-(define (pass1/or->iform sexp library lvars tail?)
+(define (pass1/or->iform sexp lvars tail?)
   (define (rec s)
     (match s
       [() ($const #f)]
       [(s)
-       (pass1/sexp->iform (pass1/expand s) library lvars tail?)]
+       (pass1/sexp->iform (pass1/expand s) lvars tail?)]
       [(e . more)
-       ($if (pass1/sexp->iform (pass1/expand e) library lvars tail?)
+       ($if (pass1/sexp->iform (pass1/expand e) lvars tail?)
             ($it)
             (rec more))]
       [else
        (error 'compiler "syntax-error: malformed or:" sexp)]))
   (rec (cdr sexp)))
 
-;; (define (pass1/library->iform sexp library lvars)
-;;   (define (get-identifier symbol libname imports)
-;;     (aif (find-with-car symbol imports)
-;;          (copy-identifier it)
-;;          (make-identifier symbol libname symbol)))
-;;   (define (get-rename-identifier rename-set libname imports)
-;;     (aif (find-with-car (car rename-set) imports)
-;;          (let1 identifier (copy-identifier it)
-;;            (set-car! identifier (second rename-set))
-;;            identifier)
-;;          (make-identifier (second rename-set) libname (first rename-set))))
-;;   (define (extract-exports imports libname form)
-;;     (let loop ([export (cdr form)]
-;;                [ret    '()])
-;;       (cond
-;;        [(null? export) ret]
-;;        [(and (pair? (car export)) (eq? (caar export) 'rename))
-;;         (loop (cdr export)
-;;               (append ret ($map1 (lambda (p) (get-rename-identifier p libname imports)) (cdar export))))]
-;;        [else
-;;         (loop (cdr export) (cons (get-identifier (car export) libname imports) ret))])))
-;;   (let1 lib ($library (library-name sexp) '() '() '() '() '() #f)
-;;     ;; We parse (library ...) with following order.
-;;     ;; 1. parse (import ...), then we know all impoted symbols and their name.
-;;     ;; 2. parse (export ...).
-;;     ;;    When the library exports symbol which is imported from another library, we link these by using imported symbols information got above.
-;;     ;; 3. set body.
-;;     ($library.set-import! lib (pass1/import->iform (fourth sexp) lib))
-;;     ($library.set-export-syms! lib (extract-exports ($library.import-syms lib) ($library.name lib) (third sexp)))
-;;     ;; We compile body at runtime.
-;;     ($library.set-body! lib (cddddr sexp))
-;;     (hashtable-set! libraries ($library.name lib) lib)
-;;     lib))
+(define (pass1/cond->iform sexp lvars tail?)
+  (define (process-clauses cls)
+    (match cls
+      [() ($undef)]
+      ;; (else . exprs)
+      [(((? (lambda (x) (eq? x 'else))) exprs ...) . rest)
+       (unless (null? rest)
+         (error 'compiler "syntax-error: 'else' clause followed by more clauses:" sexp))
+       (pass1/body->iform exprs lvars tail?)]
+      ;; (test => proc)
+      [((test (? (lambda (x) (eq? x '=>))) proc) . rest)
+       (let ([test (pass1/sexp->iform (pass1/expand test) lvars #f)]
+             [tmp (make-lvar 'tmp)])
+         ($lvar.set-init-val! tmp test)
+         ($let 'let
+               (list tmp)
+               (list test)
+               ($if ($local-ref tmp)
+                    ($call (pass1/sexp->iform (pass1/expand proc) lvars tail?)
+                           (list ($local-ref tmp))
+                           tail?
+                           #f)
+                    (process-clauses rest)) tail? sexp))]
+      [((test) . rest)                  ; (test)
+       ($if (pass1/sexp->iform (pass1/expand test) lvars tail?)
+            ($it)
+            (process-clauses rest))]
+      [((test exprs ...) . rest)          ; (test . exprs)
+       ($if (pass1/sexp->iform test lvars #f)
+            (pass1/body->iform exprs lvars tail?)
+            (process-clauses rest))]
+      (_ (error 'compiler "syntax-error: bad clause in cond:" sexp))))
+  (match sexp
+    ((_)
+     (error "syntax-error: at least one clause is required for cond:" sexp))
+    ((_ clause ...)
+     (process-clauses clause))
+    (else
+     (error "syntax-error: malformed cond:" sexp))))
 
-;; (define (pass1/import->iform sexp library)
-;;   ;; ignore <version>.
-;;   (define (library-name form)
-;;     (libname->symbol (remove-tail form pair?)))
-;;   (define (parse-level form)
-;;     (cond
-;;      [(symbol? form)
-;;       (case form
-;;         [(expand) 1]
-;;         [(run)    0]
-;;         [else (error 'compiler "unknown for")])]
-;;      [(and (pair? form) (= (length form) 2) (eq? (first form) 'meta))
-;;       (second form)]
-;;      [else
-;;       (error 'compiler "unknown level on meta")]))
-;;   ;; todo cleanup this code. (uhaaaa)
-;;   (define (import-iter form level)
-;;     (case (first form)
-;;       [(for)
-;;        (import-iter (second form) (parse-level (third form)))]
-;;       [(only)
-;;        (let1 only-binds (cddr form)
-;;          (acond
-;;           [(hashtable-ref libraries (library-name (second form)) #f)
-;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
-;;                                                               (if (memq (car x) only-binds)
-;;                                                                   (copy-identifier x)
-;;                                                                   #f)) ;; not imported
-;;                                                             ($library.export-syms it)))
-;;            ($import-spec ($library.name it) level)]
-;;           [#t
-;;            (error "library " (library-name (second form)) " not found")]))]
-;;       [(except)
-;;        (let1 except-binds (cddr form)
-;;          (acond
-;;           [(hashtable-ref libraries (library-name (second form)) #f)
-;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
-;;                                                               (if (memq (car x) except-binds)
-;;                                                                   #f ;; not imported
-;;                                                                   (copy-identifier x)))
-;;                                                             ($library.export-syms it)))
-;;            ($import-spec ($library.name it) level)]
-;;           [#t
-;;            (error "library " (library-name (second form)) " not found")]))]
-;;       [(rename)
-;;        (let1 renames (cddr form)
-;;          (acond
-;;           [(hashtable-ref libraries (library-name (second form)) #f)
-;;            ($library.add-import-syms! library ($filter-map1 (lambda (x)
-;;                                                               (aif (find-with-car (first x) renames)
-;;                                                                ;(find10 (lambda (rename) (eq? (first x) (first rename))) renames)
-;;                                                                    (make-identifier (second it) (second x) (third x))
-;;                                                                    (copy-identifier x)))
-;;                                                             ($library.export-syms it)))
-;;            ($import-spec ($library.name it) level)]
-;;           [#t
-;;            (error "library " (library-name (second form)) " not found")]))]
-;;       [(prefix)
-;;        (let1 prefix (symbol->string (third form))
-;;          (acond
-;;           [(hashtable-ref libraries (library-name (second form)) #f)
-;;            ($library.add-import-syms! library ($filter-map1 (lambda (x) (make-identifier
-;;                                                                          (string->symbol (string-append prefix (symbol->string (first x))))
-;;                                                                          (second x)
-;;                                                                          (third x)))
-;;                                                             ($library.export-syms it)))
-;;            ($import-spec ($library.name it) level)]
-;;           [#t
-;;            (error "library " (library-name (second form)) " not found")]))]
-;;       [else
-;;        (acond
-;;         [(hashtable-ref libraries (library-name form) #f)
-;;          ($library.add-import-syms! library ($map1 copy-identifier ($library.export-syms it)))
-;;          ($import-spec ($library.name it) level)]
-;;         [#t
-;;          (error "library " (library-name form) " not found")])]))
-;;   ;; default import level is zero.
-;;   ($import ($map1 (lambda (i) (import-iter i 0)) (cdr sexp))))
+(define top-level-macros '())
 
 ;; N.B.
 ;; this procedure is called from freeproc.cpp
 (define (pass1/macroexpand sexp)
   (let1 proc (first sexp)
     (acond
-     [(and (symbol? proc) (assq proc ($library.macro top-level-library)))
+     [(and (symbol? proc) (assq proc top-level-macros))
+;      (display top-level-macros (current-error-port))
       (pass1/expand (vm/apply (cdr it) (cdr sexp)))]
      [#t sexp])))
 
@@ -1096,10 +972,10 @@
 
 ;; short cut macros
 (define-macro (pass1/s->i sexp)
-  `(pass1/sexp->iform (pass1/expand ,sexp) library lvars tail?))
+  `(pass1/sexp->iform (pass1/expand ,sexp) lvars tail?))
 
 (define-macro (pass1/s->i-non-tail sexp)
-  `(pass1/sexp->iform (pass1/expand ,sexp) library lvars #f))
+  `(pass1/sexp->iform (pass1/expand ,sexp) lvars #f))
 
 (define-macro (pass1/map-s->i sexp)
   `(imap (lambda (s) (pass1/s->i s)) ,sexp))
@@ -1107,40 +983,27 @@
 (define-macro (pass1/map-s->i-non-tail sexp)
   `(imap (lambda (s) (pass1/s->i-non-tail s)) ,sexp))
 
-(define (pass1/call proc args library lvars tail?)
+(define (pass1/call proc args lvars tail?)
   (acond
    [(and (symbol? proc)
-         (assq proc ($library.macro library)))
-;;     (display "before\n" (current-error-port))
-;;     (display (vm/apply (cdr it) args) (current-error-port))
-;;     (display "end\n" (current-error-port))
+         (assq proc top-level-macros))
     (pass1/s->i (vm/apply (cdr it) args))]
-   [(and (symbol? proc) (find-with-car proc ($library.import-syms library)))
-         ;(find10 (lambda (sym) (eq? (first sym) proc)) ($library.import-syms library)))
-    (let* ([lib (hashtable-ref libraries (second it) #f)]
-           [macro (assq (third it) ($library.macro lib))])
-      (if macro
-          (pass1/s->i (vm/apply (cdr macro) args))
-          ($call (pass1/s->i proc)
-                 (pass1/map-s->i args)
-                 tail?
-                 #f)))]
    [#t
     ($call (pass1/s->i proc)
-           (pass1/map-s->i args)
+           (pass1/map-s->i-non-tail args)
            tail?
            #f)]))
 
-(define (pass1/define sexp library lvars tail?)
+(define (pass1/define sexp lvars tail?)
   (match sexp
     [('define name ('lambda . more))
      (let1 closure  (make-list-with-src-slot (cons 'lambda more))
        (set-source-info! closure (source-info (third sexp)))
-       ($define ($library.name library) name (pass1/lambda->iform name closure library lvars)))]
+       ($define name (pass1/lambda->iform name closure lvars)))]
     [else
-     ($define ($library.name library) (second sexp) (pass1/s->i (third sexp)))]))
+     ($define (second sexp) (pass1/s->i (third sexp)))]))
 
-(define (pass1/receive sexp library lvars tail?)
+(define (pass1/receive sexp lvars tail?)
   (match sexp
     [('receive vars vals . body)
      (receive (vars reqargs optarg) (parse-lambda-args vars)
@@ -1149,22 +1012,22 @@
           this-lvars
           reqargs
           optarg
-          (pass1/s->i vals)
+          (pass1/s->i-non-tail vals)
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body) (append this-lvars lvars) tail?)
           tail?)))]
     [else
      (syntax-error "malformed receive")]))
 
 
-(define (pass1/let vars vals body source-info library lvars tail?)
+(define (pass1/let vars vals body source-info lvars tail?)
   (let* ([inits      (pass1/map-s->i vals)]
          [this-lvars (map (lambda (sym init) ($lvar sym init 0 0)) vars inits)])
     ($let 'let
           this-lvars
           inits
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body)  (append this-lvars lvars) tail?)
           tail?
           source-info
           )))
@@ -1172,9 +1035,9 @@
 (define (make-compile-error who message . irritants)
   (list who message irritants))
 
-(define (pass1/letrec vars vals body source-info library lvars tail?)
+(define (pass1/letrec vars vals body source-info lvars tail?)
   (let* ([this-lvars (imap (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
-         [inits      (imap (lambda (x) (pass1/sexp->iform x library (append this-lvars lvars) tail?)) vals)])
+         [inits      (imap (lambda (x) (pass1/sexp->iform x (append this-lvars lvars) tail?)) vals)])
     (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
     (let1 found-error (find (lambda (init)
                               (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))) inits)
@@ -1182,7 +1045,7 @@
           this-lvars
           inits
           ;; the inner lvar comes first.
-          (pass1/body->iform (pass1/expand body) library (append this-lvars lvars) tail?)
+          (pass1/body->iform (pass1/expand body) (append this-lvars lvars) tail?)
           tail?
           source-info
           (if found-error (make-compile-error
@@ -1192,23 +1055,23 @@
               #f)
           ))))
 
-(define (pass1/if test then more library lvars tail?)
+(define (pass1/if test then more lvars tail?)
   ($if
-   (pass1/sexp->iform (pass1/expand test) library lvars #f) ;; N.B. test clause is NOT in tail-context.
+   (pass1/sexp->iform (pass1/expand test) lvars #f) ;; N.B. test clause is NOT in tail-context.
    (pass1/s->i then)
    (if (null? more)
        ($undef)
        (pass1/s->i (car more)))))
 
-(define (pass1/define-macro sexp library lvars tail?)
+(define (pass1/define-macro sexp lvars tail?)
   (if (pair? (second sexp))
       ; we can't use hash-table here, because hash-table can't be written with (write).
       ; So we use acons instead.
-      ($library.set-macro! library (alist-cons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp)) library) ($library.macro library)))
-      ($library.set-macro! library (alist-cons (second sexp) (compile-partial (third sexp)) ($library.macro library))))
-       ($undef))
+      (set! top-level-macros (alist-cons (caadr sexp)  (compile-partial `(lambda ,(cdadr sexp) ,(third sexp))) top-level-macros))
+      (set! top-level-macros (alist-cons (second sexp) (compile-partial (third sexp)) top-level-macros)))
+  ($undef))
 
-(define (pass1/asm-numcmp tag operator args library lvars)
+(define (pass1/asm-numcmp tag operator args lvars)
   (let1 len (length args)
     (cond [(> 2 len) (error operator " got too few argument")]
           [(= 2 len)
@@ -1218,26 +1081,37 @@
           [else
            (pass1/s->i-non-tail (conditions->if (apply-each-pair operator args)))])))
 
-(define (pass1/asm-1-arg tag arg1 library lvars)
+(define (pass1/asm-1-arg tag arg1 lvars)
   ($asm tag (list (pass1/s->i-non-tail arg1))))
 
-(define (pass1/asm-2-arg tag arg1 arg2 library lvars)
+(define (pass1/asm-2-arg tag arg1 arg2 lvars)
   ($asm tag (list (pass1/s->i-non-tail arg1) (pass1/s->i-non-tail arg2))))
 
-(define (pass1/asm-3-arg tag arg1 arg2 arg3 library lvars)
+(define (pass1/asm-3-arg tag arg1 arg2 arg3 lvars)
   ($asm tag (list (pass1/s->i-non-tail arg1)
                   (pass1/s->i-non-tail arg2)
                   (pass1/s->i-non-tail arg3))))
 
-(define (pass1/asm-1-arg-optional tag args library lvars)
+(define (pass1/asm-1-arg-optional tag args lvars)
   (let1 arg1 (if (null? args) '() (car args))
     ($asm tag (list (pass1/s->i-non-tail arg1)))))
 
-(define (pass1/asm-2-arg-optional tag arg1 rest library lvars)
+(define (pass1/asm-2-arg-optional tag arg1 rest lvars)
   (let1 arg2 (if (null? rest) '() (car rest))
     ($asm tag (list (pass1/s->i-non-tail arg1) (pass1/s->i-non-tail arg2)))))
 
-(define (pass1/asm-n-args tag operator args library lvars)
+(define (sub->add form)
+  (let* ([args (cdr form)]
+         [len (length (cdr form))])
+    (cond
+     ;; this is error so return
+     [(zero? len) form]
+     [(= 1 len)
+      `(+ ,(* -1 (car args)))]
+     [else
+      `(+ ,(car args) ,@(imap - (cdr args)))])))
+
+(define (pass1/asm-n-args tag operator args lvars)
   (let1 len (length args)
     (cond
      [(zero? len)
@@ -1262,76 +1136,74 @@
       (let1 args-iform (pass1/map-s->i-non-tail args)
         (fold (lambda (x y) ($asm tag (list y x))) (car args-iform) (cdr args-iform)))])))
 
-(define (pass1/sexp->iform sexp library lvars tail?)
+(define (pass1/sexp->iform sexp lvars tail?)
   (cond
    [(pair? sexp)
     (case (car sexp)
       ;;---------------------------- lambda ------------------------------------
       [(lambda)
-       (pass1/lambda->iform 'lambda sexp library lvars)]
+       (pass1/lambda->iform 'lambda sexp lvars)]
       ;;---------------------------- cons --------------------------------------
       [(cons)
-       (pass1/asm-2-arg 'CONS (second sexp) (third sexp) library lvars)]
+       (pass1/asm-2-arg 'CONS (second sexp) (third sexp) lvars)]
       ;;---------------------------- and ---------------------------------------
       [(and)
-       (pass1/and->iform sexp library lvars tail?)]
+       (pass1/and->iform sexp lvars tail?)]
       ;;---------------------------- and ---------------------------------------
       [(or)
-       (pass1/or->iform sexp library lvars tail?)]
+       (pass1/or->iform sexp lvars tail?)]
       ;;---------------------------- begin -------------------------------------
       [(begin)
-       (pass1/body->iform (pass1/expand (cdr sexp)) library lvars tail?)]
+       (pass1/body->iform (pass1/expand (cdr sexp)) lvars tail?)]
+      ;;---------------------------- cond --------------------------------------
+      [(cond)
+       (pass1/cond->iform (pass1/expand sexp) lvars tail?)]
       ;;---------------------------- values ------------------------------------
       [(values)
        ($asm 'VALUES (pass1/map-s->i-non-tail (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
-       (pass1/define sexp library lvars tail?)]
+       (pass1/define sexp lvars tail?)]
       ;;---------------------------- define-macro ------------------------------
       [(define-macro)
-       (pass1/define-macro sexp library lvars tail?)]
+       (pass1/define-macro sexp lvars tail?)]
       ;;---------------------------- receive -----------------------------------
       [(receive)
-       (pass1/receive sexp library lvars tail?)]
+       (pass1/receive sexp lvars tail?)]
       ;;---------------------------- let ---------------------------------------
       [(let)
        (pass1/let (imap car (second sexp))  ; vars
                   (imap cadr (second sexp)) ; vals
                   (cddr sexp)                ; body
                   (source-info sexp)         ; source-info
-                  library lvars tail?)]
+                  lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
       [(letrec)
        (pass1/letrec (imap car (second sexp))  ; vars
                      (imap cadr (second sexp)) ; vals
                      (cddr sexp)                ; body
                      (source-info sexp)         ; source-info
-                     library lvars tail?)]
+                     lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
       [(letrec*)
        (pass1/letrec (imap car (second sexp))  ; vars
                      (imap cadr (second sexp)) ; vals
                      (cddr sexp)                ; body
                      (source-info sexp)         ; source-info
-                     library lvars tail?)]
-      ;;---------------------------- library -----------------------------------
-;;       [(library)
-;;        (pass1/library->iform sexp library lvars)]
-      ;;---------------------------- import ------------------------------------
-;;
-;;       [(import)
-;;        (pass1/import->iform sexp library)]
+                     lvars tail?)]
       ;;---------------------------- set! --------------------------------------
       [(set!)
        (pass1/assign (second sexp)                ;; symbol
                      (pass1/expand (third sexp))  ;; value
-                     library lvars tail?)]
+                     lvars tail?)]
       ;;---------------------------- if ----------------------------------------
       [(if)
        (pass1/if (second sexp) ;; test
                  (third sexp)  ;; then
                  (cdddr sexp)  ;; else if exists.
-                 library lvars tail?)]
+                 lvars tail?)]
+      [(undef)
+       ($undef)]
       ;;---------------------------- call/cc -----------------------------------
       [(%call/cc)
        ($call-cc (pass1/s->i (second sexp)) tail?)]
@@ -1340,45 +1212,48 @@
       ;;---------------------------- quote -------------------------------------
       [(quote)
        ($const (second sexp))]
-      [(append)           (pass1/asm-n-args         'APPEND2      'dummy (cdr sexp) library lvars)]
-      [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp)    library lvars)]
-      [(-)                (pass1/asm-n-args         'NUMBER_SUB   '-  (cdr sexp)    library lvars)]
-      [(*)                (pass1/asm-n-args         'NUMBER_MUL   '*  (cdr sexp)    library lvars)]
-      [(/)                (pass1/asm-n-args         'NUMBER_DIV   '/  (cdr sexp)    library lvars)]
-      [(=)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  (cdr sexp)    library lvars)]
-      [(>=)               (pass1/asm-numcmp         'NUMBER_GE    '>= (cdr sexp)    library lvars)]
-      [(>)                (pass1/asm-numcmp         'NUMBER_GT    '>  (cdr sexp)    library lvars)]
-      [(<)                (pass1/asm-numcmp         'NUMBER_LT    '<  (cdr sexp)    library lvars)]
-      [(<=)               (pass1/asm-numcmp         'NUMBER_LE    '<= (cdr sexp)    library lvars)]
-      [(vector?)          (pass1/asm-1-arg          'VECTOR_P      (second sexp)    library lvars)]
-      [(vector-length)    (pass1/asm-1-arg          'VECTOR_LENGTH (second sexp)    library lvars)]
-      [(vector-set!)      (pass1/asm-3-arg          'VECTOR_SET    (second sexp)    (third sexp) (fourth sexp) library lvars)]
-      [(vector-ref)       (pass1/asm-2-arg          'VECTOR_REF    (second sexp)    (third sexp) library lvars)]
-      [(make-vector)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   (second sexp)    (cddr sexp) library lvars)]
-      [(car)              (pass1/asm-1-arg          'CAR           (second sexp)    library lvars)]
-      [(cdr)              (pass1/asm-1-arg          'CDR           (second sexp)    library lvars)]
-      [(caar)             (pass1/asm-1-arg          'CAAR          (second sexp)    library lvars)]
-      [(cadr)             (pass1/asm-1-arg          'CADR          (second sexp)    library lvars)]
-      [(cdar)             (pass1/asm-1-arg          'CDAR          (second sexp)    library lvars)]
-      [(cddr)             (pass1/asm-1-arg          'CDDR          (second sexp)    library lvars)]
-      [(set-car!)         (pass1/asm-2-arg          'SET_CAR       (second sexp)    (third sexp) library lvars)]
-      [(set-cdr!)         (pass1/asm-2-arg          'SET_CDR       (second sexp)    (third sexp) library lvars)]
-      [(eq?)              (pass1/asm-2-arg          'EQ            (second sexp)    (third sexp) library lvars)]
-      [(eqv?)             (pass1/asm-2-arg          'EQV           (second sexp)    (third sexp) library lvars)]
-      [(equal?)           (pass1/asm-2-arg          'EQUAL         (second sexp)    (third sexp) library lvars)]
-      [(not)              (pass1/asm-1-arg          'NOT           (second sexp)    library lvars)]
-      [(null?)            (pass1/asm-1-arg          'NULL_P        (second sexp)    library lvars)]
-      [(pair?)            (pass1/asm-1-arg          'PAIR_P        (second sexp)    library lvars)]
-      [(symbol?)          (pass1/asm-1-arg          'SYMBOL_P      (second sexp)    library lvars)]
-      [(read)             (pass1/asm-1-arg-optional 'READ          (cdr sexp)       library lvars)]
-      [(read-char)        (pass1/asm-1-arg-optional 'READ_CHAR     (cdr sexp)       library lvars)]
+      [(append)           (pass1/asm-n-args         'APPEND2      'dummy (cdr sexp) lvars)]
+      [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp)    lvars)]
+      [(-)
+       (if (for-all number? (cdr sexp))
+           (pass1/asm-n-args 'NUMBER_ADD   '+  (cdr (sub->add sexp))    lvars)
+           (pass1/asm-n-args 'NUMBER_SUB   '-  (cdr sexp)    lvars))]
+      [(*)                (pass1/asm-n-args         'NUMBER_MUL   '*  (cdr sexp)    lvars)]
+      [(/)                (pass1/asm-n-args         'NUMBER_DIV   '/  (cdr sexp)    lvars)]
+      [(=)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  (cdr sexp)    lvars)]
+      [(>=)               (pass1/asm-numcmp         'NUMBER_GE    '>= (cdr sexp)    lvars)]
+      [(>)                (pass1/asm-numcmp         'NUMBER_GT    '>  (cdr sexp)    lvars)]
+      [(<)                (pass1/asm-numcmp         'NUMBER_LT    '<  (cdr sexp)    lvars)]
+      [(<=)               (pass1/asm-numcmp         'NUMBER_LE    '<= (cdr sexp)    lvars)]
+      [(vector?)          (pass1/asm-1-arg          'VECTOR_P      (second sexp)    lvars)]
+      [(vector-length)    (pass1/asm-1-arg          'VECTOR_LENGTH (second sexp)    lvars)]
+      [(vector-set!)      (pass1/asm-3-arg          'VECTOR_SET    (second sexp)    (third sexp) (fourth sexp) lvars)]
+      [(vector-ref)       (pass1/asm-2-arg          'VECTOR_REF    (second sexp)    (third sexp) lvars)]
+      [(make-vector)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   (second sexp)    (cddr sexp) lvars)]
+      [(car)              (pass1/asm-1-arg          'CAR           (second sexp)    lvars)]
+      [(cdr)              (pass1/asm-1-arg          'CDR           (second sexp)    lvars)]
+      [(caar)             (pass1/asm-1-arg          'CAAR          (second sexp)    lvars)]
+      [(cadr)             (pass1/asm-1-arg          'CADR          (second sexp)    lvars)]
+      [(cdar)             (pass1/asm-1-arg          'CDAR          (second sexp)    lvars)]
+      [(cddr)             (pass1/asm-1-arg          'CDDR          (second sexp)    lvars)]
+      [(set-car!)         (pass1/asm-2-arg          'SET_CAR       (second sexp)    (third sexp) lvars)]
+      [(set-cdr!)         (pass1/asm-2-arg          'SET_CDR       (second sexp)    (third sexp) lvars)]
+      [(eq?)              (pass1/asm-2-arg          'EQ            (second sexp)    (third sexp) lvars)]
+      [(eqv?)             (pass1/asm-2-arg          'EQV           (second sexp)    (third sexp) lvars)]
+      [(equal?)           (pass1/asm-2-arg          'EQUAL         (second sexp)    (third sexp) lvars)]
+      [(not)              (pass1/asm-1-arg          'NOT           (second sexp)    lvars)]
+      [(null?)            (pass1/asm-1-arg          'NULL_P        (second sexp)    lvars)]
+      [(pair?)            (pass1/asm-1-arg          'PAIR_P        (second sexp)    lvars)]
+      [(symbol?)          (pass1/asm-1-arg          'SYMBOL_P      (second sexp)    lvars)]
+      [(read)             (pass1/asm-1-arg-optional 'READ          (cdr sexp)       lvars)]
+      [(read-char)        (pass1/asm-1-arg-optional 'READ_CHAR     (cdr sexp)       lvars)]
       ;;---------------------------- call or macro------------------------------
       [else
        (pass1/call (car sexp) ; proc
                    (cdr sexp) ; args
-                   library lvars tail?)])]
+                   lvars tail?)])]
    [(symbol? sexp)
-    (pass1/refer->iform sexp library lvars)]
+    (pass1/refer->iform sexp lvars)]
    [else ($const sexp)]))
 
 
@@ -1389,6 +1264,21 @@
 ;;
 ;;    based on Gauche/src/compiler.scm by Shiro Kawai start.
 ;;
+(define (mosh-insn->gosh-insn insn)
+  (let1 val (assq insn '((NUMBER_SUB . NUMSUB2)
+                         (VECTOR_LENGTH . VEC-LEN)
+                         (VECTOR_REF . VEC-REF)
+                         (VECTOR_SET . VEC-SET)
+                         (NUMBER_ADD . NUMADD2)
+                         (NUMBER_SUB . NUMSUB2)
+                         (NUMBER_LT . NUMLT2)
+                         (NUMBER_LE . NUMLE2)
+                         (NUMBER_GT . NUMGT2)
+                         (NUMBER_GE . NUMGE2)
+
+                  ))
+    (if val (list (cdr val)) insn)))
+
 (define (pp-iform iform)
   (define labels '()) ;; alist of label node and count
 
@@ -1400,50 +1290,46 @@
             (display #\space (current-error-port))
           (loop (+ i 1))))))
   (define (nl ind)
-    (newline) (indent ind))
+    (newline (current-error-port)) (indent ind))
   (define (lvar->string lvar)
-    (format "~a[~a ~a]"
+    (format "~a[~a;~a]"
             ($lvar.sym lvar)
             ($lvar.ref-count lvar)
             ($lvar.set-count lvar)))
   (define (rec ind iform)
     (cond
      [(tag? iform $CONST)
-      (format (current-error-port) "($CONST ~s)" ($const.val iform))]
+      (format (current-error-port) "($const ~s)" ($const.val iform))]
      [(tag? iform $LIST)
-      (format (current-error-port) "($LIST)")]
+      (format (current-error-port) "($list)")]
      [(tag? iform $UNDEF)
-      (display "($UNDEF)" (current-error-port))]
+      (display "($const #<undef>)" (current-error-port))]
      [(tag? iform $LAMBDA)
-      (format (current-error-port) "($LAMBDA[~a ~a ~a]" ($lambda.name iform)
-              (map lvar->string ($lambda.lvars iform)) ($lambda.flag iform))
+      (format (current-error-port) "($lambda[~a;~a] ~a" ($lambda.name iform)
+              (length ($lambda.calls iform))
+              (map lvar->string ($lambda.lvars iform)))
       (nl (+ ind 2))
       (rec (+ ind 2) ($lambda.body iform)) (display ")" (current-error-port))]
      [(tag? iform $SEQ)
-      (format (current-error-port) "($SEQ")
+      (format (current-error-port) "($seq")
       (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                 ($seq.body iform))
       (display ")" (current-error-port))]
-     [(tag? iform $LIBRARY)
-      (format (current-error-port) "($LIBRARY ~a export [~a] import [~a]"
-              ($library.name iform)
-              ($library.export-syms iform)
-              ($library.import-syms iform))
-      (nl (+ ind 2))
-                                        ;      (rec ind ($library.body iform))
-      (display ")" (current-error-port))]
      [(tag? iform $LOCAL-REF)
-      (format (current-error-port) "($LOCAL-REF ~a)" (lvar->string ($local-ref.lvar iform)))]
+      (format (current-error-port) "($lref ~a)" (lvar->string ($local-ref.lvar iform)))]
      [(tag? iform $GLOBAL-REF)
-      (format (current-error-port) "($GLOBAL-REF ~a ~a)" ($global-ref.libname iform) ($global-ref.sym iform))]
+      (format (current-error-port) "($gref ~a)" ;; ($global-ref.libname iform)
+              ($global-ref.sym iform))]
      [(tag? iform $LOCAL-ASSIGN)
-      (format (current-error-port) "($LOCAL-ASSIGN ~a"  (lvar->string ($local-assign.lvar iform)))
+      (format (current-error-port) "($lset ~a"  (lvar->string ($local-assign.lvar iform)))
       (nl (+ ind 2))
       (rec (+ ind 2) ($local-assign.val iform)) (display ")" (current-error-port))]
      [(tag? iform $GLOBAL-ASSIGN)
-      (format (current-error-port) "($GLOBAL-ASSIGN ~a ~a)" ($global-assign.sym iform) ($global-assign.val iform))]
+      (format (current-error-port) "($gset ~a)";;  ($global-assign.sym iform)
+              ($global-assign.val iform))]
      [(tag? iform $LET)
-      (let* ((hdr  (format "($LET ("))
+      (let* ((hdr  (format "($let~a (" (case ($let.type iform)
+                                         ((let) "") ((rec) "rec"))))
              (xind (+ ind (string-length hdr))))
         (display hdr (current-error-port))
         (for-each (lambda (var init)
@@ -1456,11 +1342,15 @@
         (display ")" (current-error-port)) (nl (+ ind 2))
         (rec (+ ind 2) ($let.body iform)) (display ")" (current-error-port)))]
      [(tag? iform $IF)
-      (display "($IF " (current-error-port))
+      (display "($if " (current-error-port))
       (rec (+ ind 5) ($if.test iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.then iform)) (nl (+ ind 2))
       (rec (+ ind 2) ($if.else iform)) (display ")" (current-error-port))]
-     [(tag? iform $RECEIVE) #f]
+     ((tag? iform $RECEIVE)
+      (format #t "($receive ~a" (map lvar->string ($receive.lvars iform)))
+      (nl (+ ind 4))
+      (rec (+ ind 4) ($receive.vals iform)) (nl (+ ind 2))
+      (rec (+ ind 2) ($receive.body iform)) (display ")"))
      [(tag? iform $LABEL)
       (cond ((assq iform labels)
              => (lambda (p) (format (current-error-port) "label#~a" (cdr p))))
@@ -1471,13 +1361,14 @@
                (nl (+ ind 2))
                (rec (+ ind 2) ($label.body iform)) (display ")" (current-error-port)))))]
      [(tag? iform $ASM)
-      (let1 insn ($asm.insn iform)
+      (let1 insn (mosh-insn->gosh-insn ($asm.insn iform))
         (format (current-error-port) "($asm ~a" insn))
       (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                 ($asm.args iform))
       (display ")" (current-error-port))]
      [(tag? iform $DEFINE)
-      (format (current-error-port) "($DEFINE ~a:~a" ($define.libname iform) ($define.sym iform))
+      (format (current-error-port) "($define () ~a" ;; ($define.libname iform)
+              ($define.sym iform))
       (nl (+ ind 2))
       (rec (+ ind 2) ($define.val iform)) (display ")" (current-error-port))]
      [(tag? iform $CALL-CC)
@@ -1485,11 +1376,11 @@
       (rec 0 ($call-cc.proc iform))
       (display ")" (current-error-port))]
      [(tag? iform $LABEL)
-      (display "($LABEL " (current-error-port))
+      (display "($label " (current-error-port))
       (rec 0 ($label.body iform))
       (display ")" (current-error-port))]
      [(tag? iform $IT)
-      (display "it" (current-error-port))]
+      (display "($it)" (current-error-port))]
      [(tag? iform $RECEIVE)
       (format (current-error-port) "($receive ~a" (map lvar->string ($receive.lvars iform)))
       (nl (+ ind 4))
@@ -1497,10 +1388,10 @@
       (rec (+ ind 2) ($receive.body iform)) (display ")" (current-error-port))]
      [(tag? iform $CALL)
       (let1 pre
-          (cond (($call.tail? iform) => (lambda (x) "($call[tail] "))
+          (cond (($call.type iform) => (lambda (x) (format "($call[~a] " x)))
                 (else "($call "))
         (format (current-error-port) pre)
-        (format (current-error-port) "[~a]" ($call.type iform))
+;        (format (current-error-port) "[~a]" ($call.tail? iform))
         (rec (+ ind (string-length pre)) ($call.proc iform))
         (for-each (lambda (node) (nl (+ ind 2)) (rec (+ ind 2) node))
                   ($call.args iform))
@@ -1509,7 +1400,7 @@
       (error "pp-iform: unknown tag:" (tag iform)))
      ))
   (rec 0 iform)
-  (newline))
+  (newline (current-error-port)))
 
 ;;  based on Gauche/src/compiler.scm by Shiro Kawai end.
 
@@ -1544,12 +1435,12 @@
         [(name . var)
          (let1 ret (gensym)
            `(define ,init
-              (format #t "[~a] IN  =>\n" ',name)
+              (format (current-error-port) "[~a] IN  =>\n" ',name)
               (pp-iform ,(car var))
               (let1 ,ret (begin ,@body)
-                (format #t "[~a] OUT =>\n" ',name)
+                (format (current-error-port) "[~a] OUT =>\n" ',name)
                 (pp-iform ,(car var))
-                (display "\n")
+                (display "\n" (current-error-port))
                 ,ret)))]
         [else
          (error 'define-pass2/tracable "invalid syntax")])
@@ -1563,10 +1454,7 @@
           [inits (imap (lambda (init) (pass2/optimize init closures)) ($let.inits iform))]
           [obody (pass2/optimize ($let.body iform) closures)])
       (for-each pass2/optimize-closure lvars inits)
-      (let* ([v (pass2/remove-vars lvars inits)]
-             [new-lvars (vector-ref v 0)]
-             [new-inits (vector-ref v 1)]
-             [removed-inits (vector-ref v 2)])
+      (receive (new-lvars new-inits removed-inits) (pass2/remove-vars lvars inits)
         (cond
          [(null? new-lvars)
           (if (null? removed-inits)
@@ -1590,8 +1478,8 @@
           iform])))]))
 
 (define-pass2/tracable (pass2/$receive iform closures)
-  ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
   ($receive.set-vals! iform (pass2/optimize ($receive.vals iform) closures))
+  ($receive.set-body! iform (pass2/optimize ($receive.body iform) closures))
   iform)
 
 (define-pass2/tracable (pass2/$local-ref iform closures)
@@ -1621,7 +1509,8 @@
   ($seq.set-body! iform (imap (lambda (x) (pass2/optimize x closures)) ($seq.body iform)))
   iform)
 
-(define-pass2/tracable (pass2/const-inliner iform)
+
+(define (pass2/const-inliner iform)
   (let ([insn ($asm.insn iform)]
         [args ($asm.args iform)])
     (case insn
@@ -1633,7 +1522,7 @@
        (when (and (tag? (first args) $CONST) (tag? (second args) $CONST))
          (vector-set! iform 0 $CONST)
          ($const.set-val! iform (* ($const.val (first args)) ($const.val (second args)))))]
-      [(NUMBER_MINUS)
+      [(NUMBER_SUB)
        (when (and (tag? (first args) $CONST) (tag? (second args) $CONST))
          (vector-set! iform 0 $CONST)
          ($const.set-val! iform (- ($const.val (first args)) ($const.val (second args)))))]
@@ -1650,10 +1539,88 @@
   iform)
 
 (define-pass2/tracable (pass2/$if iform closures)
-  (let ([test-c (pass2/optimize ($if.test iform) closures)]
-        [then-c (pass2/optimize ($if.then iform) closures)]
-        [else-c (pass2/optimize ($if.else iform) closures)])
-  ($if test-c then-c else-c)))
+  (let1 if-test ($if.test iform)
+    (cond
+     ;; (if const else then) => else or then.
+     [(tag? if-test $CONST)
+      (if ($const.val if-test)
+          ($seq (list if-test (pass2/optimize ($if.then iform) closures)) #f)
+          ($seq (list if-test (pass2/optimize ($if.else iform) closures)) #f))]
+     [else
+      (let ([test-c (pass2/optimize ($if.test iform) closures)]
+            [then-c (pass2/optimize ($if.then iform) closures)]
+            [else-c (pass2/optimize ($if.else iform) closures)])
+        ($if test-c then-c else-c))])))
+
+;; ** This version of pass2/$if works, but very slow. **
+;;   This genrates many labels and so it makes pass3/find-free/sets slower.
+;;   We need to distinguish source label and destination label.
+;;   And pass3/find-free must visit only destination label .
+;; (define-pass2/tracable (pass2/$if iform closures)
+;;   (let1 test (pass2/optimize ($if.test iform) closures)
+;;     (or (and
+;;          (tag? test $IF)
+;;          (let ([test-then ($if.then test)]
+;;                [test-else ($if.else test)])
+;;            (cond ((tag? test-then $IT)
+;;                   (receive (l0 l1)
+;;                       (pass2/label-or-dup
+;;                        (pass2/optimize ($if.then iform) closures))
+;;                     (pass2/update-if iform ($if.test test)
+;;                                      l0
+;;                                      (pass2/optimize ($if
+;;                                                       test-else
+;;                                                       l1
+;;                                                       ($if.else iform))
+;;                                                 closures))))
+;;                  ((or (tag? test-else $IT)
+;;                       (and (tag? test-else $CONST)
+;;                            (not ($const.val test-else))))
+;;                   (receive (l0 l1)
+;;                       (pass2/label-or-dup
+;;                        (pass2/optimize ($if.else iform) closures))
+;;                     (pass2/update-if iform ($if.test test)
+;;                                      (pass2/optimize ($if
+;;                                                      test-then
+;;                                                      ($if.then iform)
+;;                                                      l0)
+;;                                                 closures)
+;;                                      l1)))
+;;                  ((and (tag? test-then $CONST)
+;;                        (not ($const.val test-then)))
+;;                   (receive (l0 l1)
+;;                       (pass2/label-or-dup
+;;                        (pass2/optimize ($if.else iform) closures))
+;;                     (pass2/update-if iform ($if.test test)
+;;                                      (if (tag? l0 $IT)
+;;                                        ($const #f)
+;;                                        l0)
+;;                                      (pass2/optimize ($if
+;;                                                      test-else
+;;                                                      ($if.then iform)
+;;                                                      l1)
+;;                                                 closures))))
+;;                  (else #f))))
+;;         ;; default case
+;;         (pass2/update-if iform
+;;                          test
+;;                          (pass2/optimize ($if.then iform) closures)
+;;                          (pass2/optimize ($if.else iform) closures)))))
+
+(define (pass2/label-or-dup iform)
+  (if (memv (tag iform) `(,$LOCAL-REF ,$CONST ,$IT))
+    (values iform (iform-copy iform '()))
+    (let1 lab ($label iform)
+      (values lab lab))))
+
+(define (pass2/update-if iform new-test new-then new-else)
+  (if (eq? new-then new-else)
+    ($seq (list new-test new-then))
+    (begin ($if.set-test! iform new-test)
+           ($if.set-then! iform new-then)
+           ($if.set-else! iform new-else)
+           iform)))
+
 
 (define-pass2/tracable (pass2/$local-assign iform closures)
   ($local-assign.set-val! iform (pass2/optimize ($local-assign.val iform) closures))
@@ -1668,7 +1635,49 @@
   iform)
 
 (define-pass2/tracable (pass2/$call iform closures)
-  (pass2/collect-call iform closures))
+  (cond
+   [($call.type iform) iform]
+   [else
+    (let ([proc ($call.proc iform)]
+          [args ($call.args iform)])
+      ;; scan OP first to give an opportunity of variable renaming
+      ($call.set-proc! iform (pass2/optimize ($call.proc iform) closures))
+      (cond [(tag? proc $LAMBDA)
+             (pass2/optimize (pass2/expand-inlined-procedure proc args)
+                             closures)]
+            [(and (tag? proc $LOCAL-REF)
+                  (pass2/classify-local-ref-call proc closures ($call.tail? iform)))
+             => (lambda (type)
+                  (cond
+                   ;; Directly inline
+                   [(vector? type)
+                    ($call.set-proc! iform type)
+                    ;; Directly inlinable case.  NB: this only happens if the $LREF
+                    ;; node is the lvar's single reference, so we know the inlined
+                    ;; procedure is never called recursively.  Thus we can safely
+                    ;; traverse the inlined body without going into infinite loop.
+                    ;;                ($call-proc-set! iform result)
+                    (let1 o (pass2/expand-inlined-procedure type args)
+                      (pass2/optimize o closures)
+                    )
+                    ;;                           penv tail?))
+                    ]
+                   [(not type)
+                    iform]
+                   [else
+                    (let1 lambda-iform ($lvar.init-val ($local-ref.lvar proc))
+                      ($call.set-type! iform type)
+                      ($lambda.set-calls! lambda-iform
+                                          (cons (cons iform closures)
+                                                ($lambda.calls lambda-iform)))
+                      ;; todo
+                      ;; args の最適化 see Gauche
+                      ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
+                      iform)]))]
+            [else
+             ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
+             iform]))]))
+;  (pass2/collect-call iform closures))
 
 (define (pass2/empty iform closures)
   iform)
@@ -1677,25 +1686,24 @@
   (vector-set! pass2/dispatch-table insn proc))
 
 (pass2/register $CONST         pass2/empty)
+(pass2/register $LET           pass2/$let)
+(pass2/register $SEQ           pass2/$seq)
 (pass2/register $LAMBDA        pass2/$lambda)
 (pass2/register $LOCAL-REF     pass2/$local-ref)
 (pass2/register $LOCAL-ASSIGN  pass2/$local-assign)
-(pass2/register $GLOBAL-ASSIGN pass2/$global-assign)
 (pass2/register $GLOBAL-REF    pass2/empty)
-(pass2/register $SEQ           pass2/$seq)
+(pass2/register $GLOBAL-ASSIGN pass2/$global-assign)
 (pass2/register $UNDEF         pass2/empty)
 (pass2/register $IF            pass2/$if)
 (pass2/register $ASM           pass2/$asm)
-(pass2/register $DEFINE        pass2/empty)
+(pass2/register $DEFINE        pass2/$define)
 (pass2/register $CALL          pass2/$call)
 (pass2/register $CALL-CC       pass2/empty)
-(pass2/register $LET           pass2/$let)
+(pass2/register $LABEL         pass2/empty)
 (pass2/register $LIST          pass2/empty)
-;(pass2/register $LIBRARY       pass2/empty)
-(pass2/register $IMPORT        pass2/empty)
 (pass2/register $IT            pass2/empty)
 (pass2/register $RECEIVE       pass2/$receive)
-(pass2/register $LABEL         pass2/empty)
+
 
 (define (pass2/optimize iform closures)
   ((vector-ref pass2/dispatch-table (vector-ref iform 0)) iform closures))
@@ -1766,7 +1774,7 @@
   (let1 t (tag iform)
     (cond
      [(= $DEFINE t)
-      ($define  ($define.libname iform)
+      ($define  
                 ($define.sym iform)
                 (iform-copy ($define.val iform) lv-alist))]
      [(= $LOCAL-REF t)
@@ -1775,9 +1783,9 @@
       ($local-assign (iform-copy-lvar ($local-assign.lvar iform) lv-alist)
                      (iform-copy ($local-assign.val iform) lv-alist))]
      [(= $GLOBAL-REF t)
-      ($global-ref ($global-ref.libname iform) ($global-ref.sym iform))]
+      ($global-ref ($global-ref.sym iform))]
      [(= $GLOBAL-ASSIGN t)
-      ($global-assign ($global-assign.libname iform) ($global-assign.sym iform) (iform-copy ($global-assign.val iform) lv-alist))]
+      ($global-assign ($global-assign.sym iform) (iform-copy ($global-assign.val iform) lv-alist))]
      [(= $CONST t)
       ($const ($const.val iform))]
      [(= $IF t)
@@ -1828,10 +1836,7 @@
              (> ($lvar.ref-count lvar) 0)
              (tag? lambda-node $LAMBDA))
     (or (and (= ($lvar.ref-count lvar) (length ($lambda.calls lambda-node)))
-             (let* ([ret (pass2/classify-calls ($lambda.calls lambda-node) lambda-node)]
-                    [locals (first ret)]
-                    [recs (second ret)]
-                    [tail-recs (third ret)])
+             (receive (locals recs tail-recs) (pass2/classify-calls ($lambda.calls lambda-node) lambda-node)
                (and (null? recs)
                     (pair? locals)
                     (or (and (null? (cdr locals))
@@ -2005,7 +2010,7 @@
              (trec '()))
     (match call&envs
       (()
-       (list local rec trec))
+       (values local rec trec))
       (((call . env) . more)
        (case ($call.type call)
          ((tail-rec)
@@ -2039,10 +2044,27 @@
 ;;            (loop (cdr vars) (cdr init-iforms)
 ;;                  (cons (car vars) rl) (cons (car init-iforms) ri) rr)))))
 
+;; (define (pass2/remove-vars lvars inits)
+;;   (let loop ((lvars lvars) (inits inits) (rl '()) (ri '()) (rr '()))
+;;     (cond ((null? lvars)
+;;            (vector (reverse rl) (reverse ri) (reverse rr)))
+;;           ((and (zero? ($lvar.ref-count (car lvars)))
+;;                 (zero? ($lvar.set-count (car lvars))))
+;;            ;; TODO: if we remove $LREF from inits, we have to decrement
+;;            ;; refcount?
+;;            (loop (cdr lvars) (cdr inits) rl ri
+;;                  (if (memv (tag (car inits))
+;;                            `(,$CONST ,$LOCAL-REF ,$LAMBDA))
+;;                    rr
+;;                    (cons (car inits) rr))))
+;;           (else
+;;            (loop (cdr lvars) (cdr inits)
+;;                  (cons (car lvars) rl) (cons (car inits) ri) rr)))))
+
 (define (pass2/remove-vars lvars inits)
   (let loop ((lvars lvars) (inits inits) (rl '()) (ri '()) (rr '()))
     (cond ((null? lvars)
-           (vector (reverse rl) (reverse ri) (reverse rr)))
+           (values (reverse rl) (reverse ri) (reverse rr)))
           ((and (zero? ($lvar.ref-count (car lvars)))
                 (zero? ($lvar.set-count (car lvars))))
            ;; TODO: if we remove $LREF from inits, we have to decrement
@@ -2055,6 +2077,8 @@
           (else
            (loop (cdr lvars) (cdr inits)
                  (cons (car lvars) rl) (cons (car inits) ri) rr)))))
+
+
 
 
 (define (pass2/self-recursing? closure closures)
@@ -2126,49 +2150,49 @@
           ((null? rest) (error "given list is too short:" args))
           (else (loop (- i 1) (cdr rest) (cons (car rest) r))))))
 
-(define-pass2/tracable (pass2/collect-call iform closures)
-  (cond
-   [($call.type iform) iform]
-   [else
-    (let ([proc ($call.proc iform)]
-          [args ($call.args iform)])
-      ;; scan OP first to give an opportunity of variable renaming
-      ($call.set-proc! iform (pass2/optimize ($call.proc iform) closures))
-      (cond [(tag? proc $LAMBDA)
-             (pass2/optimize (pass2/expand-inlined-procedure proc args)
-                             closures)]
-            [(and (tag? proc $LOCAL-REF)
-                  (pass2/classify-local-ref-call proc closures ($call.tail? iform)))
-             => (lambda (type)
-                  (cond
-                   ;; Directly inline
-                   [(vector? type)
-                    ($call.set-proc! iform type)
-                    ;; Directly inlinable case.  NB: this only happens if the $LREF
-                    ;; node is the lvar's single reference, so we know the inlined
-                    ;; procedure is never called recursively.  Thus we can safely
-                    ;; traverse the inlined body without going into infinite loop.
-                    ;;                ($call-proc-set! iform result)
-                    (let1 o (pass2/expand-inlined-procedure type args)
-                      (pass2/optimize o closures)
-                    )
-                    ;;                           penv tail?))
-                    ]
-                   [(not type)
-                    iform]
-                   [else
-                    (let1 lambda-iform ($lvar.init-val ($local-ref.lvar proc))
-                      ($call.set-type! iform type)
-                      ($lambda.set-calls! lambda-iform
-                                          (cons (cons iform closures)
-                                                ($lambda.calls lambda-iform)))
-                      ;; todo
-                      ;; args の最適化 see Gauche
-                      ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
-                      iform)]))]
-            [else
-             ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
-             iform]))]))
+;; (define (pass2/collect-call iform closures)
+;;   (cond
+;;    [($call.type iform) iform]
+;;    [else
+;;     (let ([proc ($call.proc iform)]
+;;           [args ($call.args iform)])
+;;       ;; scan OP first to give an opportunity of variable renaming
+;;       ($call.set-proc! iform (pass2/optimize ($call.proc iform) closures))
+;;       (cond [(tag? proc $LAMBDA)
+;;              (pass2/optimize (pass2/expand-inlined-procedure proc args)
+;;                              closures)]
+;;             [(and (tag? proc $LOCAL-REF)
+;;                   (pass2/classify-local-ref-call proc closures ($call.tail? iform)))
+;;              => (lambda (type)
+;;                   (cond
+;;                    ;; Directly inline
+;;                    [(vector? type)
+;;                     ($call.set-proc! iform type)
+;;                     ;; Directly inlinable case.  NB: this only happens if the $LREF
+;;                     ;; node is the lvar's single reference, so we know the inlined
+;;                     ;; procedure is never called recursively.  Thus we can safely
+;;                     ;; traverse the inlined body without going into infinite loop.
+;;                     ;;                ($call-proc-set! iform result)
+;;                     (let1 o (pass2/expand-inlined-procedure type args)
+;;                       (pass2/optimize o closures)
+;;                     )
+;;                     ;;                           penv tail?))
+;;                     ]
+;;                    [(not type)
+;;                     iform]
+;;                    [else
+;;                     (let1 lambda-iform ($lvar.init-val ($local-ref.lvar proc))
+;;                       ($call.set-type! iform type)
+;;                       ($lambda.set-calls! lambda-iform
+;;                                           (cons (cons iform closures)
+;;                                                 ($lambda.calls lambda-iform)))
+;;                       ;; todo
+;;                       ;; args の最適化 see Gauche
+;;                       ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
+;;                       iform)]))]
+;;             [else
+;;              ($call.set-args! iform (imap (lambda (x) (pass2/optimize x closures)) args))
+;;              iform]))]))
 
 ;;--------------------------------------------------------------------
 ;;
@@ -2250,12 +2274,6 @@
           (if (memq i labels-seen)
               '()
               (rec ($label.body i) l (cons i labels-seen)))]
-;;          [(= $IMPORT t)
-;;           '() ;; todo 本当?
-;;           ]
-;;          [(= $LIBRARY t)
-;;           '() ;; todo 本当?
-;;           ]
          [(= $IT t) '()]
          [else
           (error "pass3/find-free unknown iform:" (tag i))])))
@@ -2330,12 +2348,6 @@
           (if (memq i labels-seen)
               '()
               (rec ($label.body i) l (cons i labels-seen)))]
-;;          [(= $IMPORT t)
-;;           '() ;; todo 本当?
-;;           ]
-;;          [(= $LIBRARY t)
-;;           '() ;; todo 本当?
-;;           ]
          [(= $IT t) '()]
          [else
           (error "pass3/find-free unknown iform:" (tag i))])))
@@ -2344,59 +2356,54 @@
   ;; moved to freeproc.cpp
   ;; N.B. these procedures are still required by vm.scm
   (define (pass3/find-sets iform lvars)
-    (define (rec i)
+    (define (rec i labels-seen)
       (let1 t (tag i)
         (cond
          [(= $CONST t) '()]
          [(= $LET t)
-          (append ($append-map1 rec ($let.inits i))
-                  (rec ($let.body i)))]
+          (append ($append-map1 (lambda (init) (rec init labels-seen)) ($let.inits i))
+                  (rec ($let.body i) labels-seen))]
          [(= $RECEIVE t)
-          (append (rec ($receive.vals i))
-                  (rec ($receive.body i)))]
+          (append (rec ($receive.vals i) labels-seen)
+                  (rec ($receive.body i) labels-seen))]
          [(= $SEQ t)
-          ($append-map1 rec ($seq.body i))]
+          ($append-map1 (lambda (fm) (rec fm labels-seen)) ($seq.body i))]
          [(= $LAMBDA t)
-          (rec ($lambda.body i))]
+          (rec ($lambda.body i) labels-seen)]
          [(= $LOCAL-ASSIGN t)
           (let1 lvar ($local-assign.lvar i)
             (append (if (memq lvar lvars) (list lvar) '())
-                    (rec ($local-assign.val i))))]
+                    (rec ($local-assign.val i) labels-seen)))]
          [(= $LOCAL-REF t)  '()]
          [(= $GLOBAL-REF t) '()]
          [(= $UNDEF t)      '()]
          [(= $IF t)
-          (append (rec ($if.test i))
-                  (rec ($if.then i))
-                  (rec ($if.else i)))]
+          (append (rec ($if.test i) labels-seen)
+                  (rec ($if.then i) labels-seen)
+                  (rec ($if.else i) labels-seen))]
          [(= $ASM t)
-          ($append-map1 rec ($asm.args i))]
+          ($append-map1 (lambda (arg) (rec arg labels-seen)) ($asm.args i))]
          [(= $DEFINE t)
-          (rec ($define.val i))]
+          (rec ($define.val i) labels-seen)]
          [(= $CALL t)
           (append
-           ($append-map1 rec ($call.args i))
-           (rec ($call.proc i))
+           ($append-map1 (lambda (arg) (rec arg labels-seen)) ($call.args i))
+           (rec ($call.proc i) labels-seen)
            )]
          [(= $CALL-CC t)
-          (rec ($call-cc.proc i))]
+          (rec ($call-cc.proc i) labels-seen)]
          [(= $GLOBAL-ASSIGN t)
-          (rec ($global-assign.val i))]
+          (rec ($global-assign.val i) labels-seen)]
          [(= $LIST t)
-          ($append-map1 rec ($list.args i))]
+          ($append-map1 (lambda (arg) (rec arg labels-seen)) ($list.args i))]
          [(= $LABEL t)
-          '() ;; todo 本当
-          ]
-;;          [(= $IMPORT t)
-;;           '() ;; todo 本当?
-;;           ]
-;;          [(= $LIBRARY t)
-;;           '() ;; todo 本当?
-;;           ]
+          (if (memq i labels-seen)
+              '()
+              (rec ($label.body i) (cons i labels-seen)))]
          [(= $IT t) '()]
          [else
           (error "pass3/find-sets unknown iform:" i)])))
-    (uniq (rec iform)))
+    (uniq (rec iform '())))
   ]
  [else #f])
 
@@ -2489,6 +2496,7 @@
   (define (code-builder-emit cb)
     (array->list cb))
 
+  (define code-builder-put-insn-arg2! code-builder-put-extra3!)
   (define code-builder-put-insn-arg1! code-builder-put-extra2!)
   (define code-builder-put-insn-arg0! code-builder-put-extra1!)
   ;; moved to freeproc.cpp end
@@ -2516,7 +2524,7 @@
 
 (define-macro (cput-shift! cb n m)
   `(when (> ,m 0)
-    (cput! ,cb 'SHIFT ,n ,m)))
+    (code-builder-put-insn-arg2! ,cb 'SHIFT ,n ,m)))
 
 (define-macro (pass3/add-sets! sets new-sets)
   `(if (null? ,new-sets)
@@ -2587,51 +2595,43 @@
 (define (pass3/register insn proc)
   (vector-set! pass3/dispatch-table insn proc))
 
-(define (pass3/$const cb iform locals frees can-frees sets tail depth)
+(define (pass3/$const cb iform locals frees can-frees sets tail depth display-count)
 ;;   (display "pass3/$const\n" (current-error-port))
 ;;   (pp-iform iform)
 
   (code-builder-put-insn-arg1! cb 'CONSTANT ($const.val iform))
   0)
 
-(define (pass3/$it cb iform locals frees can-frees sets tail depth) 0)
+(define (pass3/$it cb iform locals frees can-frees sets tail depth display-count) 0)
 
-(define (pass3/$list cb iform locals frees can-frees sets tail depth)
+(define (pass3/$list cb iform locals frees can-frees sets tail depth display-count)
   (let1 args ($list.args iform)
     (begin0
       (fold (lambda (i accum)
-              (let1 size (pass3/rec cb i locals frees can-frees sets tail depth)
+              (let1 size (pass3/rec cb i locals frees can-frees sets tail depth display-count)
                 (code-builder-put-insn-arg0! cb 'PUSH)
                 (+ size accum))) 0 args)
       (code-builder-put-insn-arg1! cb 'LIST (length args)))))
 
 ;; $local-lef is classified into REFER_LOCAL and REFER_FREE
-(define (pass3/$local-ref cb iform locals frees can-frees sets tail depth)
+(define (pass3/$local-ref cb iform locals frees can-frees sets tail depth display-count)
   (pass3/compile-refer cb ($lvar.sym ($local-ref.lvar iform)) locals frees)
   (when (hashtable-ref sets ($local-ref.lvar iform) #f)
     (code-builder-put-insn-arg0! cb 'INDIRECT))
   0)
 
 ;; $local-assign is classified into ASSIGN_LOCAL and ASSIGN_FREE
-(define (pass3/$local-assign cb iform locals frees can-frees sets tail depth)
-  (let ([val-stack-size (pass3/rec cb ($local-assign.val iform) locals frees can-frees sets #f depth)]
+(define (pass3/$local-assign cb iform locals frees can-frees sets tail depth display-count)
+  (let ([val-stack-size (pass3/rec cb ($local-assign.val iform) locals frees can-frees sets #f depth display-count)]
         [var-stack-size (pass3/compile-assign cb ($lvar.sym ($local-assign.lvar iform)) locals frees)])
     (+ val-stack-size var-stack-size)))
 
-(define top-level-sym (string->symbol "top-level-"))
-
-(define (merge-libname-sym libname sym)
-  (string->symbol
-   (string-append (symbol->string libname)
-                  ":$:"
-                  (symbol->string sym))))
-
 ;; $global-lef is classified into REFER_GLOBAL and REFER_FREE
-(define (pass3/$global-ref cb iform locals frees can-frees sets tail depth)
+(define (pass3/$global-ref cb iform locals frees can-frees sets tail depth display-count)
   (let1 sym ($global-ref.sym iform)
     (let next-free ([free frees] [n 0])
       (cond [(null? free)
-             (code-builder-put-insn-arg1! cb 'REFER_GLOBAL (merge-libname-sym ($global-ref.libname iform) sym))
+             (code-builder-put-insn-arg1! cb 'REFER_GLOBAL sym)
              0]
             [(eq? (car free) sym)
              (code-builder-put-insn-arg1! cb 'REFER_FREE n)
@@ -2639,24 +2639,24 @@
             [else
              (next-free (cdr free) (+ n 1))]))))
 
-(define (pass3/$global-assign cb iform locals frees can-frees sets tail depth)
+(define (pass3/$global-assign cb iform locals frees can-frees sets tail depth display-count)
   (let1 sym ($global-assign.sym iform)
     (let next-free ([free frees] [n 0])
       (cond
        [(null? free)
         (begin0
-          (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f depth)
+          (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f depth display-count)
           (code-builder-put-insn-arg1! cb
                  'ASSIGN_GLOBAL
-                 (merge-libname-sym ($global-assign.libname iform) sym)))]
+                 sym))]
        [(eq? (car free) sym)
         (begin0
-         (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f depth)
+         (pass3/rec cb ($global-assign.val iform) locals frees can-frees sets #f depth display-count)
          (code-builder-put-insn-arg1! cb 'ASSIGN_FREE n))]
        [else
         (next-free (cdr free) (+ n 1))]))))
 
-(define (pass3/$seq cb iform locals frees can-frees sets tail depth)
+(define (pass3/$seq cb iform locals frees can-frees sets tail depth display-count)
   (let loop ([form ($seq.body iform)]
              [size 0])
     (cond
@@ -2664,131 +2664,188 @@
      [else
       (let1 tail? (if (null? (cdr form)) tail #f)
         (loop (cdr form)
-              (+ size (pass3/rec cb (car form) locals frees can-frees sets tail? depth))))])))
+              (+ size (pass3/rec cb (car form) locals frees can-frees sets tail? depth display-count))))])))
 
-(define (pass3/$undef cb iform locals frees can-frees sets tail depth)
+(define (pass3/$undef cb iform locals frees can-frees sets tail depth display-count)
   (code-builder-put-insn-arg0! cb 'UNDEF)
   0)
 
-(define (pass3/$asm-1-arg cb insn arg1 locals frees can-frees sets depth)
+(define (pass3/$asm-1-arg cb insn arg1 locals frees can-frees sets depth display-count)
   (begin0
-    (pass3/rec cb arg1 locals frees can-frees sets #f depth)
+    (pass3/rec cb arg1 locals frees can-frees sets #f depth display-count)
     (code-builder-put-insn-arg0! cb insn)))
 
-(define (pass3/$asm-2-arg cb insn arg1 arg2 locals frees can-frees sets depth)
-    (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f depth)]
-          [y (pass3/rec cb arg2 locals frees can-frees sets #f depth)])
+(define (pass3/$asm-2-arg cb insn arg1 arg2 locals frees can-frees sets depth display-count)
+    (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f depth display-count)]
+          [y (pass3/rec cb arg2 locals frees can-frees sets #f depth display-count)])
       (code-builder-put-insn-arg0! cb insn)
       (+ x y)))
 
-(define (pass3/$asm-3-arg cb insn arg1 arg2 arg3 locals frees can-frees sets depth)
-  (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f depth)]
-        [y (pass3/compile-arg cb arg2 locals frees can-frees sets #f depth)]
-        [z (pass3/rec cb arg3 locals frees can-frees sets #f depth)])
+(define (pass3/$asm-3-arg cb insn arg1 arg2 arg3 locals frees can-frees sets depth display-count)
+  (let ([x (pass3/compile-arg cb arg1 locals frees can-frees sets #f depth display-count)]
+        [y (pass3/compile-arg cb arg2 locals frees can-frees sets #f depth display-count)]
+        [z (pass3/rec cb arg3 locals frees can-frees sets #f depth display-count)])
     (code-builder-put-insn-arg0! cb insn)
     (+ x y z)))
 
-(define (pass3/$asm-n-args cb args locals frees can-frees sets depth)
+(define (pass3/$asm-n-args cb args locals frees can-frees sets depth display-count)
   (let loop ([args args]
              [stack-size 0])
     (cond
      [(null? args) stack-size]
      [(null? (cdr args)) ;; last argument is not pushed.
-      (+ stack-size (pass3/rec cb (car args) locals frees can-frees sets #f depth))]
+      (+ stack-size (pass3/rec cb (car args) locals frees can-frees sets #f depth display-count))]
      [else
       (loop (cdr args)
-            (+ stack-size (pass3/compile-arg cb (car args) locals frees can-frees sets #f depth)))])))
+            (+ stack-size (pass3/compile-arg cb (car args) locals frees can-frees sets #f depth display-count)))])))
 
-(define (pass3/$asm cb iform locals frees can-frees sets tail depth)
+(define (pass3/$asm cb iform locals frees can-frees sets tail depth display-count)
   (let1 args ($asm.args iform)
     (case ($asm.insn iform)
-      [(APPEND2)           (pass3/$asm-2-arg cb  'APPEND2         (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_ADD)        (pass3/$asm-2-arg cb  'NUMBER_ADD      (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_SUB)        (pass3/$asm-2-arg cb  'NUMBER_SUB      (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_MUL)        (pass3/$asm-2-arg cb  'NUMBER_MUL      (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_DIV)        (pass3/$asm-2-arg cb  'NUMBER_DIV      (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_EQUAL)      (pass3/$asm-2-arg cb  'NUMBER_EQUAL    (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_GE)         (pass3/$asm-2-arg cb  'NUMBER_GE       (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_GT)         (pass3/$asm-2-arg cb  'NUMBER_GT       (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_LT)         (pass3/$asm-2-arg cb  'NUMBER_LT       (first args) (second args) locals frees can-frees sets depth)]
-      [(NUMBER_LE)         (pass3/$asm-2-arg cb  'NUMBER_LE       (first args) (second args) locals frees can-frees sets depth)]
-      [(CONS)              (pass3/$asm-2-arg cb  'CONS            (first args) (second args) locals frees can-frees sets depth)]
-      [(CAR)               (pass3/$asm-1-arg cb   'CAR             (first args) locals frees can-frees sets depth)]
-      [(CDR)               (pass3/$asm-1-arg cb   'CDR             (first args) locals frees can-frees sets depth)]
-      [(CAAR)              (pass3/$asm-1-arg cb   'CAAR            (first args) locals frees can-frees sets depth)]
-      [(CADR)              (pass3/$asm-1-arg cb   'CADR            (first args) locals frees can-frees sets depth)]
-      [(CDAR)              (pass3/$asm-1-arg cb   'CDAR            (first args) locals frees can-frees sets depth)]
-      [(CDDR)              (pass3/$asm-1-arg cb   'CDDR            (first args) locals frees can-frees sets depth)]
-      [(SET_CDR)           (pass3/$asm-2-arg cb  'SET_CDR         (first args) (second args) locals frees can-frees sets depth)]
-      [(SET_CAR)           (pass3/$asm-2-arg cb  'SET_CAR         (first args) (second args) locals frees can-frees sets depth)]
-      [(MAKE_VECTOR)       (pass3/$asm-2-arg cb  'MAKE_VECTOR     (first args) (second args) locals frees can-frees sets depth)]
-      [(VECTOR_LENGTH)     (pass3/$asm-1-arg cb   'VECTOR_LENGTH   (first args)locals frees can-frees sets depth)]
-      [(VECTOR_SET)        (pass3/$asm-3-arg cb 'VECTOR_SET      (first args) (second args) (third args) locals frees can-frees sets depth)]
-      [(VECTOR_REF)        (pass3/$asm-2-arg cb  'VECTOR_REF      (first args) (second args) locals frees can-frees sets depth)]
-      [(EQ)                (pass3/$asm-2-arg cb  'EQ              (first args) (second args) locals frees can-frees sets depth)]
-      [(EQV)               (pass3/$asm-2-arg cb  'EQV             (first args) (second args) locals frees can-frees sets depth)]
-      [(EQUAL)             (pass3/$asm-2-arg cb  'EQUAL           (first args) (second args) locals frees can-frees sets depth)]
-      [(PAIR_P)            (pass3/$asm-1-arg cb   'PAIR_P          (first args) locals frees can-frees sets depth)]
-      [(NULL_P)            (pass3/$asm-1-arg cb   'NULL_P          (first args) locals frees can-frees sets depth)]
-      [(SYMBOL_P)          (pass3/$asm-1-arg cb   'SYMBOL_P        (first args) locals frees can-frees sets depth)]
-      [(VECTOR_P)          (pass3/$asm-1-arg cb   'VECTOR_P        (first args) locals frees can-frees sets depth)]
-      [(NOT)               (pass3/$asm-1-arg cb   'NOT             (first args) locals frees can-frees sets depth)]
-      [(OPEN_INPUT_FILE)   (pass3/$asm-1-arg cb   'OPEN_INPUT_FILE (first args) locals frees can-frees sets depth)]
-      [(READ)              (pass3/$asm-1-arg cb   'READ            (first args) locals frees can-frees sets depth)]
-      [(READ_CHAR)         (pass3/$asm-1-arg cb   'READ_CHAR       (first args) locals frees can-frees sets depth)]
+      [(APPEND2)           (pass3/$asm-2-arg cb  'APPEND2         (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_ADD)        (pass3/$asm-2-arg cb  'NUMBER_ADD      (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_SUB)        (pass3/$asm-2-arg cb  'NUMBER_SUB      (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_MUL)        (pass3/$asm-2-arg cb  'NUMBER_MUL      (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_DIV)        (pass3/$asm-2-arg cb  'NUMBER_DIV      (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_EQUAL)      (pass3/$asm-2-arg cb  'NUMBER_EQUAL    (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_GE)         (pass3/$asm-2-arg cb  'NUMBER_GE       (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_GT)         (pass3/$asm-2-arg cb  'NUMBER_GT       (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_LT)         (pass3/$asm-2-arg cb  'NUMBER_LT       (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(NUMBER_LE)         (pass3/$asm-2-arg cb  'NUMBER_LE       (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(CONS)              (pass3/$asm-2-arg cb  'CONS            (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(CAR)               (pass3/$asm-1-arg cb   'CAR             (first args) locals frees can-frees sets depth display-count)]
+      [(CDR)               (pass3/$asm-1-arg cb   'CDR             (first args) locals frees can-frees sets depth display-count)]
+      [(CAAR)              (pass3/$asm-1-arg cb   'CAAR            (first args) locals frees can-frees sets depth display-count)]
+      [(CADR)              (pass3/$asm-1-arg cb   'CADR            (first args) locals frees can-frees sets depth display-count)]
+      [(CDAR)              (pass3/$asm-1-arg cb   'CDAR            (first args) locals frees can-frees sets depth display-count)]
+      [(CDDR)              (pass3/$asm-1-arg cb   'CDDR            (first args) locals frees can-frees sets depth display-count)]
+      [(SET_CDR)           (pass3/$asm-2-arg cb  'SET_CDR         (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(SET_CAR)           (pass3/$asm-2-arg cb  'SET_CAR         (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(MAKE_VECTOR)       (pass3/$asm-2-arg cb  'MAKE_VECTOR     (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(VECTOR_LENGTH)     (pass3/$asm-1-arg cb   'VECTOR_LENGTH   (first args)locals frees can-frees sets depth display-count)]
+      [(VECTOR_SET)        (pass3/$asm-3-arg cb 'VECTOR_SET      (first args) (second args) (third args) locals frees can-frees sets depth display-count)]
+      [(VECTOR_REF)        (pass3/$asm-2-arg cb  'VECTOR_REF      (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(EQ)                (pass3/$asm-2-arg cb  'EQ              (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(EQV)               (pass3/$asm-2-arg cb  'EQV             (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(EQUAL)             (pass3/$asm-2-arg cb  'EQUAL           (first args) (second args) locals frees can-frees sets depth display-count)]
+      [(PAIR_P)            (pass3/$asm-1-arg cb   'PAIR_P          (first args) locals frees can-frees sets depth display-count)]
+      [(NULL_P)            (pass3/$asm-1-arg cb   'NULL_P          (first args) locals frees can-frees sets depth display-count)]
+      [(SYMBOL_P)          (pass3/$asm-1-arg cb   'SYMBOL_P        (first args) locals frees can-frees sets depth display-count)]
+      [(VECTOR_P)          (pass3/$asm-1-arg cb   'VECTOR_P        (first args) locals frees can-frees sets depth display-count)]
+      [(NOT)               (pass3/$asm-1-arg cb   'NOT             (first args) locals frees can-frees sets depth display-count)]
+      [(OPEN_INPUT_FILE)   (pass3/$asm-1-arg cb   'OPEN_INPUT_FILE (first args) locals frees can-frees sets depth display-count)]
+      [(READ)              (pass3/$asm-1-arg cb   'READ            (first args) locals frees can-frees sets depth display-count)]
+      [(READ_CHAR)         (pass3/$asm-1-arg cb   'READ_CHAR       (first args) locals frees can-frees sets depth display-count)]
       [(VALUES)
        (begin0
-         (pass3/$asm-n-args cb args locals frees can-frees sets depth)
+         (pass3/$asm-n-args cb args locals frees can-frees sets depth display-count)
          (code-builder-put-insn-arg1! cb 'VALUES (length args)))]
       [(APPLY)
        (let1 end-of-frame (make-label)
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame))
-         (let1 arg2-size (pass3/rec cb (second args) locals frees can-frees sets #f depth)
+         (let1 arg2-size (pass3/rec cb (second args) locals frees can-frees sets #f depth display-count)
            (code-builder-put-insn-arg0! cb 'PUSH)
-           (let1 arg1-size (pass3/rec cb (first args) locals frees can-frees sets #f depth)
+           (let1 arg1-size (pass3/rec cb (first args) locals frees can-frees sets #f depth display-count)
              (cput! cb 'APPLY end-of-frame)
              (+ arg1-size arg2-size))))]
       [else
        (error "unknown insn on pass3/$asm")])))
 
-(define (pass3/$if cb iform locals frees can-frees sets tail depth)
+(define (pass3/$if cb iform locals frees can-frees sets tail depth display-count)
+  (cond
+   [(and (not (tag? ($if.then iform) $IT))
+         (not (tag? ($if.else iform) $IT))
+         (tag? ($if.test iform) $ASM)
+         (eqv? ($asm.insn ($if.test iform)) 'NOT))
+    (pass3/$if cb ($if (car ($asm.args ($if.test iform)))
+                       ($if.else iform)
+                       ($if.then iform))
+               locals frees can-frees sets tail depth display-count)]
+   ;; (if a b #f) => (if a b IT)
+   [(and (tag? ($if.else iform) $CONST) (not ($const.val ($if.else iform))))
+    ($if.set-else! iform ($it))
+    (pass3/$if cb iform locals frees can-frees sets tail depth display-count)]
+   [(tag? ($if.test iform) $ASM)
+    (let1 insn ($asm.insn ($if.test iform))
+      (cond
+       [(eq? insn 'NULL_P)
+        (pass3/branch-on-asm1 'BRANCH_NOT_NULL cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'EQ)
+        (pass3/branch-on-asm2 'BRANCH_NOT_EQ cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'EQV)
+        (pass3/branch-on-asm2 'BRANCH_NOT_EQV cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'EQUAL)
+        (pass3/branch-on-asm2 'BRANCH_NOT_EQUAL cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'NUMBER_EQUAL)
+        (pass3/branch-on-asm2 'BRANCH_NOT_NUMBER_EQUAL cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'NUMBER_LE)
+        (pass3/branch-on-asm2 'BRANCH_NOT_LE cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'NUMBER_LT)
+        (pass3/branch-on-asm2 'BRANCH_NOT_LT cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'NUMBER_GT)
+        (pass3/branch-on-asm2 'BRANCH_NOT_GT cb iform locals frees can-frees sets tail depth display-count)]
+       [(eq? insn 'NUMBER_GE)
+        (pass3/branch-on-asm2 'BRANCH_NOT_GE cb iform locals frees can-frees sets tail depth display-count)]
+       [else
+        (pass3/branch-on-false cb iform locals frees can-frees sets tail depth display-count)]))]
+   [else
+    (pass3/branch-on-false cb iform locals frees can-frees sets tail depth display-count)]))
+
+(define (pass3/emit-then-else insn test-size cb iform locals frees can-frees sets tail depth display-count)
   (let ([end-of-else   (make-label)]
         [begin-of-else (make-label)])
-    (let1 test-size (pass3/rec cb ($if.test iform) locals frees can-frees sets #f depth)
-      (code-builder-put-insn-arg1! cb 'TEST (ref-label begin-of-else))
-      (let1 then-size (pass3/rec cb ($if.then iform) locals frees can-frees sets tail depth)
+    (code-builder-put-insn-arg1! cb insn (ref-label begin-of-else))
+    (let1 then-size (pass3/rec cb ($if.then iform) locals frees can-frees sets tail depth display-count)
+      (cond
+       ;; When else clause is $IT, we can omit the jump after then clause.
+       [(tag? ($if.else iform) $IT)
+        (cput! cb
+               (ref-label begin-of-else))
+        (+ test-size then-size)]
+       [else
         (cput! cb
                'UNFIXED_JUMP
                (ref-label end-of-else)
                begin-of-else)
-        (let1 else-size (pass3/rec cb ($if.else iform) locals frees can-frees sets tail depth)
+        (let1 else-size (pass3/rec cb ($if.else iform) locals frees can-frees sets tail depth display-count)
           (cput! cb end-of-else)
-          (+ test-size then-size else-size))))))
+          (+ test-size then-size else-size))]))))
 
-(define (pass3/$define cb iform locals frees can-frees sets tail depth)
+(define (pass3/branch-on-asm1 insn cb iform locals frees can-frees sets tail depth display-count)
+  (let* ([args ($asm.args ($if.test iform))]
+         [arg-size (pass3/rec cb (first args) locals frees can-frees sets #f depth display-count)])
+    (pass3/emit-then-else insn arg-size cb iform  locals frees can-frees sets tail depth display-count)))
+
+(define (pass3/branch-on-asm2 insn cb iform locals frees can-frees sets tail depth display-count)
+  (let* ([args ($asm.args ($if.test iform))]
+         [arg1-size (pass3/compile-arg cb (first args) locals frees can-frees sets #f depth display-count)]
+         [arg2-size (pass3/rec cb (second args) locals frees can-frees sets #f depth display-count)])
+    (pass3/emit-then-else insn (+ arg1-size arg2-size) cb iform  locals frees can-frees sets tail depth display-count)))
+
+(define (pass3/branch-on-false cb iform locals frees can-frees sets tail depth display-count)
+  (let1 test-size (pass3/rec cb ($if.test iform) locals frees can-frees sets #f depth display-count)
+    (pass3/emit-then-else 'TEST test-size cb iform  locals frees can-frees sets tail depth display-count)))
+
+(define (pass3/$define cb iform locals frees can-frees sets tail depth display-count)
   (begin0
-    (pass3/rec cb ($define.val iform) locals frees can-frees sets #f depth)
-    (cput! cb 'DEFINE_GLOBAL (merge-libname-sym ($define.libname iform)
-                                                ($define.sym iform)))))
+    (pass3/rec cb ($define.val iform) locals frees can-frees sets #f depth display-count)
+    (cput! cb 'DEFINE_GLOBAL ($define.sym iform))))
 
-(define (pass3/compile-arg cb arg locals frees can-frees sets tail depth)
-;;   (display "pass3/compile-arg\n" (current-error-port))
-;;   (pp-iform arg)
-  (let1 size (pass3/rec cb arg locals frees can-frees sets #f depth)
-;  (format (current-error-port) "\nPUSH!\n")
+(define (pass3/compile-arg cb arg locals frees can-frees sets tail depth display-count)
+  (let1 size (pass3/rec cb arg locals frees can-frees sets #f depth display-count)
     (code-builder-put-insn-arg0! cb 'PUSH)
     (+ size 1)))
 
 ;; fold requires anonymous closure
 ;; So, if this procedure is called many times, it causes slow compilation.
-(define (pass3/compile-args cb args locals frees can-frees sets tail depth)
+(define (pass3/compile-args cb args locals frees can-frees sets tail depth display-count)
 ;  (format (current-error-port) "\npass3/compile-args<~a>\n" (length args))
   (let loop ([size 0]
              [iform args])
     (cond
      [(null? iform) size]
      [else
-      (loop (+ size (pass3/compile-arg cb (car iform) locals frees can-frees sets tail depth))
+      (loop (+ size (pass3/compile-arg cb (car iform) locals frees can-frees sets tail depth display-count))
             (cdr iform))])))
 
 ;; N.B.
@@ -2803,14 +2860,14 @@
 (define-macro (pass3/add-can-frees2 can-frees vars1 vars2)
   `(append (append ,can-frees (list ,vars1)) (list ,vars2)))
 
-(define (pass3/$call cb iform locals frees can-frees sets tail depth)
+(define (pass3/$call cb iform locals frees can-frees sets tail depth display-count)
   (case ($call.type iform)
     [(jump)
      (let ([label ($lambda.body ($call.proc ($call.proc iform)))]
            [args-length (length ($call.args iform))])
        (begin0
          ;; This refers local variables at stack, so we do this first before emitting SHIFTJ.
-         (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth)
+         (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth display-count)
          ;;
          ;; Named let jump optimization needs to control stack like following.
          ;;
@@ -2829,7 +2886,11 @@
          ;;
          ;;   Then we restore fp and display registers, and finally jump to [jump destination]
          ;;
-         (cput! cb 'SHIFTJ args-length (- depth ($call.depth ($call.proc iform))))
+         (cput! cb
+                'SHIFTJ
+                args-length
+                (- depth ($call.depth ($call.proc iform)) (pass3/let-frame-size)) ;; we subtract let-frame size for this jump lambda's let-frame.
+                (- display-count ($call.display-count ($call.proc iform)) 1)) ;; we subtract our display count.
          ($label.set-visited?! label #t)
          (cput! cb 'UNFIXED_JUMP label)))]
     [(embed)
@@ -2842,15 +2903,18 @@
                                          (pass3/add-can-frees2 can-frees locals frees))]
             [sets-for-this-lvars (pass3/find-sets body vars)]
             [let-cb (make-code-builder)])
-       ($call.set-depth! iform depth) ;; record depth at jump destination point.
+       ($call.set-depth! iform depth)           ;; record depth at jump destination point.
+       ($call.set-display-count! iform display-count) ;; record display-count at jump destination point.
        (cput! cb 'LET_FRAME)
        (let* ([frees-here-length (length frees-here)]
               [free-size (if (> frees-here-length 0)
                              (pass3/collect-free let-cb frees-here locals frees)
-                             0)])
-         (when (> frees-here-length 0)
+                             0)]
+              [need-display? (> frees-here-length 0)])
+         (when need-display?
            (cput! let-cb 'DISPLAY frees-here-length))
-         (let ([args-size (pass3/compile-args let-cb ($call.args iform) locals frees-here can-frees sets #f depth)]
+         (let ([args-size (pass3/compile-args let-cb ($call.args iform) locals frees-here can-frees sets #f
+                                              (+ depth (pass3/let-frame-size)) (if need-display? (+ display-count 1) display-count))]
                [args-length (length ($call.args iform))])
            (pass3/make-boxes let-cb sets-for-this-lvars vars)
            (code-builder-put-insn-arg1! let-cb 'ENTER args-length)
@@ -2863,7 +2927,8 @@
                                       (pass3/add-can-frees1 can-frees vars-sym)
                                       (pass3/add-sets! sets sets-for-this-lvars)
                                       (if tail (+ tail (length vars) (pass3/let-frame-size)) #f)
-                                      (+ depth (length vars)))
+                                      (+ depth (length vars) (pass3/let-frame-size))
+                                      (if need-display? (+ display-count 1) display-count))
              (code-builder-put-insn-arg1! let-cb 'LEAVE args-length)
              (cput! cb (+ args-size body-size free-size))
              (code-builder-append! cb let-cb)
@@ -2885,9 +2950,9 @@
        (unless tail
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
 ;       (df (current-error-port) "code-builder1 = ~a\n" cb)
-       (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth)]
+       (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth display-count)]
 ;              [dummy        (df (current-error-port) "code-builder2 = ~a\n" cb)]
-              [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth)]
+              [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth display-count)]
 ;              [dummy2        (df (current-error-port) "code-builder3 = ~a\n" cb)]
               [args-length (length ($call.args iform))])
          (when tail
@@ -2898,21 +2963,21 @@
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
 
-(define (pass3/$call-cc cb iform locals frees can-frees sets tail depth)
+(define (pass3/$call-cc cb iform locals frees can-frees sets tail depth display-count)
   (let1 end-of-frame (make-label)
     (unless tail
       (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
     (cput! cb 'MAKE_CONTINUATION (if tail 1 0))
     (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
-      (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f depth)
+      (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f depth display-count)
       (when tail
         (cput-shift! cb 1 tail))
       (code-builder-put-insn-arg1! cb 'CALL 1)
       (unless tail
         (cput! cb end-of-frame)))))
 
-(define (pass3/$lambda cb iform locals frees can-frees sets tail depth)
+(define (pass3/$lambda cb iform locals frees can-frees sets tail depth display-count)
   (let* ([vars ($lambda.lvars iform)]
          [vars-sym (imap $lvar.sym-proc vars)]
          [body ($lambda.body iform)]
@@ -2941,7 +3006,8 @@
                                  (pass3/add-can-frees1 can-frees vars-sym) ;; can-frees and vars don't have common lvars.
                                  (pass3/add-sets! sets sets-for-this-lvars)
                                  vars-length
-                                 (+ (length vars) (pass3/frame-size) depth))
+                                 (+ (length vars) (pass3/frame-size) depth)
+                                 display-count)
         (cput! cb
                (+ body-size free-size vars-length 4) ;; max-stack 4 is sizeof frame
                ($lambda.src iform))                    ;; source code information
@@ -2951,7 +3017,7 @@
         (cput! cb end-of-closure)
         0)))
 
-(define (pass3/$receive cb iform locals frees can-frees sets tail depth)
+(define (pass3/$receive cb iform locals frees can-frees sets tail depth display-count)
   (let* ([vars ($receive.lvars iform)]
          [vars-sym (imap $lvar.sym-proc vars)]
          [body ($receive.body iform)]
@@ -2966,10 +3032,13 @@
     (let* ([frees-here-length (length frees-here)]
            [free-size (if (> frees-here-length 0)
                           (pass3/collect-free let-cb frees-here locals frees)
-                          0)])
-      (when (> frees-here-length 0)
+                          0)]
+           [need-display? (> frees-here-length 0)])
+      (when need-display?
         (cput! let-cb 'DISPLAY frees-here-length))
-      (let ([vals-size (pass3/rec let-cb ($receive.vals iform) locals frees-here can-frees sets #f depth)]
+      (let ([vals-size (pass3/rec let-cb ($receive.vals iform) locals frees-here can-frees sets #f
+                                  (+ depth (pass3/let-frame-size)) ;; when evaluating vals, we have ready been in let-frame.
+                                  (if need-display? (+ display-count 1) display-count))] ;; display++
             [vars-length (length vars)])
         (cput! let-cb 'RECEIVE ($receive.reqargs iform) ($receive.optarg  iform))
         (pass3/make-boxes let-cb sets-for-this-lvars vars)
@@ -2981,15 +3050,16 @@
                                    (pass3/add-can-frees1 can-frees vars-sym)
                                    (pass3/add-sets! sets sets-for-this-lvars)
                                    (if tail (+ tail vars-length (pass3/let-frame-size)) #f)
-                                   (+ depth vars-length (pass3/let-frame-size)))
+                                   (+ depth vars-length (pass3/let-frame-size))
+                                   (if need-display? (+ display-count 1) display-count))
           (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
           (cput! cb (+ body-size vals-size free-size))
           (code-builder-append! cb let-cb)
           (+ body-size vals-size free-size))))))
 
-(define (pass3/$let cb iform locals frees can-frees sets tail depth)
+(define (pass3/$let cb iform locals frees can-frees sets tail depth display-count)
   (if (eq? ($let.type iform) 'rec)
-      (pass3/letrec cb iform locals frees can-frees sets tail depth)
+      (pass3/letrec cb iform locals frees can-frees sets tail depth display-count)
       (let* ([vars ($let.lvars iform)]
              [vars-sym (imap $lvar.sym-proc vars)]
              [body ($let.body iform)]
@@ -3001,12 +3071,14 @@
              [sets-for-this-lvars (pass3/find-sets body vars)]
              [frees-here-length   (length frees-here)]
              [vars-length         (length vars)]
-             [let-cb (make-code-builder)])
+             [let-cb (make-code-builder)]
+             [need-display? (> frees-here-length 0)])
         (cput! cb 'LET_FRAME)
         (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
-          (when (> frees-here-length 0)
+          (when need-display?
             (cput! let-cb 'DISPLAY frees-here-length))
-          (let1 args-size (pass3/compile-args let-cb ($let.inits iform) locals frees-here can-frees sets tail depth)
+          (let1 args-size (pass3/compile-args let-cb ($let.inits iform) locals frees-here can-frees sets tail
+                                              (+ depth (pass3/let-frame-size)) (if need-display? (+ display-count 1) display-count))
             (pass3/make-boxes let-cb sets-for-this-lvars vars)
             (code-builder-put-insn-arg1! let-cb 'ENTER vars-length)
             (let1 body-size (pass3/rec let-cb
@@ -3016,7 +3088,8 @@
                                        (pass3/add-can-frees1 can-frees vars-sym)
                                        (pass3/add-sets! sets sets-for-this-lvars)
                                        (if tail (+ tail vars-length (pass3/let-frame-size)) #f)
-                                       (+ depth vars-length (pass3/let-frame-size)))
+                                       (+ depth vars-length (pass3/let-frame-size))
+                                       (if need-display? (+ display-count 1) display-count))
               (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
               (cput! cb (+ body-size args-size free-size))
               (code-builder-append! cb let-cb)
@@ -3025,7 +3098,7 @@
 (define (raise-compile-error cb who message irritants)
   (cput! cb 'COMPILE_ERROR who message irritants))
 
-(define (pass3/letrec cb iform locals frees can-frees sets tail depth)
+(define (pass3/letrec cb iform locals frees can-frees sets tail depth display-count)
   (let* ([vars ($let.lvars iform)]
          [vars-sym (imap $lvar.sym-proc vars)]
          [body ($let.body iform)]
@@ -3040,14 +3113,15 @@
          [args ($let.inits iform)]
          [frees-here-length (length frees-here)]
          [vars-length (length vars)]
-         [let-cb (make-code-builder)])
+         [let-cb (make-code-builder)]
+         [need-display? (> frees-here-length 0)])
     (when ($let.error iform)
       (raise-compile-error cb (first ($let.error iform))
                               (second ($let.error iform))
                               (third ($let.error iform))))
     (cput! cb 'LET_FRAME)
     (let1 free-size (if (> frees-here-length 0) (pass3/collect-free let-cb frees-here locals frees) 0)
-      (when (> frees-here-length 0)
+      (when need-display?
         (cput! let-cb 'DISPLAY frees-here-length))
       (let loop ([args args]) ;; init code
         (cond
@@ -3070,7 +3144,8 @@
                                               new-can-frees
                                               (pass3/add-sets! sets sets-for-this-lvars)
                                               #f
-                                              depth)
+                                              (+ depth (pass3/let-frame-size))
+                                              (if need-display? (+ display-count 1) display-count))
                     (code-builder-put-insn-arg1! let-cb 'ASSIGN_LOCAL index)
                     (loop (cdr args)
                           (+ stack-size size)
@@ -3082,46 +3157,24 @@
                                         new-can-frees
                                         (pass3/add-sets! sets sets-for-this-lvars)
                                         (if tail (+ tail vars-length (pass3/let-frame-size)) #f)
-                                        (+ depth vars-length (pass3/let-frame-size)))
+                                        (+ depth vars-length (pass3/let-frame-size))
+                                        (if need-display? (+ display-count 1) display-count))
           (code-builder-put-insn-arg1! let-cb 'LEAVE vars-length)
           (cput! cb (+ free-size assign-size body-size))
           (code-builder-append! cb let-cb)
           (+ free-size assign-size body-size))))))
 
-;; (define (pass3/$import cb iform locals frees can-frees sets tail)
-;;   (define (rec form)
-;;     (for-each
-;;      (lambda (s)
-;;        (let* ([libname      ($import-spec.libname s)]
-;;               [lib          (hashtable-ref libraries libname)]
-;;               [end-of-frame (make-label)])
-;;          (rec ($library.import lib))
-;;          (code-builder-put-insn-arg1! cb 'FRAME  ;; We execute (RETURN 0) in library body
-;;                                       (ref-label end-of-frame))
-;;          (cput! cb
-;;                 'IMPORT
-;;                 libname
-;;                 end-of-frame)))
-;;      ($import.import-specs form))
-;;     0)
-;;   (rec iform))
-
-(define (pass3/$library cb iform locals frees can-frees sets tail depth)
-  (cput! cb 'LIBRARY ($library.name iform) iform)
-  0)
-
-
-(define (pass3/$label cb iform locals frees can-frees sets tail depth)
+(define (pass3/$label cb iform locals frees can-frees sets tail depth display-count)
   (cond
    [($label.visited? iform)
-    (cput! cb UNFIXED_JUMP iform)
+    (cput! cb 'UNFIXED_JUMP iform)
     0]
    [else
     ;; As far as I know, any code doesn't come here.
     ;; So, not *tested*.
     ($label.set-visited?! iform #t)
     (cput! cb iform) ;; place the label.
-    (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth)]))
+    (pass3/rec cb ($label.body iform)locals frees can-frees sets tail depth display-count)]))
 
 
 (pass3/register $CONST         pass3/$const)
@@ -3139,27 +3192,21 @@
 (pass3/register $CALL-CC       pass3/$call-cc)
 (pass3/register $LET           pass3/$let)
 (pass3/register $LIST          pass3/$list)
-(pass3/register $LIBRARY       pass3/$library)
-;(pass3/register $IMPORT        pass3/$import)
 (pass3/register $IT            pass3/$it)
 (pass3/register $RECEIVE       pass3/$receive)
 (pass3/register $LABEL       pass3/$label)
 
 ;; depth is the depth of frame, used for 'jump' and 'embeded' call and indicate the size of frame to discard.
-(define (pass3/rec cb iform locals frees can-frees sets tail depth)
-  ((vector-ref pass3/dispatch-table (vector-ref iform 0)) cb iform locals frees can-frees sets tail depth))
+(define (pass3/rec cb iform locals frees can-frees sets tail depth display-count)
+  ((vector-ref pass3/dispatch-table (vector-ref iform 0)) cb iform locals frees can-frees sets tail depth display-count))
 
 (define (pass3 iform)
   (let1 cb (make-code-builder)
-    (pass3/rec cb iform '() *free-vars-decl* '() (make-eq-hashtable) #f 0)
+    (pass3/rec cb iform '() *free-vars-decl* '() (make-eq-hashtable) #f 0 0)
     (code-builder-emit cb)))
 
 (define (pass4 lst)
   (pass4/fixup-labels (list->vector (append lst '(HALT)))))
-
-(define (compile-library-body! lib)
-  (let1 body ($append-map1 (lambda (sexp) (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) lib '() #f) '()) )) ($library.body lib))
-    ($library.set-compiled-body! lib (pass4 `(,@body RETURN 0)))))
 
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
 (cond-expand
@@ -3172,16 +3219,38 @@
        [(null? s) '()]
        [else
         (match s
-          [('REFER_LOCAL0_PUSH 'CONSTANT . rest) ;; done
-           (iter `(REFER_LOCAL0_PUSH_CONSTANT ,@rest))]
-          [('REFER_LOCAL1_PUSH 'CONSTANT . rest);;done
-           (iter `(REFER_LOCAL1_PUSH_CONSTANT ,@rest))]
-          [('REFER_LOCAL 1 'PUSH . rest) ;; done
-           (iter `(REFER_LOCAL1_PUSH ,@rest))]
-          [('REFER_LOCAL 0 'PUSH . rest) ;; done
-           (iter `(REFER_LOCAL0_PUSH ,@rest))] ;; done
-          [('REFER_LOCAL 0 . rest)
-           (iter `(REFER_LOCAL0 ,@rest))] ;; done
+          [('REFER_LOCAL_PUSH n 'CONSTANT . more)
+           (iter `(REFER_LOCAL_PUSH_CONSTANT ,n ,@more))]
+          [('REFER_LOCAL_PUSH_CONSTANT a b 'BRANCH_NOT_LE . more)
+           (iter `(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE ,a ,b ,@more))]
+          [('REFER_LOCAL_PUSH_CONSTANT a b 'BRANCH_NOT_GE . more)
+           (iter `(REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE ,a ,b ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_LOCAL_PUSH_CONSTANT a b 'BRANCH_NOT_NUMBER_EQUAL . more)
+           (iter `(,x REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL ,a ,b ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'BRANCH_NOT_NULL . more)
+           (iter `(,x REFER_LOCAL_BRANCH_NOT_NULL ,n ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'BRANCH_NOT_LT . more)
+           (iter `(,x REFER_LOCAL_BRANCH_NOT_LT ,n ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_FREE n 'CALL . more)
+           (iter `(,x REFER_FREE_CALL ,n ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'CALL . more)
+           (iter `(,x REFER_LOCAL_CALL ,n ,@more))]
+          [((and x (not 'CONSTANT)) 'REFER_GLOBAL n 'PUSH . more)
+           (iter `(,x REFER_GLOBAL_PUSH ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'PUSH_CONSTANT n 'VECTOR_SET . more)
+;;            (iter `(,x PUSH_CONSTANT_VECTOR_SET ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'VECTOR_SET . more)
+;;            (iter `(,x REFER_LOCAL_VECTOR_SET ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'VECTOR_REF . more)
+;;            (iter `(,x REFER_LOCAL_VECTOR_REF ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'VECTOR_REF 'PUSH . more)
+;;            (iter `(,x VECTOR_REF_PUSH ,@more))]
+;;           [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'CAR . more)
+;;            (iter `(,x REFER_LOCAL_CAR ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'CDR . more)
+;;            (iter `(,x REFER_LOCAL_CDR ,n ,@more))]
+;;           [((and x (not 'CONSTANT)) 'REFER_LOCAL n 'CONS . more)
+;;            (iter `(,x REFER_LOCAL_CONS ,n ,@more))]
           ;; N.B.
           ;; compiled pass3/$asm code has list '(CONSTANT NUMBER_SUB PUSH), ignore it.
           [((and x (not 'CONSTANT)) 'NUMBER_SUB 'PUSH . rest)
@@ -3190,40 +3259,12 @@
            (iter (cons 'PUSH_ENTER rest))]
           [('CONSTANT v 'PUSH . rest) ;; done
            (iter `(CONSTANT_PUSH ,v ,@rest))]
-          [('REFER_FREE 0 'PUSH . rest) ;; done
-           (iter `(REFER_FREE0_PUSH ,@rest))]
-          [('REFER_FREE 1 'PUSH . rest) ;; done
-           (iter `(REFER_FREE1_PUSH ,@rest))]
-          [('REFER_FREE 2 'PUSH . rest) ;; done
-           (iter `(REFER_FREE2_PUSH ,@rest))]
           [('REFER_FREE n 'PUSH . rest) ;; done
            (iter `(REFER_FREE_PUSH ,n ,@rest))]
           [('REFER_FREE_PUSH n 'REFER_FREE_PUSH . rest) ;; done
            (iter `(REFER_FREE_PUSH_REFER_FREE_PUSH ,n ,@rest))]
-          [('REFER_FREE 0 . rest);; done
-           (iter `(REFER_FREE0 ,@rest))]
-          [('REFER_FREE 1 . rest);;done
-           (iter `(REFER_FREE1 ,@rest))]
-          [('REFER_FREE 2 . rest);; done
-           (iter `(REFER_FREE2 ,@rest))]
-          [('REFER_LOCAL 1 . rest);;done
-           (iter `(REFER_LOCAL1 ,@rest))]
-          [('REFER_LOCAL 2 . rest);;done
-           (iter `(REFER_LOCAL2 ,@rest))]
-          [('LEAVE 1 . rest)
-           (iter `(LEAVE1 ,@rest))]
-          [('NUMBER_LE 'TEST . rest)
-           (iter `(NUMBER_LE_TEST ,@rest))]
           [('NUMBER_ADD 'PUSH . rest)
            (iter `(NUMBER_ADD_PUSH ,@rest))]
-          [('RETURN 1 . rest) ;; done
-           (iter `(RETURN1 ,@rest))]
-          [('RETURN 2 . rest) ;;done
-           (iter `(RETURN2 ,@rest))]
-          [('RETURN 3 . rest) ;;done
-           (iter `(RETURN3 ,@rest))]
-          [('REFER_LOCAL0 'EQV 'TEST . rest)
-           (iter `(REFER_LOCAL0_EQV_TEST ,@rest))]
           [('PUSH 'CONSTANT . rest)
            (iter `(PUSH_CONSTANT ,@rest))]
           [('PUSH 'FRAME . rest)
@@ -3232,45 +3273,23 @@
           ;; compiled pass3/$asm code has list '(CONSTANT_PUSH PUSH FRAME), ignore it.
           [((and x (not 'CONSTANT_PUSH)) 'PUSH 'FRAME . rest)
            (iter `(, x PUSH_FRAME ,@rest))]
-          ;;           [('PUSH 'FRAME . rest)
-          ;;            (iter `(PUSH_FRAME ,@rest))]
-          [('REFER_FREE 3 . rest) ;; done
-           (iter `(REFER_FREE3 ,@rest))]
-          [('REFER_LOCAL 3 . rest) ;; done
-           (iter `(REFER_LOCAL3 ,@rest))]
           [('CAR 'PUSH . rest);;done
            (iter `(CAR_PUSH ,@rest))]
           [('CDR 'PUSH . rest);;done
            (iter `(CDR_PUSH ,@rest))]
-          [('REFER_FREE0 'INDIRECT . rest)
-           (iter `(REFER_FREE0_INDIRECT ,@rest))]
-          [('REFER_LOCAL2 'PUSH . rest)
-           (iter `(REFER_LOCAL2_PUSH ,@rest))]
           [('SHIFT m n 'CALL o . rest)
            (iter `(SHIFT_CALL ,m ,n ,o ,@rest))]
-          [('CALL 3 . rest)
-           (iter `(CALL3 ,@rest))]
-          [('REFER_FREE1 'INDIRECT . rest)
-           (iter `(REFER_FREE1_INDIRECT ,@rest))]
           [('NOT 'TEST . rest)
            (iter `(NOT_TEST ,@rest))]
           [('REFER_GLOBAL lib-id 'CALL n . rest)
            (iter `(REFER_GLOBAL_CALL ,lib-id ,n ,@rest))]
-          [('CALL 2 . rest)
-           (iter `(CALL2 ,@rest))]
-          [('REFER_LOCAL0 'NUMBER_ADD_PUSH . rest)
-           (iter (cons 'REFER_LOCAL0_NUMBER_ADD_PUSH rest))]
-          [('REFER_LOCAL0 'VECTOR_SET . rest)
-           (iter (cons 'REFER_LOCAL0_VECTOR_SET rest))]
-          [('REFER_LOCAL0 'VECTOR_REF . rest)
-           (iter (cons 'REFER_LOCAL0_VECTOR_REF rest))]
           [('REFER_LOCAL n 'PUSH . rest) ;; done
            (iter `(REFER_LOCAL_PUSH ,n ,@rest))]
           [else
            (cons (car s) (iter (cdr s)))])]))
     (iter sexp))])
 
-(define (compile-partial sexp . lib)
+(define (compile-partial sexp)
   (let1 ss (pass1/expand sexp)
     (vector->list
      (pass4/fixup-labels
@@ -3278,7 +3297,7 @@
        (merge-insn
          (pass3
           (and (pass2/optimize
-           (pass1/sexp->iform ss (if (null? lib) top-level-library (car lib)) '() #f) '())))))))))
+           (pass1/sexp->iform ss '() #f) '())))))))))
 
 ;; todo local macro
 (define-macro (pass4/fixup-labels-clollect insn)
@@ -3286,6 +3305,24 @@
      (vector-set! ret j ,insn)
      (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
      (loop (+ i 2) (+ j 2))))
+
+(define-macro (pass4/fixup-labels-clollect2 insn)
+  `(begin
+     (vector-set! ret j ,insn)
+     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
+     (vector-set! ret (+ j 2) (vector-ref v (+ i 2)))
+     (loop (+ i 3) (+ j 3))))
+
+
+
+(define-macro (pass4/fixup-labels-clollect3 insn)
+  `(begin
+     (vector-set! ret j ,insn)
+     (vector-set! ret (+ j 1) (vector-ref v (+ i 1)))
+     (vector-set! ret (+ j 2) (vector-ref v (+ i 2)))
+     (vector-set! ret (+ j 3) (vector-ref v (+ i 3)))
+     (loop (+ i 4) (+ j 4))))
+
 
 (define-macro (pass4/fixup-labels-insn insn)
   `(let1 label (hashtable-ref labels(vector-ref code (+ i 1)) #f)
@@ -3296,6 +3333,28 @@
        (loop (+ i 2))]
       [else
        (loop (+ i 1))])))
+
+(define-macro (pass4/fixup-labels-insn2 insn)
+  `(let1 label (hashtable-ref labels(vector-ref code (+ i 2)) #f)
+     (cond
+      [label
+       (vector-set! code i ,insn)
+       (vector-set! code (+ i 2) (- label i 2)) ;; jump point
+       (loop (+ i 3))]
+      [else
+       (loop (+ i 1))])))
+
+
+(define-macro (pass4/fixup-labels-insn3 insn)
+  `(let1 label (hashtable-ref labels(vector-ref code (+ i 3)) #f)
+     (cond
+      [label
+       (vector-set! code i ,insn)
+       (vector-set! code (+ i 3) (- label i 3)) ;; jump point
+       (loop (+ i 4))]
+      [else
+       (loop (+ i 1))])))
+
 
 (cond-expand
  [vm?
@@ -3320,7 +3379,8 @@
                     (vector-set! v (+ i 1) (vector-ref v (+ destination-index 1)))
                     ]
                     ))]
-               [(and (eq? insn 'TEST) (number? (vector-ref v (+ i 1))))
+               [(and (memq insn '(TEST BRANCH_NOT_GE BRANCH_NOT_GT BRANCH_NOT_LT BRANCH_NOT_LE BRANCH_NOT_NUMBER_EQUAL BRANCH_NOT_NULL))
+                     (number? (vector-ref v (+ i 1))))
                 (let* ([offset (+ (vector-ref v (+ i 1)) 1)]
                        [destination-index (+ i offset)])
                   (when (or (eq? (vector-ref v destination-index) 'TEST) (eq? (vector-ref v destination-index) 'LOCAL_JMP))
@@ -3342,9 +3402,22 @@
               (cond
                [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-clollect 'UNFIXED_JUMP)]
                [(eq? insn 'TEST)                  (pass4/fixup-labels-clollect 'TEST)]
-               [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-clollect 'NUMBER_LE_TEST)]
+               [(eq? insn 'CONSTANT_BRANCH_NOT_LE)                  (pass4/fixup-labels-clollect 'CONSTANT_BRANCH_NOT_LE)]
+               [(eq? insn 'BRANCH_NOT_NULL)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_NULL)]
+               [(eq? insn 'BRANCH_NOT_NUMBER_EQUAL)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_NUMBER_EQUAL)]
+               [(eq? insn 'BRANCH_NOT_LE)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_LE)]
+               [(eq? insn 'BRANCH_NOT_LT)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_LT)]
+               [(eq? insn 'BRANCH_NOT_GE)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_GE)]
+               [(eq? insn 'BRANCH_NOT_GT)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_GT)]
+               [(eq? insn 'BRANCH_NOT_EQ)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_EQ)]
+               [(eq? insn 'BRANCH_NOT_EQV)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_EQV)]
+               [(eq? insn 'BRANCH_NOT_EQUAL)                  (pass4/fixup-labels-clollect 'BRANCH_NOT_EQUAL)]
                [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-clollect 'NOT_TEST)]
-               [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-clollect 'REFER_LOCAL0_EQV_TEST)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) (pass4/fixup-labels-clollect3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE) (pass4/fixup-labels-clollect3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL) (pass4/fixup-labels-clollect3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL)]
+               [(eq? insn 'REFER_LOCAL_BRANCH_NOT_LT) (pass4/fixup-labels-clollect2 'REFER_LOCAL_BRANCH_NOT_LT)]
+               [(eq? insn 'REFER_LOCAL_BRANCH_NOT_NULL) (pass4/fixup-labels-clollect2 'REFER_LOCAL_BRANCH_NOT_NULL)]
                [(eq? insn 'FRAME)                 (pass4/fixup-labels-clollect 'FRAME)]
                [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-clollect 'PUSH_FRAME)]
                [(eq? insn 'CLOSURE)               (pass4/fixup-labels-clollect 'CLOSURE)]
@@ -3365,9 +3438,22 @@
                [(eq? insn 'UNFIXED_JUMP)          (pass4/fixup-labels-insn 'LOCAL_JMP)]
                [(eq? insn 'CLOSURE)               (pass4/fixup-labels-insn 'CLOSURE)]
                [(eq? insn 'TEST)                  (pass4/fixup-labels-insn 'TEST)]
-               [(eq? insn 'NUMBER_LE_TEST)        (pass4/fixup-labels-insn 'NUMBER_LE_TEST)]
+               [(eq? insn 'CONSTANT_BRANCH_NOT_LE)        (pass4/fixup-labels-insn 'CONSTANT_BRANCH_NOT_LE)]
+               [(eq? insn 'BRANCH_NOT_NUMBER_EQUAL)                  (pass4/fixup-labels-insn 'BRANCH_NOT_NUMBER_EQUAL)]
+               [(eq? insn 'BRANCH_NOT_NULL)                  (pass4/fixup-labels-insn 'BRANCH_NOT_NULL)]
+               [(eq? insn 'BRANCH_NOT_LE)                  (pass4/fixup-labels-insn 'BRANCH_NOT_LE)]
+               [(eq? insn 'BRANCH_NOT_GE)                  (pass4/fixup-labels-insn 'BRANCH_NOT_GE)]
+               [(eq? insn 'BRANCH_NOT_LT)                  (pass4/fixup-labels-insn 'BRANCH_NOT_LT)]
+               [(eq? insn 'BRANCH_NOT_GT)                  (pass4/fixup-labels-insn 'BRANCH_NOT_GT)]
+               [(eq? insn 'BRANCH_NOT_EQ)                  (pass4/fixup-labels-insn 'BRANCH_NOT_EQ)]
+               [(eq? insn 'BRANCH_NOT_EQV)                  (pass4/fixup-labels-insn 'BRANCH_NOT_EQV)]
+               [(eq? insn 'BRANCH_NOT_EQUAL)                  (pass4/fixup-labels-insn 'BRANCH_NOT_EQUAL)]
                [(eq? insn 'NOT_TEST)              (pass4/fixup-labels-insn 'NOT_TEST)]
-               [(eq? insn 'REFER_LOCAL0_EQV_TEST) (pass4/fixup-labels-insn 'REFER_LOCAL0_EQV_TEST)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE) (pass4/fixup-labels-insn3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_LE)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE) (pass4/fixup-labels-insn3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_GE)]
+               [(eq? insn 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL) (pass4/fixup-labels-insn3 'REFER_LOCAL_PUSH_CONSTANT_BRANCH_NOT_NUMBER_EQUAL)]
+               [(eq? insn 'REFER_LOCAL_BRANCH_NOT_NULL) (pass4/fixup-labels-insn2 'REFER_LOCAL_BRANCH_NOT_NULL)]
+               [(eq? insn 'REFER_LOCAL_BRANCH_NOT_LT) (pass4/fixup-labels-insn2 'REFER_LOCAL_BRANCH_NOT_LT)]
                [(eq? insn 'FRAME)                 (pass4/fixup-labels-insn 'FRAME)]
                [(eq? insn 'PUSH_FRAME)            (pass4/fixup-labels-insn 'PUSH_FRAME)]
                [else (loop (+ i 1))]))])))
@@ -3380,13 +3466,12 @@
 (define (compile sexp)
   (pass4 (merge-insn
           ;; default is tail context == #t
-          (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #t) '())
-;                   (pp-iform x)
+          (pass3 (let1 x (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) '() #t) '())
                    x)
                  ))))
 
 (define (compile-no-optimize sexp)
-  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) top-level-library '() #t))))
+  (pass4 (pass3 (pass1/sexp->iform (pass1/expand sexp) '() #t))))
 
 (cond-expand
  [vm-outer?

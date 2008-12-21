@@ -61,6 +61,7 @@ public:
     ucs4string substr(int x, int size) const;
     void split(ucs4char ch, gc_vector<ucs4string>& v);
     ucs4char* strdup();
+    bool is_ascii() const;
 
     static ucs4string from_c_str(const char* s, int size);
 };

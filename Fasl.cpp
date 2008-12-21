@@ -110,14 +110,22 @@ void FaslReader::getSymbolsAndStrings()
         uint32_t len = fetchU32();
         ucs4string text;
         text.reserve(64);
-        for (uint32_t i = 0; i < len; i++) {
-            text += fetchU32();
+        if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING) {
+            for (uint32_t i = 0; i < len; i++) {
+                text += fetchU8();
+            }
+        } else {
+            for (uint32_t i = 0; i < len; i++) {
+                text += fetchU32();
+            }
         }
         switch (tag) {
         case Fasl::TAG_SYMBOL:
+        case Fasl::TAG_ASCII_SYMBOL:
             symbolsAndStringsArray_[uid] = Symbol::intern(text.strdup());
             break;
         case Fasl::TAG_STRING:
+        case Fasl::TAG_ASCII_STRING:
             symbolsAndStringsArray_[uid] = text;
             break;
         default:
@@ -136,6 +144,14 @@ void FaslWriter::emitString(const ucs4string& string)
     emitU32(string.size());
     for (uint32_t i = 0; i < string.size(); i++) {
         emitU32(string[i]);
+    }
+}
+
+void FaslWriter::emitAsciiString(const ucs4string& string)
+{
+    emitU32(string.size());
+    for (uint32_t i = 0; i < string.size(); i++) {
+        emitU8(string[i]);
     }
 }
 
@@ -177,14 +193,28 @@ void FaslWriter::putSymbolsAndStrings()
         const Object obj = objects[i];
         if (obj.isSymbol()) {
             Symbol* const symbol = obj.toSymbol();
-            emitU8(Fasl::TAG_SYMBOL);
-            emitU32(i);
-            emitString(symbol->c_str());
+            ucs4string text = symbol->c_str();
+            if (text.is_ascii()) {
+                emitU8(Fasl::TAG_ASCII_SYMBOL);
+                emitU32(i);
+                emitAsciiString(text);
+            } else {
+                emitU8(Fasl::TAG_SYMBOL);
+                emitU32(i);
+                emitString(text);
+            }
         } else if (obj.isString()) {
             String* const string = obj.toString();
-            emitU8(Fasl::TAG_STRING);
-            emitU32(i);
-            emitString(string->data());
+            ucs4string text = string->data();
+            if (text.is_ascii()) {
+                emitU8(Fasl::TAG_ASCII_STRING);
+                emitU32(i);
+                emitAsciiString(text);
+            } else {
+                emitU8(Fasl::TAG_STRING);
+                emitU32(i);
+                emitString(text);
+            }
         } else {
             MOSH_ASSERT(false);
         }
@@ -228,13 +258,28 @@ void FaslWriter::putDatum(Object obj)
         return;
     }
     if (obj.isFixnum()) {
-        emitU8(Fasl::TAG_FIXNUM);
-        emitU32(obj.toFixnum());
+        const int n = obj.toFixnum();
+        if (n >= 0 && n <= 255) {
+            emitU8(Fasl::TAG_SMALL_FIXNUM);
+            emitU8(n);
+        } else if (n >= 256 && n <= 65535) {
+            emitU8(Fasl::TAG_MEDIUM_FIXNUM);
+            emitU16(n);
+        } else {
+            emitU8(Fasl::TAG_FIXNUM);
+            emitU32(obj.toFixnum());
+        }
         return;
     }
     if (obj.isInstruction()) {
         emitU8(Fasl::TAG_INSTRUCTION);
-        emitU32(obj.toInstruction());
+        const int val = obj.toInstruction();
+        if (0 <= val && val <= 255) {
+            emitU8((uint8_t)val);
+        } else {
+            fprintf(stderr, "instruction out of range");
+            exit(-1);
+        }
         return;
     }
     if (obj.isCompilerInstruction()) {
@@ -278,6 +323,12 @@ void FaslWriter::putDatum(Object obj)
 void FaslWriter::emitU8(uint8_t value)
 {
     outputPort_->putU8(value);
+}
+
+void FaslWriter::emitU16(uint16_t value)
+{
+    outputPort_->putU8(value);
+    outputPort_->putU8(value >> 8);
 }
 
 void FaslWriter::emitU32(uint32_t value)

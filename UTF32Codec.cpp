@@ -52,6 +52,7 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 int UTF32Codec::out(BinaryOutputPort* port, ucs4char u)
 {
     MOSH_ASSERT(false);
+    return 0;
 }
 
 int UTF32Codec::out(uint8_t* buf, ucs4char u)
@@ -99,6 +100,7 @@ ucs4char UTF32Codec::in(BinaryInputPort* port)
 ucs4string UTF32Codec::readWholeString(BinaryInputPort* port)
 {
     MOSH_ASSERT(false);
+    return UC("");
 }
 
 int UTF32Codec::checkBOM(ByteVector* bytevector)

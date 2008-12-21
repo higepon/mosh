@@ -226,7 +226,6 @@ int main(int argc, char *argv[])
     Symbol::initBuitinSymbols();
     const Object libCompiler = FASL_GET(compiler_with_library_image);
 
-    theVM->importTopLevel();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
 #ifdef ENABLE_PROFILER
     if (isProfiler) {

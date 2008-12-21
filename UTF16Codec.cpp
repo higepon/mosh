@@ -60,6 +60,7 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 int UTF16Codec::out(BinaryOutputPort* port, ucs4char u)
 {
     MOSH_ASSERT(false);
+    return 0;
 }
 
 int UTF16Codec::out(uint8_t* buf, ucs4char ch)
@@ -125,6 +126,7 @@ ucs4char UTF16Codec::in(BinaryInputPort* port)
 ucs4string UTF16Codec::readWholeString(BinaryInputPort* port)
 {
     MOSH_ASSERT(false);
+    return UC("");
 }
 
 int UTF16Codec::checkBOM(ByteVector* bytevector)
