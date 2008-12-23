@@ -804,6 +804,19 @@
                [(CALL)
                 (val1)
                 (apply-body a (next 1) sp)]
+               [(LOCAL_CALL)
+                (val1)
+                (when (>= (+ sp (closure-max-stack a)) (vector-length stack))
+                  (format #t "stack overflow expand stack\n")
+                  (expand-stack))
+                (VM (closure-body-code a)
+                    (closure-body-pc a)
+                    a
+                    (- sp (next 1))
+                    a
+                    stack
+                    sp
+                    )]
                [(REFER_GLOBAL_CALL)
                 (val1)
                 (apply-body (refer-global (next 1)) (next 2) sp)]
@@ -842,6 +855,7 @@
                ;;---------------------------- LIST -----------------------------
                [(LIST)
                 (val1)
+                (format (current-error-port) "LIST~a\n" (next 1))
                 (let1 n (next 1)
                   (VM codes (skip 1)
                       (let loop ([i 0]
@@ -1588,7 +1602,7 @@
                  [ret '()])
         (cond [(eof-object? obj)
                (let* ([v (map (lambda (x) (cons (car x) (insn-sym->insn-num (fetch-instructions) (cdr x))))
-                              #?= (assq-multi top-level-macros allowed-macro))]
+                              (assq-multi top-level-macros allowed-macro))]
                       [c (compile-partial `(set! top-level-macros (append top-level-macros (quote ,v))))])
                (if (and (pair? for-vm-cpp?) (car for-vm-cpp?))
                    (list->vector (insn-sym->insn-num (fetch-instructions) (vector->list (pass4 (append ret c)))))
@@ -1608,19 +1622,19 @@
   (cond
    ;; test
    [(= (length args) 1)
-;    (vm-init '())
-;     (load-file "./library.scm")
+   (vm-init '())
+    (load-file "./library.scm")
 
-    (load-file "./work.scm")
-;;     (load-file "./match.scm")
-;;     (vm-test)
-;;     (set! optimize? (not optimize?))
-;;     (vm-init '())
-;;     (load-file "./library.scm")
-;;     (load-file "./match.scm")
+;    (load-file "./hage.scm")
+    (load-file "./match.scm")
+    (vm-test)
+    (set! optimize? (not optimize?))
+    (vm-init '())
+    (load-file "./library.scm")
+    (load-file "./match.scm")
 
-;;     (vm-test)
-;;     (test-end)
+    (vm-test)
+    (test-end)
 
     ]
    ;; compile string

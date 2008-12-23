@@ -33,13 +33,13 @@ config.h                                                          \
 scheme.h                                                          \
 ByteVector.h                                                      \
 HashTable.h                                                       \
-EqvHashTable.h                                                    \
 Pair.h                                                            \
 Stack.h                                                           \
 Box.h                                                             \
 Codec.h                                                           \
 Transcoder.h                  Transcoder.cpp                      \
 ProcedureMacro.h                                                  \
+EqvHashTable.h                EqvHashTable.cpp                    \
 Compnum.h                     Compnum.cpp                         \
 Fixnum.h                      Fixnum.cpp                          \
 Closure.h                     Closure.cpp                         \
@@ -101,7 +101,7 @@ FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer # -DDEBUG_VERSION
+mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer #-DDEBUG_VERSION
 # -O3 causes miss compile of NumberReader.tab.cpp. see http://d.hatena.ne.jp/higepon/20081114/1226645373
 #mosh_CFLAGS   = -O2  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
@@ -168,9 +168,9 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 
 SUFFIXES: .scmc .h
 
-# .scmc.h:
-# 	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-# 	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+.scmc.h:
+	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
@@ -181,7 +181,17 @@ psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-./compiler-with-library.scm: ./library.scm ./compiler-vm-cpp.scm lib/core/fixnum.scm lib/core/flonum.scm lib/core/bitwise.scm lib/core/bytevector.scm lib/core/base.scm lib/core/r5rs.scm
+CORE_LIBS =                 \
+    lib/core/fixnum.scm     \
+    lib/core/flonum.scm     \
+    lib/core/bitwise.scm    \
+    lib/core/bytevector.scm \
+    lib/core/base.scm       \
+    lib/core/r5rs.scm       \
+    lib/core/hashtable.scm
+
+
+./compiler-with-library.scm: ./library.scm ./compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm

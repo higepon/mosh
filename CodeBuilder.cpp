@@ -84,7 +84,7 @@ void CodeBuilder::putInstructionArgument1(Object instruction, Object argument)
 
 void CodeBuilder::putInstructionArgument2(Object instruction, Object argument1, Object argument2)
 {
-    put(CodePacket(CodePacket::ARGUMENT1, instruction, argument1, argument2, Object::Undef));
+    put(CodePacket(CodePacket::ARGUMENT2, instruction, argument1, argument2, Object::Undef));
 }
 
 void CodeBuilder::combineInstructionsArgument0(CodePacket codePacket)

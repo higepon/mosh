@@ -558,6 +558,7 @@
 (#f (eqv? (cons 1 2) (cons 1 2)))
 (#f (eqv? (lambda () 1)
           (lambda () 2)))
+(#t (eqv? 123456789101112 123456789101112))
 (#f (eqv? #f 'nil))
 
 ;; expansion of cond

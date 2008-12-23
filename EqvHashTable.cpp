@@ -1,5 +1,5 @@
 /*
- * Equivalent.h - equivalent procedures.
+ * EqvHashTable.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,42 +26,28 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Equivalent.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: EqvHashTable.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_EQUIVALENT__
-#define __SCHEME_EQUIVALENT__
+#include "Object.h"
+#include "Object-inl.h"
+#include "GenericHashTable.h"
+#include "EqvHashTable.h"
+#include "UtilityProcedures.h"
+#include "HashTableProceduures.h"
 
-#include "Arithmetic.h"
-#include "scheme.h"
+using namespace scheme;
 
-namespace scheme {
-    bool equal(Object object1, Object object2, EqHashTable* visited);
-    bool equal(Object object1, Object object2);
-    bool fastEqual(Object object1, Object object2);
+EqvHashTable::EqvHashTable() : GenericHashTable(Object::makeCProcedure(eqvHashEx),
+                                                Object::makeCProcedure(eqvPEx))
+{
+}
 
-    inline bool eqv(Object o1, Object o2)
-    {
-        if (o1.isRecord()) {
-            if (o2.isRecord()) {
-                Record* const record1 = o1.toRecord();
-                Record* const record2 = o2.toRecord();
-                return record1->rtd() == record2->rtd();
-            } else {
-                return false;
-            }
-        }
+EqvHashTable::~EqvHashTable()
+{
+}
 
-        if (o1.isNumber()) {
-            if (o2.isNumber()) {
-                return Arithmetic::eq(o1, o2);
-            } else {
-                return false;
-            }
-        }
-        return o1.eq(o2);
-    }
-
-}; // namespace scheme
-
-#endif // __SCHEME_EQUIVALENT__
+Object EqvHashTable::hashFunction() const
+{
+    return Object::False;
+}

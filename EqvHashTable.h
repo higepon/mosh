@@ -36,19 +36,13 @@
 
 namespace scheme {
 
-extern Object eqvPEx(int argc, const Object* argv);
-
-class EqvHashTable : public EqHashTable
+class EqvHashTable : public GenericHashTable
 {
-
 public:
-    EqvHashTable() {}
-    virtual ~EqvHashTable() {}
+    EqvHashTable();
+    virtual ~EqvHashTable();
 
-    Object equivalenceFunction() const
-    {
-        return Object::makeCProcedure(eqvPEx);
-    }
+    Object hashFunction() const;
 };
 
 }; // namespace scheme

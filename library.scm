@@ -1760,26 +1760,6 @@
 ;; .returns A vector of all keys in hashtable. The order of the vector is unspecified.
 (define-doc (hashtable-keys) ...)
 
-(define (hashtable-update! hashtable key proc default)
-  (cond
-   [(hashtable-mutable? hashtable)
-    (hashtable-set!
-     hashtable key
-     (proc (hashtable-ref
-            hashtable key default)))]
-   [else
-    (assertion-violation 'hashtable-update! "can't update! immutable hashtable")]))
-
-(define (hashtable-entries hashtable)
-  (let* ([keys (hashtable-keys hashtable)]
-         [vals (make-vector (vector-length keys))])
-    (let loop ([i 0])
-      (cond
-       [(>= i (vector-length keys))
-        (values keys vals)]
-       [else
-        (vector-set! vals i (hashtable-ref hashtable (vector-ref keys i)))
-        (loop (+ i 1))]))))
 
 ; ==============================================================================================================================================================
 ;;; Eval.
@@ -2713,20 +2693,6 @@
 
 ;; todo document
 
-(define (hashtable-for-each proc ht)
-  (let1 keys (hashtable-keys ht)
-    (vector-for-each
-     (lambda (key)
-       (proc key (hashtable-ref ht key)))
-     keys)))
-
-
-(define (hashtable-map proc ht)
-  (let1 keys (vector->list (hashtable-keys ht))
-    ($map1
-     (lambda (key)
-       (proc key (hashtable-ref ht key)))
-     keys)))
 
 
 ; From elk start.
@@ -2862,11 +2828,6 @@
      ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- element) x) (vector-ref x ,i))) elements)
      ,@(map-with-index (lambda (i element) `(define (,(symbol-concat name '- 'set '- element '!) x v) (vector-set! x ,i v))) elements)))
 
-(define (hashtable-keys->list ht)
-  (vector->list (hashtable-keys ht)))
-
-(define (hashtable->alist ht)
-  (hashtable-map cons ht))
 
 (define (get-closure-name closure)
   (aif (%get-closure-name closure)
@@ -3515,17 +3476,6 @@
           ,@x)
       args)))
 
-(define (alist->eq-hash-table alist)
-  (let ([hashtable (make-eq-hashtable)])
-    (for-each (lambda (x) (hashtable-set! hashtable (car x) (cdr x)))
-              alist)
-    hashtable))
-
-(define (ralist->eq-hash-table alist)
-  (let ([hashtable (make-eq-hashtable)])
-    (for-each (lambda (x) (hashtable-set! hashtable (cdr x) (car x)))
-              alist)
-    hashtable))
 
 (define composition-exclusion-list '(
  2392 2393 2394 2395 2396
@@ -6114,3 +6064,4 @@
 ;;      y]
 ;;     [else
 ;;      (syntax-error "malformed do on mosh")]))
+

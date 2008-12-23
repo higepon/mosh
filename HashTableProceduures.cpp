@@ -39,6 +39,8 @@
 #include "HashTable.h"
 #include "HashTableProceduures.h"
 #include "ProcedureMacro.h"
+#include "Arithmetic.h"
+#include "StringProcedures.h"
 
 using namespace scheme;
 
@@ -138,6 +140,17 @@ Object scheme::hashtablePEx(int argc, const Object* argv)
     return Object::makeBool(argv[0].isHashTable());
 }
 
+Object scheme::eqvHashEx(int argc, const Object* argv)
+{
+    DeclareProcedureName("eqv-hash");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    if (obj.isNumber()) {
+        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(obj, 10)).val);
+    } else {
+        return Object::makeFixnum(obj.val);
+    }
+}
 
 Object scheme::stringHashEx(int argc, const Object* argv)
 {

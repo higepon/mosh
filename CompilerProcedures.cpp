@@ -592,7 +592,6 @@ Object scheme::codeBuilderPutInsnArg2DEx(int argc, const Object* argv)
     const Object instruction = argv[1];
     const Object argument1 = argv[2];
     const Object argument2 = argv[3];
-
     codeBuilder->putInstructionArgument2(instruction, argument1, argument2);
     return Object::Undef;
 }
@@ -605,7 +604,6 @@ Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
     argumentAsCodeBuilder(0, codeBuilder);
     const Object instruction = argv[1];
     const Object argument = argv[2];
-
     codeBuilder->putInstructionArgument1(instruction, argument);
     return Object::Undef;
 }

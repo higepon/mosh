@@ -68,7 +68,7 @@ GenericHashTable::~GenericHashTable()
 void GenericHashTable::prepareFunctions()
 {
     // TODO: should be thread safe.
-    genericHashFunction = hashFunction();
+    genericHashFunction = hashFunction_;
     genericEquivalenceFunction = equivalenceFunction();
 }
 
@@ -124,7 +124,7 @@ bool GenericHashTable::containsP(Object key)
 
 Object GenericHashTable::copy(bool mutableP)
 {
-    Object ret = Object::makeGenericHashTable(hashFunction(),
+    Object ret = Object::makeGenericHashTable(hashFunction_,
                                               equivalenceFunction());
     GenericHashTable* genericHashTable = ret.toGenericHashTable();
     genericHashTable->setMap(map_);

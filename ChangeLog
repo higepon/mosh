@@ -1,4 +1,14 @@
+2008-12-23  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (VM::run): Added LOCAL_CALL instruction for better performance.
+
 2008-12-21  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (errorf): Defined for compatibility.
+
+        * EqvHashTable.cpp : Modiffied to eqv-hashtable.
+
+        * lib/core/hashtable.scm (make-eqv-hashtable): Added for bug fix.
 
         * Makefile.am: Merged branch/pass2define-bug to trunk.
 

@@ -54,6 +54,7 @@
 #include "BitwiseProcedures.h"
 #include "ByteVectorProcedures.h"
 #include "Record.h"
+#include "Arithmetic.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
@@ -63,7 +64,6 @@
 #include "Box.h"
 #include "Stack.h"
 #include "UtilityProcedures.h"
-#include "Arithmetic.h"
 #include "FixnumProcedures.h"
 #include "Bignum.h"
 
@@ -584,7 +584,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CALL)
         {
             operand = fetchOperand();
-        call_entry:
             if (ac_.isCProcedure()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
@@ -1255,7 +1254,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             operand = fetchOperand();
             #include "call.inc.cpp"
             NEXT;
-//            goto call_entry;
         }
         CASE(REFER_GLOBAL)
         {
@@ -1299,7 +1297,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 ac_ = val;
             }
             operand = fetchOperand();
-//            goto call_entry;
             #include "call.inc.cpp"
             NEXT;
         }
@@ -1318,7 +1315,25 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             operand = fetchOperand();
             #include "call.inc.cpp"
             NEXT;
-//            goto call_entry;
+        }
+        // LOCAL_CALL is lighter than CALL
+        // We can omit checking closure type and arguments length.
+        CASE(LOCAL_CALL)
+        {
+            VM_ASSERT(ac_.isClosure());
+            const Closure* const c = ac_.toClosure();
+            if (c->maxStack + sp_ >= stackEnd_) {
+                printf("CALL: stack expansion\n");
+                expandStack(stackSize_ / 10);
+            }
+            COUNT_CALL(ac_);
+            const Object argLength = fetchOperand();
+            VM_ASSERT(argLength.isFixnum());
+            dc_ = ac_;
+            cl_ = ac_;
+            pc_ = c->pc;
+            fp_ = sp_ - argLength.toFixnum();
+            NEXT;
         }
         CASE(REFER_LOCAL_PUSH_CONSTANT)
         {
@@ -1503,7 +1518,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             operand = fetchOperand();
             #include "call.inc.cpp"
             NEXT;
-//            goto call_entry;
         }
         CASE(SYMBOL_P)
         {

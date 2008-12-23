@@ -62,12 +62,13 @@
   (define (command-line) *command-line-args*)]
 [mosh
  (define df format)
-  (define dd display)
-  (define pp print)
-  (include "./free-vars-decl.scm")
-  (define-macro (make-list-with-src-slot lst) lst)
-  (define (command-line) *command-line-args*)
-  (define (get-command-line) *command-line-args*) ;; required for psyntax
+ (define dd display)
+ (define pp print)
+ (include "./free-vars-decl.scm")
+ (define-macro (make-list-with-src-slot lst) lst)
+ (define (command-line) *command-line-args*)
+ (define (get-command-line) *command-line-args*) ;; required for psyntax
+ (define (errorf form . args) (error 'compiler (apply format form args)))
   ])
 
 ;; inline map
@@ -2945,20 +2946,16 @@
        ;;   So we don't have to execute FRAME, instead we can use FRAME informtion which is saved before applying ((lambda () ...)).
        ;;   To access the FRAME informtion, we remove arguments for a, so we do this SHIFT.
        ;;
-;;        (display "pass3/$call\n" (current-error-port))
-;;        (pp-iform iform)
        (unless tail
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
-;       (df (current-error-port) "code-builder1 = ~a\n" cb)
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth display-count)]
-;              [dummy        (df (current-error-port) "code-builder2 = ~a\n" cb)]
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth display-count)]
-;              [dummy2        (df (current-error-port) "code-builder3 = ~a\n" cb)]
               [args-length (length ($call.args iform))])
          (when tail
            (cput-shift! cb args-length tail))
-;(df (current-error-port) "code-builder4 = ~a\n" cb)
-         (code-builder-put-insn-arg1! cb 'CALL args-length)
+         (if (eq? ($call.type iform) 'local)
+             (code-builder-put-insn-arg1! cb 'LOCAL_CALL args-length)
+             (code-builder-put-insn-arg1! cb 'CALL args-length))
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))

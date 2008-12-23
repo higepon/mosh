@@ -53,6 +53,7 @@ namespace scheme {
     Object eqHashtableCopyEx(int argc, const Object* argv);
     Object makeEqHashtableEx(int argc, const Object* argv);
     Object makeEqvHashtableEx(int argc, const Object* argv);
+    Object eqvHashEx(int argc, const Object* argv);
     Object stringHashEx(int argc, const Object* argv);
     Object stringCiHashEx(int argc, const Object* argv);
     Object symbolHashEx(int argc, const Object* argv);

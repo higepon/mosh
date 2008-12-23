@@ -75,6 +75,7 @@
     (hashtable-ref hash-table-get)
     (hashtable-keys hash-table-keys)
     string-hash
+    eqv-hash
     string-ci-hash
     symbol-hash
     equal-hash
