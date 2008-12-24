@@ -1,10 +1,2 @@
-(import (rnrs))
-(define n 2e200)
-(write (inexact n))
-(newline)
-;; (newline)
-;; (write (number->string (inexact n) 10 5))
-;; (newline)
-;; (write (string->number (number->string (inexact n) 10 5)))
-;; (newline)
-;; (write (inexact n))
+(display (read (open-string-input-port "#\\delete")))
+

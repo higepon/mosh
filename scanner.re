@@ -222,69 +222,63 @@ int Scanner::scan()
             YYTOKEN = YYCURSOR;
             return BOOLEAN;
         }
-        "#\\space" DELMITER {
+        "#\\space" {
             yylval.charValue = ' ';
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\newline" DELMITER {
+        "#\\newline" {
             yylval.charValue = '\n';
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\nul" DELMITER {
+        "#\\nul" {
             yylval.charValue = 0x00;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\alerm" DELMITER {
+        "#\\alarm" {
             yylval.charValue = 0x07;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\backspace" DELMITER {
+        "#\\backspace" {
             yylval.charValue = 0x08;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\tab" DELMITER {
+        "#\\tab" {
             yylval.charValue = 0x09;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\linefeed" DELMITER {
+        "#\\linefeed" {
             yylval.charValue = 0x0A;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\vtab" DELMITER {
+        "#\\vtab" {
             yylval.charValue = 0x0B;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\page" DELMITER {
+        "#\\page" {
             yylval.charValue = 0x0C;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\return" DELMITER {
+        "#\\return" {
             yylval.charValue = 0x0D;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\esc" DELMITER {
+        "#\\delete" {
+            yylval.charValue = 0x7F;
+            YYTOKEN = YYCURSOR;
+            return CHARACTER;
+        }
+        "#\\esc" {
             yylval.charValue = 0x1B;
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
@@ -308,27 +302,27 @@ int Scanner::scan()
         }
         /* we now omit "(DECIMAL_10 MANTISSA_WIDTH)" for UREAL_10. */
         /* it causes infinite loop. */
-       NUM_2 DELMITER {
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-           YYCURSOR--;
+       NUM_2 {
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_10 DELMITER {
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-           YYCURSOR--;
+       NUM_10 {
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_8 DELMITER {
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-           YYCURSOR--;
+       NUM_8  {
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_16 DELMITER {
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-           YYCURSOR--;
+       NUM_16 {
+           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }

@@ -5,7 +5,6 @@ test:
 	$(MOSH) tests/r6rs/run/syntax-case.sps
 #	$(MOSH) tests/r6rs/run/r5rs.sps
 #	$(MOSH) tests/r6rs/run/conditions.sps
-#	$(MOSH) tests/r6rs/run/reader.sps
 	$(MOSH) tests/r6rs/run/unicode.sps
 	$(MOSH) tests/r6rs/run/exceptions.sps
 	$(MOSH) tests/r6rs/run/contrib.sps
@@ -25,3 +24,4 @@ test:
 	$(MOSH) tests/r6rs/run/arithmetic/fixnums.sps
 	$(MOSH) tests/r6rs/run/arithmetic/flonums.sps
 	$(MOSH) tests/r6rs/run/base.sps
+	$(MOSH) tests/r6rs/run/reader.sps
