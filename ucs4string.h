@@ -62,8 +62,12 @@ public:
     void split(ucs4char ch, gc_vector<ucs4string>& v);
     ucs4char* strdup();
     bool is_ascii() const;
-
     static ucs4string from_c_str(const char* s, int size);
+    // see R6RS 11.11 Characters
+    static bool isValidScalar(int ch)
+    {
+        return (0 <= ch && ch <= 0xD7FF) || (0xE000 <= ch && ch <= 0x10FFFF);
+    }
 };
 
 }; // namespace scheme

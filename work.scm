@@ -5,7 +5,8 @@
 
 (define (a x)
   (b)
-  x)
+  x
+  )
 
 ;(disasm b)
 ;(disasm a)

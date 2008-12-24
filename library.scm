@@ -5714,24 +5714,26 @@
 
 (define (char-general-category char)
   (unless general-category-hashtable
+    ;; general-category-alist has a value which is error for passing to integer->char.
+    ;; so we use char value for key.
     (let ([hashtable (make-eq-hashtable)])
       (for-each (lambda (category-set)
                   (for-each (lambda (data)
                               (cond
                                [(number? data)
-                                (hashtable-set! hashtable (integer->char data) (car category-set))]
+                                (hashtable-set! hashtable data (car category-set))]
                                         ; (start . end)
                                [(pair? data)
                                 (let loop ([start (car data)]
                                            [end (cdr data)])
                                   (if (> start end)
                                       '()
-                                      (begin (hashtable-set! hashtable (integer->char start) (car category-set))
+                                      (begin (hashtable-set! hashtable start (car category-set))
                                              (loop (+ start 1) end))))]))
                             (cdr category-set)))
                 general-category-alist)
       (set! general-category-hashtable hashtable)))
-  (hashtable-ref general-category-hashtable char 'Cn))
+  (hashtable-ref general-category-hashtable (char->integer char) 'Cn))
 
 
 (define (char-ci=? . char-lst)

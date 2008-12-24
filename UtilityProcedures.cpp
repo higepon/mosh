@@ -261,8 +261,8 @@ Object scheme::integerTocharEx(int argc, const Object* argv)
     DeclareProcedureName("integer->char");
     checkArgumentLength(1);
     argumentAsFixnum(0, integer);
-    if  (integer > 0x10ffff) {// || (integer >= 0xd800 && integer <= 0xdfff)) {
-        callAssertionViolationAfter(procedureName, "code point out of range", L1(argv[1]));
+    if (!ucs4string::isValidScalar(integer)) {
+        callAssertionViolationAfter(procedureName, "code point out of range", L1(argv[0]));
         return Object::Undef;
     }
 
