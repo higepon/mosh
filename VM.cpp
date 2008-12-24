@@ -584,117 +584,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CALL)
         {
             operand = fetchOperand();
-            if (ac_.isCProcedure()) {
-                COUNT_CALL(ac_);
-                cl_ = ac_;
-                if (ac_.toCProcedure()->proc == applyEx) {
-                    // don't share retCode with others.
-                    // because apply's arguments length is not constant.
-                    Object* const retCode = Object::makeObjectArray(2);
-                    retCode[0] = Object::makeRaw(INSTRUCTION(RETURN));
-                    retCode[1] = operand;
-
-                    VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
-                    pc_  = retCode;
-
-                    ac_.toCProcedure()->call(argc, sp_ - argc);
-                } else {
-                    CProcedure* const cprocedure = ac_.toCProcedure();
-                    // set pc_ before call() for pointing where to return.
-                    pc_  = cprocedure->returnCode;
-                    pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
-                    pc_[1] = operand;
-                    VM_ASSERT(operand.isFixnum());
-                    const int argc = operand.toFixnum();
-//                    LOG1("~a\n", getClosureName(ac_));
-                    ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
-                }
-            } else if (ac_.isClosure()) {
-                const Closure* const c = ac_.toClosure();
-                if (c->maxStack + sp_ >= stackEnd_) {
-                    printf("CALL: stack expansion\n");
-                    expandStack(stackSize_ / 10);
-                }
-                COUNT_CALL(ac_);
-                VM_ASSERT(operand.isFixnum());
-                const int argLength = operand.toFixnum();
-                const int requiredLength = c->argLength;
-                dc_ = ac_;
-                cl_ = ac_;
-                pc_ = c->pc;
-                if (c->isOptionalArg) {
-                    const int extraLength = argLength - requiredLength;
-                    if (-1 == extraLength) {
-                        Object* const sp = unShiftArgs(sp_, 1);
-                        indexSet(sp, 0, Object::Nil);
-                        sp_ = sp;
-                        fp_ = sp - requiredLength;
-                    } else if (extraLength >= 0) {
-                        indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
-                        Object* const sp = sp_ - extraLength;
-                        fp_ = sp - requiredLength;
-                        sp_ = sp;
-                    } else {
-                        callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
-                                                                 requiredLength,
-                                                                 operand.toFixnum());
-                    }
-                } else if (requiredLength == argLength) {
-                    fp_ = sp_ - argLength;
-                } else {
-                    Object args = Object::Nil;
-                    for (int i = 0; i < operand.toFixnum(); i++) {
-                        args = Object::cons(index(sp_, i), args);
-                    }
-                    callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
-                                                             requiredLength,
-                                                             operand.toFixnum(),
-                                                             args);
-                }
-            } else if (ac_.isCallable()) {
-                COUNT_CALL(ac_);
-                cl_ = ac_;
-                Callable* const callable = ac_.toCallable();
-                VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
-                // set pc_ before call() for pointing where to return.
-                pc_  = callable->returnCode;
-                pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
-                pc_[1] = operand;
-                ac_ = ac_.toCallable()->call(this, argc, sp_ - argc);
-
-//                 returnCode_[1] = operand;
-//                pc_  = returnCode_;
-//                goto return_entry;
-            } else if (ac_.isRegexp()) {
-                extern Object rxmatchEx(Object args);
-                VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
-                Object argv[2];
-                argv[0] = ac_;
-                argv[1] = sp_[-argc];
-                const Object rxmatchProc = Object::makeCProcedure(scheme::rxmatchEx);
-                CProcedure* const rxmatchCProc = rxmatchProc.toCProcedure();
-                // set pc_ before call() for pointing where to return.
-                pc_  = rxmatchCProc->returnCode;
-                pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
-                pc_[1] = operand;
-                ac_ = rxmatchCProc->call(argc + 1, argv);
-            } else if (ac_.isRegMatch()) {
-                extern Object regMatchProxy(Object args);
-                VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
-                Object argv[2];
-                argv[0] = ac_;
-                argv[1] = sp_[-argc];
-                ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 1, argv);
-//                 returnCode_[1] = operand;
-//                 pc_  = returnCode_;
-                goto return_entry;
-            } else {
-                callAssertionViolationAfter("apply", "invalid application", L1(ac_));
-            }
+            #include "call.inc.cpp"
             NEXT;
         }
         CASE(APPLY)
@@ -1840,11 +1730,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;
+    const int FP_OFFSET_IN_FRAME = 1;
+    const int CLOSURE_OFFSET_IN_FRAME = 2;
+
 
     const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
-    Object* cl = &dc_;
+    Object* cl = &cl_;
     for (int i = 1;;) {
         port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
         if (cl->isClosure()) {
@@ -1868,26 +1761,20 @@ Object VM::getStackTrace()
             port->format(UC("<regexp>: ~a\n"), L1(*cl));
             i++;
         } else {
-            // this case is very rare and may be bug of VM.
-//             LOG1("cl = ~a\n", *cl);
-//             fprintf(stderr, "fatal: stack corrupt!\n");
-            break;//            exit(-1);
+            MOSH_ASSERT(false);
         }
         if (i > MAX_DEPTH) {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             port->display(UC("      ... (more stack dump truncated)\n"));
             break;
         }
 
-        if (fp->isString()) {
-            // tail call?
-            break;
-        }
-        cl = fp - 2;
-        if (cl->isObjectPointer() && !cl->isClosure() && !cl->isCProcedure() && !cl->isRegexp() && !cl->isRegexp()) {
-            break;
-        }
+        VM_ASSERT(!(*cl).isObjectPointer());
+        VM_ASSERT((*cl).isClosure() || (*cl).isCProcedure() );
         if (fp > stack_) {
-            fp = (fp - 1)->toObjectPointer();
+            cl = fp - CLOSURE_OFFSET_IN_FRAME;
+            MOSH_ASSERT((fp - FP_OFFSET_IN_FRAME)->isObjectPointer());
+            fp = (fp - FP_OFFSET_IN_FRAME)->toObjectPointer();
         } else {
             break;
         }

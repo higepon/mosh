@@ -53,6 +53,7 @@
                     VM_ASSERT(operand.isFixnum());
                     const int argc = operand.toFixnum();
 //                    LOG1("~a\n", getClosureName(ac_));
+                    cl_ = ac_;
                     ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
                 }
             } else if (ac_.isClosure()) {
