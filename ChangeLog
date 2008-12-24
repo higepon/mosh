@@ -1,5 +1,7 @@
 2008-12-24  higepon  <higepon@users.sourceforge.jp>
 
+        * TextualOutputPort.cpp (putDatum): Fixed. In some situation Flonum write buffer is not enough.
+
         * library.scm (char-general-category): Fixed wrong usage of integer->char.
 
         * ucs4string.h : Added isValidScalar(). It checks whether integer value is valid Unicode scalar or not.

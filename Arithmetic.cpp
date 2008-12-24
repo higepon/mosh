@@ -83,8 +83,8 @@ Object Arithmetic::numberToString(Object n, int radix)
             callAssertionViolationAfter("number->string", "radix 10 is required for inexact number", Pair::list1(Object::makeFixnum(radix)));
             return Object::Undef;
         } else {
-            char buf[64];
-            snprintf(buf, 64, "%f", n.toFlonum()->value());
+            char buf[256];
+            snprintf(buf, 256, "%f", n.toFlonum()->value());
             return Object::makeString(buf);
         }
     } else if (n.isBignum()) {

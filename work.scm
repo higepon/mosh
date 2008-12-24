@@ -1,15 +1,10 @@
-;(import (rnrs))
-(define (b)
-  (display 3 4 5 6)
-  7)
-
-(define (a x)
-  (b)
-  x
-  )
-
-;(disasm b)
-;(disasm a)
-
-(a 3)
-
+(import (rnrs))
+(define n 2e200)
+(write (inexact n))
+(newline)
+;; (newline)
+;; (write (number->string (inexact n) 10 5))
+;; (newline)
+;; (write (string->number (number->string (inexact n) 10 5)))
+;; (newline)
+;; (write (inexact n))
