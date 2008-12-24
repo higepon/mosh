@@ -1,5 +1,7 @@
 2008-12-23  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (guard-macro): Fixed.
+
         * VM.cpp (VM::run): Added LOCAL_CALL instruction for better performance.
 
 2008-12-21  higepon  <higepon@users.sourceforge.jp>

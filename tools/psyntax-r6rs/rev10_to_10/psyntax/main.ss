@@ -38,7 +38,7 @@
     (only (rnrs programs) exit)
     (mosh) ;; for get-command-line
     (rnrs lists)
-    (only (rnrs conditions) serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
+    (only (rnrs conditions) condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)
     (rnrs records inspection)
     (psyntax compat)
@@ -207,6 +207,12 @@
 
   (set-symbol-value! 'trace-printer trace-printer)
   (set-symbol-value! 'compile-r6rs-top-level 'compile-r6rs-top-level)
+
+  (set-symbol-value! 'create-non-continuable-violation (lambda (c)
+                                                         (condition (make-non-continuable-violation)
+                                                                    (make-who-condition 'raise)
+                                                                    (make-message-condition "returned from non-continuable exception")
+                                                                    (make-irritants-condition (list c)))))
 
 
 ;  (library-path (get-library-paths))

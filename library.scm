@@ -3072,15 +3072,30 @@
 (define parent-exception-handler (make-parameter #f))
 
 ;; borrowed from ypsilon scheme by Yoshikatsu Fujita
-(define (with-exception-handler new thunk)
-  (let ((parent (current-exception-handler)))
-    (parameterize
-        ((parent-exception-handler parent)
-         (current-exception-handler
-          (lambda (condition)
-            (parameterize ((current-exception-handler parent))
-              (new condition)))))
-      (thunk))))
+(define with-exception-handler
+  (lambda (new thunk)
+    (let ((parent (current-exception-handler)))
+      (parameterize
+          ((parent-exception-handler parent)
+           (current-exception-handler
+            (lambda (condition)
+              (parameterize ((current-exception-handler parent))
+                (new condition)))))
+        (thunk)))))
+
+(define raise
+  (lambda (c)
+    (cond ((current-exception-handler)
+           => (lambda (proc)
+                (proc c)
+                (cond ((parent-exception-handler)
+                       => (lambda (proc)
+                            (let1 create-non-continuable-violation (symbol-value 'create-non-continuable-violation)
+                              (if create-non-continuable-violation
+                                  (proc (create-non-continuable-violation c))
+                                  (display "create-non-continuable-violation is not set\n" (current-error-port)))))))
+                (throw (format "error in raise: returned from non-continuable exception\n\nirritants:~a\n" c)))))
+    (throw (format "error in raise: unhandled exception has occurred\n\nirritants:~a\n" c))))
 
 (define (condition-printer c)
   (if (condition? c)
@@ -3115,17 +3130,19 @@
   c))
 
 
-(define (raise c)
-  (when (and (not (condition? c)) (not (string? c)))
-    (format #t "Warning: raise arguments is wrong. condition expected but got ~a\n" c))
-  (cond ((current-exception-handler)
-         => (lambda (proc)
-              (proc c)
-              (cond ((parent-exception-handler)
-                     => (lambda (proc)
-                          (proc c))))
-              (throw "    in raise: returned from non-continuable exception"))))
-    (throw (format "    Unhandled exception\n\n~a" (condition-printer c))))
+
+
+;; (define (raise c)
+;;   (when (and (not (condition? c)) (not (string? c)))
+;;     (format #t "Warning: raise arguments is wrong. condition expected but got ~a\n" c))
+;;   (cond ((current-exception-handler)
+;;          => (lambda (proc)
+;;               (proc c)
+;;               (cond ((parent-exception-handler)
+;;                      => (lambda (proc)
+;;                           (proc c))))
+;;               (throw "    in raise: returned from non-continuable exception"))))
+;;     (throw (format "    Unhandled exception\n\n~a" (condition-printer c))))
 
 
 (define (raise-continuable c)

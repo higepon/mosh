@@ -3235,6 +3235,13 @@
         (if (= j 1)
             (loop1 (+ i 1))
             (loop2 (+ j 1))))))]
+;; ((0 1)
+;;  (let1 foo (lambda arg
+;;              ((lambda (len)
+;;                 (length arg))))
+;;   (cons (foo)
+;;         (foo 'x))))
+
 ;; with-input-from-file multiple values
 [3
  (receive (a b)

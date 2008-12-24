@@ -1334,47 +1334,52 @@
   (define trace-letrec-syntax-macro
     (trace-let/rec-syntax 'letrec-syntax))
 
-  (define guard-macro
+(define guard-macro
     (lambda (x)
-      (define (gen-clauses con outerk clause*)
-        (define (f x k)
-          (syntax-match x (=>)
-            [(e => p)
-             (let ([t (gensym)])
-               `(let ([,t ,e])
-                  (if ,t (,p ,t) ,k)))]
-            [(e)
-             (let ([t (gensym)])
-               `(let ([,t ,e])
-                  (if ,t ,t ,k)))]
-            [(e v v* ...)
-             `(if ,e (begin ,v ,@v*) ,k)]
-            [_ (stx-error x "invalid guard clause")]))
+      (define (gen-clauses con outerk clause*) 
+        (define (f x k) 
+          (syntax-match x (=>) 
+            ((e => p) 
+             (let ((t (gensym)))
+               `(let ((,t ,e)) 
+                  (if ,t (,p ,t) ,k))))
+            ((e) 
+             (let ((t (gensym)))
+               `(let ((,t ,e))
+                  (if ,t ,t ,k))))
+            ((e v v* ...) 
+             `(if ,e (begin ,v ,@v*) ,k))
+            (_ (stx-error x "invalid guard clause"))))
         (define (f* x*)
           (syntax-match x* (else)
-            [()
-             (values `(raise ,con) #t)]
-            [([else e e* ...])
-             (values `(begin ,e ,@e*) #f)]
-            [(cls . cls*)
-             (let-values ([(e g) (f* cls*)])
-               (values (f cls e) g))]
-            [others (stx-error others "invalid guard clause")]))
-        (let-values ([(code raisek) (f* clause*)])
+            (() 
+             (let ((g (gensym)))
+               (values `(,g (lambda () (raise-continuable ,con))) g)))
+            (((else e e* ...))
+             (values `(begin ,e ,@e*) #f))
+            ((cls . cls*) 
+             (let-values (((e g) (f* cls*)))
+               (values (f cls e) g)))
+            (others (stx-error others "invalid guard clause"))))
+        (let-values (((code raisek) (f* clause*)))
           (if raisek
-             `(,outerk ,code)
-             code)))
+              `((call/cc
+                  (lambda (,raisek)
+                    (,outerk 
+                      (lambda () ,code)))))
+              `(,outerk (lambda () ,code)))))
       (syntax-match x ()
-        [(_ (con clause* ...) b b* ...)
+        ((_ (con clause* ...) b b* ...)
          (id? con)
-         (let ([outerk (gensym)])
+         (let ((outerk (gensym)))
            (bless
-             `(call/cc
+             `((call/cc
                  (lambda (,outerk)
+                   (lambda ()
                      (with-exception-handler
                        (lambda (,con)
                          ,(gen-clauses con outerk clause*))
-                       (lambda () #f ,b ,@b*))))))])))
+                       (lambda () #f ,b ,@b*))))))))))))
 
   (define define-enumeration-macro
     (lambda (stx)

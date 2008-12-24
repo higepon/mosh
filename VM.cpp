@@ -1626,7 +1626,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //             ac_ = referLocal(n.toFixnum());
 //             // *** Fall Through ***
 //         }
-       
+
         CASE(VECTOR_REF)
         {
             const Object obj = pop();
@@ -1897,8 +1897,11 @@ Object VM::getStackTrace()
 
 void VM::throwException(Object exception)
 {
+#ifdef DEBUG_VERSION
+//    LOG1("error~a\n", exception);
     fflush(stderr);
     fflush(stdout);
+#endif
     const Object stackTrace = getStackTrace();
     const Object stringOutputPort = Object::makeStringOutputPort();
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
