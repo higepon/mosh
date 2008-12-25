@@ -607,28 +607,6 @@ Object scheme::divideEx(int argc, const Object* argv)
     return ret;
 }
 
-// todo
-Object scheme::quotientEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("quotient");
-    checkArgumentLength(2);
-    if (argv[0].isFixnum() && argv[1].isFixnum()) {
-        return Object::makeFixnum(argv[0].toFixnum() / argv[1].toFixnum());
-    } else {
-        return divideEx(argc, argv);
-    }
-}
-
-Object scheme::remainderEx(int argc, const Object* argv)
-{
-    DeclareProcedureName("remainder");
-    checkArgumentLength(2);
-    argumentAsFixnum(0, a);
-    argumentAsFixnum(1, b);
-    return Object::makeFixnum(a % b);
-}
-
-
 Object scheme::eqEx(int argc, const Object* argv)
 {
     DeclareProcedureName("=");

@@ -420,10 +420,10 @@
     (vector-set!                            interaction     r ba se)
     (vector?                                 interaction    r ba se)
     (zero?                                   interaction    r ba se)
-    (...                                     interaction    r ba sc)
-    (=>                                      interaction    r ba ex)
-    (_                                       interaction    r ba sc)
-    (else                                    interaction    r ba ex)
+    [...                                         ne r ba sc se]
+    [=>                                          ne r ba ex se]
+    [_                                           ne r ba sc]
+    [else                                        ne r ba ex se]
     ;;;
     (bitwise-arithmetic-shift                   interaction r bw)
     (bitwise-arithmetic-shift-left              interaction r bw)

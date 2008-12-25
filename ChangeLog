@@ -1,5 +1,9 @@
 2008-12-25  higepon  <higepon@users.sourceforge.jp>
 
+        * Passed all of R5RS compatibility tests of R6RS test suite.
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax-buildscript-mosh.ss (identifier->library-map): Added ne,se to definition of '=>'.
+
         * test-data.scm (read-write-invariant?): Added some tests.
 
         * TextualOutputPort.cpp (putDatum): Fixed write of #\nul. (Thanks to leque).

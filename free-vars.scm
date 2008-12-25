@@ -198,8 +198,8 @@
     bytevector?
     current-directory
     standard-library-path
-    quotient
-    remainder
+;    quotient
+;    remainder
     native-endianness
     make-bytevector
     make-bytevector
