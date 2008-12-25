@@ -757,6 +757,7 @@
     (i/o-encoding-error?                        interaction r ip)
     (i/o-error-filename                         interaction r ip is fi)
     (i/o-error-port                             interaction r ip is fi)
+    (i/o-error-position                         interaction r ip is fi)
     (i/o-error?                                 interaction r ip is fi)
     (&i/o-file-already-exists                   interaction r ip is fi)
     (i/o-file-already-exists-error?             interaction r ip is fi)

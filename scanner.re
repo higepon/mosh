@@ -146,6 +146,7 @@ int Scanner::scan()
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
   WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
+  DELMITER               = [\(\)\[\]\";#]|WHITE_SPACE;
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
   HEX_DIGIT              = DIGIT | [a-f] | [A-F];
@@ -337,6 +338,8 @@ int Scanner::scan()
             return STRING;
         }
         "." {
+//            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
             return DOT;
         }
         "`"   {
