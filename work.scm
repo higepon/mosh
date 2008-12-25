@@ -1,5 +1,11 @@
-(import (rnrs)
-        (rnrs r5rs)
-        (rnrs eval))
+(import (rnrs))
 
-(eval '(cond (#t => (lambda (x) x))) (null-environment 5))
+
+(define v 0)
+#| #|
+|#
+(define v 1)
+|#
+
+(display v)
+(newline)

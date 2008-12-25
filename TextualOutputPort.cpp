@@ -211,7 +211,9 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             }
         } else {
             double val = flonum->value();
-            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
+// (log 0.0)
+//            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
+            snprintf(buf, sizeof(buf), "%f", flonum->value());
             putString(buf);
         }
     } else if (o.isInstruction()) {
@@ -469,7 +471,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
                 putString(UC("-inf.0"));
             }
         } else {
-            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
+//            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
+            snprintf(buf, sizeof(buf), "%f", flonum->value());
             putString(buf);
         }
     } else if (o.isInstruction()) {

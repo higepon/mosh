@@ -3299,6 +3299,14 @@
 (#t (read-write-invariant? '#(a b c)))
 (#t (read-write-invariant? '#((a b) c)))
 (#t (read-write-invariant? #vu8(0 128 255)))
+;; nested comment
+(#t (let1 x #t
+      #|
+      #|
+      |#
+      (set! x #f)
+      |#
+      x))
 
 
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")

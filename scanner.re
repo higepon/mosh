@@ -207,6 +207,8 @@ int Scanner::scan()
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!"[^\n]*);
 */
 
+    int comment_count = 0;
+
     for(;;)
     {
 /*!re2c
@@ -404,6 +406,7 @@ int Scanner::scan()
             return DATUM_COMMENT;
         }
         "#|" {
+            comment_count = 1;
             goto comment;
         }
 */
@@ -413,7 +416,15 @@ comment:
 /*!re2c
         "|#" {
             YYTOKEN = YYCURSOR;
-            continue;
+            if (--comment_count == 0) {
+                continue;
+            } else {
+                goto comment;
+            }
+        }
+        "#|" {
+            comment_count++;
+            goto comment;
         }
         ANY_CHARACTER
         {

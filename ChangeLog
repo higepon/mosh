@@ -1,5 +1,7 @@
 2008-12-25  higepon  <higepon@users.sourceforge.jp>
 
+        * scanner.re (scan): Fixed nested comment. Thanks to leque.
+
         * Passed all of conditions tests of R6RS test suite.
 
         * tools/psyntax-r6rs/rev10_to_10/psyntax-buildscript-mosh.ss (identifier->library-map): Added i/o-error-position
