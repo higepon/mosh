@@ -135,6 +135,7 @@ int yylex()
 int Scanner::scan()
 {
 /*!re2c
+  EOS                    = "\X0000";
   LINE_FEED              = "\n";
   CHARACTER_TABULATION   = "\X0009";
   LINE_TABULATION        = "\X000B";
@@ -146,7 +147,7 @@ int Scanner::scan()
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
   WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
-  DELMITER               = [\(\)\[\]\";#]|WHITE_SPACE;
+  DELMITER               = [\(\)\[\]\";#]|EOS|WHITE_SPACE;
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
   HEX_DIGIT              = DIGIT | [a-f] | [A-F];
@@ -212,164 +213,185 @@ int Scanner::scan()
     for(;;)
     {
 /*!re2c
-        "#"[tT] {
+        "#"[tT] DELMITER {
             yylval.boolValue = true;
-//            YYCURSOR--;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return BOOLEAN;
         }
-        "#"[fF] {
+        "#"[fF] DELMITER {
             yylval.boolValue = false;
-//            YYCURSOR--;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return BOOLEAN;
         }
-        "#\\space" {
+        "#\\space" DELMITER {
             yylval.charValue = ' ';
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\newline" {
+        "#\\newline" DELMITER {
             yylval.charValue = '\n';
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\nul" {
+        "#\\nul" DELMITER {
             yylval.charValue = 0x00;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\alarm" {
+        "#\\alarm" DELMITER {
             yylval.charValue = 0x07;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\backspace" {
+        "#\\backspace" DELMITER {
             yylval.charValue = 0x08;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\tab" {
+        "#\\tab" DELMITER {
             yylval.charValue = 0x09;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\linefeed" {
+        "#\\linefeed" DELMITER {
             yylval.charValue = 0x0A;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\vtab" {
+        "#\\vtab" DELMITER {
             yylval.charValue = 0x0B;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\page" {
+        "#\\page" DELMITER {
             yylval.charValue = 0x0C;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\return" {
+        "#\\return" DELMITER {
             yylval.charValue = 0x0D;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\delete" {
+        "#\\delete" DELMITER {
             yylval.charValue = 0x7F;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\esc" {
+        "#\\esc" DELMITER {
             yylval.charValue = 0x1B;
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\" ANY_CHARACTER {
+        "#\\" ANY_CHARACTER DELMITER {
             yylval.charValue = YYTOKEN[2];
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\x" HEX_SCALAR_VALUE {
-            yylval.charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR);
+        "#\\x" HEX_SCALAR_VALUE DELMITER {
+            YYCURSOR--;
+            yylval.charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR );
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         /* we now omit "(DECIMAL_10 MANTISSA_WIDTH)" for UREAL_10. */
         /* it causes infinite loop. */
-       NUM_2 {
+       NUM_2  DELMITER {
+           YYCURSOR--;
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
-//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_10 {
+       NUM_10 DELMITER {
+           YYCURSOR--;
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
-//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_8  {
+       NUM_8 DELMITER {
+           YYCURSOR--;
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
-//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       NUM_16 {
+       NUM_16 DELMITER {
+           YYCURSOR--;
            yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
-//           YYCURSOR--;
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       IDENTIFIER  {
+       IDENTIFIER DELMITER {
+            YYCURSOR--;
             yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
-//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return IDENTIFIER;
             }
-        "#/" REGEXP_ELEMENT* "/" {
+        "#/" REGEXP_ELEMENT* "/" DELMITER {
+            YYCURSOR--;
             yylval.stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 3);
-//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
-
             return REGEXP;
         }
-        "\"" STRING_ELEMENT* "\""  {
+        "\"" STRING_ELEMENT* "\"" DELMITER {
+            YYCURSOR--;
             yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
-//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return STRING;
         }
-        "." {
-//            YYCURSOR--;
+        "." DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return DOT;
         }
-        "`"   {
+        "`" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUASIQUOTE;
         }
-        "'"   {
+        "'" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUOTE;
         }
-        ",@"  {
+        ",@" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNQUOTESPLICING;
         }
-        ","   {
+        "," DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNQUOTE; }
-        "#'"  {
+        "#'" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_SYNTAX; }
-        "#`"  {
+        "#`" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUASISYNTAX; }
-        "#,"  {
+        "#," DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNSYNTAX;
         }
-        "#,@" {
+        "#,@" DELMITER {
+            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNSYNTAXSPLICING;
         }

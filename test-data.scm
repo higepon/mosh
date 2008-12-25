@@ -3289,8 +3289,6 @@
 (#t (read-write-invariant? "\t"))
 (#t (read-write-invariant? "\v"))
 (#t (read-write-invariant? "\r"))
-;; (#t (read-write-invariant? "ab\
-;; c"))
 (#t (read-write-invariant? 'abc))
 (#t (read-write-invariant? '\x40;))
 (#t (read-write-invariant? 'a\x20;c))
@@ -3308,6 +3306,15 @@
       |#
       x))
 (#t #!r6rs #t)
+
+;; reader error
+[definition
+(define (read-string s)
+  (call-with-port
+   (open-string-input-port s)
+   read))
+]
+(todo error (read-string "#t.#f"))
 
 
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")

@@ -2,6 +2,7 @@
 
         * scanner.re (scan): Fixed nested comment. Thanks to leque.
                      (scan): Fixed #!r6rs comment style.
+                     (Scanner::scan): Added DELMITER support.
 
         * Passed all of conditions tests of R6RS test suite.
 
