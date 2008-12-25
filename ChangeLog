@@ -1,5 +1,11 @@
 2008-12-25  higepon  <higepon@users.sourceforge.jp>
 
+        * test-data.scm (read-write-invariant?): Added some tests.
+
+        * TextualOutputPort.cpp (putDatum): Fixed write of #\nul. (Thanks to leque).
+                                (putDatum): Added write of #\vtab.
+                                (putDatum): Fixed write of strings which include "\a".
+
         * Passed all of reader tests of R6RS test suite.
 
         * r6rs-test-suite/Makefile: Added reader test.

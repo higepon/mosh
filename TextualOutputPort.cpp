@@ -226,14 +226,16 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#\\"));
         ucs4char c = o.toChar();
         switch (c) {
-        case '0':
+        case 0:
             putString(UC("nul"));
             break;
         case ' ':
             putString(UC("space"));
             break;
         case '\n':
-            putString(UC("newline"));
+            // R6RS (4.2.6 Characters) says: "The #\newline notation is retained for backward compatibility. Its
+            // use is deprecated; #\linefeed should be used instead."
+            putString(UC("linefeed"));
             break;
         case '\a':
             putString(UC("alarm"));
@@ -243,6 +245,21 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
             break;
         case '\t':
             putString(UC("tab"));
+            break;
+        case '\v':
+            putString(UC("vtab"));
+            break;
+        case 0x0C:
+            putString(UC("page"));
+            break;
+        case 0x0D:
+            putString(UC("return"));
+            break;
+        case 0x1B:
+            putString(UC("esc"));
+            break;
+        case 0x7F:
+            putString(UC("delete"));
             break;
 
         default:
@@ -270,6 +287,27 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
                 putChar(ESCAPSE);
                 putChar('n');
                 break;
+            case '\a':
+                putChar(ESCAPSE);
+                putChar('a');
+                break;
+            case '\b':
+                putChar(ESCAPSE);
+                putChar('b');
+                break;
+            case '\t':
+                putChar(ESCAPSE);
+                putChar('t');
+                break;
+            case '\v':
+                putChar(ESCAPSE);
+                putChar('v');
+                break;
+            case '\r':
+                putChar(ESCAPSE);
+                putChar('r');
+                break;
+
             case DOUBLE_QUOTE:
                 putChar(ESCAPSE);
                 putChar(DOUBLE_QUOTE);

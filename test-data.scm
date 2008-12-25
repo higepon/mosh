@@ -3262,5 +3262,44 @@
 (#t    (buffer-mode? 'block))
 (#f    (buffer-mode? 'lf))
 
+;; read-write-invariant test by leque
+[definition
+(define (read-write-invariant? obj)
+  (call-with-port (open-string-input-port
+                   (call-with-string-output-port
+                    (lambda (p) (write obj p))))
+    (lambda (p) (equal? obj (read p)))))
+]
+(#t (read-write-invariant? #f))
+(#t (read-write-invariant? 1/2))
+(#t (read-write-invariant? -12))
+(#t (read-write-invariant? 2+5i))
+(#t (read-write-invariant? 3.141592653589793))
+(#t (read-write-invariant? +inf.0))
+(#t (read-write-invariant? +nan.0))
+(#t (read-write-invariant? #\nul))
+(#t (read-write-invariant? #\linefeed))
+(#t (read-write-invariant? #\vtab))
+(#t (read-write-invariant? #\page))
+(#t (read-write-invariant? #\return))
+(#t (read-write-invariant? #\esc))
+(#t (read-write-invariant? #\delete))
+(#t (read-write-invariant? "\a"))
+(#t (read-write-invariant? "\b"))
+(#t (read-write-invariant? "\t"))
+(#t (read-write-invariant? "\v"))
+(#t (read-write-invariant? "\r"))
+;; (#t (read-write-invariant? "ab\
+;; c"))
+(#t (read-write-invariant? 'abc))
+(#t (read-write-invariant? '\x40;))
+(#t (read-write-invariant? 'a\x20;c))
+(#t (read-write-invariant? '(1 2 3)))
+(#t (read-write-invariant? '(1 #\2 "3")))
+(#t (read-write-invariant? '#(a b c)))
+(#t (read-write-invariant? '#((a b) c)))
+(#t (read-write-invariant? #vu8(0 128 255)))
+
+
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
 (todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")

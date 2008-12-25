@@ -146,7 +146,6 @@ int Scanner::scan()
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
   WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
-  DELMITER               = [\(\)\[\]\";#]|WHITE_SPACE;
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
   HEX_DIGIT              = DIGIT | [a-f] | [A-F];
@@ -154,7 +153,7 @@ int Scanner::scan()
   INTRA_LINE_WHITE_SPACE = "\t" | UNICODE_ZS;
   INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
   /* We use "INTRA_LINE_WHITE_SPACE *" instead of "INTRA_LINE_WHITE_SPACE" defined in R6RS */
-  STRING_ELEMENT         = [^\"\\] | ("\\" [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
+  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_2                = [0-1];
   DIGIT_8                = [0-7];
@@ -210,15 +209,15 @@ int Scanner::scan()
     for(;;)
     {
 /*!re2c
-        "#"[tT] DELMITER {
+        "#"[tT] {
             yylval.boolValue = true;
-            YYCURSOR--;
+//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return BOOLEAN;
         }
-        "#"[fF] DELMITER {
+        "#"[fF] {
             yylval.boolValue = false;
-            YYCURSOR--;
+//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return BOOLEAN;
         }
@@ -282,21 +281,13 @@ int Scanner::scan()
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\delete" DELMITER {
-            yylval.charValue = 0x7F;
-            YYCURSOR--;
-            YYTOKEN = YYCURSOR;
-            return CHARACTER;
-        }
-        "#\\" ANY_CHARACTER DELMITER {
+        "#\\" ANY_CHARACTER {
             yylval.charValue = YYTOKEN[2];
-            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
-        "#\\x" HEX_SCALAR_VALUE DELMITER {
-            yylval.charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR - 1);
-            YYCURSOR--;
+        "#\\x" HEX_SCALAR_VALUE {
+            yylval.charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR);
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
@@ -326,22 +317,22 @@ int Scanner::scan()
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
-       IDENTIFIER DELMITER {
-            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN) - 1);
-            YYCURSOR--;
+       IDENTIFIER  {
+            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return IDENTIFIER;
             }
-        "#/" REGEXP_ELEMENT* "/" DELMITER {
-            yylval.stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 4);
-            YYCURSOR--;
+        "#/" REGEXP_ELEMENT* "/" {
+            yylval.stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 3);
+//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
 
             return REGEXP;
         }
-        "\"" STRING_ELEMENT* "\"" DELMITER {
-            yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 3);
-            YYCURSOR--;
+        "\"" STRING_ELEMENT* "\""  {
+            yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
+//            YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return STRING;
         }
