@@ -1,11 +1,2 @@
-(import (rnrs))
-
-
-(define v 0)
-#| #|
-|#
-(define v 1)
-|#
-
-(display v)
-(newline)
+ (import (rnrs))
+ #!r6rs (display 0) (newline)

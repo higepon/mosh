@@ -3307,6 +3307,7 @@
       (set! x #f)
       |#
       x))
+(#t #!r6rs #t)
 
 
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")

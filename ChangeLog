@@ -1,6 +1,7 @@
 2008-12-25  higepon  <higepon@users.sourceforge.jp>
 
         * scanner.re (scan): Fixed nested comment. Thanks to leque.
+                     (scan): Fixed #!r6rs comment style.
 
         * Passed all of conditions tests of R6RS test suite.
 
