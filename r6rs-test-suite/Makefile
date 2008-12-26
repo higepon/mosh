@@ -3,7 +3,6 @@ MOSH=../mosh
 test:
 #	$(MOSH) tests/r6rs/run/io/ports.sls
 #	$(MOSH) tests/r6rs/run/io/simple.sls
-#	$(MOSH) tests/r6rs/run/eval.sps
 	$(MOSH) tests/r6rs/run/syntax-case.sps
 	$(MOSH) tests/r6rs/run/unicode.sps
 	$(MOSH) tests/r6rs/run/exceptions.sps
@@ -26,5 +25,6 @@ test:
 	$(MOSH) tests/r6rs/run/reader.sps
 	$(MOSH) tests/r6rs/run/conditions.sps
 	$(MOSH) tests/r6rs/run/r5rs.sps
+	$(MOSH) tests/r6rs/run/eval.sps
 	$(MOSH) tests/r6rs/run/base.sps
 

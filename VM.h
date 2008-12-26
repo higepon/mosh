@@ -84,7 +84,7 @@ public:
     Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
     Object evaluate(Object codeVector);
-    Object eval(Object o, Object env);
+//    Object eval(Object o, Object env);
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure1(Object closure, Object o);
@@ -92,6 +92,7 @@ public:
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger1(Object closure, Object arg1);
+    Object setAfterTrigger0(Object closure);
     Object evalAfter(Object sexp);
     void applyClosure(Object closure, Object args);
     Object apply(Object proc, Object args);
@@ -152,6 +153,7 @@ protected:
     Object makeContinuation(Object n);
     Object* getDirectThreadedCode(Object* code, int length);
     void expandStack(int plusSize);
+    Object compileWithoutHalt(Object sexp);
 
 public:
     Object ac_;  // accumulator     register

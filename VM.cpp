@@ -138,7 +138,6 @@ using namespace scheme;
    }
 
 
-
 VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     dc_(Object::Nil),
@@ -224,19 +223,6 @@ void VM::loadFile(const ucs4string& file)
         exit(-1);
     }
     RESTORE_REGISTERS();
-}
-
-// same as (eval ...)
-Object VM::eval(Object obj, Object env)
-{
-    const Object code = compile(obj);
-//            dumpCompiledCode(code);
-    // (CALL) -> evalEx -> eval -> evaluate
-    // evaluate が pc_ を壊してしまい evalEx の呼び出し元に戻れない。
-    SAVE_REGISTERS();
-    const Object ret = evaluate(code);
-    RESTORE_REGISTERS();
-    return ret;
 }
 
 void VM::load(const ucs4string& file)
@@ -398,75 +384,66 @@ void VM::setOutputPort(Object port)
     outputPort_ = port;
 }
 
-// リファクタリング todo
-// compile-w/return
-// object array copy
-// 古い eval を消す。
+Object VM::compileWithoutHalt(Object sexp)
+{
+    static Object compiler = Symbol::intern(UC("compile-w/o-halt"));
+    return callClosureByName(compiler, sexp);
+}
+
 Object VM::evalAfter(Object sexp)
 {
-//    LOG1("sexp=~a\n", sexp);
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    static Object proc = Symbol::intern(UC("compile-w/o-halt"));
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    const Object code = callClosureByName(proc, sexp);
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//    dumpCompiledCode(code);
-
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    const Object code = compileWithoutHalt(sexp);
     VM_ASSERT(code.isVector());
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Vector* const vcode = code.toVector();
-    Object* p = Object::makeObjectArray(vcode->length() + 2);
-//    memcpy(p, vcode->data(), vcode->length());
-    for (int i = 0; i < vcode->length(); i++) {
-        p[i] = (vcode->data())[i];
+
+    // We need to append "RETURN 0" to the code.
+    const int codeSize = vcode->length();
+    const int bodySize = codeSize + 2;
+    Object* body = Object::makeObjectArray(bodySize);
+    for (int i = 0; i < codeSize; i++) {
+        body[i] = (vcode->data())[i];
     }
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    p[vcode->length()] = Object::makeRaw(Instruction::RETURN);
-    p[vcode->length() + 1] = Object::makeFixnum(0);
+    body[codeSize]   = Object::makeRaw(Instruction::RETURN);
+    body[codeSize+ 1] = Object::makeFixnum(0);
 
-//     for (int i = 0; i < vcode->length() + 2; i++) {
-//         LOG1("~a\n", p[i]);//Object::makeString(Instruction::toString(p[i].val)));
-//     }
+    // make closure for save/restore current environment
+    Closure* const closure = new Closure(getDirectThreadedCode(body, bodySize), // pc
+                                         bodySize,                              // codeSize
+                                         0,                                     // argLength
+                                         false,                                 // isOptionalArg
+                                         cProcs,                                // freeVars
+                                         cProcNum,                              // freeVariablesNum
+                                         0,                                     // todo maxStack
+                                         Object::False);                        // todo sourceInfo
+    return setAfterTrigger0(Object::makeClosure(closure));
+}
 
-
-
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     dumpCompiledCode(Object::makeVector(vcode->length() + 2, p));
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    Object * tcode = getDirectThreadedCode(p, vcode->length() + 2);
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    Closure* const closure = new Closure(tcode,             // pc
-                                         vcode->length() + 2,   // codeSize
-                                         0,                 // argLength
-                                         false,             // isOptionalArg
-                                         cProcs,              // freeVars
-                                         cProcNum,            // freeVariablesNum
-                                         0,                 // todo maxStack
-                                         Object::False);    // todo sourceInfo
-
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    static Object callCode[] = {
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::CALL),
-        Object::makeFixnum(0),
-        Object::makeRaw(Instruction::RETURN),
-        Object::makeFixnum(0),
+#define MAKE_CALL_CODE(argumentCount)           \
+        Object::makeRaw(Instruction::CONSTANT), \
+        Object::Undef,                          \
+        Object::makeRaw(Instruction::CALL),     \
+        Object::makeFixnum(argumentCount),      \
+        Object::makeRaw(Instruction::RETURN),   \
+        Object::makeFixnum(0),                  \
         Object::makeRaw(Instruction::HALT)
-    };
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(Object::makeObjectPointer(pc_));
-    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    push(dc_);
-    push(cl_);
+
+#define MAKE_PUSH_FRAME(code, codeSize)           \
+    push(Object::makeObjectPointer(pc_));         \
+    pc_ = getDirectThreadedCode(code, codeSize);  \
+    push(dc_);                                    \
+    push(cl_);                                    \
     push(Object::makeObjectPointer(fp_));
-    pc_[1]= Object::makeClosure(closure);
-//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+Object VM::setAfterTrigger0(Object closure)
+{
+    static Object callCode[] = {
+        MAKE_CALL_CODE(0)
+    };
+    MAKE_PUSH_FRAME(callCode, sizeof(callCode) / sizeof(Object));
+    pc_[1]= closure;
     return ac_;
 }
+
 
 Object VM::setAfterTrigger1(Object closure, Object arg1)
 {
@@ -474,20 +451,9 @@ Object VM::setAfterTrigger1(Object closure, Object arg1)
         Object::makeRaw(Instruction::CONSTANT),
         Object::Undef,
         Object::makeRaw(Instruction::PUSH),
-        Object::makeRaw(Instruction::CONSTANT),
-        Object::Undef,
-        Object::makeRaw(Instruction::CALL),
-        Object::makeFixnum(1),
-        Object::makeRaw(Instruction::RETURN),
-        Object::makeFixnum(0),
-        Object::makeRaw(Instruction::HALT)
+        MAKE_CALL_CODE(1)
     };
-    push(Object::makeObjectPointer(pc_));
-    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
-
-    push(dc_);
-    push(cl_);
-    push(Object::makeObjectPointer(fp_));
+    MAKE_PUSH_FRAME(callCode, sizeof(callCode) / sizeof(Object));
     pc_[4]= closure;
     pc_[1]= arg1;
 

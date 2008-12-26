@@ -1,5 +1,7 @@
 2008-12-26  higepon  <higepon@users.sourceforge.jp>
 
+        * Passed all of eval tests of R6RS test suite.
+
         * VM.cpp (evalAfter): Added new eval System. It needs refactoring.
 
         * compiler.scm (compile-w/o-halt): Adde for new eval.
