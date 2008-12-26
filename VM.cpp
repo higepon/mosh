@@ -398,6 +398,76 @@ void VM::setOutputPort(Object port)
     outputPort_ = port;
 }
 
+// リファクタリング todo
+// compile-w/return
+// object array copy
+// 古い eval を消す。
+Object VM::evalAfter(Object sexp)
+{
+//    LOG1("sexp=~a\n", sexp);
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    static Object proc = Symbol::intern(UC("compile-w/o-halt"));
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    const Object code = callClosureByName(proc, sexp);
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//    dumpCompiledCode(code);
+
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    VM_ASSERT(code.isVector());
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    Vector* const vcode = code.toVector();
+    Object* p = Object::makeObjectArray(vcode->length() + 2);
+//    memcpy(p, vcode->data(), vcode->length());
+    for (int i = 0; i < vcode->length(); i++) {
+        p[i] = (vcode->data())[i];
+    }
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    p[vcode->length()] = Object::makeRaw(Instruction::RETURN);
+    p[vcode->length() + 1] = Object::makeFixnum(0);
+
+//     for (int i = 0; i < vcode->length() + 2; i++) {
+//         LOG1("~a\n", p[i]);//Object::makeString(Instruction::toString(p[i].val)));
+//     }
+
+
+
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     dumpCompiledCode(Object::makeVector(vcode->length() + 2, p));
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    Object * tcode = getDirectThreadedCode(p, vcode->length() + 2);
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    Closure* const closure = new Closure(tcode,             // pc
+                                         vcode->length() + 2,   // codeSize
+                                         0,                 // argLength
+                                         false,             // isOptionalArg
+                                         cProcs,              // freeVars
+                                         cProcNum,            // freeVariablesNum
+                                         0,                 // todo maxStack
+                                         Object::False);    // todo sourceInfo
+
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    static Object callCode[] = {
+        Object::makeRaw(Instruction::CONSTANT),
+        Object::Undef,
+        Object::makeRaw(Instruction::CALL),
+        Object::makeFixnum(0),
+        Object::makeRaw(Instruction::RETURN),
+        Object::makeFixnum(0),
+        Object::makeRaw(Instruction::HALT)
+    };
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(Object::makeObjectPointer(pc_));
+    pc_ = getDirectThreadedCode(callCode, sizeof(callCode) / sizeof(Object));
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    push(dc_);
+    push(cl_);
+    push(Object::makeObjectPointer(fp_));
+    pc_[1]= Object::makeClosure(closure);
+//    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return ac_;
+}
+
 Object VM::setAfterTrigger1(Object closure, Object arg1)
 {
     static Object callCode[] = {
@@ -789,10 +859,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object freeVariablesNumObject = fetchOperand();
             const Object maxStackObject         = fetchOperand();
             const Object sourceInfo    = fetchOperand();
-
             VM_ASSERT(skipSizeObject.isFixnum());
             const int skipSize         = skipSizeObject.toFixnum();
-
             VM_ASSERT(argLengthObject.isFixnum());
             const int argLength        = argLengthObject.toFixnum();
             const bool isOptionalArg   = !isOptionalArgObjecg.isFalse();
@@ -1764,7 +1832,7 @@ Object VM::getStackTrace()
             MOSH_ASSERT(false);
         }
         if (i > MAX_DEPTH) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             port->display(UC("      ... (more stack dump truncated)\n"));
             break;
         }

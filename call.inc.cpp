@@ -32,7 +32,7 @@
             if (ac_.isCProcedure()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
-                if (ac_.toCProcedure()->proc == applyEx) {
+                if (ac_.toCProcedure()->proc == applyEx || ac_.toCProcedure()->proc == evalEx) {
                     // don't share retCode with others.
                     // because apply's arguments length is not constant.
                     Object* const retCode = Object::makeObjectArray(2);

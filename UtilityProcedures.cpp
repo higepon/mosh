@@ -412,7 +412,8 @@ Object scheme::evalEx(int argc, const Object* argv)
 {
     DeclareProcedureName("eval");
     checkArgumentLength(2);
-    return theVM->eval(argv[0], argv[1]);
+//    return theVM->eval(argv[0], argv[1]);
+    return theVM->evalAfter(argv[0]);
 }
 
 Object scheme::applyEx(int argc, const Object* argv)

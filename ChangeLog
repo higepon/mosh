@@ -1,3 +1,9 @@
+2008-12-26  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (evalAfter): Added new eval System. It needs refactoring.
+
+        * compiler.scm (compile-w/o-halt): Adde for new eval.
+
 2008-12-25  higepon  <higepon@users.sourceforge.jp>
 
         * scanner.re (scan): Fixed nested comment. Thanks to leque.

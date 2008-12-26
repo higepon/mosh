@@ -87,13 +87,31 @@ public:
     Object prev;
 };
 
-    inline Object Object::makeClosure(Object* pc, int size, int argLength, bool isOptionalArg,
-                           const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
+inline Object Object::makeClosure(Object* pc,
+                                  int size,
+                                  int argLength,
+                                  bool isOptionalArg,
+                                  const Object* freeVars,
+                                  int freeVariablesNum,
+                                  int maxStack,
+                                  Object sourceInfo)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
-                                                        reinterpret_cast<word>(new Closure(pc, size, argLength, isOptionalArg, freeVars, freeVariablesNum, maxStack, sourceInfo)))));
+                                                        reinterpret_cast<word>(new Closure(pc,
+                                                                                           size,
+                                                                                           argLength,
+                                                                                           isOptionalArg,
+                                                                                           freeVars,
+                                                                                           freeVariablesNum,
+                                                                                           maxStack,
+                                                                                           sourceInfo)))));
 }
 
+inline Object Object::makeClosure(const Closure* closure)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
+                                                        reinterpret_cast<word>(closure))));
+}
 
 }; // namespace scheme
 

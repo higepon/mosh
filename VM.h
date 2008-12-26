@@ -92,6 +92,7 @@ public:
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger1(Object closure, Object arg1);
+    Object evalAfter(Object sexp);
     void applyClosure(Object closure, Object args);
     Object apply(Object proc, Object args);
     void load(const ucs4string& file);

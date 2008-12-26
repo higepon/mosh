@@ -3205,6 +3205,9 @@
 (define (pass4 lst)
   (pass4/fixup-labels (list->vector (append lst '(HALT)))))
 
+(define (pass4-w/o-halt lst)
+  (pass4/fixup-labels (list->vector lst)))
+
 ;; merge-insn for Mosh is written in CodeBuilder.cpp
 (cond-expand
  [mosh
@@ -3458,6 +3461,13 @@
       code
     ))]
  [else #t])
+
+
+;; We call this from eval.
+(define (compile-w/o-halt sexp)
+  (pass4-w/o-halt
+   (merge-insn
+    (pass3 (pass2/optimize (pass1/sexp->iform (pass1/expand sexp) '() #t) '())))))
 
 
 (define (compile sexp)
