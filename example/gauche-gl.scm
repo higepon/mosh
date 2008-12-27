@@ -36,6 +36,12 @@
 
 (load "./3d-data.scm")
 
+(define (draw-line p1 p2 color)
+  (gl-begin GL_LINES)
+  (apply gl-color color)
+  (apply gl-vertex p1)
+  (apply gl-vertex p2)
+  (gl-end))
 
 
 (define color1  '(0.2 0.7 0.9))
@@ -45,8 +51,10 @@
   (glut-init args)
   (simple-viewer-display
    (lambda ()
-     (apply draw-axis color1 rect-before)
-     (apply draw-axis color2 rect-after)
+     (eval command (interaction-environment))
+;     (draw-line '(1.0 1.0 1.0 1.0) '(0.0 0.0 0.0 1.0))
+;;      (apply draw-axis color1 rect-before)
+;;      (apply draw-axis color2 rect-after)
 ;;      (apply draw-rectangle color1 rect-before)
 ;;      (apply draw-rectangle color2 rect-after)
      (gl-flush)))

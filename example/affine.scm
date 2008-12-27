@@ -151,18 +151,18 @@
 
 ;(define t (mulm (make-rotate-z-matrix (/ pi 4)) (make-translation-matrix 1 2 3)))
 
-(define t (mulm (mulm (make-rotate-z-matrix 0) (make-rotate-x-matrix (negate (/ pi 16)))) (make-rotate-y-matrix (negate (/ pi 16)))))
+;; (define t (mulm (mulm (make-rotate-z-matrix 0) (make-rotate-x-matrix (negate (/ pi 16)))) (make-rotate-y-matrix (negate (/ pi 16)))))
 
-(format #t "(define rect-before '~a)\n" before)
-(format #t "(define rect-after '~a)\n"
-        (map point->list
-             (map (lambda (p) (mul t (apply make-point p))) before)))
+;; (format #t "(define rect-before '~a)\n" before)
+;; (format #t "(define rect-after '~a)\n"
+;;         (map point->list
+;;              (map (lambda (p) (mul t (apply make-point p))) before)))
 
-(print-matrix t)
-(print-matrix (transpose t))
+;; (print-matrix t)
+;; (print-matrix (transpose t))
 
-(display (cross-product (make-point 1 0 0 0) (make-point 0 1 0 0)))
-(display (normalize (orthonormal-axis (make-point 1 0 0 0))))
+;; (display (cross-product (make-point 1 0 0 0) (make-point 0 1 0 0)))
+;; (display (normalize (orthonormal-axis (make-point 1 0 0 0))))
 
 
 ;これがおちる。
@@ -211,16 +211,56 @@
                 (+ (* (matrix3-ref m1 0 2) (matrix3-ref m2 1 0)) (* (matrix3-ref m1 1 2) (matrix3-ref m2 1 1)) (* (matrix3-ref m1 2 2) (matrix3-ref m2 1 2)))
                 (+ (* (matrix3-ref m1 0 2) (matrix3-ref m2 2 0)) (* (matrix3-ref m1 1 2) (matrix3-ref m2 2 1)) (* (matrix3-ref m1 2 2) (matrix3-ref m2 2 2)))))
 
+(define (multiply-matrix3-point m p)
+  (make-point (+ (* (matrix3-ref m 0 0) (point-x p)) (* (matrix3-ref m 1 0) (point-y p)) (* (matrix3-ref m 2 0) (point-z p)))
+              (+ (* (matrix3-ref m 0 1) (point-x p)) (* (matrix3-ref m 1 1) (point-y p)) (* (matrix3-ref m 2 1) (point-z p)))
+              (+ (* (matrix3-ref m 0 2) (point-x p)) (* (matrix3-ref m 1 2) (point-y p)) (* (matrix3-ref m 2 2) (point-z p)))
+              1.0))
 
-;; r (1 1 1 1) を基準に pi/4 回す
-(define org (make-point 2 0 0 1))
-(define rm (make-point 1 1 1 1))
-(define sm (orthonormal-axis rm))
-(define tm (cross-product rm sm))
 
-(define mm (points->matrix3 rm sm tm))
+(define color1  '(0.2 0.7 0.9))
+(define color2  '(0.0 1.0 0.0))
 
-(print-matrix3 (multiply-matrix3 (transpose-matrix3 mm) (multiply-matrix3 (make-rotate-x-matrix3 (/ pi 4)) mm)))
+;; r を軸にして origin を phi 回転する
+(let* ([phi      (/ pi 4)]
+       [origin   (make-point 2.0 2.0 0.0 1.0)]
+       [r        (make-point 1 0 0 1)]
+       [s        (orthonormal-axis r)]
+       [t        (cross-product r s)]
+       [m        (points->matrix3 r s t)]
+       [mt       (transpose-matrix3 m)] ;; transposed m
+       [rotate-x (make-rotate-x-matrix3 phi)]
+       [rotate   (multiply-matrix3 mt
+                                   (multiply-matrix3 rotate-x m))])
+  (display (multiply-matrix3-point rotate origin))  ;; <=== ここの値がおかしいので見る
+)
+
+;; (define org (make-point 2.0 2.0 0.0 1.0))
+;; (define rm (make-point 1 0 0 1))
+;; (define sm (orthonormal-axis rm))
+;; (define tm (cross-product rm sm))
+
+;; (define mm (points->matrix3 rm sm tm))
+
+;; ;(print-matrix3 (multiply-matrix3 (transpose-matrix3 mm) (multiply-matrix3 (make-rotate-x-matrix3 (/ pi 4)) mm)))
+
+;; (write `(define command '(begin
+;;                            (draw-line ',(point->list rm)
+;;                                       ',(point->list org)
+;;                                       ',color1)
+;;                            (draw-line ',(point->list rm)
+;;                                       ',(point->list (multiply-matrix3-point
+;;                                                      (multiply-matrix3 (transpose-matrix3 mm)
+;;                                                                        (multiply-matrix3
+;;                                                                         (make-rotate-x-matrix3 (/ pi 4)) mm)) org))
+;;                                       ',color2))))
+
+
+;; (format #t "(define command '(draw-line '~a '~a))\n" (point->list rm)
+
+
+;;        (point->list (multiply-matrix3-point (multiply-matrix3 (transpose-matrix3 mm) (multiply-matrix3 (make-rotate-x-matrix3 (/ pi 4)) mm))
+;;                               org)))
 
 
 ;ここで回転。
