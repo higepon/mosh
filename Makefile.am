@@ -10,11 +10,17 @@ GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 ONIG_DIR   = ./onig-5.7.0
 REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
+# for GTEST
+GTEST_DIR     = gtest-1.2.1
+USER_DIR      = .
+TESTS         = # used later
+GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
+                $(GTEST_DIR)/include/gtest/internal/*.h
+GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
+
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh
-mosh_SOURCES =                                                    \
-main.cpp                                                          \
+COMMON_SOURCES_ = \
 HeapObject.h                                                      \
 Object-inl.h                                                      \
 Pair-inl.h                                                        \
@@ -100,6 +106,9 @@ CodeBuilder.h                 CodeBuilder.cpp                     \
 FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp
 
+bin_PROGRAMS = mosh
+mosh_SOURCES = main.cpp $(COMMON_SOURCES_)
+
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer -DDEBUG_VERSION
 # -O3 causes miss compile of NumberReader.tab.cpp. see http://d.hatena.ne.jp/higepon/20081114/1226645373
@@ -125,7 +134,7 @@ compiler-vm.scm compiler-with-library.scm Instruction.h    \
 psyntax.h psyntax.fasl match.h match.fasl                  \
 compiler-with-library.h compiler-with-library.fasl
 
-CLEANFILES =
+CLEANFILES = gtest.a gtest_main.a
 MAINTAINERCLEANFILES = $(GENERATED)
 
 update:
@@ -231,7 +240,7 @@ bench:
 	LANG=C @GOSH@ ./scripts/bench2.scm
 
 #### test
-check:test
+check: test
 
 test:./mosh all-tests.scm 
 	./mosh -r5 test/reader.scm
@@ -243,6 +252,35 @@ test:./mosh all-tests.scm
 	./mosh r6rs-examples/unicode-test.ss
 	(cd r6rs-test-suite && $(MAKE) $@)
 
+# Builds gtest.a and gtest_main.a.
+
+# Usually you shouldn't tweak such internal variables, indicated by a
+# trailing _.
+GTEST_SRCS_ = $(GTEST_DIR)/src/*.cc $(GTEST_DIR)/src/*.h $(GTEST_HEADERS_)
+
+# For simplicity and to avoid depending on Google Test's
+# implementation details, the dependencies specified below are
+# conservative and not optimized.  This is fine as Google Test
+# compiles fast and for ordinary users its source rarely changes.
+gtest-all.o : $(GTEST_SRCS_)
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest-all.cc
+
+gtest_main.o : $(GTEST_SRCS_)
+	$(CXX) $(GTEST_CPPFLAGS_) $(CXXFLAGS) -c $(GTEST_DIR)/src/gtest_main.cc
+
+gtest.a : gtest-all.o
+	$(AR) $(ARFLAGS) $@ $^
+
+gtest_main.a : gtest-all.o gtest_main.o
+	$(AR) $(ARFLAGS) $@ $^
+
+check_PROGRAMS=
+
+TESTS += test_vector
+check_PROGRAMS += test_vector
+test_vector_CXXFLAGS = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
+test_vector_SOURCES = TestVector.cpp $(COMMON_SOURCES_)
+test_vector_LDADD = gtest_main.a $(GC_LIB) $(REGEXP_LIB)
 
 
 # doc:

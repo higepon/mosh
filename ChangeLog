@@ -1,5 +1,9 @@
 2008-12-28  higepon  <higepon@users.sourceforge.jp>
 
+        * Added gtest-1.2.1 for testsing.
+
+        * TestVector.cpp (TEST): Added.
+
         * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss (repl): REPL now accepts mulitple lines.
 
 2008-12-27  higepon  <higepon@users.sourceforge.jp>
