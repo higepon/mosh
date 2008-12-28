@@ -1008,6 +1008,7 @@
     (append-map srfi-1)
     (alist-cons srfi-1 mosh)
     (assoc-ref mosh-list mosh)
+    (ungensym mosh)
     (every srfi-1)
     (iota srfi-1)
     (first srfi-1)

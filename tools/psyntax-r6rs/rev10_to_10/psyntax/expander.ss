@@ -3943,21 +3943,22 @@
             (syntax->datum x)
             #f)
           (extract-position-condition x)
-          (extract-trace x)))))
+          ;; (extract-trace x) ;; not used on Mosh
+          ))))
 
-  (define (extract-trace x)
-    (define-condition-type &trace &condition
-      make-trace trace?
-      (form trace-form))
-    (let f ([x x])
-      (cond
-        [(stx? x)
-         (apply condition
-            (make-trace x)
-            (map f (stx-ae* x)))]
-        [(annotation? x)
-         (make-trace (make-stx x '() '() '()))]
-        [else (condition)])))
+  ;; (define (extract-trace x)
+;;     (define-condition-type &trace &condition
+;;       make-trace trace?
+;;       (form trace-form))
+;;     (let f ([x x])
+;;       (cond
+;;         [(stx? x)
+;;          (apply condition
+;;             (make-trace x)
+;;             (map f (stx-ae* x)))]
+;;         [(annotation? x)
+;;          (make-trace (make-stx x '() '() '()))]
+;;         [else (condition)])))
 
 
   (define syntax-violation*
@@ -3983,7 +3984,8 @@
              (make-message-condition msg)
              condition-object
              (extract-position-condition form)
-             (extract-trace form))))))
+             ;; (extract-trace form) ;; not used on Mosh
+             )))))
 
   (define syntax-violation
     (case-lambda

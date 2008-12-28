@@ -806,12 +806,21 @@
    [#t ($global-ref symbol)]))
 
 (define (pass1/assign symbol val lvars tail?)
-  (let1 iform (pass1/sexp->iform val lvars tail?)
-    (acond
-     [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
-      ($lvar.set-count++! it)
-      ($local-assign it iform)]
-     [#t ($global-assign symbol iform)])))
+ (match val
+            [('lambda . more)
+             (let1 iform (pass1/lambda->iform symbol val lvars)
+               (acond
+                [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
+                 ($lvar.set-count++! it)
+                 ($local-assign it iform)]
+                [#t ($global-assign symbol iform)]))]
+            [else 
+    (let1 iform (pass1/sexp->iform val lvars tail?)
+       (acond
+        [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
+         ($lvar.set-count++! it)
+         ($local-assign it iform)]
+        [#t ($global-assign symbol iform)]))]))
 
 (define (pass1/body->iform body lvars tail?)
   (let1 iforms ($map1-with-tail
@@ -2125,7 +2134,7 @@
 (define-pass2/tracable (pass2/expand-inlined-procedure iform iargs)
   (let ((lvars ($lambda.lvars iform))
         (args  (pass2/adjust-arglist ($lambda.reqargs iform) ($lambda.optarg iform)
-                                     iargs ($lambda.name iform))))
+                                     iargs ($lambda.name iform) ($lambda.src iform))))
     (for-each (lambda (lv a) ($lvar.set-init-val! lv a)) lvars args)
     ($let 'let lvars args ($lambda.body iform) #f #f)))
 
@@ -2134,10 +2143,13 @@
     (or (and (not optarg?) (= nargs reqargs))
         (and optarg? (>= nargs reqargs)))))
 
-(define (pass2/adjust-arglist reqargs optarg iargs name)
+(define (pass2/adjust-arglist reqargs optarg iargs name src)
   (unless (pass2/argcount-ok? iargs reqargs (> optarg 0))
-    (errorf "wrong number of arguments: ~a requires ~a, but got ~a at ~a"
-            name reqargs (length iargs) (source-info iargs)))
+    (if src
+        (errorf "wrong number of arguments: ~a requires ~a, but got ~a at ~a:~a"
+                name reqargs (length iargs) (caar src) (cadar src))
+        (errorf "wrong number of arguments: ~a requires ~a, but got ~a"
+                name reqargs (length iargs))))
   (if (zero? optarg)
       iargs
       (let* ([ret-args (pass2/split-args iargs reqargs)]

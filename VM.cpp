@@ -1767,38 +1767,53 @@ Object VM::getStackTrace()
     const int FP_OFFSET_IN_FRAME = 1;
     const int CLOSURE_OFFSET_IN_FRAME = 2;
 
-
     const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &cl_;
     for (int i = 1;;) {
-        port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
         if (cl->isClosure()) {
             Object src = cl->toClosure()->sourceInfo;
             if (src.isPair()) {
-                if (src.car().isFalse()) {
-                    port->format(UC("<unknown location>: ~a \n"), L1(src.cdr()));
+                port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
+                const Object procedure = src.cdr();
+                const Object location  = src.car();
+                if (location.isFalse()) {
+                    port->format(UC("~a: <unknown location>\n"), L1(unGenSyms(procedure)));
                 } else {
-                    const Object lineno = src.car().cdr().car();
-                    port->format(UC("~a:~a: ~a \n"), L3(src.car().car(), lineno, src.cdr()));
+                    const Object lineno = location.cdr().car();
+                    const Object file   = location.car();
+                    const Object procedureName = procedure.car();
+
+                    // anonymous procedure
+                    if (procedure.car() == Symbol::intern(UC("lambda"))) {
+                        // format source information to follwing style
+                        // (lambda (arg1 arg2 arg3) ...)
+                        Object args = unGenSyms(procedure.cdr());
+                        const Object procedureSource = Pair::list3(procedureName, args, Symbol::intern(UC("...")));
+                        port->format(UC("~a:  ~a:~a\n"), L3(procedureSource, file, lineno));
+                    } else {
+                        port->format(UC("~a:  ~a:~a\n"), L3(unGenSyms(procedure), file, lineno));
+                    }
                 }
                 i++;
             }
         } else if (cl->isCProcedure()) {
-            port->format(UC("<subr>: ~a\n"), L1(getClosureName(*cl)));
+            port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
+            port->format(UC("~a: <subr>\n"), L1(getClosureName(*cl)));
             i++;
         } else if (cl->isRegMatch()) {
+            port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
             port->format(UC("<reg-match>: ~a\n"), L1(*cl));
             i++;
         } else if (cl->isRegexp()) {
+            port->format(UC("    ~d. "), L1(Object::makeFixnum(i)));
             port->format(UC("<regexp>: ~a\n"), L1(*cl));
             i++;
         } else {
             MOSH_ASSERT(false);
         }
         if (i > MAX_DEPTH) {
-//            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             port->display(UC("      ... (more stack dump truncated)\n"));
             break;
         }
@@ -1807,8 +1822,26 @@ Object VM::getStackTrace()
         VM_ASSERT((*cl).isClosure() || (*cl).isCProcedure() );
         if (fp > stack_) {
             cl = fp - CLOSURE_OFFSET_IN_FRAME;
-            MOSH_ASSERT((fp - FP_OFFSET_IN_FRAME)->isObjectPointer());
-            fp = (fp - FP_OFFSET_IN_FRAME)->toObjectPointer();
+            if (!((*cl).isClosure()) && !((*cl).isCProcedure())) {
+                break;
+            }
+            // next fp is Object pointer, so 4byte aligned.
+            // if it is not Object pointer, may be tail call
+            Object* nextFp = fp - FP_OFFSET_IN_FRAME;
+            if (!(nextFp->isPointer())) {
+                break;
+            }
+            if (nextFp->isSymbol() ||
+                nextFp->isString() ||
+                nextFp->isClosure() ||
+                nextFp->isCProcedure()) {
+                break;
+            }
+            if (!nextFp->isObjectPointer()) {
+                LOG1("val=~s", *nextFp);
+            }
+            VM_ASSERT(nextFp->isObjectPointer());
+            fp = nextFp->toObjectPointer();
         } else {
             break;
         }

@@ -1,3 +1,13 @@
+2008-12-28  higepon  <higepon@users.sourceforge.jp>
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss (repl): REPL now accepts mulitple lines.
+
+2008-12-27  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (getStackTrace): Safe stack trace.
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss: Disabled extract-trace which is not used.
+
 2008-12-26  higepon  <higepon@users.sourceforge.jp>
 
         * Passed all of eval tests of R6RS test suite.

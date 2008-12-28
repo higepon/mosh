@@ -87,6 +87,20 @@ Object scheme::symbolEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
+Object scheme::unGenSyms(Object symbols)
+{
+    MOSH_ASSERT(symbols.isList());
+    Object ret = Object::Nil;
+    for (Object p = symbols; !p.isNil(); p = p.cdr()) {
+        if (p.car().isSymbol()) {
+            ret = Object::cons(unGenSym(p.car()), ret);
+        } else {
+            ret = Object::cons(p.car(), ret);
+        }
+    }
+    return Pair::reverse(ret);
+}
+
 Object scheme::unGenSym(Object symbol)
 {
     MOSH_ASSERT(symbol.isSymbol());

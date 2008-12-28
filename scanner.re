@@ -205,7 +205,7 @@ int Scanner::scan()
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!r6rs");
+  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!" [a-zA-Z0-9/\_]+);
 */
 
     int comment_count = 0;

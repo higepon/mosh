@@ -3094,7 +3094,8 @@
                               (if create-non-continuable-violation
                                   (proc (create-non-continuable-violation c))
                                   (display "      create-non-continuable-violation is not set\n" (current-error-port)))))))
-                (throw (format "     error in raise: returned from non-continuable exception\\nn~a\n" c)))))
+;                (throw (format "     error in raise: returned from non-continuable exception\\nn~a\n" c)))))
+                (throw "     error in raise: returned from non-continuable exception\n"))))
     (throw (format "    error in raise: unhandled exception has occurred\n\n~a\n" c))))
 
 (define (condition-printer c)
