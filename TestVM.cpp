@@ -61,7 +61,7 @@ protected:
 };
 
 TEST_F(VMTest, StackTrace) {
-    theVM->loadFile(UC("./work.scm"));
+    theVM->loadFile(UC("./test/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -74,8 +74,8 @@ TEST_F(VMTest, StackTrace) {
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
                  "    2. sys-display: <subr>\n"
-                 "    3. (a):  ./work.scm:7\n"
-                 "    4. (b):  ./work.scm:12\n"
+                 "    3. (a):  ./test/stack-trace1.scm:7\n"
+                 "    4. (b):  ./test/stack-trace1.scm:12\n"
                  "    5. (<top-level>): <unknown location>\n\n",
                  theVM->getLastError().toString()->data().ascii_c_str());
 }
