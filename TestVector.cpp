@@ -34,19 +34,48 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "Vector.h"
-#include "VM.h"
+#include "SString.h"
+#include "UTF8Codec.h"
+#include "Transcoder.h"
+#include "FileBinaryInputPort.h"
+#include "FileBinaryOutputPort.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+#include "TestingVM.h"
 
 using namespace scheme;
 
 VM* theVM;
 
-TEST(VectorTest, Ref) {
-    Vector* v = new Vector(2, Object::Undef);
+class VMTest : public testing::Test {
+protected:
+    virtual void SetUp() {
+        mosh_init();
+        Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+        Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+        theVM = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
+        theVM->loadCompiler();
+    }
+};
 
-    EXPECT_TRUE(v->ref(0).isUndef());
-    EXPECT_TRUE(v->ref(1).isUndef());
+TEST_F(VMTest, StackTrace) {
+    theVM->loadFile(UC("./work.scm"));
+    EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
+                 "\n"
+                 " Condition components:\n"
+                 "    1. &assertion\n"
+                 "    2. &who: display\n"
+                 "    3. &message: \"textual-output-port required, but got 3\"\n"
+                 "    4. &irritants: ()\n"
+                 "\n"
+                 "\n"
+                 " Stack trace:\n"
+                 "    1. throw: <subr>\n"
+                 "    2. sys-display: <subr>\n"
+                 "    3. (a):  ./work.scm:7\n"
+                 "    4. (b):  ./work.scm:12\n"
+                 "    5. (<top-level>): <unknown location>\n\n",
+                 theVM->getLastError().toString()->data().ascii_c_str());
 }
-
-
-
-

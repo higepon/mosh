@@ -45,7 +45,6 @@
 #include "TextualOutputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
-#include "ByteArrayBinaryInputPort.h"
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
@@ -54,16 +53,12 @@
 #include "EqHashTable.h"
 #include "Record.h"
 #include "Equivalent.h"
-#include "Fasl.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 
 using namespace scheme;
 
 VM* theVM;
-#ifdef TRACE_INSN
-FILE* errOut;
-#endif
 
 Object argsToList(int argc, int optind, char* argv[])
 {
@@ -73,11 +68,6 @@ Object argsToList(int argc, int optind, char* argv[])
     }
     return Pair::reverse(p);
 }
-
-
-#ifdef DUMP_ALL_INSTRUCTIONS
-FILE* stream;
-#endif
 
 void showVersion()
 {
@@ -116,24 +106,7 @@ void signal_handler(int signo)
 void compareRead(const char* file);
 void parrot(const char* file);
 
-#include "match.h"
-#include "psyntax.h"
-#include "compiler-with-library.h"
 
-#define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
-
-//#include <glog/logging.h>
-#include <gmp.h>
-#include <gc.h>
-void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
-{
-    return GC_REALLOC(ptr, newSize);
-}
-
-void my_dont_free(void *ptr, size_t size)
-{
-}
-    
 int main(int argc, char *argv[])
 {
     int opt;
@@ -197,46 +170,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-#ifdef DUMP_ALL_INSTRUCTIONS
-    stream = fopen("./instruction.log", "a+");
-#endif
-
-#ifdef USE_BOEHM_GC
-    GC_INIT();
-    mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
-#endif
-
-    Flonum::initialize();
-
+    mosh_init();
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-
-#ifdef TRACE_INSN
-    errOut = fopen(INSN_LOG_FILE, "w");
-    TextualOutputPort errorPort(TextualOutputPort(new FileBinaryOutputPort(errOut), transcoder));
-#else
-
-#endif
-
-    Object inPort = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);;
-    Object outPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-
-    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);;
+    Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
+    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
-
-    Symbol::initBuitinSymbols();
-    const Object libCompiler = FASL_GET(compiler_with_library_image);
-
+    theVM->loadCompiler();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
-#ifdef ENABLE_PROFILER
-    if (isProfiler) {
-        theVM->initProfiler();
-    }
-#endif
-    theVM->evaluate(libCompiler);
-    FaslReader reader2(new ByteArrayBinaryInputPort(match_image, sizeof(match_image)));
-    const Object libMatch = FASL_GET(match_image);
-    theVM->evaluate(libMatch);
-
 //     if (initFile != NULL) {
 //         theVM->load(Object::makeString(initFile).toString()->data());
 //     }
@@ -254,10 +195,7 @@ int main(int argc, char *argv[])
             theVM->getOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
-        theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
-        theVM->activateR6RSMode();
-        const Object libPsyntax = FASL_GET(psyntax_image);
-        theVM->evaluate(libPsyntax);
+        theVM->activateR6RSMode(isDebugExpand);
     } else if (isCompareRead) {
         compareRead(argv[optind]);
     } else if (isParrot) {
@@ -269,18 +207,11 @@ int main(int argc, char *argv[])
         theVM->load(UC("repl.scm"));
     }
 
-#ifdef DUMP_ALL_INSTRUCTIONS
-    fclose(stream);
-#endif
-
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
         const Object result = theVM->getProfileResult();
         theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
-#endif
-#ifdef TRACE_INSN
-    fclose(errOut);
 #endif
     exit(EXIT_SUCCESS);
 }
@@ -346,4 +277,4 @@ void compareRead(const char* file)
         }
     }
     printf("%lld:%lld :", a1, a2);
-}    
+}

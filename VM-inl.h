@@ -148,12 +148,12 @@ inline Object VM::makeContinuation(Object n)
     return Object::makeClosure(getDirectThreadedCode(code, codeSize), codeSize, 1, true, sp_, 0, 1, Object::False);
 }
 
-Object* VM::disasm(Closure* closure)
+inline Object* VM::disasm(Closure* closure)
 {
     return disasm(closure->pc - Closure::HEADER_SIZE, closure->size + Closure::HEADER_SIZE);
 }
 
-Object* VM::disasm(Object* code, int length)
+inline Object* VM::disasm(Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* ret = Object::makeObjectArray(length);
@@ -177,7 +177,7 @@ Object* VM::disasm(Object* code, int length)
 #endif
 }
 
-Object* VM::getDirectThreadedCode(Object* code, int length)
+inline Object* VM::getDirectThreadedCode(Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);

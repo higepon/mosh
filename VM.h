@@ -49,22 +49,43 @@ namespace scheme {
 #define VM_LOG2(fmt, a, b)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L2(a, b))
 #define VM_LOG3(fmt, a, b, c)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L3(a, b, c))
 
-#ifdef TRACE_INSN
-#define TRACE_INSN0(name) errorPort_.format(UC("=========================\n~a\n"), L1(name)), fflush(errOut)
-#define TRACE_INSN1(name, fmt, a) TRACE_INSN0(name),errorPort_.format(UC(fmt), L1(a)), fflush(errOut)
-#define TRACE_INSN2(name, fmt, a, b) TRACE_INSN0(name),errorPort_.format(UC(fmt), L2(a, b)), fflush(errOut)
-#define TRACE_INSN3(name, fmt, a, b, c) TRACE_INSN0(name),errorPort_.format(UC(fmt), L3(a, b, c)), fflush(errOut)
-#else
-#define TRACE_INSN0(name) //
-#define TRACE_INSN1(name, fmt, a) //
-#define TRACE_INSN2(name, fmt, a, b) //
-#define TRACE_INSN3(name, fmt, a, b, c) //
-#endif
-
 #define L1(a) Pair::list1(a)
 #define L2(a, b) Pair::list2(a, b)
 #define L3(a, b, c) Pair::list3(a, b, c)
 #define L4(a, b, c, d) Pair::list4(a, b, c, d)
+
+#define SAVE_REGISTERS()                       \
+    const Object ac = ac_;                     \
+    const Object dc = dc_;                     \
+    const Object cl = cl_;                     \
+    const Object errorHandler = errorHandler_; \
+    Object* const pc = pc_;                    \
+    Object* const fp = fp_;                    \
+    Object* const sp = sp_;
+
+#define RESTORE_REGISTERS()       \
+    ac_ = ac;                     \
+    cl_ = cl;                     \
+    dc_ = dc;                     \
+    errorHandler_ = errorHandler; \
+    fp_ = fp;                     \
+    pc_ = pc;                     \
+    sp_ = sp;
+
+#define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
+
+
+
+#ifdef DEBUG_VERSION
+#define VM_ASSERT(condition) { if (!(condition)) { \
+            fprintf(stderr, "*** ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); \
+            LOG2("    dc_ = ~a\n    cl_=~a\n", \
+                 dc_.toClosure()->sourceInfoString(), \
+                 cl_.toClosure()->sourceInfoString()); \
+                 ::exit(-1);}}
+#else
+#define VM_ASSERT(condition) /* */
+#endif
 
 class TextualOutputPort;
 
@@ -72,8 +93,10 @@ class VM EXTEND_GC
 {
 public:
     VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false);
-    ~VM();
+    virtual ~VM();
 
+    Object getLastError() const { return errorObj_; }
+    void loadCompiler();
     void importTopLevel();
     void dumpCompiledCode(Object code) const;
     void printStack() const;
@@ -116,7 +139,7 @@ public:
     Object getTopLevelGlobalValueOrFalse(Object id);
     Object getClosureName(Object closure);
     bool isR6RSMode() const;
-    void activateR6RSMode();
+    void activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
@@ -134,7 +157,11 @@ public:
 #endif
 
 protected:
-
+    virtual int exit(int status)
+    {
+        ::exit(status);
+        return status;
+    }
     void import(Object libname);
     Object fetchOperand();
     void skip(int n);

@@ -56,6 +56,7 @@ scheme.h                      scheme.cpp                          \
 Regexp.h                      Regexp.cpp                          \
 Symbol.h                      Symbol.cpp                          \
 VM.h                          VM.cpp                              \
+VM-Profiler.cpp               VM-Run.cpp                          \
 Scanner.h                     Scanner.cpp                         \
 NumberScanner.h               NumberScanner.cpp                   \
 ByteArrayBinaryInputPort.h    ByteArrayBinaryInputPort.cpp        \
@@ -106,7 +107,7 @@ CodeBuilder.h                 CodeBuilder.cpp                     \
 FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp
 
-bin_PROGRAMS = mosh
+bin_PROGRAMS = mosh test_vector
 mosh_SOURCES = main.cpp $(COMMON_SOURCES_)
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
@@ -278,16 +279,11 @@ check_PROGRAMS=
 
 TESTS += test_vector
 check_PROGRAMS += test_vector
-test_vector_CXXFLAGS = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
-test_vector_SOURCES = TestVector.cpp $(COMMON_SOURCES_)
+test_vector_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
+test_vector_SOURCES = TestVector.cpp TestingVM.cpp $(COMMON_SOURCES_)
 test_vector_LDADD = gtest_main.a $(GC_LIB) $(REGEXP_LIB)
-
 
 # doc:
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
 # 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
-fulltest:
-	./mosh -t
-	./vm.scm
-	./scripts/test-compiler.scm

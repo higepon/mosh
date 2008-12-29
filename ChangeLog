@@ -1,3 +1,9 @@
+2008-12-29  higepon  <higepon@users.sourceforge.jp>
+
+        * VM-Run.cpp (run): Added for breaking build dependencies.
+
+        * VM-Profiler.cpp: Added for breaking build dependencies.
+
 2008-12-28  higepon  <higepon@users.sourceforge.jp>
 
         * Added gtest-1.2.1 for testsing.

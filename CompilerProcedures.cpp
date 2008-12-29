@@ -41,6 +41,7 @@
 #include "EqHashTable.h"
 #include "Closure.h"
 #include "TextualOutputPort.h"
+#include "VM-inl.h"
 
 using namespace scheme;
 

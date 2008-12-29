@@ -56,10 +56,6 @@
 #include <limits.h>
 #include <string.h>
 #include <gmp.h>
-//#define DUMP_ALL_INSTRUCTIONS
-//#define TRACE_INSN
-#define INSN_LOG_FILE "/tmp/mosh-insn.log"
-
 #include <map>
 #include <vector>
 #ifdef USE_BOEHM_GC
@@ -81,7 +77,7 @@ class gc_vector : public std::vector<T1> {};
 
 
 #ifdef DEBUG_VERSION
-#define MOSH_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); exit(-1);}}
+#define MOSH_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); ::exit(-1);}}
 #else
 #define MOSH_ASSERT(condition) /* */
 #endif
@@ -113,6 +109,10 @@ typedef word ucs4char;
 #include "ucs4string.h"
 
 #define PRFILER_TEMP_FILE "/tmp/mosh-profiler.log"
+
+void* my_realloc(void *ptr, size_t oldSize, size_t newSize);
+void my_dont_free(void *ptr, size_t size);
+void mosh_init();
 
 namespace scheme {
 

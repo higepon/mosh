@@ -29,19 +29,32 @@
  *  $Id$
  */
 
-// #include "scheme.h"
-// #include "CodeBuilder.h"
-// #include "Equivalent.h"
-// #include "TextualInputPort.h"
-// #include "FileBinaryInputPort.h"
-// #include "TextualOutputPort.h"
-// #include "StringTextualOutputPort.h"
-// #include "StringTextualInputPort.h"
-// #include "TextualByteVectorOutputPort.h"
-// #include "ByteArrayBinaryInputPort.h"
-// #include "CustomBinaryInputPort.h"
-// #include "Transcoder.h"
-// #include "UTF8Codec.h"
+#include "scheme.h"
+#include "Object.h"
+#include "Object-inl.h"
+#include "Symbol.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+#include <gc.h>
+#include <gmp.h>
 
-// using namespace scheme;
+using namespace scheme;
 
+void mosh_init()
+{
+#ifdef USE_BOEHM_GC
+    GC_INIT();
+    mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
+#endif
+    Flonum::initialize();
+    Symbol::initBuitinSymbols();
+}
+
+void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
+{
+    return GC_REALLOC(ptr, newSize);
+}
+
+void my_dont_free(void *ptr, size_t size)
+{
+}
