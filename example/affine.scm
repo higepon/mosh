@@ -178,17 +178,17 @@
           g h i))
 
 (define (points->matrix3 a b c)
-  (make-matrix3 (point-x a) (point-y a) (point-y a)
-                (point-x b) (point-y b) (point-y b)
-                (point-x c) (point-y c) (point-y c)))
+  (make-matrix3 (point-x a) (point-y a) (point-z a)
+                (point-x b) (point-y b) (point-z b)
+                (point-x c) (point-y c) (point-z c)))
 
 (define (matrix3-ref m i j)
   (vector-ref  m (+ (* 3 j) i)))
 
 (define (print-matrix3 m)
-  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 0) (matrix3-ref m 1 0) (matrix3-ref m 2 0)
-  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 1) (matrix3-ref m 1 1) (matrix3-ref m 2 1)
-  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 2) (matrix3-ref m 1 2) (matrix3-ref m 2 2)))))
+  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 0) (matrix3-ref m 1 0) (matrix3-ref m 2 0))
+  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 1) (matrix3-ref m 1 1) (matrix3-ref m 2 1))
+  (format #t "|~a ~a ~a|\n" (matrix3-ref m 0 2) (matrix3-ref m 1 2) (matrix3-ref m 2 2)))
 
 (define (transpose-matrix3 m)
   (make-matrix3 (matrix3-ref m 0 0) (matrix3-ref m 0 1) (matrix3-ref m 0 2)
@@ -224,16 +224,21 @@
 ;; r を軸にして origin を phi 回転する
 (let* ([phi      (/ pi 4)]
        [origin   (make-point 2.0 2.0 0.0 1.0)]
-       [r        (make-point 1 0 0 1)]
+       [r        (make-point 0 1 0 1)]
        [s        (orthonormal-axis r)]
        [t        (cross-product r s)]
        [m        (points->matrix3 r s t)]
-       [mt       (transpose-matrix3 m)] ;; transposed m
+       [mt       (transpose-matrix3 m)]
        [rotate-x (make-rotate-x-matrix3 phi)]
        [rotate   (multiply-matrix3 mt
                                    (multiply-matrix3 rotate-x m))])
-  (display (multiply-matrix3-point rotate origin))  ;; <=== ここの値がおかしいので見る
-)
+  (write `(define command '(begin
+                             (draw-line ',(point->list r)      ;; 元の点を描画
+                                        ',(point->list origin)
+                                        ',color1)
+                             (draw-line ',(point->list r) ;; 回転後
+                                        ',(point->list (multiply-matrix3-point rotate origin))
+                                        ',color2)))))
 
 ;; (define org (make-point 2.0 2.0 0.0 1.0))
 ;; (define rm (make-point 1 0 0 1))
