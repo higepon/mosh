@@ -78,8 +78,8 @@ TEST_F(VMTest, StackTrace1) {
                  "    1. throw: <subr>\n"
                  "    2. sys-display: <subr>\n"
                  "    3. (a):  ./test/stack-trace1.scm:7\n"
-                 "    4. (b):  ./test/stack-trace1.scm:12\n"
-                 "    5. (<top-level>): <unknown location>\n\n",
+                 "    4. (b):  ./test/stack-trace1.scm:12\n\n",
+//                 "    5. (<top-level>): <unknown location>\n\n",
                  theVM->getLastError().toString()->data().ascii_c_str());
 }
 
@@ -98,7 +98,6 @@ TEST_F(VMTest, StackTrace2) {
                  "    7. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
                  "    8. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
                  "    9. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
-                 "    10. (<top-level>): <unknown location>\n"
-                 "    11. (<top-level>): <unknown location>\n\n",
+                 "    10. (<top-level>): <unknown location>\n\n",
                  theVM->getLastError().toString()->data().ascii_c_str());
 }

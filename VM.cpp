@@ -581,6 +581,11 @@ Object VM::getStackTrace()
         VM_ASSERT((*cl).isClosure() || (*cl).isCProcedure() );
         if (fp > stack_) {
             cl = fp - CLOSURE_OFFSET_IN_FRAME;
+
+            // コメントと手続きか todo
+            if (!(reinterpret_cast<Object*>(cl->val) > stackEnd_ || stack_ > reinterpret_cast<Object*>(cl->val))) {
+                break;
+            }
             if (!((*cl).isClosure()) && !((*cl).isCProcedure())) {
                 break;
             }
@@ -590,15 +595,18 @@ Object VM::getStackTrace()
             if (!(nextFp->isPointer())) {
                 break;
             }
-            if (nextFp->isSymbol() ||
-                nextFp->isString() ||
-                nextFp->isClosure() ||
-                nextFp->isCProcedure()) {
+//             if (nextFp->isSymbol() ||
+//                 nextFp->isString() ||
+//                 nextFp->isClosure() ||
+//                 nextFp->isCProcedure()) {
+//                 break;
+//             }
+            if (reinterpret_cast<Object*>(nextFp->val) > stackEnd_ || stack_ > reinterpret_cast<Object*>(nextFp->val)) {
                 break;
             }
-            if (!nextFp->isObjectPointer()) {
-                LOG1("val=~s", *nextFp);
-            }
+//             if (!nextFp->isObjectPointer()) {
+//                 LOG1("val=~s", *nextFp);
+//             }
             VM_ASSERT(nextFp->isObjectPointer());
             fp = nextFp->toObjectPointer();
         } else {
