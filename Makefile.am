@@ -20,6 +20,7 @@ GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
+
 COMMON_SOURCES_ = \
 HeapObject.h                                                      \
 Object-inl.h                                                      \
@@ -107,7 +108,7 @@ CodeBuilder.h                 CodeBuilder.cpp                     \
 FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp
 
-bin_PROGRAMS = mosh test_vector
+bin_PROGRAMS = mosh test_vm
 mosh_SOURCES = main.cpp $(COMMON_SOURCES_)
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
@@ -277,11 +278,11 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 check_PROGRAMS=
 
-TESTS += test_vector
-check_PROGRAMS += test_vector
-test_vector_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
-test_vector_SOURCES = TestVector.cpp TestingVM.cpp $(COMMON_SOURCES_)
-test_vector_LDADD = gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+TESTS += test_vm
+check_PROGRAMS += test_vm
+test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
+test_vm_SOURCES = TestVM.cpp TestingVM.cpp $(COMMON_SOURCES_)
+test_vm_LDADD = gtest_main.a $(GC_LIB) $(REGEXP_LIB)
 
 # doc:
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"

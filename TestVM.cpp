@@ -1,5 +1,5 @@
 /*
- * TestVector.cpp - Test for Vector
+ * TestVM.cpp - Test for VM
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *

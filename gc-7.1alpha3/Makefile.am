@@ -212,5 +212,5 @@ install:
 test:
 
 # mosh
-#check:
+check:
 

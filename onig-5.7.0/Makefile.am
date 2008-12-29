@@ -99,6 +99,6 @@ install:
 clean:
 
 # mosh
-#check:
+check:
 
 test:
