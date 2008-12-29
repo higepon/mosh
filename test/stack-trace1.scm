@@ -1,5 +1,3 @@
-(import (rnrs))
-
 (define (a)
   (display 3 3 3)
   4

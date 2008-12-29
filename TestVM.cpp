@@ -33,6 +33,8 @@
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "Vector.h"
 #include "SString.h"
 #include "UTF8Codec.h"
@@ -41,6 +43,7 @@
 #include "FileBinaryOutputPort.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "Symbol.h"
 #include "TestingVM.h"
 
 using namespace scheme;
@@ -60,7 +63,7 @@ protected:
     }
 };
 
-TEST_F(VMTest, StackTrace) {
+TEST_F(VMTest, StackTrace1) {
     theVM->loadFile(UC("./test/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
@@ -77,5 +80,25 @@ TEST_F(VMTest, StackTrace) {
                  "    3. (a):  ./test/stack-trace1.scm:7\n"
                  "    4. (b):  ./test/stack-trace1.scm:12\n"
                  "    5. (<top-level>): <unknown location>\n\n",
+                 theVM->getLastError().toString()->data().ascii_c_str());
+}
+
+TEST_F(VMTest, StackTrace2) {
+    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace2.scm"));
+    theVM->activateR6RSMode(false);
+    EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
+                 "\n"
+                 " Stack trace:\n"
+                 "    1. throw: <subr>\n"
+                 "    2. (raise c):  compiler-with-library.scm:3087\n"
+                 "    3. sys-display: <subr>\n"
+                 "    4. (a): <unknown location>\n"
+                 "    5. (b): <unknown location>\n"
+                 "    6. eval: <subr>\n"
+                 "    7. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
+                 "    8. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
+                 "    9. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
+                 "    10. (<top-level>): <unknown location>\n"
+                 "    11. (<top-level>): <unknown location>\n\n",
                  theVM->getLastError().toString()->data().ascii_c_str());
 }

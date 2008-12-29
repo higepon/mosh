@@ -69,11 +69,11 @@
          (format port "   ~d. ~a" i (record-type-name rtd))
          (let ([v (record-type-field-names rtd)])
            (case (vector-length v)
-             [(0) (newline)]
+             [(0) (newline port)]
              [(1)
               (display ": " port)
-              (write (ref rtd 0 x))
-              (newline)]
+              (write (ref rtd 0 x) port)
+              (newline port)]
              [else
               (display ":\n" port)
               (let f ([i 0])
