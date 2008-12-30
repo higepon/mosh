@@ -59,12 +59,13 @@ TextualOutputPort::TextualOutputPort()
 {
 }
 
-TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
-                                                                                  codec_(coder->codec()),
-                                                                                  coder_(coder),
-                                                                                  isErrorOccured_(false),
-                                                                                  errorMessage_(Object::Nil),
-                                                                                  irritants_(Object::Nil)
+TextualOutputPort::TextualOutputPort(VM* vm, BinaryOutputPort* port, Transcoder* coder) : vm_(vm),
+                                                                                          port_(port),
+                                                                                          codec_(coder->codec()),
+                                                                                          coder_(coder),
+                                                                                          isErrorOccured_(false),
+                                                                                          errorMessage_(Object::Nil),
+                                                                                          irritants_(Object::Nil)
 {
 }
 
@@ -210,7 +211,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
                 putString(UC("-inf.0"));
             }
         } else {
-            double val = flonum->value();
+//            double val = flonum->value();
 // (log 0.0)
 //            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
             snprintf(buf, sizeof(buf), "%f", flonum->value());
@@ -355,8 +356,11 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        putDatum(theVM->getCProcedureName(o));
-//        putString(UC("#<subr>"));
+        if (vm_) {
+            putDatum(vm_->getCProcedureName(o));
+        } else {
+            putString(UC("#<subr>"));
+        }
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -418,8 +422,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         if (!Arithmetic::isExactZero(real)) {
             putDatum(real);
         }
-
-        if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
+        if (Arithmetic::ge(NULL, imag, Object::makeFixnum(0)) &&
             !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
@@ -523,8 +526,11 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        putDatum(theVM->getCProcedureName(o));
-//        putString(UC("#<subr>"));
+        if (vm_) {
+            putDatum(vm_->getCProcedureName(o));
+        } else {
+            putString(UC("#<subr>"));
+        }
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -586,7 +592,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         if (!Arithmetic::isExactZero(real)) {
             display(real);
         }
-        if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
+        if (Arithmetic::ge(NULL, imag, Object::makeFixnum(0)) &&
             !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {

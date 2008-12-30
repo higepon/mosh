@@ -35,6 +35,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "scheme.h"
+#include "VM.h"
 #include "UtilityProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
@@ -55,7 +56,7 @@
 
 using namespace scheme;
 
-Object scheme::booleanEqPEx(int argc, const Object* argv)
+Object scheme::booleanEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("boolean=?");
     checkArgumentLengthAtLeast(2);
@@ -71,7 +72,7 @@ Object scheme::booleanEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::symbolEqPEx(int argc, const Object* argv)
+Object scheme::symbolEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("symbol=?");
     checkArgumentLengthAtLeast(2);
@@ -115,7 +116,7 @@ Object scheme::unGenSym(Object symbol)
 }
 
 
-Object scheme::ungensymEx(int argc, const Object* argv)
+Object scheme::ungensymEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("ungensym");
     checkArgumentLength(1);
@@ -123,7 +124,7 @@ Object scheme::ungensymEx(int argc, const Object* argv)
     return unGenSym(symbol);
 }
 
-Object scheme::makeCompilerInstructionEx(int argc, const Object* argv)
+Object scheme::makeCompilerInstructionEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-compiler-instruction");
     checkArgumentLength(1);
@@ -131,7 +132,7 @@ Object scheme::makeCompilerInstructionEx(int argc, const Object* argv)
     return Object::makeCompilerInstruction(n);
 }
 
-Object scheme::makeInstructionEx(int argc, const Object* argv)
+Object scheme::makeInstructionEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-instruction");
     checkArgumentLength(1);
@@ -139,14 +140,14 @@ Object scheme::makeInstructionEx(int argc, const Object* argv)
     return Object::makeInstruction(n);
 }
 
-Object scheme::bytevectorPEx(int argc, const Object* argv)
+Object scheme::bytevectorPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isByteVector());
 }
 
-Object scheme::numberTostringEx(int argc, const Object* argv)
+Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("number->string");
     checkArgumentLengthBetween(1, 3);
@@ -156,17 +157,17 @@ Object scheme::numberTostringEx(int argc, const Object* argv)
         // we ignore precision parameter
         argumentAsFixnum(1, radix);
         if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
-            return Arithmetic::numberToString(z, radix);
+            return Arithmetic::numberToString(theVM, z, radix);
         } else {
-            callAssertionViolationAfter(procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+            callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
             return Object::Undef;
         }
     } else {
-        return Arithmetic::numberToString(z, 10);
+        return Arithmetic::numberToString(theVM, z, 10);
     }
 }
 
-Object scheme::charEqPEx(int argc, const Object* argv)
+Object scheme::charEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char=?");
     checkArgumentLengthAtLeast(1);
@@ -181,14 +182,14 @@ Object scheme::charEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::stringPEx(int argc, const Object* argv)
+Object scheme::stringPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isString());
 }
 
-Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
+Object scheme::getEnvironmentVariableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-environment-variable");
     checkArgumentLength(1);
@@ -198,7 +199,7 @@ Object scheme::getEnvironmentVariableEx(int argc, const Object* argv)
 }
 
 extern char** environ;
-Object scheme::getEnvironmentVariablesEx(int argc, const Object* argv)
+Object scheme::getEnvironmentVariablesEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-environment-variables");
     checkArgumentLength(0);
@@ -216,24 +217,24 @@ Object scheme::getEnvironmentVariablesEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::equalPEx(int argc, const Object* argv)
+Object scheme::equalPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("equal?");
     checkArgumentLength(2);
-    return Object::makeBool(equal(argv[0], argv[1], new EqHashTable()));
+    return Object::makeBool(equal(theVM, argv[0], argv[1], new EqHashTable()));
 //    return argv[0].equal(argv[1]);
 }
 
-Object scheme::fastEqualPEx(int argc, const Object* argv)
+Object scheme::fastEqualPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fast-equal?");
     checkArgumentLength(2);
-    return Object::makeBool(fastEqual(argv[0], argv[1]));
+    return Object::makeBool(fastEqual(theVM, argv[0], argv[1]));
 }
 
 
 // todo from gauche
-Object scheme::digitTointegerEx(int argc, const Object* argv)
+Object scheme::digitTointegerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("digit->integer");
     argumentAsChar(0, ch);
@@ -255,14 +256,14 @@ Object scheme::digitTointegerEx(int argc, const Object* argv)
     return Object::False;
 }
 
-Object scheme::getRemainingInputStringEx(int argc, const Object* argv)
+Object scheme::getRemainingInputStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-remaning-input-string");
-    callNotImplementedAssertionViolationAfter(procedureName);
+    callNotImplementedAssertionViolationAfter(theVM, procedureName);
     return Object::UnBound;
 }
 
-Object scheme::charTointegerEx(int argc, const Object* argv)
+Object scheme::charTointegerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char->integer");
     checkArgumentLength(1);
@@ -270,27 +271,27 @@ Object scheme::charTointegerEx(int argc, const Object* argv)
     return Object::makeFixnum(ch);
 }
 
-Object scheme::integerTocharEx(int argc, const Object* argv)
+Object scheme::integerTocharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("integer->char");
     checkArgumentLength(1);
     argumentAsFixnum(0, integer);
     if (!ucs4string::isValidScalar(integer)) {
-        callAssertionViolationAfter(procedureName, "code point out of range", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "code point out of range", L1(argv[0]));
         return Object::Undef;
     }
 
     return Object::makeChar(integer);
 }
 
-Object scheme::charPEx(int argc, const Object* argv)
+Object scheme::charPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isChar());
 }
 
-Object scheme::gensymEx(int argc, const Object* argv)
+Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("gen-sym");
     checkArgumentLengthBetween(0, 1);
@@ -319,14 +320,14 @@ Object scheme::gensymEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::vectorPEx(int argc, const Object* argv)
+Object scheme::vectorPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vector?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isVector());
 }
 
-Object scheme::vectorFillDEx(int argc, const Object* argv)
+Object scheme::vectorFillDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vector-fill!");
     checkArgumentLength(2);
@@ -336,21 +337,21 @@ Object scheme::vectorFillDEx(int argc, const Object* argv)
 
 }
 
-Object scheme::eqPEx(int argc, const Object* argv)
+Object scheme::eqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eq?");
     checkArgumentLength(2);
     return Object::makeBool(argv[0] == argv[1]);
 }
 
-Object scheme::eqvPEx(int argc, const Object* argv)
+Object scheme::eqvPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eqv?");
     checkArgumentLength(2);
-    return Object::makeBool(eqv(argv[0], argv[1]));
+    return Object::makeBool(eqv(theVM, argv[0], argv[1]));
 }
 
-Object scheme::booleanPEx(int argc, const Object* argv)
+Object scheme::booleanPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bool?");
     checkArgumentLength(1);
@@ -362,7 +363,7 @@ Object scheme::booleanPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::symbolTostringEx(int argc, const Object* argv)
+Object scheme::symbolTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("symbol->string");
     checkArgumentLength(1);
@@ -371,7 +372,7 @@ Object scheme::symbolTostringEx(int argc, const Object* argv)
 }
 
 // // todo
-// Object scheme::errorEx(int argc, const Object* argv)
+// Object scheme::errorEx(VM* theVM, int argc, const Object* argv)
 // {
 //     DeclareProcedureName("error");
 //     checkArgumentLengthAtLeast(1);
@@ -387,7 +388,7 @@ Object scheme::symbolTostringEx(int argc, const Object* argv)
 // }
 
 
-Object scheme::getTimeofdayEx(int argc, const Object* argv)
+Object scheme::getTimeofdayEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-timeofday");
     checkArgumentLength(0);
@@ -397,21 +398,21 @@ Object scheme::getTimeofdayEx(int argc, const Object* argv)
     return Object::cons(Object::makeBignum(tv.tv_sec), Object::makeBignum(tv.tv_usec));
 }
 
-Object scheme::vmApplyEx(int argc, const Object* argv)
+Object scheme::vmApplyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vm-apply");
     checkArgumentLength(2);
     return theVM->apply(argv[0], argv[1]);
 }
 
-Object scheme::pairPEx(int argc, const Object* argv)
+Object scheme::pairPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("pair?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isPair());
 }
 
-Object scheme::vectorEx(int argc, const Object* argv)
+Object scheme::vectorEx(VM* theVM, int argc, const Object* argv)
 {
     const Object vec = Object::makeVector(argc);
     Vector* const v = vec.toVector();
@@ -422,14 +423,14 @@ Object scheme::vectorEx(int argc, const Object* argv)
 }
 
 
-Object scheme::evalEx(int argc, const Object* argv)
+Object scheme::evalEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eval");
     checkArgumentLength(2);
     return theVM->evalAfter(argv[0]);
 }
 
-Object scheme::applyEx(int argc, const Object* argv)
+Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("apply");
     checkArgumentLengthAtLeast(2);
@@ -449,7 +450,7 @@ Object scheme::applyEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::valuesEx(int argc, const Object* argv)
+Object scheme::valuesEx(VM* theVM, int argc, const Object* argv)
 {
     return theVM->values(argc, argv);
 }
@@ -471,7 +472,7 @@ int scheme::mod(int x, int y)
     return x - div(x, y) * y;
 }
 
-Object scheme::modEx(int argc, const Object* argv)
+Object scheme::modEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mod");
     checkArgumentLength(2);
@@ -480,13 +481,13 @@ Object scheme::modEx(int argc, const Object* argv)
     argumentAsFixnum(1, number2);
 
     if (0 == number2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
     return Object::makeFixnum(mod(number1, number2));
 }
 
-// Object scheme::divEx(int argc, const Object* argv)
+// Object scheme::divEx(VM* theVM, int argc, const Object* argv)
 // {
 //     DeclareProcedureName("div");
 //     checkArgumentLength(2);
@@ -501,7 +502,7 @@ Object scheme::modEx(int argc, const Object* argv)
 // }
 
 
-Object scheme::exitEx(int argc, const Object* argv)
+Object scheme::exitEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("exit");
     checkArgumentLengthBetween(0, 1);
@@ -520,7 +521,7 @@ Object scheme::exitEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::macroexpand1Ex(int argc, const Object* argv)
+Object scheme::macroexpand1Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("macroexpand1");
     checkArgumentLength(1);
@@ -528,14 +529,14 @@ Object scheme::macroexpand1Ex(int argc, const Object* argv)
     return theVM->callClosureByName(proc, argv[0]);
 }
 
-Object scheme::procedurePEx(int argc, const Object* argv)
+Object scheme::procedurePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("procedure");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isProcedure());
 }
 
-Object scheme::loadEx(int argc, const Object* argv)
+Object scheme::loadEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("load");
     checkArgumentLength(1);
@@ -545,14 +546,14 @@ Object scheme::loadEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::symbolPEx(int argc, const Object* argv)
+Object scheme::symbolPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("symbol?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isSymbol());
 }
 
-Object scheme::charGePEx(int argc, const Object* argv)
+Object scheme::charGePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char>=?");
     checkArgumentLengthAtLeast(2);
@@ -569,7 +570,7 @@ Object scheme::charGePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::charGtPEx(int argc, const Object* argv)
+Object scheme::charGtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char>?");
     checkArgumentLengthAtLeast(2);
@@ -586,7 +587,7 @@ Object scheme::charGtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::charLePEx(int argc, const Object* argv)
+Object scheme::charLePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char<=?");
     checkArgumentLengthAtLeast(2);
@@ -603,7 +604,7 @@ Object scheme::charLePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::charLtPEx(int argc, const Object* argv)
+Object scheme::charLtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("char<?");
     checkArgumentLengthAtLeast(2);
@@ -620,7 +621,7 @@ Object scheme::charLtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::vectorTolistEx(int argc, const Object* argv)
+Object scheme::vectorTolistEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vector->list");
     checkArgumentLength(1);
@@ -635,7 +636,7 @@ Object scheme::vectorTolistEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::callProcessEx(int argc, const Object* argv)
+Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("call-process");
     checkArgumentLength(1);
@@ -646,7 +647,7 @@ Object scheme::callProcessEx(int argc, const Object* argv)
     FILE* in = popen(cmd->data().ascii_c_str(), "r");
     char buffer[BUFFER_SIZE];
     if (NULL == in) {
-        callAssertionViolationAfter(procedureName, "failed", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[0]));
         return Object::Undef;
     }
 
@@ -658,13 +659,13 @@ Object scheme::callProcessEx(int argc, const Object* argv)
         ret += ucs4string::from_c_str(buffer, size);
     }
     if (pclose(in) != 0) {
-        callAssertionViolationAfter(procedureName, "failed. pclose returned error", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "failed. pclose returned error", L1(argv[0]));
         return Object::Undef;
     }
     return Object::makeString(ret);
 }
 
-Object scheme::internalgetClosureNameEx(int argc, const Object* argv)
+Object scheme::internalgetClosureNameEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%get-closure-name");
     checkArgumentLength(1);
@@ -673,7 +674,7 @@ Object scheme::internalgetClosureNameEx(int argc, const Object* argv)
 
 
 // for psyntax
-Object scheme::setSymbolValueDEx(int argc, const Object* argv)
+Object scheme::setSymbolValueDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-symbol-value");
     checkArgumentLength(2);
@@ -685,7 +686,7 @@ Object scheme::setSymbolValueDEx(int argc, const Object* argv)
 }
 
 // for psyntax
-Object scheme::symbolValueEx(int argc, const Object* argv)
+Object scheme::symbolValueEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("symbol-value");
     checkArgumentLength(1);

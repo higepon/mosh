@@ -1,5 +1,9 @@
 2008-12-30  higepon  <higepon@users.sourceforge.jp>
 
+        * scheme.h (MOSH_FATAL): Added.
+
+        * main.cpp (main): We break the theVM global variable dependencies! Yey!.
+
         * TestVM.cpp (TEST_F): Added StackTrace3 test.
 
         * VM.cpp (VM::mayBeStackPointer): Added.

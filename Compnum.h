@@ -52,57 +52,61 @@ public:
     Object imag() const { return imag_; }
 
     // e^(z2log(z1))
-    static Object expt(Object z1, Object z2)
+    static Object expt(VM* theVM, Object z1, Object z2)
     {
-        return Arithmetic::exp(Arithmetic::mul(z2, Arithmetic::log(z1)));
+        return Arithmetic::exp(Arithmetic::mul(theVM, z2, Arithmetic::log(z1)));
     }
 
-    static Object asin(Object z)
+    static Object asin(VM* theVM, Object z)
     {
         MOSH_ASSERT(z.isCompnum());
-        const Object a = Arithmetic::sub(Object::makeFixnum(1),
-                                         Arithmetic::mul(z, z));
+        const Object a = Arithmetic::sub(theVM, 
+                                         Object::makeFixnum(1),
+                                         Arithmetic::mul(theVM, z, z));
 
         const Object b = Arithmetic::sqrt(a);
-        const Object c = Arithmetic::mul(Object::makeCompnum(Object::makeFixnum(0),
+        const Object c = Arithmetic::mul(theVM,
+                                         Object::makeCompnum(Object::makeFixnum(0),
                                                              Object::makeFixnum(1)),
                                          z);
-        const Object d = Arithmetic::log(Arithmetic::add(b, c));
+        const Object d = Arithmetic::log(Arithmetic::add(theVM, b, c));
         const Object e = Object::makeCompnum(Object::makeFixnum(0),
                                              Object::makeFixnum(-1));
-        return Arithmetic::mul(e, d);
+        return Arithmetic::mul(theVM, e, d);
     }
 
     // arccos(z) = -i * log(z + sqrt(1-z*z)i)
-    static Object acos(Object z)
+    static Object acos(VM* theVM, Object z)
     {
         MOSH_ASSERT(z.isCompnum());
-        const Object a = Arithmetic::sub(Object::makeFixnum(1),
-                                         Arithmetic::mul(z, z));
+        const Object a = Arithmetic::sub(theVM,
+                                         Object::makeFixnum(1),
+                                         Arithmetic::mul(theVM, z, z));
 
         const Object b = Arithmetic::sqrt(a);
-        const Object c = Arithmetic::mul(Object::makeCompnum(Object::makeFixnum(0),
+        const Object c = Arithmetic::mul(theVM,
+                                         Object::makeCompnum(Object::makeFixnum(0),
                                                              Object::makeFixnum(1)),
                                          b);
-        const Object d = Arithmetic::log(Arithmetic::add(z, c));
+        const Object d = Arithmetic::log(Arithmetic::add(theVM, z, c));
         const Object e = Object::makeCompnum(Object::makeFixnum(0),
                                              Object::makeFixnum(-1));
-        return Arithmetic::mul(e, d);
+        return Arithmetic::mul(theVM, e, d);
     }
 
     // atan(z) = (i/2)*log((i+z)/(i-z))
-    static Object atan(Object z)
+    static Object atan(VM* theVM, Object z)
     {
         MOSH_ASSERT(z.isCompnum());
         const Object a = Object::makeCompnum(Object::makeFixnum(0),
                                              Object::makeFixnum(1));
-        const Object b = Arithmetic::add(a, z);
-        const Object c = Arithmetic::sub(a, z);
-        const Object d = Arithmetic::log(Arithmetic::div(b, c));
+        const Object b = Arithmetic::add(theVM, a, z);
+        const Object c = Arithmetic::sub(theVM, a, z);
+        const Object d = Arithmetic::log(Arithmetic::div(theVM, b, c));
 
         const Object e = Object::makeCompnum(Object::makeFixnum(0),
-                                             Arithmetic::div(Object::makeFixnum(1), Object::makeFixnum(2)));
-        return Arithmetic::mul(e, d);
+                                             Arithmetic::div(theVM, Object::makeFixnum(1), Object::makeFixnum(2)));
+        return Arithmetic::mul(theVM, e, d);
     }
 
     Object sin() const
@@ -135,9 +139,9 @@ public:
                                    Object::makeFlonum(::sin(re) * (b - a) * 0.5));
     }
 
-    Object tan() const
+    Object tan(VM* theVM) const
     {
-        return Arithmetic::div(sin(), cos());
+        return Arithmetic::div(theVM, sin(), cos());
     }
 
     Object log() const
@@ -159,13 +163,14 @@ public:
 
     bool isReal()
     {
-        return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
+        return Arithmetic::eq(NULL, imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
     }
 
-    Object magnitude() const
+    Object magnitude(VM* theVM) const
     {
-        return Arithmetic::sqrt(Arithmetic::add(Arithmetic::mul(real(), real()),
-                                                Arithmetic::mul(imag(), imag())));
+        return Arithmetic::sqrt(Arithmetic::add(theVM,
+                                                Arithmetic::mul(theVM, real(), real()),
+                                                Arithmetic::mul(theVM, imag(), imag())));
     }
 
     // theta = atan2(imaginary, real)
@@ -177,117 +182,123 @@ public:
     }
 
     // \sqrt{r}e^{\frac{i\theta}{2}}
-    Object sqrt() const
+    Object sqrt(VM* theVM) const
     {
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());
         const double r = ::sqrt(re * re + im * im);
         const double theta = ::atan2(im, re);
-        return Arithmetic::mul(Object::makeFlonum(::sqrt(r)),
+        return Arithmetic::mul(theVM,
+                               Object::makeFlonum(::sqrt(r)),
                                Arithmetic::exp(Object::makeCompnum(Object::makeFixnum(0),
                                                                    Object::makeFlonum(0.5 * theta))));
     }
 
-    static bool eq(Compnum* n1, Compnum* n2)
+    static bool eq(VM* theVM, Compnum* n1, Compnum* n2)
     {
-        return Arithmetic::eq(n1->real(), n2->real()) &&
-               Arithmetic::eq(n2->imag(), n2->imag());
+        return Arithmetic::eq(theVM, n1->real(), n2->real()) &&
+               Arithmetic::eq(theVM, n2->imag(), n2->imag());
     }
 
-    static bool eq(Object n1, Compnum* n2)
+    static bool eq(VM* theVM, Object n1, Compnum* n2)
     {
         MOSH_ASSERT(n1.isFixnum() || n1.isBignum() || n1.isFlonum() || n1.isRatnum());
-        if (Arithmetic::eq(n2->imag(), Object::makeFixnum(0))) {
-            return Arithmetic::eq(n1, n2->real());
+        if (Arithmetic::eq(theVM, n2->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(theVM, n1, n2->real());
         } else {
             return false;
         }
     }
 
-    static bool eq(Compnum* n1, Object n2)
+    static bool eq(VM* theVM, Compnum* n1, Object n2)
     {
         MOSH_ASSERT(n2.isFixnum() || n2.isBignum() || n2.isFlonum() || n2.isRatnum());
-        if (Arithmetic::eq(n1->imag(), Object::makeFixnum(0))) {
-            return Arithmetic::eq(n1->real(), n2);
+        if (Arithmetic::eq(theVM, n1->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(theVM, n1->real(), n2);
         } else {
             return false;
         }
     }
 
-    static Object add(Object n1, Compnum* n2)
+    static Object add(VM* theVM, Object n1, Compnum* n2)
     {
-        return Object::makeCompnum(Arithmetic::add(n1, n2->real()),
+        return Object::makeCompnum(Arithmetic::add(theVM, n1, n2->real()),
                                    n2->imag());
     }
 
-    static Object sub(Object n1, Compnum* n2)
+    static Object sub(VM* theVM, Object n1, Compnum* n2)
     {
-        return Object::makeCompnum(Arithmetic::sub(n1, n2->real()),
-                                   Arithmetic::sub(Object::makeFixnum(0), n2->imag()));
+        return Object::makeCompnum(Arithmetic::sub(theVM, n1, n2->real()),
+                                   Arithmetic::sub(theVM, Object::makeFixnum(0), n2->imag()));
     }
 
-    static Object mul(Object n1, Compnum* n2)
+    static Object mul(VM* theVM, Object n1, Compnum* n2)
     {
-        return Object::makeCompnum(Arithmetic::mul(n1, n2->real()),
-                                   Arithmetic::mul(n1, n2->imag()));
+        return Object::makeCompnum(Arithmetic::mul(theVM, n1, n2->real()),
+                                   Arithmetic::mul(theVM, n1, n2->imag()));
     }
 
-    static Object add(Compnum* n1, Object n2)
+    static Object add(VM* theVM, Compnum* n1, Object n2)
     {
-        return Object::makeCompnum(Arithmetic::add(n1->real(), n2),
+        return Object::makeCompnum(Arithmetic::add(theVM, n1->real(), n2),
                                    n1->imag());
     }
 
-    static Object sub(Compnum* n1, Object n2)
+    static Object sub(VM* theVM, Compnum* n1, Object n2)
     {
-        return Object::makeCompnum(Arithmetic::sub(n1->real(), n2),
+        return Object::makeCompnum(Arithmetic::sub(theVM, n1->real(), n2),
                                    n1->imag());
     }
 
-    static Object mul(Compnum* n1, Object n2)
+    static Object mul(VM* theVM, Compnum* n1, Object n2)
     {
-        return Object::makeCompnum(Arithmetic::mul(n1->real(), n2),
-                                   Arithmetic::mul(n1->imag(), n2));
+        return Object::makeCompnum(Arithmetic::mul(theVM, n1->real(), n2),
+                                   Arithmetic::mul(theVM, n1->imag(), n2));
     }
 
-    static Object div(Object n1, Compnum* n2)
+    static Object div(VM* theVM, Object n1, Compnum* n2)
     {
-        return div(new Compnum(n1, Object::makeFixnum(0)), n2);
-    }
-
-
-    static Object add(Compnum* n1, Compnum* n2)
-    {
-        return Object::makeCompnum(Arithmetic::add(n1->real(), n2->real()),
-                                   Arithmetic::add(n1->imag(), n2->imag()));
-    }
-
-    static Object sub(Compnum* n1, Compnum* n2)
-    {
-        return Object::makeCompnum(Arithmetic::sub(n1->real(), n2->real()),
-                                   Arithmetic::sub(n1->imag(), n2->imag()));
-    }
-
-    static Object mul(Compnum* n1, Compnum* n2)
-    {
-        return Object::makeCompnum(Arithmetic::sub(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
-                                   Arithmetic::add(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n2->real(), n1->imag())));
-    }
-
-    static Object div(Compnum* n1, Compnum* n2)
-    {
-        const Object denon = Arithmetic::add(Arithmetic::mul(n2->real(), n2->real()),
-                                             Arithmetic::mul(n2->imag(), n2->imag()));
-        const Object nume = Object::makeCompnum(Arithmetic::add(Arithmetic::mul(n1->real(), n2->real()), Arithmetic::mul(n1->imag(), n2->imag())),
-                                                Arithmetic::sub(Arithmetic::mul(n1->imag(), n2->real()), Arithmetic::mul(n1->real(), n2->imag())));
-        return Arithmetic::div(nume, denon);
+        return div(theVM, new Compnum(n1, Object::makeFixnum(0)), n2);
     }
 
 
-    static Object div(Compnum* n1, Object n2)
+    static Object add(VM* theVM, Compnum* n1, Compnum* n2)
     {
-        return Object::makeCompnum(Arithmetic::div(n1->real(), n2),
-                                   Arithmetic::div(n1->imag(), n2));
+        return Object::makeCompnum(Arithmetic::add(theVM, n1->real(), n2->real()),
+                                   Arithmetic::add(theVM, n1->imag(), n2->imag()));
+    }
+
+    static Object sub(VM* theVM, Compnum* n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(theVM, n1->real(), n2->real()),
+                                   Arithmetic::sub(theVM, n1->imag(), n2->imag()));
+    }
+
+    static Object mul(VM* theVM, Compnum* n1, Compnum* n2)
+    {
+        return Object::makeCompnum(Arithmetic::sub(theVM, Arithmetic::mul(theVM, n1->real(), n2->real()), Arithmetic::mul(theVM, n1->imag(), n2->imag())),
+                                   Arithmetic::add(theVM, Arithmetic::mul(theVM, n1->real(), n2->imag()), Arithmetic::mul(theVM, n2->real(), n1->imag())));
+    }
+
+    static Object div(VM* theVM, Compnum* n1, Compnum* n2)
+    {
+        const Object denon = Arithmetic::add(theVM,
+                                             Arithmetic::mul(theVM, n2->real(), n2->real()),
+                                             Arithmetic::mul(theVM, n2->imag(), n2->imag()));
+        const Object nume = Object::makeCompnum(Arithmetic::add(theVM,
+                                                                Arithmetic::mul(theVM, n1->real(), n2->real()),
+                                                                Arithmetic::mul(theVM, n1->imag(), n2->imag())),
+                                                Arithmetic::sub(theVM,
+                                                                Arithmetic::mul(theVM, n1->imag(), n2->real()),
+                                                                Arithmetic::mul(theVM, n1->real(), n2->imag())));
+        return Arithmetic::div(theVM, nume, denon);
+    }
+
+
+    static Object div(VM* theVM, Compnum* n1, Object n2)
+    {
+        return Object::makeCompnum(Arithmetic::div(theVM, n1->real(), n2),
+                                   Arithmetic::div(theVM, n1->imag(), n2));
     }
 
 private:

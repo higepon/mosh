@@ -82,7 +82,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 pc_  = callCode;
             } else {
                 if (! args.isPair()) {
-                    callAssertionViolationAfter("apply", "bug?", L1(ac_));
+                    callAssertionViolationAfter(this, "apply", "bug?", L1(ac_));
                     NEXT;
                 }
                 const int length = Pair::length(args);
@@ -142,10 +142,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (ac_.isPair()) {
                     ac_ = ac_.car();
                 } else {
-                    callAssertionViolationAfter("caar", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, "caar", "pair required", Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter("caar", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "caar", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -156,10 +156,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (ac_.isPair()) {
                     ac_ = ac_.car();
                 } else {
-                    callAssertionViolationAfter("cadr", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, "cadr", "pair required", Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter("cadr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "cadr", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -200,7 +200,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (ac_.isPair()) {
                 ac_ = ac_.car();
             } else {
-                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "car", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -211,7 +211,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 // todo エラーにこれを入れれば便利じゃ？
 //                LOG1("cl=~a\n", dc_.toClosure()->sourceInfoString());
-                callAssertionViolationAfter("car", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "car", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -222,10 +222,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (ac_.isPair()) {
                     ac_ = ac_.cdr();
                 } else {
-                    callAssertionViolationAfter("cdar", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, "cdar", "pair required", Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter("cdar", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "cdar", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -236,10 +236,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (ac_.isPair()) {
                     ac_ = ac_.cdr();
                 } else {
-                    callAssertionViolationAfter("cddr", "pair required", Pair::list1(ac_));
+                    callAssertionViolationAfter(this, "cddr", "pair required", Pair::list1(ac_));
                 }
             } else {
-                callAssertionViolationAfter("cddr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "cddr", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -248,7 +248,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (ac_.isPair()) {
                 ac_ = ac_.cdr();
             } else {
-                callAssertionViolationAfter("cdr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "cdr", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -264,7 +264,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (ac_.isPair()) {
                 push(ac_.cdr());
             } else {
-                callAssertionViolationAfter("cdr", "pair required", Pair::list1(ac_));
+                callAssertionViolationAfter(this, "cdr", "pair required", Pair::list1(ac_));
             }
             NEXT1;
         }
@@ -319,7 +319,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (found == notFound_) {
                 nameSpace->set(id, ac_);
             } else {
-                callErrorAfter("define", "defined twice", L1(id));
+                callErrorAfter(this, "define", "defined twice", L1(id));
             }
             NEXT;
         }
@@ -358,12 +358,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(EQV)
         {
-            ac_ = Object::makeBool(eqv(pop(), ac_));
+            ac_ = Object::makeBool(eqv(this, pop(), ac_));
             NEXT1;
         }
         CASE(EQUAL)
         {
-            ac_ = Object::makeBool(equal(pop(), ac_, new EqHashTable()));
+            ac_ = Object::makeBool(equal(this, pop(), ac_, new EqHashTable()));
             NEXT1;
         }
         CASE(PUSH_FRAME)
@@ -475,7 +475,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::add(n, ac_);
+                ac_ = Arithmetic::add(this, n, ac_);
             }
             NEXT1;
         }
@@ -486,7 +486,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() == ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::eq(n, ac_));
+                ac_ = Object::makeBool(Arithmetic::eq(this, n, ac_));
             }
             NEXT1;
         }
@@ -497,7 +497,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() >= ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::ge(n, ac_));
+                ac_ = Object::makeBool(Arithmetic::ge(this, n, ac_));
             }
             NEXT1;
         }
@@ -508,7 +508,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() > ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::gt(n, ac_));
+                ac_ = Object::makeBool(Arithmetic::gt(this, n, ac_));
             }
             NEXT1;
         }
@@ -519,7 +519,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() <= ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::le(n, ac_));
+                ac_ = Object::makeBool(Arithmetic::le(this, n, ac_));
             }
             NEXT1;
         }
@@ -530,18 +530,18 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() < ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::lt(n, ac_));
+                ac_ = Object::makeBool(Arithmetic::lt(this, n, ac_));
             }
             NEXT1;
         }
         CASE(NUMBER_MUL)
         {
-            ac_ = Arithmetic::mul(pop(), ac_);
+            ac_ = Arithmetic::mul(this, pop(), ac_);
             NEXT1;
         }
         CASE(NUMBER_DIV)
         {
-            ac_ = Arithmetic::div(pop(), ac_);
+            ac_ = Arithmetic::div(this, pop(), ac_);
             NEXT1
         }
         CASE(NUMBER_SUB)
@@ -552,7 +552,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::sub(n, ac_);
+                ac_ = Arithmetic::sub(this, n, ac_);
             }
             NEXT1;
         }
@@ -564,7 +564,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::sub(n, ac_);
+                ac_ = Arithmetic::sub(this, n, ac_);
             }
             push(ac_);
             NEXT1;
@@ -577,7 +577,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::add(n, ac_);
+                ac_ = Arithmetic::add(this, n, ac_);
             }
             push(ac_);
             NEXT1;
@@ -593,7 +593,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
             ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
-                callLexicalViolationAfter("read", inputPort->error());
+                callLexicalViolationAfter(this, "read", inputPort->error());
             }
             NEXT1;
         }
@@ -634,7 +634,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
-                callAssertionViolationAfter("eval",
+                callAssertionViolationAfter(this,
+                                            "eval",
                                             "unbound variable",
                                             // R6RS mode requires demangle of symbol.
                                             L1(unGenSym(id)));
@@ -648,7 +649,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
-                callAssertionViolationAfter("eval",
+                callAssertionViolationAfter(this,
+                                            "eval",
                                             "unbound variable",
                                             // R6RS mode requires demangle of symbol.
                                             L1(unGenSym(id)));
@@ -663,7 +665,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
-                callAssertionViolationAfter("eval",
+                callAssertionViolationAfter(this,
+                                            "eval",
                                             "unbound variable",
                                             L1(unGenSym(id)));
                 NEXT1; // for error handling
@@ -925,14 +928,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not eqv?
         CASE(BRANCH_NOT_EQV)
         {
-            ac_ = Object::makeBool(eqv(pop(), ac_));
+            ac_ = Object::makeBool(eqv(this, pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not equal?
         CASE(BRANCH_NOT_EQUAL)
         {
-            ac_ = Object::makeBool(equal(pop(), ac_));
+            ac_ = Object::makeBool(equal(this, pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }
@@ -1011,12 +1014,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (v->isValidIndex(index)) {
                     ac_ = v->ref(index);
                 } else {
-                    callAssertionViolationAfter("vector-ref",
+                    callAssertionViolationAfter(this,
+                                                "vector-ref",
                                                 "index out of range",
                                                 L1(ac_));
                 }
             } else {
-                callAssertionViolationAfter("vector-ref",
+                callAssertionViolationAfter(this,
+                                            "vector-ref",
                                             "vector required",
                                             L1(obj));
             }
@@ -1061,12 +1066,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     v->set(index, ac_);
                     ac_ = Object::Undef;
                 } else {
-                    callAssertionViolationAfter("vector-set!",
+                    callAssertionViolationAfter(this,
+                                                "vector-set!",
                                                 "index out of range",
                                                 L1(n));
                 }
             } else {
-                callAssertionViolationAfter("vector-set!",
+                callAssertionViolationAfter(this,
+                                            "vector-set!",
                                             "vector required",
                                             L1(obj));
             }
@@ -1077,7 +1084,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(ac_.isPair() || ac_.isNil());
             const int num = Pair::length(ac_);
             if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeFixnum(num)));
+                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(num)));
             } else {
                 numValues_ = num;
                 if (ac_.isPair()) {
@@ -1114,7 +1121,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(numObject.isFixnum());
             const int num = numObject.toFixnum();
             if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeFixnum(num)));
+                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(num)));
             } else {
                 numValues_ = num;
                 if (num >= 0) {
@@ -1141,13 +1148,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(optargObject.isFixnum());
             const int optarg  = optargObject.toFixnum();
             if (numValues_ < reqargs) {
-                callAssertionViolationAfter("receive",
+                callAssertionViolationAfter(this,
+                                            "receive",
                                             "received fewer values than expected",
                                             L2(Object::makeFixnum(numValues_),
                                                Object::makeFixnum(reqargs)));
                 NEXT;
             } else if (optarg == 0 && numValues_ > reqargs) {
-                callAssertionViolationAfter("receive",
+                callAssertionViolationAfter(this,
+                                            "receive",
                                             "received more values than expected",
                                             L2(Object::makeFixnum(numValues_),
                                                Object::makeFixnum(reqargs)));
@@ -1189,12 +1198,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object who = fetchOperand();
             const Object message = fetchOperand();
             const Object irritants = fetchOperand();
-            callAssertionViolationAfter(who, message, irritants);
+            callAssertionViolationAfter(this, who, message, irritants);
             NEXT;
         }
         CASE(UNFIXED_JUMP)
         {
-            callAssertionViolationAfter("UNFIXED_JUMP", "bug of VM");
+            callAssertionViolationAfter(this, "UNFIXED_JUMP", "bug of VM");
             NEXT;
         }
         CASE(STOP)
@@ -1204,7 +1213,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         DEFAULT
         {
-            callAssertionViolationAfter("VM", "unknown instruction, bug of VM");
+            callAssertionViolationAfter(this, "VM", "unknown instruction, bug of VM");
             NEXT;
         }
         } // SWITCH

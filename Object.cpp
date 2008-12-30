@@ -99,9 +99,9 @@ bool Object::isInteger() const
     return isFixnum() || isBignum() || (isNumber() && Arithmetic::isInteger(*this));
 }
 
-bool Object::equal(Object o) const
+bool Object::equal(VM* theVM, Object o) const
 {
-    return ::equal(*this, o, new EqHashTable());
+    return ::equal(theVM, *this, o, new EqHashTable());
 }
 
 Object Object::makeBinaryInputPort(FILE* in)
@@ -122,10 +122,10 @@ Object Object::makeBinaryOutputPort(BinaryOutputPort* port)
                                                         reinterpret_cast<word>(port))));
 }
 
-Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
+Object Object::makeTextualOutputPort(VM* theVM, BinaryOutputPort* port, Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
+                                                        reinterpret_cast<word>(new TextualOutputPort(theVM, port, transcoder)))));
 }
 
 
@@ -151,10 +151,10 @@ Object Object::makeStringInputPort(const ucs4string& str)
                                                         reinterpret_cast<word>(new StringTextualInputPort(str)))));
 }
 
-Object Object::makeStringOutputPort()
+Object Object::makeStringOutputPort(VM* theVM)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new StringTextualOutputPort()))));
+                                                        reinterpret_cast<word>(new StringTextualOutputPort(theVM)))));
 }
 
 Object Object::makeStringInputPort(const uint8_t* buf, int size)
@@ -164,10 +164,10 @@ Object Object::makeStringInputPort(const uint8_t* buf, int size)
                                                                                                     , new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR))))));
 }
 
-Object Object::makeCustomBinaryInputPort(Object readProc)
+Object Object::makeCustomBinaryInputPort(VM* theVM, Object readProc)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new CustomBinaryInputPort(readProc)))));
+                                                        reinterpret_cast<word>(new CustomBinaryInputPort(theVM, readProc)))));
 }
 
 Object Object::makeLatin1Codec()
@@ -260,13 +260,13 @@ Object Object::makeEqHashTable()
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
 }
 
-Object Object::makeEqvHashTable()
+Object Object::makeEqvHashTable(VM* theVM)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqvHashTable, reinterpret_cast<word>(new EqvHashTable()))));
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqvHashTable, reinterpret_cast<word>(new EqvHashTable(theVM)))));
 }
 
 
-Object Object::makeCProcedure(Object (*proc)(int, const Object*))
+Object Object::makeCProcedure(Object (*proc)(VM* vm, int, const Object*))
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
 }
@@ -277,10 +277,10 @@ Object Object::makeCodeBuilder()
                                                         reinterpret_cast<word>(new CodeBuilder()))));
 }
 
-Object Object::makeGenericHashTable(Object hashFunction, Object equivalenceFunction)
+Object Object::makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::GenericHashTable,
-                                                        reinterpret_cast<word>(new GenericHashTable(hashFunction, equivalenceFunction)))));
+                                                        reinterpret_cast<word>(new GenericHashTable(theVM, hashFunction, equivalenceFunction)))));
 }
 
 Object Object::makeCallable(Callable* callable)
@@ -313,12 +313,14 @@ Object Object::makeRecord(Object rtd, const Object* fields, int fieldsLength)
                                                                                           fieldsLength)))));
 }
 
-Object Object::makeRecordConstructorDescriptor(Object rtd,
+Object Object::makeRecordConstructorDescriptor(VM* theVM,
+                                               Object rtd,
                                                Object parentRcd,
                                                Object protocol)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RecordConstructorDescriptor,
-                                                        reinterpret_cast<word>(new RecordConstructorDescriptor(rtd,
+                                                        reinterpret_cast<word>(new RecordConstructorDescriptor(theVM,
+                                                                                                               rtd,
                                                                                                                parentRcd,
                                                                                                                protocol)))));
 }

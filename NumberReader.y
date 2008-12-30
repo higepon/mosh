@@ -74,7 +74,7 @@ static Object suffixToNumber(const ucs4string& text)
     if (sign == -1) {
         exponent = Arithmetic::negate(exponent);
     }
-    return Arithmetic::expt(Object::makeFixnum(10), exponent);
+    return Arithmetic::expt(NULL, Object::makeFixnum(10), exponent);
 }
 %}
 
@@ -109,25 +109,25 @@ complex2  : real2
           | real2 AT real2          { $$ = Arithmetic::makePolar($1, $3); }
           | sreal2 IMAG             { $$ = Object::makeCompnum(Object::makeFixnum(0), $1); }
           | real2 PLUS ureal2 IMAG  { $$ = Object::makeCompnum($1, $3); }
-          | real2 MINUS ureal2 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real2 MINUS ureal2 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | real2 PLUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
           | real2 MINUS IMAG        { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
           | PLUS IMAG               { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
           | MINUS IMAG              { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
           | real2 PLUS naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
-          | real2 MINUS naninf IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real2 MINUS naninf IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | PLUS naninf IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS naninf IMAG       { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS naninf IMAG       { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
 
 real2     : ureal2
           | sreal2
           | PLUS naninf  { $$ = $2; }
-          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS naninf { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 ureal2    : uinteger2
           | uinteger2 SLASH uinteger2 {
-               $$ = Arithmetic::div($1, $3, true);
+               $$ = Arithmetic::div(NULL, $1, $3, true); // VM* is NULL, because no-raise flag = true
                if ($$.isFalse()) {
                    YYERROR;
                }
@@ -135,12 +135,12 @@ ureal2    : uinteger2
           ;
 
 sreal2    : PLUS ureal2  { $$ = $2; }
-          | MINUS ureal2 { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS ureal2 { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 uinteger2 : digit2 { $$ = Object::makeFixnum($1); }
           | uinteger2 digit2  {
-                $$ = Arithmetic::add(Arithmetic::mul(2, $1), Object::makeFixnum($2));
+               $$ = Arithmetic::add(NULL, Arithmetic::mul(NULL, 2, $1), Object::makeFixnum($2));
           }
           ;
 
@@ -151,41 +151,42 @@ num8     : prefix8 complex8 { $$ = ScannerHelper::applyExactness($1, $2); }
 complex8 : real8
           | real8 AT    real8       { $$ = Arithmetic::makePolar($1, $3); }
           | real8 PLUS  ureal8 IMAG { $$ = Object::makeCompnum($1, $3); }
-          | real8 MINUS ureal8 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real8 MINUS ureal8 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | real8 PLUS  IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
           | real8 MINUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
           | PLUS  ureal8 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS ureal8 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS ureal8 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
           | PLUS  IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
           | MINUS IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
           | real8 PLUS  naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
-          | real8 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real8 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | PLUS  naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
           ;
 
 real8    : ureal8
           | sreal8
           | PLUS naninf  { $$ = $2; }
-          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS naninf { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 ureal8   : uinteger8
           | uinteger8 SLASH uinteger8 {
-               $$ = Arithmetic::div($1, $3, true);
+               // VM* is NULL, because no-raise flag = true
+               $$ = Arithmetic::div(NULL, $1, $3, true);
                if ($$.isFalse()) {
                    YYERROR;
                }
           }
           ;
 
-sreal8   : PLUS  ureal8 { $$ = $2; }
-          | MINUS ureal8 { $$ = Arithmetic::mul(-1, $2); }
+sreal8    : PLUS  ureal8 { $$ = $2; }
+          | MINUS ureal8 { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 uinteger8 : digit8 { $$ = Object::makeFixnum($1); }
           | uinteger8 digit8  {
-                $$ = Arithmetic::add(Arithmetic::mul(8, $1), Object::makeFixnum($2));
+                $$ = Arithmetic::add(NULL, Arithmetic::mul(NULL, 8, $1), Object::makeFixnum($2));
           }
           ;
 
@@ -198,28 +199,29 @@ num16     : prefix16 complex16 { $$ = ScannerHelper::applyExactness($1, $2); }
 complex16 : real16
           | real16 AT    real16       { $$ = Arithmetic::makePolar($1, $3); }
           | real16 PLUS  ureal16 IMAG { $$ = Object::makeCompnum($1, $3); }
-          | real16 MINUS ureal16 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real16 MINUS ureal16 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | real16 PLUS  IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
           | real16 MINUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
           | PLUS  ureal16 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS ureal16 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS ureal16 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
           | PLUS  IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
           | MINUS IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
           | real16 PLUS  naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
-          | real16 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real16 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | PLUS  naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL,-1, $2)); }
           ;
 
 real16    : ureal16
           | sreal16
           | PLUS naninf  { $$ = $2; }
-          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS naninf { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 ureal16   : uinteger16
           | uinteger16 SLASH uinteger16 {
-               $$ = Arithmetic::div($1, $3, true);
+               // VM* is NULL, because no-raise flag = true
+               $$ = Arithmetic::div(NULL, $1, $3, true);
                if ($$.isFalse()) {
                    YYERROR;
                }
@@ -228,12 +230,12 @@ ureal16   : uinteger16
           ;
 
 sreal16   : PLUS  ureal16 { $$ = $2; }
-          | MINUS ureal16 { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS ureal16 { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 uinteger16 : digit16 { $$ = Object::makeFixnum($1); }
           | uinteger16 digit16  {
-                $$ = Arithmetic::add(Arithmetic::mul(16, $1), Object::makeFixnum($2));
+                $$ = Arithmetic::add(NULL, Arithmetic::mul(NULL, 16, $1), Object::makeFixnum($2));
           }
           ;
 
@@ -246,28 +248,29 @@ num10     : prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
 complex10 : real10
           | real10 AT    real10       { $$ = Arithmetic::makePolar($1, $3); }
           | real10 PLUS  ureal10 IMAG { $$ = Object::makeCompnum($1, $3); }
-          | real10 MINUS ureal10 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real10 MINUS ureal10 IMAG { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | real10 PLUS  IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(1)); }
           | real10 MINUS IMAG         { $$ = Object::makeCompnum($1, Object::makeFixnum(-1)); }
           | PLUS  ureal10 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS ureal10 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS ureal10 IMAG        { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
           | PLUS  IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(1)); }
           | MINUS IMAG                { $$ = Object::makeCompnum(Object::makeFixnum(0), Object::makeFixnum(-1)); }
           | real10 PLUS  naninf IMAG  { $$ = Object::makeCompnum($1, $3); }
-          | real10 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(-1, $3)); }
+          | real10 MINUS naninf IMAG  { $$ = Object::makeCompnum($1, Arithmetic::mul(NULL, -1, $3)); }
           | PLUS  naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), $2); }
-          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(-1, $2)); }
+          | MINUS naninf IMAG         { $$ = Object::makeCompnum(Object::makeFixnum(0), Arithmetic::mul(NULL, -1, $2)); }
           ;
 
 real10    : ureal10
           | sreal10
           | PLUS naninf  { $$ = $2; }
-          | MINUS naninf { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS naninf { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 ureal10   : decimal10
           | uinteger10 SLASH uinteger10 {
-               $$ = Arithmetic::div($1, $3, true);
+               // VM* is NULL, because no-raise flag = true
+               $$ = Arithmetic::div(NULL, $1, $3, true);
                if ($$.isFalse()) {
                    yyerror("division by zero");
                    YYERROR;
@@ -276,14 +279,14 @@ ureal10   : decimal10
           ;
 
 sreal10   : PLUS  ureal10 { $$ = $2; }
-          | MINUS ureal10 { $$ = Arithmetic::mul(-1, $2); }
+          | MINUS ureal10 { $$ = Arithmetic::mul(NULL, -1, $2); }
           ;
 
 decimal10 : uinteger10String suffix {
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
-                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumber($2));
+                $$ = Arithmetic::mul(NULL, Bignum::makeInteger($1), suffixToNumber($2));
               }
           }
           | DOT uinteger10String suffix {
@@ -291,7 +294,7 @@ decimal10 : uinteger10String suffix {
               ret += $2;
               if (!$3.empty()) {
 
-                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+                $$ = Arithmetic::mul(NULL, Flonum::fromString(ret), suffixToNumber($3));
               } else {
                   $$ = Flonum::fromString(ret);
               }
@@ -302,7 +305,7 @@ decimal10 : uinteger10String suffix {
               ret += UC(".") + $3;
               if (!$4.empty()) {
 //                  VM_LOG2("from~a: ~a\n", Flonum::fromString(ret), suffixToNumber($4));
-                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($4));
+                $$ = Arithmetic::mul(NULL, Flonum::fromString(ret), suffixToNumber($4));
 //                  VM_LOG1("$$~a: n", $$);
               } else {
                   $$ = Flonum::fromString(ret);
@@ -312,7 +315,7 @@ decimal10 : uinteger10String suffix {
               ucs4string ret = $1;
               ret += UC(".0");
               if (!$3.empty()) {
-                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+                $$ = Arithmetic::mul(NULL, Flonum::fromString(ret), suffixToNumber($3));
               } else {
                   $$ = Flonum::fromString(ret);
               }

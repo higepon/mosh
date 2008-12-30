@@ -47,12 +47,12 @@ using namespace scheme;
 
 static Object pass4FixupLabelCollect(Object vec);
 static Object pass4FixupLabel(Object vec);
-static Object findFree(Object iform, Object locals, Object canFrees);
-static Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen);
-static Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list);
-static Object findSetsRecMap(Object lvars, Object list, Object labelsSeen);
-static Object findSets(Object iform, Object lvars);
-static Object findSetsRec(Object i, Object lvars, Object labelsSeen);
+static Object findFree(VM* theVM, Object iform, Object locals, Object canFrees);
+static Object findFreeRec(VM* theVM, Object i, Object l, Object canFrees, Object labelsSeen);
+static Object findFreeRecMap(VM* theVM, Object l, Object canFrees, Object labelsSeen, Object list);
+static Object findSetsRecMap(VM* theVM, Object lvars, Object list, Object labelsSeen);
+static Object findSets(VM* theVM, Object iform, Object lvars);
+static Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen);
 
 enum {
     CONST         = 0,
@@ -75,7 +75,7 @@ enum {
     RECEIVE       = 18
 };
 
-Object scheme::labelEx(int argc, const Object* argv)
+Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("$label");
     checkArgumentLength(1);
@@ -86,7 +86,7 @@ Object scheme::labelEx(int argc, const Object* argv)
     return label;
 }
 
-Object scheme::localRefEx(int argc, const Object* argv)
+Object scheme::localRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("$localRefEx");
     checkArgumentLength(1);
@@ -102,7 +102,7 @@ Object scheme::localRefEx(int argc, const Object* argv)
     return label;
 }
 
-Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
+Object scheme::pass1FindSymbolInLvarsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("pass1/find-symbol-in-lvars");
     checkArgumentLength(2);
@@ -117,7 +117,7 @@ Object scheme::pass1FindSymbolInLvarsEx(int argc, const Object* argv)
     return Object::False;
 }
 
-Object scheme::pass3CompileReferEx(int argc, const Object* argv)
+Object scheme::pass3CompileReferEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("pass3/compile-refer");
     checkArgumentLength(4);
@@ -142,30 +142,28 @@ Object scheme::pass3CompileReferEx(int argc, const Object* argv)
             return Object::makeFixnum(0);
         }
     }
-    callAssertionViolationAfter(procedureName, "bug? Unknown lvar", L1(variable));
+    callAssertionViolationAfter(theVM, procedureName, "bug? Unknown lvar", L1(variable));
     return Object::Undef;
 }
 
 
-Object scheme::pass3FindFreeEx(int argc, const Object* argv)
+Object scheme::pass3FindFreeEx(VM* theVM, int argc, const Object* argv)
 {
-    return findFree(argv[0], argv[1], argv[2]);
+    return findFree(theVM, argv[0], argv[1], argv[2]);
 }
 
-Object scheme::pass3FindSetsEx(int argc, const Object* argv)
+Object scheme::pass3FindSetsEx(VM* theVM, int argc, const Object* argv)
 {
-    return findSets(argv[0], argv[1]);
+    return findSets(theVM, argv[0], argv[1]);
 }
 
 static ObjectMap cache_;
 
-Object findFree(Object iform, Object locals, Object canFrees)
+Object findFree(VM* theVM, Object iform, Object locals, Object canFrees)
 {
-    const Object ret = findFreeRec(iform, locals, canFrees, Object::Nil);
+    const Object ret = findFreeRec(theVM, iform, locals, canFrees, Object::Nil);
     return uniq(ret);
 }
-
-
 
 bool existsInCanFrees(Object sym, Object canFrees)
 {
@@ -177,46 +175,46 @@ bool existsInCanFrees(Object sym, Object canFrees)
     return false;
 }
 
-Object findFreeLet(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeLet(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object letLvars = v->ref(2);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
-        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, letInits),
-                             findFreeRec(letBody, letLvars, canFrees, labelsSeen));
+        return Pair::append2(findFreeRecMap(theVM, l, canFrees, labelsSeen, letInits),
+                             findFreeRec(theVM, letBody, letLvars, canFrees, labelsSeen));
 }
 
-Object findFreeReceive(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeReceive(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         const Object receiveLVars = v->ref(1);
-        return Pair::append2(findFreeRec(receiveVals, l, canFrees, labelsSeen),
-                             findFreeRec(receiveBody, receiveLVars, canFrees, labelsSeen));
+        return Pair::append2(findFreeRec(theVM, receiveVals, l, canFrees, labelsSeen),
+                             findFreeRec(theVM, receiveBody, receiveLVars, canFrees, labelsSeen));
 
 }
 
-Object findFreeSeq(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeSeq(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object seqBody = v->ref(1);
-        return findFreeRecMap(l, canFrees, labelsSeen, seqBody);
+        return findFreeRecMap(theVM, l, canFrees, labelsSeen, seqBody);
 }
 
-Object findFreeLambda(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeLambda(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object lambdaBody = v->ref(6);
         const Object lambdaLvars = v->ref(5);
-        return findFreeRec(lambdaBody, lambdaLvars, canFrees, labelsSeen);
+        return findFreeRec(theVM, lambdaBody, lambdaLvars, canFrees, labelsSeen);
 }
 
-Object findFreeLocalAssign(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeLocalAssign(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
     const Object sym = v->ref(1).toVector()->ref(1);
         const Object val = v->ref(2);
         if (existsInCanFrees(sym, canFrees)) {
-            return Object::cons(sym, findFreeRec(val, l, canFrees, labelsSeen));
+            return Object::cons(sym, findFreeRec(theVM, val, l, canFrees, labelsSeen));
         } else {
-            return findFreeRec(val, l, canFrees, labelsSeen);
+            return findFreeRec(theVM, val, l, canFrees, labelsSeen);
         }
 }
 
@@ -242,34 +240,34 @@ Object findFreeGlobalRef(Vector* v, Object l, Object canFrees, Object labelsSeen
         }
 }
 
-Object findFreeIf(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeIf(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
-    const Object testF = findFreeRec(v->ref(1), l, canFrees, labelsSeen);
-    const Object thenF = findFreeRec(v->ref(2), l, canFrees, labelsSeen);
-    const Object elseF = findFreeRec(v->ref(3), l, canFrees, labelsSeen);
+    const Object testF = findFreeRec(theVM, v->ref(1), l, canFrees, labelsSeen);
+    const Object thenF = findFreeRec(theVM, v->ref(2), l, canFrees, labelsSeen);
+    const Object elseF = findFreeRec(theVM, v->ref(3), l, canFrees, labelsSeen);
     return Pair::append2(testF, Pair::append2(thenF, elseF));
 }
 
-Object findFreeLabel(Object i, Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeLabel(VM* theVM, Object i, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object labelBody = v->ref(1);
         if (!memq(i, labelsSeen).isFalse()) {
             return Object::Nil;
         } else {
-            return findFreeRec(labelBody, l, canFrees, Object::cons(i, labelsSeen));
+            return findFreeRec(theVM, labelBody, l, canFrees, Object::cons(i, labelsSeen));
         }
 }
 
-Object findFreeCall(Vector* v, Object l, Object canFrees, Object labelsSeen)
+Object findFreeCall(VM* theVM, Vector* v, Object l, Object canFrees, Object labelsSeen)
 {
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
-        return Pair::append2(findFreeRecMap(l, canFrees, labelsSeen, callArgs),
-                             findFreeRec(callProc, l, canFrees, labelsSeen));
+        return Pair::append2(findFreeRecMap(theVM, l, canFrees, labelsSeen, callArgs),
+                             findFreeRec(theVM, callProc, l, canFrees, labelsSeen));
 }
 
 
-Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
+Object findFreeRec(VM* theVM, Object i, Object l, Object canFrees, Object labelsSeen)
 {
     Vector* v = i.toVector();
     MOSH_ASSERT(v->ref(0).isFixnum());
@@ -278,23 +276,23 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
         return Object::Nil;
     case LET:
     {
-        return findFreeLet(v, l, canFrees, labelsSeen);
+        return findFreeLet(theVM, v, l, canFrees, labelsSeen);
     }
     case RECEIVE:
     {
-        return findFreeReceive(v, l, canFrees, labelsSeen);
+        return findFreeReceive(theVM, v, l, canFrees, labelsSeen);
     }
     case SEQ:
     {
-        return findFreeSeq(v, l, canFrees, labelsSeen);
+        return findFreeSeq(theVM, v, l, canFrees, labelsSeen);
     }
     case LAMBDA:
     {
-        return findFreeLambda(v, l, canFrees, labelsSeen);
+        return findFreeLambda(theVM, v, l, canFrees, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
-        return findFreeLocalAssign(v, l, canFrees, labelsSeen);
+        return findFreeLocalAssign(theVM, v, l, canFrees, labelsSeen);
     }
     case LOCAL_REF:
     {
@@ -308,86 +306,86 @@ Object findFreeRec(Object i, Object l, Object canFrees, Object labelsSeen)
         return Object::Nil;
     case IF:
     {
-        return findFreeIf(v, l, canFrees, labelsSeen);
+        return findFreeIf(theVM, v, l, canFrees, labelsSeen);
     }
     case ASM:
     {
         const Object asmArgs = v->ref(2);
-        return findFreeRecMap(l, canFrees, labelsSeen, asmArgs);
+        return findFreeRecMap(theVM, l, canFrees, labelsSeen, asmArgs);
     }
     case DEFINE:
     {
         const Object defineVal = v->ref(2);
-        return findFreeRec(defineVal, l, canFrees, labelsSeen);
+        return findFreeRec(theVM, defineVal, l, canFrees, labelsSeen);
     }
     case CALL:
     {
-        return findFreeCall(v, l, canFrees, labelsSeen);
+        return findFreeCall(theVM, v, l, canFrees, labelsSeen);
     }
     case CALL_CC:
     {
         const Object callccProc = v->ref(1);
-        return findFreeRec(callccProc, l, canFrees, labelsSeen);
+        return findFreeRec(theVM, callccProc, l, canFrees, labelsSeen);
     }
     case GLOBAL_ASSIGN:
     {
         const Object globalAssignVal = v->ref(2);
-        return findFreeRec(globalAssignVal, l, canFrees, labelsSeen);
+        return findFreeRec(theVM, globalAssignVal, l, canFrees, labelsSeen);
     }
     case LIST:
     {
         const Object listArgs = v->ref(1);
-        return findFreeRecMap(l, canFrees, labelsSeen, listArgs);
+        return findFreeRecMap(theVM, l, canFrees, labelsSeen, listArgs);
     }
     case LABEL:
     {
-        return findFreeLabel(i, v, l, canFrees, labelsSeen);
+        return findFreeLabel(theVM, i, v, l, canFrees, labelsSeen);
     }
     case IT:
         return Object::Nil;
     default:
-        callAssertionViolationAfter("find-free", "unknown iform", L1(v->ref(0)));
+        callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
         return Object::Undef;
     }
     return Object::Undef;
 }
 
 
-Object findFreeRecMap(Object l, Object canFrees, Object labelsSeen, Object list)
+Object findFreeRecMap(VM* theVM, Object l, Object canFrees, Object labelsSeen, Object list)
 {
     Object ret = Object::Nil;
     for (Object p = list; p.isPair(); p = p.cdr()) {
-        ret = Pair::append2(ret, findFreeRec(p.car(), l, canFrees, labelsSeen));
+        ret = Pair::append2(ret, findFreeRec(theVM, p.car(), l, canFrees, labelsSeen));
     }
     return ret;
 }
 
-Object findSetsRecMap(Object lvars, Object list, Object labelsSeen)
+Object findSetsRecMap(VM* theVM, Object lvars, Object list, Object labelsSeen)
 {
     Object ret = Object::Nil;
     for (Object p = list; p.isPair(); p = p.cdr()) {
-        ret = Pair::append2(ret, findSetsRec(p.car(), lvars, labelsSeen));
+        ret = Pair::append2(ret, findSetsRec(theVM, p.car(), lvars, labelsSeen));
     }
     return ret;
 }
 
-Object findSets(Object iform, Object lvars)
+Object findSets(VM* theVM, Object iform, Object lvars)
 {
-    return uniq(findSetsRec(iform, lvars, Object::Nil));
+    return uniq(findSetsRec(theVM, iform, lvars, Object::Nil));
 }
 
-Object findSetsLabel(Object i, Object lvars, Object labelsSeen)
+Object findSetsLabel(VM* theVM, Object i, Object lvars, Object labelsSeen)
 {
     Vector* v = i.toVector();
     const Object labelBody = v->ref(1);
     if (!memq(i, labelsSeen).isFalse()) {
         return Object::Nil;
     } else {
-        return findSetsRec(labelBody, lvars, Object::cons(i, labelsSeen));
+        return findSetsRec(theVM, labelBody, lvars, Object::cons(i, labelsSeen));
     }
 }
 
-Object findSetsRec(Object i, Object lvars, Object labelsSeen)
+Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
 {
     Vector* v = i.toVector();
     MOSH_ASSERT(v->ref(0).isFixnum());
@@ -398,34 +396,34 @@ Object findSetsRec(Object i, Object lvars, Object labelsSeen)
     {
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
-        return Pair::append2(findSetsRecMap(lvars, letInits, labelsSeen),
-                             findSetsRec(letBody, lvars, labelsSeen));
+        return Pair::append2(findSetsRecMap(theVM, lvars, letInits, labelsSeen),
+                             findSetsRec(theVM, letBody, lvars, labelsSeen));
     }
     case RECEIVE:
     {
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
-        return Pair::append2(findSetsRec(receiveVals, lvars, labelsSeen),
-                             findSetsRec(receiveBody, lvars, labelsSeen));
+        return Pair::append2(findSetsRec(theVM, receiveVals, lvars, labelsSeen),
+                             findSetsRec(theVM, receiveBody, lvars, labelsSeen));
     }
     case SEQ:
     {
         const Object seqBody = v->ref(1);
-        return findSetsRecMap(lvars, seqBody, labelsSeen);
+        return findSetsRecMap(theVM, lvars, seqBody, labelsSeen);
     }
     case LAMBDA:
     {
         const Object lambdaBody = v->ref(6);
-        return findSetsRec(lambdaBody, lvars, labelsSeen);
+        return findSetsRec(theVM, lambdaBody, lvars, labelsSeen);
     }
     case LOCAL_ASSIGN:
     {
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
         if (memq(localAssignLvar, lvars).isFalse()) {
-            return findSetsRec(localAssignVal, lvars, labelsSeen);
+            return findSetsRec(theVM, localAssignVal, lvars, labelsSeen);
         } else {
-            return Object::cons(localAssignLvar, findSetsRec(localAssignVal, lvars, labelsSeen));
+            return Object::cons(localAssignLvar, findSetsRec(theVM, localAssignVal, lvars, labelsSeen));
         }
     }
     case LOCAL_REF:
@@ -440,68 +438,68 @@ Object findSetsRec(Object i, Object lvars, Object labelsSeen)
         return Object::Nil;
     case IF:
     {
-        const Object testF = findSetsRec(v->ref(1), lvars, labelsSeen);
-        const Object thenF = findSetsRec(v->ref(2), lvars, labelsSeen);
-        const Object elseF = findSetsRec(v->ref(3), lvars, labelsSeen);
+        const Object testF = findSetsRec(theVM, v->ref(1), lvars, labelsSeen);
+        const Object thenF = findSetsRec(theVM, v->ref(2), lvars, labelsSeen);
+        const Object elseF = findSetsRec(theVM, v->ref(3), lvars, labelsSeen);
         return Pair::append2(testF, Pair::append2(thenF, elseF));
     }
     case ASM:
     {
         const Object asmArgs = v->ref(2);
-        return findSetsRecMap(lvars, asmArgs, labelsSeen);
+        return findSetsRecMap(theVM, lvars, asmArgs, labelsSeen);
     }
     case DEFINE:
     {
         const Object defineVal = v->ref(3);
-        return findSetsRec(defineVal, lvars, labelsSeen);
+        return findSetsRec(theVM, defineVal, lvars, labelsSeen);
     }
     case CALL:
     {
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
-        return Pair::append2(findSetsRecMap(lvars, callArgs, labelsSeen),
-                             findSetsRec(callProc, lvars, labelsSeen));
+        return Pair::append2(findSetsRecMap(theVM, lvars, callArgs, labelsSeen),
+                             findSetsRec(theVM, callProc, lvars, labelsSeen));
     }
     case CALL_CC:
     {
         const Object callccProc = v->ref(1);
-        return findSetsRec(callccProc, lvars, labelsSeen);
+        return findSetsRec(theVM, callccProc, lvars, labelsSeen);
     }
     case GLOBAL_ASSIGN:
     {
         const Object globalAssignVal = v->ref(2);
-        return findSetsRec(globalAssignVal, lvars, labelsSeen);
+        return findSetsRec(theVM, globalAssignVal, lvars, labelsSeen);
     }
     case LIST:
     {
         const Object listArgs = v->ref(1);
-        return findSetsRecMap(lvars, listArgs, labelsSeen);
+        return findSetsRecMap(theVM, lvars, listArgs, labelsSeen);
     }
     case LABEL:
     {
-        return findSetsLabel(i, lvars, labelsSeen);
+        return findSetsLabel(theVM, i, lvars, labelsSeen);
     }
     case IT:
         return Object::Nil;
     default:
-        callAssertionViolationAfter("find-free", "unknown iform", L1(v->ref(0)));
+        callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
         return Object::Undef;
     }
     return Object::Undef;
 }
 
 
-Object scheme::pass4FixupLabelsEx(int argc, const Object* argv)
+Object scheme::pass4FixupLabelsEx(VM* theVM, int argc, const Object* argv)
 {
     return pass4FixupLabel(argv[0]);
 }
 
-Object scheme::makeCodeBuilderEx(int argc, const Object* argv)
+Object scheme::makeCodeBuilderEx(VM* theVM, int argc, const Object* argv)
 {
     return Object::makeCodeBuilder();
 }
 
-Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra1DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put1!");
     checkArgumentLength(2);
@@ -512,7 +510,7 @@ Object scheme::codeBuilderPutExtra1DEx(int argc, const Object* argv)
 }
 
 
-Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra2DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put2!");
     checkArgumentLength(3);
@@ -523,7 +521,7 @@ Object scheme::codeBuilderPutExtra2DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra3DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put3!");
     checkArgumentLength(4);
@@ -535,7 +533,7 @@ Object scheme::codeBuilderPutExtra3DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra4DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put4!");
     checkArgumentLength(5);
@@ -549,7 +547,7 @@ Object scheme::codeBuilderPutExtra4DEx(int argc, const Object* argv)
 }
 
 
-Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutExtra5DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put5!");
     checkArgumentLength(6);
@@ -564,7 +562,7 @@ Object scheme::codeBuilderPutExtra5DEx(int argc, const Object* argv)
 }
 
 
-Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
+Object scheme::codeBuilderAppendDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-append!");
     checkArgumentLength(2);
@@ -575,7 +573,7 @@ Object scheme::codeBuilderAppendDEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
+Object scheme::codeBuilderEmitEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-emit2");
     checkArgumentLength(1);
@@ -584,7 +582,7 @@ Object scheme::codeBuilderEmitEx(int argc, const Object* argv)
     return codeBuilder->emit();
 }
 
-Object scheme::codeBuilderPutInsnArg2DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutInsnArg2DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put-insn-arg2!");
     checkArgumentLength(4);
@@ -597,7 +595,7 @@ Object scheme::codeBuilderPutInsnArg2DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutInsnArg1DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put-insn-arg1!");
     checkArgumentLength(3);
@@ -609,7 +607,7 @@ Object scheme::codeBuilderPutInsnArg1DEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::codeBuilderPutInsnArg0DEx(int argc, const Object* argv)
+Object scheme::codeBuilderPutInsnArg0DEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("code-builder-put-insn-arg0!");
     checkArgumentLength(2);
@@ -856,7 +854,7 @@ Object pass4FixupLabel(Object vec)
     return collected.car();
 }
 
-Object scheme::disasmEx(int argc, const Object* argv)
+Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("disasm");
     checkArgumentLength(1);
@@ -873,7 +871,7 @@ Object scheme::disasmEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::printStackEx(int argc, const Object* argv)
+Object scheme::printStackEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("print-stack");
     checkArgumentLength(0);

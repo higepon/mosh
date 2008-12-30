@@ -36,42 +36,42 @@
 
 namespace scheme {
 
-    Object fxEqPEx(int argc, const Object* argv);
-    Object fxGtPEx(int argc, const Object* argv);
-    Object fxLtPEx(int argc, const Object* argv);
-    Object fxGePEx(int argc, const Object* argv);
-    Object fxLePEx(int argc, const Object* argv);
-    Object fxzeroPEx(int argc, const Object* argv);
-    Object fxpositivePEx(int argc, const Object* argv);
-    Object fxnegativePEx(int argc, const Object* argv);
-    Object fxoddPEx(int argc, const Object* argv);
-    Object fxevenPEx(int argc, const Object* argv);
-    Object fxmaxEx(int argc, const Object* argv);
-    Object fxminEx(int argc, const Object* argv);
-    Object fxAddEx(int argc, const Object* argv);
-    Object fxMulEx(int argc, const Object* argv);
-    Object fxSubEx(int argc, const Object* argv);
-    Object fxdivEx(int argc, const Object* argv);
-    Object fxmodEx(int argc, const Object* argv);
-    Object fxdiv0Ex(int argc, const Object* argv);
-    Object fxmod0Ex(int argc, const Object* argv);
-    Object fxnotEx(int argc, const Object* argv);
-    Object fxandEx(int argc, const Object* argv);
-    Object fxiorEx(int argc, const Object* argv);
-    Object fxxorEx(int argc, const Object* argv);
-    Object fxifEx(int argc, const Object* argv);
-    Object fxbitCountEx(int argc, const Object* argv);
-    Object fxlengthEx(int argc, const Object* argv);
-    Object fxfirstBitSetEx(int argc, const Object* argv);
-    Object fxbitSetPEx(int argc, const Object* argv);
-    Object fxcopyBitEx(int argc, const Object* argv);
-    Object fxbitFieldEx(int argc, const Object* argv);
-    Object fxcopyBitFieldEx(int argc, const Object* argv);
-    Object fxarithmeticShiftEx(int argc, const Object* argv);
-    Object fxarithmeticShiftLeftEx(int argc, const Object* argv);
-    Object fxarithmeticShiftRightEx(int argc, const Object* argv);
-    Object fxrotateBitFieldEx(int argc, const Object* argv);
-    Object fxreverseBitFieldEx(int argc, const Object* argv);
+    Object fxEqPEx(VM* theVM, int argc, const Object* argv);
+    Object fxGtPEx(VM* theVM, int argc, const Object* argv);
+    Object fxLtPEx(VM* theVM, int argc, const Object* argv);
+    Object fxGePEx(VM* theVM, int argc, const Object* argv);
+    Object fxLePEx(VM* theVM, int argc, const Object* argv);
+    Object fxzeroPEx(VM* theVM, int argc, const Object* argv);
+    Object fxpositivePEx(VM* theVM, int argc, const Object* argv);
+    Object fxnegativePEx(VM* theVM, int argc, const Object* argv);
+    Object fxoddPEx(VM* theVM, int argc, const Object* argv);
+    Object fxevenPEx(VM* theVM, int argc, const Object* argv);
+    Object fxmaxEx(VM* theVM, int argc, const Object* argv);
+    Object fxminEx(VM* theVM, int argc, const Object* argv);
+    Object fxAddEx(VM* theVM, int argc, const Object* argv);
+    Object fxMulEx(VM* theVM, int argc, const Object* argv);
+    Object fxSubEx(VM* theVM, int argc, const Object* argv);
+    Object fxdivEx(VM* theVM, int argc, const Object* argv);
+    Object fxmodEx(VM* theVM, int argc, const Object* argv);
+    Object fxdiv0Ex(VM* theVM, int argc, const Object* argv);
+    Object fxmod0Ex(VM* theVM, int argc, const Object* argv);
+    Object fxnotEx(VM* theVM, int argc, const Object* argv);
+    Object fxandEx(VM* theVM, int argc, const Object* argv);
+    Object fxiorEx(VM* theVM, int argc, const Object* argv);
+    Object fxxorEx(VM* theVM, int argc, const Object* argv);
+    Object fxifEx(VM* theVM, int argc, const Object* argv);
+    Object fxbitCountEx(VM* theVM, int argc, const Object* argv);
+    Object fxlengthEx(VM* theVM, int argc, const Object* argv);
+    Object fxfirstBitSetEx(VM* theVM, int argc, const Object* argv);
+    Object fxbitSetPEx(VM* theVM, int argc, const Object* argv);
+    Object fxcopyBitEx(VM* theVM, int argc, const Object* argv);
+    Object fxbitFieldEx(VM* theVM, int argc, const Object* argv);
+    Object fxcopyBitFieldEx(VM* theVM, int argc, const Object* argv);
+    Object fxarithmeticShiftEx(VM* theVM, int argc, const Object* argv);
+    Object fxarithmeticShiftLeftEx(VM* theVM, int argc, const Object* argv);
+    Object fxarithmeticShiftRightEx(VM* theVM, int argc, const Object* argv);
+    Object fxrotateBitFieldEx(VM* theVM, int argc, const Object* argv);
+    Object fxreverseBitFieldEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

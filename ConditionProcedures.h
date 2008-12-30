@@ -37,11 +37,11 @@
 
 namespace scheme {
 
-    Object conditionAccessorEx(int argc, const Object* argv);
-    Object conditionPredicateEx(int argc, const Object* argv);
-    Object conditionPEx(int argc, const Object* argv);
-    Object simpleConditionsEx(int argc, const Object* argv);
-    Object conditionEx(int argc, const Object* argv);
+    Object conditionAccessorEx(VM* theVM, int argc, const Object* argv);
+    Object conditionPredicateEx(VM* theVM, int argc, const Object* argv);
+    Object conditionPEx(VM* theVM, int argc, const Object* argv);
+    Object simpleConditionsEx(VM* theVM, int argc, const Object* argv);
+    Object conditionEx(VM* theVM, int argc, const Object* argv);
 
     class ConditionPredicate : public Callable
     {

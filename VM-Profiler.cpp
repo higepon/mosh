@@ -49,10 +49,11 @@ extern VM* theVM;
 extern Object stringTosymbolEx(Object args);
 const int VM::SAMPLE_NUM = 50000;
 
-static void signal_handler(int signo)
-{
-    theVM->collectProfile();
-}
+extern  void signal_handler(int signo);
+// static void signal_handler(int signo)
+// {
+//     theVM->collectProfile();
+// }
 
 void VM::initProfiler()
 {
@@ -69,7 +70,7 @@ void VM::initProfiler()
     act.sa_flags = SA_RESTART;        // restart system call after signal handler
 
     if (sigaction(SIGPROF, &act, NULL) != 0) {
-        callAssertionViolationImmidiaImmediately("profiler", "sigaction failed");
+        callAssertionViolationImmidiaImmediately(this, "profiler", "sigaction failed");
     }
     startTimer();
 }
@@ -161,7 +162,7 @@ Object VM::values(int num, const Object* v)
     }
     for (int i = 1; i < num; i++) {
         if (i >= maxNumValues_) {
-            callAssertionViolationAfter("values", "too many values", Pair::list1(Object::makeFixnum(i)));
+            callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(i)));
             return Object::Undef;
         }
         values_[i - 1] = v[i];

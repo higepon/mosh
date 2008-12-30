@@ -41,7 +41,7 @@ namespace scheme {
 class GenericHashTable : public HashTable
 {
 public:
-    GenericHashTable(Object hashFunction, Object equivalenceFunction);
+    GenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     ~GenericHashTable();
 
     size_t size() const;
@@ -60,6 +60,7 @@ public:
     void setMap(GenericMap map);
     void setMutableP(bool mutableP);
 private:
+    VM* vm_;
     GenericMap map_;
     Object hashFunction_;
     Object equivalenceFunction_;

@@ -50,38 +50,46 @@
 
 using namespace scheme;
 
-VM* theVM;
+void signal_handler(int signo)
+{
+}
 
 class VMTest : public testing::Test {
 protected:
+    VM* theVM_;
     virtual void SetUp() {
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
         Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-        Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-        theVM = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-        theVM->loadCompiler();
+        Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
+        Object errorPort = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+        theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
+        outPort.toTextualOutputPort()->setVM(theVM_);
+        errorPort.toTextualOutputPort()->setVM(theVM_);
+        theVM_->loadCompiler();
     }
 };
 
 class VMErrorPortTest : public testing::Test {
 protected:
+    VM* theVM_;
     virtual void SetUp() {
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
         Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-        errorPort_ = Object::makeStringOutputPort();
-        theVM = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
-        theVM->loadCompiler();
+        Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
+        errorPort_ = Object::makeStringOutputPort(NULL);
+        theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
+        outPort.toTextualOutputPort()->setVM(theVM_);
+        errorPort_.toTextualOutputPort()->setVM(theVM_);
+        theVM_->loadCompiler();
     }
     Object errorPort_;
 };
 
 
 TEST_F(VMTest, StackTrace1) {
-    theVM->loadFile(UC("./test/stack-trace1.scm"));
+    theVM_->loadFile(UC("./test/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -96,13 +104,12 @@ TEST_F(VMTest, StackTrace1) {
                  "    2. sys-display: <subr>\n"
                  "    3. (a):  ./test/stack-trace1.scm:7\n"
                  "    4. (b):  ./test/stack-trace1.scm:12\n\n",
-//                 "    5. (<top-level>): <unknown location>\n\n",
-                 theVM->getLastError().toString()->data().ascii_c_str());
+                 theVM_->getLastError().toString()->data().ascii_c_str());
 }
 
 TEST_F(VMTest, StackTrace2) {
-    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace2.scm"));
-    theVM->activateR6RSMode(false);
+    theVM_->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace2.scm"));
+    theVM_->activateR6RSMode(false);
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
                  " Stack trace:\n"
@@ -116,12 +123,12 @@ TEST_F(VMTest, StackTrace2) {
                  "    8. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
                  "    9. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
                  "    10. (<top-level>): <unknown location>\n\n",
-                 theVM->getLastError().toString()->data().ascii_c_str());
+                 theVM_->getLastError().toString()->data().ascii_c_str());
 }
 
 TEST_F(VMErrorPortTest, StackTrace3) {
-    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace3.scm"));
-    theVM->activateR6RSMode(false);
+    theVM_->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace3.scm"));
+    theVM_->activateR6RSMode(false);
     EXPECT_STREQ(" Condition components:\n"
                  "   1. &who: let\n"
                  "   2. &message: \"invalid syntax\"\n"
@@ -141,5 +148,5 @@ TEST_F(VMErrorPortTest, StackTrace3) {
                  "    3. apply: <subr>\n"
                  "\n"
                  "\n"
-                 , sysGetOutputStringEx(1, &errorPort_).toString()->data().ascii_c_str());
+                 , sysGetOutputStringEx(theVM_, 1, &errorPort_).toString()->data().ascii_c_str());
 }

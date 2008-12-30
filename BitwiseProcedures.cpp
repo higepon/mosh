@@ -34,12 +34,13 @@
 #include "SString.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
+#include "VM.h"
 #include "Arithmetic.h"
 #include "BitwiseProcedures.h"
 
 using namespace scheme;
 
-Object scheme::bitwiseNotEx(int argc, const Object* argv)
+Object scheme::bitwiseNotEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-not");
     checkArgumentLength(1);
@@ -47,7 +48,7 @@ Object scheme::bitwiseNotEx(int argc, const Object* argv)
     return Arithmetic::bitwiseNot(e);
 }
 
-Object scheme::bitwiseAndEx(int argc, const Object* argv)
+Object scheme::bitwiseAndEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-and");
     if (0 == argc) {
@@ -64,7 +65,7 @@ Object scheme::bitwiseAndEx(int argc, const Object* argv)
     return accum;
 }
 
-Object scheme::bitwiseIorEx(int argc, const Object* argv)
+Object scheme::bitwiseIorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-ior");
     if (0 == argc) {
@@ -81,7 +82,7 @@ Object scheme::bitwiseIorEx(int argc, const Object* argv)
     return accum;
 }
 
-Object scheme::bitwiseXorEx(int argc, const Object* argv)
+Object scheme::bitwiseXorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-xor");
     if (0 == argc) {
@@ -98,7 +99,7 @@ Object scheme::bitwiseXorEx(int argc, const Object* argv)
     return accum;
 }
 
-Object scheme::bitwiseBitCountEx(int argc, const Object* argv)
+Object scheme::bitwiseBitCountEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-bit-count");
     checkArgumentLength(1);
@@ -106,7 +107,7 @@ Object scheme::bitwiseBitCountEx(int argc, const Object* argv)
     return Arithmetic::bitwiseBitCount(e);
 }
 
-Object scheme::bitwiseLengthEx(int argc, const Object* argv)
+Object scheme::bitwiseLengthEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-length");
     checkArgumentLength(1);
@@ -114,7 +115,7 @@ Object scheme::bitwiseLengthEx(int argc, const Object* argv)
     return Arithmetic::bitwiseLength(e);
 }
 
-Object scheme::bitwiseFirstBitSetEx(int argc, const Object* argv)
+Object scheme::bitwiseFirstBitSetEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-first-bit-set");
     checkArgumentLength(1);
@@ -122,7 +123,7 @@ Object scheme::bitwiseFirstBitSetEx(int argc, const Object* argv)
     return Arithmetic::bitwiseFirstBitSet(e);
 }
 
-Object scheme::bitwiseArithmeticShiftLeftEx(int argc, const Object* argv)
+Object scheme::bitwiseArithmeticShiftLeftEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-arithmetic-shift-left");
     checkArgumentLength(2);
@@ -130,14 +131,14 @@ Object scheme::bitwiseArithmeticShiftLeftEx(int argc, const Object* argv)
     argumentAsFixnum(1, e2);
 
     if (e2 < 0) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "fixnum greater than zero", argv[1]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "fixnum greater than zero", argv[1]);
         return Object::Undef;
     } else {
         return Arithmetic::bitwiseShiftLeft(e1, static_cast<unsigned long>(e2));
     }
 }
 
-Object scheme::bitwiseArithmeticShiftRightEx(int argc, const Object* argv)
+Object scheme::bitwiseArithmeticShiftRightEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-arithmetic-shift-right");
     checkArgumentLength(2);
@@ -145,14 +146,14 @@ Object scheme::bitwiseArithmeticShiftRightEx(int argc, const Object* argv)
     argumentAsFixnum(1, e2);
 
     if (e2 < 0) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "fixnum greater than zero", argv[1]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "fixnum greater than zero", argv[1]);
         return Object::Undef;
     } else {
         return Arithmetic::bitwiseShiftRight(e1, static_cast<unsigned long>(e2));
     }
 }
 
-Object scheme::bitwiseArithmeticShiftEx(int argc, const Object* argv)
+Object scheme::bitwiseArithmeticShiftEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bitwise-arithmetic-shift");
     checkArgumentLength(2);

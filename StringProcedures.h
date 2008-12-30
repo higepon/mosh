@@ -36,20 +36,20 @@
 
 namespace scheme {
 
-    Object stringCopyEx(int argc, const Object* argv);
+    Object stringCopyEx(VM* theVM, int argc, const Object* argv);
     Object stringTosymbol(Object str);
     Object format(const ucs4char* message, Object values);
-    Object stringEx(int argc, const Object* argv);
-    Object makeStringEx(int argc, const Object* argv);
-    Object stringSetDEx(int argc, const Object* argv);
-    Object stringLengthEx(int argc, const Object* argv);
-    Object stringTosymbolEx(int argc, const Object* argv);
-    Object stringTonumberEx(int argc, const Object* argv);
-    Object stringAppendEx(int argc, const Object* argv);
-    Object stringSplitEx(int argc, const Object* argv);
-    Object stringToregexpEx(int argc, const Object* argv);
-    Object stringEqPEx(int argc, const Object* argv);
-    Object stringRefEx(int argc, const Object* argv);
+    Object stringEx(VM* theVM, int argc, const Object* argv);
+    Object makeStringEx(VM* theVM, int argc, const Object* argv);
+    Object stringSetDEx(VM* theVM, int argc, const Object* argv);
+    Object stringLengthEx(VM* theVM, int argc, const Object* argv);
+    Object stringTosymbolEx(VM* theVM, int argc, const Object* argv);
+    Object stringTonumberEx(VM* theVM, int argc, const Object* argv);
+    Object stringAppendEx(VM* theVM, int argc, const Object* argv);
+    Object stringSplitEx(VM* theVM, int argc, const Object* argv);
+    Object stringToregexpEx(VM* theVM, int argc, const Object* argv);
+    Object stringEqPEx(VM* theVM, int argc, const Object* argv);
+    Object stringRefEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

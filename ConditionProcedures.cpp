@@ -43,11 +43,9 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
+extern bool isSubTypeOfCondition(VM* theVM, Object rtd);
 
-extern bool isSubTypeOfCondition(Object rtd);
-
-Object scheme::conditionAccessorEx(int argc, const Object* argv)
+Object scheme::conditionAccessorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-accessor");
     checkArgumentLength(2);
@@ -56,7 +54,7 @@ Object scheme::conditionAccessorEx(int argc, const Object* argv)
     return Object::makeCallable(new ConditionAccessor(rtd, proc));
 }
 
-Object scheme::conditionPredicateEx(int argc, const Object* argv)
+Object scheme::conditionPredicateEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-prediate");
     checkArgumentLength(1);
@@ -64,14 +62,14 @@ Object scheme::conditionPredicateEx(int argc, const Object* argv)
     return Object::makeCallable(new ConditionPredicate(rtd));
 }
 
-Object scheme::conditionPEx(int argc, const Object* argv)
+Object scheme::conditionPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition?");
     checkArgumentLength(1);
     const Object object = argv[0];
     if (object.isRecord()) {
         const Object rtd = object.toRecord()->rtd();
-        return Object::makeBool(isSubTypeOfCondition(rtd));
+        return Object::makeBool(isSubTypeOfCondition(theVM, rtd));
     } else if (object.isCompoundCondition()) {
         return Object::True;
     } else {
@@ -79,7 +77,7 @@ Object scheme::conditionPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::simpleConditionsEx(int argc, const Object* argv)
+Object scheme::simpleConditionsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("simple-conditions");
     checkArgumentLength(1);
@@ -92,7 +90,7 @@ Object scheme::simpleConditionsEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::conditionEx(int argc, const Object* argv)
+Object scheme::conditionEx(VM* theVM, int argc, const Object* argv)
 {
     return Object::makeCompoundCondition(argc, argv);
 }
@@ -105,7 +103,7 @@ ConditionPredicate::~ConditionPredicate()
 {
 }
 
-Object ConditionPredicate::call(VM* vm, int argc, const Object* argv)
+Object ConditionPredicate::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-predicate for condition");
     checkArgumentLength(1);
@@ -135,7 +133,7 @@ ConditionAccessor::~ConditionAccessor()
 {
 }
 
-Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
+Object ConditionAccessor::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-accessor for condition");
     checkArgumentLength(1);
@@ -152,7 +150,7 @@ Object ConditionAccessor::call(VM* vm, int argc, const Object* argv)
                 return theVM->callClosure1(proc_, condition);
             }
         }
-        callAssertionViolationAfter(procedureName, "invalid condition", L1(object));
+        callAssertionViolationAfter(theVM, procedureName, "invalid condition", L1(object));
         return Object::Undef;
     }
 }

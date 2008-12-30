@@ -32,6 +32,7 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"
+#include "VM.h"
 #include "FlonumProcedures.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
@@ -43,7 +44,7 @@
 
 using namespace scheme;
 
-Object scheme::fixnumToflonumEx(int argc, const Object* argv)
+Object scheme::fixnumToflonumEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fixnum->flonum");
     checkArgumentLength(1);
@@ -51,7 +52,7 @@ Object scheme::fixnumToflonumEx(int argc, const Object* argv)
     return Object::makeFlonum(fixnum);
 }
 
-Object scheme::flexptEx(int argc, const Object* argv)
+Object scheme::flexptEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flexp");
     checkArgumentLength(2);
@@ -60,7 +61,7 @@ Object scheme::flexptEx(int argc, const Object* argv)
     return Flonum::expt(flonum0, flonum1);
 }
 
-Object scheme::flsqrtEx(int argc, const Object* argv)
+Object scheme::flsqrtEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flexp");
     checkArgumentLength(1);
@@ -69,7 +70,7 @@ Object scheme::flsqrtEx(int argc, const Object* argv)
 
 }
 
-Object scheme::flatanEx(int argc, const Object* argv)
+Object scheme::flatanEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flatan");
     checkArgumentLengthBetween(1, 2);
@@ -83,7 +84,7 @@ Object scheme::flatanEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::flacosEx(int argc, const Object* argv)
+Object scheme::flacosEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flacos");
     checkArgumentLength(1);
@@ -92,7 +93,7 @@ Object scheme::flacosEx(int argc, const Object* argv)
 
 }
 
-Object scheme::flasinEx(int argc, const Object* argv)
+Object scheme::flasinEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flasin");
     checkArgumentLength(1);
@@ -101,7 +102,7 @@ Object scheme::flasinEx(int argc, const Object* argv)
 
 }
 
-Object scheme::fltanEx(int argc, const Object* argv)
+Object scheme::fltanEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fltan");
     checkArgumentLength(1);
@@ -110,7 +111,7 @@ Object scheme::fltanEx(int argc, const Object* argv)
 
 }
 
-Object scheme::flcosEx(int argc, const Object* argv)
+Object scheme::flcosEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flcos");
     checkArgumentLength(1);
@@ -119,7 +120,7 @@ Object scheme::flcosEx(int argc, const Object* argv)
 
 }
 
-Object scheme::flsinEx(int argc, const Object* argv)
+Object scheme::flsinEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flsin");
     checkArgumentLength(1);
@@ -127,7 +128,7 @@ Object scheme::flsinEx(int argc, const Object* argv)
     return flonum->sin();
 }
 
-Object scheme::fllogEx(int argc, const Object* argv)
+Object scheme::fllogEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fllog");
     checkArgumentLengthBetween(1, 2);
@@ -141,7 +142,7 @@ Object scheme::fllogEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::flexpEx(int argc, const Object* argv)
+Object scheme::flexpEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flexp");
     checkArgumentLength(1);
@@ -149,7 +150,7 @@ Object scheme::flexpEx(int argc, const Object* argv)
     return flonum->exp();
 }
 
-Object scheme::flroundEx(int argc, const Object* argv)
+Object scheme::flroundEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flround");
     checkArgumentLength(1);
@@ -157,7 +158,7 @@ Object scheme::flroundEx(int argc, const Object* argv)
     return flonum->round();
 }
 
-Object scheme::fltruncateEx(int argc, const Object* argv)
+Object scheme::fltruncateEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fltruncate");
     checkArgumentLength(1);
@@ -165,7 +166,7 @@ Object scheme::fltruncateEx(int argc, const Object* argv)
     return flonum->truncate();
 }
 
-Object scheme::flceilingEx(int argc, const Object* argv)
+Object scheme::flceilingEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flceiling");
     checkArgumentLength(1);
@@ -173,7 +174,7 @@ Object scheme::flceilingEx(int argc, const Object* argv)
     return flonum->ceiling();
 }
 
-Object scheme::flfloorEx(int argc, const Object* argv)
+Object scheme::flfloorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flfloor");
     checkArgumentLength(1);
@@ -181,7 +182,7 @@ Object scheme::flfloorEx(int argc, const Object* argv)
     return flonum->floor();
 }
 
-Object scheme::flnumeratorEx(int argc, const Object* argv)
+Object scheme::flnumeratorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flnumerator");
     checkArgumentLength(1);
@@ -189,7 +190,7 @@ Object scheme::flnumeratorEx(int argc, const Object* argv)
     return flonum->numerator();
 }
 
-Object scheme::fldenominatorEx(int argc, const Object* argv)
+Object scheme::fldenominatorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fldenominator");
     checkArgumentLength(1);
@@ -197,7 +198,7 @@ Object scheme::fldenominatorEx(int argc, const Object* argv)
     return flonum->denominator();
 }
 
-Object scheme::flIntegerDiv0Ex(int argc, const Object* argv)
+Object scheme::flIntegerDiv0Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fldiv0");
     checkArgumentLength(2);
@@ -206,7 +207,7 @@ Object scheme::flIntegerDiv0Ex(int argc, const Object* argv)
     return Flonum::integerDiv0(flonum1, flonum2);
 }
 
-Object scheme::flIntegerMod0Ex(int argc, const Object* argv)
+Object scheme::flIntegerMod0Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flmod0");
     checkArgumentLength(2);
@@ -215,7 +216,7 @@ Object scheme::flIntegerMod0Ex(int argc, const Object* argv)
     return Flonum::integerMod0(flonum1, flonum2);
 }
 
-Object scheme::flIntegerDivEx(int argc, const Object* argv)
+Object scheme::flIntegerDivEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fldiv");
     checkArgumentLength(2);
@@ -224,7 +225,7 @@ Object scheme::flIntegerDivEx(int argc, const Object* argv)
     return Flonum::integerDiv(flonum1, flonum2);
 }
 
-Object scheme::flIntegerModEx(int argc, const Object* argv)
+Object scheme::flIntegerModEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flmod");
     checkArgumentLength(2);
@@ -233,7 +234,7 @@ Object scheme::flIntegerModEx(int argc, const Object* argv)
     return Flonum::integerMod(flonum1, flonum2);
 }
 
-Object scheme::flabsEx(int argc, const Object* argv)
+Object scheme::flabsEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flabs");
     checkArgumentLength(1);
@@ -241,7 +242,7 @@ Object scheme::flabsEx(int argc, const Object* argv)
     return flonum->abs();
 }
 
-Object scheme::flAddEx(int argc, const Object* argv)
+Object scheme::flAddEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl+");
     if (0 == argc) {
@@ -259,7 +260,7 @@ Object scheme::flAddEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::flMulEx(int argc, const Object* argv)
+Object scheme::flMulEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl*");
     if (0 == argc) {
@@ -277,7 +278,7 @@ Object scheme::flMulEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::flSubEx(int argc, const Object* argv)
+Object scheme::flSubEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl-");
     checkArgumentLengthAtLeast(1);
@@ -296,14 +297,14 @@ Object scheme::flSubEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::flDivEx(int argc, const Object* argv)
+Object scheme::flDivEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl/");
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
         argumentCheckFlonum(0, number);
-        return Arithmetic::div(Object::makeFlonum(1.0), number);
+        return Arithmetic::div(theVM, Object::makeFlonum(1.0), number);
     }
 
     argumentCheckFlonum(0, dummy);
@@ -315,7 +316,7 @@ Object scheme::flDivEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::flmaxEx(int argc, const Object* argv)
+Object scheme::flmaxEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flmax");
     checkArgumentLengthAtLeast(1);
@@ -332,7 +333,7 @@ Object scheme::flmaxEx(int argc, const Object* argv)
     return maxFlonum;
 }
 
-Object scheme::flminEx(int argc, const Object* argv)
+Object scheme::flminEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flmin");
     checkArgumentLengthAtLeast(1);
@@ -349,7 +350,7 @@ Object scheme::flminEx(int argc, const Object* argv)
     return minFlonum;
 }
 
-Object scheme::flnanPEx(int argc, const Object* argv)
+Object scheme::flnanPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flnan?");
     checkArgumentLength(1);
@@ -357,7 +358,7 @@ Object scheme::flnanPEx(int argc, const Object* argv)
     return Object::makeBool(flonum->isNan());
 }
 
-Object scheme::flinfinitePEx(int argc, const Object* argv)
+Object scheme::flinfinitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flinfinite?");
     checkArgumentLength(1);
@@ -365,7 +366,7 @@ Object scheme::flinfinitePEx(int argc, const Object* argv)
     return Object::makeBool(flonum->isInfinite());
 }
 
-Object scheme::flfinitePEx(int argc, const Object* argv)
+Object scheme::flfinitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flfinite?");
     checkArgumentLength(1);
@@ -373,7 +374,7 @@ Object scheme::flfinitePEx(int argc, const Object* argv)
     return Object::makeBool(!flonum->isInfinite());
 }
 
-Object scheme::flevenPEx(int argc, const Object* argv)
+Object scheme::flevenPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fleven?");
     checkArgumentLength(1);
@@ -381,12 +382,12 @@ Object scheme::flevenPEx(int argc, const Object* argv)
     if (flonum->isInteger()) {
         return Object::makeBool(flonum->isEven());
     } else {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "integer flonum", argv[0]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "integer flonum", argv[0]);
         return Object::Undef;
     }
 }
 
-Object scheme::floddPEx(int argc, const Object* argv)
+Object scheme::floddPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flodd?");
     checkArgumentLength(1);
@@ -394,12 +395,12 @@ Object scheme::floddPEx(int argc, const Object* argv)
     if (flonum->isInteger()) {
         return Object::makeBool(flonum->isOdd());
     } else {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "integer flonum", argv[0]);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "integer flonum", argv[0]);
         return Object::Undef;
     }
 }
 
-Object scheme::flnegativePEx(int argc, const Object* argv)
+Object scheme::flnegativePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flpositive?");
     checkArgumentLength(1);
@@ -407,7 +408,7 @@ Object scheme::flnegativePEx(int argc, const Object* argv)
     return Object::makeBool(Flonum::lt(flonum, 0));
 }
 
-Object scheme::flpositivePEx(int argc, const Object* argv)
+Object scheme::flpositivePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flpositive?");
     checkArgumentLength(1);
@@ -415,7 +416,7 @@ Object scheme::flpositivePEx(int argc, const Object* argv)
     return Object::makeBool(Flonum::gt(flonum, 0));
 }
 
-Object scheme::flzeroPEx(int argc, const Object* argv)
+Object scheme::flzeroPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flzero?");
     checkArgumentLength(1);
@@ -423,7 +424,7 @@ Object scheme::flzeroPEx(int argc, const Object* argv)
     return Object::makeBool(Flonum::eq(flonum, 0));
 }
 
-Object scheme::flintegerPEx(int argc, const Object* argv)
+Object scheme::flintegerPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flinteger?");
     checkArgumentLength(1);
@@ -431,7 +432,7 @@ Object scheme::flintegerPEx(int argc, const Object* argv)
     return Object::makeBool(flonum->isInteger());
 }
 
-Object scheme::flLePEx(int argc, const Object* argv)
+Object scheme::flLePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl<=?");
     checkArgumentLengthAtLeast(2);
@@ -447,7 +448,7 @@ Object scheme::flLePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::flGePEx(int argc, const Object* argv)
+Object scheme::flGePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl>=?");
     checkArgumentLengthAtLeast(2);
@@ -463,7 +464,7 @@ Object scheme::flGePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::flGtPEx(int argc, const Object* argv)
+Object scheme::flGtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl>?");
     checkArgumentLengthAtLeast(2);
@@ -479,7 +480,7 @@ Object scheme::flGtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::flLtPEx(int argc, const Object* argv)
+Object scheme::flLtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl<?");
     checkArgumentLengthAtLeast(2);
@@ -495,7 +496,7 @@ Object scheme::flLtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::flEqPEx(int argc, const Object* argv)
+Object scheme::flEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fl=?");
     checkArgumentLengthAtLeast(2);
@@ -511,7 +512,7 @@ Object scheme::flEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::realToflonumEx(int argc, const Object* argv)
+Object scheme::realToflonumEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("real->flonum");
     checkArgumentLength(1);

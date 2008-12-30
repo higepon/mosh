@@ -52,23 +52,25 @@ namespace scheme {
 #define CATCH_IO else
 #define IO_ERROR_MESSAGE ioErrorMessage
 
-    Object throwIOError(Object message);
-    Object throwEx(int argc, const Object* argv);
-    Object errorEx(int argc, const Object* argv);
-    Object assertionViolationEx(int argc, const Object* argv);
+    class VM;
 
-    void callLexicalViolationAfter(Object who, Object message, Object irritants = Object::Nil);
-    void callIoFileNameErrorAfter(Object who, Object message, Object irritants = Object::Nil);
-    void callAssertionViolationAfter(Object who, Object message, Object irritants = Object::Nil);
-    void callErrorAfter(Object who, Object message, Object irritants = Object::Nil);
-    void callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);
-    void callImplementationRestrictionAfter(Object who, Object message, Object irritants);
-    void callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants = Object::Nil);
-    void callNotImplementedAssertionViolationAfter(Object who, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
-    void callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
+    Object throwIOError(Object message);
+    Object throwEx(VM* theVM, int argc, const Object* argv);
+    Object errorEx(VM* theVM, int argc, const Object* argv);
+    Object assertionViolationEx(VM* theVM, int argc, const Object* argv);
+
+    void callLexicalViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants);
+    void callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
+    void callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
 
 
 

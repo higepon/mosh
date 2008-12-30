@@ -39,7 +39,7 @@ namespace scheme {
 class EqvHashTable : public GenericHashTable
 {
 public:
-    EqvHashTable();
+    EqvHashTable(VM* theVM);
     virtual ~EqvHashTable();
 
     Object hashFunction() const;

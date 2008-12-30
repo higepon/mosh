@@ -38,14 +38,14 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
-RecordConstructorDescriptor::RecordConstructorDescriptor(Object rtd,
+RecordConstructorDescriptor::RecordConstructorDescriptor(VM* theVM,
+                                                         Object rtd,
                                                          Object parentRcd,
                                                          Object protocol)
-  : rtd_(rtd),
-    parentRcd_(parentRcd),
-    protocol_(protocol)
+    : vm_(theVM),
+      rtd_(rtd),
+      parentRcd_(parentRcd),
+      protocol_(protocol)
 {
 }
 
@@ -82,7 +82,7 @@ Object RecordConstructorDescriptor::makeConstructor()
 
     for (ObjectVector::reverse_iterator it = protocols.rbegin(); it != protocols.rend(); ++it) {
         if (!(*it).isFalse()) {
-            recordInitializer = theVM->callClosure1(*it, recordInitializer);
+            recordInitializer = vm_->callClosure1(*it, recordInitializer);
         }
     }
     return recordInitializer;

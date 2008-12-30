@@ -36,24 +36,24 @@
 
 namespace scheme {
 
-    Object consEx(int argc, const Object* argv);
-    Object carEx(int argc, const Object* argv);
-    Object cdrEx(int argc, const Object* argv);
-    Object setSourceInfoDEx(int argc, const Object* argv);
-    Object sourceInfoEx(int argc, const Object* argv);
-    Object nullPEx(int argc, const Object* argv);
-    Object setCarDEx(int argc, const Object* argv);
-    Object setCdrDEx(int argc, const Object* argv);
-    Object reverseEx(int argc, const Object* argv);
-    Object listPEx(int argc, const Object* argv);
-    Object memqEx(int argc, const Object* argv);
-    Object memvEx(int argc, const Object* argv);
-    Object memberEx(int argc, const Object* argv);
-    Object assqEx(int argc, const Object* argv);
-    Object appendEx(int argc, const Object* argv);
-    Object append2Ex(int argc, const Object* argv);
-    Object appendDEx(int argc, const Object* argv);
-    Object lengthEx(int argc, const Object* argv);
+    Object consEx(VM* theVM, int argc, const Object* argv);
+    Object carEx(VM* theVM, int argc, const Object* argv);
+    Object cdrEx(VM* theVM, int argc, const Object* argv);
+    Object setSourceInfoDEx(VM* theVM, int argc, const Object* argv);
+    Object sourceInfoEx(VM* theVM, int argc, const Object* argv);
+    Object nullPEx(VM* theVM, int argc, const Object* argv);
+    Object setCarDEx(VM* theVM, int argc, const Object* argv);
+    Object setCdrDEx(VM* theVM, int argc, const Object* argv);
+    Object reverseEx(VM* theVM, int argc, const Object* argv);
+    Object listPEx(VM* theVM, int argc, const Object* argv);
+    Object memqEx(VM* theVM, int argc, const Object* argv);
+    Object memvEx(VM* theVM, int argc, const Object* argv);
+    Object memberEx(VM* theVM, int argc, const Object* argv);
+    Object assqEx(VM* theVM, int argc, const Object* argv);
+    Object appendEx(VM* theVM, int argc, const Object* argv);
+    Object append2Ex(VM* theVM, int argc, const Object* argv);
+    Object appendDEx(VM* theVM, int argc, const Object* argv);
+    Object lengthEx(VM* theVM, int argc, const Object* argv);
 
     inline bool existsInList(Object o, Object list)
     {
@@ -87,7 +87,7 @@ namespace scheme {
         return Object::False;
     }
 
-    Object listTovectorEx(int argc, const Object* argv);
+    Object listTovectorEx(VM* theVM, int argc, const Object* argv);
 
 
 }; // namespace scheme

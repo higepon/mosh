@@ -73,7 +73,7 @@ public:
         return freeVariables[n];
     }
 
-    Object sourceInfoString();
+    Object sourceInfoString(VM* theVM);
 
 public:
     Object* pc;

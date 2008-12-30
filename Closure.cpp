@@ -35,6 +35,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Closure.h"
+#include "VM.h"
 #include "StringProcedures.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
@@ -42,7 +43,7 @@
 
 using namespace scheme;
 
-Object Closure::sourceInfoString()
+Object Closure::sourceInfoString(VM* theVM)
 {
     if (sourceInfo.isFalse()) {
         return "#<closure>";

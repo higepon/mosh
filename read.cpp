@@ -66,6 +66,7 @@
 #include "Reader.h"
 #include "scheme.h"
 #include "SString.h"
+#include "VM.h"
 #include "ErrorProcedures.h"
 #include "StringProcedures.h"
 #include "TextualInputPort.h"
@@ -1562,7 +1563,9 @@ static ScmObj read_regexp(ScmPort *port)
             const Object regexp = Object::makeRegexp(ds, flags & SCM_REGEXP_CASE_FOLD);
             Regexp* const regexpPointer = regexp.toRegexp();
             if (regexpPointer->isErrorOccured()) {
-                callAssertionViolationImmidiaImmediately("read",
+                MOSH_ASSERT(false);
+                callAssertionViolationImmidiaImmediately(NULL,
+                                                         "read",
                                                          regexpPointer->errorMessage(),
                                                          regexpPointer->irritants());
                 return Object::Undef;

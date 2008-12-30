@@ -34,12 +34,13 @@
 #include "SString.h"
 #include "Symbol.h"
 #include "Regexp.h"
+#include "VM.h"
 #include "RegexpProcedures.h"
 #include "ProcedureMacro.h"
 
 using namespace scheme;
 
-Object scheme::regexpReplaceEx(int argc, const Object* argv)
+Object scheme::regexpReplaceEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("regexp-replace");
     checkArgumentLength(3);
@@ -51,7 +52,7 @@ Object scheme::regexpReplaceEx(int argc, const Object* argv)
     return regexp->replace(text, sub);
 }
 
-Object scheme::regexpReplaceAllEx(int argc, const Object* argv)
+Object scheme::regexpReplaceAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("regexp-replace-all");
     checkArgumentLength(3);
@@ -63,7 +64,7 @@ Object scheme::regexpReplaceAllEx(int argc, const Object* argv)
     return regexp->replaceAll(text, sub);
 }
 
-Object scheme::rxmatchEx(int argc, const Object* argv)
+Object scheme::rxmatchEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatch");
     checkArgumentLength(2);
@@ -72,7 +73,8 @@ Object scheme::rxmatchEx(int argc, const Object* argv)
 
     const Object returnValue = regexp->match(text->data());
     if (regexp->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regexp->errorMessage(),
                                     regexp->irritants());
         return Object::Undef;
@@ -81,21 +83,21 @@ Object scheme::rxmatchEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::regexpPEx(int argc, const Object* argv)
+Object scheme::regexpPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("regexp?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isRegexp());
 }
 
-Object scheme::regexpTostringEx(int argc, const Object* argv)
+Object scheme::regexpTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("regexp->string");
     argumentAsRegexp(0, regexp);
     return Object::makeString(regexp->pattern());
 }
 
-Object scheme::rxmatchStartEx(int argc, const Object* argv)
+Object scheme::rxmatchStartEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatxh-start");
     checkArgumentLengthBetween(1, 2);
@@ -112,7 +114,8 @@ Object scheme::rxmatchStartEx(int argc, const Object* argv)
         returnValue = Object::makeFixnum(regMatch->matchStart(0));
     }
     if (regMatch->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regMatch->errorMessage(),
                                     regMatch->irritants());
         return Object::Undef;
@@ -121,7 +124,7 @@ Object scheme::rxmatchStartEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::rxmatchEndEx(int argc, const Object* argv)
+Object scheme::rxmatchEndEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatch-end");
     checkArgumentLengthBetween(1, 2);
@@ -139,7 +142,8 @@ Object scheme::rxmatchEndEx(int argc, const Object* argv)
     }
 
     if (regMatch->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regMatch->errorMessage(),
                                     regMatch->irritants());
         return Object::Undef;
@@ -148,7 +152,7 @@ Object scheme::rxmatchEndEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::rxmatchAfterEx(int argc, const Object* argv)
+Object scheme::rxmatchAfterEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatch-after");
     checkArgumentLengthBetween(1, 2);
@@ -166,7 +170,8 @@ Object scheme::rxmatchAfterEx(int argc, const Object* argv)
     }
 
     if (regMatch->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regMatch->errorMessage(),
                                     regMatch->irritants());
         return Object::Undef;
@@ -175,7 +180,7 @@ Object scheme::rxmatchAfterEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
+Object scheme::rxmatchBeforeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatch-before");
     checkArgumentLengthBetween(1, 2);
@@ -193,7 +198,8 @@ Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
     }
 
     if (regMatch->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regMatch->errorMessage(),
                                     regMatch->irritants());
         return Object::Undef;
@@ -202,7 +208,7 @@ Object scheme::rxmatchBeforeEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
+Object scheme::rxmatchSubstringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rxmatch-substring");
     checkArgumentLengthBetween(1, 2);
@@ -220,7 +226,8 @@ Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
     }
 
     if (regMatch->isErrorOccured()) {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     regMatch->errorMessage(),
                                     regMatch->irritants());
         return Object::Undef;
@@ -229,14 +236,14 @@ Object scheme::rxmatchSubstringEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::regMatchProxy(int argc, const Object* argv)
+Object scheme::regMatchProxy(VM* theVM, int argc, const Object* argv)
 {
     const Object match = argv[0];
     if (argc == 2 && argv[1] == Symbol::AFTER) {
-        return rxmatchAfterEx(1, argv);
+        return rxmatchAfterEx(theVM, 1, argv);
     } else if (argc == 2 && argv[1] == Symbol::BEFORE) {
-        return rxmatchBeforeEx(1, argv);
+        return rxmatchBeforeEx(theVM, 1, argv);
     } else {
-        return rxmatchSubstringEx(argc, argv);
+        return rxmatchSubstringEx(theVM, argc, argv);
     }
 }

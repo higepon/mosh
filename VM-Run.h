@@ -76,7 +76,7 @@
    if (n.isFixnum() && ac_.isFixnum()) {                        \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());  \
    } else {                                                     \
-       ac_ = Object::makeBool(Arithmetic::func(n, ac_));        \
+       ac_ = Object::makeBool(Arithmetic::func(this, n, ac_));   \
    }
 
 #define NUM_CMP(op, func, val)                                  \
@@ -84,7 +84,7 @@
    if (n.isFixnum() && ac_.isFixnum()) {                        \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());  \
    } else {                                                     \
-       ac_ = Object::makeBool(Arithmetic::func(n, ac_));        \
+       ac_ = Object::makeBool(Arithmetic::func(this, n, ac_));   \
    }
 
 #ifdef USE_DIRECT_THREADED_CODE

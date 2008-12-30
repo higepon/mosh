@@ -33,6 +33,7 @@
 #include "Object-inl.h"
 #include "SString.h"
 #include "Latin1Codec.h"
+#include "VM.h"
 #include "BinaryOutputPort.h"
 #include "BinaryInputPort.h"
 #include "ErrorProcedures.h"

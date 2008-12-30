@@ -63,12 +63,12 @@ static bool checkAndSetVisited(EqHashTable* visited, Object object1, Object obje
 }
 
 
-bool scheme::equal(Object obj1, Object obj2)
+bool scheme::equal(VM* theVM, Object obj1, Object obj2)
 {
-    return equal(obj1, obj2, new EqHashTable);
+    return equal(theVM, obj1, obj2, new EqHashTable);
 }
 
-bool scheme::equal(Object obj1, Object obj2, EqHashTable* visited)
+bool scheme::equal(VM* theVM, Object obj1, Object obj2, EqHashTable* visited)
 {
     Object object1 = obj1;
     Object object2 = obj2;
@@ -81,7 +81,7 @@ entry:
         if (object2.isPair()) {
             if (checkAndSetVisited(visited, object1, object2)) {
                 return true;
-            } else if (equal(object1.car(), object2.car(), visited)) {
+            } else if (equal(theVM, object1.car(), object2.car(), visited)) {
                 object1 = object1.cdr();
                 object2 = object2.cdr();
                 goto entry;
@@ -95,7 +95,7 @@ entry:
 
     if (object1.isNumber()) {
         if (object2.isNumber()) {
-            return Arithmetic::eq(object1, object2);
+            return Arithmetic::eq(theVM, object1, object2);
         } else {
             return false;
         }
@@ -111,7 +111,7 @@ entry:
             if (vector1->length() == vector2->length()) {
                 const int length = vector1->length();
                 for (int i = 0; i < length; i++) {
-                    if (!equal(vector1->ref(i), vector2->ref(i), visited)) {
+                    if (!equal(theVM, vector1->ref(i), vector2->ref(i), visited)) {
                         return false;
                     }
                 }
@@ -163,10 +163,10 @@ entry:
             return false;
         }
     }
-    return eqv(object1, object2);
+    return eqv(theVM, object1, object2);
 }
 
-bool scheme::fastEqual(Object obj1, Object obj2)
+bool scheme::fastEqual(VM* theVM, Object obj1, Object obj2)
 {
     Object object1 = obj1;
     Object object2 = obj2;
@@ -177,7 +177,7 @@ entry:
 
     if (object1.isPair()) {
         if (object2.isPair()) {
-            if (fastEqual(object1.car(), object2.car())) {
+            if (fastEqual(theVM, object1.car(), object2.car())) {
                 object1 = object1.cdr();
                 object2 = object2.cdr();
                 goto entry;
@@ -191,7 +191,7 @@ entry:
 
     if (object1.isNumber()) {
         if (object2.isNumber()) {
-            return Arithmetic::eq(object1, object2);
+            return Arithmetic::eq(theVM, object1, object2);
         } else {
             return false;
         }
@@ -204,7 +204,7 @@ entry:
             if (vector1->length() == vector2->length()) {
                 const int length = vector1->length();
                 for (int i = 0; i < length; i++) {
-                    if (!fastEqual(vector1->ref(i), vector2->ref(i))) {
+                    if (!fastEqual(theVM, vector1->ref(i), vector2->ref(i))) {
                         return false;
                     }
                 }
@@ -256,5 +256,5 @@ entry:
             return false;
         }
     }
-    return eqv(object1, object2);
+    return eqv(theVM, object1, object2);
 }

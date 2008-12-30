@@ -128,7 +128,7 @@ Object VM::getTopLevelGlobalValue(Object id)
     if (val != notFound_) {
         return val;
     } else {
-        callAssertionViolationAfter("symbol-value2", "unbound variable", L1(id));
+        callAssertionViolationAfter(this, "symbol-value2", "unbound variable", L1(id));
         return Object::Undef;
     }
 }
@@ -163,7 +163,7 @@ void VM::loadFile(const ucs4string& file)
         bool readErrorOccured = false;
         for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
             if (readErrorOccured) {
-                callLexicalViolationImmidiaImmediately("read", p->error());
+                callLexicalViolationImmidiaImmediately(this, "read", p->error());
             }
             const Object compiled = compile(o);
 //            dumpCompiledCode(compiled);
@@ -188,7 +188,8 @@ void VM::load(const ucs4string& file)
         } else if (fileExistsP(moshLibPath)) {
             loadFile(moshLibPath);
         } else {
-            callAssertionViolationImmidiaImmediately("load",
+            callAssertionViolationImmidiaImmediately(this,
+                                                     "load",
                                                      "cannot find file in load path",
                                                      L1(Object::makeString(file)));
         }
@@ -526,7 +527,7 @@ Object VM::getStackTrace()
     const int FP_OFFSET_IN_FRAME = 1;
     const int CLOSURE_OFFSET_IN_FRAME = 2;
 
-    const Object sport = Object::makeStringOutputPort();
+    const Object sport = Object::makeStringOutputPort(this);
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &cl_;
@@ -607,7 +608,7 @@ Object VM::getStackTrace()
             break;
         }
     }
-    return sysGetOutputStringEx(1, &sport);
+    return sysGetOutputStringEx(this, 1, &sport);
 }
 
 bool VM::mayBeStackPointer(Object* obj) const
@@ -624,10 +625,10 @@ void VM::throwException(Object exception)
     fflush(stdout);
 #endif
     const Object stackTrace = getStackTrace();
-    const Object stringOutputPort = Object::makeStringOutputPort();
+    const Object stringOutputPort = Object::makeStringOutputPort(this);
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
     textualOutputPort->format(UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
-    errorObj_ = sysGetOutputStringEx(1, &stringOutputPort);
+    errorObj_ = sysGetOutputStringEx(this, 1, &stringOutputPort);
 
     longjmp(returnPoint_, -1);
 }
@@ -640,7 +641,7 @@ void VM::showStack(int count, const char* file, int line)
         LOG2("============================================\n~d: ~a\n", Object::makeFixnum(i), index(sp_, i));
     }
 #else
-    callAssertionViolationImmidiaImmediately("vm", "don't use showStack");
+    callAssertionViolationImmidiaImmediately(this, "vm", "don't use showStack");
 #endif
 }
 
@@ -705,7 +706,7 @@ void VM::expandStack(int plusSize)
     if (NULL == nextStack) {
         // todo
         // handle stack overflow with guard
-        callAssertionViolationImmidiaImmediately("#<closure>", "stack overflow", L1(Object::makeFixnum(sp_ - stack_)));
+        callAssertionViolationImmidiaImmediately(this, "#<closure>", "stack overflow", L1(Object::makeFixnum(sp_ - stack_)));
     }
     memcpy(nextStack, stack_, sizeof(Object) * stackSize_);
     fp_ = nextStack + (fp_ - stack_);

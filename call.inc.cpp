@@ -43,7 +43,7 @@
                     const int argc = operand.toFixnum();
                     pc_  = retCode;
 
-                    ac_.toCProcedure()->call(argc, sp_ - argc);
+                    ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 } else {
                     CProcedure* const cprocedure = ac_.toCProcedure();
                     // set pc_ before call() for pointing where to return.
@@ -54,7 +54,7 @@
                     const int argc = operand.toFixnum();
 //                    LOG1("~a\n", getClosureName(ac_));
                     cl_ = ac_;
-                    ac_ = ac_.toCProcedure()->call(argc, sp_ - argc);
+                    ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 }
             } else if (ac_.isClosure()) {
                 const Closure* const c = ac_.toClosure();
@@ -82,7 +82,8 @@
                         fp_ = sp - requiredLength;
                         sp_ = sp;
                     } else {
-                        callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
+                        callWrongNumberOfArgumentsViolationAfter(this,
+                                                                 ac_.toClosure()->sourceInfoString(this),
                                                                  requiredLength,
                                                                  operand.toFixnum());
                     }
@@ -93,7 +94,8 @@
                     for (int i = 0; i < operand.toFixnum(); i++) {
                         args = Object::cons(index(sp_, i), args);
                     }
-                    callWrongNumberOfArgumentsViolationAfter(ac_.toClosure()->sourceInfoString(),
+                    callWrongNumberOfArgumentsViolationAfter(this,
+                                                             ac_.toClosure()->sourceInfoString(this),
                                                              requiredLength,
                                                              operand.toFixnum(),
                                                              args);
@@ -126,7 +128,7 @@
                 pc_  = rxmatchCProc->returnCode;
                 pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                 pc_[1] = operand;
-                ac_ = rxmatchCProc->call(argc + 1, argv);
+                ac_ = rxmatchCProc->call(this, argc + 1, argv);
             } else if (ac_.isRegMatch()) {
                 extern Object regMatchProxy(Object args);
                 VM_ASSERT(operand.isFixnum());
@@ -134,11 +136,11 @@
                 Object argv[2];
                 argv[0] = ac_;
                 argv[1] = sp_[-argc];
-                ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(argc + 1, argv);
+                ac_ = Object::makeCProcedure(scheme::regMatchProxy).toCProcedure()->call(this, argc + 1, argv);
 //                 returnCode_[1] = operand;
 //                 pc_  = returnCode_;
                 goto return_entry;
             } else {
-                callAssertionViolationAfter("apply", "invalid application", L1(ac_));
+                callAssertionViolationAfter(this, "apply", "invalid application", L1(ac_));
             }
 

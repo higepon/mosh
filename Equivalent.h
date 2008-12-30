@@ -36,11 +36,11 @@
 #include "scheme.h"
 
 namespace scheme {
-    bool equal(Object object1, Object object2, EqHashTable* visited);
-    bool equal(Object object1, Object object2);
-    bool fastEqual(Object object1, Object object2);
+    bool equal(VM* theVM, Object object1, Object object2, EqHashTable* visited);
+    bool equal(VM* theVM, Object object1, Object object2);
+    bool fastEqual(VM* theVM, Object object1, Object object2);
 
-    inline bool eqv(Object o1, Object o2)
+    inline bool eqv(VM* theVM, Object o1, Object o2)
     {
         if (o1.isRecord()) {
             if (o2.isRecord()) {
@@ -54,7 +54,7 @@ namespace scheme {
 
         if (o1.isNumber()) {
             if (o2.isNumber()) {
-                return Arithmetic::eq(o1, o2);
+                return Arithmetic::eq(theVM, o1, o2);
             } else {
                 return false;
             }

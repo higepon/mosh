@@ -47,7 +47,7 @@
 
 using namespace scheme;
 
-Object scheme::makePolarEx(int argc, const Object* argv)
+Object scheme::makePolarEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-polar");
     checkArgumentLength(2);
@@ -56,16 +56,16 @@ Object scheme::makePolarEx(int argc, const Object* argv)
     return Arithmetic::makePolar(n1, n2);
 }
 
-Object scheme::exptEx(int argc, const Object* argv)
+Object scheme::exptEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("expt");
     checkArgumentLength(2);
     argumentCheckNumber(0, n1);
     argumentCheckNumber(1, n2);
-    return Arithmetic::expt(n1, n2);
+    return Arithmetic::expt(theVM, n1, n2);
 }
 
-Object scheme::sqrtEx(int argc, const Object* argv)
+Object scheme::sqrtEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("sqrt");
     checkArgumentLength(1);
@@ -73,7 +73,7 @@ Object scheme::sqrtEx(int argc, const Object* argv)
     return Arithmetic::sqrt(n);
 }
 
-Object scheme::acosEx(int argc, const Object* argv)
+Object scheme::acosEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("acos");
     checkArgumentLength(1);
@@ -81,7 +81,7 @@ Object scheme::acosEx(int argc, const Object* argv)
     return Arithmetic::acos(n);
 }
 
-Object scheme::atanEx(int argc, const Object* argv)
+Object scheme::atanEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("atan");
     checkArgumentLengthBetween(1, 2);
@@ -95,7 +95,7 @@ Object scheme::atanEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::asinEx(int argc, const Object* argv)
+Object scheme::asinEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("asin");
     checkArgumentLength(1);
@@ -103,7 +103,7 @@ Object scheme::asinEx(int argc, const Object* argv)
     return Arithmetic::asin(n);
 }
 
-Object scheme::tanEx(int argc, const Object* argv)
+Object scheme::tanEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("tan");
     checkArgumentLength(1);
@@ -111,7 +111,7 @@ Object scheme::tanEx(int argc, const Object* argv)
     return Arithmetic::tan(n);
 }
 
-Object scheme::sinEx(int argc, const Object* argv)
+Object scheme::sinEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("sin");
     checkArgumentLength(1);
@@ -119,7 +119,7 @@ Object scheme::sinEx(int argc, const Object* argv)
     return Arithmetic::sin(n);
 }
 
-Object scheme::cosEx(int argc, const Object* argv)
+Object scheme::cosEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("cos");
     checkArgumentLength(1);
@@ -127,14 +127,14 @@ Object scheme::cosEx(int argc, const Object* argv)
     return Arithmetic::cos(n);
 }
 
-Object scheme::logEx(int argc, const Object* argv)
+Object scheme::logEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("log");
     checkArgumentLengthBetween(1, 2);
     if (argc == 1) {
         argumentCheckNumber(0, n);
         if (Arithmetic::isExactZero(n)) {
-            callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", L1(n));
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(n));
             return Object::Undef;
         }
         return Arithmetic::log(n);
@@ -142,14 +142,14 @@ Object scheme::logEx(int argc, const Object* argv)
         argumentCheckNumber(0, n1);
         argumentCheckNumber(1, n2);
         if (Arithmetic::isExactZero(n1) || Arithmetic::isExactZero(n2)) {
-            callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", L2(n1, n2));
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L2(n1, n2));
             return Object::Undef;
         }
-        return Arithmetic::log(n1, n2);
+        return Arithmetic::log(theVM, n1, n2);
     }
 }
 
-Object scheme::expEx(int argc, const Object* argv)
+Object scheme::expEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("exp");
     checkArgumentLength(1);
@@ -157,7 +157,7 @@ Object scheme::expEx(int argc, const Object* argv)
     return Arithmetic::exp(n);
 }
 
-Object scheme::floorEx(int argc, const Object* argv)
+Object scheme::floorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("floor");
     checkArgumentLength(1);
@@ -165,7 +165,7 @@ Object scheme::floorEx(int argc, const Object* argv)
     return Arithmetic::floor(n);
 }
 
-Object scheme::ceilingEx(int argc, const Object* argv)
+Object scheme::ceilingEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("ceiling");
     checkArgumentLength(1);
@@ -173,7 +173,7 @@ Object scheme::ceilingEx(int argc, const Object* argv)
     return Arithmetic::ceiling(n);
 }
 
-Object scheme::truncateEx(int argc, const Object* argv)
+Object scheme::truncateEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("truncate");
     checkArgumentLength(1);
@@ -181,7 +181,7 @@ Object scheme::truncateEx(int argc, const Object* argv)
     return Arithmetic::truncate(n);
 }
 
-Object scheme::roundEx(int argc, const Object* argv)
+Object scheme::roundEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("round");
     checkArgumentLength(1);
@@ -189,36 +189,36 @@ Object scheme::roundEx(int argc, const Object* argv)
     return Arithmetic::round(n);
 }
 
-Object scheme::integerDivEx(int argc, const Object* argv)
+Object scheme::integerDivEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("div");
     checkArgumentLength(2);
     argumentCheckReal(0, n1);
     argumentCheckReal(1, n2);
-    return Arithmetic::integerDiv(n1, n2);
+    return Arithmetic::integerDiv(theVM, n1, n2);
 }
 
-Object scheme::integerDiv0Ex(int argc, const Object* argv)
+Object scheme::integerDiv0Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("div0");
     checkArgumentLength(2);
     argumentCheckReal(0, n1);
     argumentCheckReal(1, n2);
     if (Arithmetic::isExactZero(n2)) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "nonzero", n2);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", n2);
         return Object::Undef;
     }
     if (n1.isFlonum()) {
         Flonum* const flonum = n1.toFlonum();
         if (flonum->isInfinite() || flonum->isNan()) {
-            callWrongTypeOfArgumentViolationAfter(procedureName, "neither infinite nor a NaN", n1);
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
             return Object::Undef;
         }
     }
-    return Arithmetic::integerDiv0(n1, n2);
+    return Arithmetic::integerDiv0(theVM, n1, n2);
 }
 
-Object scheme::absEx(int argc, const Object* argv)
+Object scheme::absEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("abs");
     checkArgumentLength(1);
@@ -226,7 +226,7 @@ Object scheme::absEx(int argc, const Object* argv)
     return Arithmetic::abs(n);
 }
 
-Object scheme::evenPEx(int argc, const Object* argv)
+Object scheme::evenPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("even?");
     checkArgumentLength(1);
@@ -234,7 +234,7 @@ Object scheme::evenPEx(int argc, const Object* argv)
     return Object::makeBool(Arithmetic::isEven(n));
 }
 
-Object scheme::oddPEx(int argc, const Object* argv)
+Object scheme::oddPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("odd?");
     checkArgumentLength(1);
@@ -242,7 +242,7 @@ Object scheme::oddPEx(int argc, const Object* argv)
     return Object::makeBool(!Arithmetic::isEven(n));
 }
 
-Object scheme::magnitudeEx(int argc, const Object* argv)
+Object scheme::magnitudeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("magnitude");
     checkArgumentLength(1);
@@ -250,7 +250,7 @@ Object scheme::magnitudeEx(int argc, const Object* argv)
     return Arithmetic::magnitude(number);
 }
 
-Object scheme::angleEx(int argc, const Object* argv)
+Object scheme::angleEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("angle");
     checkArgumentLength(1);
@@ -258,28 +258,28 @@ Object scheme::angleEx(int argc, const Object* argv)
     return Arithmetic::angle(number);
 }
 
-Object scheme::complexPEx(int argc, const Object* argv)
+Object scheme::complexPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("complex?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isComplex());
 }
 
-Object scheme::realPEx(int argc, const Object* argv)
+Object scheme::realPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("real?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isReal());
 }
 
-Object scheme::integerPEx(int argc, const Object* argv)
+Object scheme::integerPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("integer?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isInteger());
 }
 
-Object scheme::realValuedPEx(int argc, const Object* argv)
+Object scheme::realValuedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("real-valued?");
     checkArgumentLength(1);
@@ -291,7 +291,7 @@ Object scheme::realValuedPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::rationalValuedPEx(int argc, const Object* argv)
+Object scheme::rationalValuedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rational-valued?");
     checkArgumentLength(1);
@@ -303,7 +303,7 @@ Object scheme::rationalValuedPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::integerValuedPEx(int argc, const Object* argv)
+Object scheme::integerValuedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("integer-valued?");
     checkArgumentLength(1);
@@ -315,7 +315,7 @@ Object scheme::integerValuedPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::numeratorEx(int argc, const Object* argv)
+Object scheme::numeratorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("numerator");
     checkArgumentLength(1);
@@ -323,7 +323,7 @@ Object scheme::numeratorEx(int argc, const Object* argv)
     return Arithmetic::numerator(rational);
 }
 
-Object scheme::denominatorEx(int argc, const Object* argv)
+Object scheme::denominatorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("denominator");
     checkArgumentLength(1);
@@ -331,7 +331,7 @@ Object scheme::denominatorEx(int argc, const Object* argv)
     return Arithmetic::denominator(rational);
 }
 
-Object scheme::infinitePEx(int argc, const Object* argv)
+Object scheme::infinitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("infinite?");
     checkArgumentLength(1);
@@ -343,7 +343,7 @@ Object scheme::infinitePEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::finitePEx(int argc, const Object* argv)
+Object scheme::finitePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("finite?");
     checkArgumentLength(1);
@@ -355,7 +355,7 @@ Object scheme::finitePEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::nanPEx(int argc, const Object* argv)
+Object scheme::nanPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("nan?");
     checkArgumentLength(1);
@@ -367,7 +367,7 @@ Object scheme::nanPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::exactPEx(int argc, const Object* argv)
+Object scheme::exactPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("exact?");
     checkArgumentLength(1);
@@ -375,7 +375,7 @@ Object scheme::exactPEx(int argc, const Object* argv)
     return Object::makeBool(Arithmetic::isExact(number));
 }
 
-Object scheme::inexactPEx(int argc, const Object* argv)
+Object scheme::inexactPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("inexact?");
     checkArgumentLength(1);
@@ -383,7 +383,7 @@ Object scheme::inexactPEx(int argc, const Object* argv)
     return Object::makeBool(!Arithmetic::isExact(number));
 }
 
-Object scheme::realPartEx(int argc, const Object* argv)
+Object scheme::realPartEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("real-part");
     checkArgumentLength(1);
@@ -391,7 +391,7 @@ Object scheme::realPartEx(int argc, const Object* argv)
     return Arithmetic::real(n);
 }
 
-Object scheme::imagPartEx(int argc, const Object* argv)
+Object scheme::imagPartEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("imag-part");
     checkArgumentLength(1);
@@ -399,7 +399,7 @@ Object scheme::imagPartEx(int argc, const Object* argv)
     return Arithmetic::imag(n);
 }
 
-Object scheme::numberPEx(int argc, const Object* argv)
+Object scheme::numberPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("number?");
     checkArgumentLength(1);
@@ -407,7 +407,7 @@ Object scheme::numberPEx(int argc, const Object* argv)
     return Object::makeBool(obj.isNumber());
 }
 
-Object scheme::rationalPEx(int argc, const Object* argv)
+Object scheme::rationalPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("rational?");
     checkArgumentLength(1);
@@ -415,7 +415,7 @@ Object scheme::rationalPEx(int argc, const Object* argv)
     return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum());
 }
 
-Object scheme::bignumPEx(int argc, const Object* argv)
+Object scheme::bignumPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bignum?");
     checkArgumentLength(1);
@@ -423,21 +423,21 @@ Object scheme::bignumPEx(int argc, const Object* argv)
     return Object::makeBool(obj.isBignum());
 }
 
-Object scheme::flonumPEx(int argc, const Object* argv)
+Object scheme::flonumPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flonum?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isFlonum());
 }
 
-Object scheme::fixnumPEx(int argc, const Object* argv)
+Object scheme::fixnumPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fixnum?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isFixnum());
 }
 
-Object scheme::makeRectangularEx(int argc, const Object* argv)
+Object scheme::makeRectangularEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-rectangular");
     checkArgumentLength(2);
@@ -446,28 +446,28 @@ Object scheme::makeRectangularEx(int argc, const Object* argv)
     return Object::makeCompnum(real, imag);
 }
 
-Object scheme::fixnumWidthEx(int argc, const Object* argv)
+Object scheme::fixnumWidthEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fixnum-width");
     checkArgumentLength(0);
     return Object::makeFixnum(Fixnum::BITS);
 }
 
-Object scheme::leastFixnumEx(int argc, const Object* argv)
+Object scheme::leastFixnumEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("least-fixnum");
     checkArgumentLength(0);
     return Object::makeFixnum(Fixnum::MIN);
 }
 
-Object scheme::greatestFixnumEx(int argc, const Object* argv)
+Object scheme::greatestFixnumEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("greatest-fixnum");
     checkArgumentLength(0);
     return Object::makeFixnum(Fixnum::MAX);
 }
 
-Object scheme::inexactEx(int argc, const Object* argv)
+Object scheme::inexactEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("inexact");
     checkArgumentLength(1);
@@ -475,7 +475,7 @@ Object scheme::inexactEx(int argc, const Object* argv)
     return Arithmetic::inexact(number);
 }
 
-Object scheme::exactEx(int argc, const Object* argv)
+Object scheme::exactEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("exact");
     checkArgumentLength(1);
@@ -483,7 +483,7 @@ Object scheme::exactEx(int argc, const Object* argv)
     return Arithmetic::exact(number);
 }
 
-Object scheme::maxEx(int argc, const Object* argv)
+Object scheme::maxEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("max");
     checkArgumentLengthAtLeast(1);
@@ -493,14 +493,14 @@ Object scheme::maxEx(int argc, const Object* argv)
         if (number.isFlonum() && (number.toFlonum())->isNan()) {
             return number;
         }
-        if (Arithmetic::gt(number, maxNumber)) {
+        if (Arithmetic::gt(theVM, number, maxNumber)) {
             maxNumber = number;
         }
     }
     return maxNumber;
 }
 
-Object scheme::minEx(int argc, const Object* argv)
+Object scheme::minEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("min");
     checkArgumentLengthAtLeast(1);
@@ -510,14 +510,14 @@ Object scheme::minEx(int argc, const Object* argv)
         if (number.isFlonum() && (number.toFlonum())->isNan()) {
             return number;
         }
-        if (Arithmetic::lt(number, minNumber)) {
+        if (Arithmetic::lt(theVM, number, minNumber)) {
             minNumber = number;
         }
     }
     return minNumber;
 }
 
-Object scheme::addEx(int argc, const Object* argv)
+Object scheme::addEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("+");
     if (0 == argc) {
@@ -529,7 +529,7 @@ Object scheme::addEx(int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(0);
     for (int i = 0; i < argc; i++) {
-        ret = Arithmetic::add(ret, argv[i]);
+        ret = Arithmetic::add(theVM, ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -539,19 +539,19 @@ Object scheme::addEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::subEx(int argc, const Object* argv)
+Object scheme::subEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("-");
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
         argumentCheckNumber(0, number);
-        return Arithmetic::mul(-1, number);
+        return Arithmetic::mul(theVM, -1, number);
     }
 
     Object ret = argv[0];
     for (int i = 1; i < argc; i++) {
-        ret = Arithmetic::sub(ret, argv[i]);
+        ret = Arithmetic::sub(theVM, ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -561,7 +561,7 @@ Object scheme::subEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::mulEx(int argc, const Object* argv)
+Object scheme::mulEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("*");
 
@@ -575,7 +575,7 @@ Object scheme::mulEx(int argc, const Object* argv)
     Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
         argumentCheckNumber(i, num);
-        ret = Arithmetic::mul(ret, num);
+        ret = Arithmetic::mul(theVM, ret, num);
 
         // error occured
         if (ret.isFalse()) {
@@ -585,19 +585,19 @@ Object scheme::mulEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::divideEx(int argc, const Object* argv)
+Object scheme::divideEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("/");
     checkArgumentLengthAtLeast(1);
 
     if (1 == argc) {
         argumentCheckNumber(0, number);
-        return Arithmetic::div(Object::makeFixnum(1), number);
+        return Arithmetic::div(theVM, Object::makeFixnum(1), number);
     }
 
     Object ret = argv[0];
     for (int i = 1; i < argc; i++) {
-        ret = Arithmetic::div(ret, argv[i]);
+        ret = Arithmetic::div(theVM, ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -607,14 +607,14 @@ Object scheme::divideEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::eqEx(int argc, const Object* argv)
+Object scheme::eqEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (Arithmetic::eq(number1, number2)) {
+        if (Arithmetic::eq(theVM, number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -623,14 +623,14 @@ Object scheme::eqEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::gtEx(int argc, const Object* argv)
+Object scheme::gtEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName(">");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (Arithmetic::gt(number1, number2)) {
+        if (Arithmetic::gt(theVM, number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -639,14 +639,14 @@ Object scheme::gtEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::geEx(int argc, const Object* argv)
+Object scheme::geEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName(">=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (Arithmetic::ge(number1, number2)) {
+        if (Arithmetic::ge(theVM, number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -655,14 +655,14 @@ Object scheme::geEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::ltEx(int argc, const Object* argv)
+Object scheme::ltEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("<");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (Arithmetic::lt(number1, number2)) {
+        if (Arithmetic::lt(theVM, number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -671,14 +671,14 @@ Object scheme::ltEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::leEx(int argc, const Object* argv)
+Object scheme::leEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("<=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
         Object number1 = argv[i];
         Object number2 = argv[i + 1];
-        if (Arithmetic::le(number1, number2)) {
+        if (Arithmetic::le(theVM, number1, number2)) {
             continue;
         } else {
             return Object::False;

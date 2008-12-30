@@ -41,7 +41,7 @@ class RecordInitializer;
 class RecordConstructorDescriptor EXTEND_GC
 {
 public:
-    RecordConstructorDescriptor(Object rtd, Object parentRcd, Object protocol);
+    RecordConstructorDescriptor(VM* theVM, Object rtd, Object parentRcd, Object protocol);
     ~RecordConstructorDescriptor();
 
     Object makeConstructor();
@@ -52,6 +52,7 @@ public:
 private:
     Object makeRecordInitializer();
     void collectProtocols(ObjectVector& protocols);
+    VM* vm_;
     Object rtd_;
     Object parentRcd_;
     Object protocol_;

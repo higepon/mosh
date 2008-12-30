@@ -34,18 +34,20 @@
 
 namespace scheme {
 
+class VM;
+
 class CProcedure EXTEND_GC
 {
 public:
-    CProcedure(Object (*proc)(int, const Object*)) : proc(proc) {}
+    CProcedure(Object (*proc)(VM* theVM, int, const Object*)) : proc(proc) {}
     ~CProcedure() {}
 
-    Object call(int argc, const Object* argv)
+    Object call(VM* theVM, int argc, const Object* argv)
     {
-        return (*proc)(argc, argv);
+        return (*proc)(theVM, argc, argv);
     }
 
-    Object (*proc)(int, const Object*);
+    Object (*proc)(VM*, int, const Object*);
     Object returnCode[2];
 };
 

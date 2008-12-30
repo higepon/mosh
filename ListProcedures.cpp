@@ -44,7 +44,7 @@
 
 using namespace scheme;
 
-Object scheme::memberEx(int argc, const Object* argv)
+Object scheme::memberEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("member");
     checkArgumentLength(2);
@@ -52,21 +52,21 @@ Object scheme::memberEx(int argc, const Object* argv)
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().equal(arg1)) {
+        if (o.car().equal(theVM, arg1)) {
             return o;
         }
     }
     return Object::False;
 }
 
-Object scheme::consEx(int argc, const Object* argv)
+Object scheme::consEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("cons");
     checkArgumentLength(2);
     return Object::cons(argv[0], argv[1]);
 }
 
-Object scheme::carEx(int argc, const Object* argv)
+Object scheme::carEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("car");
     checkArgumentLength(1);
@@ -74,7 +74,7 @@ Object scheme::carEx(int argc, const Object* argv)
     return p.car();
 }
 
-Object scheme::cdrEx(int argc, const Object* argv)
+Object scheme::cdrEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("cdr");
     checkArgumentLength(1);
@@ -82,7 +82,7 @@ Object scheme::cdrEx(int argc, const Object* argv)
     return p.cdr();
 }
 
-Object scheme::sourceInfoEx(int argc, const Object* argv)
+Object scheme::sourceInfoEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("source-info");
     checkArgumentLength(1);
@@ -96,7 +96,7 @@ Object scheme::sourceInfoEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::setSourceInfoDEx(int argc, const Object* argv)
+Object scheme::setSourceInfoDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-source-info!");
     checkArgumentLength(2);
@@ -112,14 +112,14 @@ Object scheme::setSourceInfoDEx(int argc, const Object* argv)
     return target;
 }
 
-Object scheme::nullPEx(int argc, const Object* argv)
+Object scheme::nullPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("null?!");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isNil());
 }
 
-Object scheme::setCarDEx(int argc, const Object* argv)
+Object scheme::setCarDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-car!");
     checkArgumentLength(2);
@@ -129,7 +129,7 @@ Object scheme::setCarDEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::setCdrDEx(int argc, const Object* argv)
+Object scheme::setCdrDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-cdr!");
     checkArgumentLength(2);
@@ -139,7 +139,7 @@ Object scheme::setCdrDEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::reverseEx(int argc, const Object* argv)
+Object scheme::reverseEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("reverse");
     checkArgumentLength(1);
@@ -147,7 +147,7 @@ Object scheme::reverseEx(int argc, const Object* argv)
     return Pair::reverse(p);
 }
 
-Object scheme::listPEx(int argc, const Object* argv)
+Object scheme::listPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("list?");
     checkArgumentLength(1);
@@ -168,7 +168,7 @@ Object scheme::listPEx(int argc, const Object* argv)
 //     return Object::Undef;
 }
 
-Object scheme::memqEx(int argc, const Object* argv)
+Object scheme::memqEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("memq");
     checkArgumentLength(2);
@@ -184,7 +184,7 @@ Object scheme::memqEx(int argc, const Object* argv)
     return Object::False;
 }
 
-Object scheme::memvEx(int argc, const Object* argv)
+Object scheme::memvEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("memv");
     checkArgumentLength(2);
@@ -192,14 +192,14 @@ Object scheme::memvEx(int argc, const Object* argv)
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (eqv(o.car(), arg1)) {
+        if (eqv(theVM, o.car(), arg1)) {
             return o;
         }
     }
     return Object::False;
 }
 
-Object scheme::assqEx(int argc, const Object* argv)
+Object scheme::assqEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("assq");
     checkArgumentLength(2);
@@ -215,7 +215,7 @@ Object scheme::assqEx(int argc, const Object* argv)
     return Object::False;
 }
 
-Object scheme::appendEx(int argc, const Object* argv)
+Object scheme::appendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("append");
     if (0 == argc) return Object::Nil;
@@ -227,7 +227,7 @@ Object scheme::appendEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::append2Ex(int argc, const Object* argv)
+Object scheme::append2Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("append2");
     checkArgumentLength(2);
@@ -236,7 +236,7 @@ Object scheme::append2Ex(int argc, const Object* argv)
     return Pair::append2(list, argv[1]);
 }
 
-Object scheme::appendDEx(int argc, const Object* argv)
+Object scheme::appendDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("append!");
     if (0 == argc) return Object::Nil;
@@ -261,7 +261,7 @@ Object scheme::uniq(Object list)
     return ret;
 }
 
-Object scheme::lengthEx(int argc, const Object* argv)
+Object scheme::lengthEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("length");
     checkArgumentLength(1);
@@ -269,7 +269,7 @@ Object scheme::lengthEx(int argc, const Object* argv)
     int ret = 0;
     for (Object p = list; !p.isNil(); p = p.cdr()) {
         if (!p.isPair()) {
-            callAssertionViolationAfter(procedureName, "proper-list required", Pair::list1(list));
+            callAssertionViolationAfter(theVM, procedureName, "proper-list required", Pair::list1(list));
             return Object::Undef;
         }
         ret++;
@@ -277,7 +277,7 @@ Object scheme::lengthEx(int argc, const Object* argv)
     return Object::makeFixnum(ret);
 }
 
-Object scheme::listTovectorEx(int argc, const Object* argv)
+Object scheme::listTovectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("list->vector");
     checkArgumentLength(1);

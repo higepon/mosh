@@ -36,28 +36,28 @@
 
 namespace scheme {
 
-    Object hashtableEquivalenceFunctionEx(int argc, const Object* argv);
-    Object hashtableHashFunctionEx(int argc, const Object* argv);
-    Object hashtableKeysEx(int argc, const Object* argv);
-    Object hashtableClearDEx(int argc, const Object* argv);
-    Object hashtableCopyEx(int argc, const Object* argv);
-    Object hashtableMutablePEx(int argc, const Object* argv);
-    Object hashtableDeleteDEx(int argc, const Object* argv);
-    Object hashtableContainsPEx(int argc, const Object* argv);
-    Object hashtableSizeEx(int argc, const Object* argv);
-    Object hashtablePEx(int argc, const Object* argv);
-    Object makeHashtableEx(int argc, const Object* argv);
-    Object hashtableKeysEx(int argc, const Object* argv);
-    Object hashtableSetDEx(int argc, const Object* argv);
-    Object hashtableRefEx(int argc, const Object* argv);
-    Object eqHashtableCopyEx(int argc, const Object* argv);
-    Object makeEqHashtableEx(int argc, const Object* argv);
-    Object makeEqvHashtableEx(int argc, const Object* argv);
-    Object eqvHashEx(int argc, const Object* argv);
-    Object stringHashEx(int argc, const Object* argv);
-    Object stringCiHashEx(int argc, const Object* argv);
-    Object symbolHashEx(int argc, const Object* argv);
-    Object equalHashEx(int argc, const Object* argv);
+    Object hashtableEquivalenceFunctionEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableHashFunctionEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableKeysEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableClearDEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableCopyEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableMutablePEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableDeleteDEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableContainsPEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableSizeEx(VM* theVM, int argc, const Object* argv);
+    Object hashtablePEx(VM* theVM, int argc, const Object* argv);
+    Object makeHashtableEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableKeysEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableSetDEx(VM* theVM, int argc, const Object* argv);
+    Object hashtableRefEx(VM* theVM, int argc, const Object* argv);
+    Object eqHashtableCopyEx(VM* theVM, int argc, const Object* argv);
+    Object makeEqHashtableEx(VM* theVM, int argc, const Object* argv);
+    Object makeEqvHashtableEx(VM* theVM, int argc, const Object* argv);
+    Object eqvHashEx(VM* theVM, int argc, const Object* argv);
+    Object stringHashEx(VM* theVM, int argc, const Object* argv);
+    Object stringCiHashEx(VM* theVM, int argc, const Object* argv);
+    Object symbolHashEx(VM* theVM, int argc, const Object* argv);
+    Object equalHashEx(VM* theVM, int argc, const Object* argv);
 
     int stringHash(const ucs4string& str);
     int stringCiHash(const ucs4string& str);

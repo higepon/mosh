@@ -38,6 +38,7 @@
 #include "Record.h"
 #include "RecordConstructorDescriptor.h"
 #include "RecordTypeDescriptor.h"
+#include "VM.h"
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"
 #include "EqHashTable.h"
@@ -45,11 +46,11 @@
 using namespace scheme;
 
 static Object getConditionRtd();
-bool isSubTypeOfCondition(Object rtd);
-static void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object values);
+bool isSubTypeOfCondition(VM* theVM, Object rtd);
+static void setTopLevelGlobalValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object values);
 
 // return &conditon-rtd
-Object getConditionRtd()
+Object getConditionRtd(VM* theVM)
 {
     static Object conditionRtd = Object::False;
     if (conditionRtd.isFalse()) {
@@ -59,16 +60,16 @@ Object getConditionRtd()
 }
 
 // subtype of &condition ?
-bool isSubTypeOfCondition(Object rtd)
+bool isSubTypeOfCondition(VM* theVM, Object rtd)
 {
-    const Object conditionRtd = getConditionRtd();
+    const Object conditionRtd = getConditionRtd(theVM);
     if (conditionRtd.isFalse()) {
         return false;
     }
     return rtd.toRecordTypeDescriptor()->isA(conditionRtd.toRecordTypeDescriptor());
 }
 
-void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Object value)
+void setTopLevelGlobalValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object value)
 {
     MOSH_ASSERT(id.isSymbol());
     ucs4string name = id.toSymbol()->c_str();
@@ -76,7 +77,7 @@ void setTopLevelGlobalValueWithPostfix(Object id, const ucs4char* postfix, Objec
     theVM->setTopLevelGlobalValue(Symbol::intern(name.strdup()), value);
 }
 
-Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
+Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-type-descriptor");
     checkArgumentLength(6);
@@ -115,13 +116,13 @@ Object scheme::makeRecordTypeDescriptorEx(int argc, const Object* argv)
     if (name == Symbol::intern(UC("&condition"))) {
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("&condition-rtd")), rtd);
     }
-    if (isSubTypeOfCondition(rtd)) {
-        setTopLevelGlobalValueWithPostfix(name, UC("-rtd"), rtd);
+    if (isSubTypeOfCondition(theVM, rtd)) {
+        setTopLevelGlobalValueWithPostfix(theVM, name, UC("-rtd"), rtd);
     }
     return rtd;
 }
 
-Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
+Object scheme::makeRecordConstructorDescriptorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-record-constructor-descriptor");
     checkArgumentLength(3);
@@ -129,16 +130,16 @@ Object scheme::makeRecordConstructorDescriptorEx(int argc, const Object* argv)
     argumentCheckRecordConstructorDescriptorOrFalse(1, parentRcd);
     argumentCheckClosureOrFalse(2, protocol);
 
-    const Object rcd =  Object::makeRecordConstructorDescriptor(rtd, parentRcd, protocol);
+    const Object rcd =  Object::makeRecordConstructorDescriptor(theVM, rtd, parentRcd, protocol);
 
     // psyntax requires &xxx-rcd global defined.
-    if (isSubTypeOfCondition(rtd)) {
-        setTopLevelGlobalValueWithPostfix(rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
+    if (isSubTypeOfCondition(theVM, rtd)) {
+        setTopLevelGlobalValueWithPostfix(theVM, rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
     }
     return rcd;
 }
 
-Object scheme::recordPredicateEx(int argc, const Object* argv)
+Object scheme::recordPredicateEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-prediate");
     checkArgumentLength(1);
@@ -146,7 +147,7 @@ Object scheme::recordPredicateEx(int argc, const Object* argv)
     return Object::makeCallable(new RecordPrediate(rtd));
 }
 
-Object scheme::recordConstructorEx(int argc, const Object* argv)
+Object scheme::recordConstructorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor");
     checkArgumentLength(1);
@@ -154,20 +155,20 @@ Object scheme::recordConstructorEx(int argc, const Object* argv)
     return recordConstructorDescriptor->makeConstructor();
 }
 
-Object scheme::recordAccessorEx(int argc, const Object* argv)
+Object scheme::recordAccessorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-accessor");
     checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentAsFixnum(1, index);
     if (index < 0 || index >= rtd.toRecordTypeDescriptor()->fieldsLength()) {
-        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeFixnum(index)));
+        callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     return Object::makeCallable(new RecordAccessor(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
 }
 
-Object scheme::recordMutatorEx(int argc, const Object* argv)
+Object scheme::recordMutatorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-mutator");
     checkArgumentLength(2);
@@ -175,13 +176,13 @@ Object scheme::recordMutatorEx(int argc, const Object* argv)
     argumentAsFixnum(1, index);
     const RecordTypeDescriptor* const recordTypeDescriptor = rtd.toRecordTypeDescriptor();
     if (index < 0 || index >= recordTypeDescriptor->fieldsLength()) {
-        callAssertionViolationAfter(procedureName, "index out of range", L1(Object::makeFixnum(index)));
+        callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     if (recordTypeDescriptor->isFieldMutable(index)) {
         return Object::makeCallable(new RecordMutator(rtd, index + rtd.toRecordTypeDescriptor()->parentFieldsLengthTotal()));
     } else {
-        callAssertionViolationAfter(procedureName, "required mutable field, but got immutable field index", L1(Object::makeFixnum(index)));
+        callAssertionViolationAfter(theVM, procedureName, "required mutable field, but got immutable field index", L1(Object::makeFixnum(index)));
         return Object::Undef;
     }
     return Object::Undef;
@@ -195,7 +196,7 @@ RecordPrediate::~RecordPrediate()
 {
 }
 
-Object RecordPrediate::call(VM* vm, int argc, const Object* argv)
+Object RecordPrediate::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-predicate for record");
     checkArgumentLength(1);
@@ -217,7 +218,7 @@ RecordAccessor::~RecordAccessor()
 {
 }
 
-Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
+Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-accessor for record");
     checkArgumentLength(1);
@@ -227,7 +228,8 @@ Object RecordAccessor::call(VM* vm, int argc, const Object* argv)
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record->fieldAt(index_);
     } else {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     "invalid accessor for record",
                                     L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
         return Object::Undef;
@@ -242,7 +244,7 @@ RecordMutator::~RecordMutator()
 {
 }
 
-Object RecordMutator::call(VM* vm, int argc, const Object* argv)
+Object RecordMutator::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-mutator for record");
     checkArgumentLength(2);
@@ -253,7 +255,8 @@ Object RecordMutator::call(VM* vm, int argc, const Object* argv)
         record->setFieldAt(index_, value);
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     "invalid mutator for record",
                                     L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
         return Object::Undef;
@@ -277,7 +280,7 @@ void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLe
     parentFieldsLength_ = parentFieldsLength;
 }
 
-Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
+Object RecordInitializer::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-constructor-internal");
     checkArgumentLength(fieldsLength_);
@@ -299,7 +302,7 @@ Object RecordInitializer::call(VM* vm, int argc, const Object* argv)
     }
 }
 
-Object scheme::recordFieldMutablePEx(int argc, const Object* argv)
+Object scheme::recordFieldMutablePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-field-mutable?");
     checkArgumentLength(2);
@@ -308,7 +311,7 @@ Object scheme::recordFieldMutablePEx(int argc, const Object* argv)
     return Object::makeBool(recordTypeDescriptor->isFieldMutable(index));
 }
 
-Object scheme::recordTypeFieldNamesEx(int argc, const Object* argv)
+Object scheme::recordTypeFieldNamesEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-field-names");
     checkArgumentLength(1);
@@ -317,7 +320,7 @@ Object scheme::recordTypeFieldNamesEx(int argc, const Object* argv)
 
 }
 
-Object scheme::recordTypeOpaquePEx(int argc, const Object* argv)
+Object scheme::recordTypeOpaquePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-opaque?");
     checkArgumentLength(1);
@@ -325,7 +328,7 @@ Object scheme::recordTypeOpaquePEx(int argc, const Object* argv)
     return Object::makeBool(recordTypeDescriptor->isOpaque());
 }
 
-Object scheme::recordTypeSealedPEx(int argc, const Object* argv)
+Object scheme::recordTypeSealedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-sealed?");
     checkArgumentLength(1);
@@ -333,7 +336,7 @@ Object scheme::recordTypeSealedPEx(int argc, const Object* argv)
     return Object::makeBool(recordTypeDescriptor->isSealed());
 }
 
-Object scheme::recordTypeGenerativePEx(int argc, const Object* argv)
+Object scheme::recordTypeGenerativePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-generative?");
     checkArgumentLength(1);
@@ -342,7 +345,7 @@ Object scheme::recordTypeGenerativePEx(int argc, const Object* argv)
 
 }
 
-Object scheme::recordTypeUidEx(int argc, const Object* argv)
+Object scheme::recordTypeUidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-ui");
     checkArgumentLength(1);
@@ -350,7 +353,7 @@ Object scheme::recordTypeUidEx(int argc, const Object* argv)
     return recordTypeDescriptor->uid();
 }
 
-Object scheme::recordTypeParentEx(int argc, const Object* argv)
+Object scheme::recordTypeParentEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-parent");
     checkArgumentLength(1);
@@ -358,7 +361,7 @@ Object scheme::recordTypeParentEx(int argc, const Object* argv)
     return recordTypeDescriptor->parent();
 }
 
-Object scheme::recordTypeNameEx(int argc, const Object* argv)
+Object scheme::recordTypeNameEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-name");
     checkArgumentLength(1);
@@ -366,7 +369,7 @@ Object scheme::recordTypeNameEx(int argc, const Object* argv)
     return recordTypeDescriptor->name();
 }
 
-Object scheme::recordPEx(int argc, const Object* argv)
+Object scheme::recordPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record?");
     checkArgumentLength(1);
@@ -379,20 +382,20 @@ Object scheme::recordPEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::recordRtdEx(int argc, const Object* argv)
+Object scheme::recordRtdEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-rtd");
     checkArgumentLength(1);
     argumentAsRecord(0, record);
     if (record->recordTypeDescriptor()->isOpaque()) {
-        callAssertionViolationAfter(procedureName, "record is opaque", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "record is opaque", L1(argv[0]));
         return Object::Undef;
     } else {
         return record->rtd();
     }
 }
 
-Object scheme::recordTypeDescriptorPEx(int argc, const Object* argv)
+Object scheme::recordTypeDescriptorPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-type-descriptor?");
     checkArgumentLength(1);

@@ -34,17 +34,17 @@
 #include "SString.h"
 #include "Pair.h"
 #include "Pair-inl.h"
+#include "VM.h"
 #include "FixnumProcedures.h"
 #include "ProcedureMacro.h"
 #include "ErrorProcedures.h"
 #include "Fixnum.h"
 #include "Bignum.h"
-#include "VM.h"
 #include "Arithmetic.h"
 
 using namespace scheme;
 
-Object scheme::fxEqPEx(int argc, const Object* argv)
+Object scheme::fxEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx=?");
     checkArgumentLengthAtLeast(2);
@@ -60,7 +60,7 @@ Object scheme::fxEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::fxGtPEx(int argc, const Object* argv)
+Object scheme::fxGtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx>?");
     checkArgumentLengthAtLeast(2);
@@ -76,7 +76,7 @@ Object scheme::fxGtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::fxLtPEx(int argc, const Object* argv)
+Object scheme::fxLtPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx<?");
     checkArgumentLengthAtLeast(2);
@@ -92,7 +92,7 @@ Object scheme::fxLtPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::fxGePEx(int argc, const Object* argv)
+Object scheme::fxGePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx>=?");
     checkArgumentLengthAtLeast(2);
@@ -108,7 +108,7 @@ Object scheme::fxGePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::fxLePEx(int argc, const Object* argv)
+Object scheme::fxLePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx<=?");
     checkArgumentLengthAtLeast(2);
@@ -124,7 +124,7 @@ Object scheme::fxLePEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::fxzeroPEx(int argc, const Object* argv)
+Object scheme::fxzeroPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxzero?");
     checkArgumentLength(1);
@@ -132,7 +132,7 @@ Object scheme::fxzeroPEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::eq(fixnum, 0));
 }
 
-Object scheme::fxpositivePEx(int argc, const Object* argv)
+Object scheme::fxpositivePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxpositive?");
     checkArgumentLength(1);
@@ -140,7 +140,7 @@ Object scheme::fxpositivePEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::gt(fixnum, 0));
 }
 
-Object scheme::fxnegativePEx(int argc, const Object* argv)
+Object scheme::fxnegativePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxnegative?");
     checkArgumentLength(1);
@@ -148,7 +148,7 @@ Object scheme::fxnegativePEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::lt(fixnum, 0));
 }
 
-Object scheme::fxoddPEx(int argc, const Object* argv)
+Object scheme::fxoddPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxodd?");
     checkArgumentLength(1);
@@ -156,7 +156,7 @@ Object scheme::fxoddPEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::isOdd(fixnum));
 }
 
-Object scheme::fxevenPEx(int argc, const Object* argv)
+Object scheme::fxevenPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxeven?");
     checkArgumentLength(1);
@@ -164,7 +164,7 @@ Object scheme::fxevenPEx(int argc, const Object* argv)
     return Object::makeBool(Fixnum::isEven(fixnum));
 }
 
-Object scheme::fxmaxEx(int argc, const Object* argv)
+Object scheme::fxmaxEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxmax");
     checkArgumentLengthAtLeast(1);
@@ -178,7 +178,7 @@ Object scheme::fxmaxEx(int argc, const Object* argv)
     return maxFixnum;
 }
 
-Object scheme::fxminEx(int argc, const Object* argv)
+Object scheme::fxminEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxmin");
     checkArgumentLengthAtLeast(1);
@@ -192,7 +192,7 @@ Object scheme::fxminEx(int argc, const Object* argv)
     return minFixnum;
 }
 
-Object scheme::fxAddEx(int argc, const Object* argv)
+Object scheme::fxAddEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx+");
     checkArgumentLength(2);
@@ -204,12 +204,12 @@ Object scheme::fxAddEx(int argc, const Object* argv)
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("sum is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(theVM, procedureName, UC("sum is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-Object scheme::fxMulEx(int argc, const Object* argv)
+Object scheme::fxMulEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx*");
     checkArgumentLength(2);
@@ -221,12 +221,12 @@ Object scheme::fxMulEx(int argc, const Object* argv)
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("product is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(theVM, procedureName, UC("product is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-Object scheme::fxSubEx(int argc, const Object* argv)
+Object scheme::fxSubEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fx-");
     checkArgumentLengthBetween(1, 2);
@@ -236,7 +236,7 @@ Object scheme::fxSubEx(int argc, const Object* argv)
         if (fixnum != Fixnum::MIN) {
             return Object::makeFixnum(-fixnum);
         } else {
-            callImplementationRestrictionAfter(procedureName, UC("result is not a fixnum"), Pair::list1(argv[0]));
+            callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list1(argv[0]));
             return Object::Undef;
         }
     } else {
@@ -247,13 +247,13 @@ Object scheme::fxSubEx(int argc, const Object* argv)
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
-            callImplementationRestrictionAfter(procedureName, UC("difference is not a fixnum"), Pair::list2(argv[0], argv[1]));
+            callImplementationRestrictionAfter(theVM, procedureName, UC("difference is not a fixnum"), Pair::list2(argv[0], argv[1]));
             return Object::Undef;
         }
     }
 }
 
-Object scheme::fxdivEx(int argc, const Object* argv)
+Object scheme::fxdivEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxdiv");
     checkArgumentLength(2);
@@ -262,13 +262,13 @@ Object scheme::fxdivEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
     return Object::makeFixnum(Fixnum::fxdiv(fx1, fx2));
 }
 
-Object scheme::fxmodEx(int argc, const Object* argv)
+Object scheme::fxmodEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxmod");
     checkArgumentLength(2);
@@ -277,13 +277,13 @@ Object scheme::fxmodEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
     return Object::makeFixnum(Fixnum::fxmod(fx1, fx2));
 }
 
-Object scheme::fxdiv0Ex(int argc, const Object* argv)
+Object scheme::fxdiv0Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxdiv0");
     checkArgumentLength(2);
@@ -292,13 +292,13 @@ Object scheme::fxdiv0Ex(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
     return Object::makeFixnum(Fixnum::fxdiv0(fx1, fx2));
 }
 
-Object scheme::fxmod0Ex(int argc, const Object* argv)
+Object scheme::fxmod0Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxmod0");
     checkArgumentLength(2);
@@ -307,13 +307,13 @@ Object scheme::fxmod0Ex(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (0 == fx2) {
-        callAssertionViolationAfter(procedureName, "Dividing by zero");
+        callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
     return Object::makeFixnum(Fixnum::fxmod0(fx1, fx2));
 }
 
-Object scheme::fxnotEx(int argc, const Object* argv)
+Object scheme::fxnotEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxnot");
     checkArgumentLength(1);
@@ -323,7 +323,7 @@ Object scheme::fxnotEx(int argc, const Object* argv)
 }
 
 // -1 is identity element
-Object scheme::fxandEx(int argc, const Object* argv)
+Object scheme::fxandEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxand");
 
@@ -336,7 +336,7 @@ Object scheme::fxandEx(int argc, const Object* argv)
 }
 
 // 0 is identity element
-Object scheme::fxiorEx(int argc, const Object* argv)
+Object scheme::fxiorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxior");
 
@@ -349,7 +349,7 @@ Object scheme::fxiorEx(int argc, const Object* argv)
 }
 
 // 0 is identity element
-Object scheme::fxxorEx(int argc, const Object* argv)
+Object scheme::fxxorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxxor");
 
@@ -361,7 +361,7 @@ Object scheme::fxxorEx(int argc, const Object* argv)
     return Object::makeFixnum(ret);
 }
 
-Object scheme::fxifEx(int argc, const Object* argv)
+Object scheme::fxifEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxif");
     checkArgumentLength(3);
@@ -372,7 +372,7 @@ Object scheme::fxifEx(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::fxif(fx1, fx2, fx3));
 }
 
-Object scheme::fxbitCountEx(int argc, const Object* argv)
+Object scheme::fxbitCountEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxbit-count");
     checkArgumentLength(1);
@@ -380,7 +380,7 @@ Object scheme::fxbitCountEx(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::fxbitCount(fx));
 }
 
-Object scheme::fxlengthEx(int argc, const Object* argv)
+Object scheme::fxlengthEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxlength");
     checkArgumentLength(1);
@@ -388,7 +388,7 @@ Object scheme::fxlengthEx(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::fxlength(fx));
 }
 
-Object scheme::fxfirstBitSetEx(int argc, const Object* argv)
+Object scheme::fxfirstBitSetEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxfirst-bit-set");
     checkArgumentLength(1);
@@ -396,7 +396,7 @@ Object scheme::fxfirstBitSetEx(int argc, const Object* argv)
     return Object::makeFixnum(Fixnum::fxfirstBitSet(fx));
 }
 
-Object scheme::fxbitSetPEx(int argc, const Object* argv)
+Object scheme::fxbitSetPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxbit-set?");
     checkArgumentLength(2);
@@ -405,14 +405,14 @@ Object scheme::fxbitSetPEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
     return Object::makeBool(Fixnum::fxbitSetP(fx1, fx2));
 }
 
-Object scheme::fxcopyBitEx(int argc, const Object* argv)
+Object scheme::fxcopyBitEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxcopy-bit");
     checkArgumentLength(3);
@@ -421,18 +421,18 @@ Object scheme::fxcopyBitEx(int argc, const Object* argv)
     argumentAsFixnum(2, fx3);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
     if (fx3 != 0 && fx3 != 1) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 
     return Object::makeFixnum(Fixnum::fxcopyBit(fx1, fx2, fx3));
 }
 
-Object scheme::fxbitFieldEx(int argc, const Object* argv)
+Object scheme::fxbitFieldEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxbit-field");
     checkArgumentLength(3);
@@ -443,14 +443,14 @@ Object scheme::fxbitFieldEx(int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 
     return Object::makeFixnum(Fixnum::fxbitField(fx1, fx2, fx3));
 }
 
-Object scheme::fxcopyBitFieldEx(int argc, const Object* argv)
+Object scheme::fxcopyBitFieldEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxcopy-bit-field");
     checkArgumentLength(4);
@@ -462,14 +462,14 @@ Object scheme::fxcopyBitFieldEx(int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
     return Object::makeFixnum(Fixnum::fxcopyBitField(fx1, fx2, fx3, fx4));
 }
 
-Object scheme::fxarithmeticShiftEx(int argc, const Object* argv)
+Object scheme::fxarithmeticShiftEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxarithmetic-shift");
     checkArgumentLength(2);
@@ -477,7 +477,7 @@ Object scheme::fxarithmeticShiftEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (::abs(fx2) >= Fixnum::BITS) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -490,12 +490,12 @@ Object scheme::fxarithmeticShiftEx(int argc, const Object* argv)
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-Object scheme::fxarithmeticShiftLeftEx(int argc, const Object* argv)
+Object scheme::fxarithmeticShiftLeftEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxarithmetic-shift-left");
     checkArgumentLength(2);
@@ -503,7 +503,7 @@ Object scheme::fxarithmeticShiftLeftEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -511,12 +511,12 @@ Object scheme::fxarithmeticShiftLeftEx(int argc, const Object* argv)
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-Object scheme::fxarithmeticShiftRightEx(int argc, const Object* argv)
+Object scheme::fxarithmeticShiftRightEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxarithmetic-shift-right");
     checkArgumentLength(2);
@@ -524,7 +524,7 @@ Object scheme::fxarithmeticShiftRightEx(int argc, const Object* argv)
     argumentAsFixnum(1, fx2);
 
     if (fx2 < 0 || fx2 >= Fixnum::BITS) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list2(argv[0], argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 
@@ -532,12 +532,12 @@ Object scheme::fxarithmeticShiftRightEx(int argc, const Object* argv)
     if (Fixnum::canFit(ret)) {
         return Object::makeFixnum(ret);
     } else {
-        callImplementationRestrictionAfter(procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
     }
 }
 
-Object scheme::fxrotateBitFieldEx(int argc, const Object* argv)
+Object scheme::fxrotateBitFieldEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxrotate-bit-field");
     checkArgumentLength(4);
@@ -550,14 +550,14 @@ Object scheme::fxrotateBitFieldEx(int argc, const Object* argv)
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     const bool isFx4OutOfRange = fx4 < 0 || fx4 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || isFx4OutOfRange || fx2 > fx3 || fx4 >= (fx3 - fx2) ) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list4(argv[0], argv[1], argv[2], argv[3]));
         return Object::Undef;
     }
 
     return Object::makeFixnum(Fixnum::fxrotateBitField(fx1, fx2, fx3, fx4));
 }
 
-Object scheme::fxreverseBitFieldEx(int argc, const Object* argv)
+Object scheme::fxreverseBitFieldEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fxreverse-bit-field");
     checkArgumentLength(3);
@@ -568,7 +568,7 @@ Object scheme::fxreverseBitFieldEx(int argc, const Object* argv)
     const bool isFx2OutOfRange = fx2 < 0 || fx2 >= Fixnum::BITS;
     const bool isFx3OutOfRange = fx3 < 0 || fx3 >= Fixnum::BITS;
     if (isFx2OutOfRange || isFx3OutOfRange || fx2 > fx3) {
-        callAssertionViolationAfter(procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
+        callAssertionViolationAfter(theVM, procedureName, "out of range", Pair::list3(argv[0], argv[1], argv[2]));
         return Object::Undef;
     }
 

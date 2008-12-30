@@ -36,16 +36,18 @@
 
 namespace scheme {
 
+class VM;
+
 class Arithmetic EXTEND_GC
 {
 public:
     Arithmetic();
     ~Arithmetic();
 
-    static Object numberToString(Object n, int radix);
+    static Object numberToString(VM* theVM, Object n, int radix);
     static Object real(Object n);
     static Object imag(Object n);
-    static Object expt(Object n1, Object n2);
+    static Object expt(VM* theVM, Object n1, Object n2);
     static Object asin(Object n);
     static Object acos(Object n);
     static Object atan(Object n);
@@ -53,11 +55,11 @@ public:
     static Object sin(Object n);
     static Object cos(Object n);
     static Object tan(Object n);
-    static Object integerDiv(Object n1, Object n2);
-    static Object integerDiv0(Object n1, Object n2);
+    static Object integerDiv(VM* theVM, Object n1, Object n2);
+    static Object integerDiv0(VM* theVM, Object n1, Object n2);
     static Object exp(Object n);
     static Object log(Object n);
-    static Object log(Object n1, Object n2);
+    static Object log(VM* theVM, Object n1, Object n2);
     static Object floor(Object n);
     static Object ceiling(Object n);
     static Object truncate(Object n);
@@ -92,16 +94,16 @@ public:
     static bool isExactZero(Object n1);
     static bool isZero(Object n1);
     static Object toFlonum(Object real);
-    static Object add(Object number1, Object number2);
-    static Object sub(Object number1, Object number2);
-    static Object mul(Object number1, Object number2);
-    static Object div(Object number1, Object number2, bool noRaise = false);
-    static Object mul(int number1, Object number2);
-    static bool gt(Object number1, Object number2);
-    static bool ge(Object number1, Object number2);
-    static bool lt(Object number1, Object number2);
-    static bool le(Object number1, Object number2);
-    static bool eq(Object number1, Object number2);
+    static Object add(VM* theVM, Object number1, Object number2);
+    static Object sub(VM* theVM, Object number1, Object number2);
+    static Object mul(VM* theVM, Object number1, Object number2);
+    static Object div(VM* theVM, Object number1, Object number2, bool noRaise = false);
+    static Object mul(VM* theVM, int number1, Object number2);
+    static bool gt(VM* theVM, Object number1, Object number2);
+    static bool ge(VM* theVM, Object number1, Object number2);
+    static bool lt(VM* theVM, Object number1, Object number2);
+    static bool le(VM* theVM, Object number1, Object number2);
+    static bool eq(VM* theVM, Object number1, Object number2);
     static bool fitsU64(Object n);
     static uint64_t toU64(Object n);
     static bool fitsS64(Object n);

@@ -36,10 +36,12 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Symbol.h"
+#include "VM.h"
 #include "StringProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "TextualOutputPort.h"
+#include "StringTextualOutputPort.h"
 #include "NumberReader.h"
 
 using namespace scheme;
@@ -49,13 +51,14 @@ static Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4s
 Object scheme::format(const ucs4char* message, Object values)
 {
     MOSH_ASSERT(values.isNil() || values.isPair());
-    const Object sport = Object::makeStringOutputPort();
+    const Object sport = Object::makeStringOutputPort(NULL);
     TextualOutputPort* const port = sport.toTextualOutputPort();
     port->format(message, values);
-    return sysGetOutputStringEx(1, &sport);
+    StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(port);
+    return Object::makeString(p->getString());
 }
 
-Object scheme::stringEx(int argc, const Object* argv)
+Object scheme::stringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string");
     ucs4string ret;
@@ -66,7 +69,7 @@ Object scheme::stringEx(int argc, const Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::stringCopyEx(int argc, const Object* argv)
+Object scheme::stringCopyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-copy");
     checkArgumentLength(1);
@@ -76,7 +79,7 @@ Object scheme::stringCopyEx(int argc, const Object* argv)
 }
 
 
-Object scheme::stringRefEx(int argc, const Object* argv)
+Object scheme::stringRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-ref");
     checkArgumentLength(2);
@@ -87,7 +90,8 @@ Object scheme::stringRefEx(int argc, const Object* argv)
     if (index < text->length()) {
         return Object::makeChar(text->charAt(index));
     } else {
-        callAssertionViolationAfter(procedureName,
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
                                     "index out of range",
                                     L2(Object::makeFixnum(text->length()),
                                        argv[1]
@@ -96,7 +100,7 @@ Object scheme::stringRefEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::stringEqPEx(int argc, const Object* argv)
+Object scheme::stringEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string=?");
     checkArgumentLengthAtLeast(2);
@@ -112,7 +116,7 @@ Object scheme::stringEqPEx(int argc, const Object* argv)
     return Object::True;
 }
 
-Object scheme::stringToregexpEx(int argc, const Object* argv)
+Object scheme::stringToregexpEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string->regexp");
     checkArgumentLength(1);
@@ -120,7 +124,7 @@ Object scheme::stringToregexpEx(int argc, const Object* argv)
     return Object::makeRegexp(text->data());
 }
 
-Object scheme::makeStringEx(int argc, const Object* argv)
+Object scheme::makeStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-string");
     checkArgumentLengthBetween(1, 2);
@@ -134,7 +138,7 @@ Object scheme::makeStringEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::stringSetDEx(int argc, const Object* argv)
+Object scheme::stringSetDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-set!");
     checkArgumentLength(3);
@@ -147,7 +151,7 @@ Object scheme::stringSetDEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::stringLengthEx(int argc, const Object* argv)
+Object scheme::stringLengthEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-length");
     checkArgumentLength(1);
@@ -161,7 +165,7 @@ Object scheme::stringTosymbol(Object str)
     return Symbol::intern(str.toString()->data().c_str());
 }
 
-Object scheme::stringTosymbolEx(int argc, const Object* argv)
+Object scheme::stringTosymbolEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string->symbol");
     checkArgumentLength(1);
@@ -181,7 +185,7 @@ Object stringToNumber(const ucs4string& text)
     }
 }
 
-Object scheme::stringTonumberEx(int argc, const Object* argv)
+Object scheme::stringTonumberEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string->number");
     checkArgumentLengthBetween(1, 2);
@@ -213,13 +217,13 @@ Object scheme::stringTonumberEx(int argc, const Object* argv)
                 return stringToNumber(text);
             }
             default:
-                callAssertionViolationAfter(procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+                callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
                 return Object::Undef;
         }
     }
 }
 
-Object scheme::stringAppendEx(int argc, const Object* argv)
+Object scheme::stringAppendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-append");
     ucs4string ret;
@@ -230,7 +234,7 @@ Object scheme::stringAppendEx(int argc, const Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::stringSplitEx(int argc, const Object* argv)
+Object scheme::stringSplitEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-split");
     argumentAsString(0, text);

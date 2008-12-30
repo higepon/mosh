@@ -39,14 +39,14 @@
 #define checkType(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred()) { \
-        callWrongTypeOfArgumentViolationAfter(procedureName, #required, variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required, variableName); \
         return Object::Undef; \
     } \
 
 #define castArgument(index, variableName, pred, required, type, castFunction)    \
     const Object obj ## variableName = argv[index]; \
     if (!obj ## variableName.pred()) { \
-        callWrongTypeOfArgumentViolationAfter(procedureName, #required, obj ## variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required, obj ## variableName); \
         return Object::Undef; \
     } \
     type variableName = obj ## variableName.castFunction();
@@ -55,14 +55,14 @@
 #define checkTypeOrFalse(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred() && !variableName.isFalse()) { \
-        callWrongTypeOfArgumentViolationAfter(procedureName, #required " or #f", variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required " or #f", variableName); \
         return Object::Undef; \
     } \
 
 #define checkTypeOr(index, variableName, pred1, pred2, required1, required2)  \
     const Object variableName = argv[index]; \
     if (!variableName.pred1() && !variableName.pred2()) { \
-        callWrongTypeOfArgumentViolationAfter(procedureName, #required1 " or " #required2, variableName); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, #required1 " or " #required2, variableName); \
         return Object::Undef; \
     } \
 
@@ -134,13 +134,13 @@
 
 #define checkArgumentLength(required)   \
     if (argc != required) { \
-        callWrongNumberOfArgumentsViolationAfter(procedureName, required, argc); \
+        callWrongNumberOfArgumentsViolationAfter(theVM, procedureName, required, argc); \
         return Object::Undef;\
     } \
 
 #define checkArgumentLengthBetween(start, end)             \
     if (argc < start || argc > end) { \
-        callWrongNumberOfArgumentsBetweenViolationAfter(procedureName, start, end, argc); \
+        callWrongNumberOfArgumentsBetweenViolationAfter(theVM, procedureName, start, end, argc); \
         return Object::Undef;\
     } \
 
@@ -148,10 +148,8 @@
 
 #define checkArgumentLengthAtLeast(required)             \
     if (argc < required) { \
-        callWrongNumberOfArgumentsAtLeastViolationAfter(procedureName, required, argc); \
+        callWrongNumberOfArgumentsAtLeastViolationAfter(theVM, procedureName, required, argc); \
         return Object::Undef;\
     } \
-
-extern scheme::VM* theVM;
 
 #endif // __SCHEME_PROCEDURE_MACRO__

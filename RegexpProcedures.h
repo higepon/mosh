@@ -36,17 +36,17 @@
 
 namespace scheme {
 
-    Object regexpPEx(int argc, const Object* argv);
-    Object regexpReplaceEx(int argc, const Object* argv);
-    Object regexpReplaceAllEx(int argc, const Object* argv);
-    Object rxmatchEx(int argc, const Object* argv);
-    Object regexpTostringEx(int argc, const Object* argv);
-    Object rxmatchStartEx(int argc, const Object* argv);
-    Object rxmatchEndEx(int argc, const Object* argv);
-    Object rxmatchAfterEx(int argc, const Object* argv);
-    Object rxmatchBeforeEx(int argc, const Object* argv);
-    Object rxmatchSubstringEx(int argc, const Object* argv);
-    Object regMatchProxy(int argc, const Object* argv);
+    Object regexpPEx(VM* theVM, int argc, const Object* argv);
+    Object regexpReplaceEx(VM* theVM, int argc, const Object* argv);
+    Object regexpReplaceAllEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchEx(VM* theVM, int argc, const Object* argv);
+    Object regexpTostringEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchStartEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchEndEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchAfterEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchBeforeEx(VM* theVM, int argc, const Object* argv);
+    Object rxmatchSubstringEx(VM* theVM, int argc, const Object* argv);
+    Object regMatchProxy(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

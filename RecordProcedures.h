@@ -36,23 +36,23 @@
 
 namespace scheme {
 
-    Object makeRecordTypeDescriptorEx(int argc, const Object* argv);
-    Object makeRecordConstructorDescriptorEx(int argc, const Object* argv);
-    Object recordPredicateEx(int argc, const Object* argv);
-    Object recordConstructorEx(int argc, const Object* argv);
-    Object recordAccessorEx(int argc, const Object* argv);
-    Object recordMutatorEx(int argc, const Object* argv);
-    Object recordFieldMutablePEx(int argc, const Object* argv);
-    Object recordTypeFieldNamesEx(int argc, const Object* argv);
-    Object recordTypeOpaquePEx(int argc, const Object* argv);
-    Object recordTypeSealedPEx(int argc, const Object* argv);
-    Object recordTypeGenerativePEx(int argc, const Object* argv);
-    Object recordTypeUidEx(int argc, const Object* argv);
-    Object recordTypeParentEx(int argc, const Object* argv);
-    Object recordTypeNameEx(int argc, const Object* argv);
-    Object recordRtdEx(int argc, const Object* argv);
-    Object recordPEx(int argc, const Object* argv);
-    Object recordTypeDescriptorPEx(int argc, const Object* argv);
+    Object makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* argv);
+    Object makeRecordConstructorDescriptorEx(VM* theVM, int argc, const Object* argv);
+    Object recordPredicateEx(VM* theVM, int argc, const Object* argv);
+    Object recordConstructorEx(VM* theVM, int argc, const Object* argv);
+    Object recordAccessorEx(VM* theVM, int argc, const Object* argv);
+    Object recordMutatorEx(VM* theVM, int argc, const Object* argv);
+    Object recordFieldMutablePEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeFieldNamesEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeOpaquePEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeSealedPEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeGenerativePEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeUidEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeParentEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeNameEx(VM* theVM, int argc, const Object* argv);
+    Object recordRtdEx(VM* theVM, int argc, const Object* argv);
+    Object recordPEx(VM* theVM, int argc, const Object* argv);
+    Object recordTypeDescriptorPEx(VM* theVM, int argc, const Object* argv);
 
     class RecordInitializer : public Callable
     {

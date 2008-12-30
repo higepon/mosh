@@ -37,6 +37,7 @@
 #include "Vector.h"
 #include "SString.h"
 #include "HashTable.h"
+#include "VM.h"
 #include "HashTableProceduures.h"
 #include "ProcedureMacro.h"
 #include "Arithmetic.h"
@@ -95,7 +96,7 @@ int scheme::symbolHash(Symbol* symbol)
 }
 
 
-Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
+Object scheme::hashtableDeleteDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-delete!");
     checkArgumentLength(2);
@@ -106,13 +107,13 @@ Object scheme::hashtableDeleteDEx(int argc, const Object* argv)
     if (hashtable->mutableP()) {
         hashtable->deleteD(key);
     } else {
-        callAssertionViolationAfter(Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(argv[0]));
+        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), "can't delete an immutable hashtable.", L1(argv[0]));
         return Object::Undef;
     }
     return Object::Undef;
 }
 
-Object scheme::hashtableContainsPEx(int argc, const Object* argv)
+Object scheme::hashtableContainsPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-contains?");
     checkArgumentLength(2);
@@ -124,7 +125,7 @@ Object scheme::hashtableContainsPEx(int argc, const Object* argv)
 }
 
 
-Object scheme::hashtableSizeEx(int argc, const Object* argv)
+Object scheme::hashtableSizeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-size");
     checkArgumentLength(1);
@@ -133,26 +134,26 @@ Object scheme::hashtableSizeEx(int argc, const Object* argv)
     return Object::makeFixnum(hashtable->size());
 }
 
-Object scheme::hashtablePEx(int argc, const Object* argv)
+Object scheme::hashtablePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isHashTable());
 }
 
-Object scheme::eqvHashEx(int argc, const Object* argv)
+Object scheme::eqvHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eqv-hash");
     checkArgumentLength(1);
     const Object obj = argv[0];
     if (obj.isNumber()) {
-        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(obj, 10)).val);
+        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(theVM, obj, 10)).val);
     } else {
         return Object::makeFixnum(obj.val);
     }
 }
 
-Object scheme::stringHashEx(int argc, const Object* argv)
+Object scheme::stringHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-hash");
     checkArgumentLength(1);
@@ -161,7 +162,7 @@ Object scheme::stringHashEx(int argc, const Object* argv)
     return Object::makeFixnum(stringHash(text->data()));
 }
 
-Object scheme::symbolHashEx(int argc, const Object* argv)
+Object scheme::symbolHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("symbol-hash");
     checkArgumentLength(1);
@@ -172,7 +173,7 @@ Object scheme::symbolHashEx(int argc, const Object* argv)
     return Object::makeFixnum(symbolHash(symbol));
 }
 
-Object scheme::stringCiHashEx(int argc, const Object* argv)
+Object scheme::stringCiHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-ci-hash");
     checkArgumentLength(1);
@@ -182,7 +183,7 @@ Object scheme::stringCiHashEx(int argc, const Object* argv)
 }
 
 
-Object scheme::equalHashEx(int argc, const Object* argv)
+Object scheme::equalHashEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("equal-hash");
     checkArgumentLength(1);
@@ -190,17 +191,17 @@ Object scheme::equalHashEx(int argc, const Object* argv)
 }
 
 
-Object scheme::makeHashtableEx(int argc, const Object* argv)
+Object scheme::makeHashtableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-hashtable");
     checkArgumentLengthBetween(2, 3);
 
     argumentCheckProcedure(0, hashFunction);
     argumentCheckProcedure(1, equivalenceFunction);
-    return Object::makeGenericHashTable(hashFunction, equivalenceFunction);
+    return Object::makeGenericHashTable(theVM, hashFunction, equivalenceFunction);
 }
 
-Object scheme::hashtableKeysEx(int argc, const Object* argv)
+Object scheme::hashtableKeysEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hash-table-keys");
     checkArgumentLength(1);
@@ -208,7 +209,7 @@ Object scheme::hashtableKeysEx(int argc, const Object* argv)
     argumentAsHashTable(0, hashtable);
     return hashtable->keys();
 }
-Object scheme::hashtableSetDEx(int argc, const Object* argv)
+Object scheme::hashtableSetDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hash-table-set!");
     checkArgumentLength(3);
@@ -221,12 +222,12 @@ Object scheme::hashtableSetDEx(int argc, const Object* argv)
     if (hashtable->mutableP()) {
         hashtable->set(key, val);
     } else {
-        callAssertionViolationAfter(Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(argv[0]));
+        callAssertionViolationAfter(theVM, Symbol::intern(procedureName), "can't hashtable-set! to immutable hashtable.", Pair::list1(argv[0]));
     }
     return Object::Undef;
 }
 
-Object scheme::hashtableRefEx(int argc, const Object* argv)
+Object scheme::hashtableRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-ref");
     checkArgumentLengthBetween(2, 3);
@@ -238,21 +239,21 @@ Object scheme::hashtableRefEx(int argc, const Object* argv)
     return hashtable->ref(key, defaultVal);
 }
 
-Object scheme::makeEqHashtableEx(int argc, const Object* argv)
+Object scheme::makeEqHashtableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-eq-hashtable");
     checkArgumentLengthBetween(0, 1);
     return Object::makeEqHashTable();
 }
 
-Object scheme::makeEqvHashtableEx(int argc, const Object* argv)
+Object scheme::makeEqvHashtableEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-eqv-hashtable");
     checkArgumentLengthBetween(0, 1);
-    return Object::makeEqvHashTable();
+    return Object::makeEqvHashTable(theVM);
 }
 
-Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
+Object scheme::eqHashtableCopyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eq-hashtable-copy");
     checkArgumentLength(1);
@@ -261,7 +262,7 @@ Object scheme::eqHashtableCopyEx(int argc, const Object* argv)
     return hashtable->copy(true);
 }
 
-Object scheme::hashtableCopyEx(int argc, const Object* argv)
+Object scheme::hashtableCopyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-copy");
     checkArgumentLengthBetween(1, 2);
@@ -274,7 +275,7 @@ Object scheme::hashtableCopyEx(int argc, const Object* argv)
     return hashtable->copy(mutableP);
 }
 
-Object scheme::hashtableMutablePEx(int argc, const Object* argv)
+Object scheme::hashtableMutablePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-mutable?");
     checkArgumentLength(1);
@@ -283,7 +284,7 @@ Object scheme::hashtableMutablePEx(int argc, const Object* argv)
     return Object::makeBool(hashtable->mutableP());
 }
 
-Object scheme::hashtableClearDEx(int argc, const Object* argv)
+Object scheme::hashtableClearDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-clear!");
     checkArgumentLengthBetween(1, 2);
@@ -295,12 +296,12 @@ Object scheme::hashtableClearDEx(int argc, const Object* argv)
         hashtable->clearD();
         return Object::Undef;
     } else {
-        callAssertionViolationAfter(procedureName, "can't clear an immutable hashtable.", Pair::list1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "can't clear an immutable hashtable.", Pair::list1(argv[0]));
         return Object::Undef;
     }
 }
 
-Object scheme::hashtableEquivalenceFunctionEx(int argc, const Object* argv)
+Object scheme::hashtableEquivalenceFunctionEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-equivalence-function");
     checkArgumentLength(1);
@@ -309,7 +310,7 @@ Object scheme::hashtableEquivalenceFunctionEx(int argc, const Object* argv)
     return hashtable->equivalenceFunction();
 }
 
-Object scheme::hashtableHashFunctionEx(int argc, const Object* argv)
+Object scheme::hashtableHashFunctionEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("hashtable-hash-function");
     checkArgumentLength(1);

@@ -58,7 +58,7 @@
 
 using namespace scheme;
 
-VM* theVM;
+static VM* theVM;
 
 Object argsToList(int argc, int optind, char* argv[])
 {
@@ -103,10 +103,6 @@ void signal_handler(int signo)
 }
 #endif
 
-void compareRead(const char* file);
-void parrot(const char* file);
-
-
 int main(int argc, char *argv[])
 {
     int opt;
@@ -114,8 +110,6 @@ int main(int argc, char *argv[])
     bool isCompileString = false;
     bool isProfiler      = false;
     bool isR6RSBatchMode = true;
-    bool isCompareRead   = false;
-    bool isParrot        = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
 
@@ -145,12 +139,6 @@ int main(int argc, char *argv[])
         case 'c':
             isCompileString = true;
             break;
-        case 'r':
-            isCompareRead = true;
-            break;
-        case 'z':
-            isParrot = true;
-            break;
         case 'e':
             isDebugExpand = true;
             break;
@@ -173,9 +161,13 @@ int main(int argc, char *argv[])
     mosh_init();
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
+    Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
+    Object errorPort = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stderr), transcoder);
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
+
+    // todo dependencies
+    outPort.toTextualOutputPort()->setVM(theVM);
+    errorPort.toTextualOutputPort()->setVM(theVM);
     theVM->loadCompiler();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
 //     if (initFile != NULL) {
@@ -189,17 +181,13 @@ int main(int argc, char *argv[])
         bool errorOccured = false;
         const Object code = port.toTextualInputPort()->getDatum(errorOccured);
         if (errorOccured) {
-            callLexicalViolationImmidiaImmediately("read", port.toTextualInputPort()->error());
+            callLexicalViolationImmidiaImmediately(theVM, "read", port.toTextualInputPort()->error());
         } else {
             const Object compiled = theVM->compile(code);
             theVM->getOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode(isDebugExpand);
-    } else if (isCompareRead) {
-        compareRead(argv[optind]);
-    } else if (isParrot) {
-        parrot(argv[optind]);
     } else if (optind < argc) {
         theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
         theVM->load(Object::makeString(argv[optind]).toString()->data());
@@ -214,67 +202,4 @@ int main(int argc, char *argv[])
     }
 #endif
     exit(EXIT_SUCCESS);
-}
-
-extern "C" void dont_free(void* p)
-{
-}
-
-void parrot(const char* file)
-{
-    bool isErrorOccured;
-    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-    for (Object p = in1->getDatum(isErrorOccured); !p.isEof(); p = in1->getDatum(isErrorOccured)) {
-        port->putDatum(p);
-    }
-}
-
-// compare "old read" and "new read"
-void compareRead(const char* file)
-{
-    TextualInputPort* in1 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-    TextualInputPort* in2 = Object::makeTextualInputFilePort(file).toTextualInputPort();
-
-    long long a1 = 0;
-    long long a2 = 0;
-    struct timeval tv1, tv2, tv3;
-    TextualOutputPort* const port = theVM->getOutputPort().toTextualOutputPort();
-    bool isErrorOccured = false;
-    for (;;) {
-        gettimeofday(&tv1, NULL);
-        const Object o1 = in1->getDatumOld(isErrorOccured);
-        gettimeofday(&tv2, NULL);
-        Object o2 = in2->getDatum(isErrorOccured);
-        gettimeofday(&tv3, NULL);
-
-        a1 += (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec) - (tv1.tv_sec * 1000 * 1000 + tv1.tv_usec);
-        a2 += (tv3.tv_sec * 1000 * 1000 + tv3.tv_usec) - (tv2.tv_sec * 1000 * 1000 + tv2.tv_usec);
-        if (o1.isEof()) {
-            if (o2.isEof()) {
-            } else {
-
-                printf("old (read) reached EOF but new (read) doesn't");
-            }
-            break;
-        } else if (o2.isEof()) {
-            if (o1.isEof()) {
-            } else {
-                port->putDatum(o1);
-                printf("new (read) reached EOF but old (read) doesn't");
-            }
-            break;
-        }
-
-        if (!equal(o1, o2)) {
-            printf("======= error ==============================================================\n");
-            port->putDatum(o1);
-            printf("\n\n");
-            port->putDatum(o2);
-            break;
-        } else {
-            //       port->putDatum(o2);
-        }
-    }
-    printf("%lld:%lld :", a1, a2);
 }

@@ -43,28 +43,28 @@ namespace scheme {
         return lvar.toVector()->ref(1);
     }
 
-    Object pass1FindSymbolInLvarsEx(int argc, const Object* argv);
-    Object printStackEx(int argc, const Object* argv);
-    Object disasmEx(int argc, const Object* argv);
-    Object labelEx(int argc, const Object* argv);
-    Object localRefEx(int argc, const Object* argv);
-    Object pass3FindFreeEx(int argc, const Object* argv);
-    Object pass3FindSetsEx(int argc, const Object* argv);
-    Object pass3CompileReferEx(int argc, const Object* argv);
+    Object pass1FindSymbolInLvarsEx(VM* theVM, int argc, const Object* argv);
+    Object printStackEx(VM* theVM, int argc, const Object* argv);
+    Object disasmEx(VM* theVM, int argc, const Object* argv);
+    Object labelEx(VM* theVM, int argc, const Object* argv);
+    Object localRefEx(VM* theVM, int argc, const Object* argv);
+    Object pass3FindFreeEx(VM* theVM, int argc, const Object* argv);
+    Object pass3FindSetsEx(VM* theVM, int argc, const Object* argv);
+    Object pass3CompileReferEx(VM* theVM, int argc, const Object* argv);
 
-    Object pass4FixupLabelsEx(int argc, const Object* argv);
+    Object pass4FixupLabelsEx(VM* theVM, int argc, const Object* argv);
 
-    Object makeCodeBuilderEx(int argc, const Object* argv);
-    Object codeBuilderPutExtra1DEx(int argc, const Object* argv);
-    Object codeBuilderPutExtra2DEx(int argc, const Object* argv);
-    Object codeBuilderPutExtra3DEx(int argc, const Object* argv);
-    Object codeBuilderPutExtra4DEx(int argc, const Object* argv);
-    Object codeBuilderPutExtra5DEx(int argc, const Object* argv);
-    Object codeBuilderAppendDEx(int argc, const Object* argv);
-    Object codeBuilderEmitEx(int argc, const Object* argv);
-    Object codeBuilderPutInsnArg0DEx(int argc, const Object* argv);
-    Object codeBuilderPutInsnArg1DEx(int argc, const Object* argv);
-    Object codeBuilderPutInsnArg2DEx(int argc, const Object* argv);
+    Object makeCodeBuilderEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutExtra1DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutExtra2DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutExtra3DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutExtra4DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutExtra5DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderAppendDEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderEmitEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutInsnArg0DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutInsnArg1DEx(VM* theVM, int argc, const Object* argv);
+    Object codeBuilderPutInsnArg2DEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

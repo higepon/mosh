@@ -34,6 +34,7 @@
 #include "SString.h"
 #include "Pair.h"
 #include "Pair-inl.h"
+#include "VM.h"
 #include "ByteVector.h"
 #include "BinaryOutputPort.h"
 #include "BinaryInputPort.h"

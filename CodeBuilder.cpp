@@ -38,7 +38,6 @@
 #include "TextualOutputPort.h"
 #include "VM.h"
 
-extern scheme::VM* theVM;
 using namespace scheme;
 
 CodePacket::CodePacket() : packetType_(EMPTY),
@@ -653,5 +652,5 @@ void CodeBuilder::append(CodeBuilder* sourcCodeBuilder)
 
 void CodeBuilder::printPrevious()
 {
-    VM_LOG1("previous =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));
+    //VM_LOG1("previous =~a\n", Instruction::toString(previousCodePacket_.instructionImmediate()));
 }

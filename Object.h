@@ -70,6 +70,7 @@ class Ratnum;
 class Flonum;
 class Bignum;
 class Compnum;
+class VM;
 
 class Object
 {
@@ -127,8 +128,8 @@ public:
     Object& fifth() const;
 
     bool eq(Object o) const;
-    bool equal(Object o) const;
-    bool eqv(Object o) const;
+    bool equal(VM* theVM, Object o) const;
+    bool eqv(VM* theVM, Object o) const;
 
     static Object* makeObjectArray(int size);
     static Object makeFixnum(signed long int n);
@@ -156,12 +157,12 @@ public:
     static Object makeTextualInputFilePort(const ucs4char* str);
     static Object makeTextualInputFilePort(const char* str);
     static Object makeTextualInputPort(BinaryInputPort* port, Transcoder* coder);
-    static Object makeTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
+    static Object makeTextualOutputPort(VM* theVM, BinaryOutputPort* port, Transcoder* coder);
     static Object makeStringInputPort(const ucs4string& str);
     static Object makeStringInputPort(const uint8_t* buf, int size);
-    static Object makeStringOutputPort();
+    static Object makeStringOutputPort(VM* theVM);
     static Object makeTextualByteVectorOuputPort(Transcoder* transcoder);
-    static Object makeCustomBinaryInputPort(Object readProc);
+    static Object makeCustomBinaryInputPort(VM* theVM, Object readProc);
     static Object makeString(int n, ucs4char c = ' ');
     static Object makeClosure(Object* pc,
                               int size,
@@ -176,8 +177,8 @@ public:
     static Object makeInputFilePort(const ucs4char* str);
     static Object makeStack(Object* src, int size);
     static Object makeEqHashTable();
-    static Object makeEqvHashTable();
-    static Object makeCProcedure(Object (*proc)(int, const Object*));
+    static Object makeEqvHashTable(VM* theVM);
+    static Object makeCProcedure(Object (*proc)(VM*, int, const Object*));
     static Object makeBox(Object o);
     static Object makeByteVector(int n);
     static Object makeByteVector(int n, int8_t v);
@@ -194,7 +195,7 @@ public:
     static Object makeTranscoder(Codec* codec, const Object eolStyle);
     static Object makeTranscoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode);
     static Object makeCodeBuilder();
-    static Object makeGenericHashTable(Object hashFunction, Object equivalenceFunction);
+    static Object makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRatnum(int numerator, int denominator);
@@ -208,7 +209,8 @@ public:
                                            Object isOpaque,
                                            Object fields);
 
-    static Object makeRecordConstructorDescriptor(Object rtd,
+    static Object makeRecordConstructorDescriptor(VM* theVM,
+                                                  Object rtd,
                                                   Object parentRcd,
                                                   Object protocol);
 

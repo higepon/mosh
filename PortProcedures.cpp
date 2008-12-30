@@ -64,21 +64,21 @@ bool scheme::fileExistsP(const ucs4string& file)
     }
 }
 
-Object scheme::statMtimeEx(int argc, const Object* argv)
+Object scheme::statMtimeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("stat-mtime");
     checkArgumentLength(1);
     argumentAsString(0, path);
     struct stat sb;
     if (-1 == stat(path->data().ascii_c_str(), &sb)) {
-        callAssertionViolationAfter(procedureName, "failed", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[0]));
         return Object::Undef;
     } else {
         return Object::makeFixnum(sb.st_mtime);
     }
 }
 
-Object scheme::getStringNEx(int argc, const Object* argv)
+Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-n");
     checkArgumentLength(2);
@@ -87,7 +87,7 @@ Object scheme::getStringNEx(int argc, const Object* argv)
     return inputPort->getStringN(size);
 }
 
-Object scheme::faslWriteEx(int argc, const Object* argv)
+Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fasl-write");
     checkArgumentLength(2);
@@ -96,13 +96,13 @@ Object scheme::faslWriteEx(int argc, const Object* argv)
     TRY_IO {
         writer.put(argv[0]);
     } CATCH_IO {
-        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
         return Object::Undef;
     }
     return Object::Undef;
 }
 
-Object scheme::faslReadEx(int argc, const Object* argv)
+Object scheme::faslReadEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fasl-read");
     checkArgumentLength(1);
@@ -111,7 +111,7 @@ Object scheme::faslReadEx(int argc, const Object* argv)
     return reader.get();
 }
 
-Object scheme::getLineEx(int argc, const Object* argv)
+Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-line");
     checkArgumentLength(1);
@@ -119,12 +119,12 @@ Object scheme::getLineEx(int argc, const Object* argv)
     TRY_IO {
         return inputPort->getLine();
     } CATCH_IO {
-        callAssertionViolationAfter(procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
         return Object::Undef;
     }
 }
 
-Object scheme::closePortEx(int argc, const Object* argv)
+Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
@@ -138,12 +138,12 @@ Object scheme::closePortEx(int argc, const Object* argv)
     } else if (maybePort.isTextualOutputPort()) {
         maybePort.toTextualOutputPort()->close();
     } else {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "port", maybePort, L1(maybePort));
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", maybePort, L1(maybePort));
     }
     return Object::Undef;
 }
 
-Object scheme::currentDirectoryEx(int argc, const Object* argv)
+Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-directory");
     checkArgumentLength(0);
@@ -155,14 +155,14 @@ Object scheme::currentDirectoryEx(int argc, const Object* argv)
     return Object::makeString(buf);
 }
 
-Object scheme::standardLibraryPathEx(int argc, const Object* argv)
+Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("standard-library-path");
     checkArgumentLength(0);
     return Object::makeString(UC(MOSH_LIB_PATH));
 }
 
-Object scheme::lookaheadCharEx(int argc, const Object* argv)
+Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("lookahead-char");
     checkArgumentLengthBetween(1, 2);
@@ -179,14 +179,14 @@ Object scheme::lookaheadCharEx(int argc, const Object* argv)
     return ch == EOF ? Object::Eof : Object::makeChar(ch);
 }
 
-Object scheme::currentErrorPortEx(int argc, const Object* argv)
+Object scheme::currentErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-error-port");
     checkArgumentLength(0);
     return theVM->getErrorPort();
 }
 
-Object scheme::sysDisplayEx(int argc, const Object* argv)
+Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("display");
     checkArgumentLengthBetween(1, 2);
@@ -201,14 +201,14 @@ Object scheme::sysDisplayEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::eofObjectPEx(int argc, const Object* argv)
+Object scheme::eofObjectPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eof-object?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isEof());
 }
 
-Object scheme::readCharEx(int argc, const Object* argv)
+Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read-char");
     checkArgumentLengthBetween(0, 1);
@@ -223,7 +223,7 @@ Object scheme::readCharEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::readEx(int argc, const Object* argv)
+Object scheme::readEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read");
     checkArgumentLengthBetween(0, 1);
@@ -238,31 +238,31 @@ Object scheme::readEx(int argc, const Object* argv)
     }
     const Object object = inputPort->getDatum(errorOccured);
     if (errorOccured) {
-        callLexicalViolationAfter(procedureName, inputPort->error());
+        callLexicalViolationAfter(theVM, procedureName, inputPort->error());
         return Object::Undef;
     }
     return object;
 }
 
-Object scheme::openStringInputPortEx(int argc, const Object* argv)
+Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-input-port");
     argumentAsString(0, text);
     return Object::makeStringInputPort(text->data());
 }
 
-Object scheme::sysOpenOutputStringEx(int argc, const Object* argv)
+Object scheme::sysOpenOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
-    return Object::makeStringOutputPort();
+    return Object::makeStringOutputPort(theVM);
 }
 
-Object scheme::sysPortSeekEx(int argc, const Object* argv)
+Object scheme::sysPortSeekEx(VM* theVM, int argc, const Object* argv)
 {
     // todo
     return Object::UnBound;
 }
 
-Object scheme::openOutputFileEx(int argc, const Object* argv)
+Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-output-file");
     checkArgumentLength(1);
@@ -273,14 +273,14 @@ Object scheme::openOutputFileEx(int argc, const Object* argv)
     FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+        return Object::makeTextualOutputPort(theVM, fileBinaryOutputPort, transcoder);
     } else {
-        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 }
 
-Object scheme::closeOutputPortEx(int argc, const Object* argv)
+Object scheme::closeOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-output-port");
     checkArgumentLength(1);
@@ -293,12 +293,12 @@ Object scheme::closeOutputPortEx(int argc, const Object* argv)
         port.toBinaryOutputPort()->close();
         return Object::Undef;
     } else  {
-        callAssertionViolationAfter(procedureName, "port required", L1(port));
+        callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
         return Object::Undef;
     }
 }
 
-Object scheme::closeInputPortEx(int argc, const Object* argv)
+Object scheme::closeInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-input-port");
     checkArgumentLength(1);
@@ -311,12 +311,12 @@ Object scheme::closeInputPortEx(int argc, const Object* argv)
         port.toBinaryInputPort()->close();
         return Object::Undef;
     } else  {
-        callAssertionViolationAfter(procedureName, "port required", L1(port));
+        callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
         return Object::Undef;
     }
 }
 
-Object scheme::sysGetOutputStringEx(int argc, const Object* argv)
+Object scheme::sysGetOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-output-string");
     checkArgumentLength(1);
@@ -325,13 +325,13 @@ Object scheme::sysGetOutputStringEx(int argc, const Object* argv)
     return Object::makeString(p->getString());
 }
 
-Object scheme::deleteFileEx(int argc, const Object* argv)
+Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("delete-file");
     checkArgumentLength(1);
     argumentAsString(0, text);
     if (-1 == unlink(text->data().ascii_c_str())) {
-        callIoFileNameErrorAfter(procedureName,
+        callIoFileNameErrorAfter(theVM, procedureName,
                                  "can't delete file",
                                  L1(argv[0]));
         return Object::Undef;
@@ -340,7 +340,7 @@ Object scheme::deleteFileEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::fileExistsPEx(int argc, const Object* argv)
+Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("file-exists?");
     checkArgumentLength(1);
@@ -349,7 +349,7 @@ Object scheme::fileExistsPEx(int argc, const Object* argv)
 }
 
 // todo cleanup
-Object scheme::formatEx(int argc, const Object* argv)
+Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("format");
     const Object arg1 = argv[0];
@@ -364,7 +364,7 @@ Object scheme::formatEx(int argc, const Object* argv)
         }
         textualOutputPort->format(formatString->data(), lst);
         if (textualOutputPort->isErrorOccured()) {
-            callAssertionViolationAfter(procedureName,
+            callAssertionViolationAfter(theVM, procedureName,
                                         textualOutputPort->errorMessage(),
                                         textualOutputPort->irritants());
             return Object::Undef;
@@ -382,7 +382,7 @@ Object scheme::formatEx(int argc, const Object* argv)
         TextualOutputPort* const outputPort = theVM->getOutputPort().toTextualOutputPort();
         outputPort->format(formatString->data(), lst);
         if (outputPort->isErrorOccured()) {
-            callAssertionViolationAfter(procedureName,
+            callAssertionViolationAfter(theVM, procedureName,
                                         outputPort->errorMessage(),
                                         outputPort->irritants());
             return Object::Undef;
@@ -393,7 +393,7 @@ Object scheme::formatEx(int argc, const Object* argv)
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
 
-        const Object port = Object::makeStringOutputPort();
+        const Object port = Object::makeStringOutputPort(theVM);
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 2; i--) {
@@ -402,7 +402,7 @@ Object scheme::formatEx(int argc, const Object* argv)
 
         p->format(formatString->data(), lst);
         if (p->isErrorOccured()) {
-            callAssertionViolationAfter(procedureName,
+            callAssertionViolationAfter(theVM, procedureName,
                                         p->errorMessage(),
                                         p->irritants());
             return Object::Undef;
@@ -410,7 +410,7 @@ Object scheme::formatEx(int argc, const Object* argv)
             return Object::makeString(p->getString());
         }
     } else if (arg1.isString()) {
-        const Object port = Object::makeStringOutputPort();
+        const Object port = Object::makeStringOutputPort(theVM);
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 1; i--) {
@@ -418,7 +418,7 @@ Object scheme::formatEx(int argc, const Object* argv)
         }
         p->format(arg1.toString()->data(), lst);
         if (p->isErrorOccured()) {
-            callAssertionViolationAfter(procedureName,
+            callAssertionViolationAfter(theVM, procedureName,
                                         p->errorMessage(),
                                         p->irritants());
             return Object::Undef;
@@ -426,12 +426,12 @@ Object scheme::formatEx(int argc, const Object* argv)
             return Object::makeString(p->getString());
         }
     } else {
-        callAssertionViolationAfter(procedureName, "port and format string required");
+        callAssertionViolationAfter(theVM, procedureName, "port and format string required");
         return Object::Undef;
     }
 }
 
-Object scheme::writeEx(int argc, const Object* argv)
+Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("write");
     checkArgumentLengthBetween(1, 2);
@@ -447,7 +447,7 @@ Object scheme::writeEx(int argc, const Object* argv)
 
 // todo incomplete
 // (make-custom-binary-input-port id read! get-position set-position! close)
-Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
+Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-custom-binary-input-port");
     checkArgumentLength(5);
@@ -458,10 +458,10 @@ Object scheme::makeCustomBinaryInputPortEx(int argc, const Object* argv)
     argumentCheckProcedureOrFalse(3, setPositionProc);
     argumentCheckProcedureOrFalse(3, closeProc);
 
-    return Object::makeCustomBinaryInputPort(readProc);
+    return Object::makeCustomBinaryInputPort(theVM, readProc);
 }
 
-Object scheme::getU8Ex(int argc, const Object* argv)
+Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-u8");
     checkArgumentLength(1);
@@ -474,7 +474,7 @@ Object scheme::getU8Ex(int argc, const Object* argv)
     }
 }
 
-Object scheme::transcodedPortEx(int argc, const Object* argv)
+Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("transcoded-port");
     checkArgumentLength(2);
@@ -484,28 +484,28 @@ Object scheme::transcodedPortEx(int argc, const Object* argv)
     return Object::makeTextualInputPort(binaryInputPort, transcoder);
 }
 
-Object scheme::latin1CodecEx(int argc, const Object* argv)
+Object scheme::latin1CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("latin-1-codec");
     checkArgumentLength(0);
     return Object::makeLatin1Codec();
 }
 
-Object scheme::utf8CodecEx(int argc, const Object* argv)
+Object scheme::utf8CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-8-codec");
     checkArgumentLength(0);
     return Object::makeUTF8Codec();
 }
 
-Object scheme::utf16CodecEx(int argc, const Object* argv)
+Object scheme::utf16CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-16-codec");
     checkArgumentLength(0);
     return Object::makeUTF16Codec();
 }
 
-Object scheme::nativeEolStyleEx(int argc, const Object* argv)
+Object scheme::nativeEolStyleEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("native-eol-style");
     checkArgumentLength(0);
@@ -520,7 +520,7 @@ Object scheme::nativeEolStyleEx(int argc, const Object* argv)
 #endif
 }
 
-Object scheme::makeTranscoderEx(int argc, const Object* argv)
+Object scheme::makeTranscoderEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-transcoder");
     checkArgumentLengthBetween(1, 3);
@@ -537,19 +537,19 @@ Object scheme::makeTranscoderEx(int argc, const Object* argv)
     return Object::makeTranscoder(codec, eolStyle, errorHandlingMode);
 }
 
-Object scheme::eofObjectEx(int argc, const Object* argv)
+Object scheme::eofObjectEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eof-object");
     checkArgumentLength(0);
     return Object::Eof;
 }
 
-Object scheme::sysOpenBytevectorOutputPortEx(int argc, const Object* argv)
+Object scheme::sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-bytevector-output-port");
     checkArgumentLengthBetween(0, 1);
     if (0 == argc || argv[0].isFalse()) {
-        callNotImplementedAssertionViolationAfter(procedureName);
+        callNotImplementedAssertionViolationAfter(theVM, procedureName);
         return Object::Undef;
     } else {
         argumentAsTranscoder(0, transcoder);
@@ -557,7 +557,7 @@ Object scheme::sysOpenBytevectorOutputPortEx(int argc, const Object* argv)
     }
 }
 
-Object scheme::sysGetBytevectorEx(int argc, const Object* argv)
+Object scheme::sysGetBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-bytevector");
     checkArgumentLength(1);
@@ -566,7 +566,7 @@ Object scheme::sysGetBytevectorEx(int argc, const Object* argv)
     return Object::makeByteVector(p->getByteVector());
 }
 
-Object scheme::openFileOutputPortEx(int argc, const Object* argv)
+Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-output-port");
     checkArgumentLength(1);
@@ -578,12 +578,12 @@ Object scheme::openFileOutputPortEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeBinaryOutputPort(fileBinaryOutputPort);
     } else {
-        callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 }
 
-Object scheme::openInputFileEx(int argc, const Object* argv)
+Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-input-file");
     checkArgumentLength(1);
@@ -595,12 +595,12 @@ Object scheme::openInputFileEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
     } else {
-        callErrorAfter(procedureName, "can't open file", L1(argv[0]));
+        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 }
 
-Object scheme::openFileInputPortEx(int argc, const Object* argv)
+Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
     checkArgumentLength(1);
@@ -610,7 +610,7 @@ Object scheme::openFileInputPortEx(int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeBinaryInputPort(fileBinaryInputPort);
     } else {
-        callErrorAfter(procedureName, "can't open file", L1(argv[0]));
+        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 
@@ -619,26 +619,26 @@ Object scheme::openFileInputPortEx(int argc, const Object* argv)
 //     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
 //         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
 //     } else {
-//         callAssertionViolationAfter(procedureName, "can't open file", L1(argv[0]));
+//         callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
 //         return Object::Undef;
 //     }
 }
 
-Object scheme::currentInputPortEx(int argc, const Object* argv)
+Object scheme::currentInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-input-port");
     checkArgumentLength(0);
     return theVM->currentInputPort();
 }
 
-Object scheme::currentOutputPortEx(int argc, const Object* argv)
+Object scheme::currentOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-output-port");
     checkArgumentLength(0);
     return theVM->getOutputPort();
 }
 
-Object scheme::setCurrentInputPortDEx(int argc, const Object* argv)
+Object scheme::setCurrentInputPortDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-current-input-port!");
     checkArgumentLength(1);
@@ -648,7 +648,7 @@ Object scheme::setCurrentInputPortDEx(int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::setCurrentOutputPortDEx(int argc, const Object* argv)
+Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("set-current-output-port!");
     checkArgumentLength(1);
@@ -658,14 +658,14 @@ Object scheme::setCurrentOutputPortDEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::standardInputPortEx(int argc, const Object* argv)
+Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("starndard-input-port");
     checkArgumentLength(0);
     return theVM->standardInputPort();
 }
 
-Object scheme::readdirEx(int argc, const Object* argv)
+Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("readdir");
     checkArgumentLength(1);
@@ -673,7 +673,7 @@ Object scheme::readdirEx(int argc, const Object* argv)
 
     DIR* dir;
     if (NULL == (dir = opendir(path->data().ascii_c_str()))) {
-        callAssertionViolationAfter(procedureName, "could't open dir", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "could't open dir", L1(argv[0]));
         return Object::Undef;
     }
     Object ret = Object::Nil;
@@ -684,7 +684,7 @@ Object scheme::readdirEx(int argc, const Object* argv)
     return ret;
 }
 
-Object scheme::bufferModePEx(int argc, const Object* argv)
+Object scheme::bufferModePEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("buffer-mode?");
     checkArgumentLength(1);

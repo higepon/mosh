@@ -39,7 +39,7 @@ using namespace scheme;
 
 Object genericHashFunction;
 Object genericEquivalenceFunction;
-extern scheme::VM* theVM;
+static VM* theVM = NULL; // todo multi thread
 
 int callHashFunction(Object hashFunction, Object key)
 {
@@ -54,7 +54,8 @@ bool callEquivalenceFunction(Object equivalenceFunction, Object o1, Object o2)
     return !theVM->callClosure2(equivalenceFunction, o1, o2).isFalse();
 }
 
-GenericHashTable::GenericHashTable(Object hashFunction, Object equivalenceFunction) :
+GenericHashTable::GenericHashTable(VM* vm, Object hashFunction, Object equivalenceFunction) :
+    vm_(vm),
     hashFunction_(hashFunction),
     equivalenceFunction_(equivalenceFunction),
     mutable_(true)
@@ -70,6 +71,7 @@ void GenericHashTable::prepareFunctions()
     // TODO: should be thread safe.
     genericHashFunction = hashFunction_;
     genericEquivalenceFunction = equivalenceFunction();
+    theVM = vm_;
 }
 
 void GenericHashTable::setMap(GenericMap map)
@@ -124,7 +126,8 @@ bool GenericHashTable::containsP(Object key)
 
 Object GenericHashTable::copy(bool mutableP)
 {
-    Object ret = Object::makeGenericHashTable(hashFunction_,
+    Object ret = Object::makeGenericHashTable(theVM,
+                                              hashFunction_,
                                               equivalenceFunction());
     GenericHashTable* genericHashTable = ret.toGenericHashTable();
     genericHashTable->setMap(map_);

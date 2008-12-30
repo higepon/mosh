@@ -40,9 +40,7 @@
 
 using namespace scheme;
 
-extern scheme::VM* theVM;
-
-CustomBinaryInputPort::CustomBinaryInputPort(Object readProc) : readProc_(readProc)
+CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc)
 {
 }
 
@@ -72,7 +70,7 @@ int CustomBinaryInputPort::getU8()
     const Object bv = Object::makeByteVector(1);
     const Object start = Object::makeFixnum(0);
     const Object count = Object::makeFixnum(1);
-    const Object result = theVM->callClosure3(readProc_, bv, start, count);
+    const Object result = theVM_->callClosure3(readProc_, bv, start, count);
     MOSH_ASSERT(result.isFixnum());
     if (0 == result.toFixnum()) {
         return EOF;

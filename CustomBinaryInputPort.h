@@ -39,7 +39,7 @@ namespace scheme {
 class CustomBinaryInputPort : public BinaryInputPort
 {
 public:
-    CustomBinaryInputPort(Object readProc);
+    CustomBinaryInputPort(VM* theVM, Object readProc);
     virtual ~CustomBinaryInputPort();
 
     int getU8();
@@ -49,7 +49,9 @@ public:
     int close();
 
 private:
+    VM* theVM_;
     const Object readProc_;
+
 };
 
 }; // namespace scheme

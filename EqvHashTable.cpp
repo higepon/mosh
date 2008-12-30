@@ -33,13 +33,15 @@
 #include "Object-inl.h"
 #include "GenericHashTable.h"
 #include "EqvHashTable.h"
+#include "VM.h"
 #include "UtilityProcedures.h"
 #include "HashTableProceduures.h"
 
 using namespace scheme;
 
-EqvHashTable::EqvHashTable() : GenericHashTable(Object::makeCProcedure(eqvHashEx),
-                                                Object::makeCProcedure(eqvPEx))
+EqvHashTable::EqvHashTable(VM* theVM) : GenericHashTable(theVM,
+                                                         Object::makeCProcedure(eqvHashEx),
+                                                         Object::makeCProcedure(eqvPEx))
 {
 }
 

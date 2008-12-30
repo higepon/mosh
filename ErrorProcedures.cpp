@@ -36,10 +36,12 @@
 #include "SString.h"
 #include "Symbol.h"
 #include "RecordConstructorDescriptor.h"
+#include "VM.h"
 #include "ErrorProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "TextualOutputPort.h"
+#include "StringProcedures.h"
 #include "Closure.h"
 
 using namespace scheme;
@@ -50,13 +52,14 @@ Object  scheme::ioErrorMessage;
 bool scheme::isErrorBufInitialized = false;
 #endif
 
-static Object makeMessageCondition(Object message);
-static Object makeIrritantsCondition(Object irritants);
-static Object makeWhoCondition(Object who);
+static Object makeMessageCondition(VM* theVM, Object message);
+static Object makeIrritantsCondition(VM* theVM, Object irritants);
+static Object makeWhoCondition(VM* theVM, Object who);
 //static Object makeAssertionCondition();
-static Object makeCondition(const ucs4char* rcdName);
-static Object makeCondition(const ucs4char* rcdName, Object conent);
-static void raiseAfter(const ucs4char* errorRcdName,
+static Object makeCondition(VM* theVM, const ucs4char* rcdName);
+static Object makeCondition(VM* theVM, const ucs4char* rcdName, Object conent);
+static void raiseAfter(VM* theVM,
+                       const ucs4char* errorRcdName,
                        const ucs4char* errorName,
                        int argumentCount,
                        Object who,
@@ -68,9 +71,10 @@ Object scheme::throwIOError(Object message)
     ioErrorMessage = message;
     MOSH_ASSERT(isErrorBufInitialized);
     longjmp(ioErrorJmpBuf, -1);
+    return Object::Undef;
 }
 
-Object scheme::throwEx(int argc, const Object* argv)
+Object scheme::throwEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("throw");
     checkArgumentLength(1);
@@ -78,126 +82,100 @@ Object scheme::throwEx(int argc, const Object* argv)
     return Object::Undef;
 }
 
-void scheme::callNotImplementedAssertionViolationAfter(Object who, Object irritants /* = Object::Nil */)
+void scheme::callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Object irritants /* = Object::Nil */)
 {
-    callAssertionViolationAfter(who, "not implemented", irritants);
+    callAssertionViolationAfter(theVM, who, "not implemented", irritants);
 }
 
-void scheme::callWrongTypeOfArgumentViolationAfter(Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
+void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
 {
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC("~a required, but got ~a"),
-                              Pair::list2(requiredType, gotValue));
-    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
-    callAssertionViolationAfter(who, message, irritants);
+    const Object message = format(UC("~a required, but got ~a"),
+                                  Pair::list2(requiredType, gotValue));
+    callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
+void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
 {
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
-                              Pair::list3(Object::makeFixnum(startCounts),
-                                          Object::makeFixnum(endCounts),
-                                          Object::makeFixnum(gotCounts)));
-    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
-    callAssertionViolationAfter(who, message, irritants);
+    const Object message = format(UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
+                                  Pair::list3(Object::makeFixnum(startCounts),
+                                              Object::makeFixnum(endCounts),
+                                              Object::makeFixnum(gotCounts)));
+    callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
 {
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC("wrong number of arguments (required ~d, got ~d)"),
-                              Pair::list2(Object::makeFixnum(requiredCounts),
-                                          Object::makeFixnum(gotCounts)));
-    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
-    callAssertionViolationAfter(who, message, irritants);
+    const Object message = format(UC("wrong number of arguments (required ~d, got ~d)"),
+                                  Pair::list2(Object::makeFixnum(requiredCounts),
+                                              Object::makeFixnum(gotCounts)));
+    callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
-void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
+void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
 {
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC("wrong number of arguments (required at least ~d, got ~d)"),
-                              Pair::list2(Object::makeFixnum(requiredCounts),
-                                          Object::makeFixnum(gotCounts)));
-    const Object message = sysGetOutputStringEx(1, &stringOutputPort);
-    callAssertionViolationAfter(who, message, irritants);
+    const Object message = format(UC("wrong number of arguments (required at least ~d, got ~d)"),
+                                  Pair::list2(Object::makeFixnum(requiredCounts),
+                                              Object::makeFixnum(gotCounts)));
+    callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
 // we can't catch this!
-void scheme::callAssertionViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
+void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC(" Condition components:\n"
-                                 "    1. &assertion\n"
-                                 "    2. &who: ~a\n"
-                                 "    3. &message: ~s\n"
-                                 "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-    const Object condition = sysGetOutputStringEx(1, &stringOutputPort);
+   const Object condition =  format(UC(" Condition components:\n"
+                                       "    1. &assertion\n"
+                                       "    2. &who: ~a\n"
+                                       "    3. &message: ~s\n"
+                                       "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
     theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
-void scheme::callAssertionViolationAfter(Object who, Object message, Object irritants /* = Object::Nil */)
+void scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
-    raiseAfter(UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
+    raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
 }
 
 // we can't catch this!
-void scheme::callLexicalViolationImmidiaImmediately(Object who, Object message, Object irritants /* = Object::Nil */)
+void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
-    const Object stringOutputPort = Object::makeStringOutputPort();
-    TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-    textualOutputPort->format(UC(" Condition components:\n"
+    const Object condition = format(UC(" Condition components:\n"
                                  "    1. &lexical\n"
                                  "    2. &who: ~a\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-
-    const Object condition = sysGetOutputStringEx(1, &stringOutputPort);
     theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
-void scheme::callImplementationRestrictionAfter(Object who, Object message, Object irritants)
+void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter(UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
+    raiseAfter(theVM, UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
 }
 
-void scheme::callLexicalViolationAfter(Object who, Object message, Object irritants)
+void scheme::callLexicalViolationAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter(UC("&lexical-rcd"), UC("&lexical"), 0, who, message, irritants);
+    raiseAfter(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, who, message, irritants);
 }
-void scheme::callIoFileNameErrorAfter(Object who, Object message, Object irritants)
+void scheme::callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter(UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
-}
-
-void scheme::callErrorAfter(Object who, Object message, Object irritants /* = Object::Nil */)
-{
-    raiseAfter(UC("&error-rcd"), UC("&error"), 0, who, message, irritants);
+    raiseAfter(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
 }
 
-Object scheme::assertionViolationEx(int argc, const Object* argv)
+void scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    raiseAfter(theVM, UC("&error-rcd"), UC("&error"), 0, who, message, irritants);
+}
+
+Object scheme::assertionViolationEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("assertion-violation");
     checkArgumentLengthAtLeast(2);
     const Object who = argv[0];
     if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "symbol, string or #f", who);
         return Object::Undef;
     }
     argumentCheckString(1, message);
@@ -206,17 +184,17 @@ Object scheme::assertionViolationEx(int argc, const Object* argv)
     for (int i = 2; i < argc; i++) {
         irritants = Object::cons(argv[i], irritants);
     }
-    callAssertionViolationAfter(who, message, irritants);
+    callAssertionViolationAfter(theVM, who, message, irritants);
     return Object::Undef;
 }
 
-Object scheme::errorEx(int argc, const Object* argv)
+Object scheme::errorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("error");
     checkArgumentLengthAtLeast(2);
     const Object who = argv[0];
     if (!who.isFalse() && !who.isString() && !who.isSymbol()) {
-        callWrongTypeOfArgumentViolationAfter(procedureName, "symbol, string or #f", who);
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "symbol, string or #f", who);
         return Object::Undef;
     }
     argumentCheckString(1, message);
@@ -224,42 +202,42 @@ Object scheme::errorEx(int argc, const Object* argv)
     for (int i = argc - 1; i >= 2; i--) {
         irritants = Object::cons(argv[i], irritants);
     }
-    callErrorAfter(who, message, irritants);
+    callErrorAfter(theVM, who, message, irritants);
     return Object::Undef;
 }
 
-
 // private
-Object makeWhoCondition(Object who)
+Object makeWhoCondition(VM* theVM, Object who)
 {
-    return makeCondition(UC("&who-rcd"), who);
+    return makeCondition(theVM, UC("&who-rcd"), who);
 }
 
-Object makeMessageCondition(Object message)
+Object makeMessageCondition(VM* theVM, Object message)
 {
-    return makeCondition(UC("&message-rcd"), message);
+    return makeCondition(theVM, UC("&message-rcd"), message);
 }
 
-Object makeIrritantsCondition(Object irritants)
+Object makeIrritantsCondition(VM* theVM, Object irritants)
 {
-    return makeCondition(UC("&irritants-rcd"), irritants);
+    return makeCondition(theVM, UC("&irritants-rcd"), irritants);
 }
 
-Object makeCondition(const ucs4char* rcdName)
+Object makeCondition(VM* theVM, const ucs4char* rcdName)
 {
     const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
 }
 
-Object makeCondition(const ucs4char* rcdName, Object content)
+Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
 {
     const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
-void raiseAfter(const ucs4char* errorRcdName,
+void raiseAfter(VM* theVM,
+                const ucs4char* errorRcdName,
                 const ucs4char* errorName,
                 int argumentCount,
                 Object who,
@@ -275,32 +253,27 @@ void raiseAfter(const ucs4char* errorRcdName,
         Object conditions = Object::Nil;
 
         // even if irritants is nil, we create irritants condition.
-        conditions = Object::cons(makeIrritantsCondition(irritants), conditions);
+        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
 
-        conditions = Object::cons(makeMessageCondition(message), conditions);
+        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
 
         if (!who.isFalse()) {
-            conditions = Object::cons(makeWhoCondition(who), conditions);
+            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
         }
 
         MOSH_ASSERT(argumentCount >= 0 && argumentCount <= 1);
         if (0 == argumentCount) {
-            conditions = Object::cons(makeCondition(errorRcdName), conditions);
+            conditions = Object::cons(makeCondition(theVM, errorRcdName), conditions);
         } else {
-            conditions = Object::cons(makeCondition(errorRcdName, Object::Nil), conditions);
+            conditions = Object::cons(makeCondition(theVM, errorRcdName, Object::Nil), conditions);
         }
         condition = Object::makeCompoundCondition(conditions);
     } else {
-        const Object stringOutputPort = Object::makeStringOutputPort();
-        TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
-
-        textualOutputPort->format(UC(" Condition components:\n"
-                                     "    1. ~a\n"
-                                     "    2. &who: ~a\n"
-                                     "    3. &message: ~s\n"
-                                     "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
-
-        condition = sysGetOutputStringEx(1, &stringOutputPort);
+        condition = format(UC(" Condition components:\n"
+                              "    1. ~a\n"
+                              "    2. &who: ~a\n"
+                              "    3. &message: ~s\n"
+                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
     }
 
     const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));

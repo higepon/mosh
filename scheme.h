@@ -78,8 +78,10 @@ class gc_vector : public std::vector<T1> {};
 
 #ifdef DEBUG_VERSION
 #define MOSH_ASSERT(condition) { if (!(condition)) { fprintf(stderr, "ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); ::exit(-1);}}
+#define MOSH_FATAL(condition) { fprintf(stderr, "FATAL  %s:%d: %s\n", __FILE__, __LINE__, #condition); ::exit(-1);}}
 #else
 #define MOSH_ASSERT(condition) /* */
+#define MOSH_FATAL(condition) /* */
 #endif
 
 #define INIT_TIME_TRACE() struct timeval tv1, tv2

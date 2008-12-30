@@ -38,7 +38,7 @@
 
 using namespace scheme;
 
-extern Object eqHashEx(int argc, const Object* argv);
+extern Object eqHashEx(VM* theVM, int argc, const Object* argv);
 
 EqHashTable::EqHashTable() :
 #if HAVE_EXT_HASHES && HAVE_TR1_HASHES
