@@ -529,7 +529,7 @@ Object scheme::addEx(VM* theVM, int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(0);
     for (int i = 0; i < argc; i++) {
-        ret = Arithmetic::add(theVM, ret, argv[i]);
+        ret = Arithmetic::add(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -546,12 +546,12 @@ Object scheme::subEx(VM* theVM, int argc, const Object* argv)
 
     if (1 == argc) {
         argumentCheckNumber(0, number);
-        return Arithmetic::mul(theVM, -1, number);
+        return Arithmetic::mul(-1, number);
     }
 
     Object ret = argv[0];
     for (int i = 1; i < argc; i++) {
-        ret = Arithmetic::sub(theVM, ret, argv[i]);
+        ret = Arithmetic::sub(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
@@ -575,7 +575,7 @@ Object scheme::mulEx(VM* theVM, int argc, const Object* argv)
     Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
         argumentCheckNumber(i, num);
-        ret = Arithmetic::mul(theVM, ret, num);
+        ret = Arithmetic::mul(ret, num);
 
         // error occured
         if (ret.isFalse()) {

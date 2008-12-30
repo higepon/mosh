@@ -94,11 +94,11 @@ public:
     static bool isExactZero(Object n1);
     static bool isZero(Object n1);
     static Object toFlonum(Object real);
-    static Object add(VM* theVM, Object number1, Object number2);
-    static Object sub(VM* theVM, Object number1, Object number2);
-    static Object mul(VM* theVM, Object number1, Object number2);
+    static Object add(Object number1, Object number2);
+    static Object sub(Object number1, Object number2);
+    static Object mul(Object number1, Object number2);
     static Object div(VM* theVM, Object number1, Object number2, bool noRaise = false);
-    static Object mul(VM* theVM, int number1, Object number2);
+    static Object mul(int number1, Object number2);
     static bool gt(VM* theVM, Object number1, Object number2);
     static bool ge(VM* theVM, Object number1, Object number2);
     static bool lt(VM* theVM, Object number1, Object number2);

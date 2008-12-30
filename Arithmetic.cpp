@@ -132,7 +132,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
             if (fn2 > 0) {
                 Object ret = n1;
                 for (int i = 0; i < fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return ret;
             } else if (fn2 == 0) {
@@ -145,7 +145,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                 // inverse
                 Object ret = n1;
                 for (int i = 0; i < -fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return Arithmetic::div(theVM, Object::makeFixnum(1), ret);
             }
@@ -217,7 +217,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                 // can be much faster using gmp
                 Object ret = n1;
                 for (int i = 0; i < fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return ret;
             } else if (fn2 == 0) {
@@ -226,7 +226,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                 // inverse
                 Object ret = n1;
                 for (int i = 0; i < -fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return Arithmetic::div(theVM, Object::makeFixnum(1), ret);
             }
@@ -255,7 +255,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                 // can be much faster using gmp
                 Object ret = n1;
                 for (int i = 0; i < fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return ret;
             } else if (fn2 == 0) {
@@ -264,7 +264,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                 // inverse
                 Object ret = n1;
                 for (int i = 0; i < -fn2 - 1; i++) {
-                    ret = Arithmetic::mul(theVM, ret, n1);
+                    ret = Arithmetic::mul(ret, n1);
                 }
                 return Arithmetic::div(theVM, Object::makeFixnum(1), ret);
             }
@@ -537,14 +537,14 @@ Object Arithmetic::integerDiv0(VM* theVM, Object n1, Object n2)
     MOSH_ASSERT(n1.isReal());
     MOSH_ASSERT(n2.isReal());
     Object div = integerDiv(theVM, n1, n2);
-    Object mod = sub(theVM, n1, mul(theVM, div, n2));
+    Object mod = sub(n1, mul(div, n2));
     if (Arithmetic::lt(theVM, mod, Arithmetic::abs(Arithmetic::div(theVM, n2, Object::makeFixnum(2))))) {
         return div;
     } else {
         if (isNegative(n2)) {
-            return sub(theVM, div, Object::makeFixnum(1));
+            return sub(div, Object::makeFixnum(1));
         } else {
-            return add(theVM, div, Object::makeFixnum(1));
+            return add(div, Object::makeFixnum(1));
         }
     }
 }
@@ -570,7 +570,7 @@ Object Arithmetic::abs(Object n)
 Object Arithmetic::negate(Object n)
 {
     MOSH_ASSERT(n.isReal());
-    return Arithmetic::mul(NULL, n, Object::makeFixnum(-1));
+    return Arithmetic::mul(n, Object::makeFixnum(-1));
 }
 
 bool Arithmetic::isNegative(Object n)
@@ -1205,13 +1205,77 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         return Object::False;\
     }
 
-MAKE_OP_FUNC(add, +)
-MAKE_OP_FUNC(sub, -)
-MAKE_OP_FUNC(mul, *)
+#define MAKE_OP_FUNC2(op, symbol)\
+    Object Arithmetic::op(Object n1, Object n2)   \
+    {\
+        MOSH_ASSERT(n1.isNumber()); \
+        MOSH_ASSERT(n2.isNumber()); \
+        if (n1.isFixnum()) {\
+            if (n2.isFixnum()) {\
+                return Bignum::op(n1.toFixnum(), n2.toFixnum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toFixnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toFixnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::op(n1.toFixnum(), n2.toBignum());\
+            } else if (n2.isCompnum()) {\
+                return Compnum::op(n1, n2.toCompnum());   \
+            }\
+        } else if (n1.isBignum()) {\
+            if (n2.isFixnum()) {\
+                return Bignum::op(n1.toBignum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toBignum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toBignum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Bignum::op(n1.toBignum(), n2.toBignum());\
+            } else if (n2.isCompnum()) {\
+                return Compnum::op(n1, n2.toCompnum());   \
+            }\
+        } else if (n1.isRatnum()) {\
+            if (n2.isFixnum()) {\
+                return Ratnum::op(n1.toRatnum(), new Ratnum(n2.toFixnum(), 1));\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toRatnum(), n2.toRatnum());\
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toRatnum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Ratnum::op(n1.toRatnum(), n2.toBignum());\
+            } else if (n2.isCompnum()) { \
+                return Compnum::op(n1, n2.toCompnum());   \
+            }\
+        } else if (n1.isFlonum()) {\
+            if (n2.isFixnum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toFixnum()); \
+            } else if (n2.isRatnum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toRatnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toFlonum());\
+            } else if (n2.isBignum()) {\
+                return Flonum::op(n1.toFlonum(), n2.toBignum());\
+            } else if (n2.isCompnum()) { \
+                return Compnum::op(n1, n2.toCompnum());   \
+            }\
+        } else if (n1.isCompnum()) {\
+            if (n2.isFixnum() || n2.isBignum() || n2.isRatnum() || n2.isFlonum()) { \
+                return Compnum::op(n1.toCompnum(), n2);           \
+            } else if (n2.isCompnum()) {\
+                return Compnum::op(n1.toCompnum(), n2.toCompnum()); \
+            }\
+        }\
+        MOSH_FATAL("number required"); \
+        return Object::False;\
+    }
 
-Object Arithmetic::mul(VM* theVM, int number1, Object number2)
+MAKE_OP_FUNC2(add, +)
+MAKE_OP_FUNC2(sub, -)
+MAKE_OP_FUNC2(mul, *)
+
+Object Arithmetic::mul(int number1, Object number2)
 {
-    return mul(theVM, Object::makeFixnum(number1), number2);
+    return mul(Object::makeFixnum(number1), number2);
 }
 
 #include "ProcedureMacro.h"

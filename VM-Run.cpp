@@ -475,7 +475,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::add(this, n, ac_);
+                ac_ = Arithmetic::add(n, ac_);
             }
             NEXT1;
         }
@@ -536,7 +536,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_MUL)
         {
-            ac_ = Arithmetic::mul(this, pop(), ac_);
+            ac_ = Arithmetic::mul(pop(), ac_);
             NEXT1;
         }
         CASE(NUMBER_DIV)
@@ -552,7 +552,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::sub(this, n, ac_);
+                ac_ = Arithmetic::sub(n, ac_);
             }
             NEXT1;
         }
@@ -564,7 +564,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::sub(this, n, ac_);
+                ac_ = Arithmetic::sub(n, ac_);
             }
             push(ac_);
             NEXT1;
@@ -577,7 +577,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::add(this, n, ac_);
+                ac_ = Arithmetic::add(n, ac_);
             }
             push(ac_);
             NEXT1;
