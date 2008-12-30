@@ -80,8 +80,8 @@ namespace scheme {
 #define VM_ASSERT(condition) { if (!(condition)) { \
             fprintf(stderr, "*** ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); \
             LOG2("    dc_ = ~a\n    cl_=~a\n", \
-                 dc_.toClosure()->sourceInfoString(), \
-                 cl_.toClosure()->sourceInfoString()); \
+                 dc_.toClosure()->sourceInfoString(this), \
+                 cl_.toClosure()->sourceInfoString(this)); \
                  ::exit(-1);}}
 #else
 #define VM_ASSERT(condition) /* */

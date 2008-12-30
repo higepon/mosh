@@ -599,6 +599,7 @@ Object VM::getStackTrace()
             }
 
             if (!mayBeStackPointer(nextFp)) {
+//                getOutputPort().toTextualOutputPort()->format(UC("[[[[~a]]]]"), *nextFp);
                 break;
             }
 
@@ -613,8 +614,13 @@ Object VM::getStackTrace()
 
 bool VM::mayBeStackPointer(Object* obj) const
 {
+#ifdef DEBUG_VERSION
+    Object* const p = reinterpret_cast<Object*>(reinterpret_cast<HeapObject*>(obj->val)->obj);
+    return p >= stack_ && p <= stackEnd_;
+#else
     Object* const p = reinterpret_cast<Object*>(obj->val);
     return p >= stack_ && p <= stackEnd_;
+#endif
 }
 
 void VM::throwException(Object exception)

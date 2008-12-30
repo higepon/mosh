@@ -112,7 +112,7 @@ bin_PROGRAMS = mosh test_vm
 mosh_SOURCES = main.cpp $(COMMON_SOURCES_)
 
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer #-DDEBUG_VERSION
+mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer -DDEBUG_VERSION
 # -O3 causes miss compile of NumberReader.tab.cpp. see http://d.hatena.ne.jp/higepon/20081114/1226645373
 #mosh_CFLAGS   = -O2  $(mosh_OPTS) -pg  -D_FILE_OFFSET_BITS=64
 mosh_CXXFLAGS = $(mosh_CFLAGS)
