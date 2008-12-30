@@ -245,7 +245,7 @@ bench:
 check: test
 
 test:./mosh all-tests.scm 
-	./mosh -r5 test/reader.scm
+#	./mosh -r5 test/reader.scm
 	./mosh -5 all-tests.scm
 #	./mosh r6rs-examples/srfi8-test.ss
 	./mosh r6rs-examples/record-test.ss
