@@ -52,12 +52,12 @@ public:
     Object imag() const { return imag_; }
 
     // e^(z2log(z1))
-    static Object expt(VM* theVM, Object z1, Object z2)
+    static Object expt(Object z1, Object z2)
     {
         return Arithmetic::exp(Arithmetic::mul(z2, Arithmetic::log(z1)));
     }
 
-    static Object asin(VM* theVM, Object z)
+    static Object asin(Object z)
     {
         MOSH_ASSERT(z.isCompnum());
         const Object a = Arithmetic::sub(Object::makeFixnum(1),
@@ -74,7 +74,7 @@ public:
     }
 
     // arccos(z) = -i * log(z + sqrt(1-z*z)i)
-    static Object acos(VM* theVM, Object z)
+    static Object acos(Object z)
     {
         MOSH_ASSERT(z.isCompnum());
         const Object a = Arithmetic::sub(Object::makeFixnum(1),
@@ -162,7 +162,7 @@ public:
         return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
     }
 
-    Object magnitude(VM* theVM) const
+    Object magnitude() const
     {
         return Arithmetic::sqrt(Arithmetic::add(Arithmetic::mul(real(), real()),
                                                 Arithmetic::mul(imag(), imag())));
@@ -177,7 +177,7 @@ public:
     }
 
     // \sqrt{r}e^{\frac{i\theta}{2}}
-    Object sqrt(VM* theVM) const
+    Object sqrt() const
     {
         const double re = Arithmetic::realToDouble(real());
         const double im = Arithmetic::realToDouble(imag());

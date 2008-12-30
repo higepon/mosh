@@ -171,7 +171,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                     return Object::makeFixnum(0);
                 }
             } else {
-                return Compnum::expt(theVM, n1, n2);
+                return Compnum::expt(n1, n2);
             }
         } else {
             MOSH_ASSERT(false);
@@ -204,7 +204,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
                     return Object::makeFlonum(0.0);
                 }
             } else {
-                return Compnum::expt(theVM, n1, n2);
+                return Compnum::expt(n1, n2);
             }
         } else {
             MOSH_ASSERT(false);
@@ -243,7 +243,7 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
             const double fn2 = n2.toRatnum()->toDouble();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isCompnum()) {
-            return Compnum::expt(theVM, n1, n2);
+            return Compnum::expt(n1, n2);
         } else {
             MOSH_ASSERT(false);
             return Object::Undef;
@@ -281,13 +281,13 @@ Object Arithmetic::expt(VM* theVM, Object n1, Object n2)
             const double fn2 = n2.toRatnum()->toDouble();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isCompnum()) {
-            return Compnum::expt(theVM, n1, n2);
+            return Compnum::expt(n1, n2);
         } else {
             MOSH_ASSERT(false);
             return Object::Undef;
         }
     } else if (n1.isCompnum()) {
-        return Compnum::expt(theVM, n1, n2);
+        return Compnum::expt(n1, n2);
     } else {
         MOSH_ASSERT(false);
         return Object::Undef;
@@ -306,7 +306,7 @@ Object Arithmetic::sqrt(Object n)
     } else if (n.isRatnum()) {
         return n.toRatnum()->sqrt();
     } else if (n.isCompnum()) {
-        return n.toCompnum()->sqrt(NULL);
+        return n.toCompnum()->sqrt();
     }
     MOSH_ASSERT(false);
     return Object::Undef;
@@ -318,7 +318,7 @@ Object Arithmetic::asin(Object n)
     if (n.isFixnum()) {
         return Fixnum::asin(n.toFixnum());
     } else if (n.isCompnum()) {
-        return Compnum::asin(NULL, n);
+        return Compnum::asin(n);
     } else {
         const double value = realToDouble(n);
         return Object::makeFlonum(::asin(value));
@@ -331,7 +331,7 @@ Object Arithmetic::acos(Object n)
     if (n.isFixnum()) {
         return Fixnum::acos(n.toFixnum());
     } else if (n.isCompnum()) {
-        return Compnum::acos(NULL, n);
+        return Compnum::acos(n);
     } else {
         const double value = realToDouble(n);
         return Object::makeFlonum(::acos(value));
@@ -611,7 +611,7 @@ Object Arithmetic::magnitude(Object n)
             return n;
         }
     } else if (n.isCompnum()) {
-        return n.toCompnum()->magnitude(NULL);
+        return n.toCompnum()->magnitude();
     } else {
         MOSH_ASSERT(false);
         return Object::Undef;
