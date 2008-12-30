@@ -45,6 +45,8 @@
 #include "Flonum.h"
 #include "Symbol.h"
 #include "TestingVM.h"
+#include "StringTextualOutputPort.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -62,6 +64,21 @@ protected:
         theVM->loadCompiler();
     }
 };
+
+class VMErrorPortTest : public testing::Test {
+protected:
+    virtual void SetUp() {
+        mosh_init();
+        Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+        errorPort_ = Object::makeStringOutputPort();
+        theVM = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
+        theVM->loadCompiler();
+    }
+    Object errorPort_;
+};
+
 
 TEST_F(VMTest, StackTrace1) {
     theVM->loadFile(UC("./test/stack-trace1.scm"));
@@ -100,4 +117,29 @@ TEST_F(VMTest, StackTrace2) {
                  "    9. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
                  "    10. (<top-level>): <unknown location>\n\n",
                  theVM->getLastError().toString()->data().ascii_c_str());
+}
+
+TEST_F(VMErrorPortTest, StackTrace3) {
+    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace3.scm"));
+    theVM->activateR6RSMode(false);
+    EXPECT_STREQ(" Condition components:\n"
+                 "   1. &who: let\n"
+                 "   2. &message: \"invalid syntax\"\n"
+                 "   3. &syntax:\n"
+                 "       form: (let a 3 3)\n"
+                 "       subform: #f\n"
+                 "   4. &source-information:\n"
+                 "       file-name: \"./test/stack-trace3.scm\"\n"
+                 "       character: (5)\n"
+                 "\n"
+                 " Exception:\n"
+                 "     error in raise: returned from non-continuable exception\n"
+                 "\n"
+                 " Stack trace:\n"
+                 "    1. throw: <subr>\n"
+                 "    2. (raise c):  compiler-with-library.scm:3087\n"
+                 "    3. apply: <subr>\n"
+                 "\n"
+                 "\n"
+                 , sysGetOutputStringEx(1, &errorPort_).toString()->data().ascii_c_str());
 }

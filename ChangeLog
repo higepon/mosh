@@ -1,5 +1,7 @@
 2008-12-30  higepon  <higepon@users.sourceforge.jp>
 
+        * TestVM.cpp (TEST_F): Added StackTrace3 test.
+
         * VM.cpp (VM::mayBeStackPointer): Added.
 
 2008-12-29  higepon  <higepon@users.sourceforge.jp>
