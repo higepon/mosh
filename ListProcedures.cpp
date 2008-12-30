@@ -192,7 +192,7 @@ Object scheme::memvEx(VM* theVM, int argc, const Object* argv)
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (eqv(theVM, o.car(), arg1)) {
+        if (eqv(o.car(), arg1)) {
             return o;
         }
     }

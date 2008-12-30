@@ -1,5 +1,5 @@
 /*
- * VM-Run.h - 
+ * VM-Run.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -71,20 +71,30 @@
         pc_++;                                  \
     }
 
-#define NUM_CMP_LOCAL(op, func)                                 \
-   const Object n = pop();                                      \
-   if (n.isFixnum() && ac_.isFixnum()) {                        \
-       ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());  \
-   } else {                                                     \
-       ac_ = Object::makeBool(Arithmetic::func(this, n, ac_));   \
+#define NUM_CMP_LOCAL(op, func)                                                             \
+   const Object n = pop();                                                                  \
+   if (n.isFixnum() && ac_.isFixnum()) {                                                    \
+       ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
+   } else {                                                                                 \
+       if (n.isReal() && ac_.isReal()) {                                                    \
+           ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
+       } else {                                                                             \
+           callWrongTypeOfArgumentViolationAfter(this, #op, "number required", L2(n, ac_)); \
+           NEXT1;                                                                           \
+       }                                                                                    \
    }
 
-#define NUM_CMP(op, func, val)                                  \
-   const Object n = val;                                        \
-   if (n.isFixnum() && ac_.isFixnum()) {                        \
-       ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());  \
-   } else {                                                     \
-       ac_ = Object::makeBool(Arithmetic::func(this, n, ac_));   \
+#define NUM_CMP(op, func, val)                                                              \
+   const Object n = val;                                                                    \
+   if (n.isFixnum() && ac_.isFixnum()) {                                                    \
+       ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
+   } else {                                                                                 \
+       if (n.isReal() && ac_.isReal()) {                                                    \
+           ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
+       } else {                                                                             \
+           callWrongTypeOfArgumentViolationAfter(this, #op, "number required", L2(n, ac_)); \
+           NEXT;                                                                            \
+       }                                                                                    \
    }
 
 #ifdef USE_DIRECT_THREADED_CODE

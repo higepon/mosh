@@ -538,7 +538,7 @@ Object Arithmetic::integerDiv0(VM* theVM, Object n1, Object n2)
     MOSH_ASSERT(n2.isReal());
     Object div = integerDiv(theVM, n1, n2);
     Object mod = sub(n1, mul(div, n2));
-    if (Arithmetic::lt(theVM, mod, Arithmetic::abs(Arithmetic::div(theVM, n2, Object::makeFixnum(2))))) {
+    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(theVM, n2, Object::makeFixnum(2))))) {
         return div;
     } else {
         if (isNegative(n2)) {
@@ -576,7 +576,7 @@ Object Arithmetic::negate(Object n)
 bool Arithmetic::isNegative(Object n)
 {
     MOSH_ASSERT(n.isReal());
-    return Arithmetic::lt(NULL, n, Object::makeFixnum(0));
+    return Arithmetic::lt(n, Object::makeFixnum(0));
 }
 
 Object Arithmetic::angle(Object n)
@@ -693,7 +693,7 @@ Object Arithmetic::makePolar(Object n1, Object n2)
     MOSH_ASSERT(isRealValued(n2));
     const Object real = n1.isCompnum() ? n1.toCompnum()->real() : n1;
     const Object imag = n2.isCompnum() ? n2.toCompnum()->real() : n2;
-    if (eq(NULL, imag, Object::makeFixnum(0))) {
+    if (eq(imag, Object::makeFixnum(0))) {
         return real;
     }
     const double r = realToDouble(real);
@@ -895,7 +895,7 @@ bool Arithmetic::isInteger(Object n)
         Compnum* const c = n.toCompnum();
         return isZero(c->imag()) && isInteger(c->real());
     }
-    return Arithmetic::eq(NULL, denominator(n), Object::makeFixnum(1));
+    return Arithmetic::eq(denominator(n), Object::makeFixnum(1));
 }
 
 bool Arithmetic::isRealValued(Object n)
@@ -964,7 +964,7 @@ bool Arithmetic::isExactZero(Object n)
 
 bool Arithmetic::isZero(Object n)
 {
-    return Arithmetic::eq(NULL, Object::makeFixnum(0), n);
+    return Arithmetic::eq(Object::makeFixnum(0), n);
 }
 
 Object Arithmetic::exact(Object n)
@@ -1021,7 +1021,7 @@ bool Arithmetic::isExact(Object n)
 }
 
 #define MAKE_REAL_COMPARE_FUNC(compare, symbol)          \
-    bool Arithmetic::compare(VM* theVM, Object n1, Object n2)    \
+    bool Arithmetic::compare(Object n1, Object n2)    \
     { \
         if (n1.isFixnum()) {\
             if (n2.isFixnum()) {\
@@ -1064,7 +1064,7 @@ bool Arithmetic::isExact(Object n)
                 return Flonum::compare(n1.toFlonum(), n2.toBignum());\
             }\
         }\
-        callWrongTypeOfArgumentViolationAfter(theVM, #symbol, "number", Pair::list2(n1, n2), Pair::list2(n1, n2)); \
+        MOSH_FATAL("number required");\
         return false;\
     }
 
@@ -1073,8 +1073,10 @@ MAKE_REAL_COMPARE_FUNC(le, <=)
 MAKE_REAL_COMPARE_FUNC(gt, >)
 MAKE_REAL_COMPARE_FUNC(ge, >=)
 
-bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
+bool Arithmetic::eq(Object n1, Object n2)
 {
+    MOSH_ASSERT(n1.isNumber());
+    MOSH_ASSERT(n2.isNumber());
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
             return Fixnum::eq(n1.toFixnum(), n2.toFixnum());
@@ -1085,7 +1087,7 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         } else if (n2.isBignum()) {
             return Bignum::eq(n1.toFixnum(), n2.toBignum());
         } else if (n2.isCompnum()) {
-            return Compnum::eq(theVM, n1, n2.toCompnum());
+            return Compnum::eq(n1, n2.toCompnum());
         }
     } else if (n1.isBignum()) {
         if (n2.isFixnum()) {
@@ -1097,7 +1099,7 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         } else if (n2.isBignum()) {
             return Bignum::eq(n1.toBignum(), n2.toBignum());
         } else if (n2.isCompnum()) {
-            return Compnum::eq(theVM, n1, n2.toCompnum());
+            return Compnum::eq(n1, n2.toCompnum());
         }
     } else if (n1.isRatnum()) {
         if (n2.isFixnum()) {
@@ -1109,7 +1111,7 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         } else if (n2.isBignum()) {
             return Ratnum::eq(n1.toRatnum(), n2.toBignum());
         } else if (n2.isCompnum()) {
-            return Compnum::eq(theVM, n1, n2.toCompnum());
+            return Compnum::eq(n1, n2.toCompnum());
         }
     } else if (n1.isFlonum()) {
         if (n2.isFixnum()) {
@@ -1121,91 +1123,26 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         } else if (n2.isBignum()) {
             return Flonum::eq(n1.toFlonum(), n2.toBignum());
         } else if (n2.isCompnum()) {
-            return Compnum::eq(theVM, n1, n2.toCompnum());
+            return Compnum::eq(n1, n2.toCompnum());
         }
     } else if (n1.isCompnum()) {
         if (n2.isFixnum()) {
-            return Compnum::eq(theVM, n1.toCompnum(), n2);
+            return Compnum::eq(n1.toCompnum(), n2);
         } else if (n2.isRatnum()) {
-            return Compnum::eq(theVM, n1.toCompnum(), n2);
+            return Compnum::eq(n1.toCompnum(), n2);
         } else if (n2.isFlonum()) {
-            return Compnum::eq(theVM, n1.toCompnum(), n2);
+            return Compnum::eq(n1.toCompnum(), n2);
         } else if (n2.isBignum()) {
-            return Compnum::eq(theVM, n1.toCompnum(), n2);
+            return Compnum::eq(n1.toCompnum(), n2);
         } else if (n2.isCompnum()) {
-            return Compnum::eq(theVM, n1.toCompnum(), n2.toCompnum());
+            return Compnum::eq(n1.toCompnum(), n2.toCompnum());
         }
     }
-    callWrongTypeOfArgumentViolationAfter(theVM, "=", "number", Pair::list2(n1, n2), Pair::list2(n1, n2));
+    MOSH_FATAL("number required");
     return false;
 }
 
-
 #define MAKE_OP_FUNC(op, symbol)\
-    Object Arithmetic::op(VM* theVM, Object n1, Object n2)   \
-    {\
-        MOSH_ASSERT(n1.isNumber()); \
-        MOSH_ASSERT(n2.isNumber()); \
-        if (n1.isFixnum()) {\
-            if (n2.isFixnum()) {\
-                return Bignum::op(n1.toFixnum(), n2.toFixnum());\
-            } else if (n2.isRatnum()) {\
-                return Ratnum::op(n1.toFixnum(), n2.toRatnum());\
-            } else if (n2.isFlonum()) {\
-                return Flonum::op(n1.toFixnum(), n2.toFlonum());\
-            } else if (n2.isBignum()) {\
-                return Bignum::op(n1.toFixnum(), n2.toBignum());\
-            } else if (n2.isCompnum()) {\
-                return Compnum::op(theVM, n1, n2.toCompnum());   \
-            }\
-        } else if (n1.isBignum()) {\
-            if (n2.isFixnum()) {\
-                return Bignum::op(n1.toBignum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Ratnum::op(n1.toBignum(), n2.toRatnum()); \
-            } else if (n2.isFlonum()) {\
-                return Flonum::op(n1.toBignum(), n2.toFlonum());\
-            } else if (n2.isBignum()) {\
-                return Bignum::op(n1.toBignum(), n2.toBignum());\
-            } else if (n2.isCompnum()) {\
-                return Compnum::op(theVM, n1, n2.toCompnum());   \
-            }\
-        } else if (n1.isRatnum()) {\
-            if (n2.isFixnum()) {\
-                return Ratnum::op(n1.toRatnum(), new Ratnum(n2.toFixnum(), 1));\
-            } else if (n2.isRatnum()) {\
-                return Ratnum::op(n1.toRatnum(), n2.toRatnum());\
-            } else if (n2.isFlonum()) {\
-                return Flonum::op(n1.toRatnum(), n2.toFlonum());\
-            } else if (n2.isBignum()) {\
-                return Ratnum::op(n1.toRatnum(), n2.toBignum());\
-            } else if (n2.isCompnum()) { \
-                return Compnum::op(theVM, n1, n2.toCompnum());   \
-            }\
-        } else if (n1.isFlonum()) {\
-            if (n2.isFixnum()) {\
-                return Flonum::op(n1.toFlonum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Flonum::op(n1.toFlonum(), n2.toRatnum()); \
-            } else if (n2.isFlonum()) {\
-                return Flonum::op(n1.toFlonum(), n2.toFlonum());\
-            } else if (n2.isBignum()) {\
-                return Flonum::op(n1.toFlonum(), n2.toBignum());\
-            } else if (n2.isCompnum()) { \
-                return Compnum::op(theVM, n1, n2.toCompnum());   \
-            }\
-        } else if (n1.isCompnum()) {\
-            if (n2.isFixnum() || n2.isBignum() || n2.isRatnum() || n2.isFlonum()) { \
-                return Compnum::op(theVM, n1.toCompnum(), n2);           \
-            } else if (n2.isCompnum()) {\
-                return Compnum::op(theVM, n1.toCompnum(), n2.toCompnum()); \
-            }\
-        }\
-        callWrongTypeOfArgumentViolationAfter(theVM, #symbol, "number", Pair::list2(n1, n2), Pair::list2(n1, n2)); \
-        return Object::False;\
-    }
-
-#define MAKE_OP_FUNC2(op, symbol)\
     Object Arithmetic::op(Object n1, Object n2)   \
     {\
         MOSH_ASSERT(n1.isNumber()); \
@@ -1269,9 +1206,9 @@ bool Arithmetic::eq(VM* theVM, Object n1, Object n2)
         return Object::False;\
     }
 
-MAKE_OP_FUNC2(add, +)
-MAKE_OP_FUNC2(sub, -)
-MAKE_OP_FUNC2(mul, *)
+MAKE_OP_FUNC(add, +)
+MAKE_OP_FUNC(sub, -)
+MAKE_OP_FUNC(mul, *)
 
 Object Arithmetic::mul(int number1, Object number2)
 {

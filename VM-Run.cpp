@@ -358,12 +358,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(EQV)
         {
-            ac_ = Object::makeBool(eqv(this, pop(), ac_));
+            ac_ = Object::makeBool(eqv(pop(), ac_));
             NEXT1;
         }
         CASE(EQUAL)
         {
-            ac_ = Object::makeBool(equal(this, pop(), ac_, new EqHashTable()));
+            ac_ = Object::makeBool(equal(pop(), ac_, new EqHashTable()));
             NEXT1;
         }
         CASE(PUSH_FRAME)
@@ -486,52 +486,28 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() == ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::eq(this, n, ac_));
+                ac_ = Object::makeBool(Arithmetic::eq(n, ac_));
             }
             NEXT1;
         }
         CASE(NUMBER_GE)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                ac_ = Object::makeBool(n.toFixnum() >= ac_.toFixnum());
-            } else {
-                ac_ = Object::makeBool(Arithmetic::ge(this, n, ac_));
-            }
+            NUM_CMP_LOCAL(>=, ge);
             NEXT1;
         }
         CASE(NUMBER_GT)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                ac_ = Object::makeBool(n.toFixnum() > ac_.toFixnum());
-            } else {
-                ac_ = Object::makeBool(Arithmetic::gt(this, n, ac_));
-            }
+            NUM_CMP_LOCAL(>, gt);
             NEXT1;
         }
         CASE(NUMBER_LE)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                ac_ = Object::makeBool(n.toFixnum() <= ac_.toFixnum());
-            } else {
-                ac_ = Object::makeBool(Arithmetic::le(this, n, ac_));
-            }
+            NUM_CMP_LOCAL(<=, le);
             NEXT1;
         }
         CASE(NUMBER_LT)
         {
-            const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
-            if (n.isFixnum() && ac_.isFixnum()) {
-                ac_ = Object::makeBool(n.toFixnum() < ac_.toFixnum());
-            } else {
-                ac_ = Object::makeBool(Arithmetic::lt(this, n, ac_));
-            }
+            NUM_CMP_LOCAL(<, lt);
             NEXT1;
         }
         CASE(NUMBER_MUL)
@@ -928,14 +904,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not eqv?
         CASE(BRANCH_NOT_EQV)
         {
-            ac_ = Object::makeBool(eqv(this, pop(), ac_));
+            ac_ = Object::makeBool(eqv(pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not equal?
         CASE(BRANCH_NOT_EQUAL)
         {
-            ac_ = Object::makeBool(equal(this, pop(), ac_));
+            ac_ = Object::makeBool(equal(pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }

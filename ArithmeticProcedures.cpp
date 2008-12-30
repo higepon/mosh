@@ -493,7 +493,7 @@ Object scheme::maxEx(VM* theVM, int argc, const Object* argv)
         if (number.isFlonum() && (number.toFlonum())->isNan()) {
             return number;
         }
-        if (Arithmetic::gt(theVM, number, maxNumber)) {
+        if (Arithmetic::gt(number, maxNumber)) {
             maxNumber = number;
         }
     }
@@ -510,7 +510,7 @@ Object scheme::minEx(VM* theVM, int argc, const Object* argv)
         if (number.isFlonum() && (number.toFlonum())->isNan()) {
             return number;
         }
-        if (Arithmetic::lt(theVM, number, minNumber)) {
+        if (Arithmetic::lt(number, minNumber)) {
             minNumber = number;
         }
     }
@@ -612,9 +612,9 @@ Object scheme::eqEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        Object number1 = argv[i];
-        Object number2 = argv[i + 1];
-        if (Arithmetic::eq(theVM, number1, number2)) {
+        argumentCheckNumber(i, number1);
+        argumentCheckNumber(i + 1, number2);
+        if (Arithmetic::eq(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -628,9 +628,9 @@ Object scheme::gtEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName(">");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        Object number1 = argv[i];
-        Object number2 = argv[i + 1];
-        if (Arithmetic::gt(theVM, number1, number2)) {
+        argumentCheckReal(i, number1);
+        argumentCheckReal(i + 1, number2);
+        if (Arithmetic::gt(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -644,9 +644,9 @@ Object scheme::geEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName(">=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        Object number1 = argv[i];
-        Object number2 = argv[i + 1];
-        if (Arithmetic::ge(theVM, number1, number2)) {
+        argumentCheckReal(i, number1);
+        argumentCheckReal(i + 1, number2);
+        if (Arithmetic::ge(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -660,9 +660,9 @@ Object scheme::ltEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("<");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        Object number1 = argv[i];
-        Object number2 = argv[i + 1];
-        if (Arithmetic::lt(theVM, number1, number2)) {
+        argumentCheckReal(i, number1);
+        argumentCheckReal(i + 1, number2);
+        if (Arithmetic::lt(number1, number2)) {
             continue;
         } else {
             return Object::False;
@@ -676,9 +676,9 @@ Object scheme::leEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("<=");
     checkArgumentLengthAtLeast(2);
     for (int i = 0; i < argc - 1; i++) {
-        Object number1 = argv[i];
-        Object number2 = argv[i + 1];
-        if (Arithmetic::le(theVM, number1, number2)) {
+        argumentCheckReal(i, number1);
+        argumentCheckReal(i + 1, number2);
+        if (Arithmetic::le(number1, number2)) {
             continue;
         } else {
             return Object::False;

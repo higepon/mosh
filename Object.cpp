@@ -101,7 +101,7 @@ bool Object::isInteger() const
 
 bool Object::equal(VM* theVM, Object o) const
 {
-    return ::equal(theVM, *this, o, new EqHashTable());
+    return ::equal(*this, o, new EqHashTable());
 }
 
 Object Object::makeBinaryInputPort(FILE* in)

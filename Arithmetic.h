@@ -99,11 +99,11 @@ public:
     static Object mul(Object number1, Object number2);
     static Object div(VM* theVM, Object number1, Object number2, bool noRaise = false);
     static Object mul(int number1, Object number2);
-    static bool gt(VM* theVM, Object number1, Object number2);
-    static bool ge(VM* theVM, Object number1, Object number2);
-    static bool lt(VM* theVM, Object number1, Object number2);
-    static bool le(VM* theVM, Object number1, Object number2);
-    static bool eq(VM* theVM, Object number1, Object number2);
+    static bool gt(Object number1, Object number2);
+    static bool ge(Object number1, Object number2);
+    static bool lt(Object number1, Object number2);
+    static bool le(Object number1, Object number2);
+    static bool eq(Object number1, Object number2);
     static bool fitsU64(Object n);
     static uint64_t toU64(Object n);
     static bool fitsS64(Object n);

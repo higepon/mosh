@@ -159,7 +159,7 @@ public:
 
     bool isReal()
     {
-        return Arithmetic::eq(NULL, imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
+        return Arithmetic::eq(imag(), Object::makeFixnum(0)) && Arithmetic::isExact(imag());
     }
 
     Object magnitude(VM* theVM) const
@@ -188,27 +188,27 @@ public:
                                                                    Object::makeFlonum(0.5 * theta))));
     }
 
-    static bool eq(VM* theVM, Compnum* n1, Compnum* n2)
+    static bool eq(Compnum* n1, Compnum* n2)
     {
-        return Arithmetic::eq(theVM, n1->real(), n2->real()) &&
-               Arithmetic::eq(theVM, n2->imag(), n2->imag());
+        return Arithmetic::eq(n1->real(), n2->real()) &&
+               Arithmetic::eq(n2->imag(), n2->imag());
     }
 
-    static bool eq(VM* theVM, Object n1, Compnum* n2)
+    static bool eq(Object n1, Compnum* n2)
     {
         MOSH_ASSERT(n1.isFixnum() || n1.isBignum() || n1.isFlonum() || n1.isRatnum());
-        if (Arithmetic::eq(theVM, n2->imag(), Object::makeFixnum(0))) {
-            return Arithmetic::eq(theVM, n1, n2->real());
+        if (Arithmetic::eq(n2->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(n1, n2->real());
         } else {
             return false;
         }
     }
 
-    static bool eq(VM* theVM, Compnum* n1, Object n2)
+    static bool eq(Compnum* n1, Object n2)
     {
         MOSH_ASSERT(n2.isFixnum() || n2.isBignum() || n2.isFlonum() || n2.isRatnum());
-        if (Arithmetic::eq(theVM, n1->imag(), Object::makeFixnum(0))) {
-            return Arithmetic::eq(theVM, n1->real(), n2);
+        if (Arithmetic::eq(n1->imag(), Object::makeFixnum(0))) {
+            return Arithmetic::eq(n1->real(), n2);
         } else {
             return false;
         }
