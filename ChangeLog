@@ -1,3 +1,7 @@
+2008-12-30  higepon  <higepon@users.sourceforge.jp>
+
+        * VM.cpp (VM::mayBeStackPointer): Added.
+
 2008-12-29  higepon  <higepon@users.sourceforge.jp>
 
         * VM-Run.cpp (run): Added for breaking build dependencies.

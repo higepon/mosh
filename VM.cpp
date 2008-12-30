@@ -582,8 +582,9 @@ Object VM::getStackTrace()
         if (fp > stack_) {
             cl = fp - CLOSURE_OFFSET_IN_FRAME;
 
-            // コメントと手続きか todo
-            if (!(reinterpret_cast<Object*>(cl->val) > stackEnd_ || stack_ > reinterpret_cast<Object*>(cl->val))) {
+            // N.B. We must check whether cl is Object pointer or not.
+            // If so, we can't touch them. (touching may cause crash)
+            if (mayBeStackPointer(cl)) {
                 break;
             }
             if (!((*cl).isClosure()) && !((*cl).isCProcedure())) {
@@ -595,18 +596,11 @@ Object VM::getStackTrace()
             if (!(nextFp->isPointer())) {
                 break;
             }
-//             if (nextFp->isSymbol() ||
-//                 nextFp->isString() ||
-//                 nextFp->isClosure() ||
-//                 nextFp->isCProcedure()) {
-//                 break;
-//             }
-            if (reinterpret_cast<Object*>(nextFp->val) > stackEnd_ || stack_ > reinterpret_cast<Object*>(nextFp->val)) {
+
+            if (!mayBeStackPointer(nextFp)) {
                 break;
             }
-//             if (!nextFp->isObjectPointer()) {
-//                 LOG1("val=~s", *nextFp);
-//             }
+
             VM_ASSERT(nextFp->isObjectPointer());
             fp = nextFp->toObjectPointer();
         } else {
@@ -614,6 +608,12 @@ Object VM::getStackTrace()
         }
     }
     return sysGetOutputStringEx(1, &sport);
+}
+
+bool VM::mayBeStackPointer(Object* obj) const
+{
+    Object* const p = reinterpret_cast<Object*>(obj->val);
+    return p >= stack_ && p <= stackEnd_;
 }
 
 void VM::throwException(Object exception)

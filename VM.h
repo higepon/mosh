@@ -181,6 +181,7 @@ protected:
     Object* getDirectThreadedCode(Object* code, int length);
     void expandStack(int plusSize);
     Object compileWithoutHalt(Object sexp);
+    bool mayBeStackPointer(Object* obj) const;
 
 public:
     Object ac_;  // accumulator     register
