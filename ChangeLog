@@ -1,5 +1,8 @@
 2008-12-31  higepon  <higepon@users.sourceforge.jp>
 
+        * Makefile.am (mosh_LDADD): Added libmosh.a support.
+                                    It decreases the build dependency.
+
         * StringTextualOutputPort.h (scheme): Break dependency.
 
         * Arithmetic.cpp (numberToString): Break dependency.
