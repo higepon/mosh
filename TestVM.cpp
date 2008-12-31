@@ -61,11 +61,9 @@ protected:
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
         Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
-        Object errorPort = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+        Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-        outPort.toTextualOutputPort()->setVM(theVM_);
-        errorPort.toTextualOutputPort()->setVM(theVM_);
         theVM_->loadCompiler();
     }
 };
@@ -77,11 +75,9 @@ protected:
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
         Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
-        errorPort_ = Object::makeStringOutputPort(NULL);
+        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+        errorPort_ = Object::makeStringOutputPort();
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
-        outPort.toTextualOutputPort()->setVM(theVM_);
-        errorPort_.toTextualOutputPort()->setVM(theVM_);
         theVM_->loadCompiler();
     }
     Object errorPort_;

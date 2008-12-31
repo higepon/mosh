@@ -157,10 +157,10 @@ public:
     static Object makeTextualInputFilePort(const ucs4char* str);
     static Object makeTextualInputFilePort(const char* str);
     static Object makeTextualInputPort(BinaryInputPort* port, Transcoder* coder);
-    static Object makeTextualOutputPort(VM* theVM, BinaryOutputPort* port, Transcoder* coder);
+    static Object makeTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
     static Object makeStringInputPort(const ucs4string& str);
     static Object makeStringInputPort(const uint8_t* buf, int size);
-    static Object makeStringOutputPort(VM* theVM);
+    static Object makeStringOutputPort();
     static Object makeTextualByteVectorOuputPort(Transcoder* transcoder);
     static Object makeCustomBinaryInputPort(VM* theVM, Object readProc);
     static Object makeString(int n, ucs4char c = ' ');

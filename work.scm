@@ -1,4 +1,3 @@
 (import (rnrs))
 
-(let a 3
-  3)
+1/0

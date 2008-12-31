@@ -122,10 +122,10 @@ Object Object::makeBinaryOutputPort(BinaryOutputPort* port)
                                                         reinterpret_cast<word>(port))));
 }
 
-Object Object::makeTextualOutputPort(VM* theVM, BinaryOutputPort* port, Transcoder* transcoder)
+Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TextualOutputPort(theVM, port, transcoder)))));
+                                                        reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
 }
 
 
@@ -151,10 +151,10 @@ Object Object::makeStringInputPort(const ucs4string& str)
                                                         reinterpret_cast<word>(new StringTextualInputPort(str)))));
 }
 
-Object Object::makeStringOutputPort(VM* theVM)
+Object Object::makeStringOutputPort()
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new StringTextualOutputPort(theVM)))));
+                                                        reinterpret_cast<word>(new StringTextualOutputPort()))));
 }
 
 Object Object::makeStringInputPort(const uint8_t* buf, int size)

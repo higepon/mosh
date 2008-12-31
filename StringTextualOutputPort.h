@@ -39,7 +39,7 @@ namespace scheme {
 class StringTextualOutputPort : public TextualOutputPort
 {
 public:
-    StringTextualOutputPort(VM* vm);
+    StringTextualOutputPort();
     virtual ~StringTextualOutputPort();
     void putChar(ucs4char c);
     ucs4string getString();

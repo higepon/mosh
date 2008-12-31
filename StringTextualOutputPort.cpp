@@ -34,9 +34,8 @@
 
 using namespace scheme;
 
-StringTextualOutputPort::StringTextualOutputPort(VM* vm) : index_(0)
+StringTextualOutputPort::StringTextualOutputPort() : index_(0)
 {
-    vm_ = vm;
 }
 
 StringTextualOutputPort::~StringTextualOutputPort()

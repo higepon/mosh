@@ -1,5 +1,7 @@
 2008-12-31  higepon  <higepon@users.sourceforge.jp>
 
+        * StringTextualOutputPort.h (scheme): Break dependency.
+
         * Arithmetic.cpp (numberToString): Break dependency.
 
 2008-12-30  higepon  <higepon@users.sourceforge.jp>

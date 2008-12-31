@@ -161,13 +161,9 @@ int main(int argc, char *argv[])
     mosh_init();
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stdout), transcoder);
-    Object errorPort = Object::makeTextualOutputPort(NULL, new FileBinaryOutputPort(stderr), transcoder);
+    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
-
-    // todo dependencies
-    outPort.toTextualOutputPort()->setVM(theVM);
-    errorPort.toTextualOutputPort()->setVM(theVM);
     theVM->loadCompiler();
     theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
 //     if (initFile != NULL) {

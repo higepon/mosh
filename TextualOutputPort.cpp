@@ -59,13 +59,12 @@ TextualOutputPort::TextualOutputPort()
 {
 }
 
-TextualOutputPort::TextualOutputPort(VM* vm, BinaryOutputPort* port, Transcoder* coder) : vm_(vm),
-                                                                                          port_(port),
-                                                                                          codec_(coder->codec()),
-                                                                                          coder_(coder),
-                                                                                          isErrorOccured_(false),
-                                                                                          errorMessage_(Object::Nil),
-                                                                                          irritants_(Object::Nil)
+TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
+                                                                                  codec_(coder->codec()),
+                                                                                  coder_(coder),
+                                                                                  isErrorOccured_(false),
+                                                                                  errorMessage_(Object::Nil),
+                                                                                  irritants_(Object::Nil)
 {
 }
 
@@ -356,11 +355,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        if (vm_) {
-            putDatum(vm_->getCProcedureName(o));
-        } else {
-            putString(UC("#<subr>"));
-        }
+        putDatum(getCProcedureName(o));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -526,11 +521,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        if (vm_) {
-            putDatum(vm_->getCProcedureName(o));
-        } else {
-            putString(UC("#<subr>"));
-        }
+        putDatum(getCProcedureName(o));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();

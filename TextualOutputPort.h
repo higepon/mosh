@@ -45,7 +45,7 @@ class TextualOutputPort EXTEND_GC
 {
 public:
     TextualOutputPort();
-    TextualOutputPort(VM* vm, BinaryOutputPort* port, Transcoder* coder);
+    TextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
     virtual ~TextualOutputPort();
 
     virtual int close();
@@ -62,10 +62,7 @@ public:
     bool isErrorOccured() const;
     Object errorMessage() const;
     Object irritants() const;
-    void setVM(VM* vm) { vm_ = vm; }
 
-protected:
-    VM* vm_;
 private:
     BinaryOutputPort* port_;
     Codec* codec_;

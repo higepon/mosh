@@ -88,6 +88,7 @@ namespace scheme {
 #endif
 
 class TextualOutputPort;
+Object getCProcedureName(Object proc);
 
 class VM EXTEND_GC
 {
@@ -137,7 +138,6 @@ public:
     void setTopLevelGlobalValue(Object id, Object val);
     Object getTopLevelGlobalValue(Object id);
     Object getTopLevelGlobalValueOrFalse(Object id);
-    Object getClosureName(Object closure);
     bool isR6RSMode() const;
     void activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);
@@ -152,7 +152,7 @@ public:
     Object getProfileResult();
     void storeCallSample();
     void storeCallSampleToFile();
-    Object getCProcedureName(Object proc);
+    Object getClosureName(Object closure);
     void countCall(Object proc);
 #endif
 

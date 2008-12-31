@@ -253,7 +253,7 @@ Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::sysOpenOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
-    return Object::makeStringOutputPort(theVM);
+    return Object::makeStringOutputPort();
 }
 
 Object scheme::sysPortSeekEx(VM* theVM, int argc, const Object* argv)
@@ -273,7 +273,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        return Object::makeTextualOutputPort(theVM, fileBinaryOutputPort, transcoder);
+        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
     } else {
         callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
@@ -393,7 +393,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
 
-        const Object port = Object::makeStringOutputPort(theVM);
+        const Object port = Object::makeStringOutputPort();
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 2; i--) {
@@ -410,7 +410,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             return Object::makeString(p->getString());
         }
     } else if (arg1.isString()) {
-        const Object port = Object::makeStringOutputPort(theVM);
+        const Object port = Object::makeStringOutputPort();
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 1; i--) {

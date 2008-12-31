@@ -51,7 +51,7 @@ static Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4s
 Object scheme::format(const ucs4char* message, Object values)
 {
     MOSH_ASSERT(values.isNil() || values.isPair());
-    const Object sport = Object::makeStringOutputPort(NULL);
+    const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* const port = sport.toTextualOutputPort();
     port->format(message, values);
     StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(port);

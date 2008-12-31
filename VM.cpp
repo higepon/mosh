@@ -232,16 +232,6 @@ Object VM::evaluate(Object* code, int codeSize)
     return run(direct, NULL);
 }
 
-Object VM::getCProcedureName(Object proc)
-{
-    for (int k = 0; k < cProcNum; k++) {
-        if (proc == cProcs[k]) {
-            return Symbol::intern(cProcNames[k]);
-        }
-    }
-    return Symbol::intern(UC("<unknwon subr>"));
-}
-
 Object VM::callClosure0(Object closure)
 {
     static Object applyCode[] = {
@@ -527,7 +517,7 @@ Object VM::getStackTrace()
     const int FP_OFFSET_IN_FRAME = 1;
     const int CLOSURE_OFFSET_IN_FRAME = 2;
 
-    const Object sport = Object::makeStringOutputPort(this);
+    const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* port = sport.toTextualOutputPort();
     Object* fp = fp_;
     Object* cl = &cl_;
@@ -631,7 +621,7 @@ void VM::throwException(Object exception)
     fflush(stdout);
 #endif
     const Object stackTrace = getStackTrace();
-    const Object stringOutputPort = Object::makeStringOutputPort(this);
+    const Object stringOutputPort = Object::makeStringOutputPort();
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
     textualOutputPort->format(UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
     errorObj_ = sysGetOutputStringEx(this, 1, &stringOutputPort);
@@ -736,4 +726,15 @@ void VM::printStack() const
         }
         fflush(stderr);
     }
+}
+
+// Global
+Object scheme::getCProcedureName(Object proc)
+{
+    for (int k = 0; k < cProcNum; k++) {
+        if (proc == cProcs[k]) {
+            return Symbol::intern(cProcNames[k]);
+        }
+    }
+    return Symbol::intern(UC("<unknwon subr>"));
 }
