@@ -147,7 +147,7 @@ Object scheme::eqvHashEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object obj = argv[0];
     if (obj.isNumber()) {
-        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(theVM, obj, 10)).val);
+        return Object::makeFixnum(stringTosymbol(Arithmetic::numberToString(obj, 10)).val);
     } else {
         return Object::makeFixnum(obj.val);
     }

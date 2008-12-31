@@ -156,14 +156,23 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
     if (2 == argc || 3 == argc) {
         // we ignore precision parameter
         argumentAsFixnum(1, radix);
-        if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
-            return Arithmetic::numberToString(theVM, z, radix);
+        if (z.isFlonum()) {
+            if (radix == 10) {
+                return Arithmetic::numberToString(z, 10);
+            } else {
+                callAssertionViolationAfter(theVM, procedureName, "radix should be 10 for flonum", L1(argv[1]));
+                return Object::Undef;
+            }
         } else {
-            callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
-            return Object::Undef;
+            if (radix == 2 || radix == 8 || radix == 10 || radix == 16) {
+                return Arithmetic::numberToString(z, radix);
+            } else {
+                callAssertionViolationAfter(theVM, procedureName, "radix should be 2, 8, 10 ro 16", L1(argv[1]));
+                return Object::Undef;
+            }
         }
     } else {
-        return Arithmetic::numberToString(theVM, z, 10);
+        return Arithmetic::numberToString(z, 10);
     }
 }
 

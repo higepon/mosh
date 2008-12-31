@@ -44,7 +44,7 @@ public:
     Arithmetic();
     ~Arithmetic();
 
-    static Object numberToString(VM* theVM, Object n, int radix);
+    static Object numberToString(Object n, int radix);
     static Object real(Object n);
     static Object imag(Object n);
     static Object expt(VM* theVM, Object n1, Object n2);

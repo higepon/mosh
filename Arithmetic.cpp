@@ -48,7 +48,7 @@
 
 using namespace scheme;
 
-Object Arithmetic::numberToString(VM* theVM, Object n, int radix)
+Object Arithmetic::numberToString(Object n, int radix)
 {
     MOSH_ASSERT(n.isNumber());
     MOSH_ASSERT(radix == 2 || radix == 8 || radix == 10 || radix == 16);
@@ -80,14 +80,10 @@ Object Arithmetic::numberToString(VM* theVM, Object n, int radix)
         }
         return Object::makeString(buf);
     } else if (n.isFlonum()) {
-        if (radix != 10) {
-            callAssertionViolationAfter(theVM, "number->string", "radix 10 is required for inexact number", Pair::list1(Object::makeFixnum(radix)));
-            return Object::Undef;
-        } else {
-            char buf[256];
-            snprintf(buf, 256, "%f", n.toFlonum()->value());
-            return Object::makeString(buf);
-        }
+        MOSH_ASSERT(radix == 10);
+        char buf[256];
+        snprintf(buf, 256, "%f", n.toFlonum()->value());
+        return Object::makeString(buf);
     } else if (n.isBignum()) {
         return Object::makeString(n.toBignum()->toString(radix));
     } else if (n.isRatnum()) {
@@ -95,8 +91,8 @@ Object Arithmetic::numberToString(VM* theVM, Object n, int radix)
         return Object::makeString(r->toString(radix));
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
-        return format(UC("~d+~di"), Pair::list2(numberToString(theVM, c->real(), radix),
-                                                numberToString(theVM, c->imag(), radix)));
+        return format(UC("~d+~di"), Pair::list2(numberToString(c->real(), radix),
+                                                numberToString(c->imag(), radix)));
     } else {
         MOSH_ASSERT(false);
         return Object::Undef;
