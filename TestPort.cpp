@@ -35,18 +35,8 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
-#include "Vector.h"
-#include "SString.h"
-#include "UTF8Codec.h"
-#include "Transcoder.h"
-#include "FileBinaryInputPort.h"
-#include "FileBinaryOutputPort.h"
-#include "Ratnum.h"
-#include "Flonum.h"
-#include "Symbol.h"
-#include "TestingVM.h"
 #include "StringTextualOutputPort.h"
-#include "PortProcedures.h"
+#include "TextualInputPort.h"
 
 using namespace scheme;
 
@@ -65,6 +55,16 @@ TEST_F(PortTest, PortPredicate) {
     EXPECT_FALSE(stringPort.isTextualInputPort());
     EXPECT_FALSE(stringPort.isBinaryInputPort());
     EXPECT_FALSE(stringPort.isBinaryOutputPort());
-
-
 }
+
+TEST_F(PortTest, StringInputPort) {
+    bool isErrorOccured = false;
+    EXPECT_TRUE(Object::makeStringInputPort(UC("")).toTextualInputPort()->getDatum(isErrorOccured).isEof());
+    EXPECT_FALSE(isErrorOccured);
+
+    const Object obj = Object::makeStringInputPort(UC("3")).toTextualInputPort()->getDatum(isErrorOccured);
+    EXPECT_TRUE(obj.isFixnum());
+    EXPECT_EQ(3, obj.toFixnum());
+    EXPECT_FALSE(isErrorOccured);
+}
+
