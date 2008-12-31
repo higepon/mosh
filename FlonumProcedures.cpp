@@ -31,6 +31,8 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "SString.h"
 #include "VM.h"
 #include "FlonumProcedures.h"
@@ -304,7 +306,14 @@ Object scheme::flDivEx(VM* theVM, int argc, const Object* argv)
 
     if (1 == argc) {
         argumentCheckFlonum(0, number);
-        return Arithmetic::div(theVM, Object::makeFlonum(1.0), number);
+        bool isDiv0Error = false;
+        const Object ret = Arithmetic::div(Object::makeFlonum(1.0), number, isDiv0Error);
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(Object::makeFlonum(1.0), number));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
     }
 
     argumentCheckFlonum(0, dummy);

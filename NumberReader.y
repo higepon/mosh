@@ -74,7 +74,8 @@ static Object suffixToNumber(const ucs4string& text)
     if (sign == -1) {
         exponent = Arithmetic::negate(exponent);
     }
-    return Arithmetic::expt(NULL, Object::makeFixnum(10), exponent);
+    MOSH_ASSERT(!exponent.isBignum());
+    return Arithmetic::expt(Object::makeFixnum(10), exponent);
 }
 %}
 
@@ -127,8 +128,10 @@ real2     : ureal2
 
 ureal2    : uinteger2
           | uinteger2 SLASH uinteger2 {
-               $$ = Arithmetic::div(NULL, $1, $3, true); // VM* is NULL, because no-raise flag = true
-               if ($$.isFalse()) {
+               bool isDiv0Error = false;
+               $$ = Arithmetic::div($1, $3, isDiv0Error);
+               if (isDiv0Error) {
+                   yyerror("division by zero");
                    YYERROR;
                }
           }
@@ -172,9 +175,10 @@ real8    : ureal8
 
 ureal8   : uinteger8
           | uinteger8 SLASH uinteger8 {
-               // VM* is NULL, because no-raise flag = true
-               $$ = Arithmetic::div(NULL, $1, $3, true);
-               if ($$.isFalse()) {
+               bool isDiv0Error = false;
+               $$ = Arithmetic::div($1, $3, isDiv0Error);
+               if (isDiv0Error) {
+                   yyerror("division by zero");
                    YYERROR;
                }
           }
@@ -220,12 +224,12 @@ real16    : ureal16
 
 ureal16   : uinteger16
           | uinteger16 SLASH uinteger16 {
-               // VM* is NULL, because no-raise flag = true
-               $$ = Arithmetic::div(NULL, $1, $3, true);
-               if ($$.isFalse()) {
+               bool isDiv0Error = false;
+               $$ = Arithmetic::div($1, $3, isDiv0Error);
+               if (isDiv0Error) {
+                   yyerror("division by zero");
                    YYERROR;
                }
-
           }
           ;
 
@@ -269,9 +273,9 @@ real10    : ureal10
 
 ureal10   : decimal10
           | uinteger10 SLASH uinteger10 {
-               // VM* is NULL, because no-raise flag = true
-               $$ = Arithmetic::div(NULL, $1, $3, true);
-               if ($$.isFalse()) {
+               bool isDiv0Error = false;
+               $$ = Arithmetic::div($1, $3, isDiv0Error);
+               if (isDiv0Error) {
                    yyerror("division by zero");
                    YYERROR;
                }

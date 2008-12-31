@@ -91,17 +91,17 @@ public:
     }
 
     // atan(z) = (i/2)*log((i+z)/(i-z))
-    static Object atan(VM* theVM, Object z)
+    static Object atan(Object z, bool& isDiv0Error)
     {
         MOSH_ASSERT(z.isCompnum());
         const Object a = Object::makeCompnum(Object::makeFixnum(0),
                                              Object::makeFixnum(1));
         const Object b = Arithmetic::add(a, z);
         const Object c = Arithmetic::sub(a, z);
-        const Object d = Arithmetic::log(Arithmetic::div(theVM, b, c));
+        const Object d = Arithmetic::log(Arithmetic::div(b, c, isDiv0Error));
 
         const Object e = Object::makeCompnum(Object::makeFixnum(0),
-                                             Arithmetic::div(theVM, Object::makeFixnum(1), Object::makeFixnum(2)));
+                                             Arithmetic::div(Object::makeFixnum(1), Object::makeFixnum(2), isDiv0Error));
         return Arithmetic::mul(e, d);
     }
 
@@ -135,9 +135,9 @@ public:
                                    Object::makeFlonum(::sin(re) * (b - a) * 0.5));
     }
 
-    Object tan(VM* theVM) const
+    Object tan(bool& isDiv0Error) const
     {
-        return Arithmetic::div(theVM, sin(), cos());
+        return Arithmetic::div(sin(), cos(), isDiv0Error);
     }
 
     Object log() const
@@ -250,9 +250,9 @@ public:
                                    Arithmetic::mul(n1->imag(), n2));
     }
 
-    static Object div(VM* theVM, Object n1, Compnum* n2)
+    static Object div(Object n1, Compnum* n2, bool& isDiv0Error)
     {
-        return div(theVM, new Compnum(n1, Object::makeFixnum(0)), n2);
+        return div(new Compnum(n1, Object::makeFixnum(0)), n2, isDiv0Error);
     }
 
 
@@ -274,7 +274,7 @@ public:
                                    Arithmetic::add(Arithmetic::mul(n1->real(), n2->imag()), Arithmetic::mul(n2->real(), n1->imag())));
     }
 
-    static Object div(VM* theVM, Compnum* n1, Compnum* n2)
+    static Object div(Compnum* n1, Compnum* n2, bool& isDiv0Error)
     {
         const Object denon = Arithmetic::add(Arithmetic::mul(n2->real(), n2->real()),
                                              Arithmetic::mul(n2->imag(), n2->imag()));
@@ -282,14 +282,14 @@ public:
                                                                 Arithmetic::mul(n1->imag(), n2->imag())),
                                                 Arithmetic::sub(Arithmetic::mul(n1->imag(), n2->real()),
                                                                 Arithmetic::mul(n1->real(), n2->imag())));
-        return Arithmetic::div(theVM, nume, denon);
+        return Arithmetic::div(nume, denon, isDiv0Error);
     }
 
 
-    static Object div(VM* theVM, Compnum* n1, Object n2)
+    static Object div(Compnum* n1, Object n2, bool& isDiv0Error)
     {
-        return Object::makeCompnum(Arithmetic::div(theVM, n1->real(), n2),
-                                   Arithmetic::div(theVM, n1->imag(), n2));
+        return Object::makeCompnum(Arithmetic::div(n1->real(), n2, isDiv0Error),
+                                   Arithmetic::div(n1->imag(), n2, isDiv0Error));
     }
 
 private:

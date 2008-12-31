@@ -474,8 +474,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else {
+            } else if (n.isNumber() && ac_.isNumber()) {
                 ac_ = Arithmetic::add(n, ac_);
+            } else {
+                callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, ac_));
             }
             NEXT1;
         }
@@ -512,12 +514,22 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_MUL)
         {
-            ac_ = Arithmetic::mul(pop(), ac_);
+            const Object n = pop();
+            if (n.isNumber() && ac_.isNumber()) {
+                ac_ = Arithmetic::mul(n, ac_);
+            } else {
+                callAssertionViolationAfter(this, "/", "division by zero", L2(n, ac_));
+            }
             NEXT1;
         }
         CASE(NUMBER_DIV)
         {
-            ac_ = Arithmetic::div(this, pop(), ac_);
+            bool isDiv0Error = false;
+            const Object n = pop();
+            ac_ = Arithmetic::div(n, ac_, isDiv0Error);
+            if (isDiv0Error) {
+                callAssertionViolationAfter(this, "/", "division by zero", L2(n, ac_));
+            }
             NEXT1
         }
         CASE(NUMBER_SUB)
@@ -527,8 +539,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else {
+            } else if (n.isNumber() && ac_.isNumber()) {
                 ac_ = Arithmetic::sub(n, ac_);
+            } else {
+                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
             }
             NEXT1;
         }
@@ -552,8 +566,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else {
+            } else if (n.isNumber() && ac_.isNumber()) {
                 ac_ = Arithmetic::add(n, ac_);
+            } else {
+                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
             }
             push(ac_);
             NEXT1;

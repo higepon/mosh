@@ -44,6 +44,7 @@
 #include "Bignum.h"
 #include "ProcedureMacro.h"
 #include "Compnum.h"
+#include "TextualOutputPort.h"
 
 using namespace scheme;
 
@@ -62,7 +63,12 @@ Object scheme::exptEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentCheckNumber(0, n1);
     argumentCheckNumber(1, n2);
-    return Arithmetic::expt(theVM, n1, n2);
+    if (n2.isBignum()) {
+        callImplementationRestrictionAfter(theVM, procedureName, "too big", Pair::list2(n1, n2));
+        return Object::Undef;
+    } else {
+        return Arithmetic::expt(n1, n2);
+    }
 }
 
 Object scheme::sqrtEx(VM* theVM, int argc, const Object* argv)
@@ -87,7 +93,14 @@ Object scheme::atanEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     if (argc == 1) {
         argumentCheckNumber(0, n);
-        return Arithmetic::atan(n);
+        bool isDiv0Error = false;
+        const Object ret = Arithmetic::atan(n, isDiv0Error);
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", L1(n));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
     } else {
         argumentCheckReal(0, n1);
         argumentCheckReal(0, n2);
@@ -108,7 +121,14 @@ Object scheme::tanEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("tan");
     checkArgumentLength(1);
     argumentCheckNumber(0, n);
-    return Arithmetic::tan(n);
+    bool isDiv0Error = false;
+    const Object ret = Arithmetic::tan(n, isDiv0Error);
+    if (isDiv0Error) {
+        callAssertionViolationAfter(theVM, procedureName, "division by zero", L1(n));
+        return Object::Undef;
+    } else {
+        return ret;
+    }
 }
 
 Object scheme::sinEx(VM* theVM, int argc, const Object* argv)
@@ -145,7 +165,14 @@ Object scheme::logEx(VM* theVM, int argc, const Object* argv)
             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L2(n1, n2));
             return Object::Undef;
         }
-        return Arithmetic::log(theVM, n1, n2);
+        bool isDiv0Error = false;
+        const Object ret = Arithmetic::log(n1, n2, isDiv0Error);
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(n1, n2));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
     }
 }
 
@@ -195,7 +222,50 @@ Object scheme::integerDivEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentCheckReal(0, n1);
     argumentCheckReal(1, n2);
-    return Arithmetic::integerDiv(theVM, n1, n2);
+
+    if (n1.isFlonum()) {
+        Flonum* const flonum = n1.toFlonum();
+        if (flonum->isInfinite() || flonum->isNan()) {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
+            return Object::Undef;
+        }
+    }
+
+    if (n2.isFixnum()) {
+        const int fn2 = n2.toFixnum();
+        if (0 == fn2) {
+            callAssertionViolationAfter(theVM, procedureName, "div by 0 is not defined", Pair::list2(n1, n2));
+            return Object::Undef;
+        }
+    }
+    if (n2.isFlonum()) {
+        const double fn2 = n2.toFlonum()->value();
+        if (0.0 == fn2) {
+            callAssertionViolationAfter(theVM, procedureName, "div by 0.0 is not defined", Pair::list2(n1, n2));
+            return Object::Undef;
+        }
+    }
+
+    if (n1.isFixnum() && n2.isFixnum()) {
+        return Fixnum::integerDiv(n1.toFixnum(), n2.toFixnum());
+    } else if (n1.isFlonum() && n2.isFlonum()) {
+        return Flonum::integerDiv(n1.toFlonum(), n2.toFlonum());
+    } else {
+            bool isDiv0Error = false;
+            Object ret = Object::Undef;
+        if (Arithmetic::isNegative(n2)) {
+            ret = Arithmetic::negate(Arithmetic::floor(Arithmetic::div(n1, Arithmetic::negate(n2), isDiv0Error)));
+        } else {
+            ret = Arithmetic::floor(Arithmetic::div(n1, n2, isDiv0Error));
+        }
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", Pair::list2(n1, n2));
+            return Object::Undef;
+        } else {
+            return ret;
+        }
+
+    }
 }
 
 Object scheme::integerDiv0Ex(VM* theVM, int argc, const Object* argv)
@@ -204,18 +274,36 @@ Object scheme::integerDiv0Ex(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentCheckReal(0, n1);
     argumentCheckReal(1, n2);
-    if (Arithmetic::isExactZero(n2)) {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", n2);
+    Object div = integerDivEx(theVM, argc, argv);
+    if (div.isUndef()) {
         return Object::Undef;
     }
-    if (n1.isFlonum()) {
-        Flonum* const flonum = n1.toFlonum();
-        if (flonum->isInfinite() || flonum->isNan()) {
-            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
-            return Object::Undef;
+    Object mod = Arithmetic::sub(n1, Arithmetic::mul(div, n2));
+    // we can ignore isDiv0Error parameter of Arithmetic::div.
+    // Because we know division by zero never occur.
+    bool isDiv0Error = false;
+    if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
+        return div;
+    } else {
+        if (Arithmetic::isNegative(n2)) {
+            return Arithmetic::sub(div, Object::makeFixnum(1));
+        } else {
+            return Arithmetic::add(div, Object::makeFixnum(1));
         }
     }
-    return Arithmetic::integerDiv0(theVM, n1, n2);
+
+//     if (Arithmetic::isExactZero(n2)) {
+//         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", n2);
+//         return Object::Undef;
+//     }
+//     if (n1.isFlonum()) {
+//         Flonum* const flonum = n1.toFlonum();
+//         if (flonum->isInfinite() || flonum->isNan()) {
+//             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
+//             return Object::Undef;
+//         }
+//     }
+//     return Arithmetic::integerDiv0(n1, n2);
 }
 
 Object scheme::absEx(VM* theVM, int argc, const Object* argv)
@@ -529,7 +617,8 @@ Object scheme::addEx(VM* theVM, int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(0);
     for (int i = 0; i < argc; i++) {
-        ret = Arithmetic::add(ret, argv[i]);
+        argumentCheckNumber(i, n);
+        ret = Arithmetic::add(ret, n);
 
         // error occured
         if (ret.isFalse()) {
@@ -590,21 +679,27 @@ Object scheme::divideEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("/");
     checkArgumentLengthAtLeast(1);
 
+    bool isDiv0Error = false;
     if (1 == argc) {
         argumentCheckNumber(0, number);
-        return Arithmetic::div(theVM, Object::makeFixnum(1), number);
-    }
-
-    Object ret = argv[0];
-    for (int i = 1; i < argc; i++) {
-        ret = Arithmetic::div(theVM, ret, argv[i]);
-
-        // error occured
-        if (ret.isFalse()) {
+        const Object ret = Arithmetic::div(Object::makeFixnum(1), number, isDiv0Error);
+        if (isDiv0Error) {
+            callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(Object::makeFixnum(1), number));
             return Object::Undef;
+        } else {
+            return ret;
         }
+    } else {
+        Object ret = argv[0];
+        for (int i = 1; i < argc; i++) {
+            ret = Arithmetic::div(ret, argv[i], isDiv0Error);
+            if (isDiv0Error) {
+                callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(ret, argv[i]));
+                return Object::Undef;
+            }
+        }
+        return ret;
     }
-    return ret;
 }
 
 Object scheme::eqEx(VM* theVM, int argc, const Object* argv)

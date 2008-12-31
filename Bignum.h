@@ -196,7 +196,7 @@ public:
         }
     }
 
-    static Object expt(int n1, const Bignum* n2);
+//    static Object expt(int n1, const Bignum* n2);
 
     static Object bitwiseShiftLeft(const Bignum* n1, unsigned long n2)
     {
