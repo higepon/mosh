@@ -20,7 +20,7 @@ GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_vm
+bin_PROGRAMS = mosh test_vm test_port
 
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp.
@@ -285,6 +285,13 @@ check_PROGRAMS += test_vm
 test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_vm_SOURCES = TestVM.cpp TestingVM.cpp
 test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+
+TESTS += test_port
+check_PROGRAMS += test_port
+test_port_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+test_port_SOURCES = TestPort.cpp
+test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+
 
 # doc:
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"

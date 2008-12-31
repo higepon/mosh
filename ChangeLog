@@ -1,5 +1,7 @@
 2008-12-31  higepon  <higepon@users.sourceforge.jp>
 
+        * TestPort.cpp: Added for Testing port.
+
         * Makefile.am (mosh_LDADD): Added libmosh.a support.
                                     It decreases the build dependency.
 
