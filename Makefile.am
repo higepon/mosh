@@ -283,13 +283,13 @@ check_PROGRAMS=
 TESTS += test_vm
 check_PROGRAMS += test_vm
 test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-test_vm_SOURCES = TestVM.cpp TestingVM.cpp
+test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
 test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
 
 TESTS += test_port
 check_PROGRAMS += test_port
 test_port_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-test_port_SOURCES = TestPort.cpp
+test_port_SOURCES = PortTest.cpp TestingSignalHandler.cpp
 test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
 
 

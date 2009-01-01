@@ -50,8 +50,6 @@
 
 using namespace scheme;
 
-void signal_handler(int signo) {}
-
 class VMTest : public testing::Test {
 protected:
     VM* theVM_;

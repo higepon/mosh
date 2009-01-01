@@ -40,8 +40,6 @@
 
 using namespace scheme;
 
-void signal_handler(int signo) {}
-
 class PortTest : public testing::Test {
 protected:
     virtual void SetUp() {

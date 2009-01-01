@@ -1,3 +1,7 @@
+2009-01-01  higepon  <higepon@users.sourceforge.jp>
+
+        * TestingSignalHandler.cpp (signal_handler): Added stub for test.
+
 2008-12-31  higepon  <higepon@users.sourceforge.jp>
 
         * TestPort.cpp: Added for Testing port.
