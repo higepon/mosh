@@ -29,7 +29,7 @@ mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer -DDEBUG_VERSION
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD = $(GC_LIB) $(REGEXP_LIB) libmosh.a
+mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB)
 
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include

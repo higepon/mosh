@@ -47,6 +47,9 @@
 #include "TestingVM.h"
 #include "StringTextualOutputPort.h"
 #include "PortProcedures.h"
+#include "EqHashTable.h"
+#include "Closure.h"
+#include "VM-inl.h"
 
 using namespace scheme;
 
