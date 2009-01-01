@@ -1,5 +1,7 @@
 2009-01-01  higepon  <higepon@users.sourceforge.jp>
 
+        * Changed libtool to 2.2.6a.
+
         * PortProcedures.cpp (standardErrorPortEx): Added.
                              (standardOutputPortEx): Added.
 
