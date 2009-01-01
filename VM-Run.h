@@ -54,7 +54,9 @@
 #include "TextualInputPort.h"
 #include "Equivalent.h"
 #include "VM.h"
+#include "Symbol.h"
 #include "VM-inl.h"
+#include "StringProcedures.h"
 
 #ifdef ENABLE_PROFILER
 #define COUNT_CALL(a) countCall(a)

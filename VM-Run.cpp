@@ -582,7 +582,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(READ)
         {
             bool errorOccured = false;
-            TextualInputPort* const inputPort = ac_.isNil() ? inputPort_.toTextualInputPort() : ac_.toTextualInputPort();
+            TextualInputPort* const inputPort = ac_.isNil() ? currentInputPort_.toTextualInputPort() : ac_.toTextualInputPort();
             ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
                 callLexicalViolationAfter(this, "read", inputPort->error());
@@ -591,7 +591,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(READ_CHAR)
         {
-            const ucs4char c = ac_.isNil() ? inputPort_.toTextualInputPort()->getChar() : ac_.toTextualInputPort()->getChar();
+            const ucs4char c = ac_.isNil() ? currentInputPort_.toTextualInputPort()->getChar() : ac_.toTextualInputPort()->getChar();
             ac_= c == EOF ? Object::Eof : Object::makeChar(c);
             NEXT1;
         }

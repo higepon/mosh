@@ -34,6 +34,7 @@
 
 #include "scheme.h"
 #include "ErrorProcedures.h"
+#include "StringProcedures.h"
 #include "VM.h"
 
 #define checkType(index, variableName, pred, required) \

@@ -152,6 +152,7 @@ public:
     static Object makeString(const char* str);
     static Object makeObjectPointer(Object* p);
     static Object makeBinaryInputPort(FILE* file);
+    static Object makeBinaryOutputPort(FILE* file);
     static Object makeBinaryInputPort(BinaryInputPort* port);
     static Object makeBinaryOutputPort(BinaryOutputPort* port);
     static Object makeTextualInputFilePort(const ucs4char* str);

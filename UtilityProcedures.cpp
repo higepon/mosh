@@ -36,6 +36,10 @@
 #include "Pair-inl.h"
 #include "scheme.h"
 #include "VM.h"
+#include "EqHashTable.h"
+#include "Symbol.h"
+#include "Closure.h"
+#include "VM-inl.h"
 #include "UtilityProcedures.h"
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
@@ -46,8 +50,6 @@
 #include "UTF8Codec.h"
 #include "SString.h"
 #include "Vector.h"
-#include "EqHashTable.h"
-#include "Symbol.h"
 #include "ByteVector.h"
 #include "TextualOutputPort.h"
 #include "Closure.h"
@@ -549,9 +551,8 @@ Object scheme::loadEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("load");
     checkArgumentLength(1);
-
     argumentAsString(0, path);
-    theVM->loadFile(path->data());
+    theVM->loadFileUnsafe(path->data());
     return Object::Undef;
 }
 
@@ -690,7 +691,7 @@ Object scheme::setSymbolValueDEx(VM* theVM, int argc, const Object* argv)
 
     argumentCheckSymbol(0, id);
     const Object val = argv[1];
-    theVM->setTopLevelGlobalValue(id, val);
+    theVM->setValueSymbol(id, val);
     return Object::Undef;
 }
 

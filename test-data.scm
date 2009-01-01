@@ -3314,6 +3314,25 @@
    (open-string-input-port s)
    read))
 ]
+;; with-input-from-file and current-input-port
+(#f (let ([org (current-input-port)])
+      (with-input-from-file "./mosh"
+        (lambda ()
+          (eq? (current-input-port) org)))))
+(#t (let ([org (current-input-port)])
+      (with-input-from-file "./mosh"
+        (lambda ()
+          (eq? (current-input-port) org)))
+      (eq? org (current-input-port))))
+(#t (let ([org (current-input-port)])
+      (call/cc
+       (lambda (c)
+         (with-input-from-file "./mosh"
+           (lambda ()
+             (c)))))
+      (eq? (current-input-port) org)))
+
+
 (todo error (read-string "#t.#f"))
 
 

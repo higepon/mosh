@@ -81,7 +81,7 @@ protected:
 
 
 TEST_F(VMTest, StackTrace1) {
-    theVM_->loadFile(UC("./test/stack-trace1.scm"));
+    theVM_->loadFileWithGuard(UC("./test/stack-trace1.scm"));
     EXPECT_STREQ("    error in raise: unhandled exception has occurred\n"
                  "\n"
                  " Condition components:\n"
@@ -100,7 +100,7 @@ TEST_F(VMTest, StackTrace1) {
 }
 
 TEST_F(VMTest, StackTrace2) {
-    theVM_->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace2.scm"));
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
     theVM_->activateR6RSMode(false);
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
@@ -119,7 +119,7 @@ TEST_F(VMTest, StackTrace2) {
 }
 
 TEST_F(VMErrorPortTest, StackTrace3) {
-    theVM_->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), Pair::list1("./test/stack-trace3.scm"));
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace3.scm"));
     theVM_->activateR6RSMode(false);
     EXPECT_STREQ(" Condition components:\n"
                  "   1. &who: let\n"

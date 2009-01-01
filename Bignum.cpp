@@ -73,6 +73,5 @@ char* Bignum::toString(int radix /* = 10 */) const
 double Bignum::toDouble() const
 {
     return mpz_get_d(value);
-//    return mpz_get_d_2exp(value);
 }
 

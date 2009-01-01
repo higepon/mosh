@@ -38,6 +38,8 @@
 #include "ErrorProcedures.h"
 #include "PortProcedures.h"
 #include "Closure.h"
+#include "EqHashTable.h"
+#include "Symbol.h"
 #include "VM.h"
 #include "VM-inl.h"
 #include <setjmp.h>

@@ -55,8 +55,6 @@ public:
     static Object sin(Object n);
     static Object cos(Object n);
     static Object tan(Object n, bool& isDiv0Error);
-//    static Object integerDiv(Object n1, Object n2);
-//    static Object integerDiv0(Object n1, Object n2);
     static Object exp(Object n);
     static Object log(Object n);
     static Object log(Object n1, Object n2, bool& isDiv0Error);

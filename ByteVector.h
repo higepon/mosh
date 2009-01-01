@@ -608,22 +608,6 @@ public:
         return (-2147483648LL <= value) && (value <= 2147483647LL);
     }
 
-//     // todo
-//     static bool inU64Range(uint64_t value)
-//     {
-//         // wrong
-//         return (0 <= value) && (value <= 18446744073709551615ULL);
-//     }
-
-//     // todo
-//     static bool inS64Range(uint64_t value)
-//     {
-//         // wrong
-//         return (-9223372036854775808ULL <= value) && (value <= 9223372036854775807LL);
-//     }
-
-
-
     static bool isByte(int value)
     {
         return (-128 <= value && value <= 127);

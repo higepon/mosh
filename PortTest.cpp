@@ -37,6 +37,7 @@
 #include "Pair-inl.h"
 #include "StringTextualOutputPort.h"
 #include "TextualInputPort.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -66,3 +67,14 @@ TEST_F(PortTest, StringInputPort) {
     EXPECT_FALSE(isErrorOccured);
 }
 
+TEST_F(PortTest, StandardPort) {
+    const Object in = standardInputPortEx(NULL, 0, NULL);
+    EXPECT_TRUE(in.isBinaryInputPort());
+
+    const Object out = standardOutputPortEx(NULL, 0, NULL);
+    EXPECT_TRUE(out.isBinaryOutputPort());
+
+    const Object err = standardErrorPortEx(NULL, 0, NULL);
+    EXPECT_TRUE(err.isBinaryOutputPort());
+
+}

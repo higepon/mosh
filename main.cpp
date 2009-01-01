@@ -40,6 +40,10 @@
 #include "scheme.h"
 #include "Vector.h"
 #include "VM.h"
+#include "Closure.h"
+#include "Symbol.h"
+#include "EqHashTable.h"
+#include "VM-inl.h"
 #include "ErrorProcedures.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
@@ -160,18 +164,18 @@ int main(int argc, char *argv[])
 
     mosh_init();
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
+    const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
+    const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+    const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
     theVM->loadCompiler();
-    theVM->setTopLevelGlobalValue(Symbol::intern(UC("*command-line-args*")), argsToList(argc, optind, argv));
+    theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optind, argv));
 //     if (initFile != NULL) {
 //         theVM->load(Object::makeString(initFile).toString()->data());
 //     }
 
     if (isTestOption) {
-        theVM->load(UC("all-tests.scm"));
+        theVM->loadFileWithGuard(UC("all-tests.scm"));
     } else if (isCompileString) {
         const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
         bool errorOccured = false;
@@ -180,15 +184,15 @@ int main(int argc, char *argv[])
             callLexicalViolationImmidiaImmediately(theVM, "read", port.toTextualInputPort()->error());
         } else {
             const Object compiled = theVM->compile(code);
-            theVM->getOutputPort().toTextualOutputPort()->display(compiled);
+            theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
         theVM->activateR6RSMode(isDebugExpand);
     } else if (optind < argc) {
-        theVM->setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
-        theVM->load(Object::makeString(argv[optind]).toString()->data());
+        theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
+        theVM->loadFileWithGuard(Object::makeString(argv[optind]).toString()->data());
     } else {
-        theVM->load(UC("repl.scm"));
+        theVM->loadFileWithGuard(UC("repl.scm"));
     }
 
 #ifdef ENABLE_PROFILER

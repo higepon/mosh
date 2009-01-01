@@ -97,6 +97,8 @@
     sys-get-bytevector
     bytevector-length
     (standard-input-port standard-input-port)
+    (standard-output-port standard-output-port)
+    (standard-error-port standard-error-port)
     get-bytevector-n
     (open-file-output-port open-output-file)
     (open-file-input-port open-input-file)

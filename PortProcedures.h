@@ -47,6 +47,8 @@ namespace scheme {
     Object currentDirectoryEx(VM* theVM, int argc, const Object* argv);
     Object standardLibraryPathEx(VM* theVM, int argc, const Object* argv);
     Object standardInputPortEx(VM* theVM, int argc, const Object* argv);
+    Object standardOutputPortEx(VM* theVM, int argc, const Object* argv);
+    Object standardErrorPortEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorU8SetDEx(VM* theVM, int argc, const Object* argv);
     Object lookaheadCharEx(VM* theVM, int argc, const Object* argv);
     Object readEx(VM* theVM, int argc, const Object* argv);

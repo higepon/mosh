@@ -291,19 +291,6 @@ Object scheme::integerDiv0Ex(VM* theVM, int argc, const Object* argv)
             return Arithmetic::add(div, Object::makeFixnum(1));
         }
     }
-
-//     if (Arithmetic::isExactZero(n2)) {
-//         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", n2);
-//         return Object::Undef;
-//     }
-//     if (n1.isFlonum()) {
-//         Flonum* const flonum = n1.toFlonum();
-//         if (flonum->isInfinite() || flonum->isNan()) {
-//             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "neither infinite nor a NaN", n1);
-//             return Object::Undef;
-//         }
-//     }
-//     return Arithmetic::integerDiv0(n1, n2);
 }
 
 Object scheme::absEx(VM* theVM, int argc, const Object* argv)

@@ -54,6 +54,7 @@
 #include "RecordConstructorDescriptor.h"
 #include "CompoundCondition.h"
 #include "FileBinaryInputPort.h"
+#include "FileBinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
 #include "Latin1Codec.h"
@@ -108,6 +109,12 @@ Object Object::makeBinaryInputPort(FILE* in)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
                                                         reinterpret_cast<word>(new FileBinaryInputPort(in)))));
+}
+
+Object Object::makeBinaryOutputPort(FILE* out)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
+                                                        reinterpret_cast<word>(new FileBinaryOutputPort(out)))));
 }
 
 Object Object::makeBinaryInputPort(BinaryInputPort* port)

@@ -108,7 +108,7 @@ void VM::collectProfile()
     static int i = 0;
     if (!profilerRunning_) return;
     if (i >= SAMPLE_NUM) {
-        errorPort_.toTextualOutputPort()->display(UC("buffer full profiler stopped."));
+        currentErrorPort_.toTextualOutputPort()->display(UC("buffer full profiler stopped."));
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
         samples_[i++] = ac_;

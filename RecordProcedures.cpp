@@ -39,15 +39,18 @@
 #include "RecordConstructorDescriptor.h"
 #include "RecordTypeDescriptor.h"
 #include "VM.h"
+#include "Closure.h"
+#include "EqHashTable.h"
+#include "VM-inl.h"
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"
-#include "EqHashTable.h"
+
 
 using namespace scheme;
 
 static Object getConditionRtd();
 bool isSubTypeOfCondition(VM* theVM, Object rtd);
-static void setTopLevelGlobalValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object values);
+static void setValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object values);
 
 // return &conditon-rtd
 Object getConditionRtd(VM* theVM)
@@ -69,12 +72,12 @@ bool isSubTypeOfCondition(VM* theVM, Object rtd)
     return rtd.toRecordTypeDescriptor()->isA(conditionRtd.toRecordTypeDescriptor());
 }
 
-void setTopLevelGlobalValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object value)
+void setValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object value)
 {
     MOSH_ASSERT(id.isSymbol());
     ucs4string name = id.toSymbol()->c_str();
     name += postfix;
-    theVM->setTopLevelGlobalValue(Symbol::intern(name.strdup()), value);
+    theVM->setValueString(name.strdup(), value);
 }
 
 Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* argv)
@@ -114,10 +117,10 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
     }
     // psyntax requires &xxx-rtd global defined.
     if (name == Symbol::intern(UC("&condition"))) {
-        theVM->setTopLevelGlobalValue(Symbol::intern(UC("&condition-rtd")), rtd);
+        theVM->setValueString(UC("&condition-rtd"), rtd);
     }
     if (isSubTypeOfCondition(theVM, rtd)) {
-        setTopLevelGlobalValueWithPostfix(theVM, name, UC("-rtd"), rtd);
+        setValueWithPostfix(theVM, name, UC("-rtd"), rtd);
     }
     return rtd;
 }
@@ -134,7 +137,7 @@ Object scheme::makeRecordConstructorDescriptorEx(VM* theVM, int argc, const Obje
 
     // psyntax requires &xxx-rcd global defined.
     if (isSubTypeOfCondition(theVM, rtd)) {
-        setTopLevelGlobalValueWithPostfix(theVM, rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
+        setValueWithPostfix(theVM, rtd.toRecordTypeDescriptor()->name(), UC("-rcd"), rcd);
     }
     return rcd;
 }

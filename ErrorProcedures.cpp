@@ -128,7 +128,7 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
                                        "    2. &who: ~a\n"
                                        "    3. &message: ~s\n"
                                        "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
@@ -146,7 +146,7 @@ void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Objec
                                  "    2. &who: ~a\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
@@ -280,7 +280,7 @@ void raiseAfter(VM* theVM,
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
-        theVM->getErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);

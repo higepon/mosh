@@ -183,7 +183,7 @@ Object scheme::currentErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-error-port");
     checkArgumentLength(0);
-    return theVM->getErrorPort();
+    return theVM->currentErrorPort();
 }
 
 Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
@@ -192,7 +192,7 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
     if (1 == argc) {
-        theVM->getOutputPort().toTextualOutputPort()->display(obj);
+        theVM->currentOutputPort().toTextualOutputPort()->display(obj);
     } else {
         argumentAsTextualOutputPort(1, textualOutputPort);
         textualOutputPort->display(obj);
@@ -379,7 +379,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
         for (int i = argc - 1; i >= 2; i--) {
             lst = Object::cons(argv[i], lst);
         }
-        TextualOutputPort* const outputPort = theVM->getOutputPort().toTextualOutputPort();
+        TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
         outputPort->format(formatString->data(), lst);
         if (outputPort->isErrorOccured()) {
             callAssertionViolationAfter(theVM, procedureName,
@@ -437,7 +437,7 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
     if (1 == argc) {
-        theVM->getOutputPort().toTextualOutputPort()->putDatum(obj);
+        theVM->currentOutputPort().toTextualOutputPort()->putDatum(obj);
     } else {
         argumentAsTextualOutputPort(1, textualOutputPort);
         textualOutputPort->putDatum(obj);
@@ -635,7 +635,7 @@ Object scheme::currentOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-output-port");
     checkArgumentLength(0);
-    return theVM->getOutputPort();
+    return theVM->currentOutputPort();
 }
 
 Object scheme::setCurrentInputPortDEx(VM* theVM, int argc, const Object* argv)
@@ -644,7 +644,7 @@ Object scheme::setCurrentInputPortDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentCheckTextualInputPort(0, textualInputPort);
-    theVM->setInputPort(textualInputPort);
+    theVM->setCurrentInputPort(textualInputPort);
     return Object::UnBound;
 }
 
@@ -654,16 +654,34 @@ Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentCheckTextualOutputPort(0, textualOutputPort);
-    theVM->setOutputPort(textualOutputPort);
+    theVM->setCurrentOutputPort(textualOutputPort);
     return Object::Undef;
 }
 
 Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
+    static const Object port = Object::makeBinaryInputPort(stdin);
     DeclareProcedureName("starndard-input-port");
     checkArgumentLength(0);
-    return theVM->standardInputPort();
+    return port;
 }
+
+Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    static const Object port = Object::makeBinaryOutputPort(stdout);
+    DeclareProcedureName("starndard-output-port");
+    checkArgumentLength(0);
+    return port;
+}
+
+Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
+{
+    static const Object port = Object::makeBinaryOutputPort(stderr);
+    DeclareProcedureName("starndard-error-port");
+    checkArgumentLength(0);
+    return port;
+}
+
 
 Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
 {

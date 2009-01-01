@@ -155,10 +155,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toFlonum()->value();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isBignum()) {
-            MOSH_FATAL("never comes");
-//             // too large
-//             callImplementationRestrictionAfter(theVM, "expt", "too large", Pair::list2(n1, n2));
-//             return Object::Undef;
+            MOSH_FATAL("not reached");
         } else if (n2.isRatnum()) {
             const double fn1 = static_cast<double>(n1.toFixnum());
             const double fn2 = n2.toRatnum()->toDouble();
@@ -189,10 +186,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toFlonum()->value();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isBignum()) {
-            MOSH_FATAL("never comes");
-//             // too large
-//             callImplementationRestrictionAfter(theVM, "expt", "too large", Pair::list2(n1, n2));
-//             return Object::Undef;
+            MOSH_FATAL("not reached");
         } else if (n2.isRatnum()) {
             const double fn1 = n1.toFlonum()->value();
             const double fn2 = n2.toRatnum()->toDouble();
@@ -241,9 +235,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toFlonum()->value();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isBignum()) {
-            MOSH_FATAL("never comes");
-//             callImplementationRestrictionAfter(theVM, "expt", "too large", Pair::list2(n1, n2));
-//             return Object::Undef;
+            MOSH_FATAL("not reached");
         } else if (n2.isRatnum()) {
             const double fn1 = n1.toBignum()->toDouble();
             const double fn2 = n2.toRatnum()->toDouble();
@@ -282,10 +274,7 @@ Object Arithmetic::expt(Object n1, Object n2)
             const double fn2 = n2.toFlonum()->value();
             return Object::makeFlonum(::pow(fn1, fn2));
         } else if (n2.isBignum()) {
-            MOSH_FATAL("never comes");
-            // too large
-//             callImplementationRestrictionAfter(theVM, "expt", "too large", Pair::list2(n1, n2));
-//             return Object::Undef;
+            MOSH_FATAL("not reached");
         } else if (n2.isRatnum()) {
             const double fn1 = n1.toRatnum()->toDouble();
             const double fn2 = n2.toRatnum()->toDouble();
@@ -501,67 +490,6 @@ Object Arithmetic::round(Object n)
     return Object::Undef;
 }
 
-
-// Object Arithmetic::integerDiv(Object n1, Object n2)
-// {
-//     MOSH_ASSERT(n1.isReal());
-//     MOSH_ASSERT(n2.isReal());
-//     if (n1.isFlonum()) {
-//         Flonum* const flonum = n1.toFlonum();
-//         if (flonum->isInfinite() || flonum->isNan()) {
-//             callWrongTypeOfArgumentViolationAfter(theVM, "div", "neither infinite nor a NaN", n1);
-//             return Object::makeFixnum(0);
-//         }
-//     }
-
-//     if (n2.isFixnum()) {
-//         const int fn2 = n2.toFixnum();
-//         if (0 == fn2) {
-//             callAssertionViolationAfter(theVM, "div", "div by 0 is not defined", Pair::list2(n1, n2));
-//             return Object::makeFixnum(0);
-//         }
-//     }
-//     if (n2.isFlonum()) {
-//         const double fn2 = n2.toFlonum()->value();
-//         if (0.0 == fn2) {
-//             callAssertionViolationAfter(theVM, "div", "div by 0.0 is not defined", Pair::list2(n1, n2));
-//             return Object::makeFixnum(0);
-//         }
-//     }
-
-//     if (n1.isFixnum() && n2.isFixnum()) {
-//         return Fixnum::integerDiv(n1.toFixnum(), n2.toFixnum());
-//     } else if (n1.isFlonum() && n2.isFlonum()) {
-//         return Flonum::integerDiv(n1.toFlonum(), n2.toFlonum());
-//     } else {
-//         if (isNegative(n2)) {
-//             return negate(floor(div(theVM, n1, negate(n2))));
-//         } else {
-//             return floor(div(theVM, n1, n2));
-//         }
-//     }
-// }
-
-// Object Arithmetic::integerDiv0(Object n1, Object n2)
-// {
-//     MOSH_ASSERT(n1.isReal());
-//     MOSH_ASSERT(n2.isReal());
-//     Object div = integerDiv(n1, n2);
-//     Object mod = sub(n1, mul(div, n2));
-//     // we can ignore isDiv0Error parameter of Arithmetic::div.
-//     // Because we know division by zero never occur.
-//     bool isDiv0Error = false;
-//     if (Arithmetic::lt(mod, Arithmetic::abs(Arithmetic::div(n2, Object::makeFixnum(2), isDiv0Error)))) {
-//         return div;
-//     } else {
-//         if (isNegative(n2)) {
-//             return sub(div, Object::makeFixnum(1));
-//         } else {
-//             return add(div, Object::makeFixnum(1));
-//         }
-//     }
-// }
-
 Object Arithmetic::abs(Object n)
 {
     MOSH_ASSERT(n.isReal());
@@ -578,7 +506,6 @@ Object Arithmetic::abs(Object n)
     MOSH_ASSERT(false);
     return Object::Undef;
 }
-
 
 Object Arithmetic::negate(Object n)
 {

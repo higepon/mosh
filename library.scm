@@ -1430,24 +1430,24 @@
 
 ;; .pre-condition Thunk must be a procedure and must accept zero arguments. The file is opened for input or output using empty file options, and thunk is called with no arguments.
 (define (with-input-from-file filename thunk)
-  (let ([org-port (current-input-port)]
-        [inport (open-input-file filename)])
-    (set-current-input-port! inport)
-    (receive ret (thunk)
-      (set-current-input-port! org-port)
-      (close-port inport)
-      (apply values ret))))
-
-
+  (let ([port (open-input-file filename)]
+        [org (current-input-port)])
+    (dynamic-wind
+        (lambda () (set-current-input-port! port))
+        (lambda () (receive ret (thunk)
+                     (close-port port)
+                     (apply values ret)))
+        (lambda () (set-current-input-port! org)))))
 
 (define (with-output-to-file filename thunk)
-  (let ([org-port (current-output-port)]
-        [inport (open-output-file filename)])
-    (set-current-output-port! inport)
-    (receive ret (thunk)
-      (set-current-output-port! org-port)
-      (close-port inport)
-      (apply values ret))))
+  (let ([port (open-output-file filename)]
+        [org (current-output-port)])
+    (dynamic-wind
+        (lambda () (set-current-output-port! port))
+        (lambda () (receive ret (thunk)
+                     (close-port port)
+                     (apply values ret)))
+        (lambda () (set-current-output-port! org)))))
 
 ;; Raises a non-continuable exception by invoking the current exception handler on obj.
 ;; .form (raise obj)

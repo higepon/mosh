@@ -54,14 +54,6 @@ inline void VM::push(Object obj)
     *sp_++ = obj;
 }
 
-inline void VM::pushWithCheck(Object obj)
-{
-    if (sp_ > maxStack_) {
-        maxStack_ = sp_;
-    }
-    *sp_++ = obj;
-}
-
 inline Object VM::stackToPairArgs(Object* sp, int nArgs)
 {
     Object args = Object::Nil;
@@ -70,6 +62,17 @@ inline Object VM::stackToPairArgs(Object* sp, int nArgs)
     }
     return args;
 }
+
+inline void VM::setValueSymbol(Object id, Object val)
+{
+    nameSpace_.toEqHashTable()->set(id, val);
+}
+
+inline void VM::setValueString(const ucs4char* id, Object val)
+{
+    setValueSymbol(Symbol::intern(id), val);
+}
+
 
 inline void VM::pairArgsToStack(Object* sp, int offset, Object args)
 {
@@ -220,7 +223,6 @@ inline Object* VM::getDirectThreadedCode(Object* code, int length)
     return code;
 #endif
 }
-
 
 #ifdef ENABLE_PROFILER
 

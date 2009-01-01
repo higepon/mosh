@@ -35,9 +35,9 @@
 #include "Pair-inl.h"
 #include "VM.h"
 #include "Closure.h"
-#include "VM-inl.h"
-#include "Symbol.h"
 #include "EqHashTable.h"
+#include "Symbol.h"
+#include "VM-inl.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
 #include "RecordProcedures.h"
@@ -83,10 +83,9 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     pc_(NULL),
     stackSize_(stackSize),
     maxStack_(NULL),
-    outputPort_(outPort),
-    errorPort_(errorPort),
-    inputPort_(inputPort),
-    stdinPort_(Object::makeBinaryInputPort(stdin)),
+    currentOutputPort_(outPort),
+    currentErrorPort_(errorPort),
+    currentInputPort_(inputPort),
     errorObj_(Object::Nil),
     profilerRunning_(false),
     isProfiler_(isProfiler),
@@ -100,7 +99,6 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     sp_ = stack_;
     fp_ = stack_;
     nameSpace_ = Object::makeEqHashTable();
-
     outerSourceInfo_   = L2(Object::False, Symbol::intern(UC("<top-level>")));
 }
 
@@ -116,9 +114,15 @@ void VM::loadCompiler()
         initProfiler();
     }
 #endif
-    evaluate(libCompiler);
-    const Object libMatch = FASL_GET(match_image);
-    evaluate(libMatch);
+    TRY {
+        evaluateCodeVector(libCompiler);
+        const Object libMatch = FASL_GET(match_image);
+        evaluateCodeVector(libMatch);
+    CATCH
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
+    }
 }
 
 
@@ -135,7 +139,7 @@ Object VM::getTopLevelGlobalValue(Object id)
 
 void VM::defaultExceptionHandler(Object error)
 {
-    errorPort_.toTextualOutputPort()->format(UC("\n Exception:\n~a\n"), L1(error));
+    currentErrorPort_.toTextualOutputPort()->format(UC("\n Exception:\n~a\n"), L1(error));
 }
 
 void VM::dumpCompiledCode(Object code) const
@@ -153,47 +157,39 @@ void VM::dumpCompiledCode(Object code) const
 }
 
 
-// これはいずれ Scheme でおきかえる。
-void VM::loadFile(const ucs4string& file)
+// N.B. If you call loadFileUnsafe, be sure that this code is inside the TRY/CATCH
+void VM::loadFileUnsafe(const ucs4string& file)
 {
     SAVE_REGISTERS();
-    TRY {
-        const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
-        TextualInputPort* p = loadPort.toTextualInputPort();
-        bool readErrorOccured = false;
-        for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
-            if (readErrorOccured) {
-                callLexicalViolationImmidiaImmediately(this, "read", p->error());
-            }
-            const Object compiled = compile(o);
-//            dumpCompiledCode(compiled);
-            evaluate(compiled);
+    const Object loadPort = Object::makeTextualInputFilePort(file.ascii_c_str());
+    TextualInputPort* p = loadPort.toTextualInputPort();
+    bool readErrorOccured = false;
+    for (Object o = p->getDatum(readErrorOccured); !o.isEof(); o = p->getDatum(readErrorOccured)) {
+        if (readErrorOccured) {
+            callLexicalViolationImmidiaImmediately(this, "read", p->error());
         }
-
-        CATCH
-            // call default error handler
-            defaultExceptionHandler(errorObj_);
-        exit(-1);
+        const Object compiled = compile(o);
+//            dumpCompiledCode(compiled);
+        evaluateCodeVector(compiled);
     }
     RESTORE_REGISTERS();
 }
 
-void VM::load(const ucs4string& file)
+void VM::loadFileWithGuard(const ucs4string& file)
 {
     TRY {
         ucs4string moshLibPath(UC(MOSH_LIB_PATH));
         moshLibPath += UC("/") + file;
         if (fileExistsP(file)) {
-            loadFile(file);
+            loadFileUnsafe(file);
         } else if (fileExistsP(moshLibPath)) {
-            loadFile(moshLibPath);
+            loadFileUnsafe(moshLibPath);
         } else {
             callAssertionViolationImmidiaImmediately(this,
                                                      "load",
                                                      "cannot find file in load path",
                                                      L1(Object::makeString(file)));
         }
-        copyJmpBuf(returnPoint_, org);
     CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);
@@ -201,17 +197,10 @@ void VM::load(const ucs4string& file)
     }
 }
 
-Object VM::evaluate(Object codeVector)
+Object VM::evaluateCodeVector(Object codeVector)
 {
-    Object ret = Object::Nil;
-    TRY {
-        Vector* const v = codeVector.toVector();
-        ret = evaluate(v->data(), v->length());
-    CATCH
-        defaultExceptionHandler(errorObj_);
-        exit(-1);
-    }
-    return ret;
+    Vector* const v = codeVector.toVector();
+    return evaluate(v->data(), v->length());;
 }
 
 #include "cprocedures.cpp"
@@ -331,11 +320,6 @@ Object VM::callClosure3(Object closure, Object arg1, Object arg2, Object arg3)
     const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
     RESTORE_REGISTERS();
     return ret;
-}
-
-void VM::setOutputPort(Object port)
-{
-    outputPort_ = port;
 }
 
 Object VM::compileWithoutHalt(Object sexp)
@@ -461,15 +445,13 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
     applyCode[6] = procSymbol;
 
     SAVE_REGISTERS();
-    const Object ret = evaluate(Object::makeVector(sizeof(applyCode) / sizeof(Object), applyCode));
+    const Object ret = evaluateCodeVector(Object::makeVector(sizeof(applyCode) / sizeof(Object), applyCode));
     RESTORE_REGISTERS();
     return ret;
 }
 
 Object VM::apply(Object proc, Object args)
 {
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     LOG1("<~a>", proc);
     const int procLength = Pair::length(proc);
     const int length  = procLength + 7;
     Object* code = Object::makeObjectArray(length);
@@ -507,9 +489,6 @@ Object VM::compile(Object code)
     const Object compiled = callClosureByName(proc, code);
     return compiled;
 }
-
-
-
 
 Object VM::getStackTrace()
 {
@@ -650,15 +629,16 @@ void VM::activateR6RSMode(bool isDebugExpand)
 {
 #   include "psyntax.h"
     isR6RSMode_ = true;
-    setTopLevelGlobalValue(Symbol::intern(UC("debug-expand")), Object::makeBool(isDebugExpand));
+    setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
     const Object libPsyntax = FASL_GET(psyntax_image);
-    evaluate(libPsyntax);
-}
+    TRY {
+    evaluateCodeVector(libPsyntax);
+    CATCH
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
+    }
 
-
-void VM::setTopLevelGlobalValue(Object id, Object val)
-{
-    nameSpace_.toEqHashTable()->set(id, val);
 }
 
 Object VM::getTopLevelGlobalValueOrFalse(Object id)
@@ -671,28 +651,29 @@ Object VM::getTopLevelGlobalValueOrFalse(Object id)
     }
 }
 
-Object VM::getOutputPort()
+Object VM::currentOutputPort() const
 {
-    return outputPort_;
+    return currentOutputPort_;
 }
 
-Object VM::getErrorPort() {
-    return errorPort_;
+Object VM::currentErrorPort() const
+{
+    return currentErrorPort_;
 }
 
-void VM::setInputPort(Object port )
+Object VM::currentInputPort() const
 {
-    inputPort_ = port;
+    return currentInputPort_;
 }
 
-Object VM::standardInputPort() const
+void VM::setCurrentInputPort(Object port)
 {
-    return stdinPort_;
+    currentInputPort_ = port;
 }
 
-Object VM::currentInputPort()
+void VM::setCurrentOutputPort(Object port)
 {
-    return inputPort_;
+    currentOutputPort_ = port;
 }
 
 void VM::expandStack(int plusSize)

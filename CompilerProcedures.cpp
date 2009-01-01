@@ -41,6 +41,7 @@
 #include "EqHashTable.h"
 #include "Closure.h"
 #include "TextualOutputPort.h"
+#include "Symbol.h"
 #include "VM-inl.h"
 
 using namespace scheme;
@@ -863,9 +864,9 @@ Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
     for (int i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {
-            VM_LOG1("~a ", Instruction::toString(c.val));
+            LOG1("~a ", Instruction::toString(c.val));
         } else {
-            VM_LOG1("~a ", c);
+            LOG1("~a ", c);
         }
     }
     return Object::Undef;

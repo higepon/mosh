@@ -35,19 +35,8 @@
 #include "scheme.h"
 #include <setjmp.h>
 #include "Instruction.h"
-//#include "Pair.h"
-
-extern FILE* errOut;
 
 namespace scheme {
-
-#define LOG1(fmt, a)       errorPort_.toTextualOutputPort()->format(UC(fmt), L1(a))
-#define LOG2(fmt, a, b)    errorPort_.toTextualOutputPort()->format(UC(fmt), L2(a, b))
-#define LOG3(fmt, a, b, c)    errorPort_.toTextualOutputPort()->format(UC(fmt), L3(a, b, c))
-
-#define VM_LOG1(fmt, a)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L1(a))
-#define VM_LOG2(fmt, a, b)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L2(a, b))
-#define VM_LOG3(fmt, a, b, c)    theVM->getErrorPort().toTextualOutputPort()->format(UC(fmt), L3(a, b, c))
 
 #define L1(a) Pair::list1(a)
 #define L2(a, b) Pair::list2(a, b)
@@ -58,7 +47,6 @@ namespace scheme {
     const Object ac = ac_;                     \
     const Object dc = dc_;                     \
     const Object cl = cl_;                     \
-    const Object errorHandler = errorHandler_; \
     Object* const pc = pc_;                    \
     Object* const fp = fp_;                    \
     Object* const sp = sp_;
@@ -67,14 +55,11 @@ namespace scheme {
     ac_ = ac;                     \
     cl_ = cl;                     \
     dc_ = dc;                     \
-    errorHandler_ = errorHandler; \
     fp_ = fp;                     \
     pc_ = pc;                     \
     sp_ = sp;
 
 #define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
-
-
 
 #ifdef DEBUG_VERSION
 #define VM_ASSERT(condition) { if (!(condition)) { \
@@ -98,7 +83,6 @@ public:
 
     Object getLastError() const { return errorObj_; }
     void loadCompiler();
-    void importTopLevel();
     void dumpCompiledCode(Object code) const;
     void printStack() const;
     void copyJmpBuf(jmp_buf dst, jmp_buf src);
@@ -107,8 +91,7 @@ public:
     Object values(int num, const Object* v);
     Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
-    Object evaluate(Object codeVector);
-//    Object eval(Object o, Object env);
+    Object evaluateCodeVector(Object codeVector);
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure1(Object closure, Object o);
@@ -120,22 +103,24 @@ public:
     Object evalAfter(Object sexp);
     void applyClosure(Object closure, Object args);
     Object apply(Object proc, Object args);
-    void load(const ucs4string& file);
-    void loadFile(const ucs4string& file);
+    void loadFileWithGuard(const ucs4string& file);
+    void loadFileUnsafe(const ucs4string& file);
+
     void defaultExceptionHandler(Object error);
     void showStack(int count, const char* file, int line);
 #define SHOW_STACK(count) showStack(count, __FILE__, __LINE__)
 
     void throwException(Object exception);
-    Object getOutputPort();
-    Object getErrorPort();
+    Object currentOutputPort() const;
+    Object currentErrorPort() const;
+    Object currentInputPort() const;
     Object getStackTrace();
-    void setOutputPort(Object port);
-    void setInputPort(Object port);
-    Object standardInputPort() const;
-    Object currentInputPort();
+    void setCurrentOutputPort(Object port);
+    void setCurrentInputPort(Object port);
+
     Object idToTopLevelSymbol(Object id);
-    void setTopLevelGlobalValue(Object id, Object val);
+    void setValueSymbol(Object id, Object val);
+    void setValueString(const ucs4char* id, Object val);
     Object getTopLevelGlobalValue(Object id);
     Object getTopLevelGlobalValueOrFalse(Object id);
     bool isR6RSMode() const;
@@ -162,11 +147,9 @@ protected:
         ::exit(status);
         return status;
     }
-    void import(Object libname);
     Object fetchOperand();
     void skip(int n);
     void push(Object obj);
-    void pushWithCheck(Object obj);
     Object stackToPairArgs(Object* sp, int nArgs);
     void pairArgsToStack(Object* sp, int offset, Object args);
     void indexSet(Object* sp, int i, Object v);
@@ -183,7 +166,7 @@ protected:
     Object compileWithoutHalt(Object sexp);
     bool mayBeStackPointer(Object* obj) const;
 
-public:
+private:
     Object ac_;  // accumulator     register
     Object dc_;  // display closure register, used for refer-free
     Object cl_;  // current closure register, used for profiler.
@@ -197,12 +180,10 @@ protected:
     Object* maxStack_;
     Object nameSpace_;
     Object notFound_;
-    Object outputPort_;
-    Object errorPort_;
-    Object inputPort_;
-    Object stdinPort_;
+    Object currentOutputPort_;
+    Object currentErrorPort_;
+    Object currentInputPort_;
     Object errorObj_;
-    Object errorHandler_;
     Object returnCode_[2];
     Object outerSourceInfo_;
 #ifdef ENABLE_PROFILER
