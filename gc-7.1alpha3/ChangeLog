@@ -1,3 +1,7 @@
+2009-01-02  higepon  <higepon@users.sourceforge.jp>
+
+        * gc-7.1alpha3/configure.ac: Comment out GC_SET_VERSION.
+
 2008-02-20  Hans Boehm <Hans.Boehm@hp.com>
 
 	* tests/test.c (run_one_test): Don't mention pthread_self().
