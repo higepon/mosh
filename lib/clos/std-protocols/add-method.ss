@@ -25,7 +25,7 @@
   
   (export generic-add-method)
   
-  (import (rnrs)
+  (import (only (rnrs) define quote if cons filter lambda not and eq?)
           (clos private allocation)
           (clos private method-cache)
           (clos std-protocols generic-invocation)

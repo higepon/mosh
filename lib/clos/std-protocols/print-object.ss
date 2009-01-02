@@ -25,7 +25,7 @@
 
   (export object-print-object)
 
-  (import (rnrs)
+  (import (only (rnrs) define)
           (clos introspection)
           (clos helpers))
 

@@ -3,7 +3,7 @@
 
 (library (srfi :8)
          (export receive)
-         (import (rnrs))
+         (import (only (rnrs) define-syntax syntax-rules ... lambda call-with-values))
 
 (define-syntax receive
   (syntax-rules ()

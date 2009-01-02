@@ -30,7 +30,9 @@
           generic-compute-methods
           generic-compute-method-more-specific?)
            
-  (import (rnrs)
+  (import (only (rnrs) define set! or eq? let case-lambda if and quote list car apply lambda
+                list-sort filter cond null? not error else cdr let-values values reverse case
+                cons map let* append begin memq)
           (clos private method-cache)
           (clos introspection)
           (clos private compat))

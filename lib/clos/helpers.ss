@@ -28,7 +28,9 @@
           print-object-with-slots
           initialize-direct-slots)
   
-  (import (rnrs)
+  (import (only (rnrs) define define-syntax syntax-rules let if and >= string-length char=? string-ref - ... lambda
+                string->symbol substring symbol->string display when write or quote null? not caar cdr
+                )
           (clos introspection)
           (clos slot-access)
           (clos private compat))

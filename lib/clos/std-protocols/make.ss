@@ -25,7 +25,7 @@
 
   (export class-make)
 
-  (import (rnrs))
+  (import (only (rnrs) define let))
   
   (define (class-make class init-args
                       allocate-instance

@@ -43,7 +43,8 @@
           <output-port>
           bootstrap-make)
 
-  (import (rnrs)
+  (import (only (rnrs) define quote begin lambda let cond or eq? else error list if null?
+                car pair? boolean? symbol? procedure? number? vector? char? string? input-port? output-port?)
           (clos private allocation)
           (clos private core-class-layout)
           (clos slot-access)

@@ -11,16 +11,12 @@
           pointer-value
 )
 
-  (import (rnrs)
-          (only (srfi :1) 
+  (import (only (rnrs) define let cond null? eq? car else cdr + or and if not pair? error quote cadr member)
+          (only (srfi :1)
                 every
                 append-map
                 last)
           (mosh parameters)
-;;           (only (srfi parameters)
-;;                 make-parameter)
-;;           (only (ikarus) 
-;;                 pointer-value)
           )
 
   ;; enough

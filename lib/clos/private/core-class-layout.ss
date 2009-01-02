@@ -26,7 +26,7 @@
   (export core-class-slot-names
           core-class-slot-count)
 
-  (import (rnrs))
+  (import (only (rnrs) define quote length))
 
   (define core-class-slot-names
     '( 

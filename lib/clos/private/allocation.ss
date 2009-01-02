@@ -34,7 +34,9 @@
           set-entity-print-name!
           set-instance-printer!)
   
-  (import (rnrs))
+  (import (only (rnrs) define-record-type define lambda opaque sealed fields mutable case-lambda apply if
+                make-eq-hashtable make-vector let* hashtable-set! values and procedure? hashtable-ref vector-ref
+                vector-set! quote))
   
   (define-record-type instance-record
     (opaque #t)

@@ -26,7 +26,7 @@
   (export class-allocate-instance
           entity-class-allocate-instance)
   
-  (import (rnrs)
+  (import (only (rnrs) define let* let if null? begin car cdr + quote)
           (clos private allocation)
           (clos slot-access))
   

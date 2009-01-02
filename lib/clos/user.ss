@@ -30,7 +30,11 @@
 
    )
 
-  (import (rnrs)
+  ;; mosh. We need minimum import for serialize library
+  (import (only (rnrs) define-syntax syntax-rules syntax-case define ...
+                lambda call-with-values datum->syntax quote cons values
+                reverse list unsyntax unsyntax-splicing if null? apply
+                error car  cdr  not syntax let with-syntax quasisyntax)
           (clos core))
 
   (define-syntax define-class

@@ -27,7 +27,7 @@
           slot-set!
           register-class-of-classes!)
   
-  (import (rnrs)
+  (import (only (rnrs) define set! let if eq? cadr caddr assq quote)
           (clos private allocation)
           (clos private core-class-layout)
           (clos private compat))

@@ -35,7 +35,7 @@
           method-qualifier
           method-procedure)
   
-  (import (rnrs)
+  (import (only (rnrs) define set! if quote)
           (clos private allocation)
           (clos slot-access))
 

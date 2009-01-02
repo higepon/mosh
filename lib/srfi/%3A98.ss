@@ -3,6 +3,5 @@
 
 (library (srfi :98)
          (export get-environment-variable get-environment-variables)
-         (import (rnrs)
-                 (system))
+         (import (system))
 )

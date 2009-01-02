@@ -4,7 +4,8 @@
   (export invalidate-method-caches!
           make-cached-dispatch)
 
-  (import (rnrs)
+  (import (only (rnrs) define list set! let lambda if not eq? begin letrec null? let* cdr or
+                hashtable-ref hashtable-set! car make-eq-hashtable)
           (clos introspection)
           (clos bootstrap standard-classes))
 

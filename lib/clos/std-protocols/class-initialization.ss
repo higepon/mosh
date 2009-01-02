@@ -27,7 +27,7 @@
           class-compute-slots
           class-compute-getter-and-setter)
   
-  (import (rnrs)
+  (import (only (rnrs) define let if null? reverse let* cons append cdr filter lambda eq? car begin set! quote)
           (clos introspection)
           (clos private top-sort)
           (clos private compat))

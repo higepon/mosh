@@ -27,7 +27,8 @@
           generic-initialize
           method-initialize)
   
-  (import (rnrs)
+  (import (only (rnrs) define quote map lambda if list? list let* reverse
+                cons car let set! + error)
           (clos private allocation)
           (clos private compat)
           (clos slot-access))

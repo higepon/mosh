@@ -36,7 +36,7 @@
           compute-apply-methods
           print-object)
 
-  (import (rnrs)
+  (import (only (rnrs) define quote list lambda car cdr begin let cond eq? else error)
           (clos bootstrap standard-classes)
           (clos private allocation)
           (clos introspection)

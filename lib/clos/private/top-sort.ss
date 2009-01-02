@@ -36,7 +36,8 @@
           build-transitive-closure
           build-constraints)
 
-  (import (rnrs)
+  (import (only (rnrs) define lambda let if null? error quote filter not eq? append list
+                cdr car or cadr memq reverse cons)
           (clos private compat))
   
   (define top-sort
