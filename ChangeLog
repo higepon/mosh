@@ -1,5 +1,7 @@
 2009-01-02  higepon  <higepon@users.sourceforge.jp>
 
+        * Makefile.am : Added R6RS pre-compilation support!.
+
         * FaslTest.cpp (TEST_F): Added write/read support of EqvHashTable.
 
         * Fasl.h (scheme): Added write/read support of Record.
