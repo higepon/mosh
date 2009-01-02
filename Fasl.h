@@ -35,6 +35,7 @@
 #include "scheme.h"
 #include "Vector.h"
 #include "ByteVector.h"
+
 namespace scheme {
 
 class EqHashTable;
@@ -65,6 +66,9 @@ public:
         TAG_ASCII_STRING,
         TAG_ASCII_SYMBOL,
         TAG_MEDIUM_FIXNUM,
+        TAG_RTD,
+        TAG_RECORD,
+        TAG_EQ_HASH_TABLE,
         forbidden_comma
     };
 };
@@ -72,7 +76,7 @@ public:
 class FaslReader EXTEND_GC
 {
 public:
-    FaslReader(BinaryInputPort* inputPort);
+    FaslReader(VM* theVM, BinaryInputPort* inputPort);
     Object get();
 
 private:
@@ -200,6 +204,43 @@ private:
         case Fasl::TAG_SYMBOL:
         case Fasl::TAG_STRING:
             break;
+        case Fasl::TAG_RTD:
+        {
+            const Object name = getDatum();
+            MOSH_ASSERT(name.isSymbol());
+            ucs4string nameString = name.toSymbol()->c_str();
+            nameString += UC("-rtd$");
+            const Object rtd = theVM_->getTopLevelGlobalValueOrFalse(Symbol::intern(nameString.strdup()));
+            MOSH_ASSERT(!rtd.isFalse());
+            return rtd;
+        }
+        case Fasl::TAG_RECORD:
+        {
+            Object rtd = getDatum();
+            MOSH_ASSERT(rtd.isRecordTypeDescriptor());
+            Object length = getDatum();
+            MOSH_ASSERT(length.isFixnum());
+            const int len = length.toFixnum();
+            Object* fields = Object::makeObjectArray(len);
+            for (int i = 0; i < len; i++) {
+                fields[i] = getDatum();
+            }
+            return Object::makeRecord(rtd, fields, len);
+        }
+        case Fasl::TAG_EQ_HASH_TABLE:
+        {
+            Object length = getDatum();
+            MOSH_ASSERT(length.isFixnum());
+            const int len = length.toFixnum();
+            const Object ret = Object::makeEqHashTable();
+            EqHashTable* const ht = ret.toEqHashTable();
+            for (int i = 0; i < len; i++) {
+                const Object key = getDatum();
+                const Object value = getDatum();
+                ht->set(key, value);
+            }
+            return ret;
+        }
         default:
             MOSH_ASSERT(false);
         }
@@ -209,6 +250,7 @@ private:
 
     Object* symbolsAndStringsArray_;
     BinaryInputPort* inputPort_;
+    VM* theVM_;
 };
 
 class FaslWriter EXTEND_GC

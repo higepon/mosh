@@ -44,11 +44,15 @@
 #include "ProcedureMacro.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "Record.h"
+#include "RecordTypeDescriptor.h"
+#include "EqHashTable.h"
 #include "Fasl.h"
+
 
 using namespace scheme;
 
-FaslReader::FaslReader(BinaryInputPort* inputPort) :inputPort_(inputPort)
+FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM)
 {
 }
 
@@ -64,7 +68,13 @@ loop:
     if (obj.isNil()) {
         return;
     }
-    if (obj.isSymbol() || obj.isString()) {
+    if (obj.isRecordTypeDescriptor()) {
+        RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
+        const Object name = rtd->name();
+        MOSH_ASSERT(name.isSymbol());
+        collectSymbolsAndStrings(name);
+        return;
+    } else if (obj.isSymbol() || obj.isString()) {
         if (symbolsAndStringsTable_->containsP(obj)) {
             return;
         } else {
@@ -73,6 +83,18 @@ loop:
         return;
     }
 
+    if (obj.isEqHashTable()) {
+        EqHashTable* const ht = obj.toEqHashTable();
+        Vector* const keys = ht->keys().toVector();
+        const int length = keys->length();
+        for (int i = 0; i < length; i++) {
+            const Object key = keys->ref(i);
+            MOSH_ASSERT(key.isSymbol());
+            collectSymbolsAndStrings(key);
+            collectSymbolsAndStrings(ht->ref(key, Object::False));
+        }
+        return;
+    }
     if (obj.isPair()) {
         collectSymbolsAndStrings(obj.car());
         obj = obj.cdr();
@@ -86,6 +108,16 @@ loop:
         }
         return;
     }
+    if (obj.isRecord()) {
+        Record* const record = obj.toRecord();
+        collectSymbolsAndStrings(record->rtd());
+        const int length = record->fieldsLength();
+        for (int i = 0; i < length; i++) {
+            collectSymbolsAndStrings(record->fieldAt(i));
+        }
+        return;
+    }
+
     if (obj.isChar()                ||
         obj.isByteVector()          ||
         obj.isRegexp()              ||
@@ -96,6 +128,7 @@ loop:
         obj.isFixnum()) {
         return;
     }
+    LOG1("obj=~a\n", obj);
     throwIOError("not supported serialization");
 }
 
@@ -233,6 +266,37 @@ void FaslWriter::putDatum(Object obj)
     }
     if (obj.isFalse()) {
         emitU8(Fasl::TAG_F);
+        return;
+    }
+    if (obj.isEqHashTable()) {
+        emitU8(Fasl::TAG_EQ_HASH_TABLE);
+        EqHashTable* const ht = obj.toEqHashTable();
+        Vector* const keys = ht->keys().toVector();
+        const int length = keys->length();
+        putDatum(Object::makeFixnum(length));
+        for (int i = 0; i < length; i++) {
+            putDatum(keys->ref(i));
+            putDatum(ht->ref(keys->ref(i), Object::False));
+        }
+        return;
+    }
+
+    if (obj.isRecord()) {
+        emitU8(Fasl::TAG_RECORD);
+        Record* const record = obj.toRecord();
+        putDatum(record->rtd());
+        const int length = record->fieldsLength();
+        putDatum(Object::makeFixnum(length));
+        for (int i = 0; i < length; i++) {
+            putDatum(record->fieldAt(i));
+        }
+        return;
+    }
+    if (obj.isRecordTypeDescriptor()) {
+        RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
+        MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported
+        emitU8(Fasl::TAG_RTD);
+        putDatum(rtd->name());
         return;
     }
     if (obj.isSymbol() || obj.isString()) {

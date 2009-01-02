@@ -63,6 +63,7 @@
 #include "FixnumProcedures.h"
 #include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "Symbol.h"
 #include "Fasl.h"
 
 #define TRY     jmp_buf org;                     \
@@ -286,7 +287,15 @@ Object VM::callClosure2(Object closure, Object arg1, Object arg2)
     applyCode[6] = arg2;
     applyCode[9] = closure;
     SAVE_REGISTERS();
-    const Object ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+    Object ret;
+    TRY {
+    ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
+    CATCH
+        // call default error handler
+        defaultExceptionHandler(errorObj_);
+        exit(-1);
+    }
+
     RESTORE_REGISTERS();
     return ret;
 }

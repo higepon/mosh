@@ -1,3 +1,10 @@
-(import (rnrs))
+(import (rnrs)
+        (srfi :26))
 
-1/0
+(display (map(cut * 2 <>) '(1  3)))
+
+
+;; (import (rnrs)
+;;         (clos user)
+;;         (srfi :26)
+;;         (mosh string))

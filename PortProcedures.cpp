@@ -48,8 +48,10 @@
 #include "UTF8Codec.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
-#include "Fasl.h"
 #include "Symbol.h"
+#include "EqHashTable.h"
+#include "Fasl.h"
+
 
 using namespace scheme;
 
@@ -107,7 +109,7 @@ Object scheme::faslReadEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("fasl-read");
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, inputPort);
-    FaslReader reader(inputPort);
+    FaslReader reader(theVM, inputPort);
     return reader.get();
 }
 

@@ -1,6 +1,6 @@
 (library (srfi :26)
          (export cut cute)
-         (import (rnrs))
+         (import (only (rnrs) define define-syntax syntax-rules lambda ... begin))
 
 ; REFERENCE IMPLEMENTATION FOR SRFI-26 "CUT"
 ; ==========================================

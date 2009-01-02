@@ -59,7 +59,7 @@ namespace scheme {
     pc_ = pc;                     \
     sp_ = sp;
 
-#define FASL_GET(image) FaslReader(new ByteArrayBinaryInputPort(image, sizeof(image))).get()
+#define FASL_GET(image) FaslReader(this, new ByteArrayBinaryInputPort(image, sizeof(image))).get()
 
 #ifdef DEBUG_VERSION
 #define VM_ASSERT(condition) { if (!(condition)) { \

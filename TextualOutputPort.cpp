@@ -194,6 +194,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<unbound variable>"));
     } else if (o.isEof()) {
         putString(UC("#<eof>"));
+    } else if (o.isCallable()) {
+        putString(UC("callable"));
     } else if (o.isFixnum()) {
         static char buf[32];
         snprintf(buf, 32, "%ld", o.toFixnum());
@@ -457,6 +459,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         static char buf[32];
         snprintf(buf, 32, "%ld", o.toFixnum());
         putString(buf);
+    } else if (o.isCallable()) {
+        putString(UC("callable"));
     } else if (o.isFlonum()) {
         Flonum* const flonum = o.toFlonum();
         static char buf[256];

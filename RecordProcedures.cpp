@@ -118,9 +118,11 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
     // psyntax requires &xxx-rtd global defined.
     if (name == Symbol::intern(UC("&condition"))) {
         theVM->setValueString(UC("&condition-rtd"), rtd);
-    }
-    if (isSubTypeOfCondition(theVM, rtd)) {
+    } else if (isSubTypeOfCondition(theVM, rtd)) {
         setValueWithPostfix(theVM, name, UC("-rtd"), rtd);
+    } else {
+        // for Fasl
+        setValueWithPostfix(theVM, name, UC("-rtd$"), rtd);
     }
     return rtd;
 }
