@@ -47,11 +47,12 @@ public:
     ucs4string toString();
     int open();
     int close();
+    bool isClosed() const;
 
 private:
     VM* theVM_;
     const Object readProc_;
-
+    bool isClosed_;
 };
 
 }; // namespace scheme

@@ -38,7 +38,7 @@ namespace scheme {
 
 class ByteVector;
 
-class BinaryInputPort EXTEND_GC
+class BinaryInputPort : public gc_cleanup // for closing port on destructors
 {
 public:
     virtual ~BinaryInputPort() {};
@@ -47,6 +47,7 @@ public:
     virtual ucs4string toString() = 0;
     virtual int open() = 0;
     virtual int close() = 0;
+    virtual bool isClosed() const = 0;
 };
 
 }; // namespace scheme

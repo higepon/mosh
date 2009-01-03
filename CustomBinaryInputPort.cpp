@@ -40,7 +40,7 @@
 
 using namespace scheme;
 
-CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc)
+CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc), isClosed_(false)
 {
 }
 
@@ -61,9 +61,14 @@ int CustomBinaryInputPort::open()
 int CustomBinaryInputPort::close()
 {
     // todo if close! proc exists
+    isClosed_ = true;
     return 0;
 }
 
+bool CustomBinaryInputPort::isClosed() const
+{
+    return isClosed_;
+}
 
 int CustomBinaryInputPort::getU8()
 {

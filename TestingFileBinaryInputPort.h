@@ -1,5 +1,5 @@
 /*
- * FileBinaryInputPort.h - <file binary input port>
+ * TestingFileBinaryInputPort.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,37 +26,41 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: FileBinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: TestingFileBinaryOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FILE_BINARY_INPUT_PORT__
-#define __SCHEME_FILE_BINARY_INPUT_PORT__
+#ifndef __SCHEME_TESTING_FILEBINARY_INPUTPORT__
+#define __SCHEME_TESTING_FILEBINARY_INPUTPORT__
 
-#include "BinaryInputPort.h"
+#include "scheme.h"
 
 namespace scheme {
 
-class FileBinaryInputPort : public BinaryInputPort
+// use global variable for test
+// Because we can't refer the instance. (GC needs it).
+extern bool portIsClosed;
+
+class TestingFileBinaryInputPort : public FileBinaryInputPort
 {
 public:
-    FileBinaryInputPort(FILE* stream);
-    FileBinaryInputPort(ucs4string file);
-    FileBinaryInputPort(const char* file);
-    virtual ~FileBinaryInputPort();
+    TestingFileBinaryInputPort(ucs4string file) : FileBinaryInputPort(file)
+    {
+        portIsClosed = false;
+    }
 
-    ucs4string toString();
-    int getU8();
-    ByteVector* getByteVector(int size);
-    int open();
-    int close();
-    virtual bool isClosed() const;
+    virtual ~TestingFileBinaryInputPort()
+    {
+        close();
+    }
 
-private:
-    FILE* stream_;
-    ucs4string fileName_;
-    bool isClosed_;
+    int close()
+    {
+        portIsClosed = true;
+        return 0;
+    }
+
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_FILE_BINARY_INPUT_PORT__
+#endif // __SCHEME_TESTING_FILEBINARY_INPUTPORT__

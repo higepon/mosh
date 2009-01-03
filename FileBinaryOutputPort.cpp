@@ -37,7 +37,7 @@
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(FILE* stream) : stream_(stream)
+FileBinaryOutputPort::FileBinaryOutputPort(FILE* stream) : stream_(stream), isClosed_(false)
 {
 }
 
@@ -48,6 +48,12 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
 
 FileBinaryOutputPort::~FileBinaryOutputPort()
 {
+    close();
+}
+
+bool FileBinaryOutputPort::isClosed() const
+{
+    return isClosed_;
 }
 
 int FileBinaryOutputPort::putU8(uint8_t v)
@@ -82,6 +88,9 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
-    fclose(stream_);
+    if (!isClosed()) {
+        isClosed_ = true;
+        fclose(stream_);
+    }
     return MOSH_SUCCESS;
 }

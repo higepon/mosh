@@ -49,9 +49,11 @@ public:
     int putByteVector(ByteVector bv, int start, int count);
     int open();
     int close();
+    bool isClosed() const;
 
-private:
+protected:
     FILE* stream_;
+    bool isClosed_;
 };
 
 }; // namespace scheme

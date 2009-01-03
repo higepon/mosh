@@ -41,7 +41,10 @@ class Codec;
 class Transcoder;
 class BinaryOutputPort;
 
-class TextualOutputPort EXTEND_GC
+// N.B. We need to close the port automatically when it is not referenced.
+// So use gc_cleanup.
+// TextualOutputPort never close binary output port, it will be closed on BinaryOutputPort's destructors.
+class TextualOutputPort : public gc_cleanup
 {
 public:
     TextualOutputPort();

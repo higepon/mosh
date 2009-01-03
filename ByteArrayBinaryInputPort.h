@@ -53,11 +53,13 @@ public:
     ByteVector* getByteVector(int size);
     int open();
     int close();
+    bool isClosed() const;
 
 private:
     const uint8_t* const buf_;
     const int size_;
     int index_;
+    bool isClosed_;
 };
 
 }; // namespace scheme

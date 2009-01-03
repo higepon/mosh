@@ -43,7 +43,7 @@ public:
     virtual ~StringTextualOutputPort();
     void putChar(ucs4char c);
     ucs4string getString();
-    int close();
+    virtual int close();
 
 private:
     ucs4string buffer_;

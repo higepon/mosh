@@ -40,11 +40,11 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>"))
+FileBinaryInputPort::FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")), isClosed_(false)
 {
 }
 
-FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file)
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false)
 {
     stream_ = fopen(file.ascii_c_str(), "rb");
 }
@@ -71,6 +71,7 @@ ucs4string FileBinaryInputPort::toString()
 
 FileBinaryInputPort::~FileBinaryInputPort()
 {
+    close();
 }
 
 int FileBinaryInputPort::getU8()
@@ -94,8 +95,16 @@ ByteVector* FileBinaryInputPort::getByteVector(int size)
     return new ByteVector(ret, buf);
 }
 
+bool FileBinaryInputPort::isClosed() const
+{
+    return isClosed_;
+}
+
 int FileBinaryInputPort::close()
 {
-    fclose(stream_);
+    if (!isClosed()) {
+        isClosed_ = true;
+        fclose(stream_);
+    }
     return MOSH_SUCCESS;
 }

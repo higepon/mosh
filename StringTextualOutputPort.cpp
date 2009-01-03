@@ -40,6 +40,7 @@ StringTextualOutputPort::StringTextualOutputPort() : index_(0)
 
 StringTextualOutputPort::~StringTextualOutputPort()
 {
+    close();
 }
 
 void StringTextualOutputPort::putChar(ucs4char c)

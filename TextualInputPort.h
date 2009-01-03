@@ -42,7 +42,7 @@ class BinaryInputPort;
 class Scanner;
 class NumberScanner;
 
-class TextualInputPort EXTEND_GC
+class TextualInputPort : public gc_cleanup  // for closing port automatically
 {
 public:
     TextualInputPort(BinaryInputPort* port, Transcoder* coder);

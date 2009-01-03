@@ -1,5 +1,9 @@
 2009-01-03  higepon  <higepon@users.sourceforge.jp>
 
+        * When a port is not referenced by any objects, it will be closed automatically.
+
+        * TestingFileBinaryOutputPort.h : Test for closing port automatically.
+
         * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (guard-macro): Allowed definition in guard body.
 
 2009-01-02  higepon  <higepon@users.sourceforge.jp>

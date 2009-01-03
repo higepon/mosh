@@ -57,7 +57,8 @@ TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : c
 {
 }
 
-TextualInputPort::TextualInputPort() : error_(Object::Nil),
+TextualInputPort::TextualInputPort() : port_(NULL),
+                                       error_(Object::Nil),
                                        scanner_(new Scanner),
                                        numberScanner_(new NumberScanner())
 {
@@ -70,6 +71,7 @@ TextualInputPort::TextualInputPort(const TextualInputPort& o)
 
 TextualInputPort::~TextualInputPort()
 {
+    close();
 }
 
 int TextualInputPort::getU8()
@@ -203,7 +205,11 @@ Object TextualInputPort::getDatum(bool& errorOccured)
 
 int TextualInputPort::close()
 {
-    return port_->close();
+    if (NULL != port_) {
+        return port_->close();
+    } else {
+        return 0;
+    }
 }
 
 Transcoder* TextualInputPort::transcoder() const

@@ -167,6 +167,7 @@ int main(int argc, char *argv[])
     const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
     const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
     const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
+
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
     theVM->loadCompiler();
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optind, argv));

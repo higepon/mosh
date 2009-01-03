@@ -6049,7 +6049,9 @@
   (dynamic-wind
       (lambda () #t)
       (lambda () (proc p))
-      (lambda () (close-port p))))
+      (lambda () ;; (close-port p)
+        #t
+              )))
 
 (define (file-newer? a b)
   (> (stat-mtime a) (stat-mtime b)))

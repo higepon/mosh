@@ -38,7 +38,7 @@ namespace scheme {
 
 class ByteVector;
 
-class BinaryOutputPort EXTEND_GC
+class BinaryOutputPort : public gc_cleanup
 {
 public:
     virtual ~BinaryOutputPort() {};
@@ -48,6 +48,7 @@ public:
     virtual int putByteVector(ByteVector bv, int start, int count) = 0;
     virtual int open() = 0;
     virtual int close() = 0;
+    virtual bool isClosed() const = 0;
 };
 
 }; // namespace scheme

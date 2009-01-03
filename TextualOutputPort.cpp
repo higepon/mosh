@@ -55,7 +55,7 @@
 
 using namespace scheme;
 
-TextualOutputPort::TextualOutputPort()
+TextualOutputPort::TextualOutputPort() : port_(NULL) // be sure port is null, when derived.
 {
 }
 
@@ -70,11 +70,17 @@ TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) 
 
 TextualOutputPort::~TextualOutputPort()
 {
+    // close automatically by gc().
+    close();
 }
 
 int TextualOutputPort::close()
 {
-    return port_->close();
+    if (port_ != NULL) {
+        return port_->close();
+    } else {
+        return 0;
+    }
 }
 
 void TextualOutputPort::putString(String* str)

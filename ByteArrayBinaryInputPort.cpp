@@ -38,13 +38,13 @@
 
 using namespace scheme;
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0)
+ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0), isClosed_(false)
 {
 }
 
 ByteArrayBinaryInputPort::~ByteArrayBinaryInputPort()
 {
-
+    close();
 }
 
 ucs4string ByteArrayBinaryInputPort::toString() {
@@ -62,7 +62,13 @@ int ByteArrayBinaryInputPort::open()
     return MOSH_SUCCESS;
 }
 
+bool ByteArrayBinaryInputPort::isClosed() const
+{
+    return isClosed_;
+}
+
 int ByteArrayBinaryInputPort::close()
 {
+    isClosed_ = true;
     return MOSH_SUCCESS;
 }
