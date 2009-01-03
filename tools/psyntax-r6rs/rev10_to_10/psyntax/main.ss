@@ -33,6 +33,7 @@
     (rnrs control)
     (rnrs io simple)
     (rnrs io ports)
+    (rnrs files)
     (rnrs records procedural)
     ;(rename (rnrs programs) (command-line get-command-line))
     (only (rnrs programs) exit)
@@ -48,6 +49,7 @@
     (psyntax config)
     (mosh string)
     (mosh file)
+    (system) ; get-environment-variable
 )
 
   (define (for-each-with-index proc lst)
@@ -210,9 +212,24 @@
 
                                         ;  (library-path (get-library-paths))
                                         ;  (library-path '("." "/tmp/"))
-  (library-path (list (string-append (current-directory) "/lib")
+
+
+  (cond [(get-environment-variable "MOSH_LOADPATH")
+         => (lambda (paths)
+              (for-each
+               (lambda (path)
+                 (cond ((file-exists? path)
+                        (library-path (append (library-path) (list path))))
+                       (else
+                        (format (current-error-port) "** ERROR in environment variable 'MOSH_LOADPATH': directory ~s not exist~%" path))))
+                     (reverse (string-split paths #\:))))])
+
+
+  (library-path (append (library-path) (list (string-append (current-directory) "/lib")
                       (string-append (standard-library-path) "/lib")
-                      ))
+                      )))
+
+  (display (library-path) (current-error-port))
 
 
   (let ([args (command-line)]
