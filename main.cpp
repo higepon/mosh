@@ -32,6 +32,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <getopt.h>
 
 #include "Object.h"
 #include "Object-inl.h"
@@ -84,17 +85,17 @@ void showUsage()
     fprintf(stderr,
             "Usage: mosh [-vhpV] [file]\n"
             "options:\n"
-//            "  -l       Loads <file> before executing the script file or entering repl.\n"
-            "  -5       Run with safe mode (Almost R5RS).\n"
-            "  -V       Prints version and exits.\n"
-            "  -v       Prints version and exits.\n"
-            "  -h       Prints this help.\n"
+            "  -5                Run with safe mode (Almost R5RS).\n"
+            "  -V                Prints version and exits.\n"
+            "  -v                Prints version and exits.\n"
+            "  -h                Prints this help.\n"
 #ifdef ENABLE_PROFILER
-            "  -p       Executes with profiler.\n"
+            "  -p                Executes with profiler.\n"
 #endif
-            "  -t       Executes test.\n\n"
+            "  -t                Executes test.\n"
+            "  --loadpath=<path> Add libary loadpath.\n\n"
             " MOSH_LOADPATH\n"
-            "  You can add library-path by using environment variable MOSH_LOADPATH, \':\' separated paths.\n"
+            "  You can add library loadpath by using environment variable MOSH_LOADPATH, \':\' separated paths.\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
             "  higepon@users.sourceforge.jp\n"
@@ -112,20 +113,30 @@ void signal_handler(int signo)
 int main(int argc, char *argv[])
 {
     int opt;
+    int optionIndex = 0;
     bool isTestOption    = false;
     bool isCompileString = false;
     bool isProfiler      = false;
     bool isR6RSBatchMode = true;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     char* initFile = NULL;
+    char* loadPath = NULL;
 
-    while ((opt = getopt(argc, argv, "htvpVcl:5rze")) != -1) {
+   static struct option long_options[] = {
+       {"loadpath", optional_argument, 0, 'L'},
+       {0, 0, 0, 0}
+   };
+
+    while ((opt = getopt_long(argc, argv, "htvpVcl:5rze", long_options, &optionIndex)) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
             break;
         case 'l':
             initFile = optarg;
+            break;
+        case 'L':
+            loadPath = optarg;
             break;
         case 'b':
             isR6RSBatchMode = true;
@@ -190,6 +201,11 @@ int main(int argc, char *argv[])
             theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
         }
     } else if (isR6RSBatchMode) {
+        if (NULL == loadPath) {
+            theVM->setValueString(UC("%loadpath"), Object::False);
+        } else {
+            theVM->setValueString(UC("%loadpath"), Object::makeString(loadPath));
+        }
         theVM->activateR6RSMode(isDebugExpand);
     } else if (optind < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));

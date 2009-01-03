@@ -1,12 +1,8 @@
-(import (hoge))
-;; ;; (let1 p (open-output-file "/tmp/tmp.hige")
-  
-;; ;;     p)
+(import (rnrs))
 
-;; (display 'done)
-;; (define a 3)
-;; (let ([x a]
-;;        [y a]
-;;        [z a])
-;;   (+ x y z)
-;;     )
+(define cont #f)
+(call/cc
+ (lambda (k)
+   (set! cont k)))
+(display "hige")
+(cont 0)

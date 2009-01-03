@@ -224,6 +224,16 @@
                         (format (current-error-port) "** ERROR in environment variable 'MOSH_LOADPATH': directory ~s not exist~%" path))))
                      (reverse (string-split paths #\:))))])
 
+  (cond [(symbol-value '%loadpath) ;; command line option --loadpath
+         => (lambda (paths)
+              (for-each
+               (lambda (path)
+                 (cond ((file-exists? path)
+                        (library-path (append (library-path) (list path))))
+                       (else
+                        (format (current-error-port) "** ERROR in command line option  '--loadpath': directory ~s not exist~%" path))))
+                     (reverse (string-split paths #\:))))])
+
 
   (library-path (append (library-path) (list (string-append (current-directory) "/lib")
                       (string-append (standard-library-path) "/lib")
