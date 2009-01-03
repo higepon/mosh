@@ -229,9 +229,6 @@
                       (string-append (standard-library-path) "/lib")
                       )))
 
-  (display (library-path) (current-error-port))
-
-
   (let ([args (command-line)]
         [port (current-error-port)])
     (define (ref rtd i x)
