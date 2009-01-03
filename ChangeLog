@@ -1,5 +1,7 @@
 2009-01-03  higepon  <higepon@users.sourceforge.jp>
 
+        * Added .mosh.sls prefix file loading.
+
         * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss : Use MOSH_LOADPATH for adding load-library-path.
 
         * When a port is not referenced by any objects, it will be closed automatically.

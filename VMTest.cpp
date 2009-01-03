@@ -145,3 +145,10 @@ TEST_F(VMErrorPortTest, StackTrace3) {
                  "\n"
                  , sysGetOutputStringEx(theVM_, 1, &errorPort_).toString()->data().ascii_c_str());
 }
+
+TEST_F(VMErrorPortTest, CompatPrefix) {
+    setenv("MOSH_LOADPATH", "./test", 1);
+    theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/use-foo.scm"));
+    theVM_->activateR6RSMode(false);
+    EXPECT_STREQ("compat-mosh", sysGetOutputStringEx(theVM_, 1, &errorPort_).toString()->data().ascii_c_str());
+}

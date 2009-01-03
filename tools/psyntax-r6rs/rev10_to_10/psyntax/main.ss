@@ -229,6 +229,13 @@
                       (string-append (standard-library-path) "/lib")
                       )))
 
+  (let ([prefix
+           (lambda (ext ls)
+             (append (map (lambda (x) (string-append ext x)) ls) ls))])
+      (library-extensions
+          (prefix ".mosh"
+            (library-extensions))))
+
   (let ([args (command-line)]
         [port (current-error-port)])
     (define (ref rtd i x)
