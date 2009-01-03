@@ -64,6 +64,7 @@ protected:
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
+        theVM_->setValueString(UC("%loadpath"), Object::False);
     }
 };
 
@@ -78,6 +79,7 @@ protected:
         errorPort_ = Object::makeStringOutputPort();
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
+        theVM_->setValueString(UC("%loadpath"), Object::False);
     }
     Object errorPort_;
 };
