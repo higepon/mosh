@@ -102,9 +102,11 @@ bool FileBinaryInputPort::isClosed() const
 
 int FileBinaryInputPort::close()
 {
-    if (!isClosed()) {
+    if (!isClosed() && stream_ != NULL) {
         isClosed_ = true;
-        fclose(stream_);
+        if (fileno(stream_) != fileno(stdin)) {
+            fclose(stream_);
+        }
     }
     return MOSH_SUCCESS;
 }
