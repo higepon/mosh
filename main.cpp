@@ -93,8 +93,8 @@ void showUsage()
             "  -p       Executes with profiler.\n"
 #endif
             "  -t       Executes test.\n\n"
-            " MOSH_LIB_PATH\n"
-            "  You can add library-path by using environment variable MOSH_LIB_PATH, \':\' separated paths.\n"
+            " MOSH_LOADPATH\n"
+            "  You can add library-path by using environment variable MOSH_LOADPATH, \':\' separated paths.\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
             "  higepon@users.sourceforge.jp\n"
