@@ -50,6 +50,7 @@
 #include "FileBinaryInputPort.h"
 #include "Symbol.h"
 #include "EqHashTable.h"
+#include "Bignum.h"
 #include "Fasl.h"
 
 

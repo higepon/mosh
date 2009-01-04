@@ -42,6 +42,7 @@
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
+#include "Bignum.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Record.h"
@@ -125,7 +126,9 @@ loop:
         obj.isCompilerInstruction() ||
         obj.isInstruction()         ||
         obj.isFlonum()              ||
-        obj.isFixnum()) {
+        obj.isFixnum()              ||
+        obj.isBignum())
+        {
         return;
     }
     LOG1("obj=~a\n", obj);
@@ -319,6 +322,11 @@ void FaslWriter::putDatum(Object obj)
         n.dvalue = obj.toFlonum()->value();
         emitU8(Fasl::TAG_FLONUM);
         emitU64(n.uvalue);
+        return;
+    }
+    if (obj.isBignum()) {
+        emitU8(Fasl::TAG_BIGNUM);
+        emitU64(obj.toBignum()->toS64());
         return;
     }
     if (obj.isFixnum()) {

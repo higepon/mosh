@@ -69,6 +69,7 @@ public:
         TAG_RTD,
         TAG_RECORD,
         TAG_EQ_HASH_TABLE,
+        TAG_BIGNUM,
         forbidden_comma
     };
 };
@@ -158,6 +159,10 @@ private:
                 list = Object::cons(datum, list);
             }
             return list;
+        }
+        case Fasl::TAG_BIGNUM: {
+            int64_t value = fetchU64();
+            return Bignum::makeIntegerFromS64(value);
         }
         case Fasl::TAG_DLIST: {
             const int count = fetchU32();

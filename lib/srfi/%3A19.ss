@@ -83,11 +83,19 @@
           time-utc->time-tai!
           date->string
           string->date)
-  (import (rnrs)
+  (import (only (rnrs) define define-record-type fields mutable define-syntax syntax-rules
+                open-string-input-port lambda div if member error get-line eof-object
+                quote vector expt / let not eq? begin let* >= set! cons cadddr cdddr
+                cdr car read string-append open-input-file * - values letrec < cond caar
+                cdar else null? <= abs + or and = ... call-with-values > negative? char=?
+                string-ref integer? substring string-length number->string truncate assoc
+                floor do make-string vector-ref vector-length string=? display list newline
+                integer->char let-values open-string-output-port eof-object? char-numeric?
+                read-char peek-char char-alphabetic? write-char cadr caddr)
           (only (system) microseconds local-tz-offset)
           (only (mosh string) format)
           (only (rnrs mutable-strings) string-set!)
-          (rnrs r5rs))
+          (only (rnrs r5rs) inexact->exact remainder quotient exact->inexact modulo))
 
   (define open-input-string open-string-input-port)
 
@@ -276,7 +284,7 @@
   (define tm:nano (expt 10 9))
   (define tm:sid  86400)    ; seconds in a day
   (define tm:sihd 43200)    ; seconds in a half day
-  (define tm:tai-epoch-in-jd 4881175/2) ; julian day number for 'the epoch'
+  (define tm:tai-epoch-in-jd (/ 4881175 2)) ; julian day number for 'the epoch'
 
 
 ;;; A Very simple Error system for the time procedures
@@ -851,7 +859,7 @@
         (make-time
          time-utc
          nanosecond
-         (+ (* (- jdays 1/2) 24 60 60)
+         (+ (* (- jdays (/ 1 2)) 24 60 60)
             (* hour 60 60)
             (* minute 60)
             second
@@ -961,7 +969,7 @@
            (year (date-year date))
            (offset (date-zone-offset date)) )
       (+ (tm:encode-julian-day-number day month year)
-         (- 1/2)
+         (- (/ 1 2))
          (+ (/ (+ (* hour 60 60)
                   (* minute 60)
                   second
@@ -972,7 +980,7 @@
 
   (define (date->modified-julian-day date)
     (- (date->julian-day date)
-       4800001/2))
+       (/ 4800001 2)))
 
   (define (time-utc->julian-day time)
     (if (not (eq? (time-type time) time-utc))
@@ -983,7 +991,7 @@
 
   (define (time-utc->modified-julian-day time)
     (- (time-utc->julian-day time)
-       4800001/2))
+       (/ 4800001 2)))
 
   (define (time-tai->julian-day time)
     (if (not (eq? (time-type time) time-tai))
@@ -996,7 +1004,7 @@
 
   (define (time-tai->modified-julian-day time)
     (- (time-tai->julian-day time)
-       4800001/2))
+       (/ 4800001 2)))
 
 ;; this is the same as time-tai->julian-day
   (define (time-monotonic->julian-day time)
@@ -1010,7 +1018,7 @@
 
   (define (time-monotonic->modified-julian-day time)
     (- (time-monotonic->julian-day time)
-       4800001/2))
+       (/ 4800001 2)))
 
   (define (julian-day->time-utc jdn)
     (let ( (nanosecs (* tm:nano tm:sid (- jdn tm:tai-epoch-in-jd))) )
@@ -1030,16 +1038,16 @@
 
   (define (modified-julian-day->date jdn . tz-offset)
     (let ((offset (:optional tz-offset (tm:local-tz-offset))))
-      (julian-day->date (+ jdn 4800001/2) offset)))
+      (julian-day->date (+ jdn (/ 4800001 2)) offset)))
 
   (define (modified-julian-day->time-utc jdn)
-    (julian-day->time-utc (+ jdn 4800001/2)))
+    (julian-day->time-utc (+ jdn (/ 4800001 2))))
 
   (define (modified-julian-day->time-tai jdn)
-    (julian-day->time-tai (+ jdn 4800001/2)))
+    (julian-day->time-tai (+ jdn (/ 4800001 2))))
 
   (define (modified-julian-day->time-monotonic jdn)
-    (julian-day->time-monotonic (+ jdn 4800001/2)))
+    (julian-day->time-monotonic (+ jdn (/ 4800001 2))))
 
   (define (current-julian-day)
     (time-utc->julian-day (current-time time-utc)))

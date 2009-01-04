@@ -4,6 +4,7 @@
         (srfi :26)
         (srfi :98)
         (srfi :8)
+        (srfi :19)
         (clos user)
         (mosh string)
         )

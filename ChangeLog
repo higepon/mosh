@@ -1,5 +1,7 @@
 2009-01-04  higepon  <higepon@users.sourceforge.jp>
 
+        * test/srfi-19-test-suite.scm: Added test for srfi-19.
+
         * lib/srfi/%3A19.ss (srfi): Added srfi-19 support.
 
         * UtilityProcedures.cpp (microsecondEx): Added microsecond procedure.
