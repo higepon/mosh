@@ -987,6 +987,8 @@
     (get-environment-variable sys)
     (get-environment-variables sys)
     (readdir sys)
+    (microseconds sys)
+    (local-tz-offset sys)
     (hashtable-for-each mosh-hashtable mosh)
     (regexp-replace-all mosh-regexp mosh)
     (rxmatch mosh-regexp mosh)

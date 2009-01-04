@@ -34,6 +34,8 @@
 
 namespace scheme {
 
+    Object microsecondsEx(VM* theVM, int argc, const Object* argv);
+    Object localTzOffsetEx(VM* theVM, int argc, const Object* argv);
     Object unGenSym(Object symbol);
     Object unGenSyms(Object symbols);
     Object dummy(Object obj);

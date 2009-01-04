@@ -1,3 +1,10 @@
+2009-01-04  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/srfi/%3A19.ss (srfi): Added srfi-19 support.
+
+        * UtilityProcedures.cpp (microsecondEx): Added microsecond procedure.
+                              (localTzOffsetEx): Added local-tz-offset.
+
 2009-01-03  higepon  <higepon@users.sourceforge.jp>
 
         * main.cpp (main): Added --loadpath option.

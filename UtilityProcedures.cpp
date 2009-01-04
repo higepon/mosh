@@ -55,6 +55,7 @@
 #include "Closure.h"
 #include "Fixnum.h"
 #include "Arithmetic.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -703,4 +704,28 @@ Object scheme::symbolValueEx(VM* theVM, int argc, const Object* argv)
     argumentCheckSymbol(0, id);
     fflush(stderr);
     return theVM->getTopLevelGlobalValue(id);
+}
+
+// for srfi-19
+Object scheme::microsecondsEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("microseconds");
+    checkArgumentLength(0);
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    const uint64_t usec = static_cast<uint64_t>(tv.tv_sec) * 1000000 + static_cast<uint64_t>(tv.tv_usec);
+    return Bignum::makeIntegerFromU64(usec);
+}
+// for srfi-19
+Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("local-tz-offset");
+    checkArgumentLength(0);
+    struct tm localTime;
+    struct tm utcTime;
+    time_t current = time(NULL);
+    localtime_r(&current, &localTime);
+    time_t l = mktime(&localTime);
+    gmtime_r(&l,  &utcTime);
+    return Bignum::makeIntegerFromU64(static_cast<uint64_t>(mktime(&localTime) - mktime(&utcTime)));
 }

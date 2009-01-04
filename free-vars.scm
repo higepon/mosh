@@ -442,4 +442,6 @@
     fast-equal?
     native-eol-style
     buffer-mode?
+    microseconds
+    local-tz-offset
     )
