@@ -25,12 +25,49 @@
 ;;              (predicate (construct-name (syntax name) (syntax name) "?"))
 ;;              ((access ...)
 
-(define-syntax hoge
+;; (define-syntax hoge
+;;   (lambda (x)
+;;     (syntax-case x ()
+;;       [(_ name)
+;;        (let ([x (datum->syntax #'name (string->symbol (string-append (symbol->string 'name) "$")))])
+;;         (define x 3)
+;;         #f)])))
+;; (hoge hige)
+;; (display hige$)
+
+(define-syntax $define
   (lambda (x)
     (syntax-case x ()
-      [(_ name)
-       (let ([x (datum->syntax #'name (string->symbol (string-append (symbol->string 'name) "$")))])
-        (define x 3)
-        #f)])))
-(hoge hige)
-(display hige$)
+      ((k var val)
+       (with-syntax ([var (datum->syntax #'k (string->symbol
+                           (format "$~a" (syntax->datum #'var))))])
+         #'(define var val))))))
+
+($define a 3)
+(display $a)
+
+
+
+(define-syntax my-define
+  (lambda(x)
+    (syntax-case x ()
+      ((k v s)
+       (with-syntax ((nv
+                      (datum->syntax (syntax k)
+                                     (string->symbol
+                                      (string-append
+                                       "$"
+                                       (symbol->string (syntax->datum (syntax v))))))))
+                    (syntax (define nv s)))))))
+
+
+
+(define-syntax my-define
+  (lambda(x)
+    (syntax-case x ()
+      ((k v s)
+       (with-syntax ((nv (string->symbol
+                                      (string-append
+                                       "$"
+                                       (symbol->string (syntax->datum (syntax v)))))))
+                    (syntax (define nv s)))))))

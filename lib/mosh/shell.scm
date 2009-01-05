@@ -13,12 +13,36 @@
           ret
           (loop (cdr strings) (format "~a~a~a" ret (if (string=? "" ret) "" d) (car strings))))))
   (define-syntax def-command
-    (syntax-rules ()
+    (lambda (y)
+    (syntax-case y ()
       [(_ command)
-       (define-syntax command
-         (syntax-rules ()
+       #'(define-syntax command
+         (lambda (x)
+         (syntax-case x ()
            [(_ args (... ...))
-            (call-process (string-join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))]))]))
+            (call-process (string-join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))]
+           [_ (call-process (symbol->string (syntax->datum #'command)))]
+           )))])))
+  (define-syntax $def-command
+    (lambda (y)
+      (syntax-case y ()
+        [(k command)
+         (with-syntax ([$command (datum->syntax #'k (string->symbol
+                                                     (format "$~a" (syntax->datum #'command))))])
+         #'(define-syntax $command
+             (lambda (x)
+               (syntax-case x ()
+                 [(_ args (... ...))
+                  #'(string-split (call-process (string-join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space)) #\newline)]
+                 [_ #'(string-split (call-process (symbol->string (syntax->datum #'command))) #\newline)]
+                 )))]))))
+  ;; (define-syntax $define
+;;     (lambda (x)
+;;       (syntax-case x ()
+;;         ((k var val)
+;;          (with-syntax ([var (datum->syntax #'k (string->symbol
+;;                                                 (format "$~a" (syntax->datum #'var))))])
+;;                       #'(define var val))))))
 ))
 
 (for-each eval-r6rs shell-utilities)
@@ -28,10 +52,13 @@
 (define-syntax define-command
   (syntax-rules ()
     [(_ x)
-    (guard (c (#t (eval-r6rs '(def-command x))))
-           (eval-r6rs '(define-command x)))]))
+    (guard (c (#t (eval-r6rs '(def-command x))
+                  (eval-r6rs '($def-command x))
+                  ))
+           (eval-r6rs '(def-command x)))]))
 
 (define-command ls)
+(define-command cd)
 (define-command pwd)
 
 (define (conditioon-printer e port)
