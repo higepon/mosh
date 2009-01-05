@@ -201,7 +201,7 @@ int Scanner::scan()
   SPECIAL_INITIAL        = [!\$%&\*\/\:\<=\>\?\^\_~];
   LETTER                 = [a-z] | [A-Z];
   CONSTITUENT            = LETTER | [\X0080-\XFFFF]; /* todo: replace \X0080-\XFFFF to Unicode category */
-  INITIAL                = CONSTITUENT | SPECIAL_INITIAL | INLINE_HEX_ESCAPE;
+  INITIAL                = CONSTITUENT | SPECIAL_INITIAL | INLINE_HEX_ESCAPE | "-"; /* we allow '-' identifier for shell mode */
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;

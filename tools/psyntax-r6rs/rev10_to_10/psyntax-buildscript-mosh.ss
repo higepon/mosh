@@ -420,10 +420,10 @@
     (vector-set!                            interaction     r ba se)
     (vector?                                 interaction    r ba se)
     (zero?                                   interaction    r ba se)
-    [...                                         ne r ba sc se]
-    [=>                                          ne r ba ex se]
-    [_                                           ne r ba sc]
-    [else                                        ne r ba ex se]
+    [...                                         interaction ne r ba sc se]
+    [=>                                          interaction ne r ba ex se]
+    [_                                           interaction ne r ba sc]
+    [else                                        interaction ne r ba ex se]
     ;;;
     (bitwise-arithmetic-shift                   interaction r bw)
     (bitwise-arithmetic-shift-left              interaction r bw)
@@ -989,12 +989,13 @@
     (readdir sys)
     (microseconds sys)
     (local-tz-offset sys)
+    (call-process interaction sys)
     (hashtable-for-each mosh-hashtable mosh)
     (regexp-replace-all mosh-regexp mosh)
     (rxmatch mosh-regexp mosh)
     (string->regexp mosh-string mosh mosh)
     (bytevector-for-each mosh-bytevector mosh)
-    (string-split mosh-string mosh)
+    (string-split interaction mosh-string mosh)
     (call-with-string-io mosh-string mosh)
     (call-with-string-input-port mosh-string mosh)
     (digit->integer mosh-number mosh)
@@ -1005,8 +1006,9 @@
     (stat-mtime mosh-file mosh)
     (file-newer? mosh-file mosh)
     (standard-library-path mosh)
-    (format mosh-string mosh)
+    (format interaction mosh-string mosh)
     (print mosh-string mosh)
+;    (string-join interaction mosh-string)
     (append-map srfi-1)
     (alist-cons srfi-1 mosh)
     (assoc-ref mosh-list mosh)

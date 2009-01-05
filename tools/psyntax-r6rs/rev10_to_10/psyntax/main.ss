@@ -129,7 +129,7 @@
                          [else
                           (loop (cdr chars) p0 p1)]))))
                (define (eval-string-print text)
-                 (when (not (= 0 (string-length text)))
+                 (unless (or (string=? "\n" text) (= 0 (string-length text)))
                    (write (eval-top-level (call-with-port (open-string-input-port text) read)))))
                (if (eof-object? line)
                    (begin
