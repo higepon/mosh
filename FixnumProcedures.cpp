@@ -260,12 +260,18 @@ Object scheme::fxdivEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-
     if (0 == fx2) {
         callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeFixnum(Fixnum::fxdiv(fx1, fx2));
+
+    const int32_t ret = Fixnum::fxdiv(fx1, fx2);
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
+    } else {
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::fxmodEx(VM* theVM, int argc, const Object* argv)
@@ -275,12 +281,18 @@ Object scheme::fxmodEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-
     if (0 == fx2) {
         callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeFixnum(Fixnum::fxmod(fx1, fx2));
+
+    const int32_t ret = Fixnum::fxmod(fx1, fx2);
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
+    } else {
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::fxdiv0Ex(VM* theVM, int argc, const Object* argv)
@@ -290,12 +302,18 @@ Object scheme::fxdiv0Ex(VM* theVM, int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-
     if (0 == fx2) {
         callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeFixnum(Fixnum::fxdiv0(fx1, fx2));
+
+    const int32_t ret = Fixnum::fxdiv0(fx1, fx2);
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
+    } else {
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::fxmod0Ex(VM* theVM, int argc, const Object* argv)
@@ -305,12 +323,18 @@ Object scheme::fxmod0Ex(VM* theVM, int argc, const Object* argv)
 
     argumentAsFixnum(0, fx1);
     argumentAsFixnum(1, fx2);
-
     if (0 == fx2) {
         callAssertionViolationAfter(theVM, procedureName, "Dividing by zero");
         return Object::Undef;
     }
-    return Object::makeFixnum(Fixnum::fxmod0(fx1, fx2));
+
+    const int32_t ret = Fixnum::fxmod0(fx1, fx2);
+    if (Fixnum::canFit(ret)) {
+        return Object::makeFixnum(ret);
+    } else {
+        callImplementationRestrictionAfter(theVM, procedureName, UC("result is not a fixnum"), Pair::list2(argv[0], argv[1]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::fxnotEx(VM* theVM, int argc, const Object* argv)

@@ -154,10 +154,10 @@ NumberReader.tab.cpp: NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
 Scanner.cpp : scanner.re
-	/usr/local/bin/re2c -u $< > $@ # -d is debug option
+	re2c -u $< > $@ # -d is debug option
 
 NumberScanner.cpp : NumberScanner.re
-	/usr/local/bin/re2c -cu $< > $@ # -d is debug option
+	re2c -cu $< > $@ # -d is debug option
 
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
 ##      for "\" yen mark, -g causes infinite loop

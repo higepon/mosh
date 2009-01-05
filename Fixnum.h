@@ -99,7 +99,7 @@ public:
     {
         const int d = fxdiv(x, y);
         const int m = fxmod(x, y);
-        if (m < (::abs(y) / 2)) {
+        if (m <= (::abs(y) / 2)) {
             return d;
         } else if (y > 0) {
             return d + 1;
