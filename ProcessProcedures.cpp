@@ -32,6 +32,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"

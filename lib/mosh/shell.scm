@@ -2,7 +2,6 @@
         (mosh)
         (system))
 
-
 (define eval-r6rs (symbol-value 'eval-r6rs))
 
 (define shell-utilities '(

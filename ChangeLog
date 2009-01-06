@@ -4,6 +4,8 @@
 
 2009-01-06  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/pp.scm (mosh): Added (mosh pp) library.
+
         * Added %exec. Not *Tested* yet.
 
         * ProcessProcedures.cpp (internalForkEx): Added %fork procedure.
