@@ -40,6 +40,7 @@ class FileBinaryInputPort : public BinaryInputPort
 {
 public:
     FileBinaryInputPort(FILE* stream);
+    FileBinaryInputPort(int fd);
     FileBinaryInputPort(ucs4string file);
     FileBinaryInputPort(const char* file);
     virtual ~FileBinaryInputPort();
@@ -52,7 +53,8 @@ public:
     virtual bool isClosed() const;
 
 private:
-    FILE* stream_;
+    int fd_;
+    FILE* stream_; // todo: delete
     ucs4string fileName_;
     bool isClosed_;
 };

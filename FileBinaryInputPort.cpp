@@ -29,6 +29,10 @@
  *  $Id: FileBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "HeapObject.h"
@@ -42,22 +46,27 @@ using namespace scheme;
 
 FileBinaryInputPort::FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")), isClosed_(false)
 {
+    fd_ = stream->_fileno; // temp
+}
+
+FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false)
+{
 }
 
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false)
 {
-    stream_ = fopen(file.ascii_c_str(), "rb");
+    fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 }
 
 FileBinaryInputPort::FileBinaryInputPort(const char* file)
 {
     fileName_ = Object::makeString(file).toString()->data();
-    stream_ = fopen(file, "rb");
+    fd_ = ::open(file, O_RDONLY);
 }
 
 int FileBinaryInputPort::open()
 {
-    if (NULL == stream_) {
+    if (-1 == fd_) {
         return MOSH_FAILURE;
     } else {
         return MOSH_SUCCESS;
@@ -77,7 +86,7 @@ FileBinaryInputPort::~FileBinaryInputPort()
 int FileBinaryInputPort::getU8()
 {
     uint8_t c;
-    if (0 == fread(&c, 1, 1, stream_)) {
+    if (0 == read(fd_, &c, 1)) {
         return EOF;
     } else {
         return c;
@@ -91,7 +100,7 @@ ByteVector* FileBinaryInputPort::getByteVector(int size)
 #else
     uint8_t* buf = new uint8_t[size];
 #endif
-    int ret = fread(buf, 1, size, stream_);
+    int ret = read(fd_, buf, size);
     return new ByteVector(ret, buf);
 }
 
@@ -102,10 +111,10 @@ bool FileBinaryInputPort::isClosed() const
 
 int FileBinaryInputPort::close()
 {
-    if (!isClosed() && stream_ != NULL) {
+    if (!isClosed() && fd_ != -1) {
         isClosed_ = true;
-        if (fileno(stream_) != fileno(stdin)) {
-            fclose(stream_);
+        if (fd_ != fileno(stdin)) {
+            ::close(fd_);
         }
     }
     return MOSH_SUCCESS;
