@@ -1525,15 +1525,18 @@
         [args ($asm.args iform)])
     (case insn
       [(NUMBER_ADD)
-       (when (and (tag? (first args) $CONST) (tag? (second args) $CONST))
+       (when (and (tag? (first args) $CONST) (number? ($const.val (first args)))
+                  (tag? (second args) $CONST) (number? ($const.val (second args))))
          (vector-set! iform 0 $CONST)
          ($const.set-val! iform (+ ($const.val (first args)) ($const.val (second args)))))]
       [(NUMBER_MUL)
-       (when (and (tag? (first args) $CONST) (tag? (second args) $CONST))
+       (when (and (tag? (first args) $CONST) (number? ($const.val (first args)))
+                  (tag? (second args) $CONST) (number? ($const.val (second args))))
          (vector-set! iform 0 $CONST)
          ($const.set-val! iform (* ($const.val (first args)) ($const.val (second args)))))]
       [(NUMBER_SUB)
-       (when (and (tag? (first args) $CONST) (tag? (second args) $CONST))
+       (when (and (tag? (first args) $CONST) (number? ($const.val (first args)))
+                  (tag? (second args) $CONST) (number? ($const.val (second args))))
          (vector-set! iform 0 $CONST)
          ($const.set-val! iform (- ($const.val (first args)) ($const.val (second args)))))]
       [else #f])))
