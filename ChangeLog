@@ -1,3 +1,12 @@
+2009-01-06  higepon  <higepon@users.sourceforge.jp>
+
+        * Added %exec. Not *Tested* yet.
+
+        * ProcessProcedures.cpp (internalForkEx): Added %fork procedure.
+                             (internalWaitpidEx): Added %waitpid procedure.
+
+        * ProcessProcedures.cpp.h: Added.
+
 2008-12-18  kokosabu  <kokosabu@gmail.com>
 
         * Fixed: fxdiv, fxmod, fxdiv0, fxmod0.

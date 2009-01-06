@@ -6,12 +6,12 @@
 (define eval-r6rs (symbol-value 'eval-r6rs))
 
 (define shell-utilities '(
-  (define (string-join strings d)
+  (define (join strings d)
     (let loop ([strings strings]
                [ret ""])
       (if (null? strings)
           ret
-          (loop (cdr strings) (format "~a~a~a" ret (if (string=? "" ret) "" d) (car strings))))))
+          (loop (cdr strings) (format "~a~a~s" ret (if (string=? "" ret) "" d) (car strings))))))
   (define-syntax def-command
     (lambda (y)
     (syntax-case y ()
@@ -20,7 +20,7 @@
          (lambda (x)
          (syntax-case x ()
            [(_ args (... ...))
-            (call-process (string-join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))]
+            (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))]
            [_ (call-process (symbol->string (syntax->datum #'command)))]
            )))])))
   (define-syntax $def-command
@@ -33,7 +33,7 @@
              (lambda (x)
                (syntax-case x ()
                  [(_ args (... ...))
-                  #'(string-split (call-process (string-join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space)) #\newline)]
+                  #'(string-split (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space)) #\newline)]
                  [_ #'(string-split (call-process (symbol->string (syntax->datum #'command))) #\newline)]
                  )))]))))
   ;; (define-syntax $define

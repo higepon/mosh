@@ -1,5 +1,5 @@
 /*
- * ucs4string.h - ucs4string
+ * ProcessProcedures.h - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,50 +26,20 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: ProcessProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_UCING_H__
-#define __SCHEME_UCING_H__
+#ifndef __SCHEME_PROCESS_PROCEDURES__
+#define __SCHEME_PROCESS_PROCEDURES__
 
-#include <string>
-#include <vector>
+#include "scheme.h"
 
 namespace scheme {
 
-#ifdef USE_BOEHM_GC
-typedef std::basic_string< ucs4char, std::char_traits<ucs4char>, gc_allocator<ucs4char> > ucs4string_base;
-template <class T1>
-class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
-
-#else
-typedef std::basic_string< ucs4char, std::char_traits<ucs4char>, std::allocator<ucs4char> > ucs4string_base;
-template <class T1>
-class gc_vector : public std::vector<T1, std::allocator<T1> > {};
-#endif
-
-
-class ucs4string : public ucs4string_base
-{
-public:
-    ucs4string() {}
-    ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
-    ucs4string(const ucs4char* s) : ucs4string_base(s) {}
-    ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
-    ucs4string(ucs4string::iterator a, ucs4string::iterator b) : ucs4string_base(a, b) {}
-    char* ascii_c_str() const;
-    ucs4string substr(int x, int size) const;
-    void split(ucs4char ch, gc_vector<ucs4string>& v);
-    ucs4char* strdup();
-    bool is_ascii() const;
-    static ucs4string from_c_str(const char* s, int size);
-    // see R6RS 11.11 Characters
-    static bool isValidScalar(int ch)
-    {
-        return (0 <= ch && ch <= 0xD7FF) || (0xE000 <= ch && ch <= 0x10FFFF);
-    }
-};
+Object internalForkEx(VM* theVM, int argc, const Object* argv);
+Object internalWaitpidEx(VM* theVM, int argc, const Object* argv);
+Object internalExecEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_UCING_H__
+#endif // __SCHEME_PROCESS_PROCEDURES__

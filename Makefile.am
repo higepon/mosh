@@ -63,6 +63,7 @@ Compnum.h                     Compnum.cpp                         \
 Fixnum.h                      Fixnum.cpp                          \
 Closure.h                     Closure.cpp                         \
 UtilityProcedures.h           UtilityProcedures.cpp               \
+ProcessProcedures.h           ProcessProcedures.cpp               \
 Reader.h                      Reader.cpp                          \
 NumberReader.h                NumberReader.cpp                    \
 scheme.h                      scheme.cpp                          \

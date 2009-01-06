@@ -444,4 +444,7 @@
     buffer-mode?
     microseconds
     local-tz-offset
+    %fork
+    %exec
+    %waitpid
     )

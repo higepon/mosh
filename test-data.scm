@@ -2,7 +2,6 @@
 (#t #t)
 (mosh-only ("all-tests.scm" 2) (source-info '(3)))
 ;; don't edit end
-
 ;; test start
 (#t (and))
 (3 3)
@@ -3338,3 +3337,13 @@
 
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
 (todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")
+
+;; This shuld be placed on end of test
+(#t (let1 pid (%fork)
+      (cond [(zero? pid) ;; child
+             (exit 255)]
+            [else ;; parent
+             (receive (p status) (%waitpid pid)
+               (and (= status 255) (= p pid))]))))
+
+

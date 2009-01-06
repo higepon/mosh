@@ -676,7 +676,7 @@ Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
     return Object::makeString(ret);
 }
 
-Object scheme::internalgetClosureNameEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalGetClosureNameEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%get-closure-name");
     checkArgumentLength(1);

@@ -49,6 +49,7 @@
               (rec (read-char in))]
              [(#\%)
               (display "internal" out)
+              (display (char-upcase (read-char in)) out)
               (rec (read-char in))]
              [(#\$)
               (rec (read-char in))]

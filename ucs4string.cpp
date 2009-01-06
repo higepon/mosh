@@ -67,7 +67,7 @@ ucs4string ucs4string::substr(int x, int size) const
     return ucs4string(ucs4string_base::substr(x, size).data());
 }
 
-const char* ucs4string::ascii_c_str() const
+char* ucs4string::ascii_c_str() const
 {
     const int sz = size();
 #ifdef USE_BOEHM_GC
