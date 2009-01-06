@@ -7,7 +7,7 @@
 
         * ProcessProcedures.cpp.h: Added.
 
-2008-12-18  kokosabu  <kokosabu@gmail.com>
+2009-01-05  kokosabu  <kokosabu@gmail.com>
 
         * Fixed: fxdiv, fxmod, fxdiv0, fxmod0.
 
