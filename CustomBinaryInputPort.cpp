@@ -88,3 +88,8 @@ ByteVector* CustomBinaryInputPort::getByteVector(int size)
     fprintf(stderr, "get-byte-vector-n not implemented");
     exit(-1);
 }
+
+int CustomBinaryInputPort::fileno() const
+{
+    return BinaryInputPort::INVALID_FILENO;
+}

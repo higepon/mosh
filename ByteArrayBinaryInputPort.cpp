@@ -72,3 +72,8 @@ int ByteArrayBinaryInputPort::close()
     isClosed_ = true;
     return MOSH_SUCCESS;
 }
+
+int ByteArrayBinaryInputPort::fileno() const
+{
+    return BinaryInputPort::INVALID_FILENO;
+}

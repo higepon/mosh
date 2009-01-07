@@ -41,6 +41,11 @@ class ByteVector;
 class BinaryInputPort : public gc_cleanup // for closing port on destructors
 {
 public:
+    enum
+    {
+        INVALID_FILENO = -1,
+    };
+
     virtual ~BinaryInputPort() {};
     virtual int getU8() = 0;
     virtual ByteVector* getByteVector(int size) = 0;
@@ -48,6 +53,7 @@ public:
     virtual int open() = 0;
     virtual int close() = 0;
     virtual bool isClosed() const = 0;
+    virtual int fileno() const = 0;
 };
 
 }; // namespace scheme

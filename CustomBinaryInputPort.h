@@ -48,6 +48,7 @@ public:
     int open();
     int close();
     bool isClosed() const;
+    int fileno() const;
 
 private:
     VM* theVM_;

@@ -1,5 +1,11 @@
 2009-01-07  higepon  <higepon@users.sourceforge.jp>
 
+        * %exec takes more arguments.
+
+        * BinaryInputPort.h : Added fileno() function.
+
+        * BinaryOutputPort.h : Added fileno() function.
+
         * FileBinaryInputPort.cpp (FileBinaryInputPort): fileno_ -> filno()
 
 2009-01-06  higepon  <higepon@users.sourceforge.jp>

@@ -50,6 +50,7 @@ public:
     int open();
     int close();
     bool isClosed() const;
+    int fileno() const;
 
 protected:
     FILE* stream_;

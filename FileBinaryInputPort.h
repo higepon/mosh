@@ -50,6 +50,7 @@ public:
     ByteVector* getByteVector(int size);
     int open();
     int close();
+    int fileno() const;
     virtual bool isClosed() const;
 
 private:

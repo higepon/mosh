@@ -90,10 +90,19 @@ int FileBinaryOutputPort::close()
 {
     if (!isClosed() && NULL != stream_) {
         isClosed_ = true;
-        const int num = fileno(stream_);
-        if (num != fileno(stdout) && num != fileno(stderr)) {
+        const int num = ::fileno(stream_);
+        if (num != ::fileno(stdout) && num != ::fileno(stderr)) {
             fclose(stream_);
         }
     }
     return MOSH_SUCCESS;
+}
+
+int FileBinaryOutputPort::fileno() const
+{
+    if (NULL == stream_) {
+        return INVALID_FILENO;
+    } else {
+        return ::fileno(stream_);
+    }
 }

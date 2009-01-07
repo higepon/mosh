@@ -41,6 +41,10 @@ class ByteVector;
 class BinaryOutputPort : public gc_cleanup
 {
 public:
+    enum
+    {
+        INVALID_FILENO = -1,
+    };
     virtual ~BinaryOutputPort() {};
     virtual int putU8(uint8_t v) = 0;
     virtual int putU8(uint8_t* v, int size) = 0;
@@ -49,6 +53,7 @@ public:
     virtual int open() = 0;
     virtual int close() = 0;
     virtual bool isClosed() const = 0;
+    virtual int fileno() const = 0;
 };
 
 }; // namespace scheme

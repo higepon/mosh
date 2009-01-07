@@ -54,6 +54,7 @@ public:
     int open();
     int close();
     bool isClosed() const;
+    int fileno() const;
 
 private:
     const uint8_t* const buf_;

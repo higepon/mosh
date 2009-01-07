@@ -43,6 +43,8 @@
 #include "VM.h"
 #include "ProcessProcedures.h"
 #include "ProcedureMacro.h"
+#include "BinaryOutputPort.h"
+#include "BinaryInputPort.h"
 #include "Bignum.h"
 
 using namespace scheme;
@@ -84,12 +86,55 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     return theVM->values(2, values);
 }
 
+
+// (%exec command args in out err)
+// in : binary input port or #f. #f means "Use stdin".
 Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%exec");
-    checkArgumentLength(2);
+    checkArgumentLength(5);
     argumentAsString(0, command);
     argumentCheckList(1, args);
+
+    const Object in  = argv[2];
+    const Object out = argv[3];
+    const Object err = argv[4];
+
+    if (in.isBinaryInputPort()) {
+        const int newfd = in.toBinaryInputPort()->fileno();
+        if (newfd == BinaryInputPort::INVALID_FILENO) {
+            callAssertionViolationAfter(theVM, procedureName, "input port is not file port", L1(in));
+            return Object::Undef;
+        }
+        if (-1 == dup2(newfd, fileno(stdin))) {
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(strerror(errno)));
+            return Object::Undef;
+        }
+    }
+
+    if (out.isBinaryOutputPort()) {
+        const int newfd = out.toBinaryOutputPort()->fileno();
+        if (newfd == BinaryOutputPort::INVALID_FILENO) {
+            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
+            return Object::Undef;
+        }
+        if (-1 == dup2(newfd, fileno(stdout))) {
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(strerror(errno)));
+            return Object::Undef;
+        }
+    }
+
+    if (err.isBinaryOutputPort()) {
+        const int newfd = err.toBinaryOutputPort()->fileno();
+        if (newfd == BinaryOutputPort::INVALID_FILENO) {
+            callAssertionViolationAfter(theVM, procedureName, "error output port is not file port", L1(argv[2]));
+            return Object::Undef;
+        }
+        if (-1 == dup2(newfd, fileno(stderr))) {
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(strerror(errno)));
+            return Object::Undef;
+        }
+    }
 
     const int length = Pair::length(args);
     char** p = new(GC) char*[length + 1];
@@ -105,6 +150,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], strerror(errno)));
         return Object::Undef;
     }
+
     // this procedure doesn't return
     return Object::Undef;
 }
