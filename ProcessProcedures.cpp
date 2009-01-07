@@ -93,7 +93,7 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
         return Object::Undef;
     }
-    return theVM->values2(Bignum::makeInteger(fds[0]), Object::makeBinaryOutputPort(fds[1]));
+    return theVM->values2(Object::makeBinaryInputPort(fds[0]), Object::makeBinaryOutputPort(fds[1]));
 }
 
 // (%exec command args in out err)
@@ -108,7 +108,6 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const Object in  = argv[2];
     const Object out = argv[3];
     const Object err = argv[4];
-
     if (in.isBinaryInputPort()) {
         const int newfd = in.toBinaryInputPort()->fileno();
         if (newfd == BinaryInputPort::INVALID_FILENO) {

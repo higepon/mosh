@@ -738,10 +738,9 @@ Object VM::values(int num, const Object* v)
 
 Object VM::values2(Object obj1, Object obj2)
 {
-    values_[0] = obj1;
-    values_[1] = obj2;
+    values_[0] = obj2;
     numValues_ = 2;
-    return values_[0]; // set to ac_ later.
+    return obj1; // set to ac_ later.
 }
 
 
