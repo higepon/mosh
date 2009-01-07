@@ -86,6 +86,8 @@ namespace scheme {
     Object openFileInputPortEx(VM* theVM, int argc, const Object* argv);
     Object eofObjectPEx(VM* theVM, int argc, const Object* argv);
     Object bufferModePEx(VM* theVM, int argc, const Object* argv);
+    Object inputPortPEx(VM* theVM, int argc, const Object* argv);
+    Object binaryPortPEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

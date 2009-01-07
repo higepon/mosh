@@ -719,3 +719,17 @@ Object scheme::bufferModePEx(VM* theVM, int argc, const Object* argv)
 
     return Object::False;
 }
+
+Object scheme::inputPortPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("input-port?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isInputPort());
+}
+
+Object scheme::binaryPortPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("binary-port?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isBinaryPort());
+}

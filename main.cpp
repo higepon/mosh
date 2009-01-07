@@ -83,7 +83,7 @@ void showVersion()
 void showUsage()
 {
     fprintf(stderr,
-            "Usage: mosh [-vhpV] [file]\n"
+            "Usage: mosh <options> [file]\n"
             "options:\n"
             "  -5                Run with safe mode (Almost R5RS).\n"
             "  -V                Prints version and exits.\n"
@@ -93,9 +93,10 @@ void showUsage()
             "  -p                Executes with profiler.\n"
 #endif
             "  -t                Executes test.\n"
+            "  --help            Prints this help.\n"
             "  --loadpath=<path> Add libary loadpath.\n\n"
             " MOSH_LOADPATH\n"
-            "  You can add library loadpath by using environment variable MOSH_LOADPATH, \':\' separated paths.\n"
+            "  You can add library loadpath by using environment variable MOSH_LOADPATH, \':\' separated paths.\n\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
             "  higepon@users.sourceforge.jp\n"
@@ -124,6 +125,7 @@ int main(int argc, char *argv[])
 
    static struct option long_options[] = {
        {"loadpath", optional_argument, 0, 'L'},
+       {"help", 0, 0, 'h'},
        {0, 0, 0, 0}
    };
 

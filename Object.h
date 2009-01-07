@@ -82,6 +82,8 @@ public:
     Object(const ucs4string& str);
     Object(const char* str);
 
+    bool isInputPort() const;
+    bool isBinaryPort() const;
     bool isComplex() const;
     bool isReal() const;
     bool isRational() const;

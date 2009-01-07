@@ -6059,32 +6059,20 @@
 (define fasl-write! fasl-write)
 (define fasl-read! fasl-read)
 
-;; temporary
-(define (fxand x y)
-  (bitwise-and x y))
-
-;; ;; 後で消す
-;; (define-macro (do . sexp)
-;;   (match sexp
-;;     [(((var init step ...) ...)
-;;          (test expr ...)
-;;        command ...)
-;;      `(letrec
-;;        ((loop
-;;          (lambda (,@var)
-;;            (if ,test
-;;                (begin
-;;                  #f ; avoid empty begin
-;;                  ,@expr)
-;;                (begin
-;;                  ,@command
-;;                  (loop ,@(map (lambda (v s) `(do "step" ,v ,@s)) var step)))))))
-;;         (loop ,@init))]
-;;     [("step" x)
-;;      x]
-;;     [("step" x y)
-;;      y]
-;;     [else
-;;      (syntax-error "malformed do on mosh")]))
-
-
+(define (%spawn command args . io-list)
+  (define (parse-io-list l)
+    (cond
+     [(null? l)
+      (values #f #f #f)]
+     [else
+      (let ([l (car l)])
+      (unless (= (length l) 3)
+        (assertion-violation '%spawn "io-list list length should be 3"))
+      (unless (for-all (lambda (p) (or (binary-port? p)  (not p))) l)
+        (assertion-violation '%spawn "list of binary port or #f required"))
+      (apply values l))]))
+  (receive (in out err) (parse-io-list io-list)
+    (let1 pid (%fork)
+      (if (zero? pid)
+          (%exec command args in out err)
+          (values pid in out err)))))

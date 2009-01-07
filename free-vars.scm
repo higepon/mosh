@@ -448,4 +448,6 @@
     %exec
     %waitpid
     %pipe
+    binary-port?
+    input-port?
     )

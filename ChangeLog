@@ -1,5 +1,9 @@
 2009-01-07  higepon  <higepon@users.sourceforge.jp>
 
+        * library.scm (%spawn): Added %spawn.
+
+        * PortProcedures.cpp : Added input-port? and binary-port?.
+
         * FileBinaryOutputPort.cpp (FileBinaryOutputPort): Not to use FILE*, use fileno instead.
 
         * ProcessProcedures.cpp (internalPipeEx): Added %pipe procedure.

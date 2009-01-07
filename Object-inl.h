@@ -269,6 +269,17 @@ inline bool Object::isExactInteger() const
     return isFixnum() || isBignum();
 }
 
+inline bool Object::isInputPort() const
+{
+    return isTextualInputPort() && isBinaryInputPort();
+}
+
+inline bool Object::isBinaryPort() const
+{
+    return isBinaryInputPort() || isBinaryOutputPort();
+}
+
+
 // private
 inline uint8_t Object::tag() const
 {

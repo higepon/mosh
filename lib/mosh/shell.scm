@@ -11,6 +11,13 @@
       (if (null? strings)
           ret
           (loop (cdr strings) (format "~a~a~s" ret (if (string=? "" ret) "" d) (car strings))))))
+
+  (define (spawn command args)
+    (format #t "command=~a args=~a" command args)
+    (let-values  ([(pid cin cout cerr) (%spawn command args (list #f #f #f))])
+      (%waitpid pid)
+      #f))
+
   (define-syntax def-command
     (lambda (y)
     (syntax-case y ()
@@ -19,7 +26,9 @@
          (lambda (x)
          (syntax-case x ()
            [(_ args (... ...))
-            (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))]
+            ;; (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))
+            (spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
+            ]
            [_ (call-process (symbol->string (syntax->datum #'command)))]
            )))])))
   (define-syntax $def-command
