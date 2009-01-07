@@ -79,7 +79,7 @@ TEST_F(PortTest, BinaryInputPortAutoClose) {
     // some tough work that invoke gc().
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
     vm->loadCompiler();
@@ -97,7 +97,7 @@ TEST_F(PortTest, BinaryOutputPortAutoClose) {
     port = NULL;
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
     vm->loadCompiler();

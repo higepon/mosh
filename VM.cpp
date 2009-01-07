@@ -719,6 +719,32 @@ void VM::printStack() const
     }
 }
 
+Object VM::values(int num, const Object* v)
+{
+    if (0 == num) {
+        numValues_ = 0;
+        return Object::Undef;
+    }
+    for (int i = 1; i < num; i++) {
+        if (i >= maxNumValues_) {
+            callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(i)));
+            return Object::Undef;
+        }
+        values_[i - 1] = v[i];
+    }
+    numValues_ = num;
+    return v[0]; // set to ac_ later.
+}
+
+Object VM::values2(Object obj1, Object obj2)
+{
+    values_[0] = obj1;
+    values_[1] = obj2;
+    numValues_ = 2;
+    return values_[0]; // set to ac_ later.
+}
+
+
 // Global
 Object scheme::getCProcedureName(Object proc)
 {
@@ -729,3 +755,4 @@ Object scheme::getCProcedureName(Object proc)
     }
     return Symbol::intern(UC("<unknwon subr>"));
 }
+

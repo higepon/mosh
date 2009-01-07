@@ -1,5 +1,11 @@
 2009-01-07  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryOutputPort.cpp (FileBinaryOutputPort): Not to use FILE*, use fileno instead.
+
+        * ProcessProcedures.cpp (internalPipeEx): Added %pipe procedure.
+
+        * VM.cpp (values2): Added for shortcut.
+
         * %exec takes more arguments.
 
         * BinaryInputPort.h : Added fileno() function.

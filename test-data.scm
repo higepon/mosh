@@ -3339,9 +3339,9 @@
 (todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")
 
 ;; don't const inline (+ 1 #f).
-(#f (begin (set! G58@dummy (begin ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f) (void))) (void)))
+(#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))
 ;; This shuld be placed on end of test
-(#t (let1 pid (%fork)
+(todo #t (let1 pid (%fork)
       (cond [(zero? pid) ;; child
              (exit 255)]
             [else ;; parent

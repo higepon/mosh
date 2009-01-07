@@ -154,22 +154,6 @@ void VM::storeCallSample()
     }
 }
 
-Object VM::values(int num, const Object* v)
-{
-    if (0 == num) {
-        numValues_ = 0;
-        return Object::Undef;
-    }
-    for (int i = 1; i < num; i++) {
-        if (i >= maxNumValues_) {
-            callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(i)));
-            return Object::Undef;
-        }
-        values_[i - 1] = v[i];
-    }
-    numValues_ = num;
-    return v[0]; // set to ac_ later.
-}
 
 Object VM::getProfileResult()
 {

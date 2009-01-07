@@ -39,6 +39,7 @@ namespace scheme {
 Object internalForkEx(VM* theVM, int argc, const Object* argv);
 Object internalWaitpidEx(VM* theVM, int argc, const Object* argv);
 Object internalExecEx(VM* theVM, int argc, const Object* argv);
+Object internalPipeEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

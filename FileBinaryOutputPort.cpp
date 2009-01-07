@@ -29,6 +29,10 @@
  *  $Id: FileBinaryOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "Object.h"
 #include "Pair.h"
 #include "Pair-inl.h"
@@ -37,13 +41,13 @@
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(FILE* stream) : stream_(stream), isClosed_(false)
+FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false)
 {
 }
 
 FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
 {
-    stream_ = fopen(file.ascii_c_str(), "w");
+    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
 }
 
 FileBinaryOutputPort::~FileBinaryOutputPort()
@@ -58,12 +62,13 @@ bool FileBinaryOutputPort::isClosed() const
 
 int FileBinaryOutputPort::putU8(uint8_t v)
 {
-    return fwrite(&v, 1, 1, stream_);
+    MOSH_ASSERT(fd_ != INVALID_FILENO);
+    return write(fd_, &v, 1);
 }
 
 int FileBinaryOutputPort::putU8(uint8_t* v, int size)
 {
-    return fwrite(v, size, 1, stream_);
+    return write(fd_, v, size);
 }
 
 int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
@@ -74,12 +79,12 @@ int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
 int FileBinaryOutputPort::putByteVector(ByteVector bv, int start, int count)
 {
     uint8_t* buf = bv.data();
-    return fwrite(&buf[start], 1, count, stream_);
+    return write(fd_, &buf[start], count);
 }
 
 int FileBinaryOutputPort::open()
 {
-    if (NULL == stream_) {
+    if (-1 == fd_) {
         return MOSH_FAILURE;
     } else {
         return MOSH_SUCCESS;
@@ -88,11 +93,10 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
-    if (!isClosed() && NULL != stream_) {
+    if (!isClosed() && INVALID_FILENO != fd_) {
         isClosed_ = true;
-        const int num = ::fileno(stream_);
-        if (num != ::fileno(stdout) && num != ::fileno(stderr)) {
-            fclose(stream_);
+        if (fd_ != ::fileno(stdout) && fd_ != ::fileno(stderr)) {
+            ::close(fd_);
         }
     }
     return MOSH_SUCCESS;
@@ -100,9 +104,5 @@ int FileBinaryOutputPort::close()
 
 int FileBinaryOutputPort::fileno() const
 {
-    if (NULL == stream_) {
-        return INVALID_FILENO;
-    } else {
-        return ::fileno(stream_);
-    }
+    return fd_;
 }

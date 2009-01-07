@@ -178,8 +178,8 @@ int main(int argc, char *argv[])
     mosh_init();
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-    const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
-    const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(stderr), transcoder);
+    const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
+    const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stderr)), transcoder);
 
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
     theVM->loadCompiler();

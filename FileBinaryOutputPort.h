@@ -39,7 +39,7 @@ namespace scheme {
 class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    FileBinaryOutputPort(FILE* stream);
+    FileBinaryOutputPort(int fd);
     FileBinaryOutputPort(ucs4string file);
     virtual ~FileBinaryOutputPort();
 
@@ -53,7 +53,7 @@ public:
     int fileno() const;
 
 protected:
-    FILE* stream_;
+    int fd_;
     bool isClosed_;
 };
 

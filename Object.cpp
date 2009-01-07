@@ -111,10 +111,10 @@ Object Object::makeBinaryInputPort(FILE* in)
                                                         reinterpret_cast<word>(new FileBinaryInputPort(in)))));
 }
 
-Object Object::makeBinaryOutputPort(FILE* out)
+Object Object::makeBinaryOutputPort(int fd)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
-                                                        reinterpret_cast<word>(new FileBinaryOutputPort(out)))));
+                                                        reinterpret_cast<word>(new FileBinaryOutputPort(fd)))));
 }
 
 Object Object::makeBinaryInputPort(BinaryInputPort* port)

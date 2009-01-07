@@ -66,7 +66,7 @@ FileBinaryInputPort::FileBinaryInputPort(const char* file)
 
 int FileBinaryInputPort::open()
 {
-    if (-1 == fd_) {
+    if (INVALID_FILENO == fd_) {
         return MOSH_FAILURE;
     } else {
         return MOSH_SUCCESS;

@@ -671,7 +671,7 @@ Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(stdout);
+    static const Object port = Object::makeBinaryOutputPort(fileno(stdout));
     DeclareProcedureName("starndard-output-port");
     checkArgumentLength(0);
     return port;
@@ -679,7 +679,7 @@ Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(stderr);
+    static const Object port = Object::makeBinaryOutputPort(fileno(stderr));
     DeclareProcedureName("starndard-error-port");
     checkArgumentLength(0);
     return port;

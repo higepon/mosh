@@ -80,12 +80,21 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    static Object values[2];
-    values[0] = Bignum::makeIntegerFromU64(child);
-    values[1] = Bignum::makeInteger(WEXITSTATUS(status));
-    return theVM->values(2, values);
+    return theVM->values2(Bignum::makeIntegerFromU64(child),
+                          Bignum::makeInteger(WEXITSTATUS(status)));
 }
 
+Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%pipe");
+    checkArgumentLength(0);
+    int fds[2];
+    if (-1 == pipe(fds)) {
+        callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
+        return Object::Undef;
+    }
+    return theVM->values2(Bignum::makeInteger(fds[0]), Object::makeBinaryOutputPort(fds[1]));
+}
 
 // (%exec command args in out err)
 // in : binary input port or #f. #f means "Use stdin".

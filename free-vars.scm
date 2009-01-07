@@ -447,4 +447,5 @@
     %fork
     %exec
     %waitpid
+    %pipe
     )

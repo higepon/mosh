@@ -30,7 +30,7 @@
  */
 
 #include <gtest/gtest.h>
-
+#include <stdio.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -67,7 +67,7 @@ protected:
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
         Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(stdout), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
@@ -83,7 +83,7 @@ TEST_F(FaslTest, EqHashTable) {
 
     // Write
     const char* TMP_FILE = "/tmp/fasl-test4.dat";
-    BinaryOutputPort* const out = new FileBinaryOutputPort(fopen(TMP_FILE, "wb"));
+    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
     TRY_IO {
         writer.put(table);
@@ -130,7 +130,7 @@ TEST_F(FaslTest, RecordTypeDescriptor) {
     EXPECT_TRUE(rtd.isRecordTypeDescriptor());
     // Write
     const char* TMP_FILE = "/tmp/fasl-test0.dat";
-    BinaryOutputPort* const out = new FileBinaryOutputPort(fopen(TMP_FILE, "wb"));
+    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
     TRY_IO {
         writer.put(rtd);
@@ -188,7 +188,7 @@ TEST_F(FaslTest, Record) {
 
     // Write
     const char* TMP_FILE = "/tmp/fasl-test1.dat";
-    BinaryOutputPort* const out = new FileBinaryOutputPort(fopen(TMP_FILE, "wb"));
+    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
     TRY_IO {
         writer.put(point);
@@ -199,7 +199,7 @@ TEST_F(FaslTest, Record) {
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fopen(TMP_FILE, "rb"));
+    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(eqv(point, restored));
@@ -249,7 +249,7 @@ TEST_F(FaslTest, RecordWithPair) {
 
     // Write
     const char* TMP_FILE = "/tmp/fasl-test2.dat";
-    BinaryOutputPort* const out = new FileBinaryOutputPort(fopen(TMP_FILE, "wb"));
+    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
     TRY_IO {
         writer.put(point);

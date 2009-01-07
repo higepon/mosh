@@ -89,6 +89,7 @@ public:
     void collectProfile();
 
     Object values(int num, const Object* v);
+    Object values2(Object obj1, Object obj2);
     Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
     Object evaluate(Object* o, int codeSize);
     Object evaluateCodeVector(Object codeVector);
