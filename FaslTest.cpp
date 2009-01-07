@@ -66,7 +66,7 @@ protected:
     virtual void SetUp() {
         mosh_init();
         Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(stdin), transcoder);
+        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
@@ -94,7 +94,7 @@ TEST_F(FaslTest, EqHashTable) {
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fopen(TMP_FILE, "rb"));
+    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     ASSERT_TRUE(restored.isEqHashTable());
@@ -141,7 +141,7 @@ TEST_F(FaslTest, RecordTypeDescriptor) {
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fopen(TMP_FILE, "rb"));
+    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(rtd.eq(restored));
@@ -260,7 +260,7 @@ TEST_F(FaslTest, RecordWithPair) {
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fopen(TMP_FILE, "rb"));
+    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(eqv(point, restored));

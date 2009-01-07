@@ -48,7 +48,6 @@
 
 using namespace scheme;
 
-static Object getConditionRtd();
 bool isSubTypeOfCondition(VM* theVM, Object rtd);
 static void setValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object values);
 

@@ -39,7 +39,6 @@ namespace scheme {
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
-    FileBinaryInputPort(FILE* stream);
     FileBinaryInputPort(int fd);
     FileBinaryInputPort(ucs4string file);
     FileBinaryInputPort(const char* file);
@@ -55,7 +54,6 @@ public:
 
 private:
     int fd_;
-    FILE* stream_; // todo: delete
     ucs4string fileName_;
     bool isClosed_;
 };

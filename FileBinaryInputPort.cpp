@@ -44,11 +44,6 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")), isClosed_(false)
-{
-    fd_ = ::fileno(stream_); // temp
-}
-
 FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false)
 {
 }
@@ -111,7 +106,7 @@ bool FileBinaryInputPort::isClosed() const
 
 int FileBinaryInputPort::close()
 {
-    if (!isClosed() && fd_ != -1) {
+    if (!isClosed() && fd_ != INVALID_FILENO) {
         isClosed_ = true;
         if (fd_ != ::fileno(stdin)) {
             ::close(fd_);

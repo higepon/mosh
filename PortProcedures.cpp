@@ -663,7 +663,7 @@ Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryInputPort(stdin);
+    static const Object port = Object::makeBinaryInputPort(fileno(stdin));
     DeclareProcedureName("starndard-input-port");
     checkArgumentLength(0);
     return port;

@@ -105,10 +105,10 @@ bool Object::equal(VM* theVM, Object o) const
     return ::equal(*this, o, new EqHashTable());
 }
 
-Object Object::makeBinaryInputPort(FILE* in)
+Object Object::makeBinaryInputPort(int fd)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new FileBinaryInputPort(in)))));
+                                                        reinterpret_cast<word>(new FileBinaryInputPort(fd)))));
 }
 
 Object Object::makeBinaryOutputPort(int fd)
