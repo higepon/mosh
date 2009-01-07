@@ -46,7 +46,7 @@ using namespace scheme;
 
 FileBinaryInputPort::FileBinaryInputPort(FILE* stream) : stream_(stream), fileName_(UC("<unknown file>")), isClosed_(false)
 {
-    fd_ = stream->_fileno; // temp
+    fd_ = fileno(stream_); // temp
 }
 
 FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false)

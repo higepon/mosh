@@ -74,7 +74,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     int status;
     pid_t child = waitpid(target, &status, 0);
     if (-1 == child) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L1(strerror(errno)));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], strerror(errno)));
         return Object::Undef;
     }
 
@@ -102,7 +102,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const int ret = execvp(command->data().ascii_c_str(), p);
 
     if (-1 == ret) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L1(strerror(errno)));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], strerror(errno)));
         return Object::Undef;
     }
     // this procedure doesn't return

@@ -1,3 +1,7 @@
+2009-01-07  higepon  <higepon@users.sourceforge.jp>
+
+        * FileBinaryInputPort.cpp (FileBinaryInputPort): fileno_ -> filno()
+
 2009-01-06  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (pass2/const-inliner): Fixed invalid const-inliner.(thanks mrc.mgg)
