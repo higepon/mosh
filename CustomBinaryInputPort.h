@@ -43,6 +43,7 @@ public:
     virtual ~CustomBinaryInputPort();
 
     int getU8();
+    int lookaheadU8();
     ByteVector* getByteVector(int size);
     ucs4string toString();
     int open();
@@ -54,6 +55,7 @@ private:
     VM* theVM_;
     const Object readProc_;
     bool isClosed_;
+    int u8Buf_;
 };
 
 }; // namespace scheme

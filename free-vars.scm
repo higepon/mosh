@@ -452,4 +452,5 @@
     set-current-directory!
     binary-port?
     input-port?
+    lookahead-u8
     )

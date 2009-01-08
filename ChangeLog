@@ -1,3 +1,7 @@
+2008-01-08  kokosabu  <kokosabu@gmail.com>
+
+        * Added: lookahead-u8(file, bytearray, custom).
+
 2009-01-08  higepon  <higepon@users.sourceforge.jp>
 
         * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss : Set library-path to absolute.

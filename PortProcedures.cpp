@@ -465,6 +465,19 @@ Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
     }
 }
 
+Object scheme::lookaheadU8Ex(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("lookahead-u8");
+    checkArgumentLength(1);
+    argumentAsBinaryInputPort(0, binaryInputPort);
+    const int b = binaryInputPort->lookaheadU8();
+    if (EOF == b) {
+        return Object::Eof;
+    } else {
+        return Object::makeFixnum(b);
+    }
+}
+
 Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("transcoded-port");

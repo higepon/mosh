@@ -72,6 +72,7 @@ namespace scheme {
     Object sysPortSeekEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv);
     Object getU8Ex(VM* theVM, int argc, const Object* argv);
+    Object lookaheadU8Ex(VM* theVM, int argc, const Object* argv);
     Object transcodedPortEx(VM* theVM, int argc, const Object* argv);
     Object latin1CodecEx(VM* theVM, int argc, const Object* argv);
     Object utf8CodecEx(VM* theVM, int argc, const Object* argv);

@@ -46,6 +46,7 @@ public:
 
     ucs4string toString();
     int getU8();
+    int lookaheadU8();
     ByteVector* getByteVector(int size);
     int open();
     int close();
@@ -56,6 +57,7 @@ private:
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
+    int u8Buf_;
 };
 
 }; // namespace scheme

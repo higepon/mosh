@@ -40,7 +40,7 @@
 
 using namespace scheme;
 
-CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc), isClosed_(false)
+CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc), isClosed_(false), u8Buf_(EOF)
 {
 }
 
@@ -72,6 +72,12 @@ bool CustomBinaryInputPort::isClosed() const
 
 int CustomBinaryInputPort::getU8()
 {
+    if (u8Buf_ != EOF) {
+        int c = u8Buf_;
+        u8Buf_ = EOF;
+        return c;
+    }
+
     const Object bv = Object::makeByteVector(1);
     const Object start = Object::makeFixnum(0);
     const Object count = Object::makeFixnum(1);
@@ -81,6 +87,24 @@ int CustomBinaryInputPort::getU8()
         return EOF;
     }
     return bv.toByteVector()->u8Ref(0);
+}
+
+int CustomBinaryInputPort::lookaheadU8()
+{
+    if (u8Buf_ != EOF) {
+        return u8Buf_;
+    }
+
+    const Object bv = Object::makeByteVector(1);
+    const Object start = Object::makeFixnum(0);
+    const Object count = Object::makeFixnum(1);
+    const Object result = theVM_->callClosure3(readProc_, bv, start, count);
+    MOSH_ASSERT(result.isFixnum());
+    if (0 == result.toFixnum()) {
+        return EOF;
+    }
+    u8Buf_ = bv.toByteVector()->u8Ref(0);
+    return u8Buf_;
 }
 
 ByteVector* CustomBinaryInputPort::getByteVector(int size)

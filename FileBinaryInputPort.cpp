@@ -44,16 +44,16 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false)
+FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF)
 {
 }
 
-FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false)
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 }
 
-FileBinaryInputPort::FileBinaryInputPort(const char* file)
+FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), u8Buf_(EOF)
 {
     fileName_ = Object::makeString(file).toString()->data();
     fd_ = ::open(file, O_RDONLY);
@@ -81,9 +81,31 @@ FileBinaryInputPort::~FileBinaryInputPort()
 int FileBinaryInputPort::getU8()
 {
     uint8_t c;
+
+    if (EOF != u8Buf_) {
+        c = u8Buf_;
+        u8Buf_ = EOF;
+        return c;
+    }
+
     if (0 == read(fd_, &c, 1)) {
         return EOF;
     } else {
+        return c;
+    }
+}
+
+int FileBinaryInputPort::lookaheadU8()
+{
+    if (EOF != u8Buf_) {
+        return u8Buf_;
+    }
+
+    uint8_t c;
+    if (0 == read(fd_, &c, 1)) {
+        return EOF;
+    } else {
+        u8Buf_ = c;
         return c;
     }
 }

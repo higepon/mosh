@@ -49,6 +49,12 @@ public:
         return buf_[index_++];
     }
 
+    inline int lookaheadU8()
+    {
+        if (index_ >= size_) return EOF;
+        return buf_[index_];
+    }
+
     ucs4string toString();
     ByteVector* getByteVector(int size);
     int open();

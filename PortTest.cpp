@@ -133,3 +133,18 @@ TEST_F(PortTest, StandardPort) {
     const Object err = standardErrorPortEx(NULL, 0, NULL);
     EXPECT_TRUE(err.isBinaryOutputPort());
 }
+
+TEST_F(PortTest, FileBinary) {
+    FileBinaryOutputPort* out = new FileBinaryOutputPort(UC("/tmp/hoge.log"));
+    out->putU8(1);
+    out->putU8(0);
+    out->close();
+
+    FileBinaryInputPort* in = new FileBinaryInputPort(UC("/tmp/hoge.log"));
+    EXPECT_EQ(1, in->lookaheadU8());
+    EXPECT_EQ(1, in->getU8());
+    EXPECT_EQ(0, in->lookaheadU8());
+    EXPECT_EQ(0, in->getU8());
+    EXPECT_EQ(EOF, in->lookaheadU8());
+    EXPECT_EQ(EOF, in->getU8());
+}
