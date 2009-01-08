@@ -239,7 +239,6 @@ Object scheme::stringSplitEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("string-split");
     argumentAsString(0, text);
     argumentAsChar(1, ch);
-
     gc_vector<ucs4string> v;
     text->data().split(ch, v);
     return makeList(v, 0);

@@ -5,6 +5,14 @@
 (define eval-r6rs (symbol-value 'eval-r6rs))
 
 (define shell-utilities '(
+
+(define-syntax begin0
+  (syntax-rules ()
+    ((_ e es ...)
+     (let ((v e))
+       es ...
+       v))))
+
   (define (join strings d)
     (let loop ([strings strings]
                [ret ""])
@@ -12,11 +20,25 @@
           ret
           (loop (cdr strings) (format "~a~a~s" ret (if (string=? "" ret) "" d) (car strings))))))
 
+  (define (port->string p)
+    (let loop ([ret '()][c (read-char p)])
+      (if (eof-object? c)
+          (list->string (reverse ret))
+          (loop (cons c ret) (read-char p)))))
+
   (define (spawn command args)
-    (format #t "command=~a args=~a" command args)
     (let-values  ([(pid cin cout cerr) (%spawn command args (list #f #f #f))])
       (%waitpid pid)
       #f))
+
+  (define (spawn->string command args)
+    (let-values ([(in out) (%pipe)])
+      (let-values ([(pid cin cout cerr) (%spawn command args (list #f out #f))])
+        (close-port out)
+        (begin0
+          (port->string (transcoded-port in (make-transcoder (utf-8-codec))))
+          (close-port in)
+          (%waitpid pid)))))
 
   (define-syntax def-command
     (lambda (y)
@@ -29,7 +51,9 @@
             ;; (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))
             (spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
             ]
-           [_ (call-process (symbol->string (syntax->datum #'command)))]
+           [_ ;; (call-process (symbol->string (syntax->datum #'command)))
+            (spawn (symbol->string (syntax->datum #'command)) '())
+              ]
            )))])))
   (define-syntax $def-command
     (lambda (y)
@@ -41,8 +65,12 @@
              (lambda (x)
                (syntax-case x ()
                  [(_ args (... ...))
-                  #'(string-split (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space)) #\newline)]
-                 [_ #'(string-split (call-process (symbol->string (syntax->datum #'command))) #\newline)]
+                  #'(string-split ;; (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))
+                     (spawn->string (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
+                                  #\newline)]
+                 [_ #'(string-split ;; (call-process (symbol->string (syntax->datum #'command)))
+                       (spawn->string (symbol->string (syntax->datum #'command)) '())
+                                    #\newline)]
                  )))]))))
   ;; (define-syntax $define
 ;;     (lambda (x)

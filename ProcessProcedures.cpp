@@ -145,13 +145,14 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     }
 
     const int length = Pair::length(args);
-    char** p = new(GC) char*[length + 1];
+    char** p = new(GC) char*[length + 2];
+    p[0] = command->data().ascii_c_str();
     Object pair = args;
-    for (int i = 0; i < length; i++) {
+    for (int i = 1; i <= length; i++) {
         p[i] = pair.car().toString()->data().ascii_c_str();
         pair = pair.cdr();
     }
-    p[length] = (char*)NULL;
+    p[length + 1] = (char*)NULL;
     const int ret = execvp(command->data().ascii_c_str(), p);
 
     if (-1 == ret) {

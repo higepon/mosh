@@ -1,3 +1,7 @@
+2009-01-08  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/shell.scm: Added spawn and spawn->string.
+
 2009-01-07  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (%spawn): Added %spawn.
