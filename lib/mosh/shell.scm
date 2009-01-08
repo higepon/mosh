@@ -6,12 +6,14 @@
 
 (define shell-utilities '(
 
-(define-syntax begin0
-  (syntax-rules ()
-    ((_ e es ...)
-     (let ((v e))
-       es ...
-       v))))
+  (import (mosh test))
+
+  (define-syntax begin0
+    (syntax-rules ()
+      ((_ e es ...)
+       (let ((v e))
+         es ...
+         v))))
 
   (define (join strings d)
     (let loop ([strings strings]
@@ -42,19 +44,16 @@
 
   (define-syntax def-command
     (lambda (y)
-    (syntax-case y ()
-      [(_ command)
-       #'(define-syntax command
-         (lambda (x)
-         (syntax-case x ()
-           [(_ args (... ...))
-            ;; (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))
-            (spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
-            ]
-           [_ ;; (call-process (symbol->string (syntax->datum #'command)))
-            (spawn (symbol->string (syntax->datum #'command)) '())
-              ]
-           )))])))
+      (syntax-case y ()
+        [(_ command)
+         #'(define-syntax command
+             (lambda (x)
+               (syntax-case x ()
+                 [(_ args (... ...))
+                  #'(spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))]
+                 [_
+                  #'(spawn (symbol->string (syntax->datum #'command)) '())]
+                 )))])))
   (define-syntax $def-command
     (lambda (y)
       (syntax-case y ()
@@ -65,20 +64,13 @@
              (lambda (x)
                (syntax-case x ()
                  [(_ args (... ...))
-                  #'(string-split ;; (call-process (join (cons (symbol->string (syntax->datum #'command)) (syntax->datum #'(args (... ...)))) #\space))
+                  #'(string-split
                      (spawn->string (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
                                   #\newline)]
-                 [_ #'(string-split ;; (call-process (symbol->string (syntax->datum #'command)))
+                 [_ #'(string-split
                        (spawn->string (symbol->string (syntax->datum #'command)) '())
                                     #\newline)]
                  )))]))))
-  ;; (define-syntax $define
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         ((k var val)
-;;          (with-syntax ([var (datum->syntax #'k (string->symbol
-;;                                                 (format "$~a" (syntax->datum #'var))))])
-;;                       #'(define var val))))))
 ))
 
 (for-each eval-r6rs shell-utilities)
@@ -96,6 +88,12 @@
 (define-command ls)
 (define-command cd)
 (define-command pwd)
+
+(eval-r6rs '(test* ls #f))
+(eval-r6rs '(test* (ls -la) #f))
+(eval-r6rs '(test* (list? $ls) #t))
+(eval-r6rs '(test* (for-all string? $ls) #t))
+(eval-r6rs '(test* (for-all string? ($ls -la)) #t))
 
 (define (conditioon-printer e port)
     (define (ref rtd i x)

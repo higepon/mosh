@@ -1,6 +1,6 @@
 (library (mosh test)
   (export test* test/exception test/violation?)
-  (import (rnrs)
+  (import (only (rnrs) define-syntax lambda let* if syntax-case syntax equal? quote)
           (mosh string))
 
   (define-syntax test*

@@ -8,4 +8,5 @@
         (clos user)
         (mosh string)
         (mosh pp)
+        (mosh test)
         )
