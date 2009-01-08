@@ -34,6 +34,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -48,6 +49,33 @@
 #include "Bignum.h"
 
 using namespace scheme;
+
+Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("current-directory");
+    checkArgumentLength(0);
+    char buf[PATH_MAX];
+    if (getcwd(buf, PATH_MAX) == NULL) {
+        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(strerror(errno)));
+        return Object::Undef;
+    } else {
+        return Object::makeString(buf);
+    }
+}
+
+Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("set-current-directory!");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    if (-1 == chdir(path->data().ascii_c_str())) {
+        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(strerror(errno), argv[0]));
+        return Object::Undef;
+    } else {
+        return Object::Undef;
+    }
+}
+
 
 Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 {

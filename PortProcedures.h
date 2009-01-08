@@ -44,7 +44,6 @@ namespace scheme {
     Object openInputFileEx(VM* theVM, int argc, const Object* argv);
     Object closePortEx(VM* theVM, int argc, const Object* argv);
     Object getLineEx(VM* theVM, int argc, const Object* argv);
-    Object currentDirectoryEx(VM* theVM, int argc, const Object* argv);
     Object standardLibraryPathEx(VM* theVM, int argc, const Object* argv);
     Object standardInputPortEx(VM* theVM, int argc, const Object* argv);
     Object standardOutputPortEx(VM* theVM, int argc, const Object* argv);

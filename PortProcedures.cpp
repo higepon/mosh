@@ -146,18 +146,6 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("current-directory");
-    checkArgumentLength(0);
-
-    char buf[PATH_MAX];
-    if (getcwd(buf, PATH_MAX) == NULL) {
-        return Object::Undef;
-    }
-    return Object::makeString(buf);
-}
-
 Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("standard-library-path");

@@ -1,5 +1,11 @@
 2009-01-08  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss : Set library-path to absolute.
+
+        * library.scm (expand-path): Added expand-path.
+
+        * ProcessProcedures.cpp (setCurrentDirectoryDEx): Added set-current-directory!.
+
         * lib/mosh/shell.scm: Added spawn and spawn->string.
 
 2009-01-07  higepon  <higepon@users.sourceforge.jp>

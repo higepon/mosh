@@ -7,6 +7,7 @@
 (define shell-utilities '(
 
   (import (mosh test))
+  (import (srfi :98))
 
   (define-syntax begin0
     (syntax-rules ()
@@ -71,6 +72,13 @@
                        (spawn->string (symbol->string (syntax->datum #'command)) '())
                                     #\newline)]
                  )))]))))
+
+  (define-syntax cd
+    (lambda (x)
+      (syntax-case x ()
+        [(_ arg)
+         #'(set-current-directory! (format "~a" (syntax->datum #'arg)))]
+        [_ #'(set-current-directory! (get-environment-variable "HOME"))])))
 ))
 
 (for-each eval-r6rs shell-utilities)
@@ -86,7 +94,6 @@
            (eval-r6rs '(def-command x)))]))
 
 (define-command ls)
-(define-command cd)
 (define-command pwd)
 
 (eval-r6rs '(test* ls #f))
@@ -133,7 +140,7 @@
 
 (define (repl . x)
     (define (rec)
-      (display "mosh>")
+      (format #t "mosh:~a>" (current-directory))
       (guard (e
               (#t
                (display "\n" (current-error-port))

@@ -1,21 +1,23 @@
-(import (system)
-        (rnrs)
-        (srfi :8))
+(import (rnrs)
+        (system))
 
-(define-syntax def-command
-    (lambda (y)
-      (syntax-case y ()
-        [(_ command)
-         #'(define-syntax command
-             (lambda (x)
-               (syntax-case x ()
-                 [(_ args (... ...))
-                  #'(spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
-                  ]
-                 [_
-                  #'(spawn (symbol->string (syntax->datum #'command)) '())
-                  ]
-                 )))])))
+(define (pipe2 cmd1 args1 cmd2 args2)
+  (let-values ([(in out) (%pipe)])
+    (%spawn cmd1 args1 (list #f out #f))
+    (%spawn cmd2 args2 (list in #f #f))))
 
-(def-command ls)
-ls
+(define (pipe3 cmd1 args1 cmd2 args2 cmd3 args3)
+  (let-values ([(in1 out1) (%pipe)])
+      (%spawn cmd1 args1 (list #f out1 #f))
+      (close-port out1)
+    (let-values ([(in2 out2) (%pipe)])
+      (%spawn cmd2 args2 (list in1 out2 #f))
+      (close-port out2)
+      (%spawn cmd3 args3 (list in2 #f #f))
+      (close-port in1)
+      (close-port in2)
+      (%waitpid -1)
+      (%waitpid -1)
+      (%waitpid -1))))
+
+(pipe3 "ls" '("-la") "grep" '("cpp") "grep" '("main"))

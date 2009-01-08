@@ -61,7 +61,7 @@
                 (for-each
                  (lambda (path)
                    (cond [(file-exists? path)
-                          (add-library-path! path)]
+                          (add-library-path! (expand-path path))]
                          [else
                           (format (current-error-port) message path)]))
                  (reverse (string-split paths #\:))))]))
@@ -150,7 +150,7 @@
   (define command-line (make-parameter (get-command-line)))
 
   (define (local-library-path filename)
-    (cons "." (library-path)))
+    (cons (expand-path ".") (library-path)))
 
 
   (define (load/args filename . args)

@@ -6076,3 +6076,8 @@
       (if (zero? pid)
           (%exec command args in out err)
           (values pid in out err)))))
+
+(define (expand-path path)
+  (if (or (zero? (string-length path)) (char=? (string-ref path 0) #\/))
+      path
+      (string-append (current-directory) "/" path)))

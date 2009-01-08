@@ -448,6 +448,8 @@
     %exec
     %waitpid
     %pipe
+    current-directory
+    set-current-directory!
     binary-port?
     input-port?
     )
