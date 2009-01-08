@@ -79,6 +79,8 @@
         [(_ arg)
          #'(set-current-directory! (format "~a" (syntax->datum #'arg)))]
         [_ #'(set-current-directory! (get-environment-variable "HOME"))])))
+
+        
 ))
 
 (for-each eval-r6rs shell-utilities)
