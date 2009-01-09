@@ -137,6 +137,11 @@ void scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, 
     raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
 }
 
+void scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
+{
+    raiseAfter(theVM, UC("&undefined-rcd"), UC("&undefined"), 0, who, message, irritants);
+}
+
 // we can't catch this!
 void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {

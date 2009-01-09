@@ -8,7 +8,8 @@
 
   (import (mosh test))
   (import (srfi :98))
-
+  (import (mosh))
+  (define eval-r6rs (symbol-value 'eval-r6rs))
   (define-syntax begin0
     (syntax-rules ()
       ((_ e es ...)
@@ -45,6 +46,18 @@
           (port->string (transcoded-port in (make-transcoder (utf-8-codec))))
           (close-port in)
           (%waitpid pid)))))
+
+  (define (def-commands c)
+    (for-each (lambda (y) (eval-r6rs `(def-command ,y))) c))
+
+  (define-syntax def-alias
+    (lambda (y)
+      (syntax-case y()
+        [(_ name body ...)
+         #'(define-syntax name
+             (lambda (x)
+               (syntax-case x ()
+                 [_ (begin body ...)])))])))
 
   (define-syntax def-command
     (lambda (y)
@@ -156,6 +169,7 @@
                    (map any->string (if (pair? (syntax->datum #'z)) (cdr (syntax->datum #'z)) '()))) ...)
            (port->string (transcoded-port in (make-transcoder (utf-8-codec)))))]
       )))
+
 ))
 
 (for-each eval-r6rs shell-utilities)
@@ -178,6 +192,11 @@
 (eval-r6rs '(test* (for-all string? $ls) #t))
 (eval-r6rs '(test* (for-all string? ($ls -la)) #t))
 (eval-r6rs '(test* (begin ($-> ls (grep cpp) (grep main))) "main.cpp\n"))
+
+(eval-r6rs '(cd /usr/bin))
+(eval-r6rs '(def-commands (filter (lambda (x) (not (eq? x 'cd))) (map string->symbol $ls))))
+(eval-r6rs '(cd))
+
 
 (define (conditioon-printer e port)
     (define (ref rtd i x)

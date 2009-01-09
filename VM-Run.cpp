@@ -626,7 +626,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object id = fetchOperand();
             const Object val = nameSpace->ref(id, notFound_);
             if (val == notFound_) {
-                callAssertionViolationAfter(this,
+                callUndefinedViolationAfter(this,
                                             "eval",
                                             "unbound variable",
                                             // R6RS mode requires demangle of symbol.
