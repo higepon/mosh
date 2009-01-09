@@ -4027,7 +4027,12 @@
       (lambda ()
         (or the-env
             (let ([lib (find-library-by-name '(mosh interaction))]
-                  [rib (make-cache-rib)])
+                  [rib
+                   ;; (make-cache-rib)
+                   ;; causes multiple difinition error on interaction-environment
+                   ;; TODO: update psyntax
+                   (make-empty-rib)
+                       ])
               (let ([subst (library-subst lib)])
                 (set-rib-sym*! rib (map car subst))
                 (set-rib-mark**! rib
@@ -4036,6 +4041,7 @@
               (let ([env (make-interaction-env rib '() '())])
                 (set! the-env env)
                 env))))))
+
 
   (define top-level-context (make-parameter #f))
 

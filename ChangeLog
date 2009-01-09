@@ -1,3 +1,11 @@
+2009-01-09  higepon  <higepon@users.sourceforge.jp>
+
+        * VM(parent) ignores SIGINT, child use default handler for SIGINT.
+
+        * lib/mosh/shell.scm : Added -> and $->. Works like following ($-> ls (grep cpp) (grep main)).
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss: don't use (make-cache-rib).
+
 2008-01-08  kokosabu  <kokosabu@gmail.com>
 
         * Added: lookahead-u8(file, bytearray, custom).

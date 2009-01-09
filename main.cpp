@@ -30,6 +30,7 @@
  */
 
 #include <time.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <getopt.h>
@@ -178,6 +179,11 @@ int main(int argc, char *argv[])
     }
 
     mosh_init();
+
+    // for Shell mode.
+    // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
+    signal(SIGINT, SIG_IGN);
+
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
     const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
     const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);

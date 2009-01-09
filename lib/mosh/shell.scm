@@ -16,6 +16,9 @@
          es ...
          v))))
 
+  (define (any->string x)
+    (format "~a" x))
+
   (define (join strings d)
     (let loop ([strings strings]
                [ret ""])
@@ -51,9 +54,9 @@
              (lambda (x)
                (syntax-case x ()
                  [(_ args (... ...))
-                  #'(spawn (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))]
+                  #'(spawn (any->string (syntax->datum #'command)) (map any->string (syntax->datum #'(args (... ...)))))]
                  [_
-                  #'(spawn (symbol->string (syntax->datum #'command)) '())]
+                  #'(spawn (any->string (syntax->datum #'command)) '())]
                  )))])))
   (define-syntax $def-command
     (lambda (y)
@@ -66,10 +69,10 @@
                (syntax-case x ()
                  [(_ args (... ...))
                   #'(string-split
-                     (spawn->string (symbol->string (syntax->datum #'command)) (map symbol->string (syntax->datum #'(args (... ...)))))
+                     (spawn->string (any->string (syntax->datum #'command)) (map any->string (syntax->datum #'(args (... ...)))))
                                   #\newline)]
                  [_ #'(string-split
-                       (spawn->string (symbol->string (syntax->datum #'command)) '())
+                       (spawn->string (any->string (syntax->datum #'command)) '())
                                     #\newline)]
                  )))]))))
 
@@ -80,7 +83,79 @@
          #'(set-current-directory! (format "~a" (syntax->datum #'arg)))]
         [_ #'(set-current-directory! (get-environment-variable "HOME"))])))
 
-        
+(define-syntax pipe
+  (lambda (x)
+    (syntax-case x ()
+      [(_ (cmd1 args1) (cmd2 args2) ...)
+       #'(let-values ([(in1 out1) (%pipe)])
+           (%spawn cmd1 args1 (list #f out1 #f))
+           (close-port out1)
+           (pipe "internal" in1 (cmd2 args2) ...)
+           (do ([i 0 (+ i 1)])
+               ((= i (length '((cmd2 args2) ...))))
+             (%waitpid -1)))]
+      [(_ "internal" in (cmd args))
+       #'(begin
+           (%spawn cmd args (list in #f #f))
+           (close-port in))]
+      [(_ "internal" in (cmd1 args1) (cmd2 args2) (cmd3 args3) ...)
+       #'(let-values ([(in1 out1) (%pipe)])
+           (%spawn cmd1 args1 (list in out1 #f))
+           (close-port out1)
+           (pipe "internal" in1 (cmd2 args2) (cmd3 args3) ...))]
+      )))
+
+(define-syntax $pipe
+  (lambda (x)
+    (syntax-case x ()
+      [(_ out (cmd1 args1) (cmd2 args2) ...)
+       #'(let-values ([(in1 out1) (%pipe)])
+           (%spawn cmd1 args1 (list #f out1 #f))
+           (close-port out1)
+           ($pipe "internal" out in1 (cmd2 args2) ...)
+           (do ([i 0 (+ i 1)])
+               ((= i (length '((cmd2 args2) ...))))
+             (%waitpid -1)))]
+      [(_ "internal" out in (cmd args))
+       #'(begin
+           (%spawn cmd args (list in out #f))
+           (close-port out)
+           (close-port in))]
+      [(_ "internal" out in (cmd1 args1) (cmd2 args2) (cmd3 args3) ...)
+       #'(let-values ([(in1 out1) (%pipe)])
+           (%spawn cmd1 args1 (list in out1 #f))
+           (close-port out1)
+           ($pipe "internal" out in1 (cmd2 args2) (cmd3 args3) ...))]
+      )))
+
+(define-syntax ->
+  (lambda (x)
+    (syntax-case x ()
+      [(_ x y z ...)
+       #'(pipe ((any->string (if (pair? (syntax->datum #'x)) (car (syntax->datum #'x)) (syntax->datum #'x)))
+                                (map any->string (if (pair? (syntax->datum #'x)) (cdr (syntax->datum #'x)) '())))
+               ((any->string (if (pair? (syntax->datum #'y)) (car (syntax->datum #'y)) (syntax->datum #'y)))
+                                (map any->string (if (pair? (syntax->datum #'y)) (cdr (syntax->datum #'y)) '())))
+               ((any->string (if (pair? (syntax->datum #'z)) (car (syntax->datum #'z)) (syntax->datum #'z)))
+                                (map any->string (if (pair? (syntax->datum #'z)) (cdr (syntax->datum #'z)) '()))) ...)]
+
+      )))
+
+
+(define-syntax $->
+  (lambda (x)
+    (syntax-case x ()
+      [(_ x y z ...)
+       #'(let-values ([(in out) (%pipe)])
+           ($pipe out
+                  ((any->string (if (pair? (syntax->datum #'x)) (car (syntax->datum #'x)) (syntax->datum #'x)))
+                   (map any->string (if (pair? (syntax->datum #'x)) (cdr (syntax->datum #'x)) '())))
+                  ((any->string (if (pair? (syntax->datum #'y)) (car (syntax->datum #'y)) (syntax->datum #'y)))
+                   (map any->string (if (pair? (syntax->datum #'y)) (cdr (syntax->datum #'y)) '())))
+                  ((any->string (if (pair? (syntax->datum #'z)) (car (syntax->datum #'z)) (syntax->datum #'z)))
+                   (map any->string (if (pair? (syntax->datum #'z)) (cdr (syntax->datum #'z)) '()))) ...)
+           (port->string (transcoded-port in (make-transcoder (utf-8-codec)))))]
+      )))
 ))
 
 (for-each eval-r6rs shell-utilities)
@@ -90,9 +165,8 @@
 (define-syntax define-command
   (syntax-rules ()
     [(_ x)
-    (guard (c (#t (eval-r6rs '(def-command x))
-                  (eval-r6rs '($def-command x))
-                  ))
+    (guard (c (#t #t))
+           (eval-r6rs '($def-command x))
            (eval-r6rs '(def-command x)))]))
 
 (define-command ls)
@@ -103,6 +177,7 @@
 (eval-r6rs '(test* (list? $ls) #t))
 (eval-r6rs '(test* (for-all string? $ls) #t))
 (eval-r6rs '(test* (for-all string? ($ls -la)) #t))
+(eval-r6rs '(test* (begin ($-> ls (grep cpp) (grep main))) "main.cpp\n"))
 
 (define (conditioon-printer e port)
     (define (ref rtd i x)
