@@ -73,6 +73,10 @@ namespace scheme {
     Object makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv);
     Object getU8Ex(VM* theVM, int argc, const Object* argv);
     Object lookaheadU8Ex(VM* theVM, int argc, const Object* argv);
+    Object getBytevectorNEx(VM* theVM, int argc, const Object* argv);
+    //Object getBytevectorNDEx(VM* theVM, int argc, const Object* argv);
+    //Object getBytevectorSomeEx(VM* theVM, int argc, const Object* argv);
+    //Object getBytevectorAllEx(VM* theVM, int argc, const Object* argv);
     Object transcodedPortEx(VM* theVM, int argc, const Object* argv);
     Object latin1CodecEx(VM* theVM, int argc, const Object* argv);
     Object utf8CodecEx(VM* theVM, int argc, const Object* argv);

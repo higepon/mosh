@@ -49,7 +49,7 @@ public:
     virtual ~BinaryInputPort() {};
     virtual int getU8() = 0;
     virtual int lookaheadU8() = 0;
-    virtual ByteVector* getByteVector(int size) = 0;
+    virtual ByteVector* getByteVector(uint32_t size) = 0;
     virtual ucs4string toString() = 0;
     virtual int open() = 0;
     virtual int close() = 0;

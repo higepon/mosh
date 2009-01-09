@@ -558,6 +558,58 @@ Object Arithmetic::magnitude(Object n)
     }
 }
 
+bool Arithmetic::fitsU32(Object n)
+{
+    MOSH_ASSERT(n.isExactInteger());
+    if (n.isFixnum()) {
+        return n.toFixnum() >= 0;
+    } else if (n.isBignum()) {
+        return n.toBignum()->fitsU32();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+uint32_t Arithmetic::toU32(Object n)
+{
+    MOSH_ASSERT(fitsU32(n));
+    if (n.isFixnum()) {
+        return n.toFixnum();
+    } else if (n.isBignum()) {
+        return n.toBignum()->toU32();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+bool Arithmetic::fitsS32(Object n)
+{
+    MOSH_ASSERT(n.isExactInteger());
+    if (n.isFixnum()) {
+        return true;
+    } else if (n.isBignum()) {
+        return n.toBignum()->fitsS32();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
+int32_t Arithmetic::toS32(Object n)
+{
+    MOSH_ASSERT(fitsS32(n));
+    if (n.isFixnum()) {
+        return n.toFixnum();
+    } else if (n.isBignum()) {
+        return n.toBignum()->toS32();
+    } else {
+        MOSH_ASSERT(false);
+        return false;
+    }
+}
+
 bool Arithmetic::fitsU64(Object n)
 {
     MOSH_ASSERT(n.isExactInteger());

@@ -102,6 +102,10 @@ public:
     static bool lt(Object number1, Object number2);
     static bool le(Object number1, Object number2);
     static bool eq(Object number1, Object number2);
+    static bool fitsU32(Object n);
+    static uint32_t toU32(Object n);
+    static bool fitsS32(Object n);
+    static int32_t toS32(Object n);
     static bool fitsU64(Object n);
     static uint64_t toU64(Object n);
     static bool fitsS64(Object n);

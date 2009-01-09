@@ -66,6 +66,43 @@ public:
         return mpz_cmp_si(value, 0) < 0;
     }
 
+    bool fitsU32() const
+    {
+        return mpz_cmp_si(value, 0)
+            && mpz_popcount(value) <= 32;
+    }
+
+    // todo fix me
+    bool fitsS32() const
+    {
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_abs(temp, value);
+        return mpz_popcount(temp) <= 31;
+    }
+
+    uint32_t toU32() const
+    {
+        MOSH_ASSERT(fitsU32());
+        uint32_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_ui(temp);
+        return ret;
+    }
+
+    int32_t toS32() const
+    {
+        MOSH_ASSERT(fitsS64());
+        uint32_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_si(temp);
+        return ret;
+    }
+
     bool fitsU64() const
     {
         return mpz_cmp_si(value, 0)

@@ -52,6 +52,7 @@
 #include "EqHashTable.h"
 #include "Bignum.h"
 #include "Fasl.h"
+#include "Arithmetic.h"
 
 
 using namespace scheme;
@@ -477,6 +478,31 @@ Object scheme::lookaheadU8Ex(VM* theVM, int argc, const Object* argv)
         return Object::makeFixnum(b);
     }
 }
+
+Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-bytevector-n");
+    checkArgumentLength(2);
+
+    argumentAsBinaryInputPort(0, binaryInputPort);
+    argumentCheckExactInteger(1, count);
+    if (!Arithmetic::fitsU32(count)) {
+        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));
+        return Object::Undef;
+    }
+
+    const uint32_t u32Count = Arithmetic::toU32(count);
+    ByteVector* ret = binaryInputPort->getByteVector(u32Count);
+    if (ret->length() == 0) {
+        return Object::Eof;
+    } else {
+        return Object::makeByteVector(ret);
+    }
+}
+
+//Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
+//Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
+//Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
 {

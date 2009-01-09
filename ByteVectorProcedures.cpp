@@ -985,6 +985,7 @@ Object scheme::bytevectorLengthEx(VM* theVM, int argc, const Object* argv)
     return Object::makeFixnum(bytevector->length());
 }
 
+/*
 Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-byte-vector-n");
@@ -1000,6 +1001,7 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
         return Object::makeByteVector(ret);
     }
 }
+*/
 
 Object scheme::bytevectorIeeeSingleRefEx(VM* theVM, int argc, const Object* argv)
 {

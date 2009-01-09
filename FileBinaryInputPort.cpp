@@ -110,14 +110,22 @@ int FileBinaryInputPort::lookaheadU8()
     }
 }
 
-ByteVector* FileBinaryInputPort::getByteVector(int size)
+ByteVector* FileBinaryInputPort::getByteVector(uint32_t size)
 {
 #ifdef USE_BOEHM_GC
     uint8_t* buf = new(PointerFreeGC) uint8_t[size];
 #else
     uint8_t* buf = new uint8_t[size];
 #endif
-    int ret = read(fd_, buf, size);
+    int ret;
+    if (EOF != u8Buf_) {
+        buf[0] = u8Buf_;
+        u8Buf_ = EOF;
+        read(fd_, buf+1, size);
+    } else {
+        read(fd_, buf, size);
+    }
+
     return new ByteVector(ret, buf);
 }
 

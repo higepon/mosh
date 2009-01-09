@@ -56,7 +56,7 @@ public:
     }
 
     ucs4string toString();
-    ByteVector* getByteVector(int size);
+    ByteVector* getByteVector(uint32_t size);
     int open();
     int close();
     bool isClosed() const;

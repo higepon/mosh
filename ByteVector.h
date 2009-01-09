@@ -39,7 +39,7 @@ namespace scheme {
 class ByteVector EXTEND_GC
 {
 public:
-    explicit ByteVector(int num) : length_(num)
+    explicit ByteVector(uint32_t num) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) uint8_t[num];
@@ -48,14 +48,14 @@ public:
 #endif
     }
 
-    ByteVector(int num, uint8_t v) : length_(num)
+    ByteVector(uint32_t num, uint8_t v) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) uint8_t[num];
 #else
         data_ = new uint8_t[num];
 #endif
-        for (int i = 0; i < num; i++) {
+        for (unsigned int i = 0; i < num; i++) {
             data_[i] = v;
         }
     }
@@ -67,7 +67,7 @@ public:
 #else
         data_ = new uint8_t[length_];
 #endif
-        for (int i = 0; i < length_; i++) {
+        for (unsigned int i = 0; i < length_; i++) {
             data_[i] = v[i];
         }
     }
@@ -91,7 +91,7 @@ public:
 
     }
 
-    ByteVector(int num, uint8_t* data) : data_(data), length_(num)
+    ByteVector(uint32_t num, uint8_t* data) : data_(data), length_(num)
     {
     }
 
@@ -536,7 +536,7 @@ public:
         data_[index] = (uint8_t)obj.toFixnum();
     }
 
-    int length() const
+    uint32_t length() const
     {
         return length_;
     }
@@ -620,7 +620,7 @@ public:
 
 private:
     uint8_t* data_;
-    const int length_;
+    const uint32_t length_;
 };
 
 inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)

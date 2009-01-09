@@ -44,7 +44,7 @@ public:
 
     int getU8();
     int lookaheadU8();
-    ByteVector* getByteVector(int size);
+    ByteVector* getByteVector(uint32_t size);
     ucs4string toString();
     int open();
     int close();

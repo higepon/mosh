@@ -47,7 +47,7 @@ public:
     ucs4string toString();
     int getU8();
     int lookaheadU8();
-    ByteVector* getByteVector(int size);
+    ByteVector* getByteVector(uint32_t size);
     int open();
     int close();
     int fileno() const;

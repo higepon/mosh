@@ -1,3 +1,7 @@
+2008-01-08  kokosabu  <kokosabu@gmail.com>
+
+        * Changed: get-bytevector-u(file).
+
 2009-01-09  higepon  <higepon@users.sourceforge.jp>
 
         * VM(parent) ignores SIGINT, child use default handler for SIGINT.

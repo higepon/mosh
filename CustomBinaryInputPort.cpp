@@ -107,7 +107,7 @@ int CustomBinaryInputPort::lookaheadU8()
     return u8Buf_;
 }
 
-ByteVector* CustomBinaryInputPort::getByteVector(int size)
+ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
 {
     fprintf(stderr, "get-byte-vector-n not implemented");
     exit(-1);
