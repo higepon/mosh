@@ -1,0 +1,2 @@
+rlwrap ./mosh r6rs-examples/shell.scm
+

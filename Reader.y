@@ -78,6 +78,7 @@ top_level      : END_OF_FILE { Reader::parsed = Object::Eof; YYACCEPT; }
 
 datum          : lexme_datum
                | compound_datum
+               | DATUM_COMMENT datum datum { $$ = $3; }
                | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
                | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;

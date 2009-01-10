@@ -27,7 +27,7 @@ bin_PROGRAMS = mosh test_vm test_port test_fasl
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer -DDEBUG_VERSION
+mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer #-DDEBUG_VERSION
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB)
 
@@ -253,6 +253,7 @@ test: ./mosh all-tests.scm
 	./mosh r6rs-examples/condition-test.ss
 	./mosh r6rs-examples/exception-test.ss
 	./mosh r6rs-examples/unicode-test.ss
+	./mosh r6rs-examples/shell-test.ss
 	(cd r6rs-test-suite && $(MAKE) $@)
 	./mosh test/srfi-19-test-suite.scm
 

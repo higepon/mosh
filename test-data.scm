@@ -3331,6 +3331,23 @@
              (c)))))
       (eq? (current-input-port) org)))
 
+;; datum comment
+("3" (receive (port proc) (open-string-output-port)
+       (display #;#;1 2 3 port)
+       (proc)))
+("4" (receive (port proc) (open-string-output-port)
+       (display #;#;#;1 2 3 4 port)
+       (proc)))
+("3" (receive (port proc) (open-string-output-port)
+       (display #;#|1|# 2 3 port)
+       (proc)))
+("3" (receive (port proc) (open-string-output-port)
+       (display #;; 1
+        2 3 port)
+       (proc)))
+("2" (receive (port proc) (open-string-output-port)
+       (display #;#!r6rs 1 2 port)
+       (proc)))
 
 (todo error (read-string "#t.#f"))
 

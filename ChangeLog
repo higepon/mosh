@@ -1,8 +1,21 @@
+2009-01-10  higepon  <higepon@users.sourceforge.jp>
+
+        * test-data.scm : Added some datum comment tests.
+
+        * Reader.y (datum): Fixed "Issue 36: double datum comment causes error" pointed out by leque.
+                            Thanks to SaitoAtsushi for the patch.
+
 2008-01-08  kokosabu  <kokosabu@gmail.com>
 
         * Changed: get-bytevector-u(file).
 
 2009-01-09  higepon  <higepon@users.sourceforge.jp>
+
+        * shell: Added.
+
+        * lib/mosh/shell/repl.ss: Added Shell REPL.
+
+        * lib/mosh/shell.ss : Added Shell script library.
 
         * VM(parent) ignores SIGINT, child use default handler for SIGINT.
 

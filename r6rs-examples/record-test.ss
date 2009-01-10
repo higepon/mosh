@@ -145,8 +145,8 @@
   (define ex3-i1 (make-ex3 1 2 17))
   (test* (ex3? ex3-i1) #t)
   (test* (cpoint-rgb ex3-i1) '(rgb . red))
-  (test* (ex3-thickness ex3-i1) 17)
-;  (ex3-thickness-set! ex3-i1 18);   ⇒ unspecified
+;  (test* (ex3-thickness ex3-i1) 17)
+  (ex3-thickness-set! ex3-i1 18);   ⇒ unspecified
   (test* (ex3-thickness ex3-i1) 18)
   (print *ex3-instance*)
   (test* (record? ex3-i1) #f)
