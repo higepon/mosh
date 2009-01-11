@@ -18,9 +18,14 @@ GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
+# for FFI test
+libffitest.so.1.0: ffitest.c
+	gcc -fPIC -c $<
+	gcc -shared -Wl -o $@ ffitest.o
+
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_vm test_port test_fasl
+bin_PROGRAMS = mosh test_vm test_port test_fasl test_ffi
 
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp.
@@ -29,7 +34,7 @@ mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
 mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer #-DDEBUG_VERSION
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB)
+mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) -ldl
 
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
@@ -119,7 +124,9 @@ Bignum.h                      Bignum.cpp                          \
 Flonum.h                      Flonum.cpp                          \
 CodeBuilder.h                 CodeBuilder.cpp                     \
 FinxumProcedures.h            FixnumProcedures.cpp                \
-Latin1Codec.h                 Latin1Codec.cpp
+Latin1Codec.h                 Latin1Codec.cpp                     \
+FFI.h                         FFI.cpp                             \
+FFIProcedures.h               FFIProcedures.cpp
 
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
@@ -286,19 +293,27 @@ TESTS += test_vm
 check_PROGRAMS += test_vm
 test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
-test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
 
 TESTS += test_port
 check_PROGRAMS += test_port
 test_port_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_port_SOURCES = PortTest.cpp TestingSignalHandler.cpp
-test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
 
 TESTS += test_fasl
 check_PROGRAMS += test_fasl
 test_fasl_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_fasl_SOURCES = FaslTest.cpp TestingSignalHandler.cpp TestingVM.cpp
-test_fasl_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)
+test_fasl_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
+
+TESTS += test_ffi
+check_PROGRAMS += test_ffi
+test_ffi_DEPENDENCIES = libffitest.so.1.0
+test_ffi_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp 
+test_ffi_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
+
 
 
 

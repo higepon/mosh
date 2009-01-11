@@ -453,4 +453,7 @@
     binary-port?
     input-port?
     lookahead-u8
+    ;; ffi
+    %ffi-open
+    %ffi-lookup
     )

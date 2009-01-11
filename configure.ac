@@ -11,6 +11,7 @@ AC_CONFIG_HEADER([config.h])
 
 AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh")
 
+
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
 if test "" = "$CFLAGS"; then
@@ -23,6 +24,8 @@ if test "" = "$CXXFLAGS"; then
 fi
 
 # Checks for programs.
+AC_PROG_LIBTOOL # use LTLIBRARIES
+AC_LIBTOOL_DLOPEN # use dlopen
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_MAKE_SET

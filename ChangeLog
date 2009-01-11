@@ -1,3 +1,13 @@
+2009-01-11  higepon  <higepon@users.sourceforge.jp>
+
+        * FFIProcedures.cpp : Added %ffi-open and %ffi-lookup.
+
+        * FFITest.cpp : Added.
+
+        * FFI.cpp: Added for Foreign Function Interface.
+
+        * Makefile.am (noinst_LTLIBRARIES): Added libffitest.la for test.
+
 2009-01-10  higepon  <higepon@users.sourceforge.jp>
 
         * test-data.scm : Added some datum comment tests.

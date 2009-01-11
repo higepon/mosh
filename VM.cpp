@@ -51,6 +51,7 @@
 #include "BitwiseProcedures.h"
 #include "ProcessProcedures.h"
 #include "ByteVectorProcedures.h"
+#include "FFIProcedures.h"
 #include "Record.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
