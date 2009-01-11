@@ -633,10 +633,37 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
 Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 4);
 
-    argumentAsString(0, path);
-    FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+    if (argc == 1) {
+        argumentAsString(0, path);
+        FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+        // todo
+        // FileBinaryInputPort* const filebinaryinputport = new FileBinaryInputPort(path->data(), Object::Nil, Symbol::BLOCK, Object::False);
+    } else if (argc == 2) {
+        argumentAsString(0, path);
+        argumentCheckList(1, fileOptions);
+        FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+        // todo
+        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, Symbol::BLOCK, Object::False);
+    } else if (argc == 3) {
+        argumentAsString(0, path);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
+        FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+        // todo
+        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode, Object::False);
+    } else if (argc == 4) {
+        argumentAsString(0, path);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
+        // todo
+        // argumentCheckTranscoderOrFalse(3, maybeTranscoder);
+        FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+        // todo
+        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode, maybeTranscoder);
+    }
+
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeBinaryInputPort(fileBinaryInputPort);
     } else {

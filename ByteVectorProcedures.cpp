@@ -985,24 +985,6 @@ Object scheme::bytevectorLengthEx(VM* theVM, int argc, const Object* argv)
     return Object::makeFixnum(bytevector->length());
 }
 
-/*
-Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("get-byte-vector-n");
-    checkArgumentLength(2);
-
-    argumentAsBinaryInputPort(0, binaryInputPort);
-    argumentAsFixnum(1, count);
-
-    ByteVector* ret = binaryInputPort->getByteVector(count);
-    if (ret->length() == 0) {
-        return Object::Eof;
-    } else {
-        return Object::makeByteVector(ret);
-    }
-}
-*/
-
 Object scheme::bytevectorIeeeSingleRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector-ieee-single-ref");

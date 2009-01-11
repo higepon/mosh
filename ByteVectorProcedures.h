@@ -90,7 +90,6 @@ namespace scheme {
     Object makeBytevectorEx(VM* theVM, int argc, const Object* argv);
     Object nativeEndiannessEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorLengthEx(VM* theVM, int argc, const Object* argv);
-    Object getBytevectorNEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 
