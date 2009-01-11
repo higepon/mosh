@@ -96,7 +96,7 @@ TEST_F(FFITest, loadAndlookup) {
     EXPECT_EQ(0, ret);
 }
 
-TEST_F(VMErrorPortTest, loadAndlookup) {
+TEST_F(VMErrorPortTest, loadAndlookupScheme) {
 
     // open
     const Object name = "./libffitest.so.1.0";
@@ -106,9 +106,49 @@ TEST_F(VMErrorPortTest, loadAndlookup) {
     // lookup
     Object args[2];
     args[0] = handle;
-    args[1] = "sub2";
+    args[1] = "sub";
     const Object sym = internalFfiLookupEx(theVM_, 2, args);
     ASSERT_TRUE(sym.isExactInteger());
+
+    // lookup
+    args[0] = handle;
+    args[1] = "sub-not-found";
+    const Object notFound = internalFfiLookupEx(theVM_, 2, args);
+    ASSERT_TRUE(notFound.isUndef());
+}
+
+TEST_F(FFITest, CStackWithFixnum) {
+    CStack cstack;
+    cstack.push(Object::makeFixnum(3));
+    cstack.push(Object::makeFixnum(4));
+    intptr_t* p = cstack.frame();
+    EXPECT_EQ(2, cstack.count());
+    EXPECT_EQ(3, p[0]);
+    EXPECT_EQ(4, p[1]);
+}
+
+TEST_F(FFITest, CStackUnsupportedArgument) {
+    // we assume this
+    ASSERT_TRUE(sizeof(uint64_t) >= sizeof(intptr_t));
+    CStack cstack;
+    const bool result = cstack.push(Object::makeEqHashTable());
+    EXPECT_FALSE(result);
+    ucs4string err = cstack.getLastError();
+    EXPECT_STREQ("unsupported ffi argument", err.ascii_c_str());
+}
+
+TEST_F(FFITest, CStackTooManyArgument) {
+    // we assume this
+    ASSERT_TRUE(sizeof(uint64_t) >= sizeof(intptr_t));
+
+    CStack cstack;
+    for (int i = 0; i < CStack::MAX_ARGC; i++) {
+        EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
+    }
+    const bool result = cstack.push(Object::makeFixnum(3));
+    EXPECT_FALSE(result);
+    ucs4string err = cstack.getLastError();
+    EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
 }
 
 

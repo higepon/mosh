@@ -30,7 +30,10 @@
  */
 
 #include <dlfcn.h>
+#include "Object.h"
+#include "Object-inl.h"
 #include "FFI.h"
+
 
 using namespace scheme;
 
@@ -47,4 +50,45 @@ void* FFI::lookup(void* handle, const char* symbol)
 int FFI::close(void* handle)
 {
     return dlclose(handle);
+}
+
+CStack::CStack() : count_(0)
+{
+
+}
+
+CStack::~CStack()
+{
+}
+
+intptr_t* CStack::frame()
+{
+    return frame_;
+}
+
+int CStack::count() const
+{
+    return count_;
+}
+
+bool CStack::push(Object obj)
+{
+    if (count_ >= MAX_ARGC) {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+
+    if (obj.isFixnum()) {
+        frame_[count_++] = obj.toFixnum();
+    } else {
+        lastError_ = UC("unsupported ffi argument");
+        return false;
+    }
+
+    return true;
+}
+
+const ucs4char* CStack::getLastError() const
+{
+    return lastError_;
 }

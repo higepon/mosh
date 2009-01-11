@@ -42,6 +42,52 @@
 
 using namespace scheme;
 
+Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-call->int");
+    checkArgumentLengthAtLeast(1);
+    argumentCheckNumber(0, func);
+
+    intptr_t f;
+    if (func.isFixnum()) {
+        f = func.toFixnum();
+    } else if (func.isBignum()) {
+        MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
+        f = func.toBignum()->toU64();
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "invalid function", L1(argv[0]));
+        return Object::Undef;
+    }
+
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+
+    const int bytes = (2 * sizeof(intptr_t) + 15) & ~15;
+
+    int ret;
+    asm volatile(
+        "movl    %%esp, %%edx ;"
+        "subl    %1   , %%esp ;"
+        "movl    %%esp, %%edi ;" // copy arguments to stack
+        "rep                  ;"
+        "movsb                ;"
+        "movl    %%edx, %%edi ;"
+        "call    *%%eax       ;"
+        "movl    %%edi, %%esp ;"
+        : "=a" (ret)
+        : "c" (bytes), "S" (cstack.frame()), "0" (f) // c:ecx, S:esi
+        : "edi", "edx", "memory" // we have a memory destruction.
+        );
+
+    return Bignum::makeInteger(ret);
+
+}
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-lookup");

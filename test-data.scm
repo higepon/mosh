@@ -3349,6 +3349,22 @@
        (display #;#!r6rs 1 2 port)
        (proc)))
 
+;; FFI
+(16 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+           [sub (%ffi-lookup handle "sub")])
+      (%ffi-call->int sub 5 -11)))
+(14 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+           [sub3 (%ffi-lookup handle "sub3")])
+      (%ffi-call->int sub3 5 -11 2)))
+(error (%ffi-open "hoge"))
+(error (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+                  [sub3 (%ffi-lookup handle "hoge")])
+             #t))
+(3 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+          [return3 (%ffi-lookup handle "return3")])
+     (%ffi-call->int return3)))
+
+
 (todo error (read-string "#t.#f"))
 
 

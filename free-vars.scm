@@ -456,4 +456,5 @@
     ;; ffi
     %ffi-open
     %ffi-lookup
+    %ffi-call->int
     )

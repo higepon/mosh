@@ -48,6 +48,42 @@ public:
     static int close(void* handle);
 };
 
+class CStack EXTEND_GC
+{
+public:
+    enum
+    {
+        MAX_ARGC = 16,
+    };
+    CStack();
+    ~CStack();
+    bool push(Object obj);
+    intptr_t* frame();
+    int count() const;
+    const ucs4char* getLastError() const;
+
+private:
+    intptr_t frame_[MAX_ARGC];
+    int count_;
+    const ucs4char* lastError_;
+};
+
+#define FFI_MAX_ARGC    32
+
+#if ARCH_IA32
+    class c_stack_frame_t {
+        intptr_t m_frame[FFI_MAX_ARGC];
+        int m_count;
+        VM* m_vm;
+    public:
+        c_stack_frame_t(VM* vm) : m_vm(vm), m_count(0) {}
+        const char* push(scm_obj_t obj);
+        intptr_t* frame() { return m_frame; }
+        int count() { return m_count; }
+    };
+#endif
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_FFI__

@@ -1,5 +1,7 @@
 2009-01-11  higepon  <higepon@users.sourceforge.jp>
 
+        * FFITest.cpp : Added Test for pushing Fixnum to CStack.
+
         * FFIProcedures.cpp : Added %ffi-open and %ffi-lookup.
 
         * FFITest.cpp : Added.
