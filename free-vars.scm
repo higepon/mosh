@@ -457,4 +457,5 @@
     %ffi-open
     %ffi-lookup
     %ffi-call->int
+    %ffi-call->void
     )

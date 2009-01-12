@@ -33,8 +33,10 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
+#include "ByteVector.h"
 #include "FFI.h"
-
 
 using namespace scheme;
 
@@ -85,7 +87,9 @@ bool CStack::push(Object obj)
     // String -> char* (utf-8 ascii only)
     } else if (obj.isString()) {
         frame_[count_++] = (intptr_t)(obj.toString()->data().ascii_c_str());
-
+    // ByteVector -> char*
+    } else if (obj.isByteVector()) {
+        frame_[count_++] = (intptr_t)(obj.toByteVector()->data());
     } else {
         lastError_ = UC("unsupported ffi argument");
         return false;

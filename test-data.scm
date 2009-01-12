@@ -3366,7 +3366,11 @@
 (5 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
           [string_length (%ffi-lookup handle "string_length")])
      (%ffi-call->int string_length "12345")))
-
+("HELLO" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+                [upper (%ffi-lookup handle "my_upper")]
+                [bv    (u8-list->bytevector (map char->integer (string->list "hello")))])
+           (%ffi-call->void upper bv 5)
+           (list->string (map integer->char (bytevector->u8-list bv)))))
 
 (todo error (read-string "#t.#f"))
 

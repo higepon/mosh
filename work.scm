@@ -1,5 +1,7 @@
 
 
 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-       [return3 (%ffi-lookup handle "string_length")])
-  (print (%ffi-call->int return3 "12345")))
+       [upper (%ffi-lookup handle "my_upper")]
+       [bv    (u8-list->bytevector (map char->integer (string->list "hello")))])
+  (%ffi-call->void upper bv 5)
+  (list->string (map integer->char (bytevector->u8-list bv))))

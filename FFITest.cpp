@@ -59,6 +59,7 @@
 #include "VM-inl.h"
 #include "FFI.h"
 #include "FFIProcedures.h"
+#include "ByteVector.h"
 
 using namespace scheme;
 
@@ -134,6 +135,21 @@ TEST_F(FFITest, CStackWithString) {
     intptr_t* p = cstack.frame();
     EXPECT_EQ(2, cstack.count());
     EXPECT_EQ(3, p[0]);
+    EXPECT_STREQ("hige", (char*)p[1]);
+}
+
+TEST_F(FFITest, CStackWithByteVector) {
+    CStack cstack;
+    Object b = Object::makeByteVector(2);
+    ByteVector* const bv = b.toByteVector();
+    bv->u8Set(0, 1);
+    bv->u8Set(1, 2);
+    cstack.push(b);
+    cstack.push("hige");
+    intptr_t* p = cstack.frame();
+    EXPECT_EQ(2, cstack.count());
+    EXPECT_EQ(1, ((uint8_t*)(p[0]))[0]);
+    EXPECT_EQ(2, ((uint8_t*)(p[0]))[1]);
     EXPECT_STREQ("hige", (char*)p[1]);
 }
 

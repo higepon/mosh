@@ -1,5 +1,9 @@
 2009-01-12  higepon  <higepon@users.sourceforge.jp>
 
+        * Added %ffi-call->void.
+
+        * FFITest.cpp (TEST_F): Added test for FFI ByteVector.
+
         * FFI.cpp (CStack::push): Added char* support to FFI.
 
 2009-01-11  higepon  <higepon@users.sourceforge.jp>
