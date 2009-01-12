@@ -33,6 +33,7 @@
 #define __SCHEME_FILE_BINARY_INPUT_PORT__
 
 #include "BinaryInputPort.h"
+#include "Symbol.h"
 
 namespace scheme {
 
@@ -42,6 +43,7 @@ public:
     FileBinaryInputPort(int fd);
     FileBinaryInputPort(ucs4string file);
     FileBinaryInputPort(const char* file);
+    FileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode);
     virtual ~FileBinaryInputPort();
 
     ucs4string toString();

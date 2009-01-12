@@ -557,25 +557,25 @@ public:
 
     bool isValidIndex(int index) const
     {
-        return (index >= 0 && index < length_);
+        return ((uint32_t)index >= 0 && (uint32_t)index < length_);
     }
 
     // 16Ref will access k and k + 1
     bool isValid16RefIndex(int index) const
     {
-        return (index >= 0 && index < length_ - 1);
+        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 1);
     }
 
     // 32Ref will access between k and k + 3
     bool isValid32RefIndex(int index) const
     {
-        return (index >= 0 && index < length_ - 3);
+        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 3);
     }
 
     // 64Ref will access between k and k + 7
     bool isValid64RefIndex(int index) const
     {
-        return (index >= 0 && index < length_ - 7);
+        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 7);
     }
 
     ByteVector* copy()

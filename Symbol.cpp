@@ -61,6 +61,9 @@ Object Symbol::REPLACE;
 Object Symbol::NONE;
 Object Symbol::LINE;
 Object Symbol::BLOCK;
+Object Symbol::NO_CREATE;
+Object Symbol::NO_FAIL;
+Object Symbol::NO_TRUNCATE;
 
 void Symbol::initBuitinSymbols()
 {
@@ -77,6 +80,11 @@ void Symbol::initBuitinSymbols()
     UNSYNTAX_SPLICING = Symbol::intern(UC("unsyntax-splicing"));
     BIG               = Symbol::intern(UC("big"));
     LITTLE            = Symbol::intern(UC("little"));
+
+    // <file-options symbol>
+    NO_CREATE         = Symbol::intern(UC("no-create"));
+    NO_FAIL           = Symbol::intern(UC("no-fail"));
+    NO_TRUNCATE       = Symbol::intern(UC("no-truncate"));
 
     // <buffer-mode symbol>
     NONE              = Symbol::intern(UC("none"));

@@ -129,6 +129,7 @@
 #define argumentAsCodec(index, variableName) castArgument(index, variableName, isCodec, codec, Codec*, toCodec)
 #define argumentCheckTextualInputPort(index, variableName) checkType(index, variableName, isTextualInputPort, textual-input-port)
 #define argumentCheckTextualOutputPort(index, variableName) checkType(index, variableName, isTextualOutputPort, textual-output-port)
+#define argumentCheckTranscoderOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isTranscoder, transcoder)
 
 
 #define DeclareProcedureName(name) const ucs4char* procedureName = UC(name);

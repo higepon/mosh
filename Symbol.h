@@ -109,6 +109,11 @@ public:
     static Object BIG;
     static Object LITTLE;
 
+    // <file-options symbol>
+    static Object NO_CREATE;
+    static Object NO_FAIL;
+    static Object NO_TRUNCATE;
+
     // <buffer-mode symbol>
     static Object NONE;
     static Object LINE;

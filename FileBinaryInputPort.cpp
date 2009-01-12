@@ -59,6 +59,13 @@ FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), u
     fd_ = ::open(file, O_RDONLY);
 }
 
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), u8Buf_(EOF)
+{
+    fd_ = ::open(file.ascii_c_str(), O_RDONLY);
+
+    // todo bufferMode process
+}
+
 int FileBinaryInputPort::open()
 {
     if (INVALID_FILENO == fd_) {
@@ -121,9 +128,9 @@ ByteVector* FileBinaryInputPort::getByteVector(uint32_t size)
     if (EOF != u8Buf_) {
         buf[0] = u8Buf_;
         u8Buf_ = EOF;
-        read(fd_, buf+1, size);
+        ret = read(fd_, buf+1, size);
     } else {
-        read(fd_, buf, size);
+        ret = read(fd_, buf, size);
     }
 
     return new ByteVector(ret, buf);

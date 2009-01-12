@@ -635,33 +635,31 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
     FileBinaryInputPort* fileBinaryInputPort;
+
     if (argc == 1) {
         argumentAsString(0, path);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data());
-        // todo
-        // FileBinaryInputPort* const filebinaryinputport = new FileBinaryInputPort(path->data(), Object::Nil, Symbol::BLOCK, Object::False);
+        fileBinaryInputPort = new FileBinaryInputPort(path->data(), Object::Nil, Symbol::BLOCK);
     } else if (argc == 2) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data());
-        // todo
-        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, Symbol::BLOCK, Object::False);
+        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, Symbol::BLOCK);
     } else if (argc == 3) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data());
-        // todo
-        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode, Object::False);
+        // todo bufferMode check
+        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
     } else if (argc == 4) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        // todo
-        // argumentCheckTranscoderOrFalse(3, maybeTranscoder);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data());
-        // todo
-        // FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode, maybeTranscoder);
+        // todo bufferMode check
+        argumentCheckTranscoderOrFalse(3, maybeTranscoder);
+        if (maybeTranscoder == Object::False) {
+            fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
+        } else {
+            // textual port
+        }
     }
 
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
