@@ -634,7 +634,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
-    FileBinaryInputPort* fileBinaryInputPort;
+    FileBinaryInputPort* fileBinaryInputPort = NULL;
 
     if (argc == 1) {
         argumentAsString(0, path);
@@ -647,13 +647,23 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        // todo bufferMode check
+        if ((bufferMode != Symbol::NONE) &&
+            (bufferMode != Symbol::LINE) &&
+            (bufferMode != Symbol::BLOCK)) {
+            callErrorAfter(theVM, procedureName, "ignore buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
         fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
     } else if (argc == 4) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        // todo bufferMode check
+        if ((bufferMode != Symbol::NONE) &&
+            (bufferMode != Symbol::LINE) &&
+            (bufferMode != Symbol::BLOCK)) {
+            callErrorAfter(theVM, procedureName, "ignore buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
         argumentCheckTranscoderOrFalse(3, maybeTranscoder);
         if (maybeTranscoder == Object::False) {
             fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
