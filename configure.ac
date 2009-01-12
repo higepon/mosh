@@ -24,8 +24,8 @@ if test "" = "$CXXFLAGS"; then
 fi
 
 # Checks for programs.
-AC_PROG_LIBTOOL # use LTLIBRARIES
-AC_LIBTOOL_DLOPEN # use dlopen
+dnl AC_PROG_LIBTOOL # use LTLIBRARIES
+dnl AC_LIBTOOL_DLOPEN # use dlopen
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_MAKE_SET
