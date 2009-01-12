@@ -127,6 +127,17 @@ TEST_F(FFITest, CStackWithFixnum) {
     EXPECT_EQ(4, p[1]);
 }
 
+TEST_F(FFITest, CStackWithString) {
+    CStack cstack;
+    cstack.push(Object::makeFixnum(3));
+    cstack.push("hige");
+    intptr_t* p = cstack.frame();
+    EXPECT_EQ(2, cstack.count());
+    EXPECT_EQ(3, p[0]);
+    EXPECT_STREQ("hige", (char*)p[1]);
+}
+
+
 TEST_F(FFITest, CStackUnsupportedArgument) {
     // we assume this
     ASSERT_TRUE(sizeof(uint64_t) >= sizeof(intptr_t));

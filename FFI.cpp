@@ -32,6 +32,7 @@
 #include <dlfcn.h>
 #include "Object.h"
 #include "Object-inl.h"
+#include "SString.h"
 #include "FFI.h"
 
 
@@ -78,8 +79,13 @@ bool CStack::push(Object obj)
         return false;
     }
 
+    // Fixnum -> int
     if (obj.isFixnum()) {
         frame_[count_++] = obj.toFixnum();
+    // String -> char* (utf-8 ascii only)
+    } else if (obj.isString()) {
+        frame_[count_++] = (intptr_t)(obj.toString()->data().ascii_c_str());
+
     } else {
         lastError_ = UC("unsupported ffi argument");
         return false;

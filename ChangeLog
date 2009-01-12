@@ -1,3 +1,7 @@
+2009-01-12  higepon  <higepon@users.sourceforge.jp>
+
+        * FFI.cpp (CStack::push): Added char* support to FFI.
+
 2009-01-11  higepon  <higepon@users.sourceforge.jp>
 
         * FFITest.cpp : Added Test for pushing Fixnum to CStack.

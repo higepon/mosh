@@ -3363,6 +3363,9 @@
 (3 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
           [return3 (%ffi-lookup handle "return3")])
      (%ffi-call->int return3)))
+(5 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+          [string_length (%ffi-lookup handle "string_length")])
+     (%ffi-call->int string_length "12345")))
 
 
 (todo error (read-string "#t.#f"))
