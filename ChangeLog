@@ -1,3 +1,7 @@
+2009-01-13  higepon  <higepon@users.sourceforge.jp>
+
+        * configure.ac : On OSX don't use -shared option use -dynamiclib option instread.
+
 2009-01-12  higepon  <higepon@users.sourceforge.jp>
 
         * Added %ffi-call->void.

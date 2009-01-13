@@ -48,6 +48,16 @@ else
   AC_DEFINE(ENABLE_PROFILER, , enable -p option for profiling)
 fi
 
+case $host in
+  *darwin*)
+  SHLIB_SO_LDFLAGS="-dynamiclib"
+  ;;
+  *)
+  SHLIB_SO_LDFLAGS="-shared"
+  ;;
+esac
+AC_SUBST(SHLIB_SO_LDFLAGS)
+
 # Checks for libraries.
 have_tr1_hashes=0
 have_ext_hashes=0

@@ -21,7 +21,7 @@ GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 # for FFI test
 libffitest.so.1.0: ffitest.c
 	gcc -fPIC -c $<
-	gcc -shared -Wl -o $@ ffitest.o
+	gcc -Wl @SHLIB_SO_LDFLAGS@ -o $@ ffitest.o
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
@@ -291,25 +291,28 @@ check_PROGRAMS=
 
 TESTS += test_vm
 check_PROGRAMS += test_vm
+test_vm_DEPENDENCIES = libmosh.a gtest_main.a
 test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
 test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
 
 TESTS += test_port
 check_PROGRAMS += test_port
+test_port_DEPENDENCIES = libmosh.a gtest_main.a
 test_port_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_port_SOURCES = PortTest.cpp TestingSignalHandler.cpp
 test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
 
 TESTS += test_fasl
 check_PROGRAMS += test_fasl
+test_fasl_DEPENDENCIES = libmosh.a gtest_main.a
 test_fasl_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_fasl_SOURCES = FaslTest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_fasl_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
 
 TESTS += test_ffi
 check_PROGRAMS += test_ffi
-test_ffi_DEPENDENCIES = libffitest.so.1.0
+test_ffi_DEPENDENCIES = libffitest.so.1.0 libmosh.a gtest_main.a
 test_ffi_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp 
 test_ffi_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
