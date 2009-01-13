@@ -366,6 +366,31 @@ public:
         return makeInteger(b);
     }
 
+    static Object makeIntegerFromIntprt_t(intptr_t p)
+    {
+        MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
+        const uint64_t val = static_cast<uint64_t>(p);
+        if (Fixnum::canFit(val)) {
+            return Object::makeFixnum(val);
+        } else {
+            return makeIntegerFromU64(val);
+        }
+    }
+
+    static intptr_t toIntptr_t(Object n)
+    {
+        MOSH_ASSERT(n.isFixnum() || n.isBignum());
+        if (n.isFixnum()) {
+            return n.toFixnum();
+        } else if (n.isBignum()) {
+            MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
+            return n.toBignum()->toU64();
+        } else {
+            // not reached
+            return 0;
+        }
+    }
+
     static Object makeInteger(long n)
     {
         if (Fixnum::canFit(n)) {

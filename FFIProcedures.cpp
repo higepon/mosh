@@ -42,35 +42,10 @@
 
 using namespace scheme;
 
-Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
+static intptr_t callStub(intptr_t func, intptr_t* frame, int argc)
 {
-    DeclareProcedureName("%ffi-call->void");
-    checkArgumentLengthAtLeast(1);
-    argumentCheckNumber(0, func);
-
-    intptr_t f;
-    if (func.isFixnum()) {
-        f = func.toFixnum();
-    } else if (func.isBignum()) {
-        MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
-        f = func.toBignum()->toU64();
-    } else {
-        callAssertionViolationAfter(theVM, procedureName, "invalid function", L1(argv[0]));
-        return Object::Undef;
-    }
-
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
-    }
-
-    const int bytes = (2 * sizeof(intptr_t) + 15) & ~15;
-
-    int ret;
+    const int bytes = (argc * sizeof(intptr_t) + 15) & ~15;
+    intptr_t ret;
     asm volatile(
         "movl    %%esp, %%edx ;"
         "subl    %1   , %%esp ;"
@@ -81,9 +56,26 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
         "call    *%%eax       ;"
         "movl    %%edi, %%esp ;"
         : "=a" (ret)
-        : "c" (bytes), "S" (cstack.frame()), "0" (f) // c:ecx, S:esi
-        : "edi", "edx", "memory" // we have a memory destruction.
-        );
+        : "c" (bytes), "S" (frame), "0" (func) // c:ecx, S:esi
+        : "edi", "edx", "memory"); // we have a memory destruction.
+    return ret;
+}
+
+Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-call->void");
+    checkArgumentLengthAtLeast(1);
+    argumentAsIntptr_t(0, func, "Invalid FFI function");
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+
+    callStub(func, cstack.frame(), argc);
     return Object::Undef;
 }
 
@@ -91,18 +83,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->int");
     checkArgumentLengthAtLeast(1);
-    argumentCheckNumber(0, func);
-
-    intptr_t f;
-    if (func.isFixnum()) {
-        f = func.toFixnum();
-    } else if (func.isBignum()) {
-        MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
-        f = func.toBignum()->toU64();
-    } else {
-        callAssertionViolationAfter(theVM, procedureName, "invalid function", L1(argv[0]));
-        return Object::Undef;
-    }
+    argumentAsIntptr_t(0, func, "Invalid FFI function");
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -113,47 +94,22 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
-    const int bytes = (2 * sizeof(intptr_t) + 15) & ~15;
-
-    int ret;
-    asm volatile(
-        "movl    %%esp, %%edx ;"
-        "subl    %1   , %%esp ;"
-        "movl    %%esp, %%edi ;" // copy arguments to stack
-        "rep                  ;"
-        "movsb                ;"
-        "movl    %%edx, %%edi ;"
-        "call    *%%eax       ;"
-        "movl    %%edi, %%esp ;"
-        : "=a" (ret)
-        : "c" (bytes), "S" (cstack.frame()), "0" (f) // c:ecx, S:esi
-        : "edi", "edx", "memory" // we have a memory destruction.
-        );
-
-    return Bignum::makeInteger(ret);
+    const intptr_t ret = callStub(func, cstack.frame(), argc);
+    return Bignum::makeIntegerFromIntprt_t(ret);
 }
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-lookup");
     checkArgumentLength(2);
-    argumentCheckNumber(0, handle);
+    argumentAsIntptr_t(0, handle, "invalid shared library handle");
     argumentAsString(1, name);
-    uint64_t h;
-    if (handle.isFixnum()) {
-        h = handle.toFixnum();
-    } else if (handle.isBignum()) {
-        h = handle.toBignum()->toU64();
-    } else {
-        callAssertionViolationAfter(theVM, procedureName, "invalid shared library handle", L1(argv[0]));
-        return Object::Undef;
-    }
 
-    void* symbol = FFI::lookup((void*)h, name->data().ascii_c_str());
+    void* symbol = FFI::lookup((void*)handle, name->data().ascii_c_str());
     if (NULL == symbol) {
         callAssertionViolationAfter(theVM, procedureName, "symbol not found on shared library", L1(argv[1]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromU64(reinterpret_cast<uint64_t>(symbol));
+        return Bignum::makeIntegerFromIntprt_t(reinterpret_cast<intptr_t>(symbol));
     }
 }
 
@@ -167,6 +123,6 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "shared library not found", L1(argv[0]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromU64(reinterpret_cast<uint64_t>(handle));
+        return Bignum::makeIntegerFromIntprt_t(reinterpret_cast<intptr_t>(handle));
     }
 }
