@@ -53,6 +53,7 @@
 #include "Bignum.h"
 #include "Fasl.h"
 #include "Arithmetic.h"
+#include "FileTextualInputPort.h"
 
 
 using namespace scheme;
@@ -635,6 +636,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
     FileBinaryInputPort* fileBinaryInputPort = NULL;
+//    FileTextualInputPort* fileTextualInputPort = NULL;
 
     if (argc == 1) {
         argumentAsString(0, path);
@@ -668,12 +670,14 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         if (maybeTranscoder == Object::False) {
             fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
         } else {
-            // textual port
+//            fileTextualInputPort = new FileTexualInputPort(path->data(), fileOptions, bufferMode, maybeTranscoder);
         }
     }
 
-    if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
+    if ((fileBinaryInputPort != NULL) && (MOSH_SUCCESS == fileBinaryInputPort->open())) {
         return Object::makeBinaryInputPort(fileBinaryInputPort);
+//    } else if ((fileTextualInputPort != NULL) && (MOSH_SUCCESS == fileTextualInputPort->open())) {
+//        return Object::makeTextualInputPort(fileTextualInputPort);
     } else {
         callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
