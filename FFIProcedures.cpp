@@ -61,6 +61,11 @@ static intptr_t callStub(intptr_t func, intptr_t* frame, int argc)
     return ret;
 }
 
+Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)
+{
+    internalFfiCallTointEx(theVM, argc, argv);
+}
+
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void");
