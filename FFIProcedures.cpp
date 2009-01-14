@@ -29,6 +29,7 @@
  *  $Id: FFIProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <errno.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -139,7 +140,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, name);
     void* handle = FFI::open(name->data().ascii_c_str());
     if (NULL == handle) {
-        callAssertionViolationAfter(theVM, procedureName, "shared library not found", L1(argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
         return Object::Undef;
     } else {
         return Bignum::makeIntegerFromIntprt_t(reinterpret_cast<intptr_t>(handle));

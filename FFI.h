@@ -46,6 +46,7 @@ public:
     static void* open(const char* name);
     static void* lookup(void* handle, const char* symbol);
     static int close(void* handle);
+    static const char* lastError();
 };
 
 class CStack EXTEND_GC

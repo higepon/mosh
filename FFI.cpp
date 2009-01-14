@@ -57,6 +57,11 @@ int FFI::close(void* handle)
     return dlclose(handle);
 }
 
+const char* FFI::lastError()
+{
+    return dlerror();
+}
+
 CStack::CStack() : count_(0)
 {
 
@@ -88,10 +93,8 @@ bool CStack::push(Object obj)
         frame_[count_++] = obj.toFixnum();
     } else if (obj.isBignum()) {
         if (Arithmetic::isNegative(obj)) {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             frame_[count_++] = obj.toBignum()->toIntptr_t();
         } else {
-            printf("%x\n", obj.toBignum()->toUintptr_t());
             frame_[count_++] = obj.toBignum()->toUintptr_t();
         }
     // String -> char* (utf-8 ascii only)
