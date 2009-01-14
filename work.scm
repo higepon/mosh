@@ -1,5 +1,3 @@
-(let ([handle (%ffi-open "libmysqlclient.16.0.0.dylib")]
-      [MYSQL (make-bytevector 964)])
-
-  (display "hige"))
-
+(let* ([handle (%ffi-open "./libffitest.so.1.0")]
+       [p (%ffi-lookup handle "pointer")])
+  (display (number->string (%ffi-call->void* p) 16)))

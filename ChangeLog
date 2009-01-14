@@ -1,3 +1,7 @@
+2009-01-14  higepon  <higepon@users.sourceforge.jp>
+
+        * Bignum.h (scheme): Fixed conversion things.
+
 2009-01-13  higepon  <higepon@users.sourceforge.jp>
 
         * FFIProcedures.cpp: Use intptr_t instead of uint64_t.

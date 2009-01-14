@@ -84,23 +84,23 @@ public:
     uint32_t toU32() const
     {
         MOSH_ASSERT(fitsU32());
-        uint32_t ret = 0;
-        mpz_t temp;
-        mpz_init(temp);
-        mpz_fdiv_q_2exp(temp, value, 32);
-        ret = mpz_get_ui(temp);
-        return ret;
+//         uint32_t ret = 0;
+//         mpz_t temp;
+//         mpz_init(temp);
+//         mpz_fdiv_q_2exp(temp, value, 32);
+
+        MOSH_ASSERT(sizeof(uint32_t) == sizeof(unsigned long));
+        return mpz_get_ui(value);
     }
 
     int32_t toS32() const
     {
-        MOSH_ASSERT(fitsS64());
-        uint32_t ret = 0;
-        mpz_t temp;
-        mpz_init(temp);
-        mpz_fdiv_q_2exp(temp, value, 32);
-        ret = mpz_get_si(temp);
-        return ret;
+        MOSH_ASSERT(fitsS32());
+//         int32_t ret = 0;
+//         mpz_t temp;
+//         mpz_init(temp);
+//         mpz_fdiv_q_2exp(temp, value, 32);
+        return mpz_get_si(value);
     }
 
     bool fitsU64() const
@@ -148,8 +148,9 @@ public:
         return ret;
     }
 
-    void setU(unsigned long value)
+    void setU32(uint32_t value)
     {
+        MOSH_ASSERT(sizeof(unsigned long) ==  sizeof(uint32_t));
         mpz_set_ui(this->value, value);
     }
 
@@ -343,7 +344,7 @@ public:
             return Object::makeFixnum(n);
         } else {
             Bignum* const b = new Bignum();
-            b->setU(n);
+            b->setU32(n);
             return Object::makeBignum(b);
         }
     }
@@ -351,7 +352,7 @@ public:
     static Object makeIntegerFromU64(uint64_t n)
     {
         Bignum* const b = new Bignum();
-        b->setU(n >> 32);
+        b->setU32(n >> 32);
         mpz_mul_2exp(b->value, b->value, 32);
         mpz_add_ui(b->value, b->value, (n & 0xffffffff));
         return makeInteger(b);
@@ -377,14 +378,59 @@ public:
         }
     }
 
+    static Object makeIntegerFromUintprt_t(uintptr_t p)
+    {
+        if (sizeof(uintptr_t) == sizeof(uint32_t)) {
+            const uint32_t val = static_cast<uint32_t>(p);
+            if (Fixnum::canFit(val)) {
+                return Object::makeFixnum(val);
+            } else {
+                return makeIntegerFromU32(val);
+            }
+        } else if (sizeof(uintptr_t) == sizeof(uint64_t)) {
+            const uint64_t val = static_cast<uint64_t>(p);
+            if (Fixnum::canFit(val)) {
+                return Object::makeFixnum(val);
+            } else {
+                return makeIntegerFromU64(val);
+            }
+        }
+        MOSH_FATAL("not reached");
+        return Object::Undef;
+    }
+
+    intptr_t toIntptr_t()
+    {
+        if (sizeof(intptr_t) == sizeof(int32_t)) {
+            return toS32();
+        } else if (sizeof(intptr_t) == sizeof(int64_t)) {
+            return toS64();
+        } else {
+            MOSH_FATAL("not reached");
+            return 0;
+        }
+    }
+
+    uintptr_t toUintptr_t()
+    {
+        if (sizeof(uintptr_t) == sizeof(uint32_t)) {
+            return toU32();
+        } else if (sizeof(uintptr_t) == sizeof(uint64_t)) {
+            return toU64();
+        } else {
+            MOSH_FATAL("not reached");
+            return 0;
+        }
+    }
+
+
     static intptr_t toIntptr_t(Object n)
     {
         MOSH_ASSERT(n.isFixnum() || n.isBignum());
         if (n.isFixnum()) {
             return n.toFixnum();
         } else if (n.isBignum()) {
-            MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
-            return n.toBignum()->toU64();
+            return n.toBignum()->toIntptr_t();
         } else {
             // not reached
             return 0;

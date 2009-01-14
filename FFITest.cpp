@@ -120,12 +120,18 @@ TEST_F(VMErrorPortTest, loadAndlookupScheme) {
 
 TEST_F(FFITest, CStackWithFixnum) {
     CStack cstack;
-    cstack.push(Object::makeFixnum(3));
-    cstack.push(Object::makeFixnum(4));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(4)));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(-5)));
+    EXPECT_TRUE(cstack.push(Bignum::makeIntegerFromU32(0xffffffff)));
     intptr_t* p = cstack.frame();
-    EXPECT_EQ(2, cstack.count());
+    EXPECT_EQ(4, cstack.count());
     EXPECT_EQ(3, p[0]);
     EXPECT_EQ(4, p[1]);
+    EXPECT_EQ(-5, p[2]);
+    const uint32_t x = 0xffffffff;
+    const uint32_t y = p[3];
+    EXPECT_EQ(x, y);
 }
 
 TEST_F(FFITest, CStackWithString) {

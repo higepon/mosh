@@ -53,7 +53,7 @@
 #include "Bignum.h"
 #include "Fasl.h"
 #include "Arithmetic.h"
-#include "FileTextualInputPort.h"
+//#include "FileTextualInputPort.h"
 
 
 using namespace scheme;

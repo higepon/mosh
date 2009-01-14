@@ -63,7 +63,21 @@ static intptr_t callStub(intptr_t func, intptr_t* frame, int argc)
 
 Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)
 {
-    internalFfiCallTointEx(theVM, argc, argv);
+    DeclareProcedureName("%ffi-call->void*");
+    checkArgumentLengthAtLeast(1);
+    argumentAsIntptr_t(0, func, "Invalid FFI function");
+
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+
+    const uintptr_t ret = callStub(func, cstack.frame(), argc);
+    return Bignum::makeIntegerFromUintprt_t(ret);
 }
 
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)

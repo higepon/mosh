@@ -27,3 +27,8 @@ void my_upper(char* text, int length)
         text[i] = toupper(text[i]);
     }
 }
+
+void* pointer()
+{
+  return (void*)0x12345678;
+}

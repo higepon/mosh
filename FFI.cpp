@@ -36,6 +36,8 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "ByteVector.h"
+#include "Bignum.h"
+#include "Arithmetic.h"
 #include "FFI.h"
 
 using namespace scheme;
@@ -84,6 +86,14 @@ bool CStack::push(Object obj)
     // Fixnum -> int
     if (obj.isFixnum()) {
         frame_[count_++] = obj.toFixnum();
+    } else if (obj.isBignum()) {
+        if (Arithmetic::isNegative(obj)) {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+            frame_[count_++] = obj.toBignum()->toIntptr_t();
+        } else {
+            printf("%x\n", obj.toBignum()->toUintptr_t());
+            frame_[count_++] = obj.toBignum()->toUintptr_t();
+        }
     // String -> char* (utf-8 ascii only)
     } else if (obj.isString()) {
         frame_[count_++] = (intptr_t)(obj.toString()->data().ascii_c_str());

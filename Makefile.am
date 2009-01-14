@@ -255,12 +255,12 @@ bench:
 check: test update
 
 test: ./mosh all-tests.scm
+	./mosh r6rs-examples/shell-test.ss
 	./mosh -5 all-tests.scm
 	./mosh r6rs-examples/record-test.ss
 	./mosh r6rs-examples/condition-test.ss
 	./mosh r6rs-examples/exception-test.ss
 	./mosh r6rs-examples/unicode-test.ss
-	./mosh r6rs-examples/shell-test.ss
 	(cd r6rs-test-suite && $(MAKE) $@)
 	./mosh test/srfi-19-test-suite.scm
 

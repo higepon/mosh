@@ -3371,6 +3371,11 @@
                 [bv    (u8-list->bytevector (map char->integer (string->list "hello")))])
            (%ffi-call->void upper bv 5)
            (list->string (map integer->char (bytevector->u8-list bv)))))
+;; pointer test
+("12345678" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+                   [p (%ffi-lookup handle "pointer")])
+              (number->string (%ffi-call->void* p) 16)))
+
 
 (todo error (read-string "#t.#f"))
 
