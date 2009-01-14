@@ -53,7 +53,6 @@
 #include "Bignum.h"
 #include "Fasl.h"
 #include "Arithmetic.h"
-//#include "FileTextualInputPort.h"
 
 
 using namespace scheme;
@@ -636,7 +635,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
     FileBinaryInputPort* fileBinaryInputPort = NULL;
-//    FileTextualInputPort* fileTextualInputPort = NULL;
+    Transcoder* transcoder = NULL;
 
     if (argc == 1) {
         argumentAsString(0, path);
@@ -666,18 +665,19 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
             callErrorAfter(theVM, procedureName, "ignore buffer-mode option", L1(argv[2]));
             return Object::Undef;
         }
+        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
         argumentCheckTranscoderOrFalse(3, maybeTranscoder);
-        if (maybeTranscoder == Object::False) {
-            fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
-        } else {
-//            fileTextualInputPort = new FileTexualInputPort(path->data(), fileOptions, bufferMode, maybeTranscoder);
+        if (maybeTranscoder != Object::False) {
+            transcoder = maybeTranscoder.toTranscoder();
         }
     }
 
     if ((fileBinaryInputPort != NULL) && (MOSH_SUCCESS == fileBinaryInputPort->open())) {
-        return Object::makeBinaryInputPort(fileBinaryInputPort);
-//    } else if ((fileTextualInputPort != NULL) && (MOSH_SUCCESS == fileTextualInputPort->open())) {
-//        return Object::makeTextualInputPort(fileTextualInputPort);
+        if (transcoder == NULL) {
+            return Object::makeBinaryInputPort(fileBinaryInputPort);
+        } else {
+            return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
+        }
     } else {
         callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
