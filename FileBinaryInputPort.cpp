@@ -64,6 +64,13 @@ FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Ob
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 
     // todo bufferMode process
+    if (bufferMode == Symbol::NONE) {
+        bufferMode_ = NONE;
+    } else if (bufferMode == Symbol::LINE) {
+        bufferMode_ = LINE;
+    } else {
+        bufferMode_ = BLOCK;
+    }
 }
 
 int FileBinaryInputPort::open()
@@ -155,4 +162,15 @@ int FileBinaryInputPort::close()
 int FileBinaryInputPort::fileno() const
 {
     return fd_;
+}
+
+void FileBinaryInputPort::bufFill()
+{
+    bufLen_ = read(fd_, buffer_, BUF_SIZE);
+    bufIdx_ = 0;
+    return;
+}
+
+int FileBinaryInputPort::bufRead(int size)
+{
 }

@@ -46,6 +46,13 @@ public:
         INVALID_FILENO = -1,
     };
 
+    enum bufferMode
+    {
+        NONE,
+        LINE,
+        BLOCK,
+    };
+
     virtual ~BinaryInputPort() {};
     virtual int getU8() = 0;
     virtual int lookaheadU8() = 0;
