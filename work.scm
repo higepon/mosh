@@ -42,8 +42,7 @@
 (define mysql-fetch-row    (make-c-function libmysqlclient 'void* "mysql_fetch_row"    '(void*)))
 (define NULL 0)
 
-(let* ([handle (%ffi-open "libmysqlclient.so.15.0.0")]
-       [mysql-obj (mysql-init NULL)])
+(let ([mysql-obj (mysql-init NULL)])
   (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0)
   (mysql-query mysql-obj "select User from user;")
   (let* ([result (mysql-store-result mysql-obj)]
