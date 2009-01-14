@@ -43,7 +43,7 @@
 
 using namespace scheme;
 
-static intptr_t callStub(intptr_t func, intptr_t* frame, int argc)
+static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
 {
     const int bytes = (argc * sizeof(intptr_t) + 15) & ~15;
     intptr_t ret;
@@ -66,7 +66,7 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
 {
     DeclareProcedureName("%ffi-call->void*");
     checkArgumentLengthAtLeast(1);
-    argumentAsIntptr_t(0, func, "Invalid FFI function");
+    argumentAsUintptr_t(0, func, "Invalid FFI function");
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -85,7 +85,7 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void");
     checkArgumentLengthAtLeast(1);
-    argumentAsIntptr_t(0, func, "Invalid FFI function");
+    argumentAsUintptr_t(0, func, "Invalid FFI function");
     CStack cstack;
     for (int i = 1; i < argc; i++) {
         if (!cstack.push(argv[i])) {
@@ -103,7 +103,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->int");
     checkArgumentLengthAtLeast(1);
-    argumentAsIntptr_t(0, func, "Invalid FFI function");
+    argumentAsUintptr_t(0, func, "Invalid FFI function");
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -121,7 +121,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-lookup");
     checkArgumentLength(2);
-    argumentAsIntptr_t(0, handle, "invalid shared library handle");
+    argumentAsUintptr_t(0, handle, "invalid shared library handle");
     argumentAsString(1, name);
 
     void* symbol = FFI::lookup((void*)handle, name->data().ascii_c_str());
@@ -129,7 +129,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "symbol not found on shared library", L1(argv[1]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromIntprt_t(reinterpret_cast<intptr_t>(symbol));
+        return Bignum::makeIntegerFromUintprt_t(reinterpret_cast<uintptr_t>(symbol));
     }
 }
 
@@ -143,6 +143,22 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromIntprt_t(reinterpret_cast<intptr_t>(handle));
+        return Bignum::makeIntegerFromUintprt_t(reinterpret_cast<uintptr_t>(handle));
     }
+}
+
+Object scheme::internalFfiVoidMulTostringEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-void*->string");
+    checkArgumentLength(1);
+    argumentAsUintptr_t(0, p, "pointer required");
+    return Object::makeString((char*)p);
+}
+
+Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-pinter-ref");
+    checkArgumentLength(1);
+    argumentAsUintptr_t(0, p, "pointer required");
+    return Bignum::makeIntegerFromUintprt_t(*(uint32_t*)p);
 }

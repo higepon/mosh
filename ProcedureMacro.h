@@ -154,13 +154,13 @@
         return Object::Undef;\
     } \
 
-#define argumentAsIntptr_t(index, variableName, error)                              \
+#define argumentAsUintptr_t(index, variableName, error)                              \
     const Object obj ## variableName = argv[index];                                 \
     if (!obj ## variableName.isFixnum() && !obj ## variableName.isBignum()) {       \
          callAssertionViolationAfter(theVM, procedureName, error, L1(argv[index])); \
          return Object::Undef;                                                      \
     }                                                                               \
-    const intptr_t variableName = Bignum::toIntptr_t(obj ## variableName);
+    const uintptr_t variableName = Bignum::toUintptr_t(obj ## variableName);
 
 
 #endif // __SCHEME_PROCEDURE_MACRO__

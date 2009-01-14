@@ -437,6 +437,20 @@ public:
         }
     }
 
+    static uintptr_t toUintptr_t(Object n)
+    {
+        MOSH_ASSERT(n.isFixnum() || n.isBignum());
+        if (n.isFixnum()) {
+            return n.toFixnum();
+        } else if (n.isBignum()) {
+            return n.toBignum()->toUintptr_t();
+        } else {
+            // not reached
+            return 0;
+        }
+    }
+
+
     static Object makeInteger(long n)
     {
         if (Fixnum::canFit(n)) {
