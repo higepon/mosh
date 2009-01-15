@@ -263,7 +263,6 @@ test: ./mosh all-tests.scm
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
 	./mosh test/ffi.scm
-	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
@@ -290,6 +289,8 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 check_PROGRAMS=
+TEST_CXXFLAGS_ = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+
 
 TESTS += test_vm
 check_PROGRAMS += test_vm

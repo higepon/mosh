@@ -31,7 +31,7 @@
     (define mysql-num-rows     (c-function libmysqlclient int   mysql_num_rows     void*))
     (define mysql-fetch-row    (c-function libmysqlclient void* mysql_fetch_row    void*))
     (define mysql-close        (c-function libmysqlclient void* mysql_close        void*))
-    (define mysql-free-result  (c-function libmysqlclient void* mysql-free-result  void*))
+    (define mysql-free-result  (c-function libmysqlclient void* mysql_free_result  void*))
     (let ([mysql-obj (mysql-init NULL)])
       (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0)
       (mysql-query mysql-obj "select User from user;")

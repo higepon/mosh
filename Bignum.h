@@ -83,7 +83,7 @@ public:
 
     uint32_t toU32() const
     {
-        MOSH_ASSERT(fitsU32());
+//        MOSH_ASSERT(fitsU32());
 //         uint32_t ret = 0;
 //         mpz_t temp;
 //         mpz_init(temp);
