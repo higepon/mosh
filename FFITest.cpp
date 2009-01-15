@@ -107,15 +107,15 @@ TEST_F(VMErrorPortTest, loadAndlookupScheme) {
     // lookup
     Object args[2];
     args[0] = handle;
-    args[1] = "sub";
+    args[1] = Symbol::intern(UC("sub"));
     const Object sym = internalFfiLookupEx(theVM_, 2, args);
     ASSERT_TRUE(sym.isExactInteger());
 
     // lookup
     args[0] = handle;
-    args[1] = "sub-not-found";
+    args[1] = Symbol::intern(UC("sub-not-found"));
     const Object notFound = internalFfiLookupEx(theVM_, 2, args);
-    ASSERT_TRUE(notFound.isUndef());
+    ASSERT_TRUE(notFound.isFalse());
 }
 
 TEST_F(FFITest, CStackWithFixnum) {
