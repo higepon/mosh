@@ -130,7 +130,7 @@ FFIProcedures.h               FFIProcedures.cpp
 
 datadir = @MOSH_LIB_PATH@
 data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
-nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/srfi/%3A26.ss lib/mosh/test.ss
+nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/srfi/%3A26.ss lib/mosh/test.ss lib/mosh/pp.ss
 
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
 

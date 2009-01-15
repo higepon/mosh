@@ -1,6 +1,7 @@
 2009-01-15  higepon  <higepon@users.sourceforge.jp>
 
         * Makefile.am (test): Renamed some tests.
+          (nobase_data_DATA): Added pp.ss to installed files.
 
         * test/ffi.scm : Added tests for FFI API.
 
