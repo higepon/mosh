@@ -125,9 +125,9 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(1, name);
 
     void* symbol = FFI::lookup((void*)handle, name->data().ascii_c_str());
+
     if (NULL == symbol) {
-        callAssertionViolationAfter(theVM, procedureName, "symbol not found on shared library", L1(argv[1]));
-        return Object::Undef;
+        return Object::False;
     } else {
         return Bignum::makeIntegerFromUintprt_t(reinterpret_cast<uintptr_t>(symbol));
     }

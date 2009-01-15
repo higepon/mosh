@@ -3357,9 +3357,8 @@
            [sub3 (%ffi-lookup handle "sub3")])
       (%ffi-call->int sub3 5 -11 2)))
 (error (%ffi-open "hoge"))
-(error (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-                  [sub3 (%ffi-lookup handle "hoge")])
-             #t))
+(#f (let ([handle (%ffi-open "./libffitest.so.1.0")])
+      (%ffi-lookup handle "hoge")))
 (3 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
           [return3 (%ffi-lookup handle "return3")])
      (%ffi-call->int return3)))
