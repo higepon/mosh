@@ -32,3 +32,16 @@ void* pointer()
 {
   return (void*)0x12345678;
 }
+
+void* return_pointer_string()
+{
+  return "hello";
+}
+
+void* return_array_of_pointer_string()
+{
+  static char* p[2];
+  p[0] = "hello";
+  p[1] = "world";
+  return (void*)p;
+}

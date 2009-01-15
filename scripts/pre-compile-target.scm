@@ -9,6 +9,7 @@
         (mosh string)
         (mosh pp)
         (mosh test)
+        (mosh ffi)
         (mosh shell)
         (mosh shell repl)
         )

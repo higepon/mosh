@@ -40,6 +40,7 @@
 #include "FFIProcedures.h"
 #include "FFI.h"
 #include "Bignum.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -122,9 +123,10 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("%ffi-lookup");
     checkArgumentLength(2);
     argumentAsUintptr_t(0, handle, "invalid shared library handle");
-    argumentAsString(1, name);
+    argumentAsSymbol(1, name);
 
-    void* symbol = FFI::lookup((void*)handle, name->data().ascii_c_str());
+    ucs4string n = name->c_str();
+    void* symbol = FFI::lookup((void*)handle, n.ascii_c_str());
 
     if (NULL == symbol) {
         return Object::False;
@@ -147,9 +149,9 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
-Object scheme::internalFfiVoidMulTostringEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("%ffi-void*->string");
+    DeclareProcedureName("%ffi-pointer->string");
     checkArgumentLength(1);
     argumentAsUintptr_t(0, p, "pointer required");
     return Object::makeString((char*)p);
@@ -158,7 +160,12 @@ Object scheme::internalFfiVoidMulTostringEx(VM* theVM, int argc, const Object* a
 Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-pinter-ref");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 2);
     argumentAsUintptr_t(0, p, "pointer required");
-    return Bignum::makeIntegerFromUintprt_t(*(uint32_t*)p);
+    if (argc == 1) {
+        return Bignum::makeIntegerFromUintprt_t(*(uintptr_t*)p);
+    } else { // argc == 2
+        argumentAsFixnum(1, index);
+        return Bignum::makeIntegerFromUintprt_t(((uintptr_t*)p)[index]);
+    }
 }

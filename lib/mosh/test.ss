@@ -13,7 +13,7 @@
             (if test-ok?
                 (format #t "OK: ~a => ~a\n" (quote form)  result)
                 (begin (format #t "NG: ~a => ~a expected ~a\n"
-                               (syntax->datum (syntax test))
+                               'form
                                result
                                expected)
                        (exit -1))))))

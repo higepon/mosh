@@ -41,7 +41,7 @@ Object internalFfiOpenEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTointEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv);
-Object internalFfiVoidMulTostringEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv);
 }; // namespace scheme
 
