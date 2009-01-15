@@ -33,6 +33,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h> // memcpy
 #include "Object.h"
 #include "Object-inl.h"
 #include "HeapObject.h"
@@ -44,11 +45,11 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF)
+FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
 }
 
-FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF)
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 }
@@ -102,7 +103,7 @@ int FileBinaryInputPort::getU8()
         return c;
     }
 
-    if (0 == read(fd_, &c, 1)) {
+    if (0 == bufRead(&c, 1)) {
         return EOF;
     } else {
         return c;
@@ -116,7 +117,7 @@ int FileBinaryInputPort::lookaheadU8()
     }
 
     uint8_t c;
-    if (0 == read(fd_, &c, 1)) {
+    if (0 == bufRead(&c, 1)) {
         return EOF;
     } else {
         u8Buf_ = c;
@@ -135,9 +136,9 @@ ByteVector* FileBinaryInputPort::getByteVector(uint32_t size)
     if (EOF != u8Buf_) {
         buf[0] = u8Buf_;
         u8Buf_ = EOF;
-        ret = read(fd_, buf+1, size);
+        ret = bufRead(buf+1, size);
     } else {
-        ret = read(fd_, buf, size);
+        ret = bufRead(buf, size);
     }
 
     return new ByteVector(ret, buf);
@@ -168,9 +169,27 @@ void FileBinaryInputPort::bufFill()
 {
     bufLen_ = read(fd_, buffer_, BUF_SIZE);
     bufIdx_ = 0;
-    return;
 }
 
-int FileBinaryInputPort::bufRead(int size)
+int FileBinaryInputPort::bufRead(uint8_t* data, int size)
 {
+    if (bufferMode_ == NONE) {
+        return read(fd_, data, size);
+    }
+    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
+        return read(fd_, data, size); // temporary
+    }
+
+    // working
+    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
+        const int diff = bufLen_ - bufIdx_;
+        if (diff >= size) {
+            memcpy(data, buffer_+bufIdx_, size);
+            bufIdx_ += size;
+        } else {
+            memcpy(data, buffer_+bufIdx_, diff);
+            bufFill();
+        }
+    }
+    return size;
 }
