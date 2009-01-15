@@ -25,7 +25,7 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_vm test_port test_fasl test_ffi
+bin_PROGRAMS = mosh test_vm test_port test_fasl test_ffi test_object
 
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp.
@@ -293,6 +293,13 @@ check_PROGRAMS=
 TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
 TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
 TEST_DEPENDENCIES_ = libmosh.a gtest_main.a
+
+TESTS += test_object
+check_PROGRAMS += test_object
+test_object_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_object_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_object_SOURCES = ObjectTest.cpp TestingSignalHandler.cpp
+test_object_LDADD = $(TEST_LDADD_)
 
 TESTS += test_vm
 check_PROGRAMS += test_vm
