@@ -252,9 +252,9 @@ bench:
 	LANG=C @GOSH@ ./scripts/bench2.scm
 
 #### test
-check: test update
+check: test
 
-test: ./mosh all-tests.scm
+test: ./mosh all-tests.scm update
 	./mosh test/shell.scm
 	./mosh test/record.scm
 	./mosh test/condition.scm
@@ -263,6 +263,7 @@ test: ./mosh all-tests.scm
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
 	./mosh test/ffi.scm
+	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
@@ -289,36 +290,37 @@ gtest_main.a : gtest-all.o gtest_main.o
 	$(AR) $(ARFLAGS) $@ $^
 
 check_PROGRAMS=
-TEST_CXXFLAGS_ = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-
+TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
+TEST_DEPENDENCIES_ = libmosh.a gtest_main.a
 
 TESTS += test_vm
 check_PROGRAMS += test_vm
-test_vm_DEPENDENCIES = libmosh.a gtest_main.a
-test_vm_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+test_vm_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_vm_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
-test_vm_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
+test_vm_LDADD = $(TEST_LDADD_)
 
 TESTS += test_port
 check_PROGRAMS += test_port
-test_port_DEPENDENCIES = libmosh.a gtest_main.a
-test_port_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+test_port_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_port_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_port_SOURCES = PortTest.cpp TestingSignalHandler.cpp
-test_port_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
+test_port_LDADD = $(TEST_LDADD_)
 
 TESTS += test_fasl
 check_PROGRAMS += test_fasl
-test_fasl_DEPENDENCIES = libmosh.a gtest_main.a
-test_fasl_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
+test_fasl_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_fasl_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_fasl_SOURCES = FaslTest.cpp TestingSignalHandler.cpp TestingVM.cpp
-test_fasl_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
+test_fasl_LDADD = $(TEST_LDADD_)
 
 TESTS += test_ffi
 check_PROGRAMS += test_ffi
-test_ffi_DEPENDENCIES = libffitest.so.1.0 libmosh.a gtest_main.a
-test_ffi_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp 
-test_ffi_LDADD = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB) -ldl
+test_ffi_DEPENDENCIES = $(TEST_DEPENDENCIES_) libffitest.so.1.0
+test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
+test_ffi_LDADD = $(TEST_LDADD_)
 
 
 
