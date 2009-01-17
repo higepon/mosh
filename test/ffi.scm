@@ -33,16 +33,19 @@
     (define mysql-close        (c-function libmysqlclient void* mysql_close        void*))
     (define mysql-free-result  (c-function libmysqlclient void* mysql_free_result  void*))
     (let ([mysql-obj (mysql-init NULL)])
-      (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0)
-      (mysql-query mysql-obj "select User from user;")
-      (let* ([result (mysql-store-result mysql-obj)]
-             [count  (mysql-num-rows result)])
-        (let loop ([i 0]
-                   [record (mysql-fetch-row result)])
-          (cond
-           [(= i count) '()]
-           [else
-            (test* (string? (pointer->string (pointer-ref record))) #t)
-            (loop (+ i 1) (mysql-fetch-row result))]))
-        (mysql-close mysql-obj)
-        (mysql-free-result result)))))
+      (cond
+       [(zero? (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
+        (display "mysql connect failed\n" (current-error-port))]
+       [else
+        (mysql-query mysql-obj "select User from user;")
+        (let* ([result (mysql-store-result mysql-obj)]
+               [count  (mysql-num-rows result)])
+          (let loop ([i 0]
+                     [record (mysql-fetch-row result)])
+            (cond
+             [(= i count) '()]
+             [else
+              (test* (string? (pointer->string (pointer-ref record))) #t)
+              (loop (+ i 1) (mysql-fetch-row result))]))
+          (mysql-close mysql-obj)
+          (mysql-free-result result))]))))
