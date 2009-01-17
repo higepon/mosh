@@ -70,7 +70,7 @@ private:
     int bufIdx_;
 
     void bufFill();
-    int bufRead(uint8_t* data, int size);
+    int bufRead(uint8_t* data, int reqSize);
 };
 
 }; // namespace scheme

@@ -47,17 +47,32 @@ using namespace scheme;
 
 FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
 }
 
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
 }
 
-FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), u8Buf_(EOF)
+FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
     fileName_ = Object::makeString(file).toString()->data();
     fd_ = ::open(file, O_RDONLY);
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
 }
 
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), u8Buf_(EOF)
@@ -72,6 +87,23 @@ FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Ob
     } else {
         bufferMode_ = BLOCK;
     }
+
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+#ifdef USE_BOEHM_GC
+        buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+        buffer_ = new uint8_t[BUF_SIZE];
+#endif
+    }
+}
+
+FileBinaryInputPort::~FileBinaryInputPort()
+{
+#ifdef USE_BOEHM_GC
+#else
+    delete buffer_;
+#endif
+    close();
 }
 
 int FileBinaryInputPort::open()
@@ -86,11 +118,6 @@ int FileBinaryInputPort::open()
 ucs4string FileBinaryInputPort::toString()
 {
     return fileName_;
-}
-
-FileBinaryInputPort::~FileBinaryInputPort()
-{
-    close();
 }
 
 int FileBinaryInputPort::getU8()
@@ -167,29 +194,40 @@ int FileBinaryInputPort::fileno() const
 
 void FileBinaryInputPort::bufFill()
 {
-    bufLen_ = read(fd_, buffer_, BUF_SIZE);
-    bufIdx_ = 0;
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+        bufLen_ = read(fd_, buffer_, BUF_SIZE);
+        bufIdx_ = 0;
+    }
 }
 
-int FileBinaryInputPort::bufRead(uint8_t* data, int size)
+int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
 {
     if (bufferMode_ == NONE) {
-        return read(fd_, data, size);
+        return read(fd_, data, reqSize);
     }
-    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
-        return read(fd_, data, size); // temporary
-    }
+//    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
+//        return read(fd_, data, reqSize); // temporary
+//    }
 
     // working
-    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
-        const int diff = bufLen_ - bufIdx_;
-        if (diff >= size) {
-            memcpy(data, buffer_+bufIdx_, size);
-            bufIdx_ += size;
-        } else {
-            memcpy(data, buffer_+bufIdx_, diff);
-            bufFill();
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+        int readSize = 0;
+        while (readSize < reqSize) {
+            int bufDiff = bufLen_ - bufIdx_;
+            int sizeDiff = reqSize - readSize;
+            if (bufDiff >= sizeDiff) {
+                memcpy(data+readSize, buffer_+bufIdx_, sizeDiff);
+                bufIdx_ += sizeDiff;
+                readSize += sizeDiff;
+            } else {
+                memcpy(data+readSize, buffer_+bufIdx_, bufDiff);
+                readSize += bufDiff;
+                bufFill(); // (bufIdx_ = 0)
+                if (bufLen_ == 0) { // EOF
+                    break;
+                }
+            }
         }
+        return readSize;
     }
-    return size;
 }

@@ -78,7 +78,9 @@ TEST_F(PortTest, BinaryInputPortAutoClose) {
 
     // some tough work that invoke gc().
     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    fprintf(stderr, "a\n");
     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
+    fprintf(stderr, "b\n");
     Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
