@@ -588,23 +588,6 @@
           [else
            "error-is-not-string"])
          3)]
-[todo mosh-only "catched at parent"
- (guard (e
-         [(symbol? e)
-          "catched at parent"]
-         [else
-          "error"])
-   (guard (con
-           [(string? con)
-            "error-is-string"]) ;; no else clause
-          (raise 'symbol-error)))]
-[todo mosh-only 7
-  (guard (con
-          [con
-           4]
-          [else
-           "error-is-not-string"])
-         (+ 3 (raise-continuable "warn continuation")))]
 [6
   (apply (lambda (a b c) (+ a b c)) 1 2 '(3))]
 [6
@@ -668,7 +651,7 @@
 [mosh-only #t (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))] ;; normalization
 [mosh-only 1/2 (/ 2)]
 [mosh-only 1/3 (/ 3)]
-[todo mosh-only error (/ 0)] -> division by zero
+[todo mosh-only error (/ 0)] ;;-> division by zero
 
 [#t (fixnum? (least-fixnum))]
 [#t (fixnum? (greatest-fixnum))]

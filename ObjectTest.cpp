@@ -36,6 +36,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Vector.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -164,3 +165,22 @@ TEST_F(ObjectTest, Vector) {
 }
 
 
+TEST_F(ObjectTest, Symbol) {
+    const Object hoge = Symbol::intern(UC("hoge"));
+    const Object hige = Symbol::intern(UC("hige"));
+    const Object hige2 = Symbol::intern(UC("hige"));
+    EXPECT_TRUE(hoge.isSymbol());
+    EXPECT_TRUE(hige.isSymbol());
+    EXPECT_TRUE(hige2.isSymbol());
+
+    EXPECT_FALSE(hoge.isFalse());
+    EXPECT_FALSE(hoge.isTrue());
+    EXPECT_FALSE(hoge.isEof());
+    EXPECT_FALSE(hoge.isUndef());
+    EXPECT_FALSE(hoge.isUnbound());
+    EXPECT_FALSE(hoge.isByteVector());
+
+    EXPECT_TRUE(hige == hige2);
+    EXPECT_TRUE(hoge != hige2);
+    EXPECT_TRUE(hoge != hige);
+}

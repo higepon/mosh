@@ -332,7 +332,7 @@ test_ffi_LDADD = $(TEST_LDADD_)
 
 
 
-# doc:
+# # doc:
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
 # 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
