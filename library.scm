@@ -6049,8 +6049,7 @@
   (dynamic-wind
       (lambda () #t)
       (lambda () (proc p))
-      (lambda () ;; (close-port p)
-        #t
+      (lambda () (close-port p)
               )))
 
 (define (file-newer? a b)

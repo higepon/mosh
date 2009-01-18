@@ -1,3 +1,11 @@
+2009-01-18  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mysql.ss : Added mysql library. It's not enough yet.
+
+        * lib/mosh/ffi.ss (stub-ht): Added mapping (char* . ,%ffi-call->string-or-zero).
+
+        * Added %ffi-call->string-or-zero.
+
 2008-01-18  kokosabu  <kokosabu@gmail.como>
 
         * FileBinaryOutputPort.cpp: Implemented block mode.

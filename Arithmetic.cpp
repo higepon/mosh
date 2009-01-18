@@ -1068,6 +1068,9 @@ MAKE_REAL_COMPARE_FUNC(ge, >=)
 bool Arithmetic::eq(Object n1, Object n2)
 {
     MOSH_ASSERT(n1.isNumber());
+    if (!n2.isNumber()) {
+        LOG1("n2=~a\n", n2);
+    }
     MOSH_ASSERT(n2.isNumber());
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {

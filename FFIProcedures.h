@@ -43,6 +43,8 @@ Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
+
 }; // namespace scheme
 
 #endif // __SCHEME_FFI_PROCEDURES__

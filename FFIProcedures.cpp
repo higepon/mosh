@@ -149,6 +149,31 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
+Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-call->string-or-zero");
+    checkArgumentLengthAtLeast(1);
+    argumentAsUintptr_t(0, func, "Invalid FFI function");
+
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+
+    const uintptr_t ret = callStub(func, cstack.frame(), argc);
+    if (ret == 0) {
+        return Object::makeFixnum(0);
+    } else {
+
+        return Object::makeString((char*)ret);
+    }
+
+}
+
 Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-pointer->string");

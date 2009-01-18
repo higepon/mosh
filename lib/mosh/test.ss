@@ -1,5 +1,5 @@
 (library (mosh test)
-  (export test* test/exception test/violation?)
+  (export test* test/exception test/violation? test/t)
   (import (only (rnrs) define-syntax lambda let* if syntax-case syntax equal? quote begin syntax->datum exit ... guard violation?)
           (mosh string))
 
@@ -20,6 +20,12 @@
         ((_ test expected)
          (syntax
           (test* test expected test))))))
+
+  (define-syntax test/t
+    (lambda (x)
+      (syntax-case x ()
+        [(_ form)
+         #'(test* form #t)])))
 
   (define-syntax test/exception
     (lambda (x)

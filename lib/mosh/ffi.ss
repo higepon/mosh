@@ -2,8 +2,9 @@
   (export c-function open-shared-library
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)))
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax
-                       quasiquote unless assertion-violation quote = length
-                       for-each apply hashtable-ref unquote integer? string? ...)
+                       quasiquote unless assertion-violation quote = length and number?
+                       for-each apply hashtable-ref unquote integer? string? ... or zero?
+                       for-all procedure?)
           (only (mosh) alist->eq-hash-table)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int))
@@ -16,19 +17,23 @@
 
 (define stub-ht (alist->eq-hash-table
                  `((void* . ,%ffi-call->void*)
+                   (char* . ,%ffi-call->string-or-zero) ;; char* may be NULL,
+                   (void  . ,%ffi-call->void)
                    (int   . ,%ffi-call->int))))
 
 (define checker-ht (alist->eq-hash-table
                     `((void* . ,integer?)
                       (int   . ,integer?)
-                      (char* . ,string?))))
+                      (char* . ,(lambda (x) (or (and (number? x) (zero? x)) string?))))))
 
 (define (make-c-function lib ret-type name arg-types)
   (let ([func (%ffi-lookup lib name)]
         [stub (hashtable-ref stub-ht ret-type #f)]
         [checkers (map (lambda (type) (hashtable-ref checker-ht type #f)) arg-types)])
+    (unless (for-all procedure? checkers)
+      (assertion-violation 'c-function "invalid argument type for c-function"))
     (unless stub
-      (assertion-violation 'c-function "wrong ret type" ret-type))
+      (assertion-violation 'c-function "wrong return type" ret-type))
     (unless func
       (assertion-violation 'c-function "c-function not found" name))
     (lambda args

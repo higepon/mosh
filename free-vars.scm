@@ -459,6 +459,7 @@
     %ffi-call->int
     %ffi-call->void
     %ffi-call->void*
+    %ffi-call->string-or-zero
     %ffi-pointer->string
     %ffi-pointer-ref
     )

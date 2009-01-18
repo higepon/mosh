@@ -12,4 +12,5 @@
         (mosh ffi)
         (mosh shell)
         (mosh shell repl)
+;        (mysql)
         )
