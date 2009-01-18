@@ -2,6 +2,7 @@
  * FileBinaryOutputPort.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,32 +27,81 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: FileBinaryOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id$
  */
 
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h> // memcpy
 #include "Object.h"
+#include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "FileBinaryOutputPort.h"
 #include "ByteVector.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false)
+FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), bufferMode_(BLOCK)
 {
+    if (fd == 1) {
+        bufferMode_ = LINE;
+    } else if (fd == 2) {
+        bufferMode_ = NONE;
+    }
+
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), bufferMode_(BLOCK)
 {
+    // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
+}
+
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : isClosed_(false)
+{
+    // todo fileOptions process
+    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+
+    if (bufferMode == Symbol::NONE) {
+        bufferMode_ = NONE;
+    } else if (bufferMode == Symbol::LINE) {
+        bufferMode_ = LINE;
+    } else {
+        bufferMode_ = BLOCK;
+    }
+
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+#ifdef USE_BOEHM_GC
+        buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+        buffer_ = new uint8_t[BUF_SIZE];
+#endif
+    }
 }
 
 FileBinaryOutputPort::~FileBinaryOutputPort()
 {
+#ifdef USE_BOEHM_GC
+#else
+    delete buffer_;
+#endif
+    if (buffer_ != NULL && bufIdx_ != 0) {
+        bufFlush();
+    }
     close();
 }
 
@@ -63,12 +113,12 @@ bool FileBinaryOutputPort::isClosed() const
 int FileBinaryOutputPort::putU8(uint8_t v)
 {
     MOSH_ASSERT(fd_ != INVALID_FILENO);
-    return write(fd_, &v, 1);
+    return bufWrite(&v, 1);
 }
 
 int FileBinaryOutputPort::putU8(uint8_t* v, int size)
 {
-    return write(fd_, v, size);
+    return bufWrite(v, size);
 }
 
 int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
@@ -79,12 +129,12 @@ int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
 int FileBinaryOutputPort::putByteVector(ByteVector bv, int start, int count)
 {
     uint8_t* buf = bv.data();
-    return write(fd_, &buf[start], count);
+    return bufWrite(&buf[start], count);
 }
 
 int FileBinaryOutputPort::open()
 {
-    if (-1 == fd_) {
+    if (INVALID_FILENO == fd_) {
         return MOSH_FAILURE;
     } else {
         return MOSH_SUCCESS;
@@ -93,7 +143,11 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
+    if (buffer_ != NULL & bufIdx_ != 0) {
+        bufFlush();
+    }
     if (!isClosed() && INVALID_FILENO != fd_) {
+
         isClosed_ = true;
         if (fd_ != ::fileno(stdout) && fd_ != ::fileno(stderr)) {
             ::close(fd_);
@@ -105,4 +159,47 @@ int FileBinaryOutputPort::close()
 int FileBinaryOutputPort::fileno() const
 {
     return fd_;
+}
+
+
+void FileBinaryOutputPort::bufFlush()
+{
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+        bufWriteLen_ = write(fd_, buffer_, bufIdx_);
+        bufIdx_ = 0;
+    }
+}
+
+int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
+{
+    if (bufferMode_ == NONE) {
+        return write(fd_, data, reqSize);
+    }
+    if (bufferMode_ == LINE) {
+        // todo implement
+        return write(fd_, data, reqSize); // tempoary
+    }
+    if (bufferMode_ == BLOCK) {
+        int writeSize = 0;
+        while (writeSize < reqSize) {
+            int bufDiff = BUF_SIZE - bufIdx_;
+            int sizeDiff = reqSize - writeSize;
+            if (bufDiff >= sizeDiff) {
+                memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
+                bufIdx_ += sizeDiff;
+                writeSize += sizeDiff;
+            } else {
+                memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
+                writeSize += bufDiff;
+                bufFlush(); // (bufIdx_ = 0)
+                if (bufWriteLen_ < BUF_SIZE) {
+                    // todo
+                    break;
+                }
+            }
+        }
+        return writeSize;
+    }
+
+    // Error
 }

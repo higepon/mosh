@@ -1,7 +1,8 @@
 /*
- * FileBinaryOutputPort.h - 
+ * FileBinaryOutputPort.h - <file binary output port>
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,7 +27,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: FileBinaryOutputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_FILE_BINARY_OUTPUT_PORT__
@@ -39,8 +40,17 @@ namespace scheme {
 class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
+    enum {
+        NO_CREATE   = 1 << 0,
+        NO_FAIL     = 1 << 1,
+        NO_TRUNCATE = 1 << 2,
+
+        BUF_SIZE    = 4096,
+    };
+
     FileBinaryOutputPort(int fd);
     FileBinaryOutputPort(ucs4string file);
+    FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode);
     virtual ~FileBinaryOutputPort();
 
     int putU8(uint8_t v);
@@ -55,6 +65,13 @@ public:
 protected:
     int fd_;
     bool isClosed_;
+    enum bufferMode bufferMode_;
+    uint8_t* buffer_;
+    int bufWriteLen_;
+    int bufIdx_;
+
+    void bufFlush();
+    int bufWrite(uint8_t* data, int reqSize);
 };
 
 }; // namespace scheme

@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: BinaryOutputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_BINARY_OUTPUT_PORT__
@@ -45,6 +45,14 @@ public:
     {
         INVALID_FILENO = -1,
     };
+
+    enum bufferMode
+    {
+        NONE,
+        LINE,
+        BLOCK,
+    };
+
     virtual ~BinaryOutputPort() {};
     virtual int putU8(uint8_t v) = 0;
     virtual int putU8(uint8_t* v, int size) = 0;

@@ -1,3 +1,7 @@
+2008-01-18  kokosabu  <kokosabu@gmail.como>
+
+        * FileBinaryOutputPort.cpp: Implemented block mode.
+
 2009-01-17  higepon  <higepon@users.sourceforge.jp>
 
         * test/ffi.scm (libmysqlclient): check the return value of mysql-real-connect.

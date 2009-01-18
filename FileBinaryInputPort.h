@@ -2,6 +2,7 @@
  * FileBinaryInputPort.h - <file binary input port>
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,14 +27,13 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: FileBinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id$
  */
 
 #ifndef __SCHEME_FILE_BINARY_INPUT_PORT__
 #define __SCHEME_FILE_BINARY_INPUT_PORT__
 
 #include "BinaryInputPort.h"
-#include "Symbol.h"
 
 namespace scheme {
 

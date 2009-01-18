@@ -2,6 +2,7 @@
  * FileBinaryInputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,7 +27,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: FileBinaryInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id$
  */
 
 #include <unistd.h>
@@ -42,6 +43,7 @@
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "FileBinaryInputPort.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -79,7 +81,6 @@ FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Ob
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 
-    // todo bufferMode process
     if (bufferMode == Symbol::NONE) {
         bufferMode_ = NONE;
     } else if (bufferMode == Symbol::LINE) {
@@ -205,11 +206,6 @@ int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
     if (bufferMode_ == NONE) {
         return read(fd_, data, reqSize);
     }
-//    if (bufferMode_ == BLOCK || bufferMode_ == LINE) {
-//        return read(fd_, data, reqSize); // temporary
-//    }
-
-    // working
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         int readSize = 0;
         while (readSize < reqSize) {
@@ -230,4 +226,6 @@ int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
         }
         return readSize;
     }
+
+    // Error
 }
