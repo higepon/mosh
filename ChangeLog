@@ -1,3 +1,7 @@
+2009-01-19  kokosabu <kokosabu@gmail.com>
+
+        * Changed: file buffer size.
+
 2009-01-18  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mysql.ss : Added mysql library. It's not enough yet.

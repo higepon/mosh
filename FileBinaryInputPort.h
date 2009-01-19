@@ -41,7 +41,7 @@ class FileBinaryInputPort : public BinaryInputPort
 {
 public:
     enum {
-        BUF_SIZE = 4096,
+        BUF_SIZE = 8192,
     };
 
     FileBinaryInputPort(int fd);

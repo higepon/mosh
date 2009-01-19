@@ -45,7 +45,7 @@ public:
         NO_FAIL     = 1 << 1,
         NO_TRUNCATE = 1 << 2,
 
-        BUF_SIZE    = 4096,
+        BUF_SIZE    = 8192,
     };
 
     FileBinaryOutputPort(int fd);
