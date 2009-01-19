@@ -176,8 +176,28 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
         return write(fd_, data, reqSize);
     }
     if (bufferMode_ == LINE) {
-        // todo implement
-        return write(fd_, data, reqSize); // tempoary
+#if 1
+        return write(fd_, data, reqSize);
+#else
+        int writeSize = 0;
+        while (writeSize < reqSize) {
+            int bufDiff = BUF_SIZE - bufIdx_;
+            if (bufDiff == 0) {
+                bufFlush();
+                if (bufWriteLen_ < BUF_SIZE) {
+                    // todo
+                    break;
+                }
+            }
+            memcpy(buffer_+bufIdx_, data+writeSize, 1);
+            bufIdx_++;
+            writeSize++;
+            if (buffer_[bufIdx_-1] == '\n') {
+                bufFlush();
+            }
+        }
+        return writeSize;
+#endif
     }
     if (bufferMode_ == BLOCK) {
         int writeSize = 0;
