@@ -173,6 +173,9 @@ TEST_F(ObjectTest, Symbol) {
     EXPECT_TRUE(hige.isSymbol());
     EXPECT_TRUE(hige2.isSymbol());
 
+    ucs4string text = hoge.toSymbol()->c_str();
+    EXPECT_STREQ("hoge", text.ascii_c_str());
+
     EXPECT_FALSE(hoge.isFalse());
     EXPECT_FALSE(hoge.isTrue());
     EXPECT_FALSE(hoge.isEof());
