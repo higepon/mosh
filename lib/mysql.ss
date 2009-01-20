@@ -3,7 +3,8 @@
           mysql-num-rows mysql-fetch-row mysql-row-ref mysql-close mysql-free-result mysql-affected-rows
           mysql-get-client-info mysql-autocommit mysql-change-user mysql-character-set-name
           mysql-commit mysql-data-seek mysql-dump-debug-info mysql-errno mysql-error mysql-fetch-field
-          mysql-field-name)
+          mysql-field-name mysql-fetch-field-direct mysql-fetch-fields mysql-fetch-lengths
+          mysql-field-count mysql-field-seek)
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else)
           (mosh ffi))
 
@@ -118,6 +119,32 @@
 ;; Returns the field name of field. TODO: this depends on MYSQL_FIELD structure.
 ;; .form (field-name result)
 (define (mysql-field-name field) (pointer->string (pointer-ref field 0)))
+
+;; Given a field number fieldnr for a column within a result set, returns that column's field definition as a MYSQL_FIELD structure.
+;; .form (mysql-fetch-field-direct result fieldnr)
+;; .returns The MYSQL_FIELD structure for the specified column.
+(define mysql-fetch-field-direct (c-function-wrap libmysqlclient void* mysql_fetch_field_direct void* int))
+
+;; Returns an array of all MYSQL_FIELD  structures for a result set. Each structure provides the field definition for one column of the result set.
+;; .form (mysql-fetch-fields result)
+;; .returns An array of MYSQL_FIELD structures for all columns of a result set.
+(define mysql-fetch-fields (c-function-wrap libmysqlclient void* mysql_fetch_fields void*))
+
+;; Returns the lengths of the columns of the current row within a result set. If you plan to copy field values, this length information is also useful for optimization, because you can avoid calling strlen().
+;; .form (mysql-fetch-fields result)
+;; .returns An array of unsigned long integers representing the size of each column (not including any terminating null characters). NULL if an error occurred.
+(define mysql-fetch-lengths (c-function-wrap libmysqlclient void* mysql_fetch_lengths void*))
+
+;; Returns the number of columns for the most recent query on the connection.
+;; .form (mysql-field-count mysql-obj)
+;; .returns An unsigned integer representing the number of columns in a result set.
+(define mysql-field-count (c-function-wrap libmysqlclient int mysql_field_count void*))
+
+;;  Sets the field cursor to the given offset. The next call to mysql-fetch-field retrieves the field definition of the column associated with that offset.
+;;  To seek to the beginning of a row, pass an offset value of zero.
+;; .form (mysql-field-seek result offset)
+;; .returns The previous value of the field cursor.
+(define mysql-field-seek (c-function-wrap libmysqlclient int mysql_field_seek void* int))
 
 ;; Initialize MySQL client
 ;; .form (init)

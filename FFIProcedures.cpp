@@ -259,3 +259,19 @@ Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
         return Bignum::makeIntegerFromUintprt_t(((uintptr_t*)p)[index]);
     }
 }
+
+// Object scheme::internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("%ffi-pointer-value");
+//     checkArgumentLength(1);
+//     const Object obj = argv[0];
+//     if (obj.isHeapObject()) {
+//         // we know it may over flow, but enough
+// //        return Object::makeFixnum(reinterpret_cast<uintptr_t>(reinterpret_cast<HeapObject*>(val)->obj));
+//         return Bignum::makeIntegerFromUintprt_t(static_cast<uintptr_t>(reinterpret_cast<HeapObject*>(obj.val)->obj));
+
+//     } else {
+//         callAssertionViolationAfter(theVM, procedureName, "not a pointer object", L1(obj));
+//         return Object::Undef;
+//     }
+// }

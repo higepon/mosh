@@ -35,7 +35,10 @@
                 lambda call-with-values datum->syntax quote cons values
                 reverse list unsyntax unsyntax-splicing if null? apply
                 error car  cdr  not syntax let with-syntax quasisyntax)
-          (clos core))
+          (only (clos core) <class> print-object initialize make
+                initialize-direct-slots print-object-with-slots
+                get-arg slot-set! slot-ref <object> <top> add-method
+                <method> <generic>))
 
   (define-syntax define-class
     (syntax-rules ()

@@ -31,9 +31,9 @@
   (import (only (rnrs) define define-syntax syntax-rules let if and >= string-length char=? string-ref - ... lambda
                 string->symbol substring symbol->string display when write or quote null? not caar cdr
                 )
-          (clos introspection)
-          (clos slot-access)
-          (clos private compat))
+          (only (clos introspection) class-definition-name class-of class-slots class-direct-slots)
+          (only (clos slot-access) slot-ref slot-set!)
+          (only (clos private compat) pointer-value get-arg))
 
   (define (unmangle-class-name class-name)
     (let ((str (symbol->string class-name)))
@@ -42,11 +42,11 @@
                (char=? (string-ref str (- (string-length str) 1)) #\>))
           (string->symbol (substring str 1  (- (string-length str) 1)))
           class-name)))
-  
+
   (define (print-unreadable-object* port type? addr? obj thunk)
     (display "#<" port)
-    (when type? 
-      (write (unmangle-class-name 
+    (when type?
+      (write (unmangle-class-name
                  (or (class-definition-name (class-of obj)) 'unknown))
                port)
       (display " " port))
@@ -60,10 +60,10 @@
   (define-syntax print-unreadable-object
     (syntax-rules ()
       ((print-unreadable-object (?port ?type? ?addr? ?obj) ?body ...)
-       (print-unreadable-object* ?port 
-                                 ?type? 
-                                 ?addr? 
-                                 ?obj 
+       (print-unreadable-object* ?port
+                                 ?type?
+                                 ?addr?
+                                 ?obj
                                  (lambda () ?body ... 'ignored)))))
 
   (define (print-object-with-slots obj port)

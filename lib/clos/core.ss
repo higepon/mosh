@@ -78,8 +78,11 @@
    
    ) ;; export
   
-  (import (clos bootstrap standard-classes)
-          (clos bootstrap generic-functions)
+  (import (only (clos bootstrap standard-classes) <method> <generic> <entity-class> <procedure-class>
+                <object> <top> <class>)
+          (only (clos bootstrap generic-functions) print-object compute-apply-methods compute-method-more-specific?
+                compute-methods compute-apply-generic add-method compute-slots compute-precedence-list
+                compute-getter-and-setter allocate-instance initialize make)
           (clos slot-access)
           (clos introspection)
           (clos private compat)

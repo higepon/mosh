@@ -37,16 +37,18 @@
           print-object)
 
   (import (only (rnrs) define quote list lambda car cdr begin let cond eq? else error)
-          (clos bootstrap standard-classes)
-          (clos private allocation)
-          (clos introspection)
-          (clos std-protocols make)
-          (clos std-protocols allocate-instance)
-          (clos std-protocols initialize)
-          (clos std-protocols class-initialization)
-          (clos std-protocols add-method)
-          (clos std-protocols generic-invocation)
-          (clos std-protocols print-object))
+          (only (clos bootstrap standard-classes) bootstrap-make <method> <class> <entity-class> <object>
+                <generic>)
+          (only (clos private allocation) set-instance-printer!)
+          (only (clos introspection) class-of)
+          (only (clos std-protocols make) class-make)
+          (only (clos std-protocols allocate-instance) class-allocate-instance entity-class-allocate-instance)
+          (only (clos std-protocols initialize) class-initialize generic-initialize method-initialize)
+          (only (clos std-protocols class-initialization) class-compute-precedence-list class-compute-slots class-compute-getter-and-setter)
+          (only (clos std-protocols add-method) generic-add-method)
+          (only (clos std-protocols generic-invocation) generic-compute-methods generic-compute-apply-generic generic-compute-method-more-specific?
+                generic-compute-apply-methods register-generic-invocation-generics!)
+          (only (clos std-protocols print-object) object-print-object))
 
   (define make
     (bootstrap-make <generic>
