@@ -3340,36 +3340,36 @@
 (16 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
            [sub (%ffi-lookup handle 'sub)])
       (%ffi-call->int sub 5 -11))))
-(14 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+(14 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
            [sub3 (%ffi-lookup handle 'sub3)])
-      (%ffi-call->int sub3 5 -11 2)))
+      (%ffi-call->int sub3 5 -11 2))))
 (error (%ffi-open "hoge"))
-(#f (let ([handle (%ffi-open "./libffitest.so.1.0")])
-      (%ffi-lookup handle 'hoge)))
-(3 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+(#f (catch (let ([handle (%ffi-open "./libffitest.so.1.0")])
+      (%ffi-lookup handle 'hoge))))
+(3 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
           [return3 (%ffi-lookup handle 'return3)])
-     (%ffi-call->int return3)))
-(5 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+     (%ffi-call->int return3))))
+(5 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
           [string_length (%ffi-lookup handle 'string_length)])
-     (%ffi-call->int string_length "12345")))
-("HELLO" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+     (%ffi-call->int string_length "12345"))))
+("HELLO" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                 [upper (%ffi-lookup handle 'my_upper)]
                 [bv    (u8-list->bytevector (map char->integer (string->list "hello")))])
            (%ffi-call->void upper bv 5)
-           (list->string (map integer->char (bytevector->u8-list bv)))))
+           (list->string (map integer->char (bytevector->u8-list bv))))))
 ;; pointer test
-("12345678" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+("12345678" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'pointer)])
-              (number->string (%ffi-call->void* p) 16)))
-("hello" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+              (number->string (%ffi-call->void* p) 16))))
+("hello" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'return_pointer_string)])
-              (%ffi-pointer->string (%ffi-call->void* p))))
-("hello" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+              (%ffi-pointer->string (%ffi-call->void* p)))))
+("hello" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-              (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p)))))
-("world" (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+              (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p))))))
+("world" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-              (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p) 1))))
+              (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p) 1)))))
 
 (todo error (read-string "#t.#f"))
 
