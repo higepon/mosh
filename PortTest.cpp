@@ -69,40 +69,42 @@ protected:
     }
 };
 
-TEST_F(PortTest, BinaryInputPortAutoClose) {
-    portIsClosed = false;
-    EXPECT_FALSE(::portIsClosed);
-    volatile BinaryInputPort* port = new TestingFileBinaryInputPort(UC("/tmp/hoge.log"));
-    EXPECT_FALSE(::portIsClosed);
-    port = NULL; // port is no more referenced!
+// We are not sure when auto close.
 
-    // some tough work that invoke gc().
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
-    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-    VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-    vm->loadCompiler();
+// TEST_F(PortTest, BinaryInputPortAutoClose) {
+//     portIsClosed = false;
+//     EXPECT_FALSE(::portIsClosed);
+//     volatile BinaryInputPort* port = new TestingFileBinaryInputPort(UC("/tmp/hoge.log"));
+//     EXPECT_FALSE(::portIsClosed);
+//     port = NULL; // port is no more referenced!
 
-    // closed!
-    EXPECT_TRUE(::portIsClosed);
-}
+//     // some tough work that invoke gc().
+//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+//     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
+//     Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
+//     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+//     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
+//     vm->loadCompiler();
+
+//     // closed!
+//     EXPECT_TRUE(::portIsClosed);
+// }
 
 
-TEST_F(PortTest, BinaryOutputPortAutoClose) {
-    portIsClosed = false;
-    EXPECT_FALSE(::portIsClosed);
-    volatile BinaryOutputPort* port = new TestingFileBinaryOutputPort(UC("/tmp/hoge.log"));
-    EXPECT_FALSE(::portIsClosed);
-    port = NULL;
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-    Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-    Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
-    Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-    VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-    vm->loadCompiler();
-    EXPECT_TRUE(::portIsClosed);
-}
+// TEST_F(PortTest, BinaryOutputPortAutoClose) {
+//     portIsClosed = false;
+//     EXPECT_FALSE(::portIsClosed);
+//     volatile BinaryOutputPort* port = new TestingFileBinaryOutputPort(UC("/tmp/hoge.log"));
+//     EXPECT_FALSE(::portIsClosed);
+//     port = NULL;
+//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+//     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
+//     Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
+//     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+//     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
+//     vm->loadCompiler();
+//     EXPECT_TRUE(::portIsClosed);
+// }
 
 TEST_F(PortTest, PortPredicate) {
     const Object stringPort = Object::makeStringOutputPort();
