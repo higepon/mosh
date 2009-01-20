@@ -47,6 +47,15 @@ protected:
     }
 };
 
+TEST_F(ObjectTest, ucs4string) {
+    ucs4string text = UC("hige");
+    EXPECT_STREQ("hige", text.ascii_c_str());
+    EXPECT_EQ(strlen("hige"), text.size());
+
+
+
+}
+
 TEST_F(ObjectTest, Nil) {
     const Object nil = Object::Nil;
     EXPECT_TRUE(nil.isNil());
