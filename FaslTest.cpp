@@ -72,30 +72,50 @@ protected:
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
     }
+
+    virtual void Store(Object obj)
+    {
+        const char* TMP_FILE = "/tmp/fasl-test.tmp";
+        BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+        FaslWriter writer(out);
+        TRY_IO {
+            writer.put(obj);
+        } CATCH_IO {
+            LOG1("Error:~a\n", IO_ERROR_MESSAGE);
+            ASSERT_TRUE(false);
+        }
+        out->close();
+    }
+
+    virtual Object Restore()
+    {
+        const char* TMP_FILE = "/tmp/fasl-test.tmp";
+        BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+        FaslReader reader(theVM_, in);
+        return reader.get();
+    }
+
+    virtual Object StoreAndRestore(Object obj)
+    {
+        Store(obj);
+        return Restore();
+    }
 };
 
 TEST_F(FaslTest, Fixnum) {
-    const Object fixnum = Object::makeFixnum(123456);
-
-    // Write
-    const char* TMP_FILE = "/tmp/fasl-test5.dat";
-    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
-    FaslWriter writer(out);
-    TRY_IO {
-        writer.put(fixnum);
-    } CATCH_IO {
-        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-        ASSERT_TRUE(false);
-    }
-    out->close();
-
-    // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
-    FaslReader reader(theVM_, in);
-    const Object restored = reader.get();
+    const Object restored = StoreAndRestore(Object::makeFixnum(123456));
     ASSERT_TRUE(restored.isFixnum());
     EXPECT_EQ(123456, restored.toFixnum());
 }
+
+TEST_F(FaslTest, Symbol) {
+    const Object restored = StoreAndRestore(Symbol::intern(UC("hige")));
+    ASSERT_TRUE(restored.isSymbol());
+    EXPECT_TRUE(restored == Symbol::intern(UC("hige")));
+    ucs4string text = restored.toSymbol()->c_str();
+    EXPECT_STREQ("hige", text.ascii_c_str());
+}
+
 
 // make EqHashTable and write/read with Fasl
 TEST_F(FaslTest, EqHashTable) {
