@@ -1,3 +1,6 @@
+<<<<<<< .mine
+(display "hige")
+=======
 (import (rnrs)
         (mosh string)
         (mysql)
@@ -42,3 +45,4 @@
  (test/t (zero? (mysql-commit mysql)))
  (mysql-close mysql)
  '())
+>>>>>>> .r993
