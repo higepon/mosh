@@ -1,6 +1,7 @@
  (library (mosh ffi)
   (export c-function open-shared-library
-          (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)))
+          (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
+                  (%ffi-supported? ffi-supported?)))
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero?

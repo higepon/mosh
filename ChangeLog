@@ -1,5 +1,7 @@
 2009-01-20  higepon  <higepon@users.sourceforge.jp>
 
+        * Added %ffi-supporeted? procedure.
+
         * FFIProcedures.cpp : Disabled ffi procedure when not IA32.
 
         * configure.ac: Added architecture check.

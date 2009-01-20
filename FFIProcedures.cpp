@@ -48,8 +48,10 @@
 
 using namespace scheme;
 
+
 static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
 {
+#ifdef ARCH_IA32
     const int bytes = (argc * sizeof(intptr_t) + 15) & ~15;
     intptr_t ret;
     asm volatile(
@@ -65,6 +67,20 @@ static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
         : "c" (bytes), "S" (frame), "0" (func) // c:ecx, S:esi
         : "edi", "edx", "memory"); // we have a memory destruction.
     return ret;
+#else
+    return 0;
+#endif
+}
+
+Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-supported?");
+    checkArgumentLengthAtLeast(0);
+#ifdef ARCH_IA32
+    return Object::True;
+#else
+    return Object::False;
+#endif
 }
 
 Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)

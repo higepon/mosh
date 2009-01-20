@@ -996,6 +996,7 @@
     (%ffi-call->string-or-zero interaction sys)
     (%ffi-pointer->string interaction sys)
     (%ffi-pointer-ref interaction sys)
+    (%ffi-supported? interaction sys)
     (%waitpid interaction sys)
     (%spawn interaction sys)
     (current-directory interaction sys mosh)
