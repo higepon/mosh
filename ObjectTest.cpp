@@ -49,6 +49,11 @@ protected:
 
 TEST_F(ObjectTest, ucs4string) {
     ucs4string text = UC("hige");
+    EXPECT_EQ('h', text[0]);
+    EXPECT_EQ('i', text[1]);
+    EXPECT_EQ('g', text[2]);
+    EXPECT_EQ('e', text[3]);
+
     EXPECT_STREQ("hige", text.ascii_c_str());
     EXPECT_EQ(strlen("hige"), text.size());
 
