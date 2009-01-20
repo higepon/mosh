@@ -187,6 +187,7 @@ void FaslWriter::emitAsciiString(const ucs4string& string)
 {
     emitU32(string.size());
     for (uint32_t i = 0; i < string.size(); i++) {
+        printf("<%c>", string[i]);
         emitU8(string[i]);
     }
 }
