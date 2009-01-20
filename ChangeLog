@@ -1,5 +1,7 @@
 2009-01-20  higepon  <higepon@users.sourceforge.jp>
 
+        * Now Mosh works on x86-64 Linux.
+
         * Added %ffi-supporeted? procedure.
 
         * FFIProcedures.cpp : Disabled ffi procedure when not IA32.
