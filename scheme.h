@@ -101,7 +101,7 @@ enum {
 #define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
 typedef intptr_t word;
-typedef word ucs4char;
+typedef int32_t ucs4char; // use -1 for EOF
 
 #ifdef __GNUC__
 #define ALWAYS_INLINE  __attribute__((always_inline))
