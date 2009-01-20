@@ -1,3 +1,7 @@
+2009-01-20  higepon  <higepon@users.sourceforge.jp>
+
+        * scheme.h: Fixed the size bug of ucs4char. It causes crash on Linux 64bit.
+
 2009-01-19  kokosabu <kokosabu@gmail.com>
 
         * Changed: file buffer size.

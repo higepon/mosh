@@ -89,8 +89,13 @@ public:
 //         mpz_init(temp);
 //         mpz_fdiv_q_2exp(temp, value, 32);
 
-        MOSH_ASSERT(sizeof(uint32_t) == sizeof(unsigned long));
-        return mpz_get_ui(value);
+        if (sizeof(uint32_t) == sizeof(unsigned long)) {
+            return mpz_get_ui(value);
+        } else if (sizeof(uint64_t) == sizeof(unsigned long)) {
+            return (uint32_t)mpz_get_ui(value);
+        } else {
+            MOSH_FATAL("not reached");
+        }
     }
 
     int32_t toS32() const
@@ -100,7 +105,13 @@ public:
 //         mpz_t temp;
 //         mpz_init(temp);
 //         mpz_fdiv_q_2exp(temp, value, 32);
-        return mpz_get_si(value);
+        if (sizeof(int32_t) == sizeof(unsigned long)) {
+            return mpz_get_si(value);
+        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
+            return (int32_t)mpz_get_si(value);
+        } else {
+            MOSH_FATAL("not reached");
+        }
     }
 
     bool fitsU64() const
@@ -121,37 +132,55 @@ public:
     uint64_t toU64() const
     {
         MOSH_ASSERT(fitsU64());
-        uint64_t ret = 0;
-        mpz_t temp;
-        mpz_init(temp);
-        mpz_fdiv_q_2exp(temp, value, 32);
-        ret = mpz_get_ui(temp);
-        ret = ret << 32; // upper 32bit
-        mpz_set_ui(temp, 0xffffffff);
-        mpz_and(temp, value, temp);
-        ret += mpz_get_ui(temp); // lower 32bit
-        return ret;
+
+        if (sizeof(int32_t) == sizeof(unsigned long)) {
+            uint64_t ret = 0;
+            mpz_t temp;
+            mpz_init(temp);
+            mpz_fdiv_q_2exp(temp, value, 32);
+            ret = mpz_get_ui(temp);
+            ret = ret << 32; // upper 32bit
+            mpz_set_ui(temp, 0xffffffff);
+            mpz_and(temp, value, temp);
+            ret += mpz_get_ui(temp); // lower 32bit
+            return ret;
+        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
+            return mpz_get_ui(value);
+        } else {
+            MOSH_FATAL("not reached");
+        }
     }
 
     int64_t toS64() const
     {
         MOSH_ASSERT(fitsS64());
-        uint64_t ret = 0;
-        mpz_t temp;
-        mpz_init(temp);
-        mpz_fdiv_q_2exp(temp, value, 32);
-        ret = mpz_get_si(temp);
-        ret = ret << 32; // upper 32bit
-        mpz_set_ui(temp, 0xffffffff);
-        mpz_and(temp, value, temp);
-        ret += mpz_get_ui(temp); // lower 32bit
-        return ret;
+        if (sizeof(int32_t) == sizeof(unsigned long)) {
+            uint64_t ret = 0;
+            mpz_t temp;
+            mpz_init(temp);
+            mpz_fdiv_q_2exp(temp, value, 32);
+            ret = mpz_get_si(temp);
+            ret = ret << 32; // upper 32bit
+            mpz_set_ui(temp, 0xffffffff);
+            mpz_and(temp, value, temp);
+            ret += mpz_get_ui(temp); // lower 32bit
+            return ret;
+        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
+            return mpz_get_si(value);
+        } else {
+            MOSH_FATAL("not reached");
+        }
     }
 
     void setU32(uint32_t value)
     {
-        MOSH_ASSERT(sizeof(unsigned long) ==  sizeof(uint32_t));
-        mpz_set_ui(this->value, value);
+        if (sizeof(int32_t) == sizeof(unsigned long)) {
+            mpz_set_ui(this->value, value);
+        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
+            return mpz_set_ui(this->value, value);
+        } else {
+            MOSH_FATAL("not reached");
+        }
     }
 
     void setDouble(double value)
