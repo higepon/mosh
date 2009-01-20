@@ -1,6 +1,3 @@
-<<<<<<< .mine
-(display "hige")
-=======
 (import (rnrs)
         (mosh string)
         (mysql)
@@ -34,8 +31,6 @@
      [else
       (test/t (string? (mysql-field-name field)))
       (loop (mysql-fetch-field result))]))
-<<<<<<< .mine
-
   (test/t (string? (mysql-field-name (mysql-fetch-field-direct result 1))))
   (test/t (string? (mysql-error mysql)))
   (mysql-data-seek result 1)
@@ -50,19 +45,3 @@
   (test/t (zero? (mysql-commit mysql)))
   (mysql-close mysql)
   '())
-=======
- (test/t (string? (mysql-error mysql)))
- (mysql-data-seek result 1)
- (test/t (zero? (mysql-errno mysql)))
- (test/t (zero? (mysql-dump-debug-info mysql)))
- (test/t (string? (mysql-get-client-info)))
- (test/t (number? (mysql-affected-rows mysql)))
- (test/t (zero? (mysql-autocommit mysql 1)))
- (mysql-free-result result)
- (test/t (zero? (mysql-change-user mysql "root" "" "information_schema")))
- (test/t (string? (mysql-character-set-name mysql)))
- (test/t (zero? (mysql-commit mysql)))
- (mysql-close mysql)
- '())
->>>>>>> .r993
->>>>>>> .r1016
