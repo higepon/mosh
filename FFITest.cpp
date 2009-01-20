@@ -30,6 +30,10 @@
  */
 #include <gtest/gtest.h>
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
 #include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
@@ -62,6 +66,8 @@
 #include "ByteVector.h"
 
 using namespace scheme;
+
+#ifdef ARCH_IA32
 
 class FFITest : public testing::Test {
 protected:
@@ -185,3 +191,4 @@ TEST_F(FFITest, CStackTooManyArgument) {
 }
 
 
+#endif
