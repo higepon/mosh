@@ -29,6 +29,10 @@
  *  $Id: FFIProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#ifdef HAVE_CONFIG_H
+#  include "config.h"
+#endif
+
 #include <errno.h>
 #include "Object.h"
 #include "Object-inl.h"
@@ -66,6 +70,11 @@ static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
 Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void*");
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLengthAtLeast(1);
     argumentAsUintptr_t(0, func, "Invalid FFI function");
 
@@ -85,6 +94,11 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void");
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLengthAtLeast(1);
     argumentAsUintptr_t(0, func, "Invalid FFI function");
     CStack cstack;
@@ -103,6 +117,11 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->int");
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLengthAtLeast(1);
     argumentAsUintptr_t(0, func, "Invalid FFI function");
 
@@ -121,6 +140,12 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-lookup");
+
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLength(2);
     argumentAsUintptr_t(0, handle, "invalid shared library handle");
     argumentAsSymbol(1, name);
@@ -138,6 +163,12 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-open");
+
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLength(1);
     argumentAsString(0, name);
     void* handle = FFI::open(name->data().ascii_c_str());
@@ -152,6 +183,12 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->string-or-zero");
+
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLengthAtLeast(1);
     argumentAsUintptr_t(0, func, "Invalid FFI function");
 
@@ -177,6 +214,12 @@ Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object
 Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-pointer->string");
+
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLength(1);
     argumentAsUintptr_t(0, p, "pointer required");
     return Object::makeString((char*)p);
@@ -185,6 +228,12 @@ Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* a
 Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-pinter-ref");
+
+#ifndef ARCH_IA32
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
     checkArgumentLengthBetween(1, 2);
     argumentAsUintptr_t(0, p, "pointer required");
     if (argc == 1) {

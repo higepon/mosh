@@ -1,5 +1,9 @@
 2009-01-20  higepon  <higepon@users.sourceforge.jp>
 
+        * FFIProcedures.cpp : Disabled ffi procedure when not IA32.
+
+        * configure.ac: Added architecture check.
+
         * Bignum.h : Added code for 64bit.
 
         * scheme.h: Fixed the size bug of ucs4char. It causes crash on Linux 64bit.

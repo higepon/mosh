@@ -69,21 +69,6 @@ private:
     const ucs4char* lastError_;
 };
 
-#define FFI_MAX_ARGC    32
-
-#if ARCH_IA32
-    class c_stack_frame_t {
-        intptr_t m_frame[FFI_MAX_ARGC];
-        int m_count;
-        VM* m_vm;
-    public:
-        c_stack_frame_t(VM* vm) : m_vm(vm), m_count(0) {}
-        const char* push(scm_obj_t obj);
-        intptr_t* frame() { return m_frame; }
-        int count() { return m_count; }
-    };
-#endif
-
 
 }; // namespace scheme
 

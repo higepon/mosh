@@ -93,6 +93,28 @@ HAVE_EXT_HASHES=$have_ext_hashes
 AC_DEFINE_UNQUOTED([HAVE_EXT_HASHES], $have_ext_hashes, [Do we have __gnu_cxx:: hashes?])
 AC_SUBST([HAVE_EXT_HASHES])
 
+# Checks for cpu
+AC_MSG_CHECKING([for supported architecture])
+case "$host_cpu" in
+i[[3456]]86|pentium)
+        arch=i386
+        AC_MSG_RESULT([i386])
+        AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
+        ;;
+x86?64*)
+        arch=x86_64
+        AC_MSG_RESULT([x86_64])
+        AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+        ;;
+*)
+        AC_MSG_RESULT([NO!])
+        AC_MSG_WARN([architecture $host_cpu is not supported, but may work other than FFI])
+        AC_DEFINE([ARCH_UNKNOWN], 1, [Define for the AMD x86-64 architecture.])
+        ;;
+esac
+
+
+
 
 # Checks for header files.
 AC_HEADER_STDC
