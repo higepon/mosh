@@ -231,6 +231,7 @@ void FaslWriter::putSymbolsAndStrings()
         if (obj.isSymbol()) {
             Symbol* const symbol = obj.toSymbol();
             ucs4string text = symbol->c_str();
+            printf("text=<%s>\n", text.ascii_c_str());
             if (text.is_ascii()) {
                 emitU8(Fasl::TAG_ASCII_SYMBOL);
                 emitU32(i);
