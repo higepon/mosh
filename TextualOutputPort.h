@@ -65,6 +65,7 @@ public:
     bool isErrorOccured() const;
     Object errorMessage() const;
     Object irritants() const;
+    void flush();
 
 private:
     BinaryOutputPort* port_;

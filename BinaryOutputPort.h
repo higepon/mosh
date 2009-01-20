@@ -62,6 +62,7 @@ public:
     virtual int close() = 0;
     virtual bool isClosed() const = 0;
     virtual int fileno() const = 0;
+    virtual void bufFlush() = 0;
 };
 
 }; // namespace scheme

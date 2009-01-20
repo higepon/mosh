@@ -1,3 +1,7 @@
+2009-01-20  kokosabu  <kokosabu@gmail.com>
+
+        * FileBinaryOutputPort.cpp: Implemented buffer mode.
+
 2009-01-20  higepon  <higepon@users.sourceforge.jp>
 
         * Now Mosh works on x86-64 Linux.

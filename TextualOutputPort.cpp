@@ -181,7 +181,8 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
     if (!buffer.empty()) {
         putString(buffer);
     }
-    fflush(stdout); // temp
+    flush();
+    //fflush(stdout); // temp
     return;
 }
 
@@ -667,5 +668,12 @@ void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
             putDatum(obj.cdr(), false);
             putString(UC(")"));
         }
+    }
+}
+
+void TextualOutputPort::flush()
+{
+    if (port_) {
+        port_->bufFlush();
     }
 }

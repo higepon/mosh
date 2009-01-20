@@ -185,11 +185,12 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     const Object obj = argv[0];
     if (1 == argc) {
         theVM->currentOutputPort().toTextualOutputPort()->display(obj);
+        theVM->currentOutputPort().toTextualOutputPort()->flush();
     } else {
         argumentAsTextualOutputPort(1, textualOutputPort);
         textualOutputPort->display(obj);
+        textualOutputPort->flush();
     }
-    fflush(stdout);// temp
     return Object::Undef;
 }
 

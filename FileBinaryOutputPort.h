@@ -61,6 +61,7 @@ public:
     int close();
     bool isClosed() const;
     int fileno() const;
+    void bufFlush();
 
 protected:
     int fd_;
@@ -70,7 +71,6 @@ protected:
     int bufWriteLen_;
     int bufIdx_;
 
-    void bufFlush();
     int bufWrite(uint8_t* data, int reqSize);
 };
 
