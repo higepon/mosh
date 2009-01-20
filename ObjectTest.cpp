@@ -47,6 +47,16 @@ protected:
     }
 };
 
+TEST_F(ObjectTest, ucs4char) {
+    const ucs4char* text = UC("hige");
+    EXPECT_EQ('h', text[0]);
+    EXPECT_EQ('i', text[1]);
+    EXPECT_EQ('g', text[2]);
+    EXPECT_EQ('e', text[3]);
+    EXPECT_EQ(0, text[4]);
+}
+
+
 TEST_F(ObjectTest, ucs4string) {
     ucs4string text = UC("hige");
     EXPECT_EQ('h', text[0]);
@@ -56,9 +66,6 @@ TEST_F(ObjectTest, ucs4string) {
 
     EXPECT_STREQ("hige", text.ascii_c_str());
     EXPECT_EQ(strlen("hige"), text.size());
-
-
-
 }
 
 TEST_F(ObjectTest, Nil) {
