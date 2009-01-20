@@ -74,6 +74,29 @@ protected:
     }
 };
 
+TEST_F(FaslTest, Fixnum) {
+    const Object fixnum = Object::makeFixnum(123456);
+
+    // Write
+    const char* TMP_FILE = "/tmp/fasl-test5.dat";
+    BinaryOutputPort* const out = new FileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+    FaslWriter writer(out);
+    TRY_IO {
+        writer.put(fixnum);
+    } CATCH_IO {
+        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
+        ASSERT_TRUE(false);
+    }
+    out->close();
+
+    // Read
+    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+    FaslReader reader(theVM_, in);
+    const Object restored = reader.get();
+    ASSERT_TRUE(restored.isFixnum());
+    EXPECT_EQ(123456, restored.toFixnum());
+}
+
 // make EqHashTable and write/read with Fasl
 TEST_F(FaslTest, EqHashTable) {
     const Object table = Object::makeEqHashTable();
