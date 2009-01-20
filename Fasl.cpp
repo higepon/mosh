@@ -187,7 +187,6 @@ void FaslWriter::emitAsciiString(const ucs4string& string)
 {
     emitU32(string.size());
     for (uint32_t i = 0; i < string.size(); i++) {
-        printf("<%c>", string[i]);
         emitU8(string[i]);
     }
 }
@@ -231,7 +230,6 @@ void FaslWriter::putSymbolsAndStrings()
         if (obj.isSymbol()) {
             Symbol* const symbol = obj.toSymbol();
             ucs4string text = symbol->c_str();
-            printf("text=<%s> size=%d\n", text.ascii_c_str(), text.size());
             if (text.is_ascii()) {
                 emitU8(Fasl::TAG_ASCII_SYMBOL);
                 emitU32(i);
