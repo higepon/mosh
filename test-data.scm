@@ -3333,9 +3333,13 @@
        (proc)))
 
 ;; FFI
-(16 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+[definition
+  (define-macro (catch obj)
+    `(guard (c (#t "not supported")) ,obj))
+]
+(16 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
            [sub (%ffi-lookup handle 'sub)])
-      (%ffi-call->int sub 5 -11)))
+      (%ffi-call->int sub 5 -11))))
 (14 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
            [sub3 (%ffi-lookup handle 'sub3)])
       (%ffi-call->int sub3 5 -11 2)))
