@@ -67,7 +67,7 @@
 
 using namespace scheme;
 
-#ifdef ARCH_IA32
+#if defined(ARCH_IA32) || defined(ARCH_X86_64)
 
 class FFITest : public testing::Test {
 protected:

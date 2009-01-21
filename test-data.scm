@@ -3370,6 +3370,10 @@
 ("world" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'return_array_of_pointer_string)])
               (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p) 1)))))
+(36 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+           [add8 (%ffi-lookup handle 'add8)])
+      (%ffi-call->int add8 1 2 3 4 5 6 7 8)))
+
 
 (todo error (read-string "#t.#f"))
 

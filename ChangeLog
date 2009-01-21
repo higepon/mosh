@@ -1,5 +1,9 @@
 2009-01-21  higepon  <higepon@users.sourceforge.jp>
 
+	* FFIProcedures.cpp (callStub): Now FFI works on X86-64 Linux yeah!.
+
+	* ffitest.c: Added add8 for x86-64.
+
         * Now Mosh works on PS3 gentoo Linux.(See http://d.hatena.ne.jp/mjt/20090121/p3 )
 
 2009-01-20  kokosabu  <kokosabu@gmail.com>

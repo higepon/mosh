@@ -23,7 +23,6 @@
 
     (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
-
     (when libmysqlclient
       (let ()
         (define NULL 0)

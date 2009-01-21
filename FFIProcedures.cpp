@@ -48,6 +48,12 @@
 
 using namespace scheme;
 
+#ifdef ARCH_IA32
+#define FFI_SUPPORTED 1
+#elif defined ARCH_X86_64
+#define FFI_SUPPORTED 1
+#endif
+
 
 static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
 {
@@ -64,9 +70,59 @@ static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
         "call    *%%eax       ;"
         "movl    %%edi, %%esp ;"
         : "=a" (ret)
-        : "c" (bytes), "S" (frame), "0" (func) // c:ecx, S:esi
+        : "c" (bytes), "S" (frame), "0" (func) // c:ecx, S:esi 0:match to the 0th output
         : "edi", "edx", "memory"); // we have a memory destruction.
     return ret;
+#elif defined ARCH_X86_64
+    intptr_t ret = 0;
+    const int MAX_REG = 6;
+    if (argc <= MAX_REG) {
+        asm volatile("movq %%rsi, %%r10;"
+                     "movq 0(%%r10), %%rdi ;"   // register argument 1
+                     "movq 8(%%r10), %%rsi ;"   // register argument 2
+                     "movq 16(%%r10), %%rdx ;"  // register argument 3
+                     "movq 24(%%r10), %%rcx ;"  // register argument 4
+                     "movq 32(%%r10), %%r8 ;"   // register argument 5
+                     "movq 40(%%r10), %%r9 ;"   // register argument 6
+                     "call *%%rax ;"
+                     : "=a" (ret)
+                     : "0" (func), "S" (frame)
+                       // , "r10" (frame)
+                     : "memory"
+            );
+    } else {
+        const int bytes = (argc - 6) * 8;
+        asm volatile(
+            "movq %%rsi, %%r10;" // r10 for pointing frame top
+            "movq %%r10, %%r11;" // r11 for pointer to stack argument in frame
+            "addq $48 , %%r11;"
+            "movq %%r11, %%r12;"
+            "addq %%rcx, %%r12;"  // r12 end of stack argument in frame
+            "movq 0(%%r10), %%rdi ;"   // register argument 1
+            "movq 8(%%r10), %%rsi ;"   // register argument 2
+            "movq 16(%%r10), %%rdx ;"  // register argument 3
+            "movq 24(%%r10), %%rcx ;"  // register argument 4
+            "movq 32(%%r10), %%r8 ;"   // register argument 5
+            "movq 40(%%r10), %%r9 ;"   // register argument 6
+            "movq %%rsp, %%r13;"
+            "1:   ;"
+            "cmpq %%r11, %%r12;"
+            "je 2f;"
+            "movq 0(%%r11), %%r14;"
+            "movq %%r14, 0(%%r13);"
+            "addq $8, %%r11;"
+            "addq $8, %%r13;"
+            "jmp 1b;"
+            "2:   ;"
+            "call *%%rax ;"
+            : "=a" (ret)
+            : "c" (bytes), "0" (func), "S" (frame)
+            : "memory"
+            );
+    }
+
+    return ret;
+
 #else
     return 0;
 #endif
@@ -76,7 +132,7 @@ Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-supported?");
     checkArgumentLengthAtLeast(0);
-#ifdef ARCH_IA32
+#ifdef FFI_SUPPORTED
     return Object::True;
 #else
     return Object::False;
@@ -86,7 +142,7 @@ Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void*");
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -103,14 +159,14 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
         }
     }
 
-    const uintptr_t ret = callStub(func, cstack.frame(), argc);
+    const uintptr_t ret = callStub(func, cstack.frame(), cstack.count());
     return Bignum::makeIntegerFromUintprt_t(ret);
 }
 
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->void");
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -126,14 +182,14 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
-    callStub(func, cstack.frame(), argc);
+    callStub(func, cstack.frame(), cstack.count());
     return Object::Undef;
 }
 
 Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-call->int");
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -150,14 +206,14 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
-    const intptr_t ret = callStub(func, cstack.frame(), argc);
+    const intptr_t ret = callStub(func, cstack.frame(), cstack.count());
     return Bignum::makeIntegerFromIntprt_t(ret);
 }
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-lookup");
 
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -180,7 +236,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-open");
 
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -200,7 +256,7 @@ Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object
 {
     DeclareProcedureName("%ffi-call->string-or-zero");
 
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -217,7 +273,7 @@ Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object
         }
     }
 
-    const uintptr_t ret = callStub(func, cstack.frame(), argc);
+    const uintptr_t ret = callStub(func, cstack.frame(), cstack.count());
     if (ret == 0) {
         return Object::makeFixnum(0);
     } else {
@@ -231,7 +287,7 @@ Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* a
 {
     DeclareProcedureName("%ffi-pointer->string");
 
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
@@ -245,7 +301,7 @@ Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%ffi-pinter-ref");
 
-#ifndef ARCH_IA32
+#ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
