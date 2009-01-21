@@ -4,7 +4,10 @@
           mysql-get-client-info mysql-autocommit mysql-change-user mysql-character-set-name
           mysql-commit mysql-data-seek mysql-dump-debug-info mysql-errno mysql-error mysql-fetch-field
           mysql-field-name mysql-fetch-field-direct mysql-fetch-fields mysql-fetch-lengths
-          mysql-field-count mysql-field-seek)
+          mysql-field-count mysql-field-seek mysql-field-tell mysql-get-client-version mysql-get-host-info
+          mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
+          mysql-hex-string mysql-info mysql-insert-id mysql-library-end)
+
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else)
           (mosh ffi))
 
@@ -67,7 +70,7 @@
 (define mysql-free-result  (c-function-wrap libmysqlclient void mysql_free_result  void*))
 
 ;; .form (get-client-info)
-;; .returns Returns a string that represents the client library version. 
+;; .returns Returns a string that represents the client library version.
 (define mysql-get-client-info (c-function-wrap libmysqlclient char* mysql_get_client_info))
 
 ;; After executing a statement with query returns the number of rows changed (for UPDATE), deleted (for DELETE), or inserted (for INSERT).
@@ -75,19 +78,19 @@
 ;; .returns An integer greater than zero indicates the number of rows affected or retrieved. Zero indicates that no records were updated for an UPDATE statement, no rows matched the WHERE clause in the query or that no query has yet been executed. -1 indicates that the query returned an error or that, for a SELECT query.
 (define mysql-affected-rows (c-function-wrap libmysqlclient int mysql_affected_rows void*))
 
-;; Sets autocommit mode on if mode is 1, off if mode is 0. 
+;; Sets autocommit mode on if mode is 1, off if mode is 0.
 ;; .form (autocommit mysql-obj 0 or 1)
-;; .returns Zero if successful. Non-zero if an error occurred. 
+;; .returns Zero if successful. Non-zero if an error occurred.
 (define mysql-autocommit (c-function-wrap libmysqlclient int mysql_autocommit void* int))
 
-;; Changes the user and causes the database specified by db to become the default (current) database on the connection specified by mysql. In subsequent queries, this database is the default for table references that do not include an explicit database specifier. 
+;; Changes the user and causes the database specified by db to become the default (current) database on the connection specified by mysql. In subsequent queries, this database is the default for table references that do not include an explicit database specifier.
 ;; .form (change-user mysql-obj user password db)
 ;; .returns Zero for success. Non-zero if an error occurred.
 (define mysql-change-user (c-function-wrap libmysqlclient int mysql_change_user void* char* char* char*))
 
-;; Returns the default character set name for the current connection. 
+;; Returns the default character set name for the current connection.
 ;; .form (character-set-name mysql-obj)
-;; .returns The default character set name 
+;; .returns The default character set name
 (define mysql-character-set-name (c-function-wrap libmysqlclient char* mysql_character_set_name void*))
 
 ;; Commits the current transaction.
@@ -101,7 +104,7 @@
 
 ;; Instructs the server to write some debug information to the log. For this to work, the connected user must have the SUPER privileg
 ;; .form (dump-debug-info mysql-obj)
-;; Zero if the command was successful. Non-zero if an error occurred. 
+;; Zero if the command was successful. Non-zero if an error occurred.
 (define mysql-dump-debug-info (c-function-wrap libmysqlclient int mysql_dump_debug_info void*))
 
 ;; returns the error code for the most recently invoked API function that can succeed or fail.
@@ -145,6 +148,72 @@
 ;; .form (mysql-field-seek result offset)
 ;; .returns The previous value of the field cursor.
 (define mysql-field-seek (c-function-wrap libmysqlclient int mysql_field_seek void* int))
+
+;; Returns the position of the field cursor used for the last
+;; .form (mysql-field-tell result)
+;; .returns The current offset of the field cursor.
+(define mysql-field-tell (c-function-wrap libmysqlclient int mysql_field_tell void*))
+
+;; not supported
+;;(define mysql-get-character-set-info )
+
+
+;; Returns an integer that represents the client library version.
+;; .form ((mysql-get-client-info)
+;; .returns Returns an integer that represents the client library version.
+(define mysql-get-client-version (c-function-wrap libmysqlclient int mysql_get_client_version))
+
+;; Returns a string describing the type of connection in use, including the server host name.
+;; .form (mysql-get-host-info mysql-obj)
+(define mysql-get-host-info (c-function-wrap libmysqlclient char* mysql_get_host_info void*))
+
+;; Returns the protocol version used by current connection.
+;; .form (mysql-get-proto-info mysql-obj)
+;; .returns An unsigned integer representing the protocol version used by the current connection.
+(define mysql-get-proto-info (c-function-wrap libmysqlclient int mysql_get_proto_info void*))
+
+;; Returns a string that represents the server version number.
+;; .form (mysql-get-server-info mysql-obj)
+;; .returns A character string that represents the server version number.
+(define mysql-get-server-info (c-function-wrap libmysqlclient char* mysql_get_server_info void*))
+
+;; Returns the version number of the server as an integer.
+;; .form (mysql-get-srever-version mysql-obj)
+;; .returns A number that represents the MySQL server.
+(define mysql-get-server-version (c-function-wrap libmysqlclient int mysql_get_server_version void*))
+
+;; mysql-get-ssl-cipher returns the SSL cipher used for the given connection to the server. mysql is the connection handler returned from mysql-init.
+;; .form (mysql-get-ssl-cipher mysql-obj)
+;; .returns A string naming the SSL cipher used for the connection, or NULL if no cipher is being used.
+(define mysql-get-ssl-cipher (c-function-wrap libmysqlclient char* mysql_get_ssl_cipher void*))
+
+;; This function is used to create a legal SQL string that you can use in an SQL statement. See Section 8.1.1, "Strings" on MySQL Manual.
+;; .form (mysql-hex-string bv-to str-from len)
+;; .returns The length of the value placed into to, not including the terminating null character.
+(define mysql-hex-string (c-function-wrap libmysqlclient int mysql_hex_string char* char* int))
+
+;; Retrieves a string providing information about the most recently executed statement, but only for the statements listed here.
+;; .form (mysql-info mysql-obj)
+;; .returns A character string representing additional information about the most recently executed statement. NULL if no information is available for the statement.
+(define mysql-info (c-function-wrap libmysqlclient char* mysql_info void*))
+
+;; Returns the value generated for an AUTO_INCREMENT column by the previous INSERT or UPDATE statement. TODO: May overflow?
+;; .form (mysql-insert-id mysql-obj)
+;; .returns Described in the preceding discussion.
+(define mysql-insert-id (c-function-wrap libmysqlclient void* mysql_insert_id void*)) ;; use void* as return value
+
+
+;;  This function finalizes the MySQL library. You should call it when you are done using the library (for example, after disconnecting from the server).
+;; .form (mysql-library-end)
+;; TODO from version 5 ?
+;; (define mysql-library-end (c-function-wrap libmysqlclient void mysql_library_end))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
+
 
 ;; Initialize MySQL client
 ;; .form (init)
