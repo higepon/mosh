@@ -71,7 +71,7 @@ static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
         "movl    %%edi, %%esp ;"
         : "=a" (ret)
         : "c" (bytes), "S" (frame), "0" (func) // c:ecx, S:esi 0:match to the 0th output
-        : "edi", "edx", "memory"); // we have a memory destruction.
+        : "edi", "edx", "memory"); // we have memory destructions.
     return ret;
 #elif defined ARCH_X86_64
     intptr_t ret = 0;
