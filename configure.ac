@@ -98,7 +98,7 @@ AC_MSG_CHECKING([for supported architecture])
 case "$host_cpu" in
 i[[3456]]86|pentium)
         arch=i386
-        AC_MSG_RESULT([i386])
+        AC_MSG_RESULT([$host_cpu])
         AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
         ;;
 x86?64*)
@@ -107,7 +107,7 @@ x86?64*)
         AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
         ;;
 *)
-        AC_MSG_RESULT([NO!])
+        AC_MSG_RESULT([$host_cpu])
         AC_MSG_WARN([architecture $host_cpu is not supported, but may work other than FFI])
         AC_DEFINE([ARCH_UNKNOWN], 1, [Define for the AMD x86-64 architecture.])
         ;;

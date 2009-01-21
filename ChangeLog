@@ -1,3 +1,7 @@
+2009-01-21  higepon  <higepon@users.sourceforge.jp>
+
+        * Now Mosh works on PS3 gentoo Linux.(See http://d.hatena.ne.jp/mjt/20090121/p3 )
+
 2009-01-20  kokosabu  <kokosabu@gmail.com>
 
         * FileBinaryOutputPort.cpp: Implemented buffer mode.
