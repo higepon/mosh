@@ -11,7 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
-          mysql-sqlstate mysql-ssl-set mysql-stat mysql-thread-id
+          mysql-sqlstate mysql-ssl-set mysql-stat mysql-thread-id mysql-use-result
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -352,10 +352,10 @@
 ;; .returns The thread ID of the current connection.
 (define mysql-thread-id (c-function-wrap libmysqlclient int mysql_thread_id void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; mysql-use-result initiates a result set retrieval but does not actually read the result set into the client like mysql-store-result does. Instead, each row must be retrieved individually by making calls to mysql-fetch-row. This reads the result of a query directly from the server without storing it in a temporary table or local buffer, which is somewhat faster and uses much less memory than mysql-store-result.
+;; .form (mysql-use-result mysql)
+;; .returns A MYSQL_RES result structure. NULL if an error occurred.
+(define mysql-use-result (c-function-wrap libmysqlclient void* mysql_use_result void*))
 
 ;; ;; 
 ;; ;; .form ()
