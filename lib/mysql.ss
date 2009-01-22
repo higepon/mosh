@@ -11,7 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
-          mysql-sqlstate mysql-ssl-set mysql-stat
+          mysql-sqlstate mysql-ssl-set mysql-stat mysql-thread-id
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -347,10 +347,10 @@
 ;; .returns A character string describing the server status. NULL if an error occurred.
 (define mysql-stat (c-function-wrap libmysqlclient char* mysql_stat void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Returns the thread ID of the current connection. This value can be used as an argument to mysql_kill() to kill the thread. 
+;; .form (mysql-thread-id mysql-obj)
+;; .returns The thread ID of the current connection.
+(define mysql-thread-id (c-function-wrap libmysqlclient int mysql_thread_id void*))
 
 ;; ;; 
 ;; ;; .form ()

@@ -98,7 +98,8 @@
   ;; (mysql-shutdwon mysql NULL)
   (test/t (string? (mysql-sqlstate mysql)))
   (test/t (zero? (mysql-ssl-set mysql "" "" "" "")))
-  (display (mysql-stat mysql))
+  (test/t (string? (mysql-stat mysql)))
+  (test/t (integer? (mysql-thread-id mysql)))
   (mysql-close mysql)
 
 
