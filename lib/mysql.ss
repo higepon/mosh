@@ -10,7 +10,7 @@
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
-          mysql-select-db
+          mysql-select-db mysql-set-character-set
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -304,10 +304,12 @@
 ;; .form (mysql-select-db db)
 ;; .returns Zero for success. Non-zero if an error occurred.
 (define mysql-select-db (c-function-wrap libmysqlclient int mysql_select_db void* char*))
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+
+;; This function is used to set the default character set for the current connection. The string csname  specifies a valid character set name. The connection collation becomes the default collation of the character set.
+;; .form (mysql-set-character-set mysql-obj csname)
+;; .returns Zero for success. Non-zero if an error occurred.
+(define mysql-set-character-set (guard (c [#t (lambda x #f)])
+                               (c-function-wrap libmysqlclient int mysql_set_character_set void* char*)))
 
 ;; ;; 
 ;; ;; .form ()
