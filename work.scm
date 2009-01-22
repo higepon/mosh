@@ -72,6 +72,7 @@
 
   (test/mysql-result (mysql-list-dbs mysql NULL))
   (test/mysql-result (mysql-list-processes mysql))
+  (test/mysql-result (mysql-list-tables mysql NULL))
 
 
 

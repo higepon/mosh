@@ -7,7 +7,7 @@
           mysql-field-count mysql-field-seek mysql-field-tell mysql-get-client-version mysql-get-host-info
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
-          mysql-list-dbs mysql-list-processes
+          mysql-list-dbs mysql-list-processes mysql-list-tables
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -231,10 +231,10 @@
 ;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
 (define mysql-list-processes (c-function-wrap libmysqlclient void* mysql_list_processes void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Returns a result set consisting of table names in the current database that match the simple regular expression specified by the wild parameter. wild  may contain the wildcard characters “%” or “_”, or may be a NULL pointer to match all tables. 
+;; .form (mysql-list-tables mysql-obj wild)
+;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
+(define mysql-list-tables (c-function-wrap libmysqlclient void* mysql_list_tables void* char*))
 
 
 
