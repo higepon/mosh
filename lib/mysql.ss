@@ -7,7 +7,7 @@
           mysql-field-count mysql-field-seek mysql-field-tell mysql-get-client-version mysql-get-host-info
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
-          mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results
+          mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -241,10 +241,10 @@
 ;; .returns TRUE (1) if more results exist. FALSE (0) if no more results exist.
 (define mysql-more-results (c-function-wrap libmysqlclient int mysql_more_results void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; If more statement results exist, mysql_next_result() reads the next statement result and returns the status back to the application. I
+;; .form (mysql-next-result mysql-obj)
+;; .returns 0:Successful and there are more results, -1:Successful and there are no more results, >0:An error occurred
+(define mysql-next-result (c-function-wrap libmysqlclient int mysql_next_result void*))
 
 ;; ;; 
 ;; ;; .form ()
