@@ -8,7 +8,7 @@
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
-          mysql-num-fields mysql-options mysql-ping mysql-real-escape-string
+          mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -267,10 +267,10 @@
 ;; .returns The length of the value placed into to, not including the terminating null character.
 (define mysql-real-escape-string (c-function-wrap libmysqlclient int mysql_real_escape_string void* char* char* int))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Executes the SQL statement pointed to by stmt_str, which should be a string length bytes long.
+;; .form (mysql-real-query mysql-obj stmt int)
+;; .returns Zero if the statement was successful. Non-zero if an error occurred.
+(define mysql-real-query (c-function-wrap libmysqlclient int mysql_real_query void* char* int))
 
 ;; ;; 
 ;; ;; .form ()
