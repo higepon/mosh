@@ -12,7 +12,7 @@
   (test/t (integer? (mysql-fetch-lengths result)))
   (test/t (integer? (mysql-field-count mysql)))
   (test/t (integer? (mysql-num-fields result)))
-  (test/t (zero? (mysql-row-seek result 0)))
+  (test/t (integer? (mysql-row-seek result 0)))
   (let loop ([row (mysql-fetch-row result)])
     (cond
      [(= row NULL) '()]
