@@ -27,7 +27,7 @@
           [else
            "libmysqlclient not found"])])))
 
-(define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so")))
+(define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
 
 
 (define %mysql-init        (c-function-wrap libmysqlclient void* mysql_init void*))

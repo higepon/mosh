@@ -113,7 +113,7 @@ x86?64*)
         ;;
 esac
 
-
+AC_CHECK_LIB(mysqlclient,mysql_thread_safe,[LDFLAGS="$LDFLAGS -lmysqlclient"])
 
 
 # Checks for header files.
