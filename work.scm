@@ -79,6 +79,11 @@
   (test/t (integer? (mysql-next-result mysql)))
   (test/t (zero? (mysql-options mysql 2 NULL)))
   (test/t (zero? (mysql-ping mysql)))
+(let* ([from "'hoge"]
+       [len (string-length from)]
+       [to-bv (make-bytevector (+ (* len 2) 1))])
+    (mysql-real-escape-string to-bv from len)
+    (display (utf8->string to-bv)))
   (mysql-close mysql)
 
 

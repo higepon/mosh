@@ -8,7 +8,7 @@
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
-          mysql-num-fields mysql-options mysql-ping
+          mysql-num-fields mysql-options mysql-ping mysql-real-escape-string
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -262,10 +262,10 @@
 ;; .returns Zero if the connection to the server is alive. Non-zero if an error occurred.
 (define mysql-ping (c-function-wrap libmysqlclient int mysql_ping void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; This function is used to create a legal SQL string that you can use in an SQL statement. The string in from is encoded to an escaped SQL string, taking into account the current character set of the connection. The result is placed in to and a terminating null byte is appended. Characters encoded are NUL (ASCII 0), “\n”, “\r”, “\”, “'”, “"”, and Control-Z (see Section 8.1, “Literal Values”). (Strictly speaking, MySQL requires only that backslash and the quote character used to quote the string in the query be escaped. This function quotes the other characters to make them easier to read in log files.)
+;; .form (mysql-real-escape-string mysql-obj to-bv from len)
+;; .returns The length of the value placed into to, not including the terminating null character.
+(define mysql-real-escape-string (c-function-wrap libmysqlclient int mysql-real-escape-string void* char* char*))
 
 ;; ;; 
 ;; ;; .form ()
