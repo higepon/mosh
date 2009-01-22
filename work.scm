@@ -94,11 +94,12 @@
   (test/t (integer? (mysql-refresh mysql NULL)))
   (mysql-reload mysql)
   (test/t (integer? (mysql-rollback mysql)))
+  (mysql-shutdwon mysql NULL)
   (mysql-close mysql)
 
 
 
-  (mysql-shutdwon mysql NULL)
+
 
 ;  (mysql-library-end)
   '())
