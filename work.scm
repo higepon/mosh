@@ -82,7 +82,7 @@
 (let* ([from "'hoge"]
        [len (string-length from)]
        [to-bv (make-bytevector (+ (* len 2) 1))])
-    (mysql-real-escape-string to-bv from len)
+    (mysql-real-escape-string mysql to-bv from len)
     (display (utf8->string to-bv)))
   (mysql-close mysql)
 
