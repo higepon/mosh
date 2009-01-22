@@ -6,6 +6,19 @@
 
 (define mysql (mysql-init))
 
+(define (test/mysql-result result)
+  (when (zero? result)
+    (assertion-violation 'mysql-store-result "failed"))
+  (test/t (integer? (mysql-fetch-lengths result)))
+  (test/t (integer? (mysql-field-count mysql)))
+  (let loop ([row (mysql-fetch-row result)])
+    (cond
+     [(= row NULL) '()]
+     [else
+      (test/t (string? (mysql-row-ref row)))
+      (loop (mysql-fetch-row result))]))
+  (mysql-free-result result))
+
 (when (zero? (mysql-real-connect mysql "127.0.0.1" "root" "" "mysql" 3306 NULL 0))
   (assertion-violation 'mysql-real-connect "failed"))
 
@@ -57,20 +70,14 @@
   (test/t (integer? (mysql-info mysql)))
   (test/t (integer? (mysql-insert-id mysql)))
 
-(let* ([result (mysql-list-dbs mysql NULL)])
-    (when (zero? result)
-      (assertion-violation 'mysql-store-result "failed"))
-    (test/t (integer? (mysql-fetch-lengths result)))
-    (test/t (integer? (mysql-field-count mysql)))
-    (let loop ([row (mysql-fetch-row result)])
-      (cond
-       [(= row NULL) '()]
-       [else
-        (test/t (string? (mysql-row-ref row)))
-        (loop (mysql-fetch-row result))])))
+  (test/mysql-result (mysql-list-dbs mysql NULL))
+  (test/mysql-result (mysql-list-processes mysql))
+
+
+
   (mysql-close mysql)
 
-  
+
 
 
 

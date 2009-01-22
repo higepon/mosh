@@ -7,7 +7,7 @@
           mysql-field-count mysql-field-seek mysql-field-tell mysql-get-client-version mysql-get-host-info
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
-          mysql-list-dbs
+          mysql-list-dbs mysql-list-processes
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -226,10 +226,10 @@
 ;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
 (define mysql-list-dbs (c-function-wrap libmysqlclient void* mysql_list_dbs void* char*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Returns a result set describing the current server threads.
+;; .form (mysql-list-processes mysql-obj)
+;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
+(define mysql-list-processes (c-function-wrap libmysqlclient void* mysql_list_processes void*))
 
 ;; ;; 
 ;; ;; .form ()
