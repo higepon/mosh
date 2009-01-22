@@ -9,7 +9,7 @@
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
-          mysql-refresh mysql-reload mysql-rollback
+          mysql-refresh mysql-reload mysql-rollback mysql-row-seek
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -289,10 +289,11 @@
 ;; .returns Zero if successful. Non-zero if an error occurred.
 (define mysql-rollback (c-function-wrap libmysqlclient int mysql_rollback void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Sets the row cursor to an arbitrary row in a query result set. The offset value is a row offset that should be a value returned from mysql-row-tell or from mysql-row-seek.
+;; .form (mysql-row-seek result offset)
+;; .returns The previous value of the row cursor. This value may be passed to a subsequent call to mysql-row-seek.
+(define mysql-row-seek (c-function-wrap libmysqlclient int mysql_row_seek void* int))
+
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
