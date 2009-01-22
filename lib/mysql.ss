@@ -224,7 +224,7 @@
 ;; Returns a result set consisting of database names on the server that match the simple regular expression specified by the wild parameter. wild may contain the wildcard characters “%” or “_”, or may be a NULL pointer to match all databases. Calling mysql-list-dbs is similar to executing the query SHOW DATABASES [LIKE wild].
 ;; .form (mysql-list-dbs mysql-obj wild)
 ;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
-(define mysql-list-dbs (c-function-wrap libmysqlclient void* mysql_list_dbs char*))
+(define mysql-list-dbs (c-function-wrap libmysqlclient void* mysql_list_dbs void* char*))
 
 ;; ;; 
 ;; ;; .form ()
