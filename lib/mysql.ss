@@ -311,14 +311,20 @@
 (define mysql-set-character-set (guard (c [#t (lambda x #f)])
                                (c-function-wrap libmysqlclient int mysql_set_character_set void* char*)))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Not supporeted
+;; .form ()
+;; .returns
+(define mysql-set-local-infile-default #f)
+
+;; Not supporeted
+;; .form ()
+;; .returns
+(define mysql-set-local-infile-handler #f)
+
+;; Enables or disables an option for the connection.
+;; .form (mysql-set-server-option mysql-obj option)
+;; .returns Zero for success. Non-zero if an error occurred.
+(define mysql-set-server-option (c-function-wrap libmysqlclient int mysql_set_server_option void* int))
 
 ;; ;; 
 ;; ;; .form ()

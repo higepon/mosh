@@ -28,7 +28,7 @@
 (unless (zero? (mysql-query mysql "select Host, User from user"))
   (assertion-violation 'mysql-query "failed"))
 
-(display (mysql-set-character-set mysql "utf8"))
+(test/t (integer? (mysql-set-character-set mysql "utf8")))
 
 (test/t (integer? (mysql-select-db mysql "mysql")))
 (let* ([result (mysql-store-result mysql)])
@@ -37,6 +37,7 @@
   (format #t "result count=~d\n" (mysql-num-rows result))
   (test/t (integer? (mysql-fetch-lengths result)))
   (test/t (integer? (mysql-field-count mysql)))
+  (test/t (integer? (mysql-set-server-option mysql 0)))
   (let loop ([row (mysql-fetch-row result)])
     (cond
      [(= row NULL) '()]
@@ -53,7 +54,7 @@
   (test/t (string? (mysql-field-name (mysql-fetch-field-direct result 1))))
   (test/t (string? (mysql-error mysql)))
   (mysql-data-seek result 1)
-  (test/t (zero? (mysql-errno mysql)))
+  (test/t (integer? (mysql-errno mysql)))
   (test/t (zero? (mysql-dump-debug-info mysql)))
   (test/t (string? (mysql-get-client-info)))
   (test/t (number? (mysql-affected-rows mysql)))
