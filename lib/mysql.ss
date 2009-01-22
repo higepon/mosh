@@ -6,9 +6,10 @@
           mysql-field-name mysql-fetch-field-direct mysql-fetch-fields mysql-fetch-lengths
           mysql-field-count mysql-field-seek mysql-field-tell mysql-get-client-version mysql-get-host-info
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
-          mysql-hex-string mysql-info mysql-insert-id mysql-library-end)
-
-  (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else)
+          mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
+          mysql-list-dbs
+          )
+  (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
 
 (define NULL 0)
@@ -202,29 +203,38 @@
 ;; .returns Described in the preceding discussion.
 (define mysql-insert-id (c-function-wrap libmysqlclient void* mysql_insert_id void*)) ;; use void* as return value
 
+;; Initialize MySQL client
+;; .form (init)
+;; .returns obj
+(define (mysql-init) (%mysql-init NULL))
 
-;;  This function finalizes the MySQL library. You should call it when you are done using the library (for example, after disconnecting from the server).
+;; This function finalizes the MySQL library. You should call it when you are done using the library (for example, after disconnecting from the server).This function was added in MySQL 5.0.3.
 ;; .form (mysql-library-end)
-;; TODO from version 5 ?
-;; (define mysql-library-end (c-function-wrap libmysqlclient void mysql_library_end))
+;; .returns #f if client doen't supported this function
+(define mysql-library-end (guard (c [#t (lambda x #f)])
+                               (c-function-wrap libmysqlclient void mysql_library_end)))
+
+;; This function should be called to initialize the MySQL library before you call any other MySQL function, whether your application is a regular client program or uses the embedded server. In a non-multi-threaded environment, the call to mysql_library_init() may be omitted, because mysql_init()  will invoke it automatically as necessary.
+;; .form (mysql-library-init argc argv groups)
+;; .returns Zero if successful. Non-zero if an error occurred.
+(define mysql-library-init (guard (c [#t (lambda x #f)])
+                               (c-function-wrap libmysqlclient int mysql_library_init int void* void*)))
+
+
+;; Returns a result set consisting of database names on the server that match the simple regular expression specified by the wild parameter. wild may contain the wildcard characters “%” or “_”, or may be a NULL pointer to match all databases. Calling mysql-list-dbs is similar to executing the query SHOW DATABASES [LIKE wild].
+;; .form (mysql-list-dbs mysql-obj wild)
+;; .returns A MYSQL_RES result set for success. NULL if an error occurred.
+(define mysql-list-dbs (c-function-wrap libmysqlclient void* mysql_list_dbs char*))
 
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
 ;; (define  (c-function-wrap libmysqlclient ))
 
-
-
-;; Initialize MySQL client
-;; .form (init)
-;; .returns obj
-(define (mysql-init) (%mysql-init NULL))
-
-
-
-
-
-
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
 
 
 

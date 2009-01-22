@@ -57,5 +57,20 @@
   (test/t (integer? (mysql-info mysql)))
   (test/t (integer? (mysql-insert-id mysql)))
   (mysql-close mysql)
-  (mysql-library-end)
+
+  (let* ([result (mysql-list-dbs mysql NULL)])
+    (when (zero? result)
+      (assertion-violation 'mysql-store-result "failed"))
+    (test/t (integer? (mysql-fetch-lengths result)))
+    (test/t (integer? (mysql-field-count mysql)))
+    (let loop ([row (mysql-fetch-row result)])
+      (cond
+       [(= row NULL) '()]
+       [else
+        (test/t (string? (mysql-row-ref row)))
+        (loop (mysql-fetch-row result))])))
+
+
+
+;  (mysql-library-end)
   '())
