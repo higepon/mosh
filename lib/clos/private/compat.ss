@@ -17,6 +17,7 @@
                 append-map
                 last)
           (mosh parameters)
+          (only (mosh) format)
           )
 
   ;; enough
@@ -47,7 +48,7 @@
           (if (pair? def)
               (car def)
               (error 'get-arg
-                     "mandatory keyword argument ~a missing in ~a" key lst))
+                     (format "mandatory keyword argument ~a missing in ~a" key lst)))
           (cadr probe))))
 
   ) ;; library (clos private compat)

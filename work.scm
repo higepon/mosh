@@ -1,19 +1,49 @@
 (import (rnrs)
         (clos user)
         (clos core)
-        (mosh string))
+        (mosh string)
+        (mosh test))
+
+(define-class <person> () name age)
 
 
-(define-class <point3d> () x y z)
+(define-class <student> (<person>) credits course-list)
 
-;; 'after って何？
+(define-class <course> () name room time prof student-list)
 
-(define-method initialize 'after ((point <point3d>) init-args)
-  (initialize-direct-slots point <point3d> init-args))
 
-(define p (make <point3d> 'x 3 'y 4 'z 5))
+(define-generic get-name)
 
-(print-object p (current-error-port))
+;; (define-method get-name 'after ((student <student>))
+;;   (slot-ref student 'name))
+
+;; (define-method get-name 'after ((student <person>))
+;;   (slot-ref student 'name))
+
+
+(define-method initialize 'after ((person <person>) init-args)
+  (initialize-direct-slots person <person> init-args))
+
+(define p (make <person> 'name 'higepon 'age 3))
+
+(test* (slot-ref p 'name) 'higepon)
+
+;(display (get-name p))
+
+
+
+;; (define-class <point> () x y)
+
+;; (define-class <point3d> (<point>) x y z)
+
+;; ;; 'after って何？
+
+;; (define-method initialize 'after ((point <point3d>) init-args)
+;;   (initialize-direct-slots point <point3d> init-args))
+
+;; (define p (make <point3d> 'x 3 'y 4 'z 5))
+
+;; (print-object p (current-output-port))
 
 
 
