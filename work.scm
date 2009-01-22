@@ -94,7 +94,9 @@
   (test/t (integer? (mysql-refresh mysql NULL)))
   (mysql-reload mysql)
   (test/t (integer? (mysql-rollback mysql)))
-  (mysql-shutdwon mysql NULL)
+  ;; This works, but don't do this in test.
+  ;; (mysql-shutdwon mysql NULL)
+  (display (mysql-sqlstate mysql))
   (mysql-close mysql)
 
 

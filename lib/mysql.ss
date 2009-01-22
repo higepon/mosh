@@ -11,6 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
+          mysql-sqlstate
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -330,10 +331,11 @@
 ;; .form (mysql-shutdwon mysql-obj shutdown_level)
 ;; .returns Zero for success. Non-zero if an error occurred.
 (define mysql-shutdwon (c-function-wrap libmysqlclient int mysql_shutdown void* int))
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+
+;; Returns a null-terminated string containing the SQLSTATE error code for the most recently executed SQL statement.
+;; .form (mysql-sqlstate mysql-obj)
+;; .returns A null-terminated character string containing the SQLSTATE error code.
+(define mysql-sqlstate (c-function-wrap libmysqlclient char* mysql_sqlstate void*))
 
 ;; ;; 
 ;; ;; .form ()
