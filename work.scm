@@ -96,7 +96,8 @@
   (test/t (integer? (mysql-rollback mysql)))
   ;; This works, but don't do this in test.
   ;; (mysql-shutdwon mysql NULL)
-  (display (mysql-sqlstate mysql))
+  (test/t (string? (mysql-sqlstate mysql)))
+  (test/t (zero? (mysql-ssl-set mysql "" "" "" "")))
   (mysql-close mysql)
 
 

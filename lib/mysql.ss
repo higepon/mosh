@@ -11,7 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
-          mysql-sqlstate
+          mysql-sqlstate mysql-ssl-set
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -337,10 +337,10 @@
 ;; .returns A null-terminated character string containing the SQLSTATE error code.
 (define mysql-sqlstate (c-function-wrap libmysqlclient char* mysql_sqlstate void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;;  mysql-ssl-set() is used for establishing secure connections using SSL. It must be called before mysql-real-connect.
+;; .form (mysql-ssl-set mysql-obj key cert ca capath cipher)
+;; .returns This function always returns 0. If SSL setup is incorrect, mysql-real-connect returns an error when you attempt to connect.
+(define mysql-ssl-set  (c-function-wrap libmysqlclient int mysql_ssl_set char* char* char* char* char*))
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
