@@ -103,10 +103,5 @@
   (test/t (zero? (mysql-use-result mysql)))
   (test/t (integer? (mysql-warning-count mysql)))
   (mysql-close mysql)
-
-
-
-
-
 ;  (mysql-library-end)
   '())
