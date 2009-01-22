@@ -84,7 +84,7 @@
          [to-bv (make-bytevector (+ (* len 2) 1))])
     (mysql-real-escape-string mysql to-bv from len)
     (test/t (string=? "hoge" (utf8->string to-bv))))
-  (test/t (zero? (mysql-real-query mysql "select Host, User from user" 28)))
+  (test/t (integer? (mysql-real-query mysql "select Host, User from user" 28)))
   (test/t (integer? (mysql-refresh mysql NULL)))
   (test/t (zero? (mysql-reload mysql)))
   (mysql-close mysql)
