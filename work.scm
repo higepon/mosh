@@ -86,7 +86,7 @@
     (test/t (string=? "hoge" (utf8->string to-bv))))
   (test/t (integer? (mysql-real-query mysql "select Host, User from user" 28)))
   (test/t (integer? (mysql-refresh mysql NULL)))
-  (test/t (zero? (mysql-reload mysql)))
+  (mysql-reload mysql)
   (mysql-close mysql)
 
 
