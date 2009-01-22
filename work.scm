@@ -87,6 +87,7 @@
   (test/t (integer? (mysql-real-query mysql "select Host, User from user" 28)))
   (test/t (integer? (mysql-refresh mysql NULL)))
   (mysql-reload mysql)
+  (test/t (integer? (mysql-rollback mysql)))
   (mysql-close mysql)
 
 

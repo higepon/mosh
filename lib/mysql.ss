@@ -9,7 +9,7 @@
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
-          mysql-refresh mysql-reload
+          mysql-refresh mysql-reload mysql-rollback
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -283,10 +283,12 @@
 ;; .returns Zero for success. Non-zero if an error occurred. 
 (define mysql-reload (guard (c [#t (lambda x #f)])
                                (c-function-wrap libmysqlclient int mysql_reload void*)))
-;; ;;
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+
+;;Rolls back the current transaction.
+;; .form (mysql-rollback mysql-obj)
+;; .returns Zero if successful. Non-zero if an error occurred.
+(define mysql-rollback (c-function-wrap libmysqlclient int mysql_rollback void*))
+
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
