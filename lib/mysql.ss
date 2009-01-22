@@ -8,7 +8,7 @@
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
-          mysql-num-fields
+          mysql-num-fields mysql-options
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -252,10 +252,10 @@
 ;; .returns An unsigned integer representing the number of columns in a result set.
 (define mysql-num-fields (c-function-wrap libmysqlclient int mysql_num_fields void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Can be used to set extra connect options and affect behavior for a connection. This function may be called multiple times to set several options.
+;; .form (mysql-options mysql-obj option arg)
+;; .returns Zero for success. Non-zero if you specify an unknown option.
+(define mysql-options (c-function-wrap libmysqlclient int mysql_options void* int char*))
 
 ;; ;; 
 ;; ;; .form ()
