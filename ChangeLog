@@ -1,5 +1,7 @@
 2009-01-22  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp : Added output-port?.
+
         * test/mysql.scm: Added test for mysql library.
 
         * Added configure option --with-mysql

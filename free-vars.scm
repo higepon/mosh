@@ -463,4 +463,5 @@
     %ffi-pointer->string
     %ffi-pointer-ref
     %ffi-supported?
+    output-port?
     )

@@ -57,6 +57,14 @@
 
 using namespace scheme;
 
+Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("output-port?");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    return Object::makeBool(obj.isBinaryOutputPort() || obj.isTextualOutputPort());
+}
+
 bool scheme::fileExistsP(const ucs4string& file)
 {
     FILE* stream = fopen(file.ascii_c_str(), "rb");
