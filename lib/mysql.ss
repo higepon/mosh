@@ -281,8 +281,9 @@
 ;;  Asks the MySQL server to reload the grant tables. The connected user must have the RELOAD  privilege. This function is deprecated. It is preferable to use mysql_query() to issue an SQL FLUSH PRIVILEGES statement instead.
 ;; .form (mysql-reload mysql-obj)
 ;; .returns Zero for success. Non-zero if an error occurred. 
-(define mysql-reload (c-function-wrap libmysqlclient int mysql_reload void*))
-;; ;; 
+(define mysql-reload (guard (c [#t (lambda x #f)])
+                               (c-function-wrap libmysqlclient int mysql_reload void*)))
+;; ;;
 ;; ;; .form ()
 ;; ;; .returns
 ;; (define  (c-function-wrap libmysqlclient ))
