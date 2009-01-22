@@ -56,9 +56,8 @@
     (test/t (equal? "61626364" (utf8->string to-bv))))
   (test/t (integer? (mysql-info mysql)))
   (test/t (integer? (mysql-insert-id mysql)))
-  (mysql-close mysql)
 
-  (let* ([result (mysql-list-dbs mysql NULL)])
+(let* ([result (mysql-list-dbs mysql NULL)])
     (when (zero? result)
       (assertion-violation 'mysql-store-result "failed"))
     (test/t (integer? (mysql-fetch-lengths result)))
@@ -69,6 +68,9 @@
        [else
         (test/t (string? (mysql-row-ref row)))
         (loop (mysql-fetch-row result))])))
+  (mysql-close mysql)
+
+  
 
 
 
