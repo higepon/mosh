@@ -1,5 +1,7 @@
 2009-01-22  higepon  <higepon@users.sourceforge.jp>
 
+        * test/mysql.scm: Added test for mysql library.
+
         * Added configure option --with-mysql
         ./configure --with-mysql=/usr/lib/libmysqlclient.so.15
 

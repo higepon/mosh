@@ -263,6 +263,7 @@ test: ./mosh all-tests.scm update
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
 	./mosh test/ffi.scm
+	./mosh test/mysql.scm
 	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
