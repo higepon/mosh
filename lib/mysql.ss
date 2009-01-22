@@ -11,7 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
-          mysql-sqlstate mysql-ssl-set
+          mysql-sqlstate mysql-ssl-set mysql-stat
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -341,6 +341,27 @@
 ;; .form (mysql-ssl-set mysql-obj key cert ca capath cipher)
 ;; .returns This function always returns 0. If SSL setup is incorrect, mysql-real-connect returns an error when you attempt to connect.
 (define mysql-ssl-set  (c-function-wrap libmysqlclient int mysql_ssl_set char* char* char* char* char*))
+
+;; Returns a character string containing information similar to that provided by the mysqladmin status  command. This includes uptime in seconds and the number of running threads, questions, reloads, and open tables.
+;; .form (mysql-stat mysql-obj)
+;; .returns A character string describing the server status. NULL if an error occurred.
+(define mysql-stat (c-function-wrap libmysqlclient char* mysql_stat void*))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
