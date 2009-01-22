@@ -9,7 +9,7 @@
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
-          mysql-refresh
+          mysql-refresh mysql-reload
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -277,10 +277,11 @@
 ;; .form (mysql-refresh mysql-obj options)
 ;; .returns
 (define mysql-refresh (c-function-wrap libmysqlclient int mysql_refresh void* int))
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+
+;;  Asks the MySQL server to reload the grant tables. The connected user must have the RELOAD  privilege. This function is deprecated. It is preferable to use mysql_query() to issue an SQL FLUSH PRIVILEGES statement instead.
+;; .form (mysql-reload mysql-obj)
+;; .returns Zero for success. Non-zero if an error occurred. 
+(define mysql-reload (c-function-wrap libmysqlclient int mysql_reload void*))
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
