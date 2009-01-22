@@ -8,7 +8,7 @@
           mysql-get-proto-info mysql-get-server-info mysql-get-server-version mysql-get-ssl-cipher
           mysql-hex-string mysql-info mysql-insert-id mysql-library-end mysql-library-init
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
-          mysql-num-fields mysql-options
+          mysql-num-fields mysql-options mysql-ping
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -257,10 +257,10 @@
 ;; .returns Zero for success. Non-zero if you specify an unknown option.
 (define mysql-options (c-function-wrap libmysqlclient int mysql_options void* int char*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Checks whether the connection to the server is working. If the connection has gone down and auto-reconnect is enabled an attempt to reconnect is made.
+;; .form (mysql-ping mysql-obj)
+;; .returns Zero if the connection to the server is alive. Non-zero if an error occurred.
+(define mysql-ping (c-function-wrap libmysqlclient int mysql_ping void*))
 
 ;; ;; 
 ;; ;; .form ()

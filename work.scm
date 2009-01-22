@@ -78,6 +78,7 @@
   (test/t (= 0 (mysql-more-results mysql)))
   (test/t (integer? (mysql-next-result mysql)))
   (test/t (zero? (mysql-options mysql 2 NULL)))
+  (test/t (zero? (mysql-ping mysql)))
   (mysql-close mysql)
 
 
