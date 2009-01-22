@@ -113,8 +113,15 @@ x86?64*)
         ;;
 esac
 
-AC_CHECK_LIB(mysqlclient,mysql_real_connect,[LDFLAGS="$LDFLAGS -lmysqlclient"])
-
+AC_ARG_WITH(mysql,
+  AC_HELP_STRING([--with-mysql=FULL_PATH_TO_libmysqlclient]),
+  [
+  AC_SUBST(PATH_TO_MYSQLCLIENT, "$withval")
+  ],
+  [
+  AC_SUBST(PATH_TO_MYSQLCLIENT, "libmysqlclient.15.so")
+  ]
+)
 
 # Checks for header files.
 AC_HEADER_STDC
@@ -153,4 +160,4 @@ esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1alpha3 onig-5.7.0])
-AC_OUTPUT
+AC_OUTPUT(lib/mysql.ss)
