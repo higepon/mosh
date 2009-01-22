@@ -246,10 +246,10 @@
 ;; .returns 0:Successful and there are more results, -1:Successful and there are no more results, >0:An error occurred
 (define mysql-next-result (c-function-wrap libmysqlclient int mysql_next_result void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Returns the number of columns in a result set. 
+;; .form (mysql-num-fields result)
+;; .returns An unsigned integer representing the number of columns in a result set.
+(define mysql-num-fields (c-function-wrap libmysqlclient int mysql_num_fields void*))
 
 ;; ;; 
 ;; ;; .form ()

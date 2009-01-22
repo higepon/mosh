@@ -11,6 +11,7 @@
     (assertion-violation 'mysql-store-result "failed"))
   (test/t (integer? (mysql-fetch-lengths result)))
   (test/t (integer? (mysql-field-count mysql)))
+  (test/t (integer? (mysql-num-fields result)))
   (let loop ([row (mysql-fetch-row result)])
     (cond
      [(= row NULL) '()]
@@ -75,7 +76,7 @@
   (test/mysql-result (mysql-list-tables mysql NULL))
 
   (test/t (= 0 (mysql-more-results mysql)))
-  (test/t (= -1 (mysql-next-result mysql)))
+  (test/t (integer? (mysql-next-result mysql)))
 
   (mysql-close mysql)
 
