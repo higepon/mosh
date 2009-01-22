@@ -28,6 +28,7 @@
 (unless (zero? (mysql-query mysql "select Host, User from user"))
   (assertion-violation 'mysql-query "failed"))
 
+(test/t (zero? (mysql-select-db mysql "mysql")))
 (let* ([result (mysql-store-result mysql)])
   (when (zero? result)
     (assertion-violation 'mysql-store-result "failed"))

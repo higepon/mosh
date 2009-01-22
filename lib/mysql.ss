@@ -10,6 +10,7 @@
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
+          mysql-select-db
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -297,7 +298,35 @@
 ;; Returns the current position of the row cursor for the last mysql-fetch-row. This value can be used as an argument to mysql-row-seek.
 ;; .form (mysql-row-tell result)
 ;; .returns The current offset of the row cursor.
-(define mysql-row-tell (c-function-wrap libmysqlclient int mysql-row-tell void*))
+(define mysql-row-tell (c-function-wrap libmysqlclient int mysql_row_tell void*))
+
+;; Causes the database specified by db to become the default (current) database on the connection specified by mysql. In subsequent queries, this database is the default for table references that do not include an explicit database specifier.
+;; .form (mysql-select-db db)
+;; .returns Zero for success. Non-zero if an error occurred.
+(define mysql-select-db (c-function-wrap libmysqlclient int mysql_select_db void* char*))
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+;; ;; 
+;; ;; .form ()
+;; ;; .returns
+;; (define  (c-function-wrap libmysqlclient ))
+
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
