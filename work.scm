@@ -98,7 +98,7 @@
 
 
 
-
+  (mysql-shutdwon mysql NULL)
 
 ;  (mysql-library-end)
   '())

@@ -10,7 +10,7 @@
           mysql-list-dbs mysql-list-processes mysql-list-tables mysql-more-results mysql-next-result
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
-          mysql-select-db mysql-set-character-set
+          mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
           )
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
@@ -326,10 +326,10 @@
 ;; .returns Zero for success. Non-zero if an error occurred.
 (define mysql-set-server-option (c-function-wrap libmysqlclient int mysql_set_server_option void* int))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
+;; Asks the database server to shut down. The connected user must have the SHUTDOWN privilege. The shutdown_level argument was added in MySQL 5.0.1. MySQL 5.0 servers support only one type of shutdown; shutdown_level must be equal to SHUTDOWN_DEFAULT.
+;; .form (mysql-shutdwon mysql-obj shutdown_level)
+;; .returns Zero for success. Non-zero if an error occurred.
+(define mysql-shutdwon (c-function-wrap libmysqlclient int mysql_shutdown void* int))
 ;; ;; 
 ;; ;; .form ()
 ;; ;; .returns
