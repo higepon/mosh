@@ -74,7 +74,7 @@
   (test/mysql-result (mysql-list-processes mysql))
   (test/mysql-result (mysql-list-tables mysql NULL))
 
-
+  (test/t (= 0 (mysql-more-results mysql)))
 
   (mysql-close mysql)
 
