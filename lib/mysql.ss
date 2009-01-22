@@ -11,8 +11,7 @@
           mysql-num-fields mysql-options mysql-ping mysql-real-escape-string mysql-real-query
           mysql-refresh mysql-reload mysql-rollback mysql-row-seek mysql-row-tell
           mysql-select-db mysql-set-character-set mysql-set-server-option mysql-shutdwon
-          mysql-sqlstate mysql-ssl-set mysql-stat mysql-thread-id mysql-use-result
-          )
+          mysql-sqlstate mysql-ssl-set mysql-stat mysql-thread-id mysql-use-result mysql-warning-count)
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
 
@@ -357,16 +356,9 @@
 ;; .returns A MYSQL_RES result structure. NULL if an error occurred.
 (define mysql-use-result (c-function-wrap libmysqlclient void* mysql_use_result void*))
 
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
-
-;; ;; 
-;; ;; .form ()
-;; ;; .returns
-;; (define  (c-function-wrap libmysqlclient ))
-
-
+;; Returns the number of warnings generated during execution of the previous SQL statement.
+;; .form (mysql-warning-count mysql-obj)
+;; .returns The warning count.
+(define mysql-warning-count (c-function-wrap libmysqlclient int mysql_warning_count void*))
 
 )

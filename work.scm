@@ -101,6 +101,7 @@
   (test/t (string? (mysql-stat mysql)))
   (test/t (integer? (mysql-thread-id mysql)))
   (test/t (zero? (mysql-use-result mysql)))
+  (test/t (integer? (mysql-warning-count mysql)))
   (mysql-close mysql)
 
 
