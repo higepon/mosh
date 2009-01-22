@@ -28,7 +28,7 @@
 (unless (zero? (mysql-query mysql "select Host, User from user"))
   (assertion-violation 'mysql-query "failed"))
 
-(test/t (zero? (mysql-set-character-set mysql "utf8")))
+(display (mysql-set-character-set mysql "utf8"))
 
 (test/t (integer? (mysql-select-db mysql "mysql")))
 (let* ([result (mysql-store-result mysql)])
