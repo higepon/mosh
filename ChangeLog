@@ -1,5 +1,7 @@
 2009-01-23  higepon  <higepon@users.sourceforge.jp>
 
+        * dbi: Added dbi.ss library and tests. (They are empty now).
+
         * test/clos.scm : Added test for Tiny CLOS.
 
 2009-01-22  higepon  <higepon@users.sourceforge.jp>
