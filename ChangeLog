@@ -1,3 +1,7 @@
+2009-01-23  higepon  <higepon@users.sourceforge.jp>
+
+        * test/clos.scm : Added test for Tiny CLOS.
+
 2009-01-22  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : Added output-port?.
