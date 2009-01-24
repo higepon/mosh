@@ -53,6 +53,7 @@ public:
 
     virtual int close();
     virtual void putChar(ucs4char c);
+    virtual void flush();
 
     void putString(String* str);
     void putString(const ucs4string& s);
@@ -65,7 +66,6 @@ public:
     bool isErrorOccured() const;
     Object errorMessage() const;
     Object irritants() const;
-    void flush();
 
 private:
     BinaryOutputPort* port_;

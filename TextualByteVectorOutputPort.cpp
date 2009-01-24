@@ -62,3 +62,8 @@ int TextualByteVectorOutputPort::close()
 {
     return 0;
 }
+
+void TextualByteVectorOutputPort::flush()
+{
+    return;
+}

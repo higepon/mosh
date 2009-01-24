@@ -44,6 +44,7 @@ public:
     void putChar(ucs4char c);
     ucs4string getString();
     virtual int close();
+    virtual void flush();
 
 private:
     ucs4string buffer_;

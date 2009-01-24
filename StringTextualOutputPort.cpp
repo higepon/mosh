@@ -59,3 +59,7 @@ int StringTextualOutputPort::close()
     return 0;
 }
 
+void StringTextualOutputPort::flush()
+{
+    return;
+}

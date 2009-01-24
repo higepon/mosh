@@ -47,6 +47,7 @@ public:
     void putChar(ucs4char c);
     const gc_vector<uint8_t>& getByteVector() const;
     virtual int close();
+    virtual void flush();
 
 private:
     Transcoder* transcoder_;
