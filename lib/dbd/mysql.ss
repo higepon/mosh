@@ -1,4 +1,4 @@
-; mysql.ss - DBI(Database Interface) for MySQL
+; mysql.ss - DBD (Database Driver) for MySQL
 ;
 ;   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
@@ -27,15 +27,36 @@
 ;
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
-(library (dbi mysql)
-  (export)
+(library (dbd mysql)
+  (export <dbd-mysql>)
   (import
-     (only (rnrs) define)
-     (dbi))
+   (mysql)
+   (clos user)
+   (clos core)
+   (only (rnrs) define quote let unless when assertion-violation zero?
+                guard cond else)
+   (dbd))
 
- 
+(define-class <dbd-mysql> (<dbd>))
+(define-class <mysql-connection> (<connection>) mysql)
+
+(define-method initialize ((m <mysql-connection>) init-args)
+  (initialize-direct-slots m <mysql-connection> init-args))
+
+(define-method dbd-do ((connection <mysql-connection>) sql)
+  (cond
+   [(zero? (mysql-query (slot-ref connection 'mysql) sql))
+    (assertion-violation "execution sql failed" sql)]
+   [else
+    (mysql-store-result (slot-ref connection 'mysql))]))
 
 
-
+(define-method dbd-connect ((dbd <dbd-mysql>))
+  (let ([mysql (guard (c (#t #f)) (mysql-init))])
+    (unless mysql
+      (assertion-violation 'mysql-init "mysql-init failed"))
+    (when (zero? (mysql-real-connect mysql "127.0.0.1" "root" "" "mysql" 3306 NULL NULL))
+      (assertion-violation 'dbd-connect "mysql connection failed"))
+    (make <mysql-connection> 'mysql mysql)))
 
 )

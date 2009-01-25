@@ -28,15 +28,20 @@
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
 (library (dbi)
-  (export <dbi>)
+  (export <dbi> <dbd> dbd-connect)
   (import
-     (only (rnrs) define)
+     (only (rnrs) define quote)
      (clos core)
      (clos user))
 
 (define-class <dbi> ())
 
+(define-class <dbd> ())
 
+(define-generic dbd-connect)
+
+(define-method dbd-connect ((dbd <dbd>))
+  'dbd-connect)
 
 
 )
