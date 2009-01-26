@@ -89,27 +89,34 @@
 (define-method dbd-execute ((conn <mysql-connection>) sql)
   (let ([mysql (slot-ref conn 'mysql)])
     (unless (zero? (mysql-query mysql sql))
-      (assertion-violation 'mysql-query "failed" sql))
+      (assertion-violation 'mysql-query "failed" sql (mysql-error mysql)))
     (let ([result (mysql-store-result mysql)])
-      (when (zero? result)
-        (assertion-violation 'mysql-store-result "failed" sql))
-      (let loop ([row (mysql-fetch-row result)]
-                 [ret '()])
-        (cond
-         [(= row NULL)
-          (let ([getter (make-getter mysql result)])
-            (mysql-free-result result)
-            (make <mysql-result>
-              'mysql mysql
-              'lst (reverse ret)
-              'getter getter))]
-         [else
-          (let ([v (make-vector (mysql-field-count mysql))])
-            (vector-for-each-with-index
-             (lambda (val index)
-               (vector-set! v index (mysql-row-ref row index)))
-             v)
-            (loop (mysql-fetch-row result) (cons v ret)))])))))
+      (cond
+       ;; select
+       [(zero? result)
+        (make <mysql-result>
+          'mysql mysql
+          'lst '()
+          'getter (lambda a 'none))]
+       ;; insert, update, create table
+       [else
+        (let loop ([row (mysql-fetch-row result)]
+                   [ret '()])
+          (cond
+           [(= row NULL)
+            (let ([getter (make-getter mysql result)])
+              (mysql-free-result result)
+              (make <mysql-result>
+                'mysql mysql
+                'lst (reverse ret)
+                'getter getter))]
+           [else
+            (let ([v (make-vector (mysql-field-count mysql))])
+              (vector-for-each-with-index
+               (lambda (val index)
+                 (vector-set! v index (mysql-row-ref row index)))
+               v)
+              (loop (mysql-fetch-row result) (cons v ret)))]))]))))
 
 (define-method dbd-connect ((dbd <dbd-mysql>) user password options)
   (define (parse-options options)
@@ -126,7 +133,7 @@
       (cond
        [(and db host port)
         (when (zero? (mysql-real-connect mysql host user password db port NULL NULL))
-          (assertion-violation 'dbd-connect "mysql connection failed"))
+          (assertion-violation 'dbd-connect "mysql connection failed" (mysql-error mysql)))
         (make <mysql-connection> 'mysql mysql)]
        [else
         (assertion-violation 'dbd-connect "invalid options in dsn" options)]))))

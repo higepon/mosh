@@ -29,14 +29,16 @@
 
 (library (dbi)
   (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list dbi-close
+          dbi-do
           <connection> <query> <result>
           dbd-connect dbd-execute <dbd>)
   (import
      (only (rnrs) define quote cond => lambda assertion-violation values
                   let-values else and quasiquote unquote string->symbol let
                   let* null? apply string-append reverse if string=? car
-                  cdr cons string? number? char? when display)
-     (only (mosh) symbol-value format string-split)
+                  cdr cons string? number? char? when display string->list
+                  map)
+     (only (mosh) symbol-value format)
      (only (clos user) define-class define-generic define-method initialize initialize-direct-slots
                        make slot-ref))
 
@@ -71,6 +73,7 @@
 (define-generic dbi-result->list)
 (define-generic dbi-getter)
 (define-generic dbi-close)
+(define-generic dbi-do)
 
 (define (make-driver name)
   (let ([eval-r6rs (symbol-value 'eval-r6rs)])
@@ -106,9 +109,10 @@
     (assertion-violation 'dbi-execute "not supported argument for prepared sql" obj)]))
 
 (define (dbi-set-prepared prepared args)
-  (let* ([tokens (string-split prepared #\space)])
+  (let* ([tokens (map (lambda (x) (format "~a" x)) (string->list prepared))])
     (let loop ([tokens tokens]
-               [ret '()])
+               [ret '()]
+               [args args])
       (cond
        [(null? tokens)
         (apply string-append (reverse ret))]
@@ -117,9 +121,9 @@
          [(string=? "?" (car tokens))
           (when (null? args)
             (assertion-violation 'dbi-execute "args to short for prepared sql" prepared args))
-          (loop (cdr tokens) (cons (prepare-helper (car args)) (cons " "ret)))]
+          (loop (cdr tokens) (cons (prepare-helper (car args)) ret) (cdr args))]
          [else
-          (loop (cdr tokens) (cons (car tokens) (cons " " ret)))])]))))
+          (loop (cdr tokens) (cons (car tokens) ret) args)])]))))
 
 (define (dbi-execute query . args)
   (dbd-execute (slot-ref query 'connection) (dbi-set-prepared (slot-ref query 'prepared) args)))
@@ -132,5 +136,7 @@
 (define-method dbi-prepare ((conn <connection>) sql)
   (make <query> 'prepared sql 'connection conn))
 
+(define-method dbi-do ((conn <connection>) sql)
+  (dbi-execute (dbi-prepare conn sql)))
 
 )

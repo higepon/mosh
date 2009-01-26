@@ -28,3 +28,24 @@
              (test/t (string? (getter row "User"))))
            (dbi-result->list result))
           (dbi-close conn))))))
+
+;; dangerous
+;; (let ([conn (guard (c (#t (display "mysql not supporeted\n") #f))
+;;                       (dbi-connect "dbi:mysql:mysql:127.0.0.1:3306" "root" ""))])
+;;   (when conn
+;;    (dbi-do conn "create table hoge (a text, b integer);")
+;;    ;; insert
+;;    (let ([query (dbi-prepare conn "insert into hoge values(?, ?)")])
+;;      (do ([i 0 (+ i 1)])
+;;          ((= i 5) #f)
+;;        (dbi-execute query (format "hoge~a" i) i)))
+;;    ;; check
+;;    (let ([result (dbi-do conn "select * from hoge")])
+;;      (let ([getter (dbi-getter result)])
+;;        (for-each
+;;         (lambda (row)
+;;           (test/t (string? (getter row "a")))
+;;           (test/t (string? (getter row "b"))))
+;;         (dbi-result->list result))))
+;;    (dbi-do conn "drop table hoge")
+;;    (dbi-close conn)))
