@@ -44,7 +44,7 @@
 
 (define-class <dbd-mysql> (<dbd>))
 (define-class <mysql-connection> (<connection>) mysql)
-(define-class <mysql-result> (<result>) mysql result lst)
+(define-class <mysql-result> (<result>) mysql lst getter)
 
 (define (vector-for-each-with-index proc v)
   (let ([len (vector-length v)])
@@ -55,6 +55,22 @@
         (proc (vector-ref v i) i)
         (loop (+ i 1))]))))
 
+(define (make-getter mysql result)
+  (let* ([field-count (mysql-field-count mysql)]
+         [ht (make-hashtable string-hash equal?)])
+    (let loop ([i 0])
+      (cond
+       [(= field-count i) '()]
+       [else
+        ;; ignore case
+        (hashtable-set! ht (string-downcase (mysql-field-name (mysql-fetch-field-direct result i))) i)
+        (loop (+ i 1))]))
+    (lambda (row name)
+      (let ([index (hashtable-ref ht (string-downcase name) #f)])
+        (unless index
+          (assertion-violation 'dbi-getter "unknown column" name))
+      (vector-ref row index)))))
+
 (define-method initialize ((m <mysql-connection>) init-args)
   (initialize-direct-slots m <mysql-connection> init-args))
 
@@ -64,22 +80,11 @@
 (define-method dbi-result->list ((res <mysql-result>))
   (slot-ref res 'lst))
 
-(define-method dbi-getter ((res <mysql-result>))
-  (let* ([field-count (mysql-field-count (slot-ref res 'mysql))]
-         [ht (make-hashtable string-hash equal?)])
-    (let loop ([i 0])
-      (cond
-       [(= field-count i) '()]
-       [else
-        ;; ignore case
-        (hashtable-set! ht (string-downcase (mysql-field-name (mysql-fetch-field-direct (slot-ref res 'result) i))) i)
-        (loop (+ i 1))]))
-    (lambda (row name)
-      (let ([index (hashtable-ref ht (string-downcase name) #f)])
-        (unless index
-          (assertion-violation 'dbi-getter "unknown column" name))
-      (vector-ref row index)))))
+(define-method dbi-close ((conn <mysql-connection>))
+  (mysql-close (slot-ref conn 'mysql)))
 
+(define-method dbi-getter ((res <mysql-result>))
+  (slot-ref res 'getter))
 
 (define-method dbd-execute ((conn <mysql-connection>) sql)
   (let ([mysql (slot-ref conn 'mysql)])
@@ -92,10 +97,12 @@
                  [ret '()])
         (cond
          [(= row NULL)
-          (make <mysql-result>
-                'mysql mysql
-                'result result
-                'lst (reverse ret))]
+          (let ([getter (make-getter mysql result)])
+            (mysql-free-result result)
+            (make <mysql-result>
+              'mysql mysql
+              'lst (reverse ret)
+              'getter getter))]
          [else
           (let ([v (make-vector (mysql-field-count mysql))])
             (vector-for-each-with-index

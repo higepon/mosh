@@ -22,11 +22,9 @@
                     (if (memq <result> (class-direct-supers (class-of result))) #t #f)))
 
         (let ([getter (dbi-getter result)])
-
           (for-each
            (lambda (row)
              (test/t (string? (getter row "host")))
              (test/t (string? (getter row "User"))))
            (dbi-result->list result))
-          )))))
-
+          (dbi-close conn))))))

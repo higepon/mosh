@@ -28,7 +28,7 @@
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
 (library (dbi)
-  (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list
+  (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list dbi-close
           <connection> <query> <result>
           dbd-connect dbd-execute <dbd>)
   (import
@@ -40,6 +40,26 @@
      (only (clos user) define-class define-generic define-method initialize initialize-direct-slots
                        make slot-ref))
 
+; How to write new dbd.
+;   dbd/mysql.ss and test/dbi.scm are good sample.
+;
+; dbd SHOULD implement following functions
+;    (1) (dbd-connect <dbd-xxx> user password options)
+;        returns sub-class of <connection>
+;
+;    (2) (dbd-execute <xxx-connection> sql)
+;        returns sub-class of <result>
+;
+;    (3) (dbi-getter <xxxx-result>)
+;        returns getter closure. (getter row name)
+;
+;    (4) (dbi-result->list <xxxx-result>)
+;        returns list of rows
+;
+;    (5) (dbi-close <xxx-connection>
+;        returns unspecified.
+
+
 (define-class <connection> ())
 (define-class <dbd> ())
 (define-class <result> ())
@@ -50,6 +70,7 @@
 (define-generic dbi-prepare)
 (define-generic dbi-result->list)
 (define-generic dbi-getter)
+(define-generic dbi-close)
 
 (define (make-driver name)
   (let ([eval-r6rs (symbol-value 'eval-r6rs)])
