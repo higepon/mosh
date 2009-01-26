@@ -1,6 +1,8 @@
 2009-01-26  higepon  <higepon@users.sourceforge.jp>
 
-        * lib/dbi.ss: added dbi-connect and dbi-prepare.
+        * Added dbi-getter and dbi-result->list.
+
+        * lib/dbi.ss: added dbi-connect, dbi-execute and dbi-prepare.
 
 2009-01-23  higepon  <higepon@users.sourceforge.jp>
 

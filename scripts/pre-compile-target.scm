@@ -12,5 +12,7 @@
         (mosh ffi)
         (mosh shell)
         (mosh shell repl)
-;        (mysql)
+        (mysql)
+        (dbi)
+        (dbd mysql)
         )

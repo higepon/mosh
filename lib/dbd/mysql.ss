@@ -33,16 +33,76 @@
    (mysql)
    (clos user)
    (clos core)
+   (only (mosh) format)
    (only (rnrs) define quote let unless when assertion-violation zero?
                 guard cond else => lambda values string->number
-                let-values and)
+                let-values and = display reverse cons vector-set!
+                vector-ref make-vector vector-length + let* equal?
+                make-hashtable string-hash hashtable-set! hashtable-ref
+                string-downcase)
    (dbi))
 
 (define-class <dbd-mysql> (<dbd>))
 (define-class <mysql-connection> (<connection>) mysql)
+(define-class <mysql-result> (<result>) mysql result lst)
+
+(define (vector-for-each-with-index proc v)
+  (let ([len (vector-length v)])
+    (let loop ([i 0])
+      (cond
+       [(= i len) v]
+       [else
+        (proc (vector-ref v i) i)
+        (loop (+ i 1))]))))
 
 (define-method initialize ((m <mysql-connection>) init-args)
   (initialize-direct-slots m <mysql-connection> init-args))
+
+(define-method initialize ((m <mysql-result>) init-args)
+  (initialize-direct-slots m <mysql-result> init-args))
+
+(define-method dbi-result->list ((res <mysql-result>))
+  (slot-ref res 'lst))
+
+(define-method dbi-getter ((res <mysql-result>))
+  (let* ([field-count (mysql-field-count (slot-ref res 'mysql))]
+         [ht (make-hashtable string-hash equal?)])
+    (let loop ([i 0])
+      (cond
+       [(= field-count i) '()]
+       [else
+        ;; ignore case
+        (hashtable-set! ht (string-downcase (mysql-field-name (mysql-fetch-field-direct (slot-ref res 'result) i))) i)
+        (loop (+ i 1))]))
+    (lambda (row name)
+      (let ([index (hashtable-ref ht (string-downcase name) #f)])
+        (unless index
+          (assertion-violation 'dbi-getter "unknown column" name))
+      (vector-ref row index)))))
+
+
+(define-method dbd-execute ((conn <mysql-connection>) sql)
+  (let ([mysql (slot-ref conn 'mysql)])
+    (unless (zero? (mysql-query mysql sql))
+      (assertion-violation 'mysql-query "failed" sql))
+    (let ([result (mysql-store-result mysql)])
+      (when (zero? result)
+        (assertion-violation 'mysql-store-result "failed" sql))
+      (let loop ([row (mysql-fetch-row result)]
+                 [ret '()])
+        (cond
+         [(= row NULL)
+          (make <mysql-result>
+                'mysql mysql
+                'result result
+                'lst (reverse ret))]
+         [else
+          (let ([v (make-vector (mysql-field-count mysql))])
+            (vector-for-each-with-index
+             (lambda (val index)
+               (vector-set! v index (mysql-row-ref row index)))
+             v)
+            (loop (mysql-fetch-row result) (cons v ret)))])))))
 
 (define-method dbd-connect ((dbd <dbd-mysql>) user password options)
   (define (parse-options options)

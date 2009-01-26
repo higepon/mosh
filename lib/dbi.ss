@@ -28,21 +28,28 @@
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
 (library (dbi)
-  (export dbi-connect dbi-prepare <connection> <query>
-          dbd-connect <dbd>)
+  (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list
+          <connection> <query> <result>
+          dbd-connect dbd-execute <dbd>)
   (import
      (only (rnrs) define quote cond => lambda assertion-violation values
-                  let-values else and quasiquote unquote string->symbol let)
-     (only (mosh) symbol-value format)
-     (clos core)
-     (clos user))
+                  let-values else and quasiquote unquote string->symbol let
+                  let* null? apply string-append reverse if string=? car
+                  cdr cons string? number? char? when display)
+     (only (mosh) symbol-value format string-split)
+     (only (clos user) define-class define-generic define-method initialize initialize-direct-slots
+                       make slot-ref))
 
 (define-class <connection> ())
 (define-class <dbd> ())
-(define-class <query> ())
+(define-class <result> ())
+(define-class <query> () prepared connection)
 
 (define-generic dbd-connect)
+(define-generic dbd-execute)
 (define-generic dbi-prepare)
+(define-generic dbi-result->list)
+(define-generic dbi-getter)
 
 (define (make-driver name)
   (let ([eval-r6rs (symbol-value 'eval-r6rs)])
@@ -66,13 +73,43 @@
      [else
       (assertion-violation 'dbi-connect "invalid dsn. dbi:drivername:options required" dsn)])))
 
+(define (prepare-helper obj)
+  (cond
+   [(string? obj)
+    (format "~s" obj)]
+   [(number? obj)
+    (format "~a" obj)]
+   [(char? obj)
+    (format "~a" obj)]
+   [else
+    (assertion-violation 'dbi-execute "not supported argument for prepared sql" obj)]))
+
+(define (dbi-set-prepared prepared args)
+  (let* ([tokens (string-split prepared #\space)])
+    (let loop ([tokens tokens]
+               [ret '()])
+      (cond
+       [(null? tokens)
+        (apply string-append (reverse ret))]
+       [else
+        (cond
+         [(string=? "?" (car tokens))
+          (when (null? args)
+            (assertion-violation 'dbi-execute "args to short for prepared sql" prepared args))
+          (loop (cdr tokens) (cons (prepare-helper (car args)) (cons " "ret)))]
+         [else
+          (loop (cdr tokens) (cons (car tokens) (cons " " ret)))])]))))
+
+(define (dbi-execute query . args)
+  (dbd-execute (slot-ref query 'connection) (dbi-set-prepared (slot-ref query 'prepared) args)))
+
 (define-method initialize ((q <query>) init-args)
   (initialize-direct-slots q <query> init-args))
 
 ; default implementaion of dbi-prepare
 ; This may be overwritten in dbd.
 (define-method dbi-prepare ((conn <connection>) sql)
-  (make <query> 'prepared sql))
+  (make <query> 'prepared sql 'connection conn))
 
 
 )
