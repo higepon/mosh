@@ -93,6 +93,8 @@ namespace scheme {
     Object bufferModePEx(VM* theVM, int argc, const Object* argv);
     Object inputPortPEx(VM* theVM, int argc, const Object* argv);
     Object binaryPortPEx(VM* theVM, int argc, const Object* argv);
+    Object textualPortPEx(VM* theVM, int argc, const Object* argv);
+    Object portPEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

@@ -83,7 +83,10 @@ public:
     Object(const char* str);
 
     bool isInputPort() const;
+    bool isOutputPort() const;
     bool isBinaryPort() const;
+    bool isTextualPort() const;
+    bool isPort() const;
     bool isComplex() const;
     bool isReal() const;
     bool isRational() const;

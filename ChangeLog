@@ -1,3 +1,7 @@
+2009-01-27  kokosabu  <kokosabu@gmail.com>
+
+        * PortProcedures.cpp : Added port?, textual-port?.
+
 2009-01-26  higepon  <higepon@users.sourceforge.jp>
 
         * Added dbi-getter and dbi-result->list.

@@ -61,8 +61,7 @@ Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("output-port?");
     checkArgumentLength(1);
-    const Object obj = argv[0];
-    return Object::makeBool(obj.isBinaryOutputPort() || obj.isTextualOutputPort());
+    return Object::makeBool(argv[0].isOutputPort());
 }
 
 bool scheme::fileExistsP(const ucs4string& file)
@@ -807,4 +806,18 @@ Object scheme::binaryPortPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("binary-port?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isBinaryPort());
+}
+
+Object scheme::textualPortPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("textual-port?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isTextualPort());
+}
+
+Object scheme::portPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isPort());
 }

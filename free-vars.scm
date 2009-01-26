@@ -464,4 +464,6 @@
     %ffi-pointer-ref
     %ffi-supported?
     output-port?
+    textual-port?
+    port?
     )
