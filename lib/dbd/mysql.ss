@@ -35,7 +35,7 @@
    (clos core)
    (only (rnrs) define quote let unless when assertion-violation zero?
                 guard cond else)
-   (dbd))
+   (dbi))
 
 (define-class <dbd-mysql> (<dbd>))
 (define-class <mysql-connection> (<connection>) mysql)
@@ -43,15 +43,15 @@
 (define-method initialize ((m <mysql-connection>) init-args)
   (initialize-direct-slots m <mysql-connection> init-args))
 
-(define-method dbd-do ((connection <mysql-connection>) sql)
-  (cond
-   [(zero? (mysql-query (slot-ref connection 'mysql) sql))
-    (assertion-violation "execution sql failed" sql)]
-   [else
-    (mysql-store-result (slot-ref connection 'mysql))]))
+;; (define-method dbd-do ((connection <mysql-connection>) sql)
+;;   (cond
+;;    [(zero? (mysql-query (slot-ref connection 'mysql) sql))
+;;     (assertion-violation "execution sql failed" sql)]
+;;    [else
+;;     (mysql-store-result (slot-ref connection 'mysql))]))
 
 
-(define-method dbd-connect ((dbd <dbd-mysql>))
+(define-method dbd-connect ((dbd <dbd-mysql>) user password options)
   (let ([mysql (guard (c (#t #f)) (mysql-init))])
     (unless mysql
       (assertion-violation 'mysql-init "mysql-init failed"))

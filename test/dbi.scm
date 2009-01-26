@@ -3,8 +3,13 @@
         (mosh test)
         (clos core))
 
-(define dbi (make <dbi>))
+(define conn (dbi-connect "dbi:mysql:mysql:127.0.0.1:3306" "root" ""))
 
-(test* (class-of dbi) <dbi>)
+;; conn is sub-class of <connection>
+(test/t (if (memq <connection> (class-direct-supers (class-of conn))) #t #f))
 
-(print-object-with-slots dbi (current-output-port))
+;; (define query (dbi-prepare conn "select * from user"))
+
+;; ;; conn is <query> or sub-class of query
+;; (test/t (or (eq? (class-of query) <query>)
+;;             (memq <query> (class-direct-supers (class-of query)))))

@@ -28,20 +28,40 @@
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
 (library (dbi)
-  (export <dbi> <dbd> dbd-connect)
+  (export dbi-connect <connection>
+          dbd-connect <dbd>)
   (import
-     (only (rnrs) define quote)
+     (only (rnrs) define quote cond => lambda assertion-violation values
+                  let-values else and quasiquote unquote string->symbol let)
+     (only (mosh) symbol-value format)
      (clos core)
      (clos user))
 
-(define-class <dbi> ())
-
+(define-class <connection> ())
 (define-class <dbd> ())
 
 (define-generic dbd-connect)
 
-(define-method dbd-connect ((dbd <dbd>))
-  'dbd-connect)
+(define (parse-dsn dsn)
+  (cond
+   [(#/dbi:([^:]+):(.+)/ dsn) =>
+    (lambda (m)
+      (values (m 1) (m 2)))]
+   [else
+    (values #f #f)]))
 
+(define (make-driver name)
+  (let ([eval-r6rs (symbol-value 'eval-r6rs)])
+    (eval-r6rs `(import (clos core)))
+    (eval-r6rs `(import (dbd ,(string->symbol name))))
+    (eval-r6rs `(make ,(string->symbol (format "<dbd-~a>" name))))))
 
+(define (dbi-connect dsn user password)
+  (let-values ([(name options) (parse-dsn dsn)])
+    (cond
+     [(and name options)
+      (let ([driver (make-driver name)])
+        (dbd-connect driver user password options))]
+     [else
+      (assertion-violation 'dbi-connect "invalid dsn. dbi:drivername:options required" dsn)])))
 )
