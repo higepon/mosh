@@ -1,10 +1,9 @@
 (import (rnrs)
-        (mosh)
-        (rnrs eval)
-        (dbi))
+        (mosh))
 
-((symbol-value 'eval-r6rs) '(import (dbd mysql)))
-(define dbi ((symbol-value 'eval-r6rs) '(make-dbi)) )
-
-(display (dbd-connect dbi))
-
+(let loop ([i 0])
+  (if (= i 100000)
+      (display "\ndone")
+      (begin
+        (format #t "~d\r" i)
+        (loop (+ i 1)))))

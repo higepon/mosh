@@ -1,7 +1,13 @@
 (library (mosh test)
-  (export test* test/exception test/violation? test/t)
-  (import (only (rnrs) define-syntax lambda let* if syntax-case syntax equal? quote begin syntax->datum exit ... guard violation?)
-          (mosh string))
+  (export test* test/exception test/violation? test/t test-end)
+  (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
+                set! equal? quote begin syntax->datum exit ... guard violation? cons
+                list cond > length display for-each current-error-port car cadr caddr)
+          (mosh string)
+          (mosh parameters))
+
+  (define error* (make-parameter '()))
+  (define counter (make-parameter 0))
 
   (define-syntax test*
     (lambda (x)
@@ -11,12 +17,17 @@
           (let* ([result test]
                  [test-ok? (equal? result expected)])
             (if test-ok?
-                (format #t "OK: ~a => ~a\n" (quote form)  result)
-                (begin (format #t "NG: ~a => ~a expected ~a\n"
-                               'form
-                               result
-                               expected)
-                       (exit -1))))))
+                (begin
+                  (format #t "Test Running ~d\r" (counter))
+                  (counter (+ (counter) 1))
+                      )
+                (error* (cons (list 'form result expected) (error*)))
+                ;; (begin (format #t "NG: ~a => ~a expected ~a\n"
+;;                                'form
+;;                                result
+;;                                expected)
+;;                        (exit -1))
+                ))))
         ((_ test expected)
          (syntax
           (test* test expected test))))))
@@ -41,5 +52,17 @@
         ((_ test ...)
          (syntax
           (test/exception violation? test ...))))))
+
+  (define (test-end)
+    (cond
+     [(> (length (error*)) 0)
+      (display "\n** Error(s)\n")
+      (for-each
+       (lambda (x)
+         (format (current-error-port) "  ~a got ~a but ~a expected\n" (car x) (cadr x) (caddr x)))
+       (error*))
+      (exit -1)]
+     [else
+      (display "ok")]))
 
 )

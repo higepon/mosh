@@ -265,6 +265,7 @@ test: ./mosh all-tests.scm update
 	./mosh test/ffi.scm
 	./mosh test/mysql.scm
 	./mosh test/clos.scm
+	./mosh test/dbi.scm
 	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
