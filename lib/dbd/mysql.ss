@@ -34,7 +34,8 @@
    (clos user)
    (clos core)
    (only (rnrs) define quote let unless when assertion-violation zero?
-                guard cond else)
+                guard cond else => lambda values string->number
+                let-values and)
    (dbi))
 
 (define-class <dbd-mysql> (<dbd>))
@@ -43,20 +44,24 @@
 (define-method initialize ((m <mysql-connection>) init-args)
   (initialize-direct-slots m <mysql-connection> init-args))
 
-;; (define-method dbd-do ((connection <mysql-connection>) sql)
-;;   (cond
-;;    [(zero? (mysql-query (slot-ref connection 'mysql) sql))
-;;     (assertion-violation "execution sql failed" sql)]
-;;    [else
-;;     (mysql-store-result (slot-ref connection 'mysql))]))
-
-
 (define-method dbd-connect ((dbd <dbd-mysql>) user password options)
+  (define (parse-options options)
+    (cond
+     [(#/([^:]+):([^:]+):(\d+)/ options) =>
+      (lambda (m)
+        (values (m 1) (m 2) (string->number (m 3))))]
+     [else
+      (values #f #f #f)]))
   (let ([mysql (guard (c (#t #f)) (mysql-init))])
     (unless mysql
       (assertion-violation 'mysql-init "mysql-init failed"))
-    (when (zero? (mysql-real-connect mysql "127.0.0.1" "root" "" "mysql" 3306 NULL NULL))
-      (assertion-violation 'dbd-connect "mysql connection failed"))
-    (make <mysql-connection> 'mysql mysql)))
+    (let-values ([(db host port) (parse-options options)])
+      (cond
+       [(and db host port)
+        (when (zero? (mysql-real-connect mysql host user password db port NULL NULL))
+          (assertion-violation 'dbd-connect "mysql connection failed"))
+        (make <mysql-connection> 'mysql mysql)]
+       [else
+        (assertion-violation 'dbd-connect "invalid options in dsn" options)]))))
 
 )

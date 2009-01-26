@@ -1,3 +1,7 @@
+2009-01-26  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/dbi.ss: added dbi-connect and dbi-prepare.
+
 2009-01-23  higepon  <higepon@users.sourceforge.jp>
 
         * dbi: Added dbi.ss library and tests. (They are empty now).

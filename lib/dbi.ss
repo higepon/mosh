@@ -28,7 +28,7 @@
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
 (library (dbi)
-  (export dbi-connect <connection>
+  (export dbi-connect dbi-prepare <connection> <query>
           dbd-connect <dbd>)
   (import
      (only (rnrs) define quote cond => lambda assertion-violation values
@@ -39,16 +39,10 @@
 
 (define-class <connection> ())
 (define-class <dbd> ())
+(define-class <query> ())
 
 (define-generic dbd-connect)
-
-(define (parse-dsn dsn)
-  (cond
-   [(#/dbi:([^:]+):(.+)/ dsn) =>
-    (lambda (m)
-      (values (m 1) (m 2)))]
-   [else
-    (values #f #f)]))
+(define-generic dbi-prepare)
 
 (define (make-driver name)
   (let ([eval-r6rs (symbol-value 'eval-r6rs)])
@@ -57,6 +51,13 @@
     (eval-r6rs `(make ,(string->symbol (format "<dbd-~a>" name))))))
 
 (define (dbi-connect dsn user password)
+  (define (parse-dsn dsn)
+    (cond
+     [(#/dbi:([^:]+):(.+)/ dsn) =>
+      (lambda (m)
+        (values (m 1) (m 2)))]
+     [else
+      (values #f #f)]))
   (let-values ([(name options) (parse-dsn dsn)])
     (cond
      [(and name options)
@@ -64,4 +65,14 @@
         (dbd-connect driver user password options))]
      [else
       (assertion-violation 'dbi-connect "invalid dsn. dbi:drivername:options required" dsn)])))
+
+(define-method initialize ((q <query>) init-args)
+  (initialize-direct-slots q <query> init-args))
+
+; default implementaion of dbi-prepare
+; This may be overwritten in dbd.
+(define-method dbi-prepare ((conn <connection>) sql)
+  (make <query> 'prepared sql))
+
+
 )
