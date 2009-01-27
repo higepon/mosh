@@ -335,7 +335,8 @@ test_ffi_LDADD = $(TEST_LDADD_)
 
 
 
-# # doc:
+doc:
+	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -xi gc-7.1alpha3 -xi bench
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
 # 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
