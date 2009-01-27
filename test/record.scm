@@ -151,3 +151,4 @@
   (print *ex3-instance*)
   (test* (record? ex3-i1) #f)
 )
+(test-end)

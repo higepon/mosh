@@ -1,9 +1,14 @@
 (import (rnrs)
-        (mosh))
+        (mosh)
+        (mosh test))
 
+(test* #t #f)
+(test* #t #f)
 (let loop ([i 0])
-  (if (= i 100000)
-      (display "\ndone")
+  (if (= i 10000)
+      '()
       (begin
-        (format #t "~d\r" i)
+        (test* #t #t)
         (loop (+ i 1)))))
+
+(test-end)

@@ -123,3 +123,4 @@
   (test* (syntax-violation? (make-syntax-violation 'form 'subform)) #t)
   (test* (undefined-violation? (make-undefined-violation)) #t)
 )
+(test-end)

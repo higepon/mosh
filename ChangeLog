@@ -1,3 +1,7 @@
+2009-01-27  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/test.ss (mosh): Improved test showing results.
+
 2009-01-27  kokosabu  <kokosabu@gmail.com>
 
         * PortProcedures.cpp : Added port?, textual-port?.

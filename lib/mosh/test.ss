@@ -8,6 +8,7 @@
 
   (define error* (make-parameter '()))
   (define counter (make-parameter 0))
+  (define ok-counter (make-parameter 0))
 
   (define-syntax test*
     (lambda (x)
@@ -16,17 +17,14 @@
          (syntax
           (let* ([result test]
                  [test-ok? (equal? result expected)])
-            (if test-ok?
-                (begin
-                  (format #t "Test Running ~d\r" (counter))
-                  (counter (+ (counter) 1))
-                      )
-                (error* (cons (list 'form result expected) (error*)))
-                ;; (begin (format #t "NG: ~a => ~a expected ~a\n"
-;;                                'form
-;;                                result
-;;                                expected)
-;;                        (exit -1))
+            (cond
+             [test-ok?
+              (format #t "\rTest Running ~d/~d" (ok-counter) (counter))
+              (counter (+ (counter) 1))
+              (ok-counter (+ (ok-counter) 1))]
+             [else
+              (error* (cons (list 'form result expected) (error*)))
+              (counter (+ (counter) 1))]
                 ))))
         ((_ test expected)
          (syntax
@@ -63,6 +61,6 @@
        (error*))
       (exit -1)]
      [else
-      (display "ok")]))
+      (format #t "\rTest Running ~d/~d ... ok\n" (ok-counter) (counter))]))
 
 )

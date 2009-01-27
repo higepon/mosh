@@ -17,3 +17,5 @@
 
 (def-alias ls-x2 ls ls)
 (test* ls-x2 #f)
+
+(test-end)

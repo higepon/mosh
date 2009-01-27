@@ -107,3 +107,5 @@
   (mysql-close mysql)
 ;  (mysql-library-end)
   '())))
+
+(test-end)

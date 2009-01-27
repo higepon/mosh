@@ -51,3 +51,5 @@
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))))
+
+(test-end)
