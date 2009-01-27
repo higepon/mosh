@@ -8,7 +8,7 @@
                 current-output-port)
           (only (rnrs mutable-strings) string-set!))
 
-; File: "pp.scm"   (c) 1991, Marc Feeley
+; File; "pp.scm"   (c) 1991, Marc Feeley
 
 ; 'generic-write' is a procedure that transforms a Scheme data value (or
 ; Scheme program expression) into its textual representation.  The interface
@@ -16,7 +16,7 @@
 ; formatting procedures such as pretty printing, output to a string and
 ; truncated output.
 ;
-; Parameters:
+; Parameters;
 ;
 ;   OBJ       Scheme data value to transform.
 ;   DISPLAY?  Boolean, controls whether characters and strings are quoted.
@@ -29,7 +29,7 @@
 ;
 ; The value returned by 'generic-write' is undefined.
 ;
-; Examples:
+; Examples;
 ;
 ;   (write obj)   = (generic-write obj #f #f display-string)
 ;   (display obj) = (generic-write obj #t #f display-string)
