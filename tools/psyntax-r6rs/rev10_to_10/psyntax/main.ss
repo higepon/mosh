@@ -202,6 +202,7 @@
              (compile-r6rs-top-level x*) ; i assume this is needed
              (serialize-all serialize-library compile-core-expr)))))))
 
+
   (current-precompiled-library-loader load-serialized-library)
 
 
@@ -281,7 +282,8 @@
      (lambda ()
        (if (null? args)
            (repl)
-           (load-r6rs-top-level (car args) 'load (cdr args))))))
+           (load-r6rs-top-level (car args) 'load (cdr args))
+           ))))
 
 
   ;;   (display "r6rs psyntax ready\n")

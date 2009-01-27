@@ -230,7 +230,7 @@
   '(
     ;;;
     (import                                     interaction)
-    (export                                     interaction)
+;    (export                                     interaction)
     (library                                    interaction)
     (include                                    interaction mosh)
     (lambda                                     interaction r ba se ne)

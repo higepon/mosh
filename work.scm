@@ -1,14 +1,18 @@
-(import (rnrs)
-        (mosh)
-        (mosh test))
 
-(test* #t #f)
-(test* #t #f)
-(let loop ([i 0])
-  (if (= i 10000)
-      '()
-      (begin
-        (test* #t #t)
-        (loop (+ i 1)))))
+;;;; quux.ss
+(library (foo)
+ (export f)
+ (import (rnrs))
 
-(test-end)
+ (define f 0))
+
+(library (bar)
+ (export g)
+ (import (rnrs))
+
+ (define g 1))
+
+(import (rnrs) (foo) (bar))
+;; top-level program goes here
+
+(display g)
