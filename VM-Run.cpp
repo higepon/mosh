@@ -1129,6 +1129,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     // there's no need to push
                 }
             }
+            if (num == 0) {
+                ac_ = Object::Undef;
+            }
             NEXT;
         }
         CASE(RECEIVE)

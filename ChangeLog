@@ -1,5 +1,7 @@
 2009-01-28  higepon  <higepon@users.sourceforge.jp>
 
+        * Wrote document for Database Independent Interface.
+
         * Wrote document for Pretty Printing.
 
         * Wrote document for Unit Testing.

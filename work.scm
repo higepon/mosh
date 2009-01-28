@@ -1,18 +1,13 @@
+(import (rnrs))
 
-;;;; quux.ss
-(library (foo)
- (export f)
- (import (rnrs))
 
- (define f 0))
+(define-syntax p
+  (lambda (x)
+  (syntax-case x ()
+    [(_ obj)
+     #'(call-with-values (lambda () obj) (lambda x (display x) (newline) (apply values x)))])))
 
-(library (bar)
- (export g)
- (import (rnrs))
-
- (define g 1))
-
-(import (rnrs) (foo) (bar))
-;; top-level program goes here
-
-(display g)
+(p (values 1 2))
+(let-values (((a b) (p (values 1 2))))
+  (display (+ a b)))
+(p 1)

@@ -6080,3 +6080,8 @@
   (if (or (zero? (string-length path)) (char=? (string-ref path 0) #\/))
       path
       (string-append (current-directory) "/" path)))
+
+(define (p . obj)
+  (display obj)
+  (newline)
+  (apply values obj))

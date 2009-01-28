@@ -46,7 +46,7 @@ Format: 1.4
 # --------------------------------------------------------------------------
 
 
-File: Database independent interface  (lib/dbi.ss)
+File: Database independent interface  (lib/mosh/dbi.ss)
 File: Foreign Function Interface  (lib/mosh/ffi.ss)
 File: Pretty Printing  (lib/mosh/pp.ss)
 File: Unit Testing  (lib/mosh/test.ss)
@@ -56,5 +56,6 @@ Group: Index  {
    Index: Everything
    Function Index: Functions
    Library Index: Libraries
+   Variable Index: Variables
    }  # Group: Index
 

@@ -986,6 +986,7 @@
     (get-timeofday mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)
+    (p interaction mosh)
     (%pipe interaction sys)
     (%fork interaction sys)
     (%ffi-open interaction sys)

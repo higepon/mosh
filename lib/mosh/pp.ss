@@ -8,7 +8,7 @@
     Pretty Printer Library
 |#
 (library (mosh pp)
-  (export pretty-print)
+  (export pretty-print p pp)
   (import (only (rnrs) define if make-string case else let* and pair? symbol?
                 car cdr + null? let cond > string-length symbol->string or
                 vector? lambda set! cons - vector->list quote min < substring
@@ -355,6 +355,49 @@
 (define (pretty-print obj . opt)
   (let ((port (if (pair? opt) (car opt) (current-output-port))))
     (generic-write obj #f 79 (lambda (s) (display s port) #t))))
+
+#|
+    Function: p
+
+    Print obj and return obj.
+    This is useful for debugging like following.
+    > (and (p hoge) (p hige))
+
+    Prototype:
+    > (p obj)
+
+    Parameters:
+
+      obj - object to print. obj can be multiple values.
+
+    Returns:
+
+      obj
+|#
+(define-syntax p
+  (lambda (x)
+    (syntax-case x ()
+      [(_ obj)
+       #'(call-with-values (lambda () obj) (lambda x (display x) (newline) (apply values x)))])))
+
+#|
+    Function: pp
+
+    short cut for <pretty-print>
+
+    Prototype:
+    > (pp obj)
+
+    Parameters:
+
+      obj - object to print. obj can be multiple values.
+
+    Returns:
+
+      unspecified
+|#
+(define pp pretty-print)
+
 
 ; (pretty-print-to-string obj) returns a string with the pretty-printed
 ; textual representation of 'obj'.
