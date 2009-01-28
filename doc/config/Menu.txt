@@ -48,6 +48,7 @@ Format: 1.4
 
 File: About  (no auto-title, doc/text/About.txt)
 File: Database independent interface  (lib/mosh/dbi.ss)
+File: Download  (doc/text/Download.txt)
 File: Foreign Function Interface  (lib/mosh/ffi.ss)
 File: Pretty Printing  (lib/mosh/pp.ss)
 File: Unit Testing  (lib/mosh/test.ss)
