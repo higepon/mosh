@@ -1,3 +1,9 @@
+2009-01-28  higepon  <higepon@users.sourceforge.jp>
+
+        * Wrote document for Pretty Printing.
+
+        * Wrote document for Unit Testing.
+
 2009-01-27  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/test.ss (mosh): Improved test showing results.

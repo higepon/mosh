@@ -1,3 +1,12 @@
+#|
+    Title: Pretty Printing
+
+    Pretty Printer library written by Marc Feeley (c) 1991.
+
+    library: (mosh pp)
+
+    Pretty Printer Library
+|#
 (library (mosh pp)
   (export pretty-print)
   (import (only (rnrs) define if make-string case else let* and pair? symbol?
@@ -326,6 +335,23 @@
 ; (pretty-print obj port) pretty prints 'obj' on 'port'.  The current
 ; output port is used if 'port' is not specified.
 
+#|
+    Function: pretty-print
+
+    pretty print out Scheme object to the output port.
+
+    Prototype:
+    > (pretty-print obj . port)
+
+    Parameters:
+
+      obj - object to print
+      port - output port. Default is (current-output-port).
+
+    Returns:
+
+      unspecified
+|#
 (define (pretty-print obj . opt)
   (let ((port (if (pair? opt) (car opt) (current-output-port))))
     (generic-write obj #f 79 (lambda (s) (display s port) #t))))

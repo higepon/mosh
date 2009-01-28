@@ -27,6 +27,28 @@
 ;
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
+#|
+    Title:  Database independent interface
+
+    Defines a set of functions to access Database.
+
+    Example:
+    (start code)
+    (let* ([conn   (dbi-connect "dbi:mysql:mysql:127.0.0.1:3306" "root" "")]
+           [query  (dbi-prepare conn "select * from user where user = ?")]
+           [result (dbi-execute query "root")]
+           [getter (dbi-getter result)])
+      (for-each
+       (lambda (row)
+         (display  (getter row "host")))
+       (dbi-result->list result))
+      (dbi-close conn))
+    (end code)
+
+    library: (mosh dbi)
+
+    Database independent interface library
+|#
 (library (dbi)
   (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list dbi-close
           dbi-do

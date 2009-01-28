@@ -134,14 +134,14 @@
     Make foreign c-function closure.
 
     Prototype:
-    > (c-function lib ret func arg ...)
+    > (c-function lib ret func . arg)
 
     Parameters:
 
       lib - library object returned by <open-shared-library>
       ret - return type of c-function. void*, char*, void and int are supported.
       func - name of c-function as symbol
-      arg ... - list of argument types. void*, int and char* are supported.
+      arg - list of argument types. void*, int and char* are supported.
 
     Returns:
 

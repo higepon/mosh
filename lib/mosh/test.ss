@@ -1,3 +1,49 @@
+; test.ss - Test
+;
+;   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+;
+;   Redistribution and use in source and binary forms, with or without
+;   modification, are permitted provided that the following conditions
+;   are met:
+;
+;   1. Redistributions of source code must retain the above copyright
+;      notice, this list of conditions and the following disclaimer.
+;
+;   2. Redistributions in binary form must reproduce the above copyright
+;      notice, this list of conditions and the following disclaimer in the
+;      documentation and/or other materials provided with the distribution.
+;
+;   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+;   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+;   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+;   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+;   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+;   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+;   TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+;   PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+;   LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+;   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+;
+;  $Id: test.ss 621 2008-11-09 06:22:47Z higepon $
+
+#|
+    Title: Unit Testing
+
+    Defines a set of functions to write test scripts.
+
+    Example:
+    (start code)
+    (import (rnrs)
+            (mosh test)
+      (test* (number? 'a) #f)
+      (test-end))
+    (end code)
+
+    library: (mosh test)
+
+    Unit Testing library
+|#
 (library (mosh test)
   (export test* test/exception test/violation? test/t test-end)
   (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
@@ -10,6 +56,23 @@
   (define counter (make-parameter 0))
   (define ok-counter (make-parameter 0))
 
+  #|
+      Function: test*
+
+      Run the test and compares its result with expected.
+
+      Prototype:
+      > (test* test expected)
+
+      Parameters:
+
+        test - test to run.
+        expected - expected result.
+
+      Returns:
+
+        unspecified.
+  |#
   (define-syntax test*
     (lambda (x)
       (syntax-case x ()
@@ -30,12 +93,45 @@
          (syntax
           (test* test expected test))))))
 
+  #|
+      Function: test/t
+
+      Run the test and check the result is not #f.
+
+      Prototype:
+      > (test/t test)
+
+      Parameters:
+
+        test - test to run.
+
+      Returns:
+
+        unspecified.
+  |#
   (define-syntax test/t
     (lambda (x)
       (syntax-case x ()
         [(_ form)
-         #'(test* form #t)])))
+         #'(test* (if form #t #f) #t)])))
 
+  #|
+      Function: test/exception
+
+      Run the test which may cause exception, and check the exception satisfies the pred?
+
+      Prototype:
+      > (test/exception pred? test ...)
+
+      Parameters:
+
+        pred? - pred?
+        test - test to run.
+
+      Returns:
+
+        unspecified.
+  |#
   (define-syntax test/exception
     (lambda (x)
       (syntax-case x ()
@@ -44,6 +140,22 @@
           (test* (test/exception pred? test ...) (guard (con [(pred? con) #t])
                              test ...) #t))))))
 
+  #|
+      Function: test/violation?
+
+      Run the test which may cause exception, and check the exception satisfies the violation?
+
+      Prototype:
+      > (test/violation? test ...)
+
+      Parameters:
+
+        test - test to run.
+
+      Returns:
+
+        unspecified.
+  |#
   (define-syntax test/violation?
     (lambda (x)
       (syntax-case x ()
@@ -51,6 +163,18 @@
          (syntax
           (test/exception violation? test ...))))))
 
+  #|
+      Function: test-end
+
+      Show the test results.
+
+      Prototype:
+      > (test-end)
+
+      Returns:
+
+        unspecified.
+  |#
   (define (test-end)
     (cond
      [(> (length (error*)) 0)
@@ -62,5 +186,4 @@
       (exit -1)]
      [else
       (format #t "\rTest Running ~d/~d ... ok\n" (ok-counter) (counter))]))
-
 )
