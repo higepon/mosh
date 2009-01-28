@@ -27,10 +27,10 @@
 ;
 ;  $Id: dbi.ss 621 2008-11-09 06:22:47Z higepon $
 
-(library (dbd mysql)
+(library (mosh dbd mysql)
   (export <dbd-mysql>)
   (import
-   (mysql)
+   (mosh mysql)
    (clos user)
    (clos core)
    (only (mosh) format)
@@ -40,7 +40,7 @@
                 vector-ref make-vector vector-length + let* equal?
                 make-hashtable string-hash hashtable-set! hashtable-ref
                 string-downcase)
-   (dbi))
+   (mosh dbi))
 
 (define-class <dbd-mysql> (<dbd>))
 (define-class <mysql-connection> (<connection>) mysql)

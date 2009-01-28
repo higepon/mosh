@@ -1,5 +1,5 @@
 (import (rnrs)
-        (dbi)
+        (mosh dbi)
         (mosh)
         (mosh test)
         (clos core))

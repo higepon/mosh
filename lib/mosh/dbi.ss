@@ -49,7 +49,7 @@
 
     Database independent interface library
 |#
-(library (dbi)
+(library (mosh dbi)
   (export dbi-connect dbi-prepare dbi-execute dbi-getter dbi-result->list dbi-close
           dbi-do
           <connection> <query> <result>

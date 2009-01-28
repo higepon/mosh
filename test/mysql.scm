@@ -1,6 +1,6 @@
 (import (rnrs)
         (mosh string)
-        (mysql)
+        (mosh mysql)
         (mosh ffi)
         (mosh test))
 

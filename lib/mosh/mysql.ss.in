@@ -27,7 +27,7 @@
 ;
 ;  $Id: mysql.ss 621 2008-11-09 06:22:47Z higepon $
 
- (library (mysql)
+ (library (mosh mysql)
   (export mysql-init mysql-real-connect NULL mysql-query mysql-store-result
           mysql-num-rows mysql-fetch-row mysql-row-ref mysql-close mysql-free-result mysql-affected-rows
           mysql-get-client-info mysql-autocommit mysql-change-user mysql-character-set-name

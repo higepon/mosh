@@ -160,4 +160,4 @@ esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1alpha3 onig-5.7.0])
-AC_OUTPUT(lib/mysql.ss)
+AC_OUTPUT(lib/mosh/mysql.ss)
