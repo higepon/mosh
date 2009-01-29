@@ -14,7 +14,7 @@
                 vector? lambda set! cons - vector->list quote min < substring
                 boolean? number? number->string procedure? string? char=? string-ref
                 char? input-port? output-port? eof-object? cadr begin display
-                current-output-port)
+                current-output-port define-syntax syntax-case ... syntax)
           (only (rnrs mutable-strings) string-set!))
 
 ; File; "pp.scm"   (c) 1991, Marc Feeley

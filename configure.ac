@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(mosh, 0.0.7, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.0.8, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE
@@ -160,4 +160,4 @@ esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1alpha3 onig-5.7.0])
-AC_OUTPUT(lib/mosh/mysql.ss)
+AC_OUTPUT(lib/mosh/mysql.ss doc/text/Download.txt)

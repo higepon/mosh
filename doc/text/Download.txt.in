@@ -1,0 +1,46 @@
+Title: Download
+
+Download:
+
+http://code.google.com/p/mosh-scheme/downloads/list
+
+Operating Systems:
+
+Mosh runs on Linux/Unix and Mac OS X.
+
+Additional Software:
+
+GMP - Mosh uses the GNU Multiple Precision Arithmetic Library (GMP) for some bignum arithmetic operations. To build Mosh , GMP version 4.2 or better must be installed along with the required header files. Pre-built GMP packages are available for most operating systems. Alternatively, GMP can be downloaded from http://gmplib.org/.
+
+On OSX you need to build GMP *32bit* version like following.
+> % CFLAGS+=-m32  ./configure ABI=32 && make
+> % sudo make install
+
+Install:
+
+(start code)
+% tar zvxf mosh-@PACKAGE_VERSION@.tar.gz
+% cd mosh-@PACKAGE_VERSION@
+% ./configure
+% make
+% make check
+% sudo make install
+(end code)
+
+Run:
+
+(start code)
+% mosh
+mosh>(display "Hello, World\n")
+Hello, World
+#<unspecified>
+(end code)
+
+>% mosh ./hello.ss
+
+or
+> % mosh --help
+
+Subversion Repository:
+
+http://code.google.com/p/mosh-scheme/source/checkout

@@ -1,3 +1,9 @@
+2009-01-29  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/process.ss: Wrote document for process management.
+
+        * doc/text/Download.txt.in : Wrote document for download and install.
+
 2009-01-28  higepon  <higepon@users.sourceforge.jp>
 
         * doc/text/About.txt : Wrote document titled "About".
