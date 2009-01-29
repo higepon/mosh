@@ -6,6 +6,9 @@
 
 (define mysql (guard (c (#t #f)) (mysql-init)))
 
+(guard (con
+        ((violation? con)
+         (display "no test because mysql connect failed\n")))
 (when mysql
   (let ()
 (define (test/mysql-result result)
@@ -109,3 +112,4 @@
   '())))
 
 (test-end)
+)
