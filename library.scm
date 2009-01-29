@@ -1701,7 +1701,7 @@
 ;; .parameter bv bytevector
 ;; .parameter proc proc must accept one argument
 ;; .returns unspecified
-(define (bytevector-for-each bv proc)
+(define (bytevector-for-each proc bv)
   (let1 len (bytevector-length bv)
     (let loop ([i 0])
       (if (>= i len)
@@ -2043,8 +2043,6 @@
     (lambda (port)
       (display content port))))
 
-;; Read string from a file filename.
-;; .returns whole file content as string
 (define (file->string filename)
   (if (file-exists? filename)
       (call-with-input-file filename
@@ -2055,13 +2053,6 @@
                 (loop (cons c ret) (read-char p))))))
         ""))
 
-;; <p>Convenient string I/O procedure.</p>
-;; <pre>(define (call-with-string-io str proc)<br>
-;;       (receive (out get-string) (open-string-output-port)<br>
-;;         (let1 in (open-string-input-port str)<br>
-;;           (proc in out)<br>
-;;           (get-string))))</pre>
-;; .returns output-string
 (define (call-with-string-io str proc)
   (receive (out get-string) (open-string-output-port)
     (let1 in (open-string-input-port str)

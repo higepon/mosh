@@ -49,8 +49,8 @@
   (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
                 set! equal? quote begin syntax->datum exit ... guard violation? cons
                 list cond > length display for-each current-error-port car cadr caddr)
-          (mosh string)
-          (mosh parameters))
+          (only (mosh) format)
+          (only (system) make-parameter))
 
   (define error* (make-parameter '()))
   (define counter (make-parameter 0))

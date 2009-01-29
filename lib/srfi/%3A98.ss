@@ -3,5 +3,5 @@
 
 (library (srfi :98)
          (export get-environment-variable get-environment-variables)
-         (import (system))
+         (import (only (system) get-environment-variables get-environment-variable))
 )

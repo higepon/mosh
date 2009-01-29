@@ -6,7 +6,6 @@
         (srfi :8)
         (srfi :19)
         (clos user)
-        (mosh string)
        (mosh pp)
        (mosh test)
        (mosh ffi)

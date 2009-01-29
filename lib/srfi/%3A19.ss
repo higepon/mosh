@@ -93,7 +93,7 @@
                 integer->char let-values open-string-output-port eof-object? char-numeric?
                 read-char peek-char char-alphabetic? write-char cadr caddr)
           (only (system) microseconds local-tz-offset)
-          (only (mosh string) format)
+          (only (mosh) format)
           (only (rnrs mutable-strings) string-set!)
           (only (rnrs r5rs) inexact->exact remainder quotient exact->inexact modulo))
 

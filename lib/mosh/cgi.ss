@@ -2,10 +2,7 @@
   (export init encode decode escape moved-temporarily-header header)
   (import (rnrs)
           (only (system) get-environment-variable)
-          (only (mosh regexp) regexp-replace-all)
-          (only (mosh bytevector) bytevector-for-each)
-          (only (mosh string) string-split format call-with-string-io)
-          (only (mosh number) digit->integer)
+          (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all)
           (only (srfi :1) second)
           )
 

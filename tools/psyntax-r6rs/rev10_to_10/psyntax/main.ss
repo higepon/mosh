@@ -37,7 +37,7 @@
     (rnrs records procedural)
     ;(rename (rnrs programs) (command-line get-command-line))
     (only (rnrs programs) exit)
-    (mosh) ;; for get-command-line
+    (mosh);; for get-command-line
     (rnrs lists)
     (only (rnrs conditions) condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)
@@ -47,9 +47,7 @@
     (psyntax library-manager)
     (psyntax expander)
     (psyntax config)
-    (mosh string)
-    (mosh file)
-    (system) ; get-environment-variable
+    (only (system) get-environment-variable); get-environment-variable
 )
 
   (define (add-library-path! path)

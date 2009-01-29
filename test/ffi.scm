@@ -1,7 +1,7 @@
 (import (rnrs)
         (mosh ffi)
-        (mosh test)
-        (mosh string))
+        (mosh)
+        (mosh test))
 
 (when (ffi-supported?)
   (let ()

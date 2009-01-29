@@ -1,7 +1,7 @@
 (import (rnrs)
         (clos user)
         (clos core)
-        (mosh string)
+        (mosh)
         (mosh test))
 
 (define-class <person> () name age)

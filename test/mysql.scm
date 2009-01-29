@@ -1,5 +1,5 @@
 (import (rnrs)
-        (mosh string)
+        (mosh)
         (mosh mysql)
         (mosh ffi)
         (mosh test))

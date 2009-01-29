@@ -16,8 +16,8 @@
                 every
                 append-map
                 last)
-          (mosh parameters)
           (only (mosh) format)
+          (only (system) make-parameter parameterize)
           )
 
   ;; enough

@@ -111,14 +111,14 @@ TEST_F(VMTest, StackTrace2) {
                  "\n"
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
-                 "    2. (raise c):  compiler-with-library.scm:3087\n"
+                 "    2. (raise c):  compiler-with-library.scm:3078\n"
                  "    3. sys-display: <subr>\n"
                  "    4. (a): <unknown location>\n"
                  "    5. (b): <unknown location>\n"
                  "    6. eval: <subr>\n"
-                 "    7. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
-                 "    8. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
-                 "    9. (dynamic-wind in body out):  compiler-with-library.scm:3006\n"
+                 "    7. (dynamic-wind in body out):  compiler-with-library.scm:2997\n"
+                 "    8. (dynamic-wind in body out):  compiler-with-library.scm:2997\n"
+                 "    9. (dynamic-wind in body out):  compiler-with-library.scm:2997\n"
                  "    10. (<top-level>): <unknown location>\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
 }
@@ -141,7 +141,7 @@ TEST_F(VMErrorPortTest, StackTrace3) {
                  "\n"
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
-                 "    2. (raise c):  compiler-with-library.scm:3087\n"
+                 "    2. (raise c):  compiler-with-library.scm:3078\n"
                  "    3. apply: <subr>\n"
                  "\n"
                  "\n"

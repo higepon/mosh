@@ -27,9 +27,7 @@
   (import
     (rnrs)
     (rnrs mutable-pairs)
-    (mosh)
-    (mosh file)
-    (mosh string)
+    (except (mosh) make-parameter parameterize)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 

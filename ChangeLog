@@ -1,5 +1,7 @@
 2009-01-29  higepon  <higepon@users.sourceforge.jp>
 
+        * doc/text/srfi-98.txt: Wrote document for srfi-98.
+
         * lib/mosh/process.ss: Wrote document for process management.
 
         * doc/text/Download.txt.in : Wrote document for download and install.

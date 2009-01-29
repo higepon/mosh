@@ -27,8 +27,8 @@
     serialize-all current-precompiled-library-loader)
   (import (except (rnrs) library equal?)
           (psyntax compat) (rnrs r5rs)
-          (mosh string)
-          (rename (mosh) (fast-equal? equal?)) ;; ignore circular list
+          (rename (except (mosh) make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
+          
           )
 
   (define (make-collection)

@@ -1,0 +1,222 @@
+Library: Core
+
+library: (mosh)
+
+Function: fasl-write
+
+Write obj to binary port with Fast Loading binary format.
+
+Prototype:
+> (fasl-write obj port)
+
+Parameters:
+  obj - object to write.
+  port - binary output port.
+
+Returns:
+
+  unspecified.
+
+See Also:
+  <fasl-read>
+
+Function: fasl-read
+
+Read a object from binary port with Fast Loading binary format.
+
+Prototype:
+> (fasl-read port)
+
+Parameters:
+  port - binary input port.
+
+Returns:
+
+  object.
+
+See Also:
+  <fasl-write>
+
+
+Function: hashtable-for-each
+
+Apply proc for each (key value) pair in hashtable.
+
+Prototype:
+> (hashtable-for-each proc hashtable)
+
+Parameters:
+  proc - (lambda (key value) ...).
+  hashtable - Hash table.
+
+Returns:
+
+  unspecified.
+
+Function: bytevector-for-each
+
+Apply proc for each byte in bytevector.
+
+Prototype:
+> (bytevector-for-each proc bv)
+
+Parameters:
+  proc - (lambda (value) ...).
+  bv - bytevector.
+
+Returns:
+
+  unspecified.
+
+
+Function: string-split
+
+Split text with delimiter and return result as list.
+
+Prototype:
+> (string-split text delim)
+
+Parameters:
+  text - string to split.
+  delim - delimiter charactor
+
+Returns:
+
+  splitted result list.
+
+
+Function: call-with-string-io
+
+Convenient string I/O procedure.
+
+Prototype:
+> (call-with-string-io str proc)
+
+Parameters:
+  str - string 
+  proc - (lambda (in out) ...)
+
+Returns:
+
+  output-string.
+
+Code:
+  (start code)
+  (define (call-with-string-io str proc)
+       (receive (out get-string) (open-string-output-port)
+         (let ([in (open-string-input-port str)])
+           (proc in out)<br>
+           (get-string))))
+  (end code)
+
+
+Function: file->string
+
+Read string from a file filename.
+
+Prototype:
+> (file->string path)
+
+Parameters:
+  path - path to file.
+
+Returns:
+
+  Whole file content as string.
+
+
+Function: file->list
+
+Read S-Expressions from a file filename.
+
+Prototype:
+> (file->list path)
+
+Parameters:
+  path - path to file.
+
+Returns:
+
+  List of whole S-Expressions.
+
+
+Function: format
+
+Format arg … according to string.
+
+Prototype:
+> (format port string . args)
+> (format string . args)
+
+Parameters:
+  port - output port. #t for (current-output-port) and #f for string-output.
+  string - format string.
+  args - arguments for format string
+
+Examples:
+  (start code)
+  (format #t "one is ~d" 1)
+  (format #t "my name is ~a" "Higepon")
+  (format #t "my name is ~s" "Higepon")
+  (format (current-error-port) "my name is ~s" "Higepon")
+  (format "(+ ~d ~d) => ~d" 1 2 3)
+  (end code)
+
+Returns:
+
+  unspecified or string.
+
+    (assoc-ref mosh-list mosh)
+    (alist->eq-hash-table mosh interaction)
+    (ungensym mosh)
+
+Function: current-directory
+
+Returns current directory as string
+
+Prototype:
+> (current-directory)
+
+Returns:
+
+  current directory.
+
+See Also:
+  <set-current-directory!>
+
+
+Function: set-current-directory!
+
+Set current directory.
+
+Prototype:
+> (set-current-directory! path)
+
+Parameters:
+  path - Path to directory.
+
+Returns:
+
+  unspecified.
+
+See Also:
+
+
+Function: readdir
+
+Read directory and returns result as list of string.
+
+Prototype:
+> (readdir path)
+
+Parameters:
+  path - Path to directory.
+
+Returns:
+
+  directory entries list of string.
+
+See Also:
+
+  <current-directory> and <set-current-directory!>
+
