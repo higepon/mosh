@@ -46,13 +46,10 @@ Format: 1.4
 # --------------------------------------------------------------------------
 
 
-Group: Doc  {
+File: About  (no auto-title, doc/text/About.txt)
+File: Download  (doc/text/Download.txt)
 
-   File: About  (no auto-title, doc/text/About.txt)
-   File: Download  (doc/text/Download.txt)
-   }  # Group: Doc
-
-Group: Lib  {
+Group: Library  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
    File: Database independent interface  (lib/mosh/dbi.ss)
@@ -66,7 +63,7 @@ Group: Lib  {
       File: Environment variables  (doc/text/srfi-98.txt)
       }  # Group: SRFI
 
-   }  # Group: Lib
+   }  # Group: Library
 
 Group: Index  {
 
