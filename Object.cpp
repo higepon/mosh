@@ -195,6 +195,12 @@ Object Object::makeUTF16Codec()
                                                         reinterpret_cast<word>(new UTF16Codec()))));
 }
 
+Object Object::makeTranscoder(Transcoder* transcoder)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<word>(transcoder))));
+}
+
 Object Object::makeTranscoder(Codec* codec)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,

@@ -466,4 +466,5 @@
     output-port?
     textual-port?
     port?
+    port-transcoder
     )

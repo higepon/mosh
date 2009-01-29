@@ -95,6 +95,7 @@ namespace scheme {
     Object binaryPortPEx(VM* theVM, int argc, const Object* argv);
     Object textualPortPEx(VM* theVM, int argc, const Object* argv);
     Object portPEx(VM* theVM, int argc, const Object* argv);
+    Object portTranscoderEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

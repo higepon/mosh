@@ -3243,6 +3243,8 @@
 (#t    (buffer-mode? 'line))
 (#t    (buffer-mode? 'block))
 (#f    (buffer-mode? 'lf))
+(#f    (port-transcoder (standard-output-port)))
+(#f    (port-transcoder (open-file-input-port "./test-data.scm" '() 'block #f)))
 
 ;; read-write-invariant test by leque
 [definition
@@ -3390,5 +3392,3 @@
             [else ;; parent
              (receive (p status) (%waitpid pid)
                (and (= status 255) (= p pid))]))))
-
-

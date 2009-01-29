@@ -1,6 +1,10 @@
+2009-01-30  kokosabu  <kokosabu@gmail.com>
+
+        * PortProcedures.cpp: Added port-transcoder.
+
 2009-01-30  higepon  <higepon@users.sourceforge.jp>
 
-        * scripts/gen-doc-from-r6rs.scm : Added for generating document for R6RS. 
+        * scripts/gen-doc-from-r6rs.scm : Added for generating document for R6RS.
 
 2009-01-29  higepon  <higepon@users.sourceforge.jp>
 

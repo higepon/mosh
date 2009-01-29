@@ -75,7 +75,7 @@ public:
 private:
     Codec* codec_;
     BinaryInputPort* port_;
-    Transcoder* coder_;
+    Transcoder* transcoder_;
     ucs4string buffer_;
     int line_;
     Object error_;

@@ -61,7 +61,7 @@ TextualOutputPort::TextualOutputPort() : port_(NULL) // be sure port is null, wh
 
 TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
                                                                                   codec_(coder->codec()),
-                                                                                  coder_(coder),
+                                                                                  transcoder_(coder),
                                                                                   isErrorOccured_(false),
                                                                                   errorMessage_(Object::Nil),
                                                                                   irritants_(Object::Nil)
@@ -126,6 +126,11 @@ Object TextualOutputPort::errorMessage() const
 Object TextualOutputPort::irritants() const
 {
     return irritants_;
+}
+
+Transcoder* TextualOutputPort::transcoder() const
+{
+    return transcoder_;
 }
 
 void TextualOutputPort::format(const ucs4string& fmt, Object args)

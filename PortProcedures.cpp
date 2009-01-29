@@ -821,3 +821,18 @@ Object scheme::portPEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isPort());
 }
+
+Object scheme::portTranscoderEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-transcoder");
+    checkArgumentLength(1);
+    argumentCheckPort(0, port);
+
+    if (port.isTextualOutputPort()) {
+        return Object::makeTranscoder(port.toTextualOutputPort()->transcoder());
+    } else if (port.isTextualInputPort()) {
+        return Object::makeTranscoder(port.toTextualInputPort()->transcoder());
+    } else {
+        return Object::False;
+    }
+}

@@ -66,11 +66,12 @@ public:
     bool isErrorOccured() const;
     Object errorMessage() const;
     Object irritants() const;
+    Transcoder* transcoder() const;
 
 private:
     BinaryOutputPort* port_;
     Codec* codec_;
-    Transcoder* coder_;
+    Transcoder* transcoder_;
     bool isErrorOccured_;
     Object errorMessage_;
     Object irritants_;

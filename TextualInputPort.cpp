@@ -48,7 +48,7 @@ using namespace scheme;
 
 TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec()),
                                                                                port_(port),
-                                                                               coder_(coder),
+                                                                               transcoder_(coder),
                                                                                buffer_(UC("")),
                                                                                line_(1),
                                                                                error_(Object::Nil),
@@ -214,7 +214,7 @@ int TextualInputPort::close()
 
 Transcoder* TextualInputPort::transcoder() const
 {
-    return coder_;
+    return transcoder_;
 }
 
 Codec* TextualInputPort::codec() const
