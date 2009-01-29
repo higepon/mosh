@@ -47,7 +47,6 @@ Format: 1.4
 
 
 File: About  (no auto-title, doc/text/About.txt)
-File: Download  (doc/text/Download.txt)
 
 Group: Library  {
 
@@ -64,6 +63,9 @@ Group: Library  {
       }  # Group: SRFI
 
    }  # Group: Library
+
+File: Download  (doc/text/Download.txt)
+File: Hashtables  (doc/text/arith.txt)
 
 Group: Index  {
 
