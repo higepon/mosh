@@ -1,0 +1,708 @@
+/*
+   Based on http://ditto.modxcms.com/styles/main.css
+
+   IMPORTANT: If you're editing this file in the output directory of one of
+   your projects, your changes will be overwritten the next time you run
+   Natural Docs.  Instead, copy this file to your project directory, make your
+   changes, and you can use it with -s.  Even better would be to make a CSS
+   file in your project directory with only your changes, which you can then
+   use with -s [original style] [your changes].
+
+   On the other hand, if you're editing this file in the Natural Docs styles
+   directory, the changes will automatically be applied to all your projects
+   that use this style the next time Natural Docs is run on them.
+
+   This file is part of Natural Docs, which is Copyright (C) 2003-2005 Greg Valure
+   Natural Docs is licensed under the GPL
+*/
+html {
+	background-color: #111 !important;
+}
+body {
+	margin: 0 30px 0 30px;
+	border: #333333 solid 2px;
+	background: #111 url(http://www.modxcms.com/assets/images/greenzi/header.png) repeat-x;
+    font-family: Verdana, Arial, sans-serif;
+    color: #000000;
+    padding: 0px !important; }
+#SearchResultsPage {
+	margin: 0px !important;
+	background: white !important;
+	padding: 0px !important;
+}
+#SearchResultsPage #Index {
+	margin: 0px !important;
+}
+a:link,
+a:visited { color: #900000; text-decoration: none }
+a:hover { color: #900000; text-decoration: underline }
+a:active { color: #FF0000; text-decoration: underline }
+
+td {
+    vertical-align: top }
+
+img { border: 0;  }
+
+
+/*
+    Comment out this line to use web-style paragraphs (blank line between
+    paragraphs, no indent) instead of print-style paragraphs (no blank line,
+    indented.)
+*/
+p {
+    margin: 0 
+}
+
+/*  Can't use something like display: none or it won't break.  */
+.HB {
+    font-size: 1px;
+    visibility: hidden;
+    }
+
+/*  Blockquotes are used as containers for things that may need to scroll.  */
+blockquote {
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+    }
+
+
+#Firefox blockquote {
+    padding-bottom: .5em;
+    }
+
+/*  Turn off scrolling when printing.  */
+@media print {
+    blockquote {
+        overflow: visible;
+        }
+    #IE blockquote {
+        width: auto;
+        }
+    }
+.CParagraph {
+	margin-bottom: 2em;
+	text-indent: 2em;
+}
+#MainTopic .CParagraph {
+	text-indent: 0px !important;
+}
+#Menu {
+    font-size: 9pt;
+    padding: 92px 0 0 32px;
+	background: url(http://mirror3.cvsdude.com/trac/ditto/codebase/chrome/uploads/ditto/index.php.png) no-repeat;
+	background-position: 45px 10px;
+	position: absolute;
+	top: 0px !important;
+	left: 0px !important;
+	margin-left: 0px !important;
+	width: 200px !important;
+    }
+	#MTitle {
+		font-weight: bold;
+		font-size: 28px;
+		padding: 10px 10px 20px;
+		display: none;
+	}
+
+	#MSubTitle {
+		font-size: 11px;
+	}
+
+
+	.MGroup {
+		text-decoration: none;
+		font-size: 11pt;
+	}
+
+	.MGroup a:link, .MGroup a:visited {
+		padding: 5px 5px 6px 5px;
+		text-decoration: none;
+		display: block;
+		background: url(http://www.modxcms.com/assets/images/footer_bg.png) repeat-x;
+		color: #fff;
+		text-shadow: 2px 2px 1px #436493;
+		margin: 0px;
+	}
+
+	.MGroupContent {
+		font-size: 12px;
+		font-weight: normal;
+		text-transform: none;
+	}
+
+	#MSelected, .MFile a:link, .MFile a:visited, .MIndex a:link, .MIndex a:visited {
+		display: block;
+		padding: 4px 4px 4px 10px;
+		margin: 1px 0;
+		background: #303030;
+		color: #858585;
+		text-decoration: none;
+		text-align: left;
+		text-shadow: 2px 2px 1px #202020;
+		border-right: 4px solid #282828;
+	}
+
+	.MFile a:hover, .MFile a:active, .MIndex a:hover, .MIndex a:active {
+		color: white;
+		border-right: 4px solid #333333;
+		text-shadow: 2px 2px 1px #282828;
+	}
+
+	#MSelected {
+		background-color: #fff;
+		color: #333;
+		text-shadow: none;
+		border-right: 4px solid #fff;
+	}
+
+
+    #MSelected {
+        color: #000000; background-color: #FFFFFF;
+        /*  Replace padding with border.  */
+		}
+
+    #MSearchPanel {
+		padding: 0 !important;
+		margin: 7px 0 0 0 !important;
+        }
+
+
+    #MSearchField {
+        font: italic 9pt Verdana, sans-serif;
+        color: #606060;
+        background-color: #E8E8E8;
+        border: none;
+        padding: 2px 4px;
+        width: 100%;
+        }
+    /* Only Opera gets it right. */
+    #Firefox #MSearchField,
+    #IE #MSearchField {
+        width: 94%;
+        }
+
+    /* Firefox doesn't do this right in frames without #MSearchPanel added on.
+        It's presence doesn't hurt anything other browsers. */
+    #MSearchPanel.MSearchPanelInactive:hover #MSearchField {
+        background-color: #FFFFFF;
+        border: 1px solid #C0C0C0;
+        padding: 1px 3px;
+        }
+    .MSearchPanelActive #MSearchField {
+        background-color: #FFFFFF;
+        border: 1px solid #C0C0C0;
+        font-style: normal;
+        padding: 1px 3px;
+        }
+
+    #MSearchType {
+        visibility: hidden;
+        font: 8pt Verdana, sans-serif;
+        width: 98%;
+        padding: 0;
+        border: 1px solid #C0C0C0;
+        }
+    .MSearchPanelActive #MSearchType,
+    /*  As mentioned above, Firefox doesn't do this right in frames without #MSearchPanel added on. */
+    #MSearchPanel.MSearchPanelInactive:hover #MSearchType,
+    #MSearchType:focus {
+        visibility: visible;
+        color: #606060;
+        }
+    #MSearchType option#MSearchEverything {
+        font-weight: bold;
+        }
+
+    #Opera8 .MSearchPanelInactive:hover,
+    #Opera8 .MSearchPanelActive {
+        margin-left: -1px;
+        }
+
+
+    iframe#MSearchResults {
+        width: 60ex;
+        height: 15em;
+        }
+    #MSearchResultsWindow {
+        display: none;
+        position: absolute;
+        left: 0; top: 0;
+        border: 1px solid black;
+        background-color: #E8E8E8;
+        }
+    #MSearchResultsWindowClose {
+        font-weight: bold;
+        font-size: 8pt;
+        padding: 2px 5px;
+        display: block;
+        }
+    #MSearchResultsWindowClose:link,
+    #MSearchResultsWindowClose:visited {
+        color: #000000;
+        text-decoration: none;
+        }
+    #MSearchResultsWindowClose:active,
+    #MSearchResultsWindowClose:hover {
+        color: #800000;
+        text-decoration: none;
+        background-color: #F4F4F4;
+        }
+
+
+
+
+#Content, #Index {
+	padding: 0px 10px 10px 10px !important;
+	margin-top: 90px;
+    }
+
+.ContentPage #Content,#Index {
+    background-color: #FFFFFF;
+    font-size: 9pt;  /* To make 31ex match the menu's 31ex. */
+	margin-left: 200px !important;
+    }
+
+    .CTopic {
+        font-size: 10pt;
+        margin-bottom: 1em;
+		padding: 10px;
+        }
+
+
+	.CGroup .CTitle, h1, .IPageTitle { 
+        font-size: 11pt;
+		font-weight: normal;
+		background: url(http://modxcms.com/forums/Themes/MODx/images/titlebg.jpg) repeat-x !important;
+		border-bottom: #333333 solid 2px !important;
+		margin: -10px -20px 0 -20px !important;
+		color: white !important;
+		font-weight: normal !important;
+		padding: 5px;
+		text-shadow: 2px 2px 1px #436493;
+     }
+	.IPageTitle {
+		margin-left: -10px !important;
+		margin-top: 0px  !important;
+	}
+	 .CTitle {
+
+			font-size: 11pt;
+			font-weight: normal;
+			border-bottom: 1px solid #99CC00;
+			background-image: none;
+			background-color: white;
+			color: black;
+			font-weight: bold;
+	     }
+	
+    .CToolTip {
+        position: absolute; visibility: hidden;
+        left: 0; top: 0;
+        background-color: #282828;
+		color: white;
+        padding: 5px;
+        border-width: 1px 2px 2px 1px; border-style: solid; border-color: #000000;
+        font-size: 8pt;
+        }
+
+    #Opera .CToolTip {
+        max-width: 98%;
+        }
+
+    /*  Scrollbars would be useless.  */
+    .CToolTip blockquote {
+        overflow: hidden;
+		color: black;
+        }
+    #IE6 .CToolTip blockquote {
+        overflow: visible;
+        }
+
+    .CHeading {
+        font-weight: normal !important;
+		font-size: 11pt;
+		font-style: italic;
+        margin-top: 1.5em; margin-bottom: .5em }
+
+    .CCode {
+        font: 10pt "Courier New", Courier, monospace;
+        }
+
+    .CBulletList {
+        /*  I don't know why CBody's margin doesn't apply, but it's consistent across browsers so whatever.
+             Reapply it here as padding.  */
+        padding-left: 15px; padding-right: 15px;
+        margin: .5em 5ex .5em 5ex;
+        }
+
+    .CDescriptionList {
+        margin: .5em 5ex 0 5ex }
+
+        .CDLEntry {
+            font: 10pt "Courier New", Courier, monospace; color: #808080;
+            padding-bottom: .25em;
+            white-space: nowrap }
+
+        .CDLDescription {
+            font-size: 10pt;  /*  For browsers that don't inherit correctly, like Opera 5.  */
+            padding-bottom: .5em; padding-left: 5ex }
+
+
+    .CImage {
+        text-align: center;
+        margin: 1em 0;
+        }
+    .CImageLink {
+        color: #808080;
+        font-style: italic;
+        }
+    a.CImageLink:link,
+    a.CImageLink:visited,
+    a.CImageLink:hover { color: #808080 }
+
+    .CImageCaption {
+        font-variant: small-caps;
+        font-size: 8pt;
+        color: #808080;
+        }
+
+
+
+
+.Prototype {
+    font: 10pt "Courier New", Courier, monospace;
+    padding: 5px 3ex;
+    border-width: 1px; border-style: solid;
+    margin: 0 5ex 1.5em 5ex;
+    }
+
+    .Prototype td {
+        font-size: 10pt;
+        }
+
+    .PDefaultValue,
+    .PDefaultValuePrefix,
+    .PTypePrefix {
+        color: #8F8F8F;
+        }
+    .PTypePrefix {
+        text-align: right;
+        }
+    .PAfterParameters {
+        vertical-align: bottom;
+        }
+
+    #IE .Prototype table {
+        padding: 0;
+        }
+
+    .CFunction .Prototype {
+        background-color: #F4F4F4; border-color: #D0D0D0 }
+    .CProperty .Prototype {
+        background-color: #F4F4FF; border-color: #C0C0E8 }
+    .CVariable .Prototype {
+        background-color: #FFFFF0; border-color: #E0E0A0 }
+
+    .CDatabaseIndex .Prototype,
+    .CConstant .Prototype {
+        background-color: #D0D0D0; border-color: #000000 }
+    .CType .Prototype,
+    .CClass .Prototype,
+    .CInterface .Prototype {
+        background-color: #FAF0F0; border-color: #E0B0B0;
+        }
+    .CDatabaseTrigger .Prototype,
+    .CEvent .Prototype,
+    .CDelegate .Prototype {
+        background-color: #F0FCF0; border-color: #B8E4B8 }
+
+    .CToolTip .Prototype {
+        margin: 0 0 .5em 0;
+        white-space: nowrap;
+        }
+
+
+/*summary*/
+
+.SBody {
+	margin-left: 30px;
+}
+
+.STitle {
+	font-size: 14px;
+	padding: 2px 10px;
+	font-weight: bold;
+}
+
+.STable {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 12px;
+}
+
+.STable a:link, .STable a:visited,.STable a:hover, .STable a:active {
+	color: black;
+}
+
+.SBody {
+	padding: 10px;
+	background: #FAFAFA;
+}
+
+.SMarked {
+	background: #F3F3F3;
+}
+
+.STable td {
+	border: 2px solid #fff;
+	padding: 3px 6px;
+}
+
+h4.CHeading, .STitle {
+	margin: 10px 0 7px;
+}
+
+.SMain {
+	font-size: 14px;
+	background: #C6C6C6;
+}
+
+.SMain td {
+	padding: 4px 6px;
+}
+
+.SDescription {
+	color: #595959;
+}
+
+.SEntry {
+	width: 110px;
+}
+
+.SClass, .SSection {
+	font-size: 14px;
+	background: #ffd599;
+}
+
+.SGroup {
+	font-size: 14px;
+	background: #E7E6E6;
+}
+
+
+
+
+.ClassHierarchy {
+    margin: 0 15px 1em 15px }
+
+    .CHEntry {
+        font-size: 10pt;
+        background-color: #F4F4F4; color: #606060;
+        }
+
+    #Firefox .CHEntry {
+        -moz-border-radius: 4px;
+        }
+
+    .CHIndent0,
+    .CHIndent1,
+    .CHIndent2 {
+        float: left;
+        clear: both;
+        }
+
+    /*  Clear the float  */
+    .ClassHierarchy:after {
+        content: '.';
+        clear: both;
+        display: block;
+        height: 0;
+        visibility: hidden;
+        }
+    /*  IE doesn't support :after.  Take advantage of a bug to get the same effect.  */
+    #IE .ClassHierarchy {
+        height: 1%;
+        }
+
+    .CHIndent1 { margin-left: 3ex }
+    .CHIndent2 { margin-left: 6ex }
+
+    .CHCurrent {
+        font-weight: bold;
+        border-color: #000000;
+        color: #000000;
+        }
+
+    .CHChildNote {
+        font-style: italic;
+        font-size: 8pt;
+        }
+
+    .CHEntry a:link,
+    .CHEntry a:visited,
+    .CHEntry a:hover {
+        color: #606060;
+        }
+    .CHEntry a:active {
+        color: #800000;
+        }
+
+
+
+
+
+#Index {
+    background-color: #FFFFFF;
+    }
+
+#IndexPage #Index,
+#FramedIndexPage #Index,
+#FramedSearchResultsPage #Index {
+    padding: 15px;
+    }
+
+#IndexPage #Index {
+    border-width: 0 0 1px 1px;
+    border-style: solid;
+    border-color: #000000;
+    font-size: 9pt;  /* To make 27ex match the menu's 27ex. */
+    margin-left: 27ex;
+    }
+
+#SearchResultsPage,
+#FramedSearchResultsPage {
+    background-color: #FFFFFF;
+    }
+
+    .INavigationBar {
+        font-size: 10pt;
+        text-align: center;
+        background-color: #FAFAFA;
+        padding: 5px;
+        border-bottom: solid 1px black;
+        margin: 0 -10px -10px -10px;
+
+        }
+
+    .INavigationBar a {
+        font-weight: bold }
+
+    .IHeading {
+        font-size: 16pt; font-weight: bold;
+        padding: 2.5em 0 .5em 0;
+        text-align: center;
+        width: 3.5ex;
+        }
+    #IFirstHeading {
+        padding-top: 0;
+        }
+
+    .IEntry {
+        font-size: 10pt;
+        padding-left: 1ex;
+        }
+    #SearchResultsPage .IEntry {
+        font-size: 8pt;
+        padding: 1px 5px;
+        }
+    #SearchResultsPage #Opera9 .IEntry,
+    #FramedSearchResultsPage #Opera9 .IEntry {
+        text-align: left;
+        }
+    #FramedSearchResultsPage .IEntry {
+        padding: 0;
+        }
+
+    .ISubIndex {
+        padding-left: 3ex; padding-bottom: .5em }
+    #SearchResultsPage .ISubIndex {
+        display: none;
+        }
+
+    /*  While it may cause some entries to look like links when they aren't, I found it's much easier to read the
+         index if everything's the same color.  */
+    .ISymbol {
+        font-weight: bold; color: #900000  }
+
+    #IndexPage .ISymbolPrefix,
+    #FramedIndexPage .ISymbolPrefix {
+        font-size: 10pt;
+        text-align: right;
+        color: #C47C7C;
+        background-color: #F8F8F8;
+        border-right: 3px solid #E0E0E0;
+        border-left: 1px solid #E0E0E0;
+        padding: 0 1px 0 2px;
+        }
+    #SearchResultsPage .ISymbolPrefix,
+    #FramedSearchResultsPage .ISymbolPrefix {
+        color: #900000;
+        }
+    #SearchResultsPage .ISymbolPrefix {
+        font-size: 8pt;
+        }
+
+    #IndexPage #IFirstSymbolPrefix,
+    #FramedIndexPage #IFirstSymbolPrefix {
+        border-top: 1px solid #E0E0E0;
+        }
+    #IndexPage #ILastSymbolPrefix,
+    #FramedIndexPage #ILastSymbolPrefix {
+        border-bottom: 1px solid #E0E0E0;
+        }
+    #IndexPage #IOnlySymbolPrefix,
+    #FramedIndexPage #IOnlySymbolPrefix {
+        border-top: 1px solid #E0E0E0;
+        border-bottom: 1px solid #E0E0E0;
+        }
+
+    a.IParent,
+    a.IFile {
+        display: block;
+        }
+
+    #SearchResultsPage .SRStatus {
+        padding: 2px 5px;
+        font-size: 8pt;
+        font-style: italic;
+        }
+    #FramedSearchResultsPage .SRStatus {
+        font-size: 10pt;
+        font-style: italic;
+        }
+
+    .SRResult {
+        display: none;
+        }
+
+
+
+#Footer {
+    font-size: 8pt;
+    color: #989898;
+    text-align: right;
+    }
+
+#Footer p {
+    text-indent: 0;
+    margin-bottom: .5em;
+    }
+
+body#ContentPage #Footer,
+body#IndexPage #Footer {
+    text-align: right;
+    margin: 2px;
+    }
+
+body#FramedMenuPage #Footer {
+    text-align: center;
+    margin: 5em 10px 10px 10px;
+    padding-top: 1em;
+    border-top: 1px solid #C8C8C8;
+    }
+
+    #Footer a:link,
+    #Footer a:hover,
+    #Footer a:visited { color: #989898 }
+    #Footer a:active { color: #A00000 }

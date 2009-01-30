@@ -13,12 +13,12 @@
                  1
                  "Base Library"
                  ("(rnrs base (6))")
-                 "The (rnrs base (6)) library, which exports many of the procedure and syntax bindings that are traditionally associated with Scheme.")
+                 "The (rnrs base (6)) library exports many of the procedure and syntax bindings that are traditionally associated with Scheme.")
                 ("bytevector.tex"
                  20
                  "Bytevectors"
                  ("(rnrs bytevectors (6))")
-                 "Many applications deal with blocks of binary data by accessing them in various ways—extracting signed or unsigned numbers of various sizes.\n\n Therefore, the (rnrs bytevectors (6))library provides a single type for blocks of binary data with multiple ways to access that data. It deals with integers and floating-point representations in various sizes with specified endianness.")
+                 "Hhe (rnrs bytevectors (6))library provides a single type for blocks of binary data with multiple ways to access that data. It deals with integers and floating-point representations in various sizes with specified endianness.")
                 ("list.tex"
                  30
                  "List utilities"
@@ -28,7 +28,7 @@
                  40
                  "Sorting"
                  ("(rnrs sorting (6))")
-                 "The (rnrs sorting (6))library for sorting lists and vectors.")
+                 "The (rnrs sorting (6)) library for sorting lists and vectors.")
                 ("control.tex"
                  50
                  "Control structures"
@@ -43,7 +43,7 @@
                  70
                  "Exceptions and conditions"
                  ("(rnrs exceptions (6))")
-                 "Exception-handling and exception-raising constructs provided by the (rnrs exceptions (6))library.")
+                 "The (rnrs exceptions (6))library provides exception-handling and exception-raising constructs.")
                 ("iocond.tex"
                  81
                  "Condition types"
@@ -98,12 +98,12 @@
                  170
                  "Mutable pairs"
                  ("(rnrs mutable-pairs (6))")
-                 "The (rnrs mutable-pairs (6))library allow new values to be assigned to the car and cdr fields of previously allocated pairs.")
+                 "The (rnrs mutable-pairs (6)) library allow new values to be assigned to the car and cdr fields of previously allocated pairs.")
                 ("stringset.tex"
                  180
                  "Mutable strings"
-                 ("(rnrs mutable-strings (6))l")
-                 "The string-set! procedure provided by the (rnrs mutable-strings (6))library allows mutating the characters of a string in-place.")
+                 ("(rnrs mutable-strings (6))")
+                 "The string-set! procedure provided by the (rnrs mutable-strings (6)) library allows mutating the characters of a string in-place.")
                 ("r5rscompat.tex"
                  190
                  "R5RS compatibility"

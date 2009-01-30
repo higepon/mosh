@@ -1,4 +1,4 @@
-Title: Mosh
+Title: About
 What is Mosh?:
 Mosh is a free and fast interpreter for Scheme as specified in the R6RS. (R6RS is the latest revision of the Scheme standard)
 

@@ -1,7 +1,7 @@
 Title: Composite library
 
 library: (rnrs (6))
-The (rnrs (6)) library is a composite of most of the libraries described in this report. 
+The (rnrs (6)) library is a composite of most of the libraries described in the R6RS. 
 
 The only exceptions are
 
