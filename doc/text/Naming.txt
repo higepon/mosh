@@ -1,0 +1,21 @@
+Title: Naming Conventions
+
+The following naming conventions imply type restrictions:
+
+obj - any object
+z - complex number object
+x - real number object
+y - real number object
+q - rational number object
+n - integer object
+k - exact non-negative integer object
+bool - boolean (#f or #t)
+octet - exact integer object in {0, ..., 255}
+byte - exact integer object in { - 128, ..., 127}
+char - character
+pair - pair
+vector - vector
+string - string
+condition - condition
+bytevector - bytevector
+proc - procedure

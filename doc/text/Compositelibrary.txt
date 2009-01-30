@@ -1,0 +1,11 @@
+Title: Composite library
+
+library: (rnrs (6))
+The (rnrs (6)) library is a composite of most of the libraries described in this report. 
+
+The only exceptions are
+
+- (rnrs eval (6))
+- (rnrs mutable-pairs (6))
+- (rnrs mutable-strings (6))
+- (rnrs r5rs (6))

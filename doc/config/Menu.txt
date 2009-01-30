@@ -47,8 +47,36 @@ Format: 1.4
 
 
 File: About  (no auto-title, doc/text/About.txt)
+File: Download  (doc/text/Download.txt)
 
-Group: Library  {
+Group: R6RS  {
+
+   File: Naming Conventions  (doc/text/Naming.txt)
+   File: Composite library  (doc/text/Compositelibrary.txt)
+   File: Base Library  (doc/text/base.tex.txt)
+   File: Bytevectors  (doc/text/bytevector.tex.txt)
+   File: List utilities  (doc/text/list.tex.txt)
+   File: Sorting  (doc/text/sort.tex.txt)
+   File: Control structures  (doc/text/control.tex.txt)
+   File: Records  (doc/text/records.tex.txt)
+   File: Exceptions and conditions  (doc/text/exc.tex.txt)
+   File: I/O Condition types  (no auto-title, doc/text/iocond.tex.txt)
+   File: Port I/O  (doc/text/portio.tex.txt)
+   File: Simple I/O  (doc/text/convio.tex.txt)
+   File: File system  (doc/text/files.tex.txt)
+   File: Command-line access and exit values  (doc/text/programlib.tex.txt)
+   File: Arithmetic  (doc/text/arith.tex.txt)
+   File: syntax-case  (doc/text/syntax-case.tex.txt)
+   File: Hashtables  (doc/text/hashtable.tex.txt)
+   File: Enumerations  (doc/text/enum.tex.txt)
+   File: eval  (doc/text/eval.tex.txt)
+   File: Mutable pairs  (doc/text/setcar.tex.txt)
+   File: Mutable strings  (doc/text/stringset.tex.txt)
+   File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
+   File: Entry format  (doc/text/entry.tex.txt)
+   }  # Group: R6RS
+
+Group: Mosh Library  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
    File: Database independent interface  (lib/mosh/dbi.ss)
@@ -56,36 +84,15 @@ Group: Library  {
    File: Pretty Printing  (lib/mosh/pp.ss)
    File: Process  (lib/mosh/process.ss)
    File: Unit Testing  (lib/mosh/test.ss)
+   }  # Group: Mosh Library
 
-   Group: SRFI  {
+Group: SRFI  {
 
-      File: Environment variables  (doc/text/srfi-98.txt)
-      }  # Group: SRFI
-
-   }  # Group: Library
-
-File: Arithmetic  (doc/text/arith.tex.txt)
-File: Base Library  (doc/text/base.tex.txt)
-File: Bytevectors  (doc/text/bytevector.tex.txt)
-File: Command-line access and exit values  (doc/text/programlib.tex.txt)
-File: Condition types  (doc/text/iocond.tex.txt)
-File: Control structures  (doc/text/control.tex.txt)
-File: Download  (doc/text/Download.txt)
-File: Entry format  (doc/text/entry.tex.txt)
-File: Enumerations  (doc/text/enum.tex.txt)
-File: eval  (doc/text/eval.tex.txt)
-File: Exceptions and conditions  (doc/text/exc.tex.txt)
-File: File system  (doc/text/files.tex.txt)
-File: Hashtables  (doc/text/hashtable.tex.txt)
-File: List utilities  (doc/text/list.tex.txt)
-File: Mutable pairs  (doc/text/setcar.tex.txt)
-File: Mutable strings  (doc/text/stringset.tex.txt)
-File: Port I/O  (doc/text/portio.tex.txt)
-File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
-File: Records  (doc/text/records.tex.txt)
-File: Simple I/O  (doc/text/convio.tex.txt)
-File: Sorting  (doc/text/sort.tex.txt)
-File: syntax-case  (doc/text/syntax-case.tex.txt)
+   File: Receive  (doc/text/srfi-8.txt)
+   File: Time  (doc/text/srfi-19.txt)
+   File: cut  (doc/text/srfi-26.txt)
+   File: Environment variables  (doc/text/srfi-98.txt)
+   }  # Group: SRFI
 
 Group: Index  {
 

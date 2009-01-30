@@ -1,0 +1,8 @@
+Title: cut
+
+Notation for Specializing Parameters without Currying .
+
+See <http://srfi.schemers.org/srfi-26/srfi-26.html>.
+
+library: (srfi :26)
+
