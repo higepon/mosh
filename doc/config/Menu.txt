@@ -64,8 +64,28 @@ Group: Library  {
 
    }  # Group: Library
 
+File: Arithmetic  (doc/text/arith.tex.txt)
+File: Base Library  (doc/text/base.tex.txt)
+File: Bytevectors  (doc/text/bytevector.tex.txt)
+File: Command-line access and exit values  (doc/text/programlib.tex.txt)
+File: Condition types  (doc/text/iocond.tex.txt)
+File: Control structures  (doc/text/control.tex.txt)
 File: Download  (doc/text/Download.txt)
-File: Hashtables  (doc/text/arith.txt)
+File: Entry format  (doc/text/entry.tex.txt)
+File: Enumerations  (doc/text/enum.tex.txt)
+File: eval  (doc/text/eval.tex.txt)
+File: Exceptions and conditions  (doc/text/exc.tex.txt)
+File: File system  (doc/text/files.tex.txt)
+File: Hashtables  (doc/text/hashtable.tex.txt)
+File: List utilities  (doc/text/list.tex.txt)
+File: Mutable pairs  (doc/text/setcar.tex.txt)
+File: Mutable strings  (doc/text/stringset.tex.txt)
+File: Port I/O  (doc/text/portio.tex.txt)
+File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
+File: Records  (doc/text/records.tex.txt)
+File: Simple I/O  (doc/text/convio.tex.txt)
+File: Sorting  (doc/text/sort.tex.txt)
+File: syntax-case  (doc/text/syntax-case.tex.txt)
 
 Group: Index  {
 

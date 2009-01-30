@@ -1024,6 +1024,7 @@
     (first srfi-1)
     (second srfi-1)
     (third srfi-1)
+    (fourth srfi-1)
     (car+cdr srfi-1)
     (take srfi-1)
     (drop srfi-1)
