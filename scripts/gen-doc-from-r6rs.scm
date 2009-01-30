@@ -166,7 +166,7 @@ See <~a>
 
 Prototype:
 > ~a\n\n\n"
-        (car prot)
+        (car prot) 
         (hashtable-ref symbols (car prot) #f)
         `(,(car prot) ,@(cadr prot)))
         )
