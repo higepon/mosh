@@ -39,7 +39,7 @@
     (only (rnrs programs) exit)
     (mosh);; for get-command-line
     (rnrs lists)
-    (only (rnrs conditions) condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
+    (only (rnrs conditions) condition? condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)
     (rnrs records inspection)
     (psyntax compat)
@@ -105,8 +105,10 @@
       (display "mosh>")
       (guard (e
               (#t
-               (display "\n" (current-error-port))
-               (conditioon-printer e (current-error-port))))
+               (display "\nUnhandled exception:\n\n" (current-error-port))
+               (if (condition? e)
+                   (conditioon-printer e (current-error-port))
+                   (format (current-error-port) "  Non-condition object:\n     ~a\n" e))))
              (let loop ([line (get-line (current-input-port))]
                         [accum ""])
                (define (parentheses-ok? text)
@@ -276,7 +278,10 @@
             (ungensym val)
             val)))
     (with-exception-handler
-     (lambda (c) (conditioon-printer c (current-error-port)))
+     (lambda (c)
+       (if (condition? c)
+           (conditioon-printer c (current-error-port))
+           (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)))
      (lambda ()
        (if (null? args)
            (repl)

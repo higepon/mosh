@@ -1,5 +1,7 @@
 2009-01-30  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss : Fixed the bug of (raise 1). Thanks to leque(Issue 42).
+
         * scripts/gen-doc-from-r6rs.scm : R6RS document.
 
 2009-01-30  kokosabu  <kokosabu@gmail.com>
