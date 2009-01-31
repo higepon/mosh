@@ -1,5 +1,5 @@
 /*
- * FFI.cpp - 
+ * FFI.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -37,6 +37,8 @@
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "Bignum.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Arithmetic.h"
 #include "FFI.h"
 
@@ -91,6 +93,23 @@ bool CStack::push(Object obj)
     // Fixnum -> int
     if (obj.isFixnum()) {
         frame_[count_++] = obj.toFixnum();
+    // Flonum -> double
+#ifdef ARCH_IA32
+    } else if (obj.isFlonum()) {
+        if (MAX_ARGC - count_ < 2) {
+            return false;
+        }
+        union {
+            double fvalue;
+            struct {
+                uint32_t low;
+                uint32_t high;
+            } u32;
+        } v;
+        v.fvalue = obj.toFlonum()->value();
+        frame_[count_++] = v.u32.low;
+        frame_[count_++] = v.u32.high;
+#endif
     } else if (obj.isBignum()) {
         if (Arithmetic::isNegative(obj)) {
             frame_[count_++] = obj.toBignum()->toIntptr_t();

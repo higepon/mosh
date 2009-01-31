@@ -3359,6 +3359,12 @@
                 [bv    (u8-list->bytevector (map char->integer (string->list "hello")))])
            (%ffi-call->void upper bv 5)
            (list->string (map integer->char (bytevector->u8-list bv))))))
+(4 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+           [sub (%ffi-lookup handle 'subf)])
+      (%ffi-call->int sub 6.0 2.0))))
+(4.0 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
+                   [sub (%ffi-lookup handle 'subf2)])
+              (%ffi-call->double sub 6.0 2.0))))
 ;; pointer test
 ("12345678" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
                    [p (%ffi-lookup handle 'pointer)])

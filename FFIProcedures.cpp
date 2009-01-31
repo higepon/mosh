@@ -54,6 +54,29 @@ using namespace scheme;
 #define FFI_SUPPORTED 1
 #endif
 
+static double callStubDouble(uintptr_t func, intptr_t* frame, int argc)
+{
+#ifdef ARCH_IA32
+    const int bytes = (argc * sizeof(intptr_t) + 15) & ~15;
+    double ret;
+    asm volatile(
+        "movl    %%esp, %%edx ;"
+        "subl    %1   , %%esp ;"
+        "movl    %%esp, %%edi ;" // copy arguments to stack
+        "rep                  ;"
+        "movsb                ;"
+        "movl    %%edx, %%edi ;"
+        "call    *%%eax       ;"
+        "movl    %%edi, %%esp ;"
+        : "=t" (ret) // t: st[0]
+        : "c" (bytes), "S" (frame), "a" (func) // c:ecx, S:esi a:eax
+        : "edi", "edx", "memory"); // we have memory destructions.
+    return ret;
+#else
+    MOSH_FATAL("");
+    return 0.0;
+#endif
+}
 
 static intptr_t callStub(uintptr_t func, intptr_t* frame, int argc)
 {
@@ -137,6 +160,30 @@ Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
 #else
     return Object::False;
 #endif
+}
+
+Object scheme::internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-call->double");
+#ifndef FFI_SUPPORTED
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
+    checkArgumentLengthAtLeast(1);
+    argumentAsUintptr_t(0, func, "Invalid FFI function");
+
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+
+    const double ret = callStubDouble(func, cstack.frame(), cstack.count());
+    return Object::makeFlonum(ret);
 }
 
 Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)

@@ -53,7 +53,7 @@
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero?
-                       for-all procedure?)
+                       for-all procedure? flonum?)
           (only (mosh) alist->eq-hash-table)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int))
@@ -139,9 +139,9 @@
     Parameters:
 
       lib - library object returned by <open-shared-library>
-      ret - return type of c-function. void*, char*, void and int are supported.
+      ret - return type of c-function. void*, char*, void, double and int are supported.
       func - name of c-function as symbol
-      arg - list of argument types. void*, int and char* are supported.
+      arg - list of argument types. void*, int, double and char* are supported.
 
     Returns:
 
@@ -154,15 +154,17 @@
        #'(make-c-function lib 'ret 'func '(arg ...)))]))
 
 (define stub-ht (alist->eq-hash-table
-                 `((void* . ,%ffi-call->void*)
-                   (char* . ,%ffi-call->string-or-zero) ;; char* may be NULL,
-                   (void  . ,%ffi-call->void)
-                   (int   . ,%ffi-call->int))))
+                 `((void*  . ,%ffi-call->void*)
+                   (char*  . ,%ffi-call->string-or-zero) ;; char* may be NULL,
+                   (void   . ,%ffi-call->void)
+                   (double . ,%ffi-call->double)
+                   (int    . ,%ffi-call->int))))
 
 (define checker-ht (alist->eq-hash-table
-                    `((void* . ,integer?)
-                      (int   . ,integer?)
-                      (char* . ,(lambda (x) (or (and (number? x) (zero? x)) string?))))))
+                    `((void*  . ,integer?)
+                      (int    . ,integer?)
+                      (double . ,flonum?)
+                      (char*  . ,(lambda (x) (or (and (number? x) (zero? x)) string?))))))
 
 (define (make-c-function lib ret-type name arg-types)
   (let ([func (%ffi-lookup lib name)]

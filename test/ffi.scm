@@ -9,11 +9,13 @@
 
     (define sub (c-function libffitest int sub int int))
     (define sub3 (c-function libffitest int sub3 int int int))
+    (define subf2 (c-function libffitest double subf2 double double))
     (define string_length (c-function libffitest int string_length char*))
     (define return_pointer_string (c-function libffitest int return_pointer_string))
     (define return_array_of_pointer_string (c-function libffitest void* return_array_of_pointer_string))
 
     (test* (sub 3 2) 1)
+    (test* (subf2 1.0 0.0) 1.0)
     (test* (sub3 3 2 -5) 6)
     (test* (string_length "1234567") 7)
     (test* (integer? (return_pointer_string)) #t)

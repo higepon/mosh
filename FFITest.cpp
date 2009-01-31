@@ -190,5 +190,15 @@ TEST_F(FFITest, CStackTooManyArgument) {
     EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
 }
 
+TEST_F(FFITest, CStackWithFlonum) {
+    CStack cstack;
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(3.0)));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(2.0)));
+    double* p = (double*)cstack.frame();
+    EXPECT_EQ(4, cstack.count());
+    EXPECT_DOUBLE_EQ(3.0, p[0]);
+    EXPECT_DOUBLE_EQ(2.0, p[1]);
+}
+
 
 #endif
