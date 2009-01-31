@@ -90,6 +90,15 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
     argumentCheckBoolean(4, isOpaque);
     argumentCheckVector(5, fields);
     Object rtd;
+    // check sealed?
+    if (parent.isRecordTypeDescriptor()) {
+        RecordTypeDescriptor* const rtd = parent.toRecordTypeDescriptor();
+        if (rtd->isSealed()) {
+            callAssertionViolationAfter(theVM, procedureName, "cannot extend sealed parent", L2(name, parent));
+            return Object::Undef;
+        }
+    }
+
     // nongenerative
     if (uid.isFalse()) {
         rtd = Object::makeRecordTypeDescriptor(name,

@@ -3375,6 +3375,12 @@
 (36 (let* ([handle (%ffi-open "./libffitest.so.1.0")]
            [add8 (%ffi-lookup handle 'add8)])
       (%ffi-call->int add8 1 2 3 4 5 6 7 8)))
+;; record is sealed
+(error (let* ([prtd (make-record-type-descriptor 'a #f #f #t #f '#())]
+              [prcd  (make-record-constructor-descriptor prtd #f #f)]
+              [crtd (make-record-type-descriptor 'b prtd #f #f #f '#())]
+              [crcd  (make-record-constructor-descriptor crtd prcd #f)])
+         ((record-constructor crcd))))
 
 
 (todo error (read-string "#t.#f"))
