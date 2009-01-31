@@ -16,6 +16,7 @@
 
     (test* (sub 3 2) 1)
     (test* (subf2 1.0 0.0) 1.0)
+    (test*  (subf2 1 0) 1.0)
     (test* (sub3 3 2 -5) 6)
     (test* (string_length "1234567") 7)
     (test* (integer? (return_pointer_string)) #t)

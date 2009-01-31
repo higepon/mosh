@@ -181,7 +181,7 @@
       (display "\n** Error(s)\n")
       (for-each
        (lambda (x)
-         (format (current-error-port) "  ~a got ~a but ~a expected\n" (car x) (cadr x) (caddr x)))
+         (format (current-error-port) "  ~a got ~a but ~a expected\n" (car x) (caddr x) (cadr x)))
        (error*))
       (exit -1)]
      [else

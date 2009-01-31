@@ -53,8 +53,8 @@
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero?
-                       for-all procedure? flonum?)
-          (only (mosh) alist->eq-hash-table)
+                       for-all procedure? flonum? fixnum? cond else inexact)
+          (only (mosh) alist->eq-hash-table format)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int))
 
@@ -161,10 +161,13 @@
                    (int    . ,%ffi-call->int))))
 
 (define checker-ht (alist->eq-hash-table
-                    `((void*  . ,integer?)
-                      (int    . ,integer?)
-                      (double . ,flonum?)
-                      (char*  . ,(lambda (x) (or (and (number? x) (zero? x)) string?))))))
+                    `((void*  . ,(lambda (x) (and (integer? x) x)))
+                      (int    . ,(lambda (x) (and (integer? x) x)))
+                      (double . ,(lambda (x) (cond
+                                              [(flonum? x) x]
+                                              [(fixnum? x) (inexact x)]
+                                              [else #f])))
+                      (char*  . ,(lambda (x) (and (or (and (number? x) (zero? x)) string?) x))))))
 
 (define (make-c-function lib ret-type name arg-types)
   (let ([func (%ffi-lookup lib name)]
@@ -178,14 +181,15 @@
       (assertion-violation 'c-function "c-function not found" name))
     (lambda args
       (unless (= (length arg-types) (length args))
-        (assertion-violation name "wrong arguments number" args))
-      (for-each
-       (lambda (checker arg)
-         (unless (checker arg)
-           (assertion-violation name "wrong argument " arg)))
-       checkers
-       args)
-      (apply stub func args))))
-
-
+        (assertion-violation name (format "wrong arguments number ~d required, but got ~d"
+                                          (length arg-types)
+                                          (length args)) args))
+      (apply stub func (map
+                        (lambda (checker arg)
+                          (let ([valid-arg (checker arg)])
+                            (unless valid-arg
+                              (assertion-violation name "wrong argument " arg))
+                            valid-arg))
+                        checkers
+                        args)))))
 )
