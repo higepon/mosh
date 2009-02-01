@@ -9,7 +9,8 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([VM.h])
 AC_CONFIG_HEADER([config.h])
 
-AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh")
+
+AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
 
 
 # we don't like default CFLAGS(-O2 -g).
@@ -160,4 +161,4 @@ esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1alpha3 onig-5.7.0])
-AC_OUTPUT(lib/mosh/mysql.ss doc/text/Download.txt)
+AC_OUTPUT(mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)

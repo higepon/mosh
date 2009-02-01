@@ -97,10 +97,10 @@ void showUsage()
             "  --help            Prints this help.\n"
             "  --loadpath=<path> Add libary loadpath.\n\n"
             " MOSH_LOADPATH\n"
-            "  You can add library loadpath by using environment variable MOSH_LOADPATH, \':\' separated paths.\n\n"
+            "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\' separated paths.\n\n"
             "bug report:\n"
             "  http://code.google.com/p/mosh-scheme/\n"
-            "  higepon@users.sourceforge.jp\n"
+            "  higepon@users.sourceforge.jp\n\n"
         );
     exit(EXIT_FAILURE);
 }
@@ -219,7 +219,7 @@ int main(int argc, char *argv[])
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argv[optind]).toString()->data());
     } else {
-        theVM->loadFileWithGuard(UC("repl.scm"));
+        showUsage();
     }
 
 #ifdef ENABLE_PROFILER

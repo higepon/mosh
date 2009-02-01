@@ -1,6 +1,6 @@
 (import (rnrs)
-        (srfi :1)
-        (mosh string))
+        (mosh)
+        (srfi :1))
 
 (define (basename name)
   (let* ([lst (string-split name #\/)]

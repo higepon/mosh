@@ -1,7 +1,6 @@
 (import (rnrs)
         (srfi :1)
-        (mosh)
-        (mosh string))
+        (mosh))
 
 (define (extract obj)
   (cond

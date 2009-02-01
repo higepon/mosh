@@ -75,6 +75,7 @@ Group: R6RS  {
 Group: Mosh Library  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
+   File: Configuration  (lib/mosh/config.ss)
    File: Database independent interface  (lib/mosh/dbi.ss)
    File: Foreign Function Interface  (lib/mosh/ffi.ss)
    File: Pretty Printing  (lib/mosh/pp.ss)
@@ -93,7 +94,6 @@ Group: SRFI  {
 Group: Index  {
 
    Index: Everything
-   File Index: Files
    Function Index: Functions
    Library Index: Libraries
    Variable Index: Variables

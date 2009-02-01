@@ -26,6 +26,7 @@ libffitest.so.1.0: ffitest.c
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
 bin_PROGRAMS = mosh test_vm test_port test_fasl test_ffi test_object
+bin_SCRIPTS = mosh_config
 
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
@@ -128,9 +129,41 @@ Latin1Codec.h                 Latin1Codec.cpp                     \
 FFI.h                         FFI.cpp                             \
 FFIProcedures.h               FFIProcedures.cpp
 
+mosh_core_libraries = lib/srfi/%3A8.ss   \
+lib/srfi/%3A19.ss   \
+lib/srfi/%3A26.ss  \
+lib/srfi/%3A98.ss  \
+lib/mosh/cgi.ss    \
+lib/lambda/wiki.ss    \
+lib/mosh/ffi.ss    \
+lib/mosh/dbi.ss    \
+lib/mosh/mysql.ss    \
+lib/mosh/process.ss \
+lib/mosh/shell.ss \
+lib/mosh/shell/repl.ss \
+lib/mosh/dbd/mysql.ss  \
+lib/mosh/test.ss   \
+lib/mosh/pp.ss     \
+lib/mosh/config.ss \
+lib/clos/core.ss  lib/clos/helpers.ss  lib/clos/introspection.ss  lib/clos/slot-access.ss  lib/clos/user.ss \
+lib/clos/bootstrap/generic-functions.ss  lib/clos/bootstrap/standard-classes.ss \
+lib/clos/private/allocation.ikarus.ss         lib/clos/private/method-cache.ikarus.ss \
+lib/clos/private/allocation.ss                lib/clos/private/method-cache.ss \
+lib/clos/private/compat.ss                    lib/clos/private/rrfast-method-cache.mosh.ss \
+lib/clos/private/core-class-layout.ss         lib/clos/private/slow-method-cache.ss \
+lib/clos/private/dddmethod-cache.mosh.ss      lib/clos/private/top-sort.ss \
+lib/clos/private/fast-method-cache.ikarus.ss \
+lib/clos/std-protocols/add-method.ss            lib/clos/std-protocols/initialize.ss \
+lib/clos/std-protocols/allocate-instance.ss     lib/clos/std-protocols/make.ss \
+lib/clos/std-protocols/class-initialization.ss  lib/clos/std-protocols/print-object.ss \
+lib/clos/std-protocols/generic-invocation.ss
+
+#mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
+
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm
-nobase_data_DATA = lib/srfi/%3A8.ss lib/srfi/%3A98.ss lib/srfi/%3A26.ss lib/mosh/test.ss lib/mosh/pp.ss
+data_DATA = all-tests.scm #repl.scm #tools/psyntax-r6rs/rev10_to_10/psyntax.scm
+nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
+
 
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
 
@@ -148,6 +181,7 @@ compiler-with-library.h compiler-with-library.fasl
 
 CLEANFILES = gtest.a gtest_main.a
 MAINTAINERCLEANFILES = $(GENERATED)
+
 
 update:
 	(find . -name "*.ss.fasl" | xargs rm) ; true
@@ -244,8 +278,7 @@ all-tests.scm: ./test-data.scm
 
 # when you release comment out end
 
-#### benchmark
-.PHONY: bench doc test
+.PHONY: bench doc test install
 
 bench:
 #	@GOSH@ ./scripts/bench.scm > /dev/null
@@ -332,12 +365,11 @@ test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
-
-
-
 doc:
 	./mosh scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 # 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
 # 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
+install-data-hook :
+	(cd doc &&  ../mosh ~/mosh/scripts/pre-compile-r6rs.scm ~/mosh/scripts/pre-compile-target.scm)

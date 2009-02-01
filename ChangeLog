@@ -1,3 +1,11 @@
+2009-02-01  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am (install-data-hook): Now we pre-compile R6RS libraries on installation.
+
+        * mosh_config: Added.
+
+        * lib/mosh/config.ss.in (mosh): Added (mosh config) library and document.
+
 2009-01-31  higepon  <higepon@users.sourceforge.jp>
 
         * Allow fixnum argument to double argument (thanks to id:mjt.)

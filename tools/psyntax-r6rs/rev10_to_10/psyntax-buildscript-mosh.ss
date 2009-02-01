@@ -30,7 +30,7 @@
   (psyntax compat)
   (psyntax library-manager)
   (psyntax expander)
-  (system)
+  (except (system) make-parameter parameterize)
   (mosh)
   )
 

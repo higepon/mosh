@@ -1,4 +1,4 @@
-Library: Core
+Title: Core
 
 library: (mosh)
 
