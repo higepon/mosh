@@ -1,5 +1,8 @@
 2009-02-01  higepon  <higepon@users.sourceforge.jp>
 
+        * configure.ac: Added --enable-developer flag default No.
+                        Mosh Developer *should* enable this.
+
         * Makefile.am (install-data-hook): Now we pre-compile R6RS libraries on installation.
 
         * mosh_config: Added.

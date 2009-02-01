@@ -124,6 +124,12 @@ AC_ARG_WITH(mysql,
   ]
 )
 
+AC_ARG_ENABLE(developer, AS_HELP_STRING([--enable-developer],
+                                        [Flags are enabled for Mosh Developer])
+             , [enable_developer=true], [enable_developer=false])
+AM_CONDITIONAL(DEVELOPER, test x$enable_developer = xtrue)
+
+
 # Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS([fcntl.h stdint.h stdlib.h string.h sys/time.h utmp.h tr1/unordered_map ext/hash_map unistd.h])

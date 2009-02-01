@@ -188,7 +188,7 @@ update:
 	./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
 # when you release comment out start
-
+if DEVELOPER
 Reader.tab.cpp: Reader.y
 	bison -d $< -o $@
 
@@ -277,6 +277,8 @@ all-tests.scm: ./test-data.scm
 #	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
 # when you release comment out end
+	echo "dev"
+endif
 
 .PHONY: bench doc test install
 
@@ -373,3 +375,4 @@ doc:
 
 install-data-hook :
 	(cd doc &&  ../mosh ~/mosh/scripts/pre-compile-r6rs.scm ~/mosh/scripts/pre-compile-target.scm)
+
