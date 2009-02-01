@@ -61,9 +61,7 @@ public:
     Transcoder(Codec* codec, enum EolStyle e, enum ErrorHandlingMode m) : codec_(codec)
     {
     }
-    Transcoder(Codec* codec) : codec_(codec)
-    {
-    }
+    Transcoder(Codec* codec);
     Transcoder(Codec* codec, const Object eolStyle);
     Transcoder(Codec* codec, const Object eolStyle, const Object handlingMode);
 

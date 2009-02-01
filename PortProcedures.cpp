@@ -554,7 +554,8 @@ Object scheme::nativeEolStyleEx(VM* theVM, int argc, const Object* argv)
     return Symbol::CRLF;
 #elif LINE_FEED_CODE_CR
     return Symbol::CR;
-/* todo: #elif ... */
+#else
+    MOSH_FATAL("not found platform native eol style\n");
 #endif
 }
 

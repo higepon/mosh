@@ -45,7 +45,7 @@
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), bufferMode_(BLOCK)
+FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
 {
     if (fd == 1) {
         bufferMode_ = LINE;
@@ -60,7 +60,7 @@ FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), 
 #endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), bufferMode_(BLOCK)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
@@ -71,7 +71,7 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), 
 #endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : isClosed_(false)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : isClosed_(false), bufIdx_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
@@ -165,6 +165,7 @@ void FileBinaryOutputPort::bufFlush()
 {
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         bufWriteLen_ = write(fd_, buffer_, bufIdx_);
+        MOSH_ASSERT(bufWriteLen == bufIdx_);
         bufIdx_ = 0;
     }
 }

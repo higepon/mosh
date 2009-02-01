@@ -37,9 +37,25 @@
 
 using namespace scheme;
 
+Transcoder::Transcoder(Codec* codec) : codec_(codec)
+{
+#if LINE_FEED_CODE_LF
+    eolStyle_ = Transcoder::LF;
+#elif LINE_FEED_CODE_CRLF
+    eolStyle_ = Transcoder::CRLF;
+#elif LINE_FEED_CODE_CR
+    eolStyle_ = Transcoder::CR;
+#else
+    MOSH_FATAL("not found platform native eol style\n");
+#endif
+
+    errorhandlingMode_ = Transcoder::REPLACE;
+}
+
 Transcoder::Transcoder(Codec* codec, const Object eolStyle) : codec_(codec)
 {
     eolStyle_ = symbolToEolStyle(eolStyle);
+    errorhandlingMode_ = Transcoder::REPLACE;
 }
 
 Transcoder::Transcoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode) : codec_(codec)
