@@ -51,7 +51,7 @@
       > (aif test consequent alternate)
 
       Example:
-      >(if 3 it 4) => 3
+      >(aif 3 it 4) => 3
 
       Parameters:
 
