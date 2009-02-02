@@ -149,7 +149,7 @@ lib/clos/core.ss  lib/clos/helpers.ss  lib/clos/introspection.ss  lib/clos/slot-
 lib/clos/bootstrap/generic-functions.ss  lib/clos/bootstrap/standard-classes.ss \
 lib/clos/private/allocation.ikarus.ss         lib/clos/private/method-cache.ikarus.ss \
 lib/clos/private/allocation.ss                lib/clos/private/method-cache.ss \
-lib/clos/private/compat.ss                    lib/clos/private/rrfast-method-cache.mosh.ss \
+lib/clos/private/compat.ss                    \
 lib/clos/private/core-class-layout.ss         lib/clos/private/slow-method-cache.ss \
 lib/clos/private/dddmethod-cache.mosh.ss      lib/clos/private/top-sort.ss \
 lib/clos/private/fast-method-cache.ikarus.ss \
