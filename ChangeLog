@@ -1,5 +1,11 @@
 2009-02-02  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/control.ss : Added begin0 and let1. 
+
+        * lib/mosh/ffi.ss (find-shared-libray): Added.
+
+        * lib/mosh/control.ss : Added (mosh control) and aif.
+
         * FFI.cpp : Added double support for x86-64.
 
 2009-02-01  higepon  <higepon@users.sourceforge.jp>

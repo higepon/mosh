@@ -12,9 +12,9 @@
   (import (only (rnrs) define if make-string case else let* and pair? symbol?
                 car cdr + null? let cond > string-length symbol->string or
                 vector? lambda set! cons - vector->list quote min < substring
-                boolean? number? number->string procedure? string? char=? string-ref
-                char? input-port? output-port? eof-object? cadr begin display
-                current-output-port define-syntax syntax-case ... syntax)
+                boolean? number? number->string procedure? string? char=? string-ref values
+                char? input-port? output-port? eof-object? cadr begin display newline apply
+                current-output-port define-syntax syntax-case ... syntax call-with-values)
           (only (rnrs mutable-strings) string-set!))
 
 ; File; "pp.scm"   (c) 1991, Marc Feeley

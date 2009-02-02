@@ -37,24 +37,57 @@
 
     Example:
     (start code)
+    ;; use mysql client library
     (let* ([libmysqlclient (open-shared-library "libmysqlclient.so.15")]
            [mysql-init     (c-function libmysqlclient void* mysql_init void*)])
       (display (mysql-init 0)))
     (end code)
+
+    (start code)
+    ;; generate png image with Cairo library.
+    (import (rnrs)
+            (mosh ffi))
+
+    (let* ((libcairo (open-shared-library "libcairo.so"))
+             (cairo-image-surface-create (c-function libcairo void* cairo_image_surface_create int int int))
+             (cairo-surface-write-to-png (c-function libcairo int cairo_surface_write_to_png void* char*))
+             (cairo-create (c-function libcairo void* cairo_create void*))
+             (set-line-width (c-function libcairo void cairo_set_line_width void* double))
+             (rgba (c-function libcairo void cairo_set_source_rgba void* double double double double))
+             (move-to (c-function libcairo void cairo_move_to void* double double))
+             (line-to (c-function libcairo void cairo_line_to void* double double))
+             (TOY-show-text (c-function libcairo void cairo_show_text void* char*))
+             (stroke (c-function libcairo void cairo_stroke void*)))
+
+           (let* ((surface (cairo-image-surface-create 1 300 300))
+                  (ctx (cairo-create surface)))
+             (rgba ctx 1.0 1.0 1.0 1.0)
+             (set-line-width ctx 8.0)
+             (move-to ctx 10.0 10.0)
+             (line-to ctx 10.0 290.0)
+             (line-to ctx 290.0 290.0)
+             (line-to ctx 290.0 10.0)
+             (line-to ctx 10.0 10.0)
+             (move-to ctx 100.0 150.0)
+             (TOY-show-text ctx "mosh")
+             (stroke ctx)
+             (display (cairo-surface-write-to-png surface "test.png"))))
+    (end code)
+
 
     library: (mosh ffi)
 
     Foreign Function Interface Library
 |#
 (library (mosh ffi)
-  (export c-function open-shared-library
+  (export c-function open-shared-library find-shared-libray
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
                   (%ffi-supported? ffi-supported?)))
-  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax
+  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists
                        quasiquote unless assertion-violation quote = length and number?
-                       for-each apply hashtable-ref unquote integer? string? ... or zero?
-                       for-all procedure? flonum? fixnum? cond else inexact)
-          (only (mosh) alist->eq-hash-table format)
+                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter
+                       for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
+          (only (mosh) alist->eq-hash-table format readdir)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int))
 
@@ -168,6 +201,12 @@
                                               [(fixnum? x) (inexact x)]
                                               [else #f])))
                       (char*  . ,(lambda (x) (and (or (and (number? x) (zero? x)) string?) x))))))
+
+(define (find-shared-libray regex)
+  (exists
+   (lambda (path)
+     (find regex (guard [c (#t '())] (readdir path))))
+   (filter file-exists? '("/lib" "/usr/lib/" "/usr/local/lib"))))
 
 (define (make-c-function lib ret-type name arg-types)
   (let ([func (%ffi-lookup lib name)]

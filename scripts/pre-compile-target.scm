@@ -15,4 +15,5 @@
        (mosh dbi)
        (mosh dbd mysql)
        (mosh process)
+       (mosh control)
         )
