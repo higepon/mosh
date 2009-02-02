@@ -64,6 +64,11 @@ Transcoder::Transcoder(Codec* codec, const Object eolStyle, const Object errorHa
     errorhandlingMode_ = symbolToErrorHandlingMode(errorHandlingMode);
 }
 
+Object Transcoder::eolStyle()
+{
+    return eolStyleToSymbol(eolStyle_);
+}
+
 enum Transcoder::EolStyle Transcoder::symbolToEolStyle(const Object symbol)
 {
     if (symbol == Symbol::LF) {
@@ -80,6 +85,26 @@ enum Transcoder::EolStyle Transcoder::symbolToEolStyle(const Object symbol)
         return Transcoder::LS;
     } else {
         return Transcoder::NONE;
+    }
+}
+
+Object Transcoder::eolStyleToSymbol(const enum Transcoder::EolStyle eolstyle)
+{
+    switch (eolstyle) {
+    case Transcoder::LF:
+        return Symbol::LF;
+    case Transcoder::CR:
+        return Symbol::CR;
+    case Transcoder::CRLF:
+        return Symbol::CRLF;
+    case Transcoder::NEL:
+        return Symbol::NEL;
+    case Transcoder::CRNEL:
+        return Symbol::CRNEL;
+    case Transcoder::LS:
+        return Symbol::LS;
+    default:
+        return Symbol::NONE;
     }
 }
 

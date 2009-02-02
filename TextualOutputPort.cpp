@@ -610,6 +610,13 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("<code-builder "));
         putDatum(Bignum::makeInteger(o.val));
         putString(UC(">"));
+    } else if (o.isTranscoder()) {
+        // todo: if finish implementation, copy putDatum
+        putString(UC("<transcoder "));
+        Transcoder* transcoder = o.toTranscoder();
+        putDatum(transcoder->eolStyle());
+        // todo: othre data print
+        putString(UC(">"));
 
     } else {
         putString(UC("#<unknown datum>"));

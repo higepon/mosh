@@ -68,6 +68,8 @@ public:
 
 
     Codec* codec() const { return codec_; }
+    Object eolStyle();
+    Object errorHandlingMode();
 
 private:
     Codec* codec_;
@@ -75,6 +77,7 @@ private:
     enum ErrorHandlingMode errorhandlingMode_;
 
     enum EolStyle symbolToEolStyle(const Object symbol);
+    Object eolStyleToSymbol(const enum EolStyle eolstyle);
     enum ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
 };
 
