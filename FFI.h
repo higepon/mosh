@@ -54,7 +54,7 @@ class CStack EXTEND_GC
 public:
     enum
     {
-        MAX_ARGC = 16,
+        MAX_ARGC = 32,
         MAX_REG  = 6,
     };
     CStack();

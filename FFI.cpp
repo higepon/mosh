@@ -130,6 +130,7 @@ bool CStack::pushInt(intptr_t val)
 bool CStack::pushDouble(double val)
 {
     if (MAX_ARGC - count_ < 2) {
+        lastError_ = UC("too many ffi double arguments");
         return false;
     }
     union {

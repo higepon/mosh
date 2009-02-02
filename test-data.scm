@@ -3369,7 +3369,7 @@
                    [func (%ffi-lookup handle 'double10)])
               (%ffi-call->int func 10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0))))
 (5.0 (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-                   [func (%ffi-lookup handle 'double10)])
+                   [func (%ffi-lookup handle 'double10_2)])
               (%ffi-call->double func 10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0))))
 ;; pointer test
 ("12345678" (catch (let* ([handle (%ffi-open "./libffitest.so.1.0")]
