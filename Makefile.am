@@ -276,8 +276,14 @@ all-tests.scm: ./test-data.scm
 	mosh -5 ./scripts/gen-test.scm $< $@
 #	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
+doc:
+	./mosh scripts/gen-doc-from-r6rs.scm
+	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
+# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
+# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
+
+
 # when you release comment out end
-	echo "dev"
 endif
 
 .PHONY: bench doc test install
@@ -367,12 +373,6 @@ test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
-doc:
-	./mosh scripts/gen-doc-from-r6rs.scm
-	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
-# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
-
 install-data-hook :
-	(cd doc &&  ../mosh ~/mosh/scripts/pre-compile-r6rs.scm ~/mosh/scripts/pre-compile-target.scm)
+	(cd doc &&  ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
 
