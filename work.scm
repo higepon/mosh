@@ -1,20 +1,3 @@
-#!mosh
-(import (rnrs)
-        (mosh)
-        (mosh config)
-        (srfi :1))
-
-(define (main args)
-  (cond
-   [(null? (cdr args))
-    (display " Usage: mosh_config <option>\n" (current-error-port))
-    (display "   ex) % mosh_config library-path\n\n" (current-error-port))
-    (display " Options:\n" (current-error-port))
-    (for-each
-     (lambda (x)
-       (format (current-error-port) "    ~a: ~a\n" (first x) (second x)))
-     (get-configs))]
-   [else
-    (display (get-config (second args)))]))
-
-(main (command-line))
+(let* ([handle (%ffi-open "./libffitest.so.1.0")]
+                   [func (%ffi-lookup handle 'double10_2)])
+              (display (%ffi-call->double func 10.0 9.4 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.5)))

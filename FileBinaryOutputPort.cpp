@@ -165,7 +165,7 @@ void FileBinaryOutputPort::bufFlush()
 {
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         bufWriteLen_ = write(fd_, buffer_, bufIdx_);
-        MOSH_ASSERT(bufWriteLen == bufIdx_);
+        MOSH_ASSERT(bufWriteLen_ == bufIdx_);
         bufIdx_ = 0;
     }
 }

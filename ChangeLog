@@ -1,3 +1,7 @@
+2009-02-02  higepon  <higepon@users.sourceforge.jp>
+
+        * FFI.cpp : Added double support for x86-64.
+
 2009-02-01  higepon  <higepon@users.sourceforge.jp>
 
         * configure.ac: Added --enable-developer flag default No.

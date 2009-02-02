@@ -55,17 +55,32 @@ public:
     enum
     {
         MAX_ARGC = 16,
+        MAX_REG  = 6,
     };
     CStack();
     ~CStack();
     bool push(Object obj);
     intptr_t* frame();
+#ifdef ARCH_X86_64
+    intptr_t* xmm() { return xmm_; }
+    intptr_t* reg() { return reg_; }
+    int regCount() const { return regCount_; }
+#endif
     int count() const;
     const ucs4char* getLastError() const;
 
 private:
+    bool pushInt(intptr_t val);
+    bool pushDouble(double val);
+
     intptr_t frame_[MAX_ARGC];
     int count_;
+#ifdef ARCH_X86_64
+    intptr_t xmm_[8];
+    int xmmCount_;
+    intptr_t reg_[6];
+    int regCount_;
+#endif
     const ucs4char* lastError_;
 };
 

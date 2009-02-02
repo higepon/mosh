@@ -19,6 +19,18 @@ int subf(double a, double b)
   return a - b;
 }
 
+int double10(double x1, double x2, double x3, double x4, double x5, double x6, double x7, double x8, double x9, double x10)
+{
+  return x1 - x2 + x3 - x4 + x5 - x6 + x7 - x8 + x9 - x10;
+}
+
+
+double double10_2(double x1, double x2, double x3, double x4, double x5, double x6, double x7, double x8, double x9, double x10)
+{
+  return x1 - x2 + x3 - x4 + x5 - x6 + x7 - x8 + x9 - x10;
+}
+
+
 double subf2(double a, double b)
 {
   return a - b;

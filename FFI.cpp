@@ -64,11 +64,88 @@ const char* FFI::lastError()
     return dlerror();
 }
 
-CStack::CStack() : count_(0)
+#ifdef ARCH_X86_64
+CStack::CStack() : count_(0), xmmCount_(0), regCount_(0)
 {
-
+    memset(frame_, 0, sizeof(frame_));
+    memset(xmm_, 0, sizeof(xmm_));
+    memset(reg_, 0, sizeof(reg_));
 }
 
+bool CStack::pushInt(intptr_t val)
+{
+    if (regCount_ < (int)(sizeof(reg_) / sizeof(intptr_t))) {
+        reg_[regCount_++] = val;
+        return true;
+    } else if (count_ < MAX_ARGC) {
+        frame_[count_++] = val;
+        return true;
+    } else {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+}
+
+bool CStack::pushDouble(double val)
+{
+    if (xmmCount_ < (int)(sizeof(xmm_) / sizeof(intptr_t))) {
+        union {
+            double fvalue;
+            uint64_t uval;
+        } v;
+        v.fvalue = val;
+        xmm_[xmmCount_++] = v.uval;
+        return true;
+    } else if (count_ < MAX_ARGC) {
+        union {
+            double fvalue;
+            uint64_t uval;
+        } v;
+        v.fvalue = val;
+        frame_[count_++] = v.uval;
+        return true;
+    } else {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+}
+
+#else
+CStack::CStack() : count_(0)
+{
+    memset(frame_, 0, sizeof(frame_));
+}
+
+bool CStack::pushInt(intptr_t val)
+{
+    if (count_ < MAX_ARGC) {
+        frame_[count_++] = val;
+        return true;
+    } else {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+}
+
+bool CStack::pushDouble(double val)
+{
+    if (MAX_ARGC - count_ < 2) {
+        return false;
+    }
+    union {
+        double fvalue;
+        struct {
+            uint32_t low;
+            uint32_t high;
+        } u32;
+    } v;
+    v.fvalue = val;
+    frame_[count_++] = v.u32.low;
+    frame_[count_++] = v.u32.high;
+    return true;
+}
+
+#endif
 CStack::~CStack()
 {
 }
@@ -83,51 +160,31 @@ int CStack::count() const
     return count_;
 }
 
+
 bool CStack::push(Object obj)
 {
-    if (count_ >= MAX_ARGC) {
-        lastError_ = UC("too many ffi arguments");
-        return false;
-    }
-
     // Fixnum -> int
     if (obj.isFixnum()) {
-        frame_[count_++] = obj.toFixnum();
+        return pushInt(obj.toFixnum());
     // Flonum -> double
-#ifdef ARCH_IA32
     } else if (obj.isFlonum()) {
-        if (MAX_ARGC - count_ < 2) {
-            return false;
-        }
-        union {
-            double fvalue;
-            struct {
-                uint32_t low;
-                uint32_t high;
-            } u32;
-        } v;
-        v.fvalue = obj.toFlonum()->value();
-        frame_[count_++] = v.u32.low;
-        frame_[count_++] = v.u32.high;
-#endif
+        return pushDouble(obj.toFlonum()->value());
     } else if (obj.isBignum()) {
         if (Arithmetic::isNegative(obj)) {
-            frame_[count_++] = obj.toBignum()->toIntptr_t();
+            return pushInt(obj.toBignum()->toIntptr_t());
         } else {
-            frame_[count_++] = obj.toBignum()->toUintptr_t();
+            return pushInt(obj.toBignum()->toUintptr_t());
         }
     // String -> char* (utf-8 ascii only)
     } else if (obj.isString()) {
-        frame_[count_++] = (intptr_t)(obj.toString()->data().ascii_c_str());
+        return pushInt((intptr_t)(obj.toString()->data().ascii_c_str()));
     // ByteVector -> char*
     } else if (obj.isByteVector()) {
-        frame_[count_++] = (intptr_t)(obj.toByteVector()->data());
+        return pushInt((intptr_t)(obj.toByteVector()->data()));
     } else {
         lastError_ = UC("unsupported ffi argument");
         return false;
     }
-
-    return true;
 }
 
 const ucs4char* CStack::getLastError() const
