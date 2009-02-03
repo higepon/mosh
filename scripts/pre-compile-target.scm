@@ -4,6 +4,8 @@
         (srfi :26)
         (srfi :98)
         (srfi :8)
+        (srfi :13)
+        (srfi :14)
         (srfi :19)
         (clos user)
        (mosh pp)

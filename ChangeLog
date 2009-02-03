@@ -1,3 +1,7 @@
+2009-02-03  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/srfi/%3A14.ss : Added srfi 13 and 14 ported from Ypsilon Scheme. (Thanks to y.fujita)
+
 2009-02-02  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/control.ss : Added begin0 and let1. 
