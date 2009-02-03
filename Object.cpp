@@ -177,22 +177,25 @@ Object Object::makeCustomBinaryInputPort(VM* theVM, Object readProc)
                                                         reinterpret_cast<word>(new CustomBinaryInputPort(theVM, readProc)))));
 }
 
-Object Object::makeLatin1Codec()
+Object Object::makeCodec(Codec* codec)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
-                                                        reinterpret_cast<word>(new Latin1Codec()))));
+                                                        reinterpret_cast<word>(codec))));
+}
+
+Object Object::makeLatin1Codec()
+{
+    return makeCodec(new Latin1Codec());
 }
 
 Object Object::makeUTF8Codec()
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
-                                                        reinterpret_cast<word>(new UTF8Codec()))));
+    return makeCodec(new UTF8Codec());
 }
 
 Object Object::makeUTF16Codec()
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
-                                                        reinterpret_cast<word>(new UTF16Codec()))));
+    return makeCodec(new UTF16Codec());
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)

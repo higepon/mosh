@@ -49,24 +49,29 @@ Transcoder::Transcoder(Codec* codec) : codec_(codec)
     MOSH_FATAL("not found platform native eol style\n");
 #endif
 
-    errorhandlingMode_ = Transcoder::REPLACE;
+    errorHandlingMode_ = Transcoder::REPLACE;
 }
 
 Transcoder::Transcoder(Codec* codec, const Object eolStyle) : codec_(codec)
 {
     eolStyle_ = symbolToEolStyle(eolStyle);
-    errorhandlingMode_ = Transcoder::REPLACE;
+    errorHandlingMode_ = Transcoder::REPLACE;
 }
 
 Transcoder::Transcoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode) : codec_(codec)
 {
     eolStyle_          = symbolToEolStyle(eolStyle);
-    errorhandlingMode_ = symbolToErrorHandlingMode(errorHandlingMode);
+    errorHandlingMode_ = symbolToErrorHandlingMode(errorHandlingMode);
 }
 
 Object Transcoder::eolStyle()
 {
     return eolStyleToSymbol(eolStyle_);
+}
+
+Object Transcoder::errorHandlingMode()
+{
+    return errorHandlingModeToSymbol(errorHandlingMode_);
 }
 
 enum Transcoder::EolStyle Transcoder::symbolToEolStyle(const Object symbol)
@@ -116,5 +121,19 @@ enum Transcoder::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const O
         return Transcoder::RAISE;
     } else if (symbol == Symbol::REPLACE) {
         return Transcoder::REPLACE;
+    }
+}
+
+Object Transcoder::errorHandlingModeToSymbol(const enum Transcoder::ErrorHandlingMode errorHandlingMode)
+{
+    switch (errorHandlingMode) {
+    case Transcoder::IGNORE_ERROR:
+        return Symbol::IGNORE;
+    case Transcoder::RAISE:
+        return Symbol::RAISE;
+    case Transcoder::REPLACE:
+        return Symbol::REPLACE;
+    default:
+        MOSH_FATAL("not found errorHandlingMode\n");
     }
 }

@@ -30,13 +30,15 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "Codec.h"
 #include "Transcoder.h"
+#include "TextualOutputPort.h"
 #include "TextualByteVectorOutputPort.h"
 
 using namespace scheme;
 
-TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->codec())
+TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->codec().toCodec())
 {
 }
 

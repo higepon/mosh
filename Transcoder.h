@@ -1,5 +1,5 @@
 /*
- * Transcoder.h - 
+ * Transcoder.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -66,19 +66,20 @@ public:
     Transcoder(Codec* codec, const Object eolStyle, const Object handlingMode);
 
 
-
-    Codec* codec() const { return codec_; }
+    //Codec* codec() const { return codec_; }
+    Object codec() const { return Object::makeCodec(codec_); }
     Object eolStyle();
     Object errorHandlingMode();
 
 private:
     Codec* codec_;
     enum EolStyle eolStyle_;
-    enum ErrorHandlingMode errorhandlingMode_;
+    enum ErrorHandlingMode errorHandlingMode_;
 
     enum EolStyle symbolToEolStyle(const Object symbol);
     Object eolStyleToSymbol(const enum EolStyle eolstyle);
     enum ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
+    Object errorHandlingModeToSymbol(const enum ErrorHandlingMode errorHandlingMode);
 };
 
 }; // namespace scheme

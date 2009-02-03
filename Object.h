@@ -197,6 +197,7 @@ public:
     static Object makeLatin1Codec();
     static Object makeUTF8Codec();
     static Object makeUTF16Codec();
+    static Object makeCodec(Codec* codec);
     static Object makeTranscoder(Transcoder* transcoder);
     static Object makeTranscoder(Codec* codec);
     static Object makeTranscoder(Codec* codec, const Object eolStyle);

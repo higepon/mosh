@@ -60,7 +60,7 @@ TextualOutputPort::TextualOutputPort() : port_(NULL) // be sure port is null, wh
 }
 
 TextualOutputPort::TextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
-                                                                                  codec_(coder->codec()),
+                                                                                  codec_(coder->codec().toCodec()),
                                                                                   transcoder_(coder),
                                                                                   isErrorOccured_(false),
                                                                                   errorMessage_(Object::Nil),
@@ -390,7 +390,10 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isStack()) {
         putString(UC("#<stack>"));
     } else if (o.isCodec()) {
-        putString(UC("#<codec>"));
+        Codec* codec = o.toCodec();
+        putString(UC("#<codec "));
+        putString(codec->getCodecName());
+        putString(UC(">"));
     } else if (o.isBinaryInputPort()) {
         putString(UC("#<binary input port>"));
     } else if (o.isRecordConstructorDescriptor()) {
@@ -441,6 +444,15 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isCodeBuilder()) {
         putString(UC("<code-builder "));
         putDatum(Object::makeFixnum(o.val));
+        putString(UC(">"));
+    } else if (o.isTranscoder()) {
+        Transcoder* transcoder = o.toTranscoder();
+        putString(UC("<transcoder codec="));
+        putDatum(transcoder->codec());
+        putString(UC(", eol-style="));
+        putDatum(transcoder->eolStyle());
+        putString(UC(", error-handling-mode="));
+        putDatum(transcoder->errorHandlingMode());
         putString(UC(">"));
 
     } else {
@@ -611,11 +623,13 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putDatum(Bignum::makeInteger(o.val));
         putString(UC(">"));
     } else if (o.isTranscoder()) {
-        // todo: if finish implementation, copy putDatum
-        putString(UC("<transcoder "));
         Transcoder* transcoder = o.toTranscoder();
+        putString(UC("<transcoder codec="));
+        putDatum(transcoder->codec());
+        putString(UC(", eol-style="));
         putDatum(transcoder->eolStyle());
-        // todo: othre data print
+        putString(UC(", error-handling-mode="));
+        putDatum(transcoder->errorHandlingMode());
         putString(UC(">"));
 
     } else {

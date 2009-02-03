@@ -1,3 +1,7 @@
+2009-02-03  kokosabu  <kokosabu@gmail.com>
+
+        * putDatum : Added write of Transcoder.
+
 2009-02-03  higepon  <higepon@users.sourceforge.jp>
 
         * FileBinaryInputPort.cpp (bufRead1) : Added for specialized case.

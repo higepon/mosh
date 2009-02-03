@@ -46,7 +46,7 @@
 
 using namespace scheme;
 
-TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec()),
+TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec().toCodec()),
                                                                                port_(port),
                                                                                transcoder_(coder),
                                                                                buffer_(UC("")),

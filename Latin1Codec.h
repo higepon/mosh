@@ -43,6 +43,10 @@ public:
     int out(uint8_t* buf, ucs4char u);
     ucs4char in(BinaryInputPort* port);
     ucs4string readWholeString(BinaryInputPort* port);
+    ucs4string getCodecName() const
+    {
+        return UC("latin-1-codec");
+    }
 };
 
 }; // namespace scheme

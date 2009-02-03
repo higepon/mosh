@@ -1,5 +1,5 @@
 /*
- * ByteVectorProcedures.cpp -
+ * Bytevectorprocedures.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -229,7 +229,7 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
         TRY_IO {
-            const int length = transcoder->codec()->out(buf, *it);
+            const int length = transcoder->codec().toCodec()->out(buf, *it);
             for (int i = 0; i < length; i++) {
                 accum.push_back(buf[i]);
             }
@@ -251,7 +251,7 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
 
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     ucs4string ret;
-    Codec* const codec = transcoder->codec();
+    Codec* const codec = transcoder->codec().toCodec();
 
     TRY_IO {
         for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {

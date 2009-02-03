@@ -34,11 +34,13 @@
 
 #include "scheme.h"
 #include "TextualOutputPort.h"
-#include "Transcoder.h"
 
 namespace scheme {
 
-class TextualByteVectorOutputPort : public TextualOutputPort
+class Codec;
+class Transcoder;
+
+    class TextualByteVectorOutputPort : public TextualOutputPort, gc_cleanup
 {
 public:
     TextualByteVectorOutputPort(Transcoder* transcoder);
