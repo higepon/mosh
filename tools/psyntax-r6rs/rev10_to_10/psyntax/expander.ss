@@ -165,11 +165,12 @@
     (lambda ()
       (make-rib '() '() '() #f #f)))
 
-  (define make-cache-rib
+; cache rib is not *fast*. No longer used.
+#;  (define make-cache-rib
     (lambda ()
       (make-rib '() '() '() #f (make-eq-hashtable))))
 
-  (define (find-label rib sym mark*)
+#;  (define (find-label rib sym mark*)
     (let ((ht (rib-cache rib)))
       (and ht
         (let ((cv (hashtable-ref ht sym #f)))
@@ -196,11 +197,11 @@
           (mark* (stx-mark* id)))
       (let ((sym* (rib-sym* rib)))
         (cond
-          ((find-label rib sym mark*)
-           =>
-           (lambda (p)
-              (unless (eq? label p)
-                (stx-error id "multiple definitions of identifier"))))
+          ;; ((find-label rib sym mark*)
+;;            =>
+;;            (lambda (p)
+;;               (unless (eq? label p)
+;;                 (stx-error id "multiple definitions of identifier"))))
           [(and (memq sym (rib-sym* rib))
                 (find sym mark* sym* (rib-mark** rib) (rib-label* rib)))
            =>
@@ -656,7 +657,7 @@
                         (if i
                           (vector-ref (rib-label* rib) i)
                         (search (cdr subst*) mark*))))))
-                 ((find-label rib sym mark*))
+;                 ((find-label rib sym mark*))
                  (else
                   (let f ((sym* (rib-sym* rib))
                           (mark** (rib-mark** rib))
@@ -3475,7 +3476,9 @@
   ;;; so, a name in a top rib maps to its label if and only if
   ;;; its set of marks is top-mark*.
   (define (make-top-rib names labels)
-    (let ((rib (make-cache-rib)))
+    (let ((rib ;; (make-cache-rib)
+           (make-empty-rib)
+               ))
       (vector-for-each
         (lambda (name label)
           (unless (symbol? name)

@@ -86,8 +86,7 @@ private:
     // profiler tells that this should be inlined
     uint32_t fetchU32()
     {
-        return
-            inputPort_->getU8()       |
+        return inputPort_->getU8()       |
             inputPort_->getU8() << 8  |
             inputPort_->getU8() << 16 |
             inputPort_->getU8() << 24;

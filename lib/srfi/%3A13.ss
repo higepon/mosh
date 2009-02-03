@@ -91,8 +91,9 @@
    (only (mosh) format)
    (only (rnrs mutable-strings) string-set! string-fill!)
    (only (rnrs r5rs) modulo quotient)
-   (srfi :14)
-   (srfi :8))
+   (only (srfi :14) char-set? char-set-contains? char-set:whitespace char-set
+                    char-set:graphic)
+   (only (srfi :8) receive))
 
   (define-syntax check-arg
     (syntax-rules ()

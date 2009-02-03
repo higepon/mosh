@@ -1,6 +1,6 @@
 (import (rnrs)
         (clos user)
-        (mosh string))
+        (mosh))
 
 (define-class <point> () x y)
 

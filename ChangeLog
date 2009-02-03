@@ -1,3 +1,7 @@
+2009-02-03  higepon  <higepon@users.sourceforge.jp>
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (psyntax): Not to use cache rib. It is not fast and make fasl file much larger.
+
 2009-02-03  kokosabu  <kokosabu@gmail.com>
 
         * putDatum : Added write of Transcoder.
