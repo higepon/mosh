@@ -122,6 +122,7 @@ enum Transcoder::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const O
     } else if (symbol == Symbol::REPLACE) {
         return Transcoder::REPLACE;
     }
+    MOSH_FATAL("dont't match error-handling-mode\n");
 }
 
 Object Transcoder::errorHandlingModeToSymbol(const enum Transcoder::ErrorHandlingMode errorHandlingMode)

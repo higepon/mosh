@@ -49,7 +49,7 @@ public:
     virtual ucs4string readWholeString(BinaryInputPort* port) = 0;
     virtual ucs4string getCodecName() const
     {
-        return UC("no-name-codec");
+        return UC("");
     }
 };
 
