@@ -19,6 +19,11 @@ Timestamp: Updated month day, year
 #   yyyy  - Four digit year.  2006 is "2006"
 #   year  - Four digit year.  2006 is "2006"
 
+# These are indexes you deleted, so Natural Docs will not add them again
+# unless you remove them from this line.
+
+Don't Index: Files
+
 
 # --------------------------------------------------------------------------
 # 
@@ -70,6 +75,7 @@ Group: R6RS  {
    File: Mutable pairs  (doc/text/setcar.tex.txt)
    File: Mutable strings  (doc/text/stringset.tex.txt)
    File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
+   File: Entry format  (doc/text/entry.tex.txt)
    }  # Group: R6RS
 
 Group: Mosh Library  {
@@ -87,6 +93,8 @@ Group: Mosh Library  {
 Group: SRFI  {
 
    File: Receive  (doc/text/srfi-8.txt)
+   File: String Libraries  (doc/text/srfi-13.txt)
+   File: Character-set Library  (doc/text/srfi-14.txt)
    File: Time  (doc/text/srfi-19.txt)
    File: cut  (doc/text/srfi-26.txt)
    File: Environment variables  (doc/text/srfi-98.txt)
