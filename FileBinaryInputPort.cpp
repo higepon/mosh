@@ -131,7 +131,7 @@ int FileBinaryInputPort::getU8()
         return c;
     }
 
-    if (0 == bufRead(&c, 1)) {
+    if (0 == bufRead1(&c)) {
         return EOF;
     } else {
         return c;
@@ -199,6 +199,32 @@ void FileBinaryInputPort::bufFill()
         bufLen_ = read(fd_, buffer_, BUF_SIZE);
         bufIdx_ = 0;
     }
+}
+
+int FileBinaryInputPort::bufRead1(uint8_t* data)
+{
+    if (bufferMode_ == NONE) {
+        return read(fd_, data, 1);
+    }
+    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+        for (;;) {
+            const int bufDiff = bufLen_ - bufIdx_;
+            if (bufDiff > 0) {
+                *data = *(buffer_ + bufIdx_);
+                bufIdx_ ++;
+                return 1;
+            } else {
+                bufFill(); // (bufIdx_ = 0)
+                if (bufLen_ == 0) { // EOF
+                    return 0;
+                }
+            }
+        }
+        return 1;
+    }
+    MOSH_FATAL("not reached");
+    return EOF;
+    // Error
 }
 
 int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)

@@ -1,5 +1,7 @@
 2009-02-03  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryInputPort.cpp (bufRead1) : Added for specialized case.
+
         * lib/srfi/%3A14.ss : Added srfi 13 and 14 ported from Ypsilon Scheme. (Thanks to y.fujita)
 
 2009-02-02  higepon  <higepon@users.sourceforge.jp>

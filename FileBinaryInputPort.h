@@ -71,6 +71,7 @@ private:
 
     void bufFill();
     int bufRead(uint8_t* data, int reqSize);
+    int bufRead1(uint8_t* data);
 };
 
 }; // namespace scheme
