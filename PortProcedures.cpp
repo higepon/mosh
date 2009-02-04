@@ -269,7 +269,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, file);
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    Transcoder* transcoder = Transcoder::nativeTranscoder();
     FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
@@ -636,7 +636,7 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, path);
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    Transcoder* transcoder = Transcoder::nativeTranscoder();
     FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);

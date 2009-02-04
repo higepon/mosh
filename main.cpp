@@ -184,7 +184,7 @@ int main(int argc, char *argv[])
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
     signal(SIGINT, SIG_IGN);
 
-    Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
+    Transcoder* transcoder = Transcoder::nativeTranscoder();
     const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
     const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
     const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stderr)), transcoder);
