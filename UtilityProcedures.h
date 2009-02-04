@@ -76,6 +76,7 @@ namespace scheme {
     Object vectorEx(VM* theVM, int argc, const Object* argv);
     //    Object errorfEx(VM* theVM, int argc, const Object* argv);
     Object evalEx(VM* theVM, int argc, const Object* argv);
+    Object evalCompiledEx(VM* theVM, int argc, const Object* argv);
     Object applyEx(VM* theVM, int argc, const Object* argv);
     Object modEx(VM* theVM, int argc, const Object* argv);
     Object divEx(VM* theVM, int argc, const Object* argv);

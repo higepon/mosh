@@ -62,8 +62,46 @@
 ;;   (call-with-port (open-input-file filename) read))
 
 
+;; (define (serialize-library filename obj)
+;;   (format #t "serialize-library ~a\n..." filename)
+;;   (let ([fasl-file (scm->fasl filename)])
+;;     (when (file-exists? fasl-file)
+;;       (delete-file fasl-file))
+;;     (guard [c (#t (format #t "Warning:serialize-library failed " filename)
+;;                   (when (file-exists? fasl-file)
+;;                     (delete-file fasl-file))
+;;                   #f)]
+;;            (fasl-save fasl-file obj)
+;;            (display "OK\n"))))
+
+;; (define (load-serialized-library filename obj)
+;;   (let ([fasl-file (scm->fasl filename)])
+;;     ;; todo we may use file-newer? directory.
+;;     (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
+;;         (let* ([expanded2core (symbol-value 'expanded2core)]
+;;                [code (fasl-load fasl-file)]
+;;                [pivot (cddddr (cddddr code))]
+;;                [visit (expanded2core (car pivot))]
+;;                [visit-proc (lambda () (eval-core visit))])
+;;           (set-car! pivot visit-proc)
+;;           (let* ([pivot (cdr pivot)]
+;;                  [invoke (expanded2core (car pivot))])
+;;             (set-car! pivot (lambda () (eval-core invoke)))
+;;             (apply obj code))
+;;           #t)
+;;         #f)))
+
 (define (serialize-library filename obj)
   (format #t "serialize-library ~a\n..." filename)
+  (let* ([expanded2core (symbol-value 'expanded2core)]
+         [compile (symbol-value 'compile-w/o-halt)]
+         [code obj]
+         [pivot (cddddr (cddddr code))]
+         [visit (compile (expanded2core (car pivot)))])
+    (set-car! pivot visit)
+    (let* ([pivot (cdr pivot)]
+           [invoke (compile (expanded2core (car pivot)))])
+      (set-car! pivot invoke)))
   (let ([fasl-file (scm->fasl filename)])
     (when (file-exists? fasl-file)
       (delete-file fasl-file))
@@ -76,19 +114,22 @@
 
 (define (load-serialized-library filename obj)
   (let ([fasl-file (scm->fasl filename)])
-    (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename)) ;; todo we may use file-newer? directory.
+    ;; todo we may use file-newer? directory.
+    (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
         (let* ([expanded2core (symbol-value 'expanded2core)]
+               [eval-compiled-core (symbol-value 'eval-compiled!)]
                [code (fasl-load fasl-file)]
                [pivot (cddddr (cddddr code))]
-                          [visit (expanded2core (car pivot))]
-                          [visit-proc (lambda () (eval-core visit))])
-                     (set-car! pivot visit-proc)
-                     (let* ([pivot (cdr pivot)]
-                            [invoke (expanded2core (car pivot))])
-                       (set-car! pivot (lambda () (eval-core invoke)))
-                       (apply obj code))
-                     #t)
+               [visit (car pivot)]
+               [visit-proc (lambda () (eval-compiled-core visit))])
+          (set-car! pivot visit-proc)
+          (let* ([pivot (cdr pivot)]
+                 [invoke (car pivot)])
+            (set-car! pivot (lambda () (eval-compiled-core invoke)))
+            (apply obj code))
+          #t)
         #f)))
+
 
   (define (make-record-printer name printer)
     (lambda x

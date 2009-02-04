@@ -102,6 +102,7 @@ public:
     Object setAfterTrigger1(Object closure, Object arg1);
     Object setAfterTrigger0(Object closure);
     Object evalAfter(Object sexp);
+    Object evalCompiledAfter(Object code);
     void applyClosure(Object closure, Object args);
     Object apply(Object proc, Object args);
     void loadFileWithGuard(const ucs4string& file);

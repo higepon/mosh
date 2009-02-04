@@ -109,6 +109,7 @@
     (regexp-replace-all regexp-replace-all)
     (source-info (lambda (x) #f))
     (eval (lambda a (evaluate (car a))))
+    eval-compiled
     (apply apply-proc)
     (assq assq)
     (exit exit)

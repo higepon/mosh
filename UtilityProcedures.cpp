@@ -442,6 +442,14 @@ Object scheme::evalEx(VM* theVM, int argc, const Object* argv)
     return theVM->evalAfter(argv[0]);
 }
 
+Object scheme::evalCompiledEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("eval-compiled");
+    checkArgumentLength(1);
+    return theVM->evalCompiledAfter(argv[0]);
+}
+
+
 Object scheme::applyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("apply");

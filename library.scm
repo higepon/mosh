@@ -6046,8 +6046,11 @@
 (define (file-newer? a b)
   (> (stat-mtime a) (stat-mtime b)))
 
+;; psyntax things start
 (define fasl-write! fasl-write)
 (define fasl-read! fasl-read)
+(define eval-compiled! eval-compiled)
+
 
 (define (%spawn command args . io-list)
   (define (parse-io-list l)

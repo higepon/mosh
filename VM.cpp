@@ -339,6 +339,33 @@ Object VM::compileWithoutHalt(Object sexp)
     return callClosureByName(compiler, sexp);
 }
 
+Object VM::evalCompiledAfter(Object code)
+{
+    VM_ASSERT(code.isVector());
+    Vector* const vcode = code.toVector();
+
+    // We need to append "RETURN 0" to the code.
+    const int codeSize = vcode->length();
+    const int bodySize = codeSize + 2;
+    Object* body = Object::makeObjectArray(bodySize);
+    for (int i = 0; i < codeSize; i++) {
+        body[i] = (vcode->data())[i];
+    }
+    body[codeSize]   = Object::makeRaw(Instruction::RETURN);
+    body[codeSize+ 1] = Object::makeFixnum(0);
+
+    // make closure for save/restore current environment
+    Closure* const closure = new Closure(getDirectThreadedCode(body, bodySize), // pc
+                                         bodySize,                              // codeSize
+                                         0,                                     // argLength
+                                         false,                                 // isOptionalArg
+                                         cProcs,                                // freeVars
+                                         cProcNum,                              // freeVariablesNum
+                                         0,                                     // todo maxStack
+                                         Object::False);                        // todo sourceInfo
+    return setAfterTrigger0(Object::makeClosure(closure));
+}
+
 Object VM::evalAfter(Object sexp)
 {
     const Object code = compileWithoutHalt(sexp);
