@@ -469,4 +469,5 @@
     textual-port?
     port?
     port-transcoder
+    native-transcoder
     )

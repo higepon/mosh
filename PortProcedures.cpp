@@ -576,6 +576,13 @@ Object scheme::makeTranscoderEx(VM* theVM, int argc, const Object* argv)
     return Object::makeTranscoder(codec, eolStyle, errorHandlingMode);
 }
 
+Object scheme::nativeTranscoderEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("native-transcoder");
+    checkArgumentLength(0);
+    return Object::makeTranscoder(Transcoder::nativeTranscoder());
+}
+
 Object scheme::eofObjectEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eof-object");

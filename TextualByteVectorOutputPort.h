@@ -40,7 +40,7 @@ namespace scheme {
 class Codec;
 class Transcoder;
 
-    class TextualByteVectorOutputPort : public TextualOutputPort, gc_cleanup
+class TextualByteVectorOutputPort : public TextualOutputPort
 {
 public:
     TextualByteVectorOutputPort(Transcoder* transcoder);

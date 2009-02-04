@@ -66,16 +66,18 @@ public:
     Transcoder(Codec* codec, const Object eolStyle, const Object handlingMode);
 
 
-    //Codec* codec() const { return codec_; }
     Object codec() const { return Object::makeCodec(codec_); }
     Object eolStyle();
     Object errorHandlingMode();
+
+    static Transcoder* nativeTranscoder();
 
 private:
     Codec* codec_;
     enum EolStyle eolStyle_;
     enum ErrorHandlingMode errorHandlingMode_;
 
+    static enum EolStyle nativeEolStyle();
     enum EolStyle symbolToEolStyle(const Object symbol);
     Object eolStyleToSymbol(const enum EolStyle eolstyle);
     enum ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);

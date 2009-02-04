@@ -34,21 +34,13 @@
 #include "SString.h"
 #include "Symbol.h"
 #include "Transcoder.h"
+#include "UTF8Codec.h"
 
 using namespace scheme;
 
 Transcoder::Transcoder(Codec* codec) : codec_(codec)
 {
-#if LINE_FEED_CODE_LF
-    eolStyle_ = Transcoder::LF;
-#elif LINE_FEED_CODE_CRLF
-    eolStyle_ = Transcoder::CRLF;
-#elif LINE_FEED_CODE_CR
-    eolStyle_ = Transcoder::CR;
-#else
-    MOSH_FATAL("not found platform native eol style\n");
-#endif
-
+    eolStyle_ = nativeEolStyle();
     errorHandlingMode_ = Transcoder::REPLACE;
 }
 
@@ -72,6 +64,24 @@ Object Transcoder::eolStyle()
 Object Transcoder::errorHandlingMode()
 {
     return errorHandlingModeToSymbol(errorHandlingMode_);
+}
+
+Transcoder* Transcoder::nativeTranscoder()
+{
+    return new Transcoder(new UTF8Codec(), nativeEolStyle(), Transcoder::IGNORE_ERROR);
+}
+
+enum Transcoder::EolStyle Transcoder::nativeEolStyle()
+{
+#if LINE_FEED_CODE_LF
+    return Transcoder::LF;
+#elif LINE_FEED_CODE_CRLF
+    return Transcoder::CRLF;
+#elif LINE_FEED_CODE_CR
+    return Transcoder::CR;
+#else
+    MOSH_FATAL("not found platform native eol style\n");
+#endif
 }
 
 enum Transcoder::EolStyle Transcoder::symbolToEolStyle(const Object symbol)
