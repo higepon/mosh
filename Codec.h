@@ -47,10 +47,7 @@ public:
     virtual int out(uint8_t* buf, ucs4char c) = 0;
     virtual ucs4char in(BinaryInputPort* port) = 0;
     virtual ucs4string readWholeString(BinaryInputPort* port) = 0;
-    virtual ucs4string getCodecName() const
-    {
-        return UC("");
-    }
+    virtual ucs4string getCodecName() const = 0;
 };
 
 }; // namespace scheme
