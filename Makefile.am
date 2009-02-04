@@ -1,5 +1,5 @@
 # GLOBAL CFLAGS
-AM_CFLAGS   = -O2 -fomit-frame-pointer
+AM_CFLAGS   = @MOSH_OPTS@
 AM_CXXFLAGS = $(CFLAGS)
 
 # Boehm GC
@@ -20,8 +20,8 @@ GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
 # for FFI test
 libffitest.so.1.0: ffitest.c
-	gcc -fPIC -c $<
-	gcc -Wl @SHLIB_SO_LDFLAGS@ -o $@ ffitest.o
+	$(CC) -fPIC -c $<
+	$(CC) -Wl @SHLIB_SO_LDFLAGS@ -o $@ ffitest.o
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
@@ -33,7 +33,7 @@ bin_SCRIPTS = mosh_config
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\""
-mosh_CFLAGS   = -O3 $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -momit-leaf-frame-pointer -fomit-frame-pointer -DDEBUG_VERSION
+mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall @MOSH_OPTS@ -DDEBUG_VERSION
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) -ldl
 

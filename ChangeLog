@@ -1,5 +1,11 @@
 2009-02-04  higepon  <higepon@users.sourceforge.jp>
 
+        * test-data.scm (try-ffi): Improved tests of ffi not to raise some errors thanks to mjt.
+
+        * configure.ac: Fixed copiler opt flags thanks to mjt.
+
+        * Makefile.am (libffitest.so.1.0): gcc -> $(CC) thanks to mjt.
+
         * psyntax/compat.ss : Now loading serialized library become much faster.
                               We precompiled the invoke code and the visit code both on serialization phase.
 
