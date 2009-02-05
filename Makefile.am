@@ -135,6 +135,7 @@ lib/srfi/%3A13.ss   \
 lib/srfi/%3A14.ss   \
 lib/srfi/%3A19.ss   \
 lib/srfi/%3A26.ss  \
+lib/srfi/%3A27.ss  \
 lib/srfi/%3A98.ss  \
 lib/mosh/cgi.ss    \
 lib/lambda/wiki.ss    \
