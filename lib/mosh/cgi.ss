@@ -3,7 +3,6 @@
   (import (rnrs)
           (only (system) get-environment-variable)
           (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all)
-          (only (srfi :1) second)
           )
 
 (define header-out? #f)
@@ -102,7 +101,7 @@
      (lambda (key)
        (let ([value (assoc key parsed)])
          (if value
-             (second value)
+             (cadr value)
              #f)))
      request-method)))
 

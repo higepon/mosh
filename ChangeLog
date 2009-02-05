@@ -1,5 +1,8 @@
 2009-02-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Renamed (srfi :1) to (mosh srfi :1).
+                  This is temporary. We will add (srfi :1) library to lib/srfi soon.
+
         * Added (host-os) and (library-path) to library (mosh).
 
         * lib/srfi/%3A41.ss: Added SRFI-41.

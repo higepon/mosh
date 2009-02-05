@@ -1,5 +1,5 @@
 (import (rnrs)
-        (srfi :1)
+        (mosh srfi :1)
         (mosh))
 
 (define (extract obj)

@@ -31,7 +31,7 @@
   (psyntax library-manager)
   (psyntax expander)
   (except (system) make-parameter parameterize)
-  (mosh)
+  (except (mosh) library-path)
   )
 
 
@@ -204,7 +204,7 @@
     ($boot       (psyntax system $bootstrap)           #f    #t)
     (mosh        (mosh)                                #f    #t)  ;; for mosh
     (sys         (system)                              #f    #t)  ;; for mosh
-    (srfi-1     (srfi :1)                              #f    #t)  ;; for mosh
+    (srfi-1     (mosh srfi :1)                              #f    #t)  ;; for mosh
     ))
 
 ;;; required? flag means that said library is required for 

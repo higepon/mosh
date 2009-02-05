@@ -1,6 +1,6 @@
 (import (rnrs)
         (mosh)
-        (srfi :1))
+        (mosh srfi :1))
 
 (define (pre-compile file)
   ((symbol-value 'pre-compile-r6rs-file) file))

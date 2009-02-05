@@ -1,8 +1,14 @@
 (import (rnrs)
-        (srfi :8)
-        (mosh)
+        (srfi :0)
+        (srfi :42))
 
-        )
-(display (host-os))
-;(display (library-path))
-;(display  (list-ec (: i 5) (* i i)))
+(cond-expand
+ (mosh
+   (define name 'mosh))
+ (else
+  (define name 'other)))
+
+(display name)
+(newline)
+(display  (list-ec (: i 5) (* i i)))
+(newline)
