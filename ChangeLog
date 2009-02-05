@@ -1,5 +1,7 @@
 2009-02-05  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryOutputPort.cpp (FileBinaryOutputPort::bufFlush): Added some ASSERTs.
+
         * lib/srfi/%3A1.ss: Added SRFI-1.
 
         * Check and remove g++ warnigs.

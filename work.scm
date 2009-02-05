@@ -1,4 +1,1 @@
-(import (rnrs)
-        (srfi :1))
-
-(display (first (list 2 1)))
+(display (eqv? (utf-8-codec) (utf-8-codec)))

@@ -199,7 +199,9 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
     if (bufferMode_ == BLOCK) {
         int writeSize = 0;
         while (writeSize < reqSize) {
+            MOSH_ASSERT(BUF_SIZE >= bufIdx_);
             int bufDiff = BUF_SIZE - bufIdx_;
+            MOSH_ASSERT(reqSize > writeSize);
             int sizeDiff = reqSize - writeSize;
             if (bufDiff >= sizeDiff) {
                 memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
