@@ -130,6 +130,7 @@ FFI.h                         FFI.cpp                             \
 FFIProcedures.h               FFIProcedures.cpp
 
 mosh_core_libraries = \
+lib/srfi/%3A1.ss   \
 lib/srfi/%3A8.ss   \
 lib/srfi/%3A13.ss   \
 lib/srfi/%3A14.ss   \

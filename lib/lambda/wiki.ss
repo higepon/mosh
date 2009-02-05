@@ -3,7 +3,7 @@
   (import (rnrs)
           (rnrs mutable-pairs)
           (only (system) get-environment-variable)
-          (only (mosh srfi :1) first second third alist-cons)
+          (only (srfi :1) first second third alist-cons)
           (only (mosh) readdir assoc-ref read-line file->string write-to-file string-split format call-with-string-input-port string->regexp rxmatch)
           (prefix (mosh cgi) cgi:))
 

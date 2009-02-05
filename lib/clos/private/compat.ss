@@ -12,7 +12,7 @@
 )
 
   (import (only (rnrs) define let cond null? eq? car else cdr + or and if not pair? error quote cadr member)
-          (only (mosh srfi :1)
+          (only (srfi :1)
                 every
                 append-map
                 last)

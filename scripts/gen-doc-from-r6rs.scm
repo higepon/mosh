@@ -1,6 +1,6 @@
 (import (rnrs)
         (mosh)
-        (mosh srfi :1)
+        (srfi :1)
         (srfi :26)
         (srfi :98))
 

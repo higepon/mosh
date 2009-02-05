@@ -1,6 +1,7 @@
 (import (rnrs)
         (lambda wiki)
         (mosh cgi)
+        (srfi :1)
         (srfi :8)
         (srfi :13)
         (srfi :14)
