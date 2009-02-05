@@ -144,6 +144,12 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
                 buffer.clear();
             }
             switch (fmt[i]) {
+            case '~':
+                display(Object::makeChar('~'));
+                break;
+            case '%':
+                display(Object::makeChar('\n'));
+                break;
             case 'a':
             case 'A':
             case 'd':

@@ -1658,7 +1658,7 @@
 ;; <p>The extraction procedure takes no arguments.</p>
 ;; <p>When called, it returns a string consisting of all of the port's accumulated characters (regardless of the current position),removes the accumulated characters from the port, and resetsthe port's position</p>
 ;; .returns string-output-port, extraction procedure
-(define  (open-string-output-port)
+(define (open-string-output-port)
   (let* ([port (sys-open-output-string)]
          [proc (lambda () (let1 s (sys-get-output-string port)
                             (sys-port-seek port 0)
