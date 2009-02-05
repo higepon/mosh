@@ -1,17 +1,5 @@
 (import (rnrs)
-        (srfi :39)
+        (srfi :41)
         )
 
-(display ((make-parameter 3)))
-
-
-;(display (microseconds))
-;; (random-source-randomize! default-random-source)
-;; (display (random-integer 10))
-;; (newline)
-;; (display (random-integer 10))
-;; (newline)
-;; (display (random-integer 10))
-;; (newline)
-;; (display (random-integer 10))
-;; (newline)
+(display (list->stream '(1 2 3)))

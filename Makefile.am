@@ -136,6 +136,14 @@ lib/srfi/%3A14.ss   \
 lib/srfi/%3A19.ss   \
 lib/srfi/%3A26.ss  \
 lib/srfi/%3A27.ss  \
+lib/srfi/%3A27/mrg32k3a-a.ss  \
+lib/srfi/%3A27/mrg32k3a.ss \
+lib/srfi/%3A28.ss  \
+lib/srfi/%3A38.ss  \
+lib/srfi/%3A39.ss  \
+lib/srfi/%3A41.ss  \
+lib/srfi/%3A41/primitive.ss  \
+lib/srfi/%3A41/derived.ss  \
 lib/srfi/%3A98.ss  \
 lib/mosh/cgi.ss    \
 lib/lambda/wiki.ss    \
