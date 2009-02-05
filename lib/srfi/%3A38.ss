@@ -3,7 +3,17 @@
 (library (srfi :38)
   (export write-with-shared-structure read-with-shared-structure)
   (import
-   (rnrs)
+   (only (rnrs) or and define cons quote if cond not assq => lambda
+                cdr else let pair? car vector? do = + vector-ref
+                vector-length number? begin display write cdar null?
+                zero? string? string-length eq? current-output-port
+                procedure? vector-set! case let* char=? error char?
+                list->vector string-append list caadr assv symbol?
+                letrec set! eof-object? char-numeric? string->number
+                string->symbol string-ref make-string symbol->string
+                char-downcase char-upcase string char-alphabetic? string-ci=?
+                list->string reverse char-whitespace? eqv? peek-char read-char
+                current-input-port)
    (only (rnrs mutable-strings) string-set!)
    (only (rnrs mutable-pairs) set-car! set-cdr!))
 
@@ -323,7 +333,5 @@
                (vector-set! obj i (unthunk elt))
                (fill-in-parts elt))))))))
     obj))
-
-
 
 )
