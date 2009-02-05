@@ -96,7 +96,7 @@ Group: SRFI  {
    File: String Libraries  (doc/text/srfi-13.txt)
    File: Character-set Library  (doc/text/srfi-14.txt)
    File: Time  (doc/text/srfi-19.txt)
-   File: cut  (doc/text/srfi-26.txt)
+   File: Sources of Random Bits  (doc/text/srfi-26.txt)
    File: Environment variables  (doc/text/srfi-98.txt)
    }  # Group: SRFI
 

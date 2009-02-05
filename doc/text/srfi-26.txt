@@ -1,8 +1,8 @@
-Title: cut
+Title: Sources of Random Bits
 
-Notation for Specializing Parameters without Currying .
+An interface to sources of random bits, or "random sources" for brevity.
 
-See <http://srfi.schemers.org/srfi-26/srfi-26.html>.
+See <http://srfi.schemers.org/srfi-27/srfi-27.html>.
 
-library: (srfi :26)
+library: (srfi :27)
 

@@ -1,5 +1,14 @@
 (import (rnrs)
-        (srfi :13))
+        (srfi :27)
+        (system))
 
-(display (string-reverse "あいうえお"))
-
+;(display (microseconds))
+(random-source-randomize! default-random-source)
+(display (random-integer 10))
+(newline)
+(display (random-integer 10))
+(newline)
+(display (random-integer 10))
+(newline)
+(display (random-integer 10))
+(newline)

@@ -7,6 +7,7 @@
         (srfi :13)
         (srfi :14)
         (srfi :19)
+        (srfi :27)
         (clos user)
        (mosh pp)
        (mosh test)
