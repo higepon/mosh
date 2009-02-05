@@ -94,6 +94,23 @@ HAVE_EXT_HASHES=$have_ext_hashes
 AC_DEFINE_UNQUOTED([HAVE_EXT_HASHES], $have_ext_hashes, [Do we have __gnu_cxx:: hashes?])
 AC_SUBST([HAVE_EXT_HASHES])
 
+# Checks for OS
+case "$target_os" in
+  *linux*)
+    AC_DEFINE([MOSH_HOST_OS], ["linux"], [define operating-system])
+    ;;
+  *bsd*)
+    AC_DEFINE([MOSH_HOST_OS], ["bsd"], [define operating-system])
+    ;;
+  *darwin*)
+    AC_DEFINE([MOSH_HOST_OS], ["darwin"], [define operating-system])
+    ;;
+  *)
+    AC_DEFINE([MOSH_HOST_OS], ["unknown"], [define operating-system])
+    ;;
+esac
+
+
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 case "$host_cpu" in

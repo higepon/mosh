@@ -37,7 +37,7 @@
     (rnrs records procedural)
     ;(rename (rnrs programs) (command-line get-command-line))
     (only (rnrs programs) exit)
-    (mosh);; for get-command-line
+    (except (mosh) library-path);; for get-command-line
     (rnrs lists)
     (only (rnrs conditions) condition? condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)

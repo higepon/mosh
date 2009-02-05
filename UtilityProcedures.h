@@ -95,7 +95,7 @@ namespace scheme {
     Object internalGetClosureNameEx(VM* theVM, int argc, const Object* argv);
     Object internalsetUnionEx(VM* theVM, int argc, const Object* argv);
     Object internalsetIntersectEx(VM* theVM, int argc, const Object* argv);
-
+    Object hostOsEx(VM* theVM, int argc, const Object* argv);
 
 
 

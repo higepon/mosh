@@ -1,5 +1,8 @@
 (import (rnrs)
-        (srfi :41)
-        )
+        (srfi :8)
+        (mosh)
 
-(display (list->stream '(1 2 3)))
+        )
+(display (host-os))
+;(display (library-path))
+;(display  (list-ec (: i 5) (* i i)))

@@ -52,7 +52,7 @@
     (psyntax compat)
     (psyntax config)
     (psyntax internal)
-    (rename (except (mosh) make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
+    (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
     (prefix (rnrs syntax-case) sys.))
 

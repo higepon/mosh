@@ -59,6 +59,13 @@
 
 using namespace scheme;
 
+Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("host-os");
+    checkArgumentLengthAtLeast(0);
+    return MOSH_HOST_OS;
+}
+
 Object scheme::booleanEqPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("boolean=?");
