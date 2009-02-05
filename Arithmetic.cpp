@@ -291,6 +291,8 @@ Object Arithmetic::expt(Object n1, Object n2)
         MOSH_ASSERT(false);
         return Object::Undef;
     }
+    MOSH_FATAL("not reached");
+    return Object::Undef;
 }
 
 Object Arithmetic::sqrt(Object n)
@@ -580,7 +582,7 @@ uint32_t Arithmetic::toU32(Object n)
         return n.toBignum()->toU32();
     } else {
         MOSH_ASSERT(false);
-        return false;
+        return 0;
     }
 }
 
@@ -606,7 +608,7 @@ int32_t Arithmetic::toS32(Object n)
         return n.toBignum()->toS32();
     } else {
         MOSH_ASSERT(false);
-        return false;
+        return 0;
     }
 }
 
@@ -632,7 +634,7 @@ uint64_t Arithmetic::toU64(Object n)
         return n.toBignum()->toU64();
     } else {
         MOSH_ASSERT(false);
-        return false;
+        return 0;
     }
 }
 
@@ -658,7 +660,7 @@ int64_t Arithmetic::toS64(Object n)
         return n.toBignum()->toS64();
     } else {
         MOSH_ASSERT(false);
-        return false;
+        return 0;
     }
 }
 

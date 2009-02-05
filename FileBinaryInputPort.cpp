@@ -252,6 +252,7 @@ int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
         }
         return readSize;
     }
-
+    MOSH_FATAL("not reached");
+    return EOF;
     // Error
 }

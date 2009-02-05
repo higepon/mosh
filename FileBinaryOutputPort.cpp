@@ -219,4 +219,6 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
     }
 
     // Error
+    MOSH_FATAL("not reached");
+    return EOF;
 }

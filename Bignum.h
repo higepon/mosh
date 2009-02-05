@@ -95,6 +95,7 @@ public:
             return (uint32_t)mpz_get_ui(value);
         } else {
             MOSH_FATAL("not reached");
+            return 0;
         }
     }
 
@@ -111,6 +112,7 @@ public:
             return (int32_t)mpz_get_si(value);
         } else {
             MOSH_FATAL("not reached");
+            return 0;
         }
     }
 
@@ -148,6 +150,7 @@ public:
             return mpz_get_ui(value);
         } else {
             MOSH_FATAL("not reached");
+            return 0;
         }
     }
 
@@ -169,6 +172,7 @@ public:
             return mpz_get_si(value);
         } else {
             MOSH_FATAL("not reached");
+            return 0;
         }
     }
 

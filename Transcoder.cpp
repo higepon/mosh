@@ -133,6 +133,7 @@ enum Transcoder::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const O
         return Transcoder::REPLACE;
     }
     MOSH_FATAL("dont't match error-handling-mode\n");
+    return Transcoder::IGNORE_ERROR;
 }
 
 Object Transcoder::errorHandlingModeToSymbol(const enum Transcoder::ErrorHandlingMode errorHandlingMode)
@@ -147,4 +148,5 @@ Object Transcoder::errorHandlingModeToSymbol(const enum Transcoder::ErrorHandlin
     default:
         MOSH_FATAL("not found errorHandlingMode\n");
     }
+    return Object::Undef;
 }

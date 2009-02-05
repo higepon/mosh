@@ -1,5 +1,7 @@
 2009-02-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Check and remove g++ warnigs.
+
         * Renamed (srfi :1) to (mosh srfi :1).
                   This is temporary. We will add (srfi :1) library to lib/srfi soon.
 
