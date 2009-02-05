@@ -1,13 +1,9 @@
 (import (rnrs)
-        (srfi :38)
-        (rnrs mutable-pairs)
+        (srfi :39)
         )
 
-(define p (cons 1 2))
+(display ((make-parameter 3)))
 
-(set-cdr! p p)
-
-(write-with-shared-structure p)
 
 ;(display (microseconds))
 ;; (random-source-randomize! default-random-source)

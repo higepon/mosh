@@ -1,5 +1,7 @@
 2009-02-05  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/srfi/%3A38.ss: Added SRFI-39.
+
         * lib/srfi/%3A38.ss: Added SRFI-38.
 
         * lib/srfi/%3A28.ss: Added SRFI-28.
