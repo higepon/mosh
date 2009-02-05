@@ -2,7 +2,10 @@
 ;;; -- Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 (library (srfi :28)
   (export format)
-  (import (rnrs))
+  (import (only (rnrs) define lambda let-values let string->list
+                       open-string-output-port cond null? char=?
+                       car if cdr error quote case else begin
+                       display cddr write newline cadr))
 
 (define format
   (lambda (format-string . objects)

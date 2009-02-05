@@ -98,6 +98,7 @@ Group: SRFI  {
    File: Time  (doc/text/srfi-19.txt)
    File: Sources of Random Bits  (doc/text/srfi-26.txt)
    File: Basic Format Strings  (doc/text/srfi-28.txt)
+   File: External Representation for Data With Shared Structure  (doc/text/srfi-38.txt)
    File: Environment variables  (doc/text/srfi-98.txt)
    }  # Group: SRFI
 

@@ -1,0 +1,8 @@
+Title: External Representation for Data With Shared Structure
+
+External Representation for Data With Shared Structure
+
+See <http://srfi.schemers.org/srfi-38/srfi-38.html>.
+
+library: (srfi :38)
+

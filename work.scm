@@ -1,8 +1,13 @@
 (import (rnrs)
-        (srfi :28)
+        (srfi :38)
+        (rnrs mutable-pairs)
         )
 
-(display (format "abc ~a" 3))
+(define p (cons 1 2))
+
+(set-cdr! p p)
+
+(write-with-shared-structure p)
 
 ;(display (microseconds))
 ;; (random-source-randomize! default-random-source)
