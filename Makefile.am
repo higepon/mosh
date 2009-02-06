@@ -180,7 +180,7 @@ lib/srfi/private/let-opt.sls \
 lib/srfi/private/let-opt.sls \
 lib/srfi/private/platform-features.mosh.sls \
 lib/srfi/private/OS-id-features.sls \
-lib/srfi/%3A98.ss \
+lib/srfi/%3a98.ss \
 lib/srfi/%3a0.sls \
 lib/srfi/%3a0/cond-expand.sls \
 lib/srfi/%3a1.sls \
