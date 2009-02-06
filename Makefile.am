@@ -160,6 +160,7 @@ lib/mosh/test.ss   \
 lib/mosh/pp.ss     \
 lib/mosh/control.ss     \
 lib/mosh/config.ss \
+lib/mosh/cgi.ss  \
 lib/clos/core.ss  lib/clos/helpers.ss  lib/clos/introspection.ss  lib/clos/slot-access.ss  lib/clos/user.ss \
 lib/clos/bootstrap/generic-functions.ss  lib/clos/bootstrap/standard-classes.ss \
 lib/clos/private/allocation.ikarus.ss         lib/clos/private/method-cache.ikarus.ss \
@@ -171,7 +172,25 @@ lib/clos/private/fast-method-cache.ikarus.ss \
 lib/clos/std-protocols/add-method.ss            lib/clos/std-protocols/initialize.ss \
 lib/clos/std-protocols/allocate-instance.ss     lib/clos/std-protocols/make.ss \
 lib/clos/std-protocols/class-initialization.ss  lib/clos/std-protocols/print-object.ss \
-lib/clos/std-protocols/generic-invocation.ss
+lib/clos/std-protocols/generic-invocation.ss \
+lib/srfi/private/include.sls \
+lib/srfi/private/include/compat.mosh.sls \
+lib/srfi/private/registry.sls \
+lib/srfi/private/let-opt.sls \
+lib/srfi/private/let-opt.sls \
+lib/srfi/private/platform-features.mosh.sls \
+lib/srfi/private/OS-id-features.sls \
+lib/srfi/%3A98.ss \
+lib/srfi/%3a0.sls \
+lib/srfi/%3a0/cond-expand.sls \
+lib/srfi/%3a1.sls \
+lib/srfi/%3a1/lists.sls \
+lib/srfi/%3a1/lists/compat.mosh.sls \
+lib/srfi/%3a11.sls \
+lib/srfi/%3a11/let-values.sls
+
+
+
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
 
@@ -240,8 +259,8 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 SUFFIXES: .scmc .h
 
 .scmc.h:
-	mosh scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	(cd doc && mosh ../scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
+	(cd doc && mosh ../scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
 match.scmc: ./match.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@

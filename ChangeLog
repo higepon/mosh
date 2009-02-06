@@ -1,5 +1,10 @@
 2009-02-06  higepon  <higepon@users.sourceforge.jp>
 
+        * SRFIs: Following SRFIs are tested and installed.
+                 0, 1, 11
+
+        * test/srfi-misc.scm : Added srfi tests.
+
         * Added : new srfi system.
 
         * FileBinaryOutputPort.cpp (putByteVector): Added.
