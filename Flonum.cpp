@@ -97,6 +97,14 @@ Object Flonum::toRatnum() const
     return Object::makeRatnum(v);
 }
 
+Object Flonum::toExact() const
+{
+    mpq_t v;
+    mpq_init(v);
+    mpq_set_d(v, value_);
+    return Ratnum::makeNumber(v);
+}
+
 Object Flonum::numerator() const
 {
     if (Flonum::eq(this, POSITIVE_INF.toFlonum())) {

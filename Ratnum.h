@@ -232,9 +232,6 @@ public:
     MAKE_RATNUM_COMPARE(le, <=0);
     MAKE_RATNUM_COMPARE(eq, ==0);
 
-    mpq_t value;
-
-private:
     static Object makeNumber(mpq_t r)
     {
         if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
@@ -248,6 +245,10 @@ private:
             return Object::makeRatnum(r);
         }
     }
+
+    mpq_t value;
+
+private:
 
     Object sqrtUnsigned(const mpq_t r) const;
 

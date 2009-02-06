@@ -906,6 +906,14 @@ Object scheme::bytevectorU8SetDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("bytevector-u8-set!");
     checkArgumentLength(3);
 
+    if (!argv[1].isFixnum()) {
+        printf("bignum? %d %d %d\n", argv[1].isBignum(), argv[1].isFlonum(), argv[2].isRatnum());
+    }
+
+    if (!argv[2].isFixnum()) {
+        printf("bignum? %d %d %d\n", argv[2].isBignum(), argv[2].isFlonum(), argv[2].isRatnum());
+    }
+
     argumentAsByteVector(0, bytevector);
     argumentAsFixnum(1, index);
     argumentAsFixnum(2, value);

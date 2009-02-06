@@ -967,7 +967,7 @@ Object Arithmetic::exact(Object n)
     if (n.isFixnum() || n.isBignum() || n.isRatnum()) {
         return n;
     } else if (n.isFlonum()) {
-        return n.toFlonum()->toRatnum();
+        return n.toFlonum()->toExact();
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
         return Object::makeCompnum(exact(c->real()), exact(c->imag()));
@@ -1226,7 +1226,11 @@ Object Arithmetic::div(Object n1, Object n2, bool& isDiv0Error)
                 isDiv0Error = true;
                 return Object::makeFixnum(0);
             } else {
-                return Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
+                if (n2.toFixnum() == 1) {
+                    return Object::makeFixnum(n1.toFixnum());
+                } else {
+                    return Object::makeRatnum(n1.toFixnum(), n2.toFixnum());
+                }
             }
         } else if (n2.isRatnum()) {
             if (isExactZero(n2)) {
