@@ -55,8 +55,8 @@ public:
 
     int putU8(uint8_t v);
     int putU8(uint8_t* v, int size);
-    int putByteVector(ByteVector bv, int start = 0);
-    int putByteVector(ByteVector bv, int start, int count);
+    int putByteVector(ByteVector* bv, int start = 0);
+    int putByteVector(ByteVector* bv, int start, int count);
     int open();
     int close();
     bool isClosed() const;

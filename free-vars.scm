@@ -471,4 +471,5 @@
     port?
     port-transcoder
     native-transcoder
+    put-bytevector
     )

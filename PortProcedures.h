@@ -37,6 +37,7 @@
 namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
+    Object putBytevectorEx(VM* theVM, int argc, const Object* argv);
     Object outputPortPEx(VM* theVM, int argc, const Object* argv);
     Object getStringNEx(VM* theVM, int argc, const Object* argv);
     Object statMtimeEx(VM* theVM, int argc, const Object* argv);

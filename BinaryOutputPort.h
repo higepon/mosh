@@ -56,8 +56,8 @@ public:
     virtual ~BinaryOutputPort() {};
     virtual int putU8(uint8_t v) = 0;
     virtual int putU8(uint8_t* v, int size) = 0;
-    virtual int putByteVector(ByteVector bv, int start = 0) = 0;
-    virtual int putByteVector(ByteVector bv, int start, int count) = 0;
+    virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
+    virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
     virtual int open() = 0;
     virtual int close() = 0;
     virtual bool isClosed() const = 0;

@@ -1,5 +1,7 @@
 2009-02-06  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryOutputPort.cpp (putByteVector): Added.
+
         * Fixed : (exact 154) => 154(ratnum) is wrong.
 
 2009-02-05  higepon  <higepon@users.sourceforge.jp>

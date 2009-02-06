@@ -53,9 +53,20 @@
 #include "Bignum.h"
 #include "Fasl.h"
 #include "Arithmetic.h"
+#include "ByteVector.h"
 
 
 using namespace scheme;
+
+Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("put-bytevector");
+    checkArgumentLength(2); // todo more arguments
+    argumentAsBinaryOutputPort(0, outputPort);
+    argumentAsByteVector(1, bv);
+    outputPort->putByteVector(bv);
+    return Object::Undef;
+}
 
 Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
 {

@@ -121,14 +121,14 @@ int FileBinaryOutputPort::putU8(uint8_t* v, int size)
     return bufWrite(v, size);
 }
 
-int FileBinaryOutputPort::putByteVector(ByteVector bv, int start /* = 0 */)
+int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
 {
-    return putByteVector(bv, start, bv.length() - start);
+    return putByteVector(bv, start, bv->length() - start);
 }
 
-int FileBinaryOutputPort::putByteVector(ByteVector bv, int start, int count)
+int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
-    uint8_t* buf = bv.data();
+    uint8_t* buf = bv->data();
     return bufWrite(&buf[start], count);
 }
 
