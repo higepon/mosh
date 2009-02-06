@@ -1,5 +1,35 @@
 2009-02-06  higepon  <higepon@users.sourceforge.jp>
 
+        * Use Derick Eddington's SRFIs.
+        (srfi :0 cond-expand)
+        (srfi :1 lists)
+        (srfi :2 and-let*)
+        (srfi :6 basic-string-ports)
+        (srfi :8 receive)
+        (srfi :9 records)
+        (srfi :11 let-values)
+        (srfi :13 strings)
+        (srfi :14 char-sets)
+        (srfi :16 case-lambda)
+        (srfi :19 time)
+        (srfi :23 error)
+        (srfi :26 cut)
+        (srfi :27 random-bits)
+        (srfi :31 rec)
+        (srfi :37 args-fold)
+        (srfi :38 with-shared-structure)
+        (srfi :39 parameters)
+        (srfi :41 streams)
+        (srfi :42 eager-comprehensions)
+        (srfi :43 vectors)
+        (srfi :48 intermediate-format-strings)
+        (srfi :61 cond)
+        (srfi :67 compare-procedures)
+        (srfi :78 lightweight-testing)
+        (srfi :98)
+
+        * PortProcedures.cpp : Adde write-char for srfi-48.
+
         * lib/srfi/sync_mosh.sh: Added for sync.
 
         * SRFIs: Following SRFIs are tested and installed.

@@ -472,4 +472,5 @@
     port-transcoder
     native-transcoder
     put-bytevector
+    write-char
     )

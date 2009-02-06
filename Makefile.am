@@ -129,24 +129,6 @@ Latin1Codec.h                 Latin1Codec.cpp                     \
 FFI.h                         FFI.cpp                             \
 FFIProcedures.h               FFIProcedures.cpp
 
-# lib/srfi/%3A1.ss   \
-# lib/srfi/%3A8.ss   \
-# lib/srfi/%3A13.ss   \
-# lib/srfi/%3A14.ss   \
-# lib/srfi/%3A19.ss   \
-# lib/srfi/%3A26.ss  \
-# lib/srfi/%3A27.ss  \
-# lib/srfi/%3A27/mrg32k3a-a.ss  \
-# lib/srfi/%3A27/mrg32k3a.ss \
-# lib/srfi/%3A28.ss  \
-# lib/srfi/%3A38.ss  \
-# lib/srfi/%3A39.ss  \
-# lib/srfi/%3A41.ss  \
-# lib/srfi/%3A41/primitive.ss  \
-# lib/srfi/%3A41/derived.ss  \
-# lib/srfi/%3A98.ss  \
-# lib/mosh/cgi.ss    
-
 mosh_core_libraries = \
 lib/lambda/wiki.ss    \
 lib/mosh/ffi.ss    \
@@ -185,6 +167,8 @@ lib/srfi/%3a0.sls \
 lib/srfi/%3a0/cond-expand.sls \
 lib/srfi/%3a1.sls \
 lib/srfi/%3a1/lists.sls \
+lib/srfi/%3a2.sls \
+lib/srfi/%3a2/and-let%2a.sls \
 lib/srfi/%3a1/lists/compat.mosh.sls \
 lib/srfi/%3a6.sls \
 lib/srfi/%3a6/basic-string-ports.sls \
@@ -209,11 +193,43 @@ lib/srfi/%3a19/time/compat.mosh.sls \
 lib/srfi/19/srfi-19.scm \
 lib/srfi/%3a23.sls \
 lib/srfi/%3a23/error.sls \
+lib/srfi/%3a26.sls \
+lib/srfi/%3a26/cut.sls \
+lib/srfi/26/cut.scm \
+lib/srfi/%3a27.sls \
+lib/srfi/%3a27/random-bits.sls \
+lib/srfi/27/random.ss \
+lib/srfi/%3a31.sls \
+lib/srfi/%3a31/rec.sls \
+lib/srfi/%3a37.sls \
+lib/srfi/%3a37/args-fold.sls \
+lib/srfi/37/srfi-37-reference.scm \
+lib/srfi/%3a38.sls \
+lib/srfi/%3a38/with-shared-structure.mosh.sls \
 lib/srfi/%3a39.sls \
-lib/srfi/%3a39/parameters.mosh.sls
-
-
-
+lib/srfi/%3a39/parameters.mosh.sls \
+lib/srfi/%3a41.sls \
+lib/srfi/%3a41/streams.sls \
+lib/srfi/%3a41/streams/primitive.sls \
+lib/srfi/%3a41/streams/derived.sls \
+lib/srfi/%3a42.sls \
+lib/srfi/%3a42/eager-comprehensions.sls \
+lib/srfi/42/ec.scm \
+lib/srfi/%3a43.sls \
+lib/srfi/%3a43/vectors.sls \
+lib/srfi/43/vector-lib.scm \
+lib/srfi/%3a48.sls \
+lib/srfi/%3a48/intermediate-format-strings.sls \
+lib/srfi/%3a48/intermediate-format-strings/compat.mosh.sls \
+lib/srfi/%3a61.sls \
+lib/srfi/%3a61/cond.sls \
+lib/srfi/%3a67.sls \
+lib/srfi/%3a67/compare-procedures.sls \
+lib/srfi/67/compare.ss \
+lib/srfi/%3a78.sls \
+lib/srfi/%3a78/lightweight-testing.sls \
+lib/srfi/%3a78/lightweight-testing/compat.mosh.sls \
+lib/srfi/78/check.scm
 
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)

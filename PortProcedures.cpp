@@ -212,6 +212,22 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
+Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("write-char");
+    checkArgumentLengthBetween(1, 2);
+    argumentAsChar(0, ch);
+    if (1 == argc) {
+        theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
+        theVM->currentOutputPort().toTextualOutputPort()->flush();
+    } else {
+        argumentAsTextualOutputPort(1, textualOutputPort);
+        textualOutputPort->putChar(ch);
+        textualOutputPort->flush();
+    }
+    return Object::Undef;
+}
+
 Object scheme::eofObjectPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("eof-object?");

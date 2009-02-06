@@ -77,6 +77,7 @@
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
+#define argumentCheckChar(index, variableName) checkType(index, variableName, isChar, char)
 #define argumentCheckFixnum(index, variableName) checkType(index, variableName, isFixnum, fixnum)
 #define argumentCheckFlonum(index, variableName) checkType(index, variableName, isFlonum, flonum)
 #define argumentCheckExactInteger(index, variableName) checkType(index, variableName, isExactInteger, exact integer)
