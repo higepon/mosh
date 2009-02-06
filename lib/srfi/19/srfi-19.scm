@@ -146,7 +146,7 @@
 (define tm:nano (expt 10 9))
 (define tm:sid  86400)    ; seconds in a day
 (define tm:sihd 43200)    ; seconds in a half day
-(define tm:tai-epoch-in-jd 4881175/2) ; julian day number for 'the epoch'
+(define tm:tai-epoch-in-jd (/ 4881175 2)) ; julian day number for 'the epoch'
 
 
 ;;; A Very simple Error system for the time procedures
@@ -714,7 +714,7 @@
       (make-time 
        time-utc
        nanosecond
-       (+ (* (- jdays 1/2) 24 60 60)
+       (+ (* (- jdays (/ 1 2)) 24 60 60)
 	  (* hour 60 60)
 	  (* minute 60)
 	  second
@@ -806,14 +806,14 @@
 	 (year (date-year date))
 	 (offset (date-zone-offset date)) )
     (+ (tm:encode-julian-day-number day month year)
-       (- 1/2)
+       (- (/ 1 2))
        (+ (/ (/ (+ (* hour 60 60)
 		   (* minute 60) second (/ nanosecond tm:nano)) tm:sid)
 	     (- offset))))))
 
 (define (date->modified-julian-day date)
   (- (date->julian-day date)
-     4800001/2))
+     (/ 4800001 2)))
 
 
 (define (time-utc->julian-day time)
@@ -825,7 +825,7 @@
 
 (define (time-utc->modified-julian-day time)
   (- (time-utc->julian-day time)
-     4800001/2))
+     (/ 4800001 2)))
 
 (define (time-tai->julian-day time)
   (if (not (eq? (time-type time) time-tai))
@@ -838,7 +838,7 @@
 
 (define (time-tai->modified-julian-day time)
   (- (time-tai->julian-day time)
-     4800001/2))
+     (/ 4800001 2)))
 
 ;; this is the same as time-tai->julian-day
 (define (time-monotonic->julian-day time)
@@ -853,7 +853,7 @@
 
 (define (time-monotonic->modified-julian-day time)
   (- (time-monotonic->julian-day time)
-     4800001/2))
+     (/ 4800001 2)))
 
 
 (define (julian-day->time-utc jdn)
@@ -874,16 +874,16 @@
 
 (define (modified-julian-day->date jdn . tz-offset)
   (let ((offset (:optional tz-offset (tm:local-tz-offset))))
-    (julian-day->date (+ jdn 4800001/2) offset)))
+    (julian-day->date (+ jdn (/ 4800001 2)) offset)))
 
 (define (modified-julian-day->time-utc jdn)
-  (julian-day->time-utc (+ jdn 4800001/2)))
+  (julian-day->time-utc (+ jdn (/ 4800001 2))))
 
 (define (modified-julian-day->time-tai jdn)
-  (julian-day->time-tai (+ jdn 4800001/2)))
+  (julian-day->time-tai (+ jdn (/ 4800001 2))))
 
 (define (modified-julian-day->time-monotonic jdn)
-  (julian-day->time-monotonic (+ jdn 4800001/2)))
+  (julian-day->time-monotonic (+ jdn (/ 4800001 2))))
 
 (define (current-julian-day)
   (time-utc->julian-day (current-time time-utc)))
