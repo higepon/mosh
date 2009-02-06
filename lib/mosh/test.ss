@@ -45,7 +45,7 @@
     Unit Testing library
 |#
 (library (mosh test)
-  (export test* test/exception test/violation? test/t test-end)
+  (export test* test/exception test/violation? test/t test/f test-end)
   (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
                 set! equal? quote begin syntax->datum exit ... guard violation? cons
                 list cond > length display for-each current-error-port car cadr caddr)
@@ -114,6 +114,29 @@
       (syntax-case x ()
         [(_ form)
          #'(test* (if form #t #f) #t)])))
+
+  #|
+      Function: test/f
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test/f test)
+
+      Parameters:
+
+        test - test to run.
+
+      Returns:
+
+        unspecified.
+  |#
+  (define-syntax test/f
+    (lambda (x)
+      (syntax-case x ()
+        [(_ form)
+         #'(test* form #f)])))
+
 
   #|
       Function: test/exception

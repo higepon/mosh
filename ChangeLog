@@ -1,7 +1,9 @@
 2009-02-06  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/srfi/sync_mosh.sh: Added for sync.
+
         * SRFIs: Following SRFIs are tested and installed.
-                 0, 1, 11
+                 0, 1, 8, 9, 11, 13, 14, 23, 39.
 
         * test/srfi-misc.scm : Added srfi tests.
 

@@ -186,8 +186,23 @@ lib/srfi/%3a0/cond-expand.sls \
 lib/srfi/%3a1.sls \
 lib/srfi/%3a1/lists.sls \
 lib/srfi/%3a1/lists/compat.mosh.sls \
+lib/srfi/%3a8.sls \
+lib/srfi/%3a8/receive.sls \
+lib/srfi/%3a9.sls \
+lib/srfi/%3a9/records.sls \
 lib/srfi/%3a11.sls \
-lib/srfi/%3a11/let-values.sls
+lib/srfi/%3a11/let-values.sls \
+lib/srfi/%3a14.sls \
+lib/srfi/%3a14/char-sets.sls \
+lib/srfi/14/srfi-14.scm \
+lib/srfi/%3a13.sls \
+lib/srfi/13/srfi-13.scm \
+lib/srfi/%3a13/strings.sls \
+lib/srfi/%3a23.sls \
+lib/srfi/%3a23/error.sls \
+lib/srfi/%3a39.sls \
+lib/srfi/%3a39/parameters.mosh.sls
+
 
 
 
