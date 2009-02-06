@@ -145,7 +145,7 @@
           ((<= 0 n 9) (display n p))
           (else (display
                   (integer->char
-                    (+ (char->integer #\A)
+                    (+ (char->integer #\a)
                        (- n 10)))
                   p))))
       (let f ((ls x))
@@ -161,7 +161,7 @@
                  (display c p))
                 (else
                  (display "%" p)
-                 (let ((n (char->integer (char-downcase c))))
+                 (let ((n (char->integer c)))
                    (display-hex (quotient n 16))
                    (display-hex (remainder n 16))))))
             (string->list
