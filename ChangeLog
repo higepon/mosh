@@ -1,5 +1,7 @@
 2009-02-06  higepon  <higepon@users.sourceforge.jp>
 
+        * Added : new srfi system.
+
         * FileBinaryOutputPort.cpp (putByteVector): Added.
 
         * Fixed : (exact 154) => 154(ratnum) is wrong.
