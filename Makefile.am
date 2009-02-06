@@ -129,24 +129,25 @@ Latin1Codec.h                 Latin1Codec.cpp                     \
 FFI.h                         FFI.cpp                             \
 FFIProcedures.h               FFIProcedures.cpp
 
+# lib/srfi/%3A1.ss   \
+# lib/srfi/%3A8.ss   \
+# lib/srfi/%3A13.ss   \
+# lib/srfi/%3A14.ss   \
+# lib/srfi/%3A19.ss   \
+# lib/srfi/%3A26.ss  \
+# lib/srfi/%3A27.ss  \
+# lib/srfi/%3A27/mrg32k3a-a.ss  \
+# lib/srfi/%3A27/mrg32k3a.ss \
+# lib/srfi/%3A28.ss  \
+# lib/srfi/%3A38.ss  \
+# lib/srfi/%3A39.ss  \
+# lib/srfi/%3A41.ss  \
+# lib/srfi/%3A41/primitive.ss  \
+# lib/srfi/%3A41/derived.ss  \
+# lib/srfi/%3A98.ss  \
+# lib/mosh/cgi.ss    
+
 mosh_core_libraries = \
-lib/srfi/%3A1.ss   \
-lib/srfi/%3A8.ss   \
-lib/srfi/%3A13.ss   \
-lib/srfi/%3A14.ss   \
-lib/srfi/%3A19.ss   \
-lib/srfi/%3A26.ss  \
-lib/srfi/%3A27.ss  \
-lib/srfi/%3A27/mrg32k3a-a.ss  \
-lib/srfi/%3A27/mrg32k3a.ss \
-lib/srfi/%3A28.ss  \
-lib/srfi/%3A38.ss  \
-lib/srfi/%3A39.ss  \
-lib/srfi/%3A41.ss  \
-lib/srfi/%3A41/primitive.ss  \
-lib/srfi/%3A41/derived.ss  \
-lib/srfi/%3A98.ss  \
-lib/mosh/cgi.ss    \
 lib/lambda/wiki.ss    \
 lib/mosh/ffi.ss    \
 lib/mosh/dbi.ss    \
@@ -199,6 +200,7 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 update:
 	(find . -name "*.ss.fasl" | xargs rm) ; true
+	(find . -name "*.sls.fasl" | xargs rm) ; true
 	./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
 # when you release comment out start
@@ -321,6 +323,7 @@ test: ./mosh all-tests.scm update
 	./mosh test/mysql.scm
 	./mosh test/clos.scm
 	./mosh test/dbi.scm
+	./mosh test/srfi-misc.scm
 	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 

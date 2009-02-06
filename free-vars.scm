@@ -33,7 +33,7 @@
     get-environment-variables
     (equal? equal?)
     (open-string-input-port open-input-string)
-    (sys-open-output-string open-output-string)
+    (open-output-string open-output-string)
     (sys-port-seek port-seek)
     (open-output-file open-output-file)
     (close-output-port close-output-port)
@@ -42,7 +42,7 @@
     (readdir sys-readdir)
     (file-exists? file-exists?)
     delete-file
-    (sys-get-output-string get-output-string)
+    (get-output-string get-output-string)
     (string->regexp string->regexp)
     (char->integer char->integer)
     (integer->char integer->char)

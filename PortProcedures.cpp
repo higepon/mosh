@@ -262,7 +262,7 @@ Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
     return Object::makeStringInputPort(text->data());
 }
 
-Object scheme::sysOpenOutputStringEx(VM* theVM, int argc, const Object* argv)
+Object scheme::openOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
     return Object::makeStringOutputPort();
 }
@@ -327,7 +327,7 @@ Object scheme::closeInputPortEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
-Object scheme::sysGetOutputStringEx(VM* theVM, int argc, const Object* argv)
+Object scheme::getOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-output-string");
     checkArgumentLength(1);

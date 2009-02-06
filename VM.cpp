@@ -616,7 +616,7 @@ Object VM::getStackTrace()
             break;
         }
     }
-    return sysGetOutputStringEx(this, 1, &sport);
+    return getOutputStringEx(this, 1, &sport);
 }
 
 bool VM::mayBeStackPointer(Object* obj) const
@@ -641,7 +641,7 @@ void VM::throwException(Object exception)
     const Object stringOutputPort = Object::makeStringOutputPort();
     TextualOutputPort* const textualOutputPort = stringOutputPort.toTextualOutputPort();
     textualOutputPort->format(UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
-    errorObj_ = sysGetOutputStringEx(this, 1, &stringOutputPort);
+    errorObj_ = getOutputStringEx(this, 1, &stringOutputPort);
 
     longjmp(returnPoint_, -1);
 }

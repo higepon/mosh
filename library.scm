@@ -378,8 +378,8 @@
     ret))
 
 (define (open-string-output-port)
-  (let* ([port (sys-open-output-string)]
-         [proc (lambda () (let1 s (sys-get-output-string port)
+  (let* ([port (open-output-string)]
+         [proc (lambda () (let1 s (get-output-string port)
                             (sys-port-seek port 0)
                             s))])
     (values port proc)))

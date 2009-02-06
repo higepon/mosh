@@ -56,14 +56,14 @@ namespace scheme {
     Object sysDisplayEx(VM* theVM, int argc, const Object* argv);
     Object currentErrorPortEx(VM* theVM, int argc, const Object* argv);
     Object openStringInputPortEx(VM* theVM, int argc, const Object* argv);
-    Object sysOpenOutputStringEx(VM* theVM, int argc, const Object* argv);
+    Object openOutputStringEx(VM* theVM, int argc, const Object* argv);
     Object openOutputFileEx(VM* theVM, int argc, const Object* argv);
     Object closeOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object closeInputPortEx(VM* theVM, int argc, const Object* argv);
     Object readdirEx(VM* theVM, int argc, const Object* argv);
     Object fileExistsPEx(VM* theVM, int argc, const Object* argv);
     Object deleteFileEx(VM* theVM, int argc, const Object* argv);
-    Object sysGetOutputStringEx(VM* theVM, int argc, const Object* argv);
+    Object getOutputStringEx(VM* theVM, int argc, const Object* argv);
     Object formatEx(VM* theVM, int argc, const Object* argv);
     Object currentInputPortEx(VM* theVM, int argc, const Object* argv);
     Object currentOutputPortEx(VM* theVM, int argc, const Object* argv);
