@@ -161,7 +161,7 @@
                  (display c p))
                 (else
                  (display "%" p)
-                 (let ((n (char->integer c)))
+                 (let ((n (char->integer (char-downcase c))))
                    (display-hex (quotient n 16))
                    (display-hex (remainder n 16))))))
             (string->list

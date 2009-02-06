@@ -7,4 +7,5 @@ find srfi -name ".bzr" | xargs rm -rf
 cp -r srfi ~/mosh/lib/
 cd ~/mosh
 svn st lib/srfi
+echo "do svn diff!"
 
