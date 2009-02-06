@@ -99,9 +99,6 @@ FileBinaryOutputPort::~FileBinaryOutputPort()
 #else
     delete buffer_;
 #endif
-    if (buffer_ != NULL && bufIdx_ != 0) {
-        bufFlush();
-    }
     close();
 }
 
@@ -143,11 +140,8 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
-    if (buffer_ != NULL & bufIdx_ != 0) {
-        bufFlush();
-    }
+    bufFlush();
     if (!isClosed() && INVALID_FILENO != fd_) {
-
         isClosed_ = true;
         if (fd_ != ::fileno(stdout) && fd_ != ::fileno(stderr)) {
             ::close(fd_);
@@ -161,12 +155,16 @@ int FileBinaryOutputPort::fileno() const
     return fd_;
 }
 
-void FileBinaryOutputPort::bufFlush()
+int FileBinaryOutputPort::bufFlush()
 {
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-        bufWriteLen_ = write(fd_, buffer_, bufIdx_);
-        MOSH_ASSERT(bufWriteLen_ == bufIdx_);
+    if ((buffer_ != NULL && bufIdx_ != 0) &&
+        (bufferMode_ == LINE || bufferMode_ == BLOCK)) {
+        const int bufWriteLen = write(fd_, buffer_, bufIdx_);
+        MOSH_ASSERT(bufWriteLen == bufIdx_);
         bufIdx_ = 0;
+        return bufWriteLen;
+    } else {
+        return 0;
     }
 }
 
@@ -179,10 +177,9 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
     if (bufferMode_ == LINE) {
         int writeSize = 0;
         while (writeSize < reqSize) {
-            int bufDiff = BUF_SIZE - bufIdx_;
+            const int bufDiff = BUF_SIZE - bufIdx_;
             if (bufDiff == 0) {
-                bufFlush();
-                if (bufWriteLen_ < BUF_SIZE) {
+                if (bufFlush() < BUF_SIZE) {
                     // todo
                     break;
                 }
@@ -200,9 +197,9 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
         int writeSize = 0;
         while (writeSize < reqSize) {
             MOSH_ASSERT(BUF_SIZE >= bufIdx_);
-            int bufDiff = BUF_SIZE - bufIdx_;
+            const int bufDiff = BUF_SIZE - bufIdx_;
             MOSH_ASSERT(reqSize > writeSize);
-            int sizeDiff = reqSize - writeSize;
+            const int sizeDiff = reqSize - writeSize;
             if (bufDiff >= sizeDiff) {
                 memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
                 bufIdx_ += sizeDiff;
@@ -210,8 +207,7 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
             } else {
                 memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
                 writeSize += bufDiff;
-                bufFlush(); // (bufIdx_ = 0)
-                if (bufWriteLen_ < BUF_SIZE) {
+                if (bufFlush() < BUF_SIZE) {
                     // todo
                     break;
                 }

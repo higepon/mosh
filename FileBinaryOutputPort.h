@@ -61,14 +61,13 @@ public:
     int close();
     bool isClosed() const;
     int fileno() const;
-    void bufFlush();
+    int bufFlush();
 
 protected:
     int fd_;
     bool isClosed_;
     enum bufferMode bufferMode_;
     uint8_t* buffer_;
-    int bufWriteLen_;
     int bufIdx_;
 
     int bufWrite(uint8_t* data, int reqSize);

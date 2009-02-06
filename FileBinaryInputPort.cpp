@@ -164,7 +164,7 @@ ByteVector* FileBinaryInputPort::getByteVector(uint32_t size)
     if (EOF != u8Buf_) {
         buf[0] = u8Buf_;
         u8Buf_ = EOF;
-        ret = bufRead(buf+1, size);
+        ret = bufRead(buf+1, size-1);
     } else {
         ret = bufRead(buf, size);
     }
@@ -235,8 +235,8 @@ int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         int readSize = 0;
         while (readSize < reqSize) {
-            int bufDiff = bufLen_ - bufIdx_;
-            int sizeDiff = reqSize - readSize;
+            const int bufDiff = bufLen_ - bufIdx_;
+            const int sizeDiff = reqSize - readSize;
             if (bufDiff >= sizeDiff) {
                 memcpy(data+readSize, buffer_+bufIdx_, sizeDiff);
                 bufIdx_ += sizeDiff;
