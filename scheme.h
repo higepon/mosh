@@ -130,6 +130,25 @@ class Object;
 typedef std::vector<Object> ObjectVector;
 #endif
 
+//extern int strcmp99(const ucs4char *s1, const ucs4char *s2);
+struct ltstr EXTEND_GC
+{
+  bool operator()(const ucs4char* s1, const ucs4char* s2) const
+  {
+      while (*s1 == *s2++) {
+          if (*s1++=='\0') {
+              return false;
+          }
+      }
+    return(*s1 - *--s2) < 0;
+  }
+};
+
+#ifdef USE_BOEHM_GC
+class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocator<std::pair<const ucs4char* const, Object> > >, public gc { };
+#else
+    class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, std::allocator<std::pair<const ucs4char* const, Object> > > {};
+#endif
 };
 
 #endif // __SCHEME_SCHEME_H__

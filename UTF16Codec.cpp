@@ -55,6 +55,7 @@ Codec* UTF16Codec::getCodec()
 Codec* UTF16Codec::getCodec(int endianness)
 {
     static Codec* codec[2] = { NULL, NULL };
+    MOSH_ASSERT(endianness == 0 || endianness == 1);
     if (codec[endianness] == NULL) {
         codec[endianness] = new UTF16Codec(endianness);
     }

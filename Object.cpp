@@ -177,10 +177,25 @@ Object Object::makeCustomBinaryInputPort(VM* theVM, Object readProc)
                                                         reinterpret_cast<word>(new CustomBinaryInputPort(theVM, readProc)))));
 }
 
+typedef gc_map2 Codecs;
 Object Object::makeCodec(Codec* codec)
 {
+    static Codecs codecs;
+#if 1
+    const ucs4char* name = codec->getCodecName().strdup();
+    Codecs::const_iterator it = codecs.find(name);
+    if (it == codecs.end()) {
+        codecs[name] =
+            Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
+                                                         reinterpret_cast<word>(codec))));
+        return codecs[name];
+    } else {
+        return it->second;
+    }
+#else
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
                                                         reinterpret_cast<word>(codec))));
+#endif
 }
 
 Object Object::makeLatin1Codec()
