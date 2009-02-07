@@ -586,6 +586,11 @@
              (loop (+ i 1))))))]
     [else s]))
 
+(define (cleanup-source src)
+  (let1 src (map ungensym src) ;; strip gensymed symbols
+    (if (eq? (car src) 'lambda)
+        `(lambda ,(cdr src) ...)
+        src)))
 
 ; If you see "display closure" at name column of profiler results.
 ; Higepon can improve the result.
@@ -608,7 +613,7 @@
      (lambda (x)
        (let* ([closure  (first x)]
               [src      (source-info closure)]
-              [name     (string-chop (format "~a" (if (pair? src) (cdr src) (get-closure-name closure))) 25 "...)")]
+              [name     (string-chop (format "~a" (if (pair? src) (cleanup-source (cdr src)) (get-closure-name closure))) 25 "...)")]
               [location (if (pair? src) (car src) #f)]
               [file     (if (pair? location) (car location) #f)]
               [lineno   (if (pair? location) (second location) #f)]
@@ -3804,4 +3809,3 @@
   (display obj)
   (newline)
   (apply values obj))
-  

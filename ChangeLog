@@ -1,3 +1,7 @@
+2009-02-07  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (show-profile): Make up profiler results. (ungensym things.)
+
 2009-02-07  kokosabu  <kokosabu@gmail.com>
 
         * PortProcedures.cpp : Added transcoder-codec, transcoder-eol-style,

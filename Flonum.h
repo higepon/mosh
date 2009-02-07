@@ -62,7 +62,6 @@ public:
     Object toRatnum() const;
     bool isNan() const { return isnan(value_); }
     bool isInfinite() const { return isinf(value_); }
-    Object sqrt() const;
 
     Object numerator() const;
     Object denominator() const;
@@ -304,6 +303,16 @@ public:
     static Object mul(Flonum* n1, Bignum* n2);
     static Object div(Bignum* n1, Flonum* n2);
     static Object div(Flonum* n1, Bignum* n2);
+
+    Object sqrt() const
+    {
+        if (value_ < 0.0) {
+            return Object::makeCompnum(Object::makeFlonum(0.0),
+                                       Object::makeFlonum(::sqrt(fabs(value_))));
+        } else {
+            return Object::makeFlonum(::sqrt(value_));
+        }
+    }
 
 private:
     static double iDiv(double f1, double f2)
