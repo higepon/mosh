@@ -69,11 +69,26 @@ UTF32Codec::UTF32Codec()
 #else
     isLittleEndian_ = true;
 #endif
+    codecName_ = UC("utf-32-codec");
 }
 
 UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 {
     MOSH_ASSERT(endianness == UTF_32BE || endianness == UTF_32LE);
+
+#if WORDS_BIGENDIAN
+    if (endianness == UTF_32BE) {
+        codecName_ = UC("utf-32-codec");
+    } else if (endianness == UTF_32LE) {
+        codecName_ = UC("utf-32-codec(little)");
+    }
+#else
+    if (endianness == UTF_32BE) {
+        codecName_ = UC("utf-32-codec(big)");
+    } else if (endianness == UTF_32LE) {
+        codecName_ = UC("utf-32-codec");
+    }
+#endif
 }
 
 int UTF32Codec::out(BinaryOutputPort* port, ucs4char u)

@@ -52,7 +52,7 @@ public:
     ucs4string readWholeString(BinaryInputPort* port);
     ucs4string getCodecName() const
     {
-        return UC("utf-16-codec");
+        return codecName_;
     }
 
     static int checkBOM(ByteVector* bytevector);
@@ -60,6 +60,7 @@ public:
     static Codec* getCodec(int endianness);
 private:
     bool isLittleEndian_;
+    ucs4string codecName_;
 
     UTF16Codec();
     UTF16Codec(int endianness);

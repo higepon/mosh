@@ -55,7 +55,7 @@ Codec* UTF16Codec::getCodec()
 Codec* UTF16Codec::getCodec(int endianness)
 {
     static Codec* codec[2] = { NULL, NULL };
-    MOSH_ASSERT(endianness == 0 || endianness == 1);
+    MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
     if (codec[endianness] == NULL) {
         codec[endianness] = new UTF16Codec(endianness);
     }
@@ -69,11 +69,26 @@ UTF16Codec::UTF16Codec()
 #else
     isLittleEndian_ = true;
 #endif
+    codecName_ = UC("utf-16-codec");
 }
 
 UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
+
+#if WORDS_BIGENDIAN
+    if (endianness == UTF_16BE) {
+        codecName_ = UC("utf-16-codec");
+    } else if (endianness == UTF_16LE) {
+        codecName_ = UC("utf-16-codec(little)");
+    }
+#else
+    if (endianness == UTF_16BE) {
+        codecName_ = UC("utf-16-codec(big)");
+    } else if (endianness == UTF_16LE) {
+        codecName_ = UC("utf-16-codec");
+    }
+#endif
 }
 
 int UTF16Codec::out(BinaryOutputPort* port, ucs4char u)
