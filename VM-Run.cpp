@@ -518,7 +518,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isNumber() && ac_.isNumber()) {
                 ac_ = Arithmetic::mul(n, ac_);
             } else {
-                callAssertionViolationAfter(this, "/", "division by zero", L2(n, ac_));
+                callAssertionViolationAfter(this, "*", "wrong type arguments", L2(n, ac_));
             }
             NEXT1;
         }
