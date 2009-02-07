@@ -586,38 +586,62 @@
              (loop (+ i 1))))))]
     [else s]))
 
+;; strip gensymed symbols
+;; convert (lambda x y z) => (lambda (x y z) ...)
 (define (cleanup-source src)
-  (let1 src (map ungensym src) ;; strip gensymed symbols
+  (let1 src (map ungensym src)
     (if (eq? (car src) 'lambda)
         `(lambda ,(cdr src) ...)
         src)))
+
+;; In
+;;   calls-hash : <key closure> <value call-count>
+;;   sample-closures : list of sampled closures
+;;
+;; Out
+;;   hashtable : <key closure or source code of closure> <value (cons sample-count call-count)>
+
+(define (summerize-samples calls-hash sample-closures)
+  (let ([ht (make-eq-hashtable)]
+        [counted-ht (make-eq-hashtable)])
+    (define (counted? closure)
+      (hashtable-set! counted-ht closure #f))
+    (define (set-counted closure)
+      (hashtable-set! counted-ht closure #t))
+    (for-each
+     (lambda (closure)
+       (let1 src (source-info closure)
+         (if (pair? src)
+             (aif (hashtable-ref ht src #f)
+                  (begin
+                    (set-car! it (+ (car it) 1)) ;; sample-count++
+                    (set-cdr! it (+ (cdr it) (if (counted? closure)
+                                                 0
+                                                 (begin (set-counted! closure) (hashtable-ref calls-hash closure 0))))))
+                  (hashtable-set! ht src (cons 1 (hashtable-ref calls-hash closure 0))))
+             (aif (hashtable-ref  ht closure #f)
+                  (set-car! it (+ (car it) 1)) ;; sample-count++
+                  (hashtable-set! ht closure (cons 1 (hashtable-ref calls-hash closure 0)))))))
+     sample-closures)
+    ht))
 
 ; If you see "display closure" at name column of profiler results.
 ; Higepon can improve the result.
 ; See set-source-info! on compiler and $let.src.
 (define (show-profile result)
-  (let ([total (first result)]
-        [calls-hash (second result)]
-        [sample-closures  (cddr result)]
-        [sample-table (make-eq-hashtable)])
-    ; collect sampled closures into sample-table
-    ;   key   => #<closure>
-    ;   value => sampling count
-    (for-each (lambda (closure)
-                (aif (hashtable-ref  sample-table closure #f)
-                     (hashtable-set! sample-table closure (+ it 1))
-                     (hashtable-set! sample-table closure 1)))
-                sample-closures)
+  (let* ([total (first result)]
+         [calls-hash (second result)]
+         [sample-closures  (cddr result)]
+         [sample-table (summerize-samples calls-hash sample-closures)])
     (print "time%        msec      calls   name                              location")
     (for-each
      (lambda (x)
-       (let* ([closure  (first x)]
-              [src      (source-info closure)]
-              [name     (string-chop (format "~a" (if (pair? src) (cleanup-source (cdr src)) (get-closure-name closure))) 25 "...)")]
-              [location (if (pair? src) (car src) #f)]
+       (let* ([closure-or-src  (first x)]
+              [name     (string-chop (format "~a" (if (procedure? closure-or-src) (get-closure-name closure-or-src) (cleanup-source (cdr closure-or-src)))) 25 "...)")]
+              [location (if (procedure? closure-or-src) #f (car closure-or-src) )]
               [file     (if (pair? location) (car location) #f)]
               [lineno   (if (pair? location) (second location) #f)]
-              [count    (aif (hashtable-ref calls-hash closure #f) it "-")])
+              [count    (fourth x)])
          (format #t " ~a   ~a ~a   ~a    ~a\n"
                  (lpad (third x) " " 3)
                  (lpad (* (second x) 10) " " 10)
@@ -629,13 +653,54 @@
      (list-sort
       (lambda (x y) (> (second x) (second y)))
       (hashtable-map
-       (lambda (closure sample-count)
-         (list closure sample-count (exact (round (/ (* 100 sample-count) total)))))
+       (lambda (closure count*)
+         (list closure (car count*) (exact (round (/ (* 100 (car count*)) total))) (cdr count*)))
        sample-table)
       )
      )
     (let1 seen-syms (vector->list (hashtable-keys sample-table))
     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
+;; (define (show-profile result)
+;;   (let ([total (first result)]
+;;         [calls-hash (second result)]
+;;         [sample-closures  (cddr result)]
+;;         [sample-table (make-eq-hashtable)])
+;;     ; collect sampled closures into sample-table
+;;     ;   key   => #<closure>
+;;     ;   value => sampling count
+;;     (for-each (lambda (closure)
+;;                 (aif (hashtable-ref  sample-table closure #f)
+;;                      (hashtable-set! sample-table closure (+ it 1))
+;;                      (hashtable-set! sample-table closure 1)))
+;;                 sample-closures)
+;;     (print "time%        msec      calls   name                              location")
+;;     (for-each
+;;      (lambda (x)
+;;        (let* ([closure  (first x)]
+;;               [src      (source-info closure)]
+;;               [name     (string-chop (format "~a" (if (pair? src) (cleanup-source (cdr src)) (get-closure-name closure))) 25 "...)")]
+;;               [location (if (pair? src) (car src) #f)]
+;;               [file     (if (pair? location) (car location) #f)]
+;;               [lineno   (if (pair? location) (second location) #f)]
+;;               [count    (aif (hashtable-ref calls-hash closure #f) it "-")])
+;;          (format #t " ~a   ~a ~a   ~a    ~a\n"
+;;                  (lpad (third x) " " 3)
+;;                  (lpad (* (second x) 10) " " 10)
+;;                  (lpad count " " 10)
+;;                  (rpad name " " 30)
+;;                  (if file (format "~a:~d" file lineno) "")
+;;                  )
+;;         ))
+;;      (list-sort
+;;       (lambda (x y) (> (second x) (second y)))
+;;       (hashtable-map
+;;        (lambda (closure sample-count)
+;;          (list closure sample-count (exact (round (/ (* 100 sample-count) total)))))
+;;        sample-table)
+;;       )
+;;      )
+;;     (let1 seen-syms (vector->list (hashtable-keys sample-table))
+;;     (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
 
 ;; for psyntax.pp
 (define (void) (if #f #f))
