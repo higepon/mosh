@@ -73,16 +73,18 @@
     substring-spec-ok?)
     )
   (import
-    (except (rnrs) error string-copy string-for-each string->list
+    #;(except (rnrs) error string-copy string-for-each string->list
                    string-upcase string-downcase string-titlecase string-hash)
-    (except (rnrs mutable-strings) string-fill!)
-    (rnrs r5rs)
-    (prefix (srfi :23 error) ER:)
-    (srfi :8 receive)
-    (srfi :14 char-sets)
-    (srfi :39 parameters)
-    (srfi private let-opt)
-    (srfi private include))
+   (only (rnrs) ... _ define define-syntax lambda syntax-case and identifier? syntax begin syntax-rules apply char-upper-case? char-upcase if not string? let pair? integer? exact? >= <= values car cdr quote string-length unless zero? = substring procedure? let* do - < string-ref make-string + cons min > cond char? or char=? else eq? char-ci=? char<? char-ci<? bitwise-and * char->integer char-downcase => char-titlecase vector-ref vector-set! make-vector vector? vector-length length floor / case list null? list->string string-append string)
+   (only (rnrs mutable-strings) string-set!)
+    (only (rnrs r5rs) modulo quotient)
+    (only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+    (only (srfi :8 receive) receive)
+    (only (srfi :14 char-sets) char-set? char-set-contains? char-set:whitespace char-set char-set:graphic)
+    (only (srfi :39 parameters) parameterize)
+    (only (srfi private let-opt) :optional let-optionals*)
+    (only (srfi private include) include/resolve)
+          )
   
   (define (error . args)
     (parameterize ([ER:error-who 

@@ -25,7 +25,10 @@
   (export stream-null stream-cons stream? stream-null? stream-pair?
           stream-car stream-cdr stream-lambda)
 
-  (import (rnrs) (rnrs mutable-pairs))
+  (import
+   (rnrs)
+;(only (rnrs) ... define-record-type fields mutable define-syntax syntax-rules define immutable cons quote let case cdr let* if not eqv? car begin lambda and cond error)
+   (rnrs mutable-pairs))
 
   (define-record-type (stream-type make-stream stream?)
     (fields (mutable box stream-promise stream-promise!)))

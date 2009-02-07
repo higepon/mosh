@@ -1,5 +1,9 @@
 2009-02-07  higepon  <higepon@users.sourceforge.jp>
 
+        * Size reduction srfi 0, 1, 11, 13 and 14.
+
+        * scripts/only-maker.ss : Added.
+
         * library.scm (show-profile): Make up profiler results. (ungensym things.)
 
 2009-02-07  kokosabu  <kokosabu@gmail.com>

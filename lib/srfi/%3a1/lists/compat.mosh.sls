@@ -27,7 +27,8 @@
   (export
     last-pair make-list)
   (import
-    (rnrs))
+   (only (rnrs) define unless pair? assertion-violation quote let if cdr case-lambda and integer? exact? not negative? = - cons)
+)
   (define (last-pair x)
     (unless (pair? x)
       (assertion-violation 'last-pair "not a pair" x))

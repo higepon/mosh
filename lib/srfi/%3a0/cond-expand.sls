@@ -27,7 +27,8 @@
   (export 
     cond-expand)
   (import
-    (rnrs)
+;    (rnrs)
+   (only (rnrs) ... _ define-syntax lambda syntax-case syntax-violation syntax if member syntax->datum begin else and or lambda)
     (for (srfi private registry) expand))
   
   (define-syntax cond-expand

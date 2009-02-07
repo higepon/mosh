@@ -56,9 +56,11 @@
     lset-union! lset-intersection! lset-difference! lset-xor!
     lset-diff+intersection!)
   (import 
-    (except (rnrs) map member assoc)
-    (rnrs mutable-pairs)
-    (srfi :1 lists compat))
+;    (except (rnrs) map member assoc)
+   (only (rnrs) define-syntax lambda syntax-case and identifier? syntax define syntax-rules ... cons let if not pair? car cdr unless integer? >= error quote procedure? do - < case-lambda number? <= + * eq? null? or cond else apply list cadr caddr cadddr cddddr values zero? begin let-values let* append call-with-current-continuation reverse => letrec equal? filter find memq partition remove fold-right cons* _)
+    (only (rnrs mutable-pairs) set-cdr! set-car!)
+    (only (srfi :1 lists compat) last-pair make-list)
+    )
 
 ;;; 
 ;;; In principle, the following R4RS list- and pair-processing procedures

@@ -58,14 +58,15 @@
     char-set:empty       char-set:full
     )
   (import
-    (except (rnrs) error define-record-type)
-    (rnrs mutable-strings)
-    (rnrs r5rs)
-    (prefix (srfi :23 error) ER:)
-    (srfi :9 records)
-    (srfi :39 parameters)
-    (srfi private let-opt)
-    (srfi private include))
+   (only (rnrs) _ ... define define-syntax lambda syntax-case identifier? syntax begin integer->char char->integer apply substring string-length if pair? let null? car cdr make-string zero? string-ref not - quote or let* and string=? eq? < <= bitwise-and + * >= integer? exact? unless char? procedure? for-each cond cons string? do min else values string-copy map)
+   (only (rnrs mutable-strings) string-set!)
+   (only (rnrs r5rs) modulo)
+    (only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+    (only (srfi :9 records) define-record-type)
+    (only (srfi :39 parameters) parameterize)
+    (only (srfi private let-opt) :optional let-optionals*)
+    (only (srfi private include) include/resolve)
+)
   
   (define (%latin1->char i)
     (integer->char i))
