@@ -90,6 +90,8 @@ namespace scheme {
     Object transcoderCodecEx(VM* theVM, int argc, const Object* argv);
     Object transcoderEolStyleEx(VM* theVM, int argc, const Object* argv);
     Object transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* argv);
+    Object bytevectorTostringEx(VM* theVM, int argc, const Object* argv);
+    Object stringTobytevectorEx(VM* theVM, int argc, const Object* argv);
     Object eofObjectEx(VM* theVM, int argc, const Object* argv);
     Object sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object sysGetBytevectorEx(VM* theVM, int argc, const Object* argv);

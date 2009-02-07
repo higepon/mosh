@@ -38,6 +38,7 @@
 #include "VM.h"
 #include "ByteVectorProcedures.h"
 #include "ErrorProcedures.h"
+#include "PortProcedures.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "BinaryInputPort.h"
 #include "Symbol.h"
@@ -216,52 +217,6 @@ Object scheme::stringToutf32Ex(VM* theVM, int argc, const Object* argv)
         args[1] = Object::makeTranscoder(UTF32Codec::getCodec(UTF32Codec::UTF_32BE));
         return stringTobytevectorEx(theVM, 2, args);
     }
-}
-
-Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("string->bytevector");
-    checkArgumentLength(2);
-    argumentAsString(0, text);
-    argumentAsTranscoder(1, transcoder);
-    gc_vector<uint8_t> accum;
-    uint8_t buf[4];
-    for (ucs4string::const_iterator it = text->data().begin();
-         it != text->data().end(); ++it) {
-        TRY_IO {
-            const int length = transcoder->codec().toCodec()->out(buf, *it);
-            for (int i = 0; i < length; i++) {
-                accum.push_back(buf[i]);
-            }
-        } CATCH_IO {
-            callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-            return Object::Undef;
-        }
-    }
-    return Object::makeByteVector(new ByteVector(accum));
-}
-
-Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("bytevector->string");
-    checkArgumentLength(2);
-
-    argumentAsByteVector(0, bytevector);
-    argumentAsTranscoder(1, transcoder);
-
-    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
-    ucs4string ret;
-    Codec* const codec = transcoder->codec().toCodec();
-
-    TRY_IO {
-        for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
-            ret += c;
-        }
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
-    }
-    return Object::makeString(ret);
 }
 
 Object scheme::bytevectorS64NativeSetDEx(VM* theVM, int argc, const Object* argv)

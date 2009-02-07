@@ -51,8 +51,6 @@ namespace scheme {
     Object utf16TostringEx(VM* theVM, int argc, const Object* argv);
     Object stringToutf32Ex(VM* theVM, int argc, const Object* argv);
     Object stringToutf16Ex(VM* theVM, int argc, const Object* argv);
-    Object stringTobytevectorEx(VM* theVM, int argc, const Object* argv);
-    Object bytevectorTostringEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorS64NativeSetDEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorU64NativeSetDEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorS64SetDEx(VM* theVM, int argc, const Object* argv);
