@@ -40,6 +40,15 @@
 
 using namespace scheme;
 
+Codec* Latin1Codec::getCodec()
+{
+    static Codec* codec = NULL;
+    if (codec == NULL) {
+        codec = new Latin1Codec();
+    }
+    return codec;
+}
+
 int Latin1Codec::out(BinaryOutputPort* port, ucs4char u)
 {
     static uint8_t buf[1];

@@ -87,6 +87,9 @@ namespace scheme {
     Object nativeEolStyleEx(VM* theVM, int argc, const Object* argv);
     Object makeTranscoderEx(VM* theVM, int argc, const Object* argv);
     Object nativeTranscoderEx(VM* theVM, int argc, const Object* argv);
+    Object transcoderCodecEx(VM* theVM, int argc, const Object* argv);
+    Object transcoderEolStyleEx(VM* theVM, int argc, const Object* argv);
+    Object transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* argv);
     Object eofObjectEx(VM* theVM, int argc, const Object* argv);
     Object sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object sysGetBytevectorEx(VM* theVM, int argc, const Object* argv);

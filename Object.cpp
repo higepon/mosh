@@ -185,17 +185,17 @@ Object Object::makeCodec(Codec* codec)
 
 Object Object::makeLatin1Codec()
 {
-    return makeCodec(new Latin1Codec());
+    return makeCodec(Latin1Codec::getCodec());
 }
 
 Object Object::makeUTF8Codec()
 {
-    return makeCodec(new UTF8Codec());
+    return makeCodec(UTF8Codec::getCodec());
 }
 
 Object Object::makeUTF16Codec()
 {
-    return makeCodec(new UTF16Codec());
+    return makeCodec(UTF16Codec::getCodec());
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)

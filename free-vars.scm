@@ -473,4 +473,7 @@
     native-transcoder
     put-bytevector
     write-char
+    transcoder-codec
+    transcoder-eol-style
+    transcoder-error-handling-mode
     )

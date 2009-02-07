@@ -43,10 +43,36 @@
 
 using namespace scheme;
 
+Codec* UTF32Codec::getCodec()
+{
+#if WORDS_BIGENDIAN
+    return getCodec(UTF_32BE);
+#else
+    return getCodec(UTF_32LE);
+#endif
+}
+
+Codec* UTF32Codec::getCodec(int endianness)
+{
+    static Codec* codec[2] = { NULL, NULL };
+    if (codec[endianness] == NULL) {
+        codec[endianness] = new UTF32Codec(endianness);
+    }
+    return codec[endianness];
+}
+
+UTF32Codec::UTF32Codec()
+{
+#if WORDS_BIGENDIAN
+    isLittleEndian_ = false;
+#else
+    isLittleEndian_ = true;
+#endif
+}
+
 UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 {
     MOSH_ASSERT(endianness == UTF_32BE || endianness == UTF_32LE);
-
 }
 
 int UTF32Codec::out(BinaryOutputPort* port, ucs4char u)

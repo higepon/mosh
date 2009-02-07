@@ -39,6 +39,15 @@
 
 using namespace scheme;
 
+Codec* UTF8Codec::getCodec()
+{
+    static Codec* codec = NULL;
+    if (codec == NULL) {
+        codec = new UTF8Codec();
+    }
+    return codec;
+}
+
 // Be careful, buf is shared.
 int UTF8Codec::out(BinaryOutputPort* port, ucs4char u)
 {

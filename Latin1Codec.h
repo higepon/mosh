@@ -47,6 +47,8 @@ public:
     {
         return UC("latin-1-codec");
     }
+
+    static Codec* getCodec();
 };
 
 }; // namespace scheme

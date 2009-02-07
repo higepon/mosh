@@ -3244,6 +3244,14 @@
 (#f    (buffer-mode? 'lf))
 (#f    (port-transcoder (standard-output-port)))
 (#f    (port-transcoder (open-file-input-port "./test-data.scm" '() 'block #f)))
+(#t    (eqv? (utf-8-codec) (utf-8-codec)))
+(#t    (eqv? (utf-8-codec) (transcoder-codec (native-transcoder))))
+(#t    (eqv? (utf-16-codec) (transcoder-codec (make-transcoder (utf-16-codec)))))
+(#f    (eqv? (utf-16-codec) (transcoder-codec (make-transcoder (utf-8-codec)))))
+(#t    (equal? 'lf (transcoder-eol-style (make-transcoder (utf-8-codec) 'lf))))
+(#f    (equal? 'cr (transcoder-eol-style (make-transcoder (utf-8-codec) 'lf))))
+(#t    (equal? 'replace (transcoder-error-handling-mode (make-transcoder (utf-8-codec)))))
+(#f    (equal? 'replace (transcoder-error-handling-mode (make-transcoder (utf-8-codec) 'lf 'ignore))))
 
 ;; read-write-invariant test by leque
 [definition

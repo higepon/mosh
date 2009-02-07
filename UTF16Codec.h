@@ -46,8 +46,6 @@ public:
         UTF_16LE,
         NO_BOM
     };
-    UTF16Codec();
-    UTF16Codec(int endianness);
     int out(BinaryOutputPort* port, ucs4char u);
     int out(uint8_t* buf, ucs4char u);
     ucs4char in(BinaryInputPort* port);
@@ -58,8 +56,15 @@ public:
     }
 
     static int checkBOM(ByteVector* bytevector);
+    static Codec* getCodec();
+    static Codec* getCodec(int endianness);
 private:
     bool isLittleEndian_;
+
+    UTF16Codec();
+    UTF16Codec(int endianness);
+    UTF16Codec(const UTF16Codec& codec);
+    UTF16Codec& operator=(const UTF16Codec& codec);
 };
 
 }; // namespace scheme

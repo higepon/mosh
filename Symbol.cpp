@@ -73,7 +73,7 @@ void Symbol::initBuitinSymbols()
     UNQUOTE_SPLICING  = Symbol::intern(UC("unquote-splicing"));
     AFTER             = Symbol::intern(UC("after"));
     BEFORE            = Symbol::intern(UC("before"));
-    TOP_LEVEL         = Symbol::intern(UC("top level "));
+    TOP_LEVEL         = Symbol::intern(UC("top level"));
     SYNTAX            = Symbol::intern(UC("syntax"));
     QUASISYNTAX       = Symbol::intern(UC("quasisyntax"));
     UNSYNTAX          = Symbol::intern(UC("unsyntax"));

@@ -43,6 +43,24 @@
 
 using namespace scheme;
 
+Codec* UTF16Codec::getCodec()
+{
+#if WORDS_BIGENDIAN
+    return getCodec(UTF_16BE);
+#else
+    return getCodec(UTF_16LE);
+#endif
+}
+
+Codec* UTF16Codec::getCodec(int endianness)
+{
+    static Codec* codec[2] = { NULL, NULL };
+    if (codec[endianness] == NULL) {
+        codec[endianness] = new UTF16Codec(endianness);
+    }
+    return codec[endianness];
+}
+
 UTF16Codec::UTF16Codec()
 {
 #if WORDS_BIGENDIAN
@@ -55,7 +73,6 @@ UTF16Codec::UTF16Codec()
 UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
-
 }
 
 int UTF16Codec::out(BinaryOutputPort* port, ucs4char u)

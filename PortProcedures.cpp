@@ -553,21 +553,33 @@ Object scheme::latin1CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("latin-1-codec");
     checkArgumentLength(0);
-    return Object::makeLatin1Codec();
+    static Object codec = Object::Undef;
+    if (codec.isUndef()) {
+        codec = Object::makeLatin1Codec();
+    }
+    return codec;
 }
 
 Object scheme::utf8CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-8-codec");
     checkArgumentLength(0);
-    return Object::makeUTF8Codec();
+    static Object codec = Object::Undef;
+    if (codec.isUndef()) {
+        codec = Object::makeUTF8Codec();
+    }
+    return codec;
 }
 
 Object scheme::utf16CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-16-codec");
     checkArgumentLength(0);
-    return Object::makeUTF16Codec();
+    static Object codec = Object::Undef;
+    if (codec.isUndef()) {
+        codec = Object::makeUTF16Codec();
+    }
+    return codec;
 }
 
 Object scheme::nativeEolStyleEx(VM* theVM, int argc, const Object* argv)
@@ -608,6 +620,30 @@ Object scheme::nativeTranscoderEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("native-transcoder");
     checkArgumentLength(0);
     return Object::makeTranscoder(Transcoder::nativeTranscoder());
+}
+
+Object scheme::transcoderCodecEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("transcoder-codec");
+    checkArgumentLength(1);
+    argumentAsTranscoder(0, transcoder);
+    return transcoder->codec();
+}
+
+Object scheme::transcoderEolStyleEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("transcoder-eol-style");
+    checkArgumentLength(1);
+    argumentAsTranscoder(0, transcoder);
+    return transcoder->eolStyle();
+}
+
+Object scheme::transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("transcoder-error-handling-mode");
+    checkArgumentLength(1);
+    argumentAsTranscoder(0, transcoder);
+    return transcoder->errorHandlingMode();
 }
 
 Object scheme::eofObjectEx(VM* theVM, int argc, const Object* argv)

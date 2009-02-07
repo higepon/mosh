@@ -48,6 +48,12 @@ public:
     {
         return UC("utf-8-codec");
     }
+
+    static Codec* getCodec();
+private:
+    UTF8Codec() {}
+    UTF8Codec(const UTF8Codec& codec);
+    UTF8Codec& operator=(const UTF8Codec& codec);
 };
 
 }; // namespace scheme
