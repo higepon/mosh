@@ -27,7 +27,8 @@
   (export
     OS-id-features)
   (import 
-    (rnrs))
+   (only (rnrs) define apply append map cdr filter lambda car let and <= + or string-ci=? substring string-length)
+    )
 
   (define (OS-id-features OS-id features-alist)
     (define OS-id-len (string-length OS-id))

@@ -36,12 +36,13 @@
           random-source-make-integers
           random-source-make-reals)
   
-  (import (except (rnrs) error)
-          (rnrs r5rs)
-          (srfi :39 parameters)
-          (only (srfi :19 time) time-nanosecond current-time)
-          (prefix (srfi :23 error) ER:)
-          (srfi private include)
+  (import 
+   (only (except (rnrs) error) define begin define-record-type fields apply let vector-set! - * vector-ref let* do < + cons quote vector->list if and list? = length eq? car list-ref or zero? list->vector cdr integer? exact? <= not set! list vector expt cond even? else >= ... _ / lambda positive? null? real?)
+   (only (rnrs r5rs) modulo quotient exact->inexact)
+   (only (srfi :39 parameters) parameterize)
+   (only (srfi :19 time) time-nanosecond current-time)
+   (only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+   (only (srfi private include) include/resolve)
           )
   
   (define (error . args)
@@ -51,3 +52,5 @@
   
    (include/resolve ("srfi" "27") "random.ss")
   )
+ )
+

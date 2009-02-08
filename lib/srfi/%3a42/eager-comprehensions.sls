@@ -33,11 +33,12 @@
     :-dispatch-ref :-dispatch-set! make-initial-:-dispatch 
     dispatch-union :generator-proc)
   (import
-    (except (rnrs) error)
-    (rnrs r5rs)
-    (srfi :39 parameters)
-    (prefix (srfi :23 error) ER:)
-    (srfi private include))
+   (only (rnrs) _ ... define begin define-syntax syntax-rules apply if null? quote zero? vector-length car cdr cons lambda let append list? list case else cond and not set! string? string-length < string-ref + vector? vector-ref integer? exact? real? or / - * input-port? eof-object? read string-append char? <= integer->char char->integer procedure? cadr max ceiling = caddr letrec map vector->list length reverse eq?)
+   (only (rnrs r5rs) exact->inexact)
+   (only (srfi :39 parameters) parameterize make-parameter)
+   (only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+   (only (srfi private include) include/resolve)
+)
   
   (define (error . args)
     (parameterize ([ER:error-who 

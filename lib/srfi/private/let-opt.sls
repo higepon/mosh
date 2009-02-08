@@ -37,7 +37,8 @@
   (export
     let-optionals* :optional)
   (import
-    (rnrs))
+   (only (rnrs) ... _ define-syntax syntax-rules let if pair? null? cdr error quote car call-with-values lambda values begin)
+    )
 
 ;;; (:optional rest-arg default-exp [test-pred])
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -81,5 +81,6 @@
     time>=?
     time>?
     time?)
-  (import (srfi :19 time))
-)
+  (import
+(only (srfi :19 time) time? time>? time>=? time=? time<? time<=? time-utc->time-tai! time-utc->time-tai time-utc->time-monotonic! time-utc->time-monotonic time-utc->modified-julian-day time-utc->julian-day time-utc->date time-utc time-type time-tai->time-utc! time-tai->time-utc time-tai->time-monotonic! time-tai->time-monotonic time-tai->modified-julian-day time-tai->julian-day time-tai->date time-tai time-second time-resolution time-nanosecond time-monotonic->time-utc! time-monotonic->time-utc time-monotonic->time-tai! time-monotonic->time-tai time-monotonic->modified-julian-day time-monotonic->julian-day time-monotonic->date time-monotonic time-duration time-difference! time-difference time subtract-duration! subtract-duration string->date read-leap-second-table modified-julian-day->time-utc modified-julian-day->time-tai modified-julian-day->time-monotonic modified-julian-day->date make-time make-date leap-year? julian-day->time-utc julian-day->time-tai julian-day->time-monotonic julian-day->date date? date-zone-offset date-year-day date-year date-week-number date-week-day date-second date-nanosecond date-month date-minute date-hour date-day date->time-utc date->time-tai date->time-monotonic date->string date->modified-julian-day date->julian-day date current-time current-modified-julian-day current-julian-day current-date copy-time add-duration! add-duration)
+))

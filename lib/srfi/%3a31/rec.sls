@@ -25,7 +25,9 @@
 #!r6rs
 (library (srfi :31 rec)
   (export rec)
-  (import (rnrs))
+  (import 
+   (only (rnrs) ... _ define-syntax syntax-rules letrec lambda)
+)
   
   ;; Taken directly from the SRFI-31
   (define-syntax rec

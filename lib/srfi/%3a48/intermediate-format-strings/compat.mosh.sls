@@ -27,7 +27,7 @@
     pretty-print
     ascii-tab)
   (import
-    (rnrs base)
+   (only (rnrs base) define)
     (only (mosh pp) pretty-print))
 
   (define ascii-tab #\tab)

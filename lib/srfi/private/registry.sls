@@ -27,7 +27,7 @@
   (export
     available-features)
   (import 
-    (rnrs)
+(only (rnrs) define let-syntax lambda syntax-case quasisyntax let* list quasiquote apply map number->string string->symbol string-append if symbol? symbol->string cdr car quote unsyntax datum->syntax syntax append unquote unquote-splicing)
     (srfi private platform-features))
   
   (define available-features

@@ -55,12 +55,13 @@
     modified-julian-day->time-monotonic current-julian-day
     current-modified-julian-day date->string string->date)
   (import
-    (rnrs)
-    (rnrs r5rs)
-    (rnrs mutable-strings)
-    (srfi :19 time compat)
-    (srfi :6 basic-string-ports)
-    (srfi private include))
+   (only (rnrs) define begin define-syntax syntax-rules define-record-type fields mutable case-lambda get-line current-input-port eof-object quote vector expt / cond assoc => lambda if error cdr else let not eq? let* >= set! cons cadddr cdddr car read string-append open-input-file * - values letrec < caar cdar null? <= ... _ call-with-values + or and = > abs negative? char=? string-ref integer? substring string-length number->string truncate floor do make-string vector-ref vector-length string=? display list newline integer->char eof-object? char-numeric? read-char peek-char char-alphabetic? write-char cadr caddr)
+   (only (rnrs r5rs) inexact->exact remainder quotient exact->inexact modulo)
+   (only (rnrs mutable-strings) string-set!)
+   (only (srfi :19 time compat) host:time-second host:time-nanosecond host:current-time host:time-resolution host:time-gmt-offset)
+   (only (srfi :6 basic-string-ports) open-input-string get-output-string open-output-string)
+   (only (srfi private include) include/resolve)
+)
   
   (define read-line
     (case-lambda

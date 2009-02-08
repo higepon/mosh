@@ -26,8 +26,9 @@
 (library (srfi :23 error)
   (export error error-who)
   (import 
-    (rename (rnrs base) (error rnrs:error))
-    (srfi :39 parameters))
+   (only (rename (rnrs base) (error rnrs:error)) define apply rnrs:error)
+   (only (srfi :39 parameters) make-parameter)
+)
   
   (define error-who (make-parameter #f))
   

@@ -27,7 +27,8 @@
   (export 
     (rename (srfi:define-record-type define-record-type)))
   (import 
-    (rnrs))
+(only (rnrs) ... _ define-syntax lambda syntax-case and for-all identifier? syntax or = length car memp bound-identifier=? with-syntax map if quasisyntax remp define-record-type sealed protocol fields immutable unsyntax mutable)
+    )
   
   (define-syntax srfi:define-record-type
     (lambda (stx)

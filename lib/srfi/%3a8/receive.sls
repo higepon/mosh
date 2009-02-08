@@ -25,7 +25,9 @@
 #!r6rs
 (library (srfi :8 receive)
   (export receive)
-  (import (rnrs))
+  (import
+(only (rnrs) _ ... define-syntax syntax-rules lambda call-with-values)
+          )
   
   (define-syntax receive
     (syntax-rules ()

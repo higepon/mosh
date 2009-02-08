@@ -33,9 +33,9 @@
     option-optional-arg?
     option-processor)
   (import 
-    (rnrs)
-    (srfi private include))
-  
+(only (rnrs) define-record-type fields protocol define lambda if and list? positive? length for-all or string? string-length char? boolean? not procedure? assertion-violation quote let begin letrec cond null? car else cdr equal? = let* < + let-values apply substring pair? list string-ref values string=? > char=? => let*-values)
+(only (srfi private include) include/resolve)
+  )
   
   (define-record-type option
     (fields 

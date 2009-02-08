@@ -29,7 +29,7 @@
     open-output-string
     get-output-string)
   (import
-    (rnrs base)
+    (only (rnrs base) define)
     (only (rnrs io ports) open-string-input-port)
     (srfi :6 basic-string-ports compat))
   

@@ -27,7 +27,9 @@
   (export
     (rename (general-cond cond)))
   (import
-    (rnrs))
+   (only (rnrs) ... _ define-syntax lambda syntax-case with-syntax syntax map cond => apply let-values and)
+    )
+
   
   (define-syntax general-cond
     (lambda (stx)

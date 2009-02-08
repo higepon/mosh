@@ -31,9 +31,10 @@
           stream-take-while stream-unfold stream-unfolds stream-zip)
 
   (import 
-   (rnrs)
-;(only (rnrs) define-syntax syntax-rules define ... lambda syntax-case syntax and identifier? free-identifier=? if not list? error quote null? car cdr let input-port? current-input-port eof-object? read-char cond integer? negative? else or zero? cons - = length cadr exists apply append list procedure? begin map number? + < > pair? values list-ref call-with-values)
-          (srfi :41 streams primitive))
+   (only (rnrs) define-syntax syntax-rules define ... lambda syntax-case syntax and identifier? free-identifier=? if not list? error quote null? car cdr let input-port? current-input-port eof-object? read-char cond integer? negative? else or zero? cons - = length cadr exists apply append list procedure? begin map number? + < > pair? values list-ref call-with-values _ eq?)
+   (only (srfi :41 streams primitive) stream-lambda stream-null stream-cons stream? stream-null? stream-car stream-cdr stream-pair?)
+)
+         
 
   (define-syntax define-stream
     (syntax-rules ()

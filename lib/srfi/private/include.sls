@@ -27,7 +27,7 @@
   (export 
     include/resolve)
   (import 
-    (rnrs) 
+(only (rnrs) define-syntax lambda define syntax-case for-all and string? positive? string-length syntax->datum syntax let if null? error quote file-exists? cdr string-append car apply map with-exception-handler raise condition make-error make-who-condition make-message-condition make-irritants-condition list condition? call-with-input-file eof-object? datum->syntax quasiquote cons read _ ... unquote reverse)
     (for (srfi private include compat) expand))
   
   (define-syntax include/resolve

@@ -39,12 +39,14 @@
            refine-compare select-compare string-compare string-compare-ci 
            symbol-compare vector-compare vector-compare-as-list)
   
-  (import (except (rnrs) error)
-          (rnrs r5rs)    ; for modulo
-          (srfi :27 random-bits)  ; for random-integer
-          (srfi :39 parameters)
-          (prefix (srfi :23 error) ER:)
-          (srfi private include))
+  (import
+(only (rnrs) ... _ define begin define-syntax syntax-rules apply for-each lambda case-lambda case else if procedure? let null? car cdr < and let* length + cons quote list-ref = <= not integer? exact? cond - boolean? string-append char? eq? char=? char<? char-ci=? char-ci<? string? string=? string<? string-ci=? string-ci<? symbol? symbol->string rational? real? complex? imag-part real-part number? pair? vector-length vector-ref min vector? zero? list? map * set! or eqv? list eq?)
+(only (rnrs r5rs) modulo)
+(only (srfi :27 random-bits) random-integer)
+(only (srfi :39 parameters) parameterize)
+(only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+(only (srfi private include) include/resolve)
+)
   
   (define (error . args)
     (parameterize ([ER:error-who 
@@ -53,3 +55,8 @@
   
   (include/resolve ("srfi" "67") "compare.ss")  
   )
+compare.ss")  
+  )
+mpare.ss")  
+  )
+

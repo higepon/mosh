@@ -39,10 +39,11 @@
   (export 
     format)
   (import
-    (rnrs)
-    (srfi :48 intermediate-format-strings compat)
-    (srfi :6 basic-string-ports)
-    (srfi :38 with-shared-structure))
+(only (rnrs) define if string? null? list let cdr lambda values cond eq? current-output-port output-port? else car not letrec string-length >= eqv? + write-char string-ref or and zero? - case display write number->string newline char-numeric? cons char=? char-upcase string->number list->string reverse length quote < cadr cddr when number? let* string-append negative? substring rational? imag-part real-part error make-string = > round positive? apply assertion-violation)
+(only (srfi :48 intermediate-format-strings compat) ascii-tab pretty-print)
+(only (srfi :6 basic-string-ports) open-output-string get-output-string)
+(only (srfi :38 with-shared-structure) write-with-shared-structure)
+)
     
   (define (format arg0 . arg*)
     

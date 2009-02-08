@@ -13,6 +13,7 @@
         (srfi :16)
         (srfi :19)
         (srfi :23)
+        (srfi :26)
         (srfi :27)
         (srfi :31)
         (srfi :37)

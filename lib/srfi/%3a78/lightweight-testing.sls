@@ -40,12 +40,13 @@
     :-dispatch-ref :-dispatch-set! make-initial-:-dispatch 
     dispatch-union :generator-proc)
   (import 
-    (except (rnrs) error)
-    (srfi :78 lightweight-testing compat)
-    (srfi :39 parameters)
-    (srfi private include)
-    (prefix (srfi :23 error) ER:)
-    (srfi :42 eager-comprehensions))
+(only (rnrs) define begin define-syntax syntax-rules ... _ quote set! apply write lambda case else + cons list newline display if not = >= length or null? <= let* caddr cadr car reverse and let cadddr cddddr => equal?)
+(only (srfi :78 lightweight-testing compat) pretty-print/no-trailing-newline)
+    (only (srfi :39 parameters) parameterize make-parameter)
+(only (srfi private include) include/resolve)
+(only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+(only (srfi :42 eager-comprehensions) :generator-proc dispatch-union make-initial-:-dispatch :-dispatch-set! :-dispatch-ref :until :while :parallel :let :do :dispatched :port :char-range :real-range :range :integers :vector :string :list : fold3-ec fold-ec last-ec first-ec every?-ec any?-ec max-ec min-ec product-ec sum-ec vector-of-length-ec vector-ec string-append-ec string-ec append-ec list-ec do-ec)
+)
   
   (define (error . args)
     (parameterize ([ER:error-who

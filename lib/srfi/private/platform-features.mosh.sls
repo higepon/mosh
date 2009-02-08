@@ -3,7 +3,7 @@
     OS-features
     implementation-features)
   (import
-    (rnrs)
+   (only (rnrs) define quote)
     (only (mosh) host-os)
     (srfi private OS-id-features))
 

@@ -56,14 +56,14 @@
     vector->list          reverse-vector->list
     list->vector          reverse-list->vector )
   (import
-    (except (rnrs) error vector-map vector-for-each vector-fill! vector->list
-                   list->vector)
-    (prefix (only (rnrs) vector-fill! vector->list list->vector) rnrs:)
-    (rnrs r5rs)
-    (prefix (srfi :23 error) ER:)
-    (srfi :39 parameters)
-    (srfi :8 receive)
-    (srfi private include))
+(only (rnrs) ... _ define define-syntax lambda syntax-case if identifier? syntax begin syntax-rules apply and integer? not negative? < <= map vector-ref let cond quasiquote >= vector-length else > values append null? cdr car cddr cadr letrec min vector? - + vector-set! = zero? make-vector procedure? quote cdddr caddr let* or eq? cons positive? do case-lambda length list-tail pair? list list? vector)
+(prefix (only (rnrs) vector-fill! vector->list list->vector) rnrs:)
+(only (rnrs r5rs) quotient)
+(only (prefix (srfi :23 error) ER:) ER:error ER:error-who)
+(only (srfi :39 parameters) parameterize)
+(only (srfi :8 receive) receive)
+(only (srfi private include) include/resolve)
+)
   
   (define (error . args)
     (parameterize ([ER:error-who 
