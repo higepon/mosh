@@ -1,6 +1,0 @@
-(load (string-append laml-dir "laml.scm"))
-
-(laml "sample-css-stylsheets")
-(laml "make-all-examples")
-
-(end-laml)

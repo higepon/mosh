@@ -1,6 +1,0 @@
-; Parses xhtml1.0 transitional
-
-(define dtd-dir (string-append laml-dir "tools/dtd-parser/dtds/"))
-
-(load (string-append laml-dir "tools/dtd-parser/dtd-parser-4.scm"))
-(parse-dtd (string-append dtd-dir "xhtml10-transitional"))

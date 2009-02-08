@@ -1,1 +1,0 @@
-;; .parameter par-name  parameter description

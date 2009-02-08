@@ -1,8 +1,0 @@
-(load (string-append laml-dir "laml.scm"))
-
-(define (process-list . lst)
- (for-each (lambda (f) (display f) (newline) (newline) (laml f)) lst))
-
-(process-list "bikes" "manual-example" "index")
-
-(end-laml)

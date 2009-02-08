@@ -1,1 +1,0 @@
-;; .pre-condition Some precondition

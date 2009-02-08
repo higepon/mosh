@@ -1,8 +1,0 @@
-(load (string-append laml-dir "laml.scm"))
-(load (string-append laml-dir "lib/xml-in-laml/xml-in-laml.scm"))
-(load (string-append laml-dir "lib/xml-in-laml/mirrors/xhtml10-transitional-mirror.scm"))
-(load (string-append laml-dir "lib/xhtml1.0-convenience.scm"))
-(load (string-append laml-dir "lib/file-read.scm"))
-(load (string-append laml-dir "lib/time.scm"))
-(load (string-append laml-dir "lib/color.scm"))
-(laml-style "manual/manual" (string-append laml-dir "styles/") 'conservative-xhtml-loading)

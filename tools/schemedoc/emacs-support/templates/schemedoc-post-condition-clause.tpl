@@ -1,1 +1,0 @@
-;; .post-condition Some postcondition

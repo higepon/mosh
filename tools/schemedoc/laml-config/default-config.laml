@@ -1,3 +1,0 @@
-(load "laml-config-internal.scm")
-(laml-config (file-read "configuration"))
-
