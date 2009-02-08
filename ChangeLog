@@ -1,3 +1,7 @@
+2009-02-08  higepon  <higepon@users.sourceforge.jp>
+
+        * configure.ac: Added -march.
+
 2009-02-07  higepon  <higepon@users.sourceforge.jp>
 
         * Size reduction srfi 0, 1, 11, 13 and 14.

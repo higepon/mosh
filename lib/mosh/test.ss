@@ -48,7 +48,7 @@
   (export test* test/exception test/violation? test/t test/f test-end)
   (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
                 set! equal? quote begin syntax->datum exit ... guard violation? cons
-                list cond > length display for-each current-error-port car cadr caddr)
+                list cond > length display for-each current-error-port car cadr caddr _)
           (only (mosh) format)
           (only (system) make-parameter))
 

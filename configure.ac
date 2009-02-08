@@ -113,10 +113,11 @@ esac
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
+
 case "$host_cpu" in
 i[[3456]]86|pentium)
         arch=i386
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu -mtune=$host_cpu"
         AC_MSG_RESULT([$host_cpu])
         AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
         ;;
@@ -133,6 +134,8 @@ x86?64*)
         AC_DEFINE([ARCH_UNKNOWN], 1, [Define for the AMD x86-64 architecture.])
         ;;
 esac
+
+
 AC_SUBST(MOSH_OPTS)
 
 AC_ARG_WITH(mysql,
