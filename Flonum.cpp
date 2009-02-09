@@ -57,20 +57,20 @@ void Flonum::initialize()
     NOT_A_NUMBER = Object::makeFlonum(zero() / zero());
 }
 
-#define MAKE_LOCAL_OP(op, symbol)\
-Object Flonum::op(Bignum* n1, Flonum* n2)\
-{\
-    return Object::makeFlonum(n1->toDouble() symbol n2->value());\
-}\
-Object Flonum::op(Flonum* n1, Bignum* n2)\
-{\
-    return Object::makeFlonum(n1->value() symbol n2->toDouble());\
-}
+// #define MAKE_LOCAL_OP(op, symbol)\
+// Object Flonum::op(Bignum* n1, Flonum* n2)\
+// {\
+//     return Object::makeFlonum(n1->toDouble() symbol n2->value());\
+// }\
+// Object Flonum::op(Flonum* n1, Bignum* n2)\
+// {\
+//     return Object::makeFlonum(n1->value() symbol n2->toDouble());\
+// }
 
-MAKE_LOCAL_OP(add, +)
-MAKE_LOCAL_OP(sub, -)
-MAKE_LOCAL_OP(div, /)
-MAKE_LOCAL_OP(mul, *)
+// MAKE_LOCAL_OP(add, +)
+// MAKE_LOCAL_OP(sub, -)
+// MAKE_LOCAL_OP(div, /)
+// MAKE_LOCAL_OP(mul, *)
 
 // // Bignum(n2) * n1 is more exact than n1->toDouble() * n2->value
 // Object Flonum::mul(Bignum* n1, Flonum* n2)

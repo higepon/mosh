@@ -70,8 +70,3 @@ char* Bignum::toString(int radix /* = 10 */) const
     return mpz_get_str(NULL, radix, value);
 }
 
-double Bignum::toDouble() const
-{
-    return mpz_get_d(value);
-}
-

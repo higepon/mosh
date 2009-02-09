@@ -290,19 +290,36 @@ public:
     MAKE_FLONUM_OP_FUNC(mul, *);
     MAKE_FLONUM_OP_FUNC(div, /);
 
+#define MAKE_LOCAL_OP_F(op, symbol)\
+static Object op(Bignum* n1, Flonum* n2)\
+{\
+    return Object::makeFlonum(n1->toDouble() symbol n2->value());\
+}\
+static Object op(Flonum* n1, Bignum* n2)\
+{\
+    return Object::makeFlonum(n1->value() symbol n2->toDouble());\
+}
+
+MAKE_LOCAL_OP_F(add, +)
+MAKE_LOCAL_OP_F(sub, -)
+MAKE_LOCAL_OP_F(div, /)
+MAKE_LOCAL_OP_F(mul, *)
+
+
+
     static void initialize();
     static Object NEGATIVE_INF;
     static Object POSITIVE_INF;
     static Object NOT_A_NUMBER;
 
-    static Object add(Bignum* n1, Flonum* n2);
-    static Object add(Flonum* n1, Bignum* n2);
-    static Object sub(Bignum* n1, Flonum* n2);
-    static Object sub(Flonum* n1, Bignum* n2);
-    static Object mul(Bignum* n1, Flonum* n2);
-    static Object mul(Flonum* n1, Bignum* n2);
-    static Object div(Bignum* n1, Flonum* n2);
-    static Object div(Flonum* n1, Bignum* n2);
+//     static Object add(Bignum* n1, Flonum* n2);
+//     static Object add(Flonum* n1, Bignum* n2);
+//     static Object sub(Bignum* n1, Flonum* n2);
+//     static Object sub(Flonum* n1, Bignum* n2);
+//     static Object mul(Bignum* n1, Flonum* n2);
+//     static Object mul(Flonum* n1, Bignum* n2);
+//     static Object div(Bignum* n1, Flonum* n2);
+//     static Object div(Flonum* n1, Bignum* n2);
 
     Object sqrt() const
     {

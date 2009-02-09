@@ -1,10 +1,6 @@
-(import (srfi :0)
-        (only (rnrs)define else quote display))
+(import (rnrs))
 
-(cond-expand
- (mosh
-   (define name 'moshs))
- (else
-  (define name 'other)))
-
-(display name)
+(let loop ([i 0])
+  (if (= i 1000000)
+      '()
+      (begin (+ 1.0 i) (loop (+ i 1)))))

@@ -46,7 +46,13 @@ public:
     ~Bignum();
 
     char* toString(int radix = 10) const;
-    double toDouble() const;
+
+    double toDouble() const
+    {
+        return mpz_get_d(value);
+    }
+
+
     bool isEven() const
     {
         return mpz_even_p(value) != 0;

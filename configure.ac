@@ -87,70 +87,70 @@ int main(int, char **)
 [have_ext_hashes=0])
 AC_MSG_RESULT([$have_ext_hashes])
 
-AC_MSG_CHECKING([sse])
-AC_COMPILE_IFELSE([
-#include <xmmintrin.h>
-int main(int, char **)
-{
-    __m128 v;v=_mm_sub_ss(v,v);
-}
-],
-[have_sse=1],
-[have_sse=0])
+dnl AC_MSG_CHECKING([sse])
+dnl AC_COMPILE_IFELSE([
+dnl #include <xmmintrin.h>
+dnl int main(int, char **)
+dnl {
+dnl     __m128 v;v=_mm_sub_ss(v,v);
+dnl }
+dnl ],
+dnl [have_sse=1],
+dnl [have_sse=0])
 
-if test x$have_sse = x1; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
+dnl if test x$have_sse = x1; then
+dnl   AC_MSG_RESULT(yes)
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
 
-AC_MSG_CHECKING([sse2])
-AC_COMPILE_IFELSE([
-#include <emmintrin.h>
-int main(int, char **)
-{
-   __m128i v;v=_mm_add_epi32(v,v);
-}
-],
-[have_sse2=1],
-[have_sse2=0])
+dnl AC_MSG_CHECKING([sse2])
+dnl AC_COMPILE_IFELSE([
+dnl #include <emmintrin.h>
+dnl int main(int, char **)
+dnl {
+dnl    __m128i v;v=_mm_add_epi32(v,v);
+dnl }
+dnl ],
+dnl [have_sse2=1],
+dnl [have_sse2=0])
 
-if test x$have_sse2 = x1; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
+dnl if test x$have_sse2 = x1; then
+dnl   AC_MSG_RESULT(yes)
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
 
-AC_MSG_CHECKING([sse3])
-AC_COMPILE_IFELSE([
-#include <emmintrin.h>
-int main(int, char **)
-{
-    __m128d v;v=_mm_addsub_pd(v,v);
-}
-],
-[have_sse3=1],
-[have_sse3=0])
+dnl AC_MSG_CHECKING([sse3])
+dnl AC_COMPILE_IFELSE([
+dnl #include <emmintrin.h>
+dnl int main(int, char **)
+dnl {
+dnl     __m128d v;v=_mm_addsub_pd(v,v);
+dnl }
+dnl ],
+dnl [have_sse3=1],
+dnl [have_sse3=0])
 
-if test x$have_sse3 = x1; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-fi
+dnl if test x$have_sse3 = x1; then
+dnl   AC_MSG_RESULT(yes)
+dnl else
+dnl   AC_MSG_RESULT(no)
+dnl fi
 
-if test x$have_sse3 = x1; then
-    MOSH_SSE_OPTS=" -msse3"
-else
-if test x$have_sse2 = x1; then
-    MOSH_SSE_OPTS=" -msse2"
-else
-if test x$have_sse = x1; then
-    MOSH_SSE_OPTS=" -msse"
-else
-    MOSH_SSE_OPTS=""
-fi
-fi
-fi
+dnl if test x$have_sse3 = x1; then
+dnl     MOSH_SSE_OPTS=" -msse3"
+dnl else
+dnl if test x$have_sse2 = x1; then
+dnl     MOSH_SSE_OPTS=" -msse2"
+dnl else
+dnl if test x$have_sse = x1; then
+dnl     MOSH_SSE_OPTS=" -msse"
+dnl else
+dnl     MOSH_SSE_OPTS=""
+dnl fi
+dnl fi
+dnl fi
 
 
 HAVE_TR1_HASHES=$have_tr1_hashes
@@ -176,20 +176,20 @@ case "$target_os" in
     ;;
 esac
 
-MOSH_OPTS+="$MOSH_SSE_OPTS"
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 case "$host_cpu" in
 i[[3456]]86|pentium)
         arch=i386
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu -mtune=$host_cpu"
+        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+#        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -march=$host_cpu -pg"
         AC_MSG_RESULT([$host_cpu])
         AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
         ;;
 x86?64*)
         arch=x86_64
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -msse3 -mfpmath=sse"
         AC_MSG_RESULT([x86_64])
         AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
         ;;
