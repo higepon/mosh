@@ -331,7 +331,11 @@ void FaslWriter::putDatum(Object obj)
     }
     if (obj.isFixnum()) {
         const int n = obj.toFixnum();
-        if (n >= 0 && n <= 255) {
+        if (n == 0) {
+            emitU8(Fasl::TAG_FIXNUM_0);
+        } else if (n == 1) {
+            emitU8(Fasl::TAG_FIXNUM_1);
+        } else if (n >= 2 && n <= 255) {
             emitU8(Fasl::TAG_SMALL_FIXNUM);
             emitU8(n);
         } else if (n >= 256 && n <= 65535) {

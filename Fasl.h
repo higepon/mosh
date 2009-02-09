@@ -70,6 +70,8 @@ public:
         TAG_RECORD,
         TAG_EQ_HASH_TABLE,
         TAG_BIGNUM,
+        TAG_FIXNUM_0,
+        TAG_FIXNUM_1,
         forbidden_comma
     };
 };
@@ -129,6 +131,12 @@ private:
         case Fasl::TAG_MEDIUM_FIXNUM: {
             const int value = fetchU16();
             return Object::makeFixnum(value);
+        }
+        case Fasl::TAG_FIXNUM_0: {
+            return Object::makeFixnum(0);
+        }
+        case Fasl::TAG_FIXNUM_1: {
+            return Object::makeFixnum(1);
         }
         case Fasl::TAG_FIXNUM: {
             const int value = fetchU32();
