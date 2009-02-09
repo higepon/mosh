@@ -61,7 +61,7 @@ public:
     int close();
     bool isClosed() const;
     int fileno() const;
-    int bufFlush();
+    void bufFlush();
 
 protected:
     int fd_;

@@ -40,9 +40,9 @@
 // #include <stdint.h>
 // #include <stdarg.h>
 // #include <string.h>
-// #include <unistd.h>
+#include <unistd.h>
 // #include <assert.h>
-// #include <errno.h>
+#include <errno.h>
 
 
 // #include "dirent.h"
@@ -150,5 +150,21 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
     class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, std::allocator<std::pair<const ucs4char* const, Object> > > {};
 #endif
 };
+
+
+// from Gauche
+#define SCM_SYSCALL3(result, expr, check)       \
+    do {                                        \
+        (result) = (expr);                      \
+        if ((check) && errno == EINTR) {        \
+            /* ScmVM *vm__ = Scm_VM(); */       \
+            errno = 0;                          \
+            /* SCM_SIGCHECK(vm__); */           \
+        } else {                                \
+            break;                              \
+        }                                       \
+    } while (1)
+#define SCM_SYSCALL(result, expr) \
+    SCM_SYSCALL3(result, expr, (result < 0))
 
 #endif // __SCHEME_SCHEME_H__

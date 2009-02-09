@@ -193,10 +193,28 @@ int FileBinaryInputPort::fileno() const
     return fd_;
 }
 
+int FileBinaryInputPort::realRead(int fd, uint8_t* buf, size_t count)
+{
+    int bufReadLen;
+    SCM_SYSCALL(bufReadLen, read(fd_, buffer_, count));
+    if (bufReadLen < 0) {
+        MOSH_FATAL("read failed\n");
+    }
+    return bufReadLen;
+}
+
 void FileBinaryInputPort::bufFill()
 {
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-        bufLen_ = read(fd_, buffer_, BUF_SIZE);
+        int readCount = 0;
+        while (readCount < BUF_SIZE) {
+            const int bufReadLen = realRead(fd_, buffer_+readCount, BUF_SIZE-readCount);
+            if (bufReadLen == 0) { // EOF
+                break;
+            }
+            readCount += bufReadLen;
+        }
+        bufLen_ = readCount;
         bufIdx_ = 0;
     }
 }
@@ -204,7 +222,7 @@ void FileBinaryInputPort::bufFill()
 int FileBinaryInputPort::bufRead1(uint8_t* data)
 {
     if (bufferMode_ == NONE) {
-        return read(fd_, data, 1);
+        return realRead(fd_, data, 1);
     }
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         for (;;) {
@@ -230,7 +248,7 @@ int FileBinaryInputPort::bufRead1(uint8_t* data)
 int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
 {
     if (bufferMode_ == NONE) {
-        return read(fd_, data, reqSize);
+        return realRead(fd_, data, reqSize);
     }
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
         int readSize = 0;

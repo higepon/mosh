@@ -69,6 +69,7 @@ private:
     int bufLen_;
     int bufIdx_;
 
+    int realRead(int fd, uint8_t* buf, size_t count);
     void bufFill();
     int bufRead(uint8_t* data, int reqSize);
     int bufRead1(uint8_t* data);

@@ -155,16 +155,20 @@ int FileBinaryOutputPort::fileno() const
     return fd_;
 }
 
-int FileBinaryOutputPort::bufFlush()
+void FileBinaryOutputPort::bufFlush()
 {
     if ((buffer_ != NULL && bufIdx_ != 0) &&
         (bufferMode_ == LINE || bufferMode_ == BLOCK)) {
-        const int bufWriteLen = write(fd_, buffer_, bufIdx_);
-        MOSH_ASSERT(bufWriteLen == bufIdx_);
-        bufIdx_ = 0;
-        return bufWriteLen;
-    } else {
-        return 0;
+        uint8_t* buf = buffer_;
+        while (bufIdx_ > 0) {
+            int bufWriteLen;
+            SCM_SYSCALL(bufWriteLen, write(fd_, buf, bufIdx_));
+            if (bufWriteLen < 0) {
+                MOSH_FATAL("write failed\n");
+            }
+            buf += bufWriteLen;
+            bufIdx_ -= bufWriteLen;
+        }
     }
 }
 
@@ -179,10 +183,7 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
         while (writeSize < reqSize) {
             const int bufDiff = BUF_SIZE - bufIdx_;
             if (bufDiff == 0) {
-                if (bufFlush() < BUF_SIZE) {
-                    // todo
-                    break;
-                }
+                bufFlush();
             }
             *(buffer_+bufIdx_) = *(data+writeSize);
             bufIdx_++;
@@ -207,10 +208,7 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
             } else {
                 memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
                 writeSize += bufDiff;
-                if (bufFlush() < BUF_SIZE) {
-                    // todo
-                    break;
-                }
+                bufFlush();
             }
         }
         return writeSize;
