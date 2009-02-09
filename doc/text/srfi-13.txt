@@ -1,8 +1,0 @@
-Title: String Libraries
-
-String Libraries
-
-See <http://srfi.schemers.org/srfi-13/srfi-13.html>.
-
-library: (srfi :13)
-

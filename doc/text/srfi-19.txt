@@ -1,8 +1,0 @@
-Title: Time
-
-Time Data Types and Procedures
-
-See <http://srfi.schemers.org/srfi-19/srfi-19.html>.
-
-library: (srfi :19)
-

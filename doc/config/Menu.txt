@@ -76,6 +76,7 @@ Group: R6RS  {
    File: Mutable strings  (doc/text/stringset.tex.txt)
    File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
    File: Entry format  (doc/text/entry.tex.txt)
+   File: SRFIs  (doc/text/srfi-8.txt)
    }  # Group: R6RS
 
 Group: Mosh Library  {
@@ -90,19 +91,7 @@ Group: Mosh Library  {
    File: Unit Testing  (lib/mosh/test.ss)
    }  # Group: Mosh Library
 
-Group: SRFI  {
-
-   File: Receive  (doc/text/srfi-8.txt)
-   File: String Libraries  (doc/text/srfi-13.txt)
-   File: Character-set Library  (doc/text/srfi-14.txt)
-   File: Time  (doc/text/srfi-19.txt)
-   File: Sources of Random Bits  (doc/text/srfi-26.txt)
-   File: Basic Format Strings  (doc/text/srfi-28.txt)
-   File: External Representation for Data With Shared Structure  (doc/text/srfi-38.txt)
-   File: Parameter objects  (doc/text/srfi-39.txt)
-   File: Streams  (doc/text/srfi-41.txt)
-   File: Environment variables  (doc/text/srfi-98.txt)
-   }  # Group: SRFI
+File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {
 

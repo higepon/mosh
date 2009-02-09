@@ -1,0 +1,85 @@
+Title: SRFIs
+
+Following SRFI libraries are supported.
+
+We use Derick Eddington's SRFI implmentations for R6RS.
+
+library: (srfi :0 cond-expand)
+<http://srfi.schemers.org/srfi-0/srfi-.html>
+
+library: (srfi :1 lists)
+<http://srfi.schemers.org/srfi-1/srfi-1.html>
+
+library: (srfi :2 and-let*)
+<http://srfi.schemers.org/srfi-2/srfi-2.html>
+
+library: (srfi :6 basic-string-ports)
+<http://srfi.schemers.org/srfi-6/srfi-6.html>
+
+library: (srfi :8 receive)
+<http://srfi.schemers.org/srfi-8/srfi-8.html>
+
+library: (srfi :9 records)
+<http://srfi.schemers.org/srfi-9/srfi-9.html>
+
+library: (srfi :11 let-values)
+<http://srfi.schemers.org/srfi-11/srfi-11.html>
+
+library: (srfi :13 strings)
+<http://srfi.schemers.org/srfi-13/srfi-13.html>
+
+library: (srfi :14 char-sets)
+<http://srfi.schemers.org/srfi-14/srfi-14.html>
+
+library: (srfi :16 case-lambda)
+<http://srfi.schemers.org/srfi-16/srfi-16.html>
+
+library: (srfi :19 time)
+<http://srfi.schemers.org/srfi-19/srfi-19.html>
+
+library: (srfi :23 error)
+<http://srfi.schemers.org/srfi-23/srfi-23.html>
+
+library: (srfi :26 cut)
+<http://srfi.schemers.org/srfi-26/srfi-26.html>
+
+library: (srfi :27 random-bits)
+<http://srfi.schemers.org/srfi-27/srfi-27.html>
+
+library: (srfi :31 rec)
+<http://srfi.schemers.org/srfi-31/srfi-31.html>
+
+library: (srfi :37 args-fold)
+<http://srfi.schemers.org/srfi-37/srfi-37.html>
+
+library: (srfi :38 with-shared-structure)
+<http://srfi.schemers.org/srfi-38/srfi-38.html>
+
+library: (srfi :39 parameters)
+<http://srfi.schemers.org/srfi-39/srfi-39.html>
+
+library: (srfi :41 streams)
+<http://srfi.schemers.org/srfi-41/srfi-41.html>
+
+library: (srfi :42 eager-comprehensions)
+<http://srfi.schemers.org/srfi-42/srfi-42.html>
+
+library: (srfi :43 vectors)
+<http://srfi.schemers.org/srfi-43/srfi-43.html>
+
+library: (srfi :48 intermediate-format-strings)
+<http://srfi.schemers.org/srfi-48/srfi-48.html>
+
+library: (srfi :61 cond)
+<http://srfi.schemers.org/srfi-61/srfi-61.html>
+
+library: (srfi :67 compare-procedures)
+<http://srfi.schemers.org/srfi-67/srfi-67.html>
+
+library: (srfi :78 lightweight-testing)
+<http://srfi.schemers.org/srfi-78/srfi-78.html>
+
+library: (srfi :98)
+<http://srfi.schemers.org/srfi-98/srfi-98.html>
+
+

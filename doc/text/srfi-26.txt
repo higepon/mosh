@@ -1,8 +1,0 @@
-Title: Sources of Random Bits
-
-An interface to sources of random bits, or "random sources" for brevity.
-
-See <http://srfi.schemers.org/srfi-27/srfi-27.html>.
-
-library: (srfi :27)
-

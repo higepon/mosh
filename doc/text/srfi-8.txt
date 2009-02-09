@@ -1,8 +1,0 @@
-Title: Receive
-
-Binding to multiple values.
-
-See <http://srfi.schemers.org/srfi-8/srfi-8.html>.
-
-library: (srfi :8)
-
