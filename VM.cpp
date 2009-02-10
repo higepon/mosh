@@ -152,7 +152,7 @@ void VM::dumpCompiledCode(Object code) const
     for (int i = 0; i < v->length(); i++) {
         const Object c = v->ref(i);
         if (c.isInstruction()) {
-            LOG1("~a ", Instruction::toString(c.val));
+            LOG1("\n~a ", Instruction::toString(c.val));
         } else {
             LOG1("~a ", c);
         }

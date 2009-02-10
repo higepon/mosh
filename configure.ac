@@ -49,6 +49,10 @@ else
   AC_DEFINE(ENABLE_PROFILER, , enable -p option for profiling)
 fi
 
+AC_MSG_RESULT([$host_os])
+AC_MSG_RESULT([$host])
+AC_MSG_RESULT([$target])
+
 case $host in
   *darwin*)
   SHLIB_SO_LDFLAGS="-dynamiclib"
@@ -182,8 +186,19 @@ AC_MSG_CHECKING([for supported architecture])
 case "$host_cpu" in
 i[[3456]]86|pentium)
         arch=i386
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
-#        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -march=$host_cpu -pg"
+        case "$target_os" in
+        *darwin*)
+          if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
+             MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=pentium-m -msse2 -mfpmath=sse"
+          else
+             MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+          fi
+          ;;
+        *)
+          MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+          ;;
+        esac
+
         AC_MSG_RESULT([$host_cpu])
         AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
         ;;

@@ -865,7 +865,7 @@ Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
     for (int i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
         const Object c = code[i];
         if (c.isInstruction()) {
-            LOG1("~a ", Instruction::toString(c.val));
+            LOG1("\n~a ", Instruction::toString(c.val));
         } else {
             LOG1("~a ", c);
         }
