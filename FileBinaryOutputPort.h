@@ -70,6 +70,7 @@ protected:
     uint8_t* buffer_;
     int bufIdx_;
 
+    int realWrite(int fd, uint8_t* buf, size_t count);
     int bufWrite(uint8_t* data, int reqSize);
 };
 

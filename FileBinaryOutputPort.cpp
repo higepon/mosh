@@ -161,11 +161,7 @@ void FileBinaryOutputPort::bufFlush()
         (bufferMode_ == LINE || bufferMode_ == BLOCK)) {
         uint8_t* buf = buffer_;
         while (bufIdx_ > 0) {
-            int bufWriteLen;
-            SCM_SYSCALL(bufWriteLen, write(fd_, buf, bufIdx_));
-            if (bufWriteLen < 0) {
-                MOSH_FATAL("write failed\n");
-            }
+            const int bufWriteLen = realWrite(fd_, buf, bufIdx_);
             buf += bufWriteLen;
             bufIdx_ -= bufWriteLen;
         }
@@ -173,10 +169,20 @@ void FileBinaryOutputPort::bufFlush()
 }
 
 
+int FileBinaryOutputPort::realWrite(int fd, uint8_t* buf, size_t count)
+{
+    int bufWriteLen;
+    SCM_SYSCALL(bufWriteLen, write(fd, buf, count));
+    if (bufWriteLen < 0) {
+        MOSH_FATAL("write failed\n");
+    }
+    return bufWriteLen;
+}
+
 int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
 {
     if (bufferMode_ == NONE) {
-        return write(fd_, data, reqSize);
+        return realWrite(fd_, data, reqSize);
     }
     if (bufferMode_ == LINE) {
         int writeSize = 0;

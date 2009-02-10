@@ -49,6 +49,10 @@ using namespace scheme;
 
 FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
+    if (fd == 0) {
+        bufferMode_ = LINE;
+    }
+
 #ifdef USE_BOEHM_GC
     buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
 #else
@@ -196,7 +200,7 @@ int FileBinaryInputPort::fileno() const
 int FileBinaryInputPort::realRead(int fd, uint8_t* buf, size_t count)
 {
     int bufReadLen;
-    SCM_SYSCALL(bufReadLen, read(fd_, buffer_, count));
+    SCM_SYSCALL(bufReadLen, read(fd, buf, count));
     if (bufReadLen < 0) {
         MOSH_FATAL("read failed\n");
     }
@@ -205,7 +209,11 @@ int FileBinaryInputPort::realRead(int fd, uint8_t* buf, size_t count)
 
 void FileBinaryInputPort::bufFill()
 {
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
+    if (bufferMode_ == LINE) {
+        const int bufReadLen = realRead(fd_, buffer_, BUF_SIZE);
+        bufLen_ = bufReadLen;
+        bufIdx_ = 0;
+    } else if (bufferMode_ == BLOCK) {
         int readCount = 0;
         while (readCount < BUF_SIZE) {
             const int bufReadLen = realRead(fd_, buffer_+readCount, BUF_SIZE-readCount);
