@@ -1,5 +1,7 @@
 2009-02-10  higepon  <higepon@users.sourceforge.jp>
 
+        * Added : msse, msse2, msse3 and fpmath=sse for some processors.
+
         * configure.ac: Added OSX Core2 Duo check.
 
 2009-02-09  higepon  <higepon@users.sourceforge.jp>

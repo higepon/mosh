@@ -180,6 +180,7 @@ case "$target_os" in
     ;;
 esac
 
+MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
@@ -189,9 +190,28 @@ i[[3456]]86|pentium)
         case "$target_os" in
         *darwin*)
           if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
-             MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=pentium-m -msse2 -mfpmath=sse"
+             MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse2 -mfpmath=sse"
           else
-             MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
+             MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+          fi
+          ;;
+        *linux*)
+          if test -n "`grep 'Core(TM)2 CPU' /proc/cpuinfo`" ; then
+             MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse3 -mfpmath=sse"
+          else
+            if test -n "`grep 'ssse3' /proc/cpuinfo`" ; then
+               MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu -msse3 -mfpmath=sse"
+            else
+              if test -n "`grep 'sse2' /proc/cpuinfo`" ; then
+                MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu -msse2 -mfpmath=sse"
+              else
+                if test -n "`grep 'sse' /proc/cpuinfo`" ; then
+                  MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu -msse -mfpmath=sse"
+                else
+                  MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+                fi
+              fi
+            fi
           fi
           ;;
         *)
