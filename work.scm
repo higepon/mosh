@@ -1,5 +1,5 @@
 (let loop ([i 0])
   (if (= i 10000000)
       '()
-      (begin (+ i 1.0)
+      (begin (null? #f)
              (loop (+ i 1)))))

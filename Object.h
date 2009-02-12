@@ -72,6 +72,18 @@ class Bignum;
 class Compnum;
 class VM;
 
+enum {
+    CONST_NIL     = 0,
+    CONST_EOF     = 1,
+    CONST_UNDEF   = 2,
+    CONST_UNBOUND = 3,
+    CONST_TRUE    = 4,
+    CONST_FALSE   = 5,
+    CONST_IGNORE  = 6,
+};
+
+#define MAKE_CONST(n) ((n << 4) + 6)
+
 class Object
 {
 public:

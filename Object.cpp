@@ -1,5 +1,5 @@
 /*
- * Object.cpp - 
+ * Object.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -76,13 +76,13 @@
 
 using namespace scheme;
 
-const Object Object::Nil     = Object::makeConst(0);
-const Object Object::Eof     = Object::makeConst(1);
-const Object Object::Undef   = Object::makeConst(2);
-const Object Object::UnBound = Object::makeConst(3);
-const Object Object::True    = Object::makeConst(4);
-const Object Object::False   = Object::makeConst(5);
-const Object Object::Ignore  = Object::makeConst(6);
+const Object Object::Nil     = Object::makeConst(CONST_NIL);
+const Object Object::Eof     = Object::makeConst(CONST_EOF);
+const Object Object::Undef   = Object::makeConst(CONST_UNDEF);
+const Object Object::UnBound = Object::makeConst(CONST_UNBOUND);
+const Object Object::True    = Object::makeConst(CONST_TRUE);
+const Object Object::False   = Object::makeConst(CONST_FALSE);
+const Object Object::Ignore  = Object::makeConst(CONST_IGNORE);
 
 bool Object::isRational() const
 {

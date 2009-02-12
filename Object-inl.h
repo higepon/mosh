@@ -100,32 +100,32 @@ inline int Object::toCompilerInstruction() const
 
 inline bool Object::isNil() const
 {
-    return Nil == *this;
+    return *this == MAKE_CONST(CONST_NIL);
 }
 
 inline bool Object::isEof() const
 {
-    return Eof == *this;
+    return *this == MAKE_CONST(CONST_EOF);
 }
 
 inline bool Object::isUndef() const
 {
-    return Undef == *this;
+    return *this == MAKE_CONST(CONST_UNDEF);
 }
 
 inline bool Object::isUnbound() const
 {
-    return Undef == *this;
+    return *this == MAKE_CONST(CONST_UNBOUND);
 }
 
 inline bool Object::isTrue() const
 {
-    return True == *this;
+    return *this == MAKE_CONST(CONST_TRUE);
 }
 
 inline bool Object::isFalse() const
 {
-    return False == *this;
+    return *this == MAKE_CONST(CONST_FALSE);
 }
 
 inline bool Object::isProcedure() const
@@ -221,7 +221,7 @@ inline Object Object::makeChar(ucs4char ch)
 
 inline Object Object::makeConst(int n)
 {
-    return Object((n << 4) + 6);
+    return Object(MAKE_CONST(n));
 }
 
 inline Object Object::makeVector(int n, Object o)
