@@ -160,6 +160,7 @@ Object scheme::logEx(VM* theVM, int argc, const Object* argv)
         return Arithmetic::log(n);
     } else {
         argumentCheckNumber(0, n1);
+
         argumentCheckNumber(1, n2);
         if (Arithmetic::isExactZero(n1) || Arithmetic::isExactZero(n2)) {
             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L2(n1, n2));
@@ -604,11 +605,12 @@ Object scheme::addEx(VM* theVM, int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(0);
     for (int i = 0; i < argc; i++) {
-        argumentCheckNumber(i, n);
-        ret = Arithmetic::add(ret, n);
+        // We don't check whether n is number or not here.
+        ret = Arithmetic::add(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(ret, argv[i]));
             return Object::Undef;
         }
     }
@@ -631,6 +633,7 @@ Object scheme::subEx(VM* theVM, int argc, const Object* argv)
 
         // error occured
         if (ret.isFalse()) {
+            callWrongTypeOfArgumentViolationAfter(theVM, "-", "number", L2(ret, argv[i]));
             return Object::Undef;
         }
     }
@@ -650,11 +653,11 @@ Object scheme::mulEx(VM* theVM, int argc, const Object* argv)
 
     Object ret = Object::makeFixnum(1);
     for (int i = 0; i < argc; i++) {
-        argumentCheckNumber(i, num);
-        ret = Arithmetic::mul(ret, num);
+        ret = Arithmetic::mul(ret, argv[i]);
 
         // error occured
         if (ret.isFalse()) {
+            callWrongTypeOfArgumentViolationAfter(theVM, "*", "number", L2(ret, argv[i]));
             return Object::Undef;
         }
     }
@@ -682,6 +685,9 @@ Object scheme::divideEx(VM* theVM, int argc, const Object* argv)
             ret = Arithmetic::div(ret, argv[i], isDiv0Error);
             if (isDiv0Error) {
                 callAssertionViolationAfter(theVM, procedureName, "division by zero", L2(ret, argv[i]));
+                return Object::Undef;
+            } else if (ret.isFalse()) {
+                callWrongTypeOfArgumentViolationAfter(theVM, "/", "number", L2(ret, argv[i]));
                 return Object::Undef;
             }
         }

@@ -474,10 +474,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else if (n.isNumber() && ac_.isNumber()) {
-                ac_ = Arithmetic::add(n, ac_);
             } else {
-                callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, ac_));
+                ac_ = Arithmetic::add(n, ac_);
+                if (ac_.isFalse()) {
+                    callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, ac_));
+                }
             }
             NEXT1;
         }
@@ -515,9 +516,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(NUMBER_MUL)
         {
             const Object n = pop();
-            if (n.isNumber() && ac_.isNumber()) {
-                ac_ = Arithmetic::mul(n, ac_);
-            } else {
+            ac_ = Arithmetic::mul(n, ac_);
+            if (ac_.isFalse()) {
                 callAssertionViolationAfter(this, "*", "wrong type arguments", L2(n, ac_));
             }
             NEXT1;
@@ -529,6 +529,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = Arithmetic::div(n, ac_, isDiv0Error);
             if (isDiv0Error) {
                 callAssertionViolationAfter(this, "/", "division by zero", L2(n, ac_));
+            } else if (ac_.isFalse()) {
+                callWrongTypeOfArgumentViolationAfter(this, "/", "number", L2(n, ac_));
             }
             NEXT1
         }
@@ -539,10 +541,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() - ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else if (n.isNumber() && ac_.isNumber()) {
-                ac_ = Arithmetic::sub(n, ac_);
             } else {
-                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                ac_ = Arithmetic::sub(n, ac_);
+                if (ac_.isFalse()) {
+                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                }
             }
             NEXT1;
         }
@@ -556,6 +559,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else {
                 ac_ = Arithmetic::sub(n, ac_);
             }
+            if (ac_.isFalse()) {
+                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+            }
             push(ac_);
             NEXT1;
         }
@@ -566,10 +572,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             if (n.isFixnum() && ac_.isFixnum()) {
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
-            } else if (n.isNumber() && ac_.isNumber()) {
-                ac_ = Arithmetic::add(n, ac_);
             } else {
-                callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                ac_ = Arithmetic::add(n, ac_);
+                if (ac_.isFalse()) {
+                    callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
+                    NEXT1;
+                }
             }
             push(ac_);
             NEXT1;
@@ -1214,4 +1222,3 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         } // SWITCH
     }
 }
-

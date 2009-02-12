@@ -1058,7 +1058,6 @@ bool Arithmetic::isExact(Object n)
                 return Flonum::compare(n1.toFlonum(), n2.toBignum());\
             }\
         }\
-        MOSH_FATAL("number required");\
         return false;\
     }
 
@@ -1070,9 +1069,6 @@ MAKE_REAL_COMPARE_FUNC(ge, >=)
 bool Arithmetic::eq(Object n1, Object n2)
 {
     MOSH_ASSERT(n1.isNumber());
-    if (!n2.isNumber()) {
-        LOG1("n2=~a\n", n2);
-    }
     MOSH_ASSERT(n2.isNumber());
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
@@ -1135,17 +1131,12 @@ bool Arithmetic::eq(Object n1, Object n2)
             return Compnum::eq(n1.toCompnum(), n2.toCompnum());
         }
     }
-    MOSH_FATAL("number required");
     return false;
 }
 
 #define MAKE_OP_FUNC(op, symbol)\
     Object Arithmetic::op(Object n1, Object n2)   \
     {\
-    if (!n1.isNumber()) { \
-    printf("%s\n", format(UC("~a"), L1(n1)).toString()->data().ascii_c_str()); \
- \
-} \
         MOSH_ASSERT(n1.isNumber()); \
         MOSH_ASSERT(n2.isNumber()); \
         if (n1.isFixnum()) {\
@@ -1203,7 +1194,6 @@ bool Arithmetic::eq(Object n1, Object n2)
                 return Compnum::op(n1.toCompnum(), n2.toCompnum()); \
             }\
         }\
-        MOSH_FATAL("number required"); \
         return Object::False;\
     }
 
@@ -1345,7 +1335,5 @@ Object Arithmetic::div(Object n1, Object n2, bool& isDiv0Error)
             return Compnum::div(n1.toCompnum(), n2.toCompnum(), isDiv0Error);
         }
     }
-
-    MOSH_FATAL("number required");
     return Object::False;
 }

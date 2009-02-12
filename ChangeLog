@@ -1,3 +1,7 @@
+2009-02-12  higepon  <higepon@users.sourceforge.jp>
+
+        * Not to use isNumber before calling Arithmetic::op*. It causes slow arithmetic.
+
 2009-02-10  higepon  <higepon@users.sourceforge.jp>
 
         * Added : msse, msse2, msse3 and fpmath=sse for some processors.

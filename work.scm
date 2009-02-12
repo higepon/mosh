@@ -1,5 +1,5 @@
-;(import (rnrs))
 (let loop ([i 0])
   (if (= i 10000000)
       '()
-      (begin (+ i 1.0) (loop (+ i 1)))))
+      (begin (+ i 1.0)
+             (loop (+ i 1)))))
