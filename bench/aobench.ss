@@ -25,6 +25,11 @@
     (syntax-case x ()
       [(_ v) #'(vector-ref v 2)])))
 
+(define-syntax square
+  (lambda (x)
+    (syntax-case x ()
+      [(_ v) #'(* v v)])))
+
 (define (vadd a b)
   (vec (+ (vx a) (vx b)) (+ (vy a) (vy b)) (+ (vz a) (vz b))))
 (define (vsub a b)
@@ -34,6 +39,12 @@
     (- (* (vy a) (vz b)) (* (vy b) (vz a)))
     (- (* (vz a) (vx b)) (* (vz b) (vx a)))
     (- (* (vx a) (vy b)) (* (vx b) (vy a)))))
+(define (vdot a b)
+  (+ (* (vx a) (vx b)) (* (vy a) (vy b)) (* (vz a) (vz b))))
+(define (vlen a)
+  (flsqrt (+ (square (vx a)) (square (vy a)) (square (vz a)))))
+
+
 (define (vnormalize a)
   (let ((len (vlen a)))
     (if (> (abs len) 1.0e-6)
@@ -42,18 +53,7 @@
           (* (vx a) invlen)
           (* (vy a) invlen)
           (* (vz a) invlen))))))
-(define (square a)
-  (* a a))
-(define (vlen a)
-  (sqrt (+ (square (vx a)) (square (vy a)) (square (vz a)))))
-(define (vdot a b)
-  (+ (* (vx a) (vx b)) (* (vy a) (vy b)) (* (vz a) (vz b))))
-(define (vneg a)
-  (vec (- 0.0 (vx a)) (- 0.0 (vy a)) (- 0.0 (vz a))))
 
-(define org car)
-(define dir cdr)
-(define new-ray cons)
 
 ;R6RS record version
 (define-record-type 
@@ -84,6 +84,8 @@
               #t)) isect)) 
         isect))))
 
+
+
 (define (Plane p n)
   (lambda (isect ray)
     (let ((d (- 0.0 (vdot p n)))
@@ -101,8 +103,15 @@
               #t) isect)) 
         isect))))
 
+(define (vneg a)
+  (vec (- 0.0 (vx a)) (- 0.0 (vy a)) (- 0.0 (vz a))))
+
+(define org car)
+(define dir cdr)
+(define new-ray cons)
+
 (define IMAGE_WIDTH 256)
-(define IMAGE_HEIGHT 1) ;; 256
+(define IMAGE_HEIGHT 1) ;; 256 for bench
 (define NSUBSAMPLES 2)
 (define NAO_SAMPLES 8)
 
