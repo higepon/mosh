@@ -1,3 +1,7 @@
+2009-02-13  higepon  <higepon@users.sourceforge.jp>
+
+        * bench/aobench.ss: Added for flonum aritmetic operations.
+
 2009-02-12  higepon  <higepon@users.sourceforge.jp>
 
         * Object-inl.h (Object::isNil): Force to use Immediate value.
