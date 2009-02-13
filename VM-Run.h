@@ -57,6 +57,9 @@
 #include "Symbol.h"
 #include "VM-inl.h"
 #include "StringProcedures.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+
 
 #ifdef ENABLE_PROFILER
 #define COUNT_CALL(a) countCall(a)
