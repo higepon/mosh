@@ -31,6 +31,8 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "GenericHashTable.h"
 #include "EqvHashTable.h"
 #include "VM.h"

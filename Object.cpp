@@ -389,12 +389,6 @@ Object Object::makeRatnum(mpq_t r)
                                                         reinterpret_cast<word>(new Ratnum(r)))));
 }
 
-Object Object::makeFlonum(double value)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Flonum,
-                                                        reinterpret_cast<word>(new Flonum(value)))));
-}
-
 Object Object::makeBignum(long n)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,

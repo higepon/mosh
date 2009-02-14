@@ -516,6 +516,22 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(NUMBER_MUL)
         {
             const Object n = pop();
+            if (n.isFlonum()) {
+                if (ac_.isFlonum()) {
+                    ac_ = Flonum::mul(n.toFlonum(), ac_.toFlonum());
+                    NEXT1;
+                } else if (Arithmetic::isRealValued(ac_)) {
+                    ac_ = Object::makeFlonum(n.toFlonum()->value() * Arithmetic::realToDouble(ac_));
+                    NEXT1;
+                }
+            }
+            if (ac_.isFlonum()) {
+                if (Arithmetic::isRealValued(n)) {
+                    ac_ = Object::makeFlonum(ac_.toFlonum()->value() * Arithmetic::realToDouble(n));
+                    NEXT1;
+                }
+            }
+
             ac_ = Arithmetic::mul(n, ac_);
             if (ac_.isFalse()) {
                 callAssertionViolationAfter(this, "*", "wrong type arguments", L2(n, ac_));

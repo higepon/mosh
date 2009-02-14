@@ -363,6 +363,14 @@ private:
     double value_;
 };
 
+// for better performance
+inline Object Object::makeFlonum(double value)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Flonum,
+                                                        reinterpret_cast<word>(new Flonum(value)))));
+}
+
+
 }; // namespace scheme
 
 #endif // __SCHEME_FLONUM__
