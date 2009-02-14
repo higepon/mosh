@@ -774,3 +774,397 @@ Object scheme::leEx(VM* theVM, int argc, const Object* argv)
     }
     return Object::True;
 }
+
+Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("modulo");
+    checkArgumentLength(2);
+    const Object x = argv[0];
+    const Object y = argv[1];
+    if (x.isFixnum()) {
+        if (0 == x.toFixnum()) {
+            return Object::makeFixnum(0);
+        } else if (y.isFixnum()) { // fixnum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            intptr_t r = x.toFixnum() % y.toFixnum();
+            if (0 == r) {
+                return Object::makeFixnum(0);
+            }
+            if ((y.toFixnum() > 0) + (r > 0) == 1) {
+                r = r + y.toFixnum();
+            }
+            return Object::makeFixnum(r);
+        } else if (y.isFlonum()) { // fixnum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            double r = fmod(x.toFlonum()->value(), y.toFlonum()->value());
+            if (0.0 == r) {
+                return Object::makeFlonum(0.0);
+            }
+            if ((y.toFlonum()->value() > 0.0) + (r > 0.0) == 1) {
+                r = r + y.toFixnum();
+            }
+            Flonum f(r);
+            return f.toExact();
+        } else if (y.isBignum()) { // fixnum, bignum
+            const Object modulo = remainderEx(theVM, 2, argv);
+            if (modulo == Object::makeFixnum(0)) {
+                return modulo;
+            }
+            const bool a = Arithmetic::isNegative(y);
+            const bool b = Arithmetic::isNegative(modulo);
+            if ((a && !b) || (!a && b)) {
+                return Arithmetic::add(modulo, y);
+            }
+            return modulo;
+        } else if (y.isCompnum()) {
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return remainderEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isFlonum()) {
+        if (y.isFixnum()) { // flonum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+
+            double r = fmod(x.toFlonum()->value(), y.toFixnum());
+            if ((y.toFixnum() > 0) + (r > 0.0) == 1) {
+                r = r + y.toFixnum();
+            }
+            if (r == 0) {
+                return Object::makeFixnum(0);
+            }
+            Flonum f(r);
+            return f.toExact();
+        } else if (y.isFlonum()) { // flonum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            double r = fmod(x.toFlonum()->value(), value);
+            if (0.0 == r) {
+                return Object::makeFlonum(0.0);
+            }
+            if ((value > 0.0) + (r > 0.0) == 1) {
+                r = r + y.toFixnum();
+            }
+            Flonum f(r);
+            return f.toExact();
+        } else if (y.isBignum()) { // flonum, bignum
+            const double value = y.toBignum()->toDouble();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            double r = fmod(x.toFlonum()->value(), value);
+            if (0.0 == r) {
+                return Object::makeFlonum(0.0);
+            }
+            if ((value > 0.0) + (r > 0.0) == 1) {
+                r = r + y.toFixnum();
+            }
+            Flonum f(r);
+            return f.toExact();
+        } else if (y.isCompnum()) { // flonum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return moduloEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isBignum()) {
+        if (y.isFixnum()) { // bignum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+
+            const Object modulo = remainderEx(theVM, 2, argv);
+            if (modulo == Object::makeFixnum(0)) {
+                return modulo;
+            }
+            const bool a = Arithmetic::isNegative(y);
+            const bool b = Arithmetic::isNegative(modulo);
+            if ((a && !b) || (!a && b)) {
+                return Arithmetic::add(modulo, y);
+            }
+            return modulo;
+        } else if (y.isFlonum()) { // bignum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            double r = fmod(x.toBignum()->toDouble(), value);
+            if (0.0 == r) {
+                return Object::makeFlonum(0.0);
+            }
+            if ((value > 0.0) + (r > 0.0) == 1) {
+                r = r + y.toFixnum();
+            }
+            Flonum f(r);
+            return f.toExact();
+        } else if (y.isBignum()) {
+            const Object modulo = remainderEx(theVM, 2, argv);
+            if (modulo == Object::makeFixnum(0)) {
+                return modulo;
+            }
+            const bool a = Arithmetic::isNegative(y);
+            const bool b = Arithmetic::isNegative(modulo);
+            if ((a && !b) || (!a && b)) {
+                return Arithmetic::add(modulo, y);
+            }
+            return modulo;
+        } else if (y.isCompnum()) { // bignum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return moduloEx(theVM, 2, arguments);
+            }
+        }
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isCompnum()) {
+        if (x.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x.toCompnum()->real();
+                arguments[1] = y;
+                return moduloEx(theVM, 2, arguments);
+        }
+    }
+    callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+    return Object::Undef;
+}
+
+// For faster execution, we write all the code for quotient here.
+Object scheme::quotientEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("quotient");
+    checkArgumentLength(2);
+    const Object x = argv[0];
+    const Object y = argv[1];
+    if (x.isFixnum()) {
+        if (0 == x.toFixnum()) {
+            return Object::makeFixnum(0);
+        } else if (y.isFixnum()) { // fixnum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            return Object::makeFixnum(x.toFixnum() / y.toFixnum());
+        } else if (y.isFlonum()) { // fixnum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(x.toFixnum() / value);
+            return f.toExact();
+        } else if (y.isBignum()) { // fixnum, bignum
+            MOSH_ASSERT(y.toBignum()->toS32() != 0);
+            return Bignum::quotient(x.toFixnum(), y.toBignum());
+        } else if (y.isCompnum()) {
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return quotientEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isFlonum()) {
+        if (y.isFixnum()) { // flonum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::trunc(x.toFlonum()->value() / y.toFixnum()));
+            return f.toExact();
+        } else if (y.isFlonum()) { // flonum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::trunc(x.toFlonum()->value() / value));
+            return f.toExact();
+        } else if (y.isBignum()) { // flonum, bignum
+            Flonum f(::trunc(x.toFlonum()->value() / y.toBignum()->toDouble()));
+            return f.toExact();
+        } else if (y.isCompnum()) { // flonum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return quotientEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isBignum()) {
+        if (y.isFixnum()) { // bignum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            return Bignum::quotient(x.toBignum(), y.toFixnum());
+        } else if (y.isFlonum()) { // bignum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::trunc(y.toBignum()->toDouble() / x.toFlonum()->value()));
+            return f.toExact();
+        } else if (y.isBignum()) {
+            return Bignum::quotient(x.toBignum(), y.toBignum());
+        } else if (y.isCompnum()) { // bignum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return quotientEx(theVM, 2, arguments);
+            }
+        }
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isCompnum()) {
+        if (x.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x.toCompnum()->real();
+                arguments[1] = y;
+                return quotientEx(theVM, 2, arguments);
+        }
+    }
+    callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+    return Object::Undef;
+}
+
+Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("remainder");
+    checkArgumentLength(2);
+    const Object x = argv[0];
+    const Object y = argv[1];
+    if (x.isFixnum()) {
+        if (0 == x.toFixnum()) {
+            return Object::makeFixnum(0);
+        } else if (y.isFixnum()) { // fixnum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            return Object::makeFixnum(x.toFixnum() % y.toFixnum());
+        } else if (y.isFlonum()) { // fixnum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(fmod(x.toFixnum(), value));
+            return f.toExact();
+        } else if (y.isBignum()) { // fixnum, bignum
+            MOSH_ASSERT(y.toBignum()->toS32() != 0);
+            return Bignum::remainder(x.toFixnum(), y.toBignum());
+        } else if (y.isCompnum()) {
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return remainderEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isFlonum()) {
+        if (y.isFixnum()) { // flonum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::fmod(x.toFlonum()->value(),y.toFixnum()));
+            return f.toExact();
+        } else if (y.isFlonum()) { // flonum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::fmod(x.toFlonum()->value(), value));
+            return f.toExact();
+        } else if (y.isBignum()) { // flonum, bignum
+            Flonum f(::fmod(x.toFlonum()->value(), y.toBignum()->toDouble()));
+            return f.toExact();
+        } else if (y.isCompnum()) { // flonum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return remainderEx(theVM, 2, arguments);
+            }
+        }
+
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isBignum()) {
+        if (y.isFixnum()) { // bignum, fixnum
+            if (0 == y.toFixnum()) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            return Bignum::remainder(x.toBignum(), y.toFixnum());
+        } else if (y.isFlonum()) { // bignum, flonum
+            const double value = y.toFlonum()->value();
+            if (0.0 == value) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
+            Flonum f(::fmod(y.toBignum()->toDouble(), x.toFlonum()->value()));
+            return f.toExact();
+        } else if (y.isBignum()) {
+            return Bignum::remainder(x.toBignum(), y.toBignum());
+        } else if (y.isCompnum()) { // bignum, compnum
+            if (y.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x;
+                arguments[1] = y.toCompnum()->real();
+                return remainderEx(theVM, 2, arguments);
+            }
+        }
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+        return Object::Undef;
+    } else if (x.isCompnum()) {
+        if (x.toCompnum()->isReal()) {
+                Object arguments[2];
+                arguments[0] = x.toCompnum()->real();
+                arguments[1] = y;
+                return remainderEx(theVM, 2, arguments);
+        }
+    }
+    callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "number", L2(x, y));
+    return Object::Undef;
+}

@@ -3425,6 +3425,13 @@
 (todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
 (todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")
 
+;; r5rs
+(3 (quotient 7 2))
+(3 (quotient 7.0 2))
+(3 (quotient 7.1 2.0))
+(3 (quotient 7.1+0i 2.0))
+(3 (quotient 7.1+0i 2.0+0i))
+
 ;; don't const inline (+ 1 #f).
 (#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))
 ;; This shuld be placed on end of test

@@ -36,6 +36,9 @@
 
 namespace scheme {
 
+    Object moduloEx(VM* theVM, int argc, const Object* argv);
+    Object quotientEx(VM* theVM, int argc, const Object* argv);
+    Object remainderEx(VM* theVM, int argc, const Object* argv);
     Object makePolarEx(VM* theVM, int argc, const Object* argv);
     Object exptEx(VM* theVM, int argc, const Object* argv);
     Object sqrtEx(VM* theVM, int argc, const Object* argv);
@@ -86,8 +89,6 @@ namespace scheme {
     Object fixnumWidthEx(VM* theVM, int argc, const Object* argv);
     Object leastFixnumEx(VM* theVM, int argc, const Object* argv);
     Object greatestFixnumEx(VM* theVM, int argc, const Object* argv);
-    Object quotientEx(VM* theVM, int argc, const Object* argv);
-    Object remainderEx(VM* theVM, int argc, const Object* argv);
     Object maxEx(VM* theVM, int argc, const Object* argv);
     Object minEx(VM* theVM, int argc, const Object* argv);
     Object eqEx(VM* theVM, int argc, const Object* argv);

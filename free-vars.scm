@@ -201,8 +201,6 @@
     bytevector?
     current-directory
     standard-library-path
-;    quotient
-;    remainder
     native-endianness
     make-bytevector
     make-bytevector
@@ -476,4 +474,8 @@
     transcoder-codec
     transcoder-eol-style
     transcoder-error-handling-mode
+    ;; r5rs
+    quotient
+    remainder
+    modulo
     )

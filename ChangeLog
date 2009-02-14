@@ -1,3 +1,7 @@
+2009-02-14  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/core/r5rs.scm: Rewrote quotient, remainder and modulo in C++ for better performance.
+
 2009-02-13  higepon  <higepon@users.sourceforge.jp>
 
         * bench/aobench.ss: Added for flonum aritmetic operations.

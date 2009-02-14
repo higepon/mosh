@@ -273,6 +273,49 @@ public:
         }
     }
 
+    static Object quotient(int n1, const Bignum* n2)
+    {
+        Bignum* ret = new Bignum(n1);
+        mpz_tdiv_q(ret->value, ret->value, n2->value);
+        return makeInteger(ret);
+    }
+
+    static Object quotient(const Bignum* n1, int n2)
+    {
+        Bignum* ret = new Bignum(n2);
+        mpz_tdiv_q(ret->value, n1->value, ret->value);
+        return makeInteger(ret);
+    }
+
+    static Object quotient(const Bignum* n1, const Bignum* n2)
+    {
+        Bignum* ret = new Bignum;
+        mpz_tdiv_q(ret->value, n1->value, n2->value);
+        return makeInteger(ret);
+    }
+
+    static Object remainder(int n1, const Bignum* n2)
+    {
+        Bignum* ret = new Bignum(n1);
+        mpz_tdiv_r(ret->value, ret->value, n2->value);
+        return makeInteger(ret);
+    }
+
+    static Object remainder(const Bignum* n1, int n2)
+    {
+        Bignum* ret = new Bignum(n2);
+        mpz_tdiv_r(ret->value, n1->value, ret->value);
+        return makeInteger(ret);
+    }
+
+    static Object remainder(const Bignum* n1, const Bignum* n2)
+    {
+        Bignum* ret = new Bignum;
+        mpz_tdiv_r(ret->value, n1->value, n2->value);
+        return makeInteger(ret);
+    }
+
+
     static Object bitwiseShiftLeft(const Bignum* n1, unsigned long n2)
     {
         Bignum* ret = new Bignum;

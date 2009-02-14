@@ -32,20 +32,21 @@
 (define inexact->exact exact)
 (define exact->inexact inexact)
 
-(define (sign n)
-  (cond
-   ((negative? n) -1)
-   ((positive? n) 1)
-   (else 0)))
+;; Follwing procedures are rewrote in C++ for performance reason.
+;; (define (sign n)
+;;   (cond
+;;    ((negative? n) -1)
+;;    ((positive? n) 1)
+;;    (else 0)))
 
-(define (quotient n1 n2)
-  (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
+;; (define (quotient n1 n2)
+;;   (* (sign n1) (sign n2) (div (abs n1) (abs n2))))
 
-(define (remainder n1 n2)
-  (* (sign n1) (mod (abs n1) (abs n2))))
+;; (define (remainder n1 n2)
+;;   (* (sign n1) (mod (abs n1) (abs n2))))
 
-(define (modulo n1 n2)
-  (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
+;; (define (modulo n1 n2)
+;;   (* (sign n2) (mod (* (sign n2) n1) (abs n2))))
 
 (define (force object)
   (object))
