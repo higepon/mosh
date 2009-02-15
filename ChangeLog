@@ -1,5 +1,7 @@
 2009-02-15  higepon  <higepon@users.sourceforge.jp>
 
+        * Wrote : README and AUTHORS.
+
         * Arithmetic.cpp (Arithmetic::sin): Make it faster.
 
         * Enabled following options for GC. These options makes mosh very faster.
