@@ -574,6 +574,17 @@
 ;                          (format #t "set valuez[~d]=~a\n" (- i 1) val)
                           (vector-set! valuez (- i 1) val)
                           (loop (- i 1) (index stack sp (- n-args i 1)))))))]
+               [(VECTOR)
+                (let* ([n-args (next 1)]
+                       [vec (make-vector n-args)])
+                  (let loop ([i 0])
+                    (cond
+                     [(= (- n-args 1) i)
+                      (vector-set! vec (- n-args 1) a)
+                      (VM codes (skip 1) vec fp c stack (- sp n-args -1))]
+                     [else
+                      (vector-set! vec i (index stack sp (- n-args i 2)))
+                          (loop (+ i 1) )])))]
                [(RECEIVE)
                 (let ([reqargs (next 1)]
                       [optarg  (next 2)])

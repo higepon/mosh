@@ -1,3 +1,23 @@
+2009-02-15  higepon  <higepon@users.sourceforge.jp>
+
+        * Arithmetic.cpp (Arithmetic::sin): Make it faster.
+
+        * Enabled following options for GC. These options makes mosh very faster.
+          AC_DEFINE(DONT_ADD_BYTE_AT_END)
+          AC_DEFINE(LARGE_CONFIG)
+
+          (let loop ([i 0])
+            (if (= i 10000000)
+              '()
+               (begin (vector 1 2 3)
+               (loop (+ i 1)))))
+
+        * Object-inl.h (Object::makeObjectArray): Inlined.
+
+        * Vector.h (Vector::Vector): Inlined Constructor for better performance.
+
+        * VM-Run.cpp : Added VECTOR instruction for (vector ...). For better performance.
+
 2009-02-14  higepon  <higepon@users.sourceforge.jp>
 
         * NUMBER_MUL : Make shortcut for Real-valued multiply.

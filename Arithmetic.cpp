@@ -380,11 +380,15 @@ Object Arithmetic::cos(Object n)
     MOSH_ASSERT(n.isNumber());
     if (n.isFixnum()) {
         return Fixnum::cos(n.toFixnum());
+    } else if (n.isFlonum()) {
+        return Object::makeFlonum(::cos(n.toFlonum()->value()));
     } else if (n.isCompnum()) {
         return n.toCompnum()->cos();
-    } else {
+    } else if (n.isReal()) {
         const double value = realToDouble(n);
         return Object::makeFlonum(::cos(value));
+    } else {
+        return Object::Undef;
     }
 }
 
@@ -393,11 +397,15 @@ Object Arithmetic::sin(Object n)
     MOSH_ASSERT(n.isNumber());
     if (n.isFixnum()) {
         return Fixnum::sin(n.toFixnum());
+    } else if (n.isFlonum()) {
+        return Object::makeFlonum(::sin(n.toFlonum()->value()));
     } else if (n.isCompnum()) {
         return n.toCompnum()->sin();
-    } else {
+    } else if (n.isReal()) {
         const double value = realToDouble(n);
         return Object::makeFlonum(::sin(value));
+    } else {
+        return Object::Undef;
     }
 }
 
@@ -1020,42 +1028,42 @@ bool Arithmetic::isExact(Object n)
         if (n1.isFixnum()) {\
             if (n2.isFixnum()) {\
                 return Fixnum::compare(n1.toFixnum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Ratnum::compare(n1.toFixnum(), n2.toRatnum());\
             } else if (n2.isFlonum()) {\
                 return Flonum::compare(n1.toFixnum(), n2.toFlonum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toFixnum(), n2.toRatnum());\
             } else if (n2.isBignum()) {\
                 return Bignum::compare(n1.toFixnum(), n2.toBignum());\
+            }\
+        } else if (n1.isFlonum()) {\
+            if (n2.isFixnum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toFixnum()); \
+            } else if (n2.isFlonum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toFlonum());\
+            } else if (n2.isRatnum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toRatnum()); \
+            } else if (n2.isBignum()) {\
+                return Flonum::compare(n1.toFlonum(), n2.toBignum());\
             }\
         } else if (n1.isBignum()) {\
             if (n2.isFixnum()) {\
                 return Bignum::compare(n1.toBignum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Ratnum::compare(n1.toBignum(), n2.toRatnum()); \
             } else if (n2.isFlonum()) {\
                 return Flonum::compare(n1.toBignum(), n2.toFlonum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toBignum(), n2.toRatnum()); \
             } else if (n2.isBignum()) {\
                 return Bignum::compare(n1.toBignum(), n2.toBignum());\
             }\
         } else if (n1.isRatnum()) {\
             if (n2.isFixnum()) {\
                 return Ratnum::compare(n1.toRatnum(), n2.toFixnum());\
-            } else if (n2.isRatnum()) {\
-                return Ratnum::compare(n1.toRatnum(), n2.toRatnum());\
             } else if (n2.isFlonum()) {\
                 return Flonum::compare(n1.toRatnum(), n2.toFlonum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::compare(n1.toRatnum(), n2.toRatnum());\
             } else if (n2.isBignum()) {\
                 return Ratnum::compare(n1.toRatnum(), n2.toBignum());\
-            }\
-        } else if (n1.isFlonum()) {\
-            if (n2.isFixnum()) {\
-                return Flonum::compare(n1.toFlonum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Flonum::compare(n1.toFlonum(), n2.toRatnum()); \
-            } else if (n2.isFlonum()) {\
-                return Flonum::compare(n1.toFlonum(), n2.toFlonum());\
-            } else if (n2.isBignum()) {\
-                return Flonum::compare(n1.toFlonum(), n2.toBignum());\
             }\
         }\
         return false;\
@@ -1073,22 +1081,34 @@ bool Arithmetic::eq(Object n1, Object n2)
     if (n1.isFixnum()) {
         if (n2.isFixnum()) {
             return Fixnum::eq(n1.toFixnum(), n2.toFixnum());
-        } else if (n2.isRatnum()) {
-            return Ratnum::eq(n1.toFixnum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
             return Flonum::eq(n1.toFixnum(), n2.toFlonum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toFixnum(), n2.toRatnum());
         } else if (n2.isBignum()) {
             return Bignum::eq(n1.toFixnum(), n2.toBignum());
+        } else if (n2.isCompnum()) {
+            return Compnum::eq(n1, n2.toCompnum());
+        }
+    } else if (n1.isFlonum()) {
+        if (n2.isFixnum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toFixnum());
+        } else if (n2.isFlonum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toFlonum());
+        } else if (n2.isRatnum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toRatnum());
+        } else if (n2.isBignum()) {
+            return Flonum::eq(n1.toFlonum(), n2.toBignum());
         } else if (n2.isCompnum()) {
             return Compnum::eq(n1, n2.toCompnum());
         }
     } else if (n1.isBignum()) {
         if (n2.isFixnum()) {
             return Bignum::eq(n1.toBignum(), n2.toFixnum());
-        } else if (n2.isRatnum()) {
-            return Ratnum::eq(n1.toBignum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
             return Flonum::eq(n1.toBignum(), n2.toFlonum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toBignum(), n2.toRatnum());
         } else if (n2.isBignum()) {
             return Bignum::eq(n1.toBignum(), n2.toBignum());
         } else if (n2.isCompnum()) {
@@ -1097,24 +1117,12 @@ bool Arithmetic::eq(Object n1, Object n2)
     } else if (n1.isRatnum()) {
         if (n2.isFixnum()) {
             return Ratnum::eq(n1.toRatnum(), n2.toFixnum());
-        } else if (n2.isRatnum()) {
-            return Ratnum::eq(n1.toRatnum(), n2.toRatnum());
         } else if (n2.isFlonum()) {
             return Flonum::eq(n1.toRatnum(), n2.toFlonum());
+        } else if (n2.isRatnum()) {
+            return Ratnum::eq(n1.toRatnum(), n2.toRatnum());
         } else if (n2.isBignum()) {
             return Ratnum::eq(n1.toRatnum(), n2.toBignum());
-        } else if (n2.isCompnum()) {
-            return Compnum::eq(n1, n2.toCompnum());
-        }
-    } else if (n1.isFlonum()) {
-        if (n2.isFixnum()) {
-            return Flonum::eq(n1.toFlonum(), n2.toFixnum());
-        } else if (n2.isRatnum()) {
-            return Flonum::eq(n1.toFlonum(), n2.toRatnum());
-        } else if (n2.isFlonum()) {
-            return Flonum::eq(n1.toFlonum(), n2.toFlonum());
-        } else if (n2.isBignum()) {
-            return Flonum::eq(n1.toFlonum(), n2.toBignum());
         } else if (n2.isCompnum()) {
             return Compnum::eq(n1, n2.toCompnum());
         }
@@ -1154,12 +1162,12 @@ bool Arithmetic::eq(Object n1, Object n2)
         } else if (n1.isBignum()) {\
             if (n2.isFixnum()) {\
                 return Bignum::op(n1.toBignum(), n2.toFixnum()); \
-            } else if (n2.isRatnum()) {\
-                return Ratnum::op(n1.toBignum(), n2.toRatnum()); \
             } else if (n2.isFlonum()) {\
                 return Flonum::op(n1.toBignum(), n2.toFlonum());\
             } else if (n2.isBignum()) {\
                 return Bignum::op(n1.toBignum(), n2.toBignum());\
+            } else if (n2.isRatnum()) {\
+                return Ratnum::op(n1.toBignum(), n2.toRatnum()); \
             } else if (n2.isCompnum()) {\
                 return Compnum::op(n1, n2.toCompnum());   \
             }\

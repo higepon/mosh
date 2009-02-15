@@ -80,6 +80,8 @@
    const Object n = pop();                                                                  \
    if (n.isFixnum() && ac_.isFixnum()) {                                                    \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
+   } else if (n.isFlonum() && ac_.isFlonum()) {                                             \
+       ac_ = Object::makeBool(Flonum::func(n.toFlonum(), ac_.toFlonum()));                  \
    } else {                                                                                 \
        if (n.isReal() && ac_.isReal()) {                                                    \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
@@ -93,6 +95,8 @@
    const Object n = val;                                                                    \
    if (n.isFixnum() && ac_.isFixnum()) {                                                    \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
+   } else if (n.isFlonum() && ac_.isFlonum()) {                                             \
+       ac_ = Object::makeBool(Flonum::func(n.toFlonum(), ac_.toFlonum()));                  \
    } else {                                                                                 \
        if (n.isReal() && ac_.isReal()) {                                                    \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \

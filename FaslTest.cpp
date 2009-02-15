@@ -42,6 +42,7 @@
 #include "Transcoder.h"
 #include "FileBinaryInputPort.h"
 #include "FileBinaryOutputPort.h"
+#include "Bignum.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Symbol.h"

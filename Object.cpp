@@ -389,23 +389,6 @@ Object Object::makeRatnum(mpq_t r)
                                                         reinterpret_cast<word>(new Ratnum(r)))));
 }
 
-Object Object::makeBignum(long n)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(new Bignum(n)))));
-}
-
-Object Object::makeBignum(const mpz_t b)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(new Bignum(b)))));
-}
-
-Object Object::makeBignum(Bignum* b)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(b))));
-}
 
 Object Object::makeRatnum(Ratnum* r)
 {
@@ -434,11 +417,3 @@ bool Object::isList() const
 }
 
 
-Object* Object::makeObjectArray(int size)
-{
-#ifdef USE_BOEHM_GC
-    return new(GC) Object[size];
-#else
-    return new Object[size];
-#endif
-}

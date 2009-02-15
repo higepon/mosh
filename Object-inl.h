@@ -294,8 +294,14 @@ inline bool Object::isPort() const
     return isInputPort() || isOutputPort();
 }
 
-
-
+inline Object* Object::makeObjectArray(int size)
+{
+#ifdef USE_BOEHM_GC
+    return new(GC) Object[size];
+#else
+    return new Object[size];
+#endif
+}
 
 // private
 inline uint8_t Object::tag() const

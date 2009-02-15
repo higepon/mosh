@@ -181,6 +181,7 @@ case "$target_os" in
 esac
 
 MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -pg"
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])

@@ -43,6 +43,8 @@
 #include "ProcedureMacro.h"
 #include "FFIProcedures.h"
 #include "FFI.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Bignum.h"
 #include "Symbol.h"
 

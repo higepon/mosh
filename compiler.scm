@@ -1171,6 +1171,9 @@
       ;;---------------------------- values ------------------------------------
       [(values)
        ($asm 'VALUES (pass1/map-s->i-non-tail (cdr sexp)))]
+      ;;---------------------------- vector ------------------------------------
+      [(vector)
+       ($asm 'VECTOR (pass1/map-s->i-non-tail (cdr sexp)))]
       ;;---------------------------- define ------------------------------------
       [(define)
        (pass1/define sexp lvars tail?)]
@@ -2756,6 +2759,10 @@
        (begin0
          (pass3/$asm-n-args cb args locals frees can-frees sets depth display-count)
          (code-builder-put-insn-arg1! cb 'VALUES (length args)))]
+      [(VECTOR)
+       (begin0
+         (pass3/$asm-n-args cb args locals frees can-frees sets depth display-count)
+         (code-builder-put-insn-arg1! cb 'VECTOR (length args)))]
       [(APPLY)
        (let1 end-of-frame (make-label)
          (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame))

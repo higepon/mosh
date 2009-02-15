@@ -45,6 +45,17 @@ AC_PROG_INSTALL
 AC_SUBST(CFLAGS)
 #[monar] overwrite
 CFLAGS="-O2 -fomit-frame-pointer -DUSE_I686_PREFETCH"
+# from gauche
+# these two options make this code very fast.
+dnl           (let loop ([i 0])
+dnl             (if (= i 10000000)
+dnl               '()
+dnl                (begin (vector 1 2 3)
+dnl                (loop (+ i 1)))))
+
+AC_DEFINE(DONT_ADD_BYTE_AT_END)
+AC_DEFINE(LARGE_CONFIG)
+
 
 GC_CFLAGS=${gc_cflags}
 AC_SUBST(GC_CFLAGS)

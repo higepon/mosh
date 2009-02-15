@@ -135,16 +135,22 @@ Object scheme::sinEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("sin");
     checkArgumentLength(1);
-    argumentCheckNumber(0, n);
-    return Arithmetic::sin(n);
+    const Object ret = Arithmetic::sin(argv[0]);
+    if (ret.isUndef()) {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(argv[0]));
+    }
+    return ret;
 }
 
 Object scheme::cosEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("cos");
     checkArgumentLength(1);
-    argumentCheckNumber(0, n);
-    return Arithmetic::cos(n);
+    const Object ret = Arithmetic::cos(argv[0]);
+    if (ret.isUndef()) {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "nonzero", L1(argv[0]));
+    }
+    return ret;
 }
 
 Object scheme::logEx(VM* theVM, int argc, const Object* argv)
@@ -813,7 +819,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
             Flonum f(r);
             return f.toExact();
         } else if (y.isBignum()) { // fixnum, bignum
-            const Object modulo = remainderEx(theVM, 2, argv);
+            const Object modulo = Bignum::remainder(x.toFixnum(), y.toBignum());
             if (modulo == Object::makeFixnum(0)) {
                 return modulo;
             }
@@ -898,7 +904,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
                 return Object::Undef;
             }
 
-            const Object modulo = remainderEx(theVM, 2, argv);
+            const Object modulo = Bignum::remainder(x.toBignum(), y.toFixnum());
             if (modulo == Object::makeFixnum(0)) {
                 return modulo;
             }
@@ -924,7 +930,7 @@ Object scheme::moduloEx(VM* theVM, int argc, const Object* argv)
             Flonum f(r);
             return f.toExact();
         } else if (y.isBignum()) {
-            const Object modulo = remainderEx(theVM, 2, argv);
+            const Object modulo = Bignum::remainder(x.toBignum(), y.toBignum());
             if (modulo == Object::makeFixnum(0)) {
                 return modulo;
             }

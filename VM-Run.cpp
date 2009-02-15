@@ -441,6 +441,24 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             ac_ = makeContinuation(n);
             NEXT1;
         }
+        CASE(VECTOR)
+        {
+            const Object numObject = fetchOperand();
+            MOSH_ASSERT(numObject.isFixnum());
+            const int num = numObject.toFixnum();
+            Object vec = Object::makeVector(num);
+            if (num > 0) {
+                Vector* const v = vec.toVector();
+                Object arg = ac_;
+                for (int i = num - 1; i > 0 ; i--) {
+                    v->set(i, arg);
+                    arg = pop();
+                }
+                v->set(0, arg);
+            }
+            ac_ = vec;
+            NEXT1;
+        }
         CASE(MAKE_VECTOR)
         {
             const Object n = pop();

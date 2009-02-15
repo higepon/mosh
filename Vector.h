@@ -54,6 +54,24 @@ private:
     Object* objects_;
 };
 
+inline Vector::Vector(int num, Object obj) : num_(num)
+{
+    MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
+    objects_ = Object::makeObjectArray(num);
+    for (int i = 0; i < num; i++) {
+        objects_[i] = obj;
+    }
+}
+
+inline Vector::Vector(int num) : num_(num)
+{
+    MOSH_ASSERT(num < 1000000); // if n is too big, you may forget some cast?
+    printf("num=%d\n", num);fflush(stdout);
+    objects_ = Object::makeObjectArray(num);
+}
+
+
+
 inline Vector::Vector(int num, Object* objects) : num_(num), objects_(objects)
 {
 }

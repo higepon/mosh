@@ -47,6 +47,8 @@
 #include "UTF8Codec.h"
 #include "UTF16Codec.h"
 #include "UTF32Codec.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Bignum.h"
 #include "Arithmetic.h"
 #include "TextualOutputPort.h"

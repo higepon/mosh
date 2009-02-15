@@ -70,13 +70,18 @@
            (B (vdot rs (dir ray)))
            (C (- (vdot rs rs) (square radius)))
            (D (- (square B) C)))
-      (if (> D 0.0) ; update isect2
-        (let ((t (- 0.0 B (sqrt D))))
-          (if (< 0.0 t (is-t isect2))
+      (if #t ;; (> D 0.0)
+                                        ; update isect2
+        (let ((t ;; (- 0.0 B (sqrt D))
+               1.0
+                 ))
+          (if ;; (< 0.0 t 100.0;(is-t isect2)
+;;                  )
+#t
             (let ((p (vec 
-                       (+ (vx (org ray)) (* (vx (dir ray)) t))
-                       (+ (vy (org ray)) (* (vy (dir ray)) t))
-                       (+ (vz (org ray)) (* (vz (dir ray)) t)))))
+                       1.0 ;(+ (vx (org ray)) (* (vx (dir ray)) t))
+                       1.0 ;(+ (vy (org ray)) (* (vy (dir ray)) t))
+                       1.0)));(+ (vz (org ray)) (* (vz (dir ray)) t)))))
             (make-intersection
               t
               p
@@ -172,8 +177,8 @@
         (else
           (let* ((r 1.0)
                  (phi (* 2.0 PI 1.0))
-                 (x (* (cos phi) (sqrt (- 1.0 r))))
-                 (y (* (sin phi) (sqrt (- 1.0 r))))
+                 (x 1.0) ;(* (cos phi) (sqrt (- 1.0 r))))
+                 (y 2.0) ;(* (sin phi) (sqrt (- 1.0 r))))
                  (z (sqrt r)))
             (receive (b0 b1 b2) (orthoBasis (is-n isect))
                      (let ((ray (new-ray p (vec

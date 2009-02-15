@@ -35,21 +35,6 @@
 
 using namespace scheme;
 
-Bignum::Bignum()
-{
-    mpz_init(this->value);
-}
-
-Bignum::Bignum(long value)
-{
-    mpz_init(this->value);
-    mpz_set_si(this->value, value);
-}
-
-Bignum::Bignum(const mpz_t value)
-{
-    mpz_init_set(this->value, value);
-}
 
 Object Bignum::sqrt() const
 {

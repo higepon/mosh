@@ -40,10 +40,23 @@ namespace scheme {
 class Bignum EXTEND_GC
 {
 public:
-    Bignum();
-    Bignum(long value);
-    Bignum(const mpz_t value);
     ~Bignum();
+    Bignum()
+    {
+        mpz_init(this->value);
+    }
+
+    Bignum(long value)
+    {
+        mpz_init(this->value);
+        mpz_set_si(this->value, value);
+    }
+
+    Bignum(const mpz_t value)
+    {
+        mpz_init_set(this->value, value);
+    }
+
 
     char* toString(int radix = 10) const;
 
@@ -348,20 +361,25 @@ public:
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
     {\
-        Bignum* b = new Bignum(n1);\
-        mpz_##op(b->value, b->value, n2->value);\
-        return makeInteger(b);\
+        mpz_t ret;     \
+        mpz_init(ret); \
+        mpz_set_si(ret, n1); \
+        mpz_##op(ret, ret, n2->value);\
+        return makeInteger(ret);\
     }\
     static Object op(Bignum* n1, int n2)\
     {\
-        Bignum* b = new Bignum(n2);\
-        mpz_##op(b->value, n1->value, b->value);\
-        return makeInteger(b);\
+        mpz_t ret;     \
+        mpz_init(ret); \
+        mpz_set_si(ret, n2); \
+        mpz_##op(ret, n1->value, ret);\
+        return makeInteger(ret);\
     }\
     static Object op(Bignum* n1, Bignum* n2)\
     {\
-        Bignum* ret = new Bignum(1);\
-        mpz_##op(ret->value, n1->value, n2->value);\
+        mpz_t ret;     \
+        mpz_init(ret); \
+        mpz_##op(ret, n1->value, n2->value);\
         return makeInteger(ret);\
     }
 
@@ -544,12 +562,14 @@ public:
 
     static Object makeInteger(const mpz_t n)
     {
-        if (mpz_cmp_si(n, Fixnum::MIN) >= 0 &&
-            mpz_cmp_si(n, Fixnum::MAX) <= 0) {
-            return Object::makeFixnum(mpz_get_si(n));
-        } else {
-            return Object::makeBignum(n);
+        if (mpz_fits_slong_p(n) != 0) {
+            const intptr_t val = mpz_get_si(n);
+            if (val >= Fixnum::MIN &&
+                val <= Fixnum::MAX) {
+                return Object::makeFixnum(val);
+            }
         }
+        return Object::makeBignum(n);
     }
 
     static Object makeInteger(Bignum* b)
@@ -570,6 +590,24 @@ public:
 
 private:
 };
+
+inline Object Object::makeBignum(long n)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(new Bignum(n)))));
+}
+
+inline Object Object::makeBignum(const mpz_t b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(new Bignum(b)))));
+}
+
+inline Object Object::makeBignum(Bignum* b)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<word>(b))));
+}
 
 }; // namespace scheme
 
