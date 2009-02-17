@@ -60,7 +60,7 @@ public:
     int open();
     int close();
     bool isClosed() const;
-    int fileno() const;
+    int fileNo() const;
     void bufFlush();
 
 protected:

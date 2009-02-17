@@ -113,7 +113,7 @@ ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
     exit(-1);
 }
 
-int CustomBinaryInputPort::fileno() const
+int CustomBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;
 }

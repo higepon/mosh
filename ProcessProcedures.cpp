@@ -143,7 +143,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const Object out = argv[3];
     const Object err = argv[4];
     if (in.isBinaryInputPort()) {
-        const int newfd = in.toBinaryInputPort()->fileno();
+        const int newfd = in.toBinaryInputPort()->fileNo();
         if (newfd == BinaryInputPort::INVALID_FILENO) {
             callAssertionViolationAfter(theVM, procedureName, "input port is not file port", L1(in));
             return Object::Undef;
@@ -155,7 +155,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (out.isBinaryOutputPort()) {
-        const int newfd = out.toBinaryOutputPort()->fileno();
+        const int newfd = out.toBinaryOutputPort()->fileNo();
         if (newfd == BinaryOutputPort::INVALID_FILENO) {
             callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
             return Object::Undef;
@@ -167,7 +167,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (err.isBinaryOutputPort()) {
-        const int newfd = err.toBinaryOutputPort()->fileno();
+        const int newfd = err.toBinaryOutputPort()->fileNo();
         if (newfd == BinaryOutputPort::INVALID_FILENO) {
             callAssertionViolationAfter(theVM, procedureName, "error output port is not file port", L1(argv[2]));
             return Object::Undef;

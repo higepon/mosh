@@ -1,5 +1,7 @@
 2009-02-17  higepon  <higepon@users.sourceforge.jp>
 
+        * fileno() => fileNo(). fileno() member function causes compile error on FreeBSD.
+
         * lib/srfi/%3a98/os-environment-variables.sls (srfi): Added.
 
 2009-02-15  higepon  <higepon@users.sourceforge.jp>

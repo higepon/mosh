@@ -192,7 +192,7 @@ int FileBinaryInputPort::close()
     return MOSH_SUCCESS;
 }
 
-int FileBinaryInputPort::fileno() const
+int FileBinaryInputPort::fileNo() const
 {
     return fd_;
 }

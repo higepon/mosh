@@ -73,7 +73,7 @@ int ByteArrayBinaryInputPort::close()
     return MOSH_SUCCESS;
 }
 
-int ByteArrayBinaryInputPort::fileno() const
+int ByteArrayBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;
 }

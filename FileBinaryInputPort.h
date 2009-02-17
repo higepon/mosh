@@ -56,7 +56,7 @@ public:
     ByteVector* getByteVector(uint32_t size);
     int open();
     int close();
-    int fileno() const;
+    int fileNo() const;
     virtual bool isClosed() const;
 
 private:
