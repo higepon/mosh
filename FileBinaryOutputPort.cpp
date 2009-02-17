@@ -143,7 +143,7 @@ int FileBinaryOutputPort::close()
     bufFlush();
     if (!isClosed() && INVALID_FILENO != fd_) {
         isClosed_ = true;
-        if (fd_ != ::fileno(stdout) && fd_ != ::fileno(stderr)) {
+        if (fd_ != fileno(stdout) && fd_ != fileno(stderr)) {
             ::close(fd_);
         }
     }

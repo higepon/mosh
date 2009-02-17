@@ -185,7 +185,7 @@ int FileBinaryInputPort::close()
 {
     if (!isClosed() && fd_ != INVALID_FILENO) {
         isClosed_ = true;
-        if (fd_ != ::fileno(stdin)) {
+        if (fd_ != fileno(stdin)) {
             ::close(fd_);
         }
     }
