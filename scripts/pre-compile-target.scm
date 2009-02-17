@@ -26,6 +26,8 @@
         (srfi :61)
         (srfi :67)
         (srfi :78)
+        (srfi :98)
+        (srfi :98 os-environment-variables)
         (clos user)
         (mosh pp)
         (mosh test)

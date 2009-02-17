@@ -162,7 +162,6 @@ lib/srfi/private/let-opt.sls \
 lib/srfi/private/let-opt.sls \
 lib/srfi/private/platform-features.mosh.sls \
 lib/srfi/private/OS-id-features.sls \
-lib/srfi/%3a98.ss \
 lib/srfi/%3a0.sls \
 lib/srfi/%3a0/cond-expand.sls \
 lib/srfi/%3a1.sls \
@@ -229,7 +228,10 @@ lib/srfi/67/compare.ss \
 lib/srfi/%3a78.sls \
 lib/srfi/%3a78/lightweight-testing.sls \
 lib/srfi/%3a78/lightweight-testing/compat.mosh.sls \
-lib/srfi/78/check.scm
+lib/srfi/78/check.scm \
+lib/srfi/%3a98.ss \
+lib/srfi/%3a98/os-environment-variables.sls
+
 
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
