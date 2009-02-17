@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.61)
+AC_PREREQ(2.63)
 AC_INIT(mosh, 0.0.8, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
