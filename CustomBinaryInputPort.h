@@ -50,6 +50,17 @@ public:
     int close();
     bool isClosed() const;
     int fileNo() const;
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const {
+        MOSH_ASSERT(false);
+        return 0;
+    }
+    bool setPosition(int position)
+    {
+        MOSH_ASSERT(false);
+    }
+
 
 private:
     VM* theVM_;

@@ -62,6 +62,16 @@ public:
     bool isClosed() const;
     int fileNo() const;
     void bufFlush();
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const {
+        MOSH_ASSERT(false);
+        return 0;
+    }
+    bool setPosition(int position)
+    {
+        MOSH_ASSERT(false);
+    }
 
 protected:
     int fd_;

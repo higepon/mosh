@@ -63,6 +63,10 @@ public:
     virtual bool isClosed() const = 0;
     virtual int fileNo() const = 0;
     virtual void bufFlush() = 0;
+    virtual bool hasPosition() const = 0;
+    virtual bool hasSetPosition() const = 0;
+    virtual int position() const = 0;
+    virtual bool setPosition(int position)  = 0;
 };
 
 }; // namespace scheme

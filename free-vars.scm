@@ -87,6 +87,7 @@
     (make-custom-binary-input-port (lambda (id read! get-position set-position! close) (display "make-custom-binary-input-port not implemented")))
     get-u8
     bytevector-u8-set!
+    port-has-port-position?
     transcoded-port
     latin-1-codec
     utf-8-codec

@@ -56,8 +56,15 @@
 #include "Arithmetic.h"
 #include "ByteVector.h"
 
-
 using namespace scheme;
+
+Object scheme::portHasPortPositionPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-has-port-position?");
+    checkArgumentLength(1);
+
+
+}
 
 Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv)
 {

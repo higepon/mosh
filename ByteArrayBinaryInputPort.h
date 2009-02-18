@@ -1,5 +1,5 @@
 /*
- * ByteArrayBinaryInputPort.h - 
+ * ByteArrayBinaryInputPort.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -61,6 +61,18 @@ public:
     int close();
     bool isClosed() const;
     int fileNo() const;
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const { return index_; }
+    bool setPosition(int position)
+    {
+        if (position >= size_) {
+            return false;
+        } else {
+            index_ = position;
+            return true;
+        }
+    }
 
 private:
     const uint8_t* const buf_;
