@@ -1,3 +1,15 @@
+2009-02-18  higepon  <higepon@users.sourceforge.jp>
+
+        * Added open-bytevector-input-port.
+
+        * test/input-port.scm: Added tests for (utf-16-codec).
+
+        * lib/mosh/test.ss (mosh): Fixed the bug.
+
+        * test/input-port.scm: Added for tests of Input ports.
+
+        * Added port-eof?.
+
 2009-02-17  higepon  <higepon@users.sourceforge.jp>
 
         * fileno() => fileNo(). fileno() member function causes compile error on FreeBSD.

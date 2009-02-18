@@ -86,12 +86,12 @@
               (counter (+ (counter) 1))
               (ok-counter (+ (ok-counter) 1))]
              [else
-              (error* (cons (list 'form result expected) (error*)))
+              (error* (cons (list form expected result) (error*)))
               (counter (+ (counter) 1))]
                 ))))
         ((_ test expected)
          (syntax
-          (test* test expected test))))))
+          (test* 'test test expected ))))))
 
   #|
       Function: test/t

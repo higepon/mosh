@@ -451,7 +451,9 @@
     set-current-directory!
     binary-port?
     input-port?
+    port-eof?
     lookahead-u8
+    open-bytevector-input-port
     ;; ffi
     %ffi-open
     %ffi-lookup

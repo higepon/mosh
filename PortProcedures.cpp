@@ -59,6 +59,39 @@
 
 using namespace scheme;
 
+Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("open-bytevector-input-port");
+    checkArgumentLengthBetween(1, 2);
+    argumentAsByteVector(0, bv);
+    if (1 == argc) {
+        return Object::makeBinaryInputPort(new ByteArrayBinaryInputPort(bv->data(), bv->length()));
+    } else { // 2 == argc
+        argumentCheckTranscoderOrFalse(1, maybeTranscoder);
+        BinaryInputPort* in = new ByteArrayBinaryInputPort(bv->data(), bv->length());
+        if (maybeTranscoder.isFalse()) {
+            return Object::makeBinaryInputPort(in);
+        } else {
+            return Object::makeTextualInputPort(in, maybeTranscoder.toTranscoder());
+        }
+    }
+}
+
+Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-eof?");
+    checkArgumentLength(1);
+    const Object port = argv[0];
+    if (port.isBinaryInputPort()) {
+        return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
+    } else if (port.isTextualInputPort()) {
+        return Object::False;
+    } else {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
+        return Object::Undef;
+    }
+}
+
 Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("put-bytevector");
@@ -763,6 +796,7 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     FileBinaryInputPort* fileBinaryInputPort = NULL;
     Transcoder* transcoder = NULL;
 
+    // N.B. As R6RS says, we ignore "file-options" for input-port.
     if (argc == 1) {
         argumentAsString(0, path);
         fileBinaryInputPort = new FileBinaryInputPort(path->data(), Object::Nil, Symbol::BLOCK);
