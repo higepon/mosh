@@ -32,7 +32,7 @@
 #ifndef __SCHEME_TEXTUAL_INPUT_PORT__
 #define __SCHEME_TEXTUAL_INPUT_PORT__
 
-#include "scheme.h"
+#include "Port.h"
 
 namespace scheme {
 
@@ -42,7 +42,7 @@ class BinaryInputPort;
 class Scanner;
 class NumberScanner;
 
-class TextualInputPort : public gc_cleanup  // for closing port automatically
+class TextualInputPort : public Port  // for closing port automatically
 {
 public:
     TextualInputPort(BinaryInputPort* port, Transcoder* coder);
@@ -71,6 +71,17 @@ public:
     virtual Codec* codec() const;
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const {
+        MOSH_ASSERT(false);
+        return 0;
+    }
+    bool setPosition(int position)
+    {
+        MOSH_ASSERT(false);
+    }
+
 
 private:
     Codec* codec_;

@@ -46,6 +46,17 @@ public:
     void unGetChar(ucs4char c);
     ucs4string toString();
     int close();
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const {
+        MOSH_ASSERT(false);
+        return 0;
+    }
+    bool setPosition(int position)
+    {
+        MOSH_ASSERT(false);
+    }
+
 
 private:
     ucs4string buffer_;

@@ -32,7 +32,7 @@
 #ifndef __SCHEME_TEXTUAL_OUTPUT_PORT__
 #define __SCHEME_TEXTUAL_OUTPUT_PORT__
 
-#include "scheme.h"
+#include "Port.h"
 
 namespace scheme {
 
@@ -44,7 +44,7 @@ class BinaryOutputPort;
 // N.B. We need to close the port automatically when it is not referenced.
 // So use gc_cleanup.
 // TextualOutputPort never close binary output port, it will be closed on BinaryOutputPort's destructors.
-class TextualOutputPort : public gc_cleanup
+class TextualOutputPort : public Port
 {
 public:
     TextualOutputPort();
@@ -67,6 +67,17 @@ public:
     Object errorMessage() const;
     Object irritants() const;
     Transcoder* transcoder() const;
+    bool hasPosition() const { return true; }
+    bool hasSetPosition() const { return true; }
+    int position() const {
+        MOSH_ASSERT(false);
+        return 0;
+    }
+    bool setPosition(int position)
+    {
+        MOSH_ASSERT(false);
+    }
+
 
 private:
     BinaryOutputPort* port_;
