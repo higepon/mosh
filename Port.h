@@ -1,7 +1,7 @@
 /*
- * BinaryInputPort.h - <binary input port>
+ * Port.h - <port>
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,49 +26,28 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: BinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Port.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_BINARY_INPUT_PORT__
-#define __SCHEME_BINARY_INPUT_PORT__
+#ifndef __SCHEME_PORT__
+#define __SCHEME_PORT__
 
-#include "BinaryPort.h"
+#include "scheme.h"
 
 namespace scheme {
 
-class ByteVector;
-
-class BinaryInputPort : public BinaryPort // for closing port on destructors, we extend gc_cleanup
+class Port : public gc_cleanup // for closing port on destructors
 {
 public:
-//     enum
-//     {
-//         INVALID_FILENO = -1,
-//     };
 
-//     enum bufferMode
-//     {
-//         NONE,
-//         LINE,
-//         BLOCK,
-//     };
-
-    virtual ~BinaryInputPort() {};
-    virtual int getU8() = 0;
-    virtual int lookaheadU8() = 0;
-    virtual ByteVector* getByteVector(uint32_t size) = 0;
-    virtual ucs4string toString() = 0;
-//     virtual int open() = 0;
-//     virtual int close() = 0;
-//     virtual bool isClosed() const = 0;
-//     virtual int fileNo() const = 0;
-//     virtual bool hasPosition() const = 0;
-//     virtual bool hasSetPosition() const = 0;
-//     virtual int position() const = 0;
-//     virtual bool setPosition(int position)  = 0;
+    virtual ~Port() {};
+    virtual bool hasPosition() const = 0;
+    virtual bool hasSetPosition() const = 0;
+    virtual int position() const = 0;
+    virtual bool setPosition(int position)  = 0;
 
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_INPUT_PORT__
+#endif // __SCHEME_PORT__

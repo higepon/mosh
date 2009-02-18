@@ -32,41 +32,42 @@
 #ifndef __SCHEME_BINARY_OUTPUT_PORT__
 #define __SCHEME_BINARY_OUTPUT_PORT__
 
-#include "scheme.h"
+#include "BinaryPort.h"
 
 namespace scheme {
 
 class ByteVector;
 
-class BinaryOutputPort : public gc_cleanup
+class BinaryOutputPort : public BinaryPort
 {
 public:
-    enum
-    {
-        INVALID_FILENO = -1,
-    };
+//     enum
+//     {
+//         INVALID_FILENO = -1,
+//     };
 
-    enum bufferMode
-    {
-        NONE,
-        LINE,
-        BLOCK,
-    };
+//     enum bufferMode
+//     {
+//         NONE,
+//         LINE,
+//         BLOCK,
+//     };
 
     virtual ~BinaryOutputPort() {};
     virtual int putU8(uint8_t v) = 0;
     virtual int putU8(uint8_t* v, int size) = 0;
     virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
     virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
-    virtual int open() = 0;
-    virtual int close() = 0;
-    virtual bool isClosed() const = 0;
-    virtual int fileNo() const = 0;
     virtual void bufFlush() = 0;
-    virtual bool hasPosition() const = 0;
-    virtual bool hasSetPosition() const = 0;
-    virtual int position() const = 0;
-    virtual bool setPosition(int position)  = 0;
+//     virtual int open() = 0;
+//     virtual int close() = 0;
+//     virtual bool isClosed() const = 0;
+//     virtual int fileNo() const = 0;
+
+//     virtual bool hasPosition() const = 0;
+//     virtual bool hasSetPosition() const = 0;
+//     virtual int position() const = 0;
+//     virtual bool setPosition(int position)  = 0;
 };
 
 }; // namespace scheme

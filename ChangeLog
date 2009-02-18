@@ -1,5 +1,9 @@
 2009-02-18  higepon  <higepon@users.sourceforge.jp>
 
+        * Added : Port.h and BinaryPort.h
+
+        * Changed Port inheritance.
+
         * Added open-bytevector-input-port.
 
         * test/input-port.scm: Added tests for (utf-16-codec).
