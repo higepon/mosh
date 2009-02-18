@@ -160,8 +160,8 @@
       (syntax-case x ()
         ((_ pred? test ...)
          (syntax
-          (test* (test/exception pred? test ...) (guard (con [(pred? con) #t])
-                             test ...) #t))))))
+          (test/t (guard (con [(pred? con) #t])
+                         test ...)))))))
 
   #|
       Function: test/violation?
