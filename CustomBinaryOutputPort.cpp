@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #include "Object.h"
@@ -39,9 +39,8 @@
 
 using namespace scheme;
 
-CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, Object id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc) : theVM_(theVM), writeDProc_(writeDProc), getPositionProc_(getPositionProc), setPositionDProc_(setPositionDProc), closeProc_(closeProc)
+CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, Object id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc) : theVM_(theVM), writeDProc_(writeDProc), getPositionProc_(getPositionProc), setPositionDProc_(setPositionDProc), closeProc_(closeProc), isClosed_(false)
 {
-    // isClosed_ =
     id_ = Object::toString(id);
 }
 
@@ -102,4 +101,18 @@ int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
     } else {
         return return.toBignum()->toU32();
     }
+}
+
+int CustomBinaryOutputPort::open()
+{
+    return 0;
+}
+
+int CustomBinaryOutputPort::close()
+{
+    if (!closeProc_.isFalse()) {
+        const Object result = theVM_->callClosure(closeProc_);
+    }
+    isClosed_ = true;
+    return 0;
 }

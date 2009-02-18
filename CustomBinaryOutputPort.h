@@ -26,19 +26,17 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #ifndef __SCHEME_CUSTOM_BINARY_OUTPUT_PORT__
 #define __SCHEME_CUSTOM_BINARY_OUTPUT_PORT__
 
-#include "scheme.h"
+#include "BinaryOutputPort.h"
 
 namespace scheme {
 
-//class ByteVector;
-
-class CustomBinaryOutputPort : public gc_cleanup
+class CustomBinaryOutputPort : public BinaryOutputPort
 {
 public:
     enum
@@ -58,9 +56,9 @@ public:
     int putU8(uint8_t v);
     int putU8(uint8_t* v, int size);
     int putByteVector(ByteVector* bv, int start = 0);
-    int putByteVector(ByteVector* bv, int start, int count) = 0;
-    virtual int open() = 0;
-    virtual int close() = 0;
+    int putByteVector(ByteVector* bv, int start, int count);
+    int open();
+    int close();
     virtual bool isClosed() const = 0;
     virtual int fileNo() const = 0;
     virtual void bufFlush() = 0;
