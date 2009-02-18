@@ -63,7 +63,7 @@ public:
     int fileNo() const;
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
-    int position() const { return index_; }
+    Object position() const;
     bool setPosition(int position)
     {
         if (position >= size_) {

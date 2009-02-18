@@ -30,10 +30,13 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "Fixnum.h"
+#include "Bignum.h"
 
 
 using namespace scheme;
@@ -76,4 +79,9 @@ int ByteArrayBinaryInputPort::close()
 int ByteArrayBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;
+}
+
+Object ByteArrayBinaryInputPort::position() const
+{
+    return Bignum::makeInteger(index_);
 }

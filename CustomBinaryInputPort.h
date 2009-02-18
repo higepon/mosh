@@ -39,7 +39,7 @@ namespace scheme {
 class CustomBinaryInputPort : public BinaryInputPort
 {
 public:
-    CustomBinaryInputPort(VM* theVM, Object readProc);
+    CustomBinaryInputPort(VM* theVM, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     virtual ~CustomBinaryInputPort();
 
     int getU8();
@@ -50,21 +50,23 @@ public:
     int close();
     bool isClosed() const;
     int fileNo() const;
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
-    int position() const {
-        MOSH_ASSERT(false);
-        return 0;
-    }
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
     bool setPosition(int position)
     {
         MOSH_ASSERT(false);
+        return false;
     }
 
 
 private:
     VM* theVM_;
     const Object readProc_;
+    const Object getPositionProc_;
+    const Object setPositionProc_;
+    const Object closeProc_;
+
     bool isClosed_;
     int u8Buf_;
 };

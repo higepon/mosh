@@ -88,6 +88,7 @@
     get-u8
     bytevector-u8-set!
     port-has-port-position?
+    port-has-set-port-position!?
     transcoded-port
     latin-1-codec
     utf-8-codec

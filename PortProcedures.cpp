@@ -62,8 +62,16 @@ Object scheme::portHasPortPositionPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("port-has-port-position?");
     checkArgumentLength(1);
+    argumentAsPort(0, port);
+    return Object::makeBool(port->hasPosition());
+}
 
-
+Object scheme::portHasSetPortPositionDPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-has-set-port-position!?");
+    checkArgumentLength(1);
+    argumentAsPort(0, port);
+    return Object::makeBool(port->hasSetPosition());
 }
 
 Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv)
@@ -526,7 +534,7 @@ Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* ar
     argumentCheckProcedureOrFalse(3, setPositionProc);
     argumentCheckProcedureOrFalse(3, closeProc);
 
-    return Object::makeCustomBinaryInputPort(theVM, readProc);
+    return Object::makeCustomBinaryInputPort(theVM, readProc, getPositionProc, setPositionProc, closeProc);
 }
 
 Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)

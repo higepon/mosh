@@ -1,5 +1,11 @@
 2009-02-18  higepon  <higepon@users.sourceforge.jp>
 
+        * Added port-has-set-port-position!?.
+
+        * PortProcedures.cpp : Added port-has-port-position?. It works only for custom-binary-input-port only now.
+
+        * Object.h (scheme): Added toPort().
+
         * Added : Port.h and BinaryPort.h
 
         * Changed Port inheritance.

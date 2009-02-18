@@ -73,13 +73,14 @@ public:
     virtual NumberScanner* numberScanner() const;
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
-    int position() const {
+    Object position() const {
         MOSH_ASSERT(false);
-        return 0;
+        return Object::Undef;
     }
     bool setPosition(int position)
     {
         MOSH_ASSERT(false);
+        return false;
     }
 
 

@@ -40,8 +40,20 @@
 
 using namespace scheme;
 
-CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc) : theVM_(theVM), readProc_(readProc), isClosed_(false), u8Buf_(EOF)
+CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
+    : theVM_(theVM),
+      readProc_(readProc),
+      getPositionProc_(getPositionProc),
+      setPositionProc_(setPositionProc),
+      closeProc_(closeProc),
+      isClosed_(false),
+      u8Buf_(EOF)
 {
+    MOSH_ASSERT(readProc_.isClosure() || readProc_.isFalse());
+    MOSH_ASSERT(getPositionProc_.isClosure() || getPositionProc_.isFalse());
+    MOSH_ASSERT(setPositionProc_.isClosure() || setPositionProc_.isFalse());
+    MOSH_ASSERT(closeProc_.isClosure() || closeProc_.isFalse());
+
 }
 
 CustomBinaryInputPort::~CustomBinaryInputPort()
@@ -116,4 +128,19 @@ ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
 int CustomBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;
+}
+
+bool CustomBinaryInputPort::hasPosition() const
+{
+    return !getPositionProc_.isFalse();
+}
+
+bool CustomBinaryInputPort::hasSetPosition() const
+{
+    return !setPositionProc_.isFalse();
+}
+
+Object CustomBinaryInputPort::position() const
+{
+    return theVM_->callClosure0(getPositionProc_);
 }

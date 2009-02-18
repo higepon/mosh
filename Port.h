@@ -43,7 +43,7 @@ public:
     virtual ~Port() {};
     virtual bool hasPosition() const = 0;
     virtual bool hasSetPosition() const = 0;
-    virtual int position() const = 0;
+    virtual Object position() const = 0;
     virtual bool setPosition(int position)  = 0;
 
 };

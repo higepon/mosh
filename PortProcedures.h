@@ -38,6 +38,7 @@ namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
     Object portHasPortPositionPEx(VM* theVM, int argc, const Object* argv);
+    Object portHasSetPortPositionDPEx(VM* theVM, int argc, const Object* argv);
     Object openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv);
     Object portEofPEx(VM* theVM, int argc, const Object* argv);
     Object writeCharEx(VM* theVM, int argc, const Object* argv);

@@ -31,6 +31,7 @@
 
 #include "scheme.h"
 #include "Object.h"
+#include "Object-inl.h"
 #include "StringTextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
