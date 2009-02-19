@@ -117,7 +117,21 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(ASSIGN_GLOBAL)
         {
             const Object id = fetchOperand();
-            nameSpace->set(id, ac_);
+            if (id.isGloc()) {
+                id.toGloc()->setValue(ac_);
+            } else {
+                const Object val = nameSpace->ref(id, notFound_);
+                if (val == notFound_) {
+                    // psyntax requires this
+                    const Object gloc = Object::makeGloc(ac_);
+                    nameSpace->set(id, gloc);
+                    *(pc_ - 1) = gloc;
+                } else {
+                    VM_ASSERT(val.isGloc());
+                    val.toGloc()->setValue(ac_);
+                    *(pc_ - 1) = val;
+                }
+            }
             ac_ = Object::Undef;
             NEXT1;
         }
@@ -317,7 +331,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //            LOG1("define ~a\n", id);
             const Object found = nameSpace->ref(id, notFound_);
             if (found == notFound_) {
-                nameSpace->set(id, ac_);
+                nameSpace->set(id, Object::makeGloc(ac_));
             } else {
                 callErrorAfter(this, "define", "defined twice", L1(id));
             }
@@ -666,30 +680,40 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(REFER_GLOBAL)
         {
             const Object id = fetchOperand();
-            const Object val = nameSpace->ref(id, notFound_);
-            if (val == notFound_) {
-                callUndefinedViolationAfter(this,
-                                            "eval",
-                                            "unbound variable",
-                                            // R6RS mode requires demangle of symbol.
-                                            L1(unGenSym(id)));
+            if (id.isGloc()) {
+                ac_ = id.toGloc()->value();
             } else {
-                ac_ = val;
+                const Object val = nameSpace->ref(id, notFound_);
+                if (val == notFound_) {
+                    callUndefinedViolationAfter(this,
+                                                "eval",
+                                                "unbound variable",
+                                                // R6RS mode requires demangle of symbol.
+                                                L1(unGenSym(id)));
+                } else {
+                    ac_ = val.toGloc()->value();
+                    *(pc_ - 1) = val;
+                }
             }
             NEXT1;
         }
         CASE(REFER_GLOBAL_PUSH)
         {
             const Object id = fetchOperand();
-            const Object val = nameSpace->ref(id, notFound_);
-            if (val == notFound_) {
-                callAssertionViolationAfter(this,
-                                            "eval",
-                                            "unbound variable",
-                                            // R6RS mode requires demangle of symbol.
-                                            L1(unGenSym(id)));
+            if (id.isGloc()) {
+                ac_ = id.toGloc()->value();
             } else {
-                ac_ = val;
+                const Object val = nameSpace->ref(id, notFound_);
+                if (val == notFound_) {
+                    callAssertionViolationAfter(this,
+                                                "eval",
+                                                "unbound variable",
+                                                // R6RS mode requires demangle of symbol.
+                                                L1(unGenSym(id)));
+                } else {
+                    ac_ = val.toGloc()->value();
+                    *(pc_ - 1) = val;
+                }
             }
             push(ac_);
             NEXT1;
@@ -697,15 +721,20 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(REFER_GLOBAL_CALL)
         {
             const Object id = fetchOperand();
-            const Object val = nameSpace->ref(id, notFound_);
-            if (val == notFound_) {
-                callAssertionViolationAfter(this,
-                                            "eval",
-                                            "unbound variable",
-                                            L1(unGenSym(id)));
-                NEXT1; // for error handling
+            if (id.isGloc()) {
+                ac_ = id.toGloc()->value();
             } else {
-                ac_ = val;
+                const Object val = nameSpace->ref(id, notFound_);
+                if (val == notFound_) {
+                    callAssertionViolationAfter(this,
+                                                "eval",
+                                                "unbound variable",
+                                                L1(unGenSym(id)));
+                    NEXT1; // for error handling
+                } else {
+                    ac_ = val.toGloc()->value();
+                    *(pc_ - 1) = val;
+                }
             }
             operand = fetchOperand();
             #include "call.inc.cpp"

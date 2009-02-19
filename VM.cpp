@@ -37,6 +37,7 @@
 #include "Closure.h"
 #include "EqHashTable.h"
 #include "Symbol.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
@@ -67,6 +68,7 @@
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
 #include "Fasl.h"
+#include "Gloc.h"
 
 #define TRY     jmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \
@@ -133,7 +135,7 @@ Object VM::getTopLevelGlobalValue(Object id)
 {
     const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
     if (val != notFound_) {
-        return val;
+        return val.toGloc()->value();
     } else {
         callAssertionViolationAfter(this, "symbol-value2", "unbound variable", L1(id));
         return Object::Undef;
@@ -683,7 +685,7 @@ Object VM::getTopLevelGlobalValueOrFalse(Object id)
 {
     const Object val = nameSpace_.toEqHashTable()->ref(id, notFound_);
     if (val != notFound_) {
-        return val;
+        return val.toGloc()->value();
     } else {
         return Object::False;
     }

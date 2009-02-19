@@ -39,6 +39,7 @@
 #include "EqHashTable.h"
 #include "Symbol.h"
 #include "Closure.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "UtilityProcedures.h"
 #include "ProcedureMacro.h"

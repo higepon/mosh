@@ -42,6 +42,7 @@
 #include "Closure.h"
 #include "TextualOutputPort.h"
 #include "Symbol.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 
 using namespace scheme;

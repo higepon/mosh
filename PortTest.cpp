@@ -56,6 +56,7 @@
 #include "PortProcedures.h"
 #include "EqHashTable.h"
 #include "Closure.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 
 bool scheme::portIsClosed = false;

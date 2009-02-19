@@ -1,3 +1,10 @@
+2009-02-20  higepon  <higepon@users.sourceforge.jp>
+
+        * Now profiler is broken. It will be fixed soon.
+
+        * Gloc.h: Added for Global location object. It makes top-level variable lookup much faster.
+                  Thanks to shiro kawai for advising me.
+
 2009-02-19  kokosabu  <kokosabu@gmail.com>
 
         * CustomBinaryOutputPort.cpp : Added.

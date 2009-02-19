@@ -41,6 +41,7 @@
 #include "VM.h"
 #include "Closure.h"
 #include "EqHashTable.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"

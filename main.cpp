@@ -45,6 +45,7 @@
 #include "Closure.h"
 #include "Symbol.h"
 #include "EqHashTable.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "ErrorProcedures.h"
 #include "BinaryOutputPort.h"

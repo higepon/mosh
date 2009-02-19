@@ -1,7 +1,7 @@
 /*
- * TestingVM.cpp - 
+ * Gloc.h -
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,29 +26,42 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: TestingVM.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: Gloc.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Pair.h"
-#include "Pair-inl.h"
-#include "SString.h"
-#include "TestingVM.h"
-#include "ErrorProcedures.h"
-#include "PortProcedures.h"
-#include "Closure.h"
-#include "EqHashTable.h"
-#include "Symbol.h"
-#include "VM.h"
-#include "Gloc.h"
-#include "VM-inl.h"
-#include <setjmp.h>
+#ifndef __SCHEME_GLOC__
+#define __SCHEME_GLOC__
 
-using namespace scheme;
+#include "scheme.h"
 
-int TestingVM::exit(int status)
+namespace scheme {
+
+class Gloc EXTEND_GC
 {
-    // Testing VM never exit on any errror.
-    return status;
+public:
+    ~Gloc();
+    Gloc(Object value) : value_(value) {}
+
+    Object value() const
+    {
+        return value_;
+    }
+
+    void setValue(Object value)
+    {
+        value_ = value;
+    }
+
+private:
+    Object value_;
+};
+
+inline Object Object::makeGloc(Object value)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Gloc, reinterpret_cast<word>
+                                                        (new Gloc(value)))));
 }
+
+}; // namespace scheme
+
+#endif // __SCHEME_GLOC__

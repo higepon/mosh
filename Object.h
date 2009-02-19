@@ -72,6 +72,7 @@ class Bignum;
 class Compnum;
 class VM;
 class Port;
+class Gloc;
 
 enum {
     CONST_NIL     = 0,
@@ -149,6 +150,7 @@ public:
     bool equal(VM* theVM, Object o) const;
     bool eqv(VM* theVM, Object o) const;
 
+    static Object makeGloc(Object value);
     static Object* makeObjectArray(int size);
     static Object makeFixnum(signed long int n);
     static Object makeBignum(signed long int n);
@@ -289,6 +291,7 @@ public:
     DECL_ACCESSOR(Flonum)
     DECL_ACCESSOR(Bignum)
     DECL_ACCESSOR(Compnum)
+    DECL_ACCESSOR(Gloc)
 
     static const Object Nil;
     static const Object Eof;

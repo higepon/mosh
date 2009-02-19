@@ -55,10 +55,12 @@
 #include "Equivalent.h"
 #include "VM.h"
 #include "Symbol.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "StringProcedures.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "Gloc.h"
 
 
 #ifdef ENABLE_PROFILER

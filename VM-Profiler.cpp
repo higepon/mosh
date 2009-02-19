@@ -125,12 +125,13 @@ Object VM::getClosureName(Object closure)
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
     } else if (closure.isClosure()) {
-        const Object name = nameSpace->ref(closure, notFound_);
-        if (name == notFound_) {
-            return Object::False;
-        } else {
-            return stringTosymbol(name.cdr());
-        }
+        return "my-todo";
+//         const Object name = nameSpace->ref(closure, notFound_);
+//         if (name == notFound_) {
+//             return Object::False;
+//         } else {
+//             return stringTosymbol(name.cdr());
+//         }
     } else {
         return Object::False;
     }

@@ -60,6 +60,7 @@
 #include "PortProcedures.h"
 #include "EqHashTable.h"
 #include "Closure.h"
+#include "Gloc.h"
 #include "VM-inl.h"
 #include "FFI.h"
 #include "FFIProcedures.h"

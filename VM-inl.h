@@ -65,7 +65,7 @@ inline Object VM::stackToPairArgs(Object* sp, int nArgs)
 
 inline void VM::setValueSymbol(Object id, Object val)
 {
-    nameSpace_.toEqHashTable()->set(id, val);
+    nameSpace_.toEqHashTable()->set(id, Object::makeGloc(val));
 }
 
 inline void VM::setValueString(const ucs4char* id, Object val)
