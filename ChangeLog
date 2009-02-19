@@ -1,3 +1,7 @@
+2009-02-19  higepon  <higepon@users.sourceforge.jp>
+
+        * CustomBinaryInputPort.cpp : Added get-bytevector-n for custom-binary-input-port.
+
 2009-02-18  higepon  <higepon@users.sourceforge.jp>
 
         * Added port-has-set-port-position!?.

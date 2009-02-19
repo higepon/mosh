@@ -74,6 +74,29 @@ Object scheme::portHasSetPortPositionDPEx(VM* theVM, int argc, const Object* arg
     return Object::makeBool(port->hasSetPosition());
 }
 
+Object scheme::setPortPositionDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("set-port-position!");
+    checkArgumentLength(2);
+    argumentAsPort(0, port);
+    argumentAsFixnum(1, position);
+    if (port->setPosition(position)) {
+
+    } else {
+
+
+    }
+    return Object::Undef;
+}
+
+Object scheme::portPositionEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("port-position");
+    checkArgumentLength(1);
+    argumentAsPort(0, port);
+    return port->position();
+}
+
 Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-bytevector-input-port");

@@ -47,7 +47,7 @@ CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc, Object 
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
       isClosed_(false),
-      u8Buf_(EOF)
+      aheadU8_(EOF)
 {
     MOSH_ASSERT(readProc_.isClosure() || readProc_.isFalse());
     MOSH_ASSERT(getPositionProc_.isClosure() || getPositionProc_.isFalse());
@@ -84,9 +84,9 @@ bool CustomBinaryInputPort::isClosed() const
 
 int CustomBinaryInputPort::getU8()
 {
-    if (u8Buf_ != EOF) {
-        int c = u8Buf_;
-        u8Buf_ = EOF;
+    if (hasAheadU8()) {
+        int c = aheadU8_;
+        aheadU8_ = EOF;
         return c;
     }
 
@@ -103,8 +103,8 @@ int CustomBinaryInputPort::getU8()
 
 int CustomBinaryInputPort::lookaheadU8()
 {
-    if (u8Buf_ != EOF) {
-        return u8Buf_;
+    if (hasAheadU8()) {
+        return aheadU8_;
     }
 
     const Object bv = Object::makeByteVector(1);
@@ -115,14 +115,27 @@ int CustomBinaryInputPort::lookaheadU8()
     if (0 == result.toFixnum()) {
         return EOF;
     }
-    u8Buf_ = bv.toByteVector()->u8Ref(0);
-    return u8Buf_;
+    aheadU8_ = bv.toByteVector()->u8Ref(0);
+    return aheadU8_;
 }
 
 ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
 {
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
+#ifdef USE_BOEHM_GC
+    uint8_t* buf = new(PointerFreeGC) uint8_t[size];
+#else
+    uint8_t* buf = new uint8_t[size];
+#endif
+    int readSize;
+    for (readSize = 0; readSize < size; readSize++) {
+        const int v = getU8();
+        if (EOF == v) {
+            break;
+        }
+        buf[readSize] = v;
+    }
+
+    return new ByteVector(readSize, buf);
 }
 
 int CustomBinaryInputPort::fileNo() const
@@ -140,7 +153,17 @@ bool CustomBinaryInputPort::hasSetPosition() const
     return !setPositionProc_.isFalse();
 }
 
+bool CustomBinaryInputPort::hasAheadU8() const
+{
+    return aheadU8_ != EOF;
+}
+
 Object CustomBinaryInputPort::position() const
 {
-    return theVM_->callClosure0(getPositionProc_);
+    const Object position = theVM_->callClosure0(getPositionProc_);;
+    if (position.isFixnum() && hasAheadU8()) {
+        return Object::makeFixnum(position.toFixnum() - 1);
+    } else {
+        return position;
+    }
 }

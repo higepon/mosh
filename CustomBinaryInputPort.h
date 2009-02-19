@@ -59,8 +59,9 @@ public:
         return false;
     }
 
-
 private:
+    bool hasAheadU8() const;
+
     VM* theVM_;
     const Object readProc_;
     const Object getPositionProc_;
@@ -68,7 +69,7 @@ private:
     const Object closeProc_;
 
     bool isClosed_;
-    int u8Buf_;
+    int aheadU8_;
 };
 
 }; // namespace scheme
