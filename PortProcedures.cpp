@@ -553,20 +553,18 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-// todo incomplete
-// (make-custom-binary-input-port id read! get-position set-position! close)
 Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-custom-binary-input-port");
     checkArgumentLength(5);
 
-    argumentCheckString(0, id);
+    argumentAsString(0, id);
     argumentCheckProcedure(1, readProc);
     argumentCheckProcedureOrFalse(2, getPositionProc);
     argumentCheckProcedureOrFalse(3, setPositionProc);
-    argumentCheckProcedureOrFalse(3, closeProc);
+    argumentCheckProcedureOrFalse(4, closeProc);
 
-    return Object::makeCustomBinaryInputPort(theVM, readProc, getPositionProc, setPositionProc, closeProc);
+    return Object::makeCustomBinaryInputPort(theVM, id->data(), readProc, getPositionProc, setPositionProc, closeProc);
 }
 
 Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)

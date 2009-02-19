@@ -171,10 +171,10 @@ Object Object::makeStringInputPort(const uint8_t* buf, int size)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
-Object Object::makeCustomBinaryInputPort(VM* theVM, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
+Object Object::makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new CustomBinaryInputPort(theVM, readProc, getPositionProc, setPositionProc, closeProc)))));
+                                                        reinterpret_cast<word>(new CustomBinaryInputPort(theVM, id, readProc, getPositionProc, setPositionProc, closeProc)))));
 }
 
 typedef gc_map2 Codecs;

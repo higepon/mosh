@@ -29,6 +29,7 @@
 
 
 (import (rnrs)
+        (mosh)
         (mosh test))
 
 (define (with-all-buffer-mode proc)
@@ -60,7 +61,7 @@
 ;; custom input-port
 (let* ([pos 0]
        [p (make-custom-binary-input-port
-           "custom in"
+           "xyz"
            (lambda (bv start count)
              (if (= pos 16)
                  0
@@ -86,6 +87,7 @@
   (test* (get-bytevector-n p 2) (eof-object))
   (set-port-position! p 2)
   (test* (get-bytevector-n p 3) #vu8(3 4 5))
+  (test* (format "~a" p) "<custom input port xyz>")
   (close-port p))
 
 ;; standard-input-port doesn't suport port-position on Mosh.

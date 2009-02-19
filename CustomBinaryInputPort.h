@@ -39,7 +39,7 @@ namespace scheme {
 class CustomBinaryInputPort : public BinaryInputPort
 {
 public:
-    CustomBinaryInputPort(VM* theVM, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
+    CustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     virtual ~CustomBinaryInputPort();
 
     int getU8();
@@ -59,6 +59,7 @@ private:
     bool hasAheadU8() const;
 
     VM* theVM_;
+    const ucs4string id_;
     const Object readProc_;
     const Object getPositionProc_;
     const Object setPositionProc_;

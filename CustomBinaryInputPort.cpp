@@ -41,8 +41,9 @@
 
 using namespace scheme;
 
-CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
+CustomBinaryInputPort::CustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
     : theVM_(theVM),
+      id_(id),
       readProc_(readProc),
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
@@ -63,7 +64,10 @@ CustomBinaryInputPort::~CustomBinaryInputPort()
 
 ucs4string CustomBinaryInputPort::toString()
 {
-    return UC("<custom port>");
+    ucs4string ret = UC("<custom input port ");
+    ret += id_;
+    ret += UC(">");
+    return ret;
 }
 
 int CustomBinaryInputPort::open()
