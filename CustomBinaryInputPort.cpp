@@ -36,6 +36,7 @@
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "CustomBinaryInputPort.h"
+#include "Bignum.h"
 #include "VM.h"
 
 using namespace scheme;
@@ -126,7 +127,7 @@ ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
 #else
     uint8_t* buf = new uint8_t[size];
 #endif
-    int readSize;
+    uint32_t readSize;
     for (readSize = 0; readSize < size; readSize++) {
         const int v = getU8();
         if (EOF == v) {
@@ -160,10 +161,18 @@ bool CustomBinaryInputPort::hasAheadU8() const
 
 Object CustomBinaryInputPort::position() const
 {
-    const Object position = theVM_->callClosure0(getPositionProc_);;
+    const Object position = theVM_->callClosure0(getPositionProc_);
     if (position.isFixnum() && hasAheadU8()) {
         return Object::makeFixnum(position.toFixnum() - 1);
     } else {
         return position;
     }
+}
+
+bool CustomBinaryInputPort::setPosition(int position)
+{
+    // we need to reset the aheadU8_
+    aheadU8_ = EOF;
+    theVM_->callClosure1(setPositionProc_, Bignum::makeInteger(position));
+    return true;
 }

@@ -80,13 +80,17 @@ Object scheme::setPortPositionDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsPort(0, port);
     argumentAsFixnum(1, position);
-    if (port->setPosition(position)) {
-
+    if (port->hasSetPosition()) {
+        if (port->setPosition(position)) {
+            return Object::Undef;
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[1]));
+            return Object::Undef;
+        }
     } else {
-
-
+        callAssertionViolationAfter(theVM, procedureName, "port doesn't support set-port-position!", L1(argv[0]));
+        return Object::Undef;
     }
-    return Object::Undef;
 }
 
 Object scheme::portPositionEx(VM* theVM, int argc, const Object* argv)
@@ -94,7 +98,12 @@ Object scheme::portPositionEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-position");
     checkArgumentLength(1);
     argumentAsPort(0, port);
-    return port->position();
+    if (port->hasPosition()) {
+        return port->position();
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "port doesn't support port-position", L1(argv[0]));
+        return Object::Undef;
+    }
 }
 
 Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv)

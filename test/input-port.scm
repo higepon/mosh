@@ -49,15 +49,13 @@
   (test* (lookahead-u8 p) 4)
   (test* (lookahead-u8 p) 4)
   (test* (port-position p) 3)
-;  (set-port-position! p 10)
-;  (get-bytevector-n p 2)
- ; (test* (get-bytevector-n p 2) #vu8(13 14))
-;  (test* (get-bytevector-n p 2) #vu8(15 16))
-;  (test* (get-bytevector-n p 2) (eof-object))
-;  (set-port-position! p 2)
-;  (test* (get-bytevector-n p 3) #vu8(3 4 5))
+  (set-port-position! p 10)
+  (get-bytevector-n p 2)
+  (test* (get-bytevector-n p 2) #vu8(13 14))
+  (test* (get-bytevector-n p 2) #vu8(15 16))
+  (test* (get-bytevector-n p 2) (eof-object))
+  (set-port-position! p 2)
+  (test* (get-bytevector-n p 3) #vu8(3 4 5))
   (close-port p))
-
-
 
 (test-end)

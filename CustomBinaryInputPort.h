@@ -53,11 +53,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position)
-    {
-        MOSH_ASSERT(false);
-        return false;
-    }
+    bool setPosition(int position);
 
 private:
     bool hasAheadU8() const;
