@@ -374,6 +374,7 @@ check: test
 
 test: ./mosh all-tests.scm update
 	./mosh test/input-port.scm
+	./mosh test/output-port.scm
 	./mosh test/shell.scm
 	./mosh test/record.scm
 	./mosh test/condition.scm

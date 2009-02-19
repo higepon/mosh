@@ -46,7 +46,7 @@
 #include "TextualByteVectorOutputPort.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
-#include "FileBinaryOutputPort.h"
+#include "StandardOutputPort.h"
 #include "StandardInputPort.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
@@ -944,7 +944,7 @@ Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(fileno(stdout));
+    static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort(fileno(stdout)));
     DeclareProcedureName("starndard-output-port");
     checkArgumentLength(0);
     return port;
@@ -952,7 +952,7 @@ Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(fileno(stderr));
+    static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort(fileno(stderr)));
     DeclareProcedureName("starndard-error-port");
     checkArgumentLength(0);
     return port;

@@ -62,6 +62,7 @@ public:
     bool isClosed() const;
     int fileNo() const;
     void bufFlush();
+    ucs4string toString();
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
     Object position() const {
@@ -76,6 +77,7 @@ public:
 
 protected:
     int fd_;
+    ucs4string fileName_;
     bool isClosed_;
     enum bufferMode bufferMode_;
     uint8_t* buffer_;

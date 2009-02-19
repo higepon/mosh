@@ -403,6 +403,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC(">"));
     } else if (o.isBinaryInputPort()) {
         putString(o.toBinaryInputPort()->toString().data());
+    } else if (o.isBinaryOutputPort()) {
+        putString(o.toBinaryOutputPort()->toString().data());
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {
@@ -579,7 +581,9 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isCodec()) {
         putString(UC("#<codec>"));
     } else if (o.isBinaryInputPort()) {
-        putString(UC("#<binary input port>"));
+        putString(o.toBinaryInputPort()->toString().data());
+    } else if (o.isBinaryOutputPort()) {
+        putString(o.toBinaryOutputPort()->toString().data());
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {

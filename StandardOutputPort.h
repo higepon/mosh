@@ -1,7 +1,7 @@
 /*
- * BinaryOutputPort.h - 
+ * StandardOutputPort.h - <standard output port>
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,30 +26,48 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: StandardOutputPort.h.h 1207 2009-02-18 14:54:11Z higepon $
  */
 
-#ifndef __SCHEME_BINARY_OUTPUT_PORT__
-#define __SCHEME_BINARY_OUTPUT_PORT__
+#ifndef __SCHEME_STANDARD_OUTPUT_PORT__
+#define __SCHEME_STANDARD_OUTPUT_PORT__
 
-#include "BinaryPort.h"
+#include "FileBinaryOutputPort.h"
 
 namespace scheme {
 
-class ByteVector;
-
-class BinaryOutputPort : public BinaryPort
+// stdout/stderr does'n support port-position
+class StandardOutputPort : public FileBinaryOutputPort
 {
 public:
-    virtual ~BinaryOutputPort() {};
-    virtual int putU8(uint8_t v) = 0;
-    virtual int putU8(uint8_t* v, int size) = 0;
-    virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
-    virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
-    virtual void bufFlush() = 0;
-    virtual ucs4string toString() = 0;
+    StandardOutputPort(int fd) : FileBinaryOutputPort(fd) {}
+    virtual ~StandardOutputPort() {}
+
+    ucs4string toString()
+    {
+        return UC("standard-out/error-port");
+    }
+
+    bool hasPosition() const
+    {
+        return false;
+    }
+
+    bool hasSetPosition() const
+    {
+        return false;
+    }
+
+    Object position() const {
+        return Object::Undef;
+    }
+
+    bool setPosition(int position)
+    {
+        return false;
+    }
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_OUTPUT_PORT__
+#endif // __SCHEME_STANDARD_OUTPUT_PORT__

@@ -45,7 +45,7 @@
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
 {
     if (fd == 1) {
         bufferMode_ = LINE;
@@ -60,7 +60,7 @@ FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), isClosed_(false), 
 #endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
@@ -71,7 +71,7 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : isClosed_(false), 
 #endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : isClosed_(false), bufIdx_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), bufIdx_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
@@ -223,4 +223,9 @@ int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
     // Error
     MOSH_FATAL("not reached");
     return EOF;
+}
+
+ucs4string FileBinaryOutputPort::toString()
+{
+    return fileName_;
 }
