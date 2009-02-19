@@ -47,7 +47,6 @@ public:
     virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
     virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
     virtual void bufFlush() = 0;
-    virtual ucs4string toString() = 0;
 };
 
 }; // namespace scheme

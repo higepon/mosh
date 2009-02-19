@@ -96,4 +96,16 @@
 (test/violation? (set-port-position! (standard-input-port) 0))
 (test/violation? (port-position (standard-input-port)))
 
+;; string-input-port should support port position
+(let ([in (open-string-input-port "0123456")])
+  (test/t (port-has-port-position? in))
+  (test/t (port-has-set-port-position!? in))
+  (test* (port-position in) 0)
+  (test* (read-char in) #\0)
+  (test* (port-position in) 1)
+  (set-port-position! in 5)
+  (test* (read-char in) #\5)
+  (test* (format "~a" in) "<string input port>")
+  (close-port in))
+
 (test-end)

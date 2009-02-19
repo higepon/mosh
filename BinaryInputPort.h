@@ -45,7 +45,6 @@ public:
     virtual int getU8() = 0;
     virtual int lookaheadU8() = 0;
     virtual ByteVector* getByteVector(uint32_t size) = 0;
-    virtual ucs4string toString() = 0;
 };
 
 }; // namespace scheme

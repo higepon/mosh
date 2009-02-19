@@ -69,3 +69,8 @@ void TextualByteVectorOutputPort::flush()
 {
     return;
 }
+
+ucs4string TextualByteVectorOutputPort::toString()
+{
+    return UC("<textual bytevector output port>");
+}

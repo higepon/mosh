@@ -46,6 +46,7 @@
 #include "BinaryInputPort.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
+#include "TextualInputPort.h"
 #include "ProcedureMacro.h"
 #include "Ratnum.h"
 #include "Flonum.h"
@@ -392,8 +393,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("#<box>"));
     } else if (o.isInputFilePort()) {
         putString(UC("#<input file port>"));
-    } else if (o.isTextualInputPort()) {
-        putString(UC("#<textual input port>"));
+    } else if (o.isTextualOutputPort()) {
+        putString(o.toTextualOutputPort()->toString());
     } else if (o.isStack()) {
         putString(UC("#<stack>"));
     } else if (o.isCodec()) {
@@ -575,7 +576,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isInputFilePort()) {
         putString(UC("#<input file port>"));
     } else if (o.isTextualInputPort()) {
-        putString(UC("#<textual input port>"));
+        putString(o.toTextualInputPort()->toString());
     } else if (o.isStack()) {
         putString(UC("#<stack>"));
     } else if (o.isCodec()) {
@@ -610,7 +611,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
     } else if (o.isTextualOutputPort()) {
-        putString(UC("#<textual-output-port>"));
+        putString(o.toTextualOutputPort()->toString());
     } else if (o.isRatnum()) {
         display(o.toRatnum()->toString());
     } else if (o.isBignum()) {
@@ -713,4 +714,9 @@ void TextualOutputPort::flush()
     if (port_ != NULL) {
         port_->bufFlush();
     }
+}
+
+ucs4string TextualOutputPort::toString()
+{
+    return UC("<textual output port>");
 }

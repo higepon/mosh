@@ -35,6 +35,7 @@
 #include "StringTextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
+#include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
 
 using namespace scheme;
@@ -65,10 +66,35 @@ void StringTextualInputPort::unGetChar(ucs4char c)
 
 ucs4string StringTextualInputPort::toString()
 {
-    return UC("<string port>");
+    return UC("<string input port>");
 }
 
 int StringTextualInputPort::close()
 {
     return 0;
+}
+
+bool StringTextualInputPort::hasPosition() const
+{
+    return true;
+}
+
+bool StringTextualInputPort::hasSetPosition() const
+{
+    return true;
+}
+
+Object StringTextualInputPort::position() const
+{
+    return Bignum::makeInteger(index_);
+}
+
+bool StringTextualInputPort::setPosition(int position)
+{
+    if (position >= buffer_.size()) {
+        return false;
+    } else {
+        index_ = position;
+        return true;
+    }
 }

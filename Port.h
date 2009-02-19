@@ -45,6 +45,7 @@ public:
     virtual bool hasSetPosition() const = 0;
     virtual Object position() const = 0;
     virtual bool setPosition(int position)  = 0;
+    virtual ucs4string toString() = 0;
 
 };
 

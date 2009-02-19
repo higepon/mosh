@@ -63,3 +63,8 @@ void StringTextualOutputPort::flush()
 {
     return;
 }
+
+ucs4string StringTextualOutputPort::toString()
+{
+    return UC("<string output port>");
+}

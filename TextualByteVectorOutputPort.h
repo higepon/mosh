@@ -50,6 +50,7 @@ public:
     const gc_vector<uint8_t>& getByteVector() const;
     virtual int close();
     virtual void flush();
+    ucs4string toString();
 
 private:
     Transcoder* transcoder_;

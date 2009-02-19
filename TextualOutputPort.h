@@ -69,6 +69,7 @@ public:
     Transcoder* transcoder() const;
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
+    ucs4string toString();
     Object position() const {
         MOSH_ASSERT(false);
         return Object::Undef;

@@ -45,6 +45,7 @@ public:
     ucs4string getString();
     virtual int close();
     virtual void flush();
+    ucs4string toString();
 
 private:
     ucs4string buffer_;
