@@ -127,7 +127,8 @@ CodeBuilder.h                 CodeBuilder.cpp                     \
 FinxumProcedures.h            FixnumProcedures.cpp                \
 Latin1Codec.h                 Latin1Codec.cpp                     \
 FFI.h                         FFI.cpp                             \
-FFIProcedures.h               FFIProcedures.cpp
+FFIProcedures.h               FFIProcedures.cpp                   \
+CustomBinaryOutputPort.h      CustomBinaryOutputPort.cpp
 
 mosh_core_libraries = \
 lib/lambda/wiki.ss    \

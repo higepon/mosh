@@ -182,6 +182,7 @@ public:
     static Object makeStringOutputPort();
     static Object makeTextualByteVectorOuputPort(Transcoder* transcoder);
     static Object makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
+    static Object makeCustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc);
     static Object makeString(int n, ucs4char c = ' ');
     static Object makeClosure(Object* pc,
                               int size,

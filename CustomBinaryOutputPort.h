@@ -39,33 +39,23 @@ namespace scheme {
 class CustomBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    enum
-    {
-        INVALID_FILENO = -1,
-    };
+    CustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeProc, Object getPositionProc, Object setPositionDProc, Object closeProc);
+    virtual ~CustomBinaryOutputPort();
 
-    enum bufferMode
-    {
-        NONE,
-        LINE,
-        BLOCK,
-    };
-
-    CustomBinaryOutputPort(VM* theVM, Object id, Object writeProc, Object getPositionProc, Object setPositionDProc, Object closeProc);
-    virtual ~CustomBinaryOutputPort() {};
     int putU8(uint8_t v);
     int putU8(uint8_t* v, int size);
     int putByteVector(ByteVector* bv, int start = 0);
     int putByteVector(ByteVector* bv, int start, int count);
     int open();
     int close();
-    virtual bool isClosed() const = 0;
-    virtual int fileNo() const = 0;
-    virtual void bufFlush() = 0;
-    virtual bool hasPosition() const = 0;
-    virtual bool hasSetPosition() const = 0;
-    virtual int position() const = 0;
-    virtual bool setPosition(int position)  = 0;
+    bool isClosed() const;
+    int fileNo() const;
+    void bufFlush();
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
+    bool setPosition(int position);
+    ucs4string toString();
 
 
 private:

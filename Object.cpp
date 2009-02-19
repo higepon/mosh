@@ -65,6 +65,7 @@
 #include "StringTextualOutputPort.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "CustomBinaryInputPort.h"
+#include "CustomBinaryOutputPort.h"
 #include "TextualByteVectorOutputPort.h"
 #include "CodeBuilder.h"
 #include "Ratnum.h"
@@ -175,6 +176,12 @@ Object Object::makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
                                                         reinterpret_cast<word>(new CustomBinaryInputPort(theVM, id, readProc, getPositionProc, setPositionProc, closeProc)))));
+}
+
+Object Object::makeCustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
+                                                        reinterpret_cast<word>(new CustomBinaryOutputPort(theVM, id, writeDProc, getPositionProc, setPositionDProc, closeProc)))));
 }
 
 typedef gc_map2 Codecs;

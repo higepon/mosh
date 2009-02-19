@@ -85,6 +85,7 @@
     (vm/apply vm/apply)
     (pair? pair?)
     (make-custom-binary-input-port (lambda (id read! get-position set-position! close) (display "make-custom-binary-input-port not implemented")))
+    (make-custom-binary-output-port (lambda (id write! get-position set-position! close) (display "make-custom-binary-output-port not implemented")))
     get-u8
     bytevector-u8-set!
     port-has-port-position?

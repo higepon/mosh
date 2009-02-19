@@ -35,22 +35,42 @@
 #include "Pair-inl.h"
 #include "ByteVector.h"
 #include "CustomBinaryOutputPort.h"
+#include "Fixnum.h"
+#include "Bignum.h"
 #include "VM.h"
 
 using namespace scheme;
 
-CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, Object id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc) : theVM_(theVM), writeDProc_(writeDProc), getPositionProc_(getPositionProc), setPositionDProc_(setPositionDProc), closeProc_(closeProc), isClosed_(false)
+CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc)
+    : theVM_(theVM),
+      id_(id),
+      writeDProc_(writeDProc),
+      getPositionProc_(getPositionProc),
+      setPositionDProc_(setPositionDProc),
+      closeProc_(closeProc),
+      isClosed_(false)
 {
-    id_ = Object::toString(id);
+    MOSH_ASSERT(writeDProc_.isProcedure());
+    MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
+    MOSH_ASSERT(setPositionDProc_.isProcedure() || setPositionDProc_.isFalse());
+    MOSH_ASSERT(closeProc_.isProcedure() || closeProc_.isFalse());
 }
 
 CustomBinaryOutputPort::~CustomBinaryOutputPort()
 {
 }
 
+ucs4string CustomBinaryOutputPort::toString()
+{
+    ucs4string ret = UC("<custom output port ");
+    ret += id_;
+    ret += UC(">");
+    return ret;
+}
+
 int CustomBinaryOutputPort::putU8(uint8_t v)
 {
-    const Object bv = Object::makeByteVector(&v);
+    const Object bv = Object::makeByteVector(1, v);
     const Object start = Object::makeFixnum(0);
     const Object count = Object::makeFixnum(1);
     const Object result = theVM_->callClosure3(writeDProc_, bv, start, count);
@@ -60,7 +80,7 @@ int CustomBinaryOutputPort::putU8(uint8_t v)
 
 int CustomBinaryOutputPort::putU8(uint8_t* v, int size)
 {
-    const Object bv = Object::makeByteVector(v);
+    const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
     if (Fixnum::canFit(size)) {
         const Object count = Object::makeFixnum(size);
@@ -71,13 +91,13 @@ int CustomBinaryOutputPort::putU8(uint8_t* v, int size)
         const Object count = Object::makeBignum(size);
         const Object result = theVM_->callClosure3(writeDProc_, bv, start, count);
         MOSH_ASSERT(result.isBignum());
-        result result.toBignum()->toU32();
+        return result.toBignum()->toS32();
     }
 }
 
 int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
 {
-    result putByteVector(bv, start, vb->length() - start);
+    return putByteVector(bv, start, bv->length() - start);
 }
 
 int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
@@ -94,12 +114,12 @@ int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
     } else {
         countObj = Object::makeBignum(count);
     }
-    const Object result = theVM_->callClosure3(writeDProc_, bv, startObj, countObj);
+    const Object result = theVM_->callClosure3(writeDProc_, Object::makeByteVector(bv), startObj, countObj);
     MOSH_ASSERT(result.isFixnum() || result.isBignum());
     if (result.isFixnum()) {
         return result.toFixnum();
     } else {
-        return return.toBignum()->toU32();
+        return result.toBignum()->toS32();
     }
 }
 
@@ -110,9 +130,48 @@ int CustomBinaryOutputPort::open()
 
 int CustomBinaryOutputPort::close()
 {
-    if (!closeProc_.isFalse()) {
-        const Object result = theVM_->callClosure(closeProc_);
+    if (closeProc_.isCallable()) {
+        theVM_->callClosure0(closeProc_);
     }
     isClosed_ = true;
     return 0;
+}
+
+bool CustomBinaryOutputPort::isClosed() const
+{
+    return isClosed_;
+}
+
+int CustomBinaryOutputPort::fileNo() const
+{
+    return BinaryPort::INVALID_FILENO;
+}
+
+void CustomBinaryOutputPort::bufFlush()
+{
+    // No Operation
+}
+
+bool CustomBinaryOutputPort::hasPosition() const
+{
+    return !getPositionProc_.isFalse();
+}
+
+bool CustomBinaryOutputPort::hasSetPosition() const
+{
+    return !setPositionDProc_.isFalse();
+}
+
+Object CustomBinaryOutputPort::position() const
+{
+    // hasPosition() should be checked by the user of this class.
+    MOSH_ASSERT(hasPosition());
+    return theVM_->callClosure0(getPositionProc_);
+}
+
+bool CustomBinaryOutputPort::setPosition(int position)
+{
+    MOSH_ASSERT(hasSetPosition());
+    theVM_->callClosure1(setPositionDProc_, Bignum::makeInteger(position));
+    return true;
 }

@@ -567,6 +567,20 @@ Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* ar
     return Object::makeCustomBinaryInputPort(theVM, id->data(), readProc, getPositionProc, setPositionProc, closeProc);
 }
 
+Object scheme::makeCustomBinaryOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-custom-binary-output-port");
+    checkArgumentLength(5);
+
+    argumentAsString(0, id);
+    argumentCheckProcedure(1, writeDProc);
+    argumentCheckProcedureOrFalse(2, getPositionProc);
+    argumentCheckProcedureOrFalse(3, setPositionDProc);
+    argumentCheckProcedureOrFalse(4, closeProc);
+
+    return Object::makeCustomBinaryOutputPort(theVM, id->data(), writeDProc, getPositionProc, setPositionDProc, closeProc);
+}
+
 Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-u8");
