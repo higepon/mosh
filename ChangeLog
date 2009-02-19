@@ -1,3 +1,7 @@
+2009-02-20  kokosabu  <kokosabu@gmail.com>
+
+        * Added make-custom-textual-input-port, make-custom-textual-output-port, put-u8.
+
 2009-02-20  higepon  <higepon@users.sourceforge.jp>
 
         * Now profiler is broken. It will be fixed soon.

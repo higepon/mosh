@@ -105,6 +105,7 @@ public:
     bool isReal() const;
     bool isRational() const;
     bool isFixnum() const;
+    bool isOctet() const;
     bool isNumber() const;
     bool isInteger() const;
     bool isIntegerValued() const;

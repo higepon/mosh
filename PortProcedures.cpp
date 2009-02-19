@@ -55,6 +55,8 @@
 #include "Fasl.h"
 #include "Arithmetic.h"
 #include "ByteVector.h"
+#include "CustomBinaryInputPort.h"
+#include "CustomBinaryOutputPort.h"
 
 using namespace scheme;
 
@@ -581,6 +583,40 @@ Object scheme::makeCustomBinaryOutputPortEx(VM* theVM, int argc, const Object* a
     return Object::makeCustomBinaryOutputPort(theVM, id->data(), writeDProc, getPositionProc, setPositionDProc, closeProc);
 }
 
+Object scheme::makeCustomTextualInputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-custom-textual-input-port");
+    checkArgumentLength(5);
+
+    argumentAsString(0, id);
+    argumentCheckProcedure(1, readProc);
+    argumentCheckProcedureOrFalse(2, getPositionProc);
+    argumentCheckProcedureOrFalse(3, setPositionProc);
+    argumentCheckProcedureOrFalse(4, closeProc);
+
+    Transcoder* const transcoder = Transcoder::nativeTranscoder();
+    CustomBinaryInputPort* const customBinaryInputPort =
+        new CustomBinaryInputPort(theVM, id->data(), readProc, getPositionProc, setPositionProc, closeProc);
+    return Object::makeTextualInputPort(customBinaryInputPort, transcoder);
+}
+
+Object scheme::makeCustomTextualOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-custom-textual-output-port");
+    checkArgumentLength(5);
+
+    argumentAsString(0, id);
+    argumentCheckProcedure(1, writeDProc);
+    argumentCheckProcedureOrFalse(2, getPositionProc);
+    argumentCheckProcedureOrFalse(3, setPositionDProc);
+    argumentCheckProcedureOrFalse(4, closeProc);
+
+    Transcoder* const transcoder = Transcoder::nativeTranscoder();
+    CustomBinaryOutputPort* const customBinaryOutputPort =
+        new CustomBinaryOutputPort(theVM, id->data(), writeDProc, getPositionProc, setPositionDProc, closeProc);
+    return Object::makeTextualOutputPort(customBinaryOutputPort, transcoder);
+}
+
 Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-u8");
@@ -1046,4 +1082,16 @@ Object scheme::portTranscoderEx(VM* theVM, int argc, const Object* argv)
     } else {
         return Object::False;
     }
+}
+
+Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("put-u8");
+    checkArgumentLength(2);
+    argumentAsBinaryOutputPort(0, binaryOutputPort);
+    argumentAsOctet(1, octet);
+
+    binaryOutputPort->putU8(octet);
+
+    return Object::Undef;
 }

@@ -81,6 +81,8 @@ namespace scheme {
     Object sysPortSeekEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryOutputPortEx(VM* theVM, int argc, const Object* argv);
+    Object makeCustomTextualInputPortEx(VM* theVM, int argc, const Object* argv);
+    Object makeCustomTextualOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object getU8Ex(VM* theVM, int argc, const Object* argv);
     Object lookaheadU8Ex(VM* theVM, int argc, const Object* argv);
     Object getBytevectorNEx(VM* theVM, int argc, const Object* argv);
@@ -111,6 +113,7 @@ namespace scheme {
     Object textualPortPEx(VM* theVM, int argc, const Object* argv);
     Object portPEx(VM* theVM, int argc, const Object* argv);
     Object portTranscoderEx(VM* theVM, int argc, const Object* argv);
+    Object putU8Ex(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

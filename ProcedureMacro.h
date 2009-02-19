@@ -75,6 +75,7 @@
 
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
+#define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)
 #define argumentCheckChar(index, variableName) checkType(index, variableName, isChar, char)
