@@ -51,6 +51,7 @@
 #include "TextualOutputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "FileBinaryInputPort.h"
+#include "StandardInputPort.h"
 #include "TextualInputPort.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
@@ -185,7 +186,7 @@ int main(int argc, char *argv[])
     signal(SIGINT, SIG_IGN);
 
     Transcoder* transcoder = Transcoder::nativeTranscoder();
-    const Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
+    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
     const Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
     const Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stderr)), transcoder);
 

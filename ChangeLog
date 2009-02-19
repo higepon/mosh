@@ -1,5 +1,7 @@
 2009-02-19  higepon  <higepon@users.sourceforge.jp>
 
+        * StandardInputPort.h : Added. stdin doesn't support port-position.
+
         * test/input-port.scm : Passes all of the custom binary input port. Yey!.
 
         * CustomBinaryInputPort.cpp : Added get-bytevector-n for custom-binary-input-port.

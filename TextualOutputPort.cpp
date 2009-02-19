@@ -43,6 +43,7 @@
 #include "Record.h"
 #include "Codec.h"
 #include "Transcoder.h"
+#include "BinaryInputPort.h"
 #include "BinaryOutputPort.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
@@ -401,7 +402,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(codec->getCodecName());
         putString(UC(">"));
     } else if (o.isBinaryInputPort()) {
-        putString(UC("#<binary input port>"));
+        putString(o.toBinaryInputPort()->toString().data());
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {

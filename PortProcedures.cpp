@@ -47,7 +47,7 @@
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 #include "FileBinaryOutputPort.h"
-#include "FileBinaryInputPort.h"
+#include "StandardInputPort.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
 #include "EqHashTable.h"
@@ -936,7 +936,7 @@ Object scheme::setCurrentOutputPortDEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryInputPort(fileno(stdin));
+    static const Object port = Object::makeBinaryInputPort(new StandardInputPort());
     DeclareProcedureName("starndard-input-port");
     checkArgumentLength(0);
     return port;

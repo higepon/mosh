@@ -73,7 +73,9 @@ int CustomBinaryInputPort::open()
 
 int CustomBinaryInputPort::close()
 {
-    // todo if close! proc exists
+    if (closeProc_.isCallable()) {
+        theVM_->callClosure0(closeProc_);
+    }
     isClosed_ = true;
     return 0;
 }
@@ -161,6 +163,8 @@ bool CustomBinaryInputPort::hasAheadU8() const
 
 Object CustomBinaryInputPort::position() const
 {
+    // hasPosition() should be checked by the user of this class.
+    MOSH_ASSERT(hasPosition());
     const Object position = theVM_->callClosure0(getPositionProc_);
     if (position.isFixnum() && hasAheadU8()) {
         return Object::makeFixnum(position.toFixnum() - 1);
@@ -171,6 +175,7 @@ Object CustomBinaryInputPort::position() const
 
 bool CustomBinaryInputPort::setPosition(int position)
 {
+    MOSH_ASSERT(hasSetPosition());
     // we need to reset the aheadU8_
     aheadU8_ = EOF;
     theVM_->callClosure1(setPositionProc_, Bignum::makeInteger(position));

@@ -1,7 +1,7 @@
 /*
- * BinaryInputPort.h - <binary input port>
+ * StandardInputPort.h - <standard input port>
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,28 +26,43 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: BinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: StandardInputPort.h 1207 2009-02-18 14:54:11Z higepon $
  */
 
-#ifndef __SCHEME_BINARY_INPUT_PORT__
-#define __SCHEME_BINARY_INPUT_PORT__
+#ifndef __SCHEME_STANDARD_INPUT_PORT__
+#define __SCHEME_STANDARD_INPUT_PORT__
 
-#include "BinaryPort.h"
+#include "FileBinaryInputPort.h"
 
 namespace scheme {
 
-class ByteVector;
-
-class BinaryInputPort : public BinaryPort // for closing port on destructors, we extend gc_cleanup
+// stdin does'n support port-position
+class StandardInputPort : public FileBinaryInputPort
 {
 public:
-    virtual ~BinaryInputPort() {};
-    virtual int getU8() = 0;
-    virtual int lookaheadU8() = 0;
-    virtual ByteVector* getByteVector(uint32_t size) = 0;
-    virtual ucs4string toString() = 0;
+    StandardInputPort() : FileBinaryInputPort(fileno(stdin)) {}
+    virtual ~StandardInputPort() {}
+    ucs4string toString()
+    {
+        return UC("<standard input port>");
+    }
+    bool hasPosition() const
+    {
+        return false;
+    }
+    bool hasSetPosition() const
+    {
+        return false;
+    }
+    Object position() const {
+        return Object::Undef;
+    }
+    bool setPosition(int position)
+    {
+        return false;
+    }
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_INPUT_PORT__
+#endif // __SCHEME_STANDARD_INPUT_PORT__
