@@ -50,10 +50,11 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+    void reset();
 
 private:
     ucs4string buffer_;
-    ucs4string::size_type index_;
+    uintptr_t index_;
 };
 
 }; // namespace scheme

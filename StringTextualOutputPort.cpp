@@ -31,6 +31,7 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Bignum.h"
 #include "StringTextualOutputPort.h"
 
 using namespace scheme;
@@ -46,13 +47,23 @@ StringTextualOutputPort::~StringTextualOutputPort()
 
 void StringTextualOutputPort::putChar(ucs4char c)
 {
-    buffer_ += c;
+    if (buffer_.size() > index_) {
+        buffer_[index_] = c;
+    } else {
+        buffer_ += c;
+    }
     index_++;
 }
 
 ucs4string StringTextualOutputPort::getString()
 {
     return buffer_;
+}
+
+void StringTextualOutputPort::reset()
+{
+    buffer_ = UC("");
+    index_ = 0;
 }
 
 int StringTextualOutputPort::close()
@@ -82,10 +93,14 @@ bool StringTextualOutputPort::hasSetPosition() const
 
 Object StringTextualOutputPort::position() const
 {
-    return Object::Undef;
+    return Bignum::makeInteger(index_);
 }
 
 bool StringTextualOutputPort::setPosition(int position)
 {
-    return false;
+    if (position > index_) {
+        buffer_.resize(position, ' ');
+    }
+    index_ = position;
+    return true;
 }

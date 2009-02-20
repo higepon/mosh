@@ -432,7 +432,9 @@ Object scheme::getOutputStringEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsTextualOutputPort(0, textualOutputPort);
     StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(textualOutputPort);
-    return Object::makeString(p->getString());
+    const Object ret = Object::makeString(p->getString());
+    p->reset();
+    return ret;
 }
 
 Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)

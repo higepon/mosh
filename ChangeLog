@@ -1,5 +1,7 @@
 2009-02-20  higepon  <higepon@users.sourceforge.jp>
 
+        * Passes all of string-output-port tests.
+
         * test/output-port.scm: Adde tests for string-output-port. Now it fails, so commented them out.
 
         * test/input-port.scm : Added tests for textual-input-port (position things).
