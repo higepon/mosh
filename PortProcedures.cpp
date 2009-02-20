@@ -673,9 +673,16 @@ Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("transcoded-port");
     checkArgumentLength(2);
 
-    argumentAsBinaryInputPort(0, binaryInputPort);
     argumentAsTranscoder(1, transcoder);
-    return Object::makeTextualInputPort(binaryInputPort, transcoder);
+    const Object port = argv[0];
+    if (port.isBinaryInputPort()) {
+        return Object::makeTextualInputPort(port.toBinaryInputPort(), transcoder);
+    } else if (port.isBinaryOutputPort()) {
+        return Object::makeTextualOutputPort(port.toBinaryOutputPort(), transcoder);
+    } else {
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary port", port, L1(port));
+        return Object::Undef;
+    }
 }
 
 Object scheme::latin1CodecEx(VM* theVM, int argc, const Object* argv)
