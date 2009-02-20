@@ -30,6 +30,7 @@
  */
 
 #include "Object.h"
+#include "Object-inl.h"
 #include "StringTextualOutputPort.h"
 
 using namespace scheme;

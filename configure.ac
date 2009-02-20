@@ -15,14 +15,14 @@ AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")
 
 # we don't like default CFLAGS(-O2 -g).
 AC_SUBST(CFLAGS)
-dnl if test "" = "$CFLAGS"; then
-dnl     CFLAGS=" "
-dnl fi
+if test "" = "$CFLAGS"; then
+    CFLAGS=" "
+fi
 
 AC_SUBST(CXXFLAGS)
-dnl if test "" = "$CXXFLAGS"; then
-dnl     CXXFLAGS=" "
-dnl fi
+if test "" = "$CXXFLAGS"; then
+    CXXFLAGS=" "
+fi
 
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES

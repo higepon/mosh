@@ -1,5 +1,7 @@
 2009-02-20  higepon  <higepon@users.sourceforge.jp>
 
+        * configure.ac (CFLAGS): O2 => O3.
+
         * PortProcedures.cpp (transcodedPortEx): Accept binary output also.
 
         * ProcessProcedures.cpp : Issue 45 in mosh-scheme: spawned process is still alive even when a command is not found by leque.
