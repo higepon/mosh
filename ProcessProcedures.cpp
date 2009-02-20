@@ -190,7 +190,8 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const int ret = execvp(command->data().ascii_c_str(), p);
 
     if (-1 == ret) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], strerror(errno)));
+        callAssertionViolationImmidiaImmediately(theVM, procedureName, "failed", L2(argv[0], strerror(errno)));
+        exit(-1);
         return Object::Undef;
     }
 

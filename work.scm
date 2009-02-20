@@ -1,10 +1,8 @@
-;(define a 3)
-;(display a)
-(set! a 4)
-;(define a 4)
-(display a)
+(import (rnrs))
 
-;; (define-macro (b)
-;;   `(1 2))
+(define (fib n)
+  (if (<= n 2) 1
+      (+ (fib (- n 1)) (fib (- n 2)))))
 
-;; (display (b))
+(fib 31)
+

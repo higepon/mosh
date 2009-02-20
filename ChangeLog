@@ -1,3 +1,8 @@
+2009-02-20  higepon  <higepon@users.sourceforge.jp>
+
+        * ProcessProcedures.cpp : Issue 45 in mosh-scheme: spawned process is still alive even when a command is not found by leque.
+        When in calling spawn, exevp fails, we should terminated the forked process.
+
 2009-02-20  kokosabu  <kokosabu@gmail.com>
 
         * Added make-custom-textual-input-port, make-custom-textual-output-port, put-u8.
