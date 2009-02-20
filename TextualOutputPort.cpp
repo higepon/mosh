@@ -720,3 +720,28 @@ ucs4string TextualOutputPort::toString()
 {
     return UC("<textual output port>");
 }
+
+Object TextualOutputPort::position() const
+{
+    // caller should check hasPosition().
+    MOSH_ASSERT(false);
+    return Object::Undef;;
+}
+
+bool TextualOutputPort::setPosition(int position)
+{
+    // caller should check hasPosition().
+    MOSH_ASSERT(false);
+    return false;
+}
+
+// On Mosh Textual port doesn't support position();
+bool TextualOutputPort::hasPosition() const
+{
+    return false;
+}
+
+bool TextualOutputPort::hasSetPosition() const
+{
+    return false;
+}

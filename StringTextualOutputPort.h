@@ -46,6 +46,10 @@ public:
     virtual int close();
     virtual void flush();
     ucs4string toString();
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
+    bool setPosition(int position);
 
 private:
     ucs4string buffer_;

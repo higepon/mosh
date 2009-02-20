@@ -32,7 +32,7 @@
         (mosh test))
 
 ;; custom output-port
-#|
+#;
 (let* ([accum '()]
        [p (make-custom-binary-output-port
            "custom out"
@@ -67,5 +67,31 @@
 (test/f (port-has-set-port-position!? (standard-output-port)))
 (test/violation? (set-port-position! (standard-output-port) 0))
 (test/violation? (port-position (standard-output-port)))
+
+;; textual-output-port doesn't suport port-position on Mosh.
+(test/f (port-has-set-port-position!? (current-output-port)))
+(test/f (port-has-port-position? (current-output-port)))
+(test/violation? (set-port-position! (current-output-port) 0))
+(test/violation? (port-position (current-output-port)))
+
+;; string-output-port
+#;(let-values (([port get-string] (open-string-output-port)))
+  (test/t (port-has-set-port-position!? port))
+  (test/t (port-has-port-position? port))
+  (test* (port-position port) 0)
+  (display #\a)
+  (test* (port-position port) 1)
+  (set-port-position! port 2)
+  (display "cd")
+  (test* (port-position port) 4)
+  (set-port-position! port 1)
+  (display #\b)
+  (test* (get-string) "abcd")
+  (test* (port-position port) 0)
+  (test* (get-string) "")
+  (display #\a)
+  (test* (get-string) "a")
+  (test* (port-position port) 0)
+)
 
 (test-end)

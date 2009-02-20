@@ -108,4 +108,10 @@
   (test* (format "~a" in) "<string input port>")
   (close-port in))
 
+;; textual-input-port doesn't suport port-position on Mosh.
+(test/f (port-has-set-port-position!? (current-input-port)))
+(test/f (port-has-port-position? (current-input-port)))
+(test/violation? (set-port-position! (current-input-port) 0))
+(test/violation? (port-position (current-input-port)))
+
 (test-end)

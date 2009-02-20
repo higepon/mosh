@@ -71,18 +71,10 @@ public:
     virtual Codec* codec() const;
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
-    Object position() const {
-        MOSH_ASSERT(false);
-        return Object::Undef;
-    }
-    bool setPosition(int position)
-    {
-        MOSH_ASSERT(false);
-        return false;
-    }
-
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
+    bool setPosition(int position);
 
 private:
     Codec* codec_;

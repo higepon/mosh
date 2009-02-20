@@ -1,5 +1,11 @@
 2009-02-20  higepon  <higepon@users.sourceforge.jp>
 
+        * test/output-port.scm: Adde tests for string-output-port. Now it fails, so commented them out.
+
+        * test/input-port.scm : Added tests for textual-input-port (position things).
+
+        * test/output-port.scm : Added tests for textual-output-port (position things).
+
         * configure.ac (CFLAGS): O2 => O3.
 
         * PortProcedures.cpp (transcodedPortEx): Accept binary output also.

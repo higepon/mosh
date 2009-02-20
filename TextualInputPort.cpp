@@ -231,3 +231,28 @@ NumberScanner* TextualInputPort::numberScanner() const
 {
     return numberScanner_;
 }
+
+Object TextualInputPort::position() const
+{
+    // caller should check hasPosition().
+    MOSH_ASSERT(false);
+    return Object::Undef;;
+}
+
+bool TextualInputPort::setPosition(int position)
+{
+    // caller should check hasPosition().
+    MOSH_ASSERT(false);
+    return false;
+}
+
+// On Mosh Textual port doesn't support position();
+bool TextualInputPort::hasPosition() const
+{
+    return false;
+}
+
+bool TextualInputPort::hasSetPosition() const
+{
+    return false;
+}

@@ -67,19 +67,11 @@ public:
     Object errorMessage() const;
     Object irritants() const;
     Transcoder* transcoder() const;
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
     ucs4string toString();
-    Object position() const {
-        MOSH_ASSERT(false);
-        return Object::Undef;
-    }
-    bool setPosition(int position)
-    {
-        MOSH_ASSERT(false);
-        return 0;
-    }
-
+    Object position() const;
+    bool setPosition(int position);
+    bool hasPosition() const;
+    bool hasSetPosition() const;
 
 private:
     BinaryOutputPort* port_;

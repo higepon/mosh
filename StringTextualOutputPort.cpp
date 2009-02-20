@@ -69,3 +69,23 @@ ucs4string StringTextualOutputPort::toString()
 {
     return UC("<string output port>");
 }
+
+bool StringTextualOutputPort::hasPosition() const
+{
+    return true;
+}
+
+bool StringTextualOutputPort::hasSetPosition() const
+{
+    return true;
+}
+
+Object StringTextualOutputPort::position() const
+{
+    return Object::Undef;
+}
+
+bool StringTextualOutputPort::setPosition(int position)
+{
+    return false;
+}
