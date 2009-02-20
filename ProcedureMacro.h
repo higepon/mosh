@@ -132,6 +132,7 @@
 #define argumentAsCodec(index, variableName) castArgument(index, variableName, isCodec, codec, Codec*, toCodec)
 #define argumentCheckTextualInputPort(index, variableName) checkType(index, variableName, isTextualInputPort, textual-input-port)
 #define argumentCheckTextualOutputPort(index, variableName) checkType(index, variableName, isTextualOutputPort, textual-output-port)
+#define argumentCheckOutputPort(index, variableName) checkType(index, variableName, isOutputPort, output-port)
 #define argumentCheckPort(index, variableName) checkType(index, variableName, isPort, port)
 #define argumentCheckTranscoderOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isTranscoder, transcoder)
 

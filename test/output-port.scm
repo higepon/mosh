@@ -29,10 +29,10 @@
 
 
 (import (rnrs)
+        (mosh)
         (mosh test))
 
 ;; custom output-port
-#;
 (let* ([accum '()]
        [p (make-custom-binary-output-port
            "custom out"
@@ -46,21 +46,21 @@
            (lambda () (length accum))
            (lambda (pos) (set! accum (list-tail accum (- (length accum) pos))))
            (lambda () 'ok))])
-  (test (port-has-port-position? p) #t)
-  (test (port-has-set-port-position!? p) #t)
-  (test (port-position p) 0)
-  (test/unspec (put-bytevector p #vu8(2 4 6)))
+  (test/t (port-has-port-position? p))
+  (test/t (port-has-set-port-position!? p))
+  (test* (port-position p) 0)
+  (put-bytevector p #vu8(2 4 6))
   (flush-output-port p)
-  (test accum '(6 4 2))
-  (test (port-position p) 3)
-  (test/unspec (set-port-position! p 2))
-  (test (port-position p) 2)
-  (test accum '(4 2))
-  (test/unspec (put-bytevector p #vu8(3 7 9 11) 2 1))
-  (flush-output-port p)
-  (test accum '(9 4 2))
-  (test/unspec (close-port p)))
-|#
+  (test* accum '(6 4 2))
+  (test* (port-position p) 3)
+  (set-port-position! p 2)
+  (test* (port-position p) 2)
+  (test* accum '(4 2))
+  ;(put-bytevector p #vu8(3 7 9 11) 2 1)
+  ;(flush-output-port p)
+  ;(test* accum '(9 4 2))
+  ;(close-port p)
+  )
 
 ;; standard-output-port doesn't suport port-position on Mosh.
 (test/f (port-has-port-position? (standard-output-port)))

@@ -144,7 +144,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("put-bytevector");
-    checkArgumentLength(2); // todo more arguments
+    checkArgumentLengthBetween(2, 4);
     argumentAsBinaryOutputPort(0, outputPort);
     argumentAsByteVector(1, bv);
     outputPort->putByteVector(bv);
@@ -1100,5 +1100,20 @@ Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
 
     binaryOutputPort->putU8(octet);
 
+    return Object::Undef;
+}
+
+Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("flush-output-port");
+    checkArgumentLength(1);
+    argumentCheckOutputPort(0, outputPort);
+    if (outputPort.isBinaryPort()) {
+        outputPort.toBinaryOutputPort()->bufFlush();
+    } else if (outputPort.isTextualPort()) {
+        outputPort.toTextualOutputPort()->flush();
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
+    }
     return Object::Undef;
 }
