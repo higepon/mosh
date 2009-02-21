@@ -90,6 +90,7 @@
     (make-custom-textual-output-port (lambda (id write! get-position set-position! close) (display "make-custom-textual-output-port not implemented")))
     get-u8
     put-u8
+    put-string
     flush-output-port
     bytevector-u8-set!
     port-has-port-position?

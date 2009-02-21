@@ -1129,15 +1129,15 @@ Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-/*
 Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("put-string");
     checkArgumentLengthBetween(2, 4);
     argumentAsTextualOutputPort(0, textualOutputPort);
-    argumentAsString(1, string);
+    argumentAsString(1, stringObj);
+    const ucs4string string = stringObj->data();
     if (argc < 3) {
-        outputPort->putByteVector(string);
+        textualOutputPort->putString(string);
         return Object::Undef;
     }
 
@@ -1149,7 +1149,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
         start = startObj.toBignum()->toS32();
     }
     if (argc < 4) {
-        outputPort->putByteVector(bv, start);
+        textualOutputPort->putString(string.substr(start, string.length()-start));
         return Object::Undef;
     }
 
@@ -1160,10 +1160,10 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     } else { // countObj.isBignum()
         count = countObj.toBignum()->toS32();
     }
-    outputPort->putByteVector(bv, start, count);
+    textualOutputPort->putString(string.substr(start, count));
     return Object::Undef;
 }
-*/
+
 
 Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
