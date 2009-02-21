@@ -74,6 +74,7 @@
 #include "ProcedureMacro.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
+#include "BufferedFileBinaryInputPort.h"
 
 using namespace scheme;
 
@@ -141,14 +142,14 @@ Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transco
 Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(new FileBinaryInputPort(file)
+                                                        reinterpret_cast<word>(new TextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
 Object Object::makeTextualInputFilePort(const char* file)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(new FileBinaryInputPort(file)
+                                                        reinterpret_cast<word>(new TextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 

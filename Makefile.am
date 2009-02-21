@@ -84,6 +84,7 @@ ScannerHelper.h               ScannerHelper.cpp                   \
 Reader.tab.hpp                Reader.tab.cpp                      \
 NumberReader.tab.hpp          NumberReader.tab.cpp                \
 FileBinaryInputPort.h         FileBinaryInputPort.cpp             \
+BufferedFileBinaryInputPort.h BufferedFileBinaryInputPort.cpp     \
 FileBinaryOutputPort.h        FileBinaryOutputPort.cpp            \
 CustomBinaryInputPort.h       CustomBinaryInputPort.cpp           \
 TextualOutputPort.h           TextualOutputPort.cpp               \

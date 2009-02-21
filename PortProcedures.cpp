@@ -57,6 +57,7 @@
 #include "ByteVector.h"
 #include "CustomBinaryInputPort.h"
 #include "CustomBinaryOutputPort.h"
+#include "BufferedFileBinaryInputPort.h"
 
 using namespace scheme;
 
@@ -884,7 +885,8 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, path);
 
     Transcoder* transcoder = Transcoder::nativeTranscoder();
-    FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
+    // we choose buffered port
+    BufferedFileBinaryInputPort* const fileBinaryInputPort = new BufferedFileBinaryInputPort(path->data());
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
     } else {
@@ -897,64 +899,62 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input-port");
     checkArgumentLengthBetween(1, 4);
-    FileBinaryInputPort* fileBinaryInputPort = NULL;
+    BinaryInputPort* in = NULL;
     Transcoder* transcoder = NULL;
 
     // N.B. As R6RS says, we ignore "file-options" for input-port.
     if (argc == 1) {
         argumentAsString(0, path);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data(), Object::Nil, Symbol::BLOCK);
+        // default buffer mode is Block
+        in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 2) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
-        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, Symbol::BLOCK);
+        // default buffer mode is Block
+        in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 3) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        if ((bufferMode != Symbol::NONE) &&
-            (bufferMode != Symbol::LINE) &&
-            (bufferMode != Symbol::BLOCK)) {
-            callErrorAfter(theVM, procedureName, "ignore buffer-mode option", L1(argv[2]));
+
+        // N.B. On Mosh, buffer mode BLOCK == LINE.
+        if (bufferMode == Symbol::BLOCK || bufferMode == Symbol::LINE) {
+            in = new BufferedFileBinaryInputPort(path->data());
+        } else if (bufferMode == Symbol::NONE) {
+            in = new FileBinaryInputPort(path->data());
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
         }
-        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
     } else if (argc == 4) {
         argumentAsString(0, path);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
-        if ((bufferMode != Symbol::NONE) &&
-            (bufferMode != Symbol::LINE) &&
-            (bufferMode != Symbol::BLOCK)) {
-            callErrorAfter(theVM, procedureName, "ignore buffer-mode option", L1(argv[2]));
+        // N.B. On Mosh, buffer mode BLOCK == LINE.
+        if (bufferMode == Symbol::BLOCK || bufferMode == Symbol::LINE) {
+            in = new BufferedFileBinaryInputPort(path->data());
+        } else if (bufferMode == Symbol::NONE) {
+            in = new FileBinaryInputPort(path->data());
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
         }
-        fileBinaryInputPort = new FileBinaryInputPort(path->data(), fileOptions, bufferMode);
         argumentCheckTranscoderOrFalse(3, maybeTranscoder);
         if (maybeTranscoder != Object::False) {
             transcoder = maybeTranscoder.toTranscoder();
         }
     }
 
-    if ((fileBinaryInputPort != NULL) && (MOSH_SUCCESS == fileBinaryInputPort->open())) {
+    if ((in != NULL) && (MOSH_SUCCESS == in->open())) {
         if (transcoder == NULL) {
-            return Object::makeBinaryInputPort(fileBinaryInputPort);
+            return Object::makeBinaryInputPort(in);
         } else {
-            return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
+            return Object::makeTextualInputPort(in, transcoder);
         }
     } else {
         callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
-
-//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-//     FileBinaryInputPort* const fileBinaryInputPort = new FileBinaryInputPort(path->data());
-//     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
-//         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
-//     } else {
-//         callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-//         return Object::Undef;
-//     }
 }
 
 Object scheme::currentInputPortEx(VM* theVM, int argc, const Object* argv)

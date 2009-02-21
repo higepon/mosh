@@ -1,5 +1,7 @@
 2009-02-21  higepon  <higepon@users.sourceforge.jp>
 
+        * BufferedFileBinaryInputPort.cpp : Added.
+
         * test/input-port.scm : Added tests for file-binary-input-port on positions and buffering.
 
 2009-02-20  higepon  <higepon@users.sourceforge.jp>

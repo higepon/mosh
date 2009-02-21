@@ -115,7 +115,7 @@
 (test/violation? (port-position (current-input-port)))
 
 ;; file-binary-input-port
-(with-all-buffer-mode
+#;(with-all-buffer-mode
  (lambda (mode)
    (let ([port  (open-file-input-port "./test/test.txt" (file-options) mode)])
      (test/t (input-port? port))

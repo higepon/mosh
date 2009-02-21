@@ -59,6 +59,7 @@
 #include "ErrorProcedures.h"
 #include "Record.h"
 #include "Equivalent.h"
+#include "BufferedFileBinaryInputPort.h"
 
 using namespace scheme;
 
@@ -92,7 +93,7 @@ protected:
     virtual Object Restore()
     {
         const char* TMP_FILE = "/tmp/fasl-test.tmp";
-        BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+        BinaryInputPort* const in = new BufferedFileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
         FaslReader reader(theVM_, in);
         return reader.get();
     }

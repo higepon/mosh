@@ -66,6 +66,7 @@
 #include "FFIProcedures.h"
 #include "ByteVector.h"
 #include "StandardOutputPort.h"
+#include "StandardInputPort.h"
 
 using namespace scheme;
 
