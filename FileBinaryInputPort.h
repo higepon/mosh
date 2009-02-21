@@ -37,13 +37,13 @@
 
 namespace scheme {
 
+// None buffering <file-binary-port>
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
     FileBinaryInputPort(int fd);
     FileBinaryInputPort(ucs4string file);
     FileBinaryInputPort(const char* file);
-    FileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode);
     virtual ~FileBinaryInputPort();
 
     ucs4string toString();
@@ -53,39 +53,21 @@ public:
     int open();
     int close();
     int fileNo() const;
-    virtual bool isClosed() const;
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
-    Object position() const {
-        MOSH_ASSERT(false);
-        return Object::Undef;
-    }
-    bool setPosition(int position)
-    {
-        MOSH_ASSERT(false);
-        return false;
-    }
+    bool isClosed() const;
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
+    bool setPosition(int position);
 
 private:
-    enum {
-        BUF_SIZE = 8192,
-    };
-
-    void initializeBuffer();
+    int readFromFile(uint8_t* buf, size_t size);
+    bool hasAheadU8() const;
 
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
-    int u8Buf_;
-    enum BufferMode bufferMode_;
-    uint8_t* buffer_;
-    int bufLen_;
-    int bufIdx_;
-
-    int realRead(int fd, uint8_t* buf, size_t count);
-    void bufFill();
-    int bufRead(uint8_t* data, int reqSize);
-    int bufRead1(uint8_t* data);
+    int aheadU8_;
+    int position_;
 };
 
 }; // namespace scheme
