@@ -140,6 +140,7 @@
      ;; read over the boundary
      (test* (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
      (test* (port-position port) 8220)
+     ;; todo we should check (get-bytevector-n port 9000)
      (close-port port))))
 
 (test-end)

@@ -100,6 +100,7 @@ int FileBinaryInputPort::getU8()
         position_++;
         return c;
     } else {
+        MOSH_FATAL("todo");
         // todo error check. we may have isErrorOccured flag.
         return c;
     }

@@ -44,46 +44,26 @@
 #include "ByteVector.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "Symbol.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), position_(0)
 {
-    if (fd == 0) {
-        bufferMode_ = LINE;
-    }
-
     initializeBuffer();
 }
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), position_(0)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
     initializeBuffer();
 }
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : isClosed_(false), position_(0)
 {
     fileName_ = Object::makeString(file).toString()->data();
     fd_ = ::open(file, O_RDONLY);
     initializeBuffer();
-}
-
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), u8Buf_(EOF)
-{
-    fd_ = ::open(file.ascii_c_str(), O_RDONLY);
-
-    if (bufferMode == Symbol::NONE) {
-        bufferMode_ = NONE;
-    } else if (bufferMode == Symbol::LINE) {
-        bufferMode_ = LINE;
-    } else {
-        bufferMode_ = BLOCK;
-    }
-
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-        initializeBuffer();
-    }
 }
 
 BufferedFileBinaryInputPort::~BufferedFileBinaryInputPort()
@@ -112,14 +92,7 @@ ucs4string BufferedFileBinaryInputPort::toString()
 int BufferedFileBinaryInputPort::getU8()
 {
     uint8_t c;
-
-    if (EOF != u8Buf_) {
-        c = u8Buf_;
-        u8Buf_ = EOF;
-        return c;
-    }
-
-    if (0 == bufRead1(&c)) {
+    if (0 == readFromBuffer(&c, 1)) {
         return EOF;
     } else {
         return c;
@@ -128,15 +101,10 @@ int BufferedFileBinaryInputPort::getU8()
 
 int BufferedFileBinaryInputPort::lookaheadU8()
 {
-    if (EOF != u8Buf_) {
-        return u8Buf_;
-    }
-
     uint8_t c;
-    if (0 == bufRead(&c, 1)) {
+    if (0 == readFromBuffer(&c, 1)) {
         return EOF;
     } else {
-        u8Buf_ = c;
         return c;
     }
 }
@@ -149,13 +117,7 @@ ByteVector* BufferedFileBinaryInputPort::getByteVector(uint32_t size)
     uint8_t* buf = new uint8_t[size];
 #endif
     int ret;
-    if (EOF != u8Buf_) {
-        buf[0] = u8Buf_;
-        u8Buf_ = EOF;
-        ret = bufRead(buf+1, size-1);
-    } else {
-        ret = bufRead(buf, size);
-    }
+    ret = readFromBuffer(buf, size);
 
     return new ByteVector(ret, buf);
 }
@@ -181,92 +143,50 @@ int BufferedFileBinaryInputPort::fileNo() const
     return fd_;
 }
 
-int BufferedFileBinaryInputPort::realRead(int fd, uint8_t* buf, size_t count)
+bool BufferedFileBinaryInputPort::fillBuffer()
 {
-    int bufReadLen;
-    SCM_SYSCALL(bufReadLen, read(fd, buf, count));
-    if (bufReadLen < 0) {
-        MOSH_FATAL("read failed\n");
+    int readSize = 0;
+    while (readSize < BUF_SIZE) {
+        const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
+        if (0 == result) { // EOF
+            break;
+        } else if (result < 0) { // error
+            return false;
+        } else {
+            readSize += result;
+        }
     }
-    return bufReadLen;
+    bufLen_ = readSize;
+    bufIdx_ = 0;
+    return true;
 }
 
-void BufferedFileBinaryInputPort::bufFill()
+int BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int reqSize)
 {
-    if (bufferMode_ == LINE) {
-        const int bufReadLen = realRead(fd_, buffer_, BUF_SIZE);
-        bufLen_ = bufReadLen;
-        bufIdx_ = 0;
-    } else if (bufferMode_ == BLOCK) {
-        int readCount = 0;
-        while (readCount < BUF_SIZE) {
-            const int bufReadLen = realRead(fd_, buffer_+readCount, BUF_SIZE-readCount);
-            if (bufReadLen == 0) { // EOF
+    int readSize = 0;
+    while (readSize < reqSize) {
+        const int bufDiff = bufLen_ - bufIdx_;
+        MOSH_ASSERT(bufLen_ >= bufIdx_);
+        const int sizeDiff = reqSize - readSize;
+        MOSH_ASSERT(readSize >= readSize);
+        // we found datum in buffer
+        if (bufDiff >= sizeDiff) {
+            memcpy(dest + readSize, buffer_ + bufIdx_, sizeDiff);
+            bufIdx_ += sizeDiff;
+            readSize += sizeDiff;
+        } else {
+            memcpy(dest + readSize, buffer_ + bufIdx_, bufDiff);
+            readSize += bufDiff;
+            if (!fillBuffer()) {
+                MOSH_FATAL("todo");
+                return EOF;
+            }
+            if (bufLen_ == 0) { // EOF
                 break;
             }
-            readCount += bufReadLen;
         }
-        bufLen_ = readCount;
-        bufIdx_ = 0;
     }
-}
-
-int BufferedFileBinaryInputPort::bufRead1(uint8_t* data)
-{
-    if (bufferMode_ == NONE) {
-        return realRead(fd_, data, 1);
-    }
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-        for (;;) {
-            const int bufDiff = bufLen_ - bufIdx_;
-            if (bufDiff > 0) {
-                *data = *(buffer_ + bufIdx_);
-                bufIdx_ ++;
-                return 1;
-            } else {
-                bufFill(); // (bufIdx_ = 0)
-                if (bufLen_ == 0) { // EOF
-                    return 0;
-                }
-            }
-        }
-        return 1;
-    }
-    MOSH_FATAL("not reached");
-    return EOF;
-    // Error
-}
-
-int BufferedFileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
-{
-    if (bufferMode_ == NONE) {
-        return realRead(fd_, data, reqSize);
-    }
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-        int readSize = 0;
-        while (readSize < reqSize) {
-            const int bufDiff = bufLen_ - bufIdx_;
-            MOSH_ASSERT(bufLen_ >= bufIdx_);
-            const int sizeDiff = reqSize - readSize;
-            MOSH_ASSERT(readSize >= readSize);
-            if (bufDiff >= sizeDiff) {
-                memcpy(data+readSize, buffer_+bufIdx_, sizeDiff);
-                bufIdx_ += sizeDiff;
-                readSize += sizeDiff;
-            } else {
-                memcpy(data+readSize, buffer_+bufIdx_, bufDiff);
-                readSize += bufDiff;
-                bufFill(); // (bufIdx_ = 0)
-                if (bufLen_ == 0) { // EOF
-                    break;
-                }
-            }
-        }
-        return readSize;
-    }
-    MOSH_FATAL("not reached");
-    return EOF;
-    // Error
+    return readSize;
 }
 
 // private
@@ -277,4 +197,44 @@ void BufferedFileBinaryInputPort::initializeBuffer()
 #else
     buffer_ = new uint8_t[BUF_SIZE];
 #endif
+}
+
+// binary-ports should support position.
+bool BufferedFileBinaryInputPort::hasPosition() const
+{
+    return true;
+}
+
+bool BufferedFileBinaryInputPort::hasSetPosition() const
+{
+    return true;
+}
+
+Object BufferedFileBinaryInputPort::position() const
+{
+    return Bignum::makeInteger(position_);
+}
+
+bool BufferedFileBinaryInputPort::setPosition(int position)
+{
+    const int ret = lseek(fd_, position, SEEK_SET);
+    if (position == ret) {
+        position_ =  position;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+int BufferedFileBinaryInputPort::readFromFile(uint8_t* buf, size_t size)
+{
+    for (;;) {
+        const int result = read(fd_, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // read again
+            errno = 0;
+        } else {
+            return result;
+        }
+    }
 }
