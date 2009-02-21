@@ -44,7 +44,7 @@ public:
         INVALID_FILENO = -1,
     };
 
-    enum bufferMode
+    enum BufferMode
     {
         NONE,
         LINE,

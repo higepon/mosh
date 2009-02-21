@@ -40,10 +40,6 @@ namespace scheme {
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
-    enum {
-        BUF_SIZE = 8192,
-    };
-
     FileBinaryInputPort(int fd);
     FileBinaryInputPort(ucs4string file);
     FileBinaryInputPort(const char* file);
@@ -70,13 +66,18 @@ public:
         return false;
     }
 
-
 private:
+    enum {
+        BUF_SIZE = 8192,
+    };
+
+    void initializeBuffer();
+
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
     int u8Buf_;
-    enum bufferMode bufferMode_;
+    enum BufferMode bufferMode_;
     uint8_t* buffer_;
     int bufLen_;
     int bufIdx_;

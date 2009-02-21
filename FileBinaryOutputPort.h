@@ -79,7 +79,7 @@ protected:
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
-    enum bufferMode bufferMode_;
+    enum BufferMode bufferMode_;
     uint8_t* buffer_;
     int bufIdx_;
 

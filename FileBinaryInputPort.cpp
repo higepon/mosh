@@ -53,32 +53,20 @@ FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unkno
         bufferMode_ = LINE;
     }
 
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
+    initializeBuffer();
 }
 
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
+    initializeBuffer();
 }
 
 FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), u8Buf_(EOF), bufferMode_(BLOCK)
 {
     fileName_ = Object::makeString(file).toString()->data();
     fd_ = ::open(file, O_RDONLY);
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
+    initializeBuffer();
 }
 
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), u8Buf_(EOF)
@@ -94,11 +82,7 @@ FileBinaryInputPort::FileBinaryInputPort(ucs4string file, Object fileOptions, Ob
     }
 
     if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-#ifdef USE_BOEHM_GC
-        buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-        buffer_ = new uint8_t[BUF_SIZE];
-#endif
+        initializeBuffer();
     }
 }
 
@@ -283,4 +267,14 @@ int FileBinaryInputPort::bufRead(uint8_t* data, int reqSize)
     MOSH_FATAL("not reached");
     return EOF;
     // Error
+}
+
+// private
+void FileBinaryInputPort::initializeBuffer()
+{
+#ifdef USE_BOEHM_GC
+    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
+#else
+    buffer_ = new uint8_t[BUF_SIZE];
+#endif
 }
