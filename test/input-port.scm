@@ -114,4 +114,33 @@
 (test/violation? (set-port-position! (current-input-port) 0))
 (test/violation? (port-position (current-input-port)))
 
+;; file-binary-input-port
+(with-all-buffer-mode
+ (lambda (mode)
+   (let ([port  (open-file-input-port "./test/test.txt" (file-options) mode)])
+     (test/t (input-port? port))
+     (test/t (port-has-set-port-position!? port))
+     (test/t (port-has-port-position? port))
+     (test* (get-u8 port) #x2f)
+     (test* (port-position port) 1)
+     (test* (get-u8 port) #x2f)
+     (test* (port-position port) 2)
+     (test* (get-u8 port) #x77)
+     (test* (port-position port) 3)
+     (set-port-position! port 8193) ;; over the buffer boundary
+     (test* (port-position port) 8193)
+     (test* (get-u8 port) 46)
+     (set-port-position! port 8190)
+     (test* (port-position port) 8190)
+     (test* (get-u8 port) 32)
+     (test* (lookahead-u8 port) 110)
+     (test* (port-position port) 8191)
+     (test* (get-u8 port) 110)
+     (set-port-position! port 8190)
+     ;; read over the boundary
+     (test* (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
+     (test* (port-position port) 8220)
+     (close-port port))))
+
 (test-end)
+
