@@ -44,7 +44,7 @@ public:
     virtual ~BinaryInputPort() {};
     virtual int getU8() = 0;
     virtual int lookaheadU8() = 0;
-    virtual ByteVector* getByteVector(uint32_t size) = 0;
+    virtual int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured) = 0;
 };
 
 }; // namespace scheme

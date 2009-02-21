@@ -1,5 +1,7 @@
 2009-02-21  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp : Added get-bytevector-n!.
+
         * BufferedFileBinaryInputPort.cpp : position things works.
 
 2009-02-21  kokosabu  <kokosabu@gmail.com>

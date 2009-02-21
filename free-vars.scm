@@ -97,6 +97,9 @@
     port-has-set-port-position!?
     port-position
     set-port-position!
+    get-bytevector-n!
+    get-bytevector-some
+    get-bytevector-all
     transcoded-port
     latin-1-codec
     utf-8-codec

@@ -126,28 +126,23 @@ int FileBinaryInputPort::lookaheadU8()
     }
 }
 
-ByteVector* FileBinaryInputPort::getByteVector(uint32_t size)
+int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-#ifdef USE_BOEHM_GC
-    uint8_t* buf = new(PointerFreeGC) uint8_t[size];
-#else
-    uint8_t* buf = new uint8_t[size];
-#endif
     int ret;
     if (hasAheadU8()) {
         buf[0] = aheadU8_;
         aheadU8_ = EOF;
-        ret = readFromFile(buf + 1, size - 1);
+        ret = readFromFile(buf + 1, reqSize - 1);
     } else {
-        ret = readFromFile(buf, size);
+        ret = readFromFile(buf, reqSize);
     }
 
     if (ret < 0) {
         MOSH_FATAL("todo");
-        return NULL;
+        return 0;
     } else {
         position_ += ret;
-        return new ByteVector(ret, buf);
+        return ret;
     }
 }
 

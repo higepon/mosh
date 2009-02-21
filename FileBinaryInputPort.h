@@ -49,7 +49,7 @@ public:
     ucs4string toString();
     int getU8();
     int lookaheadU8();
-    ByteVector* getByteVector(uint32_t size);
+    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
     int open();
     int close();
     int fileNo() const;

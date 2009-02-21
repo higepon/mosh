@@ -37,6 +37,9 @@
 namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
+    Object getBytevectorAllEx(VM* theVM, int argc, const Object* argv);
+    Object getBytevectorSomeEx(VM* theVM, int argc, const Object* argv);
+    Object getBytevectorNDEx(VM* theVM, int argc, const Object* argv);
     Object portHasPortPositionPEx(VM* theVM, int argc, const Object* argv);
     Object portHasSetPortPositionDPEx(VM* theVM, int argc, const Object* argv);
     Object setPortPositionDEx(VM* theVM, int argc, const Object* argv);

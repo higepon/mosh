@@ -112,16 +112,11 @@ int BufferedFileBinaryInputPort::lookaheadU8()
     }
 }
 
-ByteVector* BufferedFileBinaryInputPort::getByteVector(uint32_t size)
+int BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-#ifdef USE_BOEHM_GC
-    uint8_t* buf = new(PointerFreeGC) uint8_t[size];
-#else
-    uint8_t* buf = new uint8_t[size];
-#endif
-    const int ret = readFromBuffer(buf, size);
+    const int ret = readFromBuffer(buf, reqSize);
     position_ += ret;
-    return new ByteVector(ret, buf);
+    return ret;
 }
 
 bool BufferedFileBinaryInputPort::isClosed() const
@@ -192,11 +187,7 @@ int BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int reqSize)
 // private
 void BufferedFileBinaryInputPort::initializeBuffer()
 {
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
+    buffer_ = allocatePointerFreeU8Array(BUF_SIZE);
 }
 
 // binary-ports should support position.

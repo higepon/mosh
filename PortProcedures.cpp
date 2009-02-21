@@ -683,17 +683,65 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     }
 
     const uint32_t u32Count = Arithmetic::toU32(count);
-    ByteVector* ret = binaryInputPort->getByteVector(u32Count);
-    if (ret->length() == 0) {
+    uint8_t* buffer = allocatePointerFreeU8Array(u32Count);
+    bool isErrorOccured = false;
+    const int ret = binaryInputPort->readBytes(buffer, u32Count, isErrorOccured);
+    if (isErrorOccured) {
+        callAssertionViolationAfter(theVM, procedureName, "read error");
+        return Object::Undef;
+    } else if (ret == 0) {
         return Object::Eof;
     } else {
-        return Object::makeByteVector(ret);
+        return Object::makeByteVector(new ByteVector(ret, buffer));
     }
 }
 
-//Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
-//Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
-//Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
+Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
+{
+}
+
+Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
+{
+}
+Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-bytevector-n!");
+    checkArgumentLength(4);
+
+    argumentAsBinaryInputPort(0, binaryInputPort);
+    argumentAsByteVector(1, bv);
+    argumentCheckExactInteger(2, start);
+    argumentCheckExactInteger(3, count);
+
+    if (!Arithmetic::fitsU32(start)) {
+        callAssertionViolationAfter(theVM, procedureName, "start value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    if (!Arithmetic::fitsU32(count)) {
+        callAssertionViolationAfter(theVM, procedureName, "count value out of range", L1(argv[3]));
+        return Object::Undef;
+    }
+
+    const uint32_t u32Start  = Arithmetic::toU32(start);
+    const uint32_t u32Count = Arithmetic::toU32(count);
+
+    if (bv->length() < u32Count + u32Start) {
+        callAssertionViolationAfter(theVM, procedureName, "bytevector must be a bytevector with at least start + count elements.", L2(argv[2], argv[3]));
+        return Object::Undef;
+    }
+
+    bool isErrorOccured = false;
+    const int ret = binaryInputPort->readBytes(bv->data() + u32Start, u32Count, isErrorOccured);
+    if (isErrorOccured) {
+        callAssertionViolationAfter(theVM, procedureName, "read error");
+        return Object::Undef;
+    } else if (ret == 0) {
+        return Object::Eof;
+    } else {
+        return Bignum::makeInteger(ret);
+    }
+}
 
 Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
 {

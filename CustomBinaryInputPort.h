@@ -44,7 +44,7 @@ public:
 
     int getU8();
     int lookaheadU8();
-    ByteVector* getByteVector(uint32_t size);
+    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
     ucs4string toString();
     int open();
     int close();

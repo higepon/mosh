@@ -142,9 +142,13 @@
      (test* (port-position port) 8220)
      ;; read over the boundary and size > buffer-size
      (set-port-position! port 4000)
-     (let ([bv (get-bytevector-n port 10000)])
-       (test* (bytevector-u8-ref bv 0) 123)
-       (test* (bytevector-u8-ref bv 9999) 108))
+     (let ([bv1 (make-bytevector 10000)]
+           [bv2 (get-bytevector-n port 10000)])
+       (test* (bytevector-u8-ref bv2 0) 123)
+       (test* (bytevector-u8-ref bv2 9999) 108)
+       (set-port-position! port 4000)
+       (test* (get-bytevector-n! port bv1 0 10000) 10000)
+       (test/t (equal? bv1 bv2)))
      (close-port port))))
 
 (test-end)

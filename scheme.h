@@ -167,4 +167,13 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
 #define SCM_SYSCALL(result, expr) \
     SCM_SYSCALL3(result, expr, (result < 0))
 
+inline uint8_t* allocatePointerFreeU8Array(int size)
+{
+#ifdef USE_BOEHM_GC
+    return new(PointerFreeGC) uint8_t[size];
+#else
+    return new uint8_t[BUF_SIZE];
+#endif
+}
+
 #endif // __SCHEME_SCHEME_H__

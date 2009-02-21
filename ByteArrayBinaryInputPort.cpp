@@ -54,10 +54,10 @@ ucs4string ByteArrayBinaryInputPort::toString() {
     return UC("<byte-array-input-port>");
 }
 
-ByteVector* ByteArrayBinaryInputPort::getByteVector(uint32_t size)
+int ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-    fprintf(stderr, "get-byte-vector-n not implemented");
-    exit(-1);
+    MOSH_FATAL("todo");
+    return 0;
 }
 
 int ByteArrayBinaryInputPort::open()

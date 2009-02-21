@@ -126,23 +126,18 @@ int CustomBinaryInputPort::lookaheadU8()
     return aheadU8_;
 }
 
-ByteVector* CustomBinaryInputPort::getByteVector(uint32_t size)
+
+int CustomBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-#ifdef USE_BOEHM_GC
-    uint8_t* buf = new(PointerFreeGC) uint8_t[size];
-#else
-    uint8_t* buf = new uint8_t[size];
-#endif
-    uint32_t readSize;
-    for (readSize = 0; readSize < size; readSize++) {
+    int readSize;
+    for (readSize = 0; readSize < reqSize; readSize++) {
         const int v = getU8();
         if (EOF == v) {
             break;
         }
         buf[readSize] = v;
     }
-
-    return new ByteVector(readSize, buf);
+    return readSize;
 }
 
 int CustomBinaryInputPort::fileNo() const

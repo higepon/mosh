@@ -44,7 +44,7 @@ public:
 
     // profiler tells that this should be inlined
     inline int getU8()
-    {
+   {
         if (index_ >= size_) return EOF;
         return buf_[index_++];
     }
@@ -56,7 +56,7 @@ public:
     }
 
     ucs4string toString();
-    ByteVector* getByteVector(uint32_t size);
+    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
     int open();
     int close();
     bool isClosed() const;
