@@ -67,8 +67,7 @@ private:
     int readFromFile(uint8_t* buf, size_t size);
     int readFromBuffer(uint8_t* dest, int reqSize);
     bool fillBuffer();
-    int bufRead(uint8_t* data, int reqSize);
-
+    void invalidateBuffer();
 
     int fd_;
     ucs4string fileName_;

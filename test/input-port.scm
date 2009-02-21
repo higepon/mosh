@@ -33,7 +33,7 @@
         (mosh test))
 
 (define (with-all-buffer-mode proc)
-  (for-each proc (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line))))
+  (for-each proc (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
 
 ;; open-file-input-port with transcoder
 (with-all-buffer-mode
@@ -140,7 +140,11 @@
      ;; read over the boundary
      (test* (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
      (test* (port-position port) 8220)
-     ;; todo we should check (get-bytevector-n port 9000)
+     ;; read over the boundary and size > buffer-size
+     (set-port-position! port 4000)
+     (let ([bv (get-bytevector-n port 10000)])
+       (test* (bytevector-u8-ref bv 0) 123)
+       (test* (bytevector-u8-ref bv 9999) 108))
      (close-port port))))
 
 (test-end)

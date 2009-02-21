@@ -1,3 +1,7 @@
+2009-02-21  higepon  <higepon@users.sourceforge.jp>
+
+        * BufferedFileBinaryInputPort.cpp : position things works.
+
 2009-02-21  kokosabu  <kokosabu@gmail.com>
 
         * Added: put-string.
@@ -5,6 +9,8 @@
         * Fixed: put-bytevector.
 
 2009-02-21  higepon  <higepon@users.sourceforge.jp>
+
+        * BufferedFileBinaryInputPort.cpp : position things doesn't work yet.
 
         * test/input-port.scm : FileBinaryInputPort (None-buffering)  passes tests.
 

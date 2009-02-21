@@ -92,6 +92,7 @@ ucs4string BufferedFileBinaryInputPort::toString()
 int BufferedFileBinaryInputPort::getU8()
 {
     uint8_t c;
+    position_++;
     if (0 == readFromBuffer(&c, 1)) {
         return EOF;
     } else {
@@ -103,8 +104,10 @@ int BufferedFileBinaryInputPort::lookaheadU8()
 {
     uint8_t c;
     if (0 == readFromBuffer(&c, 1)) {
+        bufIdx_--;
         return EOF;
     } else {
+        bufIdx_--;
         return c;
     }
 }
@@ -116,9 +119,8 @@ ByteVector* BufferedFileBinaryInputPort::getByteVector(uint32_t size)
 #else
     uint8_t* buf = new uint8_t[size];
 #endif
-    int ret;
-    ret = readFromBuffer(buf, size);
-
+    const int ret = readFromBuffer(buf, size);
+    position_ += ret;
     return new ByteVector(ret, buf);
 }
 
@@ -131,9 +133,7 @@ int BufferedFileBinaryInputPort::close()
 {
     if (!isClosed() && fd_ != INVALID_FILENO) {
         isClosed_ = true;
-        if (fd_ != fileno(stdin)) {
-            ::close(fd_);
-        }
+        ::close(fd_);
     }
     return MOSH_SUCCESS;
 }
@@ -220,6 +220,10 @@ bool BufferedFileBinaryInputPort::setPosition(int position)
     const int ret = lseek(fd_, position, SEEK_SET);
     if (position == ret) {
         position_ =  position;
+
+        // Now we just invalidate buffer.
+        // If this has performance problem, we can fix it.
+        invalidateBuffer();
         return true;
     } else {
         return false;
@@ -237,4 +241,10 @@ int BufferedFileBinaryInputPort::readFromFile(uint8_t* buf, size_t size)
             return result;
         }
     }
+}
+
+void BufferedFileBinaryInputPort::invalidateBuffer()
+{
+    bufLen_ = 0;
+    bufIdx_ = 0;
 }
