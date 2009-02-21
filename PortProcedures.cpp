@@ -148,7 +148,31 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(2, 4);
     argumentAsBinaryOutputPort(0, outputPort);
     argumentAsByteVector(1, bv);
-    outputPort->putByteVector(bv);
+    if (argc < 3) {
+        outputPort->putByteVector(bv);
+        return Object::Undef;
+    }
+
+    argumentCheckExactInteger(2, startObj);
+    int start;
+    if (startObj.isFixnum()) {
+        start = startObj.toFixnum();
+    } else { // startObj.isBignum()
+        start = startObj.toBignum()->toS32();
+    }
+    if (argc < 4) {
+        outputPort->putByteVector(bv, start);
+        return Object::Undef;
+    }
+
+    argumentCheckExactInteger(3, countObj);
+    int count;
+    if (countObj.isFixnum()) {
+        count = countObj.toFixnum();
+    } else { // countObj.isBignum()
+        count = countObj.toBignum()->toS32();
+    }
+    outputPort->putByteVector(bv, start, count);
     return Object::Undef;
 }
 
@@ -1104,6 +1128,42 @@ Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
 
     return Object::Undef;
 }
+
+/*
+Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("put-string");
+    checkArgumentLengthBetween(2, 4);
+    argumentAsTextualOutputPort(0, textualOutputPort);
+    argumentAsString(1, string);
+    if (argc < 3) {
+        outputPort->putByteVector(string);
+        return Object::Undef;
+    }
+
+    argumentCheckExactInteger(2, startObj);
+    int start;
+    if (startObj.isFixnum()) {
+        start = startObj.toFixnum();
+    } else { // startObj.isBignum()
+        start = startObj.toBignum()->toS32();
+    }
+    if (argc < 4) {
+        outputPort->putByteVector(bv, start);
+        return Object::Undef;
+    }
+
+    argumentCheckExactInteger(3, countObj);
+    int count;
+    if (countObj.isFixnum()) {
+        count = countObj.toFixnum();
+    } else { // countObj.isBignum()
+        count = countObj.toBignum()->toS32();
+    }
+    outputPort->putByteVector(bv, start, count);
+    return Object::Undef;
+}
+*/
 
 Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
 {

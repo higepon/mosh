@@ -426,5 +426,5 @@ bool Object::isList() const
 
 bool Object::isOctet() const
 {
-    return (isFixnum() && ByteVector::isOctet(static_cast<signed long int>(val) >> 2));
+    return (isFixnum() && ByteVector::isOctet(toFixnum()));
 }

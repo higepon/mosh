@@ -114,6 +114,7 @@ namespace scheme {
     Object portPEx(VM* theVM, int argc, const Object* argv);
     Object portTranscoderEx(VM* theVM, int argc, const Object* argv);
     Object putU8Ex(VM* theVM, int argc, const Object* argv);
+    Object putStringEx(VM* theVM, int argc, const Object* argv);
     Object flushOutputPortEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
