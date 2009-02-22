@@ -1,5 +1,7 @@
 2009-02-22  higepon  <higepon@users.sourceforge.jp>
 
+        * Added get-datum. get-datum and read raise &lexical and &i/o-read when error occurs.
+
         * PortProcedures.cpp : Added get-bytevector-all, get-string-n! and get-string-all.
 
         * PortProcedures.cpp : Added get-bytevector-some.
