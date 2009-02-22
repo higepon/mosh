@@ -60,6 +60,12 @@ int ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isError
     return 0;
 }
 
+int ByteArrayBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+{
+    MOSH_FATAL("todo");
+    return 0;
+}
+
 int ByteArrayBinaryInputPort::open()
 {
     return MOSH_SUCCESS;

@@ -57,6 +57,7 @@ public:
 
     ucs4string toString();
     int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
+    int readSome(uint8_t** buf, bool& isErrorOccured);
     int open();
     int close();
     bool isClosed() const;

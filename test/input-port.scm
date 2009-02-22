@@ -88,6 +88,11 @@
   (set-port-position! p 2)
   (test* (get-bytevector-n p 3) #vu8(3 4 5))
   (test* (format "~a" p) "<custom input port xyz>")
+  (set-port-position! p 2)
+  ;; some
+  (let ([bv (get-bytevector-some p)])
+    (test/t (> (bytevector-length bv) 0))
+    (test* (bytevector-u8-ref bv 0) 3))
   (close-port p))
 
 ;; standard-input-port doesn't suport port-position on Mosh.
@@ -149,7 +154,11 @@
        (set-port-position! port 4000)
        (test* (get-bytevector-n! port bv1 0 10000) 10000)
        (test/t (equal? bv1 bv2)))
+     ;; read-some
+     (set-port-position! port 4000)
+     (let ([bv (get-bytevector-some port)])
+       (test/t (> (bytevector-length bv) 0))
+       (test* (bytevector-u8-ref bv 0) 123))
      (close-port port))))
 
 (test-end)
-

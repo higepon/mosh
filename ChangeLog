@@ -1,3 +1,7 @@
+2009-02-22  higepon  <higepon@users.sourceforge.jp>
+
+        * PortProcedures.cpp : Added get-bytevector-some.
+
 2009-02-22  kokosabu  <kokosabu@gmail.com>
 
         * BufferedFileBinaryOutputPort.cpp : Added.

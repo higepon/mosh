@@ -140,6 +140,19 @@ int CustomBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOcc
     return readSize;
 }
 
+int CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+{
+    const int v = getU8();
+    if (EOF == v) {
+        return 0;
+    } else {
+        uint8_t* dest = allocatePointerFreeU8Array(1);
+        dest[0] = v;
+        *buf = dest;
+        return 1;
+    }
+}
+
 int CustomBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;

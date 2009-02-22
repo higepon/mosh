@@ -104,7 +104,6 @@ int BufferedFileBinaryInputPort::lookaheadU8()
 {
     uint8_t c;
     if (0 == readFromBuffer(&c, 1)) {
-        //bufIdx_--;
         return EOF;
     } else {
         bufIdx_--;
@@ -116,6 +115,19 @@ int BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isEr
 {
     const int ret = readFromBuffer(buf, reqSize);
     position_ += ret;
+    return ret;
+}
+
+int BufferedFileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+{
+    const int bufferedSize = bufLen_ > bufIdx_;
+
+    // if we have buffered data, return them only.
+    const int tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
+    uint8_t* dest = allocatePointerFreeU8Array(tryReadSize);
+    const int ret = readFromBuffer(dest, tryReadSize);
+    position_ += ret;
+    *buf = dest;
     return ret;
 }
 
