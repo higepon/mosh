@@ -62,6 +62,80 @@
 
 using namespace scheme;
 
+Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv) {}
+Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-string-all");
+    argumentAsTextualInputPort(0, in);
+    ucs4string text = in->getStringAll();
+    if (text.size() == 0) {
+        return Object::Undef;
+    } else {
+        return Object::makeString(text);
+    }
+}
+
+Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-string-n!");
+    argumentAsTextualInputPort(0, in);
+    argumentAsString(1, dest);
+    argumentCheckExactInteger(2, start);
+    argumentCheckExactInteger(3, count);
+
+    if (!Arithmetic::fitsU32(start)) {
+        callAssertionViolationAfter(theVM, procedureName, "start value out of range", L1(argv[2]));
+        return Object::Undef;
+    }
+
+    if (!Arithmetic::fitsU32(count)) {
+        callAssertionViolationAfter(theVM, procedureName, "count value out of range", L1(argv[3]));
+        return Object::Undef;
+    }
+
+    const uint32_t u32Start  = Arithmetic::toU32(start);
+    const uint32_t u32Count = Arithmetic::toU32(count);
+
+    if (dest->length() < u32Count + u32Start) {
+        callAssertionViolationAfter(theVM, procedureName, "string must be a string with at least start + count elements.", L2(argv[2], argv[3]));
+        return Object::Undef;
+    }
+
+    ucs4string text = in->getString(u32Count);
+    if (text.size() == 0) {
+        return Object::Eof;
+    } else {
+        ucs4string& s = dest->data();
+        for (int i = 0; i < text.size(); i++) {
+            s[u32Start + i] = text[i];
+        }
+        return Bignum::makeInteger(text.size());
+    }
+}
+
+Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-char");
+    checkArgumentLength(1);
+    argumentAsTextualInputPort(0, textualInputPort);
+    const ucs4char ch = textualInputPort->getChar();
+    return ch == EOF ? Object::Eof : Object::makeChar(ch);
+}
+
+Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-string-n");
+    checkArgumentLength(2);
+    argumentAsTextualInputPort(0, inputPort);
+    argumentAsFixnum(1, size);
+    ucs4string text = inputPort->getString(size);
+    if (text.size() == 0) {
+        return Object::Eof;
+    } else {
+        return Object::makeString(text);
+    }
+}
+
 Object scheme::portHasPortPositionPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("port-has-port-position?");
@@ -207,15 +281,6 @@ Object scheme::statMtimeEx(VM* theVM, int argc, const Object* argv)
     } else {
         return Object::makeFixnum(sb.st_mtime);
     }
-}
-
-Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("get-string-n");
-    checkArgumentLength(2);
-    argumentAsTextualInputPort(0, inputPort);
-    argumentAsFixnum(1, size);
-    return inputPort->getStringN(size);
 }
 
 Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)

@@ -210,7 +210,13 @@
     (/ /)
     (max max)
     (min min)
+    get-char
     lookahead-char
+    get-string-n
+    get-string-n!
+    get-string-all
+    get-line
+    get-datum
     bytevector?
     current-directory
     standard-library-path
@@ -260,7 +266,6 @@
     string->utf32
     utf16->string
     utf32->string
-    get-line
     close-port
     make-instruction
     make-compiler-instruction

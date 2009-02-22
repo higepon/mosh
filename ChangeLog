@@ -1,6 +1,6 @@
 2009-02-22  higepon  <higepon@users.sourceforge.jp>
 
-        * PortProcedures.cpp : Added get-bytevector-all.
+        * PortProcedures.cpp : Added get-bytevector-all, get-string-n! and get-string-all.
 
         * PortProcedures.cpp : Added get-bytevector-some.
 

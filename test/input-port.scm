@@ -116,6 +116,14 @@
   (set-port-position! in 5)
   (test* (read-char in) #\5)
   (test* (format "~a" in) "<string input port>")
+  (set-port-position! in 0)
+  (test* (get-string-n in 3) "012")
+  (let ([s (make-string 3 #\space)])
+    (set-port-position! in 1)
+    (test* (get-string-n! in s 1 2) 2)
+    (test* s " 12"))
+  (set-port-position! in 0)
+  (test* (get-string-all in) "0123456")
   (close-port in))
 
 ;; textual-input-port doesn't suport port-position on Mosh.

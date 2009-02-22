@@ -37,6 +37,10 @@
 namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
+    Object getDatumEx(VM* theVM, int argc, const Object* argv);
+    Object getStringAllEx(VM* theVM, int argc, const Object* argv);
+    Object getStringNDEx(VM* theVM, int argc, const Object* argv);
+    Object getCharEx(VM* theVM, int argc, const Object* argv);
     Object getBytevectorAllEx(VM* theVM, int argc, const Object* argv);
     Object getBytevectorSomeEx(VM* theVM, int argc, const Object* argv);
     Object getBytevectorNDEx(VM* theVM, int argc, const Object* argv);
