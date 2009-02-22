@@ -93,6 +93,11 @@
   (let ([bv (get-bytevector-some p)])
     (test/t (> (bytevector-length bv) 0))
     (test* (bytevector-u8-ref bv 0) 3))
+  ;; all
+  (set-port-position! p 0)
+  (let ([bv (get-bytevector-all p)])
+    (test* (bytevector-length bv) 16))
+  (test* (port-position p) 16)
   (close-port p))
 
 ;; standard-input-port doesn't suport port-position on Mosh.
@@ -159,6 +164,13 @@
      (let ([bv (get-bytevector-some port)])
        (test/t (> (bytevector-length bv) 0))
        (test* (bytevector-u8-ref bv 0) 123))
+     ;; read-all
+     (set-port-position! port 4000)
+     (let ([bv (get-bytevector-all port)])
+       (test* (bytevector-length bv) 34861)
+       (test* (bytevector-u8-ref bv 0) 123)
+       (test* (bytevector-u8-ref bv 34860) 10))
+     (test* (port-position port) 38861)
      (close-port port))))
 
 (test-end)

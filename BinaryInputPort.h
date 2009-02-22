@@ -46,6 +46,7 @@ public:
     virtual int lookaheadU8() = 0;
     virtual int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured) = 0;
     virtual int readSome(uint8_t** buf, bool& isErrorOccured) = 0;
+    virtual int readAll(uint8_t** buf, bool& isErrorOccured) = 0;
 };
 
 }; // namespace scheme

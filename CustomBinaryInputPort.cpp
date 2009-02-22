@@ -153,6 +153,24 @@ int CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
     }
 }
 
+int CustomBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+{
+    gc_vector<uint8_t> accum;
+    for (;;) {
+        const int v = getU8();
+        if (EOF == v) {
+            break;
+        }
+        accum.push_back(v);
+    }
+    uint8_t* dest = allocatePointerFreeU8Array(accum.size());
+    for (int i = 0; i < accum.size(); i++) {
+        dest[i] = accum[i];
+    }
+    *buf = dest;
+    return accum.size();
+}
+
 int CustomBinaryInputPort::fileNo() const
 {
     return BinaryInputPort::INVALID_FILENO;

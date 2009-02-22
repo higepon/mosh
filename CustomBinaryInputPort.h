@@ -46,6 +46,7 @@ public:
     int lookaheadU8();
     int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
     int readSome(uint8_t** buf, bool& isErrorOccured);
+    int readAll(uint8_t** buf, bool& isErrorOccured);
     ucs4string toString();
     int open();
     int close();

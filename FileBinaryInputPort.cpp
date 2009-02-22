@@ -146,6 +146,44 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
     }
 }
 
+int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+{
+    struct stat st;
+    const int ret = fstat(fd_, &st);
+    MOSH_ASSERT(ret == 0); // will never happen?
+
+    const int restSize = st.st_size - position_;
+    MOSH_ASSERT(restSize >= 0);
+    if (restSize == 0) {
+        return 0;
+    }
+
+    uint8_t* dest = allocatePointerFreeU8Array(restSize);
+    if (hasAheadU8()) {
+        dest[0] = aheadU8_;
+        aheadU8_ = EOF;
+        *buf = dest;
+        position_++;
+        const int ret = readFromFile(dest + 1, restSize - 1);
+        if (ret < 0) {
+            MOSH_FATAL("todo");
+            return 0;
+        } else {
+            return ret;
+        }
+    } else {
+        const int ret = readFromFile(dest, restSize);
+        if (ret < 0) {
+            MOSH_FATAL("todo");
+            return 0;
+        } else {
+            *buf = dest;
+            position_ += ret;
+            return ret;
+        }
+    }
+}
+
 int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     uint8_t* dest = allocatePointerFreeU8Array(1);

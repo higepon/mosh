@@ -699,6 +699,22 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
 {
+    DeclareProcedureName("get-bytevector-all");
+    checkArgumentLength(1);
+
+    argumentAsBinaryInputPort(0, binaryInputPort);
+
+    bool isErrorOccured = false;
+    uint8_t* dest;
+    const int ret = binaryInputPort->readAll(&dest, isErrorOccured);
+    if (isErrorOccured) {
+        callAssertionViolationAfter(theVM, procedureName, "read error");
+        return Object::Undef;
+    } else if (ret == 0) {
+        return Object::Eof;
+    } else {
+        return Object::makeByteVector(new ByteVector(ret, dest));
+    }
 }
 
 Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
