@@ -59,7 +59,7 @@ namespace scheme {
     Object errorEx(VM* theVM, int argc, const Object* argv);
     Object assertionViolationEx(VM* theVM, int argc, const Object* argv);
 
-    void callLexicalViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    void callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);

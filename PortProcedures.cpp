@@ -62,7 +62,20 @@
 
 using namespace scheme;
 
-Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv) {}
+Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-datum");
+    checkArgumentLength(1);
+    bool errorOccured = false;
+    argumentAsTextualInputPort(0, in);
+    const Object object = in->getDatum(errorOccured);
+    if (errorOccured) {
+        callLexicalAndIOReadAfter(theVM, procedureName, in->error());
+        return Object::Undef;
+    }
+    return object;
+}
+
 Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
@@ -439,7 +452,7 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
     }
     const Object object = inputPort->getDatum(errorOccured);
     if (errorOccured) {
-        callLexicalViolationAfter(theVM, procedureName, inputPort->error());
+        callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
         return Object::Undef;
     }
     return object;

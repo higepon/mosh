@@ -126,6 +126,10 @@
   (test* (get-string-all in) "0123456")
   (close-port in))
 
+;; get-datum with error
+(test/exception lexical-violation? (get-datum (open-string-input-port "(")))
+(test/exception i/o-read-error? (get-datum (open-string-input-port "(")))
+
 ;; textual-input-port doesn't suport port-position on Mosh.
 (test/f (port-has-set-port-position!? (current-input-port)))
 (test/f (port-has-port-position? (current-input-port)))

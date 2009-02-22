@@ -66,6 +66,18 @@ static void raiseAfter(VM* theVM,
                        Object message,
                        Object irritants = Object::Nil);
 
+static void raiseAfter2(VM* theVM,
+                const ucs4char* errorRcdName1,
+                const ucs4char* errorName1,
+                int argumentCount1,
+                const ucs4char* errorRcdName2,
+                const ucs4char* errorName2,
+                int argumentCount2,
+                Object who,
+                Object message,
+                Object irritants = Object::Nil);
+
+
 Object scheme::throwIOError(Object message)
 {
     ioErrorMessage = message;
@@ -160,10 +172,11 @@ void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object me
     raiseAfter(theVM, UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
 }
 
-void scheme::callLexicalViolationAfter(VM* theVM, Object who, Object message, Object irritants)
+void scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, who, message, irritants);
+    raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&&i/o-read"), 0, who, message, irritants);
 }
+
 void scheme::callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants)
 {
     raiseAfter(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
@@ -279,6 +292,73 @@ void raiseAfter(VM* theVM,
                               "    2. &who: ~a\n"
                               "    3. &message: ~s\n"
                               "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+}
+
+void raiseAfter2(VM* theVM,
+                const ucs4char* errorRcdName1,
+                const ucs4char* errorName1,
+                int argumentCount1,
+                const ucs4char* errorRcdName2,
+                const ucs4char* errorName2,
+                int argumentCount2,
+                Object who,
+                Object message,
+                Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+
+        // even if irritants is nil, we create irritants condition.
+        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
+
+        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
+
+        if (!who.isFalse()) {
+            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
+        }
+
+        MOSH_ASSERT(argumentCount1 >= 0 && argumentCount1 <= 1);
+        if (0 == argumentCount1) {
+            conditions = Object::cons(makeCondition(theVM, errorRcdName1), conditions);
+        } else {
+            conditions = Object::cons(makeCondition(theVM, errorRcdName1, Object::Nil), conditions);
+        }
+
+        MOSH_ASSERT(argumentCount2 >= 0 && argumentCount2 <= 1);
+        if (0 == argumentCount2) {
+            conditions = Object::cons(makeCondition(theVM, errorRcdName2), conditions);
+        } else {
+            conditions = Object::cons(makeCondition(theVM, errorRcdName2, Object::Nil), conditions);
+        }
+
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        condition = format(UC(" Condition components:\n"
+                              "    1. ~a\n"
+                              "    2. ~a\n"
+                              "    3. &who: ~a\n"
+                              "    4. &message: ~s\n"
+                              "    5. &irritants: ~a\n"), Pair::list5(Object::makeString(errorName1),
+                                                                      Object::makeString(errorName2),
+                                                                      who,
+                                                                      message,
+                                                                      irritants));
     }
 
     const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));

@@ -641,7 +641,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             TextualInputPort* const inputPort = ac_.isNil() ? currentInputPort_.toTextualInputPort() : ac_.toTextualInputPort();
             ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
-                callLexicalViolationAfter(this, "read", inputPort->error());
+                callLexicalAndIOReadAfter(this, "read", inputPort->error());
             }
             NEXT1;
         }
