@@ -42,63 +42,22 @@
 #include "FileBinaryOutputPort.h"
 #include "ByteVector.h"
 #include "Symbol.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), position_(0)
 {
-    if (fd == 1) {
-        bufferMode_ = LINE;
-    } else if (fd == 2) {
-        bufferMode_ = NONE;
-    }
-
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), position_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
-#ifdef USE_BOEHM_GC
-    buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-    buffer_ = new uint8_t[BUF_SIZE];
-#endif
-}
-
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), bufIdx_(0)
-{
-    // todo fileOptions process
-    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
-
-    if (bufferMode == Symbol::NONE) {
-        bufferMode_ = NONE;
-    } else if (bufferMode == Symbol::LINE) {
-        bufferMode_ = LINE;
-    } else {
-        bufferMode_ = BLOCK;
-    }
-
-    if (bufferMode_ == LINE || bufferMode_ == BLOCK) {
-#ifdef USE_BOEHM_GC
-        buffer_ = new(PointerFreeGC) uint8_t[BUF_SIZE];
-#else
-        buffer_ = new uint8_t[BUF_SIZE];
-#endif
-    }
 }
 
 FileBinaryOutputPort::~FileBinaryOutputPort()
 {
-#ifdef USE_BOEHM_GC
-#else
-    delete buffer_;
-#endif
     close();
 }
 
@@ -109,13 +68,12 @@ bool FileBinaryOutputPort::isClosed() const
 
 int FileBinaryOutputPort::putU8(uint8_t v)
 {
-    MOSH_ASSERT(fd_ != INVALID_FILENO);
-    return bufWrite(&v, 1);
+    return putU8(&v, 1);
 }
 
 int FileBinaryOutputPort::putU8(uint8_t* v, int size)
 {
-    return bufWrite(v, size);
+    return writeToFile(v, size);
 }
 
 int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
@@ -126,7 +84,7 @@ int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
 int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
     uint8_t* buf = bv->data();
-    return bufWrite(&buf[start], count);
+    return writeToFile(&buf[start], count);
 }
 
 int FileBinaryOutputPort::open()
@@ -140,12 +98,9 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
-    bufFlush();
-    if (!isClosed() && INVALID_FILENO != fd_) {
+    if (!isClosed() && fd_ != INVALID_FILENO) {
         isClosed_ = true;
-        if (fd_ != fileno(stdout) && fd_ != fileno(stderr)) {
-            ::close(fd_);
-        }
+        ::close(fd_);
     }
     return MOSH_SUCCESS;
 }
@@ -157,75 +112,59 @@ int FileBinaryOutputPort::fileNo() const
 
 void FileBinaryOutputPort::bufFlush()
 {
-    if ((buffer_ != NULL && bufIdx_ != 0) &&
-        (bufferMode_ == LINE || bufferMode_ == BLOCK)) {
-        uint8_t* buf = buffer_;
-        while (bufIdx_ > 0) {
-            const int bufWriteLen = realWrite(fd_, buf, bufIdx_);
-            buf += bufWriteLen;
-            bufIdx_ -= bufWriteLen;
-        }
-    }
-}
-
-
-int FileBinaryOutputPort::realWrite(int fd, uint8_t* buf, size_t count)
-{
-    int bufWriteLen;
-    SCM_SYSCALL(bufWriteLen, write(fd, buf, count));
-    if (bufWriteLen < 0) {
-        MOSH_FATAL("write failed\n");
-    }
-    return bufWriteLen;
-}
-
-int FileBinaryOutputPort::bufWrite(uint8_t* data, int reqSize)
-{
-    if (bufferMode_ == NONE) {
-        return realWrite(fd_, data, reqSize);
-    }
-    if (bufferMode_ == LINE) {
-        int writeSize = 0;
-        while (writeSize < reqSize) {
-            const int bufDiff = BUF_SIZE - bufIdx_;
-            if (bufDiff == 0) {
-                bufFlush();
-            }
-            *(buffer_+bufIdx_) = *(data+writeSize);
-            bufIdx_++;
-            writeSize++;
-            if (buffer_[bufIdx_-1] == '\n') {
-                bufFlush();
-            }
-        }
-        return writeSize;
-    }
-    if (bufferMode_ == BLOCK) {
-        int writeSize = 0;
-        while (writeSize < reqSize) {
-            MOSH_ASSERT(BUF_SIZE >= bufIdx_);
-            const int bufDiff = BUF_SIZE - bufIdx_;
-            MOSH_ASSERT(reqSize > writeSize);
-            const int sizeDiff = reqSize - writeSize;
-            if (bufDiff >= sizeDiff) {
-                memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
-                bufIdx_ += sizeDiff;
-                writeSize += sizeDiff;
-            } else {
-                memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
-                writeSize += bufDiff;
-                bufFlush();
-            }
-        }
-        return writeSize;
-    }
-
-    // Error
-    MOSH_FATAL("not reached");
-    return EOF;
 }
 
 ucs4string FileBinaryOutputPort::toString()
 {
     return fileName_;
+}
+
+bool FileBinaryOutputPort::hasPosition() const
+{
+    return true;
+}
+
+bool FileBinaryOutputPort::hasSetPosition() const
+{
+    return true;
+}
+
+Object FileBinaryOutputPort::position() const
+{
+    return Bignum::makeInteger(position_);
+}
+
+bool FileBinaryOutputPort::setPosition(int position)
+{
+    const int ret = lseek(fd_, position, SEEK_SET);
+    if (position == ret) {
+        position_ = position;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
+// private
+int FileBinaryOutputPort::writeToFile(uint8_t* buf, size_t size)
+{
+    MOSH_ASSERT(fd_ != INVALID_FILENO);
+
+    for (;;) {
+        const int result = write(fd_, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // write again
+            errno = 0;
+        } else {
+            if (result >= 0) {
+                position_ += result;
+                return result;
+            } else {
+                MOSH_FATAL("todo");
+                // todo error check. we may have isErrorOccured flag.
+                return result;
+            }
+        }
+    }
 }

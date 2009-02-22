@@ -58,6 +58,7 @@
 #include "CustomBinaryInputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
+#include "BufferedFileBinaryOutputPort.h"
 
 using namespace scheme;
 
@@ -405,7 +406,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, file);
 
     Transcoder* transcoder = Transcoder::nativeTranscoder();
-    FileBinaryOutputPort* const fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
+    BufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
@@ -939,7 +940,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, file);
 
-    FileBinaryOutputPort* fileBinaryOutputPort = new FileBinaryOutputPort(file->data());
+    BufferedFileBinaryOutputPort* fileBinaryOutputPort = new BufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeBinaryOutputPort(fileBinaryOutputPort);

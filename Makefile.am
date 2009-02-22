@@ -40,96 +40,97 @@ mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) -ldl
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
-HeapObject.h                                                      \
-Object-inl.h                                                      \
-Pair-inl.h                                                        \
-VM-inl.h                                                          \
-psyntax.h                                                         \
-match.h                                                           \
-compiler-with-library.h                                           \
-read.cpp                                                          \
-CProcedure.h                                                      \
-Instruction.h                                                     \
-Callable.h                                                        \
-GenericMap.h                                                      \
-BinaryInputPort.h                                                 \
-BinaryOutputPort.h                                                \
-config.h                                                          \
-scheme.h                                                          \
-ByteVector.h                                                      \
-HashTable.h                                                       \
-Pair.h                                                            \
-Stack.h                                                           \
-Box.h                                                             \
-Codec.h                                                           \
-Transcoder.h                  Transcoder.cpp                      \
-ProcedureMacro.h                                                  \
-EqvHashTable.h                EqvHashTable.cpp                    \
-Compnum.h                     Compnum.cpp                         \
-Fixnum.h                      Fixnum.cpp                          \
-Closure.h                     Closure.cpp                         \
-UtilityProcedures.h           UtilityProcedures.cpp               \
-ProcessProcedures.h           ProcessProcedures.cpp               \
-Reader.h                      Reader.cpp                          \
-NumberReader.h                NumberReader.cpp                    \
-scheme.h                      scheme.cpp                          \
-Regexp.h                      Regexp.cpp                          \
-Symbol.h                      Symbol.cpp                          \
-VM.h                          VM.cpp                              \
-VM-Profiler.cpp               VM-Run.cpp                          \
-Scanner.h                     Scanner.cpp                         \
-NumberScanner.h               NumberScanner.cpp                   \
-ByteArrayBinaryInputPort.h    ByteArrayBinaryInputPort.cpp        \
-ScannerHelper.h               ScannerHelper.cpp                   \
-Reader.tab.hpp                Reader.tab.cpp                      \
-NumberReader.tab.hpp          NumberReader.tab.cpp                \
-FileBinaryInputPort.h         FileBinaryInputPort.cpp             \
-BufferedFileBinaryInputPort.h BufferedFileBinaryInputPort.cpp     \
-FileBinaryOutputPort.h        FileBinaryOutputPort.cpp            \
-CustomBinaryInputPort.h       CustomBinaryInputPort.cpp           \
-TextualOutputPort.h           TextualOutputPort.cpp               \
-TextualByteVectorOutputPort.h TextualByteVectorOutputPort.cpp     \
-TextualInputPort.cpp          TextualInputPort.h                  \
-StringTextualOutputPort.h     StringTextualOutputPort.cpp         \
-StringTextualInputPort.h      StringTextualInputPort.cpp          \
-UTF8Codec.cpp                 UTF8Codec.h                         \
-UTF16Codec.cpp                UTF16Codec.h                        \
-UTF32Codec.cpp                UTF32Codec.h                        \
-EqHashTable.h                 EqHashTable.cpp                     \
-SString.h                     SString.cpp                         \
-GenericHashTable.h            GenericHashTable.cpp                \
-Object.h                      Object.cpp                          \
-RecordTypeDescriptor.h        RecordTypeDescriptor.cpp            \
-RecordConstructorDescriptor.h RecordConstructorDescriptor.cpp     \
-Record.h                      Record.cpp                          \
-RecordProcedures.cpp          RecordProcedures.h                  \
-ConditionProcedures.cpp       ConditionProcedures.h               \
-CompilerProcedures.cpp        CompilerProcedures.h                \
-HashTableProceduures.cpp      HashTableProceduures.h              \
-RegexpProcedures.cpp          RegexpProcedures.h                  \
-StringProcedures.cpp          StringProcedures.h                  \
-PortProcedures.cpp            PortProcedures.h                    \
-ListProcedures.cpp            ListProcedures.h                    \
-ErrorProcedures.cpp           ErrorProcedures.h                   \
-ArithmeticProcedures.cpp      ArithmeticProcedures.h              \
-FlonumProcedures.cpp          FlonumProcedures.h                  \
-BitwiseProcedures.cpp         BitwiseProcedures.h                 \
-ByteVectorProcedures.cpp      ByteVectorProcedures.h              \
-Equivalent.h                  Equivalent.cpp                      \
-CompoundCondition.h           CompoundCondition.cpp               \
-ucs4string.h                  ucs4string.cpp                      \
-Vector.h                      Vector.cpp                          \
-Fasl.h                        Fasl.cpp                            \
-Arithmetic.h                  Arithmetic.cpp                      \
-Ratnum.h                      Ratnum.cpp                          \
-Bignum.h                      Bignum.cpp                          \
-Flonum.h                      Flonum.cpp                          \
-CodeBuilder.h                 CodeBuilder.cpp                     \
-FinxumProcedures.h            FixnumProcedures.cpp                \
-Latin1Codec.h                 Latin1Codec.cpp                     \
-FFI.h                         FFI.cpp                             \
-FFIProcedures.h               FFIProcedures.cpp                   \
-CustomBinaryOutputPort.h      CustomBinaryOutputPort.cpp
+HeapObject.h                                                       \
+Object-inl.h                                                       \
+Pair-inl.h                                                         \
+VM-inl.h                                                           \
+psyntax.h                                                          \
+match.h                                                            \
+compiler-with-library.h                                            \
+read.cpp                                                           \
+CProcedure.h                                                       \
+Instruction.h                                                      \
+Callable.h                                                         \
+GenericMap.h                                                       \
+BinaryInputPort.h                                                  \
+BinaryOutputPort.h                                                 \
+config.h                                                           \
+scheme.h                                                           \
+ByteVector.h                                                       \
+HashTable.h                                                        \
+Pair.h                                                             \
+Stack.h                                                            \
+Box.h                                                              \
+Codec.h                                                            \
+Transcoder.h                   Transcoder.cpp                      \
+ProcedureMacro.h                                                   \
+EqvHashTable.h                 EqvHashTable.cpp                    \
+Compnum.h                      Compnum.cpp                         \
+Fixnum.h                       Fixnum.cpp                          \
+Closure.h                      Closure.cpp                         \
+UtilityProcedures.h            UtilityProcedures.cpp               \
+ProcessProcedures.h            ProcessProcedures.cpp               \
+Reader.h                       Reader.cpp                          \
+NumberReader.h                 NumberReader.cpp                    \
+scheme.h                       scheme.cpp                          \
+Regexp.h                       Regexp.cpp                          \
+Symbol.h                       Symbol.cpp                          \
+VM.h                           VM.cpp                              \
+VM-Profiler.cpp                VM-Run.cpp                          \
+Scanner.h                      Scanner.cpp                         \
+NumberScanner.h                NumberScanner.cpp                   \
+ByteArrayBinaryInputPort.h     ByteArrayBinaryInputPort.cpp        \
+ScannerHelper.h                ScannerHelper.cpp                   \
+Reader.tab.hpp                 Reader.tab.cpp                      \
+NumberReader.tab.hpp           NumberReader.tab.cpp                \
+FileBinaryInputPort.h          FileBinaryInputPort.cpp             \
+BufferedFileBinaryInputPort.h  BufferedFileBinaryInputPort.cpp     \
+FileBinaryOutputPort.h         FileBinaryOutputPort.cpp            \
+BufferedFileBinaryOutputPort.h BufferedFileBinaryOutputPort.cpp    \
+CustomBinaryInputPort.h        CustomBinaryInputPort.cpp           \
+TextualOutputPort.h            TextualOutputPort.cpp               \
+TextualByteVectorOutputPort.h  TextualByteVectorOutputPort.cpp     \
+TextualInputPort.cpp           TextualInputPort.h                  \
+StringTextualOutputPort.h      StringTextualOutputPort.cpp         \
+StringTextualInputPort.h       StringTextualInputPort.cpp          \
+UTF8Codec.cpp                  UTF8Codec.h                         \
+UTF16Codec.cpp                 UTF16Codec.h                        \
+UTF32Codec.cpp                 UTF32Codec.h                        \
+EqHashTable.h                  EqHashTable.cpp                     \
+SString.h                      SString.cpp                         \
+GenericHashTable.h             GenericHashTable.cpp                \
+Object.h                       Object.cpp                          \
+RecordTypeDescriptor.h         RecordTypeDescriptor.cpp            \
+RecordConstructorDescriptor.h  RecordConstructorDescriptor.cpp     \
+Record.h                       Record.cpp                          \
+RecordProcedures.cpp           RecordProcedures.h                  \
+ConditionProcedures.cpp        ConditionProcedures.h               \
+CompilerProcedures.cpp         CompilerProcedures.h                \
+HashTableProceduures.cpp       HashTableProceduures.h              \
+RegexpProcedures.cpp           RegexpProcedures.h                  \
+StringProcedures.cpp           StringProcedures.h                  \
+PortProcedures.cpp             PortProcedures.h                    \
+ListProcedures.cpp             ListProcedures.h                    \
+ErrorProcedures.cpp            ErrorProcedures.h                   \
+ArithmeticProcedures.cpp       ArithmeticProcedures.h              \
+FlonumProcedures.cpp           FlonumProcedures.h                  \
+BitwiseProcedures.cpp          BitwiseProcedures.h                 \
+ByteVectorProcedures.cpp       ByteVectorProcedures.h              \
+Equivalent.h                   Equivalent.cpp                      \
+CompoundCondition.h            CompoundCondition.cpp               \
+ucs4string.h                   ucs4string.cpp                      \
+Vector.h                       Vector.cpp                          \
+Fasl.h                         Fasl.cpp                            \
+Arithmetic.h                   Arithmetic.cpp                      \
+Ratnum.h                       Ratnum.cpp                          \
+Bignum.h                       Bignum.cpp                          \
+Flonum.h                       Flonum.cpp                          \
+CodeBuilder.h                  CodeBuilder.cpp                     \
+FinxumProcedures.h             FixnumProcedures.cpp                \
+Latin1Codec.h                  Latin1Codec.cpp                     \
+FFI.h                          FFI.cpp                             \
+FFIProcedures.h                FFIProcedures.cpp                   \
+CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp
 
 mosh_core_libraries = \
 lib/lambda/wiki.ss    \

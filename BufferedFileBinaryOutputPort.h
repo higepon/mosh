@@ -1,5 +1,5 @@
 /*
- * FileBinaryOutputPort.h - <file binary output port>
+ * BufferedFileBinaryOutputPort.h - <file binary output port>
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
@@ -27,17 +27,17 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id:$
  */
 
-#ifndef __SCHEME_FILE_BINARY_OUTPUT_PORT__
-#define __SCHEME_FILE_BINARY_OUTPUT_PORT__
+#ifndef __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
+#define __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
 
 #include "BinaryOutputPort.h"
 
 namespace scheme {
 
-class FileBinaryOutputPort : public BinaryOutputPort
+class BufferedFileBinaryOutputPort : public BinaryOutputPort
 {
 public:
     enum {
@@ -46,16 +46,17 @@ public:
         NO_TRUNCATE = 1 << 2,
     };
 
-    FileBinaryOutputPort(int fd);
-    FileBinaryOutputPort(ucs4string file);
-    virtual ~FileBinaryOutputPort();
+    BufferedFileBinaryOutputPort(int fd);
+    BufferedFileBinaryOutputPort(ucs4string file);
+    BufferedFileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode);
+    virtual ~BufferedFileBinaryOutputPort();
 
     int putU8(uint8_t v);
     int putU8(uint8_t* v, int size);
     int putByteVector(ByteVector* bv, int start = 0);
     int putByteVector(ByteVector* bv, int start, int count);
     int open();
-    int close();
+    virtual int close();
     bool isClosed() const;
     int fileNo() const;
     void bufFlush();
@@ -66,14 +67,23 @@ public:
     bool setPosition(int position);
 
 protected:
+    enum {
+        BUF_SIZE = 8192,
+    };
+
+    void initializeBuffer();
+    int writeToFile(uint8_t* buf, size_t count);
+    int writeToBuffer(uint8_t* data, int reqSize);
+
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
+    enum BufferMode bufferMode_;
+    uint8_t* buffer_;
+    int bufIdx_;
     int position_;
-
-    int writeToFile(uint8_t* buf, size_t size);
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_FILE_BINARY_OUTPUT_PORT__
+#endif // __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__

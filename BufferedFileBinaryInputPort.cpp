@@ -104,7 +104,7 @@ int BufferedFileBinaryInputPort::lookaheadU8()
 {
     uint8_t c;
     if (0 == readFromBuffer(&c, 1)) {
-        bufIdx_--;
+        //bufIdx_--;
         return EOF;
     } else {
         bufIdx_--;

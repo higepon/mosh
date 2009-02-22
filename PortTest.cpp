@@ -58,6 +58,8 @@
 #include "Closure.h"
 #include "Gloc.h"
 #include "VM-inl.h"
+#include "BufferedFileBinaryOutputPort.h"
+#include "BufferedFileBinaryInputPort.h"
 
 bool scheme::portIsClosed = false;
 
@@ -150,4 +152,21 @@ TEST_F(PortTest, FileBinary) {
     EXPECT_EQ(0, in->getU8());
     EXPECT_EQ(EOF, in->lookaheadU8());
     EXPECT_EQ(EOF, in->getU8());
+    in->close();
+}
+
+TEST_F(PortTest, BufferedFileBinary) {
+    BufferedFileBinaryOutputPort* out = new BufferedFileBinaryOutputPort(UC("/tmp/hoge.log"));
+    out->putU8(1);
+    out->putU8(0);
+    out->close();
+
+    BufferedFileBinaryInputPort* in = new BufferedFileBinaryInputPort(UC("/tmp/hoge.log"));
+    EXPECT_EQ(1, in->lookaheadU8());
+    EXPECT_EQ(1, in->getU8());
+    EXPECT_EQ(0, in->lookaheadU8());
+    EXPECT_EQ(0, in->getU8());
+    EXPECT_EQ(EOF, in->lookaheadU8());
+    EXPECT_EQ(EOF, in->getU8());
+    in->close();
 }

@@ -51,6 +51,8 @@
 #include "Closure.h"
 #include "Gloc.h"
 #include "VM-inl.h"
+#include "StandardInputPort.h"
+#include "StandardOutputPort.h"
 
 using namespace scheme;
 
@@ -60,8 +62,8 @@ protected:
     virtual void SetUp() {
         mosh_init();
         Transcoder* transcoder = Transcoder::nativeTranscoder();
-        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
+        Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(fileno(stdout)), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
@@ -75,8 +77,8 @@ protected:
     virtual void SetUp() {
         mosh_init();
         Transcoder* transcoder = Transcoder::nativeTranscoder();
-        Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
+        Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(fileno(stdout)), transcoder);
         errorPort_ = Object::makeStringOutputPort();
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
         theVM_->loadCompiler();

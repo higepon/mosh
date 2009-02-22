@@ -1,3 +1,9 @@
+2009-02-22  kokosabu  <kokosabu@gmail.com>
+
+        * BufferedFileBinaryOutputPort.cpp : Added.
+
+        * BufferedFileBinaryInputPort.cpp : Fixed getU8.
+
 2009-02-21  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : Added get-bytevector-n!.
