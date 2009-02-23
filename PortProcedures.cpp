@@ -351,18 +351,8 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
-    const Object maybePort = argv[0];
-    if (maybePort.isTextualInputPort()) {
-        maybePort.toTextualInputPort()->close();
-    } else if (maybePort.isBinaryInputPort()) {
-        maybePort.toBinaryInputPort()->close();
-    } else if (maybePort.isBinaryOutputPort()) {
-        maybePort.toBinaryOutputPort()->close();
-    } else if (maybePort.isTextualOutputPort()) {
-        maybePort.toTextualOutputPort()->close();
-    } else {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", maybePort, L1(maybePort));
-    }
+    argumentAsPort(0, port);
+    port->close();
     return Object::Undef;
 }
 

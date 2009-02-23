@@ -124,7 +124,7 @@
     (test* s " 12"))
   (set-port-position! in 0)
   (test* (get-string-all in) "0123456")
-  (close-port in))
+  (close-input-port in))
 
 (let ([in (open-string-input-port "012\n34\n567\n")])
   (test* (get-line in) "012\n")
@@ -195,5 +195,10 @@
 
 ;; current-input-port
 (test/t (input-port? (current-input-port)))
+
+;; call-with-port
+(call-with-port (open-string-input-port "012\n34\n567\n")
+  (lambda (p)
+    (test* (get-line p) "012\n")))
 
 (test-end)

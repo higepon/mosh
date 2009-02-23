@@ -1,5 +1,7 @@
 2009-02-23  higepon  <higepon@users.sourceforge.jp>
 
+        * Added tests for call-with-port.
+
         * Added peek-char and tests.
 
         * Moved close() from BinarInputPort to Port Class.
