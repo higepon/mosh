@@ -499,4 +499,5 @@
     quotient
     remainder
     modulo
+    open-file-input/output-port
     )

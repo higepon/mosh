@@ -73,6 +73,7 @@ class Compnum;
 class VM;
 class Port;
 class Gloc;
+class BinaryInputOutputPort;
 
 enum {
     CONST_NIL     = 0,
@@ -174,6 +175,7 @@ public:
     static Object makeObjectPointer(Object* p);
     static Object makeBinaryInputPort(int fd);
     static Object makeBinaryOutputPort(int fd);
+    static Object makeBinaryInputOutputPort(BinaryInputOutputPort* port);
     static Object makeBinaryInputPort(BinaryInputPort* port);
     static Object makeBinaryOutputPort(BinaryOutputPort* port);
     static Object makeTextualInputFilePort(const ucs4char* str);
@@ -293,6 +295,7 @@ public:
     DECL_ACCESSOR(Bignum)
     DECL_ACCESSOR(Compnum)
     DECL_ACCESSOR(Gloc)
+    DECL_ACCESSOR(BinaryInputOutputPort)
 
     static const Object Nil;
     static const Object Eof;

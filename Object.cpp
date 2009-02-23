@@ -125,6 +125,13 @@ Object Object::makeBinaryInputPort(BinaryInputPort* port)
                                                         reinterpret_cast<word>(port))));
 }
 
+Object Object::makeBinaryInputOutputPort(BinaryInputOutputPort* port)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputOutputPort,
+                                                        reinterpret_cast<word>(port))));
+}
+
+
 Object Object::makeBinaryOutputPort(BinaryOutputPort* port)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,

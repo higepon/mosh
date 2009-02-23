@@ -1,5 +1,5 @@
 /*
- * BinaryPort.h - 
+ * BinaryInputOutputPort.h - <binary input/output port>
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,37 +26,24 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: BinaryPort.h 1202 2009-02-18 08:55:27Z higepon $
+ *  $Id: BinaryInputOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_BINARY_PORT__
-#define __SCHEME_BINARY_PORT__
+#ifndef __SCHEME_BINARY_INPUT_OUTPUT_PORT__
+#define __SCHEME_BINARY_INPUT_OUTPUT_PORT__
 
-#include "Port.h"
+#include "BinaryInputPort.h"
+#include "BinaryOutputPort.h"
 
 namespace scheme {
 
-class BinaryPort : virtual public Port
+
+class BinaryInputOutputPort : public BinaryInputPort, public BinaryOutputPort
 {
 public:
-    enum
-    {
-        INVALID_FILENO = -1,
-    };
-
-    enum BufferMode
-    {
-        NONE,
-        LINE,
-        BLOCK,
-    };
-
-    virtual ~BinaryPort() {};
-    virtual int open() = 0;
-    virtual bool isClosed() const = 0;
-    virtual int fileNo() const = 0;
+    virtual ~BinaryInputOutputPort() {};
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_PORT__
+#endif // __SCHEME_BINARY_INPUT_PORT__

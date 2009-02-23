@@ -37,6 +37,7 @@
 namespace scheme {
 
     bool fileExistsP(const ucs4string& file);
+    Object openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object peekCharEx(VM* theVM, int argc, const Object* argv);
     Object getDatumEx(VM* theVM, int argc, const Object* argv);
     Object getStringAllEx(VM* theVM, int argc, const Object* argv);

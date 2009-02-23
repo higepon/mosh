@@ -38,7 +38,7 @@ namespace scheme {
 
 class ByteVector;
 
-class BinaryInputPort : public BinaryPort // for closing port on destructors, we extend gc_cleanup
+class BinaryInputPort : virtual public BinaryPort // for closing port on destructors, we extend gc_cleanup
 {
 public:
     virtual ~BinaryInputPort() {};

@@ -60,9 +60,35 @@
 #include "CustomBinaryOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BufferedFileBinaryOutputPort.h"
+#include "BinaryInputOutputPort.h"
+#include "BufferedFileBinaryInputOutputPort.h"
 #include "BlockBufferedFileBinaryOutputPort.h"
 
 using namespace scheme;
+
+Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("open-file-input/output-port");
+    checkArgumentLengthBetween(1, 4);
+    BinaryInputOutputPort* port = NULL;
+    if (argc == 1) {
+        argumentAsString(0, path);
+        // default buffer mode is Block
+        port = new BufferedFileBinaryInputOutputPort(path->data());
+    }
+
+
+    if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
+//        if (transcoder == NULL) {
+            return Object::makeBinaryInputOutputPort(port);
+//        } else {
+//            return Object::makeTextualInputPort(in, transcoder);
+//        }
+    } else {
+        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
+        return Object::Undef;
+    }
+}
 
 Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {

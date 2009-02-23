@@ -38,7 +38,7 @@ namespace scheme {
 
 class ByteVector;
 
-class BinaryOutputPort : public BinaryPort
+class BinaryOutputPort : virtual public BinaryPort
 {
 public:
     virtual ~BinaryOutputPort() {};

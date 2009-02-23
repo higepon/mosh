@@ -6,6 +6,8 @@
 
 2009-02-23  higepon  <higepon@users.sourceforge.jp>
 
+        * BufferedFileBinaryInputOutputPort.cpp : Added (Not implemented yet).
+
         * Added tests for call-with-port.
 
         * Added peek-char and tests.
