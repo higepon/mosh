@@ -128,6 +128,7 @@
 
 (let ([in (open-string-input-port "012\n34\n567\n")])
   (test* (get-line in) "012\n")
+  (test* (peek-char in) #\3)
   (test* (get-line in) "34\n")
   (test* (get-line in) "567\n")
   (test/t (eof-object? (get-line in)))
@@ -191,5 +192,8 @@
        (test* (bytevector-u8-ref bv 34860) 10))
      (test* (port-position port) 38861)
      (close-port port))))
+
+;; current-input-port
+(test/t (input-port? (current-input-port)))
 
 (test-end)

@@ -62,6 +62,20 @@
 
 using namespace scheme;
 
+Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("peek-char");
+    checkArgumentLength(1);
+    if (0 == argc) {
+        const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
+        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    } else {
+        argumentAsTextualInputPort(0, textualInputPort);
+        const ucs4char ch = textualInputPort->lookaheadChar();
+        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    }
+}
+
 Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-datum");
@@ -499,15 +513,12 @@ Object scheme::closeOutputPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("close-output-port");
     checkArgumentLength(1);
 
-    const Object port = argv[0];
-    if (port.isTextualOutputPort()) {
-        port.toTextualOutputPort()->close();
+    if (argv[0].isTextualOutputPort() || argv[0].isBinaryOutputPort()) {
+        argumentAsPort(0, port);
+        port->close();
         return Object::Undef;
-    } else if (port.isBinaryOutputPort()) {
-        port.toBinaryOutputPort()->close();
-        return Object::Undef;
-    } else  {
-        callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "output port required", L1(argv[0]));
         return Object::Undef;
     }
 }
@@ -516,16 +527,12 @@ Object scheme::closeInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-input-port");
     checkArgumentLength(1);
-
-    const Object port = argv[0];
-    if (port.isTextualInputPort()) {
-        port.toTextualInputPort()->close();
+    if (argv[0].isTextualInputPort() || argv[0].isBinaryInputPort()) {
+        argumentAsPort(0, port);
+        port->close();
         return Object::Undef;
-    } else if (port.isBinaryInputPort()) {
-        port.toBinaryInputPort()->close();
-        return Object::Undef;
-    } else  {
-        callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "input port required", L1(argv[0]));
         return Object::Undef;
     }
 }

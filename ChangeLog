@@ -1,5 +1,9 @@
 2009-02-23  higepon  <higepon@users.sourceforge.jp>
 
+        * Added peek-char and tests.
+
+        * Moved close() from BinarInputPort to Port Class.
+
         * test/input-port.scm : Added tests for (get-line textual-input-port).
 
 2009-02-22  higepon  <higepon@users.sourceforge.jp>

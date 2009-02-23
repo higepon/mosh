@@ -53,7 +53,6 @@ public:
 
     virtual ~BinaryPort() {};
     virtual int open() = 0;
-    virtual int close() = 0;
     virtual bool isClosed() const = 0;
     virtual int fileNo() const = 0;
 };

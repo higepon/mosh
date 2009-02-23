@@ -27,6 +27,7 @@
     (reverse reverse)
     (eof-object? eof-object?)
     (read-char read-char)
+    peek-char
     (char=? char=?)
     (string? string?)
     (get-environment-variable sys-getenv)
