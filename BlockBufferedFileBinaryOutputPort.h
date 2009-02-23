@@ -1,5 +1,5 @@
 /*
- * BufferedFileBinaryOutputPort.h - <file binary output port>
+ * BlockBufferedFileBinaryOutputPort.h - <file binary output port>
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
@@ -30,58 +30,43 @@
  *  $Id:$
  */
 
-#ifndef __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
-#define __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
+#ifndef __SCHEME_BLOCK_BUFFERED_FILE_BINARY_OUTPUT_PORT__
+#define __SCHEME_BLOCK_BUFFERED_FILE_BINARY_OUTPUT_PORT__
 
-#include "BinaryOutputPort.h"
+#include "BufferedFileBinaryOutputPort.h"
 
 namespace scheme {
 
-class BufferedFileBinaryOutputPort : public BinaryOutputPort
+class BlockBufferedFileBinaryOutputPort : public BufferedFileBinaryOutputPort
 {
 public:
-    enum {
-        NO_CREATE   = 1 << 0,
-        NO_FAIL     = 1 << 1,
-        NO_TRUNCATE = 1 << 2,
-    };
-
-    BufferedFileBinaryOutputPort(int fd);
-    BufferedFileBinaryOutputPort(ucs4string file);
-    virtual ~BufferedFileBinaryOutputPort();
-
-    int putU8(uint8_t v);
-    int putU8(uint8_t* v, int size);
-    int putByteVector(ByteVector* bv, int start = 0);
-    int putByteVector(ByteVector* bv, int start, int count);
-    int open();
-    virtual int close();
-    bool isClosed() const;
-    int fileNo() const;
-    void bufFlush();
-    ucs4string toString();
-    virtual bool hasPosition() const;
-    virtual bool hasSetPosition() const;
-    virtual Object position() const;
-    virtual bool setPosition(int position);
+    BlockBufferedFileBinaryOutputPort(int fd) : BufferedFileBinaryOutputPort(fd) {}
+    BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
+    virtual ~BlockBufferedFileBinaryOutputPort() {}
 
 protected:
-    enum {
-        BUF_SIZE = 8192,
-    };
-
-    void initializeBuffer();
-    int writeToFile(uint8_t* buf, size_t count);
-    virtual int writeToBuffer(uint8_t* data, int reqSize) = 0;
-
-    int fd_;
-    ucs4string fileName_;
-    bool isClosed_;
-    uint8_t* buffer_;
-    int bufIdx_;
-    int position_;
+    int writeToBuffer(uint8_t* data, int reqSize)
+    {
+        int writeSize = 0;
+        while (writeSize < reqSize) {
+            MOSH_ASSERT(BUF_SIZE >= bufIdx_);
+            const int bufDiff = BUF_SIZE - bufIdx_;
+            MOSH_ASSERT(reqSize > writeSize);
+            const int sizeDiff = reqSize - writeSize;
+            if (bufDiff >= sizeDiff) {
+                memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
+                bufIdx_ += sizeDiff;
+                writeSize += sizeDiff;
+            } else {
+                memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
+                writeSize += bufDiff;
+                bufFlush();
+            }
+        }
+        return writeSize;
+    }
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
+#endif // __SCHEME_LINE_BUFFERED_FILE_BINARY_OUTPUT_PORT__

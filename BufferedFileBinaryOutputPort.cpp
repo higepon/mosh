@@ -46,31 +46,15 @@
 
 using namespace scheme;
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), bufIdx_(0), position_(0)
 {
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufferMode_(BLOCK), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
-    initializeBuffer();
-}
-
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, Object fileOptions, Object bufferMode) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
-{
-    MOSH_ASSERT(bufferMode == Symbol::LINE || bufferMode == Symbol::BLOCK);
-
-    // todo fileOptions process
-    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
-
-    if (bufferMode == Symbol::LINE) {
-        bufferMode_ = LINE;
-    } else { // bufferMode == Symbol::BLOCK
-        bufferMode_ = BLOCK;
-    }
-
     initializeBuffer();
 }
 
@@ -201,49 +185,6 @@ int BufferedFileBinaryOutputPort::writeToFile(uint8_t* buf, size_t count)
             }
         }
     }
-}
-
-int BufferedFileBinaryOutputPort::writeToBuffer(uint8_t* data, int reqSize)
-{
-    if (bufferMode_ == LINE) {
-        int writeSize = 0;
-        while (writeSize < reqSize) {
-            const int bufDiff = BUF_SIZE - bufIdx_;
-            if (bufDiff == 0) {
-                bufFlush();
-            }
-            *(buffer_+bufIdx_) = *(data+writeSize);
-            bufIdx_++;
-            writeSize++;
-            if (buffer_[bufIdx_-1] == '\n') {
-                bufFlush();
-            }
-        }
-        return writeSize;
-    }
-    if (bufferMode_ == BLOCK) {
-        int writeSize = 0;
-        while (writeSize < reqSize) {
-            MOSH_ASSERT(BUF_SIZE >= bufIdx_);
-            const int bufDiff = BUF_SIZE - bufIdx_;
-            MOSH_ASSERT(reqSize > writeSize);
-            const int sizeDiff = reqSize - writeSize;
-            if (bufDiff >= sizeDiff) {
-                memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
-                bufIdx_ += sizeDiff;
-                writeSize += sizeDiff;
-            } else {
-                memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
-                writeSize += bufDiff;
-                bufFlush();
-            }
-        }
-        return writeSize;
-    }
-
-    // Error
-    MOSH_FATAL("not reached");
-    return EOF;
 }
 
 void BufferedFileBinaryOutputPort::initializeBuffer()

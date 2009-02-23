@@ -86,7 +86,7 @@ protected:
         mosh_init();
         Transcoder* transcoder = Transcoder::nativeTranscoder();
         const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-        const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(fileno(stdout)), transcoder);
+        const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         errorPort_ = Object::makeStringOutputPort();
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
         theVM_->loadCompiler();

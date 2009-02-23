@@ -1,3 +1,9 @@
+2009-02-23  kokosabu  <kokosabu@gmail.com>
+
+        * Added BlockBufferedBinaryOutputPort.h,
+                LineBufferedBinaryOutputPort.h,
+                StandardErrorOutputPort.h
+
 2009-02-23  higepon  <higepon@users.sourceforge.jp>
 
         * Added tests for call-with-port.

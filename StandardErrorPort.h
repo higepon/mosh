@@ -1,5 +1,5 @@
 /*
- * StandardOutputPort.h - <standard output port>
+ * StandardErrorPort.h - <standard error port>
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,26 +26,26 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: StandardOutputPort.h.h 1207 2009-02-18 14:54:11Z higepon $
+ *  $Id:$
  */
 
-#ifndef __SCHEME_STANDARD_OUTPUT_PORT__
-#define __SCHEME_STANDARD_OUTPUT_PORT__
+#ifndef __SCHEME_STANDARD_ERROR_PORT__
+#define __SCHEME_STANDARD_ERROR_PORT__
 
-#include "LineBufferedFileBinaryOutputPort.h"
+#include "FileBinaryOutputPort.h"
 
 namespace scheme {
 
-// stdout does'n support port-position
-class StandardOutputPort : public LineBufferedFileBinaryOutputPort
+// stderr does'n support port-position
+class StandardErrorPort : public FileBinaryOutputPort
 {
 public:
-    StandardOutputPort() : LineBufferedFileBinaryOutputPort(fileno(stdout)) {}
-    virtual ~StandardOutputPort() {}
+    StandardErrorPort() : FileBinaryOutputPort(fileno(stderr)) {}
+    virtual ~StandardErrorPort() {}
 
     ucs4string toString()
     {
-        return UC("standard-out-port");
+        return UC("standard-error-port");
     }
 
     bool hasPosition() const
@@ -70,4 +70,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_STANDARD_OUTPUT_PORT__
+#endif // __SCHEME_STANDARD_ERROR_PORT__

@@ -58,7 +58,7 @@
 #include "Closure.h"
 #include "Gloc.h"
 #include "VM-inl.h"
-#include "BufferedFileBinaryOutputPort.h"
+#include "BlockBufferedFileBinaryOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 
 bool scheme::portIsClosed = false;
@@ -156,7 +156,7 @@ TEST_F(PortTest, FileBinary) {
 }
 
 TEST_F(PortTest, BufferedFileBinary) {
-    BufferedFileBinaryOutputPort* out = new BufferedFileBinaryOutputPort(UC("/tmp/hoge.log"));
+    BlockBufferedFileBinaryOutputPort* out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/hoge.log"));
     out->putU8(1);
     out->putU8(0);
     out->close();

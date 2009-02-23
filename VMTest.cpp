@@ -63,7 +63,7 @@ protected:
         mosh_init();
         Transcoder* transcoder = Transcoder::nativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(fileno(stdout)), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         theVM_->loadCompiler();
@@ -78,7 +78,7 @@ protected:
         mosh_init();
         Transcoder* transcoder = Transcoder::nativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(fileno(stdout)), transcoder);
+        Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         errorPort_ = Object::makeStringOutputPort();
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
         theVM_->loadCompiler();

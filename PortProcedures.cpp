@@ -47,6 +47,7 @@
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 #include "StandardOutputPort.h"
+#include "StandardErrorPort.h"
 #include "StandardInputPort.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
@@ -59,6 +60,7 @@
 #include "CustomBinaryOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BufferedFileBinaryOutputPort.h"
+#include "BlockBufferedFileBinaryOutputPort.h"
 
 using namespace scheme;
 
@@ -488,7 +490,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, file);
 
     Transcoder* transcoder = Transcoder::nativeTranscoder();
-    BufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BufferedFileBinaryOutputPort(file->data());
+    BlockBufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
@@ -1048,7 +1050,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, file);
 
-    BufferedFileBinaryOutputPort* fileBinaryOutputPort = new BufferedFileBinaryOutputPort(file->data());
+    BlockBufferedFileBinaryOutputPort* fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeBinaryOutputPort(fileBinaryOutputPort);
@@ -1182,7 +1184,7 @@ Object scheme::standardInputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort(fileno(stdout)));
+    static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort());
     DeclareProcedureName("starndard-output-port");
     checkArgumentLength(0);
     return port;
@@ -1190,7 +1192,7 @@ Object scheme::standardOutputPortEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 {
-    static const Object port = Object::makeBinaryOutputPort(new StandardOutputPort(fileno(stderr)));
+    static const Object port = Object::makeBinaryOutputPort(new StandardErrorPort());
     DeclareProcedureName("starndard-error-port");
     checkArgumentLength(0);
     return port;
