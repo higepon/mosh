@@ -126,6 +126,13 @@
   (test* (get-string-all in) "0123456")
   (close-port in))
 
+(let ([in (open-string-input-port "012\n34\n567\n")])
+  (test* (get-line in) "012\n")
+  (test* (get-line in) "34\n")
+  (test* (get-line in) "567\n")
+  (test/t (eof-object? (get-line in)))
+  (close-port in))
+
 ;; get-datum with error
 (test/exception lexical-violation? (get-datum (open-string-input-port "(")))
 (test/exception i/o-read-error? (get-datum (open-string-input-port "(")))
