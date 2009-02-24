@@ -74,18 +74,21 @@ private:
         BUF_SIZE = 8192,
     };
 
-//     void initializeBuffer();
-//     int readFromFile(uint8_t* buf, size_t size);
-//     int readFromBuffer(uint8_t* dest, int reqSize);
+    void initializeBuffer();
+//    int readFromFile(uint8_t* buf, size_t size);
+     int readFromBuffer(uint8_t* dest, int reqSize);
 //     bool fillBuffer();
 //     void invalidateBuffer();
 
-//     int fd_;
-//     ucs4string fileName_;
+    ucs4string fileName_;
+    int fd_;
+    uint8_t* buffer_;
+    bool* isDirty_;
+    int position_;
 //     bool isClosed_;
-//     uint8_t* buffer_;
-//     int bufLen_;
-//     int bufIdx_;
+
+     int bufferSize_;
+     int bufferIndex_;
 //     int position_;
 
 };

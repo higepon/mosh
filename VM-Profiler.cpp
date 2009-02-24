@@ -121,7 +121,7 @@ void VM::collectProfile()
 // this is slow, because it creates namespace hash for each call.
 Object VM::getClosureName(Object closure)
 {
-    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
+//    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
     } else if (closure.isClosure()) {
