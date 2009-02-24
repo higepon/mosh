@@ -1,3 +1,7 @@
+2009-02-24  higepon  <higepon@users.sourceforge.jp>
+
+        * BufferedFileBinaryInputOutputPort.cpp (BufferedFileBinaryInputOutputPort::fillBuffer): Added some implementations.
+
 2009-02-23  kokosabu  <kokosabu@gmail.com>
 
         * Added BlockBufferedBinaryOutputPort.h,

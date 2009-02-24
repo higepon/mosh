@@ -134,6 +134,42 @@ void BufferedFileBinaryInputOutputPort::initializeBuffer()
     buffer_ = allocatePointerFreeU8Array(BUF_SIZE);
 }
 
+bool BufferedFileBinaryInputOutputPort::fillBuffer()
+{
+    // we need to flush to disk, before reading new data.
+    if (isBufferDirety()) {
+        MOSH_ASSERT(false);
+        // todo flush
+    }
+
+    for (int readSize = 0; readSize < BUF_SIZE; ) {
+        const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
+        if (0 == result) { // EOF
+            bufferSize_ = readSize;
+            bufferIndex_ = 0;
+            return true;
+        } else if (result < 0) { // error
+            return false;
+        } else {
+            readSize += result;
+        }
+    }
+}
+
+int BufferedFileBinaryInputOutputPort::readFromFile(uint8_t* buf, size_t size)
+{
+    for (;;) {
+        const int result = read(fd_, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // read again
+            errno = 0;
+        } else {
+            return result;
+        }
+    }
+}
+
+
 int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int requestSize)
 {
     MOSH_ASSERT(dest != NULL);
@@ -152,31 +188,18 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
         } else {
             // read whole buffered data.
             memcpy(dest + readSize, buffer_ + bufferIndex_, bufferSize_);
+            readSize += bufferSize_;
+
+            // we need more
+            if (!fillBuffer()) {
+                MOSH_FATAL("todo");
+                return EOF;
+            }
+            // EOF
+            if (0 == bufferSize_) {
+                return readSize;
+            }
 
         }
-
     }
-//     while (readSize < reqSize) {
-//         const int bufDiff = bufLen_ - bufIdx_;
-//         MOSH_ASSERT(bufLen_ >= bufIdx_);
-//         const int sizeDiff = reqSize - readSize;
-//         MOSH_ASSERT(readSize >= readSize);
-//         // we found datum in buffer
-//         if (bufDiff >= sizeDiff) {
-//             memcpy(dest + readSize, buffer_ + bufIdx_, sizeDiff);
-//             bufIdx_ += sizeDiff;
-//             readSize += sizeDiff;
-//         } else {
-//             memcpy(dest + readSize, buffer_ + bufIdx_, bufDiff);
-//             readSize += bufDiff;
-//             if (!fillBuffer()) {
-//                 MOSH_FATAL("todo");
-//                 return EOF;
-//             }
-//             if (bufLen_ == 0) { // EOF
-//                 break;
-//             }
-//         }
-//     }
-//     return readSize;
 }
