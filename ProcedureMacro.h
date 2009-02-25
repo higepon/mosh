@@ -115,7 +115,6 @@
 #define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)
 
 #define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
-#define argumentAsBinaryOutputPort(index, variableName) castArgument(index, variableName, isBinaryOutputPort, binary-output-port, BinaryOutputPort*, toBinaryOutputPort)
 
 #define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
 #define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)
@@ -127,6 +126,7 @@
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 #define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)
 #define argumentAsBinaryInputPort(index, variableName) castArgument(index, variableName, isBinaryInputPortKind, binary-input-port, BinaryInputPort*, toBinaryInputPortKind)
+#define argumentAsBinaryOutputPort(index, variableName) castArgument(index, variableName, isBinaryOutputPortKind, binary-output-port, BinaryOutputPort*, toBinaryOutputPortKind)
 
 #define argumentAsByteVector(index, variableName) castArgument(index, variableName, isByteVector, bytevector, ByteVector*, toByteVector)
 #define argumentAsTranscoder(index, variableName) castArgument(index, variableName, isTranscoder, transcoder, Transcoder*, toTranscoder)

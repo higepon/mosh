@@ -58,7 +58,7 @@ public:
     virtual int close();
     bool isClosed() const;
     int fileNo() const;
-    void bufFlush();
+    void flush();
     ucs4string toString();
     virtual bool hasPosition() const;
     virtual bool hasSetPosition() const;

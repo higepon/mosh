@@ -51,6 +51,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(ucs4string 
                                                                                         buffer_(NULL),
                                                                                         isDirty_(false),
                                                                                         position_(0),
+                                                                                        isClosed_(false),
                                                                                         bufferSize_(0),
                                                                                         bufferIndex_(0)
 {
@@ -86,6 +87,7 @@ Object BufferedFileBinaryInputOutputPort::position() const
 int BufferedFileBinaryInputOutputPort::close()
 {
     if (!isClosed() && fd_ != INVALID_FILENO) {
+        flush();
         isClosed_ = true;
         ::close(fd_);
     }
@@ -94,16 +96,17 @@ int BufferedFileBinaryInputOutputPort::close()
 
 bool BufferedFileBinaryInputOutputPort::setPosition(int position)
 {
-    // todo
-    // flush
-    // invalidiate
     const int ret = lseek(fd_, position, SEEK_SET);
     if (position == ret) {
         position_ =  position;
 
-        // Now we just invalidate buffer.
-        // If this has performance problem, we can fix it.
-        invalidateBuffer();
+        if (isBufferDirty()) {
+            flush();
+        } else {
+            // Now we just invalidate buffer.
+            // If this has performance problem, we can fix it.
+            invalidateBuffer();
+        }
         return true;
     } else {
         return false;
@@ -201,12 +204,31 @@ int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccu
 }
 
     // output interfaces
-int BufferedFileBinaryInputOutputPort::putU8(uint8_t v){return 0;}
-int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size){ return 0;}
-int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */){return 0;}
-int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count){ return 0;}
+int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
+{
+    return putU8(&v, 1);
+}
 
-void BufferedFileBinaryInputOutputPort::bufFlush()
+int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
+{
+    const int result = writeToBuffer(v, size);
+    position_ += result;
+    return result;
+}
+
+int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */){
+    return putByteVector(bv, start, bv->length() - start);
+}
+
+int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
+{
+    uint8_t* buf = bv->data();
+    const int result = writeToBuffer(&buf[start], count);
+    position_ += result;
+    return result;
+}
+
+void BufferedFileBinaryInputOutputPort::flush()
 {
     uint8_t* buf = buffer_;
     while (bufferIndex_ > 0) {
@@ -216,6 +238,7 @@ void BufferedFileBinaryInputOutputPort::bufFlush()
     }
     // Now read/write buffer is empty
     MOSH_ASSERT(bufferIndex_ == 0);
+    invalidateBuffer();
 
     // there's no dirty data
     isDirty_ = false;
@@ -231,26 +254,9 @@ void BufferedFileBinaryInputOutputPort::initializeBuffer()
 bool BufferedFileBinaryInputOutputPort::fillBuffer()
 {
     // we need to flush to disk, before reading new data.
-    if (isBufferDirety()) {
-        MOSH_ASSERT(false);
-        // todo flush
+    if (isBufferDirty()) {
+        flush();
     }
-//     for (int readSize = 0;; ) {
-//         const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
-//         // reached EOF
-//         if (0 == result || readSize < BUF_SIZE) {
-//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//             printf("result = %d\n", result);
-//             bufferSize_ = readSize;
-//             bufferIndex_ = 0;
-//             return true;
-//         } else if (result < 0) {
-//             // read error
-//             return false;
-//         } else {
-//             readSize += result;
-//         }
-//     }
     int readSize = 0;
     while (readSize < BUF_SIZE) {
         const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
@@ -307,6 +313,9 @@ int BufferedFileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
 
 int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSize)
 {
+    if (reqSize > 0) {
+        isDirty_ = true;
+    }
     int writeSize = 0;
     while (writeSize < reqSize) {
         MOSH_ASSERT(BUF_SIZE >= bufferIndex_);
@@ -320,7 +329,7 @@ int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSi
         } else {
             memcpy(buffer_ + bufferIndex_, data + writeSize, bufferedSize);
             writeSize += bufferedSize;
-            bufFlush();
+            flush();
         }
     }
     return writeSize;

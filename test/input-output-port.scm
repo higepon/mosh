@@ -29,21 +29,25 @@
 
 (import (rnrs)
         (mosh)
-        (mosh test))
+        (mosh test)
+        (mosh shell))
+(def-command cp)
 
 (define (with-all-buffer-mode proc)
+  (cp "./test/test.txt" "./test/test.txt.temp")
   (for-each proc (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
+
+
 
 (with-all-buffer-mode
  (lambda (mode)
-   (let ([port  (open-file-input/output-port "./test/test.txt" (file-options) mode)])
+   (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
      (test/t (input-port? port))
      (test/t (port-has-set-port-position!? port))
      (test/t (port-has-port-position? port))
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
-     (test* (get-u8 port) #x2f)
-     (test* (port-position port) 2)
+     (put-u8 port #x2e)
      (test* (get-u8 port) #x20)
      (test* (port-position port) 3)
      (set-port-position! port 8193) ;; over the buffer boundary
@@ -80,4 +84,15 @@
        (test* (bytevector-u8-ref bv 0) 123)
        (test* (bytevector-u8-ref bv 34860) 10))
      (test* (port-position port) 38861)
-     (close-port port))))
+     (close-port port))
+
+   ;; check the written data
+   (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
+     (test* (get-u8 port) #x2f)
+     (test* (port-position port) 1)
+     (test* (get-u8 port) #x2e)
+     (test* (port-position port) 2))
+   ))
+
+
+(test-end)

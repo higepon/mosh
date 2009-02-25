@@ -50,7 +50,7 @@ public:
     int close();
     bool isClosed() const;
     int fileNo() const;
-    void bufFlush();
+    void flush();
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;

@@ -1356,7 +1356,7 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentCheckOutputPort(0, outputPort);
     if (outputPort.isBinaryPort()) {
-        outputPort.toBinaryOutputPort()->bufFlush();
+        outputPort.toBinaryOutputPort()->flush();
     } else if (outputPort.isTextualPort()) {
         outputPort.toTextualOutputPort()->flush();
     } else {

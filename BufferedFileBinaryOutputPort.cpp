@@ -108,7 +108,7 @@ int BufferedFileBinaryOutputPort::open()
 
 int BufferedFileBinaryOutputPort::close()
 {
-    bufFlush();
+    flush();
     if (!isClosed() && fd_ != INVALID_FILENO) {
         isClosed_ = true;
         ::close(fd_);
@@ -121,7 +121,7 @@ int BufferedFileBinaryOutputPort::fileNo() const
     return fd_;
 }
 
-void BufferedFileBinaryOutputPort::bufFlush()
+void BufferedFileBinaryOutputPort::flush()
 {
     uint8_t* buf = buffer_;
     while (bufIdx_ > 0) {
@@ -154,7 +154,7 @@ Object BufferedFileBinaryOutputPort::position() const
 
 bool BufferedFileBinaryOutputPort::setPosition(int position)
 {
-    bufFlush();
+    flush();
     const int ret = lseek(fd_, position, SEEK_SET);
     if (position == ret) {
         position_ =  position;

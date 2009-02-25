@@ -51,13 +51,13 @@ protected:
         while (writeSize < reqSize) {
             const int bufDiff = BUF_SIZE - bufIdx_;
             if (bufDiff == 0) {
-                bufFlush();
+                flush();
             }
             *(buffer_+bufIdx_) = *(data+writeSize);
             bufIdx_++;
             writeSize++;
             if (buffer_[bufIdx_-1] == '\n') {
-                bufFlush();
+                flush();
             }
         }
         return writeSize;

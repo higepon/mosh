@@ -274,6 +274,11 @@ inline bool Object::isBinaryInputPortKind() const
     return isBinaryInputPort() || isBinaryInputOutputPort();
 }
 
+inline bool Object::isBinaryOutputPortKind() const
+{
+    return isBinaryOutputPort() || isBinaryInputOutputPort();
+}
+
 inline bool Object::isInputPort() const
 {
     return isTextualInputPort() || isBinaryInputPortKind();

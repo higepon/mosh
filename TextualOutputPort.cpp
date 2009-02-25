@@ -714,7 +714,7 @@ void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
 void TextualOutputPort::flush()
 {
     if (port_ != NULL) {
-        port_->bufFlush();
+        port_->flush();
     }
 }
 

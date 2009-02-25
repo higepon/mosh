@@ -147,7 +147,7 @@ int CustomBinaryOutputPort::fileNo() const
     return BinaryPort::INVALID_FILENO;
 }
 
-void CustomBinaryOutputPort::bufFlush()
+void CustomBinaryOutputPort::flush()
 {
     // No Operation
 }

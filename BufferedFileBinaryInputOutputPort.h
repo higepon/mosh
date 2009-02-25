@@ -67,7 +67,7 @@ public:
     int putU8(uint8_t* v, int size);
     int putByteVector(ByteVector* bv, int start = 0);
     int putByteVector(ByteVector* bv, int start, int count);
-    void bufFlush();
+    void flush();
 
 private:
     enum {
@@ -80,13 +80,13 @@ private:
     int writeToBuffer(uint8_t* buf, size_t size);
     int readFromBuffer(uint8_t* dest, int reqSize);
     bool fillBuffer();
-    bool isBufferDirety() { return isDirty_; }
+    bool isBufferDirty() { return isDirty_; }
     void invalidateBuffer();
 
     ucs4string fileName_;
     int fd_;
     uint8_t* buffer_;
-    bool* isDirty_;
+    bool isDirty_;
     int position_;
     bool isClosed_;
     int bufferSize_;

@@ -110,7 +110,7 @@ int FileBinaryOutputPort::fileNo() const
     return fd_;
 }
 
-void FileBinaryOutputPort::bufFlush()
+void FileBinaryOutputPort::flush()
 {
 }
 

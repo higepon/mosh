@@ -60,7 +60,7 @@ protected:
             } else {
                 memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
                 writeSize += bufDiff;
-                bufFlush();
+                flush();
             }
         }
         return writeSize;
