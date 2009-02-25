@@ -54,6 +54,8 @@
 #include "Compnum.h"
 #include "Arithmetic.h"
 #include "CompoundCondition.h"
+#include "BinaryOutputPort.h"
+#include "BinaryInputOutputPort.h"
 
 using namespace scheme;
 
@@ -391,8 +393,6 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC(")"));
     } else if (o.isBox()) {
         putString(UC("#<box>"));
-    } else if (o.isInputFilePort()) {
-        putString(UC("#<input file port>"));
     } else if (o.isTextualOutputPort()) {
         putString(o.toTextualOutputPort()->toString());
     } else if (o.isStack()) {
@@ -406,6 +406,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(o.toBinaryInputPort()->toString().data());
     } else if (o.isBinaryOutputPort()) {
         putString(o.toBinaryOutputPort()->toString().data());
+    } else if (o.isBinaryInputOutputPort()) {
+        putString(o.toBinaryInputOutputPort()->toString().data());
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {
@@ -573,8 +575,6 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC(")"));
     } else if (o.isBox()) {
         putString(UC("#<box>"));
-    } else if (o.isInputFilePort()) {
-        putString(UC("#<input file port>"));
     } else if (o.isTextualInputPort()) {
         putString(o.toTextualInputPort()->toString());
     } else if (o.isStack()) {
@@ -585,6 +585,8 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(o.toBinaryInputPort()->toString().data());
     } else if (o.isBinaryOutputPort()) {
         putString(o.toBinaryOutputPort()->toString().data());
+    } else if (o.isBinaryInputOutputPort()) {
+        putString(o.toBinaryInputOutputPort()->toString().data());
     } else if (o.isRecordConstructorDescriptor()) {
         putString(UC("#<record-constructor-descriptor>"));
     } else if (o.isRecordTypeDescriptor()) {

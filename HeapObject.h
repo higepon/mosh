@@ -54,7 +54,6 @@ public:
         Vector                      = Type<0>::VALUE,
         String                      = Type<1>::VALUE,
         Symbol                      = Type<2>::VALUE,
-        InputFilePort               = Type<3>::VALUE,
         Closure                     = Type<4>::VALUE,
         Stack                       = Type<5>::VALUE,
         EqHashTable                 = Type<6>::VALUE,

@@ -71,11 +71,11 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     DeclareProcedureName("open-file-input/output-port");
     checkArgumentLengthBetween(1, 4);
     BinaryInputOutputPort* port = NULL;
-    if (argc == 1) {
+//    if (argc == 1) {
         argumentAsString(0, path);
         // default buffer mode is Block
         port = new BufferedFileBinaryInputOutputPort(path->data());
-    }
+//    }
 
 
     if ((port != NULL) && (MOSH_SUCCESS == port->open())) {

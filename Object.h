@@ -41,7 +41,6 @@ namespace scheme {
 struct Pair;
 class Vector;
 class String;
-class InputFilePort;
 class Closure;
 class Stack;
 class HashTable;
@@ -100,6 +99,12 @@ public:
     bool isInputPort() const;
     bool isOutputPort() const;
     bool isBinaryPort() const;
+    bool isBinaryInputPortKind() const;
+    BinaryInputPort* toBinaryInputPortKind() const
+    {
+        MOSH_ASSERT(isBinaryInputPort() || isBinaryInputOutputPort());
+        return reinterpret_cast<BinaryInputPort*>(reinterpret_cast<HeapObject*>(val)->obj);
+    }
     bool isTextualPort() const;
     bool isPort() const;
     bool isComplex() const;
@@ -266,7 +271,6 @@ public:
 
     DECL_ACCESSOR(GenericHashTable)
     DECL_ACCESSOR(Vector)
-    DECL_ACCESSOR(InputFilePort)
     DECL_ACCESSOR(Closure)
     DECL_ACCESSOR(CProcedure)
     DECL_ACCESSOR(String)

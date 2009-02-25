@@ -76,22 +76,21 @@ private:
 
     void initializeBuffer();
     int readFromFile(uint8_t* buf, size_t size);
+    int writeToFile(uint8_t* buf, size_t size);
+    int writeToBuffer(uint8_t* buf, size_t size);
     int readFromBuffer(uint8_t* dest, int reqSize);
     bool fillBuffer();
     bool isBufferDirety() { return isDirty_; }
-//     void invalidateBuffer();
+    void invalidateBuffer();
 
     ucs4string fileName_;
     int fd_;
     uint8_t* buffer_;
     bool* isDirty_;
     int position_;
-//     bool isClosed_;
-
-     int bufferSize_;
-     int bufferIndex_;
-//     int position_;
-
+    bool isClosed_;
+    int bufferSize_;
+    int bufferIndex_;
 };
 
 }; // namespace scheme

@@ -1,7 +1,7 @@
 /*
  * BufferedFileBinaryOutputPort.cpp -
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
@@ -129,6 +129,7 @@ void BufferedFileBinaryOutputPort::bufFlush()
         buf += result;
         bufIdx_ -= result;
     }
+    MOSH_ASSERT(bufIdx_ == 0);
 }
 
 ucs4string BufferedFileBinaryOutputPort::toString()

@@ -126,7 +126,8 @@
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 #define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)
-#define argumentAsBinaryInputPort(index, variableName) castArgument(index, variableName, isBinaryInputPort, binary-input-port, BinaryInputPort*, toBinaryInputPort)
+#define argumentAsBinaryInputPort(index, variableName) castArgument(index, variableName, isBinaryInputPortKind, binary-input-port, BinaryInputPort*, toBinaryInputPortKind)
+
 #define argumentAsByteVector(index, variableName) castArgument(index, variableName, isByteVector, bytevector, ByteVector*, toByteVector)
 #define argumentAsTranscoder(index, variableName) castArgument(index, variableName, isTranscoder, transcoder, Transcoder*, toTranscoder)
 #define argumentAsCodec(index, variableName) castArgument(index, variableName, isCodec, codec, Codec*, toCodec)
