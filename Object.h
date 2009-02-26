@@ -100,18 +100,6 @@ public:
     bool isInputPort() const;
     bool isOutputPort() const;
     bool isBinaryPort() const;
-    bool isBinaryInputPortKind() const;
-    bool isBinaryOutputPortKind() const;
-    BinaryInputPort* toBinaryInputPortKind() const
-    {
-        MOSH_ASSERT(isBinaryInputPort() || isBinaryInputOutputPort());
-        return reinterpret_cast<BinaryInputPort*>(reinterpret_cast<HeapObject*>(val)->obj);
-    }
-    BinaryOutputPort* toBinaryOutputPortKind() const
-    {
-        MOSH_ASSERT(isBinaryOutputPort() || isBinaryInputOutputPort());
-        return reinterpret_cast<BinaryOutputPort*>(reinterpret_cast<HeapObject*>(val)->obj);
-    }
     bool isTextualPort() const;
     bool isPort() const;
     bool isComplex() const;

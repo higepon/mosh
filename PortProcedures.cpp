@@ -1302,6 +1302,7 @@ Object scheme::portTranscoderEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
+
 Object scheme::putU8Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("put-u8");

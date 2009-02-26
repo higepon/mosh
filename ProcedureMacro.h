@@ -37,6 +37,35 @@
 #include "StringProcedures.h"
 #include "VM.h"
 
+// N.B For BinaryInputOutputPort Class, we use multiple inheritance.
+// It is dangerous to reinterpret_cast<BinaryInput*>(theInstance).
+// So we use special versio of argumentAsBinaryOutputPort and argumentAsBinaryInputPort.
+
+#define argumentAsBinaryOutputPort(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    BinaryOutputPort* variableName;                                  \
+    if (obj ## variableName.isBinaryOutputPort()) { \
+        variableName = obj ## variableName.toBinaryOutputPort(); \
+    } else if (obj ## variableName.isBinaryInputOutputPort()) { \
+        variableName = obj ## variableName.toBinaryInputOutputPort(); \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary-output-port", obj ## variableName); \
+        return Object::Undef; \
+    }
+
+#define argumentAsBinaryInputPort(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    BinaryInputPort* variableName;                                  \
+    if (obj ## variableName.isBinaryInputPort()) { \
+        variableName = obj ## variableName.toBinaryInputPort(); \
+    } else if (obj ## variableName.isBinaryInputOutputPort()) { \
+        variableName = obj ## variableName.toBinaryInputOutputPort(); \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary-input-port", obj ## variableName); \
+        return Object::Undef; \
+    }
+
+
 #define checkType(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
     if (!variableName.pred()) { \
@@ -125,8 +154,6 @@
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 #define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)
-#define argumentAsBinaryInputPort(index, variableName) castArgument(index, variableName, isBinaryInputPortKind, binary-input-port, BinaryInputPort*, toBinaryInputPortKind)
-#define argumentAsBinaryOutputPort(index, variableName) castArgument(index, variableName, isBinaryOutputPortKind, binary-output-port, BinaryOutputPort*, toBinaryOutputPortKind)
 
 #define argumentAsByteVector(index, variableName) castArgument(index, variableName, isByteVector, bytevector, ByteVector*, toByteVector)
 #define argumentAsTranscoder(index, variableName) castArgument(index, variableName, isTranscoder, transcoder, Transcoder*, toTranscoder)

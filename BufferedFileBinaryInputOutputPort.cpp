@@ -96,17 +96,18 @@ int BufferedFileBinaryInputOutputPort::close()
 
 bool BufferedFileBinaryInputOutputPort::setPosition(int position)
 {
+    if (isBufferDirty()) {
+        flush();
+    } else {
+        // Now we just invalidate buffer.
+        // If this has performance problem, we can fix it.
+        invalidateBuffer();
+    }
+
     const int ret = lseek(fd_, position, SEEK_SET);
     if (position == ret) {
+        // Don't change postion_ before flush() done.
         position_ =  position;
-
-        if (isBufferDirty()) {
-            flush();
-        } else {
-            // Now we just invalidate buffer.
-            // If this has performance problem, we can fix it.
-            invalidateBuffer();
-        }
         return true;
     } else {
         return false;
@@ -211,7 +212,6 @@ int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
 
 int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
-    printf("\n\n\n\n\n\\n\nn\n\n\%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const int result = writeToBuffer(v, size);
     position_ += result;
     return result;
@@ -271,8 +271,6 @@ bool BufferedFileBinaryInputOutputPort::fillBuffer()
     }
     bufferSize_ = readSize;
     bufferIndex_ = 0;
-    // there's no dirty data
-    isDirty_ = false;
     return true;
 
 }
@@ -295,6 +293,10 @@ int BufferedFileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
     MOSH_ASSERT(fd_ != INVALID_FILENO);
 
     for (;;) {
+        // N.B file cursor may be changed after reading into buffer.
+
+        const int ret = lseek(fd_, position_ - bufferIndex_, SEEK_SET);
+
         const int result = write(fd_, buf, count);
         if (result < 0 && errno == EINTR) {
             // write again
@@ -320,16 +322,16 @@ int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSi
     int writeSize = 0;
     while (writeSize < reqSize) {
         MOSH_ASSERT(BUF_SIZE >= bufferIndex_);
-        const int bufferedSize = BUF_SIZE - bufferIndex_;
+        const int bufferRestSize = BUF_SIZE - bufferIndex_;
         MOSH_ASSERT(reqSize > writeSize);
         const int restSize = reqSize - writeSize;
-        if (bufferedSize >= restSize) {
+        if (bufferRestSize >= restSize) {
             memcpy(buffer_ + bufferIndex_, data + writeSize, restSize);
             bufferIndex_ += restSize;
             writeSize += restSize;
         } else {
-            memcpy(buffer_ + bufferIndex_, data + writeSize, bufferedSize);
-            writeSize += bufferedSize;
+            memcpy(buffer_ + bufferIndex_, data + writeSize, bufferRestSize);
+            writeSize += bufferRestSize;
             flush();
         }
     }
@@ -363,7 +365,6 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             }
             // EOF
             if (0 == bufferSize_) {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 return readSize;
             }
         }

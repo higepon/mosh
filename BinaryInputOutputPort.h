@@ -35,6 +35,10 @@
 #include "BinaryInputPort.h"
 #include "BinaryOutputPort.h"
 
+// N.B For BinaryInputOutputPort Class, we use multiple inheritance.
+// It is dangerous to reinterpret_cast<BinaryInput*>(theInstance).
+// So we use special versio of argumentAsBinaryOutputPort and argumentAsBinaryInputPort.
+
 namespace scheme {
 
 class BinaryInputOutputPort : public BinaryInputPort, public BinaryOutputPort
