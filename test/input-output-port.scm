@@ -40,13 +40,19 @@
 (with-all-buffer-mode
  (lambda (mode)
    (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
+     (define (write-and-back c)
+       (put-u8 port c)
+       (set-port-position! port (- (port-position port) 1)))
      (test/t (input-port? port))
      (test/t (port-has-set-port-position!? port))
      (test/t (port-has-port-position? port))
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
+     ;; write!
      (put-u8 port #x2e)
-     (test* (get-u8 port) #x20)
+     ;; write!
+     (write-and-back #xfb)
+     (test* (get-u8 port) #xfb)
      (test* (port-position port) 3)
      (set-port-position! port 8193) ;; over the buffer boundary
      (test* (port-position port) 8193)
@@ -69,6 +75,8 @@
        (test* (bytevector-u8-ref bv2 9999) 108)
        (set-port-position! port 4000)
        (test* (get-bytevector-n! port bv1 0 10000) 10000)
+       ;; write!
+       (put-u8 port #xfc)
        (test/t (equal? bv1 bv2)))
      ;; read-some
      (set-port-position! port 4000)
@@ -82,6 +90,8 @@
        (test* (bytevector-u8-ref bv 0) 123)
        (test* (bytevector-u8-ref bv 34860) 10))
      (test* (port-position port) 38861)
+     (set-port-position! port 4000)
+     (put-bytevector port (make-bytevector 9000 #x13))
      (close-port port))
 
    ;; check the written data
@@ -89,7 +99,18 @@
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
      (test* (get-u8 port) #x2e)
-     (test* (port-position port) 2))
+     (test* (port-position port) 2)
+     (test* (get-u8 port) #xfb)
+     (set-port-position! port 14000)
+     (test* (get-u8 port) #xfc)
+     (set-port-position! port 4000)
+     (let ([bv (get-bytevector-n port 9000)])
+       (test/t (bytevector? bv))
+       (test* (bytevector-length bv) 9000)
+;       (display bv)
+       (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
+       )
+)
    ))
 
 
