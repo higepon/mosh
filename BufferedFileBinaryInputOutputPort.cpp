@@ -211,6 +211,7 @@ int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
 
 int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
+    printf("\n\n\n\n\n\\n\nn\n\n\%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     const int result = writeToBuffer(v, size);
     position_ += result;
     return result;
