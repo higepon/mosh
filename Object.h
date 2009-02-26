@@ -55,6 +55,7 @@ class TextualInputPort;
 class TextualOutputPort;
 class Regexp;
 class RegMatch;
+class OutputPort;
 class BinaryInputPort;
 class BinaryOutputPort;
 class Transcoder;

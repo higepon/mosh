@@ -181,6 +181,9 @@
 (test/f (output-port? (current-input-port)))
 (test/t (output-port? (current-output-port)))
 
+(test* (output-port-buffer-mode (standard-output-port)) 'line)
+(test* (output-port-buffer-mode (standard-error-port)) 'none)
+
 ;; custom output-port
 (let* ([accum '()]
        [p (make-custom-binary-output-port

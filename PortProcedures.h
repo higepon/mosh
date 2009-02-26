@@ -125,6 +125,7 @@ namespace scheme {
     Object putU8Ex(VM* theVM, int argc, const Object* argv);
     Object putStringEx(VM* theVM, int argc, const Object* argv);
     Object flushOutputPortEx(VM* theVM, int argc, const Object* argv);
+    Object outputPortBufferModeEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 

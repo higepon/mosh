@@ -750,3 +750,8 @@ bool TextualOutputPort::hasSetPosition() const
 {
     return port_->hasSetPosition();
 }
+
+enum OutputPort::bufferMode TextualOutputPort::bufferMode() const
+{
+    return port_->bufferMode();
+}

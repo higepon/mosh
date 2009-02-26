@@ -44,6 +44,11 @@ public:
     BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
     virtual ~BlockBufferedFileBinaryOutputPort() {}
 
+    virtual enum bufferMode bufferMode() const
+    {
+        return BLOCK;
+    }
+
 protected:
     int writeToBuffer(uint8_t* data, int reqSize)
     {

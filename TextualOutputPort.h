@@ -32,7 +32,8 @@
 #ifndef __SCHEME_TEXTUAL_OUTPUT_PORT__
 #define __SCHEME_TEXTUAL_OUTPUT_PORT__
 
-#include "Port.h"
+//#include "Port.h"
+#include "OutputPort.h"
 
 namespace scheme {
 
@@ -44,7 +45,7 @@ class BinaryOutputPort;
 // N.B. We need to close the port automatically when it is not referenced.
 // So use gc_cleanup.
 // TextualOutputPort never close binary output port, it will be closed on BinaryOutputPort's destructors.
-class TextualOutputPort : public Port
+class TextualOutputPort : public OutputPort
 {
 public:
     TextualOutputPort();
@@ -54,6 +55,7 @@ public:
     virtual int close();
     virtual void putChar(ucs4char c);
     virtual void flush();
+    virtual enum OutputPort::bufferMode bufferMode() const;
 
     void putString(String* str);
     void putString(const ucs4string& s);

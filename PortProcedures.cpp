@@ -1349,7 +1349,6 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-
 Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flush-output-port");
@@ -1363,4 +1362,40 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
     }
     return Object::Undef;
+}
+
+Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("output-port-buffer-mode");
+    checkArgumentLength(1);
+
+    argumentCheckOutputPort(0, outputPort);
+    enum OutputPort::bufferMode bufferMode;
+    if (outputPort.isBinaryPort()) {
+        bufferMode = outputPort.toBinaryOutputPort()->bufferMode();
+    } else if (outputPort.isTextualPort()) {
+        bufferMode = outputPort.toTextualOutputPort()->bufferMode();
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
+        return Object::Undef;
+    }
+
+    if (bufferMode == OutputPort::BLOCK) {
+        return Symbol::BLOCK;
+    } else if (bufferMode == OutputPort::LINE) {
+        return Symbol::LINE;
+    } else {
+        return Symbol::NONE;
+    }
+
+    /*
+    argumentAsOutputPort(0, outputPort);
+    if (outputPort->bufferMode() == OutputPort::BLOCK) {
+        return Symbol::BLOCK;
+    } else if (outputPort->bufferMode() == OutputPort::LINE) {
+        return Symbol::LINE;
+    } else {
+        return Symbol::NONE;
+    }
+    */
 }

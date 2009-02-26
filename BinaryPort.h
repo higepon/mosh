@@ -44,13 +44,6 @@ public:
         INVALID_FILENO = -1,
     };
 
-    enum BufferMode
-    {
-        NONE,
-        LINE,
-        BLOCK,
-    };
-
     virtual ~BinaryPort() {};
     virtual int open() = 0;
     virtual bool isClosed() const = 0;

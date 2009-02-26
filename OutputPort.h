@@ -1,7 +1,7 @@
 /*
- * StringTextualOutputPort.h - 
+ * OutputPort.h - <output port>
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,38 +26,36 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: StringTextualOutputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id:$
  */
 
-#ifndef __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
-#define __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
+#ifndef __SCHEME_OUTPUT_PORT__
+#define __SCHEME_OUTPUT_PORT__
 
-#include "TextualOutputPort.h"
+#include "scheme.h"
+#include "Port.h"
 
 namespace scheme {
 
-class StringTextualOutputPort : public TextualOutputPort
+class OutputPort : virtual public Port
 {
 public:
-    StringTextualOutputPort();
-    virtual ~StringTextualOutputPort();
-    void putChar(ucs4char c);
-    ucs4string getString();
-    virtual int close();
-    virtual void flush();
-    ucs4string toString();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int position);
-    void reset();
-    virtual enum OutputPort::bufferMode bufferMode() const;
 
-private:
-    ucs4string buffer_;
-    uintptr_t index_;
+    enum bufferMode
+    {
+        NONE,
+        LINE,
+        BLOCK,
+    };
+
+    virtual ~OutputPort() {};
+    virtual enum bufferMode bufferMode() const
+    {
+        return NONE;
+    }
+
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_STRING_TEXTUAL_OUTPUT_PORT__
+#endif // __SCHEME_OUTPUT_PORT__

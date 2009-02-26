@@ -33,12 +33,14 @@
 #define __SCHEME_BINARY_OUTPUT_PORT__
 
 #include "BinaryPort.h"
+#include "OutputPort.h"
 
 namespace scheme {
 
 class ByteVector;
 
-class BinaryOutputPort : virtual public BinaryPort
+class BinaryOutputPort : virtual public BinaryPort,
+                         virtual public OutputPort
 {
 public:
     virtual ~BinaryOutputPort() {};

@@ -93,6 +93,7 @@
     put-u8
     put-string
     flush-output-port
+    output-port-buffer-mode
     bytevector-u8-set!
     port-has-port-position?
     port-has-set-port-position!?

@@ -104,3 +104,8 @@ bool StringTextualOutputPort::setPosition(int position)
     index_ = position;
     return true;
 }
+
+enum OutputPort::bufferMode StringTextualOutputPort::bufferMode() const
+{
+    return NONE;
+}
