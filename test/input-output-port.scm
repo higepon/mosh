@@ -35,7 +35,7 @@
 
 (define (with-all-buffer-mode proc)
   (cp "./test/test.txt" "./test/test.txt.temp")
-  (for-each proc (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
+  (for-each proc (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line))))
 
 (with-all-buffer-mode
  (lambda (mode)
@@ -82,6 +82,7 @@
      (set-port-position! port 4000)
      (let ([bv (get-bytevector-some port)])
        (test/t (> (bytevector-length bv) 0))
+       ;; yeah wrote data is here
        (test* (bytevector-u8-ref bv 0) 123))
      ;; read-all
      (set-port-position! port 4000)
@@ -96,6 +97,7 @@
 
    ;; check the written data
    (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
+     #f
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
      (test* (get-u8 port) #x2e)
@@ -107,9 +109,8 @@
      (let ([bv (get-bytevector-n port 9000)])
        (test/t (bytevector? bv))
        (test* (bytevector-length bv) 9000)
-;       (display bv)
-       (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
-       )
+;       (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
+      )
 )
    ))
 
