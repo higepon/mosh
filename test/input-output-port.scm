@@ -110,9 +110,7 @@
        (test/t (bytevector? bv))
        (test* (bytevector-length bv) 9000)
        (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
-      )
-)
+      ))
    ))
-
 
 (test-end)

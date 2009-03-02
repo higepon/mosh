@@ -75,7 +75,7 @@ private:
         BUF_SIZE = 8192,
     };
 
-    void syncFdPositoin();
+    void forwardPosition(int offset);
     void initializeBuffer();
     int readFromFile(uint8_t* buf, size_t size);
     int writeToFile(uint8_t* buf, size_t size);

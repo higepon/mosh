@@ -119,8 +119,8 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int position)
         invalidateBuffer();
     }
 
-    const int ret = lseek(fd_, position, SEEK_SET);
-    if (position == ret) {
+    const int currentOffset = lseek(fd_, position, SEEK_SET);
+    if (position == currentOffset) {
         // Don't change postion_ before flush() done.
         position_ =  position;
         return true;
@@ -165,8 +165,7 @@ int BufferedFileBinaryInputOutputPort::getU8()
     if (0 == readFromBuffer(&c, 1)) {
         return EOF;
     } else {
-        position_++;
-        syncFdPositoin();
+        forwardPosition(1);
         return c;
     }
 }
@@ -186,11 +185,10 @@ int BufferedFileBinaryInputOutputPort::lookaheadU8()
 int BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
-    const int ret = readFromBuffer(buf, reqSize);
-    position_ += ret;
-    syncFdPositoin();
+    const int readSize = readFromBuffer(buf, reqSize);
+    forwardPosition(readSize);
     DEBUG_SHOW_POSITION();
-    return ret;
+    return readSize;
 }
 
 int BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
@@ -207,11 +205,10 @@ int BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccur
     }
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    const int ret = readFromBuffer(dest, restSize);
-    position_ += ret;
-    syncFdPositoin();
+    const int readSize = readFromBuffer(dest, restSize);
+    forwardPosition(readSize);
     *buf = dest;
-    return ret;
+    return readSize;
 }
 
 int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
@@ -222,11 +219,10 @@ int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccu
     // if we have buffered data, return them only.
     const int tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
     uint8_t* dest = allocatePointerFreeU8Array(tryReadSize);
-    const int ret = readFromBuffer(dest, tryReadSize);
-    position_ += ret;
-    syncFdPositoin();
+    const int readSize = readFromBuffer(dest, tryReadSize);
+    forwardPosition(readSize);
     *buf = dest;
-    return ret;
+    return readSize;
 }
 
     // output interfaces
@@ -239,13 +235,13 @@ int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
     DEBUG_SHOW_POSITION();
     const int result = writeToBuffer(v, size);
-    position_ += result;
-    syncFdPositoin();
+    forwardPosition(result);
     DEBUG_SHOW_POSITION();
     return result;
 }
 
-int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */){
+int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+{
     return putByteVector(bv, start, bv->length() - start);
 }
 
@@ -255,8 +251,7 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
     uint8_t* buf = bv->data();
     const int result = writeToBuffer(&buf[start], count);
-    position_ += result;
-    syncFdPositoin();
+    forwardPosition(result);
     return result;
 }
 
@@ -447,7 +442,9 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
     bufferIndex_ = 0;
 }
 
-void BufferedFileBinaryInputOutputPort::syncFdPositoin()
+void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
 {
-    lseek(fd_, position_, SEEK_SET);
+    position_ += offset;
+    const int currentPosition = lseek(fd_, position_, SEEK_SET);
+    MOSH_ASSERT(position_ == currentPosition);
 }
