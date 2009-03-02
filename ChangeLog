@@ -1,3 +1,7 @@
+2009-03-02  higepon  <higepon@users.sourceforge.jp>
+
+        * BufferedFileBinaryInputOutputPort.cpp (BufferedFileBinaryInputOutputPort): Passes all tests in input-output-port.scm
+
 2009-02-27  higepon  <higepon@users.sourceforge.jp>
 
         * test/input-output-port.scm : Just passed simple tests.

@@ -68,12 +68,14 @@ public:
     int putByteVector(ByteVector* bv, int start = 0);
     int putByteVector(ByteVector* bv, int start, int count);
     void flush();
+    void flush2();
 
 private:
     enum {
         BUF_SIZE = 8192,
     };
 
+    void syncFdPositoin();
     void initializeBuffer();
     int readFromFile(uint8_t* buf, size_t size);
     int writeToFile(uint8_t* buf, size_t size);
