@@ -1,5 +1,7 @@
 2009-03-02  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryInputOutputPort.cpp (FileBinaryInputOutputPort::readFromFile): Added.
+
         * BlockBufferedFileBinaryInputOutputPort.h : Added.
 
         * LineBufferedFileBinaryInputOutputPort.h : Added.

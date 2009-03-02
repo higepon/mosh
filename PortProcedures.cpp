@@ -63,6 +63,7 @@
 #include "BinaryInputOutputPort.h"
 #include "BufferedFileBinaryInputOutputPort.h"
 #include "BlockBufferedFileBinaryOutputPort.h"
+#include "FileBinaryInputOutputPort.h"
 #include "BlockBufferedFileBinaryInputOutputPort.h"
 #include "LineBufferedFileBinaryInputOutputPort.h"
 
@@ -97,8 +98,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         } else if (bufferMode == Symbol::LINE) {
             port = new LineBufferedFileBinaryInputOutputPort(filename->data());
         } else if (bufferMode == Symbol::NONE) {
-            // todo none
-            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+            port = new FileBinaryInputOutputPort(filename->data());
         } else {
             callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
