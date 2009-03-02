@@ -346,6 +346,7 @@ int BufferedFileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
 // N.B. writeToFile doesn't change the fd's position.
 int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSize)
 {
+#if 0
     if (reqSize > 0) {
         isDirty_ = true;
     }
@@ -374,6 +375,34 @@ int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSi
         lseek(fd_, origPositon, SEEK_SET);
     }
     return writeSize;
+#else
+    if (reqSize > 0) {
+        isDirty_ = true;
+    }
+
+    const int origPositon = lseek(fd_, 0, SEEK_CUR);
+    bool needUnwind = false;
+
+    int writeSize = 0;
+    while (writeSize < reqSize) {
+        const int bufferRestSize = BUF_SIZE - bufferIndex_;
+        if (0 == bufferRestSize) {
+            flush();
+            needUnwind = true;
+        }
+        *(buffer_+bufferIndex_) = *(data+writeSize);
+        bufferIndex_++;
+        writeSize++;
+        if (buffer_[bufferIndex_-1] == '\n') {
+            internalFlush();
+            needUnwind = true;
+        }
+    }
+    if (needUnwind) {
+        lseek(fd_, origPositon, SEEK_SET);
+    }
+    return writeSize;
+#endif
 }
 
 // N.B. readFromBuffer doesn't change the fd's position.
