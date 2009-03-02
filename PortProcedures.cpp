@@ -1072,16 +1072,64 @@ Object scheme::sysGetBytevectorEx(VM* theVM, int argc, const Object* argv)
 Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-output-port");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(1, 4);
+    BinaryOutputPort* out = NULL;
+    Transcoder* transcoder = NULL;
 
-    argumentAsString(0, file);
+    // N.B. As R6RS says, we ignore "file-options" for input-port.
+    if (argc == 1) {
+        argumentAsString(0, filename);
+        // default buffer mode is Block
+        out = new BlockBufferedFileBinaryOutputPort(filename->data());
+    } else if (argc == 2) {
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+        // default buffer mode is Block
+        out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
+    } else if (argc == 3) {
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
 
-    BlockBufferedFileBinaryOutputPort* fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
+        if (bufferMode == Symbol::BLOCK) {
+            out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
+        } else if (bufferMode == Symbol::LINE) {
+            out = new LineBufferedFileBinaryOutputPort(filename->data(), fileOptions);
+        } else if (bufferMode == Symbol::NONE) {
+            out = new FileBinaryOutputPort(filename->data(), fileOptions);
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
+    } else if (argc == 4) {
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
 
-    if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        return Object::makeBinaryOutputPort(fileBinaryOutputPort);
+        if (bufferMode == Symbol::BLOCK) {
+            out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
+        } else if (bufferMode == Symbol::LINE) {
+            out = new LineBufferedFileBinaryOutputPort(filename->data(), fileOptions);
+        } else if (bufferMode == Symbol::NONE) {
+            out = new FileBinaryOutputPort(filename->data(), fileOptions);
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
+        argumentCheckTranscoderOrFalse(3, maybeTranscoder);
+        if (maybeTranscoder != Object::False) {
+            transcoder = maybeTranscoder.toTranscoder();
+        }
+    }
+
+    if ((out != NULL) && (MOSH_SUCCESS == out->open())) {
+        if (transcoder == NULL) {
+            return Object::makeBinaryOutputPort(out);
+        } else {
+            return Object::makeTextualOutputPort(out, transcoder);
+        }
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
+        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
     }
 }

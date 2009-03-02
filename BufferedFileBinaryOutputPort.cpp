@@ -27,7 +27,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #include <unistd.h>
@@ -52,6 +52,13 @@ BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fi
 }
 
 BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
+{
+    // todo fileOptions process
+    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+    initializeBuffer();
+}
+
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, Object list) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
 {
     // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);

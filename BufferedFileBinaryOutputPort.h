@@ -27,7 +27,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #ifndef __SCHEME_BUFFERED_FILE_BINARY_OUTPUT_PORT__
@@ -48,6 +48,7 @@ public:
 
     BufferedFileBinaryOutputPort(int fd);
     BufferedFileBinaryOutputPort(ucs4string file);
+    BufferedFileBinaryOutputPort(ucs4string file, Object list);
     virtual ~BufferedFileBinaryOutputPort();
 
     int putU8(uint8_t v);

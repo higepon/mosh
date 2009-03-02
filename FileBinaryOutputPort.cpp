@@ -57,6 +57,12 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : fileName_(file), i
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
 }
 
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object list) : fileName_(file), isClosed_(false), position_(0)
+{
+    // todo fileOptions process
+    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+}
+
 FileBinaryOutputPort::~FileBinaryOutputPort()
 {
     close();

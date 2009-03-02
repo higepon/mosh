@@ -48,6 +48,7 @@ public:
 
     FileBinaryOutputPort(int fd);
     FileBinaryOutputPort(ucs4string file);
+    FileBinaryOutputPort(ucs4string file, Object list);
     virtual ~FileBinaryOutputPort();
 
     int putU8(uint8_t v);

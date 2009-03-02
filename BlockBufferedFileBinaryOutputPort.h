@@ -27,7 +27,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id:$
+ *  $Id$
  */
 
 #ifndef __SCHEME_BLOCK_BUFFERED_FILE_BINARY_OUTPUT_PORT__
@@ -42,6 +42,7 @@ class BlockBufferedFileBinaryOutputPort : public BufferedFileBinaryOutputPort
 public:
     BlockBufferedFileBinaryOutputPort(int fd) : BufferedFileBinaryOutputPort(fd) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
+    BlockBufferedFileBinaryOutputPort(ucs4string file, Object list) : BufferedFileBinaryOutputPort(file, list) {}
     virtual ~BlockBufferedFileBinaryOutputPort() {}
 
     virtual enum bufferMode bufferMode() const
