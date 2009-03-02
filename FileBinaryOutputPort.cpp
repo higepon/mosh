@@ -43,6 +43,7 @@
 #include "ByteVector.h"
 #include "Symbol.h"
 #include "Bignum.h"
+#include "ErrorProcedures.h"
 
 using namespace scheme;
 

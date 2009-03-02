@@ -64,6 +64,7 @@ protected:
                 writeSize += sizeDiff;
             } else {
                 memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
+                bufIdx_ += bufDiff;
                 writeSize += bufDiff;
                 flush();
             }
