@@ -34,8 +34,10 @@
 (def-command cp)
 
 (define (with-all-buffer-mode proc)
-  (cp "./test/test.txt" "./test/test.txt.temp")
-  (for-each proc (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line))))
+  (for-each (lambda (mode)
+              (cp "./test/test.txt" "./test/test.txt.temp")
+              (proc mode))
+            (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
 
 (with-all-buffer-mode
  (lambda (mode)

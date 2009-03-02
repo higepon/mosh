@@ -59,13 +59,14 @@ using namespace scheme;
 
 #define DEBUG_SHOW_POSITION() /* */
 
-BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(ucs4string file) : fileName_(file),
-                                                                                        buffer_(NULL),
-                                                                                        isDirty_(false),
-                                                                                        position_(0),
-                                                                                        isClosed_(false),
-                                                                                        bufferSize_(0),
-                                                                                        bufferIndex_(0)
+BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file) :
+    fileName_(file),
+    buffer_(NULL),
+    isDirty_(false),
+    position_(0),
+    isClosed_(false),
+    bufferSize_(0),
+    bufferIndex_(0)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT, 0644);
     initializeBuffer();
@@ -343,68 +344,6 @@ int BufferedFileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
     }
 }
 
-// N.B. writeToFile doesn't change the fd's position.
-int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSize)
-{
-#if 0
-    if (reqSize > 0) {
-        isDirty_ = true;
-    }
-    int writeSize = 0;
-    const int origPositon = lseek(fd_, 0, SEEK_CUR);
-    bool needUnwind = false;
-
-    while (writeSize < reqSize) {
-        MOSH_ASSERT(BUF_SIZE >= bufferIndex_);
-        const int bufferRestSize = BUF_SIZE - bufferIndex_;
-        MOSH_ASSERT(reqSize > writeSize);
-        const int restSize = reqSize - writeSize;
-        if (bufferRestSize >= restSize) {
-            memcpy(buffer_ + bufferIndex_, data + writeSize, restSize);
-            bufferIndex_ += restSize;
-            writeSize += restSize;
-        } else {
-            memcpy(buffer_ + bufferIndex_, data + writeSize, bufferRestSize);
-            bufferIndex_ += bufferRestSize;
-            writeSize += bufferRestSize;
-            internalFlush();
-            needUnwind = true;
-        }
-    }
-    if (needUnwind) {
-        lseek(fd_, origPositon, SEEK_SET);
-    }
-    return writeSize;
-#else
-    if (reqSize > 0) {
-        isDirty_ = true;
-    }
-
-    const int origPositon = lseek(fd_, 0, SEEK_CUR);
-    bool needUnwind = false;
-
-    int writeSize = 0;
-    while (writeSize < reqSize) {
-        const int bufferRestSize = BUF_SIZE - bufferIndex_;
-        if (0 == bufferRestSize) {
-            flush();
-            needUnwind = true;
-        }
-        *(buffer_+bufferIndex_) = *(data+writeSize);
-        bufferIndex_++;
-        writeSize++;
-        if (buffer_[bufferIndex_-1] == '\n') {
-            internalFlush();
-            needUnwind = true;
-        }
-    }
-    if (needUnwind) {
-        lseek(fd_, origPositon, SEEK_SET);
-    }
-    return writeSize;
-#endif
-}
-
 // N.B. readFromBuffer doesn't change the fd's position.
 int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int requestSize)
 {
@@ -415,7 +354,6 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     bool needUnwind = false;
 
     for (int readSize = 0 ;;) {
-        const int bufferedSize = bufferSize_ - bufferIndex_;
         MOSH_ASSERT(bufferIndex_ >= 0);
         const int restSize = requestSize - readSize;
         // we have enough data in the buffer.

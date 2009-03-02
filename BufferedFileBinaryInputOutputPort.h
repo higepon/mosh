@@ -39,7 +39,7 @@ namespace scheme {
 class BufferedFileBinaryInputOutputPort : public BinaryInputOutputPort
 {
 public:
-    BufferedFileBinaryInputOutputPort(ucs4string file);
+    BufferedFileBinaryInputOutputPort(const ucs4string& file);
     virtual ~BufferedFileBinaryInputOutputPort();
 
     // port interfaces
@@ -70,7 +70,7 @@ public:
     void flush();
     void internalFlush();
 
-private:
+protected:
     enum {
         BUF_SIZE = 8192,
     };
@@ -79,7 +79,7 @@ private:
     void initializeBuffer();
     int readFromFile(uint8_t* buf, size_t size);
     int writeToFile(uint8_t* buf, size_t size);
-    int writeToBuffer(uint8_t* buf, size_t size);
+    virtual int writeToBuffer(uint8_t* buf, size_t size) = 0;
     int readFromBuffer(uint8_t* dest, int reqSize);
     bool fillBuffer();
     bool isBufferDirty() { return isDirty_; }

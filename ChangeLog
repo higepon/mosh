@@ -1,5 +1,9 @@
 2009-03-02  higepon  <higepon@users.sourceforge.jp>
 
+        * BlockBufferedFileBinaryInputOutputPort.h : Added.
+
+        * LineBufferedFileBinaryInputOutputPort.h : Added.
+
         * Makefile.am (test): Added test/input-output-port.scm to Makefile.asm
 
         * BufferedFileBinaryInputOutputPort.cpp (BufferedFileBinaryInputOutputPort): Passes all tests in input-output-port.scm

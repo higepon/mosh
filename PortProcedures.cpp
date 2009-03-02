@@ -63,6 +63,8 @@
 #include "BinaryInputOutputPort.h"
 #include "BufferedFileBinaryInputOutputPort.h"
 #include "BlockBufferedFileBinaryOutputPort.h"
+#include "BlockBufferedFileBinaryInputOutputPort.h"
+#include "LineBufferedFileBinaryInputOutputPort.h"
 
 using namespace scheme;
 
@@ -71,11 +73,39 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     DeclareProcedureName("open-file-input/output-port");
     checkArgumentLengthBetween(1, 4);
     BinaryInputOutputPort* port = NULL;
-//    if (argc == 1) {
+    if (argc == 1) {
         argumentAsString(0, path);
         // default buffer mode is Block
-        port = new BufferedFileBinaryInputOutputPort(path->data());
-//    }
+        port = new BlockBufferedFileBinaryInputOutputPort(path->data());
+    } else if (argc == 2) {
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+
+        // todo
+        // we now ignore fileOptions
+
+        // default buffer mode is Block
+        port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+    } else if (argc == 3) {
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
+
+        // todo ignore options
+        if (bufferMode == Symbol::BLOCK) {
+            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+        } else if (bufferMode == Symbol::LINE) {
+            port = new LineBufferedFileBinaryInputOutputPort(filename->data());
+        } else if (bufferMode == Symbol::NONE) {
+            // todo none
+            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
+    } else if (argc == 4) {
+        MOSH_FATAL("todo");
+    }
 
 
     if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
