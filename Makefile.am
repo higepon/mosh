@@ -377,6 +377,7 @@ bench:
 check: test
 
 test: ./mosh all-tests.scm update
+	./mosh test/input-output-port.scm
 	./mosh test/input-port.scm
 	./mosh test/output-port.scm
 	./mosh test/shell.scm

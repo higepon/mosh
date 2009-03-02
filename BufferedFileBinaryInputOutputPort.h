@@ -68,7 +68,7 @@ public:
     int putByteVector(ByteVector* bv, int start = 0);
     int putByteVector(ByteVector* bv, int start, int count);
     void flush();
-    void flush2();
+    void internalFlush();
 
 private:
     enum {

@@ -1,5 +1,7 @@
 2009-03-02  higepon  <higepon@users.sourceforge.jp>
 
+        * Makefile.am (test): Added test/input-output-port.scm to Makefile.asm
+
         * BufferedFileBinaryInputOutputPort.cpp (BufferedFileBinaryInputOutputPort): Passes all tests in input-output-port.scm
 
 2009-02-27  higepon  <higepon@users.sourceforge.jp>

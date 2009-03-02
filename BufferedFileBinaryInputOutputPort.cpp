@@ -50,7 +50,7 @@ using namespace scheme;
 // N.B. About port position.
 //
 //   writeToBuffer and readFromBuffer does NOT change the fd's postion.
-//   Because user don't care whether wrote bytes are written in buffer or file.
+//   Because user don't care whether written bytes are written in buffer or file.
 //
 //   position_ should be maintained by public functions which call writeToBuffer and readFromBuffer.
 //
@@ -225,7 +225,7 @@ int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccu
     return readSize;
 }
 
-    // output interfaces
+// output interfaces
 int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
 {
     return putU8(&v, 1);
@@ -234,10 +234,10 @@ int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
 int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
     DEBUG_SHOW_POSITION();
-    const int result = writeToBuffer(v, size);
-    forwardPosition(result);
+    const int writtenSize = writeToBuffer(v, size);
+    forwardPosition(writtenSize);
     DEBUG_SHOW_POSITION();
-    return result;
+    return writtenSize;
 }
 
 int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
@@ -250,38 +250,25 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
     DEBUG_SHOW_POSITION();
 
     uint8_t* buf = bv->data();
-    const int result = writeToBuffer(&buf[start], count);
-    forwardPosition(result);
-    return result;
+    const int writtenSize = writeToBuffer(&buf[start], count);
+    forwardPosition(writtenSize);
+    return writtenSize;
 }
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    DEBUG_SHOW_POSITION();
-    uint8_t* buf = buffer_;
     lseek(fd_, position_ - bufferIndex_, SEEK_SET);
-    while (bufferIndex_ > 0) {
-        const int result = writeToFile(buf, bufferIndex_);
-        buf += result;
-        bufferIndex_ -= result;
-    }
-    // Now read/write buffer is empty
-    MOSH_ASSERT(bufferIndex_ == 0);
-    MOSH_ASSERT(position_ == lseek(fd_, 0, SEEK_CUR));
-    invalidateBuffer();
-
-    // there's no dirty data
-    isDirty_ = false;
+    internalFlush();
 }
 
-void BufferedFileBinaryInputOutputPort::flush2()
+void BufferedFileBinaryInputOutputPort::internalFlush()
 {
     DEBUG_SHOW_POSITION();
     uint8_t* buf = buffer_;
     while (bufferIndex_ > 0) {
-        const int result = writeToFile(buf, bufferIndex_);
-        buf += result;
-        bufferIndex_ -= result;
+        const int writtenSize = writeToFile(buf, bufferIndex_);
+        buf += writtenSize;
+        bufferIndex_ -= writtenSize;
     }
     // Now read/write buffer is empty
     MOSH_ASSERT(bufferIndex_ == 0);
@@ -379,7 +366,7 @@ int BufferedFileBinaryInputOutputPort::writeToBuffer(uint8_t* data, size_t reqSi
             memcpy(buffer_ + bufferIndex_, data + writeSize, bufferRestSize);
             bufferIndex_ += bufferRestSize;
             writeSize += bufferRestSize;
-            flush2();
+            internalFlush();
             needUnwind = true;
         }
     }
@@ -396,9 +383,6 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     MOSH_ASSERT(requestSize >= 0);
 
     const int origPositon = lseek(fd_, 0, SEEK_CUR);
-
-//    int unwindSize = 0;
-
     bool needUnwind = false;
 
     for (int readSize = 0 ;;) {
