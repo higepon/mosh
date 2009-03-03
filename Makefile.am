@@ -91,6 +91,7 @@ CustomBinaryInputPort.h        CustomBinaryInputPort.cpp           \
 TextualOutputPort.h            TextualOutputPort.cpp               \
 TextualByteVectorOutputPort.h  TextualByteVectorOutputPort.cpp     \
 TextualInputPort.cpp           TextualInputPort.h                  \
+TranscodedTextualInputPort.cpp TranscodedTextualInputPort.h        \
 StringTextualOutputPort.h      StringTextualOutputPort.cpp         \
 StringTextualInputPort.h       StringTextualInputPort.cpp          \
 UTF8Codec.cpp                  UTF8Codec.h                         \

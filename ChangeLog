@@ -1,3 +1,7 @@
+2009-03-03  higepon  <higepon@users.sourceforge.jp>
+
+        * TranscodedTextualInputPort.h : Added.
+
 2009-03-02  higepon  <higepon@users.sourceforge.jp>
 
         * FileBinaryInputOutputPort.cpp (FileBinaryInputOutputPort::readFromFile): Added.

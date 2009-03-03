@@ -49,7 +49,6 @@ public:
     virtual ~TextualInputPort();
 
     virtual ucs4char getChar() = 0;
-//    virtual int getU8() = 0; // これは本当に必要かあとで検討
     virtual int getLineNo() const = 0;
     virtual void unGetChar(ucs4char c) = 0;
     virtual Transcoder* transcoder() const = 0;
@@ -68,51 +67,15 @@ public:
     virtual Object getDatum(bool& errorOccured);
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;
+    virtual bool hasPosition() const;
+    virtual bool hasSetPosition() const;
+    virtual Object position() const;
+    virtual bool setPosition(int position);
 
 protected:
     Object error_;
     Scanner* scanner_;
     NumberScanner* numberScanner_;
-};
-
-class BasicTextualInputPort : public TextualInputPort
-{
-public:
-    BasicTextualInputPort(BinaryInputPort* port, Transcoder* coder);
-    BasicTextualInputPort(const BasicTextualInputPort& o);
-    BasicTextualInputPort();
-    virtual ~BasicTextualInputPort();
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-    Object position() const;
-    bool setPosition(int position);
-
-    virtual ucs4char getChar();
-//     virtual ucs4char lookaheadChar(int offset);
-//     virtual ucs4char lookaheadChar();
-//     virtual ucs4string getString(int n);
-//     virtual ucs4string getStringAll();
-//    virtual int getU8();
-    virtual int getLineNo() const;
-//    virtual Object getLine();
-    virtual void unGetChar(ucs4char c);
-    virtual ucs4string toString();
-//    virtual void setError(Object error);
-//    virtual Object error() const;
-//    virtual Object getDatumOld(bool& errorOccured);
-//    virtual Object getDatum(bool& errorOccured);
-    virtual int close();
-    virtual Transcoder* transcoder() const;
-    virtual Codec* codec() const;
-//     virtual Scanner* scanner() const;
-//     virtual NumberScanner* numberScanner() const;
-
-private:
-    Codec* codec_;
-    BinaryInputPort* port_;
-    Transcoder* transcoder_;
-    ucs4string buffer_;
-    int line_;
 };
 
 }; // namespace scheme
