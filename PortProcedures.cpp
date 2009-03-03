@@ -66,6 +66,8 @@
 #include "FileBinaryInputOutputPort.h"
 #include "BlockBufferedFileBinaryInputOutputPort.h"
 #include "LineBufferedFileBinaryInputOutputPort.h"
+#include "TranscodedTextualInputOutputPort.h"
+#include "BinaryInputOutputPort.h"
 
 using namespace scheme;
 
@@ -127,11 +129,11 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
 
     if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
-//        if (transcoder == NULL) {
+        if (transcoder == NULL) {
             return Object::makeBinaryInputOutputPort(port);
-//        } else {
-//            return Object::makeTextualInputPort(in, transcoder);
-//        }
+        } else {
+            return Object::makeTextualInputOutputPort(port, transcoder);
+        }
     } else {
         callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
         return Object::Undef;
@@ -199,7 +201,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
     const uint32_t u32Start  = Arithmetic::toU32(start);
     const uint32_t u32Count = Arithmetic::toU32(count);
 
-    if (dest->length() < u32Count + u32Start) {
+    if ((uint32_t)dest->length() < u32Count + u32Start) {
         callAssertionViolationAfter(theVM, procedureName, "string must be a string with at least start + count elements.", L2(argv[2], argv[3]));
         return Object::Undef;
     }
@@ -209,7 +211,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Eof;
     } else {
         ucs4string& s = dest->data();
-        for (int i = 0; i < text.size(); i++) {
+        for (int i = 0; i < (int)text.size(); i++) {
             s[u32Start + i] = text[i];
         }
         return Bignum::makeInteger(text.size());
@@ -312,8 +314,12 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     const Object port = argv[0];
     if (port.isBinaryInputPort()) {
         return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
+    } else if (port.isBinaryInputOutputPort()) {
+        return Object::makeBool(port.toBinaryInputOutputPort()->lookaheadU8() == EOF);
     } else if (port.isTextualInputPort()) {
-        return Object::False;
+        return Object::makeBool(port.toTextualInputPort()->lookaheadChar() == EOF);
+    } else if (port.isTextualInputOutputPort()) {
+        return Object::makeBool(port.toTextualInputOutputPort()->lookaheadChar() == EOF);
     } else {
         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
         return Object::Undef;

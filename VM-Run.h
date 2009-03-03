@@ -61,6 +61,7 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Gloc.h"
+#include "TranscodedTextualInputOutputPort.h"
 
 
 #ifdef ENABLE_PROFILER

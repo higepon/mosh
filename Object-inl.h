@@ -271,7 +271,7 @@ inline bool Object::isExactInteger() const
 
 inline bool Object::isInputPort() const
 {
-    return isTextualInputPort() || isBinaryInputPort() || isBinaryInputOutputPort();
+    return isTextualInputPort() || isBinaryInputPort() || isBinaryInputOutputPort() || isTextualInputOutputPort();
 }
 
 inline bool Object::isOutputPort() const
@@ -286,7 +286,7 @@ inline bool Object::isBinaryPort() const
 
 inline bool Object::isTextualPort() const
 {
-    return isTextualInputPort() || isTextualOutputPort();
+    return isTextualInputPort() || isTextualOutputPort() || isTextualInputOutputPort();
 }
 
 inline bool Object::isPort() const

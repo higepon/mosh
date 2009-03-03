@@ -38,7 +38,18 @@
 
 namespace scheme {
 
-class TranscodedTextualInputOutputPort : public TextualOutputPort, public TextualInputPort
+class TextualInputOutputPort : public TextualOutputPort, public TextualInputPort
+{
+public:
+    virtual ~TextualInputOutputPort() {}
+    Object position() const = 0;
+    bool setPosition(int position) = 0;
+    bool hasPosition() const = 0;
+    bool hasSetPosition() const = 0;
+
+};
+
+class TranscodedTextualInputOutputPort : public TextualInputOutputPort
 {
 public:
     TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder);

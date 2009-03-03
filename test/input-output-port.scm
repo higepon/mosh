@@ -29,19 +29,23 @@
 
 (import (rnrs)
         (mosh)
-        (mosh test)
-        (mosh shell))
-(def-command cp)
+        (mosh process)
+        (mosh test))
 
-(define (with-all-buffer-mode proc)
-  (for-each (lambda (mode)
-              (cp "./test/test.txt" "./test/test.txt.temp")
-              (proc mode))
-            (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
+(define (cp from to)
+  (spawn "cp" (list from to)))
 
-(with-all-buffer-mode
- (lambda (mode)
-   (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
+(define (with-all-buffer-mode file proc)
+  (let ([tmp-file (format "~a.temp" file)])
+    (for-each (lambda (mode)
+                (cp file tmp-file)
+                (proc mode tmp-file))
+              (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line)))))
+
+;; binary-port
+#;(with-all-buffer-mode "./test/test.txt"
+ (lambda (mode file)
+   (let ([port  (open-file-input/output-port file (file-options) mode)])
      (define (write-and-back c)
        (put-u8 port c)
        (set-port-position! port (- (port-position port) 1)))
@@ -98,7 +102,7 @@
      (close-port port))
 
    ;; check the written data
-   (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
+   (let ([port  (open-file-input/output-port file (file-options) mode)])
      #f
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
@@ -114,5 +118,23 @@
        (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
       ))
    ))
+
+;; textual port
+;; これが通らない
+#;(with-all-buffer-mode "./test/utf16.txt"
+ (lambda (mode file)
+   (let ([port (open-file-input/output-port file (file-options) mode (make-transcoder (utf-16-codec)))])
+     (test/t (input-port? port))
+     (test* (read port) "あいう")
+     (test/f (port-eof? port)) ;; #f for textual port
+     (close-port port))))
+
+#;(with-all-buffer-mode "./test/utf16.txt"
+ (lambda (mode file)
+   (let ([port (open-file-input/output-port file (file-options) mode (make-transcoder (utf-16-codec)))])
+     (test/t (input-port? port))
+     (test* (apply read (list port)) "あいう")
+     (test/f (port-eof? port)) ;; #f for textual port
+     (close-port port))))
 
 (test-end)

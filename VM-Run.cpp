@@ -638,7 +638,19 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(READ)
         {
             bool errorOccured = false;
-            TextualInputPort* const inputPort = ac_.isNil() ? currentInputPort_.toTextualInputPort() : ac_.toTextualInputPort();
+            TextualInputPort* inputPort = NULL;
+            if (ac_.isNil()) {
+                inputPort = currentInputPort_.toTextualInputPort();
+            } else {
+                if (ac_.isTextualInputPort()) {
+                    inputPort = ac_.toTextualInputPort();
+                } else if (ac_.isTextualInputOutputPort()) {
+                    inputPort = ac_.toTextualInputOutputPort();
+                } else {
+                    callAssertionViolationAfter(this, "read", "textual input port required", L1(ac_));
+                    NEXT1;
+                }
+            }
             ac_ = inputPort->getDatum(errorOccured);
             if (errorOccured) {
                 callLexicalAndIOReadAfter(this, "read", inputPort->error());
@@ -647,7 +659,20 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(READ_CHAR)
         {
-            const ucs4char c = ac_.isNil() ? currentInputPort_.toTextualInputPort()->getChar() : ac_.toTextualInputPort()->getChar();
+            TextualInputPort* inputPort = NULL;
+            if (ac_.isNil()) {
+                inputPort = currentInputPort_.toTextualInputPort();
+            } else {
+                if (ac_.isTextualInputPort()) {
+                    inputPort = ac_.toTextualInputPort();
+                } else if (ac_.isTextualInputOutputPort()) {
+                    inputPort = ac_.toTextualInputOutputPort();
+                } else {
+                    callAssertionViolationAfter(this, "read", "textual input port required", L1(ac_));
+                    NEXT1;
+                }
+            }
+            const ucs4char c = inputPort->getChar();
             ac_= c == EOF ? Object::Eof : Object::makeChar(c);
             NEXT1;
         }
