@@ -53,14 +53,29 @@ FileBinaryOutputPort::FileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unkn
 
 FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), position_(0)
 {
-    // todo fileOptions process
-    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+    openFile(NO_FAIL);
 }
 
 FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, Object list) : fileName_(file), isClosed_(false), position_(0)
 {
-    // todo fileOptions process
-    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+    int flag = NONE;
+
+    while (!list.isPair()) {
+        const Object option = list.car();
+        list = list.cdr();
+        if (option == Symbol::NO_CREATE) {
+            flag |= FileBinaryOutputPort::NO_CREATE;
+        } else if (option == Symbol::NO_FAIL) {
+            flag |= FileBinaryOutputPort::NO_FAIL;
+        } else if (option == Symbol::NO_TRUNCATE) {
+            flag |= FileBinaryOutputPort::NO_TRUNCATE;
+        } else {
+            // implementation-specific meaning
+            // (r6rs-lib 8.2.2 File options)
+        }
+    }
+
+    openFile(flag);
 }
 
 FileBinaryOutputPort::~FileBinaryOutputPort()
@@ -172,6 +187,31 @@ int FileBinaryOutputPort::writeToFile(uint8_t* buf, size_t size)
                 // todo error check. we may have isErrorOccured flag.
                 return result;
             }
+        }
+    }
+}
+
+void FileBinaryOutputPort::openFile(int fileOptionsFlag)
+{
+    if (fileOptionsFlag & NO_TRUNCATE) {
+        fd_ = ::open(fileName_.ascii_c_str(), O_WRONLY | O_APPEND, 0644);
+    } else {
+        fd_ = ::open(fileName_.ascii_c_str(), O_WRONLY | O_TRUNC, 0644);
+    }
+
+    if (fd_ == INVALID_FILENO) {
+        // open failure
+        if (fileOptionsFlag & NO_CREATE) {
+            MOSH_FATAL("&i/o-file-does-not-exists");
+        } else {
+            fd_ = ::open(fileName_.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+        }
+    } else {
+        // open success
+        if (fileOptionsFlag & (NO_CREATE | NO_FAIL)) {
+            ;
+        } else {
+            MOSH_FATAL("&i/o-file-already-exists");
         }
     }
 }

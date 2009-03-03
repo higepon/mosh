@@ -1124,7 +1124,6 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
     BinaryOutputPort* out = NULL;
     Transcoder* transcoder = NULL;
 
-    // N.B. As R6RS says, we ignore "file-options" for input-port.
     if (argc == 1) {
         argumentAsString(0, filename);
         // default buffer mode is Block

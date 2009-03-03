@@ -41,6 +41,8 @@ class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
     enum {
+        NONE        = 0,
+
         NO_CREATE   = 1 << 0,
         NO_FAIL     = 1 << 1,
         NO_TRUNCATE = 1 << 2,
@@ -73,6 +75,7 @@ protected:
     int position_;
 
     int writeToFile(uint8_t* buf, size_t size);
+    void openFile(int fileOptionsFlag);
 };
 
 }; // namespace scheme
