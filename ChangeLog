@@ -1,5 +1,9 @@
 2009-03-03  higepon  <higepon@users.sourceforge.jp>
 
+        * Added textual-input/output-port not TESTed.
+
+        * TranscodedTextualInputOutputPort.h : Added.
+
         * TranscodedTextualOutputPort.h : Added.
 
         * TranscodedTextualInputPort.h : Added.

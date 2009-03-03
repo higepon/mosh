@@ -134,6 +134,7 @@ FFI.h                          FFI.cpp                             \
 FFIProcedures.h                FFIProcedures.cpp                   \
 CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
+TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp
 
 mosh_core_libraries = \

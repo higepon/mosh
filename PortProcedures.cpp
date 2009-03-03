@@ -74,6 +74,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     DeclareProcedureName("open-file-input/output-port");
     checkArgumentLengthBetween(1, 4);
     BinaryInputOutputPort* port = NULL;
+    Transcoder* transcoder = NULL;
     if (argc == 1) {
         argumentAsString(0, path);
         // default buffer mode is Block
@@ -104,7 +105,24 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             return Object::Undef;
         }
     } else if (argc == 4) {
-        MOSH_FATAL("todo");
+        argumentAsString(0, filename);
+        argumentCheckList(1, fileOptions);
+        argumentCheckSymbol(2, bufferMode);
+
+        if (bufferMode == Symbol::BLOCK) {
+            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+        } else if (bufferMode == Symbol::LINE) {
+            port = new LineBufferedFileBinaryInputOutputPort(filename->data());
+        } else if (bufferMode == Symbol::NONE) {
+            port = new FileBinaryInputOutputPort(filename->data());
+        } else {
+            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+            return Object::Undef;
+        }
+        argumentCheckTranscoderOrFalse(3, maybeTranscoder);
+        if (maybeTranscoder != Object::False) {
+            transcoder = maybeTranscoder.toTranscoder();
+        }
     }
 
 

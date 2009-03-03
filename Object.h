@@ -74,6 +74,7 @@ class VM;
 class Port;
 class Gloc;
 class BinaryInputOutputPort;
+class TextualInputOutputPort;
 
 enum {
     CONST_NIL     = 0,
@@ -181,6 +182,7 @@ public:
     static Object makeTextualInputFilePort(const ucs4char* str);
     static Object makeTextualInputFilePort(const char* str);
     static Object makeTextualInputPort(BinaryInputPort* port, Transcoder* coder);
+    static Object makeTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder);
     static Object makeTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
     static Object makeStringInputPort(const ucs4string& str);
     static Object makeStringInputPort(const uint8_t* buf, int size);
@@ -295,6 +297,7 @@ public:
     DECL_ACCESSOR(Compnum)
     DECL_ACCESSOR(Gloc)
     DECL_ACCESSOR(BinaryInputOutputPort)
+    DECL_ACCESSOR(TextualInputOutputPort)
 
     static const Object Nil;
     static const Object Eof;

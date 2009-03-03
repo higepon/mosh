@@ -77,6 +77,7 @@
 #include "BufferedFileBinaryInputPort.h"
 #include "TranscodedTextualInputPort.h"
 #include "TranscodedTextualOutputPort.h"
+#include "TranscodedTextualInputOutputPort.h"
 
 using namespace scheme;
 
@@ -144,6 +145,12 @@ Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transco
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
                                                         reinterpret_cast<word>(new TranscodedTextualOutputPort(port, transcoder)))));
+}
+
+Object Object::makeTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* transcoder)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputOutputPort,
+                                                        reinterpret_cast<word>(new TranscodedTextualInputOutputPort(port, transcoder)))));
 }
 
 

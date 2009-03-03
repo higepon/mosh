@@ -83,6 +83,7 @@ public:
         Compnum                     = Type<32>::VALUE,
         Gloc                        = Type<33>::VALUE,
         BinaryInputOutputPort       = Type<34>::VALUE,
+        TextualInputOutputPort      = Type<35>::VALUE,
         forbidden_comma
     };
 };
