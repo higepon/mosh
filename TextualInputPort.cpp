@@ -1,7 +1,7 @@
 /*
- * TextualInputPort.cpp -
+ * BasicTextualInputPort.cpp -
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: TextualInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: BasicTextualInputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
 #include "Object.h"
@@ -46,38 +46,15 @@
 
 using namespace scheme;
 
-TextualInputPort::TextualInputPort(BinaryInputPort* port, Transcoder* coder) : codec_(coder->codec().toCodec()),
-                                                                               port_(port),
-                                                                               transcoder_(coder),
-                                                                               buffer_(UC("")),
-                                                                               line_(1),
-                                                                               error_(Object::Nil),
-                                                                               scanner_(new Scanner),
-                                                                               numberScanner_(new NumberScanner)
+TextualInputPort::TextualInputPort() :
+    error_(Object::Nil),
+    scanner_(new Scanner),
+    numberScanner_(new NumberScanner)
 {
-}
-
-TextualInputPort::TextualInputPort() : port_(NULL),
-                                       error_(Object::Nil),
-                                       scanner_(new Scanner),
-                                       numberScanner_(new NumberScanner())
-{
-}
-
-TextualInputPort::TextualInputPort(const TextualInputPort& o)
-{
-    MOSH_ASSERT(false);
 }
 
 TextualInputPort::~TextualInputPort()
 {
-    close();
-}
-
-int TextualInputPort::getU8()
-{
-    MOSH_ASSERT(port_);
-    return port_->getU8();
 }
 
 ucs4string TextualInputPort::getStringAll()
@@ -106,18 +83,16 @@ ucs4string TextualInputPort::getString(int n)
     return accum;
 }
 
-ucs4char TextualInputPort::getChar()
+Scanner* TextualInputPort::scanner() const
 {
-    ucs4char c;
-    if (buffer_.empty()) {
-        c= codec_->in(port_);
-    } else {
-        c = buffer_[buffer_.size() - 1];
-        buffer_.erase(buffer_.size() - 1, 1);
-    }
-    if (c == '\n') ++line_;
-    return c;
+    return scanner_;
 }
+
+NumberScanner* TextualInputPort::numberScanner() const
+{
+    return numberScanner_;
+}
+
 
 ucs4char TextualInputPort::lookaheadChar(int offset /* = 1 */)
 {
@@ -140,31 +115,6 @@ ucs4char TextualInputPort::lookaheadChar()
     return c;
 }
 
-bool TextualInputPort::hasPortPosition() const
-{
-    return true;
-}
-
-bool TextualInputPort::hasSetPortPosition() const
-{
-    return true;
-}
-
-int TextualInputPort::portPosition() const
-{
-    return 0;
-}
-
-bool TextualInputPort::setPortPostion()
-{
-    return false;
-}
-
-int TextualInputPort::getLineNo() const
-{
-    return line_;
-}
-
 Object TextualInputPort::getLine()
 {
     ucs4string ret;
@@ -180,16 +130,6 @@ Object TextualInputPort::getLine()
         ret += ch;
     }
     return Object::makeString(ret);
-}
-
-void TextualInputPort::unGetChar(ucs4char c)
-{
-    if (EOF == c) return;
-    buffer_ += c;
-}
-
-ucs4string TextualInputPort::toString() {
-    return port_->toString();
 }
 
 void TextualInputPort::setError(Object error)
@@ -212,7 +152,71 @@ Object TextualInputPort::getDatum(bool& errorOccured)
     return Reader::read(this, errorOccured);
 }
 
-int TextualInputPort::close()
+
+
+
+
+BasicTextualInputPort::BasicTextualInputPort(BinaryInputPort* port, Transcoder* coder)
+    : TextualInputPort(),
+      codec_(coder->codec().toCodec()),
+      port_(port),
+      transcoder_(coder),
+      buffer_(UC("")),
+      line_(1)
+{
+}
+
+BasicTextualInputPort::BasicTextualInputPort() : port_(NULL)
+{
+}
+
+BasicTextualInputPort::BasicTextualInputPort(const BasicTextualInputPort& o)
+{
+    MOSH_ASSERT(false);
+}
+
+int BasicTextualInputPort::getLineNo() const
+{
+    return line_;
+}
+
+
+BasicTextualInputPort::~BasicTextualInputPort()
+{
+    close();
+}
+
+// int BasicTextualInputPort::getU8()
+// {
+//     MOSH_ASSERT(port_);
+//     return port_->getU8();
+// }
+
+ucs4char BasicTextualInputPort::getChar()
+{
+    ucs4char c;
+    if (buffer_.empty()) {
+        c= codec_->in(port_);
+    } else {
+        c = buffer_[buffer_.size() - 1];
+        buffer_.erase(buffer_.size() - 1, 1);
+    }
+    if (c == '\n') ++line_;
+    return c;
+}
+
+void BasicTextualInputPort::unGetChar(ucs4char c)
+{
+    if (EOF == c) return;
+    buffer_ += c;
+}
+
+ucs4string BasicTextualInputPort::toString() {
+    return port_->toString();
+}
+
+
+int BasicTextualInputPort::close()
 {
     if (NULL != port_) {
         return port_->close();
@@ -221,47 +225,37 @@ int TextualInputPort::close()
     }
 }
 
-Transcoder* TextualInputPort::transcoder() const
+Transcoder* BasicTextualInputPort::transcoder() const
 {
     return transcoder_;
 }
 
-Codec* TextualInputPort::codec() const
+Codec* BasicTextualInputPort::codec() const
 {
     return codec_;
 }
 
-Scanner* TextualInputPort::scanner() const
-{
-    return scanner_;
-}
-
-NumberScanner* TextualInputPort::numberScanner() const
-{
-    return numberScanner_;
-}
-
-Object TextualInputPort::position() const
+Object BasicTextualInputPort::position() const
 {
     // caller should check hasPosition().
     MOSH_ASSERT(false);
     return Object::Undef;;
 }
 
-bool TextualInputPort::setPosition(int position)
+bool BasicTextualInputPort::setPosition(int position)
 {
     // caller should check hasPosition().
     MOSH_ASSERT(false);
     return false;
 }
 
-// On Mosh Textual port doesn't support position();
-bool TextualInputPort::hasPosition() const
+// On Mosh BasicTextual port doesn't support position();
+bool BasicTextualInputPort::hasPosition() const
 {
     return false;
 }
 
-bool TextualInputPort::hasSetPosition() const
+bool BasicTextualInputPort::hasSetPosition() const
 {
     return false;
 }

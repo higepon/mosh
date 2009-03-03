@@ -149,14 +149,14 @@ Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transco
 Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(new BufferedFileBinaryInputPort(file)
+                                                        reinterpret_cast<word>(new BasicTextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
 Object Object::makeTextualInputFilePort(const char* file)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(new BufferedFileBinaryInputPort(file)
+                                                        reinterpret_cast<word>(new BasicTextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
@@ -176,7 +176,7 @@ Object Object::makeStringOutputPort()
 Object Object::makeStringInputPort(const uint8_t* buf, int size)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(new ByteArrayBinaryInputPort(buf, size)
+                                                        reinterpret_cast<word>(new BasicTextualInputPort(new ByteArrayBinaryInputPort(buf, size)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
@@ -255,7 +255,7 @@ Object Object::makeTranscoder(Codec* codec, const Object eolStyle, const Object 
 Object Object::makeTextualInputPort(BinaryInputPort* port, Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TextualInputPort(port, transcoder)))));
+                                                        reinterpret_cast<word>(new BasicTextualInputPort(port, transcoder)))));
 }
 
 Object Object::makeTextualByteVectorOuputPort(Transcoder* transcoder)

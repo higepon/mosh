@@ -41,12 +41,21 @@
 using namespace scheme;
 
 
-StringTextualInputPort::StringTextualInputPort(const ucs4string& str) : buffer_(str), index_(0)
+StringTextualInputPort::StringTextualInputPort(const ucs4string& str) :
+    TextualInputPort(),
+    buffer_(str),
+    index_(0),
+    lineNo_(1)
 {
 }
 
 StringTextualInputPort::~StringTextualInputPort()
 {
+}
+
+int StringTextualInputPort::getLineNo() const
+{
+    return lineNo_;
 }
 
 ucs4char StringTextualInputPort::getChar()
@@ -55,7 +64,11 @@ ucs4char StringTextualInputPort::getChar()
     {
         return EOF;
     }
-    return buffer_[index_++];
+    const ucs4char ch = buffer_[index_++];
+    if (ch == '\n') {
+        lineNo_++;
+    }
+    return ch;
 }
 
 void StringTextualInputPort::unGetChar(ucs4char c)
@@ -97,4 +110,14 @@ bool StringTextualInputPort::setPosition(int position)
         index_ = position;
         return true;
     }
+}
+
+Transcoder* StringTextualInputPort::transcoder() const
+{
+    MOSH_FATAL("todo");
+}
+
+Codec* StringTextualInputPort::codec() const
+{
+    MOSH_FATAL("todo");
 }

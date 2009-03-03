@@ -1,5 +1,5 @@
 /*
- * TextualInputPort.h - 
+ * BasicTextualInputPort.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,11 +26,11 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: TextualInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: BasicTextualInputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TEXTUAL_INPUT_PORT__
-#define __SCHEME_TEXTUAL_INPUT_PORT__
+#ifndef __SCHEME_BASIC_TEXTUAL_INPUT_PORT__
+#define __SCHEME_BASIC_TEXTUAL_INPUT_PORT__
 
 #include "Port.h"
 
@@ -42,40 +42,70 @@ class BinaryInputPort;
 class Scanner;
 class NumberScanner;
 
-class TextualInputPort : public Port  // for closing port automatically
+class TextualInputPort : public Port
 {
 public:
-    TextualInputPort(BinaryInputPort* port, Transcoder* coder);
-    TextualInputPort(const TextualInputPort& o);
     TextualInputPort();
     virtual ~TextualInputPort();
-    virtual bool hasPortPosition() const;
-    virtual bool hasSetPortPosition() const;
-    virtual int portPosition() const;
-    virtual bool setPortPostion();
-    virtual ucs4char getChar();
-    virtual ucs4char lookaheadChar(int offset);
-    virtual ucs4char lookaheadChar();
+
+    virtual ucs4char getChar() = 0;
+//    virtual int getU8() = 0; // これは本当に必要かあとで検討
+    virtual int getLineNo() const = 0;
+    virtual void unGetChar(ucs4char c) = 0;
+    virtual Transcoder* transcoder() const = 0;
+    virtual Codec* codec() const = 0 ;
+
+
+    // template method pattern
     virtual ucs4string getString(int n);
     virtual ucs4string getStringAll();
-    virtual int getU8();
-    virtual int getLineNo() const;
+    virtual ucs4char lookaheadChar(int offset) ; // これは本当に必要かあとで検討
+    virtual ucs4char lookaheadChar();
     virtual Object getLine();
-    virtual void unGetChar(ucs4char c);
-    virtual ucs4string toString();
     virtual void setError(Object error);
     virtual Object error() const;
     virtual Object getDatumOld(bool& errorOccured);
     virtual Object getDatum(bool& errorOccured);
-    virtual int close();
-    virtual Transcoder* transcoder() const;
-    virtual Codec* codec() const;
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;
+
+protected:
+    Object error_;
+    Scanner* scanner_;
+    NumberScanner* numberScanner_;
+};
+
+class BasicTextualInputPort : public TextualInputPort
+{
+public:
+    BasicTextualInputPort(BinaryInputPort* port, Transcoder* coder);
+    BasicTextualInputPort(const BasicTextualInputPort& o);
+    BasicTextualInputPort();
+    virtual ~BasicTextualInputPort();
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+
+    virtual ucs4char getChar();
+//     virtual ucs4char lookaheadChar(int offset);
+//     virtual ucs4char lookaheadChar();
+//     virtual ucs4string getString(int n);
+//     virtual ucs4string getStringAll();
+//    virtual int getU8();
+    virtual int getLineNo() const;
+//    virtual Object getLine();
+    virtual void unGetChar(ucs4char c);
+    virtual ucs4string toString();
+//    virtual void setError(Object error);
+//    virtual Object error() const;
+//    virtual Object getDatumOld(bool& errorOccured);
+//    virtual Object getDatum(bool& errorOccured);
+    virtual int close();
+    virtual Transcoder* transcoder() const;
+    virtual Codec* codec() const;
+//     virtual Scanner* scanner() const;
+//     virtual NumberScanner* numberScanner() const;
 
 private:
     Codec* codec_;
@@ -83,9 +113,6 @@ private:
     Transcoder* transcoder_;
     ucs4string buffer_;
     int line_;
-    Object error_;
-    Scanner* scanner_;
-    NumberScanner* numberScanner_;
 };
 
 }; // namespace scheme
