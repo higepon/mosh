@@ -54,7 +54,6 @@ public:
     virtual Transcoder* transcoder() const = 0;
     virtual Codec* codec() const = 0 ;
 
-
     // template method pattern
     virtual ucs4string getString(int n);
     virtual ucs4string getStringAll();

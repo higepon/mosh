@@ -177,8 +177,3 @@ Object TextualInputPort::getDatum(bool& errorOccured)
 {
     return Reader::read(this, errorOccured);
 }
-
-
-
-
-
