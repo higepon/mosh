@@ -42,46 +42,58 @@ class Codec;
 class Transcoder;
 class BinaryOutputPort;
 
-// N.B. We need to close the port automatically when it is not referenced.
-// So use gc_cleanup.
-// TextualOutputPort never close binary output port, it will be closed on BinaryOutputPort's destructors.
 class TextualOutputPort : public OutputPort
 {
 public:
     TextualOutputPort();
-    TextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
     virtual ~TextualOutputPort();
 
-    virtual int close();
-    virtual void putChar(ucs4char c);
-    virtual void flush();
-    virtual enum OutputPort::bufferMode bufferMode() const;
+    virtual void putChar(ucs4char c) = 0;
+    virtual void flush() = 0;
+    virtual Transcoder* transcoder() const = 0;
 
-    void putString(String* str);
-    void putString(const ucs4string& s);
-    void putString(const char* s);
-    void putDatum(Object o, bool inList = false);
-    void display(Object o, bool inList = false);
-    void putPair(Object obj, bool inList = false);
-    void format(const ucs4string& fmt, Object args);
+    // template method
+    virtual void putString(String* str);
+    virtual void putString(const ucs4string& s);
+    virtual void putString(const char* s);
+    virtual void putDatum(Object o, bool inList = false);
+    virtual void display(Object o, bool inList = false);
+    virtual void putPair(Object obj, bool inList = false);
+    virtual void format(const ucs4string& fmt, Object args);
+    virtual bool isErrorOccured() const;
+    virtual Object errorMessage() const;
+    virtual Object irritants() const;
+    virtual Object position() const;
+    virtual bool setPosition(int position);
+    virtual bool hasPosition() const;
+    virtual bool hasSetPosition() const;
+
+protected:
+    bool isErrorOccured_;
+    Object errorMessage_;
+    Object irritants_;
+};
+
+// N.B. We need to close the port automatically when it is not referenced.
+// So use gc_cleanup.
+// TextualOutputPort never close binary output port, it will be closed on BinaryOutputPort's destructors.
+class TranscodedTextualOutputPort : public TextualOutputPort
+{
+public:
+    TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
+    virtual ~TranscodedTextualOutputPort();
+
+    int close();
+    void flush();
+    enum OutputPort::bufferMode bufferMode() const;
+    void putChar(ucs4char c);
     BinaryOutputPort* binaryPort() const;
-    bool isErrorOccured() const;
-    Object errorMessage() const;
-    Object irritants() const;
     Transcoder* transcoder() const;
     ucs4string toString();
-    Object position() const;
-    bool setPosition(int position);
-    bool hasPosition() const;
-    bool hasSetPosition() const;
-
 private:
     BinaryOutputPort* port_;
     Codec* codec_;
     Transcoder* transcoder_;
-    bool isErrorOccured_;
-    Object errorMessage_;
-    Object irritants_;
 };
 
 }; // namespace scheme

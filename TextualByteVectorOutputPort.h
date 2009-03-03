@@ -51,6 +51,7 @@ public:
     virtual int close();
     virtual void flush();
     ucs4string toString();
+    Transcoder* transcoder() const;
 
 private:
     Transcoder* transcoder_;

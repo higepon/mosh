@@ -51,7 +51,8 @@ public:
     Object position() const;
     bool setPosition(int position);
     void reset();
-    virtual enum OutputPort::bufferMode bufferMode() const;
+    Transcoder* transcoder() const;
+    enum OutputPort::bufferMode bufferMode() const;
 
 private:
     ucs4string buffer_;

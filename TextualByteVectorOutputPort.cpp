@@ -74,3 +74,8 @@ ucs4string TextualByteVectorOutputPort::toString()
 {
     return UC("<textual bytevector output port>");
 }
+
+Transcoder* TextualByteVectorOutputPort::transcoder() const
+{
+    return transcoder_;
+}

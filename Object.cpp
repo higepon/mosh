@@ -142,7 +142,7 @@ Object Object::makeBinaryOutputPort(BinaryOutputPort* port)
 Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TextualOutputPort(port, transcoder)))));
+                                                        reinterpret_cast<word>(new TranscodedTextualOutputPort(port, transcoder)))));
 }
 
 

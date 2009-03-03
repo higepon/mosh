@@ -109,3 +109,9 @@ enum OutputPort::bufferMode StringTextualOutputPort::bufferMode() const
 {
     return NONE;
 }
+
+Transcoder* StringTextualOutputPort::transcoder() const
+{
+    MOSH_FATAL("todo");
+    return NULL;
+}
