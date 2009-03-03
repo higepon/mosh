@@ -92,6 +92,7 @@ TextualOutputPort.h            TextualOutputPort.cpp               \
 TextualByteVectorOutputPort.h  TextualByteVectorOutputPort.cpp     \
 TextualInputPort.cpp           TextualInputPort.h                  \
 TranscodedTextualInputPort.cpp TranscodedTextualInputPort.h        \
+TranscodedTextualOutputPort.cpp TranscodedTextualOutputPort.h      \
 StringTextualOutputPort.h      StringTextualOutputPort.cpp         \
 StringTextualInputPort.h       StringTextualInputPort.cpp          \
 UTF8Codec.cpp                  UTF8Codec.h                         \

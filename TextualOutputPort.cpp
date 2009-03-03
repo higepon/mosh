@@ -66,12 +66,9 @@ TextualOutputPort::TextualOutputPort() :
 {
 }
 
-
-
 TextualOutputPort::~TextualOutputPort()
 {
 }
-
 
 bool TextualOutputPort::isErrorOccured() const
 {
@@ -83,36 +80,24 @@ Object TextualOutputPort::errorMessage() const
     return errorMessage_;
 }
 
-
-
 Object TextualOutputPort::position() const
 {
-//    if (hasPosition()) {
-//        return port_->position();
-//    } else {
-        return Object::Undef;
-//    }
+    return Object::Undef;
 }
 
 bool TextualOutputPort::setPosition(int position)
 {
-//    if (hasSetPosition()) {
-//        return port_->setPosition(position);
-//    } else {
-        return false;
-//    }
+    return false;
 }
 
 bool TextualOutputPort::hasPosition() const
 {
     return false;
-//    return port_->hasPosition();
 }
 
 bool TextualOutputPort::hasSetPosition() const
 {
     return false;
-//    return port_->hasSetPosition();
 }
 
 void TextualOutputPort::putString(String* str)
@@ -138,49 +123,6 @@ void TextualOutputPort::putString(const char* s)
 Object TextualOutputPort::irritants() const
 {
     return irritants_;
-}
-
-
-
-enum OutputPort::bufferMode TranscodedTextualOutputPort::bufferMode() const
-{
-    return port_->bufferMode();
-}
-
-
-TranscodedTextualOutputPort::TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder) : port_(port),
-                                                                                  codec_(coder->codec().toCodec()),
-                                                                                  transcoder_(coder)
-{
-}
-
-TranscodedTextualOutputPort::~TranscodedTextualOutputPort()
-{
-    // close automatically by gc().
-    close();
-}
-
-int TranscodedTextualOutputPort::close()
-{
-    MOSH_ASSERT(port_ != NULL);
-    return port_->close();
-}
-
-
-void TranscodedTextualOutputPort::putChar(ucs4char c)
-{
-    codec_->out(port_, c);
-}
-
-BinaryOutputPort* TranscodedTextualOutputPort::binaryPort() const
-{
-    return port_;
-}
-
-
-Transcoder* TranscodedTextualOutputPort::transcoder() const
-{
-    return transcoder_;
 }
 
 void TextualOutputPort::format(const ucs4string& fmt, Object args)
@@ -755,16 +697,5 @@ void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
             putString(UC(")"));
         }
     }
-}
-
-void TranscodedTextualOutputPort::flush()
-{
-    MOSH_ASSERT(port_ != NULL);
-    port_->flush();
-}
-
-ucs4string TranscodedTextualOutputPort::toString()
-{
-    return UC("<textual output port>");
 }
 

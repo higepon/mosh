@@ -76,6 +76,7 @@
 #include "Arithmetic.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "TranscodedTextualInputPort.h"
+#include "TranscodedTextualOutputPort.h"
 
 using namespace scheme;
 

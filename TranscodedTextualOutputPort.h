@@ -1,7 +1,7 @@
 /*
- * TextualOutputPort.h - 
+ * TranscodedTextualOutputPort.h - 
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -29,51 +29,32 @@
  *  $Id: TextualOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TEXTUAL_OUTPUT_PORT__
-#define __SCHEME_TEXTUAL_OUTPUT_PORT__
+#ifndef __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
+#define __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
 
-//#include "Port.h"
-#include "OutputPort.h"
+#include "TextualOutputPort.h"
 
 namespace scheme {
 
-class String;
-class Codec;
-class Transcoder;
-class BinaryOutputPort;
-
-class TextualOutputPort : public OutputPort
+class TranscodedTextualOutputPort : public TextualOutputPort
 {
 public:
-    TextualOutputPort();
-    virtual ~TextualOutputPort();
+    TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
+    virtual ~TranscodedTextualOutputPort();
 
-    virtual void putChar(ucs4char c)       = 0;
-    virtual void flush()                   = 0;
-    virtual Transcoder* transcoder() const = 0;
-
-    // template method
-    virtual void putString(String* str);
-    virtual void putString(const ucs4string& s);
-    virtual void putString(const char* s);
-    virtual void putDatum(Object o, bool inList = false);
-    virtual void display(Object o, bool inList = false);
-    virtual void putPair(Object obj, bool inList = false);
-    virtual void format(const ucs4string& fmt, Object args);
-    virtual bool isErrorOccured() const;
-    virtual Object errorMessage() const;
-    virtual Object irritants() const;
-    virtual Object position() const;
-    virtual bool setPosition(int position);
-    virtual bool hasPosition() const;
-    virtual bool hasSetPosition() const;
-
-protected:
-    bool isErrorOccured_;
-    Object errorMessage_;
-    Object irritants_;
+    int close();
+    void flush();
+    enum OutputPort::bufferMode bufferMode() const;
+    void putChar(ucs4char c);
+    BinaryOutputPort* binaryPort() const;
+    Transcoder* transcoder() const;
+    ucs4string toString();
+private:
+    BinaryOutputPort* port_;
+    Codec* codec_;
+    Transcoder* transcoder_;
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_TEXTUAL_OUTPUT_PORT__
+#endif // __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
