@@ -29,8 +29,8 @@
  *  $Id: BasicTextualInputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_BASIC_TEXTUAL_INPUT_PORT__
-#define __SCHEME_BASIC_TEXTUAL_INPUT_PORT__
+#ifndef __SCHEME_TEXTUAL_INPUT_PORT__
+#define __SCHEME_TEXTUAL_INPUT_PORT__
 
 #include "Port.h"
 
@@ -71,7 +71,7 @@ public:
     virtual Object position() const;
     virtual bool setPosition(int position);
 
-protected:
+private:
     Object error_;
     Scanner* scanner_;
     NumberScanner* numberScanner_;
@@ -79,4 +79,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TEXTUALINPUTPORT__
+#endif // __SCHEME_TEXTUAL_INPUT_PORT__
