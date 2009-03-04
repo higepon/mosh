@@ -174,12 +174,22 @@ void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object me
 
 void scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&&i/o-read"), 0, who, message, irritants);
+    raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
 }
 
 void scheme::callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants)
 {
     raiseAfter(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
+}
+
+void scheme::callIoFileNotExist(VM* theVM, Object who, Object message, Object irritants)
+{
+    raiseAfter(theVM, UC("&i/o-file-does-not-exist-rcd"), UC("&i/o-file-does-not-exist"), 1, who, message, irritants);
+}
+
+void scheme::callIoFileAlreadyExist(VM* theVM, Object who, Object message, Object irritants)
+{
+    raiseAfter(theVM, UC("&i/o-file-already-exists-rcd"), UC("&i/o-file-already-exists"), 1, who, message, irritants);
 }
 
 void scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)

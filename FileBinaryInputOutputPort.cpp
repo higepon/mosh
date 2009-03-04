@@ -47,11 +47,11 @@
 
 using namespace scheme;
 
-FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file) :
+FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     fileName_(file),
     isClosed_(false)
 {
-    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT, 0644);
+    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | openFlags, 0644);
 }
 
 FileBinaryInputOutputPort::~FileBinaryInputOutputPort()

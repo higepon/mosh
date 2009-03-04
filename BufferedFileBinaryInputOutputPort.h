@@ -39,7 +39,7 @@ namespace scheme {
 class BufferedFileBinaryInputOutputPort : public BinaryInputOutputPort
 {
 public:
-    BufferedFileBinaryInputOutputPort(const ucs4string& file);
+    BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags);
     virtual ~BufferedFileBinaryInputOutputPort();
 
     // port interfaces

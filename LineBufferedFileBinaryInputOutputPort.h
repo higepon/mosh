@@ -39,7 +39,8 @@ namespace scheme {
 class LineBufferedFileBinaryInputOutputPort : public BufferedFileBinaryInputOutputPort
 {
 public:
-    LineBufferedFileBinaryInputOutputPort(const ucs4string& filename) : BufferedFileBinaryInputOutputPort(filename) {}
+    LineBufferedFileBinaryInputOutputPort(const ucs4string& filename, int openFlags) :
+        BufferedFileBinaryInputOutputPort(filename, openFlags) {}
     virtual ~LineBufferedFileBinaryInputOutputPort() {}
 
 protected:

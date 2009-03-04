@@ -32,6 +32,8 @@
 #include <dirent.h>
 #include <unistd.h> // getcwd
 #include <sys/stat.h> // stat
+#include <sys/types.h>
+#include <fcntl.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -68,8 +70,36 @@
 #include "LineBufferedFileBinaryInputOutputPort.h"
 #include "TranscodedTextualInputOutputPort.h"
 #include "BinaryInputOutputPort.h"
+#include "ListProcedures.h"
 
 using namespace scheme;
+
+bool scheme::fileExistsP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), F_OK) == 0;
+}
+
+bool scheme::fileWritableP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), R_OK | W_OK) == 0;
+}
+
+static bool isNoFail(Object fileOptions)
+{
+    return !memq(Symbol::NO_FAIL, fileOptions).isFalse();
+}
+
+static bool isNoCreate(Object fileOptions)
+{
+    return !memq(Symbol::NO_CREATE, fileOptions).isFalse();
+}
+
+static bool isNoTruncate(Object fileOptions)
+{
+    return !memq(Symbol::NO_TRUNCATE, fileOptions).isFalse();
+}
+
+
 
 Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
@@ -77,10 +107,15 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     checkArgumentLengthBetween(1, 4);
     BinaryInputOutputPort* port = NULL;
     Transcoder* transcoder = NULL;
+
+    int openFlags = 0;
+
+
+
     if (argc == 1) {
         argumentAsString(0, path);
         // default buffer mode is Block
-        port = new BlockBufferedFileBinaryInputOutputPort(path->data());
+        port = new BlockBufferedFileBinaryInputOutputPort(path->data(), 0 /* openFlags */);
     } else if (argc == 2) {
         argumentAsString(0, filename);
         argumentCheckList(1, fileOptions);
@@ -89,19 +124,42 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         // we now ignore fileOptions
 
         // default buffer mode is Block
-        port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+        port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), 0 /* todo */);
     } else if (argc == 3) {
         argumentAsString(0, filename);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
 
+        // no-fail : truncated to zero length
+        if (isNoFail(fileOptions)) {
+            openFlags |= O_TRUNC;
+        }
+
+        // no-create
+        // N.B. if no-fail is specified
+        if (isNoCreate(fileOptions)) {
+            // no-create : truncated to zero length.
+            if (fileExistsP(filename->data())) {
+                openFlags |= O_TRUNC;
+
+            // no-create && no-fail : truncated to zero length
+            } else if (isNoFail(fileOptions)) {
+
+            // no-create : file not exists => &i/o-file-does-not-exist
+            } else {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
+                return Object::Undef;
+            }
+        }
+
+
         // todo ignore options
         if (bufferMode == Symbol::BLOCK) {
-            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+            port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
         } else if (bufferMode == Symbol::LINE) {
-            port = new LineBufferedFileBinaryInputOutputPort(filename->data());
+            port = new LineBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
         } else if (bufferMode == Symbol::NONE) {
-            port = new FileBinaryInputOutputPort(filename->data());
+            port = new FileBinaryInputOutputPort(filename->data(), openFlags);
         } else {
             callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
@@ -112,11 +170,11 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         argumentCheckSymbol(2, bufferMode);
 
         if (bufferMode == Symbol::BLOCK) {
-            port = new BlockBufferedFileBinaryInputOutputPort(filename->data());
+            port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
         } else if (bufferMode == Symbol::LINE) {
-            port = new LineBufferedFileBinaryInputOutputPort(filename->data());
+            port = new LineBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
         } else if (bufferMode == Symbol::NONE) {
-            port = new FileBinaryInputOutputPort(filename->data());
+            port = new FileBinaryInputOutputPort(filename->data(), openFlags);
         } else {
             callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
@@ -367,16 +425,17 @@ Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isOutputPort());
 }
 
-bool scheme::fileExistsP(const ucs4string& file)
-{
-    FILE* stream = fopen(file.ascii_c_str(), "rb");
-    if (NULL == stream) {
-        return false;
-    } else {
-        fclose(stream);
-        return true;
-    }
-}
+// bool scheme::fileExistsP(const ucs4string& file)
+// {
+//     return
+//     FILE* stream = fopen(file.ascii_c_str(), "rb");
+//     if (NULL == stream) {
+//         return false;
+//     } else {
+//         fclose(stream);
+//         return true;
+//     }
+// }
 
 Object scheme::statMtimeEx(VM* theVM, int argc, const Object* argv)
 {
@@ -640,7 +699,7 @@ Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("file-exists?");
     checkArgumentLength(1);
     argumentAsString(0, path);
-    return Object::makeBool(access(path->data().ascii_c_str(), F_OK) == 0);
+    return Object::makeBool(fileExistsP(path->data()));
 }
 
 // todo cleanup

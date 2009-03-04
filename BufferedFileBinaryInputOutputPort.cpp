@@ -59,7 +59,7 @@ using namespace scheme;
 
 #define DEBUG_SHOW_POSITION() /* */
 
-BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file) :
+BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     fileName_(file),
     buffer_(NULL),
     isDirty_(false),
@@ -68,7 +68,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4s
     bufferSize_(0),
     bufferIndex_(0)
 {
-    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT, 0644);
+    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | openFlags, 0644);
     initializeBuffer();
 }
 
