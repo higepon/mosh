@@ -29,7 +29,4 @@
 
 (import (rnrs))
 
-(let ([port (open-file-input/output-port "test/utf16.txt" (file-options no-truncate no-fail) 'line (make-transcoder (utf-16-codec)))])
-     (display (read port))
-     (display (port-eof? port))
-     (close-port port))
+(open-file-output-port "./not-exists" (file-options no-fail no-create))

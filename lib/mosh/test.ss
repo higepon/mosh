@@ -46,7 +46,7 @@
 |#
 (library (mosh test)
   (export test* test/exception test/violation? test/t test/f test-end)
-  (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else +
+  (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else + raise make-error
                 set! equal? quote begin syntax->datum exit ... guard violation? cons
                 list cond > length display for-each current-error-port car cadr caddr _)
           (only (mosh) format)
@@ -160,8 +160,8 @@
       (syntax-case x ()
         ((_ pred? test ...)
          (syntax
-          (test/t (guard (con [(pred? con) #t])
-                         test ...)))))))
+          (test/t (guard (con [(pred? con) (display "here")#t][else #f])
+                         test ... (raise (make-error)))))))))
 
   #|
       Function: test/violation?

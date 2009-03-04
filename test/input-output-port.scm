@@ -55,7 +55,7 @@
 ;; binary-port
 (with-all-buffer-mode "./test/test.txt"
  (lambda (mode file)
-   (let ([port  (open-file-input/output-port file (file-options) mode)])
+   (let ([port  (open-file-input/output-port file (file-options no-truncate) mode)])
      (define (write-and-back c)
        (put-u8 port c)
        (set-port-position! port (- (port-position port) 1)))
@@ -112,7 +112,7 @@
      (close-port port))
 
    ;; check the written data
-   (let ([port  (open-file-input/output-port file (file-options) mode)])
+   (let ([port  (open-file-input/output-port file (file-options no-truncate) mode)])
      #f
      (test* (get-u8 port) #x2f)
      (test* (port-position port) 1)
@@ -132,15 +132,118 @@
 ;; textual port
 (with-all-buffer-mode "./test/utf16.txt"
  (lambda (mode file)
-   (let ([port (open-file-input/output-port file (file-options) mode (make-transcoder (utf-16-codec)))])
+   (let ([port (open-file-input/output-port file (file-options no-truncate) mode (make-transcoder (utf-16-codec)))])
      (test/t (input-port? port))
      (test* (read port) "あいう")
      (test/t (port-eof? port))
      (close-port port))))
 
-;; todo
-;; file doesn't exist
-;
+;; test utilitiy
+(define (empty-file-exists? path)
+  (let ([port (open-file-input-port path (file-options))])
+    (let ([ret (eof-object? (get-u8 port))])
+      (close-port port)
+      ret)))
+
+#|  file-options
+
+    (file-options)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+|#
+
+(test/exception i/o-file-already-exists-error?
+                (open-file-input/output-port "./test/utf16.txt"))
+
+(test/exception i/o-file-already-exists-error?
+                (open-file-input/output-port "./test/utf16.txt" (file-options)))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (test/exception i/o-file-already-exists-error?
+                   (open-file-input/output-port "./test/utf16.txt" (file-options) mode))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (test/exception i/o-file-already-exists-error?
+                   (open-file-input/output-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec))))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (let ([port (open-file-input/output-port "./not-exists")])
+     (close-port port)
+     (test/t (empty-file-exists? "./not-exists"))
+     (rm "-f" "./not-exists"))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (let ([port (open-file-input/output-port "./not-exists" (file-options))])
+     (close-port port)
+     (test/t (empty-file-exists? "./not-exists"))
+     (rm "-f" "./not-exists"))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (let ([port (open-file-input/output-port "./not-exists" (file-options) mode)])
+     (close-port port)
+     (test/t (empty-file-exists? "./not-exists"))
+     (rm "-f" "./not-exists"))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (let ([port (open-file-input/output-port "./not-exists" (file-options) mode (make-transcoder (utf-16-codec)))])
+     (close-port port)
+     (test/t (empty-file-exists? "./not-exists"))
+     (rm "-f" "./not-exists"))))
+
+
+#|
+    (file-options no-create)
+      If file exists:     truncate
+      If does not exist:  raise &file-does-not-exist
+|#
+
+(with-all-buffer-mode "test/utf16.txt"
+ (lambda (mode file)
+   (let ([port (open-file-input/output-port file (file-options no-create))])
+     (close-port port)
+     (test/t (empty-file-exists? file)))))
+
+(with-all-buffer-mode "test/utf16.txt"
+ (lambda (mode file)
+   (let ([port (open-file-input/output-port file (file-options no-create) mode)])
+     (close-port port)
+     (test/t (empty-file-exists? file)))))
+
+(with-all-buffer-mode "test/utf16.txt"
+ (lambda (mode file)
+   (let ([port (open-file-input/output-port file (file-options no-create) mode (make-transcoder (utf-16-codec)))])
+     (close-port port)
+     (test/t (empty-file-exists? file)))))
+
+
+
+#|
+    (file-options no-fail)
+      If file exists:     truncate
+      If does not exist:  create new file
+    (file-options no-truncate)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create no-fail)
+      If file exists:     truncate
+      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+    (file-options no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  create new file
+    (file-options no-create no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-create no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+|#
+
 
 ;; no-create : file not exists => &i/o-file-does-not-exist
 (with-all-buffer-mode-simple

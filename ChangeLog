@@ -1,5 +1,7 @@
 2009-03-04  higepon  <higepon@users.sourceforge.jp>
 
+        * test/input-output-port.scm : Writing (file-options) tests
+
         * textual-input/output-port passes all tests.
 
 2009-03-03  higepon  <higepon@users.sourceforge.jp>

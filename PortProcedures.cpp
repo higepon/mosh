@@ -99,8 +99,41 @@ static bool isNoTruncate(Object fileOptions)
     return !memq(Symbol::NO_TRUNCATE, fileOptions).isFalse();
 }
 
+static bool isEmpty(Object fileOptions)
+{
+    return fileOptions.isNil();
+}
 
 
+/*
+  file-options
+
+    (file-options)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create)
+      If file exists:     truncate
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-fail)
+      If file exists:     truncate
+      If does not exist:  create new file
+    (file-options no-truncate)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create no-fail)
+      If file exists:     truncate
+      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+    (file-options no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  create new file
+    (file-options no-create no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-create no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+
+*/
 Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-input/output-port");
@@ -110,42 +143,51 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
     int openFlags = 0;
 
+    argumentAsString(0, path);
+    const bool isFileExist = fileExistsP(path->data());
 
 
     if (argc == 1) {
-        argumentAsString(0, path);
+        if (isFileExist) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
+            return Object::Undef;
+        }
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryInputOutputPort(path->data(), 0 /* openFlags */);
     } else if (argc == 2) {
-        argumentAsString(0, filename);
         argumentCheckList(1, fileOptions);
+
+        if (isFileExist && isEmpty(fileOptions)) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
+            return Object::Undef;
+        }
+
+        if (isNoCreate(fileOptions)) {
+            if (isFileExist) {
+                openFlags |= O_TRUNC;
+            } else {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
+                return Object::Undef;
+            }
+        }
 
         // todo
         // we now ignore fileOptions
 
         // default buffer mode is Block
-        port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), 0 /* todo */);
+        port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
     } else if (argc == 3) {
-        argumentAsString(0, filename);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
 
-        // no-fail : truncated to zero length
-        if (isNoFail(fileOptions)) {
-            openFlags |= O_TRUNC;
+        if (isFileExist && isEmpty(fileOptions)) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
+            return Object::Undef;
         }
 
-        // no-create
-        // N.B. if no-fail is specified
         if (isNoCreate(fileOptions)) {
-            // no-create : truncated to zero length.
-            if (fileExistsP(filename->data())) {
+            if (isFileExist) {
                 openFlags |= O_TRUNC;
-
-            // no-create && no-fail : truncated to zero length
-            } else if (isNoFail(fileOptions)) {
-
-            // no-create : file not exists => &i/o-file-does-not-exist
             } else {
                 callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
                 return Object::Undef;
@@ -153,28 +195,65 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         }
 
 
+        // no-fail : truncated to zero length
+        if (isNoFail(fileOptions)) {
+            openFlags |= O_TRUNC;
+        }
+
+//         // no-create
+//         // N.B. if no-fail is specified
+//         if (isNoCreate(fileOptions)) {
+//             // no-create : truncated to zero length.
+//             if (fileExistsP(path->data())) {
+//                 openFlags |= O_TRUNC;
+
+//             // no-create && no-fail : truncated to zero length
+//             } else if (isNoFail(fileOptions)) {
+
+//             // no-create : file not exists => &i/o-file-does-not-exist
+//             } else {
+//                 callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
+//                 return Object::Undef;
+//             }
+//         }
+
+
         // todo ignore options
         if (bufferMode == Symbol::BLOCK) {
-            port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
         } else if (bufferMode == Symbol::LINE) {
-            port = new LineBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new LineBufferedFileBinaryInputOutputPort(path->data(), openFlags);
         } else if (bufferMode == Symbol::NONE) {
-            port = new FileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new FileBinaryInputOutputPort(path->data(), openFlags);
         } else {
             callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
         }
     } else if (argc == 4) {
-        argumentAsString(0, filename);
         argumentCheckList(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
 
+        if (isFileExist && isEmpty(fileOptions)) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
+            return Object::Undef;
+        }
+
+
+        if (isNoCreate(fileOptions)) {
+            if (isFileExist) {
+                openFlags |= O_TRUNC;
+            } else {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
+                return Object::Undef;
+            }
+        }
+
         if (bufferMode == Symbol::BLOCK) {
-            port = new BlockBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
         } else if (bufferMode == Symbol::LINE) {
-            port = new LineBufferedFileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new LineBufferedFileBinaryInputOutputPort(path->data(), openFlags);
         } else if (bufferMode == Symbol::NONE) {
-            port = new FileBinaryInputOutputPort(filename->data(), openFlags);
+            port = new FileBinaryInputOutputPort(path->data(), openFlags);
         } else {
             callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
             return Object::Undef;
