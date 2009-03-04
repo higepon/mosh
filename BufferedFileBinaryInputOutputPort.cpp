@@ -355,9 +355,10 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
 
     for (int readSize = 0 ;;) {
         MOSH_ASSERT(bufferIndex_ >= 0);
+        const int bufferedSize = bufferSize_ - bufferIndex_;
         const int restSize = requestSize - readSize;
         // we have enough data in the buffer.
-        if (bufferSize_ >= restSize) {
+        if (bufferedSize >= restSize) {
             memcpy(dest + readSize, buffer_ + bufferIndex_, restSize);
             bufferIndex_ += restSize;
             // unwind postion
@@ -368,8 +369,8 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             return requestSize;
         } else {
             // read whole buffered data.
-            memcpy(dest + readSize, buffer_ + bufferIndex_, bufferSize_);
-            readSize += bufferSize_;
+            memcpy(dest + readSize, buffer_ + bufferIndex_, bufferedSize);
+            readSize += bufferedSize;
             // we need more
             if (!fillBuffer()) {
                 MOSH_FATAL("todo");

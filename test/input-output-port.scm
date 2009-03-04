@@ -33,14 +33,16 @@
         (mosh test))
 
 (define (cp from to)
-  (spawn "cp" (list from to)))
+  (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
+    (waitpid pid)
+    #f))
 
 (define (with-all-buffer-mode file proc)
   (let ([tmp-file (format "~a.temp" file)])
     (for-each (lambda (mode)
                 (cp file tmp-file)
                 (proc mode tmp-file))
-              (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line)))))
+              (list (buffer-mode none) (buffer-mode block) (buffer-mode line)))))
 
 ;; binary-port
 (with-all-buffer-mode "./test/test.txt"

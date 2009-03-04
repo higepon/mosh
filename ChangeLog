@@ -1,3 +1,7 @@
+2009-03-04  higepon  <higepon@users.sourceforge.jp>
+
+        * textual-input/output-port passes all tests.
+
 2009-03-03  higepon  <higepon@users.sourceforge.jp>
 
         * Added textual-input/output-port not TESTed.

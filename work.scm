@@ -27,90 +27,9 @@
 ;
 ;  $Id$
 
-(import (rnrs)
-        (mosh)
-        (mosh test)
-        (mosh shell))
-(def-command cp)
+(import (rnrs))
 
-(define (with-all-buffer-mode proc)
-  (cp "./test/test.txt" "./test/test.txt.temp")
-  (for-each proc (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line))))
-
-(with-all-buffer-mode
- (lambda (mode)
-   (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
-     (define (write-and-back c)
-       (put-u8 port c)
-       (set-port-position! port (- (port-position port) 1)))
-;;      (test/t (input-port? port))
-;;      (test/t (port-has-set-port-position!? port))
-;;      (test/t (port-has-port-position? port))
-     (test* (get-u8 port) #x2f)
-     (test* (port-position port) 1)
-     ;; write!
-     (put-u8 port #x2e)
-     ;; write!
-     (write-and-back #xfb)
-     (test* (get-u8 port) #xfb)
-;;      (test* (port-position port) 3)
-;;      (set-port-position! port 8193) ;; over the buffer boundary
-;;      (test* (port-position port) 8193)
-;;      (test* (get-u8 port) 46)
-;;      (set-port-position! port 8190)
-;;      (test* (port-position port) 8190)
-;;      (test* (get-u8 port) 32)
-;;      (test* (lookahead-u8 port) 110)
-;;      (test* (port-position port) 8191)
-;;      (test* (get-u8 port) 110)
-;;      (set-port-position! port 8190)
-;;      ;; read over the boundary
-;;      (test* (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
-;;      (test* (port-position port) 8220)
-     ;; read over the boundary and size > buffer-size
-;;      (set-port-position! port 4000)
-;;      (let ([bv1 (make-bytevector 10000)]
-;;            [bv2 (get-bytevector-n port 10000)])
-;;        (test* (bytevector-u8-ref bv2 0) 123)
-;;        (test* (bytevector-u8-ref bv2 9999) 108)
-;;        (set-port-position! port 4000)
-;;        (test* (get-bytevector-n! port bv1 0 10000) 10000)
-;;        ;; write!
-;;        (put-u8 port #xfc)
-;;        (test/t (equal? bv1 bv2)))
-     ;; read-some
-;;      (set-port-position! port 4000)
-;;      (let ([bv (get-bytevector-some port)])
-;;        (test/t (> (bytevector-length bv) 0))
-;;        ;; yeah wrote data is here
-;;        (test* (bytevector-u8-ref bv 0) 123))
-     ;; read-all
-;;      (set-port-position! port 4000)
-;;      (let ([bv (get-bytevector-all port)])
-;;        (test* (bytevector-length bv) 34861)
-;;        (test* (bytevector-u8-ref bv 0) 123)
-;;        (test* (bytevector-u8-ref bv 34860) 10))
-;;      (test* (port-position port) 38861)
-;;      (set-port-position! port 4000)
-;;      (put-bytevector port (make-bytevector 9000 #x13))
+(let ([port (open-file-input/output-port "test/utf16.txt" (file-options no-truncate no-fail) 'line (make-transcoder (utf-16-codec)))])
+     (display (read port))
+     (display (port-eof? port))
      (close-port port))
-
-   ;; check the written data
-   ;; (let ([port  (open-file-input/output-port "./test/test.txt.temp" (file-options) mode)])
-;;      #f
-;;      (test* (get-u8 port) #x2f)
-;;      (test* (port-position port) 1)
-;;      (test* (get-u8 port) #x2e)
-;;      (test* (port-position port) 2)
-;;      (test* (get-u8 port) #xfb)
-;;      (set-port-position! port 14000)
-;;      (test* (get-u8 port) #xfc)
-;;      (set-port-position! port 4000)
-;;      (let ([bv (get-bytevector-n port 9000)])
-;;        (test/t (bytevector? bv))
-;;        (test* (bytevector-length bv) 9000)
-;;        (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
-;;       ))
-   ))
-
-(test-end)
