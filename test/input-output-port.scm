@@ -221,6 +221,21 @@
      (close-port port)
      (test/t (empty-file-exists? file)))))
 
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (test/exception i/o-file-does-not-exist-error?
+                   (open-file-input/output-port "./not-exists" (file-options no-create)))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (test/exception i/o-file-does-not-exist-error?
+                   (open-file-input/output-port "./not-exists" (file-options no-create) mode))))
+
+(with-all-buffer-mode-simple
+ (lambda (mode)
+   (test/exception i/o-file-does-not-exist-error?
+                   (open-file-input/output-port "./not-exists" (file-options no-create) mode (make-transcoder (utf-16-codec))))))
+
 
 
 #|
@@ -245,40 +260,40 @@
 |#
 
 
-;; no-create : file not exists => &i/o-file-does-not-exist
-(with-all-buffer-mode-simple
- (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
-                   (open-file-input/output-port "./not-exists" (file-options no-create) mode))))
+;; ;; no-create : file not exists => &i/o-file-does-not-exist
+;; (with-all-buffer-mode-simple
+;;  (lambda (mode)
+;;    (test/exception i/o-file-does-not-exist-error?
+;;                    (open-file-input/output-port "./not-exists" (file-options no-create) mode))))
 
-;; no-create : file exists => size shrink to zero
-(with-all-buffer-mode "./test/utf16.txt"
- (lambda (mode file)
-   (let ([port (open-file-input/output-port file (file-options no-create) mode)])
-     (close-port port)
-     (test/t (file-exists? file))
-     (let ([port (open-file-input-port file (file-options) mode)])
-       (test/t (eof-object? (get-u8 port)))))))
+;; ;; no-create : file exists => size shrink to zero
+;; (with-all-buffer-mode "./test/utf16.txt"
+;;  (lambda (mode file)
+;;    (let ([port (open-file-input/output-port file (file-options no-create) mode)])
+;;      (close-port port)
+;;      (test/t (file-exists? file))
+;;      (let ([port (open-file-input-port file (file-options) mode)])
+;;        (test/t (eof-object? (get-u8 port)))))))
 
-;; no-fail : file exists => size shrink to zero
-(with-all-buffer-mode "./test/utf16.txt"
- (lambda (mode file)
-   (let ([port (open-file-input/output-port file (file-options no-fail) mode)])
-     (close-port port)
-     (test/t (file-exists? file))
-     (let ([port (open-file-input-port file (file-options) mode)])
-       (test/t (eof-object? (get-u8 port)))))))
+;; ;; no-fail : file exists => size shrink to zero
+;; (with-all-buffer-mode "./test/utf16.txt"
+;;  (lambda (mode file)
+;;    (let ([port (open-file-input/output-port file (file-options no-fail) mode)])
+;;      (close-port port)
+;;      (test/t (file-exists? file))
+;;      (let ([port (open-file-input-port file (file-options) mode)])
+;;        (test/t (eof-object? (get-u8 port)))))))
 
-;; no-fail : file not exist => create and size shrink to zero
-(with-all-buffer-mode-simple
- (lambda (mode)
-   (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail) mode)])
-     (close-port port)
-     (test/t (file-exists?  "./not-exists"))
-     (let ([port (open-file-input-port  "./not-exists" (file-options) mode)])
-       (test/t (eof-object? (get-u8 port)))
-       (close-port port))
-     (rm "-f" "./not-exists"))))
+;; ;; no-fail : file not exist => create and size shrink to zero
+;; (with-all-buffer-mode-simple
+;;  (lambda (mode)
+;;    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail) mode)])
+;;      (close-port port)
+;;      (test/t (file-exists?  "./not-exists"))
+;;      (let ([port (open-file-input-port  "./not-exists" (file-options) mode)])
+;;        (test/t (eof-object? (get-u8 port)))
+;;        (close-port port))
+;;      (rm "-f" "./not-exists"))))
 
 ;; no-fail : file should shrink to size zero.
 #;(with-all-buffer-mode "./test/utf16.txt"
