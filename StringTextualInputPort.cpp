@@ -104,7 +104,7 @@ Object StringTextualInputPort::position() const
 
 bool StringTextualInputPort::setPosition(int position)
 {
-    if (position >= buffer_.size()) {
+    if (position >= (int)buffer_.size()) {
         return false;
     } else {
         index_ = position;

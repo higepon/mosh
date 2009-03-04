@@ -47,7 +47,7 @@ StringTextualOutputPort::~StringTextualOutputPort()
 
 void StringTextualOutputPort::putChar(ucs4char c)
 {
-    if (buffer_.size() > index_) {
+    if ((int)buffer_.size() > index_) {
         buffer_[index_] = c;
     } else {
         buffer_ += c;

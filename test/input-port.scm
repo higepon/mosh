@@ -41,7 +41,7 @@
    (let ([port (open-file-input-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec)))])
      (test/t (input-port? port))
      (test* (read port) "あいう")
-     (test/f (port-eof? port)) ;; #f for textual port
+     (test/t (port-eof? port))
      (close-port port))))
 
 ;; open-bytevector-input-port

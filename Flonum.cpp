@@ -57,38 +57,6 @@ void Flonum::initialize()
     NOT_A_NUMBER = Object::makeFlonum(zero() / zero());
 }
 
-// #define MAKE_LOCAL_OP(op, symbol)\
-// Object Flonum::op(Bignum* n1, Flonum* n2)\
-// {\
-//     return Object::makeFlonum(n1->toDouble() symbol n2->value());\
-// }\
-// Object Flonum::op(Flonum* n1, Bignum* n2)\
-// {\
-//     return Object::makeFlonum(n1->value() symbol n2->toDouble());\
-// }
-
-// MAKE_LOCAL_OP(add, +)
-// MAKE_LOCAL_OP(sub, -)
-// MAKE_LOCAL_OP(div, /)
-// MAKE_LOCAL_OP(mul, *)
-
-// // Bignum(n2) * n1 is more exact than n1->toDouble() * n2->value
-// Object Flonum::mul(Bignum* n1, Flonum* n2)
-// {
-//     Bignum* b2 = new Bignum();
-//     b2->setDouble(n2->value());
-//     return Arithmetic::inexact(Bignum::mul(n1, b2));
-// }
-// Object Flonum::mul(Flonum* n1, Bignum* n2)
-// {
-//     Bignum* b1 = new Bignum();
-//     b1->setDouble(n1->value());
-//     printf("n1=%f\n", n1);
-//     VM_LOG2("ret=~a n2=~a", Bignum::mul(b1, n2), Object::makeBignum(n2));
-//     return Arithmetic::inexact(Bignum::mul(b1, n2));
-// }
-
-
 Object Flonum::toRatnum() const
 {
     mpq_t v;

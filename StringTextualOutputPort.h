@@ -56,7 +56,7 @@ public:
 
 private:
     ucs4string buffer_;
-    uintptr_t index_;
+    intptr_t index_;
 };
 
 }; // namespace scheme

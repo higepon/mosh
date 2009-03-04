@@ -164,7 +164,7 @@ int CustomBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
         accum.push_back(v);
     }
     uint8_t* dest = allocatePointerFreeU8Array(accum.size());
-    for (int i = 0; i < accum.size(); i++) {
+    for (size_t i = 0; i < accum.size(); i++) {
         dest[i] = accum[i];
     }
     *buf = dest;

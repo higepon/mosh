@@ -43,7 +43,7 @@
               (list (buffer-mode none) #;(buffer-mode block) #;(buffer-mode line)))))
 
 ;; binary-port
-#;(with-all-buffer-mode "./test/test.txt"
+(with-all-buffer-mode "./test/test.txt"
  (lambda (mode file)
    (let ([port  (open-file-input/output-port file (file-options) mode)])
      (define (write-and-back c)
@@ -120,21 +120,12 @@
    ))
 
 ;; textual port
-;; これが通らない
-#;(with-all-buffer-mode "./test/utf16.txt"
+(with-all-buffer-mode "./test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options) mode (make-transcoder (utf-16-codec)))])
      (test/t (input-port? port))
      (test* (read port) "あいう")
-     (test/f (port-eof? port)) ;; #f for textual port
-     (close-port port))))
-
-#;(with-all-buffer-mode "./test/utf16.txt"
- (lambda (mode file)
-   (let ([port (open-file-input/output-port file (file-options) mode (make-transcoder (utf-16-codec)))])
-     (test/t (input-port? port))
-     (test* (apply read (list port)) "あいう")
-     (test/f (port-eof? port)) ;; #f for textual port
+     (test/t (port-eof? port))
      (close-port port))))
 
 (test-end)
