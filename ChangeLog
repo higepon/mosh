@@ -1,5 +1,7 @@
 2009-03-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Passed all of file-options pattern tests for input/output-port.
+
         * configure.ac: Fixed message for GNU MP.
 
 2009-03-04  higepon  <higepon@users.sourceforge.jp>

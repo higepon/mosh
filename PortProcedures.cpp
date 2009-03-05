@@ -162,20 +162,30 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             return Object::Undef;
         }
 
-        if (isNoCreate(fileOptions)) {
+        if (isNoCreate(fileOptions) && isNoTruncate(fileOptions)) {
+            if (isFileExist) {
+                // set port position to 0 (overwriting)
+            } else {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return Object::Undef;
+            }
+        } else if (isNoCreate(fileOptions)) {
             if (isFileExist) {
                 openFlags |= O_TRUNC;
             } else {
-                callIoFileNotExist(theVM, procedureName, "file-options no-create: file already exists", L1(argv[0]));
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
                 return Object::Undef;
             }
-        }
+        } else if (isNoFail(fileOptions) && isNoTruncate(fileOptions)) {
+            if (isFileExist) {
+                // set port position to 0 (overwriting)
+            } else {
+                openFlags |= O_TRUNC;
+            }
 
-        if (isNoFail(fileOptions)) {
+        } else if (isNoFail(fileOptions)) {
             openFlags |= O_TRUNC;
-        }
-
-        if (isNoTruncate(fileOptions)) {
+        } else if (isNoTruncate(fileOptions)) {
             if (isFileExist) {
                 callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
                 return Object::Undef;
