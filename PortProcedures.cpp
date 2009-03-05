@@ -104,7 +104,6 @@ static bool isEmpty(Object fileOptions)
     return fileOptions.isNil();
 }
 
-
 /*
   file-options
 
@@ -122,7 +121,7 @@ static bool isEmpty(Object fileOptions)
       If does not exist:  create new file
     (file-options no-create no-fail)
       If file exists:     truncate
-      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
     (file-options no-fail no-truncate)
       If file exists:     set port position to 0 (overwriting)
       If does not exist:  create new file
@@ -131,7 +130,7 @@ static bool isEmpty(Object fileOptions)
       If does not exist:  raise &file-does-not-exist
     (file-options no-create no-fail no-truncate)
       If file exists:     set port position to 0 (overwriting)
-      If does not exist:  [N.B.] R6RS doesn't tell this case, we choose raise &file-does-not-exist
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
 
 */
 Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv)
@@ -140,12 +139,10 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     checkArgumentLengthBetween(1, 4);
     BinaryInputOutputPort* port = NULL;
     Transcoder* transcoder = NULL;
-
     int openFlags = 0;
 
     argumentAsString(0, path);
     const bool isFileExist = fileExistsP(path->data());
-
 
     if (argc == 1) {
         if (isFileExist) {
@@ -153,39 +150,37 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             return Object::Undef;
         }
         // default buffer mode is Block
-        port = new BlockBufferedFileBinaryInputOutputPort(path->data(), 0 /* openFlags */);
+        port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
     } else {
         argumentCheckList(1, fileOptions);
 
-        if (isFileExist && isEmpty(fileOptions)) {
+        const bool emptyP = isEmpty(fileOptions);
+        const bool noCreateP = isNoCreate(fileOptions);
+        const bool noTruncateP = isNoTruncate(fileOptions);
+        const bool noFailP = isNoFail(fileOptions);
+
+        if (isFileExist && emptyP) {
             callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
             return Object::Undef;
-        }
-
-        if (isNoCreate(fileOptions) && isNoTruncate(fileOptions)) {
-            if (isFileExist) {
-                // set port position to 0 (overwriting)
-            } else {
+        } else if (noCreateP && noTruncateP) {
+            if (!isFileExist) {
                 callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
                 return Object::Undef;
             }
-        } else if (isNoCreate(fileOptions)) {
+        } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= O_TRUNC;
             } else {
                 callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
                 return Object::Undef;
             }
-        } else if (isNoFail(fileOptions) && isNoTruncate(fileOptions)) {
-            if (isFileExist) {
-                // set port position to 0 (overwriting)
-            } else {
+        } else if (noFailP && noTruncateP) {
+            if (!isFileExist) {
                 openFlags |= O_TRUNC;
             }
-
-        } else if (isNoFail(fileOptions)) {
+        } else if (noFailP) {
             openFlags |= O_TRUNC;
-        } else if (isNoTruncate(fileOptions)) {
+        } else if (noTruncateP) {
             if (isFileExist) {
                 callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
                 return Object::Undef;
