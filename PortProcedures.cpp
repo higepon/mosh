@@ -171,6 +171,19 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             }
         }
 
+        if (isNoFail(fileOptions)) {
+            openFlags |= O_TRUNC;
+        }
+
+        if (isNoTruncate(fileOptions)) {
+            if (isFileExist) {
+                callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
+                return Object::Undef;
+            } else {
+                openFlags |= O_TRUNC;
+            }
+        }
+
         if (argc == 2) {
             port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
         } else {
