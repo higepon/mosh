@@ -41,6 +41,7 @@
     (rnrs lists)
     (only (rnrs conditions) condition? condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)
+    (only (rnrs) reverse)
     (rnrs records inspection)
     (psyntax compat)
     (psyntax internal)
@@ -70,35 +71,76 @@
         ((null? lst))
       (proc i (car lst))))
 
-  (define (conditioon-printer e port)
-    (define (ref rtd i x)
-      (let ([val ((record-accessor rtd i) x)])
-        (if (symbol? val)
-            (ungensym val)
-            val)))
+  ;; (define (conditioon-printer e port)
+;;     (define (ref rtd i x)
+;;       (let ([val ((record-accessor rtd i) x)])
+;;         (if (symbol? val)
+;;             (ungensym val)
+;;             val)))
+;;     (display " Condition components:\n" port)
+;;     (for-each-with-index
+;;      (lambda (i x)
+;;        (let ([rtd (record-rtd x)])
+;;          (format port "   ~d. ~a" i (record-type-name rtd))
+;;          (let ([v (record-type-field-names rtd)])
+;;            (case (vector-length v)
+;;              [(0) (newline port)]
+;;              [(1)
+;;               (display ": " port)
+;;               (write (ref rtd 0 x) port)
+;;               (newline port)]
+;;              [else
+;;               (display ":\n" port)
+;;               (let f ([i 0])
+;;                 (unless (= i (vector-length v))
+;;                   (display "       " port)
+;;                   (display (vector-ref v i) port)
+;;                   (display ": " port)
+;;                   (write (ref rtd i x) port)
+;;                   (newline port)
+;;                   (f (+ i 1))))]))))
+;;      (simple-conditions e)))
+
+(define (condition-printer e port)
     (display " Condition components:\n" port)
     (for-each-with-index
      (lambda (i x)
        (let ([rtd (record-rtd x)])
          (format port "   ~d. ~a" i (record-type-name rtd))
-         (let ([v (record-type-field-names rtd)])
-           (case (vector-length v)
-             [(0) (newline port)]
-             [(1)
-              (display ": " port)
-              (write (ref rtd 0 x) port)
-              (newline port)]
-             [else
-              (display ":\n" port)
-              (let f ([i 0])
-                (unless (= i (vector-length v))
-                  (display "       " port)
-                  (display (vector-ref v i) port)
-                  (display ": " port)
-                  (write (ref rtd i x) port)
-                  (newline port)
-                  (f (+ i 1))))]))))
+         (for-each
+          (lambda (field)
+            (display "       " port)
+            (display (car field) port)
+            (display ": " port)
+            (write (cdr field) port)
+            (newline port))
+          (record->field-alist x))))
      (simple-conditions e)))
+
+(define (map-with-index proc lst)
+  (let loop ([i 0]
+             [lst lst]
+             [ret '()])
+    (if (null? lst)
+        (reverse ret)
+        (loop (+ i 1) (cdr lst) (cons (proc i (car lst)) ret)))))
+
+(define (record->field-alist r)
+  (define (ref rtd i x)
+    (let ([val ((record-accessor rtd i) x)])
+      (if (symbol? val)
+          (ungensym val)
+          val)))
+  (let loop ([ret '()]
+             [rtd (record-rtd r)])
+    (cond
+     [rtd
+      (loop (append ret
+      (map-with-index
+       (lambda (i field)
+         (cons field (ref rtd i r)))
+       (vector->list (record-type-field-names rtd)))) (record-type-parent rtd))]
+     [else ret])))
 
   (define (repl . x)
     (define (rec)
@@ -107,7 +149,7 @@
               (#t
                (display "\nUnhandled exception:\n\n" (current-error-port))
                (if (condition? e)
-                   (conditioon-printer e (current-error-port))
+                   (condition-printer e (current-error-port))
                    (format (current-error-port) "  Non-condition object:\n     ~a\n" e))))
              (let loop ([line (get-line (current-input-port))]
                         [accum ""])
@@ -280,7 +322,7 @@
     (with-exception-handler
      (lambda (c)
        (if (condition? c)
-           (conditioon-printer c (current-error-port))
+           (condition-printer c (current-error-port))
            (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)))
      (lambda ()
        (if (null? args)

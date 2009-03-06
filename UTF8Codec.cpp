@@ -31,6 +31,8 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "SString.h"
 #include "UTF8Codec.h"
 #include "BinaryOutputPort.h"
@@ -140,7 +142,7 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
             throwIOError("invalid byte sequence");
         }
     } else {
-        throwIOError("invalid byte sequence");
+        throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence", Pair::list1(Object::makeByteVector(1, first)));
     }
     return ' ';
 }

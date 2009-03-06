@@ -48,6 +48,8 @@ using namespace scheme;
 
 jmp_buf scheme::ioErrorJmpBuf;
 Object  scheme::ioErrorMessage;
+IOError scheme::ioError;
+
 #ifdef DEBUG_VERSION
 bool scheme::isErrorBufInitialized = false;
 #endif
@@ -66,6 +68,15 @@ static void raiseAfter(VM* theVM,
                        Object message,
                        Object irritants = Object::Nil);
 
+static void raiseAfter1(VM* theVM,
+                        const ucs4char* errorRcdName,
+                        const ucs4char* errorName,
+                        Object argument1,
+                        Object who,
+                        Object message,
+                        Object irritants = Object::Nil);
+
+
 static void raiseAfter2(VM* theVM,
                 const ucs4char* errorRcdName1,
                 const ucs4char* errorName1,
@@ -77,10 +88,32 @@ static void raiseAfter2(VM* theVM,
                 Object message,
                 Object irritants = Object::Nil);
 
+Object scheme::callIOErrorAfter(VM* theVM, IOError e)
+{
+    switch(e.type) {
+    case IOError::DECODE:
+        raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.port, e.who, e.message, e.irritants);
+        break;
+    default:
+        callAssertionViolationAfter(theVM, e.who, e.message, e.irritants);
+        break;
+
+    }
+    return Object::Undef;
+}
+
 
 Object scheme::throwIOError(Object message)
 {
     ioErrorMessage = message;
+    MOSH_ASSERT(isErrorBufInitialized);
+    longjmp(ioErrorJmpBuf, -1);
+    return Object::Undef;
+}
+
+Object scheme::throwIOError2(int type, Object message, Object irritants /* = Object::Nil */)
+{
+    ioError = IOError(type, message, irritants);
     MOSH_ASSERT(isErrorBufInitialized);
     longjmp(ioErrorJmpBuf, -1);
     return Object::Undef;
@@ -263,6 +296,53 @@ Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
+
+void raiseAfter1(VM* theVM,
+                const ucs4char* errorRcdName,
+                const ucs4char* errorName,
+                Object argument1,
+                Object who,
+                Object message,
+                Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+
+        // even if irritants is nil, we create irritants condition.
+        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
+
+        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
+
+        if (!who.isFalse()) {
+            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
+        }
+
+        conditions = Object::cons(makeCondition(theVM, errorRcdName, argument1), conditions);
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        condition = format(UC(" Condition components:\n"
+                              "    1. ~a\n"
+                              "    2. &who: ~a\n"
+                              "    3. &message: ~s\n"
+                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+}
+
 
 void raiseAfter(VM* theVM,
                 const ucs4char* errorRcdName,

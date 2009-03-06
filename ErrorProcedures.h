@@ -37,22 +37,50 @@
 
 namespace scheme {
 
+
+typedef struct IOError
+{
+    IOError(int type, Object message, Object irritants) :
+        type(type),
+        message(message),
+        irritants(irritants) {}
+    IOError() {}
+
+    int type;
+    Object port;
+    Object who;
+    Object message;
+    Object irritants;
+    enum {
+        DECODE,
+        forbidden_comma
+    };
+} IOError;
+
     extern jmp_buf ioErrorJmpBuf;
     extern Object  ioErrorMessage;
+    extern IOError ioError;
 #ifdef DEBUG_VERSION
     extern bool isErrorBufInitialized;
 #endif
 
+
 #ifdef DEBUG_VERSION
+
+#define TRY2 isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
 
 #define TRY_IO isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
 #else
 #define TRY_IO if (setjmp(ioErrorJmpBuf) == 0)
 #endif
 #define CATCH_IO else
+#define CATCH2(x) else
 #define IO_ERROR_MESSAGE ioErrorMessage
 
     class VM;
+
+    Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
+    Object callIOErrorAfter(VM* theVM, IOError e);
 
     Object throwIOError(Object message);
     Object throwEx(VM* theVM, int argc, const Object* argv);

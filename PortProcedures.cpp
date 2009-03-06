@@ -1146,13 +1146,15 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     ucs4string ret;
     Codec* const codec = transcoder->codec().toCodec();
 
-    TRY_IO {
+    TRY2 {
         for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
             ret += c;
         }
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
+    } CATCH2(ioError) {
+        ioError.port = Object::makeBinaryInputPort(in);
+        ioError.who = procedureName;
+        ioError.irritants = Object::cons(argv[1], ioError.irritants);
+        return callIOErrorAfter(theVM, ioError);
     }
     return Object::makeString(ret);
 }
