@@ -61,8 +61,128 @@
   (test* (string-ref s 2) #\b)
   (test* (string-ref s 3) #\c))
 
+;; How do I can test utf-8-codec encoding-error?
+;; It never happen?
+
+;; utf-8-codec
+;;  read
+(test/exception i/o-decoding-error?
+                 (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                       (file-options no-truncate no-fail)
+                                                       (buffer-mode none)
+                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                         read))
+
+(test/exception i/o-decoding-error?
+                 (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                       (file-options no-truncate no-fail)
+                                                       (buffer-mode none)
+                                                       (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                         (lambda (x) (read x))))
+
+;; utf-8-codec
+;;  peek-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                peek-char))
+
+;; utf-8-codec
+;;  get-datum
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                get-datum))
+
+;; utf-8-codec
+;;  get-string
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                get-string-all))
+
+;; utf-8-codec
+;;  get-string-n!
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (get-string-n! x "abc" 0 3))))
+
+;; utf-8-codec
+;;  get-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                get-char))
+
+;; utf-8-codec
+;;  get-string-n
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (get-string-n x 3))))
+
+;; utf-8-codec
+;;  port-eof?
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                port-eof?))
+
+;; utf-8-codec
+;;  get-line
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                get-line))
+
+;; utf-8-codec
+;;  lookahead-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                lookahead-char))
+
+;; utf-8-codec
+;;  read-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                read-char))
+
+;; utf-8-codec
+;;  read-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf8.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (read-char x))))
+
+
 
 
 ;; todo igreno error with transcoder
 
-(test-end)
+
+;(test-end)

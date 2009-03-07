@@ -94,6 +94,9 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
     case IOError::DECODE:
         raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.port, e.who, e.message, e.irritants);
         break;
+    case IOError::ENCODE:
+        raiseAfter1(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.port, e.who, e.message, e.irritants);
+        break;
     default:
         callAssertionViolationAfter(theVM, e.who, e.message, e.irritants);
         break;

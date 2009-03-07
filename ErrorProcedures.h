@@ -53,6 +53,7 @@ typedef struct IOError
     Object irritants;
     enum {
         DECODE,
+        ENCODE,
         forbidden_comma
     };
 } IOError;

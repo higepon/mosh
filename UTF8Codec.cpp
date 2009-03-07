@@ -75,9 +75,16 @@ int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         buf[3] = 0x80 | (u & 0x3f);
         return 4;
     } else {
-//            fprintf(stderr, "malformed utf8 error\n");
-        return 0;
-//            exit(-1);
+        if (mode == Codec::RAISE) { \
+            throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence");
+        } else if (mode == Codec::REPLACE) {
+            buf[0] = 0xff;
+            buf[1] = 0xfd;
+            return 2;
+        } else {
+            MOSH_ASSERT(mode == Codec::IGNORE_ERROR);
+            return 0;
+        }
     }
 }
 
@@ -95,7 +102,6 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
         MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
         goto retry;                                                     \
     }
-
 
 ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {

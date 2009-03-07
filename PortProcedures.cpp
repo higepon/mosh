@@ -229,13 +229,19 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("peek-char");
     checkArgumentLength(1);
-    if (0 == argc) {
-        const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
-        return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } else {
-        argumentAsTextualInputPort(0, textualInputPort);
-        const ucs4char ch = textualInputPort->lookaheadChar();
-        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    TRY2 {
+        if (0 == argc) {
+            const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
+            return ch == EOF ? Object::Eof : Object::makeChar(ch);
+        } else {
+            argumentAsTextualInputPort(0, textualInputPort);
+            const ucs4char ch = textualInputPort->lookaheadChar();
+            return ch == EOF ? Object::Eof : Object::makeChar(ch);
+        }
+    } CATCH2(ioError) {
+        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -245,23 +251,35 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     bool errorOccured = false;
     argumentAsTextualInputPort(0, in);
-    const Object object = in->getDatum(errorOccured);
-    if (errorOccured) {
-        callLexicalAndIOReadAfter(theVM, procedureName, in->error());
-        return Object::Undef;
+    TRY2 {
+        const Object object = in->getDatum(errorOccured);
+        if (errorOccured) {
+            callLexicalAndIOReadAfter(theVM, procedureName, in->error());
+            return Object::Undef;
+        }
+        return object;
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return object;
 }
 
 Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
-    ucs4string text = in->getStringAll();
-    if (text.size() == 0) {
-        return Object::Undef;
-    } else {
-        return Object::makeString(text);
+    TRY2 {
+        ucs4string text = in->getStringAll();
+        if (text.size() == 0) {
+            return Object::Undef;
+        } else {
+            return Object::makeString(text);
+        }
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -291,15 +309,21 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    ucs4string text = in->getString(u32Count);
-    if (text.size() == 0) {
-        return Object::Eof;
-    } else {
-        ucs4string& s = dest->data();
-        for (int i = 0; i < (int)text.size(); i++) {
-            s[u32Start + i] = text[i];
+    TRY2 {
+        ucs4string text = in->getString(u32Count);
+        if (text.size() == 0) {
+            return Object::Eof;
+        } else {
+            ucs4string& s = dest->data();
+            for (int i = 0; i < (int)text.size(); i++) {
+                s[u32Start + i] = text[i];
+            }
+            return Bignum::makeInteger(text.size());
         }
-        return Bignum::makeInteger(text.size());
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -308,8 +332,14 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
-    const ucs4char ch = textualInputPort->getChar();
-    return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    TRY2 {
+        const ucs4char ch = textualInputPort->getChar();
+        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    }
 }
 
 Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
@@ -318,11 +348,18 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
     argumentAsFixnum(1, size);
-    ucs4string text = inputPort->getString(size);
-    if (text.size() == 0) {
-        return Object::Eof;
-    } else {
-        return Object::makeString(text);
+    TRY2 {
+        ucs4string text = inputPort->getString(size);
+
+        if (text.size() == 0) {
+            return Object::Eof;
+        } else {
+            return Object::makeString(text);
+        }
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -397,17 +434,23 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-eof?");
     checkArgumentLength(1);
     const Object port = argv[0];
-    if (port.isBinaryInputPort()) {
-        return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
-    } else if (port.isBinaryInputOutputPort()) {
-        return Object::makeBool(port.toBinaryInputOutputPort()->lookaheadU8() == EOF);
-    } else if (port.isTextualInputPort()) {
-        return Object::makeBool(port.toTextualInputPort()->lookaheadChar() == EOF);
-    } else if (port.isTextualInputOutputPort()) {
-        return Object::makeBool(port.toTextualInputOutputPort()->lookaheadChar() == EOF);
-    } else {
-        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
-        return Object::Undef;
+    TRY2 {
+        if (port.isBinaryInputPort()) {
+            return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
+        } else if (port.isBinaryInputOutputPort()) {
+            return Object::makeBool(port.toBinaryInputOutputPort()->lookaheadU8() == EOF);
+        } else if (port.isTextualInputPort()) {
+            return Object::makeBool(port.toTextualInputPort()->lookaheadChar() == EOF);
+        } else if (port.isTextualInputOutputPort()) {
+            return Object::makeBool(port.toTextualInputOutputPort()->lookaheadChar() == EOF);
+        } else {
+            callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
+            return Object::Undef;
+        }
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -452,18 +495,6 @@ Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isOutputPort());
 }
 
-// bool scheme::fileExistsP(const ucs4string& file)
-// {
-//     return
-//     FILE* stream = fopen(file.ascii_c_str(), "rb");
-//     if (NULL == stream) {
-//         return false;
-//     } else {
-//         fclose(stream);
-//         return true;
-//     }
-// }
-
 Object scheme::statMtimeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("stat-mtime");
@@ -507,11 +538,12 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-line");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
-    TRY_IO {
+    TRY2 {
         return inputPort->getLine();
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -536,16 +568,21 @@ Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookahead-char");
     checkArgumentLengthBetween(1, 2);
     argumentAsTextualInputPort(0, textualInputPort);
-
-    ucs4char ch;
-    if (2 == argc) {
-        // mosh only
-        argumentAsFixnum(1, offset);
-        ch = textualInputPort->lookaheadChar(offset);
-    } else {
-        ch = textualInputPort->lookaheadChar();
+    TRY2 {
+        ucs4char ch;
+        if (2 == argc) {
+            // mosh only
+            argumentAsFixnum(1, offset);
+            ch = textualInputPort->lookaheadChar(offset);
+        } else {
+            ch = textualInputPort->lookaheadChar();
+        }
+        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return ch == EOF ? Object::Eof : Object::makeChar(ch);
 }
 
 Object scheme::currentErrorPortEx(VM* theVM, int argc, const Object* argv)
@@ -576,15 +613,21 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write-char");
     checkArgumentLengthBetween(1, 2);
     argumentAsChar(0, ch);
-    if (1 == argc) {
-        theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
-        theVM->currentOutputPort().toTextualOutputPort()->flush();
-    } else {
-        argumentAsTextualOutputPort(1, textualOutputPort);
-        textualOutputPort->putChar(ch);
-        textualOutputPort->flush();
+    TRY2 {
+        if (1 == argc) {
+            theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
+            theVM->currentOutputPort().toTextualOutputPort()->flush();
+        } else {
+            argumentAsTextualOutputPort(1, textualOutputPort);
+            textualOutputPort->putChar(ch);
+            textualOutputPort->flush();
+        }
+        return Object::Undef;
+    } CATCH2(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return Object::Undef;
 }
 
 Object scheme::eofObjectPEx(VM* theVM, int argc, const Object* argv)
@@ -598,14 +641,19 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read-char");
     checkArgumentLengthBetween(0, 1);
-
-    if (0 == argc) {
-        const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->getChar();
-        return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } else {
-        argumentAsTextualInputPort(0, textualInputPort);
-        const ucs4char ch = textualInputPort->getChar();
-        return ch == EOF ? Object::Eof : Object::makeChar(ch);
+    TRY2 {
+        if (0 == argc) {
+            const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->getChar();
+            return ch == EOF ? Object::Eof : Object::makeChar(ch);
+        } else {
+            argumentAsTextualInputPort(0, textualInputPort);
+            const ucs4char ch = textualInputPort->getChar();
+            return ch == EOF ? Object::Eof : Object::makeChar(ch);
+        }
+    } CATCH2(ioError) {
+        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -622,12 +670,18 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
         argumentAsTextualInputPort(0, textualInputPort);
         inputPort = textualInputPort;
     }
-    const Object object = inputPort->getDatum(errorOccured);
-    if (errorOccured) {
-        callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
-        return Object::Undef;
+    TRY2 {
+        const Object object = inputPort->getDatum(errorOccured);
+        if (errorOccured) {
+            callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
+            return Object::Undef;
+        }
+        return object;
+    } CATCH2(ioError) {
+        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return object;
 }
 
 Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
