@@ -1,5 +1,5 @@
 /*
- * UTF8Codec.h - 
+ * Codec.cpp - 
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,34 +26,17 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: UTF8Codec.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: Codec.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef __SCHEME_UTF8_CODEC__
-#define __SCHEME_UTF8_CODEC__
-
 #include "Codec.h"
+#include "BinaryOutputPort.h"
 
-namespace scheme {
+using namespace scheme;
 
-class UTF8Codec : public Codec
+int Codec::out(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode)
 {
-public:
-    int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode);
-    ucs4string getCodecName() const
-    {
-        return UC("utf-8-codec");
-    }
-
-    static Codec* getCodec();
-private:
-    UTF8Codec() {}
-    UTF8Codec(const UTF8Codec& codec);
-    UTF8Codec& operator=(const UTF8Codec& codec);
-    bool isUtf8Tail(uint8_t b);
-};
-
-}; // namespace scheme
-
-#endif // __SCHEME_UTF8_CODEC__
+    static uint8_t buf[4];
+    const int size = out(buf, c, mode);
+    return port->putU8(buf, size);
+}

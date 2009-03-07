@@ -46,7 +46,7 @@ public:
         UTF_32LE,
         NO_BOM
     };
-    int out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode);
+
     int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
     ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode);
     ucs4string getCodecName() const

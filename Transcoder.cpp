@@ -33,6 +33,7 @@
 #include "Object-inl.h"
 #include "SString.h"
 #include "Symbol.h"
+#include "BinaryOutputPort.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 

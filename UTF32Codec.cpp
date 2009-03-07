@@ -91,12 +91,6 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 #endif
 }
 
-int UTF32Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
-{
-    MOSH_ASSERT(false);
-    return 0;
-}
-
 int UTF32Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     if (isLittleEndian_) {

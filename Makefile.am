@@ -95,6 +95,7 @@ TranscodedTextualInputPort.cpp TranscodedTextualInputPort.h        \
 TranscodedTextualOutputPort.cpp TranscodedTextualOutputPort.h      \
 StringTextualOutputPort.h      StringTextualOutputPort.cpp         \
 StringTextualInputPort.h       StringTextualInputPort.cpp          \
+Codec.cpp                      Codec.h                             \
 UTF8Codec.cpp                  UTF8Codec.h                         \
 UTF16Codec.cpp                 UTF16Codec.h                        \
 UTF32Codec.cpp                 UTF32Codec.h                        \

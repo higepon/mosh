@@ -50,10 +50,11 @@ public:
     };
 
     virtual ~Codec() {}
-    virtual int out(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode) = 0;
     virtual int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) = 0;
     virtual ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode) = 0;
     virtual ucs4string getCodecName() const = 0;
+
+    int out(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode);
 };
 
 }; // namespace scheme

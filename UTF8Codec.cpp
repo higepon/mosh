@@ -50,14 +50,6 @@ Codec* UTF8Codec::getCodec()
     return codec;
 }
 
-// Be careful, buf is shared.
-int UTF8Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
-{
-    static uint8_t buf[4];
-    const int size = out(buf, u, mode);
-    return port->putU8(buf, size);
-}
-
 int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     // UTF8-1
