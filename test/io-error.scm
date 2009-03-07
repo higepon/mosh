@@ -33,9 +33,33 @@
         (mosh shell)
         (mosh test))
 
-(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
-(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode ignore)))
-(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode replace)))
+;; utf-8-codec
+;;   error-handling-mode: raise
+(test/exception i/o-decoding-error?
+                (bytevector->string #vu8(97 #xff 98 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise))))
+
+;; utf-8-codec
+;;   error-handling-mode: ignore
+(test* (bytevector->string #vu8(97 #xff 98 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode ignore)))
+       "abc")
+
+;; utf-8-codec
+;;   error-handling-mode: ignore
+(test* (bytevector->string #vu8(97 98 #xff 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode ignore)))
+       "abc")
+
+;; utf-8-codec
+;;   error-handling-mode: ignore
+(test* (bytevector->string #vu8(97 98 99 #xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode ignore)))
+       "abc")
+
+;; utf-8-code
+;;   error-handling-mode: replace
+(let ([s (bytevector->string #vu8(97 #xff 98 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode replace)))])
+  (test* (string-ref s 0) #\a)
+  (test* (string-ref s 1) (integer->char #xfffd))
+  (test* (string-ref s 2) #\b)
+  (test* (string-ref s 3) #\c))
 
 
 

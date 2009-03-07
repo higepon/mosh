@@ -1,5 +1,7 @@
 2009-03-07  higepon  <higepon@users.sourceforge.jp>
 
+        * UTF8Codec.cpp (in): Now (utf-8-codec) raises &i/o-decoding.
+
         * test/io-error.scm: Added.
 
         * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss (condition-printer): Changed to print parent fields.

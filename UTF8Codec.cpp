@@ -1,5 +1,5 @@
 /*
- * UTF8Codec.cpp - 
+ * UTF8Codec.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -86,8 +86,20 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
     return (0x80 <= b && b <= 0xbf);
 }
 
+#define decodeError() \
+    if (mode == Codec::RAISE) { \
+        throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence");  \
+    } else if (mode == Codec::REPLACE) {                                \
+        return 0xFFFD;                                                  \
+    } else {                                                            \
+        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        goto retry;                                                     \
+    }
+
+
 ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
+retry:
     const int f = port->getU8();
     if (f == EOF) return EOF;
     uint8_t first = (uint8_t)(f & 0xff);
@@ -101,7 +113,7 @@ ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
         if (isUtf8Tail(second)) {
             return ((first & 0x1f) << 6) | (second & 0x3f);
         } else {
-            throwIOError("invalid byte sequence");
+            decodeError();
         }
         // UTF8-3 = %xE0 %xA0-BF UTF8-tail / %xE1-EC 2( UTF8-tail ) /
         //          %xED %x80-9F UTF8-tail / %xEE-EF 2( UTF8-tail )
@@ -109,14 +121,14 @@ ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
         uint8_t second = port->getU8();
         uint8_t third =  port->getU8();
         if (!isUtf8Tail(third)) {
-            throwIOError("invalid byte sequence");
+            decodeError();
         } else if ((0xe0 == first && 0xa0 <= second && second <= 0xbf)    |
                    (0xed == first && 0x80 <= second && second <= 0x9f)    |
                    (0xe1 <= first && first <= 0xec && isUtf8Tail(second)) |
                    (0xee == first || 0xef == first) && isUtf8Tail(second)) {
             return ((first & 0xf) << 12) | ((second & 0x3f) << 6) | (third & 0x3f);
         } else {
-            throwIOError("invalid byte sequence");
+            decodeError();
         }
         // UTF8-4 = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
         //          %xF4 %x80-8F 2( UTF8-tail )
@@ -125,19 +137,16 @@ ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
         uint8_t third =  port->getU8();
         uint8_t fourth = port->getU8();
         if (!isUtf8Tail(third) || !isUtf8Tail(fourth)) {
-            throwIOError("invalid byte sequence");
+            decodeError();
         } else if ((0xf0 == first && 0x90 <= second && second <= 0xbf)     |
                    (0xf4 == first && 0x80 <= second && second <= 0x8f)     |
                    (0xf1 <= first && first <= 0xf3 && isUtf8Tail(second))) {
             return ((first & 0x7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | fourth;
         } else {
-            throwIOError("invalid byte sequence");
+            decodeError();
         }
     } else {
-        if (mode == Codec::RAISE) {
-            throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence", Pair::list1(Object::makeByteVector(1, first)));
-        }
+        decodeError();
     }
     return ' ';
 }
-
