@@ -139,12 +139,6 @@ ucs4char UTF32Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
     }
 }
 
-ucs4string UTF32Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
-{
-    MOSH_ASSERT(false);
-    return UC("");
-}
-
 int UTF32Codec::checkBOM(ByteVector* bytevector)
 {
     if (bytevector->length() >= 4) {

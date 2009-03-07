@@ -69,15 +69,3 @@ ucs4char Latin1Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
     return (uint8_t)(f & 0xff);
 }
 
-ucs4string Latin1Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
-{
-    ucs4string ret;
-    for (;;) {
-        const ucs4char ch = in(port, mode);
-        if (EOF == ch) {
-            break;
-        }
-        ret += ch;
-    }
-    return ret;
-}

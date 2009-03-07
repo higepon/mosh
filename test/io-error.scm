@@ -33,8 +33,9 @@
         (mosh shell)
         (mosh test))
 
-(test/exception i/o-decoding-error? (utf8->string #vu8(#xff)))
-
+(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode ignore)))
+(bytevector->string #vu8(#xff) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode replace)))
 
 
 

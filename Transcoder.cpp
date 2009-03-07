@@ -166,7 +166,3 @@ ucs4char Transcoder::in(BinaryInputPort* port)
     return codec_->in(port, errorHandlingMode_);
 }
 
-ucs4string Transcoder::readWholeString(BinaryInputPort* port)
-{
-    return codec_->in(port, errorHandlingMode_);
-}

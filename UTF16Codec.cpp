@@ -157,12 +157,6 @@ ucs4char UTF16Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
     return (u << 16) | (part1 << 10) | part2;
 }
 
-ucs4string UTF16Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
-{
-    MOSH_ASSERT(false);
-    return UC("");
-}
-
 int UTF16Codec::checkBOM(ByteVector* bytevector)
 {
     if (bytevector->length() >= 2) {

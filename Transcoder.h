@@ -66,7 +66,6 @@ public:
     int out(BinaryOutputPort* port, ucs4char c);
     int out(uint8_t* buf, ucs4char c);
     ucs4char in(BinaryInputPort* port);
-    ucs4string readWholeString(BinaryInputPort* port);
 
 
     static Transcoder* nativeTranscoder();

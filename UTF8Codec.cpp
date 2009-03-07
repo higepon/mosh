@@ -142,20 +142,10 @@ ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
             throwIOError("invalid byte sequence");
         }
     } else {
-        throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence", Pair::list1(Object::makeByteVector(1, first)));
+        if (mode == Codec::RAISE) {
+            throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence", Pair::list1(Object::makeByteVector(1, first)));
+        }
     }
     return ' ';
 }
 
-ucs4string UTF8Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
-{
-    ucs4string ret;
-    for (;;) {
-        const ucs4char ch = in(port, mode);
-        if (EOF == ch) {
-            break;
-        }
-        ret += ch;
-    }
-    return ret;
-}
