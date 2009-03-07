@@ -501,4 +501,6 @@
     remainder
     modulo
     open-file-input/output-port
+    ;;
+    time-usage
     )

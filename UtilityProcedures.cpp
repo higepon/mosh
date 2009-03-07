@@ -745,3 +745,17 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     gmtime_r(&l,  &utcTime);
     return Bignum::makeIntegerFromU64(static_cast<uint64_t>(mktime(&localTime) - mktime(&utcTime)));
 }
+
+Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("time-usage");
+    checkArgumentLength(0);
+    struct timeval tv;
+    struct rusage ru;
+    gettimeofday(&tv, NULL);
+    getrusage(RUSAGE_SELF, &ru);
+
+    return Pair::list3(Object::makeFlonum((double)tv.tv_sec + tv.tv_usec / 1000000.0),
+                       Object::makeFlonum((double)ru.ru_utime.tv_sec + ru.ru_utime.tv_usec / 1000000.0),
+                       Object::makeFlonum((double)ru.ru_stime.tv_sec + ru.ru_stime.tv_usec / 1000000.0));
+}

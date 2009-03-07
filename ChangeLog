@@ -1,5 +1,13 @@
 2009-03-07  higepon  <higepon@users.sourceforge.jp>
 
+        * Added time macro to (mosh) library.
+
+        * bench/run-mosh.scm: Added. Thanks to naoya_t.
+
+        * UtilityProcedures.cpp : Added time-usage. Thanks to naoya_t.
+
+        * lib/mosh/process.ss : Added time macro. Thanks to naoya_t.
+
         * UTF8Codec.cpp (in): Now (utf-8-codec) raises &i/o-decoding.
 
         * test/io-error.scm: Added.

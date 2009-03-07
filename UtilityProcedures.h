@@ -34,6 +34,7 @@
 
 namespace scheme {
 
+    Object timeUsageEx(VM* theVM, int argc, const Object* argv);
     Object microsecondsEx(VM* theVM, int argc, const Object* argv);
     Object localTzOffsetEx(VM* theVM, int argc, const Object* argv);
     Object unGenSym(Object symbol);

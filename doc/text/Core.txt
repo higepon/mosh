@@ -20,6 +20,20 @@ Returns:
 See Also:
   <fasl-read>
 
+Function: time
+
+show time-usage
+
+Prototype:
+> (time (fib 3))
+
+Parameters:
+  expr - expression.
+
+Returns:
+
+  unspecified.
+
 Function: fasl-read
 
 Read a object from binary port with Fast Loading binary format.
