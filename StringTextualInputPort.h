@@ -52,8 +52,6 @@ public:
     bool setPosition(int position);
     int getLineNo() const;
     Transcoder* transcoder() const;
-    Codec* codec() const;
-;
 
 private:
     ucs4string buffer_;

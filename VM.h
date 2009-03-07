@@ -146,6 +146,7 @@ public:
 protected:
     virtual int exit(int status)
     {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         ::exit(status);
         return status;
     }

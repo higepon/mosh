@@ -379,6 +379,8 @@ bench:
 
 #### test
 check: test
+	@echo "TEST results =>"
+	@echo $$?
 
 test: ./mosh all-tests.scm update
 	./mosh test/input-output-port.scm

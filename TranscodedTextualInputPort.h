@@ -51,7 +51,6 @@ public:
     Codec* codec() const;
 
 private:
-    Codec* codec_;
     BinaryInputPort* port_;
     Transcoder* transcoder_;
     ucs4string buffer_;

@@ -33,10 +33,9 @@
 #define __SCHEME_TRANSCODER__
 
 #include "scheme.h"
+#include "Codec.h"
 
 namespace scheme {
-
-class Codec;
 
 class Transcoder EXTEND_GC
 {
@@ -51,14 +50,8 @@ public:
         LS,
         NONE,
     };
-    enum ErrorHandlingMode
-    {
-        IGNORE_ERROR,
-        RAISE,
-        REPLACE,
-    };
 
-    Transcoder(Codec* codec, enum EolStyle e, enum ErrorHandlingMode m) : codec_(codec)
+    Transcoder(Codec* codec, enum EolStyle e, enum Codec::ErrorHandlingMode m) : codec_(codec)
     {
     }
     Transcoder(Codec* codec);
@@ -70,18 +63,24 @@ public:
     Object eolStyle();
     Object errorHandlingMode();
 
+    int out(BinaryOutputPort* port, ucs4char c);
+    int out(uint8_t* buf, ucs4char c);
+    ucs4char in(BinaryInputPort* port);
+    ucs4string readWholeString(BinaryInputPort* port);
+
+
     static Transcoder* nativeTranscoder();
 
 private:
     Codec* codec_;
     enum EolStyle eolStyle_;
-    enum ErrorHandlingMode errorHandlingMode_;
+    enum Codec::ErrorHandlingMode errorHandlingMode_;
 
     static enum EolStyle nativeEolStyle();
     enum EolStyle symbolToEolStyle(const Object symbol);
     Object eolStyleToSymbol(const enum EolStyle eolstyle);
-    enum ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
-    Object errorHandlingModeToSymbol(const enum ErrorHandlingMode errorHandlingMode);
+    enum Codec::ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
+    Object errorHandlingModeToSymbol(const enum Codec::ErrorHandlingMode errorHandlingMode);
 };
 
 }; // namespace scheme

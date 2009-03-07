@@ -45,10 +45,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         return Object::makeRaw(dispatch_table);
     }
 #endif
-
     returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
     returnCode_[1] = Object::makeFixnum(0);
-
     static Object callCode[] = {
         Object::makeRaw(INSTRUCTION(CALL)),
         Object::makeFixnum(0),
@@ -59,7 +57,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
     // shourt cut pointers
     EqHashTable* const nameSpace = nameSpace_.toEqHashTable();
-
     pc_ = code;
     for (;;) {
         const Object insn = *pc_++;
@@ -295,14 +292,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(argLengthObject.isFixnum());
             const int argLength        = argLengthObject.toFixnum();
             const bool isOptionalArg   = !isOptionalArgObjecg.isFalse();
-
             VM_ASSERT(freeVariablesNumObject.isFixnum());
             const int freeVariablesNum = freeVariablesNumObject.toFixnum();
             VM_ASSERT(maxStackObject.isFixnum());
             const int maxStack         =maxStackObject.toFixnum();
 
 //            LOG1("(CLOSURE) source=~a\n", sourceInfo);
-
             ac_ = Object::makeClosure(pc_, skipSize, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
             sp_ -= freeVariablesNum;
             pc_ += skipSize - 6;
@@ -422,7 +417,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object maxStack = fetchOperand();
             if (maxStack.toFixnum() + sp_ >= stackEnd_) {
-                printf("LET_FRAME: stack expansion\n");
+//                printf("LET_FRAME: stack expansion\n");
                 expandStack(stackSize_ / 10);
             }
             push(dc_);
@@ -788,7 +783,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(ac_.isClosure());
             const Closure* const c = ac_.toClosure();
             if (c->maxStack + sp_ >= stackEnd_) {
-                printf("CALL: stack expansion\n");
+//                printf("CALL: stack expansion\n");
                 expandStack(stackSize_ / 10);
             }
             COUNT_CALL(ac_);

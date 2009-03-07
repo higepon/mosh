@@ -1144,10 +1144,9 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
 
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     ucs4string ret;
-    Codec* const codec = transcoder->codec().toCodec();
 
     TRY2 {
-        for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
+        for (ucs4char c = transcoder->in(in); c != EOF; c = transcoder->in(in)) {
             ret += c;
         }
     } CATCH2(ioError) {
@@ -1170,7 +1169,7 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
         TRY_IO {
-            const int length = transcoder->codec().toCodec()->out(buf, *it);
+            const int length = transcoder->out(buf, *it);
             for (int i = 0; i < length; i++) {
                 accum.push_back(buf[i]);
             }

@@ -52,7 +52,6 @@ public:
     virtual int getLineNo() const = 0;
     virtual void unGetChar(ucs4char c) = 0;
     virtual Transcoder* transcoder() const = 0;
-    virtual Codec* codec() const = 0 ;
 
     // template method pattern
     virtual ucs4string getString(int n);

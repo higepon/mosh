@@ -41,13 +41,13 @@ using namespace scheme;
 Transcoder::Transcoder(Codec* codec) : codec_(codec)
 {
     eolStyle_ = nativeEolStyle();
-    errorHandlingMode_ = Transcoder::REPLACE;
+    errorHandlingMode_ = Codec::REPLACE;
 }
 
 Transcoder::Transcoder(Codec* codec, const Object eolStyle) : codec_(codec)
 {
     eolStyle_ = symbolToEolStyle(eolStyle);
-    errorHandlingMode_ = Transcoder::REPLACE;
+    errorHandlingMode_ = Codec::REPLACE;
 }
 
 Transcoder::Transcoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode) : codec_(codec)
@@ -68,7 +68,7 @@ Object Transcoder::errorHandlingMode()
 
 Transcoder* Transcoder::nativeTranscoder()
 {
-    return new Transcoder(UTF8Codec::getCodec(), nativeEolStyle(), Transcoder::IGNORE_ERROR);
+    return new Transcoder(UTF8Codec::getCodec(), nativeEolStyle(), Codec::IGNORE_ERROR);
 }
 
 enum Transcoder::EolStyle Transcoder::nativeEolStyle()
@@ -123,30 +123,50 @@ Object Transcoder::eolStyleToSymbol(const enum Transcoder::EolStyle eolstyle)
     }
 }
 
-enum Transcoder::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const Object symbol)
+enum Codec::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const Object symbol)
 {
     if (symbol == Symbol::IGNORE) {
-        return Transcoder::IGNORE_ERROR;
+        return Codec::IGNORE_ERROR;
     } else if (symbol == Symbol::RAISE) {
-        return Transcoder::RAISE;
+        return Codec::RAISE;
     } else if (symbol == Symbol::REPLACE) {
-        return Transcoder::REPLACE;
+        return Codec::REPLACE;
     }
     MOSH_FATAL("dont't match error-handling-mode\n");
-    return Transcoder::IGNORE_ERROR;
+    return Codec::IGNORE_ERROR;
 }
 
-Object Transcoder::errorHandlingModeToSymbol(const enum Transcoder::ErrorHandlingMode errorHandlingMode)
+Object Transcoder::errorHandlingModeToSymbol(const enum Codec::ErrorHandlingMode errorHandlingMode)
 {
     switch (errorHandlingMode) {
-    case Transcoder::IGNORE_ERROR:
+    case Codec::IGNORE_ERROR:
         return Symbol::IGNORE;
-    case Transcoder::RAISE:
+    case Codec::RAISE:
         return Symbol::RAISE;
-    case Transcoder::REPLACE:
+    case Codec::REPLACE:
         return Symbol::REPLACE;
     default:
         MOSH_FATAL("not found errorHandlingMode\n");
     }
     return Object::Undef;
+}
+
+int Transcoder::out(BinaryOutputPort* port, ucs4char c)
+{
+    return codec_->out(port, c, errorHandlingMode_);
+}
+
+int Transcoder::out(uint8_t* buf, ucs4char c)
+{
+    return codec_->out(buf, c, errorHandlingMode_);
+}
+
+ucs4char Transcoder::in(BinaryInputPort* port)
+{
+    return codec_->in(port, errorHandlingMode_);
+}
+
+ucs4string Transcoder::readWholeString(BinaryInputPort* port)
+{
+    return codec_->in(port, errorHandlingMode_);
 }

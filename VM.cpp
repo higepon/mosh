@@ -123,10 +123,10 @@ void VM::loadCompiler()
         evaluateCodeVector(libCompiler);
         const Object libMatch = FASL_GET(match_image);
         evaluateCodeVector(libMatch);
-    CATCH
+        CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);
-        exit(-1);
+        this->exit(-1);
     }
 }
 
@@ -198,7 +198,7 @@ void VM::loadFileWithGuard(const ucs4string& file)
     CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);
-        exit(-1);
+        this->exit(-1);
     }
 }
 
@@ -297,7 +297,7 @@ Object VM::callClosure2(Object closure, Object arg1, Object arg2)
     CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);
-        exit(-1);
+        this->exit(-1);
     }
 
     RESTORE_REGISTERS();
@@ -650,7 +650,7 @@ void VM::throwException(Object exception)
 
 void VM::showStack(int count, const char* file, int line)
 {
-    printf("** STACK %s:%d\n", file, line);fflush(stdout);
+   printf("** STACK %s:%d\n", file, line);fflush(stdout);
 #ifdef DEBUG_VERSION
     for (int i = count - 1; i >= 0; i--) {
         LOG2("============================================\n~d: ~a\n", Object::makeFixnum(i), index(sp_, i));
@@ -676,7 +676,7 @@ void VM::activateR6RSMode(bool isDebugExpand)
     CATCH
         // call default error handler
         defaultExceptionHandler(errorObj_);
-        exit(-1);
+        this->exit(-1);
     }
 
 }

@@ -39,10 +39,10 @@ namespace scheme {
 class Latin1Codec : public Codec
 {
 public:
-    int out(BinaryOutputPort* port, ucs4char u);
-    int out(uint8_t* buf, ucs4char u);
-    ucs4char in(BinaryInputPort* port);
-    ucs4string readWholeString(BinaryInputPort* port);
+    int out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode);
+    int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
+    ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode);
+    ucs4string readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode);
     ucs4string getCodecName() const
     {
         return UC("latin-1-codec");

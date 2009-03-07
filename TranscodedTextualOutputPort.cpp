@@ -62,7 +62,6 @@ using namespace scheme;
 
 TranscodedTextualOutputPort::TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder)
   : port_(port),
-    codec_(coder->codec().toCodec()),
     transcoder_(coder)
 {
 }
@@ -86,7 +85,7 @@ int TranscodedTextualOutputPort::close()
 
 void TranscodedTextualOutputPort::putChar(ucs4char c)
 {
-    codec_->out(port_, c);
+    transcoder_->out(port_, c);
 }
 
 BinaryOutputPort* TranscodedTextualOutputPort::binaryPort() const

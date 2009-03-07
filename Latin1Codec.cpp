@@ -49,31 +49,31 @@ Codec* Latin1Codec::getCodec()
     return codec;
 }
 
-int Latin1Codec::out(BinaryOutputPort* port, ucs4char u)
+int Latin1Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
 {
     static uint8_t buf[1];
-    const int size = out(buf, u);
+    const int size = out(buf, u, mode);
     return port->putU8(buf, size);
 }
 
-int Latin1Codec::out(uint8_t* buf, ucs4char u)
+int Latin1Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     buf[0] = (uint8_t)u;
     return 1;
 }
 
-ucs4char Latin1Codec::in(BinaryInputPort* port)
+ucs4char Latin1Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     const int f = port->getU8();
     if (f == EOF) return EOF;
     return (uint8_t)(f & 0xff);
 }
 
-ucs4string Latin1Codec::readWholeString(BinaryInputPort* port)
+ucs4string Latin1Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     ucs4string ret;
     for (;;) {
-        const ucs4char ch = in(port);
+        const ucs4char ch = in(port, mode);
         if (EOF == ch) {
             break;
         }

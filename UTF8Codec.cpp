@@ -51,14 +51,14 @@ Codec* UTF8Codec::getCodec()
 }
 
 // Be careful, buf is shared.
-int UTF8Codec::out(BinaryOutputPort* port, ucs4char u)
+int UTF8Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
 {
     static uint8_t buf[4];
-    const int size = out(buf, u);
+    const int size = out(buf, u, mode);
     return port->putU8(buf, size);
 }
 
-int UTF8Codec::out(uint8_t* buf, ucs4char u)
+int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     // UTF8-1
     if (u < 0x80) {
@@ -94,7 +94,7 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
     return (0x80 <= b && b <= 0xbf);
 }
 
-ucs4char UTF8Codec::in(BinaryInputPort* port)
+ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     const int f = port->getU8();
     if (f == EOF) return EOF;
@@ -147,11 +147,11 @@ ucs4char UTF8Codec::in(BinaryInputPort* port)
     return ' ';
 }
 
-ucs4string UTF8Codec::readWholeString(BinaryInputPort* port)
+ucs4string UTF8Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     ucs4string ret;
     for (;;) {
-        const ucs4char ch = in(port);
+        const ucs4char ch = in(port, mode);
         if (EOF == ch) {
             break;
         }

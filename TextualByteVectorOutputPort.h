@@ -55,7 +55,6 @@ public:
 
 private:
     Transcoder* transcoder_;
-    Codec* codec_;
     gc_vector<uint8_t> v_;
 };
 

@@ -91,13 +91,13 @@ UTF32Codec::UTF32Codec(int endianness) : isLittleEndian_(endianness == UTF_32LE)
 #endif
 }
 
-int UTF32Codec::out(BinaryOutputPort* port, ucs4char u)
+int UTF32Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
 {
     MOSH_ASSERT(false);
     return 0;
 }
 
-int UTF32Codec::out(uint8_t* buf, ucs4char u)
+int UTF32Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     if (isLittleEndian_) {
         buf[0] = u;
@@ -113,7 +113,7 @@ int UTF32Codec::out(uint8_t* buf, ucs4char u)
     return 4;
 }
 
-ucs4char UTF32Codec::in(BinaryInputPort* port)
+ucs4char UTF32Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     int a = port->getU8();
     if (EOF == a) return EOF;
@@ -139,7 +139,7 @@ ucs4char UTF32Codec::in(BinaryInputPort* port)
     }
 }
 
-ucs4string UTF32Codec::readWholeString(BinaryInputPort* port)
+ucs4string UTF32Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     MOSH_ASSERT(false);
     return UC("");

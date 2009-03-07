@@ -57,7 +57,6 @@ using namespace scheme;
 TranscodedTextualInputOutputPort::TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder)
   : port_(port),
     transcoder_(coder),
-    codec_(coder->codec().toCodec()),
     buffer_(UC("")),
     line_(1)
 {
@@ -100,7 +99,7 @@ ucs4char TranscodedTextualInputOutputPort::getChar()
 {
     ucs4char c;
     if (buffer_.empty()) {
-        c= codec_->in(port_);
+        c= transcoder_->in(port_);
     } else {
         c = buffer_[buffer_.size() - 1];
         buffer_.erase(buffer_.size() - 1, 1);
@@ -127,11 +126,6 @@ Transcoder* TranscodedTextualInputOutputPort::transcoder() const
     return transcoder_;
 }
 
-Codec* TranscodedTextualInputOutputPort::codec() const
-{
-    return codec_;
-}
-
 // TextualOutputPort interfaces
 void TranscodedTextualInputOutputPort::putChar(ucs4char c)
 {
@@ -139,7 +133,7 @@ void TranscodedTextualInputOutputPort::putChar(ucs4char c)
         // remove 1 charcter
         buffer_.erase(0, 1);
     }
-    codec_->out(port_, c);
+    transcoder_->out(port_, c);
 }
 
 void TranscodedTextualInputOutputPort::flush()

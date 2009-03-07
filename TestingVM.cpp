@@ -50,5 +50,6 @@ using namespace scheme;
 int TestingVM::exit(int status)
 {
     // Testing VM never exit on any errror.
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return status;
 }

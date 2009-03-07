@@ -121,9 +121,9 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
     const int skipSize = (skipBOM ? 4 : 0);
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
     ucs4string ret;
-    UTF32Codec* codec = (UTF32Codec*)UTF32Codec::getCodec(endianness);
+    Codec* codec = UTF32Codec::getCodec(endianness);
     TRY_IO {
-        for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
+        for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
             ret += c;
         }
         return Object::makeString(ret);
@@ -163,9 +163,9 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     const int skipSize = (skipBOM ? 2 : 0);
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
     ucs4string ret;
-    UTF16Codec* codec = (UTF16Codec*)UTF16Codec::getCodec(endianness);
+    Codec* codec = UTF16Codec::getCodec(endianness);
     TRY_IO {
-        for (ucs4char c = codec->in(in); c != EOF; c = codec->in(in)) {
+        for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
             ret += c;
         }
         return Object::makeString(ret);

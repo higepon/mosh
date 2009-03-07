@@ -51,7 +51,6 @@ public:
     ucs4string toString();
 private:
     BinaryOutputPort* port_;
-    Codec* codec_;
     Transcoder* transcoder_;
 };
 

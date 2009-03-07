@@ -91,13 +91,13 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 #endif
 }
 
-int UTF16Codec::out(BinaryOutputPort* port, ucs4char u)
+int UTF16Codec::out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
 {
     MOSH_ASSERT(false);
     return 0;
 }
 
-int UTF16Codec::out(uint8_t* buf, ucs4char ch)
+int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
         throwIOError("character out of utf16 range");
@@ -133,7 +133,7 @@ int UTF16Codec::out(uint8_t* buf, ucs4char ch)
     }
 }
 
-ucs4char UTF16Codec::in(BinaryInputPort* port)
+ucs4char UTF16Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     const int a = port->getU8();
     if (EOF == a) return EOF;
@@ -157,7 +157,7 @@ ucs4char UTF16Codec::in(BinaryInputPort* port)
     return (u << 16) | (part1 << 10) | part2;
 }
 
-ucs4string UTF16Codec::readWholeString(BinaryInputPort* port)
+ucs4string UTF16Codec::readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
     MOSH_ASSERT(false);
     return UC("");

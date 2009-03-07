@@ -38,7 +38,7 @@
 
 using namespace scheme;
 
-TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder), codec_(transcoder->codec().toCodec())
+TextualByteVectorOutputPort::TextualByteVectorOutputPort(Transcoder* transcoder) : transcoder_(transcoder)
 {
 }
 
@@ -49,7 +49,7 @@ TextualByteVectorOutputPort::~TextualByteVectorOutputPort()
 void TextualByteVectorOutputPort::putChar(ucs4char c)
 {
     uint8_t buf[4];
-    const int size = codec_->out(buf, c);
+    const int size = transcoder_->out(buf, c);
     for (int i = 0; i < size; i++) {
         v_.push_back(buf[i]);
     }

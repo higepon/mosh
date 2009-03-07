@@ -66,7 +66,6 @@ public:
     int getLineNo() const;
     void unGetChar(ucs4char c);
     Transcoder* transcoder() const;
-    Codec* codec() const;
 
     // TextualOutputPort interfaces
     void putChar(ucs4char c);
@@ -78,7 +77,6 @@ public:
 private:
     BinaryInputOutputPort* port_;
     Transcoder* transcoder_;
-    Codec* codec_;
     ucs4string buffer_;
     int line_;
 };

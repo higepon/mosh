@@ -39,11 +39,10 @@ namespace scheme {
 class UTF8Codec : public Codec
 {
 public:
-    int out(BinaryOutputPort* port, ucs4char u);
-    int out(uint8_t* buf, ucs4char u);
-    bool isUtf8Tail(uint8_t b);
-    ucs4char in(BinaryInputPort* port);
-    ucs4string readWholeString(BinaryInputPort* port);
+    int out(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode);
+    int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
+    ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode);
+    ucs4string readWholeString(BinaryInputPort* port, enum ErrorHandlingMode mode);
     ucs4string getCodecName() const
     {
         return UC("utf-8-codec");
@@ -54,6 +53,7 @@ private:
     UTF8Codec() {}
     UTF8Codec(const UTF8Codec& codec);
     UTF8Codec& operator=(const UTF8Codec& codec);
+    bool isUtf8Tail(uint8_t b);
 };
 
 }; // namespace scheme

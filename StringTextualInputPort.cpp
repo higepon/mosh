@@ -117,7 +117,3 @@ Transcoder* StringTextualInputPort::transcoder() const
     MOSH_FATAL("todo");
 }
 
-Codec* StringTextualInputPort::codec() const
-{
-    MOSH_FATAL("todo");
-}

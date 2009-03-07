@@ -60,14 +60,23 @@ class VMTest : public testing::Test {
 protected:
     VM* theVM_;
     virtual void SetUp() {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         mosh_init();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Transcoder* transcoder = Transcoder::nativeTranscoder();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_->loadCompiler();
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_->setValueString(UC("%loadpath"), Object::False);
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
 };
 
@@ -108,8 +117,11 @@ TEST_F(VMTest, StackTrace1) {
 }
 
 TEST_F(VMTest, StackTrace2) {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->activateR6RSMode(false);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
                  " Stack trace:\n"
@@ -124,6 +136,7 @@ TEST_F(VMTest, StackTrace2) {
                  "    9. (dynamic-wind in body out):  compiler-with-library.scm:808\n"
                  "    10. (<top-level>): <unknown location>\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
 TEST_F(VMErrorPortTest, StackTrace3) {
