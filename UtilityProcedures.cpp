@@ -30,6 +30,7 @@
  */
 
 #include <sys/time.h>
+#include <sys/resource.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
