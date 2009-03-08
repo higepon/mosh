@@ -105,7 +105,7 @@ static bool isEmpty(Object fileOptions)
 }
 
 /*
-  file-options
+    file-options
 
     (file-options)
       If file exists:     raise &file-already-exists
@@ -1264,63 +1264,120 @@ Object scheme::sysGetBytevectorEx(VM* theVM, int argc, const Object* argv)
     return Object::makeByteVector(p->getByteVector());
 }
 
+/*
+    file-options
+
+    (file-options)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create)
+      If file exists:     truncate
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-fail)
+      If file exists:     truncate
+      If does not exist:  create new file
+    (file-options no-truncate)
+      If file exists:     raise &file-already-exists
+      If does not exist:  create new file
+    (file-options no-create no-fail)
+      If file exists:     truncate
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+    (file-options no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  create new file
+    (file-options no-create no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  raise &file-does-not-exist
+    (file-options no-create no-fail no-truncate)
+      If file exists:     set port position to 0 (overwriting)
+      If does not exist:  [N.B.] R6RS say nothing about this case, we choose raise &file-does-not-exist
+
+*/
 Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-file-output-port");
     checkArgumentLengthBetween(1, 4);
-    BinaryOutputPort* out = NULL;
+    BinaryOutputPort* port = NULL;
     Transcoder* transcoder = NULL;
+    int openFlags = 0;
+
+    argumentAsString(0, path);
+    const bool isFileExist = fileExistsP(path->data());
 
     if (argc == 1) {
-        argumentAsString(0, filename);
-        // default buffer mode is Block
-        out = new BlockBufferedFileBinaryOutputPort(filename->data());
-    } else if (argc == 2) {
-        argumentAsString(0, filename);
-        argumentCheckList(1, fileOptions);
-        // default buffer mode is Block
-        out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
-    } else if (argc == 3) {
-        argumentAsString(0, filename);
-        argumentCheckList(1, fileOptions);
-        argumentCheckSymbol(2, bufferMode);
-
-        if (bufferMode == Symbol::BLOCK) {
-            out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
-        } else if (bufferMode == Symbol::LINE) {
-            out = new LineBufferedFileBinaryOutputPort(filename->data(), fileOptions);
-        } else if (bufferMode == Symbol::NONE) {
-            out = new FileBinaryOutputPort(filename->data(), fileOptions);
-        } else {
-            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+        if (isFileExist) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
             return Object::Undef;
         }
-    } else if (argc == 4) {
-        argumentAsString(0, filename);
+        // default buffer mode is Block
+        port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
+    } else {
         argumentCheckList(1, fileOptions);
-        argumentCheckSymbol(2, bufferMode);
 
-        if (bufferMode == Symbol::BLOCK) {
-            out = new BlockBufferedFileBinaryOutputPort(filename->data(), fileOptions);
-        } else if (bufferMode == Symbol::LINE) {
-            out = new LineBufferedFileBinaryOutputPort(filename->data(), fileOptions);
-        } else if (bufferMode == Symbol::NONE) {
-            out = new FileBinaryOutputPort(filename->data(), fileOptions);
-        } else {
-            callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+        const bool emptyP = isEmpty(fileOptions);
+        const bool noCreateP = isNoCreate(fileOptions);
+        const bool noTruncateP = isNoTruncate(fileOptions);
+        const bool noFailP = isNoFail(fileOptions);
+
+        if (isFileExist && emptyP) {
+            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
             return Object::Undef;
+        } else if (noCreateP && noTruncateP) {
+            if (!isFileExist) {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return Object::Undef;
+            }
+        } else if (noCreateP) {
+            if (isFileExist) {
+                openFlags |= O_TRUNC;
+            } else {
+                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
+                return Object::Undef;
+            }
+        } else if (noFailP && noTruncateP) {
+            if (!isFileExist) {
+                openFlags |= O_TRUNC;
+            }
+        } else if (noFailP) {
+            openFlags |= O_TRUNC;
+        } else if (noTruncateP) {
+            if (isFileExist) {
+                callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
+                return Object::Undef;
+            } else {
+                openFlags |= O_TRUNC;
+            }
         }
-        argumentCheckTranscoderOrFalse(3, maybeTranscoder);
-        if (maybeTranscoder != Object::False) {
-            transcoder = maybeTranscoder.toTranscoder();
+
+        if (argc == 2) {
+            port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
+        } else {
+            argumentCheckSymbol(2, bufferMode);
+
+            if (bufferMode == Symbol::BLOCK) {
+                port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
+            } else if (bufferMode == Symbol::LINE) {
+                port = new LineBufferedFileBinaryOutputPort(path->data(), openFlags);
+            } else if (bufferMode == Symbol::NONE) {
+                port = new FileBinaryOutputPort(path->data(), openFlags);
+            } else {
+                callErrorAfter(theVM, procedureName, "invalid buffer-mode option", L1(argv[2]));
+                return Object::Undef;
+            }
+            if (argc == 4) {
+                argumentCheckTranscoderOrFalse(3, maybeTranscoder);
+                if (maybeTranscoder != Object::False) {
+                    transcoder = maybeTranscoder.toTranscoder();
+                }
+            }
         }
     }
 
-    if ((out != NULL) && (MOSH_SUCCESS == out->open())) {
+    if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
         if (transcoder == NULL) {
-            return Object::makeBinaryOutputPort(out);
+            return Object::makeBinaryOutputPort(port);
         } else {
-            return Object::makeTextualOutputPort(out, transcoder);
+            return Object::makeTextualOutputPort(port, transcoder);
         }
     } else {
         callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));

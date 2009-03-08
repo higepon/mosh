@@ -40,17 +40,9 @@ namespace scheme {
 class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    enum {
-        NONE        = 0,
-
-        NO_CREATE   = 1 << 0,
-        NO_FAIL     = 1 << 1,
-        NO_TRUNCATE = 1 << 2,
-    };
-
     FileBinaryOutputPort(int fd);
     FileBinaryOutputPort(ucs4string file);
-    FileBinaryOutputPort(ucs4string file, Object list);
+    FileBinaryOutputPort(ucs4string file, int openFlags);
     virtual ~FileBinaryOutputPort();
 
     int putU8(uint8_t v);
@@ -75,7 +67,6 @@ protected:
     int position_;
 
     int writeToFile(uint8_t* buf, size_t size);
-    void openFile(int fileOptionsFlag);
 };
 
 }; // namespace scheme

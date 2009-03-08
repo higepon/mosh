@@ -42,7 +42,7 @@ class BlockBufferedFileBinaryOutputPort : public BufferedFileBinaryOutputPort
 public:
     BlockBufferedFileBinaryOutputPort(int fd) : BufferedFileBinaryOutputPort(fd) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
-    BlockBufferedFileBinaryOutputPort(ucs4string file, Object list) : BufferedFileBinaryOutputPort(file, list) {}
+    BlockBufferedFileBinaryOutputPort(ucs4string file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
     virtual ~BlockBufferedFileBinaryOutputPort() {}
 
     virtual enum bufferMode bufferMode() const

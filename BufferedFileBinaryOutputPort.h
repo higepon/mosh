@@ -40,15 +40,9 @@ namespace scheme {
 class BufferedFileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    enum {
-        NO_CREATE   = 1 << 0,
-        NO_FAIL     = 1 << 1,
-        NO_TRUNCATE = 1 << 2,
-    };
-
     BufferedFileBinaryOutputPort(int fd);
     BufferedFileBinaryOutputPort(ucs4string file);
-    BufferedFileBinaryOutputPort(ucs4string file, Object list);
+    BufferedFileBinaryOutputPort(ucs4string file, int openFlags);
     virtual ~BufferedFileBinaryOutputPort();
 
     int putU8(uint8_t v);

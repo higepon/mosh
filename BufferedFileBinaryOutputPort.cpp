@@ -53,15 +53,13 @@ BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fi
 
 BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
 {
-    // todo fileOptions process
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, Object list) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, int openFlags) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
 {
-    // todo fileOptions process
-    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
+    fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT | openFlags, 0644);
     initializeBuffer();
 }
 
