@@ -384,6 +384,7 @@ check: test
 	@echo $$?
 
 test: ./mosh all-tests.scm update
+	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
 	./mosh test/input-port.scm
 	./mosh test/output-port.scm

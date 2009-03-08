@@ -94,7 +94,16 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
-        throwIOError("character out of utf16 range");
+        if (mode == Codec::RAISE) {
+            throwIOError2(IOError::ENCODE, "character out of utf16 range");
+        } else if (mode == Codec::REPLACE) {
+            buf[0] = 0xff;
+            buf[1] = 0xfd;
+            return 2;
+        } else {
+            MOSH_ASSERT(mode == Codec::IGNORE_ERROR);
+            return 0;
+        }
     }
     if (ch < 0x10000) {
         if (isLittleEndian_) {
@@ -127,12 +136,25 @@ int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
     }
 }
 
+#define decodeError() \
+    if (mode == Codec::RAISE) { \
+        throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
+    } else if (mode == Codec::REPLACE) {                                \
+        return 0xFFFD;                                                  \
+    } else {                                                            \
+        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        goto retry;                                                     \
+    }
+
 ucs4char UTF16Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
+retry:
     const int a = port->getU8();
     if (EOF == a) return EOF;
     const int b = port->getU8();
-    if (EOF == b) throwIOError("malformed utf16 byte sequence");
+    if (EOF == b) {
+        decodeError();
+    }
 
     const uint16_t val1 = isLittleEndian_ ? ((b << 8) | a) : ((a << 8) | b);
     if (val1 < 0xD800 || val1 > 0xDFFF) {
@@ -140,10 +162,13 @@ ucs4char UTF16Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
     }
 
     const int c = port->getU8();
-    if (EOF == c) throwIOError("malformed utf16 byte sequence");
+    if (EOF == c) {
+        decodeError();
+    }
     const int d = port->getU8();
-    if (EOF == d) throwIOError("malformed utf16 byte sequence");
-
+    if (EOF == d) {
+        decodeError();
+    }
     const uint16_t val2 = isLittleEndian_ ? ((d << 8) | c) : ((c << 8) | d);
     const int u = ((val1 >> 6) & 0x0D) + 1;
     const int part1 = val1 & 63;

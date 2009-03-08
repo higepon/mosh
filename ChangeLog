@@ -4,6 +4,8 @@
 
 2009-03-07  higepon  <higepon@users.sourceforge.jp>
 
+        * UTF8Codec.cpp (in): Now (utf-16-codec) raises &i/o-decoding.
+
         * Added time macro to (mosh) library.
 
         * bench/run-mosh.scm: Added. Thanks to naoya_t.

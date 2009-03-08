@@ -3,7 +3,7 @@
 (import (rnrs)
         (rnrs mutable-pairs)
         (srfi :19)
-        (mosh)
+        (except (mosh) time)
         (system))
 
 (define s19-tests (list))

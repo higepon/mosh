@@ -180,9 +180,136 @@
                 (lambda (x) (read-char x))))
 
 
+;; utf-16-codec
+;;   error-handling-mode: raise
+(test/exception i/o-decoding-error?
+                (bytevector->string #vu8(97) (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise))))
 
 
-;; todo igreno error with transcoder
+;; utf-16-codec
+;;   error-handling-mode: ignore
+(test* (bytevector->string #vu8(97) (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode ignore)))
+       "")
+
+;; utf-16-code
+;;   error-handling-mode: replace
+(let ([s (bytevector->string #vu8(97) (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode replace)))])
+  (test* (string-ref s 0) (integer->char #xfffd)))
+
+;; utf-16-codec
+;;  read
+(test/exception i/o-decoding-error?
+                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                       (file-options no-truncate no-fail)
+                                                       (buffer-mode none)
+                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                         read))
+
+(test/exception i/o-decoding-error?
+                 (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                       (file-options no-truncate no-fail)
+                                                       (buffer-mode none)
+                                                       (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                         (lambda (x) (read x))))
+
+;; utf-16-codec
+;;  peek-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                peek-char))
+
+;; utf-16-codec
+;;  get-datum
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                get-datum))
+
+;; utf-16-codec
+;;  get-string
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                get-string-all))
+
+;; utf-16-codec
+;;  get-string-n!
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (get-string-n! x "abc" 0 3))))
+
+;; utf-16-codec
+;;  get-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                get-char))
+
+;; utf-16-codec
+;;  get-string-n
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (get-string-n x 3))))
+
+;; utf-16-codec
+;;  port-eof?
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                port-eof?))
+
+;; utf-16-codec
+;;  get-line
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                get-line))
+
+;; utf-16-codec
+;;  lookahead-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                lookahead-char))
+
+;; utf-16-codec
+;;  read-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                read-char))
+
+;; utf-16-codec
+;;  read-char
+(test/exception i/o-decoding-error?
+                (call-with-port (open-file-input-port "./test/invalid-utf16.txt"
+                                                      (file-options no-truncate no-fail)
+                                                      (buffer-mode none)
+                                                      (make-transcoder (utf-16-codec) (native-eol-style) (error-handling-mode raise)))
+                (lambda (x) (read-char x))))
 
 
-;(test-end)
+(test-end)

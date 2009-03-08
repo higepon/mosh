@@ -1441,27 +1441,36 @@
                            (syntax (n* ...)))
                          (syntax (,mk '(n* ...))))]))))))])))
 
-;;   (define time-macro
-;;     (lambda (stx)
-;;       (syntax-match stx ()
-;;         ((_ expr)
-;;          (let ([str
-;;                 (let-values ([(p e) (open-string-output-port)])
-;;                   (write (syntax->datum expr) p)
-;;                   (e))])
-;;            (bless `(time-it ,str (lambda () ,expr))))))))
-
   (define time-macro
     (lambda (stx)
       (syntax-match stx ()
         ((_ expr)
+         (let ([str
+                (let-values ([(p e) (open-string-output-port)])
+                  (write (syntax->datum expr) p)
+                  (e))])
+           (bless `(time-it ,str (lambda () ,expr))))))))
+
+
+  #;(define time-macro
+    (lambda (stx)
+      (syntax-match stx ()
+        ((_ expr)
            (bless `(let* ([start (time-usage)]
-                          [result (apply (lambda () ,expr) '())]
-                          [end (time-usage)] [used (map - end start)]
-                          [real (car used)] [user (cadr used)] [sys (caddr used)])
+                          [result ((lambda () ,expr))]
+                          [end (time-usage)]
+                          [used (map - end start)]
+                          [real (car used)]
+                          [user (cadr used)]
+                          [sys (caddr used)])
                      (format #t "~%;;~a real ~a user ~a sys~%~!" real user sys)
                      result))))))
 
+;;   (define time-macro
+;;     (lambda (stx)
+;;       (syntax-match stx ()
+;;         ((_ expr)
+;;            (bless `(lambda () 3))))))
 
 
   (define delay-macro
