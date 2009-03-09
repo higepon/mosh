@@ -178,7 +178,9 @@ int BufferedFileBinaryInputOutputPort::lookaheadU8()
     if (0 == readFromBuffer(&c, 1)) {
         return EOF;
     } else {
+        MOSH_ASSERT(bufferIndex_ >= 0);
         bufferIndex_--;
+        MOSH_ASSERT(bufferIndex_ >= 0);
         return c;
     }
 }
@@ -259,7 +261,7 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 void BufferedFileBinaryInputOutputPort::flush()
 {
     const int result = lseek(fd_, position_ - bufferIndex_, SEEK_SET);
-    MOSH_ASSERT(result >= 0);
+//    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
 
@@ -271,6 +273,7 @@ void BufferedFileBinaryInputOutputPort::internalFlush()
         const int writtenSize = writeToFile(buf, bufferIndex_);
         buf += writtenSize;
         bufferIndex_ -= writtenSize;
+        MOSH_ASSERT(bufferIndex_ >= 0);
     }
     // Now read/write buffer is empty
     MOSH_ASSERT(bufferIndex_ == 0);
