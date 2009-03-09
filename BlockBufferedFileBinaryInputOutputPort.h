@@ -52,6 +52,7 @@ protected:
         }
         size_t writeSize = 0;
         const int origPositon = lseek(fd_, 0, SEEK_CUR);
+        MOSH_ASSERT(origPositon >= 0);
         bool needUnwind = false;
 
         while (writeSize < reqSize) {

@@ -389,8 +389,7 @@ Object scheme::setPortPositionDEx(VM* theVM, int argc, const Object* argv)
         if (port->setPosition(position)) {
             return Object::Undef;
         } else {
-            callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[1]));
-            return Object::Undef;
+            return callIOInvalidPositionAfter(theVM, procedureName, "invalid port position", L2(argv[0], argv[1]), argv[1]);
         }
     } else {
         callAssertionViolationAfter(theVM, procedureName, "port doesn't support set-port-position!", L1(argv[0]));

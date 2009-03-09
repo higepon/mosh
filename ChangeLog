@@ -1,5 +1,9 @@
 2009-03-09  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp : (set-port-position! port position) can raise i/o-invalid-position-error.
+
+        * doc/html/images : Added for documents.
+
         * We found a bug on serialize-library, we will fix it later.
 
         * scripts/scmc2fasl.scm (main): Added sanity-check.

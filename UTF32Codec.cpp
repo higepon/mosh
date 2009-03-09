@@ -107,16 +107,33 @@ int UTF32Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
     return 4;
 }
 
+#define decodeError() \
+    if (mode == Codec::RAISE) { \
+        throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
+    } else if (mode == Codec::REPLACE) {                                \
+        return 0xFFFD;                                                  \
+    } else {                                                            \
+        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        goto retry;                                                     \
+    }
+
 ucs4char UTF32Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
+retry:
     int a = port->getU8();
     if (EOF == a) return EOF;
     int b = port->getU8();
-    if (EOF == b) throwIOError("malformed utf32 byte sequence");
+    if (EOF == b) {
+        decodeError();
+    }
     int c = port->getU8();
-    if (EOF == c)  throwIOError("malformed utf32 byte sequence");
+    if (EOF == c) {
+        decodeError();
+    }
     int d = port->getU8();
-    if (EOF == d)  throwIOError("malformed utf32 byte sequence");
+    if (EOF == d) {
+        decodeError();
+    }
 
     if (isLittleEndian_) {
         return

@@ -180,6 +180,13 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
     theVM->throwException(condition);
 }
 
+Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position)
+{
+    raiseAfter1(theVM, UC("&i/o-invalid-position-rcd"), UC("&i/o-invalid-position"), position, who, message, irritants);
+    return Object::Undef;
+}
+
+
 void scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);

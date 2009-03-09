@@ -258,7 +258,8 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    lseek(fd_, position_ - bufferIndex_, SEEK_SET);
+    const int result = lseek(fd_, position_ - bufferIndex_, SEEK_SET);
+    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
 
@@ -351,6 +352,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     MOSH_ASSERT(requestSize >= 0);
 
     const int origPositon = lseek(fd_, 0, SEEK_CUR);
+    MOSH_ASSERT(origPositon >= 0);
     bool needUnwind = false;
 
     for (int readSize = 0 ;;) {
@@ -363,7 +365,8 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
-                lseek(fd_, origPositon, SEEK_SET);
+                const int result = lseek(fd_, origPositon, SEEK_SET);
+                MOSH_ASSERT(result >= 0);
             }
             // done
             return requestSize;
@@ -380,7 +383,8 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
-                    lseek(fd_, origPositon, SEEK_SET);
+                    const int result = lseek(fd_, origPositon, SEEK_SET);
+                    MOSH_ASSERT(result >= 0);
                 }
                 return readSize;
             }

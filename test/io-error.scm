@@ -312,4 +312,12 @@
                 (lambda (x) (read-char x))))
 
 
+(test/exception i/o-invalid-position-error?
+                (let ([port (open-file-input-port "./test/invalid-utf8.txt"
+                                                  (file-options no-truncate no-fail)
+                                                  (buffer-mode none))])
+                  (set-port-position! port -1)))
+
 (test-end)
+
+

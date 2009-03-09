@@ -136,11 +136,14 @@ int FileBinaryInputOutputPort::lookaheadU8()
 {
     uint8_t c;
     const int origPositon = lseek(fd_, 0, SEEK_CUR);
+    MOSH_ASSERT(origPositon >= 0);
     if (0 == readFromFile(&c, 1)) {
-        lseek(fd_, origPositon, SEEK_SET);
+        const int result = lseek(fd_, origPositon, SEEK_SET);
+        MOSH_ASSERT(result >= 0);
         return EOF;
     } else {
-        lseek(fd_, origPositon, SEEK_SET);
+        const int result = lseek(fd_, origPositon, SEEK_SET);
+        MOSH_ASSERT(result >= 0);
         return c;
     }
 }

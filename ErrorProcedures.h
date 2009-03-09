@@ -44,6 +44,7 @@ typedef struct IOError
         type(type),
         message(message),
         irritants(irritants) {}
+
     IOError() {}
 
     int type;
@@ -82,7 +83,7 @@ typedef struct IOError
 
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
     Object callIOErrorAfter(VM* theVM, IOError e);
-
+    Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
     Object throwIOError(Object message);
     Object throwEx(VM* theVM, int argc, const Object* argv);
     Object errorEx(VM* theVM, int argc, const Object* argv);
