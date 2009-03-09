@@ -1452,7 +1452,7 @@
            (bless `(time-it ,str (lambda () ,expr))))))))
 
 
-  #;(define time-macro
+#;  (define time-macro
     (lambda (stx)
       (syntax-match stx ()
         ((_ expr)
