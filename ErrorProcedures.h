@@ -55,6 +55,8 @@ typedef struct IOError
     enum {
         DECODE,
         ENCODE,
+        READ,
+        WRITE,
         forbidden_comma
     };
 } IOError;
@@ -88,10 +90,12 @@ typedef struct IOError
     Object throwEx(VM* theVM, int argc, const Object* argv);
     Object errorEx(VM* theVM, int argc, const Object* argv);
     Object assertionViolationEx(VM* theVM, int argc, const Object* argv);
-    void callIoFileNotExist(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
-    void callIoFileAlreadyExist(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
-    void callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
-    void callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants  = Object::Nil);
+    Object callIoFileProtectionAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
+    Object callIoFileNotExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
+    Object callIoFileAlreadyExistAfter(VM* theVM, Object filname, Object who, Object message, Object irritants = Object::Nil);
+    Object callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+    Object callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
     void callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     void callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);

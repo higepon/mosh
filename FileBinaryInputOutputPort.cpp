@@ -44,6 +44,8 @@
 #include "Symbol.h"
 #include "Bignum.h"
 #include "FileBinaryInputOutputPort.h"
+#include "ErrorProcedures.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -125,7 +127,7 @@ int FileBinaryInputOutputPort::fileNo() const
 int FileBinaryInputOutputPort::getU8()
 {
     uint8_t c;
-    if (0 == readFromFile(&c, 1)) {
+    if (0 == readFromFd(fd_, &c, 1)) {
         return EOF;
     } else {
         return c;
@@ -137,7 +139,7 @@ int FileBinaryInputOutputPort::lookaheadU8()
     uint8_t c;
     const int origPositon = lseek(fd_, 0, SEEK_CUR);
     MOSH_ASSERT(origPositon >= 0);
-    if (0 == readFromFile(&c, 1)) {
+    if (0 == readFromFd(fd_, &c, 1)) {
         const int result = lseek(fd_, origPositon, SEEK_SET);
         MOSH_ASSERT(result >= 0);
         return EOF;
@@ -150,7 +152,7 @@ int FileBinaryInputOutputPort::lookaheadU8()
 
 int FileBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-    const int readSize = readFromFile(buf, reqSize);
+    const int readSize = readFromFd(fd_, buf, reqSize);
     return readSize;
 }
 
@@ -169,7 +171,7 @@ int FileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
     }
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    const int readSize = readFromFile(dest, restSize);
+    const int readSize = readFromFd(fd_, dest, restSize);
     *buf = dest;
     return readSize;
 }
@@ -187,7 +189,7 @@ int FileBinaryInputOutputPort::putU8(uint8_t v)
 
 int FileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
-    const int writtenSize = writeToFile(v, size);
+    const int writtenSize = writeToFd(fd_, v, size);
     return writtenSize;
 }
 
@@ -199,7 +201,7 @@ int FileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */
 int FileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
     uint8_t* buf = bv->data();
-    const int writtenSize = writeToFile(&buf[start], count);
+    const int writtenSize = writeToFd(fd_, &buf[start], count);
     return writtenSize;
 }
 
@@ -207,38 +209,4 @@ void FileBinaryInputOutputPort::flush()
 {
 }
 
-// private
-int FileBinaryInputOutputPort::readFromFile(uint8_t* buf, size_t size)
-{
-    for (;;) {
-        const int result = read(fd_, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            return result;
-        }
-    }
-}
-
-int FileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
-{
-    MOSH_ASSERT(fd_ != INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd_, buf, count);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result >= 0) {
-                return result;
-            } else {
-                MOSH_FATAL("todo");
-                // todo error check. we may have isErrorOccured flag.
-                return result;
-            }
-        }
-    }
-}
 

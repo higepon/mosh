@@ -318,6 +318,22 @@
                                                   (buffer-mode none))])
                   (set-port-position! port -1)))
 
+;; file-is-read-only
+(test/exception i/o-file-is-read-only-error?
+                (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
+
+(test/exception i/o-file-is-read-only-error?
+                (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block))
+
+
+; we can't "svn add" this file, but test is OK.
+;(open-file-output-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-file-input/output-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-file-input-port "./test/can-not-read-write.txt" (file-options no-fail) 'block)
+;(open-input-file "./test/can-not-read-write.txt")
+;(open-output-file "./test/can-not-read-write.txt")
+
+
 (test-end)
 
 

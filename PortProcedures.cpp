@@ -74,6 +74,46 @@
 
 using namespace scheme;
 
+int scheme::readFromFd(int fd, uint8_t* buf, size_t size)
+{
+    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
+    for (;;) {
+        const int result = read(fd, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // read again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::READ, strerror(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+}
+
+int scheme::writeToFd(int fd, uint8_t* buf, size_t count)
+{
+    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
+
+    for (;;) {
+        const int result = write(fd, buf, count);
+        if (result < 0 && errno == EINTR) {
+            // write again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::WRITE, strerror(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+}
+
+
 bool scheme::fileExistsP(const ucs4string& path)
 {
     return access(path.ascii_c_str(), F_OK) == 0;
@@ -81,8 +121,14 @@ bool scheme::fileExistsP(const ucs4string& path)
 
 bool scheme::fileWritableP(const ucs4string& path)
 {
-    return access(path.ascii_c_str(), R_OK | W_OK) == 0;
+    return access(path.ascii_c_str(), W_OK | R_OK) == 0;
 }
+
+bool scheme::fileReadableP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), R_OK) == 0;
+}
+
 
 static bool isNoFail(Object fileOptions)
 {
@@ -143,12 +189,13 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
     argumentAsString(0, path);
     const bool isFileExist = fileExistsP(path->data());
+    const bool isReadable = fileReadableP(path->data());
 
     if (argc == 1) {
         if (isFileExist) {
-            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
-            return Object::Undef;
+            return callIoFileAlreadyExistAfter(theVM, procedureName, argv[0], "file already exists", L1(argv[0]));
         }
+
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
     } else {
@@ -160,19 +207,16 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         const bool noFailP = isNoFail(fileOptions);
 
         if (isFileExist && emptyP) {
-            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
-            return Object::Undef;
+            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= O_TRUNC;
             } else {
-                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -182,8 +226,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             openFlags |= O_TRUNC;
         } else if (noTruncateP) {
             if (isFileExist) {
-                callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
             } else {
                 openFlags |= O_TRUNC;
             }
@@ -220,8 +263,17 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             return Object::makeTextualInputOutputPort(port, transcoder);
         }
     } else {
-        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-        return Object::Undef;
+        switch(errno) {
+        case EACCES:
+            if (isReadable) {
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            } else {
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            }
+        default:
+            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            return Object::Undef;
+        }
     }
 }
 
@@ -714,8 +766,18 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-        return Object::Undef;
+        const bool isReadable = fileReadableP(file->data());
+        switch(errno) {
+        case EACCES:
+            if (isReadable) {
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            } else {
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            }
+        default:
+            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            return Object::Undef;
+        }
     }
 }
 
@@ -765,7 +827,7 @@ Object scheme::deleteFileEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, text);
     if (-1 == unlink(text->data().ascii_c_str())) {
-        callIoFileNameErrorAfter(theVM, procedureName,
+        callIoFileNameErrorAfter(theVM, argv[0], procedureName,
                                  "can't delete file",
                                  L1(argv[0]));
         return Object::Undef;
@@ -1302,11 +1364,12 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, path);
     const bool isFileExist = fileExistsP(path->data());
+    const bool isReadable = fileReadableP(path->data());
+
 
     if (argc == 1) {
         if (isFileExist) {
-            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
-            return Object::Undef;
+            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
         }
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
@@ -1319,19 +1382,16 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         const bool noFailP = isNoFail(fileOptions);
 
         if (isFileExist && emptyP) {
-            callIoFileAlreadyExist(theVM, procedureName, "file already exists", L1(argv[0]));
-            return Object::Undef;
+            return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file already exists", L1(argv[0]));
         } else if (noCreateP && noTruncateP) {
             if (!isFileExist) {
-                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noCreateP) {
             if (isFileExist) {
                 openFlags |= O_TRUNC;
             } else {
-                callIoFileNotExist(theVM, procedureName, "file-options no-create: file not exist", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
@@ -1341,8 +1401,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             openFlags |= O_TRUNC;
         } else if (noTruncateP) {
             if (isFileExist) {
-                callIoFileAlreadyExist(theVM, procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
-                return Object::Undef;
+                return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
             } else {
                 openFlags |= O_TRUNC;
             }
@@ -1379,8 +1438,17 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             return Object::makeTextualOutputPort(port, transcoder);
         }
     } else {
-        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-        return Object::Undef;
+        switch(errno) {
+        case EACCES:
+            if (isReadable) {
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            } else {
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            }
+        default:
+            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            return Object::Undef;
+        }
     }
 }
 
@@ -1397,8 +1465,13 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
     } else {
-        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-        return Object::Undef;
+        switch(errno) {
+        case EACCES:
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+        default:
+            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            return Object::Undef;
+        }
     }
 }
 
@@ -1459,8 +1532,13 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
             return Object::makeTextualInputPort(in, transcoder);
         }
     } else {
-        callErrorAfter(theVM, procedureName, "can't open file", L1(argv[0]));
-        return Object::Undef;
+        switch(errno) {
+        case EACCES:
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+        default:
+            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            return Object::Undef;
+        }
     }
 }
 

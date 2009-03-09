@@ -1,5 +1,7 @@
 2009-03-09  higepon  <higepon@users.sourceforge.jp>
 
+        * open-xxx can raise i/o-file-is-read-only and i/o-file-protection.
+
         * PortProcedures.cpp : (set-port-position! port position) can raise i/o-invalid-position-error.
 
         * doc/html/images : Added for documents.

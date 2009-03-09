@@ -36,8 +36,11 @@
 
 namespace scheme {
 
+    int writeToFd(int fd, uint8_t* buf, size_t size);
+    int readFromFd(int fd, uint8_t* buf, size_t size);
     bool fileExistsP(const ucs4string& path);
     bool fileWritableP(const ucs4string& path);
+    bool fileReadableP(const ucs4string& path);
     Object openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object peekCharEx(VM* theVM, int argc, const Object* argv);
     Object getDatumEx(VM* theVM, int argc, const Object* argv);

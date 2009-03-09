@@ -77,8 +77,6 @@ protected:
 
     void forwardPosition(int offset);
     void initializeBuffer();
-    int readFromFile(uint8_t* buf, size_t size);
-    int writeToFile(uint8_t* buf, size_t size);
     virtual int writeToBuffer(uint8_t* buf, size_t size) = 0;
     int readFromBuffer(uint8_t* dest, int reqSize);
     bool fillBuffer();

@@ -66,7 +66,6 @@ protected:
     };
 
     void initializeBuffer();
-    int writeToFile(uint8_t* buf, size_t count);
     virtual int writeToBuffer(uint8_t* data, int reqSize) = 0;
 
     int fd_;

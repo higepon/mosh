@@ -44,6 +44,7 @@
 #include "Symbol.h"
 #include "Bignum.h"
 #include "ErrorProcedures.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -78,7 +79,7 @@ int FileBinaryOutputPort::putU8(uint8_t v)
 
 int FileBinaryOutputPort::putU8(uint8_t* v, int size)
 {
-    return writeToFile(v, size);
+    return writeToFd(fd_, v, size);
 }
 
 int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
@@ -89,7 +90,7 @@ int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
 int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
     uint8_t* buf = bv->data();
-    return writeToFile(&buf[start], count);
+    return writeToFd(fd_, &buf[start], count);
 }
 
 int FileBinaryOutputPort::open()
@@ -151,25 +152,3 @@ bool FileBinaryOutputPort::setPosition(int position)
 }
 
 
-// private
-int FileBinaryOutputPort::writeToFile(uint8_t* buf, size_t size)
-{
-    MOSH_ASSERT(fd_ != INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd_, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result >= 0) {
-                position_ += result;
-                return result;
-            } else {
-                MOSH_FATAL("todo");
-                // todo error check. we may have isErrorOccured flag.
-                return result;
-            }
-        }
-    }
-}

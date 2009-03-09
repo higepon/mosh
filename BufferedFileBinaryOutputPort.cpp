@@ -43,6 +43,7 @@
 #include "Symbol.h"
 #include "Bignum.h"
 #include "BufferedFileBinaryOutputPort.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -130,7 +131,7 @@ void BufferedFileBinaryOutputPort::flush()
 {
     uint8_t* buf = buffer_;
     while (bufIdx_ > 0) {
-        const int result = writeToFile(buf, bufIdx_);
+        const int result = writeToFd(fd_, buf, bufIdx_);
         buf += result;
         bufIdx_ -= result;
     }
@@ -169,29 +170,6 @@ bool BufferedFileBinaryOutputPort::setPosition(int position)
     }
 }
 
-
-// private
-int BufferedFileBinaryOutputPort::writeToFile(uint8_t* buf, size_t count)
-{
-    MOSH_ASSERT(fd_ != INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd_, buf, count);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result >= 0) {
-                position_ += result;
-                return result;
-            } else {
-                MOSH_FATAL("todo");
-                // todo error check. we may have isErrorOccured flag.
-                return result;
-            }
-        }
-    }
-}
 
 void BufferedFileBinaryOutputPort::initializeBuffer()
 {

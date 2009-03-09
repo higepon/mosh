@@ -45,6 +45,7 @@
 #include "BufferedFileBinaryInputPort.h"
 #include "Symbol.h"
 #include "Bignum.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -173,7 +174,7 @@ bool BufferedFileBinaryInputPort::fillBuffer()
 {
     int readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
+        const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
         if (0 == result) { // EOF
             break;
         } else if (result < 0) { // error
@@ -249,19 +250,6 @@ bool BufferedFileBinaryInputPort::setPosition(int position)
         return true;
     } else {
         return false;
-    }
-}
-
-int BufferedFileBinaryInputPort::readFromFile(uint8_t* buf, size_t size)
-{
-    for (;;) {
-        const int result = read(fd_, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            return result;
-        }
     }
 }
 

@@ -45,6 +45,7 @@
 #include "FileBinaryInputPort.h"
 #include "Bignum.h"
 #include "Symbol.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -92,7 +93,7 @@ int FileBinaryInputPort::getU8()
     }
 
     uint8_t c;
-    const int result = readFromFile(&c, 1);
+    const int result = readFromFd(fd_, &c, 1);
     if (0 == result) {
         position_++;
         return EOF;
@@ -113,7 +114,7 @@ int FileBinaryInputPort::lookaheadU8()
     }
 
     uint8_t c;
-    const int result = readFromFile(&c, 1);
+    const int result = readFromFd(fd_, &c, 1);
     if (0 == result) {
         return EOF;
     } else if (result > 0) {
@@ -132,9 +133,9 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
     if (hasAheadU8()) {
         buf[0] = aheadU8_;
         aheadU8_ = EOF;
-        ret = readFromFile(buf + 1, reqSize - 1);
+        ret = readFromFd(fd_, buf + 1, reqSize - 1);
     } else {
-        ret = readFromFile(buf, reqSize);
+        ret = readFromFd(fd_, buf, reqSize);
     }
 
     if (ret < 0) {
@@ -164,23 +165,15 @@ int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
         aheadU8_ = EOF;
         *buf = dest;
         position_++;
-        const int ret = readFromFile(dest + 1, restSize - 1);
-        if (ret < 0) {
-            MOSH_FATAL("todo");
-            return 0;
-        } else {
-            return ret;
-        }
+        const int ret = readFromFd(fd_, dest + 1, restSize - 1);
+        MOSH_ASSERT(ret >= 0); // should never happen
+        return ret;
     } else {
-        const int ret = readFromFile(dest, restSize);
-        if (ret < 0) {
-            MOSH_FATAL("todo");
-            return 0;
-        } else {
-            *buf = dest;
-            position_ += ret;
-            return ret;
-        }
+        const int ret = readFromFd(fd_, dest, restSize);
+        MOSH_ASSERT(ret >= 0); // should never happen
+        *buf = dest;
+        position_ += ret;
+        return ret;
     }
 }
 
@@ -194,15 +187,10 @@ int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
         position_++;
         return 1;
     } else {
-        const int ret = readFromFile(dest, 1);
-        if (ret < 0) {
-            MOSH_FATAL("todo");
-            return 0;
-        } else {
-            *buf = dest;
-            position_ += ret;
-            return ret;
-        }
+        const int ret = readFromFd(fd_, dest, 1);
+        *buf = dest;
+        position_ += ret;
+        return ret;
     }
 }
 
@@ -249,19 +237,6 @@ bool FileBinaryInputPort::setPosition(int position)
         return true;
     } else {
         return false;
-    }
-}
-
-int FileBinaryInputPort::readFromFile(uint8_t* buf, size_t size)
-{
-    for (;;) {
-        const int result = read(fd_, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            return result;
-        }
     }
 }
 

@@ -60,7 +60,7 @@ static Object makeWhoCondition(VM* theVM, Object who);
 //static Object makeAssertionCondition();
 static Object makeCondition(VM* theVM, const ucs4char* rcdName);
 static Object makeCondition(VM* theVM, const ucs4char* rcdName, Object conent);
-static void raiseAfter(VM* theVM,
+static Object raiseAfter(VM* theVM,
                        const ucs4char* errorRcdName,
                        const ucs4char* errorName,
                        int argumentCount,
@@ -68,7 +68,7 @@ static void raiseAfter(VM* theVM,
                        Object message,
                        Object irritants = Object::Nil);
 
-static void raiseAfter1(VM* theVM,
+static Object raiseAfter1(VM* theVM,
                         const ucs4char* errorRcdName,
                         const ucs4char* errorName,
                         Object argument1,
@@ -77,7 +77,7 @@ static void raiseAfter1(VM* theVM,
                         Object irritants = Object::Nil);
 
 
-static void raiseAfter2(VM* theVM,
+static Object raiseAfter2(VM* theVM,
                 const ucs4char* errorRcdName1,
                 const ucs4char* errorName1,
                 int argumentCount1,
@@ -96,6 +96,11 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
         break;
     case IOError::ENCODE:
         raiseAfter1(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.port, e.who, e.message, e.irritants);
+        break;
+    case IOError::READ:
+        raiseAfter(theVM, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, e.who, e.message, e.irritants);
+    case IOError::WRITE:
+        raiseAfter(theVM, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, e.who, e.message, e.irritants);
         break;
     default:
         callAssertionViolationAfter(theVM, e.who, e.message, e.irritants);
@@ -215,25 +220,36 @@ void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object me
     raiseAfter(theVM, UC("&implementation-restriction-rcd"), UC("&implementation-restriction"), 0, who, message, irritants);
 }
 
-void scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
+    return raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
 }
 
-void scheme::callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    raiseAfter(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), 1, who, message, irritants);
+    return raiseAfter1(theVM, UC("&i/o-filename-rcd"), UC("&i/o-filename"), filename, who, message, irritants);
 }
 
-void scheme::callIoFileNotExist(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callIoFileNotExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    raiseAfter(theVM, UC("&i/o-file-does-not-exist-rcd"), UC("&i/o-file-does-not-exist"), 1, who, message, irritants);
+    return raiseAfter1(theVM, UC("&i/o-file-does-not-exist-rcd"), UC("&i/o-file-does-not-exist"), filename, who, message, irritants);
 }
 
-void scheme::callIoFileAlreadyExist(VM* theVM, Object who, Object message, Object irritants)
+Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    raiseAfter(theVM, UC("&i/o-file-already-exists-rcd"), UC("&i/o-file-already-exists"), 1, who, message, irritants);
+    return raiseAfter1(theVM, UC("&i/o-file-already-exists-rcd"), UC("&i/o-file-already-exists"), filename, who, message, irritants);
 }
+
+Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+{
+    return raiseAfter1(theVM, UC("&i/o-file-protection-rcd"), UC("&i/o-file-protection"), filename, who, message, irritants);
+}
+
+Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
+{
+    return raiseAfter1(theVM, UC("&i/o-file-is-read-only-rcd"), UC("&i/o-file-is-read-only"), filename, who, message, irritants);
+}
+
 
 void scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
@@ -307,7 +323,7 @@ Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
-void raiseAfter1(VM* theVM,
+Object raiseAfter1(VM* theVM,
                 const ucs4char* errorRcdName,
                 const ucs4char* errorName,
                 Object argument1,
@@ -351,10 +367,11 @@ void raiseAfter1(VM* theVM,
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
     }
+    return Object::Undef;
 }
 
 
-void raiseAfter(VM* theVM,
+Object raiseAfter(VM* theVM,
                 const ucs4char* errorRcdName,
                 const ucs4char* errorName,
                 int argumentCount,
@@ -403,9 +420,10 @@ void raiseAfter(VM* theVM,
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
     }
+    return Object::Undef;
 }
 
-void raiseAfter2(VM* theVM,
+Object raiseAfter2(VM* theVM,
                 const ucs4char* errorRcdName1,
                 const ucs4char* errorName1,
                 int argumentCount1,
@@ -470,4 +488,5 @@ void raiseAfter2(VM* theVM,
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
     }
+    return Object::Undef;
 }

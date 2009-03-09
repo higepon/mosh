@@ -71,9 +71,6 @@ public:
 
 private:
 
-    int readFromFile(uint8_t* buf, size_t size);
-    int writeToFile(uint8_t* buf, size_t size);
-
     ucs4string fileName_;
     int fd_;
     bool isClosed_;

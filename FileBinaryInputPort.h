@@ -62,7 +62,6 @@ public:
     bool setPosition(int position);
 
 private:
-    int readFromFile(uint8_t* buf, size_t size);
     bool hasAheadU8() const;
 
     int fd_;

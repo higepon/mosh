@@ -65,8 +65,6 @@ protected:
     ucs4string fileName_;
     bool isClosed_;
     int position_;
-
-    int writeToFile(uint8_t* buf, size_t size);
 };
 
 }; // namespace scheme

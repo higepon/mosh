@@ -44,6 +44,7 @@
 #include "Symbol.h"
 #include "Bignum.h"
 #include "BufferedFileBinaryInputOutputPort.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 
@@ -270,7 +271,7 @@ void BufferedFileBinaryInputOutputPort::internalFlush()
     DEBUG_SHOW_POSITION();
     uint8_t* buf = buffer_;
     while (bufferIndex_ > 0) {
-        const int writtenSize = writeToFile(buf, bufferIndex_);
+        const int writtenSize = writeToFd(fd_, buf, bufferIndex_);
         buf += writtenSize;
         bufferIndex_ -= writtenSize;
         MOSH_ASSERT(bufferIndex_ >= 0);
@@ -299,7 +300,7 @@ bool BufferedFileBinaryInputOutputPort::fillBuffer()
     }
     int readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = readFromFile(buffer_ + readSize, BUF_SIZE - readSize);
+        const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
         if (0 == result) { // EOF
             break;
         } else if (result < 0) { // error
@@ -312,40 +313,6 @@ bool BufferedFileBinaryInputOutputPort::fillBuffer()
     bufferIndex_ = 0;
     return true;
 
-}
-
-int BufferedFileBinaryInputOutputPort::readFromFile(uint8_t* buf, size_t size)
-{
-    for (;;) {
-        const int result = read(fd_, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            return result;
-        }
-    }
-}
-
-int BufferedFileBinaryInputOutputPort::writeToFile(uint8_t* buf, size_t count)
-{
-    MOSH_ASSERT(fd_ != INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd_, buf, count);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result >= 0) {
-                return result;
-            } else {
-                MOSH_FATAL("todo");
-                // todo error check. we may have isErrorOccured flag.
-                return result;
-            }
-        }
-    }
 }
 
 // N.B. readFromBuffer doesn't change the fd's position.
