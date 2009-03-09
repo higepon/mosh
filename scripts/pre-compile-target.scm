@@ -30,7 +30,9 @@
         (srfi :98 os-environment-variables)
         (clos user)
         (mosh pp)
-        (mosh test)
+; Avoid Bugs : See Mona wiki
+; http://wiki.monaos.org/pukiwiki.php?Mosh%2FBugs%2Fserialize-library
+;        (mosh test)
         (mosh ffi)
         (mosh shell)
         (mosh shell repl)

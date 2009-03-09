@@ -1,5 +1,7 @@
 2009-03-09  higepon  <higepon@users.sourceforge.jp>
 
+        * We found a bug on serialize-library, we will fix it later.
+
         * scripts/scmc2fasl.scm (main): Added sanity-check.
 
         * scripts/binary2c.scm : Set (buffer-mode none). We may have buffering problem.
