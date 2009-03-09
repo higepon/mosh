@@ -12,10 +12,10 @@
 
 ;; convert any files to binary array for include from C.
 (define (main args)
-  (call-with-port (open-output-file (third args))
+  (call-with-port (open-file-output-port (third args) (file-options no-fail) (buffer-mode none) (native-transcoder))
     (lambda (out)
       (format out "static const uint8_t ~a_image[] = {" (filename->arrayname (second args)))
-      (call-with-port (open-file-input-port (second args))
+      (call-with-port (open-file-input-port (second args) (file-options) (buffer-mode none))
         (lambda (port)
           (let loop ([b (get-u8 port)]
                      [i 0])

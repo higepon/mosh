@@ -17,7 +17,7 @@
 (define (main args)
   (with-input-from-file (second args)
     (lambda ()
-      (call-with-port (open-file-output-port (third args))
+      (call-with-port (open-file-output-port (third args) (file-options no-fail) (buffer-mode none))
          (lambda (port)
            (fasl-write (extract (read)) port)))))
   0)
