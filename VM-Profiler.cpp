@@ -50,10 +50,6 @@ extern Object stringTosymbolEx(Object args);
 const int VM::SAMPLE_NUM = 50000;
 
 extern  void signal_handler(int signo);
-// static void signal_handler(int signo)
-// {
-//     theVM->collectProfile();
-// }
 
 void VM::initProfiler()
 {
