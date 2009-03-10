@@ -33,6 +33,8 @@
         (mosh shell)
         (mosh test))
 
+(def-command chmod)
+
 ;; utf-8-codec
 ;;   error-handling-mode: raise
 (test/exception i/o-decoding-error?
@@ -319,6 +321,7 @@
                   (set-port-position! port -1)))
 
 ;; file-is-read-only
+(chmod -w "./test/read-only.txt")
 (test/exception i/o-file-is-read-only-error?
                 (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
 
