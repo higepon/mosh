@@ -32,6 +32,8 @@
 #ifndef __SCHEME_VM_INL__
 #define __SCHEME_VM_INL__
 
+#include "config.h"
+
 namespace scheme {
 
 inline void VM::copyJmpBuf(jmp_buf dst, jmp_buf src)
