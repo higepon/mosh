@@ -45,6 +45,7 @@
 #include "Bignum.h"
 #include "BufferedFileBinaryInputOutputPort.h"
 #include "PortProcedures.h"
+#include "Transcoder.h"
 
 using namespace scheme;
 
@@ -292,7 +293,7 @@ void BufferedFileBinaryInputOutputPort::initializeBuffer()
     buffer_ = allocatePointerFreeU8Array(BUF_SIZE);
 }
 
-bool BufferedFileBinaryInputOutputPort::fillBuffer()
+void BufferedFileBinaryInputOutputPort::fillBuffer()
 {
     // we need to flush to disk, before reading new data.
     if (isBufferDirty()) {
@@ -301,18 +302,16 @@ bool BufferedFileBinaryInputOutputPort::fillBuffer()
     int readSize = 0;
     while (readSize < BUF_SIZE) {
         const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
+        MOSH_ASSERT(result >= 0); // error will raised by longjmp
+        MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
             break;
-        } else if (result < 0) { // error
-            return false;
         } else {
             readSize += result;
         }
     }
     bufferSize_ = readSize;
     bufferIndex_ = 0;
-    return true;
-
 }
 
 // N.B. readFromBuffer doesn't change the fd's position.
@@ -345,10 +344,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             memcpy(dest + readSize, buffer_ + bufferIndex_, bufferedSize);
             readSize += bufferedSize;
             // we need more
-            if (!fillBuffer()) {
-                MOSH_FATAL("todo");
-                return EOF;
-            }
+            fillBuffer();
             needUnwind = true;
             // EOF
             if (0 == bufferSize_) {

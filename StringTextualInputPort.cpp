@@ -114,6 +114,6 @@ bool StringTextualInputPort::setPosition(int position)
 
 Transcoder* StringTextualInputPort::transcoder() const
 {
-    MOSH_FATAL("todo");
+    return Transcoder::nativeTranscoder();
 }
 

@@ -131,8 +131,7 @@ loop:
         {
         return;
     }
-    LOG1("obj=~a\n", obj);
-    throwIOError("not supported serialization");
+    throwIOError2(IOError::WRITE, "not supported serialization", L1(obj));
 }
 
 

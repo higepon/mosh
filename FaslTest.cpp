@@ -84,12 +84,7 @@ protected:
         const char* TMP_FILE = "/tmp/fasl-test.tmp";
         BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
         FaslWriter writer(out);
-        TRY_IO {
-            writer.put(obj);
-        } CATCH_IO {
-            LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-            ASSERT_TRUE(false);
-        }
+        writer.put(obj);
         out->close();
     }
 
@@ -134,12 +129,7 @@ TEST_F(FaslTest, EqHashTable) {
     const char* TMP_FILE = "/tmp/fasl-test4.dat";
     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
-    TRY_IO {
-        writer.put(table);
-    } CATCH_IO {
-        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-        ASSERT_TRUE(false);
-    }
+    writer.put(table);
     out->close();
 
     // Read
@@ -181,12 +171,7 @@ TEST_F(FaslTest, RecordTypeDescriptor) {
     const char* TMP_FILE = "/tmp/fasl-test0.dat";
     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
-    TRY_IO {
-        writer.put(rtd);
-    } CATCH_IO {
-        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-        ASSERT_TRUE(false);
-    }
+    writer.put(rtd);
     out->close();
 
     // Read
@@ -239,12 +224,7 @@ TEST_F(FaslTest, Record) {
     const char* TMP_FILE = "/tmp/fasl-test1.dat";
     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
-    TRY_IO {
-        writer.put(point);
-    } CATCH_IO {
-        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-        ASSERT_TRUE(false);
-    }
+    writer.put(point);
     out->close();
 
     // Read
@@ -300,12 +280,7 @@ TEST_F(FaslTest, RecordWithPair) {
     const char* TMP_FILE = "/tmp/fasl-test2.dat";
     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
     FaslWriter writer(out);
-    TRY_IO {
-        writer.put(point);
-    } CATCH_IO {
-        LOG1("Error:~a\n", IO_ERROR_MESSAGE);
-        ASSERT_TRUE(false);
-    }
+    writer.put(point);
     out->close();
 
     // Read

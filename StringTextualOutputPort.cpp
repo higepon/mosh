@@ -33,6 +33,7 @@
 #include "Object-inl.h"
 #include "Bignum.h"
 #include "StringTextualOutputPort.h"
+#include "Transcoder.h"
 
 using namespace scheme;
 
@@ -112,6 +113,5 @@ enum OutputPort::bufferMode StringTextualOutputPort::bufferMode() const
 
 Transcoder* StringTextualOutputPort::transcoder() const
 {
-    MOSH_FATAL("todo");
-    return NULL;
+    return Transcoder::nativeTranscoder();
 }

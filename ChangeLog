@@ -1,3 +1,7 @@
+2009-03-10  higepon  <higepon@users.sourceforge.jp>
+
+        * <string-port> returns native-transcoder.
+
 2009-03-09  higepon  <higepon@users.sourceforge.jp>
 
         * i/o-read and i/o-write can be raised.

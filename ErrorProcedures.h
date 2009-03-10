@@ -37,7 +37,6 @@
 
 namespace scheme {
 
-
 typedef struct IOError
 {
     IOError(int type, Object message, Object irritants) :
@@ -61,32 +60,27 @@ typedef struct IOError
     };
 } IOError;
 
-    extern jmp_buf ioErrorJmpBuf;
-    extern Object  ioErrorMessage;
-    extern IOError ioError;
+extern jmp_buf ioErrorJmpBuf;
+extern IOError ioError;
 #ifdef DEBUG_VERSION
-    extern bool isErrorBufInitialized;
+extern bool isErrorBufInitialized;
 #endif
 
 
 #ifdef DEBUG_VERSION
-
-#define TRY2 isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
-
-#define TRY_IO isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
+  #define TRY isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
 #else
-#define TRY_IO if (setjmp(ioErrorJmpBuf) == 0)
+  #define TRY if (setjmp(ioErrorJmpBuf) == 0)
 #endif
-#define CATCH_IO else
-#define CATCH2(x) else
-#define IO_ERROR_MESSAGE ioErrorMessage
+
+#define CATCH(x) else
 
     class VM;
 
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
     Object callIOErrorAfter(VM* theVM, IOError e);
     Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
-    Object throwIOError(Object message);
+//    Object throwIOError(Object message);
     Object throwEx(VM* theVM, int argc, const Object* argv);
     Object errorEx(VM* theVM, int argc, const Object* argv);
     Object assertionViolationEx(VM* theVM, int argc, const Object* argv);

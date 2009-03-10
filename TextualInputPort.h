@@ -56,7 +56,6 @@ public:
     // template method pattern
     virtual ucs4string getString(int n);
     virtual ucs4string getStringAll();
-    virtual ucs4char lookaheadChar(int offset) ; // これは本当に必要かあとで検討
     virtual ucs4char lookaheadChar();
     virtual Object getLine();
     virtual void setError(Object error);

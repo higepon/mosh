@@ -70,11 +70,11 @@
 #include "Fasl.h"
 #include "Gloc.h"
 
-#define TRY     jmp_buf org;                     \
+#define TRY_VM     jmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \
                 if (setjmp(returnPoint_) == 0)   \
 
-#define CATCH   copyJmpBuf(returnPoint_, org); \
+#define CATCH_VM   copyJmpBuf(returnPoint_, org); \
                 } else {
 
 
@@ -119,11 +119,11 @@ void VM::loadCompiler()
         initProfiler();
     }
 #endif
-    TRY {
+    TRY_VM {
         evaluateCodeVector(libCompiler);
         const Object libMatch = FASL_GET(match_image);
         evaluateCodeVector(libMatch);
-        CATCH
+        CATCH_VM
         // call default error handler
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
@@ -162,7 +162,7 @@ void VM::dumpCompiledCode(Object code) const
 }
 
 
-// N.B. If you call loadFileUnsafe, be sure that this code is inside the TRY/CATCH
+// N.B. If you call loadFileUnsafe, be sure that this code is inside the TRY_VM/CATCH_VM
 void VM::loadFileUnsafe(const ucs4string& file)
 {
     SAVE_REGISTERS();
@@ -182,7 +182,7 @@ void VM::loadFileUnsafe(const ucs4string& file)
 
 void VM::loadFileWithGuard(const ucs4string& file)
 {
-    TRY {
+    TRY_VM {
         ucs4string moshLibPath(UC(MOSH_LIB_PATH));
         moshLibPath += UC("/") + file;
         if (fileExistsP(file)) {
@@ -195,7 +195,7 @@ void VM::loadFileWithGuard(const ucs4string& file)
                                                      "cannot find file in load path",
                                                      L1(Object::makeString(file)));
         }
-    CATCH
+    CATCH_VM
         // call default error handler
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
@@ -292,9 +292,9 @@ Object VM::callClosure2(Object closure, Object arg1, Object arg2)
     applyCode[9] = closure;
     SAVE_REGISTERS();
     Object ret;
-    TRY {
+    TRY_VM {
     ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
-    CATCH
+    CATCH_VM
         // call default error handler
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
@@ -671,9 +671,9 @@ void VM::activateR6RSMode(bool isDebugExpand)
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
     const Object libPsyntax = FASL_GET(psyntax_image);
-    TRY {
+    TRY_VM {
     evaluateCodeVector(libPsyntax);
-    CATCH
+    CATCH_VM
         // call default error handler
         defaultExceptionHandler(errorObj_);
         this->exit(-1);

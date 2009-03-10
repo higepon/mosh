@@ -79,7 +79,7 @@ protected:
     void initializeBuffer();
     virtual int writeToBuffer(uint8_t* buf, size_t size) = 0;
     int readFromBuffer(uint8_t* dest, int reqSize);
-    bool fillBuffer();
+    void fillBuffer();
     bool isBufferDirty() { return isDirty_; }
     void invalidateBuffer();
 

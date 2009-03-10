@@ -67,7 +67,7 @@ private:
 
     void initializeBuffer();
     int readFromBuffer(uint8_t* dest, int reqSize);
-    bool fillBuffer();
+    void fillBuffer();
     void invalidateBuffer();
 
     int fd_;

@@ -646,12 +646,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY2 {
+            TRY {
                 ac_ = inputPort->getDatum(errorOccured);
                 if (errorOccured) {
                     callLexicalAndIOReadAfter(this, "read", inputPort->error());
                 }
-            } CATCH2(ioError) {
+            } CATCH(ioError) {
                 ioError.port = (ac_.isNil()) ? currentInputPort_ : ac_;
                 ioError.who = "read";
                 callIOErrorAfter(this, ioError);
@@ -674,10 +674,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY2 {
+            TRY {
                 const ucs4char c = inputPort->getChar();
                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
-            } CATCH2(ioError) {
+            } CATCH(ioError) {
                 ioError.port = (ac_.isNil()) ? currentInputPort_ : ac_;
                 ioError.who = "read-char";
                 callIOErrorAfter(this, ioError);

@@ -120,20 +120,6 @@ NumberScanner* TextualInputPort::numberScanner() const
 }
 
 
-ucs4char TextualInputPort::lookaheadChar(int offset /* = 1 */)
-{
-    gc_vector<ucs4char> characters;
-    ucs4char ret;
-    for (int i = 0; i < offset; i++) {
-        ret = getChar();
-        characters.push_back(ret);
-    }
-    for (gc_vector<ucs4char>::const_iterator it = characters.begin(); it != characters.end(); ++it) {
-        unGetChar(*it);
-    }
-    return ret;
-}
-
 ucs4char TextualInputPort::lookaheadChar()
 {
     const ucs4char c = getChar();

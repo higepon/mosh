@@ -122,14 +122,15 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
     ucs4string ret;
     Codec* codec = UTF32Codec::getCodec(endianness);
-    TRY_IO {
+    TRY {
         for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
             ret += c;
         }
         return Object::makeString(ret);
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.port = Object::Nil;
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 
@@ -164,14 +165,15 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
     ucs4string ret;
     Codec* codec = UTF16Codec::getCodec(endianness);
-    TRY_IO {
+    TRY {
         for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
             ret += c;
         }
         return Object::makeString(ret);
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.port = Object::Nil;
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
 

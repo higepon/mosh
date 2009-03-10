@@ -281,7 +281,7 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("peek-char");
     checkArgumentLength(1);
-    TRY2 {
+    TRY {
         if (0 == argc) {
             const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -290,7 +290,7 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
             const ucs4char ch = textualInputPort->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -303,14 +303,14 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     bool errorOccured = false;
     argumentAsTextualInputPort(0, in);
-    TRY2 {
+    TRY {
         const Object object = in->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, in->error());
             return Object::Undef;
         }
         return object;
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -321,14 +321,14 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
-    TRY2 {
+    TRY {
         ucs4string text = in->getStringAll();
         if (text.size() == 0) {
             return Object::Undef;
         } else {
             return Object::makeString(text);
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -361,7 +361,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    TRY2 {
+    TRY {
         ucs4string text = in->getString(u32Count);
         if (text.size() == 0) {
             return Object::Eof;
@@ -372,7 +372,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
             }
             return Bignum::makeInteger(text.size());
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -384,10 +384,10 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
-    TRY2 {
+    TRY {
         const ucs4char ch = textualInputPort->getChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -400,7 +400,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
     argumentAsFixnum(1, size);
-    TRY2 {
+    TRY {
         ucs4string text = inputPort->getString(size);
 
         if (text.size() == 0) {
@@ -408,7 +408,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
         } else {
             return Object::makeString(text);
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -485,7 +485,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-eof?");
     checkArgumentLength(1);
     const Object port = argv[0];
-    TRY2 {
+    TRY {
         if (port.isBinaryInputPort()) {
             return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
         } else if (port.isBinaryInputOutputPort()) {
@@ -498,7 +498,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
             return Object::Undef;
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -566,11 +566,12 @@ Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsBinaryOutputPort(1, outputPort);
     FaslWriter writer(outputPort);
-    TRY_IO {
+    TRY {
         writer.put(argv[0]);
-    } CATCH_IO {
-        callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.port = argv[1];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
     return Object::Undef;
 }
@@ -589,9 +590,9 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-line");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
-    TRY2 {
+    TRY {
         return inputPort->getLine();
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -617,19 +618,13 @@ Object scheme::standardLibraryPathEx(VM* theVM, int argc, const Object* argv)
 Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("lookahead-char");
-    checkArgumentLengthBetween(1, 2);
+    checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
-    TRY2 {
+    TRY {
         ucs4char ch;
-        if (2 == argc) {
-            // mosh only
-            argumentAsFixnum(1, offset);
-            ch = textualInputPort->lookaheadChar(offset);
-        } else {
-            ch = textualInputPort->lookaheadChar();
-        }
+        ch = textualInputPort->lookaheadChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -664,7 +659,7 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write-char");
     checkArgumentLengthBetween(1, 2);
     argumentAsChar(0, ch);
-    TRY2 {
+    TRY {
         if (1 == argc) {
             theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
             theVM->currentOutputPort().toTextualOutputPort()->flush();
@@ -674,7 +669,7 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
             textualOutputPort->flush();
         }
         return Object::Undef;
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -692,7 +687,7 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read-char");
     checkArgumentLengthBetween(0, 1);
-    TRY2 {
+    TRY {
         if (0 == argc) {
             const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -701,7 +696,7 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
             const ucs4char ch = textualInputPort->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -721,14 +716,14 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
         argumentAsTextualInputPort(0, textualInputPort);
         inputPort = textualInputPort;
     }
-    TRY2 {
+    TRY {
         const Object object = inputPort->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
             return Object::Undef;
         }
         return object;
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
@@ -1260,11 +1255,11 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     ucs4string ret;
 
-    TRY2 {
+    TRY {
         for (ucs4char c = transcoder->in(in); c != EOF; c = transcoder->in(in)) {
             ret += c;
         }
-    } CATCH2(ioError) {
+    } CATCH(ioError) {
         ioError.port = Object::makeBinaryInputPort(in);
         ioError.who = procedureName;
         ioError.irritants = Object::cons(argv[1], ioError.irritants);
@@ -1283,14 +1278,14 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
     uint8_t buf[4];
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
-        TRY_IO {
+        TRY {
             const int length = transcoder->out(buf, *it);
             for (int i = 0; i < length; i++) {
                 accum.push_back(buf[i]);
             }
-        } CATCH_IO {
-            callAssertionViolationAfter(theVM, procedureName, IO_ERROR_MESSAGE, L1(argv[0]));
-            return Object::Undef;
+        } CATCH(ioError) {
+            ioError.who = procedureName;
+            return callIOErrorAfter(theVM, ioError);
         }
     }
     return Object::makeByteVector(new ByteVector(accum));

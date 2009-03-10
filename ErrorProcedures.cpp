@@ -47,7 +47,6 @@
 using namespace scheme;
 
 jmp_buf scheme::ioErrorJmpBuf;
-Object  scheme::ioErrorMessage;
 IOError scheme::ioError;
 
 #ifdef DEBUG_VERSION
@@ -110,14 +109,6 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
     return Object::Undef;
 }
 
-
-Object scheme::throwIOError(Object message)
-{
-    ioErrorMessage = message;
-    MOSH_ASSERT(isErrorBufInitialized);
-    longjmp(ioErrorJmpBuf, -1);
-    return Object::Undef;
-}
 
 Object scheme::throwIOError2(int type, Object message, Object irritants /* = Object::Nil */)
 {

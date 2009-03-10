@@ -440,8 +440,8 @@ ScmObj Scm_ReadWithContext(ScmPort* port, ScmReadContext *ctx)
 
 static jmp_buf returnPoint;
 
-#define TRY if (setjmp(returnPoint) == 0)
-#define CATCH else
+#define TRY2 if (setjmp(returnPoint) == 0)
+#define CATCH2 else
 #define RAISE_READ_ERROR0(message) raiseReadError(port, UC(message), Object::Nil)
 #define RAISE_READ_ERROR1(message, value1) raiseReadError(port, UC(message), Pair::list1(value1))
 #define RAISE_READ_ERROR2(message, value1, value2) raiseReadError(port, UC(message), Pair::list2(value1, value2))
@@ -460,9 +460,9 @@ ScmObj Scm_Read(ScmPort* port, bool& errorOccured)
     ScmReadContext ctx;
     read_context_init(Scm_VM(), &ctx);
     ScmObj o = Object::Nil;
-    TRY {
+    TRY2 {
         o = Scm_ReadWithContext(port, &ctx);
-    } CATCH {
+    } CATCH2 {
         errorOccured = true;
         o = Object::Undef;
     }

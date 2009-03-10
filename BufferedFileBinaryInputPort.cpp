@@ -170,22 +170,20 @@ int BufferedFileBinaryInputPort::fileNo() const
     return fd_;
 }
 
-bool BufferedFileBinaryInputPort::fillBuffer()
+void BufferedFileBinaryInputPort::fillBuffer()
 {
     int readSize = 0;
     while (readSize < BUF_SIZE) {
         const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
+        MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
             break;
-        } else if (result < 0) { // error
-            return false;
         } else {
             readSize += result;
         }
     }
     bufLen_ = readSize;
     bufIdx_ = 0;
-    return true;
 }
 
 int BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int reqSize)
@@ -204,10 +202,7 @@ int BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int reqSize)
         } else {
             memcpy(dest + readSize, buffer_ + bufIdx_, bufDiff);
             readSize += bufDiff;
-            if (!fillBuffer()) {
-                MOSH_FATAL("todo");
-                return EOF;
-            }
+            fillBuffer();
             if (bufLen_ == 0) { // EOF
                 break;
             }

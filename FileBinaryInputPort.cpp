@@ -94,15 +94,12 @@ int FileBinaryInputPort::getU8()
 
     uint8_t c;
     const int result = readFromFd(fd_, &c, 1);
+    MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         position_++;
         return EOF;
-    } else if (result > 0) {
-        position_++;
-        return c;
     } else {
-        MOSH_FATAL("todo");
-        // todo error check. we may have isErrorOccured flag.
+        position_++;
         return c;
     }
 }
@@ -115,14 +112,11 @@ int FileBinaryInputPort::lookaheadU8()
 
     uint8_t c;
     const int result = readFromFd(fd_, &c, 1);
+    MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         return EOF;
-    } else if (result > 0) {
-        aheadU8_ = c;
-        return c;
     } else {
-        // todo error check. we may have isErrorOccured.
-        MOSH_FATAL("todo");
+        aheadU8_ = c;
         return c;
     }
 }
@@ -137,14 +131,9 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
     } else {
         ret = readFromFd(fd_, buf, reqSize);
     }
-
-    if (ret < 0) {
-        MOSH_FATAL("todo");
-        return 0;
-    } else {
-        position_ += ret;
-        return ret;
-    }
+    MOSH_ASSERT(ret >= 0); // error will be raised by longjmp
+    position_ += ret;
+    return ret;
 }
 
 int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
