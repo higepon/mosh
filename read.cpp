@@ -1309,7 +1309,7 @@ static ScmObj read_char(ScmPort *port, ScmReadContext *ctx)
 #else
     const char *cname;
 #endif
-    u_int32_t namelen, namesize;
+    uint32_t namelen, namesize;
     struct char_name *cntab = char_names;
     c = Scm_GetcUnsafe(port);
     switch (c) {
