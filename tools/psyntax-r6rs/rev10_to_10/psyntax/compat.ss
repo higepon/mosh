@@ -28,9 +28,36 @@
     (rnrs)
     (rnrs mutable-pairs)
     (except (mosh) make-parameter parameterize)
+    (only (system) get-environment-variable)
     (only (psyntax system $bootstrap)
-          void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
+          void #;gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
+;; N.B. We don't use backend's (gensym) for following reasons.
+;;  (a) When we read serialize libraries, we need all symbols are interned.
+;;      Because symbols who have same string should be eq?, even when they are loaded from separate files.
+;;
+;;  (b) When we precompile system libraries, we want to control the start index of gensym.
+;;      Since we should avoid index overlapping between pre-compile libraries and pre-compiled psyntax.
+;;      So using environment variable MOSH_GENSYM_START, we control the index.
+(define (make-gensym-counter i)
+  (define (inc)
+    (set! i (+ i 1))
+    i)
+  inc)
+
+(define gen-sym-start
+  (let ([v (get-environment-variable "MOSH_GENSYM_START")])
+    (if v
+        (string->number v)
+        0)))
+
+(define gen-sym-counter (make-gensym-counter gen-sym-start))
+
+(define (gensym . x)
+  (string->symbol
+  (if (null? x)
+      (format "K~a" (gen-sym-counter))
+      (format "K~a@~a" (gen-sym-counter) (car x)))))
 
 
   ;; defined for mosh

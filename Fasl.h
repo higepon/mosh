@@ -72,6 +72,8 @@ public:
         TAG_BIGNUM,
         TAG_FIXNUM_0,
         TAG_FIXNUM_1,
+        TAG_ASCII_UNINTERNED_SYMBOL,
+        TAG_UNINTERNED_SYMBOL,
         forbidden_comma
     };
 };

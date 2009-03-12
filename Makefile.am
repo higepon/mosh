@@ -267,11 +267,17 @@ compiler-with-library.h compiler-with-library.fasl
 CLEANFILES = gtest.a gtest_main.a
 MAINTAINERCLEANFILES = $(GENERATED)
 
+#  N.B. We don't use backend's (gensym) for following reasons.
+#   (a) When we read serialize libraries, we need all symbols are interned.
+#       Because symbols who have same string should be eq?, even when they are loaded from separate files.
 
+#   (b) When we precompile system libraries, we want to control the start index of gensym.
+#       Since we should avoid index overlapping between pre-compile libraries and pre-compiled psyntax.
+#       So using environment variable MOSH_GENSYM_START, we control the index.
 update:
 	(find . -name "*.ss.fasl" | xargs rm) ; true
 	(find . -name "*.sls.fasl" | xargs rm) ; true
-	./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
+	MOSH_GENSYM_START=50000 ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
 # when you release comment out start
 if DEVELOPER
@@ -467,5 +473,5 @@ test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
-	(cd doc &&  ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
+	(cd doc &&  MOSH_GENSYM_START=1000 ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
 

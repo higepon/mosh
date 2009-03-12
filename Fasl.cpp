@@ -145,7 +145,7 @@ void FaslReader::getSymbolsAndStrings()
         uint32_t len = fetchU32();
         ucs4string text;
         text.reserve(64);
-        if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING) {
+        if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING || tag == Fasl::TAG_ASCII_UNINTERNED_SYMBOL) {
             for (uint32_t i = 0; i < len; i++) {
                 text += fetchU8();
             }
@@ -158,6 +158,10 @@ void FaslReader::getSymbolsAndStrings()
         case Fasl::TAG_SYMBOL:
         case Fasl::TAG_ASCII_SYMBOL:
             symbolsAndStringsArray_[uid] = Symbol::intern(text.strdup());
+            break;
+        case Fasl::TAG_ASCII_UNINTERNED_SYMBOL:
+        case Fasl::TAG_UNINTERNED_SYMBOL:
+            symbolsAndStringsArray_[uid] = Object::makeSymbol(text.strdup());
             break;
         case Fasl::TAG_STRING:
         case Fasl::TAG_ASCII_STRING:
@@ -229,15 +233,28 @@ void FaslWriter::putSymbolsAndStrings()
         if (obj.isSymbol()) {
             Symbol* const symbol = obj.toSymbol();
             ucs4string text = symbol->c_str();
-            if (text.is_ascii()) {
-                emitU8(Fasl::TAG_ASCII_SYMBOL);
-                emitU32(i);
-                emitAsciiString(text);
+            if (Symbol::isInterned(obj)) {
+                if (text.is_ascii()) {
+                    emitU8(Fasl::TAG_ASCII_SYMBOL);
+                    emitU32(i);
+                    emitAsciiString(text);
+                } else {
+                    emitU8(Fasl::TAG_SYMBOL);
+                    emitU32(i);
+                    emitString(text);
+                }
+
             } else {
-                emitU8(Fasl::TAG_SYMBOL);
-                emitU32(i);
-                emitString(text);
-            }
+                if (text.is_ascii()) {
+                    emitU8(Fasl::TAG_ASCII_UNINTERNED_SYMBOL);
+                    emitU32(i);
+                    emitAsciiString(text);
+                } else {
+                    emitU8(Fasl::TAG_UNINTERNED_SYMBOL);
+                    emitU32(i);
+                    emitString(text);
+                }
+           }
         } else if (obj.isString()) {
             String* const string = obj.toString();
             ucs4string text = string->data();

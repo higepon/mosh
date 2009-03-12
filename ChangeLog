@@ -1,3 +1,8 @@
+2009-03-12  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed the bug: Loading serialized librararies causes overwriting corrent label binding value.
+          See compat.ss and http://wiki.monaos.org/pukiwiki.php?Mosh%2FBugs%2Fserialize-library%2Fdebug
+
 2009-03-12  kokosabu  <kokosabu@gmail.com>
 
         * PortProcedures.cpp : Added put-char.

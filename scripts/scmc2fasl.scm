@@ -21,12 +21,7 @@
         (call-with-port (open-file-output-port (third args) (file-options no-fail) (buffer-mode none))
            (lambda (port)
              (fasl-write obj port)))
-        ;; check sanity
-        (call-with-port (open-file-input-port (third args) (file-options no-fail) (buffer-mode none))
-           (lambda (port)
-             (let ([restored (fasl-read port)])
-               (unless (equal? obj restored)
-                 (assertion-violation 'scmc2fasl "fasl read/write have inconsistent state"))))))))
+        )))
 
 
   0)

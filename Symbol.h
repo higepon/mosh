@@ -68,6 +68,11 @@ public:
             return (*it).second;
         }
     }
+    static bool isInterned(Object symbol)
+    {
+        MOSH_ASSERT(symbol.isSymbol());
+        return symbol == Symbol::intern(symbol.toSymbol()->c_str());
+    }
     static Object add(const ucs4char* name)
     {
         return (symbols[name] = Object::makeSymbol(name));

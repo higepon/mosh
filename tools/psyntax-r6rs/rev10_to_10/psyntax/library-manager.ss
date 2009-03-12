@@ -352,6 +352,12 @@
                      ((global-macro!)
                       (cons 'global-macro! (cons lib (cdr binding))))
                      (else binding))))
+              ;; N.B.
+              ;; sanity check
+              ;; If (gensym) values are overlapping, we may overwrite correct value. See compat.ss.
+              (when (hashtable-ref label->binding-table label #f)
+                (format (current-error-port) "FATAL overwrite !! key=~a value=~a to ~a\n" label (hashtable-ref label->binding-table label #f) binding)
+                (exit))
               (hashtable-set! label->binding-table label binding))))
         exp-env))
     ((current-library-collection) lib))
