@@ -1,3 +1,7 @@
+2009-03-12  kokosabu  <kokosabu@gmail.com>
+
+        * PortProcedures.cpp : Added put-char.
+
 2009-03-11  higepon  <higepon@users.sourceforge.jp>
 
         * read.cpp (read_char): u_int32_t => uint32_t. (Thanks to antonio.vieiro).

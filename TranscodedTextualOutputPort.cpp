@@ -106,5 +106,5 @@ void TranscodedTextualOutputPort::flush()
 
 ucs4string TranscodedTextualOutputPort::toString()
 {
-    return UC("<textual output port>");
+    return port_->toString();
 }

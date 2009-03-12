@@ -492,6 +492,7 @@
     port-transcoder
     native-transcoder
     put-bytevector
+    put-char
     write-char
     transcoder-codec
     transcoder-eol-style

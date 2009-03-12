@@ -421,6 +421,8 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
+    } else if (o.isTextualInputPort()) {
+        putString(o.toTextualInputPort()->toString());
     } else if (o.isTextualOutputPort()) {
         putString(UC("#<textual-output-port>"));
     } else if (o.isRatnum()) {

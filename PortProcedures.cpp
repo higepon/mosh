@@ -539,6 +539,23 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
+Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("put-char");
+    checkArgumentLength(2);
+    argumentAsTextualOutputPort(0, textualOutputPort);
+    argumentAsChar(1, ch);
+    TRY {
+        textualOutputPort->putChar(ch);
+        textualOutputPort->flush();
+        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.port = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    }
+}
+
 Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("output-port?");
@@ -1759,15 +1776,5 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
     } else {
         return Symbol::NONE;
     }
-
-    /*
-    argumentAsOutputPort(0, outputPort);
-    if (outputPort->bufferMode() == OutputPort::BLOCK) {
-        return Symbol::BLOCK;
-    } else if (outputPort->bufferMode() == OutputPort::LINE) {
-        return Symbol::LINE;
-    } else {
-        return Symbol::NONE;
-    }
-    */
 }
+
