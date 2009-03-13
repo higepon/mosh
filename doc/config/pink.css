@@ -44,7 +44,7 @@ h3{
 	color:#4578DB;
 	border-bottom:2px dotted #4578DB;
 	padding:0.25em 0;
-	margin:1em 15px 0 1em;
+	margin:1em 15px 0.5em 1em;
 }
 
 
@@ -54,12 +54,12 @@ h4{
 	font-weight:normal;
 	color: #4578DB;
 	padding:0 0 0 0.5em;
-	margin:1em 10px 0 1em;
+	margin:1em 10px 0.5em 0.5em;
 	border-left:5px solid #8FA9D8;
 }
 
 p{
-	margin: 0.1em 0.5em;
+	margin: 0.1em 0.5em 0.1em 1.25em;
 }
 
 pre{
