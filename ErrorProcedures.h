@@ -41,13 +41,17 @@ typedef struct IOError
 {
     IOError(int type, Object message, Object irritants) :
         type(type),
+        arg1(Object::Nil),
+        arg2(Object::Nil),
+        who(Object::Nil),
         message(message),
         irritants(irritants) {}
 
     IOError() {}
 
     int type;
-    Object port;
+    Object arg1;
+    Object arg2;
     Object who;
     Object message;
     Object irritants;

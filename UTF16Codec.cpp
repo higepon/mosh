@@ -95,7 +95,7 @@ int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
         if (mode == Codec::RAISE) {
-            throwIOError2(IOError::ENCODE, "character out of utf16 range");
+            throwIOError2(IOError::ENCODE, "character out of utf16 range", L1(Object::makeChar(ch)));
         } else if (mode == Codec::REPLACE) {
             buf[0] = 0xff;
             buf[1] = 0xfd;

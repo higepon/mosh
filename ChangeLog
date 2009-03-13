@@ -1,3 +1,7 @@
+2009-03-13  higepon  <higepon@users.sourceforge.jp>
+
+        * ErrorProcedures.cpp : Fixed the bug of &i/o-encoding arguments error.
+
 2009-03-12  higepon  <higepon@users.sourceforge.jp>
 
         * Fixed the bug: Loading serialized librararies causes overwriting corrent label binding value.

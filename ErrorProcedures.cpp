@@ -59,6 +59,7 @@ static Object makeWhoCondition(VM* theVM, Object who);
 //static Object makeAssertionCondition();
 static Object makeCondition(VM* theVM, const ucs4char* rcdName);
 static Object makeCondition(VM* theVM, const ucs4char* rcdName, Object conent);
+static Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object arg1, Object arg2);
 static Object raiseAfter(VM* theVM,
                        const ucs4char* errorRcdName,
                        const ucs4char* errorName,
@@ -75,8 +76,18 @@ static Object raiseAfter1(VM* theVM,
                         Object message,
                         Object irritants = Object::Nil);
 
-
 static Object raiseAfter2(VM* theVM,
+                        const ucs4char* errorRcdName,
+                        const ucs4char* errorName,
+                        Object argument1,
+                        Object argument2,
+                        Object who,
+                        Object message,
+                        Object irritants = Object::Nil);
+
+
+
+static Object raiseAfterB(VM* theVM,
                 const ucs4char* errorRcdName1,
                 const ucs4char* errorName1,
                 int argumentCount1,
@@ -91,10 +102,11 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 {
     switch(e.type) {
     case IOError::DECODE:
-        raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.port, e.who, e.message, e.irritants);
+        raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.arg1, e.who, e.message, e.irritants);
         break;
     case IOError::ENCODE:
-        raiseAfter1(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.port, e.who, e.message, e.irritants);
+        MOSH_ASSERT(e.irritants.isPair() && Pair::length(e.irritants) == 1);
+        raiseAfter2(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.arg1, e.irritants.car(), e.who, e.message, e.irritants);
         break;
     case IOError::READ:
         raiseAfter(theVM, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, e.who, e.message, e.irritants);
@@ -213,7 +225,7 @@ void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object me
 
 Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    return raiseAfter2(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
+    return raiseAfterB(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
 }
 
 Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
@@ -314,6 +326,13 @@ Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
+Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object content1, Object content2)
+{
+    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
+    MOSH_ASSERT(!rcd.isFalse());
+    return theVM->callClosure2(rcd.toRecordConstructorDescriptor()->makeConstructor(), content1, content2);
+}
+
 Object raiseAfter1(VM* theVM,
                 const ucs4char* errorRcdName,
                 const ucs4char* errorName,
@@ -340,6 +359,54 @@ Object raiseAfter1(VM* theVM,
         }
 
         conditions = Object::cons(makeCondition(theVM, errorRcdName, argument1), conditions);
+        condition = Object::makeCompoundCondition(conditions);
+    } else {
+        condition = format(UC(" Condition components:\n"
+                              "    1. ~a\n"
+                              "    2. &who: ~a\n"
+                              "    3. &message: ~s\n"
+                              "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
+    }
+
+    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+
+    // Error occured before (raise ...) is defined.
+    if (raiseProcedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(raiseProcedure, condition);
+    }
+    return Object::Undef;
+}
+
+Object raiseAfter2(VM* theVM,
+                const ucs4char* errorRcdName,
+                const ucs4char* errorName,
+                Object argument1,
+                Object argument2,
+                Object who,
+                Object message,
+                Object irritants /* = Object::Nil */)
+{
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        Object conditions = Object::Nil;
+
+        // even if irritants is nil, we create irritants condition.
+        conditions = Object::cons(makeIrritantsCondition(theVM, irritants), conditions);
+
+        conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
+
+        if (!who.isFalse()) {
+            conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
+        }
+
+        conditions = Object::cons(makeCondition2(theVM, errorRcdName, argument1, argument2), conditions);
         condition = Object::makeCompoundCondition(conditions);
     } else {
         condition = format(UC(" Condition components:\n"
@@ -414,7 +481,7 @@ Object raiseAfter(VM* theVM,
     return Object::Undef;
 }
 
-Object raiseAfter2(VM* theVM,
+Object raiseAfterB(VM* theVM,
                 const ucs4char* errorRcdName1,
                 const ucs4char* errorName1,
                 int argumentCount1,

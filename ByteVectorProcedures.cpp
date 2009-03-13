@@ -128,7 +128,7 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
         }
         return Object::makeString(ret);
     } CATCH(ioError) {
-        ioError.port = Object::Nil;
+        ioError.arg1 = Object::Nil;
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -171,7 +171,7 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
         }
         return Object::makeString(ret);
     } CATCH(ioError) {
-        ioError.port = Object::Nil;
+        ioError.arg1 = Object::Nil;
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }

@@ -76,7 +76,7 @@ int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         return 4;
     } else {
         if (mode == Codec::RAISE) {
-            throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence");
+            throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence", Pair::list1(Object::makeChar(u)));
             return 0;
         } else if (mode == Codec::REPLACE) {
             buf[0] = 0xff;

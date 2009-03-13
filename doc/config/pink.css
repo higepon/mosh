@@ -16,6 +16,7 @@ body{
   color: #000000;
 	font-size:90%;
   background: #FBF8E4 url(../images/logo.png) no-repeat;
+	word-break:break-all;
 	}
 
 h1{
@@ -29,7 +30,7 @@ h1{
 }
 
 h2{
-	margin:25px 0 10px 0;
+	margin:25px 5px 10px 0;
 	padding:0.25em 0.3em;
 	font-size:125%;
 	background: #F0F8FF;
@@ -43,7 +44,7 @@ h3{
 	color:#4578DB;
 	border-bottom:2px dotted #4578DB;
 	padding:0.25em 0;
-	margin:1em 0;
+	margin:1em 15px 0 1em;
 }
 
 
@@ -53,7 +54,7 @@ h4{
 	font-weight:normal;
 	color: #4578DB;
 	padding:0 0 0 0.5em;
-	margin:1em 0;
+	margin:1em 10px 0 1em;
 	border-left:5px solid #8FA9D8;
 }
 
@@ -66,6 +67,11 @@ pre{
 	border:2px solid #CCCCCC;
 	padding:0.5em;
 	margin:0;
+  white-space: -moz-pre-wrap; /* Mozilla */
+  white-space: -pre-wrap;     /* Opera 4-6 */
+  white-space: -o-pre-wrap;   /* Opera 7 */
+  white-space: pre-wrap;      /* CSS3 */
+  word-wrap: break-word;      /* IE 5.5+ */
 }
 
 
@@ -108,7 +114,9 @@ a:active , a:hover{
 	padding:0;
 }
 
-
+.CLibrary{
+	margin:0 10px 0 0;
+}
 
 .IPageTitle{
 	margin:25px 25px 20px 10px;

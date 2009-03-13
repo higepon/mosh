@@ -291,7 +291,7 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
     } CATCH(ioError) {
-        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -311,7 +311,7 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
         }
         return object;
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -329,7 +329,7 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
             return Object::makeString(text);
         }
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -373,7 +373,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
             return Bignum::makeInteger(text.size());
         }
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -388,7 +388,7 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
         const ucs4char ch = textualInputPort->getChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -409,7 +409,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
             return Object::makeString(text);
         }
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -499,7 +499,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -550,7 +550,7 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
         textualOutputPort->flush();
         return Object::Undef;
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -586,7 +586,7 @@ Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
     TRY {
         writer.put(argv[0]);
     } CATCH(ioError) {
-        ioError.port = argv[1];
+        ioError.arg1 = argv[1];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -610,7 +610,7 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     TRY {
         return inputPort->getLine();
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -642,7 +642,7 @@ Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
         ch = textualInputPort->lookaheadChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -687,7 +687,7 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
         }
         return Object::Undef;
     } CATCH(ioError) {
-        ioError.port = argv[0];
+        ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -714,7 +714,7 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
     } CATCH(ioError) {
-        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -741,7 +741,7 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
         }
         return object;
     } CATCH(ioError) {
-        ioError.port = (0 == argc) ? theVM->currentInputPort() : argv[0];
+        ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
@@ -1277,7 +1277,7 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
             ret += c;
         }
     } CATCH(ioError) {
-        ioError.port = Object::makeBinaryInputPort(in);
+        ioError.arg1 = Object::makeBinaryInputPort(in);
         ioError.who = procedureName;
         ioError.irritants = Object::cons(argv[1], ioError.irritants);
         return callIOErrorAfter(theVM, ioError);
