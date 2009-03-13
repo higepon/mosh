@@ -72,7 +72,7 @@ CustomBinaryInputOutputPort::~CustomBinaryInputOutputPort()
 
 ucs4string CustomBinaryInputOutputPort::toString()
 {
-    ucs4string ret = UC("<custom input/output port ");
+    ucs4string ret = UC("<custom-input/output-port ");
     ret += id_;
     ret += UC(">");
     return ret;

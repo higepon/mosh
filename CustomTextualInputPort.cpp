@@ -134,7 +134,7 @@ bool CustomTextualInputPort::setPosition(int position)
 
 ucs4string CustomTextualInputPort::toString()
 {
-    ucs4string ret = UC("<custom textual input port ");
+    ucs4string ret = UC("<custom-textual-input-port ");
     ret += id_;
     ret += UC(">");
     return ret;

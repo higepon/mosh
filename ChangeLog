@@ -1,6 +1,10 @@
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
-        * test/input-port.scm: Adde tests for custom-textual-input-port.
+        * Implemented and tested custom-textual-output-port.
+
+        * test/output-port.scm : Added tests for custom-textual-output-port.
+
+        * test/input-port.scm: Added tests for custom-textual-input-port.
 
         * Implemented and tested custom-textual-input-port.
 

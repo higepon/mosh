@@ -1,5 +1,5 @@
 /*
- * TranscodedTextualOutputPort.h - 
+ * CustomTextualInputPort.h -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,35 +26,48 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: TextualOutputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: CustomTextualInputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
-#define __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
+#ifndef __SCHEME_CUSTOM_TEXTUAL_OUTPUT_PORT__
+#define __SCHEME_CUSTOM_TEXTUAL_OUTPUT_PORT__
 
 #include "TextualOutputPort.h"
 
 namespace scheme {
 
-class TranscodedTextualOutputPort : public TextualOutputPort
+class CustomTextualOutputPort : public TextualOutputPort
 {
 public:
-    TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
-    virtual ~TranscodedTextualOutputPort();
+    CustomTextualOutputPort(VM* theVM,
+                            const ucs4string& id,
+                            Object writeProc,
+                            Object getPositionProc,
+                            Object setPositionDProc,
+                            Object closeProc);
+    virtual ~CustomTextualOutputPort();
 
     int close();
     void flush();
     enum OutputPort::bufferMode bufferMode() const;
     void putChar(ucs4char c);
-    BinaryOutputPort* binaryPort() const;
     Transcoder* transcoder() const;
+
     ucs4string toString();
+    bool hasPosition() const;
+    bool hasSetPosition() const;
+    Object position() const;
+    bool setPosition(int position);
 
 private:
-    BinaryOutputPort* port_;
-    Transcoder* transcoder_;
+    VM* theVM_;
+    const ucs4string id_;
+    const Object writeDProc_;
+    const Object getPositionProc_;
+    const Object setPositionDProc_;
+    const Object closeProc_;
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT__
+#endif // __SCHEME_CUSTOM_TEXTUAL_OUTPUT_PORT__

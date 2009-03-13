@@ -79,7 +79,7 @@ void StringTextualInputPort::unGetChar(ucs4char c)
 
 ucs4string StringTextualInputPort::toString()
 {
-    return UC("<string input port>");
+    return UC("<string-input-port>");
 }
 
 int StringTextualInputPort::close()

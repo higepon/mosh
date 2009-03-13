@@ -122,7 +122,10 @@ void FileBinaryOutputPort::flush()
 
 ucs4string FileBinaryOutputPort::toString()
 {
-    return fileName_;
+    ucs4string ret = UC("<binary-output-port ");
+    ret += fileName_;
+    ret += UC(">");
+    return ret;
 }
 
 bool FileBinaryOutputPort::hasPosition() const

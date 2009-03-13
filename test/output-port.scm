@@ -582,4 +582,33 @@
   (test* (output-port-buffer-mode p) 'none)
   (close-port p))
 
+(let* ([accum '()]
+           [p (make-custom-textual-output-port
+               "custom out"
+               (lambda (str start count)
+                 (let ([str (substring str start count)])
+                   (set! accum (append
+                                (reverse (string->list str))
+                                accum))
+                   count))
+               (lambda () (length accum))
+               (lambda (pos) (set! accum (list-tail accum (- (length accum) pos))))
+               (lambda () 'ok))])
+      (test* (port-has-port-position? p) #t)
+      (test* (port-has-set-port-position!? p) #t)
+      (test* (port-position p) 0)
+      (put-string p "ab")
+      (test* (port-position p) 2)
+      (put-string p "c")
+      (flush-output-port p)
+      (test* accum '(#\c #\b #\a))
+      (test* (port-position p) 3)
+      (set-port-position! p 2)
+      (test* (port-position p) 2)
+      (test* accum '(#\b #\a))
+      (put-string p "xyzw" 2 1)
+      (flush-output-port p)
+      (test* accum '(#\z #\b #\a))
+      (close-port p))
+
 (test-end)

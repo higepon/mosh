@@ -61,6 +61,7 @@
 #include "CustomBinaryInputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "CustomTextualInputPort.h"
+#include "CustomTextualOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BufferedFileBinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
@@ -1028,10 +1029,7 @@ Object scheme::makeCustomTextualOutputPortEx(VM* theVM, int argc, const Object* 
     argumentCheckProcedureOrFalse(3, setPositionDProc);
     argumentCheckProcedureOrFalse(4, closeProc);
 
-    Transcoder* const transcoder = Transcoder::nativeTranscoder();
-    CustomBinaryOutputPort* const customBinaryOutputPort =
-        new CustomBinaryOutputPort(theVM, id->data(), writeDProc, getPositionProc, setPositionDProc, closeProc);
-    return Object::makeTextualOutputPort(customBinaryOutputPort, transcoder);
+    return Object::makeCustomTextualOutputPort(theVM, id->data(), writeDProc, getPositionProc, setPositionDProc, closeProc);
 }
 
 Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)

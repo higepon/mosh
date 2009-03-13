@@ -194,6 +194,12 @@ public:
                                              Object getPositionProc,
                                              Object setPositionProc,
                                              Object closeProc);
+    static Object makeCustomTextualOutputPort(VM* theVM,
+                                              const ucs4string& id,
+                                              Object readProc,
+                                              Object getPositionProc,
+                                              Object setPositionProc,
+                                              Object closeProc);
     static Object makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     static Object makeCustomBinaryInputOutputPort(VM* theVM, const ucs4string& id, Object readProc, Object writeProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     static Object makeCustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc);
