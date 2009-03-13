@@ -19,23 +19,64 @@ body{
 	}
 
 h1{
-	margin:25px 0;
+	margin:25px 0 10px 0;
 	padding:0.25em 0.3em;
-	font-size:120%;
+	font-size:140%;
 	background:#DAEFFC url(../images/h1_bg.png) repeat-x left bottom;
 	border:1px solid #BDCCDF;
 	border-bottom:none;
 	color:#4578DB;
 }
 
+h2{
+	margin:25px 0 10px 0;
+	padding:0.25em 0.3em;
+	font-size:125%;
+	background: #F0F8FF;
+	border-bottom:1px solid #6699FF;
+	border-left:2px solid #6699FF;
+	color:#4578DB;
+}
+
+h3{
+	font-size:120%;
+	color:#4578DB;
+	border-bottom:2px dotted #4578DB;
+	padding:0.25em 0;
+	margin:1em 0;
+}
+
+
 
 h4{
 	font-size:105%;
-	color:#4578DB;
-	border-bottom:2px dotted #BDCCDF;
-	padding:0.25em 0;
-	margin:0.5em 0;
+	font-weight:normal;
+	color: #4578DB;
+	padding:0 0 0 0.5em;
+	margin:1em 0;
+	border-left:5px solid #8FA9D8;
 }
+
+p{
+	margin: 0.1em 0.5em;
+}
+
+pre{
+	background:#F5F5F5;
+	border:2px solid #CCCCCC;
+	padding:0.5em;
+	margin:0;
+}
+
+
+.STitle{
+	margin:35px 0 -5px 10px;
+	padding:0;
+	font-size:100%;
+	color:#666666;
+	font-weight:bold;
+}
+
 
 a:link , a:visited{
 	color:#0033CC;
@@ -47,12 +88,86 @@ a:active , a:hover{
 
 
 /* ID(#)*/
-#Content{
-	padding: 0px 0 0 15px !important;
+#Content , #Index{
+	padding: 0px 0 15px 15px !important;
 	margin: 75px 30px 0 260px;
-  background: #FFFFFF url(../images8/content_bg_left.png) left top no-repeat;
+  background: #FFFFFF;
 	border:1px solid #CCCCCC;
     }
+
+.PopupSearchResultsPage .Firefox #Index{
+	padding: 5px !important;
+	margin: 5px !important;
+  background: #FFFFFF;
+	border:none;
+  }
+
+
+.CBody{
+	margin:0 0 0 25px;
+	padding:0;
+}
+
+
+
+.IPageTitle{
+	margin:25px 25px 20px 10px;
+	padding:0.25em 0.3em;
+	font-size:120%;
+	background:#DAEFFC url(../images/h1_bg.png) repeat-x left bottom;
+	border:1px solid #BDCCDF;
+	border-bottom:none;
+	color:#4578DB;
+	font-weight:bold;
+}
+
+.INavigationBar{
+	margin:10px 25px 20px 10px;
+	padding:0.3em;
+	font-size:80%;
+	background:#F5FEFC;
+	border:2px solid #D2C3DB;
+}
+
+
+#Index table{
+	margin:-20px 0 20px 10px;
+	padding:0;
+}
+
+.IHeading{
+	margin:20px 20px;
+	padding:35px 0 5px 0;
+	font-size:140%;
+	font-weight:bold;
+	color:#4578DB;
+	text-align:center;
+}
+
+.ISymbolPrefix{
+	border-left:1px solid #99CCCC;
+	border-right:4px solid #9CD0EF;
+	background:#EBF4FC;
+	width:2em;
+}
+
+td.IEntry{
+	margin:0;
+	padding:0.3em 1em;
+	font-size:90%;
+}
+
+td.IEntry a:link{
+	font-weight:bold;
+}
+
+.CToolTip{
+	margin:0.3em 10px;
+}
+
+
+
+
 
 #Menu {
   padding:0;
@@ -170,8 +285,9 @@ a:active , a:hover{
 
 
 #MSearchResultsWindow{
-	margin: 0;
-	padding:0;
+  display: none;
+  position: absolute;
+  left: 0; top: 5px;
 	width: 60ex ;
  	border:1px solid #CCCCCC;
   background: #F5FEFC;
@@ -207,7 +323,7 @@ iframe{
 
 .PopupSearchResultsPage{
 	margin:0 !important;
-	padding:0.5em !important;
+	padding:0 0.5em !important;
   background: #FFFFFF !important;
 	}
 
@@ -229,3 +345,61 @@ iframe{
 	color: #0066FF !important;
 	text-decoration:none;
 }
+
+
+.SRResult{
+	margin:0;
+	padding:0.25em 0;
+}
+
+
+/*table*/
+
+.SBorder table , .CDescriptionList{
+	margin:0 ;
+	border:1px solid #CCCCCC;
+	border-right:none;
+	border-bottom:none;
+}
+
+.SBorder table td , .CDescriptionList td{
+	margin:10px;
+	padding:0.3em 0.5em 0.3em 0.3em;
+	border-right:1px solid #CCCCCC;
+	border-bottom:1px solid #CCCCCC;
+}
+
+
+.CBody table{
+	margin:10px;
+}
+
+
+.CDLEntry{
+	font-weight:bold;
+	color:#333333;
+}
+
+
+/*  CoolTips */
+
+.CToolTip {
+	position: absolute; visibility: hidden;
+	left: 0; top: 0;
+	color: #666666;
+	padding: 5px;
+        }
+
+#Opera .CToolTip {
+  max-width: 98%;
+}
+
+/*  Scrollbars would be useless.  */
+.CToolTip blockquote {
+  overflow: hidden;
+	color: black;
+   }
+
+#IE6 .CToolTip blockquote {
+　overflow: visible;
+   }
