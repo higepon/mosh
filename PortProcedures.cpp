@@ -60,6 +60,7 @@
 #include "ByteVector.h"
 #include "CustomBinaryInputPort.h"
 #include "CustomBinaryOutputPort.h"
+#include "CustomTextualInputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BufferedFileBinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
@@ -1013,10 +1014,7 @@ Object scheme::makeCustomTextualInputPortEx(VM* theVM, int argc, const Object* a
     argumentCheckProcedureOrFalse(3, setPositionProc);
     argumentCheckProcedureOrFalse(4, closeProc);
 
-    Transcoder* const transcoder = Transcoder::nativeTranscoder();
-    CustomBinaryInputPort* const customBinaryInputPort =
-        new CustomBinaryInputPort(theVM, id->data(), readProc, getPositionProc, setPositionProc, closeProc);
-    return Object::makeTextualInputPort(customBinaryInputPort, transcoder);
+    return Object::makeCustomTextualInputPort(theVM, id->data(), readProc, getPositionProc, setPositionProc, closeProc);
 }
 
 Object scheme::makeCustomTextualOutputPortEx(VM* theVM, int argc, const Object* argv)

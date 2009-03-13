@@ -188,6 +188,12 @@ public:
     static Object makeStringInputPort(const uint8_t* buf, int size);
     static Object makeStringOutputPort();
     static Object makeTextualByteVectorOuputPort(Transcoder* transcoder);
+    static Object makeCustomTextualInputPort(VM* theVM,
+                                             const ucs4string& id,
+                                             Object readProc,
+                                             Object getPositionProc,
+                                             Object setPositionProc,
+                                             Object closeProc);
     static Object makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     static Object makeCustomBinaryInputOutputPort(VM* theVM, const ucs4string& id, Object readProc, Object writeProc, Object getPositionProc, Object setPositionProc, Object closeProc);
     static Object makeCustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc);

@@ -29,6 +29,7 @@
 
 
 (import (rnrs)
+        (rnrs mutable-strings)
         (mosh)
         (mosh test))
 
@@ -200,5 +201,29 @@
 (call-with-port (open-string-input-port "012\n34\n567\n")
   (lambda (p)
     (test* (get-line p) "012\n")))
+
+(let* ([pos 0]
+           [p (make-custom-textual-input-port
+               "custom in"
+               (lambda (bv start count)
+                 (if (= pos 16)
+                     0
+                     (begin
+                       (set! pos (+ 1 pos))
+                       (string-set! bv start (integer->char (+ 96 pos)))
+                       1)))
+               (lambda () pos)
+               (lambda (p) (set! pos p))
+               (lambda () 'ok))])
+      (port-position p)
+      (test* (get-string-n p 3) "abc")
+      (test* (lookahead-char p) #\d)
+      (test* (lookahead-char p) #\d)
+      (test* (get-string-n p 7) "defghij")
+      (get-string-n p 2)
+      (test* (get-string-n p 2) "mn")
+      (test* (get-string-n p 2) "op")
+      (test* (get-string-n p 2) (eof-object))
+      (close-port p))
 
 (test-end)

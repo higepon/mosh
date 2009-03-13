@@ -37,7 +37,9 @@
 #include "ByteVector.h"
 #include "CustomTextualInputPort.h"
 #include "Bignum.h"
+#include "SString.h"
 #include "VM.h"
+#include "Transcoder.h"
 
 using namespace scheme;
 
@@ -48,7 +50,8 @@ CustomTextualInputPort::CustomTextualInputPort(VM* theVM, const ucs4string& id, 
       getPositionProc_(getPositionProc),
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
-      isClosed_(false)
+      buffer_(UC("")),
+      line_(1)
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
@@ -61,16 +64,73 @@ CustomTextualInputPort::~CustomTextualInputPort()
 {
 }
 
-    ucs4char CustomTextualInputPort::getChar(){}
-    int CustomTextualInputPort::getLineNo() const{}
-    void CustomTextualInputPort::unGetChar(ucs4char c){}
-    Transcoder* CustomTextualInputPort::transcoder() const{}
-    bool CustomTextualInputPort::hasPosition() const{}
-    bool CustomTextualInputPort::hasSetPosition() const{}
-    Object CustomTextualInputPort::position() const{}
-    bool CustomTextualInputPort::setPosition(int position){}
+ucs4char CustomTextualInputPort::getChar()
+{
+    ucs4char c;
+    if (buffer_.empty()) {
+        const Object text = UC(" ");
+        const Object start = Object::makeFixnum(0);
+        const Object count = Object::makeFixnum(1);
+        const Object result = theVM_->callClosure3(readProc_, text, start, count);
+        MOSH_ASSERT(result.isFixnum());
+        if (0 == result.toFixnum()) {
+            return EOF;
+        }
+        c = text.toString()->data()[0];
+    } else {
+        c = buffer_[buffer_.size() - 1];
+        buffer_.erase(buffer_.size() - 1, 1);
+    }
+    if (c == '\n') ++line_;
+    return c;
+}
 
+int CustomTextualInputPort::getLineNo() const
+{
+    return line_;
+}
 
+void CustomTextualInputPort::unGetChar(ucs4char c)
+{
+    if (EOF == c) return;
+    buffer_ += c;
+}
+
+Transcoder* CustomTextualInputPort::transcoder() const
+{
+    return Transcoder::nativeTranscoder();
+}
+
+bool CustomTextualInputPort::hasPosition() const
+{
+    return !getPositionProc_.isFalse();
+}
+
+bool CustomTextualInputPort::hasSetPosition() const
+{
+    return !setPositionProc_.isFalse();
+}
+
+Object CustomTextualInputPort::position() const
+{
+    // hasPosition() should be checked by the user of this class.
+    MOSH_ASSERT(hasPosition());
+    const Object position = theVM_->callClosure0(getPositionProc_);
+    if (position.isFixnum() && !buffer_.empty()) {
+        return Object::makeFixnum(position.toFixnum() - buffer_.size());
+    } else {
+        return position;
+    }
+}
+
+bool CustomTextualInputPort::setPosition(int position)
+{
+    MOSH_ASSERT(hasSetPosition());
+    // we need to reset the cache
+    buffer_.clear();
+    theVM_->callClosure1(setPositionProc_, Bignum::makeInteger(position));
+    return true;
+}
 
 ucs4string CustomTextualInputPort::toString()
 {
@@ -78,4 +138,12 @@ ucs4string CustomTextualInputPort::toString()
     ret += id_;
     ret += UC(">");
     return ret;
+}
+
+int CustomTextualInputPort::close()
+{
+    if (closeProc_.isCallable()) {
+        theVM_->callClosure0(closeProc_);
+    }
+    return 0;
 }

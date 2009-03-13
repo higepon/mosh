@@ -1,5 +1,5 @@
 /*
- * CustomTextualInputPort.h - 
+ * CustomTextualInputPort.h -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -53,6 +53,7 @@ public:
 
     // Port interface
     ucs4string toString();
+    int close();
 private:
     VM* theVM_;
     const ucs4string id_;
@@ -60,8 +61,8 @@ private:
     const Object getPositionProc_;
     const Object setPositionProc_;
     const Object closeProc_;
-
-    bool isClosed_;
+    ucs4string buffer_;
+    int line_;
 };
 
 }; // namespace scheme

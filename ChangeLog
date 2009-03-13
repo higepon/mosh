@@ -1,5 +1,9 @@
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
+        * test/input-port.scm: Adde tests for custom-textual-input-port.
+
+        * Implemented and tested custom-textual-input-port.
+
         * CustomTextualInputPort.cpp : Added not implemented.
 
         * CustomBinaryInputOutputPort.cpp : Added <custom-binary-input/output-port>.

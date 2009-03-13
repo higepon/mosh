@@ -65,6 +65,7 @@
 #include "StringTextualOutputPort.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "CustomBinaryInputPort.h"
+#include "CustomTextualInputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "CustomBinaryInputOutputPort.h"
 #include "TextualByteVectorOutputPort.h"
@@ -189,6 +190,23 @@ Object Object::makeStringInputPort(const uint8_t* buf, int size)
                                                         reinterpret_cast<word>(new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(buf, size)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
+
+Object Object::makeCustomTextualInputPort(VM* theVM,
+                                          const ucs4string& id,
+                                          Object readProc,
+                                          Object getPositionProc,
+                                          Object setPositionProc,
+                                          Object closeProc)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<word>(new CustomTextualInputPort(theVM,
+                                                                                                          id,
+                                                                                                          readProc,
+                                                                                                          getPositionProc,
+                                                                                                          setPositionProc,
+                                                                                                          closeProc)))));
+}
+
 
 Object Object::makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
 {
