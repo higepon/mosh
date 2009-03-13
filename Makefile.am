@@ -88,6 +88,7 @@ BufferedFileBinaryInputPort.h  BufferedFileBinaryInputPort.cpp     \
 FileBinaryOutputPort.h         FileBinaryOutputPort.cpp            \
 BufferedFileBinaryOutputPort.h BufferedFileBinaryOutputPort.cpp    \
 CustomBinaryInputPort.h        CustomBinaryInputPort.cpp           \
+CustomTextualInputPort.h       CustomTextualInputPort.cpp          \
 CustomBinaryInputOutputPort.h  CustomBinaryInputOutputPort.cpp     \
 TextualOutputPort.h            TextualOutputPort.cpp               \
 TextualByteVectorOutputPort.h  TextualByteVectorOutputPort.cpp     \
