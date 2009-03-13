@@ -88,7 +88,7 @@
   (test* (get-bytevector-n p 2) (eof-object))
   (set-port-position! p 2)
   (test* (get-bytevector-n p 3) #vu8(3 4 5))
-  (test* (format "~a" p) "<custom input port xyz>")
+  (test* (format "~a" p) "<custom-input-port xyz>")
   (set-port-position! p 2)
   ;; some
   (let ([bv (get-bytevector-some p)])
@@ -116,7 +116,7 @@
   (test* (port-position in) 1)
   (set-port-position! in 5)
   (test* (read-char in) #\5)
-  (test* (format "~a" in) "<string input port>")
+  (test* (format "~a" in) "<string-input-port>")
   (set-port-position! in 0)
   (test* (get-string-n in 3) "012")
   (let ([s (make-string 3 #\space)])

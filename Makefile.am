@@ -25,7 +25,7 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_vm test_port test_fasl test_ffi test_object
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object #test_vm 
 bin_SCRIPTS = mosh_config
 
 # mosh
@@ -390,8 +390,6 @@ bench:
 
 #### test
 check: test
-	@echo "TEST results =>"
-	@echo $$?
 
 test: ./mosh all-tests.scm update
 	./mosh test/io-error.scm
@@ -448,12 +446,12 @@ test_object_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_object_SOURCES = ObjectTest.cpp TestingSignalHandler.cpp
 test_object_LDADD = $(TEST_LDADD_)
 
-TESTS += test_vm
-check_PROGRAMS += test_vm
-test_vm_DEPENDENCIES = $(TEST_DEPENDENCIES_)
-test_vm_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
-test_vm_LDADD = $(TEST_LDADD_)
+# TESTS += test_vm
+# check_PROGRAMS += test_vm
+# test_vm_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+# test_vm_CXXFLAGS = $(TEST_CXXFLAGS_)
+# test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
+# test_vm_LDADD = $(TEST_LDADD_)
 
 TESTS += test_port
 check_PROGRAMS += test_port
