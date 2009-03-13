@@ -28,7 +28,9 @@ System Requirements:
 Mosh runs on Linux/Unix and Mac OS X. 
 
 License:
-Mosh is developed by higepon (higepon@users.sourceforge.jp) and kokosabu on <http://code.google.com/p/mosh-scheme/>.
+Mosh is developed on <http://code.google.com/p/mosh-scheme/> by
+- higepon (higepon@users.sourceforge.jp)
+- kokosabu 
 
 It is distributed by MIT/X License.
 
