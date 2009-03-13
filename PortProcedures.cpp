@@ -314,7 +314,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("peek-char");
-    checkArgumentLength(1);
+    checkArgumentLengthBetween(0, 1);
     TRY {
         if (0 == argc) {
             const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();

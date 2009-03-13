@@ -1,5 +1,11 @@
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
+        * Now passes all of (rnrs io simple) tests.
+
+        * PortProcedures.cpp (peek-char): Fixed wrong argument length.
+
+        * library.scm (call-with-output-file): Fixed for mulitple values.
+
         * Implemented and tested custom-textual-input/output-port.
 
         * Implemented and tested custom-textual-output-port.

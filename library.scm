@@ -366,16 +366,16 @@
         (lambda () (set-current-output-port! org)))))
 
 (define (call-with-output-file filename proc)
-  (let* ((port (open-output-file filename))
-         (ret (proc port)))
-    (close-output-port port)
-    ret))
+  (let1 port (open-output-file filename)
+    (receive ret (proc port)
+      (close-output-port port)
+      (apply values ret))))
 
 (define (call-with-input-file filename proc)
-  (let* ([port (open-input-file filename)]
-         [ret (proc port)])
-    (close-input-port port)
-    ret))
+  (let1 port (open-input-file filename)
+    (receive ret (proc port)
+      (close-input-port port)
+      (apply values ret))))
 
 (define (open-string-output-port)
   (let* ([port (open-output-string)]
