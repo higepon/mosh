@@ -65,6 +65,19 @@
         return Object::Undef; \
     }
 
+#define argumentAsTextualOutputPort(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    TextualOutputPort* variableName;                                  \
+    if (obj ## variableName.isTextualOutputPort()) { \
+        variableName = obj ## variableName.toTextualOutputPort(); \
+    } else if (obj ## variableName.isTextualInputOutputPort()) { \
+        variableName = obj ## variableName.toTextualInputOutputPort(); \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "textual-output-port", obj ## variableName); \
+        return Object::Undef; \
+    }
+
+
 
 #define checkType(index, variableName, pred, required) \
     const Object variableName = argv[index]; \
@@ -143,7 +156,7 @@
 #define argumentAsPort(index, variableName) castArgument(index, variableName, isPort, port, Port*, toPort)
 #define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)
 
-#define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
+//#define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
 
 #define argumentAsRegexp(index, variableName) castArgument(index, variableName, isRegexp, regexp, Regexp*, toRegexp)
 #define argumentAsRegMatch(index, variableName) castArgument(index, variableName, isRegMatch, regexp, RegMatch*, toRegMatch)

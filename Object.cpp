@@ -67,6 +67,7 @@
 #include "CustomBinaryInputPort.h"
 #include "CustomTextualInputPort.h"
 #include "CustomTextualOutputPort.h"
+#include "CustomTextualInputOutputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "CustomBinaryInputOutputPort.h"
 #include "TextualByteVectorOutputPort.h"
@@ -222,6 +223,25 @@ Object Object::makeCustomTextualOutputPort(VM* theVM,
                                                                                                           getPositionProc,
                                                                                                           setPositionProc,
                                                                                                           closeProc)))));
+}
+
+
+Object Object::makeCustomTextualInputOutputPort(VM* theVM,
+                                                const ucs4string& id,
+                                                Object readProc,
+                                                Object writeProc,
+                                                Object getPositionProc,
+                                                Object setPositionProc,
+                                                Object closeProc)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputOutputPort,
+                                                        reinterpret_cast<word>(new CustomTextualInputOutputPort(theVM,
+                                                                                                                id,
+                                                                                                                readProc,
+                                                                                                                writeProc,
+                                                                                                                getPositionProc,
+                                                                                                                setPositionProc,
+                                                                                                                closeProc)))));
 }
 
 

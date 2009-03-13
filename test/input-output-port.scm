@@ -28,6 +28,7 @@
 ;  $Id: test.ss 621 2008-11-09 06:22:47Z higepon $
 
 (import (rnrs)
+        (rnrs mutable-strings)
         (mosh)
         (mosh process)
         (mosh shell)
@@ -531,5 +532,21 @@
       (test* (get-u8 p) 7)
       (close-port p))
 (test-positions make-custom-binary-input-port)
+
+#;(let* ([save #f]
+           [p (make-custom-textual-input/output-port
+               "custom in"
+               (lambda (str start end)
+                 (string-set! str start #\!)
+                 1)
+               (lambda (str start end)
+                 (set! save (string-ref str start))
+                 1)
+               #f #f #f)])
+      (put-char p #\q)
+      (flush-output-port p)
+      (test* save #\q)
+      (test* (get-char p) #\!)
+      (close-port p))
 
 (test-end)

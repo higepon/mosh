@@ -62,6 +62,7 @@
 #include "CustomBinaryOutputPort.h"
 #include "CustomTextualInputPort.h"
 #include "CustomTextualOutputPort.h"
+#include "CustomTextualInputOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BufferedFileBinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
@@ -155,7 +156,17 @@ static bool isEmpty(Object fileOptions)
 
 Object scheme::makeCustomTextualInputOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
-    return Object::Undef;
+    DeclareProcedureName("make-custom-textual-input/output-port");
+    checkArgumentLength(6);
+
+    argumentAsString(0, id);
+    argumentCheckProcedure(1, readProc);
+    argumentCheckProcedure(2, writeDProc);
+    argumentCheckProcedureOrFalse(3, getPositionProc);
+    argumentCheckProcedureOrFalse(4, setPositionDProc);
+    argumentCheckProcedureOrFalse(5, closeProc);
+
+    return Object::makeCustomTextualInputOutputPort(theVM, id->data(), readProc, writeDProc, getPositionProc, setPositionDProc, closeProc);
 }
 
 Object scheme::makeCustomBinaryInputOutputPortEx(VM* theVM, int argc, const Object* argv)
@@ -1764,8 +1775,10 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
         outputPort.toBinaryOutputPort()->flush();
     } else if (outputPort.isBinaryInputOutputPort()) {
         outputPort.toBinaryInputOutputPort()->flush();
-    } else if (outputPort.isTextualPort()) {
+    } else if (outputPort.isTextualOutputPort()) {
         outputPort.toTextualOutputPort()->flush();
+    } else if (outputPort.isTextualInputOutputPort()) {
+        outputPort.toTextualInputOutputPort()->flush();
     } else {
         callAssertionViolationAfter(theVM, procedureName, "output-port required", L1(outputPort));
     }
