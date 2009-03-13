@@ -35,6 +35,37 @@
 
 (def-command rm)
 
+(define-syntax test-positions
+    (syntax-rules ()
+      [(_ make)
+       (begin
+         (let* ([p (make "custom"
+                     (lambda (? start count) 0)
+                     (lambda () 0)
+                     #f
+                     (lambda () 'ok))])
+           (test* (port-has-port-position? p) #t)
+           (test* (port-has-set-port-position!? p) #f)
+           (test* (port-position p) 0)
+           (close-port p))
+         (let* ([p (make "custom"
+                     (lambda (? start count) 0)
+                     #f
+                     (lambda (pos) 'ok)
+                     (lambda () 'ok))])
+           (test* (port-has-port-position? p) #f)
+           (test* (port-has-set-port-position!? p) #t)
+           (set-port-position! p 0)
+           (close-port p))
+         (let* ([p (make "custom"
+                     (lambda (? start count) 0)
+                     #f
+                     #f
+                     (lambda () 'ok))])
+           (test* (port-has-port-position? p) #f)
+           (test* (port-has-set-port-position!? p) #f)
+           (close-port p))))])
+
 (define (cp from to)
   (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
     (waitpid pid)
@@ -499,6 +530,6 @@
       (test* save 10)
       (test* (get-u8 p) 7)
       (close-port p))
-
+(test-positions make-custom-binary-input-port)
 
 (test-end)

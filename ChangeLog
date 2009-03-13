@@ -1,5 +1,7 @@
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
+        * CustomBinaryInputOutputPort.cpp : Added <custom-binary-input/output-port>.
+
         * ErrorProcedures.cpp : Fixed the bug of &i/o-encoding arguments error.
 
 2009-03-12  higepon  <higepon@users.sourceforge.jp>
