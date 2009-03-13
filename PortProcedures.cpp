@@ -71,6 +71,7 @@
 #include "TranscodedTextualInputOutputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "ListProcedures.h"
+#include "CustomBinaryInputOutputPort.h"
 
 using namespace scheme;
 
@@ -148,6 +149,26 @@ static bool isNoTruncate(Object fileOptions)
 static bool isEmpty(Object fileOptions)
 {
     return fileOptions.isNil();
+}
+
+Object scheme::makeCustomTextualInputOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    return Object::Undef;
+}
+
+Object scheme::makeCustomBinaryInputOutputPortEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-custom-binary-input/output-port");
+    checkArgumentLength(6);
+
+    argumentAsString(0, id);
+    argumentCheckProcedure(1, readProc);
+    argumentCheckProcedure(2, writeProc);
+    argumentCheckProcedureOrFalse(3, getPositionProc);
+    argumentCheckProcedureOrFalse(4, setPositionProc);
+    argumentCheckProcedureOrFalse(5, closeProc);
+
+    return Object::makeCustomBinaryInputOutputPort(theVM, id->data(), readProc, writeProc, getPositionProc, setPositionProc, closeProc);
 }
 
 /*
@@ -1743,8 +1764,10 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("flush-output-port");
     checkArgumentLength(1);
     argumentCheckOutputPort(0, outputPort);
-    if (outputPort.isBinaryPort()) {
+    if (outputPort.isBinaryOutputPort()) {
         outputPort.toBinaryOutputPort()->flush();
+    } else if (outputPort.isBinaryInputOutputPort()) {
+        outputPort.toBinaryInputOutputPort()->flush();
     } else if (outputPort.isTextualPort()) {
         outputPort.toTextualOutputPort()->flush();
     } else {

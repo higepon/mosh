@@ -501,7 +501,10 @@
     quotient
     remainder
     modulo
+    ;; i/o
     open-file-input/output-port
+    make-custom-binary-input/output-port
+    make-custom-textual-input/output-port
     ;;
     time-usage
     )

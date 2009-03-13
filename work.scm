@@ -1,6 +1,21 @@
 (import (rnrs)
-        #;(mosh test))
+        (mosh test))
 
 
-(display (i/o-encoding-error-char (make-i/o-encoding-error 'port 'char)))
-;(bytevector->string #vu8(97 #xff 98 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode raise)))
+(let* ([save #f]
+           [p (make-custom-binary-input/output-port
+               "custom in"
+               (lambda (bv start end)
+                 (bytevector-u8-set! bv start 7)
+                 1)
+               (lambda (bv start end)
+                 (set! save (bytevector-u8-ref bv start))
+                 1)
+               #f #f #f)])
+      (put-u8 p 10)
+      (flush-output-port p)
+      (test* save 10)
+      (test* (get-u8 p) 7)
+      (close-port p))
+
+(test-end)
