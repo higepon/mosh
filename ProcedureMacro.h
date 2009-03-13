@@ -77,6 +77,18 @@
         return Object::Undef; \
     }
 
+#define argumentAsTextualInputPort(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    TextualInputPort* variableName;                                  \
+    if (obj ## variableName.isTextualInputPort()) { \
+        variableName = obj ## variableName.toTextualInputPort(); \
+    } else if (obj ## variableName.isTextualInputOutputPort()) { \
+        variableName = obj ## variableName.toTextualInputOutputPort(); \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "textual-input-port", obj ## variableName); \
+        return Object::Undef; \
+    }
+
 
 
 #define checkType(index, variableName, pred, required) \
@@ -192,7 +204,7 @@
         return Object::Undef;\
     } \
 
-#define argumentAsTextualInputPort(index, variableName) castArgument(index, variableName, isTextualInputPort, textual-input-port, TextualInputPort*, toTextualInputPort)
+//#define argumentAsTextualInputPort(index, variableName) castArgument(index, variableName, isTextualInputPort, textual-input-port, TextualInputPort*, toTextualInputPort)
 
 #define checkArgumentLengthAtLeast(required)             \
     if (argc < required) { \

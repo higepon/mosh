@@ -1770,7 +1770,7 @@ Object scheme::flushOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("flush-output-port");
     checkArgumentLength(1);
-    argumentCheckOutputPort(0, outputPort);
+    const Object outputPort = argv[0];
     if (outputPort.isBinaryOutputPort()) {
         outputPort.toBinaryOutputPort()->flush();
     } else if (outputPort.isBinaryInputOutputPort()) {

@@ -1,5 +1,7 @@
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
+        * Implemented and tested custom-textual-input/output-port.
+
         * Implemented and tested custom-textual-output-port.
 
         * test/output-port.scm : Added tests for custom-textual-output-port.

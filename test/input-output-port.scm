@@ -533,7 +533,7 @@
       (close-port p))
 (test-positions make-custom-binary-input-port)
 
-#;(let* ([save #f]
+(let* ([save #f]
            [p (make-custom-textual-input/output-port
                "custom in"
                (lambda (str start end)
