@@ -330,6 +330,12 @@ Object Object::makeTextualInputPort(BinaryInputPort* port, Transcoder* transcode
                                                         reinterpret_cast<word>(new TranscodedTextualInputPort(port, transcoder)))));
 }
 
+Object Object::makeTextualInputPort(TextualInputPort* port)
+{
+    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<word>(port))));
+}
+
 Object Object::makeTextualByteVectorOuputPort(Transcoder* transcoder)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,

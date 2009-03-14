@@ -182,6 +182,7 @@ public:
     static Object makeTextualInputFilePort(const ucs4char* str);
     static Object makeTextualInputFilePort(const char* str);
     static Object makeTextualInputPort(BinaryInputPort* port, Transcoder* coder);
+    static Object makeTextualInputPort(TextualInputPort* port);
     static Object makeTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder);
     static Object makeTextualOutputPort(BinaryOutputPort* port, Transcoder* coder);
     static Object makeStringInputPort(const ucs4string& str);
