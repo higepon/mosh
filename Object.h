@@ -83,8 +83,28 @@ enum {
     CONST_UNBOUND = 3,
     CONST_TRUE    = 4,
     CONST_FALSE   = 5,
-    CONST_IGNORE  = 6,
+    CONST_IGNORE  = 6
 };
+
+enum EolStyle
+{
+    LF = 0x0a,
+    CR = 0x0d,
+    NEL = 0x85,
+    LS = 0x2028,
+    CRNEL,
+    CRLF,
+    NONE
+};
+
+enum ErrorHandlingMode
+{
+    IGNORE_ERROR,
+    RAISE,
+    REPLACE
+};
+
+
 
 #define MAKE_CONST(n) ((n << 4) + 6)
 
@@ -243,8 +263,8 @@ public:
     static Object makeCodec(Codec* codec);
     static Object makeTranscoder(Transcoder* transcoder);
     static Object makeTranscoder(Codec* codec);
-    static Object makeTranscoder(Codec* codec, const Object eolStyle);
-    static Object makeTranscoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode);
+    static Object makeTranscoder(Codec* codec, enum EolStyle eolStyle);
+    static Object makeTranscoder(Codec* codec, enum EolStyle eolStyle, enum ErrorHandlingMode errorHandlingMode);
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);

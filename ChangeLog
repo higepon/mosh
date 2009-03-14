@@ -1,5 +1,9 @@
 2009-03-14  higepon  <higepon@users.sourceforge.jp>
 
+        * Implmented "eol-style" for textual-input-port.
+
+        * Refactoring Transcoder things.
+
         * Makefile.am : disable-profiler works fine.
 
 2009-03-13  higepon  <higepon@users.sourceforge.jp>

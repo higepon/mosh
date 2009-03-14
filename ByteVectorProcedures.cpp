@@ -123,7 +123,7 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
     ucs4string ret;
     Codec* codec = UTF32Codec::getCodec(endianness);
     TRY {
-        for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
+        for (ucs4char c = codec->in(in, ErrorHandlingMode(RAISE)); c != EOF; c = codec->in(in, ErrorHandlingMode(RAISE))) {
             ret += c;
         }
         return Object::makeString(ret);
@@ -166,7 +166,7 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     ucs4string ret;
     Codec* codec = UTF16Codec::getCodec(endianness);
     TRY {
-        for (ucs4char c = codec->in(in, Codec::RAISE); c != EOF; c = codec->in(in, Codec::RAISE)) {
+        for (ucs4char c = codec->in(in, ErrorHandlingMode(RAISE)); c != EOF; c = codec->in(in, ErrorHandlingMode(RAISE))) {
             ret += c;
         }
         return Object::makeString(ret);

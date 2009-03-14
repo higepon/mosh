@@ -52,7 +52,8 @@ TranscodedTextualInputPort::TranscodedTextualInputPort(BinaryInputPort* port, Tr
       port_(port),
       transcoder_(coder),
       buffer_(UC("")),
-      line_(1)
+      line_(1),
+      eolStyle_(coder->eolStyle())
 {
 }
 
@@ -67,7 +68,7 @@ TranscodedTextualInputPort::~TranscodedTextualInputPort()
     close();
 }
 
-ucs4char TranscodedTextualInputPort::getChar()
+ucs4char TranscodedTextualInputPort::getCharInternal()
 {
     ucs4char c;
     if (buffer_.empty()) {
@@ -76,7 +77,86 @@ ucs4char TranscodedTextualInputPort::getChar()
         c = buffer_[buffer_.size() - 1];
         buffer_.erase(buffer_.size() - 1, 1);
     }
-    if (c == '\n') ++line_;
+    return c;
+}
+
+ucs4char TranscodedTextualInputPort::getChar()
+{
+    ucs4char c = getCharInternal();
+    switch(eolStyle_) {
+    case EolStyle(LF):
+    case EolStyle(CR):
+    case EolStyle(NEL):
+    case EolStyle(LS):
+    {
+        if (EolStyle(CR) == c) {
+            ++line_;
+            const ucs4char c2 = getCharInternal();
+            if (c2 == EolStyle(LF) || c2 == EolStyle(NEL)) {
+                return eolStyle_;
+            } else {
+                unGetChar(c2);
+                return eolStyle_;
+            }
+        } else if (c == EolStyle(NEL) || c  == EolStyle(LS)) {
+            ++line_;
+            return eolStyle_;
+        } else {
+            return c;
+        }
+        break;
+    }
+    case EolStyle(CRLF):
+    {
+        if (EolStyle(CR) == c) {
+            ++line_;
+            const ucs4char c2 = getCharInternal();
+            if (c2 == EolStyle(LF)) {
+                unGetChar(c2);
+                return c;
+            } else if (c2 == EolStyle(NEL)) {
+                unGetChar(EolStyle(LF));
+                return c;
+            } else {
+                unGetChar(c2);
+                return eolStyle_;
+            }
+        } else if (c == EolStyle(NEL) || c  == EolStyle(LS)) {
+            ++line_;
+            unGetChar(EolStyle(LF));
+            return EolStyle(CR);
+        } else {
+            return c;
+        }
+        break;
+    }
+    case EolStyle(CRNEL):
+    {
+        if (EolStyle(CR) == c) {
+            ++line_;
+            const ucs4char c2 = getCharInternal();
+            if (c2 == EolStyle(LF)) {
+                unGetChar(EolStyle(NEL));
+                return c;
+            } else if (c2 == EolStyle(NEL)) {
+                unGetChar(c2);
+                return c;
+            } else {
+                unGetChar(c2);
+                return eolStyle_;
+            }
+        } else if (c == EolStyle(NEL) || c  == EolStyle(LS)) {
+            ++line_;
+            unGetChar(EolStyle(NEL));
+            return EolStyle(CR);
+        } else {
+            return c;
+        }
+        break;
+    }
+    case EolStyle(NONE):
+        return c;
+    }
     return c;
 }
 

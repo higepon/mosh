@@ -1251,12 +1251,22 @@ Object scheme::makeTranscoderEx(VM* theVM, int argc, const Object* argv)
     if (argc == 1) {
         return Object::makeTranscoder(codec);
     }
-    argumentCheckSymbol(1, eolStyle);
+    argumentCheckSymbol(1, style);
+    EolStyle eolStyle;
+    if (!Transcoder::validateEolStyle(style, eolStyle)) {
+        callAssertionViolationAfter(theVM, procedureName, "invalid eol-style", L1(argv[1]));
+        return Object::Undef;
+    }
     if (argc == 2) {
         return Object::makeTranscoder(codec, eolStyle);
     }
     argumentCheckSymbol(2, errorHandlingMode);
-    return Object::makeTranscoder(codec, eolStyle, errorHandlingMode);
+    ErrorHandlingMode mode;
+    if (!Transcoder::validateErrorHandlingMode(errorHandlingMode, mode)) {
+        callAssertionViolationAfter(theVM, procedureName, "invalid error-handling-mode", L1(argv[2]));
+        return Object::Undef;
+    }
+    return Object::makeTranscoder(codec, eolStyle, mode);
 }
 
 Object scheme::nativeTranscoderEx(VM* theVM, int argc, const Object* argv)
@@ -1279,7 +1289,7 @@ Object scheme::transcoderEolStyleEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("transcoder-eol-style");
     checkArgumentLength(1);
     argumentAsTranscoder(0, transcoder);
-    return transcoder->eolStyle();
+    return transcoder->eolStyleSymbol();
 }
 
 Object scheme::transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* argv)
@@ -1287,7 +1297,7 @@ Object scheme::transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* 
     DeclareProcedureName("transcoder-error-handling-mode");
     checkArgumentLength(1);
     argumentAsTranscoder(0, transcoder);
-    return transcoder->errorHandlingMode();
+    return transcoder->errorHandlingModeSymbol();
 }
 
 Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
@@ -1298,12 +1308,10 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsByteVector(0, bytevector);
     argumentAsTranscoder(1, transcoder);
 
-    TextualInputPort* port =
-        new TranscodedTextualInputPort(
-            new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length())
-            , transcoder);
+    TextualInputPort* port = new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(bytevector->data(),
+                                                                                         bytevector->length()),
+                                                            transcoder);
     ucs4string ret;
-
     TRY {
         for (ucs4char c = port->getChar(); c != EOF; c = port->getChar()) {
             ret += c;

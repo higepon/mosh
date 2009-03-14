@@ -39,112 +39,93 @@
 
 using namespace scheme;
 
-Transcoder::Transcoder(Codec* codec) : codec_(codec)
+Transcoder::Transcoder(Codec* codec) :
+    codec_(codec),
+    eolStyle_(nativeEolStyle()),
+    errorHandlingMode_(ErrorHandlingMode(REPLACE))
 {
-    eolStyle_ = nativeEolStyle();
-    errorHandlingMode_ = Codec::REPLACE;
 }
 
-Transcoder::Transcoder(Codec* codec, const Object eolStyle) : codec_(codec)
+Transcoder::Transcoder(Codec* codec, EolStyle eolStyle) :
+    codec_(codec),
+    eolStyle_(eolStyle),
+    errorHandlingMode_(ErrorHandlingMode(REPLACE))
 {
-    eolStyle_ = symbolToEolStyle(eolStyle);
-    errorHandlingMode_ = Codec::REPLACE;
 }
 
-Transcoder::Transcoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode) : codec_(codec)
+Transcoder::Transcoder(Codec* codec, EolStyle eolStyle, enum ErrorHandlingMode errorHandlingMode) :
+    codec_(codec),
+    eolStyle_(eolStyle),
+    errorHandlingMode_(errorHandlingMode)
 {
-    eolStyle_          = symbolToEolStyle(eolStyle);
-    errorHandlingMode_ = symbolToErrorHandlingMode(errorHandlingMode);
 }
 
-Object Transcoder::eolStyle()
+enum EolStyle Transcoder::eolStyle()
+{
+    return eolStyle_;
+}
+
+enum ErrorHandlingMode Transcoder::errorHandlingMode()
+{
+    return errorHandlingMode_;
+}
+
+Object Transcoder::eolStyleSymbol()
 {
     return eolStyleToSymbol(eolStyle_);
 }
 
-Object Transcoder::errorHandlingMode()
+Object Transcoder::errorHandlingModeSymbol()
 {
     return errorHandlingModeToSymbol(errorHandlingMode_);
 }
 
 Transcoder* Transcoder::nativeTranscoder()
 {
-    return new Transcoder(UTF8Codec::getCodec(), nativeEolStyle(), Codec::IGNORE_ERROR);
+    return new Transcoder(UTF8Codec::getCodec(), nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
 }
 
-enum Transcoder::EolStyle Transcoder::nativeEolStyle()
+enum EolStyle Transcoder::nativeEolStyle()
 {
 #if LINE_FEED_CODE_LF
-    return Transcoder::LF;
+    return EolStyle(LF);
 #elif LINE_FEED_CODE_CRLF
-    return Transcoder::CRLF;
+    return EolStyle(CRLF);
 #elif LINE_FEED_CODE_CR
-    return Transcoder::CR;
+    return EolStyle::CR;
 #else
     MOSH_FATAL("not found platform native eol style\n");
 #endif
 }
 
-enum Transcoder::EolStyle Transcoder::symbolToEolStyle(const Object symbol)
-{
-    if (symbol == Symbol::LF) {
-        return Transcoder::LF;
-    } else if (symbol == Symbol::CR) {
-        return Transcoder::CR;
-    } else if (symbol == Symbol::CRLF) {
-        return Transcoder::CRLF;
-    } else if (symbol == Symbol::NEL) {
-        return Transcoder::NEL;
-    } else if (symbol == Symbol::CRNEL) {
-        return Transcoder::CRNEL;
-    } else if (symbol == Symbol::LS) {
-        return Transcoder::LS;
-    } else {
-        return Transcoder::NONE;
-    }
-}
-
-Object Transcoder::eolStyleToSymbol(const enum Transcoder::EolStyle eolstyle)
+Object Transcoder::eolStyleToSymbol(const enum EolStyle eolstyle)
 {
     switch (eolstyle) {
-    case Transcoder::LF:
+    case EolStyle(LF):
         return Symbol::LF;
-    case Transcoder::CR:
+    case EolStyle(CR):
         return Symbol::CR;
-    case Transcoder::CRLF:
+    case EolStyle(CRLF):
         return Symbol::CRLF;
-    case Transcoder::NEL:
+    case EolStyle(NEL):
         return Symbol::NEL;
-    case Transcoder::CRNEL:
+    case EolStyle(CRNEL):
         return Symbol::CRNEL;
-    case Transcoder::LS:
+    case EolStyle(LS):
         return Symbol::LS;
     default:
         return Symbol::NONE;
     }
 }
 
-enum Codec::ErrorHandlingMode Transcoder::symbolToErrorHandlingMode(const Object symbol)
-{
-    if (symbol == Symbol::IGNORE) {
-        return Codec::IGNORE_ERROR;
-    } else if (symbol == Symbol::RAISE) {
-        return Codec::RAISE;
-    } else if (symbol == Symbol::REPLACE) {
-        return Codec::REPLACE;
-    }
-    MOSH_FATAL("dont't match error-handling-mode\n");
-    return Codec::IGNORE_ERROR;
-}
-
-Object Transcoder::errorHandlingModeToSymbol(const enum Codec::ErrorHandlingMode errorHandlingMode)
+Object Transcoder::errorHandlingModeToSymbol(const enum ErrorHandlingMode errorHandlingMode)
 {
     switch (errorHandlingMode) {
-    case Codec::IGNORE_ERROR:
+    case ErrorHandlingMode(IGNORE_ERROR):
         return Symbol::IGNORE;
-    case Codec::RAISE:
+    case ErrorHandlingMode(RAISE):
         return Symbol::RAISE;
-    case Codec::REPLACE:
+    case ErrorHandlingMode(REPLACE):
         return Symbol::REPLACE;
     default:
         MOSH_FATAL("not found errorHandlingMode\n");
@@ -167,3 +148,40 @@ ucs4char Transcoder::in(BinaryInputPort* port)
     return codec_->in(port, errorHandlingMode_);
 }
 
+bool Transcoder::validateEolStyle(Object eolStyle, EolStyle& result)
+{
+    MOSH_ASSERT(eolStyle.isSymbol());
+    if (eolStyle == Symbol::LF) {
+        result = EolStyle(LF);
+    } else if (eolStyle == Symbol::CR) {
+        result = EolStyle(CR);
+    } else if (eolStyle == Symbol::CRLF) {
+        result = EolStyle(CRLF);
+    } else if (eolStyle == Symbol::NEL) {
+        result = EolStyle(NEL);
+    } else if (eolStyle == Symbol::CRNEL) {
+        result = EolStyle(CRNEL);
+    } else if (eolStyle == Symbol::LS) {
+        result = EolStyle(LS);
+    } else if (eolStyle == Symbol::NONE) {
+        result = EolStyle(NONE);
+    } else {
+        return false;
+    }
+    return true;
+}
+
+bool Transcoder::validateErrorHandlingMode(Object symbol, enum ErrorHandlingMode& result)
+{
+    MOSH_ASSERT(symbol.isSymbol());
+    if (symbol == Symbol::IGNORE) {
+        result = ErrorHandlingMode(IGNORE_ERROR);
+    } else if (symbol == Symbol::RAISE) {
+        result = ErrorHandlingMode(RAISE);
+    } else if (symbol == Symbol::REPLACE) {
+        result = ErrorHandlingMode(REPLACE);
+    } else {
+        return false;
+    }
+    return true;
+}

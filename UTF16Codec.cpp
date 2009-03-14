@@ -94,14 +94,14 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
-        if (mode == Codec::RAISE) {
+        if (mode == ErrorHandlingMode(RAISE)) {
             throwIOError2(IOError::ENCODE, "character out of utf16 range", L1(Object::makeChar(ch)));
-        } else if (mode == Codec::REPLACE) {
+        } else if (mode == ErrorHandlingMode(REPLACE)) {
             buf[0] = 0xff;
             buf[1] = 0xfd;
             return 2;
         } else {
-            MOSH_ASSERT(mode == Codec::IGNORE_ERROR);
+            MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
             return 0;
         }
     }
@@ -137,12 +137,12 @@ int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 }
 
 #define decodeError() \
-    if (mode == Codec::RAISE) { \
+    if (mode == ErrorHandlingMode(RAISE)) {                             \
         throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
-    } else if (mode == Codec::REPLACE) {                                \
+    } else if (mode == ErrorHandlingMode(REPLACE)) {                    \
         return 0xFFFD;                                                  \
     } else {                                                            \
-        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));           \
         goto retry;                                                     \
     }
 

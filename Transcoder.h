@@ -40,46 +40,34 @@ namespace scheme {
 class Transcoder EXTEND_GC
 {
 public:
-    enum EolStyle
-    {
-        LF,
-        CR,
-        CRLF,
-        NEL,
-        CRNEL,
-        LS,
-        NONE,
-    };
 
-    Transcoder(Codec* codec, enum EolStyle e, enum Codec::ErrorHandlingMode m) : codec_(codec)
-    {
-    }
     Transcoder(Codec* codec);
-    Transcoder(Codec* codec, const Object eolStyle);
-    Transcoder(Codec* codec, const Object eolStyle, const Object handlingMode);
-
+    Transcoder(Codec* codec, EolStyle eolStyle);
+    Transcoder(Codec* codec, EolStyle eolStyle, enum ErrorHandlingMode handlingMode);
 
     Object codec() const { return Object::makeCodec(codec_); }
-    Object eolStyle();
-    Object errorHandlingMode();
+    enum EolStyle eolStyle();
+    enum ErrorHandlingMode errorHandlingMode();
+    Object eolStyleSymbol();
+    Object errorHandlingModeSymbol();
+
 
     int out(BinaryOutputPort* port, ucs4char c);
     int out(uint8_t* buf, ucs4char c);
     ucs4char in(BinaryInputPort* port);
 
-
     static Transcoder* nativeTranscoder();
+    static bool validateEolStyle(Object eolStyle, enum EolStyle& result);
+    static bool validateErrorHandlingMode(Object handlingMode, enum ErrorHandlingMode& result);
 
 private:
+    static enum EolStyle nativeEolStyle();
+    static Object eolStyleToSymbol(const enum EolStyle eolstyle);
+    static Object errorHandlingModeToSymbol(enum ErrorHandlingMode errorHandlingMode);
+
     Codec* codec_;
     enum EolStyle eolStyle_;
-    enum Codec::ErrorHandlingMode errorHandlingMode_;
-
-    static enum EolStyle nativeEolStyle();
-    enum EolStyle symbolToEolStyle(const Object symbol);
-    Object eolStyleToSymbol(const enum EolStyle eolstyle);
-    enum Codec::ErrorHandlingMode symbolToErrorHandlingMode(const Object symbol);
-    Object errorHandlingModeToSymbol(const enum Codec::ErrorHandlingMode errorHandlingMode);
+    enum ErrorHandlingMode errorHandlingMode_;
 };
 
 }; // namespace scheme

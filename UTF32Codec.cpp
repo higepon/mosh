@@ -29,9 +29,9 @@
  *  $Id: UTF32Codec.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include "UTF32Codec.h"
 #include "Object.h"
 #include "Object-inl.h"
+#include "UTF32Codec.h"
 #include "SString.h"
 #include "UTF8Codec.h"
 #include "Pair.h"
@@ -108,12 +108,12 @@ int UTF32Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 }
 
 #define decodeError() \
-    if (mode == Codec::RAISE) { \
+    if (mode == ErrorHandlingMode(RAISE)) {                             \
         throwIOError2(IOError::DECODE, "invalid utf-16 byte sequence"); \
-    } else if (mode == Codec::REPLACE) {                                \
+    } else if (mode == ErrorHandlingMode(REPLACE)) {                                \
         return 0xFFFD;                                                  \
     } else {                                                            \
-        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));           \
         goto retry;                                                     \
     }
 

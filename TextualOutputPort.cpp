@@ -452,9 +452,9 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         putString(UC("<transcoder codec="));
         putDatum(transcoder->codec());
         putString(UC(", eol-style="));
-        putDatum(transcoder->eolStyle());
+        putDatum(transcoder->eolStyleSymbol());
         putString(UC(", error-handling-mode="));
-        putDatum(transcoder->errorHandlingMode());
+        putDatum(transcoder->errorHandlingModeSymbol());
         putString(UC(">"));
 
     } else {
@@ -631,9 +631,9 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         putString(UC("<transcoder codec="));
         putDatum(transcoder->codec());
         putString(UC(", eol-style="));
-        putDatum(transcoder->eolStyle());
+        putDatum(transcoder->eolStyleSymbol());
         putString(UC(", error-handling-mode="));
-        putDatum(transcoder->errorHandlingMode());
+        putDatum(transcoder->errorHandlingModeSymbol());
         putString(UC(">"));
 
     } else {

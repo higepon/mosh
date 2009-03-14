@@ -75,15 +75,15 @@ int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         buf[3] = 0x80 | (u & 0x3f);
         return 4;
     } else {
-        if (mode == Codec::RAISE) {
+        if (mode == ErrorHandlingMode(RAISE)) {
             throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence", Pair::list1(Object::makeChar(u)));
             return 0;
-        } else if (mode == Codec::REPLACE) {
+        } else if (mode == ErrorHandlingMode(RAISE)) {
             buf[0] = 0xff;
             buf[1] = 0xfd;
             return 2;
         } else {
-            MOSH_ASSERT(mode == Codec::IGNORE_ERROR);
+            MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
             return 0;
         }
     }
@@ -95,12 +95,12 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
 }
 
 #define decodeError() \
-    if (mode == Codec::RAISE) { \
+    if (mode == ErrorHandlingMode(RAISE)) {                             \
         throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence");  \
-    } else if (mode == Codec::REPLACE) {                                \
+    } else if (mode == ErrorHandlingMode(REPLACE)) {                    \
         return 0xFFFD;                                                  \
     } else {                                                            \
-        MOSH_ASSERT(mode == Codec::IGNORE_ERROR);                       \
+        MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));           \
         goto retry;                                                     \
     }
 

@@ -312,13 +312,13 @@ Object Object::makeTranscoder(Codec* codec)
                                                         reinterpret_cast<word>(new Transcoder(codec)))));
 }
 
-Object Object::makeTranscoder(Codec* codec, const Object eolStyle)
+Object Object::makeTranscoder(Codec* codec, enum EolStyle eolStyle)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
                                                         reinterpret_cast<word>(new Transcoder(codec, eolStyle)))));
 }
 
-Object Object::makeTranscoder(Codec* codec, const Object eolStyle, const Object errorHandlingMode)
+Object Object::makeTranscoder(Codec* codec, enum EolStyle eolStyle, enum ErrorHandlingMode errorHandlingMode)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
                                                         reinterpret_cast<word>(new Transcoder(codec, eolStyle, errorHandlingMode)))));

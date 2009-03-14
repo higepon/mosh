@@ -42,13 +42,6 @@ class BinaryInputPort;
 class Codec EXTEND_GC
 {
 public:
-    enum ErrorHandlingMode
-    {
-        IGNORE_ERROR,
-        RAISE,
-        REPLACE,
-    };
-
     virtual ~Codec() {}
     virtual int out(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) = 0;
     virtual ucs4char in(BinaryInputPort* port, enum ErrorHandlingMode mode) = 0;
