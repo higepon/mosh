@@ -1,3 +1,7 @@
+2009-03-14  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am : disable-profiler works fine.
+
 2009-03-13  higepon  <higepon@users.sourceforge.jp>
 
         * Now passes all of (rnrs io simple) tests.

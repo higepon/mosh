@@ -40,13 +40,10 @@ AC_CHECK_LIB(gmp, __gmpz_init, ,
   [AC_MSG_ERROR([GNU MP not found, see http://gmplib.org/."For OSX, install GNU MP with "CFLAGS+=-m32 ./configure ABI=32 && make"])])
 
 
-AC_ARG_ENABLE(profiler, [  --disable-profiler turn off profiler [default no]],,disable_profiler=no)
+AC_ARG_ENABLE(profiler, [  --enable-profiler turn off profiler [default=yes]], ,[enable_profiler=yes])
 AC_MSG_CHECKING(whether to enable profiler)
-if test x$disable_profiler = xyes; then
-  AC_MSG_RESULT(yes)
-else
-  AC_MSG_RESULT(no)
-  AC_DEFINE(ENABLE_PROFILER, , enable -p option for profiling)
+if test "$enable_profiler" = "yes"; then
+  AC_DEFINE(ENABLE_PROFILER, 1, enable -p option for profiling)
 fi
 
 AC_MSG_RESULT([$host_os])

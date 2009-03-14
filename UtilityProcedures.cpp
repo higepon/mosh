@@ -695,9 +695,13 @@ Object scheme::callProcessEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::internalGetClosureNameEx(VM* theVM, int argc, const Object* argv)
 {
+#ifdef ENABLE_PROFILER
     DeclareProcedureName("%get-closure-name");
     checkArgumentLength(1);
     return theVM->getClosureName(argv[0]);
+#else
+    return UC("<unknown>");
+#endif
 }
 
 

@@ -139,9 +139,9 @@ public:
     Object getProfileResult();
     void storeCallSample();
     void storeCallSampleToFile();
-    Object getClosureName(Object closure);
     void countCall(Object proc);
 #endif
+    Object getClosureName(Object closure);
 
 protected:
     virtual int exit(int status)

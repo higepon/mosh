@@ -114,25 +114,6 @@ void VM::collectProfile()
     totalSampleCount_++;
 }
 
-// this is slow, because it creates namespace hash for each call.
-Object VM::getClosureName(Object closure)
-{
-//    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
-    if (closure.isCProcedure()) {
-        return getCProcedureName(closure);
-    } else if (closure.isClosure()) {
-        return "my-todo";
-//         const Object name = nameSpace->ref(closure, notFound_);
-//         if (name == notFound_) {
-//             return Object::False;
-//         } else {
-//             return stringTosymbol(name.cdr());
-//         }
-    } else {
-        return Object::False;
-    }
-}
-
 void VM::storeCallSample()
 {
     EqHashTable* callHash = callHash_.toEqHashTable();
@@ -167,6 +148,31 @@ Object VM::getProfileResult()
     storeCallSample();
     return Object::cons(Object::makeFixnum(totalSampleCount_), Object::cons(callHash_, ret));
 }
+
+// this is slow, because it creates namespace hash for each call.
+Object VM::getClosureName(Object closure)
+{
+//    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
+    if (closure.isCProcedure()) {
+        return getCProcedureName(closure);
+    } else if (closure.isClosure()) {
+        return "my-todo";
+//         const Object name = nameSpace->ref(closure, notFound_);
+//         if (name == notFound_) {
+//             return Object::False;
+//         } else {
+//             return stringTosymbol(name.cdr());
+//         }
+    } else {
+        return Object::False;
+    }
+}
+#else
+Object VM::getClosureName(Object closure)
+{
+    return Object::False;
+}
+
 
 #endif // ENABLE_PROFILER
 

@@ -92,7 +92,9 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     currentErrorPort_(errorPort),
     currentInputPort_(inputPort),
     errorObj_(Object::Nil),
+#ifdef ENABLE_PROFILER
     profilerRunning_(false),
+#endif
     isProfiler_(isProfiler),
     maxNumValues_(256),
     numValues_(0),
