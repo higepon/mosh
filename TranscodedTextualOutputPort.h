@@ -53,6 +53,7 @@ public:
 private:
     BinaryOutputPort* port_;
     Transcoder* transcoder_;
+    const enum EolStyle eolStyle_;
 };
 
 }; // namespace scheme

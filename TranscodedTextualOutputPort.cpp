@@ -1,5 +1,5 @@
 /*
- * TranscodedTextualOutputPort.cpp - 
+ * TranscodedTextualOutputPort.cpp -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -62,7 +62,8 @@ using namespace scheme;
 
 TranscodedTextualOutputPort::TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder)
   : port_(port),
-    transcoder_(coder)
+    transcoder_(coder),
+    eolStyle_(coder->eolStyle())
 {
 }
 
@@ -85,7 +86,39 @@ int TranscodedTextualOutputPort::close()
 
 void TranscodedTextualOutputPort::putChar(ucs4char c)
 {
-    transcoder_->out(port_, c);
+    if (eolStyle_ == EolStyle(E_NONE)) {
+        transcoder_->out(port_, c);
+    } else if (c == EolStyle(LF)) {
+        switch (eolStyle_) {
+        case EolStyle(LF):
+        case EolStyle(CR):
+        case EolStyle(NEL):
+        case EolStyle(LS):
+        {
+            transcoder_->out(port_, eolStyle_);
+            break;
+        }
+        case EolStyle(E_NONE):
+        {
+            transcoder_->out(port_, c);
+            break;
+        }
+        case EolStyle(CRLF):
+        {
+            transcoder_->out(port_, EolStyle(CR));
+            transcoder_->out(port_, EolStyle(LF));
+            break;
+        }
+        case EolStyle(CRNEL):
+        {
+            transcoder_->out(port_, EolStyle(CR));
+            transcoder_->out(port_, EolStyle(NEL));
+            break;
+        }
+        }
+    } else {
+        transcoder_->out(port_, c);
+    }
 }
 
 BinaryOutputPort* TranscodedTextualOutputPort::binaryPort() const
