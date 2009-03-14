@@ -72,6 +72,7 @@
 #include "BlockBufferedFileBinaryInputOutputPort.h"
 #include "LineBufferedFileBinaryInputOutputPort.h"
 #include "TranscodedTextualInputOutputPort.h"
+#include "TranscodedTextualInputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "ListProcedures.h"
 #include "CustomBinaryInputOutputPort.h"
@@ -1298,10 +1299,12 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsTranscoder(1, transcoder);
 
     BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
+    TranscodedTextualInputPort* port = new TranscodedTextualInputPort(in, transcoder);
     ucs4string ret;
 
+
     TRY {
-        for (ucs4char c = transcoder->in(in); c != EOF; c = transcoder->in(in)) {
+        for (ucs4char c = port->getChar(); c != EOF; c = port->getChar()) {
             ret += c;
         }
     } CATCH(ioError) {

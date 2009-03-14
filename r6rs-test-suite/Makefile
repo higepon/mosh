@@ -1,8 +1,8 @@
 MOSH=../mosh
 
 test:
-#	$(MOSH) tests/r6rs/run/io/ports.sls
-	$(MOSH) tests/r6rs/run/io/simple.sls
+#	$(MOSH) tests/r6rs/run/io/ports.sps
+	$(MOSH) tests/r6rs/run/io/simple.sps
 	$(MOSH) tests/r6rs/run/syntax-case.sps
 	$(MOSH) tests/r6rs/run/unicode.sps
 	$(MOSH) tests/r6rs/run/exceptions.sps
