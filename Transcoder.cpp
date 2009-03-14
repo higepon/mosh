@@ -164,7 +164,7 @@ bool Transcoder::validateEolStyle(Object eolStyle, EolStyle& result)
     } else if (eolStyle == Symbol::LS) {
         result = EolStyle(LS);
     } else if (eolStyle == Symbol::NONE) {
-        result = EolStyle(NONE);
+        result = EolStyle(E_NONE);
     } else {
         return false;
     }

@@ -154,7 +154,7 @@ ucs4char TranscodedTextualInputPort::getChar()
         }
         break;
     }
-    case EolStyle(NONE):
+    case EolStyle(E_NONE):
         return c;
     }
     return c;

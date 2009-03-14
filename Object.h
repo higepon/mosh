@@ -94,7 +94,7 @@ enum EolStyle
     LS = 0x2028,
     CRNEL,
     CRLF,
-    NONE
+    E_NONE
 };
 
 enum ErrorHandlingMode
