@@ -51,6 +51,7 @@ const int VM::SAMPLE_NUM = 50000;
 
 extern  void signal_handler(int signo);
 
+
 void VM::initProfiler()
 {
     samples_ = Object::makeObjectArray(SAMPLE_NUM);

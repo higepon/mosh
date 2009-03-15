@@ -39,13 +39,14 @@
 #include <gmp.h>
 
 using namespace scheme;
-
+extern void initCprocedures();
 void mosh_init()
 {
 #ifdef USE_BOEHM_GC
     GC_INIT();
     mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
 #endif
+    initCprocedures();
     Flonum::initialize();
     Symbol::initBuitinSymbols();
 }

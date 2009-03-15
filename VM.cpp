@@ -212,6 +212,18 @@ Object VM::evaluateCodeVector(Object codeVector)
 
 #include "cprocedures.cpp"
 
+static Object* cProcs = NULL;;
+
+// call this after gc_init
+void initCprocedures()
+{
+    cProcs = Object::makeObjectArray(cProcNum);
+    for (int i = 0; i < cProcNum; i++) {
+        cProcs[i] = Object::makeCProcedure(cProcFunctions[i]);
+    }
+}
+
+
 Object VM::evaluate(Object* code, int codeSize)
 {
     static Object closure = Object::Undef;

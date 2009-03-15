@@ -1,5 +1,7 @@
 2009-03-15  higepon  <higepon@users.sourceforge.jp>
 
+        * cprocedures.cpp: We allocate CProcedure Objects after GC_INIT is issued.
+
         * free-vars.scm : (newline) commented out, since ./mosh test/srfi-misc.scm fails.
 
 2009-03-15  kokosabu  <kokosabu@gmail.com>
