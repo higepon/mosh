@@ -208,7 +208,6 @@ public:
     static Object makeStringInputPort(const ucs4string& str);
     static Object makeStringInputPort(const uint8_t* buf, int size);
     static Object makeStringOutputPort();
-    static Object makeTextualByteVectorOuputPort(Transcoder* transcoder);
     static Object makeCustomTextualInputPort(VM* theVM,
                                              const ucs4string& id,
                                              Object readProc,

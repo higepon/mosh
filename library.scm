@@ -394,8 +394,8 @@
     (proc port)
     (get-bytevector)))
 
-(define  (open-bytevector-output-port transcoder)
-  (let* ([port (sys-open-bytevector-output-port transcoder)]
+(define  (open-bytevector-output-port . transcoder)
+  (let* ([port (apply sys-open-bytevector-output-port transcoder)]
          [proc (lambda () (sys-get-bytevector port))])
     (values port proc)))
 

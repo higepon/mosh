@@ -94,7 +94,6 @@ CustomTextualOutputPort.h      CustomTextualOutputPort.cpp         \
 CustomTextualInputOutputPort.h CustomTextualInputOutputPort.cpp    \
 CustomBinaryInputOutputPort.h  CustomBinaryInputOutputPort.cpp     \
 TextualOutputPort.h            TextualOutputPort.cpp               \
-TextualByteVectorOutputPort.h  TextualByteVectorOutputPort.cpp     \
 TextualInputPort.cpp           TextualInputPort.h                  \
 TranscodedTextualInputPort.cpp TranscodedTextualInputPort.h        \
 TranscodedTextualOutputPort.cpp TranscodedTextualOutputPort.h      \

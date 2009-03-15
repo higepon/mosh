@@ -45,7 +45,6 @@
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
 #include "StringTextualOutputPort.h"
-#include "TextualByteVectorOutputPort.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 #include "StandardOutputPort.h"
@@ -1361,11 +1360,10 @@ Object scheme::sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* 
     DeclareProcedureName("open-bytevector-output-port");
     checkArgumentLengthBetween(0, 1);
     if (0 == argc || argv[0].isFalse()) {
-        callNotImplementedAssertionViolationAfter(theVM, procedureName);
-        return Object::Undef;
+        return Object::makeBinaryOutputPort(new ByteArrayBinaryOutputPort);
     } else {
         argumentAsTranscoder(0, transcoder);
-        return Object::makeTextualByteVectorOuputPort(transcoder);
+        return Object::makeTextualOutputPort(new ByteArrayBinaryOutputPort(), transcoder);
     }
 }
 
@@ -1373,9 +1371,16 @@ Object scheme::sysGetBytevectorEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-bytevector");
     checkArgumentLength(1);
-    argumentAsTextualOutputPort(0, textualOutputPort);
-    TextualByteVectorOutputPort* p = reinterpret_cast<TextualByteVectorOutputPort*>(textualOutputPort);
-    return Object::makeByteVector(p->getByteVector());
+    const Object port = argv[0];
+    if (port.isBinaryOutputPort()) {
+        return Object::makeByteVector(reinterpret_cast<ByteArrayBinaryOutputPort*>(port.toBinaryOutputPort())->toByteVector());
+    } else if (port.isTextualOutputPort()) {
+        BinaryOutputPort* out = reinterpret_cast<TranscodedTextualOutputPort*>(port.toTextualOutputPort())->binaryPort();
+        return Object::makeByteVector(reinterpret_cast<ByteArrayBinaryOutputPort*>(out)->toByteVector());
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "bytevector-port required", L1(argv[0]));
+        return Object::Undef;
+    }
 }
 
 /*
@@ -1822,4 +1827,3 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
         return Symbol::NONE;
     }
 }
-

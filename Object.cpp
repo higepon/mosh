@@ -70,7 +70,6 @@
 #include "CustomTextualInputOutputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "CustomBinaryInputOutputPort.h"
-#include "TextualByteVectorOutputPort.h"
 #include "CodeBuilder.h"
 #include "Ratnum.h"
 #include "Flonum.h"
@@ -334,12 +333,6 @@ Object Object::makeTextualInputPort(TextualInputPort* port)
 {
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
                                                         reinterpret_cast<word>(port))));
-}
-
-Object Object::makeTextualByteVectorOuputPort(Transcoder* transcoder)
-{
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TextualByteVectorOutputPort(transcoder)))));
 }
 
 Object Object::makeRegexp(const ucs4string& pattern, bool caseFold /* = false */)

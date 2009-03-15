@@ -56,20 +56,25 @@ ucs4string ByteArrayBinaryInputPort::toString() {
 
 int ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-    MOSH_FATAL("todo");
-    return 0;
+    const int restSize = size_ - index_;
+    const int sizeToRead = (reqSize > restSize) ? restSize : reqSize;
+    memcpy(buf, &(buf_[index_]), sizeToRead);
+    index_ += sizeToRead;
+    return sizeToRead;
 }
 
 int ByteArrayBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
-    MOSH_FATAL("todo");
-    return 0;
+    return readAll(buf, isErrorOccured);
 }
 
 int ByteArrayBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    MOSH_FATAL("todo");
-    return 0;
+    const int restSize = size_ - index_;
+    uint8_t* dest = allocatePointerFreeU8Array(restSize);
+    memcpy(dest, &buf_[index_], restSize);
+    *buf = dest;
+    return restSize;
 }
 
 int ByteArrayBinaryInputPort::open()
