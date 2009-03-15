@@ -1840,23 +1840,3 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
-Object scheme::newlineEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("newline");
-    checkArgumentLengthBetween(0, 1);
-    TRY {
-        if (0 == argc) {
-            theVM->currentOutputPort().toTextualOutputPort()->putChar(EolStyle(LF));
-            theVM->currentOutputPort().toTextualOutputPort()->flush();
-        } else {
-            argumentAsTextualOutputPort(1, textualOutputPort);
-            textualOutputPort->putChar(EolStyle(LF));
-            textualOutputPort->flush();
-        }
-        return Object::Undef;
-    } CATCH(ioError) {
-        ioError.arg1 = argv[0];
-        ioError.who = procedureName;
-        return callIOErrorAfter(theVM, ioError);
-    }
-}

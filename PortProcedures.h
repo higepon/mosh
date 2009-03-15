@@ -133,7 +133,6 @@ namespace scheme {
     Object putStringEx(VM* theVM, int argc, const Object* argv);
     Object flushOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object outputPortBufferModeEx(VM* theVM, int argc, const Object* argv);
-    Object newlineEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 
