@@ -1,3 +1,8 @@
+2009-03-15  kokosabu  <kokosabu@gmail.com>
+
+        * PortProcedures.cpp : Added newline,
+                               Fixed display, write.
+
 2009-03-15  higepon  <higepon@users.sourceforge.jp>
 
         * ByteArrayBinaryInputPort.cpp : Implmented readBytes, readSome and readAll.

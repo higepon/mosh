@@ -696,15 +696,21 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("display");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    if (1 == argc) {
-        theVM->currentOutputPort().toTextualOutputPort()->display(obj);
-        theVM->currentOutputPort().toTextualOutputPort()->flush();
-    } else {
-        argumentAsTextualOutputPort(1, textualOutputPort);
-        textualOutputPort->display(obj);
-        textualOutputPort->flush();
+    TRY {
+        if (1 == argc) {
+            theVM->currentOutputPort().toTextualOutputPort()->display(obj);
+            theVM->currentOutputPort().toTextualOutputPort()->flush();
+        } else {
+            argumentAsTextualOutputPort(1, textualOutputPort);
+            textualOutputPort->display(obj);
+            textualOutputPort->flush();
+        }
+        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return Object::Undef;
 }
 
 Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
@@ -980,13 +986,19 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    if (1 == argc) {
-        theVM->currentOutputPort().toTextualOutputPort()->putDatum(obj);
-    } else {
-        argumentAsTextualOutputPort(1, textualOutputPort);
-        textualOutputPort->putDatum(obj);
+    TRY {
+        if (1 == argc) {
+            theVM->currentOutputPort().toTextualOutputPort()->putDatum(obj);
+        } else {
+            argumentAsTextualOutputPort(1, textualOutputPort);
+            textualOutputPort->putDatum(obj);
+        }
+        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
-    return Object::Undef;
 }
 
 Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv)
@@ -1825,5 +1837,26 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
         return Symbol::LINE;
     } else {
         return Symbol::NONE;
+    }
+}
+
+Object scheme::newlineEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("newline");
+    checkArgumentLengthBetween(0, 1);
+    TRY {
+        if (0 == argc) {
+            theVM->currentOutputPort().toTextualOutputPort()->putChar(EolStyle(LF));
+            theVM->currentOutputPort().toTextualOutputPort()->flush();
+        } else {
+            argumentAsTextualOutputPort(1, textualOutputPort);
+            textualOutputPort->putChar(EolStyle(LF));
+            textualOutputPort->flush();
+        }
+        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
     }
 }
