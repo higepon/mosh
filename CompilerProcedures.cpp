@@ -160,8 +160,6 @@ Object scheme::pass3FindSetsEx(VM* theVM, int argc, const Object* argv)
     return findSets(theVM, argv[0], argv[1]);
 }
 
-static ObjectMap cache_;
-
 Object findFree(VM* theVM, Object iform, Object locals, Object canFrees)
 {
     const Object ret = findFreeRec(theVM, iform, locals, canFrees, Object::Nil);

@@ -1,9 +1,15 @@
+2009-03-15  higepon  <higepon@users.sourceforge.jp>
+
+        * free-vars.scm : (newline) commented out, since ./mosh test/srfi-misc.scm fails.
+
 2009-03-15  kokosabu  <kokosabu@gmail.com>
 
         * PortProcedures.cpp : Added newline,
                                Fixed display, write.
 
 2009-03-15  higepon  <higepon@users.sourceforge.jp>
+
+        * CompilerProcedures.cpp : Deleted unused code.
 
         * ByteArrayBinaryInputPort.cpp : Implmented readBytes, readSome and readAll.
 

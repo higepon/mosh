@@ -494,7 +494,7 @@
     put-bytevector
     put-char
     write-char
-    newline
+;    newline
     transcoder-codec
     transcoder-eol-style
     transcoder-error-handling-mode
