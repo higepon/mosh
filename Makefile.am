@@ -80,6 +80,7 @@ VM-Profiler.cpp                VM-Run.cpp                          \
 Scanner.h                      Scanner.cpp                         \
 NumberScanner.h                NumberScanner.cpp                   \
 ByteArrayBinaryInputPort.h     ByteArrayBinaryInputPort.cpp        \
+ByteArrayBinaryOutputPort.h    ByteArrayBinaryOutputPort.cpp       \
 ScannerHelper.h                ScannerHelper.cpp                   \
 Reader.tab.hpp                 Reader.tab.cpp                      \
 NumberReader.tab.hpp           NumberReader.tab.cpp                \

@@ -73,9 +73,11 @@
 #include "LineBufferedFileBinaryInputOutputPort.h"
 #include "TranscodedTextualInputOutputPort.h"
 #include "TranscodedTextualInputPort.h"
+#include "TranscodedTextualOutputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "ListProcedures.h"
 #include "CustomBinaryInputOutputPort.h"
+#include "ByteArrayBinaryOutputPort.h"
 
 using namespace scheme;
 
@@ -1331,21 +1333,20 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsString(0, text);
     argumentAsTranscoder(1, transcoder);
-    gc_vector<uint8_t> accum;
-    uint8_t buf[4];
+
+    ByteArrayBinaryOutputPort accum;
+    TranscodedTextualOutputPort out(&accum, transcoder);
+
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
         TRY {
-            const int length = transcoder->out(buf, *it);
-            for (int i = 0; i < length; i++) {
-                accum.push_back(buf[i]);
-            }
+            out.putChar(*it);
         } CATCH(ioError) {
             ioError.who = procedureName;
             return callIOErrorAfter(theVM, ioError);
         }
     }
-    return Object::makeByteVector(new ByteVector(accum));
+    return Object::makeByteVector(accum.toByteVector());
 }
 
 Object scheme::eofObjectEx(VM* theVM, int argc, const Object* argv)

@@ -1,7 +1,7 @@
 /*
- * ByteArrayBinaryInputPort.h -
+ * ByteArrayBinaryOutputPort.h - <byte-array-binary-input-port>
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,63 +26,43 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: ByteArrayBinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: ByteArrayBinaryOutputPort.h 1301 2009-03-09 14:59:07Z higepon $
  */
 
-#ifndef __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
-#define __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
+#ifndef __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__
+#define __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__
 
-#include "BinaryInputPort.h"
+#include "ucs4string.h"
+#include "BinaryOutputPort.h"
 
 namespace scheme {
 
-class ByteArrayBinaryInputPort : public BinaryInputPort
+class ByteArrayBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    ByteArrayBinaryInputPort(const uint8_t* buf, int size);
-    ~ByteArrayBinaryInputPort();
+    ByteArrayBinaryOutputPort();
+    virtual ~ByteArrayBinaryOutputPort();
 
-    // profiler tells that this should be inlined
-    inline int getU8()
-    {
-        if (index_ >= size_) return EOF;
-        return buf_[index_++];
-    }
-
-    inline int lookaheadU8()
-    {
-        if (index_ >= size_) return EOF;
-        return buf_[index_];
-    }
-
-    ucs4string toString();
-    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
-    int readSome(uint8_t** buf, bool& isErrorOccured);
-    int readAll(uint8_t** buf, bool& isErrorOccured);
+    int putU8(uint8_t v);
+    int putU8(uint8_t* v, int size);
+    int putByteVector(ByteVector* bv, int start = 0);
+    int putByteVector(ByteVector* bv, int start, int count);
     int open();
     int close();
     bool isClosed() const;
-    int fileNo() const;
-    bool hasPosition() const { return true; }
-    bool hasSetPosition() const { return true; }
+    void flush();
+    int fileNo() const { return INVALID_FILENO; }
+    ucs4string toString();
+    bool hasPosition() const;
+    bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position)
-    {
-        if (position >= size_) {
-            return false;
-        } else {
-            index_ = position;
-            return true;
-        }
-    }
+    bool setPosition(int position);
+    ByteVector* toByteVector() const;
 
-private:
-    const uint8_t* const buf_;
-    const int size_;
-    int index_;
-    bool isClosed_;
+protected:
+    gc_vector<uint8_t> buffer_;
 };
 
 }; // namespace scheme
 
-#endif // __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
+#endif // __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__

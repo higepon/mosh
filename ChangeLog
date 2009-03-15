@@ -1,3 +1,7 @@
+2009-03-15  higepon  <higepon@users.sourceforge.jp>
+
+        * ByteArrayBinaryOutputPort.cpp/h : Added for string->bytevector.
+
 2009-03-14  higepon  <higepon@users.sourceforge.jp>
 
         * Implmented "eol-style" for textual-input-port.
