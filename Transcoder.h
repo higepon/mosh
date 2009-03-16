@@ -52,7 +52,7 @@ public:
     Object errorHandlingModeSymbol();
 
 
-    int out(BinaryOutputPort* port, ucs4char c);
+    void putChar(BinaryOutputPort* port, ucs4char c);
     int out(uint8_t* buf, ucs4char c);
     ucs4char getChar(BinaryInputPort* port);
     void unGetChar(ucs4char c);

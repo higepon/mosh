@@ -78,7 +78,6 @@ private:
     BinaryInputOutputPort* port_;
     Transcoder* transcoder_;
     int line_;
-    const enum EolStyle eolStyle_;
 };
 
 }; // namespace scheme

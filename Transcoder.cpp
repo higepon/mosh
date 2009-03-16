@@ -133,9 +133,46 @@ Object Transcoder::errorHandlingModeToSymbol(const enum ErrorHandlingMode errorH
     return Object::Undef;
 }
 
-int Transcoder::out(BinaryOutputPort* port, ucs4char c)
+void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
 {
-    return codec_->out(port, c, errorHandlingMode_);
+    if (!buffer_.empty()) {
+        // remove 1 charcter
+        buffer_.erase(0, 1);
+    }
+    if (eolStyle_ == EolStyle(E_NONE)) {
+        codec_->out(port, c, errorHandlingMode_);
+        return;
+    } else if (c == EolStyle(LF)) {
+        switch (eolStyle_) {
+        case EolStyle(LF):
+        case EolStyle(CR):
+        case EolStyle(NEL):
+        case EolStyle(LS):
+        {
+            codec_->out(port, eolStyle_, errorHandlingMode_);
+            break;
+        }
+        case EolStyle(E_NONE):
+        {
+            codec_->out(port, c, errorHandlingMode_);
+            break;
+        }
+        case EolStyle(CRLF):
+        {
+            codec_->out(port, EolStyle(CR), errorHandlingMode_);
+            codec_->out(port, EolStyle(LF), errorHandlingMode_);
+            break;
+        }
+        case EolStyle(CRNEL):
+        {
+            codec_->out(port, EolStyle(CR), errorHandlingMode_);
+            codec_->out(port, EolStyle(NEL), errorHandlingMode_);
+            break;
+        }
+        }
+    } else {
+        codec_->out(port, c, errorHandlingMode_);
+    }
 }
 
 int Transcoder::out(uint8_t* buf, ucs4char c)
