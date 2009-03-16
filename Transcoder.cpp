@@ -197,6 +197,7 @@ ucs4char Transcoder::getCharInternal(BinaryInputPort* port)
     }
     return c;
 }
+
 ucs4char Transcoder::getChar(BinaryInputPort* port)
 {
     const ucs4char c = getCharInternal(port);
@@ -225,6 +226,15 @@ ucs4char Transcoder::getChar(BinaryInputPort* port)
     default:
         return c;
     }
+}
+
+ucs4string Transcoder::getString(BinaryInputPort* port)
+{
+    ucs4string ret;
+    for (ucs4char c = getChar(port); c != EOF; c = getChar(port)) {
+        ret += c;
+    }
+    return ret;
 }
 
 bool Transcoder::validateEolStyle(Object eolStyle, EolStyle& result)

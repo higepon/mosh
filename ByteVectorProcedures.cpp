@@ -122,12 +122,8 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
 
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
     Transcoder transcoder(UTF32Codec::getCodec(endianness));
-    ucs4string ret;
     TRY {
-        for (ucs4char c = transcoder.getChar(&in); c != EOF; c = transcoder.getChar(&in)) {
-            ret += c;
-        }
-        return Object::makeString(ret);
+        return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
         ioError.arg1 = Object::Nil;
         ioError.who = procedureName;
@@ -165,12 +161,8 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     const int skipSize = (skipBOM ? 2 : 0);
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
     Transcoder transcoder(UTF16Codec::getCodec(endianness));
-    ucs4string ret;
     TRY {
-        for (ucs4char c = transcoder.getChar(&in); c != EOF; c = transcoder.getChar(&in)) {
-            ret += c;
-        }
-        return Object::makeString(ret);
+        return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
         ioError.arg1 = Object::Nil;
         ioError.who = procedureName;

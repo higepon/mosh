@@ -1332,21 +1332,15 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsByteVector(0, bytevector);
     argumentAsTranscoder(1, transcoder);
 
-    TextualInputPort* port = new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(bytevector->data(),
-                                                                                         bytevector->length()),
-                                                            transcoder);
-    ucs4string ret;
+    BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     TRY {
-        for (ucs4char c = port->getChar(); c != EOF; c = port->getChar()) {
-            ret += c;
-        }
+        return Object::makeString(transcoder->getString(port));
     } CATCH(ioError) {
-        ioError.arg1 = Object::makeTextualInputPort(port);
+        ioError.arg1 = Object::makeBinaryInputPort(port);
         ioError.who = procedureName;
         ioError.irritants = Object::cons(argv[1], ioError.irritants);
         return callIOErrorAfter(theVM, ioError);
     }
-    return Object::makeString(ret);
 }
 
 Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)

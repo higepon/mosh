@@ -55,6 +55,7 @@ public:
     void putChar(BinaryOutputPort* port, ucs4char c);
 //    int putChar(uint8_t* buf, ucs4char c);
     ucs4char getChar(BinaryInputPort* port);
+    ucs4string getString(BinaryInputPort* port);
     void unGetChar(ucs4char c);
 
     static Transcoder* nativeTranscoder();
