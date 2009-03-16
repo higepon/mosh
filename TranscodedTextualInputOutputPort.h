@@ -75,11 +75,8 @@ public:
     ucs4string toString();
 
 private:
-    ucs4char getCharInternal();
-
     BinaryInputOutputPort* port_;
     Transcoder* transcoder_;
-    ucs4string buffer_;
     int line_;
     const enum EolStyle eolStyle_;
 };

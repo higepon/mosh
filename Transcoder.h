@@ -54,13 +54,15 @@ public:
 
     int out(BinaryOutputPort* port, ucs4char c);
     int out(uint8_t* buf, ucs4char c);
-    ucs4char in(BinaryInputPort* port);
+    ucs4char getChar(BinaryInputPort* port);
+    void unGetChar(ucs4char c);
 
     static Transcoder* nativeTranscoder();
     static bool validateEolStyle(Object eolStyle, enum EolStyle& result);
     static bool validateErrorHandlingMode(Object handlingMode, enum ErrorHandlingMode& result);
 
 private:
+    ucs4char getCharInternal(BinaryInputPort* port);
     static enum EolStyle nativeEolStyle();
     static Object eolStyleToSymbol(const enum EolStyle eolstyle);
     static Object errorHandlingModeToSymbol(enum ErrorHandlingMode errorHandlingMode);
@@ -68,6 +70,7 @@ private:
     Codec* codec_;
     enum EolStyle eolStyle_;
     enum ErrorHandlingMode errorHandlingMode_;
+    ucs4string buffer_;
 };
 
 }; // namespace scheme

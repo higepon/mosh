@@ -1,5 +1,7 @@
 2009-03-16  higepon  <higepon@users.sourceforge.jp>
 
+        * TranscodedTextualInputOutputPort.h : Moved eol-style implmentation from here to Transcoder.cpp.
+
         * tools/psyntax-r6rs/rev10_to_10/Makefile : MOSH_GENSYM_START=5000.
 
         * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (psyntax): Changed file-options to use (rnrs enums).

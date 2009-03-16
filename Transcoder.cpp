@@ -143,9 +143,51 @@ int Transcoder::out(uint8_t* buf, ucs4char c)
     return codec_->out(buf, c, errorHandlingMode_);
 }
 
-ucs4char Transcoder::in(BinaryInputPort* port)
+void Transcoder::unGetChar(ucs4char c)
 {
-    return codec_->in(port, errorHandlingMode_);
+    if (EOF == c) return;
+    buffer_ += c;
+}
+
+ucs4char Transcoder::getCharInternal(BinaryInputPort* port)
+{
+    ucs4char c;
+    if (buffer_.empty()) {
+        c= codec_->in(port, errorHandlingMode_);
+    } else {
+        c = buffer_[buffer_.size() - 1];
+        buffer_.erase(buffer_.size() - 1, 1);
+    }
+    return c;
+}
+ucs4char Transcoder::getChar(BinaryInputPort* port)
+{
+    const ucs4char c = getCharInternal(port);
+    if (eolStyle_ == EolStyle(E_NONE)) {
+        return c;
+    }
+    switch(c) {
+    case EolStyle(LF):
+    case EolStyle(NEL):
+    case EolStyle(LS):
+    {
+        return EolStyle(LF);
+    }
+    case EolStyle(CR):
+    {
+        const ucs4char c2 = getCharInternal(port);
+        switch(c2) {
+        case EolStyle(LF):
+        case EolStyle(NEL):
+            return EolStyle(LF);
+        default:
+            unGetChar(c2);
+            return EolStyle(LF);
+        }
+    }
+    default:
+        return c;
+    }
 }
 
 bool Transcoder::validateEolStyle(Object eolStyle, EolStyle& result)
@@ -185,3 +227,4 @@ bool Transcoder::validateErrorHandlingMode(Object symbol, enum ErrorHandlingMode
     }
     return true;
 }
+

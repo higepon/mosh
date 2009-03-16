@@ -51,13 +51,10 @@ public:
     Codec* codec() const;
 
 private:
-    ucs4char getCharInternal();
 
     BinaryInputPort* const port_;
     Transcoder* const transcoder_;
-    ucs4string buffer_;
     int line_;
-    const enum EolStyle eolStyle_;
 };
 
 }; // namespace scheme

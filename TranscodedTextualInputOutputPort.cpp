@@ -57,7 +57,6 @@ using namespace scheme;
 TranscodedTextualInputOutputPort::TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder)
   : port_(port),
     transcoder_(coder),
-    buffer_(UC("")),
     line_(1),
     eolStyle_(coder->eolStyle())
 {
@@ -98,33 +97,7 @@ bool TranscodedTextualInputOutputPort::hasSetPosition() const
 // TextualInputPort interfaces
 ucs4char TranscodedTextualInputOutputPort::getChar()
 {
-    ucs4char c = getCharInternal();
-    if (eolStyle_ == EolStyle(E_NONE)) {
-        return c;
-    }
-    switch(c) {
-    case EolStyle(LF):
-    case EolStyle(NEL):
-    case EolStyle(LS):
-    {
-        ++line_;
-        return EolStyle(LF);
-    }
-    case EolStyle(CR):
-    {
-        const ucs4char c2 = getCharInternal();
-        switch(c2) {
-        case EolStyle(LF):
-        case EolStyle(NEL):
-            return EolStyle(LF);
-        default:
-            unGetChar(c2);
-            return EolStyle(LF);
-        }
-    }
-    default:
-        return c;
-    }
+    return transcoder_->getChar(port_);
 }
 
 int TranscodedTextualInputOutputPort::getLineNo() const
@@ -134,8 +107,7 @@ int TranscodedTextualInputOutputPort::getLineNo() const
 
 void TranscodedTextualInputOutputPort::unGetChar(ucs4char c)
 {
-    if (EOF == c) return;
-    buffer_ += c;
+    return transcoder_->unGetChar(c);
 }
 
 Transcoder* TranscodedTextualInputOutputPort::transcoder() const
@@ -146,10 +118,11 @@ Transcoder* TranscodedTextualInputOutputPort::transcoder() const
 // TextualOutputPort interfaces
 void TranscodedTextualInputOutputPort::putChar(ucs4char c)
 {
-    if (!buffer_.empty()) {
-        // remove 1 charcter
-        buffer_.erase(0, 1);
-    }
+// TODO
+//     if (!buffer_.empty()) {
+//         // remove 1 charcter
+//         buffer_.erase(0, 1);
+//     }
     if (eolStyle_ == EolStyle(E_NONE)) {
         transcoder_->out(port_, c);
     } else if (c == EolStyle(LF)) {
@@ -196,14 +169,3 @@ ucs4string TranscodedTextualInputOutputPort::toString()
     return UC("<textual-input/output-port>");
 }
 
-ucs4char TranscodedTextualInputOutputPort::getCharInternal()
-{
-    ucs4char c;
-    if (buffer_.empty()) {
-        c= transcoder_->in(port_);
-    } else {
-        c = buffer_[buffer_.size() - 1];
-        buffer_.erase(buffer_.size() - 1, 1);
-    }
-    return c;
-}

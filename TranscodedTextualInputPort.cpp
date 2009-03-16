@@ -51,9 +51,7 @@ TranscodedTextualInputPort::TranscodedTextualInputPort(BinaryInputPort* port, Tr
     : TextualInputPort(),
       port_(port),
       transcoder_(coder),
-      buffer_(UC("")),
-      line_(1),
-      eolStyle_(coder->eolStyle())
+      line_(1)
 {
 }
 
@@ -68,53 +66,14 @@ TranscodedTextualInputPort::~TranscodedTextualInputPort()
     close();
 }
 
-ucs4char TranscodedTextualInputPort::getCharInternal()
-{
-    ucs4char c;
-    if (buffer_.empty()) {
-        c= transcoder_->in(port_);
-    } else {
-        c = buffer_[buffer_.size() - 1];
-        buffer_.erase(buffer_.size() - 1, 1);
-    }
-    return c;
-}
-
 ucs4char TranscodedTextualInputPort::getChar()
 {
-    ucs4char c = getCharInternal();
-    if (eolStyle_ == EolStyle(E_NONE)) {
-        return c;
-    }
-    switch(c) {
-    case EolStyle(LF):
-    case EolStyle(NEL):
-    case EolStyle(LS):
-    {
-        ++line_;
-        return EolStyle(LF);
-    }
-    case EolStyle(CR):
-    {
-        const ucs4char c2 = getCharInternal();
-        switch(c2) {
-        case EolStyle(LF):
-        case EolStyle(NEL):
-            return EolStyle(LF);
-        default:
-            unGetChar(c2);
-            return EolStyle(LF);
-        }
-    }
-    default:
-        return c;
-    }
+    return transcoder_->getChar(port_);
 }
 
 void TranscodedTextualInputPort::unGetChar(ucs4char c)
 {
-    if (EOF == c) return;
-    buffer_ += c;
+    return transcoder_->unGetChar(c);
 }
 
 ucs4string TranscodedTextualInputPort::toString()
