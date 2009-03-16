@@ -296,7 +296,7 @@ Object Object::makeUTF8Codec()
 
 Object Object::makeUTF16Codec()
 {
-    return makeCodec(UTF16Codec::getCodec());
+    return makeCodec(new UTF16Codec);
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)

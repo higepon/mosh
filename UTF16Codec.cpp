@@ -176,6 +176,28 @@ retry:
     return (u << 16) | (part1 << 10) | part2;
 }
 
+int UTF16Codec::acceptBOM(ByteVector* bytevector)
+{
+    if (bytevector->length() >= 2) {
+        if (bytevector->u8Ref(0) == 0xFE &&
+            bytevector->u8Ref(1) == 0xFF) {
+            isLittleEndian_ = false;
+            return 2;
+        } else if (bytevector->u8Ref(0) == 0xFF &&
+                   bytevector->u8Ref(1) == 0xFE) {
+            isLittleEndian_ = true;
+            return 2;
+        } else {
+            isLittleEndian_ = false;
+            return 0;
+        }
+    } else {
+        isLittleEndian_ = false;
+        return 0;
+    }
+}
+
+
 int UTF16Codec::checkBOM(ByteVector* bytevector)
 {
     if (bytevector->length() >= 2) {
