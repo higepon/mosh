@@ -1,10 +1,5 @@
 (import (rnrs)
         (mosh test))
 
-(test* (bytevector->string #vu8(97 10 98 13 99 13 10 100 194 133 101 226 128 168 102 13 194 133 103) (make-transcoder (utf-8-codec) 'lf))
-        "a\nb\nc\nd\ne\nf\ng")
- (bytevector->string #vu8(97 10 98 13 99 13 10 100 194 133 101 226 128 168 102 13 194 133 103) (make-transcoder (utf-8-codec) 'none))
-(test-end)
 
-
-;(bytevector->string #vu8(97 10 98 13 99 13 10 100 194 133 101 226 128 168 102 13 194 133 103) (make-transcoder (utf-8-codec) 'lf))
+(display (bytevector->string #vu8(254 255 0 97 0 112 0 112 3 187 0 101) (make-transcoder (utf-16-codec))))
