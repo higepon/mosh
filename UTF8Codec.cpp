@@ -50,7 +50,7 @@ Codec* UTF8Codec::getCodec()
     return codec;
 }
 
-int UTF8Codec::out(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
+int UTF8Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     // UTF8-1
     if (u < 0x80) {
@@ -104,7 +104,7 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
         goto retry;                                                     \
     }
 
-ucs4char UTF8Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
+ucs4char UTF8Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
 retry:
     const int f = port->getU8();

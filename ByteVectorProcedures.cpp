@@ -119,11 +119,12 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
         }
     }
     const int skipSize = (skipBOM ? 4 : 0);
-    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
+
+    ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    Transcoder transcoder(UTF32Codec::getCodec(endianness));
     ucs4string ret;
-    Codec* codec = UTF32Codec::getCodec(endianness);
     TRY {
-        for (ucs4char c = codec->in(in, ErrorHandlingMode(RAISE)); c != EOF; c = codec->in(in, ErrorHandlingMode(RAISE))) {
+        for (ucs4char c = transcoder.getChar(&in); c != EOF; c = transcoder.getChar(&in)) {
             ret += c;
         }
         return Object::makeString(ret);
@@ -162,11 +163,11 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
         }
     }
     const int skipSize = (skipBOM ? 2 : 0);
-    BinaryInputPort* in = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    Transcoder transcoder(UTF16Codec::getCodec(endianness));
     ucs4string ret;
-    Codec* codec = UTF16Codec::getCodec(endianness);
     TRY {
-        for (ucs4char c = codec->in(in, ErrorHandlingMode(RAISE)); c != EOF; c = codec->in(in, ErrorHandlingMode(RAISE))) {
+        for (ucs4char c = transcoder.getChar(&in); c != EOF; c = transcoder.getChar(&in)) {
             ret += c;
         }
         return Object::makeString(ret);
@@ -1124,4 +1125,3 @@ Object scheme::bytevectorIeeeDoubleNativeSetDEx(VM* theVM, int argc, const Objec
     bytevector->ieeeDoubleNativeSet(index, v);
     return Object::Undef;
 }
-

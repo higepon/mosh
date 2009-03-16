@@ -140,7 +140,7 @@ void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
         buffer_.erase(0, 1);
     }
     if (eolStyle_ == EolStyle(E_NONE)) {
-        codec_->out(port, c, errorHandlingMode_);
+        codec_->putChar(port, c, errorHandlingMode_);
         return;
     } else if (c == EolStyle(LF)) {
         switch (eolStyle_) {
@@ -149,36 +149,36 @@ void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
         case EolStyle(NEL):
         case EolStyle(LS):
         {
-            codec_->out(port, eolStyle_, errorHandlingMode_);
+            codec_->putChar(port, eolStyle_, errorHandlingMode_);
             break;
         }
         case EolStyle(E_NONE):
         {
-            codec_->out(port, c, errorHandlingMode_);
+            codec_->putChar(port, c, errorHandlingMode_);
             break;
         }
         case EolStyle(CRLF):
         {
-            codec_->out(port, EolStyle(CR), errorHandlingMode_);
-            codec_->out(port, EolStyle(LF), errorHandlingMode_);
+            codec_->putChar(port, EolStyle(CR), errorHandlingMode_);
+            codec_->putChar(port, EolStyle(LF), errorHandlingMode_);
             break;
         }
         case EolStyle(CRNEL):
         {
-            codec_->out(port, EolStyle(CR), errorHandlingMode_);
-            codec_->out(port, EolStyle(NEL), errorHandlingMode_);
+            codec_->putChar(port, EolStyle(CR), errorHandlingMode_);
+            codec_->putChar(port, EolStyle(NEL), errorHandlingMode_);
             break;
         }
         }
     } else {
-        codec_->out(port, c, errorHandlingMode_);
+        codec_->putChar(port, c, errorHandlingMode_);
     }
 }
 
-int Transcoder::out(uint8_t* buf, ucs4char c)
-{
-    return codec_->out(buf, c, errorHandlingMode_);
-}
+// int Transcoder::putChar(uint8_t* buf, ucs4char c)
+// {
+//     return codec_->out(buf, c, errorHandlingMode_);
+// }
 
 void Transcoder::unGetChar(ucs4char c)
 {
@@ -190,7 +190,7 @@ ucs4char Transcoder::getCharInternal(BinaryInputPort* port)
 {
     ucs4char c;
     if (buffer_.empty()) {
-        c= codec_->in(port, errorHandlingMode_);
+        c= codec_->getChar(port, errorHandlingMode_);
     } else {
         c = buffer_[buffer_.size() - 1];
         buffer_.erase(buffer_.size() - 1, 1);

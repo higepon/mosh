@@ -91,7 +91,7 @@ UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
 #endif
 }
 
-int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
+int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
     if (ch > 0x10FFFF) {
         if (mode == ErrorHandlingMode(RAISE)) {
@@ -146,7 +146,7 @@ int UTF16Codec::out(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         goto retry;                                                     \
     }
 
-ucs4char UTF16Codec::in(BinaryInputPort* port, enum ErrorHandlingMode mode)
+ucs4char UTF16Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode)
 {
 retry:
     const int a = port->getU8();
