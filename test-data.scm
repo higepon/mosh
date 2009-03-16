@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(mosh-only ("all-tests.scm" 2) (source-info '(3)))
+(mosh-only ("<binary-input-port all-tests.scm>" 2) (source-info '(3)))
 ;; don't edit end
 ;; test start
 (#t (and))
@@ -1489,8 +1489,6 @@
 ("あいう" (bytevector->string #vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86)
                              (make-transcoder (utf-8-codec))))
 (#vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86) (string->bytevector "あいう" (make-transcoder (utf-8-codec))))
-(error (bytevector->string #vu8(#x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86)
-                             (make-transcoder (utf-8-codec))))
 (#vu8(#xe3 #x81 #x82 #xe3 #x81 #x84 #xe3 #x81 #x86) (string->utf8 "あいう"))
 
 (#vu8(97 0 0 0 112 0 0 0 112 0 0 0 #xBB #x3 0 0 101 0 0 0) (string->utf32 "app\x3BB;e" 'little))
@@ -3243,7 +3241,7 @@
 (#t    (buffer-mode? 'block))
 (#f    (buffer-mode? 'lf))
 (#f    (port-transcoder (standard-output-port)))
-(#f    (port-transcoder (open-file-input-port "./test-data.scm" '() 'block #f)))
+(#f    (port-transcoder (open-file-input-port "./test-data.scm" (make-file-options '()) 'block #f)))
 (#t    (eqv? (utf-8-codec) (utf-8-codec)))
 (#t    (eqv? (utf-8-codec) (transcoder-codec (native-transcoder))))
 (#t    (eqv? (utf-16-codec) (transcoder-codec (make-transcoder (utf-16-codec)))))

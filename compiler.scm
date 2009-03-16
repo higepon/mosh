@@ -2428,6 +2428,10 @@
 
 (cond-expand
  [mosh
+  (define make-file-options
+    (enum-set-constructor
+     (make-enumeration
+      '(no-create no-fail no-truncate))))
   ]
  [else
   (define (make-array)

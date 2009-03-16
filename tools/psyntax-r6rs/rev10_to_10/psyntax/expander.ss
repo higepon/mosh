@@ -56,6 +56,17 @@
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
     (prefix (rnrs syntax-case) sys.))
 
+  (define file-options-macro
+    (lambda (x)
+      (define (valid-option? x)
+        (and (id? x) (memq (id->sym x) '(no-fail no-create no-truncate))))
+      (syntax-match x ()
+        ((_ opt* ...)
+         (for-all valid-option? opt*)
+         (bless `(make-file-options ',opt*))))))
+
+
+
 
   (define (set-cons x ls)
     (cond
@@ -2645,7 +2656,7 @@
                 "BUG: cannot find transformer"
                 name)))))
 
-  (define file-options-macro
+#;  (define file-options-macro
     (lambda (x)
       (define (valid-option? x)
         (and (id? x) (memq (id->sym x) '(no-fail no-create no-truncate))))
