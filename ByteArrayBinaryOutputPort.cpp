@@ -43,7 +43,7 @@
 
 using namespace scheme;
 
-ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort()
+ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() : position_(0)
 {
 }
 
@@ -58,14 +58,18 @@ bool ByteArrayBinaryOutputPort::isClosed() const
 
 int ByteArrayBinaryOutputPort::putU8(uint8_t v)
 {
-    return putU8(&v, 1);
+    buffer_.resize(position_ + 1, 0);
+    buffer_[position_++] = v;
+    return 1;
 }
 
 int ByteArrayBinaryOutputPort::putU8(uint8_t* v, int size)
 {
+    buffer_.resize(position_ + size, 0);
     for (int i = 0; i < size; i++) {
-        buffer_.push_back(v[i]);
+        buffer_[position_ + i] = v[i];
     }
+    position_ += size;
     return size;
 }
 
@@ -96,30 +100,37 @@ void ByteArrayBinaryOutputPort::flush()
 
 ucs4string ByteArrayBinaryOutputPort::toString()
 {
-    return UC("<byte-array-output-port>");
+    return UC("<bytevector-output-port>");
 }
 
 bool ByteArrayBinaryOutputPort::hasPosition() const
 {
-    return false;
+    return true;
 }
 
 bool ByteArrayBinaryOutputPort::hasSetPosition() const
 {
-    return false;
+    return true;
 }
 
 Object ByteArrayBinaryOutputPort::position() const
 {
-    return Object::Undef;
+    return Bignum::makeInteger(position_);
 }
 
 bool ByteArrayBinaryOutputPort::setPosition(int position)
 {
-    return false;
+    if (position >= 0) {
+        position_ = position;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-ByteVector* ByteArrayBinaryOutputPort::toByteVector() const
+ByteVector* ByteArrayBinaryOutputPort::toByteVector()
 {
-    return new ByteVector(buffer_);
+    ByteVector* ret = new ByteVector(buffer_);
+    buffer_.clear();
+    return ret;
 }

@@ -1,5 +1,11 @@
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (iform-count-size-upto): Added cond clause for $RECEIVE.
+
+        * library.scm (call-with-bytevector-output-port): Fixed wrong arguments.
+
+        * Fixed bytevector-output-port's positions.
+
         * Fixed the problems on UTF16.
 
 2009-03-16  higepon  <higepon@users.sourceforge.jp>

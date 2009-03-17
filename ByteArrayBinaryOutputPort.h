@@ -57,10 +57,11 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
-    ByteVector* toByteVector() const;
+    ByteVector* toByteVector();
 
 protected:
     gc_vector<uint8_t> buffer_;
+    uintptr_t position_;
 };
 
 }; // namespace scheme

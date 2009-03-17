@@ -389,8 +389,8 @@
     (proc port)
     (get-string)))
 
-(define (call-with-bytevector-output-port proc transcoder)
-  (receive (port get-bytevector) (open-bytevector-output-port transcoder)
+(define (call-with-bytevector-output-port proc . transcoder)
+  (receive (port get-bytevector) (apply open-bytevector-output-port transcoder)
     (proc port)
     (get-bytevector)))
 
