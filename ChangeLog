@@ -1,5 +1,7 @@
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
+        * scheme.h (UC): Force the order of operator L and ##. (thanks to herumi-san).
+
         * compiler.scm (iform-count-size-upto): Added cond clause for $RECEIVE.
 
         * library.scm (call-with-bytevector-output-port): Fixed wrong arguments.

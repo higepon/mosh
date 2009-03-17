@@ -98,7 +98,10 @@ enum {
     forbidden_comma
 };
 
-#define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
+//#define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
+
+#define UC_(x) L ## x
+#define UC(x) reinterpret_cast<const ucs4char*>(UC_(x))
 
 typedef intptr_t word;
 typedef int32_t ucs4char; // use -1 for EOF
