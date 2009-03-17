@@ -82,9 +82,8 @@ ucs4char Latin1Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode
 retry:
     const int f = port->getU8();
     if (f == EOF) return EOF;
-    const uint8_t c = (uint8_t)(f & 0xff);
-    if (c <= 0xff) {
-       return c;
+    if (f <= 0xff) {
+        return (ucs4char)f;
      } else {
         if (mode == ErrorHandlingMode(RAISE)) {
             throwIOError2(IOError::DECODE, "invalid latin-1 byte sequence");
