@@ -1,5 +1,5 @@
 /*
- * TranscodedTextualOutputPort.cpp - 
+ * TranscodedTextualOutputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -344,14 +344,26 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isSymbol()) {
         Symbol* symbol = o.toSymbol();
 //        Object s = symbol->toString();
-        const ucs4string& content = symbol->c_str();//s.toString()->data();
-        bool hasSpecial = content.find(' ') != ucs4string::npos;
-        if (hasSpecial) {
-            putChar('|');
+        const ucs4string& content = symbol->c_str();
+        const ucs4char start = content[0];
+        if ((start >= '0' && start <= '9') || (start == ' ')) {
+            char buf[16];
+            snprintf(buf, 16, "\\x%x;", start);
+            putString(buf);
+        } else {
+            putChar(start);
         }
-        putString(symbol->c_str());
-        if (hasSpecial) {
-            putChar('|');
+
+        for (uintptr_t i = 1; i < content.size(); i++) {
+            const ucs4char ch = content[i];
+            // not enough
+            if (ch == ' ') {
+                char buf[16];
+                snprintf(buf, 16, "\\x%x;", ch);
+                putString(buf);
+            } else {
+                putChar(ch);
+            }
         }
     } else if (o.isRegexp()) {
         putChar('#');
@@ -529,14 +541,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         Symbol* symbol = o.toSymbol();
 //        Object s = symbol->toString();
         const ucs4string& content = symbol->c_str();
-        bool special = content.find(' ') != ucs4string::npos;
-        if (special) {
-            putChar('|');
-        }
         putString(symbol->c_str());
-        if (special) {
-            putChar('|');
-        }
     } else if (o.isRegexp()) {
         putChar('#');
         putChar('/');
@@ -700,4 +705,3 @@ void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
         }
     }
 }
-

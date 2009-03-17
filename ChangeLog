@@ -1,5 +1,7 @@
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
+        * TextualOutputPort.cpp (TextualOutputPort::putDatum): put-datum with inline hex escaped symbol (May be not enough).
+
         * Reader.y : Accepted reading inline hex escaped symbol.
 
 2009-03-17  kokosabu  <kokosabu@gmail.com>
