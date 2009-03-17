@@ -596,7 +596,6 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
     argumentAsChar(1, ch);
     TRY {
         textualOutputPort->putChar(ch);
-        textualOutputPort->flush();
         return Object::Undef;
     } CATCH(ioError) {
         ioError.arg1 = argv[0];
@@ -604,6 +603,22 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
         return callIOErrorAfter(theVM, ioError);
     }
 }
+
+Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("put-datum");
+    checkArgumentLength(2);
+    argumentAsTextualOutputPort(0, textualOutputPort);
+    TRY {
+        textualOutputPort->putDatum(argv[1]);
+        return Object::Undef;
+    } CATCH(ioError) {
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    }
+}
+
 
 Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
 {

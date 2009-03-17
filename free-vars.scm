@@ -506,5 +506,6 @@
     make-custom-binary-input/output-port
     make-custom-textual-input/output-port
     ;;
+    put-datum
     time-usage
     )

@@ -1,5 +1,7 @@
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp : Added put-datum.
+
         * StandardOutputPort.h (close): Not to close(stdout).
 
         * Replace the invalid MACRO names like __SCHEME__ to SCHEME_.(thanks to herumi-san).
