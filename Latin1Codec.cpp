@@ -60,10 +60,8 @@ int Latin1Codec::putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingM
 
 int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
-    const uint8_t c = (uint8_t)u;
-    if ((c >= 0x20 && c <= 0x7f) ||
-        (c >= 0xa0 /* && c <= 0xff */)) {
-        buf[0] = c;
+    if (u <= 0xff) {
+        buf[0] = u;
         return 1;
     } else {
         if (mode == ErrorHandlingMode(RAISE)) {
@@ -85,14 +83,13 @@ retry:
     const int f = port->getU8();
     if (f == EOF) return EOF;
     const uint8_t c = (uint8_t)(f & 0xff);
-    if ((c >= 0x20 && c <= 0x7f) ||
-        (c >= 0xa0 /* && c <= 0xff */)) {
-        return c;
-    } else {
+    if (c <= 0xff) {
+       return c;
+     } else {
         if (mode == ErrorHandlingMode(RAISE)) {
             throwIOError2(IOError::DECODE, "invalid latin-1 byte sequence");
         } else if (mode == ErrorHandlingMode(REPLACE)) {
-            return '?';
+            return 0xFFFD;
         } else {
             MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
             goto retry;
