@@ -1,22 +1,12 @@
 (import (rnrs)
         (mosh test))
 
-(define-syntax test-transcoders
-    (syntax-rules ()
-      [(_ bytevector->string string->bytevector)
-       (begin
-         (string->bytevector "a\nb" (make-transcoder ))
-         (string->bytevector "a\nb" (make-transcoder))
-         )]))
-
-(let (
-          [string->bytevector-via-port
-           (lambda (str tr)
-             (let-values ([(p get) (open-bytevector-output-port tr)])
-               (put-string p str)
-               (get)
-               ))])
-      (test-transcoders bytevector->string-via-port
-                        string->bytevector-via-port))
+(let ([p (standard-output-port)])
+      #f
+;;       (test* (input-port? p) #f)
+;;       (test* (output-port? p) #t)
+;;       (test* (binary-port? p) #t)
+;      (test* (textual-port? p) #f)
+      (close-port p))
 
 (test-end)

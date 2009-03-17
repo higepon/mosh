@@ -53,6 +53,12 @@ public:
         return false;
     }
 
+    int close()
+    {
+        flush();
+        return MOSH_SUCCESS;
+    }
+
     bool hasSetPosition() const
     {
         return false;

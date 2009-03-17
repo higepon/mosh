@@ -670,7 +670,13 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
     argumentAsPort(0, port);
-    port->close();
+    TRY {
+        port->close();
+    } CATCH(ioError) {
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    }
     return Object::Undef;
 }
 
