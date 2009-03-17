@@ -47,6 +47,12 @@ public:
         return UC("latin-1-codec");
     }
 
+    enum Codec::Type type() const
+    {
+        return Codec::Type(LATIN1);
+    }
+
+
     static Codec* getCodec();
 };
 

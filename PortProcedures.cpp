@@ -47,7 +47,9 @@
 #include "TextualInputPort.h"
 #include "StringTextualOutputPort.h"
 #include "Transcoder.h"
+#include "Latin1Codec.h"
 #include "UTF8Codec.h"
+#include "UTF16Codec.h"
 #include "StandardOutputPort.h"
 #include "StandardErrorPort.h"
 #include "StandardInputPort.h"
@@ -1221,33 +1223,21 @@ Object scheme::latin1CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("latin-1-codec");
     checkArgumentLength(0);
-    static Object codec = Object::Undef;
-    if (codec.isUndef()) {
-        codec = Object::makeLatin1Codec();
-    }
-    return codec;
+    return Object::makeCodec(new Latin1Codec());
 }
 
 Object scheme::utf8CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-8-codec");
     checkArgumentLength(0);
-    static Object codec = Object::Undef;
-    if (codec.isUndef()) {
-        codec = Object::makeUTF8Codec();
-    }
-    return codec;
+    return Object::makeCodec(new UTF8Codec());
 }
 
 Object scheme::utf16CodecEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf-16-codec");
     checkArgumentLength(0);
-    static Object codec = Object::Undef;
-    if (codec.isUndef()) {
-        codec = Object::makeUTF16Codec();
-    }
-    return codec;
+    return Object::makeCodec(new UTF16Codec);
 }
 
 Object scheme::nativeEolStyleEx(VM* theVM, int argc, const Object* argv)

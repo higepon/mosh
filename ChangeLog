@@ -1,3 +1,7 @@
+2009-03-17  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed the problems on UTF16.
+
 2009-03-16  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : bytevector->string checks the BOM things.

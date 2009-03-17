@@ -54,6 +54,7 @@
 #include "ByteVectorProcedures.h"
 #include "FFIProcedures.h"
 #include "Record.h"
+#include "Codec.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"

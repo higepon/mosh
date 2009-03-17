@@ -43,25 +43,6 @@
 
 using namespace scheme;
 
-Codec* UTF32Codec::getCodec()
-{
-#if WORDS_BIGENDIAN
-    return getCodec(UTF_32BE);
-#else
-    return getCodec(UTF_32LE);
-#endif
-}
-
-Codec* UTF32Codec::getCodec(int endianness)
-{
-    static Codec* codec[2] = { NULL, NULL };
-    MOSH_ASSERT(endianness == 0 || endianness == 1);
-    if (codec[endianness] == NULL) {
-        codec[endianness] = new UTF32Codec(endianness);
-    }
-    return codec[endianness];
-}
-
 UTF32Codec::UTF32Codec()
 {
 #if WORDS_BIGENDIAN

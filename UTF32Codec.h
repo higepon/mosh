@@ -46,6 +46,8 @@ public:
         UTF_32LE,
         NO_BOM
     };
+    UTF32Codec();
+    UTF32Codec(int endianness);
 
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
@@ -54,17 +56,15 @@ public:
         return codecName_;
     }
 
+    enum Codec::Type type() const
+    {
+        return Codec::Type(UTF32);
+    }
+
     static int checkBOM(ByteVector* bytevector);
-    static Codec* getCodec();
-    static Codec* getCodec(int endianness);
 private:
     bool isLittleEndian_;
     ucs4string codecName_;
-
-    UTF32Codec();
-    UTF32Codec(int endianness);
-    UTF32Codec(const UTF32Codec& codec);
-    UTF32Codec& operator=(const UTF32Codec& codec);
 };
 
 }; // namespace scheme

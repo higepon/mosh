@@ -42,11 +42,17 @@ class BinaryInputPort;
 class Codec EXTEND_GC
 {
 public:
+    enum Type {
+        UTF8,
+        UTF16,
+        UTF32,
+        LATIN1,
+    };
     virtual ~Codec() {}
     virtual int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode) = 0;
     virtual ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false) = 0;
     virtual ucs4string getCodecName() const = 0;
-    virtual int acceptBOM(ByteVector* bv) { return 0; }
+    virtual enum Type type() const = 0;
 
     int putChar(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode);
 };

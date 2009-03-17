@@ -52,6 +52,7 @@
 #include "Record.h"
 #include "UtilityProcedures.h"
 #include "TextualInputPort.h"
+#include "Codec.h"
 #include "Equivalent.h"
 #include "VM.h"
 #include "Symbol.h"

@@ -33,6 +33,7 @@
 #define __SCHEME_EQUIVALENT__
 
 #include "Arithmetic.h"
+#include "Codec.h"
 #include "scheme.h"
 
 namespace scheme {
@@ -55,6 +56,14 @@ namespace scheme {
         if (o1.isNumber()) {
             if (o2.isNumber()) {
                 return Arithmetic::eq(o1, o2);
+            } else {
+                return false;
+            }
+        }
+
+        if (o1.isCodec()) {
+            if (o2.isCodec()) {
+                return o1.toCodec()->type() == o2.toCodec()->type();
             } else {
                 return false;
             }

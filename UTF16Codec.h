@@ -47,24 +47,23 @@ public:
         NO_BOM
     };
     UTF16Codec();
+    UTF16Codec(int endianness);
 
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
     ucs4string getCodecName() const;
-    int acceptBOM(ByteVector* bytevector);
+
+    enum Codec::Type type() const
+    {
+        return Codec::Type(UTF16);
+    }
 
     static int checkBOM(ByteVector* bytevector);
-    static Codec* getCodec();
-    static Codec* getCodec(int endianness);
 private:
     bool isLittleEndian_;
     const bool nativeIsLittleEndinan_;
     const bool dontCheckBOM_;
     ucs4string codecName_;
-
-    UTF16Codec(int endianness);
-    UTF16Codec(const UTF16Codec& codec);
-    UTF16Codec& operator=(const UTF16Codec& codec);
 };
 
 }; // namespace scheme

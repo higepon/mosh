@@ -41,15 +41,6 @@
 
 using namespace scheme;
 
-Codec* UTF8Codec::getCodec()
-{
-    static Codec* codec = NULL;
-    if (codec == NULL) {
-        codec = new UTF8Codec();
-    }
-    return codec;
-}
-
 int UTF8Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
     // UTF8-1

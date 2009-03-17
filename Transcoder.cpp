@@ -85,7 +85,7 @@ Object Transcoder::errorHandlingModeSymbol()
 
 Transcoder* Transcoder::nativeTranscoder()
 {
-    return new Transcoder(UTF8Codec::getCodec(), nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+    return new Transcoder(new UTF8Codec(), nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
 }
 
 enum EolStyle Transcoder::nativeEolStyle()

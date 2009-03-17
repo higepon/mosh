@@ -73,7 +73,7 @@ Object scheme::utf8TostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf8->string");
     checkArgumentLength(1);
-    Object transcoder = Object::makeTranscoder(UTF8Codec::getCodec());
+    Object transcoder = Object::makeTranscoder(new UTF8Codec);
     Object args[2];
     args[0] = argv[0];
     args[1] = transcoder;
@@ -84,7 +84,7 @@ Object scheme::stringToutf8Ex(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string->utf8");
     checkArgumentLength(1);
-    Object transcoder = Object::makeTranscoder(UTF8Codec::getCodec());
+    Object transcoder = Object::makeTranscoder(new UTF8Codec);
     Object args[2];
     args[0] = argv[0];
     args[1] = transcoder;
@@ -121,7 +121,8 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
     const int skipSize = (skipBOM ? 4 : 0);
 
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
-    Transcoder transcoder(UTF32Codec::getCodec(endianness));
+    UTF32Codec codec(endianness);
+    Transcoder transcoder(&codec);
     TRY {
         return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
@@ -160,7 +161,8 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     }
     const int skipSize = (skipBOM ? 2 : 0);
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
-    Transcoder transcoder(UTF16Codec::getCodec(endianness));
+    UTF16Codec codec(endianness);
+    Transcoder transcoder(&codec);
     TRY {
         return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
@@ -179,16 +181,16 @@ Object scheme::stringToutf16Ex(VM* theVM, int argc, const Object* argv)
     if (argc == 2) {
         argumentCheckSymbol(1, endianness);
         if (endianness == Symbol::LITTLE) {
-            args[1] = Object::makeTranscoder(UTF16Codec::getCodec(UTF16Codec::UTF_16LE));
+            args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16LE));
         } else if (endianness == Symbol::BIG) {
-            args[1] = Object::makeTranscoder(UTF16Codec::getCodec(UTF16Codec::UTF_16BE));
+            args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16BE));
         } else {
             callAssertionViolationAfter(theVM, procedureName, "endianness should be little or big", L1(argv[1]));
             return Object::Undef;
         }
         return stringTobytevectorEx(theVM, 2, args);
     } else {
-        args[1] = Object::makeTranscoder(UTF16Codec::getCodec(UTF16Codec::UTF_16BE));
+        args[1] = Object::makeTranscoder(new UTF16Codec(UTF16Codec::UTF_16BE));
         return stringTobytevectorEx(theVM, 2, args);
     }
 }
@@ -202,16 +204,16 @@ Object scheme::stringToutf32Ex(VM* theVM, int argc, const Object* argv)
     if (argc == 2) {
         argumentCheckSymbol(1, endianness);
         if (endianness == Symbol::LITTLE) {
-            args[1] = Object::makeTranscoder(UTF32Codec::getCodec(UTF32Codec::UTF_32LE));
+            args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32LE));
         } else if (endianness == Symbol::BIG) {
-            args[1] = Object::makeTranscoder(UTF32Codec::getCodec(UTF32Codec::UTF_32BE));
+            args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32BE));
         } else {
             callAssertionViolationAfter(theVM, procedureName, "endianness should be little or big", L1(argv[1]));
             return Object::Undef;
         }
         return stringTobytevectorEx(theVM, 2, args);
     } else {
-        args[1] = Object::makeTranscoder(UTF32Codec::getCodec(UTF32Codec::UTF_32BE));
+        args[1] = Object::makeTranscoder(new UTF32Codec(UTF32Codec::UTF_32BE));
         return stringTobytevectorEx(theVM, 2, args);
     }
 }

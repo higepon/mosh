@@ -58,8 +58,6 @@
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
 #include "Latin1Codec.h"
-#include "UTF8Codec.h"
-#include "UTF16Codec.h"
 #include "Transcoder.h"
 #include "StringTextualInputPort.h"
 #include "StringTextualOutputPort.h"
@@ -282,21 +280,6 @@ Object Object::makeCodec(Codec* codec)
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
                                                         reinterpret_cast<word>(codec))));
 #endif
-}
-
-Object Object::makeLatin1Codec()
-{
-    return makeCodec(Latin1Codec::getCodec());
-}
-
-Object Object::makeUTF8Codec()
-{
-    return makeCodec(UTF8Codec::getCodec());
-}
-
-Object Object::makeUTF16Codec()
-{
-    return makeCodec(new UTF16Codec);
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)

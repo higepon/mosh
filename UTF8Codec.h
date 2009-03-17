@@ -1,5 +1,5 @@
 /*
- * UTF8Codec.h - 
+ * UTF8Codec.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -39,6 +39,8 @@ namespace scheme {
 class UTF8Codec : public Codec
 {
 public:
+    UTF8Codec() {}
+
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
     ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
     ucs4string getCodecName() const
@@ -46,11 +48,12 @@ public:
         return UC("utf-8-codec");
     }
 
-    static Codec* getCodec();
+    enum Codec::Type type() const
+    {
+        return Codec::Type(UTF8);
+    }
+
 private:
-    UTF8Codec() {}
-    UTF8Codec(const UTF8Codec& codec);
-    UTF8Codec& operator=(const UTF8Codec& codec);
     bool isUtf8Tail(uint8_t b);
 };
 
