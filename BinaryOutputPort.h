@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_BINARY_OUTPUT_PORT__
-#define __SCHEME_BINARY_OUTPUT_PORT__
+#ifndef SCHEME_BINARY_OUTPUT_PORT_
+#define SCHEME_BINARY_OUTPUT_PORT_
 
 #include "BinaryPort.h"
 #include "OutputPort.h"
@@ -53,4 +53,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_OUTPUT_PORT__
+#endif // SCHEME_BINARY_OUTPUT_PORT_

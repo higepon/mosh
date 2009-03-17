@@ -1,5 +1,7 @@
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
+        * Replace the invalid MACRO names like __SCHEME__ to SCHEME_.(thanks to herumi-san).
+
         * scheme.h (UC): Force the order of operator L and ##. (thanks to herumi-san).
 
         * compiler.scm (iform-count-size-upto): Added cond clause for $RECEIVE.

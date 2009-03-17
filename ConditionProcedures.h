@@ -29,8 +29,8 @@
  *  $Id: ConditionProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_CONDITION_PROCEDURES__
-#define __SCHEME_CONDITION_PROCEDURES__
+#ifndef SCHEME_CONDITION_PROCEDURES_
+#define SCHEME_CONDITION_PROCEDURES_
 
 #include "scheme.h"
 #include "Callable.h"
@@ -71,4 +71,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_CONDITION_PROCEDURES__
+#endif // SCHEME_CONDITION_PROCEDURES_

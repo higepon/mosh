@@ -29,8 +29,8 @@
  *  $Id: Scanner.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_SCANNER__
-#define __SCHEME_SCANNER__
+#ifndef SCHEME_SCANNER_
+#define SCHEME_SCANNER_
 
 #include "scheme.h"
 
@@ -57,4 +57,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_SCANNER__
+#endif // SCHEME_SCANNER_

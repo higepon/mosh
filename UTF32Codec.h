@@ -29,8 +29,8 @@
  *  $Id: UTF32Codec.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_UTF32_CODEC__
-#define __SCHEME_UTF32_CODEC__
+#ifndef SCHEME_UTF32_CODEC_
+#define SCHEME_UTF32_CODEC_
 
 #include "Codec.h"
 
@@ -69,4 +69,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_UTF32_CODEC__
+#endif // SCHEME_UTF32_CODEC_

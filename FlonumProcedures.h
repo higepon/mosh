@@ -29,8 +29,8 @@
  *  $Id: FlonumProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FLONUM_PROCEDURES__
-#define __SCHEME_FLONUM_PROCEDURES__
+#ifndef SCHEME_FLONUM_PROCEDURES_
+#define SCHEME_FLONUM_PROCEDURES_
 
 #include "scheme.h"
 
@@ -82,4 +82,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_FLONUM_PROCEDURES__
+#endif // SCHEME_FLONUM_PROCEDURES_

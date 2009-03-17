@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_BYTE_VECTOR_H__
-#define __SCHEME_BYTE_VECTOR_H__
+#ifndef SCHEME_BYTE_VECTOR_H_
+#define SCHEME_BYTE_VECTOR_H_
 
 #include <stdint.h>
 
@@ -645,4 +645,4 @@ inline Object Object::makeByteVector(ByteVector* b)
 
 }; // namespace scheme
 
-#endif // __SCHEME_BYTE_VECTOR_H__
+#endif // SCHEME_BYTE_VECTOR_H_

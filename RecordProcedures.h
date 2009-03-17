@@ -29,8 +29,8 @@
  *  $Id: RecordProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_PROCEDURES__
-#define __SCHEME_RECORD_PROCEDURES__
+#ifndef SCHEME_RECORD_PROCEDURES_
+#define SCHEME_RECORD_PROCEDURES_
 
 #include "Callable.h"
 
@@ -112,4 +112,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD_PROCEDURES__
+#endif // SCHEME_RECORD_PROCEDURES_

@@ -29,8 +29,8 @@
  *  $Id: Arithmetic.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FFI__
-#define __SCHEME_FFI__
+#ifndef SCHEME_FFI_
+#define SCHEME_FFI_
 
 #include "scheme.h"
 
@@ -87,4 +87,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_FFI__
+#endif // SCHEME_FFI_

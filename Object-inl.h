@@ -29,8 +29,8 @@
  *  $Id: Object-inl.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_OBJECT_INL__
-#define __SCHEME_OBJECT_INL__
+#ifndef SCHEME_OBJECT_INL_
+#define SCHEME_OBJECT_INL_
 
 namespace scheme {
 
@@ -311,4 +311,4 @@ inline uint8_t Object::tag() const
 
 }; // namespace scheme
 
-#endif // __SCHEME_OBJECT_INL__
+#endif // SCHEME_OBJECT_INL_

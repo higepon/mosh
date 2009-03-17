@@ -29,8 +29,8 @@
  *  $Id: ProcedureMacro.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_PROCEDURE_MACRO__
-#define __SCHEME_PROCEDURE_MACRO__
+#ifndef SCHEME_PROCEDURE_MACRO_
+#define SCHEME_PROCEDURE_MACRO_
 
 #include "scheme.h"
 #include "ErrorProcedures.h"
@@ -221,4 +221,4 @@
     const uintptr_t variableName = Bignum::toUintptr_t(obj ## variableName);
 
 
-#endif // __SCHEME_PROCEDURE_MACRO__
+#endif // SCHEME_PROCEDURE_MACRO_

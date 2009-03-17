@@ -29,8 +29,8 @@
  *  $Id: Pair-inl.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_PAIR_INL__
-#define __SCHEME_PAIR_INL__
+#ifndef SCHEME_PAIR_INL_
+#define SCHEME_PAIR_INL_
 
 #include "scheme.h"
 
@@ -93,4 +93,4 @@ inline Object& Object::fifth() const
 
 }; // namespace scheme
 
-#endif // __SCHEME_PAIR_INL__
+#endif // SCHEME_PAIR_INL_

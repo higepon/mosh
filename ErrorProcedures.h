@@ -29,8 +29,8 @@
  *  $Id: ErrorProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_VIOLATION_PROCEDURES__
-#define __SCHEME_VIOLATION_PROCEDURES__
+#ifndef SCHEME_VIOLATION_PROCEDURES_
+#define SCHEME_VIOLATION_PROCEDURES_
 
 #include "scheme.h"
 #include <setjmp.h>
@@ -110,4 +110,4 @@ extern bool isErrorBufInitialized;
 
 }; // namespace scheme
 
-#endif // __SCHEME_VIOLATION_PROCEDURES__
+#endif // SCHEME_VIOLATION_PROCEDURES_

@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_STRING_H__
-#define __SCHEME_STRING_H__
+#ifndef SCHEME_STRING_H_
+#define SCHEME_STRING_H_
 
 namespace scheme {
 
@@ -108,4 +108,4 @@ inline Object::Object(const ucs4string& str) : val(reinterpret_cast<word>(new He
 
 }; // namespace scheme
 
-#endif // __SCHEME_STRING_H__
+#endif // SCHEME_STRING_H_

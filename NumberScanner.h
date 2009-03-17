@@ -29,8 +29,8 @@
  *  $Id: Numberscanner.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_NUMBERSCANNER__
-#define __SCHEME_NUMBERSCANNER__
+#ifndef SCHEME_NUMBERSCANNER_
+#define SCHEME_NUMBERSCANNER_
 
 #include "scheme.h"
 
@@ -61,4 +61,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_NUMBERSCANNER__
+#endif // SCHEME_NUMBERSCANNER_

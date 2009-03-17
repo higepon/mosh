@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_CPROCEDURE__
-#define __SCHEME_CPROCEDURE__
+#ifndef SCHEME_CPROCEDURE_
+#define SCHEME_CPROCEDURE_
 
 namespace scheme {
 
@@ -53,4 +53,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_CPROCEDURE__
+#endif // SCHEME_CPROCEDURE_

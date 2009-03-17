@@ -29,8 +29,8 @@
  *  $Id: VM-Run.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_VM_RUN__
-#define __SCHEME_VM_RUN__
+#ifndef SCHEME_VM_RUN_
+#define SCHEME_VM_RUN_
 
 #include "Object.h"
 #include "Object-inl.h"
@@ -137,4 +137,4 @@
 #define INSTRUCTION(insn) Instruction:: ## insn
 #endif
 
-#endif // __SCHEME_VM_RUN__
+#endif // SCHEME_VM_RUN_

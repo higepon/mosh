@@ -29,8 +29,8 @@
  *  $Id: RegexpProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_REGEXP_PROCEDURES__
-#define __SCHEME_REGEXP_PROCEDURES__
+#ifndef SCHEME_REGEXP_PROCEDURES_
+#define SCHEME_REGEXP_PROCEDURES_
 
 #include "scheme.h"
 
@@ -50,4 +50,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_REGEXP_PROCEDURES__
+#endif // SCHEME_REGEXP_PROCEDURES_

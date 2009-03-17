@@ -29,8 +29,8 @@
  *  $Id: UTF8Codec.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_UTF8_CODEC__
-#define __SCHEME_UTF8_CODEC__
+#ifndef SCHEME_UTF8_CODEC_
+#define SCHEME_UTF8_CODEC_
 
 #include "Codec.h"
 
@@ -59,4 +59,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_UTF8_CODEC__
+#endif // SCHEME_UTF8_CODEC_

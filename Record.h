@@ -29,8 +29,8 @@
  *  $Id: Record.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD__
-#define __SCHEME_RECORD__
+#ifndef SCHEME_RECORD_
+#define SCHEME_RECORD_
 
 #include "RecordTypeDescriptor.h"
 
@@ -57,4 +57,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD__
+#endif // SCHEME_RECORD_

@@ -29,8 +29,8 @@
  *  $Id: StandardOutputPort.h.h 1207 2009-02-18 14:54:11Z higepon $
  */
 
-#ifndef __SCHEME_STANDARD_OUTPUT_PORT__
-#define __SCHEME_STANDARD_OUTPUT_PORT__
+#ifndef SCHEME_STANDARD_OUTPUT_PORT_
+#define SCHEME_STANDARD_OUTPUT_PORT_
 
 #include "LineBufferedFileBinaryOutputPort.h"
 
@@ -70,4 +70,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_STANDARD_OUTPUT_PORT__
+#endif // SCHEME_STANDARD_OUTPUT_PORT_

@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_CLOSURE_H__
-#define __SCHEME_CLOSURE_H__
+#ifndef SCHEME_CLOSURE_H_
+#define SCHEME_CLOSURE_H_
 
 namespace scheme {
 
@@ -115,4 +115,4 @@ inline Object Object::makeClosure(const Closure* closure)
 
 }; // namespace scheme
 
-#endif // __SCHEME_CLOSURE_H__
+#endif // SCHEME_CLOSURE_H_

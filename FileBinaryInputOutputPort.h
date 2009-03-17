@@ -29,8 +29,8 @@
  *  $Id: FileBinaryInputOutputPort.h 1227 2009-02-21 03:01:29Z higepon $
  */
 
-#ifndef __SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT__
-#define __SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT__
+#ifndef SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT_
+#define SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT_
 
 #include "BinaryInputOutputPort.h"
 
@@ -78,4 +78,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT__
+#endif // SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT_

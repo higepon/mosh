@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_BOX_H__
-#define __SCHEME_BOX_H__
+#ifndef SCHEME_BOX_H_
+#define SCHEME_BOX_H_
 
 namespace scheme {
 
@@ -49,4 +49,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BOX_H__
+#endif // SCHEME_BOX_H_

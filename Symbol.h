@@ -30,8 +30,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_SYMBOL_H__
-#define __SCHEME_SYMBOL_H__
+#ifndef SCHEME_SYMBOL_H_
+#define SCHEME_SYMBOL_H_
 
 #include "scheme.h"
 
@@ -120,4 +120,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_SYMBOL_H__
+#endif // SCHEME_SYMBOL_H_

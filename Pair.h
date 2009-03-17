@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_PAIR_H__
-#define __SCHEME_PAIR_H__
+#ifndef SCHEME_PAIR_H_
+#define SCHEME_PAIR_H_
 
 namespace scheme {
 
@@ -200,4 +200,4 @@ struct Pair EXTEND_GC
 
 }; // namespace scheme
 
-#endif // __SCHEME_PAIR_H__
+#endif // SCHEME_PAIR_H_

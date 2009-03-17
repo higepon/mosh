@@ -29,8 +29,8 @@
  *  $Id: HashTableProceduures.h 210 2008-07-10 03:02:14Z higepon $
  */
 
-#ifndef __SCHEME_HASH_TABLE_PROCEDURES__
-#define __SCHEME_HASH_TABLE_PROCEDURES__
+#ifndef SCHEME_HASH_TABLE_PROCEDURES_
+#define SCHEME_HASH_TABLE_PROCEDURES_
 
 #include "scheme.h"
 
@@ -65,4 +65,4 @@ namespace scheme {
     int equalHash(Object o);
 }; // namespace scheme
 
-#endif // __SCHEME_HASH_TABLE_PROCEDURES__
+#endif // SCHEME_HASH_TABLE_PROCEDURES_

@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_OUTPUT_PORT__
-#define __SCHEME_OUTPUT_PORT__
+#ifndef SCHEME_OUTPUT_PORT_
+#define SCHEME_OUTPUT_PORT_
 
 #include "scheme.h"
 #include "Port.h"
@@ -58,4 +58,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_OUTPUT_PORT__
+#endif // SCHEME_OUTPUT_PORT_

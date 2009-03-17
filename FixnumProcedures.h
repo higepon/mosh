@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_FIXNUM_PROCEDURES__
-#define __SCHEME_FIXNUM_PROCEDURES__
+#ifndef SCHEME_FIXNUM_PROCEDURES_
+#define SCHEME_FIXNUM_PROCEDURES_
 
 #include "scheme.h"
 
@@ -75,4 +75,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_FIXNUM_PROCEDURES__
+#endif // SCHEME_FIXNUM_PROCEDURES_

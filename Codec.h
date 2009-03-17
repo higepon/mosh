@@ -29,8 +29,8 @@
  *  $Id: Codec.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_CODEC__
-#define __SCHEME_CODEC__
+#ifndef SCHEME_CODEC_
+#define SCHEME_CODEC_
 
 #include "scheme.h"
 
@@ -59,4 +59,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_CODEC__
+#endif // SCHEME_CODEC_

@@ -29,8 +29,8 @@
  *  $Id: FFIProcedreus.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FFI_PROCEDURES__
-#define __SCHEME_FFI_PROCEDURES__
+#ifndef SCHEME_FFI_PROCEDURES_
+#define SCHEME_FFI_PROCEDURES_
 
 #include "scheme.h"
 
@@ -50,4 +50,4 @@ Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_FFI_PROCEDURES__
+#endif // SCHEME_FFI_PROCEDURES_

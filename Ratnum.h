@@ -29,8 +29,8 @@
  *  $Id: Ratnum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RATIONAL__
-#define __SCHEME_RATIONAL__
+#ifndef SCHEME_RATIONAL_
+#define SCHEME_RATIONAL_
 
 #include "scheme.h"
 #include "Bignum.h"
@@ -256,4 +256,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_RATIONAL__
+#endif // SCHEME_RATIONAL_

@@ -29,8 +29,8 @@
  *  $Id: Fasl.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FASL__
-#define __SCHEME_FASL__
+#ifndef SCHEME_FASL_
+#define SCHEME_FASL_
 
 #include "scheme.h"
 #include "Vector.h"
@@ -291,4 +291,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_FASL__
+#endif // SCHEME_FASL_

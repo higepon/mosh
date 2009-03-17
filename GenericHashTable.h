@@ -29,8 +29,8 @@
  *  $Id: EqHashTable.h 251 2008-07-22 05:12:58Z higepon $
  */
 
-#ifndef __SCHEME_GENERIC_HASH_TABLE__
-#define __SCHEME_GENERIC_HASH_TABLE__
+#ifndef SCHEME_GENERIC_HASH_TABLE_
+#define SCHEME_GENERIC_HASH_TABLE_
 
 #include "scheme.h"
 #include "HashTable.h"
@@ -69,4 +69,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_GENERIC_HASH_TABLE__
+#endif // SCHEME_GENERIC_HASH_TABLE_

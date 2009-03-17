@@ -29,8 +29,8 @@
  *  $Id: HeapObject.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_HEAP_OBJECT__
-#define __SCHEME_HEAP_OBJECT__
+#ifndef SCHEME_HEAP_OBJECT_
+#define SCHEME_HEAP_OBJECT_
 
 #include "scheme.h"
 
@@ -90,4 +90,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_HEAP_OBJECT__
+#endif // SCHEME_HEAP_OBJECT_

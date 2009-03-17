@@ -29,8 +29,8 @@
  *  $Id: PortProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_PORT_PROCEDURES__
-#define __SCHEME_PORT_PROCEDURES__
+#ifndef SCHEME_PORT_PROCEDURES_
+#define SCHEME_PORT_PROCEDURES_
 
 #include "scheme.h"
 
@@ -136,4 +136,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_PORT_PROCEDURES__
+#endif // SCHEME_PORT_PROCEDURES_

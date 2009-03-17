@@ -30,8 +30,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_FILE_BINARY_INPUT_PORT__
-#define __SCHEME_FILE_BINARY_INPUT_PORT__
+#ifndef SCHEME_FILE_BINARY_INPUT_PORT_
+#define SCHEME_FILE_BINARY_INPUT_PORT_
 
 #include "BinaryInputPort.h"
 
@@ -73,4 +73,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_FILE_BINARY_INPUT_PORT__
+#endif // SCHEME_FILE_BINARY_INPUT_PORT_

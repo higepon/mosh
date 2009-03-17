@@ -29,8 +29,8 @@
  *  $Id: StringProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_STRING_PROCEDURES__
-#define __SCHEME_STRING_PROCEDURES__
+#ifndef SCHEME_STRING_PROCEDURES_
+#define SCHEME_STRING_PROCEDURES_
 
 #include "scheme.h"
 
@@ -53,4 +53,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_STRING_PROCEDURES__
+#endif // SCHEME_STRING_PROCEDURES_

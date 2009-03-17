@@ -29,8 +29,8 @@
  *  $Id: EqvHashTable.h 259 2008-07-25 03:42:55Z higepon $
  */
 
-#ifndef __SCHEME_EQV_HASH_TABLE__
-#define __SCHEME_EQV_HASH_TABLE__
+#ifndef SCHEME_EQV_HASH_TABLE_
+#define SCHEME_EQV_HASH_TABLE_
 
 #include "scheme.h"
 
@@ -47,4 +47,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_EQV_HASH_TABLE__
+#endif // SCHEME_EQV_HASH_TABLE_

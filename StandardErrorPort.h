@@ -29,8 +29,8 @@
  *  $Id:$
  */
 
-#ifndef __SCHEME_STANDARD_ERROR_PORT__
-#define __SCHEME_STANDARD_ERROR_PORT__
+#ifndef SCHEME_STANDARD_ERROR_PORT_
+#define SCHEME_STANDARD_ERROR_PORT_
 
 #include "FileBinaryOutputPort.h"
 
@@ -70,4 +70,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_STANDARD_ERROR_PORT__
+#endif // SCHEME_STANDARD_ERROR_PORT_

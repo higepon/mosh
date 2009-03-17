@@ -29,8 +29,8 @@
  *  $Id: Port.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_PORT__
-#define __SCHEME_PORT__
+#ifndef SCHEME_PORT_
+#define SCHEME_PORT_
 
 #include "scheme.h"
 
@@ -52,4 +52,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_PORT__
+#endif // SCHEME_PORT_

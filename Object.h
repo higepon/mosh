@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_OBJECT__
-#define __SCHEME_OBJECT__
+#ifndef SCHEME_OBJECT_
+#define SCHEME_OBJECT_
 
 #include <setjmp.h>
 #include "HeapObject.h"
@@ -361,4 +361,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_OBJECT__
+#endif // SCHEME_OBJECT_

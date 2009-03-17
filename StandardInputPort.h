@@ -29,8 +29,8 @@
  *  $Id: StandardInputPort.h 1207 2009-02-18 14:54:11Z higepon $
  */
 
-#ifndef __SCHEME_STANDARD_INPUT_PORT__
-#define __SCHEME_STANDARD_INPUT_PORT__
+#ifndef SCHEME_STANDARD_INPUT_PORT_
+#define SCHEME_STANDARD_INPUT_PORT_
 
 #include "FileBinaryInputPort.h"
 
@@ -65,4 +65,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_STANDARD_INPUT_PORT__
+#endif // SCHEME_STANDARD_INPUT_PORT_

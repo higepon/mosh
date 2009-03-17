@@ -29,8 +29,8 @@
  *  $Id: ByteArrayBinaryInputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
-#define __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
+#ifndef SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT_
+#define SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT_
 
 #include "BinaryInputPort.h"
 
@@ -85,4 +85,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT__
+#endif // SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT_

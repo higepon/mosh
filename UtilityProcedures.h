@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_FREE_PROC_H__
-#define __SCHEME_FREE_PROC_H__
+#ifndef SCHEME_FREE_PROC_H_
+#define SCHEME_FREE_PROC_H_
 
 namespace scheme {
 
@@ -115,4 +115,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_FREE_PROC_H__
+#endif // SCHEME_FREE_PROC_H_

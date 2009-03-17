@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_TRANSCODER__
-#define __SCHEME_TRANSCODER__
+#ifndef SCHEME_TRANSCODER_
+#define SCHEME_TRANSCODER_
 
 #include "scheme.h"
 #include "Codec.h"
@@ -77,4 +77,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TRANSCODER__
+#endif // SCHEME_TRANSCODER_

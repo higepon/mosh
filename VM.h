@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_VM_H__
-#define __SCHEME_VM_H__
+#ifndef SCHEME_VM_H_
+#define SCHEME_VM_H_
 
 #include "scheme.h"
 #include <setjmp.h>
@@ -207,4 +207,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_VM_H__
+#endif // SCHEME_VM_H_

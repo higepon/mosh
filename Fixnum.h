@@ -29,8 +29,8 @@
  *  $Id: Fixnum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FIXNUM__
-#define __SCHEME_FIXNUM__
+#ifndef SCHEME_FIXNUM_
+#define SCHEME_FIXNUM_
 
 #include "scheme.h"
 #include "Arithmetic.h"
@@ -255,4 +255,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_FIXNUM__
+#endif // SCHEME_FIXNUM_

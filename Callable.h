@@ -29,8 +29,8 @@
  *  $Id: Callable.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_CALLABLE__
-#define __SCHEME_CALLABLE__
+#ifndef SCHEME_CALLABLE_
+#define SCHEME_CALLABLE_
 
 namespace scheme {
 
@@ -47,4 +47,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_CALLABLE__
+#endif // SCHEME_CALLABLE_

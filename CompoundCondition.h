@@ -29,8 +29,8 @@
  *  $Id: CompoundCondition.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_COMPOUND_CONDITION__
-#define __SCHEME_COMPOUND_CONDITION__
+#ifndef SCHEME_COMPOUND_CONDITION_
+#define SCHEME_COMPOUND_CONDITION_
 
 #include "scheme.h"
 
@@ -52,4 +52,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_COMPOUND_CONDITION__
+#endif // SCHEME_COMPOUND_CONDITION_

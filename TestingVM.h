@@ -29,8 +29,8 @@
  *  $Id: TestingVM.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TESTING_VM__
-#define __SCHEME_TESTING_VM__
+#ifndef SCHEME_TESTING_VM_
+#define SCHEME_TESTING_VM_
 
 #include "scheme.h"
 #include "VM.h"
@@ -54,4 +54,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TESTINGVM__
+#endif // SCHEME_TESTINGVM_

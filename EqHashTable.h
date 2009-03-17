@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_EQ_HASH_TABLE__
-#define __SCHEME_EQ_HASH_TABLE__
+#ifndef SCHEME_EQ_HASH_TABLE_
+#define SCHEME_EQ_HASH_TABLE_
 
 #include "HashTable.h"
 
@@ -107,4 +107,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_EQ_HASH_TABLE__
+#endif // SCHEME_EQ_HASH_TABLE_

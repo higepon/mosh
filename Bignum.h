@@ -29,8 +29,8 @@
  *  $Id: Bignum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_BIGNUM__
-#define __SCHEME_BIGNUM__
+#ifndef SCHEME_BIGNUM_
+#define SCHEME_BIGNUM_
 
 #include "scheme.h"
 #include "Fixnum.h"
@@ -611,4 +611,4 @@ inline Object Object::makeBignum(Bignum* b)
 
 }; // namespace scheme
 
-#endif // __SCHEME_BIGNUM__
+#endif // SCHEME_BIGNUM_

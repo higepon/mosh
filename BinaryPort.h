@@ -29,8 +29,8 @@
  *  $Id: BinaryPort.h 1202 2009-02-18 08:55:27Z higepon $
  */
 
-#ifndef __SCHEME_BINARY_PORT__
-#define __SCHEME_BINARY_PORT__
+#ifndef SCHEME_BINARY_PORT_
+#define SCHEME_BINARY_PORT_
 
 #include "Port.h"
 
@@ -52,4 +52,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BINARY_PORT__
+#endif // SCHEME_BINARY_PORT_

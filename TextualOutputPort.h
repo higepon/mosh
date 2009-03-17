@@ -29,8 +29,8 @@
  *  $Id: TextualOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TEXTUAL_OUTPUT_PORT__
-#define __SCHEME_TEXTUAL_OUTPUT_PORT__
+#ifndef SCHEME_TEXTUAL_OUTPUT_PORT_
+#define SCHEME_TEXTUAL_OUTPUT_PORT_
 
 //#include "Port.h"
 #include "OutputPort.h"
@@ -76,4 +76,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TEXTUAL_OUTPUT_PORT__
+#endif // SCHEME_TEXTUAL_OUTPUT_PORT_

@@ -29,8 +29,8 @@
  *  $Id: EqHashTable.h 251 2008-07-22 05:12:58Z higepon $
  */
 
-#ifndef __SCHEME_GENERIC_MAP__
-#define __SCHEME_GENERIC_MAP__
+#ifndef SCHEME_GENERIC_MAP_
+#define SCHEME_GENERIC_MAP_
 
 #include "config.h"
 
@@ -69,4 +69,4 @@ typedef __gnu_cxx::hash_map<scheme::Object,
 #error todo_use tr1_instread
 #endif
 
-#endif // __SCHEME_GENERIC_MAP__
+#endif // SCHEME_GENERIC_MAP_

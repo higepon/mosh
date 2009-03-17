@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_COMPILER_PROCEDURES__
-#define __SCHEME_COMPILER_PROCEDURES__
+#ifndef SCHEME_COMPILER_PROCEDURES_
+#define SCHEME_COMPILER_PROCEDURES_
 
 #include "scheme.h"
 #include "VM.h"
@@ -68,4 +68,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_COMPILER_PROCEDURES__
+#endif // SCHEME_COMPILER_PROCEDURES_

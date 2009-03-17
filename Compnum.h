@@ -29,8 +29,8 @@
  *  $Id: Compnum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_COMPNUM__
-#define __SCHEME_COMPNUM__
+#ifndef SCHEME_COMPNUM_
+#define SCHEME_COMPNUM_
 
 #include "scheme.h"
 #include "Arithmetic.h"
@@ -299,4 +299,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_COMPNUM__
+#endif // SCHEME_COMPNUM_

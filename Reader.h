@@ -29,8 +29,8 @@
  *  $Id: reader.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_READER__
-#define __SCHEME_READER__
+#ifndef SCHEME_READER_
+#define SCHEME_READER_
 
 #include "scheme.h"
 #include "ucs4string.h"
@@ -66,4 +66,4 @@ typedef struct EXTEND_GC {
 
 #define YYSTYPE_IS_DECLARED 1
 
-#endif // __SCHEME_READER__
+#endif // SCHEME_READER_

@@ -29,8 +29,8 @@
  *  $Id: Flonum.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_FLONUM__
-#define __SCHEME_FLONUM__
+#ifndef SCHEME_FLONUM_
+#define SCHEME_FLONUM_
 
 #include <stdlib.h>
 #include <math.h> // isnan
@@ -373,4 +373,4 @@ inline Object Object::makeFlonum(double value)
 
 }; // namespace scheme
 
-#endif // __SCHEME_FLONUM__
+#endif // SCHEME_FLONUM_

@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_STACK_H__
-#define __SCHEME_STACK_H__
+#ifndef SCHEME_STACK_H_
+#define SCHEME_STACK_H_
 
 namespace scheme {
 
@@ -57,4 +57,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_STACK_H__
+#endif // SCHEME_STACK_H_

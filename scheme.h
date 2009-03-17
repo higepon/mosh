@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_SCHEME_H__
-#define __SCHEME_SCHEME_H__
+#ifndef SCHEME_SCHEME_H_
+#define SCHEME_SCHEME_H_
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
@@ -179,4 +179,4 @@ inline uint8_t* allocatePointerFreeU8Array(int size)
 #endif
 }
 
-#endif // __SCHEME_SCHEME_H__
+#endif // SCHEME_SCHEME_H_

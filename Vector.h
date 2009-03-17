@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_VECTOR_H__
-#define __SCHEME_VECTOR_H__
+#ifndef SCHEME_VECTOR_H_
+#define SCHEME_VECTOR_H_
 
 namespace scheme {
 
@@ -127,4 +127,4 @@ inline Object Object::makeVector(Object pair)
 
 }; // namespace scheme
 
-#endif // __SCHEME_VECTOR_H__
+#endif // SCHEME_VECTOR_H_

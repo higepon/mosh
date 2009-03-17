@@ -29,8 +29,8 @@
  *  $Id: NumberReader.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_NUMBER_READER__
-#define __SCHEME_NUMBER_READER__
+#ifndef SCHEME_NUMBER_READER_
+#define SCHEME_NUMBER_READER_
 
 #include "scheme.h"
 
@@ -50,4 +50,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_NUMBER_READER__
+#endif // SCHEME_NUMBER_READER_

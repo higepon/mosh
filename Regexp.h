@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_REGEXP_H__
-#define __SCHEME_REGEXP_H__
+#ifndef SCHEME_REGEXP_H_
+#define SCHEME_REGEXP_H_
 
 #include "scheme.h"
 #include "oniguruma.h"
@@ -89,4 +89,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_REGEXP_H__
+#endif // SCHEME_REGEXP_H_

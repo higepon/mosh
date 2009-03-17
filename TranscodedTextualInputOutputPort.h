@@ -29,8 +29,8 @@
  *  $Id: TranscodedTextualInputOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT__
-#define __SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT__
+#ifndef SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT_
+#define SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT_
 
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"
@@ -82,4 +82,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT__
+#endif // SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT_

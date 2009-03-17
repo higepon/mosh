@@ -29,8 +29,8 @@
  *  $Id: EqHashTable.h 251 2008-07-22 05:12:58Z higepon $
  */
 
-#ifndef __SCHEME_HASH_TABLE__
-#define __SCHEME_HASH_TABLE__
+#ifndef SCHEME_HASH_TABLE_
+#define SCHEME_HASH_TABLE_
 
 #include <stdlib.h>
 
@@ -57,4 +57,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_HASH_TABLE__
+#endif // SCHEME_HASH_TABLE_

@@ -29,8 +29,8 @@
  *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_RECORD_TYPE_DESCRIPTOR__
-#define __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#ifndef SCHEME_RECORD_TYPE_DESCRIPTOR_
+#define SCHEME_RECORD_TYPE_DESCRIPTOR_
 
 #include "scheme.h"
 
@@ -67,4 +67,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_RECORD_TYPE_DESCRIPTOR__
+#endif // SCHEME_RECORD_TYPE_DESCRIPTOR_

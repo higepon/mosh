@@ -29,8 +29,8 @@
  *  $Id: ScannerHelper.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_SCANNER_HELPER__
-#define __SCHEME_SCANNER_HELPER__
+#ifndef SCHEME_SCANNER_HELPER_
+#define SCHEME_SCANNER_HELPER_
 
 #include "scheme.h"
 
@@ -47,4 +47,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_SCANNERHELPER__
+#endif // SCHEME_SCANNERHELPER_

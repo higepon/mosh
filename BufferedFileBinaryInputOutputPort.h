@@ -29,8 +29,8 @@
  *  $Id: BufferedFileBinaryInputOutputPort.h 1227 2009-02-21 03:01:29Z higepon $
  */
 
-#ifndef __SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT__
-#define __SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT__
+#ifndef SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_
+#define SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_
 
 #include "BinaryInputOutputPort.h"
 
@@ -95,4 +95,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT__
+#endif // SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_

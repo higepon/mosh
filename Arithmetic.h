@@ -29,8 +29,8 @@
  *  $Id: Arithmetic.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_ARITHMETIC__
-#define __SCHEME_ARITHMETIC__
+#ifndef SCHEME_ARITHMETIC_
+#define SCHEME_ARITHMETIC_
 
 #include "scheme.h"
 
@@ -147,4 +147,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_ARITHMETIC__
+#endif // SCHEME_ARITHMETIC_

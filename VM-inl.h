@@ -29,8 +29,8 @@
  *  $Id: VM-inl.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_VM_INL__
-#define __SCHEME_VM_INL__
+#ifndef SCHEME_VM_INL_
+#define SCHEME_VM_INL_
 
 #include "config.h"
 
@@ -246,4 +246,4 @@ inline void VM::countCall(Object proc)
 
 }; // namespace scheme
 
-#endif // __SCHEME_VM_INL__
+#endif // SCHEME_VM_INL_

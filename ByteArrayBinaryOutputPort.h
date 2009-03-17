@@ -29,8 +29,8 @@
  *  $Id: ByteArrayBinaryOutputPort.h 1301 2009-03-09 14:59:07Z higepon $
  */
 
-#ifndef __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__
-#define __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__
+#ifndef SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT_
+#define SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT_
 
 #include "ucs4string.h"
 #include "BinaryOutputPort.h"
@@ -66,4 +66,4 @@ protected:
 
 }; // namespace scheme
 
-#endif // __SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT__
+#endif // SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT_

@@ -29,8 +29,8 @@
  *  $Id: TestingFileBinaryOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_TESTING_FILEBINARY_OUTPUTPORT__
-#define __SCHEME_TESTING_FILEBINARY_OUTPUTPORT__
+#ifndef SCHEME_TESTING_FILEBINARY_OUTPUTPORT_
+#define SCHEME_TESTING_FILEBINARY_OUTPUTPORT_
 
 #include "scheme.h"
 
@@ -63,4 +63,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_TESTING_FILEBINARY_OUTPUTPORT__
+#endif // SCHEME_TESTING_FILEBINARY_OUTPUTPORT_

@@ -29,8 +29,8 @@
  *  $Id: CustomBinaryInputOutputPort.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT__
-#define __SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT__
+#ifndef SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT_
+#define SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT_
 
 #include "BinaryInputOutputPort.h"
 
@@ -88,4 +88,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT__
+#endif // SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT_

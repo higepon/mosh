@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_CODE_BUILDER_H__
-#define __SCHEME_CODE_BUILDER_H__
+#ifndef SCHEME_CODE_BUILDER_H_
+#define SCHEME_CODE_BUILDER_H_
 
 #include "scheme.h"
 
@@ -110,4 +110,4 @@ private:
 
 }; // namespace scheme
 
-#endif // __SCHEME_CODE_BUILDER_H__
+#endif // SCHEME_CODE_BUILDER_H_

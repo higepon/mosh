@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_UCING_H__
-#define __SCHEME_UCING_H__
+#ifndef SCHEME_UCING_H_
+#define SCHEME_UCING_H_
 
 #include <string>
 #include <vector>
@@ -72,4 +72,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_UCING_H__
+#endif // SCHEME_UCING_H_

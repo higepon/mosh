@@ -29,8 +29,8 @@
  *  $Id: ListProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_LIST_PROCEDURES__
-#define __SCHEME_LIST_PROCEDURES__
+#ifndef SCHEME_LIST_PROCEDURES_
+#define SCHEME_LIST_PROCEDURES_
 
 #include "scheme.h"
 
@@ -92,4 +92,4 @@ namespace scheme {
 
 }; // namespace scheme
 
-#endif // __SCHEME_LIST_PROCEDURES__
+#endif // SCHEME_LIST_PROCEDURES_

@@ -29,8 +29,8 @@
  *  $Id: ProcessProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef __SCHEME_PROCESS_PROCEDURES__
-#define __SCHEME_PROCESS_PROCEDURES__
+#ifndef SCHEME_PROCESS_PROCEDURES_
+#define SCHEME_PROCESS_PROCEDURES_
 
 #include "scheme.h"
 
@@ -45,4 +45,4 @@ Object setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv);
 
 }; // namespace scheme
 
-#endif // __SCHEME_PROCESS_PROCEDURES__
+#endif // SCHEME_PROCESS_PROCEDURES_

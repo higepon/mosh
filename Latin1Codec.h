@@ -29,8 +29,8 @@
  *  $Id$
  */
 
-#ifndef __SCHEME_LATIN1_CODEC__
-#define __SCHEME_LATIN1_CODEC__
+#ifndef SCHEME_LATIN1_CODEC_
+#define SCHEME_LATIN1_CODEC_
 
 #include "Codec.h"
 
@@ -58,4 +58,4 @@ public:
 
 }; // namespace scheme
 
-#endif // __SCHEME_LATIN1_CODEC__
+#endif // SCHEME_LATIN1_CODEC_
