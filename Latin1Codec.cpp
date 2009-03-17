@@ -31,6 +31,8 @@
 
 #include "Object.h"
 #include "Object-inl.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "SString.h"
 #include "Latin1Codec.h"
 #include "VM.h"
@@ -58,14 +60,44 @@ int Latin1Codec::putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingM
 
 int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
 {
-    buf[0] = (uint8_t)u;
-    return 1;
+    const uint8_t c = (uint8_t)u;
+    if ((c >= 0x20 && c <= 0x7f) ||
+        (c >= 0xa0 /* && c <= 0xff */)) {
+        buf[0] = c;
+        return 1;
+    } else {
+        if (mode == ErrorHandlingMode(RAISE)) {
+            throwIOError2(IOError::ENCODE, "invalid latin-1 char byte sequence", Pair::list1(Object::makeChar(u)));
+            return 0;
+        } else if (mode == ErrorHandlingMode(REPLACE)) {
+            buf[0] = '?';
+            return 1;
+        } else {
+            MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
+            return 0;
+        }
+    }
 }
 
 ucs4char Latin1Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM /* = false */)
 {
+retry:
     const int f = port->getU8();
     if (f == EOF) return EOF;
-    return (uint8_t)(f & 0xff);
+    const uint8_t c = (uint8_t)(f & 0xff);
+    if ((c >= 0x20 && c <= 0x7f) ||
+        (c >= 0xa0 /* && c <= 0xff */)) {
+        return c;
+    } else {
+        if (mode == ErrorHandlingMode(RAISE)) {
+            throwIOError2(IOError::DECODE, "invalid latin-1 byte sequence");
+        } else if (mode == ErrorHandlingMode(REPLACE)) {
+            return '?';
+        } else {
+            MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));
+            goto retry;
+        }
+    }
+    return ' ';
 }
 

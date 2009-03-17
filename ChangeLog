@@ -1,3 +1,9 @@
+2009-03-17  kokosabu  <kokosabu@gmail.com>
+
+        * UTF8Codec.cpp : fixed putChar's error-handling.
+
+        * Latin1Codec.cpp : Added encode/decode error-handling.
+
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : Added put-datum.

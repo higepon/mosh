@@ -69,7 +69,7 @@ int UTF8Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         if (mode == ErrorHandlingMode(RAISE)) {
             throwIOError2(IOError::ENCODE, "invalid utf-8 char byte sequence", Pair::list1(Object::makeChar(u)));
             return 0;
-        } else if (mode == ErrorHandlingMode(RAISE)) {
+        } else if (mode == ErrorHandlingMode(REPLACE)) {
             buf[0] = 0xff;
             buf[1] = 0xfd;
             return 2;
