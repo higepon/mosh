@@ -68,6 +68,7 @@ private:
     static Object eolStyleToSymbol(const enum EolStyle eolstyle);
     static Object errorHandlingModeToSymbol(enum ErrorHandlingMode errorHandlingMode);
 
+    bool beginningOfInput_;
     Codec* codec_;
     enum EolStyle eolStyle_;
     enum ErrorHandlingMode errorHandlingMode_;

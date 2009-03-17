@@ -1332,10 +1332,7 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsByteVector(0, bytevector);
     argumentAsTranscoder(1, transcoder);
 
-    // check the BOM
-    const int skipSize = transcoder->codec().toCodec()->acceptBOM(bytevector);
-
-    BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data() + skipSize, bytevector->length() - skipSize);
+    BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
     TRY {
         return Object::makeString(transcoder->getString(port));
     } CATCH(ioError) {

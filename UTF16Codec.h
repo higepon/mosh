@@ -49,11 +49,8 @@ public:
     UTF16Codec();
 
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode);
-    ucs4string getCodecName() const
-    {
-        return codecName_;
-    }
+    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
+    ucs4string getCodecName() const;
     int acceptBOM(ByteVector* bytevector);
 
     static int checkBOM(ByteVector* bytevector);
@@ -61,6 +58,8 @@ public:
     static Codec* getCodec(int endianness);
 private:
     bool isLittleEndian_;
+    const bool nativeIsLittleEndinan_;
+    const bool dontCheckBOM_;
     ucs4string codecName_;
 
     UTF16Codec(int endianness);

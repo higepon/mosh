@@ -117,7 +117,7 @@ int UTF32Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         goto retry;                                                     \
     }
 
-ucs4char UTF32Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode)
+ucs4char UTF32Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM)
 {
 retry:
     int a = port->getU8();

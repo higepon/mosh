@@ -40,7 +40,7 @@ class UTF8Codec : public Codec
 {
 public:
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode);
+    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
     ucs4string getCodecName() const
     {
         return UC("utf-8-codec");

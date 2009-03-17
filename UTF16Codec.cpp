@@ -61,35 +61,29 @@ Codec* UTF16Codec::getCodec(int endianness)
     }
     return codec[endianness];
 }
-
-UTF16Codec::UTF16Codec()
-{
 #if WORDS_BIGENDIAN
-    isLittleEndian_ = false;
+UTF16Codec::UTF16Codec() : isLittleEndian_(false), nativeIsLittleEndinan_(false), dontCheckBOM_(false)
 #else
-    isLittleEndian_ = true;
+UTF16Codec::UTF16Codec() : isLittleEndian_(true), nativeIsLittleEndinan_(true),dontCheckBOM_(false)
 #endif
-    codecName_ = UC("utf-16-codec");
+{
 }
 
-UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE)
+// constructor for UTF16_LE and UTF16_BE. (dontCheckBOM_ is true)
+#if WORDS_BIGENDIAN
+UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE), nativeIsLittleEndinan_(false), dontCheckBOM_(true)
+#else
+UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE), nativeIsLittleEndinan_(true), dontCheckBOM_(true)
+#endif
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
-
-#if WORDS_BIGENDIAN
-    if (endianness == UTF_16BE) {
-        codecName_ = UC("utf-16-codec");
-    } else if (endianness == UTF_16LE) {
-        codecName_ = UC("utf-16-codec(little)");
-    }
-#else
-    if (endianness == UTF_16BE) {
-        codecName_ = UC("utf-16-codec(big)");
-    } else if (endianness == UTF_16LE) {
-        codecName_ = UC("utf-16-codec");
-    }
-#endif
 }
+
+ucs4string UTF16Codec::getCodecName() const
+{
+    return UC("<utf-16-codec>");
+}
+
 
 int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
@@ -146,14 +140,31 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         goto retry;                                                     \
     }
 
-ucs4char UTF16Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode)
+ucs4char UTF16Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM /* = false */)
 {
 retry:
     const int a = port->getU8();
-    if (EOF == a) return EOF;
+    if (EOF == a) {
+        return EOF;
+    }
     const int b = port->getU8();
     if (EOF == b) {
         decodeError();
+    }
+
+    if (checkBOM && !dontCheckBOM_) {
+        if (a == 0xFE && b == 0xFF) {
+            isLittleEndian_ = false;
+            // checkBOM = false
+            return getChar(port, mode, false);
+        } else if (a == 0xFF && b == 0xFE) {
+            isLittleEndian_ = true;
+            // checkBOM = false
+            return getChar(port, mode, false);
+        } else {
+            isLittleEndian_ = nativeIsLittleEndinan_;
+            // fall through
+        }
     }
 
     const uint16_t val1 = isLittleEndian_ ? ((b << 8) | a) : ((a << 8) | b);

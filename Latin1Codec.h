@@ -41,7 +41,7 @@ class Latin1Codec : public Codec
 public:
     int putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode);
     int putChar(uint8_t* buf, ucs4char c, enum ErrorHandlingMode mode);
-    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode);
+    ucs4char getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM = false);
     ucs4string getCodecName() const
     {
         return UC("latin-1-codec");

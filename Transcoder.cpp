@@ -40,6 +40,7 @@
 using namespace scheme;
 
 Transcoder::Transcoder(Codec* codec) :
+    beginningOfInput_(true),
     codec_(codec),
     eolStyle_(nativeEolStyle()),
     errorHandlingMode_(ErrorHandlingMode(REPLACE))
@@ -47,6 +48,7 @@ Transcoder::Transcoder(Codec* codec) :
 }
 
 Transcoder::Transcoder(Codec* codec, EolStyle eolStyle) :
+    beginningOfInput_(true),
     codec_(codec),
     eolStyle_(eolStyle),
     errorHandlingMode_(ErrorHandlingMode(REPLACE))
@@ -54,6 +56,7 @@ Transcoder::Transcoder(Codec* codec, EolStyle eolStyle) :
 }
 
 Transcoder::Transcoder(Codec* codec, EolStyle eolStyle, enum ErrorHandlingMode errorHandlingMode) :
+    beginningOfInput_(true),
     codec_(codec),
     eolStyle_(eolStyle),
     errorHandlingMode_(errorHandlingMode)
@@ -188,6 +191,12 @@ void Transcoder::unGetChar(ucs4char c)
 
 ucs4char Transcoder::getCharInternal(BinaryInputPort* port)
 {
+    // In the beginning of input, we have to check the BOM.
+    if (beginningOfInput_) {
+        beginningOfInput_ = false;
+        const bool checkBOM = true;
+        return codec_->getChar(port, errorHandlingMode_, checkBOM);
+    }
     ucs4char c;
     if (buffer_.empty()) {
         c= codec_->getChar(port, errorHandlingMode_);
