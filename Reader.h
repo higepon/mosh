@@ -46,6 +46,7 @@ namespace scheme {
     public:
         static Object read(TextualInputPort* port, bool& isErrorOccured);
         static ucs4string readString(const ucs4string& s);
+        static ucs4string readSymbol(const ucs4string& s);
         static TextualInputPort* port() { return in_; }
         static Object parsed;
     private:

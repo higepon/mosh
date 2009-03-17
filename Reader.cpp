@@ -62,6 +62,52 @@ Object Reader::read(TextualInputPort* port, bool& errorOccured)
     }
 }
 
+ucs4string Reader::readSymbol(const ucs4string& s)
+{
+    ucs4string ret;
+    for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        const ucs4char ch = *it;
+        if (ch == '\\') {
+            const ucs4char ch2 = *(++it);
+            if (it == s.end()) break;
+            switch (ch2)
+            {
+            case 'x':
+            {
+                ucs4char currentChar = 0;
+                for (int i = 0; ; i++) {
+                    const ucs4char hexChar = *(++it);
+                    if (it == s.end()) {
+                        fprintf(stderr, "invalid \\x in symbol end");
+                        break;
+                    } else if (hexChar == ';') {
+                        ret += currentChar;
+                        break;
+                    } else if (isdigit(hexChar)) {
+                        currentChar = (currentChar << 4) | (hexChar - '0');
+                    } else if ('a' <= hexChar && hexChar <= 'f') {
+                        currentChar = (currentChar << 4) | (hexChar - 'a' + 10);
+                    } else if ('A' <= hexChar && hexChar <= 'F') {
+                        currentChar = (currentChar << 4) | (hexChar - 'A' + 10);
+                    } else {
+                        fprintf(stderr, "invalid \\x in symbol <%c>", (char)hexChar);
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
+                ret += ch;
+                ret += ch2;
+                break;
+            }
+        } else {
+            ret += ch;
+        }
+    }
+    return ret;
+}
+
 ucs4string Reader::readString(const ucs4string& s)
 {
     ucs4string ret;

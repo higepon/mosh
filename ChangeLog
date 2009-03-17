@@ -1,3 +1,7 @@
+2009-03-17  higepon  <higepon@users.sourceforge.jp>
+
+        * Reader.y : Accepted reading inline hex escaped symbol.
+
 2009-03-17  kokosabu  <kokosabu@gmail.com>
 
         * UTF8Codec.cpp : fixed putChar's error-handling.

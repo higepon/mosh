@@ -99,7 +99,7 @@ lexme_datum    : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                    }
                }
                | IDENTIFIER {
-                    $$ = Symbol::intern($1.strdup());
+                   $$ = Symbol::intern(Reader::readSymbol($1).strdup());
                }
                | CHARACTER {
                     $$ = Object::makeChar($1);
