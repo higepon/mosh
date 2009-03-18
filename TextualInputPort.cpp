@@ -136,7 +136,6 @@ Object TextualInputPort::getLine()
             return Object::Eof;
         }
         if (ch == '\n' || ch == EOF) {
-            ret += ch;
             break;
         }
         ret += ch;

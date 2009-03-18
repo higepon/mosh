@@ -1,5 +1,12 @@
 (import (rnrs)
         (mosh test))
-(string->bytevector "a\x185;b" (make-transcoder (latin-1-codec) 'lf 'raise))
 
+    (let ([p (open-file-output-port "io-tmp1" (file-options) 
+                                    'block (make-transcoder (utf-16-codec)))])
+      (put-string p "app\x3BB;e")
+      (close-port p))
+    (let ([p (open-file-input-port "io-tmp1" (file-options no-create)
+                                   'block (make-transcoder (utf-16-codec)))])
+      (test* (get-string-n p 20) "app\x3BB;e")
+      (close-port p))
 (test-end)
