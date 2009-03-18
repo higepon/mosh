@@ -1,5 +1,7 @@
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
+        * Object-inl.h (Object::makeCompilerInstruction): Now Mosh works with normal switch/case.
+
         * Removed getDatumOld
 
         * Not to use ucs4string::data()

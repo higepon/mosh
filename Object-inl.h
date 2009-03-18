@@ -211,7 +211,11 @@ inline Object Object::makeInstruction(int n)
 
 inline Object Object::makeCompilerInstruction(int n)
 {
+#ifdef USE_DIRECT_THREADED_CODE
     return Object((n << 5) + 30);
+#else
+    return Object((n << 5) + 14);
+#endif
 }
 
 inline Object Object::makeChar(ucs4char ch)

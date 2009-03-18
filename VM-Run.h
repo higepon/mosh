@@ -135,7 +135,7 @@
 #define NEXT        break;
 #define NEXT1        {numValues_ = 1; break;}
 #define DEFAULT     default:
-#define INSTRUCTION(insn) Instruction:: ## insn
+#define INSTRUCTION(insn) Instruction:: insn
 #endif
 
 #endif // SCHEME_VM_RUN_
