@@ -1369,6 +1369,7 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
         TRY {
             out.putChar(*it);
         } CATCH(ioError) {
+            ioError.arg1 = Object::Nil;
             ioError.who = procedureName;
             return callIOErrorAfter(theVM, ioError);
         }
@@ -1785,7 +1786,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(1, stringObj);
     const ucs4string string = stringObj->data();
     if (argc < 3) {
-        textualOutputPort->putString(string);
+        TRY {
+            textualOutputPort->putString(string);
+        } CATCH(IOError){
+            ioError.arg1 = argv[0];
+            ioError.who = procedureName;
+            return callIOErrorAfter(theVM, ioError);
+        }
         return Object::Undef;
     }
 
@@ -1797,7 +1804,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
         start = startObj.toBignum()->toS32();
     }
     if (argc < 4) {
-        textualOutputPort->putString(string.substr(start, string.length()-start));
+        TRY {
+            textualOutputPort->putString(string.substr(start, string.length()-start));
+        } CATCH(IOError){
+            ioError.arg1 = argv[0];
+            ioError.who = procedureName;
+            return callIOErrorAfter(theVM, ioError);
+        }
         return Object::Undef;
     }
 
@@ -1808,7 +1821,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     } else { // countObj.isBignum()
         count = countObj.toBignum()->toS32();
     }
-    textualOutputPort->putString(string.substr(start, count));
+    TRY {
+        textualOutputPort->putString(string.substr(start, count));
+    } CATCH(IOError){
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    }
     return Object::Undef;
 }
 

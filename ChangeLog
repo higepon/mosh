@@ -1,5 +1,7 @@
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
+        * PortProcedures.cpp : Added TRY/CATCH to put-string.
+
         * Latin1Codec.cpp (Latin1Codec::getChar): Fixed.
 
 2009-03-17  higepon  <higepon@users.sourceforge.jp>
