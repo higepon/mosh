@@ -1,5 +1,7 @@
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
+        * r6rs-test-suite : Passes io/port tests.
+
         * TextualInputPort.cpp (getLine): Fixed the bug of get-line.
 
         * PortProcedures.cpp : Added TRY/CATCH to put-string.

@@ -261,25 +261,10 @@ Object Object::makeCustomBinaryInputOutputPort(VM* theVM, const ucs4string& id, 
 }
 
 
-typedef gc_map2 Codecs;
 Object Object::makeCodec(Codec* codec)
 {
-    static Codecs codecs;
-#if 1
-    const ucs4char* name = codec->getCodecName().strdup();
-    Codecs::const_iterator it = codecs.find(name);
-    if (it == codecs.end()) {
-        codecs[name] =
-            Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
-                                                         reinterpret_cast<word>(codec))));
-        return codecs[name];
-    } else {
-        return it->second;
-    }
-#else
     return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
                                                         reinterpret_cast<word>(codec))));
-#endif
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)

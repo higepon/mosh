@@ -63,7 +63,6 @@ private:
     bool isLittleEndian_;
     const bool nativeIsLittleEndinan_;
     const bool dontCheckBOM_;
-    ucs4string codecName_;
 };
 
 }; // namespace scheme

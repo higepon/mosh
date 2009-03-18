@@ -43,20 +43,12 @@
 
 using namespace scheme;
 
-#if WORDS_BIGENDIAN
 UTF16Codec::UTF16Codec() : isLittleEndian_(false), nativeIsLittleEndinan_(false), dontCheckBOM_(false)
-#else
-UTF16Codec::UTF16Codec() : isLittleEndian_(true), nativeIsLittleEndinan_(true),dontCheckBOM_(false)
-#endif
 {
 }
 
 // constructor for UTF16_LE and UTF16_BE. (dontCheckBOM_ is true)
-#if WORDS_BIGENDIAN
 UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE), nativeIsLittleEndinan_(false), dontCheckBOM_(true)
-#else
-UTF16Codec::UTF16Codec(int endianness) : isLittleEndian_(endianness == UTF_16LE), nativeIsLittleEndinan_(true), dontCheckBOM_(true)
-#endif
 {
     MOSH_ASSERT(endianness == UTF_16BE || endianness == UTF_16LE);
 }
@@ -122,7 +114,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         goto retry;                                                     \
     }
 
-ucs4char UTF16Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOM /* = false */)
+ucs4char UTF16Codec::getChar(BinaryInputPort* port, enum ErrorHandlingMode mode, bool checkBOMNow /* = false */)
 {
 retry:
     const int a = port->getU8();
@@ -134,7 +126,7 @@ retry:
         decodeError();
     }
 
-    if (checkBOM && !dontCheckBOM_) {
+    if (checkBOMNow && !dontCheckBOM_) {
         if (a == 0xFE && b == 0xFF) {
             isLittleEndian_ = false;
             // checkBOM = false
