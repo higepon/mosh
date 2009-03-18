@@ -1,5 +1,7 @@
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
+        * TranscodedTextualInputPort.cpp (TranscodedTextualInputPort::getLineNo): Fixed the bug of line number.
+
         * Object-inl.h (Object::makeCompilerInstruction): Now Mosh works with normal switch/case.
 
         * Removed getDatumOld

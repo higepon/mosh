@@ -50,14 +50,13 @@ using namespace scheme;
 TranscodedTextualInputPort::TranscodedTextualInputPort(BinaryInputPort* port, Transcoder* coder)
     : TextualInputPort(),
       port_(port),
-      transcoder_(coder),
-      line_(1)
+      transcoder_(coder)
 {
 }
 
 int TranscodedTextualInputPort::getLineNo() const
 {
-    return line_;
+    return transcoder_->getLineNo();
 }
 
 

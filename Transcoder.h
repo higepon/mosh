@@ -57,6 +57,7 @@ public:
     ucs4char getChar(BinaryInputPort* port);
     ucs4string getString(BinaryInputPort* port);
     void unGetChar(ucs4char c);
+    int getLineNo() const;
 
     static Transcoder* nativeTranscoder();
     static bool validateEolStyle(Object eolStyle, enum EolStyle& result);
@@ -73,6 +74,7 @@ private:
     enum EolStyle eolStyle_;
     enum ErrorHandlingMode errorHandlingMode_;
     ucs4string buffer_;
+    int lineNo_;
 };
 
 }; // namespace scheme

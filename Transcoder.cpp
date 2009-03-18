@@ -43,7 +43,8 @@ Transcoder::Transcoder(Codec* codec) :
     beginningOfInput_(true),
     codec_(codec),
     eolStyle_(nativeEolStyle()),
-    errorHandlingMode_(ErrorHandlingMode(REPLACE))
+    errorHandlingMode_(ErrorHandlingMode(REPLACE)),
+    lineNo_(1)
 {
 }
 
@@ -51,7 +52,8 @@ Transcoder::Transcoder(Codec* codec, EolStyle eolStyle) :
     beginningOfInput_(true),
     codec_(codec),
     eolStyle_(eolStyle),
-    errorHandlingMode_(ErrorHandlingMode(REPLACE))
+    errorHandlingMode_(ErrorHandlingMode(REPLACE)),
+    lineNo_(1)
 {
 }
 
@@ -59,8 +61,14 @@ Transcoder::Transcoder(Codec* codec, EolStyle eolStyle, enum ErrorHandlingMode e
     beginningOfInput_(true),
     codec_(codec),
     eolStyle_(eolStyle),
-    errorHandlingMode_(errorHandlingMode)
+    errorHandlingMode_(errorHandlingMode),
+    lineNo_(1)
 {
+}
+
+int Transcoder::getLineNo() const
+{
+    return lineNo_;
 }
 
 enum EolStyle Transcoder::eolStyle()
@@ -211,6 +219,9 @@ ucs4char Transcoder::getChar(BinaryInputPort* port)
 {
     const ucs4char c = getCharInternal(port);
     if (eolStyle_ == EolStyle(E_NONE)) {
+        if (c == EolStyle(LF)) {
+            lineNo_++;
+        }
         return c;
     }
     switch(c) {
@@ -218,11 +229,13 @@ ucs4char Transcoder::getChar(BinaryInputPort* port)
     case EolStyle(NEL):
     case EolStyle(LS):
     {
+            lineNo_++;
         return EolStyle(LF);
     }
     case EolStyle(CR):
     {
         const ucs4char c2 = getCharInternal(port);
+        lineNo_++;
         switch(c2) {
         case EolStyle(LF):
         case EolStyle(NEL):

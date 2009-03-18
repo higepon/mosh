@@ -54,7 +54,6 @@ private:
 
     BinaryInputPort* const port_;
     Transcoder* const transcoder_;
-    int line_;
 };
 
 }; // namespace scheme
