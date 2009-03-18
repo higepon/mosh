@@ -3,7 +3,8 @@ AM_CFLAGS   = @MOSH_OPTS@
 AM_CXXFLAGS = $(CFLAGS)
 
 # Boehm GC
-BOEHM_GC_DIR = ./gc-7.1alpha3
+#BOEHM_GC_DIR = ./gc-7.1alpha3
+BOEHM_GC_DIR = ./gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
 # Regexp library oniguruma
@@ -35,7 +36,7 @@ mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I $(includedir)
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ -DDEBUG_VERSION
 mosh_CXXFLAGS = $(mosh_CFLAGS)
-mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) -ldl
+mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) -ldl -lpthread
 
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
@@ -435,7 +436,7 @@ gtest_main.a : gtest-all.o gtest_main.o
 
 check_PROGRAMS=
 TEST_CXXFLAGS_     = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include -DGTEST_HAS_CLONE=0
-TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl
+TEST_LDADD_        = libmosh.a gtest_main.a $(GC_LIB) $(REGEXP_LIB)  -ldl -lpthread
 TEST_DEPENDENCIES_ = libmosh.a gtest_main.a
 
 TESTS += test_object
