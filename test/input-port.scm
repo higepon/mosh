@@ -128,10 +128,10 @@
   (close-input-port in))
 
 (let ([in (open-string-input-port "012\n34\n567\n")])
-  (test* (get-line in) "012\n")
+  (test* (get-line in) "012")
   (test* (peek-char in) #\3)
-  (test* (get-line in) "34\n")
-  (test* (get-line in) "567\n")
+  (test* (get-line in) "34")
+  (test* (get-line in) "567")
   (test/t (eof-object? (get-line in)))
   (close-port in))
 
@@ -200,7 +200,7 @@
 ;; call-with-port
 (call-with-port (open-string-input-port "012\n34\n567\n")
   (lambda (p)
-    (test* (get-line p) "012\n")))
+    (test* (get-line p) "012")))
 
 (let* ([pos 0]
            [p (make-custom-textual-input-port
