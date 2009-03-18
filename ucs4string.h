@@ -39,13 +39,13 @@ namespace scheme {
 
 #ifdef USE_BOEHM_GC
 typedef std::basic_string< ucs4char, std::char_traits<ucs4char>, gc_allocator<ucs4char> > ucs4string_base;
-template <class T1>
-class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
+//template <class T1>
+//class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
 
 #else
 typedef std::basic_string< ucs4char, std::char_traits<ucs4char>, std::allocator<ucs4char> > ucs4string_base;
-template <class T1>
-class gc_vector : public std::vector<T1, std::allocator<T1> > {};
+//template <class T1>
+//class gc_vector : public std::vector<T1, std::allocator<T1> > {};
 #endif
 
 

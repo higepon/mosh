@@ -64,7 +64,7 @@ void ucs4string::split(ucs4char ch, gc_vector<ucs4string>& v)
 
 ucs4string ucs4string::substr(int x, int size) const
 {
-    return ucs4string(ucs4string_base::substr(x, size).data());
+    return ucs4string(ucs4string_base::substr(x, size).c_str());
 }
 
 char* ucs4string::ascii_c_str() const

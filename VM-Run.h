@@ -133,7 +133,7 @@
 #define SWITCH(val) switch (val)
 #define CASE(insn)  case Instruction:: insn :
 #define NEXT        break;
-#define NEX1        {numValues_ = 1; break;}
+#define NEXT1        {numValues_ = 1; break;}
 #define DEFAULT     default:
 #define INSTRUCTION(insn) Instruction:: ## insn
 #endif

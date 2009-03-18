@@ -60,7 +60,6 @@ public:
     virtual Object getLine();
     virtual void setError(Object error);
     virtual Object error() const;
-    virtual Object getDatumOld(bool& errorOccured);
     virtual Object getDatum(bool& errorOccured);
     virtual Scanner* scanner() const;
     virtual NumberScanner* numberScanner() const;

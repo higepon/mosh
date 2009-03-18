@@ -46,7 +46,7 @@
 
 using namespace scheme;
 
-static Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4string>::size_type i);
+static Object makeList(gc_vector<ucs4string>& v, gc_vector<ucs4string>::size_type i);
 
 Object scheme::format(const ucs4char* message, Object values)
 {
@@ -244,7 +244,7 @@ Object scheme::stringSplitEx(VM* theVM, int argc, const Object* argv)
     return makeList(v, 0);
 }
 
-Object makeList(scheme::gc_vector<ucs4string>& v, scheme::gc_vector<ucs4string>::size_type i)
+Object makeList(gc_vector<ucs4string>& v, gc_vector<ucs4string>::size_type i)
 {
     if (i == v.size()) {
         return Object::Nil;

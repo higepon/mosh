@@ -153,11 +153,6 @@ Object TextualInputPort::error() const
     return error_;
 }
 
-Object TextualInputPort::getDatumOld(bool& errorOccured)
-{
-    return readOld(this, errorOccured);
-}
-
 Object TextualInputPort::getDatum(bool& errorOccured)
 {
     return Reader::read(this, errorOccured);

@@ -1,5 +1,13 @@
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
+        * Removed getDatumOld
+
+        * Not to use ucs4string::data()
+
+        * Removed unused gc_vector definition.
+
+        * Renamd files and*-let => and-let.
+
         * r6rs-test-suite : Passes io/port tests.
 
         * TextualInputPort.cpp (getLine): Fixed the bug of get-line.

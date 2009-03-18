@@ -47,7 +47,6 @@ VM-inl.h                                                           \
 psyntax.h                                                          \
 match.h                                                            \
 compiler-with-library.h                                            \
-read.cpp                                                           \
 CProcedure.h                                                       \
 Instruction.h                                                      \
 Callable.h                                                         \
