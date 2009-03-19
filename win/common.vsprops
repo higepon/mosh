@@ -14,7 +14,7 @@
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalDependencies="gc.lib gmp.lib onig_s.lib"
+		AdditionalDependencies="gc.lib gmp.lib onig.lib"
 		AdditionalLibraryDirectories="win/lib"
 	/>
 </VisualStudioPropertySheet>
