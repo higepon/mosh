@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="shift_jis"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="common"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		AdditionalIncludeDirectories="$(SolutionDir)win/include"
+		PreprocessorDefinitions="WIN32;WINVER=0x501;_WIN32_WINNT=0x0501;WIN32_LEAN_AND_MEAN;HAVE_TR1_HASHES;USE_BOEHM_GC;MOSH_LIB_PATH=&quot;\&quot;./\&quot;&quot;;HAVE_CONFIG_H"
+		EnableEnhancedInstructionSet="2"
+		FloatingPointModel="2"
+		WarningLevel="3"
+	/>
+	<Tool
+		Name="VCLinkerTool"
+		AdditionalDependencies="gc.lib gmp.lib onig.lib"
+		AdditionalLibraryDirectories="win/lib"
+	/>
+</VisualStudioPropertySheet>

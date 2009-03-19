@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="shift_jis"?>
+<VisualStudioPropertySheet
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="release"
+	>
+	<Tool
+		Name="VCCLCompilerTool"
+		PreprocessorDefinitions="NDEBUG;_SECURE_SCL=0"
+		RuntimeLibrary="2"
+	/>
+</VisualStudioPropertySheet>
