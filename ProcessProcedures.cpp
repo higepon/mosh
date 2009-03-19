@@ -144,7 +144,6 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 #ifdef _WIN32
     return Object::makeString(UC("<not-supported>"));
 #else
-    return Object::makeString(UC("<not-supported>"));
     checkArgumentLength(0);
     int fds[2];
     if (-1 == pipe(fds)) {
