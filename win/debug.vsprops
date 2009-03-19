@@ -7,6 +7,6 @@
 	<Tool
 		Name="VCCLCompilerTool"
 		PreprocessorDefinitions="_DEBUG"
-		RuntimeLibrary="3"
+		RuntimeLibrary="1"
 	/>
 </VisualStudioPropertySheet>
