@@ -28,12 +28,12 @@ const ucs4char* UC(const char *str)
 #include "include/gettimeofday.h"
 #include <sys/timeb.h>
 
-int gettimeofday(struct timeval *tv, struct timezone *tz)
+int gettimeofday(struct timeval *tv, struct timezone *)
 {
     struct _timeb timeb;
     _ftime_s(&timeb);
     tv->tv_sec = timeb.time;
     tv->tv_usec = timeb.millitm * 1000;
-#pragma message("tz is not supported ni gettimeofday")
+#pragma message("tz is not supported in gettimeofday")
 	return 0;
 }

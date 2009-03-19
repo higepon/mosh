@@ -31,9 +31,6 @@
 
 #ifdef _WIN32
     #include <io.h>
-    #define F_OK 0
-    #define W_OK 2
-    #define R_OK 4
 #else
 #include <dirent.h>
 #include <unistd.h> // getcwd
@@ -87,6 +84,12 @@
 #include "ListProcedures.h"
 #include "CustomBinaryInputOutputPort.h"
 #include "ByteArrayBinaryOutputPort.h"
+
+#ifdef _WIN32
+    #define F_OK 0
+    #define W_OK 2
+    #define R_OK 4
+#endif
 
 using namespace scheme;
 
