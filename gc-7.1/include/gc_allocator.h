@@ -116,7 +116,11 @@ public:
 # endif
   ~gc_allocator() throw() {}
 
+#ifdef _WIN32
+  pointer address(reference GC_x) { return &GC_x; }
+#else
   pointer address(reference GC_x) const { return &GC_x; }
+#endif
   const_pointer address(const_reference GC_x) const { return &GC_x; }
 
   // GC_n is permitted to be 0.  The C++ standard says nothing about what
