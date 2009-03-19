@@ -575,7 +575,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             } else if (ac_.isFalse()) {
                 callWrongTypeOfArgumentViolationAfter(this, "/", "number", L2(n, ac_));
             }
-            NEXT1
+            NEXT1;
         }
         CASE(NUMBER_SUB)
         {

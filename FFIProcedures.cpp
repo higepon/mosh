@@ -50,6 +50,10 @@
 
 using namespace scheme;
 
+#ifdef _WIN32
+	#undef ARCH_IA32
+#endif
+
 #ifdef ARCH_IA32
 #define FFI_SUPPORTED 1
 #elif defined ARCH_X86_64

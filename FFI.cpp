@@ -29,7 +29,10 @@
  *  $Id: FFI.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#ifdef _WIN32
+#else
 #include <dlfcn.h>
+#endif
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"
@@ -46,22 +49,38 @@ using namespace scheme;
 
 void* FFI::open(const char* name)
 {
+#ifdef _WIN32
+    return 0;
+#else
     return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
+#endif
 }
 
 void* FFI::lookup(void* handle, const char* symbol)
 {
+#ifdef _WIN32
+    return 0;
+#else
     return dlsym(handle, symbol);
+#endif
 }
 
 int FFI::close(void* handle)
 {
+#ifdef _WIN32
+    return 0;
+#else
     return dlclose(handle);
+#endif
 }
 
 const char* FFI::lastError()
 {
+#ifdef _WIN32
+    return 0;
+#else
     return dlerror();
+#endif
 }
 
 #ifdef ARCH_X86_64

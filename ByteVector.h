@@ -32,7 +32,9 @@
 #ifndef SCHEME_BYTE_VECTOR_H_
 #define SCHEME_BYTE_VECTOR_H_
 
+#ifndef _WIN32
 #include <stdint.h>
+#endif
 
 namespace scheme {
 

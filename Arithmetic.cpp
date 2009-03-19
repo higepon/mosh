@@ -46,6 +46,9 @@
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
 
+#ifdef _WIN32
+    #define snprintf _snprintf
+#endif
 using namespace scheme;
 
 Object Arithmetic::numberToString(Object n, int radix)
@@ -535,7 +538,7 @@ Object Arithmetic::angle(Object n)
     if (n.isReal()) {
         if (isNegative(n)) {
             // pi
-            return Object::makeFlonum(::acos(-1));
+            return Object::makeFlonum(::acos(-1.0));
         } else {
             if (n.isFlonum()) {
                 return Object::makeFlonum(0.0);

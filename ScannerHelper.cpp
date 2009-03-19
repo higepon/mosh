@@ -35,6 +35,10 @@
 #include "Arithmetic.h"
 #include "ScannerHelper.h"
 
+#ifdef _WIN32
+    #define strtoll _strtoi64
+#endif
+
 using namespace scheme;
 
 ucs4char ScannerHelper::hexStringToUCS4Char(ucs4char* start, ucs4char* end)
@@ -64,7 +68,7 @@ int ScannerHelper::num16StringToInt(ucs4char* start, ucs4char* end)
         buf[i] = p[i];
     }
     errno = 0;
-    long long ret = strtoll(buf, NULL, 16);
+    int64_t ret = strtoll(buf, NULL, 16);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
         fprintf(stderr, "error num-16 buf=<%s>", buf);
@@ -82,7 +86,7 @@ int ScannerHelper::num10StringToInt(ucs4char* start, ucs4char* end)
         buf[i] = start[i];
     }
     errno = 0;
-    long long ret = strtoll(buf, NULL, 10);
+    int64_t ret = strtoll(buf, NULL, 10);
     if ((errno == ERANGE && (ret == LONG_MAX || ret == LONG_MIN))
         || (errno != 0 && ret == 0)) {
         fprintf(stderr, "error num-10 buf=<%s>", buf);

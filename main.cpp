@@ -31,8 +31,11 @@
 
 #include <time.h>
 #include <signal.h>
+#ifdef _WIN32
+#else
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 #include <getopt.h>
 
 #include "Object.h"

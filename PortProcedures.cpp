@@ -29,8 +29,15 @@
  *  $Id$
  */
 
+#ifdef _WIN32
+    #include <io.h>
+    #define F_OK 0
+    #define W_OK 2
+    #define R_OK 4
+#else
 #include <dirent.h>
 #include <unistd.h> // getcwd
+#endif
 #include <sys/stat.h> // stat
 #include <sys/types.h>
 #include <fcntl.h>
@@ -686,7 +693,7 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsPort(0, port);
     TRY {
-        port->close();
+//        port->close();
     } CATCH(ioError) {
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
@@ -1691,6 +1698,9 @@ Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("readdir");
+#ifdef _WIN32
+    return Object::makeString(UC("<not-supported>"));
+#else
     checkArgumentLength(1);
     argumentAsString(0, path);
 
@@ -1705,6 +1715,7 @@ Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
         ret = Object::cons(Object::makeString(entry->d_name), ret);
     }
     return ret;
+#endif
 }
 
 Object scheme::bufferModePEx(VM* theVM, int argc, const Object* argv)
@@ -1874,4 +1885,3 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
         return Symbol::NONE;
     }
 }
-

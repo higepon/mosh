@@ -29,8 +29,12 @@
  *  $Id$
  */
 
+#ifdef _WIN32
+    #include "../include/gettimeofday.h"
+#else
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -59,6 +63,10 @@
 #include "Arithmetic.h"
 #include "Bignum.h"
 
+#ifdef _WIN32
+    #define popen _popen
+    #define pclose _pclose
+#endif
 using namespace scheme;
 
 Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
@@ -219,7 +227,12 @@ Object scheme::getEnvironmentVariableEx(VM* theVM, int argc, const Object* argv)
     return NULL == value ? Object::False : Object::makeString(value);
 }
 
+#ifdef _WIN32
+#include <stdlib.h>
+#define environ _environ
+#else
 extern char** environ;
+#endif
 Object scheme::getEnvironmentVariablesEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-environment-variables");
@@ -745,15 +758,24 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     struct tm localTime;
     struct tm utcTime;
     time_t current = time(NULL);
+#ifdef _WIN32
+    localtime_s(&localTime, &current);
+    time_t l = mktime(&localTime);
+    gmtime_s(&utcTime, &l);
+#else
     localtime_r(&current, &localTime);
     time_t l = mktime(&localTime);
     gmtime_r(&l,  &utcTime);
+#endif
     return Bignum::makeIntegerFromU64(static_cast<uint64_t>(mktime(&localTime) - mktime(&utcTime)));
 }
 
 Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("time-usage");
+#ifdef _WIN32
+    return Object::makeString(UC("<not-supported>"));
+#else
     checkArgumentLength(0);
     struct timeval tv;
     struct rusage ru;
@@ -763,4 +785,5 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     return Pair::list3(Object::makeFlonum((double)tv.tv_sec + tv.tv_usec / 1000000.0),
                        Object::makeFlonum((double)ru.ru_utime.tv_sec + ru.ru_utime.tv_usec / 1000000.0),
                        Object::makeFlonum((double)ru.ru_stime.tv_sec + ru.ru_stime.tv_usec / 1000000.0));
+#endif
 }

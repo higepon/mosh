@@ -57,6 +57,9 @@
 #include "BinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
 
+#ifdef _WIN32
+    #define snprintf _snprintf
+#endif
 using namespace scheme;
 
 TextualOutputPort::TextualOutputPort() :

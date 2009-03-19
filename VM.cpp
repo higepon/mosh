@@ -208,7 +208,7 @@ void VM::loadFileWithGuard(const ucs4string& file)
 Object VM::evaluateCodeVector(Object codeVector)
 {
     Vector* const v = codeVector.toVector();
-    return evaluate(v->data(), v->length());;
+    return evaluate(v->data(), v->length());
 }
 
 #include "cprocedures.cpp"

@@ -29,7 +29,10 @@
  *  $Id: VM-Profiler.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#ifdef _WIN32
+#else
 #include <sys/time.h>
+#endif
 #include <signal.h>
 #include "Object.h"
 #include "Object-inl.h"

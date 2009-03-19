@@ -50,7 +50,12 @@ typedef __gnu_cxx::hash_map<scheme::Object,
                             gc_allocator<std::pair<const scheme::Object, scheme::Object> > > ObjectMap;
 
 #elif HAVE_TR1_HASHES
+#ifdef _WIN32
+#include <unordered_map>
+#include "gc_allocator.h"
+#else
 #include <tr1/unordered_map>
+#endif
 struct hash_func
 {
     size_t operator()(scheme::Object const & s) const

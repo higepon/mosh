@@ -33,6 +33,9 @@
 #define SCHEME_STANDARD_OUTPUT_PORT_
 
 #include "LineBufferedFileBinaryOutputPort.h"
+#ifdef _WIN32
+    #define fileno _fileno
+#endif
 
 namespace scheme {
 

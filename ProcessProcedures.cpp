@@ -29,12 +29,19 @@
  *  $Id: ProcessProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <errno.h>
+#ifdef _WIN32
+    #include <stdlib.h>
+    #include <io.h>
+    #include <direct.h>
+    #include <process.h>
+#else
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#endif
+#include <errno.h>
+#include <sys/types.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -47,6 +54,11 @@
 #include "BinaryOutputPort.h"
 #include "BinaryInputPort.h"
 #include "Bignum.h"
+
+#ifdef _WIN32
+    #define PATH_MAX _MAX_PATH
+    #define dup2 _dup2
+#endif
 
 using namespace scheme;
 
@@ -80,6 +92,9 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%fork");
+#ifdef _WIN32
+    return Object::makeString(UC("<not-supported>"));
+#else
     checkArgumentLength(0);
     const pid_t pid = fork();
     if (-1 == pid) {
@@ -93,11 +108,15 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
         signal(SIGINT, SIG_DFL);
     }
     return Bignum::makeIntegerFromU64(pid);
+#endif
 }
 
 Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%waitpid");
+#ifdef _WIN32
+    return Object::makeString(UC("<not-supported>"));
+#else
     checkArgumentLength(1);
     argumentCheckIntegerValued(0, pid);
     MOSH_ASSERT(pid.isBignum() || pid.isFixnum());
@@ -116,11 +135,16 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 
     return theVM->values2(Bignum::makeIntegerFromU64(child),
                           Bignum::makeInteger(WEXITSTATUS(status)));
+#endif
 }
 
 Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%pipe");
+#ifdef _WIN32
+    return Object::makeString(UC("<not-supported>"));
+#else
+    return Object::makeString(UC("<not-supported>"));
     checkArgumentLength(0);
     int fds[2];
     if (-1 == pipe(fds)) {
@@ -128,6 +152,7 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
     return theVM->values2(Object::makeBinaryInputPort(fds[0]), Object::makeBinaryOutputPort(fds[1]));
+#endif
 }
 
 // (%exec command args in out err)

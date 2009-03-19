@@ -36,6 +36,13 @@
 
 #if HAVE_EXT_HASHES
 #include <ext/hash_map>
+#else
+#ifdef _WIN32
+#include <unordered_map>
+#else
+#include <tr1/unordered_map>
+#endif
+#endif
 
 extern scheme::Object genericHashFunction;
 extern scheme::Object genericEquivalenceFunction;
@@ -59,14 +66,19 @@ struct generic_equal_to
     }
 };
 
-
+#if HAVE_EXT_HASHES
 typedef __gnu_cxx::hash_map<scheme::Object,
                             scheme::Object,
                             generic_hash_func,
                             generic_equal_to,
                             gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #else
-#error todo_use tr1_instread
+//#error todo_use tr1_instread
+typedef std::tr1::unordered_map<scheme::Object,
+                                scheme::Object,
+                                generic_hash_func,
+                                generic_equal_to,
+                                gc_allocator<std::pair<scheme::Object, scheme::Object> > > GenericMap;
 #endif
 
 #endif // SCHEME_GENERIC_MAP_

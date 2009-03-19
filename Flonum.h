@@ -37,6 +37,14 @@
 #include "scheme.h"
 #include "Bignum.h"
 
+#ifdef _WIN32
+    #include <float.h>
+    #define isnan(x) _isnan(x)
+    static inline int isinf(double x) { return  !_finite(x) && !_isnan(x); }
+    static inline double round(double x) { if (x >= 0) { return floor(x + 0.5); } else { return ceil(x - 0.5); } }
+    static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
+#endif
+
 namespace scheme {
 
 class Flonum EXTEND_GC

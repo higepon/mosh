@@ -30,7 +30,11 @@
  *  $Id: BufferedFileBinaryInputPort.cpp 1200 2009-02-17 13:27:08Z higepon $
  */
 
+#ifdef _WIN32
+    #include <io.h>
+#else
 #include <unistd.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

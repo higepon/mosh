@@ -52,9 +52,18 @@ static double mone (void) { return -1.0; }
 
 void Flonum::initialize()
 {
+#ifdef _WIN32
+    unsigned int pos_inf[2] = { 0x0, 0x7ff00000 };
+    unsigned int neg_inf[2] = { 0x0, 0xfff00000 };
+    unsigned int not_num[2] = { 0x0, 0xfff80000 };
+    POSITIVE_INF = Object::makeFlonum(*(double*)pos_inf);
+    NEGATIVE_INF = Object::makeFlonum(*(double*)neg_inf);
+    NOT_A_NUMBER = Object::makeFlonum(*(double*)not_num);
+#else
     POSITIVE_INF = Object::makeFlonum(one() / zero());
     NEGATIVE_INF = Object::makeFlonum(mone() / zero());
     NOT_A_NUMBER = Object::makeFlonum(zero() / zero());
+#endif
 }
 
 Object Flonum::toRatnum() const

@@ -40,7 +40,10 @@
 // #include <stdint.h>
 // #include <stdarg.h>
 // #include <string.h>
+#ifdef _WIN32
+#else
 #include <unistd.h>
+#endif
 // #include <assert.h>
 #include <errno.h>
 
@@ -50,7 +53,18 @@
 // #include <sys/time.h>
 // #include <stdio.h>
 // #include <signal.h>
+#ifdef _WIN32
+    typedef unsigned char uint8_t;
+    typedef unsigned short uint16_t;
+    typedef unsigned int uint32_t;
+    typedef unsigned __int64 uint64_t;
+    typedef signed char int8_t;
+    typedef short int16_t;
+    typedef int int32_t;
+    typedef __int64 int64_t;
+#else
 #include <inttypes.h>
+#endif
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
@@ -100,11 +114,15 @@ enum {
 
 //#define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
-#define UC_(x) L ## x
-#define UC(x) reinterpret_cast<const ucs4char*>(UC_(x))
-
 typedef intptr_t word;
 typedef int32_t ucs4char; // use -1 for EOF
+
+#ifdef _WIN32
+const ucs4char* UC(const char *str);
+#else
+#define UC_(x) L ## x
+#define UC(x) reinterpret_cast<const ucs4char*>(UC_(x))
+#endif
 
 #ifdef __GNUC__
 #define ALWAYS_INLINE  __attribute__((always_inline))
@@ -112,7 +130,6 @@ typedef int32_t ucs4char; // use -1 for EOF
 #else
 #define ALWAYS_INLINE
 #endif
-
 
 #include "ucs4string.h"
 
