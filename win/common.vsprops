@@ -7,14 +7,14 @@
 	<Tool
 		Name="VCCLCompilerTool"
 		AdditionalIncludeDirectories="$(SolutionDir)win/include,$(SolutionDir)gc-7.1/include"
-		PreprocessorDefinitions="WIN32;WINVER=0x501;_WIN32_WINNT=0x0501;WIN32_LEAN_AND_MEAN;HAVE_TR1_HASHES;USE_BOEHM_GC;MOSH_LIB_PATH=&quot;\&quot;./\&quot;&quot;;HAVE_CONFIG_H"
+		PreprocessorDefinitions="WIN32;WINVER=0x501;_WIN32_WINNT=0x0501;WIN32_LEAN_AND_MEAN;HAVE_TR1_HASHES;USE_BOEHM_GC;MOSH_LIB_PATH=&quot;\&quot;./\&quot;&quot;;HAVE_CONFIG_H;ONIG_EXTERN=extern"
 		EnableEnhancedInstructionSet="2"
 		FloatingPointModel="2"
 		WarningLevel="3"
 	/>
 	<Tool
 		Name="VCLinkerTool"
-		AdditionalDependencies="gc.lib gmp.lib onig.lib"
+		AdditionalDependencies="gc.lib gmp.lib onig_s.lib"
 		AdditionalLibraryDirectories="win/lib"
 	/>
 </VisualStudioPropertySheet>
