@@ -90,23 +90,26 @@ private:
     // profiler tells that this should be inlined
     uint32_t fetchU32()
     {
-        return inputPort_->getU8()       |
-            inputPort_->getU8() << 8  |
-            inputPort_->getU8() << 16 |
-            inputPort_->getU8() << 24;
+        const uint8_t a = inputPort_->getU8();
+        const uint8_t b = inputPort_->getU8();
+        const uint8_t c = inputPort_->getU8();
+        const uint8_t d = inputPort_->getU8();
+        return a | (b << 8) | (c << 16) | (d << 24);
     }
 
     // profiler tells that this should be inlined
     uint16_t fetchU16()
     {
-        return
-            inputPort_->getU8() |
-            inputPort_->getU8() << 8;
+        const uint8_t a = inputPort_->getU8();
+        const uint8_t b = inputPort_->getU8();
+        return a | (b << 8);
     }
 
     uint64_t fetchU64()
     {
-        return fetchU32() | (((uint64_t)fetchU32()) << 32);
+        const uint32_t a = fetchU32();
+        const uint32_t b = fetchU32();
+        return a | (((uint64_t)b) << 32);
     }
 
     // profiler tells that this should be inlined
