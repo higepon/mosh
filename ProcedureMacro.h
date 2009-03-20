@@ -41,6 +41,27 @@
 // It is dangerous to reinterpret_cast<BinaryInput*>(theInstance).
 // So we use special versio of argumentAsBinaryOutputPort and argumentAsBinaryInputPort.
 
+#define argumentAsPort(index, variableName) \
+    const Object obj ## variableName = argv[index];     \
+    Port* variableName;                                  \
+    if (obj ## variableName.isBinaryOutputPort()) { \
+        variableName = obj ## variableName.toBinaryOutputPort(); \
+    } else if (obj ## variableName.isBinaryInputPort()) {   \
+        variableName = obj ## variableName.toBinaryInputPort(); \
+    } else if (obj ## variableName.isTextualInputPort()) {   \
+        variableName = obj ## variableName.toTextualInputPort(); \
+    } else if (obj ## variableName.isTextualOutputPort()) {   \
+        variableName = obj ## variableName.toTextualOutputPort(); \
+    } else if (obj ## variableName.isTextualInputOutputPort()) { \
+        variableName = obj ## variableName.toTextualInputOutputPort(); \
+    } else if (obj ## variableName.isBinaryInputOutputPort()) { \
+        variableName = obj ## variableName.toBinaryInputOutputPort(); \
+    } else { \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", obj ## variableName); \
+        return Object::Undef; \
+    }
+
+
 #define argumentAsBinaryOutputPort(index, variableName) \
     const Object obj ## variableName = argv[index];     \
     BinaryOutputPort* variableName;                                  \
