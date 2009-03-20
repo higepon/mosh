@@ -694,23 +694,24 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
-    const Object port = argv[0];
+    argumentAsPort(0, port);
     TRY {
-        if (port.isBinaryOutputPort()) {
-            port.toBinaryOutputPort()->close();
-        } else if (port.isBinaryInputOutputPort()) {
-            port.toBinaryInputOutputPort()->close();
-        } else if (port.isTextualOutputPort()) {
-            port.toTextualOutputPort()->close();
-        } else if (port.isTextualInputOutputPort()) {
-            port.toTextualInputOutputPort()->close();
-        } else if (port.isBinaryInputPort()) {
-            port.toBinaryInputPort()->close();
-        } else if (port.isTextualInputPort()) {
-            port.toTextualInputPort()->close();
-        } else {
-            callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
-        }
+        port->close();
+//         if (port.isBinaryOutputPort()) {
+//             port.toBinaryOutputPort()->close();
+//         } else if (port.isBinaryInputOutputPort()) {
+//             port.toBinaryInputOutputPort()->close();
+//         } else if (port.isTextualOutputPort()) {
+//             port.toTextualOutputPort()->close();
+//         } else if (port.isTextualInputOutputPort()) {
+//             port.toTextualInputOutputPort()->close();
+//         } else if (port.isBinaryInputPort()) {
+//             port.toBinaryInputPort()->close();
+//         } else if (port.isTextualInputPort()) {
+//             port.toTextualInputPort()->close();
+//         } else {
+//             callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
+//         }
     } CATCH(ioError) {
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
