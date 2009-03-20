@@ -472,7 +472,7 @@ public:
         MOSH_ASSERT(sizeof(uint64_t) >= sizeof(intptr_t));
         const uint64_t val = static_cast<uint64_t>(p);
         if (Fixnum::canFit(val)) {
-            return Object::makeFixnum(val);
+            return Object::makeFixnum(static_cast<int>(val));
         } else {
             return makeIntegerFromU64(val);
         }
@@ -490,7 +490,7 @@ public:
         } else if (sizeof(uintptr_t) == sizeof(uint64_t)) {
             const uint64_t val = static_cast<uint64_t>(p);
             if (Fixnum::canFit(val)) {
-                return Object::makeFixnum(val);
+                return Object::makeFixnum(static_cast<int>(val));
             } else {
                 return makeIntegerFromU64(val);
             }

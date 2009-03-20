@@ -1004,9 +1004,9 @@ Object scheme::bytevectorIeeeSingleSetDEx(VM* theVM, int argc, const Object* arg
     const double v = Arithmetic::realToDouble(value);
 
     if (endianness == Symbol::LITTLE) {
-        bytevector->ieeeSingleSetLittle(index, v);
+        bytevector->ieeeSingleSetLittle(index, static_cast<float>(v));
     } else if (endianness == Symbol::BIG) {
-        bytevector->ieeeSingleSetBig(index, v);
+        bytevector->ieeeSingleSetBig(index, static_cast<float>(v));
     } else {
         callAssertionViolationAfter(theVM, procedureName, "unsupporeted endianness", L1(endianness));
     }
@@ -1029,7 +1029,7 @@ Object scheme::bytevectorIeeeSingleNativeSetDEx(VM* theVM, int argc, const Objec
         return Object::Undef;
     }
     const double v = Arithmetic::realToDouble(value);
-    bytevector->ieeeSingleNativeSet(index, v);
+    bytevector->ieeeSingleNativeSet(index, static_cast<float>(v));
     return Object::Undef;
 }
 

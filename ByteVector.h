@@ -32,7 +32,10 @@
 #ifndef SCHEME_BYTE_VECTOR_H_
 #define SCHEME_BYTE_VECTOR_H_
 
-#ifndef _WIN32
+#ifdef _WIN32
+#pragma warning(push)
+#pragma warning(disable : 4244) // convert from uint64_t to uint8_t
+#else
 #include <stdint.h>
 #endif
 
@@ -646,5 +649,9 @@ inline Object Object::makeByteVector(ByteVector* b)
 }
 
 }; // namespace scheme
+
+#ifdef _WIN32
+#pragma warning(pop)
+#endif
 
 #endif // SCHEME_BYTE_VECTOR_H_

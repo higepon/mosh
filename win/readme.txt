@@ -15,6 +15,7 @@ check warning by VC
 run test
 use onigruma in mosh repository
 gmp binary is slow (without asm)
+remove warning 4996 (for POSIX name) in common property
 
 *memo
 http://wiki.monaos.org/pukiwiki.php?Mosh%2F%B3%AB%C8%AF%B4%C4%B6%AD%C0%B0%A4%A8%A4%EB

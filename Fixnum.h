@@ -44,7 +44,7 @@ public:
     {
         BITS = 30,
         MAX = (1L << (BITS - 1)) - 1,
-        MIN = -MAX - 1,
+        MIN = -MAX - 1
     };
 
     static bool canFit(long long n)
