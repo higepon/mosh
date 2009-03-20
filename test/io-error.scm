@@ -321,7 +321,7 @@
                   (set-port-position! port -1)))
 
 ;; file-is-read-only
-(unless (eq? (host-os) 'win32)
+(unless (sring=? (host-os) "win32")
   (chmod -w "./test/read-only.txt")
   (test/exception i/o-file-is-read-only-error?
                   (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
