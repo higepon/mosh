@@ -102,37 +102,13 @@ public:
 
     uint32_t toU32() const
     {
-//        MOSH_ASSERT(fitsU32());
-//         uint32_t ret = 0;
-//         mpz_t temp;
-//         mpz_init(temp);
-//         mpz_fdiv_q_2exp(temp, value, 32);
-
-        if (sizeof(uint32_t) == sizeof(unsigned long)) {
-            return mpz_get_ui(value);
-        } else if (sizeof(uint64_t) == sizeof(unsigned long)) {
-            return (uint32_t)mpz_get_ui(value);
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
+        return (uint32_t)mpz_get_ui(value);
     }
 
     int32_t toS32() const
     {
         MOSH_ASSERT(fitsS32());
-//         int32_t ret = 0;
-//         mpz_t temp;
-//         mpz_init(temp);
-//         mpz_fdiv_q_2exp(temp, value, 32);
-        if (sizeof(int32_t) == sizeof(unsigned long)) {
-            return mpz_get_si(value);
-        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
             return (int32_t)mpz_get_si(value);
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
     }
 
     bool fitsU64() const

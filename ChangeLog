@@ -1,5 +1,7 @@
 2009-03-20  higepon  <higepon@users.sourceforge.jp>
 
+        * Bignum.h (scheme): Fixed toU32 and toS32.
+
         * tools/psyntax-r6rs/rev10_to_10/psyntax/library-manager.ss : MOSH_GENSYM_PREFIX.
 
         * scanner.re (Scanner): Fixed the parse of bad string. (thanks to naoya_t)
