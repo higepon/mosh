@@ -3439,3 +3439,5 @@
             [else ;; parent
              (receive (p status) (%waitpid pid)
                (and (= status 255) (= p pid))]))))
+;; invalid string
+(error (call-with-port (open-string-input-port (list->string '(#\" #\1 #\2 #\3 #\\ #\0 #\"))) read))

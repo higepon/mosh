@@ -55,7 +55,7 @@ extern VM* theVM;
 extern TextualInputPort* parser_port();
 extern YYSTYPE yylval;
 
-Scanner::Scanner() : dummy_('Z'),  // for YYDEBUG
+Scanner::Scanner() : eofP_(false), dummy_('Z'),  // for YYDEBUG
                      buffer_(NULL),
                      cursor_(&dummy_),
                      token_(buffer_),
@@ -78,6 +78,7 @@ Scanner::~Scanner()
 
 void Scanner::fill(int n)
 {
+    if (eofP_) return;
     TextualInputPort* const inputPort = Reader::port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
@@ -107,6 +108,7 @@ void Scanner::fill(int n)
     for (i = 0; i < n; i++) {
         const ucs4char ch = inputPort->getChar();
         if (ch == EOF) {
+            eofP_ = true;
             buffer_[i + restCharCount] = '\0';
             i++;
             break;
@@ -115,7 +117,7 @@ void Scanner::fill(int n)
         }
 //         if (!inputPort->isDataReady()) {
 //             i++;
-//             printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//
 //             break;
 //         }
 
@@ -143,10 +145,10 @@ int Scanner::scan()
   FORM_FEED              = "\X000C";
   CARRIGE_RETURN         = "\r";
   NEXT_LINE              = "\X0085";
-  UNICODE_ZL_ZP          = [\X2028-\x2029];
+  UNICODE_ZL_ZP          = [\X2028-\X2029];
   UNICODE_ZS             = "\X0020" | "\X00A0" | "\X1680" | "\X180E" | [\X2000-\X200A] | "\X202F" | "\X205F" | "\X3000";
   LINE_ENDING            = LINE_FEED | CARRIGE_RETURN | (CARRIGE_RETURN LINE_FEED) | NEXT_LINE | (CARRIGE_RETURN NEXT_LINE) | LINE_SEPARATOR;
-  WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP | UNICODE_ZS;
+  WHITE_SPACE            = CHARACTER_TABULATION | LINE_FEED | LINE_TABULATION | FORM_FEED | CARRIGE_RETURN | NEXT_LINE | UNICODE_ZL_ZP| UNICODE_ZS;
   DELMITER               = [\(\)\[\]\";#]|EOS|WHITE_SPACE;
   ANY_CHARACTER          = [^];
   DIGIT                  = [0-9];
@@ -213,7 +215,7 @@ int Scanner::scan()
     for(;;)
     {
 /*!re2c
-        "#"[tT] DELMITER {
+       "#"[tT] DELMITER {
             yylval.boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
@@ -348,6 +350,7 @@ int Scanner::scan()
             return REGEXP;
         }
         "\"" STRING_ELEMENT* "\"" DELMITER {
+
             YYCURSOR--;
             yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
             YYTOKEN = YYCURSOR;
@@ -358,39 +361,39 @@ int Scanner::scan()
             YYTOKEN = YYCURSOR;
             return DOT;
         }
-        "`" DELMITER {
+        "`" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUASIQUOTE;
         }
-        "'" DELMITER {
+        "'" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUOTE;
         }
-        ",@" DELMITER {
+        ",@" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNQUOTESPLICING;
         }
-        "," DELMITER {
+        "," ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNQUOTE; }
-        "#'" DELMITER {
+        "#'" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_SYNTAX; }
-        "#`" DELMITER {
+        "#`" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_QUASISYNTAX; }
-        "#," DELMITER {
+        "#," ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNSYNTAX;
         }
-        "#,@" DELMITER {
+        "#,@" ANY_CHARACTER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return ABBV_UNSYNTAXSPLICING;
@@ -431,6 +434,11 @@ int Scanner::scan()
             comment_count = 1;
             goto comment;
         }
+        [^] {
+            // syntax error
+            return 0;
+        }
+
 */
 
 comment:

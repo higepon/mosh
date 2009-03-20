@@ -46,6 +46,7 @@ public:
     ucs4char* currentToken() const;
 
 private:
+    bool eofP_;
     ucs4char dummy_;
     ucs4char* buffer_;
     ucs4char* cursor_;
