@@ -35,21 +35,21 @@ ok:
 clos.scm
 condition.scm
 exception.scm
+input-port.scm
 output-port.scm
 record.scm
 srfi19.scm
 srfi8.scm
 unicode.scm
+srfi-misc.scm
 
 ng:
 dbi.scm
 ffi.scm
 input-output-port.scm
-input-port.scm            ; readBytes?
 io-error.scm
 mysql.scm
 shell.scm
-srfi-misc.scm
 stack-trace1.scm
 stack-trace2.scm
 stack-trace3.scm
