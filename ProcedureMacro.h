@@ -186,7 +186,7 @@
 #define argumentCheckRecordConstructorDescriptor(index, variableName) checkType(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 #define argumentCheckRecordConstructorDescriptorOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isRecordConstructorDescriptor, record-constructor-descriptor)
 
-#define argumentAsPort(index, variableName) castArgument(index, variableName, isPort, port, Port*, toPort)
+//#define argumentAsPort(index, variableName) castArgument(index, variableName, isPort, port, Port*, toPort)
 #define argumentCheckPair(index, variableName) checkType(index, variableName, isPair, pair)
 
 //#define argumentAsTextualOutputPort(index, variableName) castArgument(index, variableName, isTextualOutputPort, textual-output-port, TextualOutputPort*, toTextualOutputPort)
