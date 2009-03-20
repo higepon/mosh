@@ -277,11 +277,11 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 #   (b) When we precompile system libraries, we want to control the start index of gensym.
 #       Since we should avoid index overlapping between pre-compile libraries and pre-compiled psyntax.
-#       So using environment variable MOSH_GENSYM_START, we control the index.
+#       So using environment variable MOSH_GENSYM_PREFIX, we control the prefix.
 update:
 	(find . -name "*.ss.fasl" | xargs rm) ; true
 	(find . -name "*.sls.fasl" | xargs rm) ; true
-	MOSH_GENSYM_START=50000 ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
+	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
 # when you release comment out start
 if DEVELOPER
@@ -475,5 +475,5 @@ test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
-	(cd doc &&  MOSH_GENSYM_START=1000 ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
+	(cd doc &&  MOSH_GENSYM_PREFIX=I ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
 

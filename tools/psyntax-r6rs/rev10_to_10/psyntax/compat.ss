@@ -33,7 +33,7 @@
           void #;gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
 ;; N.B. We don't use backend's (gensym) for following reasons.
-;;  (a) When we read serialize libraries, we need all symbols are interned.
+;;  (a) When we read serialized libraries, we need all symbols are interned.
 ;;      Because symbols who have same string should be eq?, even when they are loaded from separate files.
 ;;
 ;;  (b) When we precompile system libraries, we want to control the start index of gensym.
@@ -45,19 +45,19 @@
     i)
   inc)
 
-(define gen-sym-start
-  (let ([v (get-environment-variable "MOSH_GENSYM_START")])
+(define gen-sym-prefix
+  (let ([v (get-environment-variable "MOSH_GENSYM_PREFIX")])
     (if v
-        (string->number v)
-        0)))
+        (string->symbol v)
+        'A)))
 
-(define gen-sym-counter (make-gensym-counter gen-sym-start))
+(define gen-sym-counter (make-gensym-counter 0))
 
 (define (gensym . x)
   (string->symbol
   (if (null? x)
-      (format "K~a" (gen-sym-counter))
-      (format "K~a@~a" (gen-sym-counter) (car x)))))
+      (format "~a~a" gen-sym-prefix (gen-sym-counter))
+      (format "~a~a@~a" gen-sym-prefix (gen-sym-counter) (car x)))))
 
 
   ;; defined for mosh
