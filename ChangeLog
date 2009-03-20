@@ -1,5 +1,7 @@
 2009-03-20  higepon  <higepon@users.sourceforge.jp>
 
+        * test/io-error.scm : use (eq? (host-os) 'win32).
+
         * PortProcedures.cpp (scheme::closePortEx): Use argumentAsPort.
 
         * Bignum.h (scheme): Fixed toU32 and toS32.

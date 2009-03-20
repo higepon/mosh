@@ -321,12 +321,13 @@
                   (set-port-position! port -1)))
 
 ;; file-is-read-only
-(chmod -w "./test/read-only.txt")
-(test/exception i/o-file-is-read-only-error?
-                (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
+(unless (eq? (host-os) 'win32)
+  (chmod -w "./test/read-only.txt")
+  (test/exception i/o-file-is-read-only-error?
+                  (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
 
-(test/exception i/o-file-is-read-only-error?
-                (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block))
+  (test/exception i/o-file-is-read-only-error?
+                  (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block)))
 
 
 ; we can't "svn add" this file, but test is OK.
