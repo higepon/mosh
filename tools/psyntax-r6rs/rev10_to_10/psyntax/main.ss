@@ -114,15 +114,23 @@
     (for-each-with-index
      (lambda (i x)
        (let ([rtd (record-rtd x)])
-        (format port "   ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
-         (for-each
-          (lambda (field)
-            (display "       " port)
-           (display (car field) port)
-           (display ": " port)
-           (write (cdr field) port)
-            (newline port))
-          (record->field-alist x))))
+        (format port " ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+         (let loop ([first #t]
+                    [fields-alist (record->field-alist x)])
+           (cond
+            [(null? fields-alist) '()]
+            [else
+             (let ([field (car fields-alist)])
+               (unless first
+                 (display (rpad "" " " (+ 4 max-condition-len)) port))
+             (display "       " port)
+             (display (car field) port)
+             (display ": " port)
+             (write (cdr field) port)
+             (newline port)
+             (loop #f (cdr fields-alist)))
+             ]
+          ))))
      (simple-conditions e)))
 
 ;; このコードを使いたいが使うと vm_test の $? が 1 になりテスト失敗する
