@@ -340,7 +340,7 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("peek-char");
     checkArgumentLengthBetween(0, 1);
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (0 == argc) {
             const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -362,7 +362,7 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     bool errorOccured = false;
     argumentAsTextualInputPort(0, in);
-    TRY {
+    TRY_WITHOUT_DSTR {
         const Object object = in->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, in->error());
@@ -380,7 +380,7 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
-    TRY {
+    TRY_WITHOUT_DSTR {
         ucs4string text = in->getStringAll();
         if (text.size() == 0) {
             return Object::Undef;
@@ -420,7 +420,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    TRY {
+    TRY_WITHOUT_DSTR {
         ucs4string text = in->getString(u32Count);
         if (text.size() == 0) {
             return Object::Eof;
@@ -443,7 +443,7 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
-    TRY {
+    TRY_WITHOUT_DSTR {
         const ucs4char ch = textualInputPort->getChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
     } CATCH(ioError) {
@@ -459,7 +459,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
     argumentAsFixnum(1, size);
-    TRY {
+    TRY_WITHOUT_DSTR {
         ucs4string text = inputPort->getString(size);
 
         if (text.size() == 0) {
@@ -544,7 +544,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-eof?");
     checkArgumentLength(1);
     const Object port = argv[0];
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (port.isBinaryInputPort()) {
             return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
         } else if (port.isBinaryInputOutputPort()) {
@@ -604,7 +604,7 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualOutputPort(0, textualOutputPort);
     argumentAsChar(1, ch);
-    TRY {
+    TRY_WITHOUT_DSTR {
         textualOutputPort->putChar(ch);
         return Object::Undef;
     } CATCH(ioError) {
@@ -619,7 +619,7 @@ Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("put-datum");
     checkArgumentLength(2);
     argumentAsTextualOutputPort(0, textualOutputPort);
-    TRY {
+    TRY_WITHOUT_DSTR {
         textualOutputPort->putDatum(argv[1]);
         return Object::Undef;
     } CATCH(ioError) {
@@ -657,7 +657,7 @@ Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsBinaryOutputPort(1, outputPort);
     FaslWriter writer(outputPort);
-    TRY {
+    TRY_WITHOUT_DSTR {
         writer.put(argv[0]);
     } CATCH(ioError) {
         ioError.arg1 = argv[1];
@@ -681,7 +681,7 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-line");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
-    TRY {
+    TRY_WITHOUT_DSTR {
         return inputPort->getLine();
     } CATCH(ioError) {
         ioError.arg1 = argv[0];
@@ -695,7 +695,7 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
     argumentAsPort(0, port);
-    TRY {
+    TRY_WITHOUT_DSTR {
         port->close();
 //         if (port.isBinaryOutputPort()) {
 //             port.toBinaryOutputPort()->close();
@@ -732,7 +732,7 @@ Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookahead-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
-    TRY {
+    TRY_WITHOUT_DSTR {
         ucs4char ch;
         ch = textualInputPort->lookaheadChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -755,7 +755,7 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("display");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (1 == argc) {
             theVM->currentOutputPort().toTextualOutputPort()->display(obj);
             theVM->currentOutputPort().toTextualOutputPort()->flush();
@@ -777,7 +777,7 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write-char");
     checkArgumentLengthBetween(1, 2);
     argumentAsChar(0, ch);
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (1 == argc) {
             theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
             theVM->currentOutputPort().toTextualOutputPort()->flush();
@@ -805,7 +805,7 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read-char");
     checkArgumentLengthBetween(0, 1);
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (0 == argc) {
             const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -834,7 +834,7 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
         argumentAsTextualInputPort(0, textualInputPort);
         inputPort = textualInputPort;
     }
-    TRY {
+    TRY_WITHOUT_DSTR {
         const Object object = inputPort->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
@@ -1045,7 +1045,7 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    TRY {
+    TRY_WITHOUT_DSTR {
         if (1 == argc) {
             theVM->currentOutputPort().toTextualOutputPort()->putDatum(obj);
         } else {
@@ -1369,7 +1369,7 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsTranscoder(1, transcoder);
 
     BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
-    TRY {
+    TRY_WITHOUT_DSTR {
         return Object::makeString(transcoder->getString(port));
     } CATCH(ioError) {
         ioError.arg1 = Object::makeBinaryInputPort(port);
@@ -1391,7 +1391,7 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
 
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
-        TRY {
+        TRY_WITHOUT_DSTR {
             out.putChar(*it);
         } CATCH(ioError) {
             ioError.arg1 = Object::Nil;
@@ -1815,7 +1815,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(1, stringObj);
     const ucs4string string = stringObj->data();
     if (argc < 3) {
-        TRY {
+        TRY_WITHOUT_DSTR {
             textualOutputPort->putString(string);
         } CATCH(IOError){
             ioError.arg1 = argv[0];
@@ -1833,7 +1833,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
         start = startObj.toBignum()->toS32();
     }
     if (argc < 4) {
-        TRY {
+        TRY_WITHOUT_DSTR {
             textualOutputPort->putString(string.substr(start, string.length()-start));
         } CATCH(IOError){
             ioError.arg1 = argv[0];
@@ -1850,7 +1850,7 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     } else { // countObj.isBignum()
         count = countObj.toBignum()->toS32();
     }
-    TRY {
+    TRY_WITHOUT_DSTR {
         textualOutputPort->putString(string.substr(start, count));
     } CATCH(IOError){
         ioError.arg1 = argv[0];

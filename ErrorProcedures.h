@@ -72,9 +72,9 @@ extern bool isErrorBufInitialized;
 
 
 #ifdef DEBUG_VERSION
-  #define TRY isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
+  #define TRY_WITHOUT_DSTR isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
 #else
-  #define TRY if (setjmp(ioErrorJmpBuf) == 0)
+  #define TRY_WITHOUT_DSTR if (setjmp(ioErrorJmpBuf) == 0)
 #endif
 
 #define CATCH(x) else

@@ -543,7 +543,6 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isSymbol()) {
         Symbol* symbol = o.toSymbol();
 //        Object s = symbol->toString();
-        const ucs4string& content = symbol->c_str();
         putString(symbol->c_str());
     } else if (o.isRegexp()) {
         putChar('#');

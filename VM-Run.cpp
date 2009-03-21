@@ -646,7 +646,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY {
+            TRY_WITHOUT_DSTR {
                 ac_ = inputPort->getDatum(errorOccured);
                 if (errorOccured) {
                     callLexicalAndIOReadAfter(this, "read", inputPort->error());
@@ -674,7 +674,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY {
+            TRY_WITHOUT_DSTR {
                 const ucs4char c = inputPort->getChar();
                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
             } CATCH(ioError) {

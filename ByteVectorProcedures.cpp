@@ -123,7 +123,7 @@ Object scheme::utf32TostringEx(VM* theVM, int argc, const Object* argv)
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
     UTF32Codec codec(endianness);
     Transcoder transcoder(&codec);
-    TRY {
+    TRY_WITHOUT_DSTR {
         return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
         ioError.arg1 = Object::Nil;
@@ -163,7 +163,7 @@ Object scheme::utf16TostringEx(VM* theVM, int argc, const Object* argv)
     ByteArrayBinaryInputPort in(bytevector->data() + skipSize, bytevector->length() - skipSize);
     UTF16Codec codec(endianness);
     Transcoder transcoder(&codec);
-    TRY {
+    TRY_WITHOUT_DSTR {
         return Object::makeString(transcoder.getString(&in));
     } CATCH(ioError) {
         ioError.arg1 = Object::Nil;
