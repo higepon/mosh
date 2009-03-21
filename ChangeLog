@@ -1,5 +1,7 @@
 2009-03-21  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss : Show condition components when error occurs.
+
         * gc-7.1/configure.ac: Don't enable DONT_ADD_BYTE_AT_END and THREAD_LOCAL_ALLOC in same time.
 
 2009-03-20  higepon  <higepon@users.sourceforge.jp>

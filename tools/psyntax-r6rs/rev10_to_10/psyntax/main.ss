@@ -70,7 +70,7 @@
         ((null? lst))
       (proc i (car lst))))
 
-  (define (conditioon-printer e port)
+#;  (define (conditioon-printer e port)
     (define (ref rtd i x)
       (let ([val ((record-accessor rtd i) x)])
         (if (symbol? val)
@@ -100,8 +100,33 @@
                   (f (+ i 1))))]))))
      (simple-conditions e)))
 
-;; このコードを使いたいが使うと vm_test の $? が 1 になりテスト失敗する
+(define (rpad str pad n)
+  (let ([rest (- n (string-length (format "~a" str)))])
+    (let loop ([rest rest]
+               [ret (format "~a" str)])
+      (if (<= rest 0)
+          ret
+          (loop (- rest 1) (string-append ret pad))))))
+
 (define (condition-printer e port)
+    (define max-condition-len (apply max (map (lambda (c) (string-length (symbol->string (record-type-name (record-rtd c))))) (simple-conditions e))))
+    (display " Condition components:\n" port)
+    (for-each-with-index
+     (lambda (i x)
+       (let ([rtd (record-rtd x)])
+        (format port "   ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+         (for-each
+          (lambda (field)
+            (display "       " port)
+           (display (car field) port)
+           (display ": " port)
+           (write (cdr field) port)
+            (newline port))
+          (record->field-alist x))))
+     (simple-conditions e)))
+
+;; このコードを使いたいが使うと vm_test の $? が 1 になりテスト失敗する
+#;(define (condition-printer e port)
     (display " Condition components:\n" port)
     (for-each-with-index
      (lambda (i x)
@@ -149,7 +174,7 @@
               (#t
                (display "\nUnhandled exception:\n\n" (current-error-port))
                (if (condition? e)
-                   (conditioon-printer e (current-error-port))
+                   (condition-printer e (current-error-port))
                    (format (current-error-port) "  Non-condition object:\n     ~a\n" e))))
              (let loop ([line (get-line (current-input-port))]
                         [accum ""])
@@ -322,7 +347,7 @@
     (with-exception-handler
      (lambda (c)
        (if (condition? c)
-           (conditioon-printer c (current-error-port))
+           (condition-printer c (current-error-port))
            (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)))
      (lambda ()
        (if (null? args)
