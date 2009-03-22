@@ -1259,6 +1259,8 @@ Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
         return Object::makeTextualInputPort(port.toBinaryInputPort(), transcoder);
     } else if (port.isBinaryOutputPort()) {
         return Object::makeTextualOutputPort(port.toBinaryOutputPort(), transcoder);
+    } else if (port.isBinaryInputOutputPort()) {
+        return Object::makeTextualInputOutputPort(port.toBinaryInputOutputPort(), transcoder);
     } else {
         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary port", port, L1(port));
         return Object::Undef;

@@ -1,3 +1,7 @@
+2009-03-22  higepon  <higepon@users.sourceforge.jp>
+
+        * thread_local_alloc.c : applied http://osdir.com/ml/programming.garbage-collection.boehmgc/2008-05/msg00013.html.
+
 2009-03-21  higepon  <higepon@users.sourceforge.jp>
 
         * ErrorProcedures.h : Renamed TRY -> TRY_WITHOUT_DSTR.

@@ -44,6 +44,9 @@ AC_PROG_INSTALL
 
 ## Mosh start
 gc_cflags="${gc_cflags} -fomit-frame-pointer -DUSE_I686_PREFETCH"
+AC_DEFINE(DONT_ADD_BYTE_AT_END) ## N.B. gc-7.1 has bug about this. Use patch by Hans Boehm
+AC_DEFINE(LARGE_CONFIG)
+AC_DEFINE(NO_CLOCK)
 ## Mosh end
 
 GC_CFLAGS=${gc_cflags}
@@ -72,12 +75,6 @@ AC_ARG_ENABLE(parallel-mark,
 AC_ARG_ENABLE(cplusplus,
     [AC_HELP_STRING([--enable-cplusplus], [install C++ support])])
 
-## Mosh start
-AC_DEFINE(DONT_ADD_BYTE_AT_END) ## N.B. gc-7.1 bug. Don't enable THREAD_LOCAL_ALLOC
-AC_DEFINE(LARGE_CONFIG)
-AC_DEFINE(NO_CLOCK)
-THREADS=no
-## Mosh end
 
 INCLUDES=-I${srcdir}/include
 THREADDLLIBS=
