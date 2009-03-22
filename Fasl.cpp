@@ -50,6 +50,10 @@
 #include "EqHashTable.h"
 #include "Fasl.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244) // convert from uint64_t to uint8_t
+#endif
 
 using namespace scheme;
 

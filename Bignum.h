@@ -35,6 +35,22 @@
 #include "scheme.h"
 #include "Fixnum.h"
 
+#ifdef _WIN32
+    #ifdef _WIN64
+        #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
+    #else
+        #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
+    #endif
+#elif defined(__GNUC__) && defined(__WORDSIZE)
+    #if (__WORDSIZE == 8)
+        #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
+    #else
+        #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
+    #endif
+#else
+    #error "define MOSH_BIGNUM_SIZEOF_INTPTR_T"
+#endif
+
 namespace scheme {
 
 class Bignum EXTEND_GC
@@ -129,57 +145,44 @@ public:
     uint64_t toU64() const
     {
         MOSH_ASSERT(fitsU64());
-
-        if (sizeof(int32_t) == sizeof(unsigned long)) {
-            uint64_t ret = 0;
-            mpz_t temp;
-            mpz_init(temp);
-            mpz_fdiv_q_2exp(temp, value, 32);
-            ret = mpz_get_ui(temp);
-            ret = ret << 32; // upper 32bit
-            mpz_set_ui(temp, 0xffffffff);
-            mpz_and(temp, value, temp);
-            ret += mpz_get_ui(temp); // lower 32bit
-            return ret;
-        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
-            return mpz_get_ui(value);
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_ui(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        return ret;
+#else
+        return mpz_get_ui(value);
+#endif
     }
 
     int64_t toS64() const
     {
         MOSH_ASSERT(fitsS64());
-        if (sizeof(int32_t) == sizeof(unsigned long)) {
-            uint64_t ret = 0;
-            mpz_t temp;
-            mpz_init(temp);
-            mpz_fdiv_q_2exp(temp, value, 32);
-            ret = mpz_get_si(temp);
-            ret = ret << 32; // upper 32bit
-            mpz_set_ui(temp, 0xffffffff);
-            mpz_and(temp, value, temp);
-            ret += mpz_get_ui(temp); // lower 32bit
-            return ret;
-        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
-            return mpz_get_si(value);
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value, 32);
+        ret = mpz_get_si(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        return ret;
+#else
+        return mpz_get_si(value);
+#endif
     }
 
     void setU32(uint32_t value)
     {
-        if (sizeof(int32_t) == sizeof(unsigned long)) {
-            mpz_set_ui(this->value, value);
-        } else if (sizeof(int64_t) == sizeof(unsigned long)) {
-            return mpz_set_ui(this->value, value);
-        } else {
-            MOSH_FATAL("not reached");
-        }
+        mpz_set_ui(this->value, value);
     }
 
     void setDouble(double value)
@@ -456,47 +459,39 @@ public:
 
     static Object makeIntegerFromUintprt_t(uintptr_t p)
     {
-        if (sizeof(uintptr_t) == sizeof(uint32_t)) {
-            const uint32_t val = static_cast<uint32_t>(p);
-            if (Fixnum::canFit(val)) {
-                return Object::makeFixnum(val);
-            } else {
-                return makeIntegerFromU32(val);
-            }
-        } else if (sizeof(uintptr_t) == sizeof(uint64_t)) {
-            const uint64_t val = static_cast<uint64_t>(p);
-            if (Fixnum::canFit(val)) {
-                return Object::makeFixnum(static_cast<int>(val));
-            } else {
-                return makeIntegerFromU64(val);
-            }
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        const uint32_t val = static_cast<uint32_t>(p);
+        if (Fixnum::canFit(val)) {
+            return Object::makeFixnum(val);
+        } else {
+            return makeIntegerFromU32(val);
         }
-        MOSH_FATAL("not reached");
-        return Object::Undef;
+#else
+        const uint64_t val = static_cast<uint64_t>(p);
+        if (Fixnum::canFit(val)) {
+            return Object::makeFixnum(static_cast<int>(val));
+        } else {
+            return makeIntegerFromU64(val);
+        }
+#endif
     }
 
     intptr_t toIntptr_t()
     {
-        if (sizeof(intptr_t) == sizeof(int32_t)) {
-            return toS32();
-        } else if (sizeof(intptr_t) == sizeof(int64_t)) {
-            return toS64();
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        return toS32();
+#else
+        return toS64();
+#endif
     }
 
     uintptr_t toUintptr_t()
     {
-        if (sizeof(uintptr_t) == sizeof(uint32_t)) {
-            return toU32();
-        } else if (sizeof(uintptr_t) == sizeof(uint64_t)) {
-            return toU64();
-        } else {
-            MOSH_FATAL("not reached");
-            return 0;
-        }
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        return toU32();
+#else
+        return toU64();
+#endif
     }
 
 

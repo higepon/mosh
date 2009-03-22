@@ -36,6 +36,7 @@ clos.scm
 condition.scm
 exception.scm
 input-port.scm
+io-error.scm
 output-port.scm
 record.scm
 srfi19.scm
@@ -47,7 +48,6 @@ ng:
 dbi.scm
 ffi.scm
 input-output-port.scm
-io-error.scm
 mysql.scm
 shell.scm
 ;stack-trace1.scm

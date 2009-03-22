@@ -32,7 +32,7 @@
 #ifndef SCHEME_BYTE_VECTOR_H_
 #define SCHEME_BYTE_VECTOR_H_
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #pragma warning(push)
 #pragma warning(disable : 4244) // convert from uint64_t to uint8_t
 #else

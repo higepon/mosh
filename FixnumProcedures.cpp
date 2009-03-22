@@ -219,7 +219,7 @@ Object scheme::fxMulEx(VM* theVM, int argc, const Object* argv)
     const int64_t ret = fx1 * fx2;
 
     if (Fixnum::canFit(ret)) {
-        return Object::makeFixnum(ret);
+        return Object::makeFixnum(static_cast<long>(ret));
     } else {
         callImplementationRestrictionAfter(theVM, procedureName, UC("product is not a fixnum"), Pair::list2(argv[0], argv[1]));
         return Object::Undef;
