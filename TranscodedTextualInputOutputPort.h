@@ -60,6 +60,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     int close();
+    bool isClosed() const;
 
     // TextualInputPort interfaces
     ucs4char getChar();

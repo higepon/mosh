@@ -67,6 +67,7 @@ public:
     Object position() const;
     bool setPosition(int position);
     int close();
+    bool isClosed() const;
 private:
     VM* theVM_;
     const ucs4string id_;
@@ -77,6 +78,7 @@ private:
     const Object closeProc_;
     ucs4string buffer_;
     int line_;
+    bool isClosed_;
 };
 
 } // namespace scheme

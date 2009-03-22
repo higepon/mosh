@@ -43,6 +43,7 @@ public:
     virtual ~TranscodedTextualOutputPort();
 
     int close();
+    bool isClosed() const;
     void flush();
     enum OutputPort::bufferMode bufferMode() const;
     void putChar(ucs4char c);

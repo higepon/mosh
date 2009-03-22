@@ -51,7 +51,8 @@ CustomTextualInputPort::CustomTextualInputPort(VM* theVM, const ucs4string& id, 
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
       buffer_(UC("")),
-      line_(1)
+      line_(1),
+      isClosed_(false)
 {
     MOSH_ASSERT(readProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
@@ -145,5 +146,11 @@ int CustomTextualInputPort::close()
     if (closeProc_.isCallable()) {
         theVM_->callClosure0(closeProc_);
     }
+    isClosed_ = true;
     return 0;
+}
+
+bool CustomTextualInputPort::isClosed() const
+{
+    return isClosed_;
 }

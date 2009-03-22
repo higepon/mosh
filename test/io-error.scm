@@ -337,6 +337,15 @@
 ;(open-input-file "./test/can-not-read-write.txt")
 ;(open-output-file "./test/can-not-read-write.txt")
 
+;; transcoded-port procedure closes the binary port
+(test/exception i/o-port-error?
+                (let* ([binary-port (open-bytevector-input-port #vu8(97 98 99))]
+                       [text-port (transcoded-port binary-port (make-transcoder (latin-1-codec)))])
+                  (display (read-char text-port))
+                  (display (read-char text-port))
+                  (get-u8 binary-port) ;; port is already closed!
+                  (display (read-char text-port))))
+
 
 (test-end)
 

@@ -47,6 +47,7 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     int close();
+    int pseudoClose();
     bool setPosition(int position) ;
     ucs4string toString();
 
@@ -74,6 +75,7 @@ private:
     ucs4string fileName_;
     int fd_;
     bool isClosed_;
+    bool isPseudoClosed_;
 };
 
 } // namespace scheme

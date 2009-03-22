@@ -71,6 +71,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4s
     isDirty_(false),
     position_(0),
     isClosed_(false),
+    isPseudoClosed_(false),
     bufferSize_(0),
     bufferIndex_(0)
 {
@@ -111,6 +112,12 @@ int BufferedFileBinaryInputOutputPort::close()
         isClosed_ = true;
         ::close(fd_);
     }
+    return MOSH_SUCCESS;
+}
+
+int BufferedFileBinaryInputOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 
@@ -156,7 +163,7 @@ int BufferedFileBinaryInputOutputPort::open()
 
 bool BufferedFileBinaryInputOutputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int BufferedFileBinaryInputOutputPort::fileNo() const

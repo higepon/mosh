@@ -48,6 +48,7 @@ public:
     int putByteVector(ByteVector* bv, int start, int count);
     int open();
     int close();
+    int pseudoClose();
     bool isClosed() const;
     int fileNo() const;
     void flush();
@@ -66,6 +67,7 @@ private:
     const Object setPositionDProc_;
     const Object closeProc_;
     bool isClosed_;
+    bool isPseudoClosed_;
 };
 
 } // namespace scheme

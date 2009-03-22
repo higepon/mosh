@@ -41,7 +41,7 @@
 
 using namespace scheme;
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0), isClosed_(false)
+ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0), isClosed_(false), isPseudoClosed_(false)
 {
 }
 
@@ -84,12 +84,18 @@ int ByteArrayBinaryInputPort::open()
 
 bool ByteArrayBinaryInputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int ByteArrayBinaryInputPort::close()
 {
     isClosed_ = true;
+    return MOSH_SUCCESS;
+}
+
+int ByteArrayBinaryInputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 

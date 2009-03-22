@@ -50,6 +50,7 @@ public:
     ucs4string toString();
     int open();
     int close();
+    int pseudoClose();
     bool isClosed() const;
     int fileNo() const;
     bool hasPosition() const;
@@ -68,6 +69,7 @@ private:
     const Object closeProc_;
 
     bool isClosed_;
+    bool isPseudoClosed_;
     int aheadU8_;
 };
 

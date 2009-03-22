@@ -62,6 +62,7 @@ public:
     int open();
     int close();
     bool isClosed() const;
+    int pseudoClose();
     int fileNo() const;
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
@@ -81,6 +82,7 @@ private:
     const int size_;
     int index_;
     bool isClosed_;
+    bool isPseudoClosed_;
 };
 
 } // namespace scheme

@@ -37,7 +37,7 @@
 
 using namespace scheme;
 
-StringTextualOutputPort::StringTextualOutputPort() : index_(0)
+StringTextualOutputPort::StringTextualOutputPort() : isClosed_(false), index_(0)
 {
 }
 
@@ -69,7 +69,13 @@ void StringTextualOutputPort::reset()
 
 int StringTextualOutputPort::close()
 {
+    isClosed_ = true;
     return 0;
+}
+
+bool StringTextualOutputPort::isClosed() const
+{
+    return isClosed_;
 }
 
 void StringTextualOutputPort::flush()

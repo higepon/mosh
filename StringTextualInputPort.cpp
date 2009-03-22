@@ -43,6 +43,7 @@ using namespace scheme;
 
 StringTextualInputPort::StringTextualInputPort(const ucs4string& str) :
     TextualInputPort(),
+    isClosed_(false),
     buffer_(str),
     index_(0),
     lineNo_(1)
@@ -84,7 +85,13 @@ ucs4string StringTextualInputPort::toString()
 
 int StringTextualInputPort::close()
 {
+    isClosed_ = true;
     return 0;
+}
+
+bool StringTextualInputPort::isClosed() const
+{
+    return isClosed_;
 }
 
 bool StringTextualInputPort::hasPosition() const

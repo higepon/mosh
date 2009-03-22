@@ -55,7 +55,8 @@ using namespace scheme;
 
 FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
     fileName_(file),
-    isClosed_(false)
+    isClosed_(false),
+    isPseudoClosed_(false)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | openFlags, 0644);
 }
@@ -82,10 +83,16 @@ Object FileBinaryInputOutputPort::position() const
 
 int FileBinaryInputOutputPort::close()
 {
-    if (!isClosed() && fd_ != INVALID_FILENO) {
+    if (!isClosed_ && fd_ != INVALID_FILENO) {
         isClosed_ = true;
         ::close(fd_);
     }
+    return MOSH_SUCCESS;
+}
+
+int FileBinaryInputOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 
@@ -119,7 +126,7 @@ int FileBinaryInputOutputPort::open()
 
 bool FileBinaryInputOutputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int FileBinaryInputOutputPort::fileNo() const

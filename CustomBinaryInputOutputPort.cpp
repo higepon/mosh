@@ -56,6 +56,7 @@ CustomBinaryInputOutputPort::CustomBinaryInputOutputPort(VM* theVM,
       setPositionProc_(setPositionProc),
       closeProc_(closeProc),
       isClosed_(false),
+      isPseudoClosed_(false),
       aheadU8_(EOF)
 {
     MOSH_ASSERT(readProc_.isProcedure());
@@ -89,12 +90,18 @@ int CustomBinaryInputOutputPort::close()
         theVM_->callClosure0(closeProc_);
     }
     isClosed_ = true;
-    return 0;
+    return MOSH_SUCCESS;
+}
+
+int CustomBinaryInputOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
+    return MOSH_SUCCESS;
 }
 
 bool CustomBinaryInputOutputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int CustomBinaryInputOutputPort::getU8()

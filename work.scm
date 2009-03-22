@@ -4,5 +4,5 @@
        [text-port (transcoded-port binary-port (make-transcoder (latin-1-codec)))])
   (display (read-char text-port))
   (display (read-char text-port))
-  (get-u8 binary-port) ;; こんなことをされたくない
+  (get-u8 binary-port)
   (display (read-char text-port)))

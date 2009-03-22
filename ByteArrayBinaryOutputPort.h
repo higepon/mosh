@@ -49,6 +49,7 @@ public:
     int putByteVector(ByteVector* bv, int start, int count);
     int open();
     int close();
+    int pseudoClose();
     bool isClosed() const;
     void flush();
     int fileNo() const { return INVALID_FILENO; }
@@ -62,6 +63,8 @@ public:
 protected:
     gc_vector<uint8_t> buffer_;
     uintptr_t position_;
+    bool isClosed_;
+    bool isPseudoClosed_;
 };
 
 } // namespace scheme

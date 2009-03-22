@@ -84,6 +84,11 @@ int TranscodedTextualOutputPort::close()
     return port_->close();
 }
 
+bool TranscodedTextualOutputPort::isClosed() const
+{
+    return port_->isClosed();
+}
+
 void TranscodedTextualOutputPort::putChar(ucs4char c)
 {
     transcoder_->putChar(port_, c);

@@ -54,7 +54,8 @@ CustomTextualOutputPort::CustomTextualOutputPort(VM* theVM,
       writeDProc_(writeDProc),
       getPositionProc_(getPositionProc),
       setPositionDProc_(setPositionDProc),
-      closeProc_(closeProc)
+      closeProc_(closeProc),
+      isClosed_(false)
 {
     MOSH_ASSERT(writeDProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
@@ -79,7 +80,13 @@ int CustomTextualOutputPort::close()
     if (closeProc_.isCallable()) {
         theVM_->callClosure0(closeProc_);
     }
+    isClosed_ = true;
     return 0;
+}
+
+bool CustomTextualOutputPort::isClosed() const
+{
+    return isClosed_;
 }
 
 void CustomTextualOutputPort::flush()

@@ -342,10 +342,13 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(0, 1);
     TRY_WITHOUT_DSTR {
         if (0 == argc) {
-            const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->lookaheadChar();
+            TextualInputPort* const port = theVM->currentInputPort().toTextualInputPort();
+            checkPortIsOpen(port, theVM->currentInputPort());
+            const ucs4char ch = port->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         } else {
             argumentAsTextualInputPort(0, textualInputPort);
+            checkPortIsOpen(textualInputPort, argv[0]);
             const ucs4char ch = textualInputPort->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
@@ -362,6 +365,7 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     bool errorOccured = false;
     argumentAsTextualInputPort(0, in);
+    checkPortIsOpen(in, argv[0]);
     TRY_WITHOUT_DSTR {
         const Object object = in->getDatum(errorOccured);
         if (errorOccured) {
@@ -398,6 +402,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-n!");
     argumentAsTextualInputPort(0, in);
+    checkPortIsOpen(in, argv[0]);
     argumentAsString(1, dest);
     argumentCheckExactInteger(2, start);
     argumentCheckExactInteger(3, count);
@@ -443,6 +448,7 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
+    checkPortIsOpen(textualInputPort, argv[0]);
     TRY_WITHOUT_DSTR {
         const ucs4char ch = textualInputPort->getChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
@@ -458,6 +464,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-string-n");
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
+    checkPortIsOpen(inputPort, argv[0]);
     argumentAsFixnum(1, size);
     TRY_WITHOUT_DSTR {
         ucs4string text = inputPort->getString(size);
@@ -479,6 +486,7 @@ Object scheme::portHasPortPositionPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-has-port-position?");
     checkArgumentLength(1);
     argumentAsPort(0, port);
+    checkPortIsOpen(port, argv[0]);
     return Object::makeBool(port->hasPosition());
 }
 
@@ -487,6 +495,7 @@ Object scheme::portHasSetPortPositionDPEx(VM* theVM, int argc, const Object* arg
     DeclareProcedureName("port-has-set-port-position!?");
     checkArgumentLength(1);
     argumentAsPort(0, port);
+    checkPortIsOpen(port, argv[0]);
     return Object::makeBool(port->hasSetPosition());
 }
 
@@ -495,6 +504,7 @@ Object scheme::setPortPositionDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("set-port-position!");
     checkArgumentLength(2);
     argumentAsPort(0, port);
+    checkPortIsOpen(port, argv[0]);
     argumentAsFixnum(1, position);
     if (port->hasSetPosition()) {
         if (port->setPosition(position)) {
@@ -546,13 +556,21 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     const Object port = argv[0];
     TRY_WITHOUT_DSTR {
         if (port.isBinaryInputPort()) {
-            return Object::makeBool(port.toBinaryInputPort()->lookaheadU8() == EOF);
+            BinaryInputPort* const in = port.toBinaryInputPort();
+            checkPortIsOpen(in, port);
+            return Object::makeBool(in->lookaheadU8() == EOF);
         } else if (port.isBinaryInputOutputPort()) {
-            return Object::makeBool(port.toBinaryInputOutputPort()->lookaheadU8() == EOF);
+            BinaryInputOutputPort* const inout = port.toBinaryInputOutputPort();
+            checkPortIsOpen(inout, port);
+            return Object::makeBool(inout->lookaheadU8() == EOF);
         } else if (port.isTextualInputPort()) {
-            return Object::makeBool(port.toTextualInputPort()->lookaheadChar() == EOF);
+            TextualInputPort* const in = port.toTextualInputPort();
+            checkPortIsOpen(in, port);
+            return Object::makeBool(in->lookaheadChar() == EOF);
         } else if (port.isTextualInputOutputPort()) {
-            return Object::makeBool(port.toTextualInputOutputPort()->lookaheadChar() == EOF);
+            TextualInputOutputPort* const inout = port.toTextualInputOutputPort();
+            checkPortIsOpen(inout, port);
+            return Object::makeBool(inout->lookaheadChar() == EOF);
         } else {
             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
             return Object::Undef;
@@ -569,6 +587,7 @@ Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("put-bytevector");
     checkArgumentLengthBetween(2, 4);
     argumentAsBinaryOutputPort(0, outputPort);
+    checkPortIsOpen(outputPort, argv[0]);
     argumentAsByteVector(1, bv);
     if (argc < 3) {
         outputPort->putByteVector(bv);
@@ -603,6 +622,7 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("put-char");
     checkArgumentLength(2);
     argumentAsTextualOutputPort(0, textualOutputPort);
+    checkPortIsOpen(textualOutputPort, argv[0]);
     argumentAsChar(1, ch);
     TRY_WITHOUT_DSTR {
         textualOutputPort->putChar(ch);
@@ -619,6 +639,7 @@ Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("put-datum");
     checkArgumentLength(2);
     argumentAsTextualOutputPort(0, textualOutputPort);
+    checkPortIsOpen(textualOutputPort, argv[0]);
     TRY_WITHOUT_DSTR {
         textualOutputPort->putDatum(argv[1]);
         return Object::Undef;
@@ -656,6 +677,7 @@ Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("fasl-write");
     checkArgumentLength(2);
     argumentAsBinaryOutputPort(1, outputPort);
+    checkPortIsOpen(outputPort, argv[0]);
     FaslWriter writer(outputPort);
     TRY_WITHOUT_DSTR {
         writer.put(argv[0]);
@@ -672,6 +694,7 @@ Object scheme::faslReadEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("fasl-read");
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, inputPort);
+    checkPortIsOpen(inputPort, argv[0]);
     FaslReader reader(theVM, inputPort);
     return reader.get();
 }
@@ -681,6 +704,7 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-line");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
+    checkPortIsOpen(inputPort, argv[0]);
     TRY_WITHOUT_DSTR {
         return inputPort->getLine();
     } CATCH(ioError) {
@@ -732,6 +756,7 @@ Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookahead-char");
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
+    checkPortIsOpen(textualInputPort, argv[0]);
     TRY_WITHOUT_DSTR {
         ucs4char ch;
         ch = textualInputPort->lookaheadChar();
@@ -757,12 +782,13 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     const Object obj = argv[0];
     TRY_WITHOUT_DSTR {
         if (1 == argc) {
-            theVM->currentOutputPort().toTextualOutputPort()->display(obj);
-            theVM->currentOutputPort().toTextualOutputPort()->flush();
+            TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
+            checkPortIsOpen(out, theVM->currentOutputPort());
+            out->display(obj);
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
+            checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->display(obj);
-            textualOutputPort->flush();
         }
         return Object::Undef;
     } CATCH(ioError) {
@@ -779,12 +805,13 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
     argumentAsChar(0, ch);
     TRY_WITHOUT_DSTR {
         if (1 == argc) {
-            theVM->currentOutputPort().toTextualOutputPort()->putChar(ch);
-            theVM->currentOutputPort().toTextualOutputPort()->flush();
+            TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
+            checkPortIsOpen(out, theVM->currentOutputPort());
+            out->putChar(ch);
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
+            checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->putChar(ch);
-            textualOutputPort->flush();
         }
         return Object::Undef;
     } CATCH(ioError) {
@@ -807,10 +834,13 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(0, 1);
     TRY_WITHOUT_DSTR {
         if (0 == argc) {
-            const ucs4char ch = theVM->currentInputPort().toTextualInputPort()->getChar();
+            TextualInputPort* const in = theVM->currentInputPort().toTextualInputPort();
+            checkPortIsOpen(in, theVM->currentInputPort());
+            const ucs4char ch = in->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         } else {
             argumentAsTextualInputPort(0, textualInputPort);
+            checkPortIsOpen(textualInputPort, argv[0]);
             const ucs4char ch = textualInputPort->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
@@ -830,10 +860,13 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
     TextualInputPort* inputPort = NULL;
     if (0 == argc) {
         inputPort = theVM->currentInputPort().toTextualInputPort();
+        checkPortIsOpen(inputPort, theVM->currentInputPort());
     } else {
         argumentAsTextualInputPort(0, textualInputPort);
+        checkPortIsOpen(textualInputPort, argv[0]);
         inputPort = textualInputPort;
     }
+
     TRY_WITHOUT_DSTR {
         const Object object = inputPort->getDatum(errorOccured);
         if (errorOccured) {
@@ -965,6 +998,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
     if (arg1.isTextualOutputPort()) {
         checkArgumentLengthAtLeast(2);
         argumentAsTextualOutputPort(0, textualOutputPort);
+        checkPortIsOpen(textualOutputPort, argv[0]);
         argumentAsString(1, formatString);
 
         Object lst = Object::Nil;
@@ -989,6 +1023,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             lst = Object::cons(argv[i], lst);
         }
         TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
+        checkPortIsOpen(outputPort, theVM->currentOutputPort());
         outputPort->format(formatString->data(), lst);
         if (outputPort->isErrorOccured()) {
             callAssertionViolationAfter(theVM, procedureName,
@@ -1047,9 +1082,13 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     const Object obj = argv[0];
     TRY_WITHOUT_DSTR {
         if (1 == argc) {
-            theVM->currentOutputPort().toTextualOutputPort()->putDatum(obj);
+            TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
+            checkPortIsOpen(out, theVM->currentOutputPort());
+            out->putDatum(obj);
+
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
+            checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->putDatum(obj);
         }
         return Object::Undef;
@@ -1121,6 +1160,10 @@ Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-u8");
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, binaryInputPort);
+    checkPortIsOpen(binaryInputPort, argv[0]);
+    if (binaryInputPort->isClosed()) {
+        return callIOPortErrorAfter(theVM, argv[0], procedureName, "port is closed");
+    }
     const int b = binaryInputPort->getU8();
     if (EOF == b) {
         return Object::Eof;
@@ -1134,6 +1177,7 @@ Object scheme::lookaheadU8Ex(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("lookahead-u8");
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, binaryInputPort);
+    checkPortIsOpen(binaryInputPort, argv[0]);
     const int b = binaryInputPort->lookaheadU8();
     if (EOF == b) {
         return Object::Eof;
@@ -1148,6 +1192,7 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
 
     argumentAsBinaryInputPort(0, binaryInputPort);
+    checkPortIsOpen(binaryInputPort, argv[0]);
     argumentCheckExactInteger(1, count);
     if (!Arithmetic::fitsU32(count)) {
         callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));
@@ -1174,7 +1219,7 @@ Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsBinaryInputPort(0, binaryInputPort);
-
+    checkPortIsOpen(binaryInputPort, argv[0]);
     bool isErrorOccured = false;
     uint8_t* dest;
     const int ret = binaryInputPort->readAll(&dest, isErrorOccured);
@@ -1194,7 +1239,7 @@ Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
 
     argumentAsBinaryInputPort(0, binaryInputPort);
-
+    checkPortIsOpen(binaryInputPort, argv[0]);
     bool isErrorOccured = false;
     uint8_t* dest;
     const int ret = binaryInputPort->readSome(&dest, isErrorOccured);
@@ -1214,6 +1259,7 @@ Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(4);
 
     argumentAsBinaryInputPort(0, binaryInputPort);
+    checkPortIsOpen(binaryInputPort, argv[0]);
     argumentAsByteVector(1, bv);
     argumentCheckExactInteger(2, start);
     argumentCheckExactInteger(3, count);
@@ -1256,11 +1302,17 @@ Object scheme::transcodedPortEx(VM* theVM, int argc, const Object* argv)
     argumentAsTranscoder(1, transcoder);
     const Object port = argv[0];
     if (port.isBinaryInputPort()) {
-        return Object::makeTextualInputPort(port.toBinaryInputPort(), transcoder);
+        BinaryInputPort* const in = port.toBinaryInputPort();
+        in->pseudoClose();
+        return Object::makeTextualInputPort(in, transcoder);
     } else if (port.isBinaryOutputPort()) {
-        return Object::makeTextualOutputPort(port.toBinaryOutputPort(), transcoder);
+        BinaryOutputPort* const out = port.toBinaryOutputPort();
+        out->pseudoClose();
+        return Object::makeTextualOutputPort(out, transcoder);
     } else if (port.isBinaryInputOutputPort()) {
-        return Object::makeTextualInputOutputPort(port.toBinaryInputOutputPort(), transcoder);
+        BinaryInputOutputPort* const inout = port.toBinaryInputOutputPort();
+        inout->pseudoClose();
+        return Object::makeTextualInputOutputPort(inout, transcoder);
     } else {
         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "binary port", port, L1(port));
         return Object::Undef;

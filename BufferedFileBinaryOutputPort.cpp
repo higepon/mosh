@@ -51,18 +51,18 @@
 
 using namespace scheme;
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT, 0644);
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, int openFlags) : fileName_(file), isClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, int openFlags) : fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
     fd_ = ::open(file.ascii_c_str(), O_WRONLY | O_CREAT | openFlags, 0644);
     initializeBuffer();
@@ -79,7 +79,7 @@ BufferedFileBinaryOutputPort::~BufferedFileBinaryOutputPort()
 
 bool BufferedFileBinaryOutputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int BufferedFileBinaryOutputPort::putU8(uint8_t v)
@@ -123,6 +123,12 @@ int BufferedFileBinaryOutputPort::close()
         isClosed_ = true;
         ::close(fd_);
     }
+    return MOSH_SUCCESS;
+}
+
+int BufferedFileBinaryOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 

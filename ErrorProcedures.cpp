@@ -98,6 +98,12 @@ static Object raiseAfterB(VM* theVM,
                 Object message,
                 Object irritants = Object::Nil);
 
+Object scheme::callIOPortErrorAfter(VM* theVM, Object port, Object who, Object message)
+{
+    return raiseAfter1(theVM, UC("&i/o-port-rcd"), UC("&i/o-port"), port, who, "port is closed");
+}
+
+
 Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 {
     switch(e.type) {

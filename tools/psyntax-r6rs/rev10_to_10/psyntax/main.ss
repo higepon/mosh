@@ -113,10 +113,13 @@
     (display " Condition components:\n" port)
     (for-each-with-index
      (lambda (i x)
-       (let ([rtd (record-rtd x)])
+       (let ([rtd (record-rtd x)]
+             [fields-alist (record->field-alist x)])
         (format port " ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+        (when (null? fields-alist)
+          (newline port))
          (let loop ([first #t]
-                    [fields-alist (record->field-alist x)])
+                    [fields-alist fields-alist])
            (cond
             [(null? fields-alist) '()]
             [else

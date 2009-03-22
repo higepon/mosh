@@ -54,6 +54,7 @@ public:
     // Port interface
     ucs4string toString();
     int close();
+    bool isClosed() const;
 private:
     VM* theVM_;
     const ucs4string id_;
@@ -63,6 +64,7 @@ private:
     const Object closeProc_;
     ucs4string buffer_;
     int line_;
+    bool isClosed_;
 };
 
 } // namespace scheme

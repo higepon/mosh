@@ -46,6 +46,7 @@ public:
     void unGetChar(ucs4char c);
     ucs4string toString();
     int close();
+    bool isClosed() const;
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
@@ -54,6 +55,7 @@ public:
     Transcoder* transcoder() const;
 
 private:
+    bool isClosed_;
     ucs4string buffer_;
     ucs4string::size_type index_;
     int lineNo_;

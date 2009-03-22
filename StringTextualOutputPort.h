@@ -44,6 +44,7 @@ public:
     void putChar(ucs4char c);
     ucs4string getString();
     virtual int close();
+    bool isClosed() const;
     virtual void flush();
     ucs4string toString();
     bool hasPosition() const;
@@ -55,6 +56,7 @@ public:
     enum OutputPort::bufferMode bufferMode() const;
 
 private:
+    bool isClosed_;
     ucs4string buffer_;
     intptr_t index_;
 };

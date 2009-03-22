@@ -47,6 +47,7 @@ public:
     void unGetChar(ucs4char c);
     ucs4string toString();
     int close();
+    bool isClosed() const;
     Transcoder* transcoder() const;
     Codec* codec() const;
 

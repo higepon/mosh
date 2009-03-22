@@ -51,7 +51,9 @@ public:
     int putByteVector(ByteVector* bv, int start, int count);
     int open();
     virtual int close();
+    int pseudoClose();
     bool isClosed() const;
+    bool isPseudoClosed() const;
     int fileNo() const;
     void flush();
     ucs4string toString();
@@ -71,6 +73,7 @@ protected:
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
+    bool isPseudoClosed_;
     uint8_t* buffer_;
     int bufIdx_;
     int position_;

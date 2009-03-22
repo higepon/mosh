@@ -82,11 +82,13 @@ ucs4string TranscodedTextualInputPort::toString()
 
 int TranscodedTextualInputPort::close()
 {
-    if (NULL != port_) {
-        return port_->close();
-    } else {
-        return 0;
-    }
+    MOSH_ASSERT(port_ != NULL);
+    return port_->close();
+}
+
+bool TranscodedTextualInputPort::isClosed() const
+{
+    return port_->isClosed();
 }
 
 Transcoder* TranscodedTextualInputPort::transcoder() const

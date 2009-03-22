@@ -43,7 +43,10 @@
 
 using namespace scheme;
 
-ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() : position_(0)
+ByteArrayBinaryOutputPort::ByteArrayBinaryOutputPort() :
+    position_(0),
+    isClosed_(false),
+    isPseudoClosed_(false)
 {
 }
 
@@ -53,7 +56,7 @@ ByteArrayBinaryOutputPort::~ByteArrayBinaryOutputPort()
 
 bool ByteArrayBinaryOutputPort::isClosed() const
 {
-    return false;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int ByteArrayBinaryOutputPort::putU8(uint8_t v)
@@ -91,6 +94,13 @@ int ByteArrayBinaryOutputPort::open()
 
 int ByteArrayBinaryOutputPort::close()
 {
+    isClosed_ = true;
+    return MOSH_SUCCESS;
+}
+
+int ByteArrayBinaryOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 

@@ -37,6 +37,13 @@
 #include "StringProcedures.h"
 #include "VM.h"
 
+
+#define checkPortIsOpen(port, obj) \
+    if (port->isClosed()) { \
+        return callIOPortErrorAfter(theVM, obj, procedureName, "port is closed"); \
+    }
+
+
 // N.B For BinaryInputOutputPort Class, we use multiple inheritance.
 // It is dangerous to reinterpret_cast<BinaryInput*>(theInstance).
 // So we use special versio of argumentAsBinaryOutputPort and argumentAsBinaryInputPort.

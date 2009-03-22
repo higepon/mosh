@@ -73,6 +73,11 @@ int TranscodedTextualInputOutputPort::close()
     return port_->close();
 }
 
+bool TranscodedTextualInputOutputPort::isClosed() const
+{
+    return port_->isClosed();
+}
+
 Object TranscodedTextualInputOutputPort::position() const
 {
     return Object::Undef;

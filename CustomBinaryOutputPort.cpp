@@ -48,7 +48,8 @@ CustomBinaryOutputPort::CustomBinaryOutputPort(VM* theVM, const ucs4string& id, 
       getPositionProc_(getPositionProc),
       setPositionDProc_(setPositionDProc),
       closeProc_(closeProc),
-      isClosed_(false)
+      isClosed_(false),
+      isPseudoClosed_(false)
 {
     MOSH_ASSERT(writeDProc_.isProcedure());
     MOSH_ASSERT(getPositionProc_.isProcedure() || getPositionProc_.isFalse());
@@ -134,12 +135,17 @@ int CustomBinaryOutputPort::close()
         theVM_->callClosure0(closeProc_);
     }
     isClosed_ = true;
-    return 0;
+    return MOSH_SUCCESS;
 }
 
+int CustomBinaryOutputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
+    return MOSH_SUCCESS;
+}
 bool CustomBinaryOutputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int CustomBinaryOutputPort::fileNo() const

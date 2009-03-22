@@ -48,6 +48,7 @@ public:
     virtual ~CustomTextualOutputPort();
 
     int close();
+    bool isClosed() const;
     void flush();
     enum OutputPort::bufferMode bufferMode() const;
     void putChar(ucs4char c);
@@ -66,6 +67,7 @@ private:
     const Object getPositionProc_;
     const Object setPositionDProc_;
     const Object closeProc_;
+    bool isClosed_;
 };
 
 } // namespace scheme

@@ -54,6 +54,7 @@ public:
     int readAll(uint8_t** buf, bool& isErrorOccured);
     int open();
     int close();
+    int pseudoClose();
     int fileNo() const;
     bool isClosed() const;
     bool hasPosition() const;
@@ -67,6 +68,7 @@ private:
     int fd_;
     ucs4string fileName_;
     bool isClosed_;
+    bool isPseudoClosed_;
     int aheadU8_;
     int position_;
 };

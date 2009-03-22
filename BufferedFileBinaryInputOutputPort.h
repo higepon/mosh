@@ -47,6 +47,7 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     int close();
+    int pseudoClose();
     bool setPosition(int position) ;
     ucs4string toString();
 
@@ -89,6 +90,7 @@ protected:
     bool isDirty_;
     int position_;
     bool isClosed_;
+    bool isPseudoClosed_;
     int bufferSize_;
     int bufferIndex_;
 };

@@ -53,16 +53,16 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
 }
 
-FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 }
 
-FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
     fileName_ = Object::makeString(file).toString()->data();
     fd_ = ::open(file, O_RDONLY);
@@ -192,7 +192,7 @@ int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 
 bool FileBinaryInputPort::isClosed() const
 {
-    return isClosed_;
+    return isClosed_ || isPseudoClosed_;
 }
 
 int FileBinaryInputPort::close()
@@ -201,6 +201,12 @@ int FileBinaryInputPort::close()
         isClosed_ = true;
         ::close(fd_);
     }
+    return MOSH_SUCCESS;
+}
+
+int FileBinaryInputPort::pseudoClose()
+{
+    isPseudoClosed_ = true;
     return MOSH_SUCCESS;
 }
 
