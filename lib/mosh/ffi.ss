@@ -80,7 +80,7 @@
     Foreign Function Interface Library
 |#
 (library (mosh ffi)
-  (export c-function open-shared-library find-shared-libray
+  (export make-c-function c-function open-shared-library find-shared-libray
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
                   (%ffi-supported? ffi-supported?)))
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists
@@ -89,8 +89,7 @@
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
           (only (mosh) alist->eq-hash-table format readdir)
           (rename (system) (%ffi-open open-shared-library))
-          (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int))
-
+          (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero))
 #|
     Function: ffi-supported?
 
