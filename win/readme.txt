@@ -50,7 +50,7 @@ input-output-port.scm
 io-error.scm
 mysql.scm
 shell.scm
-stack-trace1.scm
-stack-trace2.scm
-stack-trace3.scm
+;stack-trace1.scm
+;stack-trace2.scm
+;stack-trace3.scm
 use-foo.scm

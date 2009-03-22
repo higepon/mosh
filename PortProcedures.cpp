@@ -382,7 +382,7 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualInputPort(0, in);
     TRY_WITHOUT_DSTR {
         ucs4string text = in->getStringAll();
-        if (text.size() == 0) {
+        if (text.empty()) {
             return Object::Undef;
         } else {
             return Object::makeString(text);
@@ -422,7 +422,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
 
     TRY_WITHOUT_DSTR {
         ucs4string text = in->getString(u32Count);
-        if (text.size() == 0) {
+        if (text.empty()) {
             return Object::Eof;
         } else {
             ucs4string& s = dest->data();
@@ -462,7 +462,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     TRY_WITHOUT_DSTR {
         ucs4string text = inputPort->getString(size);
 
-        if (text.size() == 0) {
+        if (text.empty()) {
             return Object::Eof;
         } else {
             return Object::makeString(text);
