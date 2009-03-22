@@ -68,7 +68,14 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4146) // convert from signed to unsigned (this may be not necessary if gmp is latest version)
+#endif
 #include <gmp.h>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 #include <map>
 #include <vector>
 #ifdef USE_BOEHM_GC
