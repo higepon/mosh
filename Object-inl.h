@@ -313,6 +313,6 @@ inline uint8_t Object::tag() const
     return (static_cast<word>(val)) & 0x03;
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_OBJECT_INL_

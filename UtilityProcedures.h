@@ -113,6 +113,6 @@ namespace scheme {
 //     Object testEx(VM* theVM, int argc, const Object* argv);
 //     Object test2Ex(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FREE_PROC_H_

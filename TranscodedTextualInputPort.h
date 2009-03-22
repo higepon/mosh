@@ -56,6 +56,6 @@ private:
     Transcoder* const transcoder_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TRANSCODED_TEXTUAL_INPUT_PORT_

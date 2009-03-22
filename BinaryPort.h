@@ -50,6 +50,6 @@ public:
     virtual int fileNo() const = 0;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BINARY_PORT_

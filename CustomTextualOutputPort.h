@@ -68,6 +68,6 @@ private:
     const Object closeProc_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CUSTOM_TEXTUAL_OUTPUT_PORT_

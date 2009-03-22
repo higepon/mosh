@@ -108,6 +108,6 @@ extern bool isErrorBufInitialized;
 
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_VIOLATION_PROCEDURES_

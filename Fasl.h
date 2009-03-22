@@ -292,6 +292,6 @@ private:
     BinaryOutputPort* outputPort_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FASL_

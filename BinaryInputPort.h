@@ -49,6 +49,6 @@ public:
     virtual int readAll(uint8_t** buf, bool& isErrorOccured) = 0;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BINARY_INPUT_PORT_

@@ -135,6 +135,6 @@ namespace scheme {
     Object flushOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object outputPortBufferModeEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_PORT_PROCEDURES_

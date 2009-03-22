@@ -205,6 +205,6 @@ protected:
     bool isR6RSMode_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_VM_H_

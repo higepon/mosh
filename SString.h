@@ -106,6 +106,6 @@ inline Object::Object(const ucs4string& str) : val(reinterpret_cast<word>(new He
 // }
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STRING_H_

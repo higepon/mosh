@@ -51,6 +51,6 @@ namespace scheme {
     Object stringEqPEx(VM* theVM, int argc, const Object* argv);
     Object stringRefEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STRING_PROCEDURES_

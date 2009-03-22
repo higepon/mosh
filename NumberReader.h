@@ -48,6 +48,6 @@ private:
 };
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_NUMBER_READER_

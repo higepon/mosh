@@ -59,6 +59,6 @@ private:
     intptr_t index_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STRING_TEXTUAL_OUTPUT_PORT_

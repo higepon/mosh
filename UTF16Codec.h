@@ -65,6 +65,6 @@ private:
     const bool dontCheckBOM_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_UTF16_CODEC_

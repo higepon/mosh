@@ -86,6 +86,6 @@ private:
     int aheadU8_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CUSTOM_BINARY_INPUT_OUTPUT_PORT_

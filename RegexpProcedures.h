@@ -48,6 +48,6 @@ namespace scheme {
     Object rxmatchSubstringEx(VM* theVM, int argc, const Object* argv);
     Object regMatchProxy(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_REGEXP_PROCEDURES_

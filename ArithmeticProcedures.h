@@ -101,6 +101,6 @@ namespace scheme {
     Object mulEx(VM* theVM, int argc, const Object* argv);
     Object divideEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_ARITHMETIC_PROCEDURES_

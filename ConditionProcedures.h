@@ -69,6 +69,6 @@ namespace scheme {
     };
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CONDITION_PROCEDURES_

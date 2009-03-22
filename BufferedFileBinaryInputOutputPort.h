@@ -93,6 +93,6 @@ protected:
     int bufferIndex_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_

@@ -43,6 +43,6 @@ Object internalPipeEx(VM* theVM, int argc, const Object* argv);
 Object currentDirectoryEx(VM* theVM, int argc, const Object* argv);
 Object setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_PROCESS_PROCEDURES_

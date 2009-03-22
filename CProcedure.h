@@ -51,6 +51,6 @@ public:
     Object returnCode[2];
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CPROCEDURE_

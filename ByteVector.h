@@ -648,7 +648,7 @@ inline Object Object::makeByteVector(ByteVector* b)
                                                         reinterpret_cast<word>(b))));
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #ifdef _WIN32
 #pragma warning(pop)

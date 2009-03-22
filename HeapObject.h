@@ -88,6 +88,6 @@ public:
     };
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_HEAP_OBJECT_

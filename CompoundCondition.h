@@ -50,6 +50,6 @@ private:
     ObjectVector conditions_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_COMPOUND_CONDITION_

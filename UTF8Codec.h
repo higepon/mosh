@@ -57,6 +57,6 @@ private:
     bool isUtf8Tail(uint8_t b);
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_UTF8_CODEC_

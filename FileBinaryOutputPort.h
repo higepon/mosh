@@ -67,6 +67,6 @@ protected:
     int position_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FILE_BINARY_OUTPUT_PORT_

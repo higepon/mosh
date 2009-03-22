@@ -77,6 +77,6 @@ private:
     int lineNo_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TRANSCODER_

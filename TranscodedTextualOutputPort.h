@@ -56,6 +56,6 @@ private:
     const enum EolStyle eolStyle_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TRANSCODED_TEXTUAL_OUTPUT_PORT_

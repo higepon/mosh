@@ -45,6 +45,6 @@ public:
     static Object applyExactness(int exactness, Object num);
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_SCANNERHELPER_

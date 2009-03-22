@@ -108,6 +108,6 @@ private:
     ObjectVector code_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CODE_BUILDER_H_

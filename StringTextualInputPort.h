@@ -59,6 +59,6 @@ private:
     int lineNo_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STRING_TEXTUAL_INPUT_PORT_

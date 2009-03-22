@@ -125,6 +125,6 @@ inline Object Object::makeVector(Object pair)
 
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_VECTOR_H_

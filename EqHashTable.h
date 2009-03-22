@@ -110,6 +110,6 @@ private:
     bool mutable_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_EQ_HASH_TABLE_

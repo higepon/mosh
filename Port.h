@@ -50,6 +50,6 @@ public:
 
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_PORT_

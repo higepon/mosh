@@ -61,6 +61,6 @@ public:
 
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TESTING_FILEBINARY_INPUTPORT_

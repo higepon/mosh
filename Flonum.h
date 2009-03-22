@@ -379,6 +379,6 @@ inline Object Object::makeFlonum(double value)
 }
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FLONUM_

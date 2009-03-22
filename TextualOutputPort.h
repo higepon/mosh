@@ -74,6 +74,6 @@ protected:
     Object irritants_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TEXTUAL_OUTPUT_PORT_

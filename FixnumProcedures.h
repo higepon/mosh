@@ -73,6 +73,6 @@ namespace scheme {
     Object fxrotateBitFieldEx(VM* theVM, int argc, const Object* argv);
     Object fxreverseBitFieldEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FIXNUM_PROCEDURES_

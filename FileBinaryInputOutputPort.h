@@ -76,6 +76,6 @@ private:
     bool isClosed_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME__FILE_BINARY_INPUT_OUTPUT_PORT_

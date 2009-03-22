@@ -71,6 +71,6 @@ namespace scheme {
         return o1.eq(o2);
     }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_EQUIVALENT_

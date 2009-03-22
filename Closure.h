@@ -113,6 +113,6 @@ inline Object Object::makeClosure(const Closure* closure)
                                                         reinterpret_cast<word>(closure))));
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CLOSURE_H_

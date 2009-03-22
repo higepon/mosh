@@ -80,6 +80,6 @@ private:
 
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BUFFERED_FILE_BINARY_INPUT_PORT_

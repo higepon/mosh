@@ -77,6 +77,6 @@ public:
     }
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STANDARD_OUTPUT_PORT_

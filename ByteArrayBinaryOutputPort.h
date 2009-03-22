@@ -64,6 +64,6 @@ protected:
     uintptr_t position_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BYTE_ARRAY_BINARY_OUTPUT_PORT_

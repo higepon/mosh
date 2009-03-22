@@ -67,6 +67,6 @@ private:
     bool mutable_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_GENERIC_HASH_TABLE_

@@ -65,6 +65,6 @@ private:
     int line_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CUSTOM_TEXTUAL_INPUT_PORT_

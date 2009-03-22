@@ -75,6 +75,6 @@ protected:
     }
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_LINEBUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_

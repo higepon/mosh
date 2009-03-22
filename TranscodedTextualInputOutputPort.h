@@ -80,6 +80,6 @@ private:
     int line_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TRANSCODED_TEXTUAL_INPUT_OUTPUT_PORT_

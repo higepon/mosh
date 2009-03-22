@@ -110,6 +110,6 @@ namespace scheme {
         const int index_;
     };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_RECORD_PROCEDURES_

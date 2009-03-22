@@ -47,6 +47,6 @@ public:
     virtual ~BinaryInputOutputPort() {};
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BINARY_INPUT_PORT_

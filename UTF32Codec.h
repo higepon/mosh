@@ -67,6 +67,6 @@ private:
     ucs4string codecName_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_UTF32_CODEC_

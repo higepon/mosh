@@ -56,6 +56,6 @@ private:
     int bufferSize_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_SCANNER_

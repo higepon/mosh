@@ -63,6 +63,6 @@ public:
     }
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STANDARD_INPUT_PORT_

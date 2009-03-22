@@ -68,6 +68,6 @@ public:
     }
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STANDARD_ERROR_PORT_

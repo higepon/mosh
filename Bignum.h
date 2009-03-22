@@ -585,6 +585,6 @@ inline Object Object::makeBignum(Bignum* b)
                                                         reinterpret_cast<word>(b))));
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BIGNUM_

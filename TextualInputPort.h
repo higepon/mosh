@@ -74,6 +74,6 @@ private:
     NumberScanner* numberScanner_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TEXTUAL_INPUT_PORT_

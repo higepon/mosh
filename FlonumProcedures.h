@@ -80,6 +80,6 @@ namespace scheme {
     Object flEqPEx(VM* theVM, int argc, const Object* argv);
     Object realToflonumEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FLONUM_PROCEDURES_

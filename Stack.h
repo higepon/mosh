@@ -55,6 +55,6 @@ protected:
     const int size_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_STACK_H_

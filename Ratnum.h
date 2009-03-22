@@ -254,6 +254,6 @@ private:
 
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_RATIONAL_

@@ -46,6 +46,6 @@ namespace scheme {
     Object bitwiseArithmeticShiftLeftEx(VM* theVM, int argc, const Object* argv);
     Object bitwiseArithmeticShiftRightEx(VM* theVM, int argc, const Object* argv);
     Object bitwiseArithmeticShiftEx(VM* theVM, int argc, const Object* argv);
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BITWISE_PROCEDURES_

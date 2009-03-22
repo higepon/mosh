@@ -87,6 +87,6 @@ private:
     Object irritants_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_REGEXP_H_

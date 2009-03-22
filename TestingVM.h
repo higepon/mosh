@@ -52,6 +52,6 @@ public:
     virtual int exit(int status);
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_TESTINGVM_

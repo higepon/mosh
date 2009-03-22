@@ -58,6 +58,6 @@ private:
     Object protocol_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_RECORD_CONSTRUCTOR_DESCRIPTOR_

@@ -55,6 +55,6 @@ public:
     virtual bool mutableP() const = 0;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_HASH_TABLE_

@@ -47,6 +47,6 @@ protected:
     Object value_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BOX_H_

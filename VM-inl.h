@@ -244,6 +244,6 @@ inline void VM::countCall(Object proc)
 
 #endif // ENABLE_PROFILER
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_VM_INL_

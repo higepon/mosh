@@ -48,6 +48,6 @@ Object internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
 //Object internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_FFI_PROCEDURES_

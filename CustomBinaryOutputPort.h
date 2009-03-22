@@ -68,6 +68,6 @@ private:
     bool isClosed_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CUSTOM_BINARY_OUTPUT_PORT_

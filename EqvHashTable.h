@@ -45,6 +45,6 @@ public:
     Object hashFunction() const;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_EQV_HASH_TABLE_

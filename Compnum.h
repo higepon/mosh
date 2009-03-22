@@ -297,6 +297,6 @@ private:
     Object imag_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_COMPNUM_

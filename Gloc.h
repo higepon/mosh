@@ -62,6 +62,6 @@ inline Object Object::makeGloc(Object value)
                                                         (new Gloc(value)))));
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_GLOC_

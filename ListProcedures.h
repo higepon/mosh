@@ -90,6 +90,6 @@ namespace scheme {
     Object listTovectorEx(VM* theVM, int argc, const Object* argv);
 
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_LIST_PROCEDURES_

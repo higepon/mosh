@@ -70,6 +70,6 @@ public:
     }
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_UCING_H_

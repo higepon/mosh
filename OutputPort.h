@@ -56,6 +56,6 @@ public:
 
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_OUTPUT_PORT_

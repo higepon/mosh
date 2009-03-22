@@ -51,6 +51,6 @@ public:
     virtual void flush() = 0;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BINARY_OUTPUT_PORT_

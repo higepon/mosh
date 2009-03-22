@@ -55,6 +55,6 @@ private:
     const int fieldsLength_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_RECORD_

@@ -91,6 +91,6 @@ inline Object& Object::fifth() const
     return cdr().cdr().cdr().cdr().car();
 }
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_PAIR_INL_

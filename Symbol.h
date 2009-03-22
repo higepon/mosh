@@ -118,6 +118,6 @@ public:
     static void initBuitinSymbols();
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_SYMBOL_H_

@@ -56,6 +56,6 @@ public:
     static Codec* getCodec();
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_LATIN1_CODEC_

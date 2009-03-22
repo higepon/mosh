@@ -89,6 +89,6 @@ namespace scheme {
     Object nativeEndiannessEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorLengthEx(VM* theVM, int argc, const Object* argv);
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BYTEVECTOR_PROCEDURES_

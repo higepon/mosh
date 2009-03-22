@@ -59,6 +59,6 @@ private:
     } condition_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_NUMBERSCANNER_

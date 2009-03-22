@@ -198,6 +198,6 @@ struct Pair EXTEND_GC
     Object sourceInfo;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_PAIR_H_

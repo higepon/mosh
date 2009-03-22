@@ -83,6 +83,6 @@ private:
     bool isClosed_;
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_BYTE_ARRAY_BINARY_INPUT_PORT_

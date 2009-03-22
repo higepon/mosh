@@ -57,6 +57,6 @@ public:
     int putChar(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode);
 };
 
-}; // namespace scheme
+} // namespace scheme
 
 #endif // SCHEME_CODEC_
