@@ -1,5 +1,7 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * win/win.cpp: UC moved to ucs4string.cpp for Mingw.
+
         * gtest-1.2.1/src/gtest.cc: Added code for Mingw.
 
         * UtilityProcedures.cpp (scheme::localTzOffsetEx): Added code for Mingw.
