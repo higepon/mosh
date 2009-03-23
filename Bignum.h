@@ -42,7 +42,7 @@
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
     #endif
 #elif defined(__GNUC__) && defined(__WORDSIZE)
-    #if (__WORDSIZE == 8)
+    #if (__WORDSIZE == 64)
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
     #else
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4

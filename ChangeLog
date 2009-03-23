@@ -1,5 +1,7 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * Bignum.h: Fixed __WORDSIZE.
+
         * scripts/gen-accessors.scm : Added.
 
         * Object-accessors.h : Added.
