@@ -43,6 +43,7 @@ libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/i
 libmosh_a_SOURCES = \
 HeapObject.h                                                       \
 Object-inl.h                                                       \
+Object-accessors.h                                                 \
 Pair-inl.h                                                         \
 VM-inl.h                                                           \
 psyntax.h                                                          \
@@ -365,12 +366,17 @@ DebugInstruction.h: instruction.scm
 
 VM.cpp: cprocedures.cpp labels.cpp
 
+Object.h: Object-accessors.h
+
 ./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
 	@GOSH@ ./scripts/gen-cproc.scm > $@
 
 all-tests.scm: ./test-data.scm
 	mosh -5 ./scripts/gen-test.scm $< $@
 #	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
+
+Object-accessors.h: ./accessors.scm
+	./mosh ./scripts/gen-accessors.scm > $@
 
 doc:
 	./mosh scripts/gen-doc-from-r6rs.scm

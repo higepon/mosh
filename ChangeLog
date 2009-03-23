@@ -1,5 +1,9 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * scripts/gen-accessors.scm : Added.
+
+        * Object-accessors.h : Added.
+
         * Now passes all of r6rs-test suite.
 
         * library.scm (string-titlecase): Fixed string-titlecase.

@@ -283,60 +283,7 @@ public:
 
     static Object makeCompoundCondition(int conditionCounts, const Object* conditions);
     static Object makeCompoundCondition(Object conditions);
-
-#define DECL_TO(type)                                                            \
-    type* to##type() const                                                       \
-    {                                                                            \
-        MOSH_ASSERT(is##type());                                                 \
-        return reinterpret_cast<type*>(reinterpret_cast<HeapObject*>(val)->obj); \
-    }
-
-    DECL_TO(Port)
-
-#define DECL_IS(tp)                                                        \
-    bool is##tp() const                                                    \
-    {                                                                      \
-        return isHeapObject()                                              \
-            && reinterpret_cast<HeapObject*>(val)->type == HeapObject::tp; \
-    }
-
-#define DECL_ACCESSOR(type) \
-    DECL_IS(type)           \
-    DECL_TO(type)
-
-    DECL_ACCESSOR(GenericHashTable)
-    DECL_ACCESSOR(Vector)
-    DECL_ACCESSOR(Closure)
-    DECL_ACCESSOR(CProcedure)
-    DECL_ACCESSOR(String)
-    DECL_ACCESSOR(Symbol)
-    DECL_ACCESSOR(Stack)
-    DECL_ACCESSOR(Box)
-    DECL_ACCESSOR(EqHashTable)
-    DECL_ACCESSOR(EqvHashTable)
-    DECL_ACCESSOR(ByteVector)
-    DECL_ACCESSOR(TextualInputPort)
-    DECL_ACCESSOR(TextualOutputPort)
-    DECL_ACCESSOR(Regexp)
-    DECL_ACCESSOR(RegMatch)
-    DECL_ACCESSOR(BinaryInputPort)
-    DECL_ACCESSOR(BinaryOutputPort)
-    DECL_ACCESSOR(Codec)
-    DECL_ACCESSOR(Transcoder)
-    DECL_ACCESSOR(CodeBuilder)
-    DECL_ACCESSOR(Callable)
-    DECL_ACCESSOR(Record)
-    DECL_ACCESSOR(RecordTypeDescriptor)
-    DECL_ACCESSOR(RecordConstructorDescriptor)
-    DECL_ACCESSOR(CompoundCondition)
-    DECL_ACCESSOR(Ratnum)
-    DECL_ACCESSOR(Flonum)
-    DECL_ACCESSOR(Bignum)
-    DECL_ACCESSOR(Compnum)
-    DECL_ACCESSOR(Gloc)
-    DECL_ACCESSOR(BinaryInputOutputPort)
-    DECL_ACCESSOR(TextualInputOutputPort)
-
+#include "Object-accessors.h"
     static const Object Nil;
     static const Object Eof;
     static const Object Undef;
