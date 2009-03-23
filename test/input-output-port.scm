@@ -45,7 +45,7 @@
       (call-with-port (open-file-input-port from (file-options no-fail) (buffer-mode none))
         (lambda (in)
           (let ([bv (get-bytevector-all in)])
-            (format #t "cp bv length = ~a\n" (bytevector-length bv))
+;            (format #t "cp bv length = ~a\n" (bytevector-length bv))
             (put-bytevector out bv)
             (close-port in)
             (close-port out)))))))
