@@ -40,9 +40,9 @@
     (delete-file file-name)))
 
 (define (cp from to)
-  (call-with-port (open-file-output-port to (file-options no-fail))
+  (call-with-port (open-file-output-port to (file-options no-fail) (buffer-mode none))
     (lambda (out)
-      (call-with-port (open-file-input-port from)
+      (call-with-port (open-file-input-port from (file-options no-fail) (buffer-mode none))
         (lambda (in)
           (put-bytevector out (get-bytevector-all in))
           (close-port in)
