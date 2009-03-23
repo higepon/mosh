@@ -1,5 +1,7 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * Bignum.h (scheme): Not to use long.
+
         * CompilerProcedures.cpp (enum): Added prefix TAG_ for compatibility on compilation.
 
         * test/input-output-port.scm (rm): Added rm procedure not using shell command.
