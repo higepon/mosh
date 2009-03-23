@@ -1775,6 +1775,7 @@ Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("readdir");
 #ifdef _WIN32
+    callAssertionViolationAfter(theVM, procedureName, "could't open dir");
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(1);

@@ -144,6 +144,7 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%pipe");
 #ifdef _WIN32
+    callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);

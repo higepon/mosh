@@ -774,6 +774,7 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("time-usage");
 #ifdef _WIN32
+    callAssertionViolationAfter(theVM, procedureName, "time-usage failed");
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);
