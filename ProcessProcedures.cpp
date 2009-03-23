@@ -93,6 +93,7 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%fork");
 #ifdef _WIN32
+    callAssertionViolationAfter(theVM, procedureName, "can't fork");
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);
@@ -115,6 +116,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("%waitpid");
 #ifdef _WIN32
+    callAssertionViolationAfter(theVM, procedureName, "failed");
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(1);
