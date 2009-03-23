@@ -57,24 +57,24 @@ static Object findSets(VM* theVM, Object iform, Object lvars);
 static Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen);
 
 enum {
-    CONST         = 0,
-    LET           = 2,
-    SEQ           = 3,
-    LAMBDA        = 4,
-    LOCAL_REF     = 5,
-    LOCAL_ASSIGN  = 6,
-    GLOBAL_REF    = 7,
-    GLOBAL_ASSIGN = 8,
-    UNDEF         = 9,
-    IF            = 10,
-    ASM           = 11,
-    DEFINE        = 12,
-    CALL_CC       = 13,
-    CALL          = 14,
-    LABEL         = 15,
-    LIST          = 16,
-    IT            = 17,
-    RECEIVE       = 18
+    TAG_CONST         = 0,
+    TAG_LET           = 2,
+    TAG_SEQ           = 3,
+    TAG_LAMBDA        = 4,
+    TAG_LOCAL_REF     = 5,
+    TAG_LOCAL_ASSIGN  = 6,
+    TAG_GLOBAL_REF    = 7,
+    TAG_GLOBAL_ASSIGN = 8,
+    TAG_UNDEF         = 9,
+    TAG_IF            = 10,
+    TAG_ASM           = 11,
+    TAG_DEFINE        = 12,
+    TAG_CALL_CC       = 13,
+    TAG_CALL          = 14,
+    TAG_LABEL         = 15,
+    TAG_LIST          = 16,
+    TAG_IT            = 17,
+    TAG_RECEIVE       = 18
 };
 
 Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
@@ -83,7 +83,7 @@ Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object label = Object::makeVector(3);
     Vector* const v = label.toVector();
-    v->set(0, Object::makeFixnum(LABEL));
+    v->set(0, Object::makeFixnum(TAG_LABEL));
     v->set(1, argv[0]);
     v->set(2, Object::False);
     return label;
@@ -95,7 +95,7 @@ Object scheme::localRefEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     const Object label = Object::makeVector(2);
     const Object lvar = argv[0];
-    label.toVector()->set(0, Object::makeFixnum(LOCAL_REF));
+    label.toVector()->set(0, Object::makeFixnum(TAG_LOCAL_REF));
     label.toVector()->set(1, lvar);
     MOSH_ASSERT(lvar.isVector());
     Vector* const v = lvar.toVector();
@@ -273,76 +273,76 @@ Object findFreeRec(VM* theVM, Object i, Object l, Object canFrees, Object labels
     Vector* v = i.toVector();
     MOSH_ASSERT(v->ref(0).isFixnum());
     switch(v->ref(0).toFixnum()) {
-    case CONST:
+    case TAG_CONST:
         return Object::Nil;
-    case LET:
+    case TAG_LET:
     {
         return findFreeLet(theVM, v, l, canFrees, labelsSeen);
     }
-    case RECEIVE:
+    case TAG_RECEIVE:
     {
         return findFreeReceive(theVM, v, l, canFrees, labelsSeen);
     }
-    case SEQ:
+    case TAG_SEQ:
     {
         return findFreeSeq(theVM, v, l, canFrees, labelsSeen);
     }
-    case LAMBDA:
+    case TAG_LAMBDA:
     {
         return findFreeLambda(theVM, v, l, canFrees, labelsSeen);
     }
-    case LOCAL_ASSIGN:
+    case TAG_LOCAL_ASSIGN:
     {
         return findFreeLocalAssign(theVM, v, l, canFrees, labelsSeen);
     }
-    case LOCAL_REF:
+    case TAG_LOCAL_REF:
     {
         return findFreeLocalRef(v, l, canFrees, labelsSeen);
     }
-    case GLOBAL_REF:
+    case TAG_GLOBAL_REF:
     {
         return findFreeGlobalRef(v, l, canFrees, labelsSeen);
     }
-    case UNDEF:
+    case TAG_UNDEF:
         return Object::Nil;
-    case IF:
+    case TAG_IF:
     {
         return findFreeIf(theVM, v, l, canFrees, labelsSeen);
     }
-    case ASM:
+    case TAG_ASM:
     {
         const Object asmArgs = v->ref(2);
         return findFreeRecMap(theVM, l, canFrees, labelsSeen, asmArgs);
     }
-    case DEFINE:
+    case TAG_DEFINE:
     {
         const Object defineVal = v->ref(2);
         return findFreeRec(theVM, defineVal, l, canFrees, labelsSeen);
     }
-    case CALL:
+    case TAG_CALL:
     {
         return findFreeCall(theVM, v, l, canFrees, labelsSeen);
     }
-    case CALL_CC:
+    case TAG_CALL_CC:
     {
         const Object callccProc = v->ref(1);
         return findFreeRec(theVM, callccProc, l, canFrees, labelsSeen);
     }
-    case GLOBAL_ASSIGN:
+    case TAG_GLOBAL_ASSIGN:
     {
         const Object globalAssignVal = v->ref(2);
         return findFreeRec(theVM, globalAssignVal, l, canFrees, labelsSeen);
     }
-    case LIST:
+    case TAG_LIST:
     {
         const Object listArgs = v->ref(1);
         return findFreeRecMap(theVM, l, canFrees, labelsSeen, listArgs);
     }
-    case LABEL:
+    case TAG_LABEL:
     {
         return findFreeLabel(theVM, i, v, l, canFrees, labelsSeen);
     }
-    case IT:
+    case TAG_IT:
         return Object::Nil;
     default:
         callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
@@ -391,33 +391,33 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     Vector* v = i.toVector();
     MOSH_ASSERT(v->ref(0).isFixnum());
     switch(v->ref(0).toFixnum()) {
-    case CONST:
+    case TAG_CONST:
         return Object::Nil;
-    case LET:
+    case TAG_LET:
     {
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
         return Pair::append2(findSetsRecMap(theVM, lvars, letInits, labelsSeen),
                              findSetsRec(theVM, letBody, lvars, labelsSeen));
     }
-    case RECEIVE:
+    case TAG_RECEIVE:
     {
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         return Pair::append2(findSetsRec(theVM, receiveVals, lvars, labelsSeen),
                              findSetsRec(theVM, receiveBody, lvars, labelsSeen));
     }
-    case SEQ:
+    case TAG_SEQ:
     {
         const Object seqBody = v->ref(1);
         return findSetsRecMap(theVM, lvars, seqBody, labelsSeen);
     }
-    case LAMBDA:
+    case TAG_LAMBDA:
     {
         const Object lambdaBody = v->ref(6);
         return findSetsRec(theVM, lambdaBody, lvars, labelsSeen);
     }
-    case LOCAL_ASSIGN:
+    case TAG_LOCAL_ASSIGN:
     {
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
@@ -427,60 +427,60 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
             return Object::cons(localAssignLvar, findSetsRec(theVM, localAssignVal, lvars, labelsSeen));
         }
     }
-    case LOCAL_REF:
+    case TAG_LOCAL_REF:
     {
         return Object::Nil;
     }
-    case GLOBAL_REF:
+    case TAG_GLOBAL_REF:
     {
         return Object::Nil;
     }
-    case UNDEF:
+    case TAG_UNDEF:
         return Object::Nil;
-    case IF:
+    case TAG_IF:
     {
         const Object testF = findSetsRec(theVM, v->ref(1), lvars, labelsSeen);
         const Object thenF = findSetsRec(theVM, v->ref(2), lvars, labelsSeen);
         const Object elseF = findSetsRec(theVM, v->ref(3), lvars, labelsSeen);
         return Pair::append2(testF, Pair::append2(thenF, elseF));
     }
-    case ASM:
+    case TAG_ASM:
     {
         const Object asmArgs = v->ref(2);
         return findSetsRecMap(theVM, lvars, asmArgs, labelsSeen);
     }
-    case DEFINE:
+    case TAG_DEFINE:
     {
         const Object defineVal = v->ref(3);
         return findSetsRec(theVM, defineVal, lvars, labelsSeen);
     }
-    case CALL:
+    case TAG_CALL:
     {
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
         return Pair::append2(findSetsRecMap(theVM, lvars, callArgs, labelsSeen),
                              findSetsRec(theVM, callProc, lvars, labelsSeen));
     }
-    case CALL_CC:
+    case TAG_CALL_CC:
     {
         const Object callccProc = v->ref(1);
         return findSetsRec(theVM, callccProc, lvars, labelsSeen);
     }
-    case GLOBAL_ASSIGN:
+    case TAG_GLOBAL_ASSIGN:
     {
         const Object globalAssignVal = v->ref(2);
         return findSetsRec(theVM, globalAssignVal, lvars, labelsSeen);
     }
-    case LIST:
+    case TAG_LIST:
     {
         const Object listArgs = v->ref(1);
         return findSetsRecMap(theVM, lvars, listArgs, labelsSeen);
     }
-    case LABEL:
+    case TAG_LABEL:
     {
         return findSetsLabel(theVM, i, lvars, labelsSeen);
     }
-    case IT:
+    case TAG_IT:
         return Object::Nil;
     default:
         callAssertionViolationAfter(theVM, "find-free", "unknown iform", L1(v->ref(0)));
@@ -694,7 +694,7 @@ Object pass4FixupLabelCollect(Object vec)
             i += 3;
             j += 3;
         } else if (insn.isVector() && insn.toVector()->length() > 0 && insn.toVector()->ref(0).isFixnum() &&
-                   insn.toVector()->ref(0).toFixnum() == LABEL) {
+                   insn.toVector()->ref(0).toFixnum() == TAG_LABEL) {
             i++;
             table->set(insn, Object::makeFixnum(j));
         } else {
