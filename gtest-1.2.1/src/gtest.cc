@@ -1993,7 +1993,7 @@ void Test::Run() {
   if (!HasSameFixtureClass()) return;
 
   internal::UnitTestImpl* const impl = internal::GetUnitTestImpl();
-#ifdef GTEST_OS_WINDOWS
+#if defined(GTEST_OS_WINDOWS) && !defined(__MINGW__) && !defined(__MINGW32__)
   // We are on Windows.
   impl->os_stack_trace_getter()->UponLeavingGTest();
   __try {
@@ -2227,7 +2227,7 @@ void TestInfoImpl::Run() {
   const TimeInMillis start = GetTimeInMillis();
 
   impl->os_stack_trace_getter()->UponLeavingGTest();
-#ifdef GTEST_OS_WINDOWS
+#if defined(GTEST_OS_WINDOWS) && !defined(__MINGW__) && !defined(__MINGW32__)
   // We are on Windows.
   Test* test = NULL;
 
@@ -3271,7 +3271,7 @@ void UnitTest::RecordPropertyForCurrentTest(const char* key,
 // We don't protect this under mutex_, as we only support calling it
 // from the main thread.
 int UnitTest::Run() {
-#ifdef GTEST_OS_WINDOWS
+#if defined(GTEST_OS_WINDOWS) && !defined(__MINGW__) && !defined(__MINGW32__)
 
 #if !defined(_WIN32_WCE)
   // SetErrorMode doesn't exist on CE.

@@ -35,7 +35,7 @@
 #include "Arithmetic.h"
 #include "ScannerHelper.h"
 
-#ifdef _WIN32
+#ifdef _MSC_VER
     #define strtoll _strtoi64
 #endif
 

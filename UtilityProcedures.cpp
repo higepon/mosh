@@ -758,10 +758,14 @@ Object scheme::localTzOffsetEx(VM* theVM, int argc, const Object* argv)
     struct tm localTime;
     struct tm utcTime;
     time_t current = time(NULL);
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(MOSH_MINGW32)
     localtime_s(&localTime, &current);
     time_t l = mktime(&localTime);
     gmtime_s(&utcTime, &l);
+#elif defined(MOSH_MINGW32)
+    localTime = *localtime(&current);
+    time_t l = mktime(&localTime);
+    utcTime = *gmtime(&l);
 #else
     localtime_r(&current, &localTime);
     time_t l = mktime(&localTime);

@@ -1,5 +1,13 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * gtest-1.2.1/src/gtest.cc: Added code for Mingw.
+
+        * UtilityProcedures.cpp (scheme::localTzOffsetEx): Added code for Mingw.
+
+        * ScannerHelper.cpp: _WIN32 => _MSC_VER.
+
+        * Flonum.h : _WIN32 => _MSC_VER.
+
         * Bignum.h (scheme): Not to use long.
 
         * CompilerProcedures.cpp (enum): Added prefix TAG_ for compatibility on compilation.

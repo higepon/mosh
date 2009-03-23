@@ -37,7 +37,7 @@
 #include "scheme.h"
 #include "Bignum.h"
 
-#ifdef _WIN32
+#ifdef _MSC_VER
     #include <float.h>
     #define isnan(x) _isnan(x)
     static inline int isinf(double x) { return  !_finite(x) && !_isnan(x); }
