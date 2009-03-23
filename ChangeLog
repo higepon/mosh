@@ -1,5 +1,8 @@
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
+        * test/input-output-port.scm (rm): Added rm procedure not using shell command.
+                                     (cp): Rewrote cp procedure for Windows.
+
         * Bignum.h: Fixed __WORDSIZE.
 
         * scripts/gen-accessors.scm : Added.
