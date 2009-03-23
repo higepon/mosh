@@ -99,7 +99,6 @@ int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
 
 int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
-    printf("start=%d count=%d\n", start, count);
     uint8_t* buf = bv->data();
     return writeToFd(fd_, &buf[start], count);
 }
