@@ -1,3 +1,9 @@
+2009-03-23  higepon  <higepon@users.sourceforge.jp>
+
+        * Now passes all of r6rs-test suite.
+
+        * library.scm (string-titlecase): Fixed string-titlecase.
+
 2009-03-22  higepon  <higepon@users.sourceforge.jp>
 
         * PortProcedures.cpp : transcoded-port closes the binary-input-port.

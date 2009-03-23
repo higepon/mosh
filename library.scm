@@ -3645,11 +3645,16 @@
                                 (else
                                  (display ch output)
                                  (titlecase-first-char))))
+                             ((Nd)
+                              (display ch output)
+                              (loop (get-char input)))
                              (else
                               (display ch output)
                               (titlecase-first-char)))))))))
         (let ((new (titlecase-first-char)))
           (if (string=? s new) s new))))))
+
+
 
 (define (compose string)
   (define (pair-number->symbol a b)

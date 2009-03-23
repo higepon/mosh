@@ -785,10 +785,14 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
             out->display(obj);
+            // todo
+            out->flush();
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
             checkPortIsOpen(textualOutputPort, argv[1]);
             textualOutputPort->display(obj);
+            // todo
+            textualOutputPort->flush();
         }
         return Object::Undef;
     } CATCH(ioError) {
