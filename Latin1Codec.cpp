@@ -64,10 +64,10 @@ int Latin1Codec::putChar(uint8_t* buf, ucs4char u, enum ErrorHandlingMode mode)
         buf[0] = u;
         return 1;
     } else {
-        if (mode == ErrorHandlingMode(RAISE)) {
+        if (mode == ErrorHandlingMode(RAISE_ERROR)) {
             throwIOError2(IOError::ENCODE, "invalid latin-1 char byte sequence", Pair::list1(Object::makeChar(u)));
             return 0;
-        } else if (mode == ErrorHandlingMode(REPLACE)) {
+        } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             buf[0] = '?';
             return 1;
         } else {
@@ -85,9 +85,9 @@ retry:
     if (f <= 0xff) {
         return (ucs4char)f;
      } else {
-        if (mode == ErrorHandlingMode(RAISE)) {
+        if (mode == ErrorHandlingMode(RAISE_ERROR)) {
             throwIOError2(IOError::DECODE, "invalid latin-1 byte sequence");
-        } else if (mode == ErrorHandlingMode(REPLACE)) {
+        } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {
             return 0xFFFD;
         } else {
             MOSH_ASSERT(mode == ErrorHandlingMode(IGNORE_ERROR));

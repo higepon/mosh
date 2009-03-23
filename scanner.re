@@ -219,13 +219,13 @@ int Scanner::scan()
             yylval.boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
-            return BOOLEAN;
+            return SCHEME_BOOLEAN;
         }
         "#"[fF] DELMITER {
             yylval.boolValue = false;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
-            return BOOLEAN;
+            return SCHEME_BOOLEAN;
         }
         "#\\space" DELMITER {
             yylval.charValue = ' ';

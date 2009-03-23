@@ -55,9 +55,9 @@ Object Symbol::CRLF;
 Object Symbol::NEL;
 Object Symbol::CRNEL;
 Object Symbol::LS;
-Object Symbol::IGNORE;
-Object Symbol::RAISE;
-Object Symbol::REPLACE;
+Object Symbol::IGNORE_ERROR;
+Object Symbol::RAISE_ERROR;
+Object Symbol::REPLACE_ERROR;
 Object Symbol::NONE;
 Object Symbol::LINE;
 Object Symbol::BLOCK;
@@ -100,9 +100,9 @@ void Symbol::initBuitinSymbols()
     LS                = Symbol::intern(UC("ls"));
 
     // <error-handling-mode symbol>
-    IGNORE            = Symbol::intern(UC("ignore"));
-    RAISE             = Symbol::intern(UC("raise"));
-    REPLACE           = Symbol::intern(UC("replace"));
+    IGNORE_ERROR      = Symbol::intern(UC("ignore"));
+    RAISE_ERROR       = Symbol::intern(UC("raise"));
+    REPLACE_ERROR     = Symbol::intern(UC("replace"));
 }
 
 const ucs4char* Symbol::c_str()

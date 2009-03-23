@@ -111,9 +111,9 @@ public:
     static Object LS;
 
     // <error-handling symbol>
-    static Object IGNORE;
-    static Object RAISE;
-    static Object REPLACE;
+    static Object IGNORE_ERROR;
+    static Object RAISE_ERROR;
+    static Object REPLACE_ERROR;
 
     static void initBuitinSymbols();
 };

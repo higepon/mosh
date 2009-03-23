@@ -55,7 +55,7 @@ extern int yyerror(const char *);
 %}
 
 %token <stringValue> IDENTIFIER
-%token <boolValue> BOOLEAN
+%token <boolValue> SCHEME_BOOLEAN
 %token <stringValue> STRING
 %token <intValue> CHARACTER
 %token <intValue> CHARACTER_NAME
@@ -83,7 +83,7 @@ datum          : lexme_datum
                | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
 
-lexme_datum    : BOOLEAN { $$ = $1 ? Object::True : Object::False; }
+lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                | STRING {
                    $$ = Reader::readString($1);
                }

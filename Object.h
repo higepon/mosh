@@ -100,8 +100,8 @@ enum EolStyle
 enum ErrorHandlingMode
 {
     IGNORE_ERROR,
-    RAISE,
-    REPLACE
+    RAISE_ERROR,
+    REPLACE_ERROR
 };
 
 

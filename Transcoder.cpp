@@ -43,7 +43,7 @@ Transcoder::Transcoder(Codec* codec) :
     beginningOfInput_(true),
     codec_(codec),
     eolStyle_(nativeEolStyle()),
-    errorHandlingMode_(ErrorHandlingMode(REPLACE)),
+    errorHandlingMode_(ErrorHandlingMode(REPLACE_ERROR)),
     lineNo_(1)
 {
 }
@@ -52,7 +52,7 @@ Transcoder::Transcoder(Codec* codec, EolStyle eolStyle) :
     beginningOfInput_(true),
     codec_(codec),
     eolStyle_(eolStyle),
-    errorHandlingMode_(ErrorHandlingMode(REPLACE)),
+    errorHandlingMode_(ErrorHandlingMode(REPLACE_ERROR)),
     lineNo_(1)
 {
 }
@@ -133,11 +133,11 @@ Object Transcoder::errorHandlingModeToSymbol(const enum ErrorHandlingMode errorH
 {
     switch (errorHandlingMode) {
     case ErrorHandlingMode(IGNORE_ERROR):
-        return Symbol::IGNORE;
-    case ErrorHandlingMode(RAISE):
-        return Symbol::RAISE;
-    case ErrorHandlingMode(REPLACE):
-        return Symbol::REPLACE;
+        return Symbol::IGNORE_ERROR;
+    case ErrorHandlingMode(RAISE_ERROR):
+        return Symbol::RAISE_ERROR;
+    case ErrorHandlingMode(REPLACE_ERROR):
+        return Symbol::REPLACE_ERROR;
     default:
         MOSH_FATAL("not found errorHandlingMode\n");
     }
@@ -285,12 +285,12 @@ bool Transcoder::validateEolStyle(Object eolStyle, EolStyle& result)
 bool Transcoder::validateErrorHandlingMode(Object symbol, enum ErrorHandlingMode& result)
 {
     MOSH_ASSERT(symbol.isSymbol());
-    if (symbol == Symbol::IGNORE) {
+    if (symbol == Symbol::IGNORE_ERROR) {
         result = ErrorHandlingMode(IGNORE_ERROR);
-    } else if (symbol == Symbol::RAISE) {
-        result = ErrorHandlingMode(RAISE);
-    } else if (symbol == Symbol::REPLACE) {
-        result = ErrorHandlingMode(REPLACE);
+    } else if (symbol == Symbol::RAISE_ERROR) {
+        result = ErrorHandlingMode(RAISE_ERROR);
+    } else if (symbol == Symbol::REPLACE_ERROR) {
+        result = ErrorHandlingMode(REPLACE_ERROR);
     } else {
         return false;
     }
