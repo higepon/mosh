@@ -1,5 +1,7 @@
 2009-03-24  higepon  <higepon@users.sourceforge.jp>
 
+        * test/test.bat: Added for tests on Windows.
+
         * Added O_BINARY flag for open (_WIN32 only).
 
         * LineBufferedFileBinaryInputOutputPort.h (scheme): Fixed the bug.
