@@ -43,13 +43,14 @@ srfi19.scm
 srfi8.scm
 unicode.scm
 srfi-misc.scm
+input-output-port.scm
 
 ng:
 dbi.scm
 ffi.scm
-input-output-port.scm
+
 mysql.scm
-shell.scm
+;shell.scm
 ;stack-trace1.scm
 ;stack-trace2.scm
 ;stack-trace3.scm
