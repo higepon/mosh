@@ -35,11 +35,27 @@
         (mosh process))
 
 ;; test utilitiy
-(def-command rm)
+;; (def-command rm)
+;; (define (cp from to)
+;;   (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
+;;     (waitpid pid)
+;;     #f))
+;; N.B rm and cp should be written in pure scheme
+(define (rm file-name)
+  (when (file-exists? file-name)
+    (delete-file file-name)))
+
 (define (cp from to)
-  (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
-    (waitpid pid)
-    #f))
+  (call-with-port (open-file-output-port to (file-options no-fail) (buffer-mode none))
+    (lambda (out)
+      (call-with-port (open-file-input-port from (file-options no-fail) (buffer-mode none))
+        (lambda (in)
+          (let ([bv (get-bytevector-all in)])
+;            (format #t "cp bv length = ~a\n" (bytevector-length bv))
+            (put-bytevector out bv)
+            (close-port in)
+            (close-port out)))))))
+
 (cp "./test/test.txt" "./test/test.txt.temp")
 
 (define (with-all-buffer-mode file proc)
@@ -204,28 +220,28 @@
    (let ([port (open-file-output-port "./not-exists")])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options) mode)])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 
 #|
@@ -296,21 +312,21 @@
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail) mode)])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 #|
     (file-options no-truncate)
@@ -336,21 +352,21 @@
    (let ([port (open-file-output-port "./not-exists" (file-options no-truncate))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-truncate) mode)])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 #|
     (file-options no-create no-fail)
@@ -419,21 +435,21 @@
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate) mode)])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-output-port "./not-exists" (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
      (test/t (empty-file-exists? "./not-exists"))
-     (rm "-f" "./not-exists"))))
+     (rm "./not-exists"))))
 
 
 #|
