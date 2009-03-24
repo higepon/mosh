@@ -2,8 +2,56 @@ echo off
 setlocal
 if not exist mosh.exe goto notfound
 echo ----------------------------------------
-echo input-port.scm
+echo base
+mosh.exe -5 all-tests.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo input-port
 mosh.exe test/input-port.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo output-port
+mosh.exe test/output-port.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo input/output-port
+mosh.exe test/input-output-port.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo clos
+mosh.exe test/clos.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo condition
+mosh.exe test/condition.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo exception
+mosh.exe test/exception.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo io-error
+mosh.exe test/io-error.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo record
+mosh.exe test/record.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo srfi8
+mosh.exe test/srfi8.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo srfi19
+mosh.exe test/srfi19.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo unicode
+mosh.exe test/unicode.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo srfi-misc
+mosh.exe test/srfi-misc.scm
 if errorlevel 1 goto end
 echo Passed all tests
 goto end
