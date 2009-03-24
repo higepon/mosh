@@ -264,17 +264,17 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /
 int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
     DEBUG_SHOW_POSITION();
-
     uint8_t* buf = bv->data();
     const int writtenSize = writeToBuffer(&buf[start], count);
     forwardPosition(writtenSize);
+    DEBUG_SHOW_POSITION();
     return writtenSize;
 }
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
     const int result = lseek(fd_, position_ - bufferIndex_, SEEK_SET);
-//    MOSH_ASSERT(result >= 0);
+   MOSH_ASSERT(result >= 0);
     internalFlush();
 }
 

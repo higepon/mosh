@@ -60,62 +60,8 @@
                 (proc mode))
               (list (buffer-mode none) (buffer-mode block) (buffer-mode line))))
 
-#|
-    ;; ----------------------------------------
-    ;; Transcoders
 
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
-                                    'block (make-transcoder (latin-1-codec)))])
-      (when (port-has-port-position? p)
-        (test/unspec (port-position p))
-        (when (port-has-set-port-position!? p)
-          (let ([pos (port-position p)])
-            (test/unspec (set-port-position! p pos)))))
-      (test (binary-port? p) #f)
-      (test (textual-port? p) #t)
-      (test/unspec (put-string p "apple"))
-      (test/unspec (put-string p "berry" 3))
-      (test/unspec (put-string p "berry" 1 1))
-      (close-port p))
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
-                                    'block (make-transcoder (utf-8-codec)))])
-      (test/unspec (put-string p "app\x3BB;e"))
-      (close-port p))
-    (let ([p (open-file-output-port "io-tmp1" (file-options no-create) 
-                                    'block (make-transcoder (utf-16-codec)))])
-      (test/unspec (put-string p "app\x3BB;e"))
-      (close-port p))
-    (let-values ([(p get) (open-bytevector-output-port)])
-      (test (output-port? p) #t)
-      (test (binary-port? p) #t)
-      (test (textual-port? p) #f)
-      (test/unspec (put-u8 p 10))
-      (test/unspec (put-bytevector p #vu8(11 12 13)))
-      (test/unspec (put-bytevector p #vu8(14 15 16 17 18) 4))
-      (test/unspec (put-bytevector p #vu8(14 15 16 17 18) 2 1))
-      (test (get) #vu8(10 11 12 13 18 16))
-      (test (get) #vu8())
-      (close-port p))
-    (test (call-with-bytevector-output-port
-           (lambda (p)
-             (put-bytevector p #vu8(1 2 3))))
-          #vu8(1 2 3))
 
-    (test (call-with-bytevector-output-port
-           (lambda (p)
-             (put-string p "app\x3BB;e"))
-           (make-transcoder (utf-8-codec)))
-          #vu8(97 112 112 206 187 101))
-    (let-values ([(p get) (open-string-output-port)])
-      (test/unspec (put-string p "app\x3BB;e"))
-      (test (get) "app\x3BB;e")
-      (test (get) "")
-      (close-port p))
-    (test (call-with-string-output-port
-           (lambda (p)
-             (test/unspec (put-string p "app\x3BB;y"))))
-          "app\x3BB;y")
-|#
 
 (test/f (output-port? (standard-input-port)))
 (test/t (output-port? (standard-output-port)))
@@ -228,7 +174,6 @@
 (let ([port (open-file-input-port "./test/test.txt.temp" (file-options no-fail))])
       (set-port-position! port 4000)
           (let ([bv (get-bytevector-n port 9000)])
-                  (display bv)
                         (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))))
 
 #|  file-options

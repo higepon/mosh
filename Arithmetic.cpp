@@ -1148,8 +1148,6 @@ bool Arithmetic::eq(Object n1, Object n2)
 #define MAKE_OP_FUNC(op, symbol)\
     Object Arithmetic::op(Object n1, Object n2)   \
     {\
-        MOSH_ASSERT(n1.isNumber()); \
-        MOSH_ASSERT(n2.isNumber()); \
         if (n1.isFixnum()) {\
             if (n2.isFixnum()) {\
                 return Bignum::op(n1.toFixnum(), n2.toFixnum());\

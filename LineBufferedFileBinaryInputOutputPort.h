@@ -57,7 +57,7 @@ protected:
         while (writeSize < reqSize) {
             const int bufferRestSize = BUF_SIZE - bufferIndex_;
             if (0 == bufferRestSize) {
-                flush();
+                internalFlush();
                 needUnwind = true;
             }
             *(buffer_+bufferIndex_) = *(data+writeSize);

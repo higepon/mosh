@@ -1,5 +1,7 @@
 2009-03-24  higepon  <higepon@users.sourceforge.jp>
 
+        * LineBufferedFileBinaryInputOutputPort.h (scheme): Fixed the bug.
+
         * test-data.scm: Added tests for round.
 
         * Ratnum.cpp (round): Fixed the bug of round procedure.
