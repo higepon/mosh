@@ -502,9 +502,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int32_t val = n.toFixnum() + ac_.toFixnum();
                 ac_ = Bignum::makeInteger(val);
             } else {
-                ac_ = Arithmetic::add(n, ac_);
+                const Object v = ac_;
+                ac_ = Arithmetic::add(n, v);
                 if (ac_.isFalse()) {
-                    callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, ac_));
+                    callWrongTypeOfArgumentViolationAfter(this, "+", "number", L2(n, v));
                 }
             }
             NEXT1;
