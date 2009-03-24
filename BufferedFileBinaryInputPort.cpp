@@ -60,14 +60,22 @@ BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(int fd) : fd_(fd), file
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
+#ifdef _WIN32
+    fd_ = ::open(file.ascii_c_str(), O_RDONLY | O_BYNARY);
+#else
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
+#endif
     initializeBuffer();
 }
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : isClosed_(false), isPseudoClosed_(false), position_(0)
 {
     fileName_ = Object::makeString(file).toString()->data();
+#ifdef _WIN32
+    fd_ = ::open(file, O_RDONLY | O_BYNARY);
+#else
     fd_ = ::open(file, O_RDONLY);
+#endif
     initializeBuffer();
 }
 
