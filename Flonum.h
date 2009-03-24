@@ -175,7 +175,14 @@ public:
 
     Object round() const
     {
-        return Object::makeFlonum(::round(value_));
+        const double ret = ::floor(value_ + 0.5);
+        if (ret != value_ + 0.5) {
+            return Object::makeFlonum(ret);
+        } else if (ret * 0.5 == ::floor(ret * 0.5)) {
+            return Object::makeFlonum(ret);
+        } else {
+            return Object::makeFlonum(ret - 1.0);
+        }
     }
 
 

@@ -1,3 +1,9 @@
+2009-03-24  higepon  <higepon@users.sourceforge.jp>
+
+        * test-data.scm: Added tests for round.
+
+        * Ratnum.cpp (round): Fixed the bug of round procedure.
+
 2009-03-23  higepon  <higepon@users.sourceforge.jp>
 
         * win/win.cpp: UC moved to ucs4string.cpp for Mingw.

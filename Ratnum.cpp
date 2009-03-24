@@ -92,8 +92,18 @@ Object Ratnum::truncate() const
 
 Object Ratnum::round() const
 {
-    mpz_t ret;
-    mpz_init(ret);
-    mpz_cdiv_q(ret, mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(ret);
+    Ratnum* half = new Ratnum(1, 2);
+    Object n = Ratnum::add(half, (Ratnum*)this);
+    const Object ret = Arithmetic::floor(n);
+
+    if (!Arithmetic::eq(ret, n)) {
+        return ret;
+    } else {
+        const Object d = Arithmetic::mul(ret, Object::makeRatnum(half));
+        if (Arithmetic::eq(d, Arithmetic::floor(d))) {
+            return ret;
+        } else {
+            return Arithmetic::sub(ret, Object::makeFixnum(1));
+        }
+    }
 }

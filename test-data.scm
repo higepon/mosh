@@ -651,7 +651,6 @@
 [mosh-only #t (fixnum? (/ (+ (greatest-fixnum) 1) (+ (greatest-fixnum) 1)))] ;; normalization
 [mosh-only 1/2 (/ 2)]
 [mosh-only 1/3 (/ 3)]
-[todo mosh-only error (/ 0)] ;;-> division by zero
 
 [#t (fixnum? (least-fixnum))]
 [#t (fixnum? (greatest-fixnum))]
@@ -1060,7 +1059,7 @@
                 (record-field-mutable? :point 1))]
 
 ;; dynamic-wind start
-[todo mosh-only (connect talk1 disconnect connect talk2 disconnect)
+[mosh-only (connect talk1 disconnect connect talk2 disconnect)
            (let ((path '())
                  (c '()))
              (let ((add (lambda (s) (set! path (cons s path)))))
@@ -1073,7 +1072,7 @@
                (if (< (length path) 4)
                    (c 'talk2)
                    (reverse path))))]
-[todo mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
+[mosh-only (3 connect talk1 disconnect connect talk2 disconnect 1) ;; from Gauche
   (let* ([c '()]
          [dynwind-test1
           (lambda ()
@@ -1185,7 +1184,6 @@
 
 [error (apply read-char (current-input-port))] ;; the argument should be a list.
 [error (rxmatch-start (rxmatch #/\d+/ "a345a") 5)]
-[todo error (and #/(?<hage >.*)/ #t)] ;; invalid regexp group name
 [error (string-ref "hige" 5)]
 [error (open-file-input-port "not-exist-path/////xxx")]
 [error (open-file-output-port "not-exist-path/////xxx")]
@@ -1223,7 +1221,7 @@
 (#t (apply <= '(1 2 3)))
 (#t (apply <= '(1 3 3)))
 (#f (apply <= '(1 5 3)))
-(todo error (+ 1 2 'a))
+(error (+ 1 2 'a))
 (error (/ 1 0))
 (4  (apply + '(4)))
 (7  (apply + '(4 3)))
@@ -2077,9 +2075,6 @@
 (#f (infinite? t3.0))
 (#f (finite? plus-inf))
 (#t (infinite? plus-inf))
-
-;; +0.0 -0.0
-;(todo todo todo)
 
 ;; write flonum
 ("+inf.0" (format "~a" plus-inf))
@@ -3235,7 +3230,6 @@
 
 ;; port i/o
 (error (buffer-mode?))
-(todo  (#t (buffer-mode? (buffer-mode none))))
 (#t    (buffer-mode? 'none))
 (#t    (buffer-mode? 'line))
 (#t    (buffer-mode? 'block))
@@ -3417,11 +3411,7 @@
          ((record-constructor crcd))))
 
 
-(todo error (read-string "#t.#f"))
-
-
-(todo "VM.cpp の callAssertionViolationAfter で dc_.sourceString() を出力するとうれしいよね。")
-(todo "(pass2/$local-ref iform closures) を C++ で書けば clos 速くなる")
+(error (read-string "#t.#f"))
 
 ;; r5rs
 (3 (quotient 7 2))
@@ -3429,15 +3419,23 @@
 (3 (quotient 7.1 2.0))
 (3 (quotient 7.1+0i 2.0))
 (3 (quotient 7.1+0i 2.0+0i))
+(0 (round 0.4))
+(0 (round 0.5))
+(1 (round 0.6))
+(1 (round 1.0))
+(1 (round 1.2))
+(2 (round 1.5))
+(2 (round 1.7))
+(-2 (round -1.5))
+(-1 (round -0.6))
+(0 (round -0.5))
+(0 (round -0.4))
+(0 (round -1/2))
+(0 (round 1/2))
+(1 (round 2/3))
+(2 (round 3/2))
 
 ;; don't const inline (+ 1 #f).
 (#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))
-;; This shuld be placed on end of test
-(todo #t (let1 pid (%fork)
-      (cond [(zero? pid) ;; child
-             (exit 255)]
-            [else ;; parent
-             (receive (p status) (%waitpid pid)
-               (and (= status 255) (= p pid))]))))
 ;; invalid string
 (error (call-with-port (open-string-input-port (list->string '(#\" #\1 #\2 #\3 #\\ #\0 #\"))) read))
