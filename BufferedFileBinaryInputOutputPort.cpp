@@ -76,7 +76,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4s
     bufferIndex_(0)
 {
 #ifdef _WIN32
-    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | O_BYNARY | openFlags, 0644);
+    fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | O_BINARY | openFlags, 0644);
 #else
     fd_ = ::open(file.ascii_c_str(), O_RDWR | O_CREAT | openFlags, 0644);
 #endif

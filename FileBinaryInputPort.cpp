@@ -60,7 +60,7 @@ FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unkno
 FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
 #ifdef _WIN32
-    fd_ = ::open(file.ascii_c_str(), O_RDONLY | O_BYNARY);
+    fd_ = ::open(file.ascii_c_str(), O_RDONLY | O_BINARY);
 #else
     fd_ = ::open(file.ascii_c_str(), O_RDONLY);
 #endif
@@ -70,7 +70,7 @@ FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), i
 {
     fileName_ = Object::makeString(file).toString()->data();
 #ifdef _WIN32
-    fd_ = ::open(file, O_RDONLY | O_BYNARY);
+    fd_ = ::open(file, O_RDONLY | O_BINARY);
 #else
     fd_ = ::open(file, O_RDONLY);
 #endif
