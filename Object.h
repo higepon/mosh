@@ -175,7 +175,7 @@ public:
 
     static Object makeGloc(Object value);
     static Object* makeObjectArray(int size);
-    static Object makeFixnum(signed long int n);
+    static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
     static Object makeBignum(const mpz_t v);
@@ -293,12 +293,12 @@ public:
     static const Object Ignore;
 
 private:
-    Object(word n) : val(n) {}
+    Object(intptr_t n) : val(n) {}
     Object(int n, Object o); // for vector
     uint8_t tag() const;
 
 public:
-    word val; // public for performancs. val() const { return val; } is not be inlined with -O2
+    intptr_t val; // public for performancs. val() const { return val; } is not be inlined with -O2
 
     friend bool operator <(const Object& o1, const Object& o2)
     {

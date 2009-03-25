@@ -66,18 +66,18 @@ private:
     ucs4string data_;
 };
 
-inline Object::Object(const ucs4char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+inline Object::Object(const ucs4char* str) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str)))))
 {
 }
 
 
-inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+inline Object::Object(const char* str) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str)))))
 {
 }
 
 inline Object Object::makeString(int n, ucs4char c /* = ' ' */)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(n, c)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(n, c)))));
 }
 
 inline Object Object::makeString(const ucs4char* str)
@@ -95,13 +95,13 @@ inline Object Object::makeString(const char* str)
     return Object(str);
 }
 
-inline Object::Object(const ucs4string& str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str.data())))))
+inline Object::Object(const ucs4string& str) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str.data())))))
 {
 
 }
 
 
-// inline Object::Object(const char* str) : val(reinterpret_cast<word>(new HeapObject(HeapObject::String, reinterpret_cast<word>(new String(str)))))
+// inline Object::Object(const char* str) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str)))))
 // {
 // }
 

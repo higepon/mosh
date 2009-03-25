@@ -60,7 +60,7 @@ public:
     void setArgument2(Object argument) { argument2_ = argument; }
     void setArgument3(Object argument) { argument3_ = argument; }
     Object instruction() const { return instruction_; }
-    word instructionImmediate() const { return instruction_.val; }
+    intptr_t instructionImmediate() const { return instruction_.val; }
     Object argument1() const { return argument1_; }
     Object argument2() const { return argument2_; }
     Object argument3() const { return argument3_; }

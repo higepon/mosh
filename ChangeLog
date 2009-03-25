@@ -1,5 +1,7 @@
 2009-03-25  higepon  <higepon@users.sourceforge.jp>
 
+        * Removed type "word" and use "intptr_t" instead.
+
         * UtilityProcedures.cpp: Patch for Mingw by .mjt.
 
         * Bignum.h : Fixed add, sub and mul.

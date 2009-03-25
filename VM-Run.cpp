@@ -40,7 +40,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
     if (returnTable) {
 #ifdef ENABLE_PROFILER
-        labelReturn_ = reinterpret_cast<word>(&&LABEL_RETURN); // used for profiler
+        labelReturn_ = reinterpret_cast<intptr_t>(&&LABEL_RETURN); // used for profiler
 #endif
         return Object::makeRaw(dispatch_table);
     }

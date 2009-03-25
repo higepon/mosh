@@ -630,22 +630,22 @@ private:
 
 inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
-                                                        reinterpret_cast<word>(new ByteVector(v)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<intptr_t>(new ByteVector(v)))));
 }
 
 inline Object Object::makeByteVector(Object pair)
 {
     MOSH_ASSERT(pair.isPair() || pair.isNil());
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
-                                                        reinterpret_cast<word>(new ByteVector(pair)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<intptr_t>(new ByteVector(pair)))));
 }
 
 
 inline Object Object::makeByteVector(ByteVector* b)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector,
-                                                        reinterpret_cast<word>(b))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector,
+                                                        reinterpret_cast<intptr_t>(b))));
 }
 
 } // namespace scheme

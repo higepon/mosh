@@ -381,8 +381,8 @@ private:
 // for better performance
 inline Object Object::makeFlonum(double value)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Flonum,
-                                                        reinterpret_cast<word>(new Flonum(value)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Flonum,
+                                                        reinterpret_cast<intptr_t>(new Flonum(value)))));
 }
 
 

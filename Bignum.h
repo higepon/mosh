@@ -388,7 +388,7 @@ public:
 
     static Object add(int n1, int n2)
     {
-        const int64_t ret = (int64_t)n1 + n2;
+        const fixedint ret = (fixedint)n1 + n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
@@ -397,7 +397,7 @@ public:
     }
     static Object sub(int n1, int n2)
     {
-        const int64_t ret = (int64_t)n1 - n2;
+        const fixedint ret = (fixedint)n1 - n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
@@ -407,7 +407,7 @@ public:
 
     static Object mul(int n1, int n2)
     {
-        const int64_t ret = (int64_t)n1 * n2;
+        const fixedint ret = (fixedint)n1 * n2;
 
         /* Overflow check from Gauche */
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {
@@ -564,20 +564,20 @@ private:
 
 inline Object Object::makeBignum(long n)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(new Bignum(n)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<intptr_t>(new Bignum(n)))));
 }
 
 inline Object Object::makeBignum(const mpz_t b)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(new Bignum(b)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<intptr_t>(new Bignum(b)))));
 }
 
 inline Object Object::makeBignum(Bignum* b)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<word>(b))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Bignum,
+                                                        reinterpret_cast<intptr_t>(b))));
 }
 
 } // namespace scheme

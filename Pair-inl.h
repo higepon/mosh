@@ -48,7 +48,7 @@ inline Object Object::cons(Object car, Object cdr, Object sourceInfo /* = Object
 //     if (sourceInfo.isFalse() && car.isPair()) {
 //         sourceInfo = car.sourceInfo();
 //     }
-    return Object(reinterpret_cast<word>(new Pair(car, cdr, sourceInfo)));
+    return Object(reinterpret_cast<intptr_t>(new Pair(car, cdr, sourceInfo)));
 }
 
 inline Object& Object::cdr() const

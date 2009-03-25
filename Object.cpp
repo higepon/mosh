@@ -113,80 +113,80 @@ bool Object::equal(VM* theVM, Object o) const
 
 Object Object::makeBinaryInputPort(int fd)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new FileBinaryInputPort(fd)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputPort,
+                                                        reinterpret_cast<intptr_t>(new FileBinaryInputPort(fd)))));
 }
 
 Object Object::makeBinaryOutputPort(int fd)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
-                                                        reinterpret_cast<word>(new FileBinaryOutputPort(fd)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryOutputPort,
+                                                        reinterpret_cast<intptr_t>(new FileBinaryOutputPort(fd)))));
 }
 
 Object Object::makeBinaryInputPort(BinaryInputPort* port)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(port))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputPort,
+                                                        reinterpret_cast<intptr_t>(port))));
 }
 
 Object Object::makeBinaryInputOutputPort(BinaryInputOutputPort* port)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputOutputPort,
-                                                        reinterpret_cast<word>(port))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputOutputPort,
+                                                        reinterpret_cast<intptr_t>(port))));
 }
 
 
 Object Object::makeBinaryOutputPort(BinaryOutputPort* port)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
-                                                        reinterpret_cast<word>(port))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryOutputPort,
+                                                        reinterpret_cast<intptr_t>(port))));
 }
 
 Object Object::makeTextualOutputPort(BinaryOutputPort* port, Transcoder* transcoder)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualOutputPort(port, transcoder)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualOutputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualOutputPort(port, transcoder)))));
 }
 
 Object Object::makeTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* transcoder)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputOutputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualInputOutputPort(port, transcoder)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputOutputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputOutputPort(port, transcoder)))));
 }
 
 
 
 Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
 Object Object::makeTextualInputFilePort(const char* file)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
 
 Object Object::makeStringInputPort(const ucs4string& str)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new StringTextualInputPort(str)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new StringTextualInputPort(str)))));
 }
 
 Object Object::makeStringOutputPort()
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new StringTextualOutputPort()))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualOutputPort,
+                                                        reinterpret_cast<intptr_t>(new StringTextualOutputPort()))));
 }
 
 Object Object::makeStringInputPort(const uint8_t* buf, int size)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(buf, size)
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(buf, size)
                                                                                                     , Transcoder::nativeTranscoder())))));
 }
 
@@ -197,8 +197,8 @@ Object Object::makeCustomTextualInputPort(VM* theVM,
                                           Object setPositionProc,
                                           Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new CustomTextualInputPort(theVM,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomTextualInputPort(theVM,
                                                                                                           id,
                                                                                                           readProc,
                                                                                                           getPositionProc,
@@ -213,8 +213,8 @@ Object Object::makeCustomTextualOutputPort(VM* theVM,
                                           Object setPositionProc,
                                           Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualOutputPort,
-                                                        reinterpret_cast<word>(new CustomTextualOutputPort(theVM,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualOutputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomTextualOutputPort(theVM,
                                                                                                           id,
                                                                                                           writeProc,
                                                                                                           getPositionProc,
@@ -231,8 +231,8 @@ Object Object::makeCustomTextualInputOutputPort(VM* theVM,
                                                 Object setPositionProc,
                                                 Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputOutputPort,
-                                                        reinterpret_cast<word>(new CustomTextualInputOutputPort(theVM,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputOutputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomTextualInputOutputPort(theVM,
                                                                                                                 id,
                                                                                                                 readProc,
                                                                                                                 writeProc,
@@ -244,134 +244,134 @@ Object Object::makeCustomTextualInputOutputPort(VM* theVM,
 
 Object Object::makeCustomBinaryInputPort(VM* theVM, const ucs4string& id, Object readProc, Object getPositionProc, Object setPositionProc, Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<word>(new CustomBinaryInputPort(theVM, id, readProc, getPositionProc, setPositionProc, closeProc)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomBinaryInputPort(theVM, id, readProc, getPositionProc, setPositionProc, closeProc)))));
 }
 
 Object Object::makeCustomBinaryOutputPort(VM* theVM, const ucs4string& id, Object writeDProc, Object getPositionProc, Object setPositionDProc, Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryOutputPort,
-                                                        reinterpret_cast<word>(new CustomBinaryOutputPort(theVM, id, writeDProc, getPositionProc, setPositionDProc, closeProc)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryOutputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomBinaryOutputPort(theVM, id, writeDProc, getPositionProc, setPositionDProc, closeProc)))));
 }
 
 Object Object::makeCustomBinaryInputOutputPort(VM* theVM, const ucs4string& id, Object readProc, Object writeProc, Object getPositionProc, Object setPositionProc, Object closeProc)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::BinaryInputOutputPort,
-                                                        reinterpret_cast<word>(new CustomBinaryInputOutputPort(theVM, id, readProc, writeProc, getPositionProc, setPositionProc, closeProc)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputOutputPort,
+                                                        reinterpret_cast<intptr_t>(new CustomBinaryInputOutputPort(theVM, id, readProc, writeProc, getPositionProc, setPositionProc, closeProc)))));
 }
 
 
 Object Object::makeCodec(Codec* codec)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Codec,
-                                                        reinterpret_cast<word>(codec))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Codec,
+                                                        reinterpret_cast<intptr_t>(codec))));
 }
 
 Object Object::makeTranscoder(Transcoder* transcoder)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
-                                                        reinterpret_cast<word>(transcoder))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<intptr_t>(transcoder))));
 }
 
 Object Object::makeTranscoder(Codec* codec)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
-                                                        reinterpret_cast<word>(new Transcoder(codec)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<intptr_t>(new Transcoder(codec)))));
 }
 
 Object Object::makeTranscoder(Codec* codec, enum EolStyle eolStyle)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
-                                                        reinterpret_cast<word>(new Transcoder(codec, eolStyle)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<intptr_t>(new Transcoder(codec, eolStyle)))));
 }
 
 Object Object::makeTranscoder(Codec* codec, enum EolStyle eolStyle, enum ErrorHandlingMode errorHandlingMode)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Transcoder,
-                                                        reinterpret_cast<word>(new Transcoder(codec, eolStyle, errorHandlingMode)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Transcoder,
+                                                        reinterpret_cast<intptr_t>(new Transcoder(codec, eolStyle, errorHandlingMode)))));
 }
 
 Object Object::makeTextualInputPort(BinaryInputPort* port, Transcoder* transcoder)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(new TranscodedTextualInputPort(port, transcoder)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(port, transcoder)))));
 }
 
 Object Object::makeTextualInputPort(TextualInputPort* port)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::TextualInputPort,
-                                                        reinterpret_cast<word>(port))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
+                                                        reinterpret_cast<intptr_t>(port))));
 }
 
 Object Object::makeRegexp(const ucs4string& pattern, bool caseFold /* = false */)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Regexp,
-                                                        reinterpret_cast<word>(new Regexp(pattern, caseFold)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Regexp,
+                                                        reinterpret_cast<intptr_t>(new Regexp(pattern, caseFold)))));
 }
 
 Object Object::makeRegMatch(OnigRegion* region, const ucs4string& text)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RegMatch,
-                                                        reinterpret_cast<word>(new RegMatch(region, text)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::RegMatch,
+                                                        reinterpret_cast<intptr_t>(new RegMatch(region, text)))));
 }
 Object Object::makeSymbol(const ucs4char* str)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Symbol, reinterpret_cast<word>(new Symbol(str)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Symbol, reinterpret_cast<intptr_t>(new Symbol(str)))));
 }
 
 Object Object::makeBox(Object o)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Box, reinterpret_cast<word>(new Box(o)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Box, reinterpret_cast<intptr_t>(new Box(o)))));
 }
 
 Object Object::makeByteVector(int n)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<intptr_t>(new ByteVector(n)))));
 }
 
 Object Object::makeByteVector(int n, int8_t v)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<word>(new ByteVector(n, v)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ByteVector, reinterpret_cast<intptr_t>(new ByteVector(n, v)))));
 }
 
 Object Object::makeStack(Object* src, int size)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Stack, reinterpret_cast<word>(new Stack(src, size)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Stack, reinterpret_cast<intptr_t>(new Stack(src, size)))));
 }
 
 
 Object Object::makeEqHashTable()
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<word>(new EqHashTable()))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::EqHashTable, reinterpret_cast<intptr_t>(new EqHashTable()))));
 }
 
 Object Object::makeEqvHashTable(VM* theVM)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::EqvHashTable, reinterpret_cast<word>(new EqvHashTable(theVM)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::EqvHashTable, reinterpret_cast<intptr_t>(new EqvHashTable(theVM)))));
 }
 
 
 Object Object::makeCProcedure(Object (*proc)(VM* vm, int, const Object*))
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<word>(new CProcedure(proc)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CProcedure, reinterpret_cast<intptr_t>(new CProcedure(proc)))));
 }
 
 Object Object::makeCodeBuilder()
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CodeBuilder,
-                                                        reinterpret_cast<word>(new CodeBuilder()))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CodeBuilder,
+                                                        reinterpret_cast<intptr_t>(new CodeBuilder()))));
 }
 
 Object Object::makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::GenericHashTable,
-                                                        reinterpret_cast<word>(new GenericHashTable(theVM, hashFunction, equivalenceFunction)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::GenericHashTable,
+                                                        reinterpret_cast<intptr_t>(new GenericHashTable(theVM, hashFunction, equivalenceFunction)))));
 }
 
 Object Object::makeCallable(Callable* callable)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Callable,
-                                                        reinterpret_cast<word>(callable))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Callable,
+                                                        reinterpret_cast<intptr_t>(callable))));
 }
 
 Object Object::makeRecordTypeDescriptor(Object name,
@@ -381,8 +381,8 @@ Object Object::makeRecordTypeDescriptor(Object name,
                                         Object isOpaque,
                                         Object fields)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RecordTypeDescriptor,
-                                                        reinterpret_cast<word>(new RecordTypeDescriptor(name,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::RecordTypeDescriptor,
+                                                        reinterpret_cast<intptr_t>(new RecordTypeDescriptor(name,
                                                                                                         parent,
                                                                                                         uid,
                                                                                                         isSealed,
@@ -392,8 +392,8 @@ Object Object::makeRecordTypeDescriptor(Object name,
 
 Object Object::makeRecord(Object rtd, const Object* fields, int fieldsLength)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Record,
-                                                        reinterpret_cast<word>(new Record(rtd,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Record,
+                                                        reinterpret_cast<intptr_t>(new Record(rtd,
                                                                                           fields,
                                                                                           fieldsLength)))));
 }
@@ -403,8 +403,8 @@ Object Object::makeRecordConstructorDescriptor(VM* theVM,
                                                Object parentRcd,
                                                Object protocol)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::RecordConstructorDescriptor,
-                                                        reinterpret_cast<word>(new RecordConstructorDescriptor(theVM,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::RecordConstructorDescriptor,
+                                                        reinterpret_cast<intptr_t>(new RecordConstructorDescriptor(theVM,
                                                                                                                rtd,
                                                                                                                parentRcd,
                                                                                                                protocol)))));
@@ -412,8 +412,8 @@ Object Object::makeRecordConstructorDescriptor(VM* theVM,
 
 Object Object::makeCompoundCondition(int conditionCounts, const Object* conditions)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CompoundCondition,
-                                                        reinterpret_cast<word>(new CompoundCondition(conditionCounts,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CompoundCondition,
+                                                        reinterpret_cast<intptr_t>(new CompoundCondition(conditionCounts,
                                                                                                      conditions)))));
 }
 
@@ -426,28 +426,28 @@ Object Object::makeCompoundCondition(Object conditions)
         conditionsArray[i] = p.car();
         p = p.cdr();
     }
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::CompoundCondition,
-                                                        reinterpret_cast<word>(new CompoundCondition(conditionCounts,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CompoundCondition,
+                                                        reinterpret_cast<intptr_t>(new CompoundCondition(conditionCounts,
                                                                                                      conditionsArray)))));
 }
 
 Object Object::makeRatnum(int numerator, int denominator)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<word>(new Ratnum(numerator, denominator)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<intptr_t>(new Ratnum(numerator, denominator)))));
 }
 
 Object Object::makeRatnum(mpq_t r)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<word>(new Ratnum(r)))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<intptr_t>(new Ratnum(r)))));
 }
 
 
 Object Object::makeRatnum(Ratnum* r)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<word>(r))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
+                                                        reinterpret_cast<intptr_t>(r))));
 }
 
 Object Object::makeCompnum(Object real, Object imag)
@@ -455,8 +455,8 @@ Object Object::makeCompnum(Object real, Object imag)
     if (Arithmetic::isExactZero(imag)) {
         return real;
     } else {
-        return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Compnum,
-                                                            reinterpret_cast<word>(new Compnum(real, imag)))));
+        return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Compnum,
+                                                            reinterpret_cast<intptr_t>(new Compnum(real, imag)))));
     }
 }
 

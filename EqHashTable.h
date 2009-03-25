@@ -40,7 +40,7 @@ struct hash_func
 {
     size_t operator()(scheme::Object const & s) const
     {
-        return static_cast<word>(s.val);
+        return static_cast<intptr_t>(s.val);
     }
 };
 typedef __gnu_cxx::hash_map<scheme::Object,
@@ -60,7 +60,7 @@ struct hash_func
 {
     size_t operator()(scheme::Object const & s) const
     {
-        return std::tr1::hash<word>()(s.val);
+        return std::tr1::hash<intptr_t>()(s.val);
     }
 };
 

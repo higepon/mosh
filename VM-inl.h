@@ -167,7 +167,7 @@ inline Object* VM::disasm(Object* code, int length)
         const Object c = code[i];
         bool isInsn = false;
         for (int j = 0; j < Instruction::INSTRUCTION_COUNT; j++) {
-            if (c.val == (word)(table[Object::makeInstruction(j).val])) {
+            if (c.val == (intptr_t)(table[Object::makeInstruction(j).val])) {
                 isInsn = true;
                 ret[i] = Object::makeInstruction(j);
             }
@@ -215,7 +215,7 @@ inline Object* VM::getDirectThreadedCode(Object* code, int length)
             }
             direct[i] = code[i];
         } else if (code[i].isInstruction()) {
-            direct[i].val = (word)(table[code[i].val]);
+            direct[i].val = (intptr_t)(table[code[i].val]);
         } else {
             direct[i] = code[i];
         }

@@ -46,10 +46,10 @@ class HeapObject EXTEND_GC
     };
 
 public:
-    HeapObject(word type, word obj) : type(type), obj(obj) {}
+    HeapObject(intptr_t type, intptr_t obj) : type(type), obj(obj) {}
     ~HeapObject() {} // not virtual
-    word type;
-    word obj;
+    intptr_t type;
+    intptr_t obj;
     enum {
         Vector                      = Type<0>::VALUE,
         String                      = Type<1>::VALUE,

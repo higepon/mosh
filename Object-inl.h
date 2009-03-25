@@ -60,18 +60,18 @@ inline bool Object::isBoolean() const
 
 inline bool Object::isInstruction() const
 {
-    return (static_cast<word>(val) & 31) == 14;
+    return (static_cast<intptr_t>(val) & 31) == 14;
 }
 
 inline bool Object::isCompilerInstruction() const
 {
-    return (static_cast<word>(val) & 31) == 30;
+    return (static_cast<intptr_t>(val) & 31) == 30;
 }
 
 
 inline bool Object::isChar() const
 {
-    return (static_cast<word>(val) & 0x07L) == 2;
+    return (static_cast<intptr_t>(val) & 0x07L) == 2;
 }
 
 inline ucs4char Object::toChar() const
@@ -80,10 +80,10 @@ inline ucs4char Object::toChar() const
     return static_cast<ucs4char>(val) >> 3;
 }
 
-inline signed long int Object::toFixnum() const
+inline fixedint Object::toFixnum() const
 {
     MOSH_ASSERT(isFixnum());
-    return static_cast<signed long int>(val) >> 2;
+    return static_cast<fixedint>(val) >> 2;
 }
 
 inline int Object::toInstruction() const
@@ -189,7 +189,7 @@ inline bool Object::eq(Object o) const
     return operator==(o);
 }
 
-inline Object Object::makeFixnum(signed long int n)
+inline Object Object::makeFixnum(fixedint n)
 {
     return Object((n << 2) + 1);
 }
@@ -201,7 +201,7 @@ inline Object Object::makeRaw(int n)
 
 inline Object Object::makeRaw(void* n)
 {
-    return Object(reinterpret_cast<word>(n));
+    return Object(reinterpret_cast<intptr_t>(n));
 }
 
 inline Object Object::makeInstruction(int n)
@@ -251,10 +251,10 @@ inline Pair* Object::toPair() const
 inline Object Object::makeObjectPointer(Object* p)
 {
 #ifdef DEBUG_VERSION
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::ObjectPointer,
-                                                        reinterpret_cast<word>(p))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ObjectPointer,
+                                                        reinterpret_cast<intptr_t>(p))));
 #else
-    return Object(reinterpret_cast<word>(p));
+    return Object(reinterpret_cast<intptr_t>(p));
 #endif
 }
 
@@ -310,7 +310,7 @@ inline Object* Object::makeObjectArray(int size)
 // private
 inline uint8_t Object::tag() const
 {
-    return (static_cast<word>(val)) & 0x03;
+    return (static_cast<intptr_t>(val)) & 0x03;
 }
 
 } // namespace scheme

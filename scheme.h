@@ -121,8 +121,8 @@ enum {
 
 //#define UC(a) (reinterpret_cast<const ucs4char*>(L##""a))
 
-typedef intptr_t word;
 typedef int32_t ucs4char; // use -1 for EOF
+typedef intptr_t fixedint;
 
 #ifdef _WIN32
 const ucs4char* UC(const char *str);

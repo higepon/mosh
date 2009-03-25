@@ -96,8 +96,8 @@ inline Object Object::makeClosure(Object* pc,
                                   int maxStack,
                                   Object sourceInfo)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
-                                                        reinterpret_cast<word>(new Closure(pc,
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Closure,
+                                                        reinterpret_cast<intptr_t>(new Closure(pc,
                                                                                            size,
                                                                                            argLength,
                                                                                            isOptionalArg,
@@ -109,8 +109,8 @@ inline Object Object::makeClosure(Object* pc,
 
 inline Object Object::makeClosure(const Closure* closure)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Closure,
-                                                        reinterpret_cast<word>(closure))));
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Closure,
+                                                        reinterpret_cast<intptr_t>(closure))));
 }
 
 } // namespace scheme

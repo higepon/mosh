@@ -106,20 +106,20 @@ inline bool Vector::isValidIndex(int index) const
 }
 
 inline Object::Object(int n, Object o)
-  : val(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>(new Vector(n, o)))))
+  : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Vector, reinterpret_cast<intptr_t>(new Vector(n, o)))))
 {
 }
 
 
 inline Object Object::makeVector(int n, Object* objects)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Vector, reinterpret_cast<intptr_t>
                                                         (new Vector(n, objects)))));
 }
 
 inline Object Object::makeVector(Object pair)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Vector, reinterpret_cast<word>
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Vector, reinterpret_cast<intptr_t>
                                                         (new Vector(pair)))));
 }
 

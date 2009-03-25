@@ -58,7 +58,7 @@ private:
 
 inline Object Object::makeGloc(Object value)
 {
-    return Object(reinterpret_cast<word>(new HeapObject(HeapObject::Gloc, reinterpret_cast<word>
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Gloc, reinterpret_cast<intptr_t>
                                                         (new Gloc(value)))));
 }
 

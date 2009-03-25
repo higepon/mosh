@@ -189,7 +189,7 @@ protected:
     Object returnCode_[2];
     Object outerSourceInfo_;
 #ifdef ENABLE_PROFILER
-    word labelReturn_;           // for profiler
+    intptr_t labelReturn_;           // for profiler
     static const int SAMPLE_NUM; // for profiler
     Object* samples_;            // for profiler
     Object* callSamples_;        // for profiler
