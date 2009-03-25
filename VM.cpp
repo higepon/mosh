@@ -218,6 +218,7 @@ static Object* cProcs = NULL;;
 // call this after gc_init
 void initCprocedures()
 {
+    if (cProcs != NULL) return;
     cProcs = Object::makeObjectArray(cProcNum);
     for (int i = 0; i < cProcNum; i++) {
         cProcs[i] = Object::makeCProcedure(cProcFunctions[i]);
