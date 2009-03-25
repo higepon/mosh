@@ -388,7 +388,7 @@ public:
 
     static Object add(int n1, int n2)
     {
-        const int64_t ret = n1 + n2;
+        const int64_t ret = (int64_t)n1 + n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
@@ -397,7 +397,7 @@ public:
     }
     static Object sub(int n1, int n2)
     {
-        const int64_t ret = n1 - n2;
+        const int64_t ret = (int64_t)n1 - n2;
         if (Fixnum::canFit(ret)) {
             return Object::makeFixnum(ret);
         } else {
@@ -407,7 +407,7 @@ public:
 
     static Object mul(int n1, int n2)
     {
-        const int64_t ret = n1 * n2;
+        const int64_t ret = (int64_t)n1 * n2;
 
         /* Overflow check from Gauche */
         if ((n2 != 0 && ret / n2 != n1) || !Fixnum::canFit(ret)) {

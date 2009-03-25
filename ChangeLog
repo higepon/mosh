@@ -1,3 +1,7 @@
+2009-03-25  higepon  <higepon@users.sourceforge.jp>
+
+        * Bignum.h : Fixed add, sub and mul.
+
 2009-03-24  higepon  <higepon@users.sourceforge.jp>
 
         * test/test.bat: Added for tests on Windows.
