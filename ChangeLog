@@ -1,5 +1,7 @@
 2009-03-25  higepon  <higepon@users.sourceforge.jp>
 
+        * UtilityProcedures.cpp: Patch for Mingw by .mjt.
+
         * Bignum.h : Fixed add, sub and mul.
 
 2009-03-24  higepon  <higepon@users.sourceforge.jp>

@@ -29,10 +29,12 @@
  *  $Id$
  */
 
-#ifdef _WIN32
+#ifdef _MSC_VER
     #include "../include/gettimeofday.h"
 #else
 #include <sys/time.h>
+#endif
+#ifndef _WIN32
 #include <sys/resource.h>
 #endif
 #include "Object.h"
