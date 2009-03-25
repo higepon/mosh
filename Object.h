@@ -153,7 +153,7 @@ public:
     bool isHeapObject() const;
 
     ucs4char toChar() const;
-    signed long int toFixnum() const;
+    fixedint toFixnum() const;
     int toInstruction() const;
     int toCompilerInstruction() const;
     Pair* toPair() const;
