@@ -186,6 +186,22 @@
 			<File
 				RelativePath=".\Arithmetic.cpp"
 				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						FloatingPointModel="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						FloatingPointModel="0"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\ArithmeticProcedures.cpp"

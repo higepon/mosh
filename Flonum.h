@@ -39,8 +39,15 @@
 
 #ifdef _MSC_VER
     #include <float.h>
-    #define isnan(x) _isnan(x)
-    static inline int isinf(double x) { return  !_finite(x) && !_isnan(x); }
+	static inline int isnan(double x)
+	{
+		return _isnan(x);
+	}
+    static inline int isinf(double x)
+    {
+        return _fpclass(x) & (_FPCLASS_NINF | _FPCLASS_PINF);
+//        return  !_finite(x) && !_isnan(x);
+    }
     static inline double round(double x) { if (x >= 0) { return floor(x + 0.5); } else { return ceil(x - 0.5); } }
     static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
