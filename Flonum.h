@@ -39,10 +39,10 @@
 
 #ifdef _MSC_VER
     #include <float.h>
-	static inline int isnan(double x)
-	{
-		return _isnan(x);
-	}
+    static inline int isnan(double x)
+    {
+        return _isnan(x);
+    }
     static inline int isinf(double x)
     {
         return _fpclass(x) & (_FPCLASS_NINF | _FPCLASS_PINF);
