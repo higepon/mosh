@@ -1,5 +1,7 @@
 2009-03-26  higepon  <higepon@users.sourceforge.jp>
 
+        * Added (srfi :64 testing)
+
         * lib/srfi/%3a64.sls: Now porting.
 
 2009-03-25  higepon  <higepon@users.sourceforge.jp>

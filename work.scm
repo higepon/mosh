@@ -1,13 +1,13 @@
-(import (rnrs)
-        (mosh)
+(import (except (rnrs) error)
+        (srfi :23)
         (srfi :64))
 
-;;;
-;;;  This is a test suite written in the notation of 
-;;;  SRFI-64, A Scheme API for test suites
-;;;
+;; ;;;
+;; ;;;  This is a test suite written in the notation of 
+;; ;;;  SRFI-64, A Scheme API for test suites
+;; ;;;
 
-;(test-begin "SRFI 64 - Meta-Test Suite")
+;; (test-begin "SRFI 64 - Meta-Test Suite")
 
 ;; ;;;
 ;; ;;;  Ironically, in order to set up the meta-test environment,
@@ -53,55 +53,55 @@
 ;;     (test-with-runner r (thunk))
 ;;     (reverse results)))
 
-;;;
-;;;  The `triv-runner' invokes `thunk'
-;;;  and returns a list of 6 lists, the first 5 of which
-;;;  are a list of the names of the tests that, respectively,
-;;;  PASS, FAIL, XFAIL, XPASS, and SKIP.
-;;;  The last item is a list of counts.
-;;;
+;; ;;;
+;; ;;;  The `triv-runner' invokes `thunk'
+;; ;;;  and returns a list of 6 lists, the first 5 of which
+;; ;;;  are a list of the names of the tests that, respectively,
+;; ;;;  PASS, FAIL, XFAIL, XPASS, and SKIP.
+;; ;;;  The last item is a list of counts.
+;; ;;;
 
-(define (triv-runner thunk)
-  (let ((r (test-runner-null))
-        (accum-pass '())
-        (accum-fail '())
-        (accum-xfail '())
-        (accum-xpass '())
-        (accum-skip '()))
-    ;;
-    (test-runner-on-bad-count!
-     r
-     (lambda (runner count expected-count)
-       (error 'triv-runner (string-append "bad count " (number->string count)
-			     " but expected "
-			     (number->string expected-count)))))
-    (test-runner-on-bad-end-name!
-     r
-     (lambda (runner begin end)
-       (error 'triv-runner (string-append "bad end grojup name " end
-			     " but expected " begin))))
-    (test-runner-on-test-end! 
-     r 
-     (lambda (runner)
-       (let ((n (test-runner-test-name runner)))
-         (case (test-result-kind runner)
-           ((pass) (set! accum-pass (cons n accum-pass)))
-           ((fail) (set! accum-fail (cons n accum-fail)))
-           ((xpass) (set! accum-xpass (cons n accum-xpass)))
-           ((xfail) (set! accum-xfail (cons n accum-xfail)))
-           ((skip) (set! accum-skip (cons n accum-skip)))))))
-    ;;
-    (test-with-runner r (thunk))
-    (list (reverse accum-pass)    ; passed as expected
-          (reverse accum-fail)    ; failed, but was expected to pass
-          (reverse accum-xfail)   ; failed as expected
-          (reverse accum-xpass)   ; passed, but was expected to fail
-          (reverse accum-skip)    ; was not executed
-          (list (test-runner-pass-count r)
-                (test-runner-fail-count r)
-                (test-runner-xfail-count r)
-                (test-runner-xpass-count r)
-                (test-runner-skip-count r)))))
+;; (define (triv-runner thunk)
+;;   (let ((r (test-runner-null))
+;;         (accum-pass '())
+;;         (accum-fail '())
+;;         (accum-xfail '())
+;;         (accum-xpass '())
+;;         (accum-skip '()))
+;;     ;;
+;;     (test-runner-on-bad-count!
+;;      r
+;;      (lambda (runner count expected-count)
+;;        (error (string-append "bad count " (number->string count)
+;; 			     " but expected "
+;; 			     (number->string expected-count)))))
+;;     (test-runner-on-bad-end-name!
+;;      r
+;;      (lambda (runner begin end)
+;;        (error (string-append "bad end grojup name " end
+;; 			     " but expected " begin))))
+;;     (test-runner-on-test-end! 
+;;      r 
+;;      (lambda (runner)
+;;        (let ((n (test-runner-test-name runner)))
+;;          (case (test-result-kind runner)
+;;            ((pass) (set! accum-pass (cons n accum-pass)))
+;;            ((fail) (set! accum-fail (cons n accum-fail)))
+;;            ((xpass) (set! accum-xpass (cons n accum-xpass)))
+;;            ((xfail) (set! accum-xfail (cons n accum-xfail)))
+;;            ((skip) (set! accum-skip (cons n accum-skip)))))))
+;;     ;;
+;;     (test-with-runner r (thunk))
+;;     (list (reverse accum-pass)    ; passed as expected
+;;           (reverse accum-fail)    ; failed, but was expected to pass
+;;           (reverse accum-xfail)   ; failed as expected
+;;           (reverse accum-xpass)   ; passed, but was expected to fail
+;;           (reverse accum-skip)    ; was not executed
+;;           (list (test-runner-pass-count r)
+;;                 (test-runner-fail-count r)
+;;                 (test-runner-xfail-count r)
+;;                 (test-runner-xpass-count r)
+;;                 (test-runner-skip-count r)))))
 
 ;; (define (path-revealing-runner thunk)
 ;;   (let ((r (test-runner-null))
@@ -177,23 +177,17 @@
 ;; ;;;
 ;; ;;;
 
-;(test-begin "2. Tests for catching errors")
+;; (test-begin "2. Tests for catching errors")
 
-(test-begin "2.1. test-error")
-;(test-error (vector-ref '#(1 2) 9))
-;; (display (triv-runner
+;; (test-begin "2.1. test-error")
+
+;; (test-equal
+;;  "2.1.1. Baseline test; PASS with no optional args"
+;;  '(("") () () () () (1 0 0 0 0))
+;;  (triv-runner
 ;;   (lambda ()
 ;;     ;; PASS
 ;;     (test-error (vector-ref '#(1 2) 9)))))
-(test-equal
- "2.1.1. Baseline test; PASS with no optional args"
- '(("") () () () () (1 0 0 0 0))
- (let ([ x (triv-runner
-  (lambda ()
-    ;; PASS
-    (test-error (vector-ref '#(1 2) 9))))])
-   (display x)
-   x))
 
 ;; (test-equal
 ;;  "2.1.2. Baseline test; FAIL with no optional args"

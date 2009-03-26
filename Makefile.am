@@ -236,6 +236,8 @@ lib/srfi/%3a48/intermediate-format-strings.sls \
 lib/srfi/%3a48/intermediate-format-strings/compat.mosh.sls \
 lib/srfi/%3a61.sls \
 lib/srfi/%3a61/cond.sls \
+lib/srfi/%3a64.sls \
+lib/srfi/%3a64/testing.sls \
 lib/srfi/%3a67.sls \
 lib/srfi/%3a67/compare-procedures.sls \
 lib/srfi/67/compare.ss \
@@ -409,6 +411,7 @@ test: ./mosh all-tests.scm update
 	./mosh test/unicode.scm
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
+	./mosh lib/srfi/	%3a64/srfi-64-test.scm
 	./mosh test/ffi.scm
 	./mosh test/mysql.scm
 	./mosh test/clos.scm
