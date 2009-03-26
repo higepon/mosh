@@ -519,6 +519,7 @@
 (define (%test-report-result)
   (let* ((r (test-runner-get))
      (result-kind (test-result-kind r)))
+    (display result-kind)
     (case result-kind
       ((pass)
        (test-runner-pass-count! r (+ 1 (test-runner-pass-count r))))
@@ -546,6 +547,7 @@
   (not (eq? 'skip (test-result-ref r 'result-kind))))
 
 (define (%test-on-test-end r result)
+  (display result)
     (test-result-set! r 'result-kind
               (if (eq? (test-result-ref r 'result-kind) 'xfail)
               (if result 'xpass 'xfail)
@@ -578,6 +580,7 @@
        (if (%test-on-test-begin r)
        (let ()
          (let ((res (%test-evaluate-with-catch expr)))
+           (display res)
            (test-result-set! r 'actual-value res)
            (%test-on-test-end r res))))
        (%test-report-result)))))
@@ -635,14 +638,14 @@
       ((%test-error r etype expr)
        (%test-comp1body r (guard (ex
           ((procedure? etype)
+           (display 'procedure)
            (etype ex))
           ((equal? etype #t)
            #t)
-          (else #t))
+          (else 
+           (display 'else)
+           #t))
           expr)))))
-
-;;       ((%test-error r etype expr)
-;;        (%test-comp1body r (guard (ex (else #t)) expr)))))
 
   (define-syntax test-error
     (syntax-rules ()
