@@ -78,9 +78,9 @@
     (syntax-rules ()
       ((%test-record-define alloc runner? (name index setter getter) ...)
        (define-record-type test-runner
-	 (alloc)
-	 runner?
-	 (name setter getter) ...))))
+     (alloc)
+     runner?
+     (name setter getter) ...))))
 ;; (define-record-type (test-runner %test-runner-alloc test-runner?)
 ;;   (fields
 ;;  (mutable pass-count test-runner-pass-count test-runner-pass-count!)
@@ -115,7 +115,7 @@
 ;;  ;; Field can be used by test-runner for any purpose.
 ;;  ;; test-runner-simple uses it for a log file.
 ;;  (mutable aux-value test-runner-aux-value test-runner-aux-value!)))
-   
+
 
 
 (%test-record-define
@@ -633,7 +633,16 @@
   (define-syntax %test-error
     (syntax-rules ()
       ((%test-error r etype expr)
-       (%test-comp1body r (guard (ex (else (display ex) #t)) expr)))))
+       (%test-comp1body r (guard (ex
+          ((procedure? etype)
+           (etype ex))
+          ((equal? etype #t)
+           #t)
+          (else #t))
+          expr)))))
+
+;;       ((%test-error r etype expr)
+;;        (%test-comp1body r (guard (ex (else #t)) expr)))))
 
   (define-syntax test-error
     (syntax-rules ()
