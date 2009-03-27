@@ -205,7 +205,7 @@
 
 ;; Not part of the specification.  FIXME
 ;; Controls whether a log file is generated.
-(define test-log-to-file #t)
+(define test-log-to-file #f)
 
 
 
@@ -545,6 +545,9 @@
      (let ()
        (if (%test-on-test-begin r)
            (let ((exp expected))
+             ;; added by higepon
+             (test-result-alist! r (list (cons 'test-name (list 'comp 'expected 'expr))))
+             ;;
              (test-result-set! r 'expected-value exp)
              (let ((res (%test-evaluate-with-catch expr)))
                (test-result-set! r 'actual-value res)
@@ -562,7 +565,6 @@
      (let ()
        (if (%test-on-test-begin r)
            (let ()
-
              (let ((res (%test-evaluate-with-catch expr)))
                (test-result-set! r 'actual-value res)
 
@@ -581,13 +583,14 @@
     ((test-assert tname test-expression)
      (let* ((r (test-runner-get))
             (name tname))
-
        (test-result-alist! r '((test-name . tname)))
        (%test-comp1body r test-expression)))
     ((test-assert test-expression)
-     (let* ((r (test-runner-get)))
-
-       (test-result-alist! r '())
+     (let* ((r (test-runner-get))
+            (name 'test-expression))
+;       (test-result-alist! r '())
+       ;; added by higepon
+       (test-result-alist! r (list (cons 'test-name name)))
        (%test-comp1body r test-expression)))))
 (define-syntax %test-comp2
   (syntax-rules ()
@@ -624,16 +627,14 @@
 (define-syntax %test-error
   (syntax-rules ()
     ((%test-error r etype expr)
-     (begin  (guard (ex
-                     ((procedure? etype)
-                      (etype ex))
-                     ((equal? etype #t)
-                      #t)
-                     (else
-                      #t))
-                    (begin
-
-                      expr ))     ))))
+     (guard (ex
+             ((procedure? etype)
+              (etype ex))
+             ((equal? etype #t)
+              #t)
+             (else
+              #t))
+            expr #f)]))
 
 (define-syntax test-error
   (syntax-rules ()
