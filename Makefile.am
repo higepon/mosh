@@ -411,7 +411,7 @@ test: ./mosh all-tests.scm update
 	./mosh test/unicode.scm
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
-	./mosh lib/srfi/	%3a64/srfi-64-test.scm
+	./mosh lib/srfi/%3a64/srfi-64-test.scm
 	./mosh test/ffi.scm
 	./mosh test/mysql.scm
 	./mosh test/clos.scm
