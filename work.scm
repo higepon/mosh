@@ -1,147 +1,44 @@
 (import (rnrs)
         (mosh)
-        (srfi :64))
+        (mosh test2)
+        )
 
-(define-record-type failure
-  (fields
-    (immutable expr)
-    (immutable expected)
-    (immutable actual)))
+(define (main args)
+  (define :point
+    (make-record-type-descriptor
+     'point #f
+     #f #f #f
+     '#((mutable x) (mutable y))))
+  (define :point-cd
+    (make-record-constructor-descriptor :point #f #f))
+  (define make-point (record-constructor :point-cd))
+  (define point? (record-predicate :point))
+  (define point-x (record-accessor :point 0))
+  (define point-y (record-accessor :point 1))
+  (define point-x-set! (record-mutator :point 0))
+  (define point-y-set! (record-mutator :point 1))
+  (define p1 (make-point 1 2))
 
-(define *nul* '*runner-nul*)
-
-;; We may store #f as value of a-list.
-;; So returns *nul* instead of #f.
-(define (assq-ref obj alist)
-  (let loop ([lst alist])
-    (cond
-     [(null? lst) *nul*]
-     [(eq? (caar lst) obj)
-      (cdar lst)]
-     [else
-      (loop (cdr lst))])))
-
-(define (valid? obj)
-  (not (eq? obj *nul*)))
-
-(define-syntax with-color
-  (lambda (x)
-    (syntax-case x ()
-      [(_ color expr more ...)
-       (if (string=? (host-os) "win32")
-           #'(begin expr more ...)
-           #'(dynamic-wind
-                 (lambda () (display color))
-                 (lambda () expr more ...)
-                 (lambda () (display "\x1b;[m")))]))))
-
-(define-syntax with-color-green
-  (lambda (x)
-    (syntax-case x ()
-      [(_ expr more ...)
-       #'(with-color "\x1b;[0;32m" expr more ...)])))
-
-(define-syntax with-color-red
-  (lambda (x)
-    (syntax-case x ()
-      [(_ expr more ...)
-       #'(with-color "\x1b;[0;31m" expr more ...)])))
-
-(define (mosh-test-runner)
-  (let ([runner (test-runner-null)]
-        [failures '()])
-    (define (add-failure! failure)
-      (set! failures (cons failure failures)))
-    (test-runner-on-test-end! runner
-       (lambda (runner)
-         (let* ([result (test-result-alist runner)]
-                [kind (test-result-ref runner 'result-kind)])
-           (when (memq kind '(fail))
-             (add-failure! (make-failure
-                            (assq-ref 'test-name result)
-                            (assq-ref 'expected-value result)
-                            (assq-ref 'actual-value result)))))))
-    (test-runner-on-final! runner
-       (lambda (runner)
-         (cond
-          [(> (test-runner-fail-count runner) 0)
-           (with-color-red
-            (format #t "[  FAILED  ] ~d passed, ~d failed.\n"
-                    (test-runner-pass-count runner)
-                    (test-runner-fail-count runner)))
-           (for-each
-            (lambda (f)
-              (display "=======================================\n")
-              (when (valid? (failure-expr f))
-                (format (current-error-port) " Test     : ~a \n" (failure-expr f)))
-              (when (valid? (failure-expected f))
-                (format (current-error-port) " Expected : ~a \n" (failure-expected f)))
-              (when (valid? (failure-actual f))
-                (format (current-error-port) " Actual   : ~a \n" (failure-actual f))))
-            failures)
-           (display "=======================================\n")]
-          [else
-           (with-color-green
-            (format #t "[  PASSED  ] ~d tests\x1b;[m\n" (test-runner-pass-count runner)))])))
-    runner))
-
-(test-runner-factory mosh-test-runner)
-
-(define (test-not-match-name name)
-  (lambda (runner)
-    (not (equal? name (test-runner-test-name runner)))))
+;; (test-begin "hage")
+ (test-begin "hage")
 
 
-(test-begin "hige")
-;(test-skip 2)
+  (when (>= (length args) 1)
+    (test-skip (test-not-match-name (cadr args))))
+      
 
-(test-begin "hage")
+
+;; (let ()
+  (test-assert "hage" 3)
+  (test-assert (point? p1))
+  (test-assert (point-x p1))
+  (test-assert (point-y p1))
+  (point-y-set! p1 3)
+  (test-assert (point-y p1))
 (test-skip (test-not-match-name "hage"))
-;(test-skip 10)
-(test-assert "hage" (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-(test-assert (let ([x 3]) x))
-;(test-error lexical-violation? (vector-ref '#(1 2) 9))
-;(test-eqv 4 (let ([x 3]) x))
 (test-end)
-(test-begin "hage")
-;(test-eqv 5 6)
-(test-end)
-(test-end)
+)
+
+(main (command-line))
+
+
