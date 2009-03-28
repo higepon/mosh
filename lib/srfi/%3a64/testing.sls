@@ -60,11 +60,11 @@
    test-on-bad-count-simple test-on-bad-end-name-simple
    test-on-final-simple test-on-test-end-simple)
   (import
-   (only (rnrs) define ... _ define-syntax syntax-rules reverse quote let if memq let* or begin display cdr car cons eq? newline assq output-port? pair? not lambda cond null? else set! eqv? open-output-file string? string-append current-output-port > number->string and equal? = - caar cdar write case + >= <= dynamic-wind apply list < procedure? integer? eof-object? read-char read guard)
-   (only (srfi :0) cond-expand)
+   (only (rnrs) error define ... _ define-syntax syntax-rules reverse quote let if memq let* or begin display cdr car cons eq? newline assq output-port? pair? not lambda cond null? else set! eqv? open-output-file string? string-append current-output-port > number->string and equal? = - caar cdar write case + >= <= dynamic-wind apply list < procedure? integer? eof-object? read-char read guard)
+;   (only (srfi :0) cond-expand)
    (only (srfi :6) open-input-string)
    (only (srfi :9) define-record-type)
-   (only (srfi :23) error)
+;   (only (srfi :23) error)
    (only (srfi :39) make-parameter)
    (only (rnrs mutable-pairs) set-cdr!)
    (only (rnrs eval) eval environment))
@@ -228,10 +228,8 @@
 (define (test-runner-get)
   (let ((r (test-runner-current)))
     (if (not r)
-        (cond-expand
-         (srfi-23 (error "test-runner not initialized - test-begin missing?"))
-         (else #t)))
-    r))
+        (error 'test-runner-get "test-runner not initialized - test-begin missing?")
+        r)))
 
 (define (%test-specificier-matches spec runner)
   (spec runner))
@@ -300,9 +298,7 @@
                     (if (string? test-log-to-file) test-log-to-file
                         (string-append suite-name ".log")))
                    (log-file
-                    (cond-expand (mzscheme
-                                  (open-output-file log-file-name 'truncate/replace))
-                                 (else (open-output-file log-file-name)))))
+                    (open-output-file log-file-name)))
               (display "%%%% Starting test " log-file)
               (display suite-name log-file)
               (newline log-file)
@@ -347,9 +343,7 @@
 (define (test-on-bad-end-name-simple runner begin-name end-name)
   (let ((msg (string-append (%test-format-line runner) "test-end " begin-name
                             " does not match test-begin " end-name)))
-    (cond-expand
-     (srfi-23 (error msg))
-     (else (display msg) (newline)))))
+     (error 'test-on-bad-end-name-simple msg)))
 
 
 (define (%test-final-report1 value label port)
@@ -394,9 +388,7 @@
     (test-result-alist! r line-info)
     (if (null? groups)
         (let ((msg (string-append line "test-end not in a group")))
-          (cond-expand
-           (srfi-23 (error msg))
-           (else (display msg) (newline)))))
+           (error 'test-end msg)))
     (if (and suite-name (not (equal? suite-name (car groups))))
         ((test-runner-on-bad-end-name r) r suite-name (car groups)))
     (let* ((count-list (%test-runner-count-list r))
@@ -727,7 +719,7 @@
         ((integer? specifier) (test-match-nth 1 specifier))
         ((string? specifier) (test-match-name specifier))
         (else
-         (error "not a valid test specifier"))))
+         (error 'test-as-specifier "not a valid test specifier"))))
 
 (define-syntax test-skip
   (syntax-rules ()
@@ -754,8 +746,6 @@
          (form (read port)))
     (if (eof-object? (read-char port))
         (eval form (environment '(rnrs)))
-        (cond-expand
-         (srfi-23 (error  "(not at eof)"))
-         (else "error")))))
+        (error 'test-read-eval-string "(not at eof)"))))
 
 ) ;; library

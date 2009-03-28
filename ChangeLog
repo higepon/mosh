@@ -1,3 +1,7 @@
+2009-03-28  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/test2.ss (mosh): Trying new test system.
+
 2009-03-26  higepon  <higepon@users.sourceforge.jp>
 
         * Added (srfi :64 testing)

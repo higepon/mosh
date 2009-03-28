@@ -1,31 +1,13 @@
 (import (rnrs)
-        (mosh test))
+        (mosh test2))
 
-(define (print str) (display str) (newline))
+(test-begin "record")
 
-;; (define-syntax or
-;;   (lambda (x)
-;;     (syntax-case x ()
-;;       [(_) (syntax #f)]
-;;       [(_ e) (syntax e)]
-;;       [(_ e1 e2 e3 ...)
-;;        (syntax (let ([t e1])
-;;                  (if t t (or e2 e3 ...))))])))
+(when (>= (length (command-line)) 2)
+  (test-skip (test-not-match-name (cadr (command-line)))))
 
-;; (define-syntax test-and-print
-;;   (lambda (x)
-;;     (syntax-case x ()
-;;       ((_ test expected)
-;;        (syntax
-;;         (let* ([result test]
-;;                [test-ok? (equal? result expected)])
-;;           (if test-ok?
-;;               (format #t "OK: ~a => ~a\n" (syntax->datum (syntax test)) result)
-;;               (format #t "NG: ~a => ~a expected ~a\n"
-;;                       (syntax->datum (syntax test))
-;;                       result
-;;                       expected))))))))
 
+(test-begin "basic")
 (let ()
   (define :point
     (make-record-type-descriptor
@@ -41,13 +23,15 @@
   (define point-x-set! (record-mutator :point 0))
   (define point-y-set! (record-mutator :point 1))
   (define p1 (make-point 1 2))
-  (test* (point? p1) #t)
-  (test* (point? p1) #t)
-  (test* (point-x p1) 1)
-  (test* (point-y p1) 2)
+  (test-true (point? p1))
+  (test-true (point? p1))
+  (test-eqv 1 (point-x p1))
+  (test-eqv 2 (point-y p1))
   (point-y-set! p1 3)
-  (test* (point-y p1) 3))
+  (test-eqv 3 (point-y p1)))
+(test-end)
 
+(test-begin "generative")
 (let ()
   (define-record-type (point make-point point?)
     (fields (immutable x point-x)
@@ -66,27 +50,29 @@
     (cons 'rgb c))
   (define p1 (make-point 1 2))
   (define p2 (make-cpoint 3 4 'red))
-  (test* (point? p1) #t)
-  (test* (point? p2) #t)
-  (test* (point? (vector)) #f)
-  (test* (point? (cons 'a 'b)) #f)
-  (test* (cpoint? p1) #f)
-  (test* (cpoint? p2) #t)
-  (test* (point-x p1) 1)
-  (test* (point-y p1) 2)
-  (test* (point-x p2) 3)
-  (test* (point-y p2) 4)
-  (test* (cpoint-rgb p2) '(rgb . red))
+  (test-true (point? p1))
+  (test-true (point? p2))
+  (test-false (point? (vector)))
+  (test-false (point? (cons 'a 'b)))
+  (test-false (cpoint? p1))
+  (test-true (cpoint? p2))
+  (test-eqv 1 (point-x p1))
+  (test-eqv 2 (point-y p1))
+  (test-eqv 3 (point-x p2))
+  (test-eqv 4 (point-y p2))
+  (test-equal '(rgb . red) (cpoint-rgb p2))
   (set-point-y! p1 17)
-  (test* (point-y p1) 17)
-  (print (record-rtd p1)))
+  (test-eqv 17 (point-y p1)))
 
+(test-end)
+
+(test-begin "protocol")
 (let ()
   (define-record-type (ex1 make-ex1 ex1?)
     (protocol (lambda (p) (lambda a (p a))))
     (fields (immutable f ex1-f)))
   (define ex1-i1 (make-ex1 1 2 3))
-  (test* (ex1-f ex1-i1) '(1 2 3)))
+  (test-equal '(1 2 3) (ex1-f ex1-i1) ))
 
 (let ()
   (define-record-type (ex2 make-ex2 ex2?)
@@ -95,8 +81,8 @@
     (fields (immutable a ex2-a)
             (immutable b ex2-b)))
   (define ex2-i1 (make-ex2 1 2 3))
-  (test* (ex2-a ex2-i1) 1)
-  (test* (ex2-b ex2-i1) '(2 3)))
+  (test-eqv 1 (ex2-a ex2-i1))
+  (test-equal '(2 3) (ex2-b ex2-i1)))
 
 (let ()
   (define (color->rgb c)
@@ -143,12 +129,11 @@
      (mutable thickness))
     (sealed #t) (opaque #t)) ; this is bug of psyntax (sealed? #t) (opaque? #t))
   (define ex3-i1 (make-ex3 1 2 17))
-  (test* (ex3? ex3-i1) #t)
-  (test* (cpoint-rgb ex3-i1) '(rgb . red))
-;  (test* (ex3-thickness ex3-i1) 17)
+  (test-true (ex3? ex3-i1))
+  (test-equal '(rgb . red) (cpoint-rgb ex3-i1))
   (ex3-thickness-set! ex3-i1 18);   ⇒ unspecified
-  (test* (ex3-thickness ex3-i1) 18)
-  (print *ex3-instance*)
-  (test* (record? ex3-i1) #f)
-)
+  (test-eqv 18 (ex3-thickness ex3-i1))
+  (test-false (record? ex3-i1)))
+
+(test-end)
 (test-end)
