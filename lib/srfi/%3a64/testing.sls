@@ -60,12 +60,13 @@
    test-on-bad-count-simple test-on-bad-end-name-simple
    test-on-final-simple test-on-test-end-simple)
   (import
-   (only (rnrs) error define ... _ define-syntax syntax-rules reverse quote let if memq let* or begin display cdr car cons eq? newline assq output-port? pair? not lambda cond null? else set! eqv? open-output-file string? string-append current-output-port > number->string and equal? = - caar cdar write case + >= <= dynamic-wind apply list < procedure? integer? eof-object? read-char read guard)
+   (only (rnrs) error define ... _ define-syntax syntax-rules reverse quote let if memq let* or begin display cdr car cons eq? newline assq output-port? pair? not lambda cond null? else set! eqv? open-output-file string? string-append current-output-port > number->string and equal? = - caar cdar write case + >= <= dynamic-wind apply list < procedure? integer? eof-object? read-char read guard define-record-type protocol fields mutable open-string-input-port)
 ;   (only (srfi :0) cond-expand)
-   (only (srfi :6) open-input-string)
-   (only (srfi :9) define-record-type)
+;   (only (srfi :6) open-input-string)
+;   (only (srfi :9) define-record-type)
 ;   (only (srfi :23) error)
-   (only (srfi :39) make-parameter)
+;   (only (srfi :39) make-parameter)
+   (only (system) make-parameter)
    (only (rnrs mutable-pairs) set-cdr!)
    (only (rnrs eval) eval environment))
 
@@ -92,52 +93,92 @@
 ;; SOFTWARE.
 
 (define reverse! reverse)
+  (define (open-input-string str)
+    (open-string-input-port str))
 
-(define-syntax %test-record-define
-  (syntax-rules ()
-    ((%test-record-define alloc runner? (name index setter getter) ...)
-     (define-record-type test-runner
-       (alloc)
-       runner?
-       (name setter getter) ...))))
+;; (define-syntax %test-record-define
+;;   (syntax-rules ()
+;;     ((%test-record-define alloc runner? (name index setter getter) ...)
+;;      (define-record-type test-runner
+;;        (alloc)
+;;        runner?
+;;        (name setter getter) ...))))
 
 
-(%test-record-define
- %test-runner-alloc test-runner?
- ;; Cumulate count of all tests that have passed and were expected to.
- (pass-count 1 test-runner-pass-count test-runner-pass-count!)
- (fail-count 2 test-runner-fail-count test-runner-fail-count!)
- (xpass-count 3 test-runner-xpass-count test-runner-xpass-count!)
- (xfail-count 4 test-runner-xfail-count test-runner-xfail-count!)
- (skip-count 5 test-runner-skip-count test-runner-skip-count!)
- (skip-list 6 %test-runner-skip-list %test-runner-skip-list!)
- (fail-list 7 %test-runner-fail-list %test-runner-fail-list!)
- ;; Normally #t, except when in a test-apply.
- (run-list 8 %test-runner-run-list %test-runner-run-list!)
- (skip-save 9 %test-runner-skip-save %test-runner-skip-save!)
- (fail-save 10 %test-runner-fail-save %test-runner-fail-save!)
- (group-stack 11 test-runner-group-stack test-runner-group-stack!)
- (on-test-begin 12 test-runner-on-test-begin test-runner-on-test-begin!)
- (on-test-end 13 test-runner-on-test-end test-runner-on-test-end!)
- ;; Call-back when entering a group. Takes (runner suite-name count).
- (on-group-begin 14 test-runner-on-group-begin test-runner-on-group-begin!)
- ;; Call-back when leaving a group.
- (on-group-end 15 test-runner-on-group-end test-runner-on-group-end!)
- ;; Call-back when leaving the outermost group.
- (on-final 16 test-runner-on-final test-runner-on-final!)
- ;; Call-back when expected number of tests was wrong.
- (on-bad-count 17 test-runner-on-bad-count test-runner-on-bad-count!)
- ;; Call-back when name in test=end doesn't match test-begin.
- (on-bad-end-name 18 test-runner-on-bad-end-name test-runner-on-bad-end-name!)
- ;; Cumulate count of all tests that have been done.
- (total-count 19 %test-runner-total-count %test-runner-total-count!)
- ;; Stack (list) of (count-at-start . expected-count):
- (count-list 20 %test-runner-count-list %test-runner-count-list!)
- (result-alist 21 test-result-alist test-result-alist!)
- ;; Field can be used by test-runner for any purpose.
- ;; test-runner-simple uses it for a log file.
- (aux-value 22 test-runner-aux-value test-runner-aux-value!)
- )
+;; (%test-record-define
+;;  %test-runner-alloc test-runner?
+;;  ;; Cumulate count of all tests that have passed and were expected to.
+;;  (pass-count 1 test-runner-pass-count test-runner-pass-count!)
+;;  (fail-count 2 test-runner-fail-count test-runner-fail-count!)
+;;  (xpass-count 3 test-runner-xpass-count test-runner-xpass-count!)
+;;  (xfail-count 4 test-runner-xfail-count test-runner-xfail-count!)
+;;  (skip-count 5 test-runner-skip-count test-runner-skip-count!)
+;;  (skip-list 6 %test-runner-skip-list %test-runner-skip-list!)
+;;  (fail-list 7 %test-runner-fail-list %test-runner-fail-list!)
+;;  ;; Normally #t, except when in a test-apply.
+;;  (run-list 8 %test-runner-run-list %test-runner-run-list!)
+;;  (skip-save 9 %test-runner-skip-save %test-runner-skip-save!)
+;;  (fail-save 10 %test-runner-fail-save %test-runner-fail-save!)
+;;  (group-stack 11 test-runner-group-stack test-runner-group-stack!)
+;;  (on-test-begin 12 test-runner-on-test-begin test-runner-on-test-begin!)
+;;  (on-test-end 13 test-runner-on-test-end test-runner-on-test-end!)
+;;  ;; Call-back when entering a group. Takes (runner suite-name count).
+;;  (on-group-begin 14 test-runner-on-group-begin test-runner-on-group-begin!)
+;;  ;; Call-back when leaving a group.
+;;  (on-group-end 15 test-runner-on-group-end test-runner-on-group-end!)
+;;  ;; Call-back when leaving the outermost group.
+;;  (on-final 16 test-runner-on-final test-runner-on-final!)
+;;  ;; Call-back when expected number of tests was wrong.
+;;  (on-bad-count 17 test-runner-on-bad-count test-runner-on-bad-count!)
+;;  ;; Call-back when name in test=end doesn't match test-begin.
+;;  (on-bad-end-name 18 test-runner-on-bad-end-name test-runner-on-bad-end-name!)
+;;  ;; Cumulate count of all tests that have been done.
+;;  (total-count 19 %test-runner-total-count %test-runner-total-count!)
+;;  ;; Stack (list) of (count-at-start . expected-count):
+;;  (count-list 20 %test-runner-count-list %test-runner-count-list!)
+;;  (result-alist 21 test-result-alist test-result-alist!)
+;;  ;; Field can be used by test-runner for any purpose.
+;;  ;; test-runner-simple uses it for a log file.
+;;  (aux-value 22 test-runner-aux-value test-runner-aux-value!)
+;;  )
+
+(define-record-type (%test-runner %test-runner-alloc test-runner?)
+  (protocol (lambda (p) (lambda a (p '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '() '()))))
+  (fields
+   ;; Cumulate count of all tests that have passed and were expected to.
+   (mutable pass-count test-runner-pass-count test-runner-pass-count!)
+   (mutable fail-count  test-runner-fail-count test-runner-fail-count!)
+   (mutable xpass-count test-runner-xpass-count test-runner-xpass-count!)
+   (mutable xfail-count test-runner-xfail-count test-runner-xfail-count!)
+   (mutable skip-count test-runner-skip-count test-runner-skip-count!)
+   (mutable skip-list %test-runner-skip-list %test-runner-skip-list!)
+   (mutable fail-list %test-runner-fail-list %test-runner-fail-list!)
+   ;; Normally #t, except when in a test-apply.
+   (mutable run-list %test-runner-run-list %test-runner-run-list!)
+   (mutable skip-save %test-runner-skip-save %test-runner-skip-save!)
+   (mutable fail-save %test-runner-fail-save %test-runner-fail-save!)
+   (mutable group-stack test-runner-group-stack test-runner-group-stack!)
+   (mutable on-test-begin test-runner-on-test-begin test-runner-on-test-begin!)
+   (mutable on-test-end test-runner-on-test-end test-runner-on-test-end!)
+   ;; Call-back when entering a group. Takes (runner suite-name count).
+   (mutable on-group-begin test-runner-on-group-begin test-runner-on-group-begin!)
+   ;; Call-back when leaving a group.
+   (mutable on-group-end test-runner-on-group-end test-runner-on-group-end!)
+   ;; Call-back when leaving the outermost group.
+   (mutable on-final test-runner-on-final test-runner-on-final!)
+   ;; Call-back when expected number of tests was wrong.
+   (mutable on-bad-count test-runner-on-bad-count test-runner-on-bad-count!)
+   ;; Call-back when name in test=end doesn't match test-begin.
+   (mutable on-bad-end-name test-runner-on-bad-end-name test-runner-on-bad-end-name!)
+   ;; Cumulate count of all tests that have been done.
+   (mutable total-count %test-runner-total-count %test-runner-total-count!)
+   ;; Stack (list) of (count-at-start . expected-count):
+   (mutable count-list %test-runner-count-list %test-runner-count-list!)
+   (mutable result-alist test-result-alist test-result-alist!)
+   ;; Field can be used by test-runner for any purpose.
+   ;; test-runner-simple uses it for a log file.
+   (mutable aux-value test-runner-aux-value test-runner-aux-value!)
+   ))
 
 (define (test-runner-reset runner)
   (test-runner-pass-count! runner 0)
