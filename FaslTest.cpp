@@ -44,6 +44,7 @@
 #include "FileBinaryOutputPort.h"
 #include "Bignum.h"
 #include "Ratnum.h"
+#include "Record.h"
 #include "Flonum.h"
 #include "Symbol.h"
 #include "TestingVM.h"

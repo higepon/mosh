@@ -78,7 +78,12 @@ loop:
         const Object name = rtd->name();
         MOSH_ASSERT(name.isSymbol());
         collectSymbolsAndStrings(name);
-        return;
+        if (symbolsAndStringsTable_->containsP(obj)) {
+            return;
+        } else {
+            symbolsAndStringsTable_->set(obj, Object::makeFixnum(symbolsAndStringsTable_->size()));
+            return;
+        }
     } else if (obj.isSymbol() || obj.isString()) {
         if (symbolsAndStringsTable_->containsP(obj)) {
             return;
@@ -120,6 +125,12 @@ loop:
         for (int i = 0; i < length; i++) {
             collectSymbolsAndStrings(record->fieldAt(i));
         }
+        if (symbolsAndStringsTable_->containsP(obj)) {
+            return;
+        } else {
+            recordCount_++;
+            symbolsAndStringsTable_->set(obj, Object::makeFixnum(symbolsAndStringsTable_->size()));
+        }
         return;
     }
 
@@ -141,15 +152,20 @@ loop:
 
 void FaslReader::getSymbolsAndStrings()
 {
+    const int tableSize = fetchU32();
     const int count = fetchU32();
-    symbolsAndStringsArray_ = Object::makeObjectArray(count);
+    symbolsAndStringsArray_ = Object::makeObjectArray(tableSize);
+    for (int i = 0; i < tableSize; i++) {
+        symbolsAndStringsArray_[i] = Object::Ignore; // use Ignore for marking as not initialized
+    }
     for (int i = 0; i < count; i++) {
+//    for (int i = 0; i < tableSize; i++) {
         uint8_t tag = fetchU8();
         uint32_t uid = fetchU32();
         uint32_t len = fetchU32();
         ucs4string text;
         text.reserve(64);
-        if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING || tag == Fasl::TAG_ASCII_UNINTERNED_SYMBOL) {
+        if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING || tag == Fasl::TAG_ASCII_UNINTERNED_SYMBOL || tag == Fasl::TAG_RTD) {
             for (uint32_t i = 0; i < len; i++) {
                 text += fetchU8();
             }
@@ -171,6 +187,15 @@ void FaslReader::getSymbolsAndStrings()
         case Fasl::TAG_ASCII_STRING:
             symbolsAndStringsArray_[uid] = text;
             break;
+        case Fasl::TAG_RTD:
+        {
+            ucs4string nameString = text;
+            nameString += UC("-rtd$");
+            const Object rtd = theVM_->getTopLevelGlobalValueOrFalse(Symbol::intern(nameString.strdup()));
+            MOSH_ASSERT(!rtd.isFalse());
+            symbolsAndStringsArray_[uid] = rtd;
+            break;
+        }
         default:
             MOSH_ASSERT(false);
         }
@@ -178,6 +203,8 @@ void FaslReader::getSymbolsAndStrings()
 }
 
 FaslWriter::FaslWriter(BinaryOutputPort* outputPort) : symbolsAndStringsTable_(new EqHashTable),
+                                                       writtenRecord_(new EqHashTable),
+                                                       recordCount_(0),
                                                        outputPort_(outputPort)
 {
 }
@@ -231,7 +258,8 @@ void FaslWriter::putSymbolsAndStrings()
         MOSH_ASSERT(value.toFixnum() < size);
         objects[value.toFixnum()] = key;
     }
-    emitU32(size);
+    emitU32(size); // table size
+    emitU32(size - recordCount_); // number of datum
     for (int i = 0; i < size; i++) {
         const Object obj = objects[i];
         if (obj.isSymbol()) {
@@ -271,6 +299,19 @@ void FaslWriter::putSymbolsAndStrings()
                 emitU32(i);
                 emitString(text);
             }
+        } else if (obj.isRecordTypeDescriptor()) {
+            RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
+            MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported
+            MOSH_ASSERT(rtd->name().isSymbol());
+            Symbol* const symbol = rtd->name().toSymbol();
+            ucs4string text = symbol->c_str();
+            MOSH_ASSERT(text.is_ascii());
+            emitU8(Fasl::TAG_RTD);
+            emitU32(i);
+            emitAsciiString(text);
+        } else if (obj.isRecord()) {
+            // just skip
+            // Record is written after lookup entry initialized.
         } else {
             MOSH_ASSERT(false);
         }
@@ -305,24 +346,42 @@ void FaslWriter::putDatum(Object obj)
     }
 
     if (obj.isRecord()) {
-        emitU8(Fasl::TAG_RECORD);
-        Record* const record = obj.toRecord();
-        putDatum(record->rtd());
-        const int length = record->fieldsLength();
-        putDatum(Object::makeFixnum(length));
-        for (int i = 0; i < length; i++) {
-            putDatum(record->fieldAt(i));
+        // Writing Record.
+        // Record is collected as lookup object, but is not written at lookup section.
+        // Instead written in at normal section.
+
+        // not yet written
+        if (writtenRecord_->ref(obj, Object::False).isFalse()) {
+            emitU8(Fasl::TAG_RECORD);
+            const Object uid = symbolsAndStringsTable_->ref(obj, Object::False);
+            MOSH_ASSERT(uid.isFixnum());
+            putDatum(uid);
+            writtenRecord_->set(obj, Object::True);
+            Record* const record = obj.toRecord();
+            putDatum(record->rtd());
+            const int length = record->fieldsLength();
+            putDatum(Object::makeFixnum(length));
+            for (int i = 0; i < length; i++) {
+                // We don't support this pattern?
+                MOSH_ASSERT(!record->fieldAt(i).isRecord());
+                putDatum(record->fieldAt(i));
+            }
+        } else {
+            emitU8(Fasl::TAG_LOOKUP);
+            const Object id = symbolsAndStringsTable_->ref(obj, Object::False);
+            MOSH_ASSERT(!id.isFalse());
+            emitU32(id.toFixnum());
         }
         return;
     }
-    if (obj.isRecordTypeDescriptor()) {
-        RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
-        MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported
-        emitU8(Fasl::TAG_RTD);
-        putDatum(rtd->name());
-        return;
-    }
-    if (obj.isSymbol() || obj.isString()) {
+//     if (obj.isRecordTypeDescriptor()) {
+//         RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
+//         MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported
+//         emitU8(Fasl::TAG_RTD);
+//         putDatum(rtd->name());
+//         return;
+//     }
+    if (obj.isSymbol() || obj.isString() || obj.isRecordTypeDescriptor()) {
         emitU8(Fasl::TAG_LOOKUP);
         const Object id = symbolsAndStringsTable_->ref(obj, Object::False);
         MOSH_ASSERT(!id.isFalse());

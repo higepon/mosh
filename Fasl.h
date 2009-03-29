@@ -127,6 +127,7 @@ private:
             return Object::Eof;
         case Fasl::TAG_LOOKUP: {
             const uint32_t uid = fetchU32();
+            MOSH_ASSERT(symbolsAndStringsArray_[uid] != Object::Ignore);
             return symbolsAndStringsArray_[uid];
         }
         case Fasl::TAG_SMALL_FIXNUM: {
@@ -220,29 +221,29 @@ private:
             return Object::False;
         case Fasl::TAG_SYMBOL:
         case Fasl::TAG_STRING:
-            break;
         case Fasl::TAG_RTD:
-        {
-            const Object name = getDatum();
-            MOSH_ASSERT(name.isSymbol());
-            ucs4string nameString = name.toSymbol()->c_str();
-            nameString += UC("-rtd$");
-            const Object rtd = theVM_->getTopLevelGlobalValueOrFalse(Symbol::intern(nameString.strdup()));
-            MOSH_ASSERT(!rtd.isFalse());
-            return rtd;
-        }
+            break;
         case Fasl::TAG_RECORD:
         {
+            // Readin Record.
+            // Record is collected as lookup object, but is not written at lookup section.
+            // Instead written in at normal section.
+            Object uid = getDatum();
+            MOSH_ASSERT(uid.isFixnum());
             Object rtd = getDatum();
             MOSH_ASSERT(rtd.isRecordTypeDescriptor());
+
             Object length = getDatum();
             MOSH_ASSERT(length.isFixnum());
             const int len = length.toFixnum();
             Object* fields = Object::makeObjectArray(len);
+            const Object record =  Object::makeRecord(rtd, fields, len);
+            MOSH_ASSERT(symbolsAndStringsArray_[uid.toFixnum()] == Object::Ignore);
+            symbolsAndStringsArray_[uid.toFixnum()] = record;
             for (int i = 0; i < len; i++) {
-                fields[i] = getDatum();
+                record.toRecord()->setFieldAt(i, getDatum());
             }
-            return Object::makeRecord(rtd, fields, len);
+            return record;
         }
         case Fasl::TAG_EQ_HASH_TABLE:
         {
@@ -261,6 +262,7 @@ private:
         default:
             MOSH_ASSERT(false);
         }
+
         MOSH_ASSERT(false);
         return Object::Undef;
     }
@@ -289,6 +291,8 @@ private:
     void putDatum(Object obj);
 
     EqHashTable* symbolsAndStringsTable_;
+    EqHashTable* writtenRecord_;
+    int recordCount_;
     BinaryOutputPort* outputPort_;
 };
 
