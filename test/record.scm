@@ -1,5 +1,5 @@
 (import (rnrs)
-        (mosh test2))
+        (mosh test))
 
 (test-begin "record")
 

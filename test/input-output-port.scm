@@ -33,6 +33,7 @@
         (mosh process)
         (mosh shell)
         (mosh test))
+(test-begin "input/output")
 
 ;; N.B rm and cp should be written in pure scheme
 (define (rm file-name)
@@ -50,7 +51,7 @@
             (close-port in)
             (close-port out)))))))
 
-;;(cp "./test/test.txt" "./test/test.txt.dat")
+;;(cp "./test-trueest.txt" "./test-trueest.txt.dat")
 
 ;; (define (cp from to)
 ;;   (let-values  ([(pid cin cout cerr) (spawn "cp" (list from to) (list #f #f #f))])
@@ -67,17 +68,17 @@
                      (lambda () 0)
                      #f
                      (lambda () 'ok))])
-           (test* (port-has-port-position? p) #t)
-           (test* (port-has-set-port-position!? p) #f)
-           (test* (port-position p) 0)
+           (test-true (port-has-port-position? p))
+           (test-false  (port-has-set-port-position!? p))
+           (test-equal (port-position p) 0)
            (close-port p))
          (let* ([p (make "custom"
                      (lambda (? start count) 0)
                      #f
                      (lambda (pos) 'ok)
                      (lambda () 'ok))])
-           (test* (port-has-port-position? p) #f)
-           (test* (port-has-set-port-position!? p) #t)
+           (test-false  (port-has-port-position? p))
+           (test-true  (port-has-set-port-position!? p))
            (set-port-position! p 0)
            (close-port p))
          (let* ([p (make "custom"
@@ -85,8 +86,8 @@
                      #f
                      #f
                      (lambda () 'ok))])
-           (test* (port-has-port-position? p) #f)
-           (test* (port-has-set-port-position!? p) #f)
+           (test-false  (port-has-port-position? p))
+           (test-false  (port-has-set-port-position!? p))
            (close-port p))))])
 
 
@@ -109,54 +110,54 @@
      (define (write-and-back c)
        (put-u8 port c)
        (set-port-position! port (- (port-position port) 1)))
-     (test/t (input-port? port))
-     (test/t (port-has-set-port-position!? port))
-     (test/t (port-has-port-position? port))
-     (test* (get-u8 port) #x2f)
-     (test* (port-position port) 1)
+     (test-true (input-port? port))
+     (test-true (port-has-set-port-position!? port))
+     (test-true (port-has-port-position? port))
+     (test-equal (get-u8 port) #x2f)
+     (test-equal (port-position port) 1)
      ;; write!
      (put-u8 port #x2e)
      ;; write!
      (write-and-back #xfb)
-     (test* (get-u8 port) #xfb)
-     (test* (port-position port) 3)
+     (test-equal (get-u8 port) #xfb)
+     (test-equal (port-position port) 3)
      (set-port-position! port 8193) ;; over the buffer boundary
-     (test* (port-position port) 8193)
-     (test* (get-u8 port) 46)
+     (test-equal (port-position port) 8193)
+     (test-equal (get-u8 port) 46)
      (set-port-position! port 8190)
-     (test* (port-position port) 8190)
-     (test* (get-u8 port) 32)
-     (test* (lookahead-u8 port) 110)
-     (test* (port-position port) 8191)
-     (test* (get-u8 port) 110)
+     (test-equal (port-position port) 8190)
+     (test-equal (get-u8 port) 32)
+     (test-equal (lookahead-u8 port) 110)
+     (test-equal (port-position port) 8191)
+     (test-equal (get-u8 port) 110)
      (set-port-position! port 8190)
      ;; read over the boundary
-     (test* (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
-     (test* (port-position port) 8220)
+     (test-equal (get-bytevector-n port 30) #vu8(32 110 50 46 116 111 70 108 111 110 117 109 40 41 41 59 10 32 32 32 32 125 32 101 108 115 101 32 123 10))
+     (test-equal (port-position port) 8220)
      ;; read over the boundary and size > buffer-size
      (set-port-position! port 4000)
      (let ([bv1 (make-bytevector 10000)]
            [bv2 (get-bytevector-n port 10000)])
-       (test* (bytevector-u8-ref bv2 0) 123)
-       (test* (bytevector-u8-ref bv2 9999) 108)
+       (test-equal (bytevector-u8-ref bv2 0) 123)
+       (test-equal (bytevector-u8-ref bv2 9999) 108)
        (set-port-position! port 4000)
-       (test* (get-bytevector-n! port bv1 0 10000) 10000)
+       (test-equal (get-bytevector-n! port bv1 0 10000) 10000)
        ;; write!
        (put-u8 port #xfc)
-       (test/t (equal? bv1 bv2)))
+       (test-true (equal? bv1 bv2)))
      ;; read-some
      (set-port-position! port 4000)
      (let ([bv (get-bytevector-some port)])
-       (test/t (> (bytevector-length bv) 0))
+       (test-true (> (bytevector-length bv) 0))
        ;; yeah wrote data is here
-       (test* (bytevector-u8-ref bv 0) 123))
+       (test-equal (bytevector-u8-ref bv 0) 123))
      ;; read-all
      (set-port-position! port 4000)
      (let ([bv (get-bytevector-all port)])
-       (test* (bytevector-length bv) 34861)
-       (test* (bytevector-u8-ref bv 0) 123)
-       (test* (bytevector-u8-ref bv 34860) 10))
-     (test* (port-position port) 38861)
+       (test-equal (bytevector-length bv) 34861)
+       (test-equal (bytevector-u8-ref bv 0) 123)
+       (test-equal (bytevector-u8-ref bv 34860) 10))
+     (test-equal (port-position port) 38861)
      (set-port-position! port 4000)
      (put-bytevector port (make-bytevector 9000 #x13))
      (close-port port))
@@ -164,18 +165,18 @@
    ;; check the written data
    (let ([port  (open-file-input/output-port file (file-options no-fail no-truncate) mode)])
      #f
-     (test* (get-u8 port) #x2f)
-     (test* (port-position port) 1)
-     (test* (get-u8 port) #x2e)
-     (test* (port-position port) 2)
-     (test* (get-u8 port) #xfb)
+     (test-equal (get-u8 port) #x2f)
+     (test-equal (port-position port) 1)
+     (test-equal (get-u8 port) #x2e)
+     (test-equal (port-position port) 2)
+     (test-equal (get-u8 port) #xfb)
      (set-port-position! port 14000)
-     (test* (get-u8 port) #xfc)
+     (test-equal (get-u8 port) #xfc)
      (set-port-position! port 4000)
      (let ([bv (get-bytevector-n port 9000)])
-       (test/t (bytevector? bv))
-       (test* (bytevector-length bv) 9000)
-       (test/t (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
+       (test-true (bytevector? bv))
+       (test-equal (bytevector-length bv) 9000)
+       (test-true (for-all (lambda (x) (= #x13 x)) (bytevector->u8-list bv)))
       ))
    ))
 
@@ -183,9 +184,9 @@
 (with-all-buffer-mode "./test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
-     (test/t (input-port? port))
-     (test* (read port) "あいう")
-     (test/t (port-eof? port))
+     (test-true (input-port? port))
+     (test-equal (read port) "あいう")
+     (test-true (port-eof? port))
      (close-port port))))
 
 ;; test utilitiy
@@ -202,48 +203,48 @@
       If does not exist:  create new file
 |#
 
-(test/exception i/o-file-already-exists-error?
+(test-error i/o-file-already-exists-error?
                 (open-file-input/output-port "./test/utf16.txt"))
 
-(test/exception i/o-file-already-exists-error?
+(test-error i/o-file-already-exists-error?
                 (open-file-input/output-port "./test/utf16.txt" (file-options)))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-already-exists-error?
+   (test-error i/o-file-already-exists-error?
                    (open-file-input/output-port "./test/utf16.txt" (file-options) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-already-exists-error?
+   (test-error i/o-file-already-exists-error?
                    (open-file-input/output-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec))))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists")])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options) mode)])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 
@@ -257,33 +258,33 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create) mode)])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create) mode (make-transcoder (utf-16-codec))))))
 
 #|
@@ -296,39 +297,39 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail) mode)])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail) mode)])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 #|
@@ -337,38 +338,38 @@
       If does not exist:  create new file
 |#
 
-(test/exception i/o-file-already-exists-error?
+(test-error i/o-file-already-exists-error?
                 (open-file-input/output-port "./test/utf16.txt" (file-options no-truncate)))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-already-exists-error?
+   (test-error i/o-file-already-exists-error?
                    (open-file-input/output-port "./test/utf16.txt" (file-options no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-already-exists-error?
+   (test-error i/o-file-already-exists-error?
                    (open-file-input/output-port "./test/utf16.txt" (file-options no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-truncate))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-truncate) mode)])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 #|
@@ -380,33 +381,33 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-fail))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-fail) mode)])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? file)))))
+     (test-true (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail) mode (make-transcoder (utf-16-codec))))))
 
 #|
@@ -419,39 +420,39 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail no-truncate))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail no-truncate) mode)])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail no-truncate))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail no-truncate) mode)])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
    (let ([port (open-file-input/output-port "./not-exists" (file-options no-fail no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/t (empty-file-exists? "./not-exists"))
+     (test-true (empty-file-exists? "./not-exists"))
      (rm "./not-exists"))))
 
 
@@ -465,33 +466,33 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate) mode)])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-truncate)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 #|
@@ -504,33 +505,33 @@
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate no-fail))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate no-fail) mode)])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode "test/utf16.txt"
  (lambda (mode file)
    (let ([port (open-file-input/output-port file (file-options no-create no-truncate no-fail) mode (make-transcoder (utf-16-codec)))])
      (close-port port)
-     (test/f (empty-file-exists? file)))))
+     (test-false (empty-file-exists? file)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail no-truncate)))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail no-truncate) mode))))
 
 (with-all-buffer-mode-simple
  (lambda (mode)
-   (test/exception i/o-file-does-not-exist-error?
+   (test-error i/o-file-does-not-exist-error?
                    (open-file-input/output-port "./not-exists" (file-options no-create no-fail no-truncate) mode (make-transcoder (utf-16-codec))))))
 
 ;; custom
@@ -546,8 +547,8 @@
                #f #f #f)])
       (put-u8 p 10)
       (flush-output-port p)
-      (test* save 10)
-      (test* (get-u8 p) 7)
+      (test-equal save 10)
+      (test-equal (get-u8 p) 7)
       (close-port p))
 (test-positions make-custom-binary-input-port)
 
@@ -563,8 +564,8 @@
                #f #f #f)])
       (put-char p #\q)
       (flush-output-port p)
-      (test* save #\q)
-      (test* (get-char p) #\!)
+      (test-equal save #\q)
+      (test-equal (get-char p) #\!)
       (close-port p))
 
 (test-end)

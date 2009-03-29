@@ -3,6 +3,8 @@
         (mosh)
         (mosh test))
 
+(test-begin "ffi")
+
 (when (ffi-supported?)
   (let ()
     (define libffitest (open-shared-library "./libffitest.so.1.0"))
@@ -14,15 +16,15 @@
     (define return_pointer_string (c-function libffitest int return_pointer_string))
     (define return_array_of_pointer_string (c-function libffitest void* return_array_of_pointer_string))
 
-    (test* (sub 3 2) 1)
-    (test* (subf2 1.0 0.0) 1.0)
-    (test*  (subf2 1 0) 1.0)
-    (test* (sub3 3 2 -5) 6)
-    (test* (string_length "1234567") 7)
-    (test* (integer? (return_pointer_string)) #t)
-    (test* (pointer->string (return_pointer_string)) "hello")
-    (test* (pointer->string (pointer-ref (return_array_of_pointer_string) 0)) "hello")
-    (test* (pointer->string (pointer-ref (return_array_of_pointer_string) 1)) "world")
+    (test-equal (sub 3 2) 1)
+    (test-equal (subf2 1.0 0.0) 1.0)
+    (test-equal  (subf2 1 0) 1.0)
+    (test-equal (sub3 3 2 -5) 6)
+    (test-equal (string_length "1234567") 7)
+    (test-true  (integer? (return_pointer_string)))
+    (test-equal (pointer->string (return_pointer_string)) "hello")
+    (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 0)) "hello")
+    (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 1)) "world")
 
     (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
@@ -50,7 +52,7 @@
                 (cond
                  [(= i count) '()]
                  [else
-                  (test* (string? (pointer->string (pointer-ref record))) #t)
+                  (test-true  (string? (pointer->string (pointer-ref record))))
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))))
