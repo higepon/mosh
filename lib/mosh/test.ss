@@ -212,7 +212,7 @@
 ;; )
 
 
-(library (mosh test2)
+(library (mosh test)
   (export    test-true test-false test-null;; mosh only
    test-begin test-not-match-name
    test-end test-assert test-eqv test-eq test-equal

@@ -32,7 +32,7 @@
         (clos user)
         (mosh pp)
 ;        (except (mosh test) test-end)
-        (except (mosh test2) test-end test-begin)
+        (except (mosh test) test-end test-begin)
         (mosh ffi)
         (mosh shell)
         (mosh shell repl)
