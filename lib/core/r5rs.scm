@@ -56,6 +56,20 @@
         (result #f))
     (lambda ()
       (if result-ready?
+          (apply values result)
+          (receive x (proc)
+            (if result-ready?
+                (apply values result)
+                (begin (set! result-ready? #t)
+                       (set! result x)
+                       (apply values x))))))))
+
+
+#;(define (make-promise proc)
+  (let ((result-ready? #f)
+        (result #f))
+    (lambda ()
+      (if result-ready?
           result
           (let ((x (proc)))
             (if result-ready?
