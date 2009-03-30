@@ -1,5 +1,7 @@
 2009-03-30  higepon  <higepon@users.sourceforge.jp>
 
+        * configure.ac/Makefile.am : Mingw patch by .mjt.
+
         * Fixed the bug of transcoded-port and external representation of port by Will.Donnelly.
 
         * lib/mosh/test.ss (test-external-rep): Added.

@@ -172,16 +172,23 @@ case "$target_os" in
   *darwin*)
     AC_DEFINE([MOSH_HOST_OS], ["darwin"], [define operating-system])
     ;;
+  *mingw*)
+    AC_DEFINE([MOSH_HOST_OS], ["win32"], [define operating-system])
+    ;;
   *)
     AC_DEFINE([MOSH_HOST_OS], ["unknown"], [define operating-system])
     ;;
 esac
 
-MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+#MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+MOSH_GENERIC_OPTS="-O3"
+MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-pointer"
+
 #MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -pg"
 
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
+MOSH_LDADD_ARCH="-ldl -lpthread"
 case "$host_cpu" in
 i[[3456]]86|pentium)
         arch=i386
@@ -212,6 +219,10 @@ i[[3456]]86|pentium)
             fi
           fi
           ;;
+       *mingw*)
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -DMOSH_MINGW32"
+         MOSH_LDADD_ARCH=" "
+         ;;
         *)
           MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
           ;;
@@ -236,6 +247,8 @@ esac
 
 
 AC_SUBST(MOSH_OPTS)
+AC_SUBST(MOSH_LDADD_ARCH)
+
 
 AC_ARG_WITH(mysql,
   AC_HELP_STRING([--with-mysql=FULL_PATH_TO_libmysqlclient]),

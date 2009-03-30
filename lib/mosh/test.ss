@@ -32,10 +32,13 @@
 
     Defines a set of functions to write test scripts.
 
+    (mosh test) uses (srfi :64 testing) as backend.
+
     Example:
     (start code)
     (import (rnrs)
             (mosh test)
+      (test-begin "number predicate")
       (test-false (number? 'a))
       (test-end))
     (end code)
@@ -44,174 +47,6 @@
 
     Unit Testing library
 |#
-;; (library (mosh test)
-;;   (export test* test/exception test/violation? test/t test/f test-end)
-;;   (import (only (rnrs) define define-syntax lambda let* if syntax-case syntax else + raise make-error
-;;                 set! equal? quote begin syntax->datum exit ... guard violation? cons
-;;                 list cond > length display for-each current-error-port car cadr caddr _)
-;;           (only (mosh) format)
-;;           (only (system) make-parameter))
-
-;;   (define error* (make-parameter '()))
-;;   (define counter (make-parameter 0))
-;;   (define ok-counter (make-parameter 0))
-
-;;   #|
-;;       Function: test*
-
-;;       Run the test and compares its result with expected.
-
-;;       Prototype:
-;;       > (test* test expected)
-
-;;       Parameters:
-
-;;         test - test to run.
-;;         expected - expected result.
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define-syntax test*
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         ((_ form test expected)
-;;          (syntax
-;;           (let* ([result test]
-;;                  [test-ok? (equal? result expected)])
-;;             (cond
-;;              [test-ok?
-;;               (format #t "\rTest Running ~d/~d" (ok-counter) (counter))
-;;               (counter (+ (counter) 1))
-;;               (ok-counter (+ (ok-counter) 1))]
-;;              [else
-;;               (error* (cons (list form expected result) (error*)))
-;;               (counter (+ (counter) 1))]
-;;                 ))))
-;;         ((_ test expected)
-;;          (syntax
-;;           (test* 'test test expected ))))))
-
-;;   #|
-;;       Function: test/t
-
-;;       Run the test and check the result is not #f.
-
-;;       Prototype:
-;;       > (test/t test)
-
-;;       Parameters:
-
-;;         test - test to run.
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define-syntax test/t
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         [(_ form)
-;;          #'(test* (if form #t #f) #t)])))
-
-;;   #|
-;;       Function: test/f
-
-;;       Run the test and check the result is #f.
-
-;;       Prototype:
-;;       > (test/f test)
-
-;;       Parameters:
-
-;;         test - test to run.
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define-syntax test/f
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         [(_ form)
-;;          #'(test* form #f)])))
-
-
-;;   #|
-;;       Function: test/exception
-
-;;       Run the test which may cause exception, and check the exception satisfies the pred?
-
-;;       Prototype:
-;;       > (test/exception pred? test ...)
-
-;;       Parameters:
-
-;;         pred? - pred?
-;;         test - test to run.
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define-syntax test/exception
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         ((_ pred? test ...)
-;;          (syntax
-;;           (test/t (guard (con [(pred? con) (display "here")#t][else #f])
-;;                          test ... (raise (make-error)))))))))
-
-;;   #|
-;;       Function: test/violation?
-
-;;       Run the test which may cause exception, and check the exception satisfies the violation?
-
-;;       Prototype:
-;;       > (test/violation? test ...)
-
-;;       Parameters:
-
-;;         test - test to run.
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define-syntax test/violation?
-;;     (lambda (x)
-;;       (syntax-case x ()
-;;         ((_ test ...)
-;;          (syntax
-;;           (test/exception violation? test ...))))))
-
-;;   #|
-;;       Function: test-end
-
-;;       Show the test results.
-
-;;       Prototype:
-;;       > (test-end)
-
-;;       Returns:
-
-;;         unspecified.
-;;   |#
-;;   (define (test-end)
-;;     (cond
-;;      [(> (length (error*)) 0)
-;;       (display "\n** Error(s)\n")
-;;       (for-each
-;;        (lambda (x)
-;;          (format (current-error-port) "  ~a got ~a but ~a expected\n" (car x) (caddr x) (cadr x)))
-;;        (error*))
-;;       (exit -1)]
-;;      [else
-;;       (format #t "\rTest Running ~d/~d ... ok\n" (ok-counter) (counter))]))
-;; )
-
-
 (library (mosh test)
   (export    test-true test-false test-null test-external-rep test-no-error;; mosh only
    test-begin test-not-match-name
@@ -227,6 +62,277 @@
 ;   (rnrs)
           (rename (srfi :64 testing) (test-begin %test-begin))
           (only (mosh) format host-os))
+
+  #|
+      Function: test-begin
+
+      A test-begin enters a new test group.
+      The suite-name becomes the current test group name, and is added to the end of the test group path.
+
+      Portable test suites should use a sting literal for suite-name; the effect of expressions or other kinds of literals is unspecified.
+
+      Prototype:
+      > (test-begin suite-name [count])
+
+      Parameters:
+
+        suite-name - test suite name.
+        count - The optional count must match the number of test-cases executed by this group. (Nested test groups count as a single test case for this count.) This extra test may be useful to catch cases where a test doesn't get executed because of some unexpected error.
+
+      Returns:
+
+        unspecified.
+  |#
+
+  #|
+      Function: test-end
+
+      A test-end leaves the current test group. An error is reported if the suite-name does not match the current test group name.
+
+      Additionally, if the matching test-begin installed a new test-runner, then the test-end will de-install it, after reporting the accumulated test results in an implementation-defined manner.
+
+      Prototype:
+      > (test-end [suite-name])
+
+      Parameters:
+
+        suite-name - test suite name.
+
+      Returns:
+
+        unspecified.
+  |#
+
+  #|
+      Function: test-group
+
+      This is usually equivalent to executing the decl-or-exprs within the named test group.
+
+      However, the entire group is skipped if it matched an active test-skip (see later).
+
+      Also, the test-end is executed in case of an exception.
+
+      Equivalent to
+      (start code)
+      (if (not (test-to-skip% suite-name))
+        (dynamic-wind
+          (lambda () (test-begin suite-name))
+          (lambda () decl-or-expr ...)
+          (lambda () (test-end suite-name))))
+      (end code)
+
+      Prototype:
+      > (test-group suite-name decl-or-expr ...)
+
+      Parameters:
+
+        suite-name - test suite name.
+        decl-or-expr - decl-or-expr
+
+      Returns:
+
+        unspecified.
+  |#
+
+
+  #|
+      Function: test-assert
+
+      This evaluates the expression.
+
+      The test passes if the result is true; if the result is false, a test failure is reported.
+      The test also fails if an exception is raised.
+
+      The test-name is a string that names the test case.
+
+      (Though the test-name is a string literal in the examples, it is an expression.
+      It is evaluated only once.)
+
+      It is used when reporting errors, and also when skipping tests, as described below. It is an error to invoke test-assert if there is no current test runner.
+
+      Prototype:
+      > (test-assert [test-name] expression)
+
+      Parameters:
+
+        test-name - test name.
+        expression - expression to evaluate.
+
+      Returns:
+
+        unspecified.
+  |#
+
+  #|
+      Function: test-true
+
+      Run the test and check the result is not #f.
+
+      Prototype:
+      > (test-true [test-name] expression)
+
+      Parameters:
+
+        test-name - test name.
+        expression - expression to evaluate.
+
+      Returns:
+
+        unspecified.
+  |#
+
+#|
+      Function: test-false
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-false [test-name] expression)
+
+      Parameters:
+
+        test-name - test name.
+        expression - expression to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+
+#|
+      Function: test-eqv
+
+      This is equivalent to
+      > (test-assert [test-name] (eqv? expected test-expr))
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-eqv [test-name] expected test-expr)
+
+      Parameters:
+
+        test-name - test name.
+        expected - expected values
+        test-expr - test-expr to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+
+#|
+      Function: test-eq
+
+      This is equivalent to
+      > (test-assert [test-name] (eq? expected test-expr))
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-eq [test-name] expected test-expr)
+
+      Parameters:
+
+        test-name - test name.
+        expected - expected values
+        test-expr - test-expr to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+
+#|
+      Function: test-equal
+
+      This is equivalent to
+      > (test-assert [test-name] (equal? expected test-expr))
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-equal [test-name] expected test-expr)
+
+      Parameters:
+
+        test-name - test name.
+        expected - expected values
+        test-expr - test-expr to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+
+#|
+      Function: test-approximate
+
+      This is equivalent to (except that each argument is only evaluated once)
+      (start code)
+      (test-assert [test-name]
+        (and (>= test-expr (- expected error))
+         (<= test-expr (+ expected error))))
+      (end code)
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-approximate [test-name] expected test-expr error)
+
+      Parameters:
+
+        test-name - test name.
+        expected - expected values
+        test-expr - test-expr to evaluate.
+        error - allowed error.
+
+      Returns:
+
+        unspecified.
+|#
+
+#|
+      Function: test-read-eval-string
+
+      This function parses string (using read) and evaluates the result.
+
+      The result of evaluation is returned from test-read-eval-string. An error is signalled if there are unread characters after the read is done.
+
+      Prototype:
+      > (test-read-eval-string string)
+
+      Parameters:
+
+        string - string to evaluate.
+
+      Returns:
+
+        evalated result.
+|#
+
+#|
+      Function: test-error
+
+      Evaluating test-expr is expected to signal an error.The kind of error is indicated by error-type.
+
+      If the error-type is left out, or it is #t, it means "some kind of unspecified error should be signaled".
+
+
+      Prototype:
+      > (test-error [[test-name] error-type] test-expr)
+
+      Parameters:
+
+        test-name - test name.
+        error-type - error-type
+        test-expr - test-expr to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+
 
 (define-record-type failure
   (fields

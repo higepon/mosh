@@ -73,6 +73,9 @@ library: (srfi :48 intermediate-format-strings)
 library: (srfi :61 cond)
 <http://srfi.schemers.org/srfi-61/srfi-61.html>
 
+library: (srfi :64 cond)
+<http://srfi.schemers.org/srfi-64/srfi-64.html>
+
 library: (srfi :67 compare-procedures)
 <http://srfi.schemers.org/srfi-67/srfi-67.html>
 
