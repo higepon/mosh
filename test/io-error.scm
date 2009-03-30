@@ -349,6 +349,7 @@
                   (display (read-char text-port))))
 
 (test-begin "pseudo-close")
+(unless (string=? (host-os) "win32")
 (let ()
   (define (text-pipe)
     ;; Binary ports here
@@ -372,7 +373,7 @@
   (flush-output-port p-writer)
   (test-eqv #\a (read-char p-reader))
   (close-port p-reader)
-  (close-port p-writer))
+  (close-port p-writer)))
 (test-end)
 
 (test-end)
