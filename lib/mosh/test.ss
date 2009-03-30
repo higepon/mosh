@@ -414,7 +414,7 @@
                     (test-runner-fail-count runner)))]
           [else
            (with-color-green
-            (format #t "[  PASSED  ] ~d tests\x1b;[m\n" (test-runner-pass-count runner)))])))
+            (format #t "[  PASSED  ] ~d tests\n" (test-runner-pass-count runner)))])))
     runner))
 
 (define (test-not-match-name name)
