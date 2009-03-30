@@ -22,6 +22,18 @@ echo clos
 mosh.exe test/clos.scm
 if errorlevel 1 goto end
 echo ----------------------------------------
+echo dbi
+mosh.exe test/dbi.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo ffi
+mosh.exe test/ffi.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo shell
+mosh.exe test/shell.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
 echo condition
 mosh.exe test/condition.scm
 if errorlevel 1 goto end
