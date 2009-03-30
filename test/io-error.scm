@@ -348,7 +348,31 @@
                   (get-u8 binary-port) ;; port is already closed!
                   (display (read-char text-port))))
 
+(test-begin "pseudo-close")
+(let ()
+  (define (text-pipe)
+    ;; Binary ports here
+    (let-values ([(in out) (pipe)])
+      ;; Textual ports here
+      (cons (transcoded-port in (native-transcoder))
+            (transcoded-port out (native-transcoder)))))
 
+  (define p (text-pipe))
+  (define p-reader (car p))
+  (define p-writer (cdr p))
+
+  (test-external-rep "<transcoded-textual-input-port <binary-input-port <unknown file>>>"
+                     p-reader)
+  (test-true (textual-port? p-reader))
+  (test-external-rep "<transcoded-textual-output-port <binary-output-port <unknown file>>>"
+                     p-writer)
+  (test-true (textual-port? p-writer))
+
+  (test-no-error (display "asd" p-writer))
+  (flush-output-port p-writer)
+  (test-eqv #\a (read-char p-reader))
+  (close-port p-reader)
+  (close-port p-writer))
 (test-end)
 
-
+(test-end)

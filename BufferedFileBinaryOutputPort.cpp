@@ -51,7 +51,7 @@
 
 using namespace scheme;
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("unknown file")), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
     initializeBuffer();
 }

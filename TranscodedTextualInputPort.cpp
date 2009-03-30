@@ -50,7 +50,8 @@ using namespace scheme;
 TranscodedTextualInputPort::TranscodedTextualInputPort(BinaryInputPort* port, Transcoder* coder)
     : TextualInputPort(),
       port_(port),
-      transcoder_(coder)
+      transcoder_(coder),
+      isClosed_(false)
 {
 }
 
@@ -77,18 +78,22 @@ void TranscodedTextualInputPort::unGetChar(ucs4char c)
 
 ucs4string TranscodedTextualInputPort::toString()
 {
-    return port_->toString();
+    ucs4string ret = UC("<transcoded-textual-input-port ");
+    ret += port_->toString();
+    ret += UC(">");
+    return ret;
 }
 
 int TranscodedTextualInputPort::close()
 {
+    isClosed_ = true;
     MOSH_ASSERT(port_ != NULL);
     return port_->close();
 }
 
 bool TranscodedTextualInputPort::isClosed() const
 {
-    return port_->isClosed();
+	return isClosed_;
 }
 
 Transcoder* TranscodedTextualInputPort::transcoder() const

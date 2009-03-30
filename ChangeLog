@@ -1,3 +1,9 @@
+2009-03-30  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed the bug of transcoded-port and external representation of port by Will.Donnelly.
+
+        * lib/mosh/test.ss (test-external-rep): Added.
+
 2009-03-29  higepon  <higepon@users.sourceforge.jp>
 
         * Fasl.cpp : Improved Fasl write/read of Record & RTD.

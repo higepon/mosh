@@ -213,7 +213,7 @@
 
 
 (library (mosh test)
-  (export    test-true test-false test-null;; mosh only
+  (export    test-true test-false test-null test-external-rep test-no-error;; mosh only
    test-begin test-not-match-name
    test-end test-assert test-eqv test-eq test-equal
    test-approximate  test-error test-apply test-with-runner
@@ -223,7 +223,8 @@
    test-result-ref test-result-set! test-result-clear test-result-remove
    test-result-kind test-passed?
    test-log-to-file test-group)
-  (import (only (rnrs) ... _ define define-record-type fields immutable let cond not eq? syntax-case string=? begin dynamic-wind lambda display define-syntax if syntax quote null? caar cdar else cdr let* when memq > for-each current-error-port set! cons member and boolean?)
+  (import (only (rnrs) ... _ define define-record-type fields immutable let cond not eq? syntax-case string=? begin dynamic-wind lambda display define-syntax if syntax quote null? caar cdar else cdr let* when memq > for-each current-error-port set! cons member and boolean? let-values open-string-output-port write)
+;   (rnrs)
           (rename (srfi :64 testing) (test-begin %test-begin))
           (only (mosh) format host-os))
 
@@ -345,5 +346,25 @@
       [(_ expr)
        #'(test-assert (null? expr))])))
 
+(define (%test-external-rep tname expected obj)
+  (let-values ([(port get-string) (open-string-output-port)])
+    (write obj port)
+    (test-equal tname expected (get-string))))
+
+(define-syntax test-external-rep
+  (lambda (x)
+    (syntax-case x ()
+      [(_ tname expected expr)
+       #'(%test-external-rep tname expected expr)]
+      [(_ expected expr)
+       #'(%test-external-rep 'expr expected expr)])))
+
+(define-syntax test-no-error
+  (lambda (x)
+    (syntax-case x ()
+      [(_ tname expr)
+       #'(test-assert tname expr)]
+      [(_ expr)
+       #'(test-assert 'expr expr)])))
 
 )

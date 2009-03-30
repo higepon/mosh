@@ -57,7 +57,8 @@ using namespace scheme;
 TranscodedTextualInputOutputPort::TranscodedTextualInputOutputPort(BinaryInputOutputPort* port, Transcoder* coder)
   : port_(port),
     transcoder_(coder),
-    line_(1)
+    line_(1),
+    isClosed_(false)
 {
 }
 
@@ -69,13 +70,14 @@ TranscodedTextualInputOutputPort::~TranscodedTextualInputOutputPort()
 
 int TranscodedTextualInputOutputPort::close()
 {
+    isClosed_ = true;
     MOSH_ASSERT(port_ != NULL);
     return port_->close();
 }
 
 bool TranscodedTextualInputOutputPort::isClosed() const
 {
-    return port_->isClosed();
+    return isClosed_;
 }
 
 Object TranscodedTextualInputOutputPort::position() const
@@ -133,6 +135,9 @@ void TranscodedTextualInputOutputPort::flush()
 
 ucs4string TranscodedTextualInputOutputPort::toString()
 {
-    return UC("<textual-input/output-port>");
+    ucs4string ret = UC("<transcoded-textual-input/output-port ");
+    ret += port_->toString();
+    ret += UC(">");
+    return ret;
 }
 

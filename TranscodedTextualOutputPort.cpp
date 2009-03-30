@@ -63,7 +63,8 @@ using namespace scheme;
 TranscodedTextualOutputPort::TranscodedTextualOutputPort(BinaryOutputPort* port, Transcoder* coder)
   : port_(port),
     transcoder_(coder),
-    eolStyle_(coder->eolStyle())
+    eolStyle_(coder->eolStyle()),
+    isClosed_(false)
 {
 }
 
@@ -80,13 +81,14 @@ enum OutputPort::bufferMode TranscodedTextualOutputPort::bufferMode() const
 
 int TranscodedTextualOutputPort::close()
 {
+    isClosed_ = true;
     MOSH_ASSERT(port_ != NULL);
     return port_->close();
 }
 
 bool TranscodedTextualOutputPort::isClosed() const
 {
-    return port_->isClosed();
+    return isClosed_;
 }
 
 void TranscodedTextualOutputPort::putChar(ucs4char c)
@@ -112,5 +114,8 @@ void TranscodedTextualOutputPort::flush()
 
 ucs4string TranscodedTextualOutputPort::toString()
 {
-    return port_->toString();
+    ucs4string ret = UC("<transcoded-textual-output-port ");
+    ret += port_->toString();
+    ret += UC(">");
+    return ret;
 }

@@ -1,6 +1,6 @@
 ;; don't edit start
 (#t #t)
-(mosh-only ("<binary-input-port all-tests.scm>" 2) (source-info '(3)))
+(mosh-only ("<transcoded-textual-input-port <binary-input-port all-tests.scm>>" 2) (source-info '(3)))
 ;; don't edit end
 ;; test start
 (#t (and))

@@ -118,8 +118,8 @@ TEST_F(VMTest, StackTrace1) {
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
                  "    2. sys-display: <subr>\n"
-                 "    3. (a):  <binary-input-port ./test/stack-trace1.scm>:7\n"
-                 "    4. (b):  <binary-input-port ./test/stack-trace1.scm>:12\n\n",
+                 "    3. (a):  <transcoded-textual-input-port <binary-input-port ./test/stack-trace1.scm>>:7\n"
+                 "    4. (b):  <transcoded-textual-input-port <binary-input-port ./test/stack-trace1.scm>>:12\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
 }
 

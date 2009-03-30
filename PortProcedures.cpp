@@ -384,6 +384,7 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
+    checkPortIsOpen(in, argv[0]);
     TRY_WITHOUT_DSTR {
         ucs4string text = in->getStringAll();
         if (text.empty()) {
