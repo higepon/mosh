@@ -475,7 +475,7 @@ fi
 dnl As of 4.13a2, the collector will not properly work on Solaris when
 dnl built with gcc and -O.  So we remove -O in the appropriate case.
 dnl Not needed anymore on Solaris.
-AC_MSG_CHECKINpG(whether Solaris gcc optimization fix is necessary)
+AC_MSG_CHECKING(whether Solaris gcc optimization fix is necessary)
 case "$host" in
  *aix*)
     if test "$GCC" = yes; then
