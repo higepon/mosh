@@ -9,29 +9,75 @@ Mosh is A Fast R6RS Scheme interpreter.
   Homepage:
     http://code.google.com/p/mosh-scheme/
 
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and .mjt.
 
 About This Release
 ------------------
+
+Mosh becomes R6RS compliant.
+
+  Passes all of "R6RS test suite" which written by PLT Scheme project.
+  Run like following.
+    mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
+
+Added new reference manual
+  http://mosh.monaos.org/
+
+Added FFI (Foreign Function Interface). 
+  See test/ffi.scm or reference manual.
+
+Supported build on Windows with Visual C++ by herumi
+
+Supported build on Mingw by .mjt
 
 Implemented R6RS Numric tower.
 
 Implemented R6RS Port I/O.
 
-Implemented utf-16-codec and latin-1-codec
+Implemented R6RS Simple I/O.
 
-Added some optimization.
+Imroved reader and scanner.
+
+Added SRFIs written by Derick Eddington.
+  (srfi :0 cond-expand)
+  (srfi :1 lists)
+  (srfi :2 and-let*)
+  (srfi :6 basic-string-ports)
+  (srfi :8 receive)
+  (srfi :9 records)
+  (srfi :11 let-values)
+  (srfi :13 strings)
+  (srfi :14 char-sets)
+  (srfi :16 case-lambda)
+  (srfi :19 time)
+  (srfi :23 error)
+  (srfi :26 cut)
+  (srfi :27 random-bits)
+  (srfi :31 rec)
+  (srfi :37 args-fold)
+  (srfi :38 with-shared-structure)
+  (srfi :39 parameters)
+  (srfi :41 streams)
+  (srfi :42 eager-comprehensions)
+  (srfi :43 vectors)
+  (srfi :48 intermediate-format-strings)
+  (srfi :61 cond)
+  (srfi :64 testing)
+  (srfi :67 compare-procedures)
+  (srfi :78 lightweight-testing)
+  (srfi :98 os-environment-variables)
+
+Added many optimizations.
   Instruction combination.
   Gloc lookup.
-sp
- 
+  SSE flags.
+  Efficient Fasl.
 
-
-Now Mosh passes all of "R6RS test suite".
-
-  R6RS test suite is written by PLT Scheme project.
-    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
-  Run like following.
-    mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
+Updated Boehm GC to 7.1.
 
 Mosh 0.0.7 Release Note
 ============================
