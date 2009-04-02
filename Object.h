@@ -111,16 +111,7 @@ enum ErrorHandlingMode
 class Object
 {
 public:
-    Object()
-    {
-    }
-    ~Object()
-    {
-    }
-    Object(const Object& o)
-    {
-        val = o.val;
-    }
+	Object() {}
     Object(const ucs4char* str);
     Object(const ucs4string& str);
     Object(const char* str);
@@ -165,11 +156,6 @@ public:
     int toCompilerInstruction() const;
     Pair* toPair() const;
     Object* toObjectPointer() const;
-    Object operator=(const Object& o)
-    {
-        val = o.val;
-        return *this;
-    }
     HashTable* toHashTable() const;
     Object& car() const;
     Object& cdr() const;
@@ -311,7 +297,7 @@ private:
 public:
     intptr_t val; // public for performancs. val() const { return val; } is not be inlined with -O2
 
-    friend bool operator <(const Object& o1, const Object& o2)
+    friend bool operator <(const Object o1, const Object o2)
     {
             return o1.val < o2.val;
     }
