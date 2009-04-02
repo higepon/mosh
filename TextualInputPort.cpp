@@ -123,7 +123,9 @@ NumberScanner* TextualInputPort::numberScanner() const
 ucs4char TextualInputPort::lookaheadChar()
 {
     const ucs4char c = getChar();
-    unGetChar(c);
+    if (c != EOF) {
+        unGetChar(c);
+    }
     return c;
 }
 

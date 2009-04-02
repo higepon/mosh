@@ -2,8 +2,18 @@
 
 ;; (test-begin "record")
 
+<<<<<<< .working
 ;; (when (>= (length (command-line)) 2)
 ;;   (test-skip (test-not-match-name (cadr (command-line)))))
+=======
+(let ([p (open-string-input-port
+           "ab cd ef gh ij kl mn op qr st uv wx yz\n")])
+  (test-equal 'ab (get-datum p))
+  (test-eqv #\space  (get-char p))
+  (test-equal 'cd (get-datum p))
+  (test-eqv #\space (get-char p))
+  (close-port p))
+>>>>>>> .merge-right.r1476
 
 
 ;; (test-begin "basic")

@@ -49,6 +49,7 @@
    (let ([port (open-file-input-port "./test/utf16.txt" (file-options) mode (make-transcoder (utf-16-codec)))])
      (test-true (input-port? port))
      (test-equal (read port) "あいう")
+     (test-equal (read-char port) #\newline)
      (test-true (port-eof? port))
      (close-port port))))
 
@@ -234,5 +235,22 @@
       (test-equal (get-string-n p 2) "op")
       (test-equal (get-string-n p 2) (eof-object))
       (close-port p))
+
+(test-begin "re2c greeding bug check")
+
+(let ([p (open-string-input-port
+           "ab cd ef gh ij kl mn op qr st uv wx yz\n")])
+  (test-equal 'ab (get-datum p))
+  (test-eqv #\space  (get-char p))
+  (test-equal 'cd (get-datum p))
+  (test-eqv #\space (get-char p))
+  (close-port p))
+
+(let ([p (open-string-input-port
+           "\"abcdefghijklmnopqrstuvwxyz\"")])
+  (test-equal "string length greater than 18 (fill buffer)" "abcdefghijklmnopqrstuvwxyz" (get-datum p))
+  (close-port p))
+
+(test-end)
 
 (test-end)

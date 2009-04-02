@@ -1,5 +1,5 @@
 /*
- * TranscodedTextualInputPort.cpp - 
+ * TranscodedTextualInputPort.cpp -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -93,11 +93,10 @@ int TranscodedTextualInputPort::close()
 
 bool TranscodedTextualInputPort::isClosed() const
 {
-	return isClosed_;
+    return isClosed_;
 }
 
 Transcoder* TranscodedTextualInputPort::transcoder() const
 {
     return transcoder_;
 }
-

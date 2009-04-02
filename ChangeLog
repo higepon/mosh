@@ -1,3 +1,15 @@
+2009-04-02  higepon  <higepon@users.sourceforge.jp>
+
+        * Scanner.cpp: Fixed the bug "'get-datum' and 'read' are greedy with their input"
+                       pointed out by Will.Donnelly.
+          http://code.google.com/p/mosh-scheme/issues/detail?id=51
+
+        * test/input-port.scm: Added tests for greedy bug.
+
+2009-04-01  higepon  <higepon@users.sourceforge.jp>
+
+        * TextualInputPort.cpp (TextualInputPort::lookaheadChar): don't unGetChar(Eof).
+
 2009-03-30  higepon  <higepon@users.sourceforge.jp>
 
         * configure.ac/Makefile.am : Mingw patch by .mjt.
