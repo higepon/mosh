@@ -780,7 +780,25 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("time-usage");
 #ifdef _WIN32
-    callAssertionViolationAfter(theVM, procedureName, "time-usage failed");
+    FILETIME real_time;
+    FILETIME creation_time;
+    FILETIME exit_time;
+    FILETIME kernel_time;
+    FILETIME user_time;
+    GetSystemTimeAsFileTime(&real_time);
+    if (GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time)) {
+      return Pair::list3(Object::makeFlonum(((double)real_time.dwLowDateTime 
+                                             + (double)real_time.dwHighDateTime 
+                                             * (double)UINT32_MAX) / 10000000.0),
+                         Object::makeFlonum(((double)user_time.dwLowDateTime
+                                             + (double)user_time.dwHighDateTime
+                                             * (double)UINT32_MAX) / 10000000.0),
+                         Object::makeFlonum(((double)kernel_time.dwLowDateTime
+                                             + (double)kernel_time.dwHighDateTime
+                                             * (double)UINT32_MAX) / 10000000.0));
+    } else {
+      return Object::False;
+    }
     return Object::makeString(UC("<not-supported>"));
 #else
     checkArgumentLength(0);

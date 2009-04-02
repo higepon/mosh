@@ -31,6 +31,8 @@ License:
 Mosh is developed on <http://code.google.com/p/mosh-scheme/> by
 - higepon (higepon@users.sourceforge.jp)
 - kokosabu 
+- herumi
+- .mjt
 
 It is distributed by MIT/X License.
 

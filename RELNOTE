@@ -1,3 +1,38 @@
+Mosh 0.0.8 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://code.google.com/p/mosh-scheme/
+
+
+About This Release
+------------------
+
+Implemented R6RS Numric tower.
+
+Implemented R6RS Port I/O.
+
+Implemented utf-16-codec and latin-1-codec
+
+Added some optimization.
+  Instruction combination.
+  Gloc lookup.
+sp
+ 
+
+
+Now Mosh passes all of "R6RS test suite".
+
+  R6RS test suite is written by PLT Scheme project.
+    http://svn.plt-scheme.org/plt/trunk/collects/tests/r6rs/
+  Run like following.
+    mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
+
 Mosh 0.0.7 Release Note
 ============================
 
