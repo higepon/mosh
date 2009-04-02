@@ -34,20 +34,6 @@
 
 namespace scheme {
 
-inline Object::Object()
-{
-}
-
-inline Object::Object(const Object& o)
-{
-    val = o.val;
-}
-
-// not virtual
-inline Object::~Object()
-{
-}
-
 inline bool Object::isFixnum() const
 {
     return tag() == 1;
@@ -146,12 +132,6 @@ inline bool Object::operator==(Object o) const
 inline bool Object::operator!=(Object o) const
 {
     return val != o.val;
-}
-
-inline Object Object::operator=(const Object& o)
-{
-    val = o.val;
-    return *this;
 }
 
 inline HashTable* Object::toHashTable() const

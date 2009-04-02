@@ -111,9 +111,16 @@ enum ErrorHandlingMode
 class Object
 {
 public:
-    Object();
-    ~Object();
-    Object(const Object& o);
+    Object()
+    {
+    }
+    ~Object()
+    {
+    }
+    Object(const Object& o)
+    {
+        val = o.val;
+    }
     Object(const ucs4char* str);
     Object(const ucs4string& str);
     Object(const char* str);
@@ -158,7 +165,11 @@ public:
     int toCompilerInstruction() const;
     Pair* toPair() const;
     Object* toObjectPointer() const;
-    Object operator=(const Object& o);
+    Object operator=(const Object& o)
+    {
+        val = o.val;
+        return *this;
+    }
     HashTable* toHashTable() const;
     Object& car() const;
     Object& cdr() const;
