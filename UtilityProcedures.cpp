@@ -30,6 +30,7 @@
  */
 
 #ifdef _MSC_VER
+	#include <windows.h> // for FILETIME
     #include "../include/gettimeofday.h"
 #else
 #include <sys/time.h>
@@ -789,13 +790,13 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     if (GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time)) {
       return Pair::list3(Object::makeFlonum(((double)real_time.dwLowDateTime 
                                              + (double)real_time.dwHighDateTime 
-                                             * (double)UINT32_MAX) / 10000000.0),
+                                             * (double)UINT_MAX) / 10000000.0),
                          Object::makeFlonum(((double)user_time.dwLowDateTime
                                              + (double)user_time.dwHighDateTime
-                                             * (double)UINT32_MAX) / 10000000.0),
+                                             * (double)UINT_MAX) / 10000000.0),
                          Object::makeFlonum(((double)kernel_time.dwLowDateTime
                                              + (double)kernel_time.dwHighDateTime
-                                             * (double)UINT32_MAX) / 10000000.0));
+                                             * (double)UINT_MAX) / 10000000.0));
     } else {
       return Object::False;
     }
