@@ -62,6 +62,11 @@ AC_ARG_ENABLE(threads,
     fi
     AC_MSG_RESULT([$THREADS]) ])
 
+## MOSH start
+## Ubuntu 8.10 amd64 with DLINUX_THREADS=1 makes gctest crash.
+THREADS=no
+## MOSH end
+
 AC_ARG_ENABLE(parallel-mark,
    [AC_HELP_STRING([--enable-parallel-mark],
 	[parallelize marking and free list construction])],
