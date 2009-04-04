@@ -1,5 +1,7 @@
 2009-04-04  higepon  <higepon@users.sourceforge.jp>
 
+        * Fixed VM.cpp:310: warning: 'ret.scheme::Object::val' may be used uninitialized in this function.
+
         * gc-7.1 : Disabled Threads. On Ubuntu 8.10 amd64 with DLINUX_THREADS=1,s gctest crash.
 
 2009-04-03  higepon  <higepon@users.sourceforge.jp>

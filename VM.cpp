@@ -307,7 +307,7 @@ Object VM::callClosure2(Object closure, Object arg1, Object arg2)
     applyCode[6] = arg2;
     applyCode[9] = closure;
     SAVE_REGISTERS();
-    Object ret;
+    Object ret = Object::Undef;;
     TRY_VM {
     ret = evaluate(applyCode, sizeof(applyCode) / sizeof(Object));
     CATCH_VM
