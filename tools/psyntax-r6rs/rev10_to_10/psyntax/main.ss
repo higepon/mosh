@@ -337,9 +337,15 @@
 ;;                      (reverse (string-split paths #\:))))])
 
 
-  (library-path (append (library-path) (list (string-append (current-directory) "/lib")
+#;  (library-path (append (library-path) (list (string-append (current-directory) "/lib")
                       (string-append (standard-library-path) "/lib")
                       )))
+
+  (if (mosh-executable-path)
+      (add-library-path! (string-append (mosh-executable-path) "/lib"))
+      (add-library-path! (string-append (current-directory) "/lib")))
+
+  (add-library-path! (string-append (standard-library-path) "/lib"))
 
   (let ([prefix
            (lambda (ext ls)

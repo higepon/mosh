@@ -489,5 +489,5 @@ test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
-	(cd doc &&  MOSH_GENSYM_PREFIX=I ../mosh ../scripts/pre-compile-r6rs.scm ../scripts/pre-compile-target.scm)
+	MOSH_GENSYM_PREFIX=I mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 

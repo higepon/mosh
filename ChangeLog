@@ -1,5 +1,7 @@
 2009-04-05  higepon  <higepon@users.sourceforge.jp>
 
+        * Changed standerd library look up path. Search the (mosh-executable-path)/lib which is the path of mosh binary.
+
         * UtilityProcedures.cpp : Added mosh-executable-path. Checked only on Linux.
 
         * tools/psyntax-r6rs/rev10_to_10/print-prefix.ss : Added.

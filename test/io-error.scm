@@ -378,9 +378,10 @@
 
 (test-begin "executable path")
 (cond
- [(string=? "linux" (host-os))
+ [(member (host-os) '("win32" "linux"))
   (test-true (string? (mosh-executable-path)))]
- [else #f])
+ [else
+  '()])
 
 (test-end)
 
