@@ -508,4 +508,5 @@
     ;;
     put-datum
     time-usage
+    mosh-executable-path
     )

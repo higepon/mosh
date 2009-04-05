@@ -1,3 +1,9 @@
+2009-04-05  higepon  <higepon@users.sourceforge.jp>
+
+        * UtilityProcedures.cpp : Added mosh-executable-path. Checked only on Linux.
+
+        * tools/psyntax-r6rs/rev10_to_10/print-prefix.ss : Added.
+
 2009-04-04  higepon  <higepon@users.sourceforge.jp>
 
         * Fixed VM.cpp:310: warning: 'ret.scheme::Object::val' may be used uninitialized in this function.

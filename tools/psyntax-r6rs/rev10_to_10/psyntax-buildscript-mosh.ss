@@ -973,6 +973,7 @@
     (make-compiler-instruction               mosh)
     (source-info                             mosh)
     (make-file-options                       mosh)
+    (mosh-executable-path                    mosh)
     (sys-display mosh)
     (get-command-line mosh)
     (get-timeofday mosh)

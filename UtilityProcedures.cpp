@@ -29,6 +29,13 @@
  *  $Id$
  */
 
+#ifdef _WIN32
+#include <windows.h>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+#else
+#include <unistd.h>
+#endif
 #ifdef _MSC_VER
 	#include <windows.h> // for FILETIME
     #include "../include/gettimeofday.h"
@@ -71,6 +78,48 @@
     #define pclose _pclose
 #endif
 using namespace scheme;
+
+Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("mosh-executable-path");
+#if defined(_WIN32)
+    char path[MAX_PATH];
+    if (GetModuleFileNameA(NULL, path, sizeof(path))) {
+        if (PathRemoveFileSpecA(path)) {
+            PathAddBackslashA(path);
+            return Object::makeString(path);
+        }
+    }
+    return Object::False;
+#elif defined(__linux__)
+    char path[4096];
+    int ret = readlink("/proc/self/exe", path, sizeof(path));
+    if (ret != -1) {
+        std::string chop(path, ret);
+        int pos = chop.find_last_of('/');
+        if (pos > 0) {
+            return Object::makeString(chop.substr(0, pos + 1).c_str());
+        }
+    }
+    return Object::False;
+#elif defined(__sun)
+    char path[4096];
+    char procpath[64];
+    pid_t my_pid = getpid();
+    sprintf(procpath, "/proc/%d/path/a.out", (int)my_pid);
+    int ret = readlink(procpath, path, sizeof(path));
+    if (ret != -1) {
+        std::string chop(path, ret);
+        int pos = chop.find_last_of('/');
+        if (pos > 0) {
+            return Object::makeString(chop.substr(0, pos + 1).c_str());
+        }
+    }
+    return Object::Undef;
+#else
+    return Object::False;
+#endif
+}
 
 Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)
 {

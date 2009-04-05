@@ -376,4 +376,12 @@
   (close-port p-writer)))
 (test-end)
 
+(test-begin "executable path")
+(cond
+ [(string=? "linux" (host-os))
+  (test-true (string? (mosh-executable-path)))]
+ [else #f])
+
+(test-end)
+
 (test-end)
