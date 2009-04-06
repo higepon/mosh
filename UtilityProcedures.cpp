@@ -49,7 +49,13 @@
 #include <sys/param.h>
 #include <mach-o/dyld.h> /* _NSGetExecutablePath */
 #include <string.h>
-#endif
+#endif /* __APPLE__ */
+
+#ifdef __FreeBSD__
+#include <dlfcn.h>
+extern int main(int argc, char *argv[]);
+#endif /* __FreeBSD__ */
+
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -106,6 +112,26 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
         if (pos > 0) {
             return Object::makeString(chop.substr(0, pos + 1).c_str());
         }
+    }
+    return Object::False;
+#elif defined(__FreeBSD__)
+    Dl_info info;
+    char path[PATH_MAX + 1];
+
+    if (dladdr( (const void*)&main, &info) == 0) {
+        return Object::False;
+    }
+
+    strncpy(path, info.dli_fname, PATH_MAX + 1);
+    path[PATH_MAX + 1] = '\0';
+    char base[PATH_MAX];
+    if (NULL== realpath(path, base)) {
+        return Object::False;
+    }
+    std::string p = base;
+    int pos = p.find_last_of('/');
+    if (pos > 0) {
+        return Object::makeString(p.substr(0, pos + 1).c_str());
     }
     return Object::False;
 #elif defined(__APPLE__)
