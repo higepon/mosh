@@ -39,6 +39,7 @@
 #ifdef _MSC_VER
     #include <windows.h> // for FILETIME
     #include "../include/gettimeofday.h"
+    #include "Tchar.h"
 #else
 #include <sys/time.h>
 #endif
@@ -75,6 +76,8 @@ extern int main(int argc, char *argv[]);
 #include "Equivalent.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "UTF8Codec.h"
+#include "UTF16Codec.h"
+#include "Transcoder.h"
 #include "SString.h"
 #include "Vector.h"
 #include "ByteVector.h"
@@ -95,12 +98,21 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("mosh-executable-path");
     checkArgumentLength(0);
 #if defined(_WIN32)
-    char path[MAX_PATH];
-    if (GetModuleFileNameA(NULL, path, sizeof(path))) {
-        if (PathRemoveFileSpecA(path)) {
-            PathAddBackslashA(path);
-            return Object::makeString(path);
-        }
+//    char path[MAX_PATH];
+//    if (GetModuleFileNameA(NULL, path, sizeof(path))) {
+//        if (PathRemoveFileSpecA(path)) {
+//            PathAddBackslashA(path);
+//            return Object::makeString(path);
+//        }
+//    }
+    TCHAR tmp[MAX_PATH]; /* may be Unicoded */
+    if (GetModuleFileNameW(NULL,tmp,MAX_PATH)) {
+        TCHAR* trm = _tcsinc(_tcsrchr(tmp,_T('\\')));
+        *trm = _T('\0');
+        ByteArrayBinaryInputPort name((uint8_t *)tmp,_tcslen(tmp)*sizeof(TCHAR));
+        UTF16Codec codec(UTF16Codec::UTF_16LE);
+        Transcoder tcoder(&codec);
+        return Object::makeString(tcoder.getString(&name));
     }
     return Object::False;
 #elif defined(__linux__)
