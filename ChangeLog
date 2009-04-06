@@ -1,5 +1,7 @@
 2009-04-06  higepon  <higepon@users.sourceforge.jp>
 
+        * Bignum.h: FreeBSD has no __WORDSIZE ?.
+
         * (mosh-executable-path) works on FreeBSD.
 
         * (mosh-executable-path) works on OSX using _NSGetExecutablePath.

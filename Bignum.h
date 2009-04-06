@@ -41,8 +41,8 @@
     #else
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
     #endif
-#elif defined(__GNUC__) && defined(__WORDSIZE)
-    #if (__WORDSIZE == 64)
+#elif defined(__GNUC__)
+    #if defined(__WORDSIZE) && (__WORDSIZE == 64) // Some FreeBSD have no __WORDSIZE.
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 8
     #else
         #define MOSH_BIGNUM_SIZEOF_INTPTR_T 4
