@@ -9,6 +9,7 @@
    [(= 1 (length args))
     (display "top-level-program file is required\n" (current-error-port))]
    [else
-    (pre-compile (cadr args))]))
+    (pre-compile (cadr args))])
+  (exit 0))
 
 (main (command-line))

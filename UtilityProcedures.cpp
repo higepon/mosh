@@ -37,13 +37,18 @@
 #include <unistd.h>
 #endif
 #ifdef _MSC_VER
-	#include <windows.h> // for FILETIME
+    #include <windows.h> // for FILETIME
     #include "../include/gettimeofday.h"
 #else
 #include <sys/time.h>
 #endif
 #ifndef _WIN32
 #include <sys/resource.h>
+#endif
+#ifdef __APPLE__
+#include <sys/param.h>
+#include <mach-o/dyld.h> /* _NSGetExecutablePath */
+#include <string.h>
 #endif
 #include "Object.h"
 #include "Object-inl.h"
@@ -82,6 +87,7 @@ using namespace scheme;
 Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mosh-executable-path");
+    checkArgumentLength(0);
 #if defined(_WIN32)
     char path[MAX_PATH];
     if (GetModuleFileNameA(NULL, path, sizeof(path))) {
@@ -96,6 +102,17 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
     int ret = readlink("/proc/self/exe", path, sizeof(path));
     if (ret != -1) {
         std::string chop(path, ret);
+        int pos = chop.find_last_of('/');
+        if (pos > 0) {
+            return Object::makeString(chop.substr(0, pos + 1).c_str());
+        }
+    }
+    return Object::False;
+#elif defined(__APPLE__)
+    char path[MAXPATHLEN];
+    uint32_t pathLen = MAXPATHLEN;
+    if (_NSGetExecutablePath(path, &pathLen) == 0) {
+        std::string chop(path, pathLen);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
             return Object::makeString(chop.substr(0, pos + 1).c_str());
@@ -837,8 +854,8 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
     FILETIME user_time;
     GetSystemTimeAsFileTime(&real_time);
     if (GetProcessTimes(GetCurrentProcess(), &creation_time, &exit_time, &kernel_time, &user_time)) {
-      return Pair::list3(Object::makeFlonum(((double)real_time.dwLowDateTime 
-                                             + (double)real_time.dwHighDateTime 
+      return Pair::list3(Object::makeFlonum(((double)real_time.dwLowDateTime
+                                             + (double)real_time.dwHighDateTime
                                              * (double)UINT_MAX) / 10000000.0),
                          Object::makeFlonum(((double)user_time.dwLowDateTime
                                              + (double)user_time.dwHighDateTime

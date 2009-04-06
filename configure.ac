@@ -194,6 +194,7 @@ i[[3456]]86|pentium)
         arch=i386
         case "$target_os" in
         *darwin*)
+#          MOSH_LDADD_ARCH="$MOSH_LDADD_ARCH -framework CoreFoundation"
           if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse2 -mfpmath=sse"
           else
