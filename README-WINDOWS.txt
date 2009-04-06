@@ -6,10 +6,9 @@
 
 3. Copy lib to C:\Users\<UserName>\Mosh.
 
-4. Start Mosh with --load-path=C:\Users\<UserName>\Mosh\lib option as follows
+4. Start Mosh as follows
 
-
-C:\Users\<UserName>\Mosh> mosh.exe --load-path=C:\Users\<UserName>\Mosh\lib
+C:\Users\<UserName>\Mosh> mosh.exe
 
 > mosh>(display "Hello, World")
 Hello, World#<unspecified>
