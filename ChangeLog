@@ -1,5 +1,7 @@
 2009-04-07  higepon  <higepon@users.sourceforge.jp>
 
+        * Changed open() => openFd();
+
         * Added openFd.
 
         * Added utf32toUtf8 and utf8ToUtf32.
