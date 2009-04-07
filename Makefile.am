@@ -26,7 +26,7 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm 
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat
 bin_SCRIPTS = mosh_config
 
 # mosh
@@ -141,7 +141,8 @@ FFIProcedures.h                FFIProcedures.cpp                   \
 CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
-BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp
+BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
+OScompat.h OScompat.cpp
 
 mosh_core_libraries = \
 lib/lambda/wiki.ss    \
@@ -487,6 +488,14 @@ test_ffi_DEPENDENCIES = $(TEST_DEPENDENCIES_) libffitest.so.1.0
 test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
+
+TESTS += test_compat
+check_PROGRAMS += test_compat
+test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_compat_SOURCES = OScompatTest.cpp TestingSignalHandler.cpp
+test_compat_LDADD = $(TEST_LDADD_)
+
 
 install-data-hook :
 	MOSH_GENSYM_PREFIX=I mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm

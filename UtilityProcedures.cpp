@@ -86,6 +86,7 @@ extern int main(int argc, char *argv[]);
 #include "Fixnum.h"
 #include "Arithmetic.h"
 #include "Bignum.h"
+#include "OSCompat.h"
 
 #ifdef _WIN32
     #define popen _popen
@@ -330,7 +331,7 @@ Object scheme::getEnvironmentVariableEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-environment-variable");
     checkArgumentLength(1);
     argumentAsString(0, text);
-    const char* value = getenv(text->data().ascii_c_str());
+    const ucs4char* value = getEnv(text->data());
     return NULL == value ? Object::False : Object::makeString(value);
 }
 
