@@ -45,6 +45,7 @@
 #include "OSCompat.h"
 #include "SString.h"
 #include "ByteVector.h"
+#include <dirent.h>
 
 using namespace scheme;
 //
@@ -184,6 +185,20 @@ Object scheme::getEnvAlist()
                                         Object::makeString(value)),
                            ret);
         env++;
+    }
+    return ret;
+}
+
+Object scheme::readDirectory(const ucs4string& path)
+{
+    DIR* dir;
+    if (NULL == (dir = opendir((char*)utf32toUtf8(path)->data()))) {
+        return Object::False;
+    }
+    Object ret = Object::Nil;
+    for (struct dirent* entry = readdir(dir); entry != NULL; entry = readdir(dir))
+    {
+        ret = Object::cons(Object::makeString(entry->d_name), ret);
     }
     return ret;
 }

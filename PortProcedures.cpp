@@ -32,7 +32,6 @@
 #ifdef _WIN32
     #include <io.h>
 #else
-#include <dirent.h>
 #include <unistd.h> // getcwd
 #endif
 #include <sys/stat.h> // stat
@@ -1714,25 +1713,14 @@ Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("readdir");
-#ifdef _WIN32
-    callAssertionViolationAfter(theVM, procedureName, "could't open dir");
-    return Object::makeString(UC("<not-supported>"));
-#else
     checkArgumentLength(1);
     argumentAsString(0, path);
-
-    DIR* dir;
-    if (NULL == (dir = opendir(path->data().ascii_c_str()))) {
+    const Object directories = readDirectory(path->data());
+    if (directories.isFalse()) {
         callAssertionViolationAfter(theVM, procedureName, "could't open dir", L1(argv[0]));
         return Object::Undef;
     }
-    Object ret = Object::Nil;
-    for (struct dirent* entry = readdir(dir); entry != NULL; entry = readdir(dir))
-    {
-        ret = Object::cons(Object::makeString(entry->d_name), ret);
-    }
-    return ret;
-#endif
+    return directories;
 }
 
 Object scheme::bufferModePEx(VM* theVM, int argc, const Object* argv)

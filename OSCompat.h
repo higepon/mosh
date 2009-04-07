@@ -46,6 +46,7 @@ namespace scheme {
     ByteVector* utf32toUtf8(const ucs4string& s);
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
+    Object readDirectory(const ucs4string& dir);
     ucs4string stringError(int num);
 
 }; // namespace scheme
