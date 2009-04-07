@@ -493,7 +493,7 @@ TESTS += test_compat
 check_PROGRAMS += test_compat
 test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_compat_SOURCES = OScompatTest.cpp TestingSignalHandler.cpp
+test_compat_SOURCES = OSCompatTest.cpp TestingSignalHandler.cpp
 test_compat_LDADD = $(TEST_LDADD_)
 
 
