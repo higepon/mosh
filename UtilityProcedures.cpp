@@ -335,28 +335,11 @@ Object scheme::getEnvironmentVariableEx(VM* theVM, int argc, const Object* argv)
     return NULL == value ? Object::False : Object::makeString(value);
 }
 
-#ifdef _WIN32
-#include <stdlib.h>
-#define environ _environ
-#else
-extern char** environ;
-#endif
 Object scheme::getEnvironmentVariablesEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-environment-variables");
     checkArgumentLength(0);
-    Object ret = Object::Nil;
-    char ** env = environ;
-    while(*env) {
-        char* equalPostion = strchr(*env, '=');
-        ucs4string key = ucs4string::from_c_str(*env, equalPostion - *env);
-        ucs4string value = ucs4string::from_c_str(equalPostion + 1, strlen(equalPostion + 1));
-        ret = Object::cons(Object::cons(Object::makeString(key),
-                                        Object::makeString(value)),
-                           ret);
-        env++;
-    }
-    return ret;
+    return getEnvAlist();
 }
 
 Object scheme::equalPEx(VM* theVM, int argc, const Object* argv)
