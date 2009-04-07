@@ -40,6 +40,7 @@
 #include "OSCompat.h"
 #include "ByteVector.h"
 #include "SString.h"
+#include "PortProcedures.h"
 
 using namespace scheme;
 

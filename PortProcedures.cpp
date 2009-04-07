@@ -87,6 +87,28 @@
 
 using namespace scheme;
 
+ucs4string scheme::utf8ToUtf32(const char* s, int len)
+{
+    ByteArrayBinaryInputPort in((uint8_t*)s, len);
+    UTF8Codec codec;
+    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
+    return transcoderr.getString(&in);
+}
+
+// output is NULL terminated
+ByteVector* scheme::utf32toUtf8(const ucs4string& s)
+{
+    ByteArrayBinaryOutputPort out;
+    UTF8Codec codec;
+    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
+    transcoderr.putString(&out, s);
+    if (!s.empty()) {
+        transcoderr.putChar(&out, '\0');
+    }
+    return out.toByteVector();
+}
+
+
 static bool isExistOption(Record* fileOptions, Object option)
 {
     MOSH_ASSERT(fileOptions->fieldsLength() == 2);

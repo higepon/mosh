@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Pair.h"
@@ -45,7 +46,8 @@
 #include "OSCompat.h"
 #include "SString.h"
 #include "ByteVector.h"
-#include <dirent.h>
+#include "PortProcedures.h"
+
 
 using namespace scheme;
 //
@@ -129,26 +131,6 @@ bool scheme::fileReadableP(const ucs4string& path)
     return access(path.ascii_c_str(), R_OK) == 0;
 }
 
-ucs4string scheme::utf8ToUtf32(const char* s, int len)
-{
-    ByteArrayBinaryInputPort in((uint8_t*)s, len);
-    UTF8Codec codec;
-    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
-    return transcoderr.getString(&in);
-}
-
-// output is NULL terminated
-ByteVector* scheme::utf32toUtf8(const ucs4string& s)
-{
-    ByteArrayBinaryOutputPort out;
-    UTF8Codec codec;
-    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
-    transcoderr.putString(&out, s);
-    if (!s.empty()) {
-        transcoderr.putChar(&out, '\0');
-    }
-    return out.toByteVector();
-}
 
 ucs4string scheme::stringError(int num)
 {

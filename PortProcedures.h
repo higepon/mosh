@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    ucs4string utf8ToUtf32(const char* s, int len);
+    ByteVector* utf32toUtf8(const ucs4string& s);
     Object makeCustomTextualInputOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object makeCustomBinaryInputOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv);

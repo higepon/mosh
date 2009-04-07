@@ -42,8 +42,6 @@ namespace scheme {
     bool fileExistsP(const ucs4string& path);
     bool fileWritableP(const ucs4string& path);
     bool fileReadableP(const ucs4string& path);
-    ucs4string utf8ToUtf32(const char* s, int len);
-    ByteVector* utf32toUtf8(const ucs4string& s);
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
