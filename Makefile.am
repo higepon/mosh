@@ -142,7 +142,7 @@ CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
-OScompat.h OScompat.cpp
+OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
 lib/lambda/wiki.ss    \
