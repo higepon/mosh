@@ -84,70 +84,9 @@
 #include "ListProcedures.h"
 #include "CustomBinaryInputOutputPort.h"
 #include "ByteArrayBinaryOutputPort.h"
-
-#ifdef _WIN32
-    #define F_OK 0
-    #define W_OK 2
-    #define R_OK 4
-#endif
+#include "OSCompat.h"
 
 using namespace scheme;
-
-int scheme::readFromFd(int fd, uint8_t* buf, size_t size)
-{
-    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
-    for (;;) {
-        const int result = read(fd, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            if (result < 0) {
-                throwIOError2(IOError::READ, strerror(errno));
-                return result;
-            } else {
-                return result;
-            }
-        }
-    }
-}
-
-int scheme::writeToFd(int fd, uint8_t* buf, size_t count)
-{
-    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd, buf, count);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result < 0) {
-                throwIOError2(IOError::WRITE, strerror(errno));
-                return result;
-            } else {
-                return result;
-            }
-        }
-    }
-}
-
-
-bool scheme::fileExistsP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), F_OK) == 0;
-}
-
-bool scheme::fileWritableP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), W_OK | R_OK) == 0;
-}
-
-bool scheme::fileReadableP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), R_OK) == 0;
-}
-
 
 static bool isExistOption(Record* fileOptions, Object option)
 {
@@ -325,12 +264,12 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -921,12 +860,12 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1612,12 +1551,12 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1638,9 +1577,9 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     } else {
         switch(errno) {
         case EACCES:
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
         default:
-            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1705,9 +1644,9 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     } else {
         switch(errno) {
         case EACCES:
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, strerror(errno), L1(argv[0]));
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
         default:
-            callErrorAfter(theVM, procedureName, strerror(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
             return Object::Undef;
         }
     }

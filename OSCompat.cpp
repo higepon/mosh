@@ -29,24 +29,117 @@
  *  $Id: OScompat.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "ErrorProcedures.h"
 #include "OSCompat.h"
+#include "SString.h"
 
 using namespace scheme;
-
+//
 // N.B Dont't forget to add tests to OScompatTest.cpp.
+//
+
+// TODO: This funcion should be placed on File Class ?.
+int scheme::openFd(const ucs4string& file, int flags, mode_t mode)
+{
+#ifdef _WIN32
+    // Add O_BINARY flag!
+    // TODO file should be encoded
+    return open(file.ascii_c_str(), O_BINARY | flags, mode);
+#else
+
+    // TODO
+    // ucs4toUtf8
+    return open(file.ascii_c_str(), flags, mode);
+#endif
+}
+
+// TODO: This funcion should be placed on File Class ?.
+// N.B. This funcion can raise I/O error, caller should handle it.
+int scheme::readFromFd(int fd, uint8_t* buf, size_t size)
+{
+    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
+    for (;;) {
+        const int result = read(fd, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // read again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::READ, stringError(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+}
+
+// TODO: This funcion should be placed on File Class ?.
+// N.B. This funcion can raise I/O error, caller should handle it.
+int scheme::writeToFd(int fd, uint8_t* buf, size_t count)
+{
+    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
+
+    for (;;) {
+        const int result = write(fd, buf, count);
+        if (result < 0 && errno == EINTR) {
+            // write again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::WRITE, stringError(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+}
+
+
+#ifdef _WIN32
+    #define F_OK 0
+    #define W_OK 2
+    #define R_OK 4
+#endif
+
+bool scheme::fileExistsP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), F_OK) == 0;
+}
+
+bool scheme::fileWritableP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), W_OK | R_OK) == 0;
+}
+
+bool scheme::fileReadableP(const ucs4string& path)
+{
+    return access(path.ascii_c_str(), R_OK) == 0;
+}
 
 ucs4string scheme::utf8ToUcs4(const char* s, int len)
 {
-    ByteArrayBinaryInputPort in((uint8_t *)s, len);
+    ByteArrayBinaryInputPort in((uint8_t*)s, len);
     UTF8Codec codec;
     Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
     return transcoderr.getString(&in);
+}
+
+ucs4string scheme::stringError(int num)
+{
+    const char* text = strerror(num);
+    return ucs4string::from_c_str(text, strlen(text));
+    // use _wcserror_s on Windows ?
 }
 
 ucs4char* scheme::getEnv(const ucs4string& key)

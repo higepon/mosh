@@ -36,9 +36,16 @@
 
 namespace scheme {
 
+    int openFd(const ucs4string& file, int flags, mode_t mode);
+    int writeToFd(int fd, uint8_t* buf, size_t size);
+    int readFromFd(int fd, uint8_t* buf, size_t size);
+    bool fileExistsP(const ucs4string& path);
+    bool fileWritableP(const ucs4string& path);
+    bool fileReadableP(const ucs4string& path);
     ucs4string utf8ToUcs4(const char* s, int len);
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
+    ucs4string stringError(int num);
 
 }; // namespace scheme
 

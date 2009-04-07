@@ -49,6 +49,7 @@
 #include "Bignum.h"
 #include "FileBinaryInputOutputPort.h"
 #include "ErrorProcedures.h"
+#include "OSCompat.h"
 #include "PortProcedures.h"
 
 using namespace scheme;

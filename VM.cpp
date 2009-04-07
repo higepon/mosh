@@ -70,6 +70,7 @@
 #include "Symbol.h"
 #include "Fasl.h"
 #include "Gloc.h"
+#include "OSCompat.h"
 
 #define TRY_VM     jmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \

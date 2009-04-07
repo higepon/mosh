@@ -48,7 +48,7 @@
 #include "Symbol.h"
 #include "Bignum.h"
 #include "ErrorProcedures.h"
-#include "PortProcedures.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 

@@ -1,6 +1,7 @@
 2009-04-07  higepon  <higepon@users.sourceforge.jp>
 
-        * OSCompat.cpp (getEnv)(getEnvAlist): Added for Linux and OS X.
+        * OSCompat.cpp (getEnv, getEnvAlist): Added for Linux and OS X.
+                       (stringError):
 
         * OSCompatTest.cpp : Added.
 

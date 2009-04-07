@@ -50,6 +50,7 @@
 #include "Bignum.h"
 #include "Symbol.h"
 #include "PortProcedures.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 

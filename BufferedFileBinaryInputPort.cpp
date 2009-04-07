@@ -49,7 +49,7 @@
 #include "BufferedFileBinaryInputPort.h"
 #include "Symbol.h"
 #include "Bignum.h"
-#include "PortProcedures.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 

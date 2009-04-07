@@ -50,6 +50,7 @@
 #include "BufferedFileBinaryInputOutputPort.h"
 #include "PortProcedures.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
