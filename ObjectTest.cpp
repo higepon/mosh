@@ -37,6 +37,8 @@
 #include "Pair-inl.h"
 #include "Vector.h"
 #include "Symbol.h"
+#include "OSCompat.h"
+#include "ByteVector.h"
 
 using namespace scheme;
 
@@ -46,6 +48,17 @@ protected:
         mosh_init();
     }
 };
+
+// TODO : move to OSCompatTest
+TEST_F(ObjectTest, utf32toUtf8) {
+    ByteVector* bv = utf32toUtf8(UC("abc"));
+    ASSERT_EQ(4, bv->length());
+    EXPECT_EQ('a', bv->u8Ref(0));
+    EXPECT_EQ('b', bv->u8Ref(1));
+    EXPECT_EQ('c', bv->u8Ref(2));
+    EXPECT_EQ('\0', bv->u8Ref(3));
+}
+
 
 TEST_F(ObjectTest, ucs4char) {
     const ucs4char* text = UC("hige");

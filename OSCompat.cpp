@@ -35,12 +35,16 @@
 #include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "ByteArrayBinaryOutputPort.h"
 #include "ErrorProcedures.h"
 #include "OSCompat.h"
 #include "SString.h"
+#include "ByteVector.h"
 
 using namespace scheme;
 //
@@ -55,10 +59,7 @@ int scheme::openFd(const ucs4string& file, int flags, mode_t mode)
     // TODO file should be encoded
     return open(file.ascii_c_str(), O_BINARY | flags, mode);
 #else
-
-    // TODO
-    // ucs4toUtf8
-    return open(file.ascii_c_str(), flags, mode);
+    return open((char*)utf32toUtf8(file)->data(), flags, mode);
 #endif
 }
 
@@ -127,12 +128,25 @@ bool scheme::fileReadableP(const ucs4string& path)
     return access(path.ascii_c_str(), R_OK) == 0;
 }
 
-ucs4string scheme::utf8ToUcs4(const char* s, int len)
+ucs4string scheme::utf8ToUtf32(const char* s, int len)
 {
     ByteArrayBinaryInputPort in((uint8_t*)s, len);
     UTF8Codec codec;
     Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
     return transcoderr.getString(&in);
+}
+
+// output is NULL terminated
+ByteVector* scheme::utf32toUtf8(const ucs4string& s)
+{
+    ByteArrayBinaryOutputPort out;
+    UTF8Codec codec;
+    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
+    transcoderr.putString(&out, s);
+    if (!s.empty()) {
+        transcoderr.putChar(&out, '\0');
+    }
+    return out.toByteVector();
 }
 
 ucs4string scheme::stringError(int num)
@@ -148,7 +162,7 @@ ucs4char* scheme::getEnv(const ucs4string& key)
     if (NULL == value) {
         return NULL;
     }
-    return utf8ToUcs4(value, strlen(value)).strdup();
+    return utf8ToUtf32(value, strlen(value)).strdup();
 }
 
 #ifdef _WIN32
@@ -164,8 +178,8 @@ Object scheme::getEnvAlist()
     char** env = environ;
     while(*env) {
         char* equalPostion = strchr(*env, '=');
-        ucs4string key = utf8ToUcs4(*env, equalPostion - *env);
-        ucs4string value = utf8ToUcs4(equalPostion + 1, strlen(equalPostion + 1));
+        ucs4string key = utf8ToUtf32(*env, equalPostion - *env);
+        ucs4string value = utf8ToUtf32(equalPostion + 1, strlen(equalPostion + 1));
         ret = Object::cons(Object::cons(Object::makeString(key),
                                         Object::makeString(value)),
                            ret);

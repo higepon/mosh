@@ -144,6 +144,13 @@ Object Transcoder::errorHandlingModeToSymbol(const enum ErrorHandlingMode errorH
     return Object::Undef;
 }
 
+void Transcoder::putString(BinaryOutputPort* port, const ucs4string& s)
+{
+    for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
+        putChar(port, *it);
+    }
+}
+
 void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
 {
     if (!buffer_.empty()) {

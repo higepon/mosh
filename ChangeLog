@@ -1,7 +1,10 @@
 2009-04-07  higepon  <higepon@users.sourceforge.jp>
 
+        * Added openFd.
+
+        * Added utf32toUtf8 and utf8ToUtf32.
+
         * OSCompat.cpp (getEnv, getEnvAlist): Added for Linux and OS X.
-                       (stringError):
 
         * OSCompatTest.cpp : Added.
 
