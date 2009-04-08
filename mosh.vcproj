@@ -388,6 +388,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OSCompat.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\PortProcedures.cpp"
 				>
 			</File>

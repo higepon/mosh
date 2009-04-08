@@ -37,7 +37,7 @@
 
 namespace scheme {
 
-    int openFd(const ucs4string& file, int flags, mode_t mode);
+    int openFd(const ucs4string& file, int flags, int mode);
     int writeToFd(int fd, uint8_t* buf, size_t size);
     int readFromFd(int fd, uint8_t* buf, size_t size);
     bool fileExistsP(const ucs4string& path);

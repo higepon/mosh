@@ -31,6 +31,20 @@
 
 #ifndef _WIN32
 #include <sys/resource.h>
+#include <dirent.h>
+#endif
+#ifdef _MSC_VER
+#include "TChar.h"
+#endif
+#ifndef _WIN32
+#include <sys/resource.h>
+#endif
+#ifdef _WIN32
+#include <windows.h>
+#include <shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+#else
+#include <unistd.h>
 #endif
 #ifdef __APPLE__
 #include <sys/param.h>
@@ -46,13 +60,13 @@ extern int main(int argc, char *argv[]);
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <dirent.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Transcoder.h"
 #include "UTF8Codec.h"
+#include "UTF16Codec.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "ByteArrayBinaryOutputPort.h"
 #include "ErrorProcedures.h"
@@ -75,7 +89,7 @@ int         optreset;
 #define EMSG    (ucs4char*)(UC(""))
 
 int  opterr;
-int  optind = 1;
+int  optind= 1;
 int  optopt;
 ucs4char *optarg4;
 
@@ -384,7 +398,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 }
 
 // TODO: This funcion should be placed on File Class ?.
-int scheme::openFd(const ucs4string& file, int flags, mode_t mode)
+int scheme::openFd(const ucs4string& file, int flags, int mode)
 {
 #ifdef _WIN32
     // Add O_BINARY flag!
@@ -502,6 +516,10 @@ Object scheme::getEnvAlist()
 
 Object scheme::readDirectory(const ucs4string& path)
 {
+#ifdef _MSC_VER
+    // TODO
+	return Object::False;
+#else
     DIR* dir;
     if (NULL == (dir = opendir((char*)utf32toUtf8(path)->data()))) {
         return Object::False;
@@ -512,4 +530,5 @@ Object scheme::readDirectory(const ucs4string& path)
         ret = Object::cons(Object::makeString(entry->d_name), ret);
     }
     return ret;
+#endif
 }
