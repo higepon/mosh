@@ -49,19 +49,21 @@ namespace scheme {
     ucs4string stringError(int num);
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
 
-    struct option_utf32 {
+    struct optionU {
         const ucs4char* name;
         int has_arg;
         int* flag;
         int val;
     };
 
-    int getopt_long_utf32(int argc, ucs4char *const argv[],
+    int getopt_longU(int argc, ucs4char *const argv[],
                           const ucs4char *optstring,
-                          const struct option_utf32 * longopts, int *longindex);
+                          const struct optionU * longopts, int *longindex);
 
 }; // namespace scheme
 
-extern ucs4char* optarg4;
+extern ucs4char* optargU;
+extern int opterrU;
+extern int optindU;
 
 #endif // SCHEME_OSCOMPAT_

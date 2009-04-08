@@ -32,7 +32,9 @@
 #ifndef SCHEME_BINARY_PORT_
 #define SCHEME_BINARY_PORT_
 
+#ifdef _MSC_VER
 #include <io.h> // lseek on windows : todo remove
+#endif
 #include "Port.h"
 
 namespace scheme {
