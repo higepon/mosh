@@ -26,7 +26,7 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm #test_compat
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat
 bin_SCRIPTS = mosh_config
 
 # mosh
@@ -489,12 +489,12 @@ test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
-# TESTS += test_compat
-# check_PROGRAMS += test_compat
-# test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
-# test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
-# test_compat_SOURCES = OSCompatTest.cpp TestingSignalHandler.cpp
-# test_compat_LDADD = $(TEST_LDADD_)
+TESTS += test_compat
+check_PROGRAMS += test_compat
+test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_compat_SOURCES = OSCompatTest.cpp TestingSignalHandler.cpp
+test_compat_LDADD = $(TEST_LDADD_)
 
 
 install-data-hook :
