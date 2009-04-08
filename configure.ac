@@ -221,8 +221,8 @@ i[[3456]]86|pentium)
           fi
           ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -DMOSH_MINGW32"
-         MOSH_LDADD_ARCH=" "
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE"
+         MOSH_LDADD_ARCH="-lshlwapi"
          ;;
         *)
           MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu

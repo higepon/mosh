@@ -31,20 +31,17 @@
 
 #ifndef _WIN32
 #include <sys/resource.h>
-#include <dirent.h>
-#endif
-#ifdef _MSC_VER
-#include "TChar.h"
-#endif
-#ifndef _WIN32
-#include <sys/resource.h>
 #endif
 #ifdef _WIN32
 #include <windows.h>
 #include <shlwapi.h>
+#include <tchar.h>
 #pragma comment(lib, "shlwapi.lib")
 #else
 #include <unistd.h>
+#endif
+#ifndef _MSC_VER
+#include <dirent.h>
 #endif
 #ifdef __APPLE__
 #include <sys/param.h>
@@ -85,14 +82,15 @@ using namespace scheme;
 ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 {
 #if defined(_WIN32)
-    TCHAR tmp[MAX_PATH]; /* may be Unicoded */
+    wchar_t tmp[MAX_PATH]; 
     if (GetModuleFileNameW(NULL,tmp,MAX_PATH)) {
-        TCHAR* trm = _tcsinc(_tcsrchr(tmp,_T('\\')));
-        *trm = _T('\0');
-        ByteArrayBinaryInputPort name((uint8_t *)tmp,_tcslen(tmp)*sizeof(TCHAR));
-        UTF16Codec codec(UTF16Codec::UTF_16LE);
-        Transcoder tcoder(&codec);
-        return tcoder.getString(&name);
+        if(PathRemoveFileSpecW(tmp)){
+            PathAddBackslashW(tmp);
+            ByteArrayBinaryInputPort name((uint8_t *)tmp,wcslen((const wchar_t*)tmp)*sizeof(wchar_t)); //FIXME: check wcslen behavior when the path includes any charactor outside of BMP.
+            UTF16Codec codec(UTF16Codec::UTF_16LE);
+            Transcoder tcoder(&codec);
+            return tcoder.getString(&name);
+        }
     }
     isErrorOccured = true;
     return UC("");
