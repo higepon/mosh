@@ -29,11 +29,11 @@
  *  $Id$
  */
 
-#ifdef _WIN32
-    #include <io.h>
-#else
-#include <unistd.h> // getcwd
-#endif
+// #ifdef _WIN32
+//     #include <io.h>
+// #else
+// #include <unistd.h> // getcwd
+// #endif
 #include <sys/stat.h> // stat
 #include <sys/types.h>
 #include <fcntl.h>

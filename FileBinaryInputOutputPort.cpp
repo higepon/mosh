@@ -29,11 +29,11 @@
  *  $Id: FileBinaryInputOutputPort.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifdef _WIN32
-    #include <io.h>
-#else
-#include <unistd.h>
-#endif
+// #ifdef _WIN32
+//     #include <io.h>
+// #else
+// #include <unistd.h>
+// #endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

@@ -46,16 +46,6 @@
 #ifndef _WIN32
 #include <sys/resource.h>
 #endif
-#ifdef __APPLE__
-#include <sys/param.h>
-#include <mach-o/dyld.h> /* _NSGetExecutablePath */
-#include <string.h>
-#endif /* __APPLE__ */
-
-#ifdef __FreeBSD__
-#include <dlfcn.h>
-extern int main(int argc, char *argv[]);
-#endif /* __FreeBSD__ */
 
 #include "Object.h"
 #include "Object-inl.h"
@@ -98,83 +88,90 @@ Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("mosh-executable-path");
     checkArgumentLength(0);
-#if defined(_WIN32)
-//    char path[MAX_PATH];
-//    if (GetModuleFileNameA(NULL, path, sizeof(path))) {
-//        if (PathRemoveFileSpecA(path)) {
-//            PathAddBackslashA(path);
-//            return Object::makeString(path);
-//        }
-//    }
-    TCHAR tmp[MAX_PATH]; /* may be Unicoded */
-    if (GetModuleFileNameW(NULL,tmp,MAX_PATH)) {
-        TCHAR* trm = _tcsinc(_tcsrchr(tmp,_T('\\')));
-        *trm = _T('\0');
-        ByteArrayBinaryInputPort name((uint8_t *)tmp,_tcslen(tmp)*sizeof(TCHAR));
-        UTF16Codec codec(UTF16Codec::UTF_16LE);
-        Transcoder tcoder(&codec);
-        return Object::makeString(tcoder.getString(&name));
-    }
-    return Object::False;
-#elif defined(__linux__)
-    char path[4096];
-    int ret = readlink("/proc/self/exe", path, sizeof(path));
-    if (ret != -1) {
-        std::string chop(path, ret);
-        int pos = chop.find_last_of('/');
-        if (pos > 0) {
-            return Object::makeString(chop.substr(0, pos + 1).c_str());
-        }
-    }
-    return Object::False;
-#elif defined(__FreeBSD__)
-    Dl_info info;
-    char path[PATH_MAX + 1];
-
-    if (dladdr( (const void*)&main, &info) == 0) {
+    bool isErrorOccured = false;
+    ucs4string path = getMoshExecutablePath(isErrorOccured);
+    if (isErrorOccured) {
         return Object::False;
+    } else {
+        return path;
     }
+// #if defined(_WIN32)
+// //    char path[MAX_PATH];
+// //    if (GetModuleFileNameA(NULL, path, sizeof(path))) {
+// //        if (PathRemoveFileSpecA(path)) {
+// //            PathAddBackslashA(path);
+// //            return Object::makeString(path);
+// //        }
+// //    }
+//     TCHAR tmp[MAX_PATH]; /* may be Unicoded */
+//     if (GetModuleFileNameW(NULL,tmp,MAX_PATH)) {
+//         TCHAR* trm = _tcsinc(_tcsrchr(tmp,_T('\\')));
+//         *trm = _T('\0');
+//         ByteArrayBinaryInputPort name((uint8_t *)tmp,_tcslen(tmp)*sizeof(TCHAR));
+//         UTF16Codec codec(UTF16Codec::UTF_16LE);
+//         Transcoder tcoder(&codec);
+//         return Object::makeString(tcoder.getString(&name));
+//     }
+//     return Object::False;
+// #elif defined(__linux__)
+//     char path[4096];
+//     int ret = readlink("/proc/self/exe", path, sizeof(path));
+//     if (ret != -1) {
+//         std::string chop(path, ret);
+//         int pos = chop.find_last_of('/');
+//         if (pos > 0) {
+//             return Object::makeString(chop.substr(0, pos + 1).c_str());
+//         }
+//     }
+//     return Object::False;
+// #elif defined(__FreeBSD__)
+//     Dl_info info;
+//     char path[PATH_MAX + 1];
 
-    strncpy(path, info.dli_fname, PATH_MAX + 1);
-    path[PATH_MAX + 1] = '\0';
-    char base[PATH_MAX];
-    if (NULL== realpath(path, base)) {
-        return Object::False;
-    }
-    std::string p = base;
-    int pos = p.find_last_of('/');
-    if (pos > 0) {
-        return Object::makeString(p.substr(0, pos + 1).c_str());
-    }
-    return Object::False;
-#elif defined(__APPLE__)
-    char path[MAXPATHLEN];
-    uint32_t pathLen = MAXPATHLEN;
-    if (_NSGetExecutablePath(path, &pathLen) == 0) {
-        std::string chop(path, pathLen);
-        int pos = chop.find_last_of('/');
-        if (pos > 0) {
-            return Object::makeString(chop.substr(0, pos + 1).c_str());
-        }
-    }
-    return Object::False;
-#elif defined(__sun)
-    char path[4096];
-    char procpath[64];
-    pid_t my_pid = getpid();
-    sprintf(procpath, "/proc/%d/path/a.out", (int)my_pid);
-    int ret = readlink(procpath, path, sizeof(path));
-    if (ret != -1) {
-        std::string chop(path, ret);
-        int pos = chop.find_last_of('/');
-        if (pos > 0) {
-            return Object::makeString(chop.substr(0, pos + 1).c_str());
-        }
-    }
-    return Object::Undef;
-#else
-    return Object::False;
-#endif
+//     if (dladdr( (const void*)&main, &info) == 0) {
+//         return Object::False;
+//     }
+
+//     strncpy(path, info.dli_fname, PATH_MAX + 1);
+//     path[PATH_MAX + 1] = '\0';
+//     char base[PATH_MAX];
+//     if (NULL== realpath(path, base)) {
+//         return Object::False;
+//     }
+//     std::string p = base;
+//     int pos = p.find_last_of('/');
+//     if (pos > 0) {
+//         return Object::makeString(p.substr(0, pos + 1).c_str());
+//     }
+//     return Object::False;
+// #elif defined(__APPLE__)
+//     char path[MAXPATHLEN];
+//     uint32_t pathLen = MAXPATHLEN;
+//     if (_NSGetExecutablePath(path, &pathLen) == 0) {
+//         std::string chop(path, pathLen);
+//         int pos = chop.find_last_of('/');
+//         if (pos > 0) {
+//             return Object::makeString(chop.substr(0, pos + 1).c_str());
+//         }
+//     }
+//     return Object::False;
+// #elif defined(__sun)
+//     char path[4096];
+//     char procpath[64];
+//     pid_t my_pid = getpid();
+//     sprintf(procpath, "/proc/%d/path/a.out", (int)my_pid);
+//     int ret = readlink(procpath, path, sizeof(path));
+//     if (ret != -1) {
+//         std::string chop(path, ret);
+//         int pos = chop.find_last_of('/');
+//         if (pos > 0) {
+//             return Object::makeString(chop.substr(0, pos + 1).c_str());
+//         }
+//     }
+//     return Object::Undef;
+// #else
+//     return Object::False;
+// #endif
 }
 
 Object scheme::hostOsEx(VM* theVM, int argc, const Object* argv)

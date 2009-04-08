@@ -30,11 +30,11 @@
  *  $Id$
  */
 
-#ifdef _WIN32
-    #include <io.h>
-#else
-#include <unistd.h>
-#endif
+// #ifdef _WIN32
+//     #include <io.h>
+// #else
+// #include <unistd.h>
+// #endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>

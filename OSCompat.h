@@ -46,6 +46,7 @@ namespace scheme {
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
     ucs4string stringError(int num);
+    ucs4string getMoshExecutablePath(bool& isErrorOccured);
 
 }; // namespace scheme
 
