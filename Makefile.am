@@ -26,7 +26,7 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt
 bin_SCRIPTS = mosh_config
 
 # mosh
@@ -142,6 +142,7 @@ CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
+getoptU.h getoptU.cpp                                                        \
 OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
@@ -495,6 +496,14 @@ test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_compat_SOURCES = OSCompatTest.cpp TestingSignalHandler.cpp
 test_compat_LDADD = $(TEST_LDADD_)
+
+TESTS += test_getopt
+check_PROGRAMS += test_getopt
+test_getopt_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_getopt_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_getopt_SOURCES = getoptUTest.cpp TestingSignalHandler.cpp
+test_getopt_LDADD = $(TEST_LDADD_)
+
 
 
 install-data-hook :

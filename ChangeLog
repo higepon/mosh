@@ -1,5 +1,9 @@
 2009-04-08  higepon  <higepon@users.sourceforge.jp>
 
+        * getoptU.cpp : Ported getopt_long for ucs4.
+
+        * getoptUTest.cpp: Added tests for getopt_longU.
+
         * OSCompat.cpp (getMoshExecutablePath): Moved to OSCompat.cpp
 
 2009-04-07  higepon  <higepon@users.sourceforge.jp>

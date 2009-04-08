@@ -1,5 +1,5 @@
 /*
- * OSCompatTest - Test for OS compatibility functions
+ * getopt.h - 
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -26,58 +26,32 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: TestVector.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: getopt.h 261 2008-07-25 06:16:44Z higepon $
  */
-#include <gtest/gtest.h>
 
+#ifndef SCHEME_GETOPT_
+#define SCHEME_GETOPT_
+
+#include <getopt.h>
 #include "scheme.h"
-#include "Object.h"
-#include "Object-inl.h"
-#include "Pair.h"
-#include "Pair-inl.h"
-#include "OSCompat.h"
-#include "ByteVector.h"
-#include "PortProcedures.h"
 
-using namespace scheme;
+namespace scheme {
 
-class MoshTest : public testing::Test {
-protected:
-    virtual void SetUp() {
-        mosh_init();
-    }
-};
+    struct optionU {
+        const ucs4char* name;
+        int has_arg;
+        int* flag;
+        int val;
+    };
 
-TEST_F(MoshTest, getEnv) {
-    EXPECT_EQ(NULL, getEnv(UC("MOSH_NOT_EXIST_ENV")));
-    EXPECT_TRUE(NULL != getEnv(UC("PATH")));
-}
+    int getopt_longU(int argc, ucs4char *const argv[],
+                     const ucs4char *optstring,
+                     const struct optionU * longopts, int *longindex);
 
-TEST_F(MoshTest, getEnvAlist) {
-    ASSERT_TRUE(getEnvAlist().isList());
-}
+}; // namespace scheme
 
-TEST_F(MoshTest, stringError) {
-    ASSERT_TRUE(stringError(1).size() > 0);
-}
+extern ucs4char* optargU;
+extern int opterrU;
+extern int optindU;
 
-TEST_F(MoshTest, FileAccess) {
-    EXPECT_TRUE(fileExistsP(UC("lib")));
-    EXPECT_TRUE(fileWritableP(UC("lib")));
-    EXPECT_TRUE(fileReadableP(UC("lib")));
-}
-
-TEST_F(MoshTest, utf32toUtf8) {
-    ByteVector* bv = utf32toUtf8(UC("abc"));
-    ASSERT_EQ(4, bv->length());
-    EXPECT_EQ('a', bv->u8Ref(0));
-    EXPECT_EQ('b', bv->u8Ref(1));
-    EXPECT_EQ('c', bv->u8Ref(2));
-    EXPECT_EQ('\0', bv->u8Ref(3));
-}
-
-TEST_F(MoshTest, readDirectory) {
-    const Object directories = readDirectory(UC("."));
-    ASSERT_TRUE(directories.isList());
-}
-
+#endif // SCHEME_GETOPT_
