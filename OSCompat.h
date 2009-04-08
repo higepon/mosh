@@ -62,4 +62,6 @@ namespace scheme {
 
 }; // namespace scheme
 
+extern ucs4char* optarg4;
+
 #endif // SCHEME_OSCOMPAT_

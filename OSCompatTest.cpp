@@ -45,6 +45,8 @@ class MoshTest : public testing::Test {
 protected:
     virtual void SetUp() {
         mosh_init();
+        optind = 1;
+        opterr = 1;
     }
 };
 
@@ -83,61 +85,72 @@ TEST_F(MoshTest, readDirectory) {
 
 TEST_F(MoshTest, getopt_long_utf32) {
     struct option_utf32 long_options[] = {
-//       {UC("loadpath"), optional_argument, 0, 'L'},
        {UC("help"), 0, 0, 'h'},
        {0, 0, 0, 0}
-   };
+    };
 
     const int argc = 2;
     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-h") };
     int optionIndex = 0;
-    opterr = 1;
-    printf("%c", getopt_long_utf32(argc, argv, UC("ah"), long_options, &optionIndex));
-
-//    ASSERT_EQ('h', getopt_long_utf32(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
-    
-
-
-//     while ((opt = getopt_long_utf32(argc, argv, "htvpVcl:5rze", long_options, &optionIndex)) != -1) {
-//         switch (opt) {
-//         case 'h':
-//             showUsage();
-//             break;
-//         case 'l':
-//             initFile = optarg;
-//             break;
-//         case 'L':
-//             loadPath = optarg;
-//             break;
-//         case 'b':
-//             isR6RSBatchMode = true;
-//             break;
-//         case 'v':
-//             showVersion();
-//             break;
-//         case 'V':
-//             showVersion();
-//             break;
-//         case 't':
-//             isTestOption = true;
-//             break;
-//         case 'p':
-//             isProfiler = true;
-//             break;
-//         case 'c':
-//             isCompileString = true;
-//             break;
-//         case 'e':
-//             isDebugExpand = true;
-//             break;
-//         case '5':
-//             isR6RSBatchMode = false;
-//             break;
-//         default:
-//             fprintf(stderr, "invalid option %c", opt);
-//             showUsage();
-//             exit(EXIT_FAILURE);
-//         }
-//     }
-
+    ASSERT_EQ('h', getopt_long_utf32(argc, argv, UC("h"), long_options, &optionIndex));
+    ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("h"), long_options, &optionIndex));
 }
+
+TEST_F(MoshTest, getopt_long_utf32_2) {
+    struct option_utf32 long_options[] = {
+       {UC("help"), 0, 0, 'h'},
+       {0, 0, 0, 0}
+    };
+
+    const int argc = 2;
+    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-t") };
+    int optionIndex = 0;
+    ASSERT_EQ('t', getopt_long_utf32(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
+    ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
+}
+
+TEST_F(MoshTest, getopt_long_utf32_3) {
+    struct option_utf32 long_options[] = {
+       {UC("help"), 0, 0, 'h'},
+       {0, 0, 0, 0}
+    };
+
+    const int argc = 2;
+    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-あ") };
+    int optionIndex = 0;
+    ASSERT_EQ(0x3042, getopt_long_utf32(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
+    ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
+}
+
+TEST_F(MoshTest, getopt_long_utf32_4) {
+    struct option_utf32 long_options[] = {
+        {UC("loadpath"), optional_argument, 0, 'L'},
+        {UC("help"), 0, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    const int argc = 2;
+    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("--loadpath=my-library") };
+    int optionIndex = 0;
+    ASSERT_EQ('L', getopt_long_utf32(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
+    ucs4string path = optarg4;
+    EXPECT_TRUE(path == UC("my-library"));
+    ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
+}
+
+// TEST_F(MoshTest, getopt_long_utf32_5) {
+//     struct option_utf32 long_options[] = {
+//         {UC("loadpath"), optional_argument, 0, 'L'},
+//         {UC("help"), 0, 0, 'h'},
+//         {0, 0, 0, 0}
+//     };
+
+//     const int argc = 2;
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-L=my-library") };
+//     int optionIndex = 0;
+//     ASSERT_EQ('L', getopt_long_utf32(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
+//     ucs4string path = optarg4;
+//     EXPECT_TRUE(path == UC("my-library"));
+//     ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
+// }
+

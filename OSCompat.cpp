@@ -117,14 +117,27 @@ static size_t strlen_utf32(const ucs4char *s)
     return c;
 }
 
-static ucs4char* strchr_utf32(const ucs4char *s, ucs4char c)
+// strchr from OpenBSD
+static ucs4char* strchr_utf32(const ucs4char *p, int ch)
 {
-    while( *s++ != '\0' ) {
-        if( *s == c )
-            return (ucs4char*)s;
+    for (;; ++p) {
+        if (*p == ch)
+            return((ucs4char *)p);
+        if (!*p)
+            return((ucs4char *)NULL);
     }
-    return NULL;
+    /* NOTREACHED */
 }
+
+// static ucs4char* strchr_utf32(const ucs4char *s, ucs4char c)
+// {
+//     while( *s++ != '\0' ) {
+//         printf("<%c = %c>", *s, c);
+//         if( *s == c )
+//             return (ucs4char*)s;
+//     }
+//     return NULL;
+// }
 
 // Ported from pgsql/src/port/getopt_long.c
 int scheme::getopt_long_utf32(int argc, ucs4char *const argv[],
