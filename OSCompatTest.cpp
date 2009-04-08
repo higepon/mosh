@@ -138,7 +138,24 @@ TEST_F(MoshTest, getopt_long_utf32_4) {
     ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
 }
 
-// TEST_F(MoshTest, getopt_long_utf32_5) {
+TEST_F(MoshTest, getopt_long_utf32_5) {
+    struct option_utf32 long_options[] = {
+        {UC("loadpath"), optional_argument, 0, 'L'},
+        {UC("help"), 0, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    const int argc = 3;
+    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-L"), (ucs4char*)UC("my-library") };
+    int optionIndex = 0;
+    ASSERT_EQ('L', getopt_long_utf32(argc, argv, UC("hあvpVcl:L5rze"), long_options, &optionIndex));
+    ucs4string path = optarg4;
+    EXPECT_TRUE(path == UC("my-library"));
+    ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:L:5rze"), long_options, &optionIndex));
+}
+
+// const is problem.
+// TEST_F(MoshTest, getopt_long_utf32_6) {
 //     struct option_utf32 long_options[] = {
 //         {UC("loadpath"), optional_argument, 0, 'L'},
 //         {UC("help"), 0, 0, 'h'},
@@ -146,11 +163,10 @@ TEST_F(MoshTest, getopt_long_utf32_4) {
 //     };
 
 //     const int argc = 2;
-//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-L=my-library") };
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("--loadpath=my-library") };
 //     int optionIndex = 0;
 //     ASSERT_EQ('L', getopt_long_utf32(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
 //     ucs4string path = optarg4;
 //     EXPECT_TRUE(path == UC("my-library"));
 //     ASSERT_EQ(-1, getopt_long_utf32(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
 // }
-
