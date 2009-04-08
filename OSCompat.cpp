@@ -66,6 +66,227 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
+#ifndef HAVE_INT_OPTRESET
+int         optreset;
+#endif
+
+#define BADCH   '?'
+#define BADARG  ':'
+#define EMSG    (ucs4char*)(UC(""))
+
+int  opterr;
+int  optind = 1;
+int  optopt;
+ucs4char *optarg4;
+
+static size_t strcspn_utf32(const ucs4char* str1, const ucs4char* str2) {
+
+    const ucs4char* const head = str1;
+    const ucs4char* t;
+    for (; *str1; str1++) {
+
+        for (t = str2; *t; t++) if (*t == *str1) return str1 - head;
+    }
+    return str1 - head;
+}
+
+static int strncmp_utf32(const ucs4char *s1, const ucs4char *s2, size_t n)
+{
+    for(size_t i = 0; i < n ; i++ ) {
+        if( s1[i] > s2[i] ) {
+            return 1;
+        }
+        if( s1[i] < s2[i] ) {
+            return -1;
+        }
+        if( s1[i] == s2[i] ) {
+            continue;
+        }
+        if( s1[i] == '\0' || s2[i] == '\0' ) {
+            break;
+        }
+    }
+    return 0;
+}
+
+static size_t strlen_utf32(const ucs4char *s)
+{
+    int c;
+    while(*s++)
+        c++;
+    return c;
+}
+
+static ucs4char* strchr_utf32(const ucs4char *s, ucs4char c)
+{
+    while( *s++ != '\0' ) {
+        if( *s == c )
+            return (ucs4char*)s;
+    }
+    return NULL;
+}
+
+// Ported from pgsql/src/port/getopt_long.c
+int scheme::getopt_long_utf32(int argc, ucs4char *const argv[],
+            const ucs4char *optstring,
+            const struct option_utf32 * longopts, int *longindex)
+{
+    static ucs4char *place = EMSG;  /* option letter processing */
+    ucs4char       *oli;            /* option letter list index */
+
+    if (optreset || !*place)
+    {                           /* update scanning pointer */
+        optreset = 0;
+
+        if (optind >= argc)
+        {
+            place = EMSG;
+            return -1;
+        }
+
+        place = argv[optind];
+
+        if (place[0] != '-')
+        {
+            place = EMSG;
+            return -1;
+        }
+
+        place++;
+
+        if (place[0] && place[0] == '-' && place[1] == '\0')
+        {                       /* found "--" */
+            ++optind;
+            place = EMSG;
+            return -1;
+        }
+
+        if (place[0] && place[0] == '-' && place[1])
+        {
+            /* long option */
+            size_t      namelen;
+            int         i;
+
+            place++;
+
+            namelen = strcspn_utf32(place, UC("="));
+
+            for (i = 0; longopts[i].name != NULL; i++)
+            {
+                if (strlen_utf32(longopts[i].name) == namelen
+                    && strncmp_utf32(place, longopts[i].name, namelen) == 0)
+                {
+                    if (longopts[i].has_arg)
+                    {
+                        if (place[namelen] == '=')
+                            optarg4 = place + namelen + 1;
+                        else if (optind < argc - 1)
+                        {
+                            optind++;
+                            optarg4 = argv[optind];
+                        }
+                        else
+                        {
+                            if (optstring[0] == ':')
+                                return BADARG;
+                            if (opterr)
+                                fprintf(stderr,
+                                   "%s: option requires an argument -- %s\n",
+                                        argv[0], place);
+                            place = EMSG;
+                            optind++;
+                            return BADCH;
+                        }
+                    }
+                    else
+                    {
+                        optarg4 = NULL;
+                        if (place[namelen] != 0)
+                        {
+                            /* XXX error? */
+                        }
+                    }
+
+                    optind++;
+
+                    if (longindex)
+                        *longindex = i;
+
+                    place = EMSG;
+
+                    if (longopts[i].flag == NULL)
+                        return longopts[i].val;
+                    else
+                    {
+                        *longopts[i].flag = longopts[i].val;
+                        return 0;
+                    }
+                }
+            }
+
+            if (opterr && optstring[0] != ':')
+                fprintf(stderr,
+                        "%s: illegal option -- %s\n", argv[0], place);
+            place = EMSG;
+            optind++;
+            return BADCH;
+        }
+    }
+
+    /* short option */
+    optopt = (int) *place++;
+
+    oli = strchr_utf32(optstring, optopt);
+    for (int i = 0; ;i++) {
+        if (optstring[i] == '\0') {
+            break;
+        }
+        printf("<%c>", optstring[i]);
+    }
+    printf("optopt = %c", optopt);
+    printf("oli=%d\n", oli);
+    if (!oli)
+    {
+        if (!*place)
+            ++optind;
+        if (opterr && *optstring != ':') {
+            fprintf(stderr,
+                    "%s: illegal option -- %c\n", argv[0], optopt);
+        }
+        return BADCH;
+    }
+
+    if (oli[1] != ':')
+    {                           /* don't need argument */
+        optarg4 = NULL;
+        if (!*place)
+            ++optind;
+    }
+    else
+    {                           /* need an argument */
+        if (*place)             /* no white space */
+            optarg4 = place;
+        else if (argc <= ++optind)
+        {                       /* no arg */
+            place = EMSG;
+            if (*optstring == ':')
+                return BADARG;
+            if (opterr)
+                fprintf(stderr,
+                        "%s: option requires an argument -- %c\n",
+                        argv[0], optopt);
+            return BADCH;
+        }
+        else
+            /* white space */
+            optarg4 = argv[optind];
+        place = EMSG;
+        ++optind;
+    }
+    return optopt;
+}
+
+
 ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 {
 #if defined(_WIN32)

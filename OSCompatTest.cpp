@@ -81,3 +81,63 @@ TEST_F(MoshTest, readDirectory) {
     ASSERT_TRUE(directories.isList());
 }
 
+TEST_F(MoshTest, getopt_long_utf32) {
+    struct option_utf32 long_options[] = {
+//       {UC("loadpath"), optional_argument, 0, 'L'},
+       {UC("help"), 0, 0, 'h'},
+       {0, 0, 0, 0}
+   };
+
+    const int argc = 2;
+    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-h") };
+    int optionIndex = 0;
+    opterr = 1;
+    printf("%c", getopt_long_utf32(argc, argv, UC("ah"), long_options, &optionIndex));
+
+//    ASSERT_EQ('h', getopt_long_utf32(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
+    
+
+
+//     while ((opt = getopt_long_utf32(argc, argv, "htvpVcl:5rze", long_options, &optionIndex)) != -1) {
+//         switch (opt) {
+//         case 'h':
+//             showUsage();
+//             break;
+//         case 'l':
+//             initFile = optarg;
+//             break;
+//         case 'L':
+//             loadPath = optarg;
+//             break;
+//         case 'b':
+//             isR6RSBatchMode = true;
+//             break;
+//         case 'v':
+//             showVersion();
+//             break;
+//         case 'V':
+//             showVersion();
+//             break;
+//         case 't':
+//             isTestOption = true;
+//             break;
+//         case 'p':
+//             isProfiler = true;
+//             break;
+//         case 'c':
+//             isCompileString = true;
+//             break;
+//         case 'e':
+//             isDebugExpand = true;
+//             break;
+//         case '5':
+//             isR6RSBatchMode = false;
+//             break;
+//         default:
+//             fprintf(stderr, "invalid option %c", opt);
+//             showUsage();
+//             exit(EXIT_FAILURE);
+//         }
+//     }
+
+}

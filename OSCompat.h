@@ -32,6 +32,7 @@
 #ifndef SCHEME_OSCOMPAT_
 #define SCHEME_OSCOMPAT_
 
+#include <getopt.h>
 #include "scheme.h"
 
 namespace scheme {
@@ -47,6 +48,17 @@ namespace scheme {
     Object readDirectory(const ucs4string& dir);
     ucs4string stringError(int num);
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
+
+    struct option_utf32 {
+        const ucs4char* name;
+        int has_arg;
+        int* flag;
+        int val;
+    };
+
+    int getopt_long_utf32(int argc, ucs4char *const argv[],
+                          const ucs4char *optstring,
+                          const struct option_utf32 * longopts, int *longindex);
 
 }; // namespace scheme
 
