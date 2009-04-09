@@ -61,7 +61,7 @@ public:
     virtual bool hasSetPosition() const;
     virtual Object position() const;
     virtual bool setPosition(int position);
-    int dup(int target);
+    File* getFile();
 
 protected:
     enum {

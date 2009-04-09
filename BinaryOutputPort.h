@@ -32,6 +32,7 @@
 #ifndef SCHEME_BINARY_OUTPUT_PORT_
 #define SCHEME_BINARY_OUTPUT_PORT_
 
+#include "OSCompat.h"
 #include "BinaryPort.h"
 #include "OutputPort.h"
 
@@ -48,7 +49,7 @@ public:
     virtual int putU8(uint8_t* v, int size) = 0;
     virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
     virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
-    virtual int dup(int target) = 0;
+    virtual File* getFile() = 0;
     virtual void flush() = 0;
 };
 

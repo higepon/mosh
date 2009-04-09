@@ -59,7 +59,7 @@ public:
     Object position() const;
     bool setPosition(int position);
     ByteVector* toByteVector();
-    int dup(int target);
+    File* getFile();
 
 
 protected:

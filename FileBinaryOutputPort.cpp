@@ -123,12 +123,13 @@ int FileBinaryOutputPort::close()
 
 int FileBinaryOutputPort::fileNo() const
 {
+    MOSH_ASSERT(false);
     return -1; //////////////////////// todo
 }
 
-int FileBinaryOutputPort::dup(int target)
+File* FileBinaryOutputPort::getFile()
 {
-    return file_->dup(target);
+    return file_;
 }
 
 void FileBinaryOutputPort::flush()

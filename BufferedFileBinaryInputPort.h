@@ -71,7 +71,7 @@ private:
     void fillBuffer();
     void invalidateBuffer();
 
-    int fd_;
+    File* file_;
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;

@@ -383,7 +383,7 @@ void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
     MOSH_ASSERT(position_ == currentPosition);
 }
 
-int BufferedFileBinaryInputOutputPort::dup(int target)
+File* BufferedFileBinaryInputOutputPort::getFile()
 {
-    return -1;
+    return NULL;
 }

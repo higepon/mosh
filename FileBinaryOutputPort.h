@@ -61,7 +61,7 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
-    int dup(int target);
+    File* getFile();
 
 protected:
     File* file_;

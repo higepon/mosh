@@ -145,7 +145,7 @@ ByteVector* ByteArrayBinaryOutputPort::toByteVector()
     return ret;
 }
 
-int ByteArrayBinaryOutputPort::dup(int target)
+File* ByteArrayBinaryOutputPort::getFile()
 {
-    return -1;
+    return NULL;
 }

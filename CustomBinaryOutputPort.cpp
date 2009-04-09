@@ -182,7 +182,7 @@ bool CustomBinaryOutputPort::setPosition(int position)
     return true;
 }
 
-int CustomBinaryOutputPort::dup(int target)
+File* CustomBinaryOutputPort::getFile()
 {
-    return -1;
+    return NULL;
 }

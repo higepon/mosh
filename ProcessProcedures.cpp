@@ -183,12 +183,13 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (out.isBinaryOutputPort()) {
-//         const int newfd = out.toBinaryOutputPort()->fileNo();
-//         if (newfd == BinaryOutputPort::INVALID_FILENO) {
-//             callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
-//             return Object::Undef;
-//         }
-        if (-1 == out.toBinaryOutputPort()->dup(fileno(stdout))) {
+        File* file = out.toBinaryOutputPort()->getFile();
+        if (NULL == file) {
+            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
+            return Object::Undef;
+        }
+
+        if (-1 ==  file->dup(fileno(stdout))) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }

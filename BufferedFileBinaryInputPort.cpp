@@ -30,11 +30,6 @@
  *  $Id: BufferedFileBinaryInputPort.cpp 1200 2009-02-17 13:27:08Z higepon $
  */
 
-// #ifdef _WIN32
-//     #include <io.h>
-// #else
-// #include <unistd.h>
-// #endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -46,6 +41,7 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "ByteVector.h"
+#include "OSCompat.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "Symbol.h"
 #include "Bignum.h"
@@ -53,21 +49,21 @@
 
 using namespace scheme;
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), position_(0)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(int fd) : file_(new File(fd)), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
     initializeBuffer();
 }
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), position_(0)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
-    fd_ = openFd(file, O_RDONLY, 0);
+    file_->open(fileName_, O_RDONLY, 0);
     initializeBuffer();
 }
 
-BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : isClosed_(false), isPseudoClosed_(false), position_(0)
+BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
-    fileName_ = Object::makeString(file).toString()->data();
-    fd_ = openFd(ucs4string::from_c_str(file, strlen(file)), O_RDONLY, 0);
+    fileName_ = ucs4string::from_c_str(file, strlen(file));
+    file_->open(fileName_, O_RDONLY, 0);
     initializeBuffer();
 }
 
@@ -82,10 +78,11 @@ BufferedFileBinaryInputPort::~BufferedFileBinaryInputPort()
 
 int BufferedFileBinaryInputPort::open()
 {
-    if (INVALID_FILENO == fd_) {
-        return MOSH_FAILURE;
-    } else {
+    if (file_->isOpen()) {
         return MOSH_SUCCESS;
+
+    } else {
+        return MOSH_FAILURE;
     }
 }
 
@@ -128,11 +125,7 @@ int BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isEr
 
 int BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    struct stat st;
-    const int result = fstat(fd_, &st);
-    MOSH_ASSERT(result == 0); // will never happen?
-
-    const int restSize = st.st_size - position_;
+    const int restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
@@ -165,9 +158,9 @@ bool BufferedFileBinaryInputPort::isClosed() const
 
 int BufferedFileBinaryInputPort::close()
 {
-    if (!isClosed_ && fd_ != INVALID_FILENO) {
+    if (!isClosed_) {
         isClosed_ = true;
-        ::close(fd_);
+        file_->close();
     }
     return MOSH_SUCCESS;
 }
@@ -180,14 +173,15 @@ int BufferedFileBinaryInputPort::pseudoClose()
 
 int BufferedFileBinaryInputPort::fileNo() const
 {
-    return fd_;
+    MOSH_ASSERT(false);
+    return -1;
 }
 
 void BufferedFileBinaryInputPort::fillBuffer()
 {
     int readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
+        const int result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
         MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
             break;
@@ -248,7 +242,7 @@ Object BufferedFileBinaryInputPort::position() const
 
 bool BufferedFileBinaryInputPort::setPosition(int position)
 {
-    const int ret = lseekFd(fd_, position, SEEK_SET);
+    const int ret = file_->seek(position, SEEK_SET);
     if (position == ret) {
         position_ =  position;
 

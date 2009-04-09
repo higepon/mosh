@@ -64,6 +64,7 @@ namespace scheme {
         int read(uint8_t* buf, size_t size);
         int64_t seek(int64_t offset, int whence);
         int dup(int target);
+        int64_t size() const;
 
         // todo
         static bool isExists(const ucs4string& path);

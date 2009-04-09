@@ -122,6 +122,15 @@ void File::close()
     }
 }
 
+int64_t File::size() const
+{
+    // TODO windows
+    struct stat st;
+    const int result = fstat(desc_, &st);
+    MOSH_ASSERT(result == 0); // will never happen?
+    return st.st_size;
+}
+
 // N.B. This funcion can raise I/O error, caller should handle it.
 int File::write(uint8_t* buf, size_t size)
 {

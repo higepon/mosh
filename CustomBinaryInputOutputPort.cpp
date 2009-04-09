@@ -288,7 +288,7 @@ void CustomBinaryInputOutputPort::flush()
 
 }
 
-int CustomBinaryInputOutputPort::dup(int target)
+File* CustomBinaryInputOutputPort::getFile()
 {
-    return -1;
+    return NULL;
 }
