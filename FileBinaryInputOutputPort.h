@@ -73,8 +73,8 @@ public:
 
 private:
 
+    File* file_;
     ucs4string fileName_;
-    int fd_;
     bool isClosed_;
     bool isPseudoClosed_;
 };

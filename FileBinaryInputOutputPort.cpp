@@ -55,11 +55,12 @@
 using namespace scheme;
 
 FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
+    file_(new File),
     fileName_(file),
     isClosed_(false),
     isPseudoClosed_(false)
 {
-    fd_ = openFd(file, O_RDWR | O_CREAT | openFlags, 0644);
+    file_->open(file, O_RDWR | O_CREAT | openFlags, 0644);
 }
 
 FileBinaryInputOutputPort::~FileBinaryInputOutputPort()
@@ -79,14 +80,14 @@ bool FileBinaryInputOutputPort::hasSetPosition() const
 
 Object FileBinaryInputOutputPort::position() const
 {
-    return Bignum::makeInteger(lseekFd(fd_, 0, SEEK_CUR));
+    return Bignum::makeInteger(file_->seek(0, SEEK_CUR));
 }
 
 int FileBinaryInputOutputPort::close()
 {
-    if (!isClosed_ && fd_ != INVALID_FILENO) {
+    if (!isClosed_) {
         isClosed_ = true;
-        ::close(fd_);
+        file_->close();
     }
     return MOSH_SUCCESS;
 }
@@ -99,7 +100,7 @@ int FileBinaryInputOutputPort::pseudoClose()
 
 bool FileBinaryInputOutputPort::setPosition(int position)
 {
-    const int currentOffset = lseekFd(fd_, position, SEEK_SET);
+    const int currentOffset = file_->seek(position, SEEK_SET);
     if (position == currentOffset) {
         return true;
     } else {
@@ -118,10 +119,10 @@ ucs4string FileBinaryInputOutputPort::toString()
 // binary port interfaces
 int FileBinaryInputOutputPort::open()
 {
-    if (INVALID_FILENO == fd_) {
-        return MOSH_FAILURE;
-    } else {
+    if (file_->isOpen()) {
         return MOSH_SUCCESS;
+    } else {
+        return MOSH_FAILURE;
     }
 }
 
@@ -132,14 +133,14 @@ bool FileBinaryInputOutputPort::isClosed() const
 
 int FileBinaryInputOutputPort::fileNo() const
 {
-    return fd_;
+    return -1;
 }
 
 // input interfaces
 int FileBinaryInputOutputPort::getU8()
 {
     uint8_t c;
-    if (0 == readFromFd(fd_, &c, 1)) {
+    if (0 == file_->read(&c, 1)) {
         return EOF;
     } else {
         return c;
@@ -149,14 +150,14 @@ int FileBinaryInputOutputPort::getU8()
 int FileBinaryInputOutputPort::lookaheadU8()
 {
     uint8_t c;
-    const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
+    const int origPositon = file_->seek(0, SEEK_CUR);
     MOSH_ASSERT(origPositon >= 0);
-    if (0 == readFromFd(fd_, &c, 1)) {
-        const int result = lseekFd(fd_, origPositon, SEEK_SET);
+    if (0 == file_->read(&c, 1)) {
+        const int result = file_->seek(origPositon, SEEK_SET);
         MOSH_ASSERT(result >= 0);
         return EOF;
     } else {
-        const int result = lseekFd(fd_, origPositon, SEEK_SET);
+        const int result = file_->seek(origPositon, SEEK_SET);
         MOSH_ASSERT(result >= 0);
         return c;
     }
@@ -164,26 +165,22 @@ int FileBinaryInputOutputPort::lookaheadU8()
 
 int FileBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
 {
-    const int readSize = readFromFd(fd_, buf, reqSize);
+    const int readSize = file_->read(buf, reqSize);
     return readSize;
 }
 
 int FileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    struct stat st;
-    const int result = fstat(fd_, &st);
-    MOSH_ASSERT(result == 0); // will never happen?
-
-    const int currentOffset = lseekFd(fd_, 0, SEEK_CUR);
+    const int currentOffset = file_->seek(0, SEEK_CUR);
     MOSH_ASSERT(currentOffset >= 0);
-    const int restSize = st.st_size - currentOffset;
+    const int restSize = file_->size() - currentOffset;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
     }
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    const int readSize = readFromFd(fd_, dest, restSize);
+    const int readSize = file_->read(dest, restSize);
     *buf = dest;
     return readSize;
 }
@@ -201,7 +198,7 @@ int FileBinaryInputOutputPort::putU8(uint8_t v)
 
 int FileBinaryInputOutputPort::putU8(uint8_t* v, int size)
 {
-    const int writtenSize = writeToFd(fd_, v, size);
+    const int writtenSize = file_->write(v, size);
     return writtenSize;
 }
 
@@ -213,7 +210,7 @@ int FileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */
 int FileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
 {
     uint8_t* buf = bv->data();
-    const int writtenSize = writeToFd(fd_, &buf[start], count);
+    const int writtenSize = file_->write(&buf[start], count);
     return writtenSize;
 }
 
