@@ -67,6 +67,7 @@ using namespace scheme;
 #define DEBUG_SHOW_POSITION() /* */
 
 BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4string& file, int openFlags) :
+    file_(new File),
     fileName_(file),
     buffer_(NULL),
     isDirty_(false),
@@ -76,7 +77,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4s
     bufferSize_(0),
     bufferIndex_(0)
 {
-    fd_ = openFd(file, O_RDWR | O_CREAT | openFlags, 0644);
+    file_->open(fileName_, O_RDWR | O_CREAT | openFlags, 0644);
     initializeBuffer();
 }
 
@@ -107,11 +108,11 @@ Object BufferedFileBinaryInputOutputPort::position() const
 
 int BufferedFileBinaryInputOutputPort::close()
 {
-    if (!isClosed() && fd_ != INVALID_FILENO) {
+    if (!isClosed()) {
 
         flush();
         isClosed_ = true;
-        ::close(fd_);
+        file_->close();
     }
     return MOSH_SUCCESS;
 }
@@ -134,7 +135,7 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int position)
         invalidateBuffer();
     }
 
-    const int currentOffset = lseekFd(fd_, position, SEEK_SET);
+    const int currentOffset = file_->seek(position, SEEK_SET);
     if (position == currentOffset) {
         // Don't change postion_ before flush() done.
         position_ =  position;
@@ -155,10 +156,10 @@ ucs4string BufferedFileBinaryInputOutputPort::toString()
 // binary port interfaces
 int BufferedFileBinaryInputOutputPort::open()
 {
-    if (INVALID_FILENO == fd_) {
-        return MOSH_FAILURE;
-    } else {
+    if (file_->isOpen()) {
         return MOSH_SUCCESS;
+    } else {
+        return MOSH_FAILURE;
     }
 }
 
@@ -169,7 +170,8 @@ bool BufferedFileBinaryInputOutputPort::isClosed() const
 
 int BufferedFileBinaryInputOutputPort::fileNo() const
 {
-    return fd_;
+    MOSH_ASSERT(false);
+    return -1;
 }
 
 // input interfaces
@@ -211,11 +213,8 @@ int BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool
 int BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
-    struct stat st;
-    const int result = fstat(fd_, &st);
-    MOSH_ASSERT(result == 0); // will never happen?
 
-    const int restSize = st.st_size - position_;
+    const int restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
@@ -274,7 +273,7 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    const int result = lseekFd(fd_, position_ - bufferIndex_, SEEK_SET);
+    const int result = file_->seek(position_ - bufferIndex_, SEEK_SET);
    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
@@ -284,7 +283,7 @@ void BufferedFileBinaryInputOutputPort::internalFlush()
     DEBUG_SHOW_POSITION();
     uint8_t* buf = buffer_;
     while (bufferIndex_ > 0) {
-        const int writtenSize = writeToFd(fd_, buf, bufferIndex_);
+        const int writtenSize = file_->write(buf, bufferIndex_);
         buf += writtenSize;
         bufferIndex_ -= writtenSize;
         MOSH_ASSERT(bufferIndex_ >= 0);
@@ -313,7 +312,7 @@ void BufferedFileBinaryInputOutputPort::fillBuffer()
     }
     int readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = readFromFd(fd_, buffer_ + readSize, BUF_SIZE - readSize);
+        const int result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
         MOSH_ASSERT(result >= 0); // error will raised by longjmp
         MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
@@ -332,7 +331,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     MOSH_ASSERT(dest != NULL);
     MOSH_ASSERT(requestSize >= 0);
 
-    const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
+    const int origPositon = file_->seek(0, SEEK_CUR);
     MOSH_ASSERT(origPositon >= 0);
     bool needUnwind = false;
 
@@ -346,7 +345,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
-                const int result = lseekFd(fd_, origPositon, SEEK_SET);
+                const int result = file_->seek(origPositon, SEEK_SET);
                 MOSH_ASSERT(result >= 0);
             }
             // done
@@ -361,7 +360,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
-                    const int result = lseekFd(fd_, origPositon, SEEK_SET);
+                    const int result = file_->seek(origPositon, SEEK_SET);
                     MOSH_ASSERT(result >= 0);
                 }
                 return readSize;
@@ -379,7 +378,7 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
 void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
 {
     position_ += offset;
-    const int currentPosition = lseekFd(fd_, position_, SEEK_SET);
+    const int currentPosition = file_->seek(position_, SEEK_SET);
     MOSH_ASSERT(position_ == currentPosition);
 }
 

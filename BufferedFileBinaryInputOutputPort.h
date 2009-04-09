@@ -85,8 +85,8 @@ protected:
     bool isBufferDirty() { return isDirty_; }
     void invalidateBuffer();
 
+    File* file_;
     ucs4string fileName_;
-    int fd_;
     uint8_t* buffer_;
     bool isDirty_;
     int position_;

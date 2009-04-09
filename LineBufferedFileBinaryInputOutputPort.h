@@ -50,7 +50,7 @@ protected:
         if (reqSize > 0) {
             isDirty_ = true;
         }
-        const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
+        const int origPositon = file_->seek(0, SEEK_CUR);
         bool needUnwind = false;
 
         size_t writeSize = 0;
@@ -69,7 +69,7 @@ protected:
             }
         }
         if (needUnwind) {
-            lseekFd(fd_, origPositon, SEEK_SET);
+            file_->seek(origPositon, SEEK_SET);
         }
         return writeSize;
     }
