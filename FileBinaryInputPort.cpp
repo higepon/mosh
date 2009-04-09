@@ -234,7 +234,7 @@ Object FileBinaryInputPort::position() const
 
 bool FileBinaryInputPort::setPosition(int position)
 {
-    const int ret = lseek(fd_, position, SEEK_SET);
+    const int ret = lseekFd(fd_, position, SEEK_SET);
     if (ret >= 0 && position == ret) {
         position_ =  position;
         return true;

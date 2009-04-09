@@ -155,7 +155,7 @@ Object FileBinaryOutputPort::position() const
 
 bool FileBinaryOutputPort::setPosition(int position)
 {
-    const int ret = lseek(fd_, position, SEEK_SET);
+    const int ret = lseekFd(fd_, position, SEEK_SET);
     if (position == ret) {
         position_ = position;
         return true;

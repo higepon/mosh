@@ -79,7 +79,7 @@ bool FileBinaryInputOutputPort::hasSetPosition() const
 
 Object FileBinaryInputOutputPort::position() const
 {
-    return Bignum::makeInteger(lseek(fd_, 0, SEEK_CUR));
+    return Bignum::makeInteger(lseekFd(fd_, 0, SEEK_CUR));
 }
 
 int FileBinaryInputOutputPort::close()
@@ -99,7 +99,7 @@ int FileBinaryInputOutputPort::pseudoClose()
 
 bool FileBinaryInputOutputPort::setPosition(int position)
 {
-    const int currentOffset = lseek(fd_, position, SEEK_SET);
+    const int currentOffset = lseekFd(fd_, position, SEEK_SET);
     if (position == currentOffset) {
         return true;
     } else {
@@ -149,14 +149,14 @@ int FileBinaryInputOutputPort::getU8()
 int FileBinaryInputOutputPort::lookaheadU8()
 {
     uint8_t c;
-    const int origPositon = lseek(fd_, 0, SEEK_CUR);
+    const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
     MOSH_ASSERT(origPositon >= 0);
     if (0 == readFromFd(fd_, &c, 1)) {
-        const int result = lseek(fd_, origPositon, SEEK_SET);
+        const int result = lseekFd(fd_, origPositon, SEEK_SET);
         MOSH_ASSERT(result >= 0);
         return EOF;
     } else {
-        const int result = lseek(fd_, origPositon, SEEK_SET);
+        const int result = lseekFd(fd_, origPositon, SEEK_SET);
         MOSH_ASSERT(result >= 0);
         return c;
     }
@@ -174,7 +174,7 @@ int FileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
     const int result = fstat(fd_, &st);
     MOSH_ASSERT(result == 0); // will never happen?
 
-    const int currentOffset = lseek(fd_, 0, SEEK_CUR);
+    const int currentOffset = lseekFd(fd_, 0, SEEK_CUR);
     MOSH_ASSERT(currentOffset >= 0);
     const int restSize = st.st_size - currentOffset;
     MOSH_ASSERT(restSize >= 0);

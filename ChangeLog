@@ -1,5 +1,7 @@
 2009-04-09  higepon  <higepon@users.sourceforge.jp>
 
+        * OSCompat.cpp (lseekFd): Added.
+
         * main.cpp (main): Use getCommandLine and getopt_longU.
 
         * configure.ac: autoreconf -ifv for mingw.

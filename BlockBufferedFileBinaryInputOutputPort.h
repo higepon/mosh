@@ -32,6 +32,7 @@
 #ifndef SCHEME_BLOCKBUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_
 #define SCHEME_BLOCKBUFFERED_FILE_BINARY_INPUT_OUTPUT_PORT_
 
+#include "OSCompat.h"
 #include "BufferedFileBinaryInputOutputPort.h"
 
 namespace scheme {
@@ -51,7 +52,7 @@ protected:
             isDirty_ = true;
         }
         size_t writeSize = 0;
-        const int origPositon = lseek(fd_, 0, SEEK_CUR);
+        const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
         MOSH_ASSERT(origPositon >= 0);
         bool needUnwind = false;
 
@@ -73,7 +74,7 @@ protected:
             }
         }
         if (needUnwind) {
-            lseek(fd_, origPositon, SEEK_SET);
+            lseekFd(fd_, origPositon, SEEK_SET);
         }
         return writeSize;
     }

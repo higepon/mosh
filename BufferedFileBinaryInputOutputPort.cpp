@@ -62,7 +62,7 @@ using namespace scheme;
 //   position_ should be maintained by public functions which call writeToBuffer and readFromBuffer.
 //
 
-//#define DEBUG_SHOW_POSITION() printf("**** %s lseek=%d position_=%d line:%d\n", __func__, (int)lseek(fd_, 0, SEEK_CUR), position_, __LINE__)
+//#define DEBUG_SHOW_POSITION() printf("**** %s lseek=%d position_=%d line:%d\n", __func__, (int)lseekFd(fd_, 0, SEEK_CUR), position_, __LINE__)
 
 #define DEBUG_SHOW_POSITION() /* */
 
@@ -134,7 +134,7 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int position)
         invalidateBuffer();
     }
 
-    const int currentOffset = lseek(fd_, position, SEEK_SET);
+    const int currentOffset = lseekFd(fd_, position, SEEK_SET);
     if (position == currentOffset) {
         // Don't change postion_ before flush() done.
         position_ =  position;
@@ -274,7 +274,7 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    const int result = lseek(fd_, position_ - bufferIndex_, SEEK_SET);
+    const int result = lseekFd(fd_, position_ - bufferIndex_, SEEK_SET);
    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
@@ -332,7 +332,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     MOSH_ASSERT(dest != NULL);
     MOSH_ASSERT(requestSize >= 0);
 
-    const int origPositon = lseek(fd_, 0, SEEK_CUR);
+    const int origPositon = lseekFd(fd_, 0, SEEK_CUR);
     MOSH_ASSERT(origPositon >= 0);
     bool needUnwind = false;
 
@@ -346,7 +346,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
-                const int result = lseek(fd_, origPositon, SEEK_SET);
+                const int result = lseekFd(fd_, origPositon, SEEK_SET);
                 MOSH_ASSERT(result >= 0);
             }
             // done
@@ -361,7 +361,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
-                    const int result = lseek(fd_, origPositon, SEEK_SET);
+                    const int result = lseekFd(fd_, origPositon, SEEK_SET);
                     MOSH_ASSERT(result >= 0);
                 }
                 return readSize;
@@ -379,6 +379,6 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
 void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
 {
     position_ += offset;
-    const int currentPosition = lseek(fd_, position_, SEEK_SET);
+    const int currentPosition = lseekFd(fd_, position_, SEEK_SET);
     MOSH_ASSERT(position_ == currentPosition);
 }

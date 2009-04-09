@@ -31,6 +31,9 @@
 
 #ifndef _WIN32
 #include <sys/resource.h>
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <unistd.h>
 #endif
 #ifdef _WIN32
 #include <windows.h>
@@ -77,8 +80,21 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
+int64_t scheme::lseekFd(int fd, int64_t offset, int whence)
+{
+#if defined(_WIN32) // TODO
+    return lseek(fd, offset, whence);
+#elif defined(__APPLE__)
+    return lseek(fd, offset, whence);
+#else
+    // TODO handle 64bit lseek64?
+    return lseek64(fd, offset, whence);
+#endif
+}
+
 ucs4char** scheme::getCommandLine(int argc, char* argv[])
 {
+    // TODO: Windows
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
     argvU[argc] = NULL;
     for (int i = 0; i < argc; i++) {
