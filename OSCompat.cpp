@@ -80,12 +80,12 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
-File::File()
+File::File() : desc_(-1), isOpen_(false)
 {
 }
 
 // For stdin/stdout/stderr
-File::File(int desc) : desc_(desc)
+File::File(int desc) : desc_(desc), isOpen_(true)
 {
 }
 
@@ -99,17 +99,27 @@ bool File::open(const ucs4string& file, int flags, int mode)
     // Add O_BINARY flag!
     // TODO file should be encoded
     desc_ = ::open(file.ascii_c_str(), O_BINARY | flags, mode);
-    return desc_ != -1;
+    isOpen_ = desc_ != -1;
+    return isOpen_;
 #else
     desc_ = ::open((char*)utf32toUtf8(file)->data(), flags, mode);
-    return desc_ != -1;
+    isOpen_ = desc_ != -1;
+    return isOpen_;
 #endif
+}
+
+int File::dup(int target)
+{
+    return dup2(desc_, target);
+    // TODO windows
 }
 
 void File::close()
 {
     // TODO windows
-    ::close(desc_);
+    if (isOpen_) {
+        ::close(desc_);
+    }
 }
 
 // N.B. This funcion can raise I/O error, caller should handle it.
@@ -152,6 +162,11 @@ int File::read(uint8_t* buf, size_t size)
         }
     }
     return 0;
+}
+
+bool File::isOpen() const
+{
+    return isOpen_;
 }
 
 int64_t File::seek(int64_t offset, int whence)

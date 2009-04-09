@@ -181,3 +181,8 @@ bool CustomBinaryOutputPort::setPosition(int position)
     theVM_->callClosure1(setPositionDProc_, Bignum::makeInteger(position));
     return true;
 }
+
+int CustomBinaryOutputPort::dup(int target)
+{
+    return -1;
+}

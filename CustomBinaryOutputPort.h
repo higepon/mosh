@@ -57,7 +57,7 @@ public:
     Object position() const;
     bool setPosition(int position);
     ucs4string toString();
-
+    int dup(int target);
 
 private:
     VM* theVM_;

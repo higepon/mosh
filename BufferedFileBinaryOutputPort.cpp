@@ -87,6 +87,11 @@ int BufferedFileBinaryOutputPort::putU8(uint8_t v)
     return putU8(&v, 1);
 }
 
+int BufferedFileBinaryOutputPort::dup(int target)
+{
+    return -1;
+}
+
 int BufferedFileBinaryOutputPort::putU8(uint8_t* v, int size)
 {
     const int result = writeToBuffer(v, size);

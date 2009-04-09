@@ -61,9 +61,10 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+    int dup(int target);
 
 protected:
-    int fd_;
+    File* file_;
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;

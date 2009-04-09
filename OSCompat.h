@@ -58,16 +58,19 @@ namespace scheme {
         virtual ~File();
 
         bool open(const ucs4string& file, int flags, int mode);
+        bool isOpen() const;
         void close();
         int write(uint8_t* buf, size_t size);
         int read(uint8_t* buf, size_t size);
         int64_t seek(int64_t offset, int whence);
+        int dup(int target);
 
         // todo
         static bool isExists(const ucs4string& path);
 
     private:
         int desc_;
+        bool isOpen_;
     };
 }; // namespace scheme
 

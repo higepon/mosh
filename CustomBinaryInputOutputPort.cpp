@@ -287,3 +287,8 @@ void CustomBinaryInputOutputPort::flush()
 {
 
 }
+
+int CustomBinaryInputOutputPort::dup(int target)
+{
+    return -1;
+}

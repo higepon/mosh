@@ -70,6 +70,7 @@ public:
     int putByteVector(ByteVector* bv, int start, int count);
     void flush();
     void internalFlush();
+    int dup(int target);
 
 protected:
     enum {

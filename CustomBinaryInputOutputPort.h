@@ -71,6 +71,8 @@ public:
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+    int dup(int target);
+
 
 private:
     bool hasAheadU8() const;

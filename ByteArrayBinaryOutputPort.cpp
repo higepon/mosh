@@ -144,3 +144,8 @@ ByteVector* ByteArrayBinaryOutputPort::toByteVector()
     buffer_.clear();
     return ret;
 }
+
+int ByteArrayBinaryOutputPort::dup(int target)
+{
+    return -1;
+}

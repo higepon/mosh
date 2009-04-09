@@ -382,3 +382,8 @@ void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
     const int currentPosition = lseekFd(fd_, position_, SEEK_SET);
     MOSH_ASSERT(position_ == currentPosition);
 }
+
+int BufferedFileBinaryInputOutputPort::dup(int target)
+{
+    return -1;
+}
