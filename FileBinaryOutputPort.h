@@ -34,6 +34,7 @@
 #define SCHEME_FILE_BINARY_OUTPUT_PORT_
 
 #include "BinaryOutputPort.h"
+#include "OSCompat.h"
 
 namespace scheme {
 

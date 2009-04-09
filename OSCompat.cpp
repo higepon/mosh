@@ -80,6 +80,98 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
+File::File()
+{
+}
+
+// For stdin/stdout/stderr
+File::File(int desc) : desc_(desc)
+{
+}
+
+File::~File()
+{
+}
+
+bool File::open(const ucs4string& file, int flags, int mode)
+{
+#ifdef _WIN32
+    // Add O_BINARY flag!
+    // TODO file should be encoded
+    desc_ = ::open(file.ascii_c_str(), O_BINARY | flags, mode);
+    return desc_ != -1;
+#else
+    desc_ = ::open((char*)utf32toUtf8(file)->data(), flags, mode);
+    return desc_ != -1;
+#endif
+}
+
+void File::close()
+{
+    // TODO windows
+    ::close(desc_);
+}
+
+// N.B. This funcion can raise I/O error, caller should handle it.
+int File::write(uint8_t* buf, size_t size)
+{
+    MOSH_ASSERT(desc_ != BinaryPort::INVALID_FILENO);
+
+    for (;;) {
+        const int result = ::write(desc_, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // write again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::WRITE, stringError(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+    return 0;
+}
+
+int File::read(uint8_t* buf, size_t size)
+{
+    MOSH_ASSERT(desc_ != BinaryPort::INVALID_FILENO);
+    for (;;) {
+        const int result = ::read(desc_, buf, size);
+        if (result < 0 && errno == EINTR) {
+            // read again
+            errno = 0;
+        } else {
+            if (result < 0) {
+                throwIOError2(IOError::READ, stringError(errno));
+                return result;
+            } else {
+                return result;
+            }
+        }
+    }
+    return 0;
+}
+
+int64_t File::seek(int64_t offset, int whence)
+{
+#if defined(_WIN32) // TODO
+    return lseek(desc_, offset, whence);
+#elif defined(__APPLE__)
+    return lseek(desc_, offset, whence);
+#else
+    // TODO handle 64bit lseek64?
+    return lseek64(desc_, offset, whence);
+#endif
+}
+
+bool File::isExists(const ucs4string& path)
+{
+    return false;
+}
+
+
 int64_t scheme::lseekFd(int fd, int64_t offset, int whence)
 {
 #if defined(_WIN32) // TODO

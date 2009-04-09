@@ -49,6 +49,26 @@ namespace scheme {
     Object readDirectory(const ucs4string& dir);
     ucs4string stringError(int num);
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
+
+    class File EXTEND_GC
+    {
+    public:
+        File();
+        File(int desc);
+        virtual ~File();
+
+        bool open(const ucs4string& file, int flags, int mode);
+        void close();
+        int write(uint8_t* buf, size_t size);
+        int read(uint8_t* buf, size_t size);
+        int64_t seek(int64_t offset, int whence);
+
+        // todo
+        static bool isExists(const ucs4string& path);
+
+    private:
+        int desc_;
+    };
 }; // namespace scheme
 
 #endif // SCHEME_OSCOMPAT_
