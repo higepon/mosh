@@ -36,7 +36,7 @@
 #include <sys/time.h>
 #include <sys/resource.h>
 #endif
-#include <getopt.h>
+
 
 #include "Object.h"
 #include "Object-inl.h"
@@ -66,6 +66,8 @@
 #include "Equivalent.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "getoptU.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -120,32 +122,34 @@ void signal_handler(int signo)
 
 int main(int argc, char *argv[])
 {
-    int opt;
+    ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
     bool isCompileString = false;
     bool isProfiler      = false;
     bool isR6RSBatchMode = true;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
-    char* initFile = NULL;
-    char* loadPath = NULL;
+    ucs4char* initFile = NULL;
+    ucs4char* loadPath = NULL;
 
-   static struct option long_options[] = {
-       {"loadpath", optional_argument, 0, 'L'},
-       {"help", 0, 0, 'h'},
+   static struct optionU long_options[] = {
+       {UC("loadpath"), optional_argument, 0, 'L'},
+       {UC("help"), 0, 0, 'h'},
        {0, 0, 0, 0}
    };
 
-    while ((opt = getopt_long(argc, argv, "htvpVcl:5rze", long_options, &optionIndex)) != -1) {
+   ucs4char** argvU = getCommandLine(argc, argv);
+
+   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rze"), long_options, &optionIndex)) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
             break;
         case 'l':
-            initFile = optarg;
+            initFile = optargU;
             break;
         case 'L':
-            loadPath = optarg;
+            loadPath = optargU;
             break;
         case 'b':
             isR6RSBatchMode = true;
@@ -178,7 +182,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (isProfiler && argc == optind) {
+    if (isProfiler && argc == optindU) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
@@ -197,23 +201,24 @@ int main(int argc, char *argv[])
 
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
     theVM->loadCompiler();
-    theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optind, argv));
+    theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argv));
 //     if (initFile != NULL) {
 //         theVM->load(Object::makeString(initFile).toString()->data());
 //     }
 
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
-    } else if (isCompileString) {
-        const Object port = Object::makeStringInputPort((const uint8_t*)argv[optind], strlen(argv[optind]));
-        bool errorOccured = false;
-        const Object code = port.toTextualInputPort()->getDatum(errorOccured);
-        if (errorOccured) {
-            callLexicalViolationImmidiaImmediately(theVM, "read", port.toTextualInputPort()->error());
-        } else {
-            const Object compiled = theVM->compile(code);
-            theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
-        }
+//     } else if (isCompileString) {
+//         ucs4string text
+//         const Object port = Object::makeStringInputPort((const uint8_t*)argvU[optindU], strlen(argv[optindU]));
+//         bool errorOccured = false;
+//         const Object code = port.toTextualInputPort()->getDatum(errorOccured);
+//         if (errorOccured) {
+//             callLexicalViolationImmidiaImmediately(theVM, "read", port.toTextualInputPort()->error());
+//         } else {
+//             const Object compiled = theVM->compile(code);
+//             theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
+//         }
     } else if (isR6RSBatchMode) {
         if (NULL == loadPath) {
             theVM->setValueString(UC("%loadpath"), Object::False);
@@ -221,9 +226,9 @@ int main(int argc, char *argv[])
             theVM->setValueString(UC("%loadpath"), Object::makeString(loadPath));
         }
         theVM->activateR6RSMode(isDebugExpand);
-    } else if (optind < argc) {
+    } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
-        theVM->loadFileWithGuard(Object::makeString(argv[optind]).toString()->data());
+        theVM->loadFileWithGuard(Object::makeString(argv[optindU]).toString()->data());
     } else {
         showUsage();
     }

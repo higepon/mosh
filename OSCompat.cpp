@@ -77,7 +77,15 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
-
+ucs4char** scheme::getCommandLine(int argc, char* argv[])
+{
+    ucs4char** argvU = new(GC) ucs4char*[argc + 1];
+    argvU[argc] = NULL;
+    for (int i = 0; i < argc; i++) {
+        argvU[i] = utf8ToUtf32(argv[i], strlen(argv[i])).strdup();
+    }
+    return argvU;
+}
 
 ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 {

@@ -36,6 +36,7 @@
 
 namespace scheme {
 
+    ucs4char** getCommandLine(int argc, char* argv[]);
     int openFd(const ucs4string& file, int flags, int mode);
     int writeToFd(int fd, uint8_t* buf, size_t size);
     int readFromFd(int fd, uint8_t* buf, size_t size);
