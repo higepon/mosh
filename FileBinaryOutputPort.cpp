@@ -121,12 +121,6 @@ int FileBinaryOutputPort::close()
     return MOSH_SUCCESS;
 }
 
-int FileBinaryOutputPort::fileNo() const
-{
-    MOSH_ASSERT(false);
-    return -1; //////////////////////// todo
-}
-
 File* FileBinaryOutputPort::getFile()
 {
     return file_;

@@ -148,11 +148,6 @@ bool CustomBinaryOutputPort::isClosed() const
     return isClosed_ || isPseudoClosed_;
 }
 
-int CustomBinaryOutputPort::fileNo() const
-{
-    return BinaryPort::INVALID_FILENO;
-}
-
 void CustomBinaryOutputPort::flush()
 {
     // No Operation

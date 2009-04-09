@@ -54,12 +54,12 @@ public:
     int open();
     int close();
     int pseudoClose();
-    int fileNo() const;
     virtual bool isClosed() const;
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+    File* getFile() { return NULL; }
 
 private:
     enum {

@@ -57,12 +57,12 @@ public:
     int open();
     int close();
     int pseudoClose();
-    int fileNo() const;
     bool isClosed() const;
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
+    File* getFile() { return file_; }
 
 private:
     bool hasAheadU8() const;

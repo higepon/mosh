@@ -171,12 +171,13 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const Object out = argv[3];
     const Object err = argv[4];
     if (in.isBinaryInputPort()) {
-        const int newfd = in.toBinaryInputPort()->fileNo();
-        if (newfd == BinaryInputPort::INVALID_FILENO) {
-            callAssertionViolationAfter(theVM, procedureName, "input port is not file port", L1(in));
+        File* file = out.toBinaryInputPort()->getFile();
+        if (NULL == file) {
+            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
             return Object::Undef;
         }
-        if (-1 == dup2(newfd, fileno(stdin))) {
+
+        if (-1 ==  file->dup(fileno(stdout))) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }
@@ -196,12 +197,13 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     }
 
     if (err.isBinaryOutputPort()) {
-        const int newfd = err.toBinaryOutputPort()->fileNo();
-        if (newfd == BinaryOutputPort::INVALID_FILENO) {
-            callAssertionViolationAfter(theVM, procedureName, "error output port is not file port", L1(argv[2]));
+        File* file = err.toBinaryOutputPort()->getFile();
+        if (NULL == file) {
+            callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
             return Object::Undef;
         }
-        if (-1 == dup2(newfd, fileno(stderr))) {
+
+        if (-1 ==  file->dup(fileno(stdout))) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }

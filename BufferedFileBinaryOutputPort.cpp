@@ -137,12 +137,6 @@ int BufferedFileBinaryOutputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-int BufferedFileBinaryOutputPort::fileNo() const
-{
-    MOSH_ASSERT(false);
-    return -1;
-}
-
 void BufferedFileBinaryOutputPort::flush()
 {
     uint8_t* buf = buffer_;

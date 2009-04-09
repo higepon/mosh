@@ -171,12 +171,6 @@ int BufferedFileBinaryInputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-int BufferedFileBinaryInputPort::fileNo() const
-{
-    MOSH_ASSERT(false);
-    return -1;
-}
-
 void BufferedFileBinaryInputPort::fillBuffer()
 {
     int readSize = 0;

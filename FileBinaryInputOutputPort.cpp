@@ -131,11 +131,6 @@ bool FileBinaryInputOutputPort::isClosed() const
     return isClosed_ || isPseudoClosed_;
 }
 
-int FileBinaryInputOutputPort::fileNo() const
-{
-    return -1;
-}
-
 // input interfaces
 int FileBinaryInputOutputPort::getU8()
 {

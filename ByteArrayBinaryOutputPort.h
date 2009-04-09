@@ -52,7 +52,6 @@ public:
     int pseudoClose();
     bool isClosed() const;
     void flush();
-    int fileNo() const { return INVALID_FILENO; }
     ucs4string toString();
     bool hasPosition() const;
     bool hasSetPosition() const;

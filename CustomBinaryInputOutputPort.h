@@ -58,7 +58,6 @@ public:
     int close();
     int pseudoClose();
     bool isClosed() const;
-    int fileNo() const;
 
     // out
     int putU8(uint8_t v);

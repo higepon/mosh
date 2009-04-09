@@ -208,12 +208,6 @@ int FileBinaryInputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-int FileBinaryInputPort::fileNo() const
-{
-    MOSH_ASSERT(false);
-    return -1;
-}
-
 // binary-ports should support position.
 bool FileBinaryInputPort::hasPosition() const
 {

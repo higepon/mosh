@@ -63,10 +63,10 @@ public:
     int close();
     bool isClosed() const;
     int pseudoClose();
-    int fileNo() const;
     bool hasPosition() const { return true; }
     bool hasSetPosition() const { return true; }
     Object position() const;
+    File* getFile();
     bool setPosition(int position)
     {
         if (position >= size_) {

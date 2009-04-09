@@ -54,7 +54,6 @@ public:
     int pseudoClose();
     bool isClosed() const;
     bool isPseudoClosed() const;
-    int fileNo() const;
     void flush();
     ucs4string toString();
     virtual bool hasPosition() const;

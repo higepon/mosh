@@ -54,7 +54,6 @@ public:
     // binary port interfaces
     int open();
     bool isClosed() const;
-    int fileNo() const;
 
     // input interfaces
     int getU8();

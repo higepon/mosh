@@ -99,12 +99,12 @@ int ByteArrayBinaryInputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-int ByteArrayBinaryInputPort::fileNo() const
-{
-    return BinaryInputPort::INVALID_FILENO;
-}
-
 Object ByteArrayBinaryInputPort::position() const
 {
     return Bignum::makeInteger(index_);
+}
+
+File* ByteArrayBinaryInputPort::getFile()
+{
+    return NULL;
 }

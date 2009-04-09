@@ -168,12 +168,6 @@ bool BufferedFileBinaryInputOutputPort::isClosed() const
     return isClosed_ || isPseudoClosed_;
 }
 
-int BufferedFileBinaryInputOutputPort::fileNo() const
-{
-    MOSH_ASSERT(false);
-    return -1;
-}
-
 // input interfaces
 int BufferedFileBinaryInputOutputPort::getU8()
 {

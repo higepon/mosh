@@ -52,12 +52,11 @@ public:
     int close();
     int pseudoClose();
     bool isClosed() const;
-    int fileNo() const;
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
     bool setPosition(int position);
-
+    File* getFile() { return NULL; }
 private:
     bool hasAheadU8() const;
 

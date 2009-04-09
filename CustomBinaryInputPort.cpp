@@ -178,11 +178,6 @@ int CustomBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
     return accum.size();
 }
 
-int CustomBinaryInputPort::fileNo() const
-{
-    return BinaryInputPort::INVALID_FILENO;
-}
-
 bool CustomBinaryInputPort::hasPosition() const
 {
     return !getPositionProc_.isFalse();

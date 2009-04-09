@@ -35,9 +35,12 @@
 #ifdef _MSC_VER
 #include <io.h> // lseek on windows : todo remove
 #endif
+
 #include "Port.h"
 
 namespace scheme {
+
+class File;
 
 class BinaryPort : virtual public Port
 {
@@ -49,8 +52,8 @@ public:
 
     virtual ~BinaryPort() {};
     virtual int open() = 0;
-    virtual int fileNo() const = 0;
     virtual int pseudoClose() = 0;
+    virtual File* getFile() = 0;
 };
 
 } // namespace scheme
