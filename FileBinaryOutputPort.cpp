@@ -61,7 +61,7 @@ FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file) : file_(new File), f
     file_->open(file, O_WRONLY | O_CREAT, 0644);
 }
 
-FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, int openFlags) : fileName_(file), isClosed_(false), isPseudoClosed_(), position_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(ucs4string file, int openFlags) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(), position_(0)
 {
     file_->open(file, O_WRONLY | O_CREAT | openFlags, 0644);
 }
