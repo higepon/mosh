@@ -41,8 +41,8 @@ class BufferedFileBinaryOutputPort : public BinaryOutputPort
 {
 public:
     BufferedFileBinaryOutputPort(int fd);
-    BufferedFileBinaryOutputPort(ucs4string file);
-    BufferedFileBinaryOutputPort(ucs4string file, int openFlags);
+    BufferedFileBinaryOutputPort(const ucs4string& file);
+    BufferedFileBinaryOutputPort(const ucs4string& file, int openFlags);
     virtual ~BufferedFileBinaryOutputPort();
 
     int putU8(uint8_t v);
@@ -71,7 +71,7 @@ protected:
     void initializeBuffer();
     virtual int writeToBuffer(uint8_t* data, int reqSize) = 0;
 
-    int fd_;
+    File* file_;
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;

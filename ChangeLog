@@ -1,6 +1,8 @@
 2009-04-09  higepon  <higepon@users.sourceforge.jp>
 
-        * FileBinaryInputOutputPort.cpp (FileBinaryInputOutputPort::putByteVector): Changed fd_ => File Class.
+        * BufferedFileBinaryOutputPort.h : Changed fd_ => File Class.
+
+        * FileBinaryInputOutputPort.cpp : Changed fd_ => File Class.
 
         * FileBinaryInputPort.cpp : Changed fd_ => File Class.
 

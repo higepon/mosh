@@ -62,7 +62,7 @@ using namespace scheme;
 //   position_ should be maintained by public functions which call writeToBuffer and readFromBuffer.
 //
 
-//#define DEBUG_SHOW_POSITION() printf("**** %s lseek=%d position_=%d line:%d\n", __func__, (int)lseekFd(fd_, 0, SEEK_CUR), position_, __LINE__)
+//#define DEBUG_SHOW_POSITION() printf("**** %s lseek=%d position_=%d line:%d\n", __func__, (int)file_->seek(0, SEEK_CUR), position_, __LINE__)
 
 #define DEBUG_SHOW_POSITION() /* */
 

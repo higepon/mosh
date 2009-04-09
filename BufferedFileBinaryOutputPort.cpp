@@ -51,20 +51,20 @@
 
 using namespace scheme;
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : file_(new File(fd)), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(const ucs4string& file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
-    fd_ = openFd(file, O_WRONLY | O_CREAT, 0644);
+    file_->open(file, O_WRONLY | O_CREAT, 0644);
     initializeBuffer();
 }
 
-BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(ucs4string file, int openFlags) : fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
+BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(const ucs4string& file, int openFlags) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
-    fd_ = openFd(file, O_WRONLY | O_CREAT | openFlags, 0644);
+    file_->open(file, O_WRONLY | O_CREAT | openFlags, 0644);
     initializeBuffer();
 }
 
@@ -114,19 +114,19 @@ int BufferedFileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int c
 
 int BufferedFileBinaryOutputPort::open()
 {
-    if (INVALID_FILENO == fd_) {
-        return MOSH_FAILURE;
-    } else {
+    if (file_->isOpen()) {
         return MOSH_SUCCESS;
+    } else {
+        return MOSH_FAILURE;
     }
 }
 
 int BufferedFileBinaryOutputPort::close()
 {
     flush();
-    if (!isClosed() && fd_ != INVALID_FILENO) {
+    if (!isClosed()) {
         isClosed_ = true;
-        ::close(fd_);
+        file_->close();
     }
     return MOSH_SUCCESS;
 }
@@ -139,14 +139,15 @@ int BufferedFileBinaryOutputPort::pseudoClose()
 
 int BufferedFileBinaryOutputPort::fileNo() const
 {
-    return fd_;
+    MOSH_ASSERT(false);
+    return -1;
 }
 
 void BufferedFileBinaryOutputPort::flush()
 {
     uint8_t* buf = buffer_;
     while (bufIdx_ > 0) {
-        const int result = writeToFd(fd_, buf, bufIdx_);
+        const int result = file_->write(buf, bufIdx_);
         buf += result;
         bufIdx_ -= result;
     }
@@ -179,7 +180,7 @@ Object BufferedFileBinaryOutputPort::position() const
 bool BufferedFileBinaryOutputPort::setPosition(int position)
 {
     flush();
-    const int ret = lseekFd(fd_, position, SEEK_SET);
+    const int ret = file_->seek(position, SEEK_SET);
     if (position == ret) {
         position_ =  position;
         return true;
