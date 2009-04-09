@@ -37,12 +37,14 @@
 
 namespace scheme {
 
+class File;
+
 // None buffering <file-binary-port>
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
     FileBinaryInputPort(int fd);
-    FileBinaryInputPort(ucs4string file);
+    FileBinaryInputPort(const ucs4string& file);
     FileBinaryInputPort(const char* file);
     virtual ~FileBinaryInputPort();
 
@@ -65,7 +67,7 @@ public:
 private:
     bool hasAheadU8() const;
 
-    int fd_;
+    File* file_;
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;

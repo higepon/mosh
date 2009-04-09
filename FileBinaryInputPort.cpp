@@ -46,27 +46,28 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "ByteVector.h"
+#include "OSCompat.h"
 #include "FileBinaryInputPort.h"
 #include "Bignum.h"
 #include "Symbol.h"
 #include "PortProcedures.h"
-#include "OSCompat.h"
+
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(int fd) : fd_(fd), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(int fd) : file_(new File(fd)), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
 }
 
-FileBinaryInputPort::FileBinaryInputPort(ucs4string file) : fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(const ucs4string& file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
-    fd_ = openFd(file, O_RDONLY, 0);
+    file_->open(file, O_RDONLY, 0);
 }
 
-FileBinaryInputPort::FileBinaryInputPort(const char* file) : isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
-    fileName_ = Object::makeString(file).toString()->data();
-    fd_ = openFd(ucs4string::from_c_str(file, strlen(file)), O_RDONLY, 0);
+    fileName_ = ucs4string::from_c_str(file, strlen(file));
+    file_->open(fileName_, O_RDONLY, 0);
 }
 
 FileBinaryInputPort::~FileBinaryInputPort()
@@ -76,10 +77,10 @@ FileBinaryInputPort::~FileBinaryInputPort()
 
 int FileBinaryInputPort::open()
 {
-    if (INVALID_FILENO == fd_) {
-        return MOSH_FAILURE;
-    } else {
+    if (file_->isOpen()) {
         return MOSH_SUCCESS;
+    } else {
+        return MOSH_FAILURE;
     }
 }
 
@@ -101,7 +102,7 @@ int FileBinaryInputPort::getU8()
     }
 
     uint8_t c;
-    const int result = readFromFd(fd_, &c, 1);
+    const int result = file_->read(&c, 1);
     MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         position_++;
@@ -119,7 +120,7 @@ int FileBinaryInputPort::lookaheadU8()
     }
 
     uint8_t c;
-    const int result = readFromFd(fd_, &c, 1);
+    const int result = file_->read(&c, 1);
     MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         return EOF;
@@ -135,9 +136,9 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
     if (hasAheadU8()) {
         buf[0] = aheadU8_;
         aheadU8_ = EOF;
-        ret = readFromFd(fd_, buf + 1, reqSize - 1);
+        ret = file_->read(buf + 1, reqSize - 1);
     } else {
-        ret = readFromFd(fd_, buf, reqSize);
+        ret = file_->read(buf, reqSize);
     }
     MOSH_ASSERT(ret >= 0); // error will be raised by longjmp
     position_ += ret;
@@ -146,11 +147,7 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
 
 int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    struct stat st;
-    const int ret = fstat(fd_, &st);
-    MOSH_ASSERT(ret == 0); // will never happen?
-
-    const int restSize = st.st_size - position_;
+    const int restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
@@ -162,11 +159,11 @@ int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
         aheadU8_ = EOF;
         *buf = dest;
         position_++;
-        const int ret = readFromFd(fd_, dest + 1, restSize - 1);
+        const int ret = file_->read(dest + 1, restSize - 1);
         MOSH_ASSERT(ret >= 0); // should never happen
         return ret;
     } else {
-        const int ret = readFromFd(fd_, dest, restSize);
+        const int ret = file_->read(dest, restSize);
         MOSH_ASSERT(ret >= 0); // should never happen
         *buf = dest;
         position_ += ret;
@@ -184,7 +181,7 @@ int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
         position_++;
         return 1;
     } else {
-        const int ret = readFromFd(fd_, dest, 1);
+        const int ret = file_->read(dest, 1);
         *buf = dest;
         position_ += ret;
         return ret;
@@ -198,9 +195,9 @@ bool FileBinaryInputPort::isClosed() const
 
 int FileBinaryInputPort::close()
 {
-    if (!isClosed() && fd_ != INVALID_FILENO) {
+    if (!isClosed()) {
         isClosed_ = true;
-        ::close(fd_);
+        file_->close();
     }
     return MOSH_SUCCESS;
 }
@@ -213,7 +210,8 @@ int FileBinaryInputPort::pseudoClose()
 
 int FileBinaryInputPort::fileNo() const
 {
-    return fd_;
+    MOSH_ASSERT(false);
+    return -1;
 }
 
 // binary-ports should support position.
@@ -234,7 +232,7 @@ Object FileBinaryInputPort::position() const
 
 bool FileBinaryInputPort::setPosition(int position)
 {
-    const int ret = lseekFd(fd_, position, SEEK_SET);
+    const int ret = file_->seek(position, SEEK_SET);
     if (ret >= 0 && position == ret) {
         position_ =  position;
         return true;

@@ -1,5 +1,7 @@
 2009-04-09  higepon  <higepon@users.sourceforge.jp>
 
+        * FileBinaryInputPort.cpp : Changed fd_ => File Class.
+
         * LineBufferedFileBinaryInputOutputPort.h: Changed fd_ => File Class.
 
         * BufferedFileBinaryInputPort.cpp : Changed fd_ => File Class.
