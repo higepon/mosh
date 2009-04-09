@@ -179,6 +179,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
             for (i = 0; longopts[i].name != NULL; i++)
             {
                 printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                printf("strlenU(longopts[i].name) = %d namelen= %d \n", strlenU(longopts[i].name), namelen);
                 if (strlenU(longopts[i].name) == namelen
                     && strncmpU(place, longopts[i].name, namelen) == 0)
                 {
