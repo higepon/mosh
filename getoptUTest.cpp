@@ -50,44 +50,44 @@ protected:
     }
 };
 
-TEST_F(MoshTest, getopt_longU) {
-    struct optionU long_options[] = {
-       {UC("help"), 0, 0, 'h'},
-       {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU) {
+//     struct optionU long_options[] = {
+//        {UC("help"), 0, 0, 'h'},
+//        {0, 0, 0, 0}
+//     };
 
-    const int argc = 2;
-    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-h") };
-    int optionIndex = 0;
-    ASSERT_EQ('h', getopt_longU(argc, argv, UC("h"), long_options, &optionIndex));
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("h"), long_options, &optionIndex));
-}
+//     const int argc = 2;
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-h") };
+//     int optionIndex = 0;
+//     ASSERT_EQ('h', getopt_longU(argc, argv, UC("h"), long_options, &optionIndex));
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("h"), long_options, &optionIndex));
+// }
 
-TEST_F(MoshTest, getopt_longU_2) {
-    struct optionU long_options[] = {
-       {UC("help"), 0, 0, 'h'},
-       {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU_2) {
+//     struct optionU long_options[] = {
+//        {UC("help"), 0, 0, 'h'},
+//        {0, 0, 0, 0}
+//     };
 
-    const int argc = 2;
-    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-t") };
-    int optionIndex = 0;
-    ASSERT_EQ('t', getopt_longU(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
-}
+//     const int argc = 2;
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-t") };
+//     int optionIndex = 0;
+//     ASSERT_EQ('t', getopt_longU(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("htvpVcl:5rze"), long_options, &optionIndex));
+// }
 
-TEST_F(MoshTest, getopt_longU_3) {
-    struct optionU long_options[] = {
-       {UC("help"), 0, 0, 'h'},
-       {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU_3) {
+//     struct optionU long_options[] = {
+//        {UC("help"), 0, 0, 'h'},
+//        {0, 0, 0, 0}
+//     };
 
-    const int argc = 2;
-    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-あ") };
-    int optionIndex = 0;
-    ASSERT_EQ(0x3042, getopt_longU(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
-}
+//     const int argc = 2;
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("-あ") };
+//     int optionIndex = 0;
+//     ASSERT_EQ(0x3042, getopt_longU(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
+// }
 
 TEST_F(MoshTest, getopt_longU_4) {
     struct optionU long_options[] = {
@@ -103,66 +103,66 @@ TEST_F(MoshTest, getopt_longU_4) {
     ucs4char* argv[] = { argv1.strdup(), argv2.strdup() };
     int optionIndex = 0;
     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5rze"), long_options, &optionIndex));
-    ucs4string path = optargU;
-    EXPECT_TRUE(path == UC("my-library"));
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
+//     ucs4string path = optargU;
+//     EXPECT_TRUE(path == UC("my-library"));
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5rze"), long_options, &optionIndex));
 }
 
-TEST_F(MoshTest, getopt_longU_5) {
-    struct optionU long_options[] = {
-        {UC("loadpath"), optional_argument, 0, 'L'},
-        {UC("help"), 0, 0, 'h'},
-        {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU_5) {
+//     struct optionU long_options[] = {
+//         {UC("loadpath"), optional_argument, 0, 'L'},
+//         {UC("help"), 0, 0, 'h'},
+//         {0, 0, 0, 0}
+//     };
 
-    const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-L");
-    ucs4string argv3 = UC("my-library");
-    ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
-    int optionIndex = 0;
-    ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
-    ASSERT_TRUE(optargU != NULL);
-    ucs4string path = optargU;
-    EXPECT_TRUE(path == argv3);
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
-}
+//     const int argc = 3;
+//     ucs4string argv1 = UC("mosh");
+//     ucs4string argv2 = UC("-L");
+//     ucs4string argv3 = UC("my-library");
+//     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup() };
+//     int optionIndex = 0;
+//     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
+//     ASSERT_TRUE(optargU != NULL);
+//     ucs4string path = optargU;
+//     EXPECT_TRUE(path == argv3);
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
+// }
 
-TEST_F(MoshTest, getopt_longU_6) {
-    struct optionU long_options[] = {
-        {UC("loadpath"), optional_argument, 0, 'L'},
-        {UC("help"), 0, 0, 'h'},
-        {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU_6) {
+//     struct optionU long_options[] = {
+//         {UC("loadpath"), optional_argument, 0, 'L'},
+//         {UC("help"), 0, 0, 'h'},
+//         {0, 0, 0, 0}
+//     };
 
-    const int argc = 2;
-    ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("--loadpath=my-library") };
-    int optionIndex = 0;
-    ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:L:5rze"), long_options, &optionIndex));
-    ucs4string path = optargU;
-    EXPECT_TRUE(path == UC("my-library"));
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:L:5rze"), long_options, &optionIndex));
-}
+//     const int argc = 2;
+//     ucs4char* argv[] = {(ucs4char*)UC("mosh"), (ucs4char*)UC("--loadpath=my-library") };
+//     int optionIndex = 0;
+//     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:L:5rze"), long_options, &optionIndex));
+//     ucs4string path = optargU;
+//     EXPECT_TRUE(path == UC("my-library"));
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:L:5rze"), long_options, &optionIndex));
+// }
 
-TEST_F(MoshTest, getopt_longU_7) {
-    struct optionU long_options[] = {
-        {UC("loadpath"), optional_argument, 0, 'L'},
-        {UC("help"), 0, 0, 'h'},
-        {0, 0, 0, 0}
-    };
+// TEST_F(MoshTest, getopt_longU_7) {
+//     struct optionU long_options[] = {
+//         {UC("loadpath"), optional_argument, 0, 'L'},
+//         {UC("help"), 0, 0, 'h'},
+//         {0, 0, 0, 0}
+//     };
 
-    const int argc = 3;
-    ucs4string argv1 = UC("mosh");
-    ucs4string argv2 = UC("-L");
-    ucs4string argv3 = UC("my-library");
-    ucs4string argv4 = UC("test.scm");
-    ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup(), argv4.strdup() };
-    int optionIndex = 0;
-    ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
-    ASSERT_TRUE(optargU != NULL);
-    ucs4string path = optargU;
-    EXPECT_TRUE(path == argv3);
-    ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
-    ucs4string script = argv[optindU];
-    EXPECT_TRUE(script == argv4);
-}
+//     const int argc = 3;
+//     ucs4string argv1 = UC("mosh");
+//     ucs4string argv2 = UC("-L");
+//     ucs4string argv3 = UC("my-library");
+//     ucs4string argv4 = UC("test.scm");
+//     ucs4char* argv[] = { argv1.strdup(), argv2.strdup(), argv3.strdup(), argv4.strdup() };
+//     int optionIndex = 0;
+//     ASSERT_EQ('L', getopt_longU(argc, argv, UC("hあvpVcl:5L:rze"), long_options, &optionIndex));
+//     ASSERT_TRUE(optargU != NULL);
+//     ucs4string path = optargU;
+//     EXPECT_TRUE(path == argv3);
+//     ASSERT_EQ(-1, getopt_longU(argc, argv, UC("hあtvpVcl:5L:rze"), long_options, &optionIndex));
+//     ucs4string script = argv[optindU];
+//     EXPECT_TRUE(script == argv4);
+// }

@@ -32,7 +32,7 @@
 #ifndef SCHEME_GETOPT_
 #define SCHEME_GETOPT_
 
-#include <getopt.h>
+//#include <getopt.h>
 #include "scheme.h"
 
 namespace scheme {
@@ -47,6 +47,10 @@ namespace scheme {
     int getopt_longU(int argc, ucs4char *const argv[],
                      const ucs4char *optstring,
                      const struct optionU * longopts, int *longindex);
+
+# define no_argument            0
+# define required_argument      1
+# define optional_argument      2
 
 }; // namespace scheme
 

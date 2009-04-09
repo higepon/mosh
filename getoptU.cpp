@@ -173,20 +173,24 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
             int         i;
 
             place++;
-
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             namelen = strcspnU(place, UC("="));
-
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             for (i = 0; longopts[i].name != NULL; i++)
             {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 if (strlenU(longopts[i].name) == namelen
                     && strncmpU(place, longopts[i].name, namelen) == 0)
                 {
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     if (longopts[i].has_arg)
                     {
+                        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                         if (place[namelen] == '=')
                             optargU = place + namelen + 1;
                         else if (optindU < argc - 1)
                         {
+                            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                             optindU++;
                             optargU = argv[optindU];
                         }
@@ -211,7 +215,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
                             /* XXX error? */
                         }
                     }
-
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     optindU++;
 
                     if (longindex)
@@ -223,6 +227,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
                         return longopts[i].val;
                     else
                     {
+                        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                         *longopts[i].flag = longopts[i].val;
                         return 0;
                     }
@@ -231,7 +236,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
 
             if (opterrU && optstring[0] != ':')
                 fprintf(stderr,
-                        "%s: illegal option -- %s\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(place).ascii_c_str());
+                        "%s: illegal option -- %s %d\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(place).ascii_c_str(), __LINE__);
             place = EMSG;
             optindU++;
             return BADCH;
@@ -248,7 +253,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
             ++optindU;
         if (opterrU && *optstring != ':') {
             fprintf(stderr,
-                    "%s: illegal option -- %c\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(optoptU).ascii_c_str());
+                    "%s: illegal option -- %c %d\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(optoptU).ascii_c_str(), __LINE__);
         }
         return BADCH;
     }
