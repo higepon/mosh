@@ -1,3 +1,7 @@
+2009-04-09  higepon  <higepon@users.sourceforge.jp>
+
+        * configure.ac: autoreconf -ifv for mingw.
+
 2009-04-08  higepon  <higepon@users.sourceforge.jp>
 
         * getoptU.cpp : Ported getopt_long for ucs4.
