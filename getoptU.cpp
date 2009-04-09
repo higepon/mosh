@@ -114,7 +114,7 @@ static int strncmpU(const ucs4char *s1, const ucs4char *s2, size_t n)
 
 static size_t strlenU(const ucs4char *s)
 {
-    int c;
+    int c = 0;
     while(*s++)
         c++;
     return c;
