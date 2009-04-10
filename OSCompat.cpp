@@ -186,8 +186,10 @@ int64_t File::seek(int64_t offset, int whence)
 #elif defined(__APPLE__)
     return lseek(desc_, offset, whence);
 #else
-    // TODO handle 64bit lseek64?
-    return lseek64(desc_, offset, whence);
+    // Don't use lseek64.
+    // We handle 64bit offset With -D _FILE_OFFSET_BITS=64 and lseek.
+    // See http://www.linux.or.jp/JM/html/LDP_man-pages/man7/feature_test_macros.7.html
+    return lseek(desc_, offset, whence);
 #endif
 }
 
