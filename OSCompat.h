@@ -37,13 +37,6 @@
 namespace scheme {
 
     ucs4char** getCommandLine(int argc, char* argv[]);
-    int openFd(const ucs4string& file, int flags, int mode);
-    int64_t lseekFd(int fd, int64_t offset, int whence);
-    int writeToFd(int fd, uint8_t* buf, size_t size);
-    int readFromFd(int fd, uint8_t* buf, size_t size);
-    bool fileExistsP(const ucs4string& path);
-    bool fileWritableP(const ucs4string& path);
-    bool fileReadableP(const ucs4string& path);
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
@@ -66,8 +59,9 @@ namespace scheme {
         int dup(int target);
         int64_t size() const;
 
-        // todo
-        static bool isExists(const ucs4string& path);
+        static bool isExist(const ucs4string& path);
+        static bool isWritable(const ucs4string& path);
+        static bool isReadable(const ucs4string& path);
 
     private:
         int desc_;

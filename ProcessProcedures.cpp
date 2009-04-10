@@ -171,13 +171,13 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const Object out = argv[3];
     const Object err = argv[4];
     if (in.isBinaryInputPort()) {
-        File* file = out.toBinaryInputPort()->getFile();
+        File* file = in.toBinaryInputPort()->getFile();
         if (NULL == file) {
             callAssertionViolationAfter(theVM, procedureName, "output port is not file port", L1(argv[2]));
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(fileno(stdout))) {
+        if (-1 ==  file->dup(fileno(stdin))) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }
@@ -203,7 +203,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(fileno(stdout))) {
+        if (-1 ==  file->dup(fileno(stderr))) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }

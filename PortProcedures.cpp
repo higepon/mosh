@@ -205,8 +205,8 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
     int openFlags = 0;
 
     argumentAsString(0, path);
-    const bool isFileExist = fileExistsP(path->data());
-    const bool isReadable = fileReadableP(path->data());
+    const bool isFileExist = File::isExist(path->data());
+    const bool isReadable = File::isReadable(path->data());
 
     if (argc == 1) {
         if (isFileExist) {
@@ -877,7 +877,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
         return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
     } else {
-        const bool isReadable = fileReadableP(file->data());
+        const bool isReadable = File::isReadable(file->data());
         switch(errno) {
         case EACCES:
             if (isReadable) {
@@ -952,7 +952,7 @@ Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("file-exists?");
     checkArgumentLength(1);
     argumentAsString(0, path);
-    return Object::makeBool(fileExistsP(path->data()));
+    return Object::makeBool(File::isExist(path->data()));
 }
 
 // todo cleanup
@@ -1494,8 +1494,8 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
     int openFlags = 0;
 
     argumentAsString(0, path);
-    const bool isFileExist = fileExistsP(path->data());
-    const bool isReadable = fileReadableP(path->data());
+    const bool isFileExist = File::isExist(path->data());
+    const bool isReadable = File::isReadable(path->data());
 
 
     if (argc == 1) {

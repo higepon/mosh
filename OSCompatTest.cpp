@@ -62,9 +62,9 @@ TEST_F(MoshTest, stringError) {
 }
 
 TEST_F(MoshTest, FileAccess) {
-    EXPECT_TRUE(fileExistsP(UC("lib")));
-    EXPECT_TRUE(fileWritableP(UC("lib")));
-    EXPECT_TRUE(fileReadableP(UC("lib")));
+    EXPECT_TRUE(File::isExist(UC("lib")));
+    EXPECT_TRUE(File::isWritable(UC("lib")));
+    EXPECT_TRUE(File::isReadable(UC("lib")));
 }
 
 TEST_F(MoshTest, utf32toUtf8) {

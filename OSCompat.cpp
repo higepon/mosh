@@ -110,6 +110,7 @@ bool File::open(const ucs4string& file, int flags, int mode)
 
 int File::dup(int target)
 {
+    MOSH_ASSERT(desc_ != -1);
     return dup2(desc_, target);
     // TODO windows
 }
@@ -190,22 +191,24 @@ int64_t File::seek(int64_t offset, int whence)
 #endif
 }
 
-bool File::isExists(const ucs4string& path)
+#ifdef _WIN32
+    #define F_OK 0
+    #define W_OK 2
+    #define R_OK 4
+#endif
+
+bool File::isExist(const ucs4string& path)
 {
-    return false;
+    return access((char*)utf32toUtf8(path)->data(), F_OK) == 0;
 }
 
-
-int64_t scheme::lseekFd(int fd, int64_t offset, int whence)
+bool File::isWritable(const ucs4string& path)
 {
-#if defined(_WIN32) // TODO
-    return lseek(fd, offset, whence);
-#elif defined(__APPLE__)
-    return lseek(fd, offset, whence);
-#else
-    // TODO handle 64bit lseek64?
-    return lseek64(fd, offset, whence);
-#endif
+    return access((char*)utf32toUtf8(path)->data(), W_OK | R_OK) == 0;
+}
+bool File::isReadable(const ucs4string& path)
+{
+    return access((char*)utf32toUtf8(path)->data(), R_OK) == 0;
 }
 
 ucs4char** scheme::getCommandLine(int argc, char* argv[])
@@ -222,7 +225,7 @@ ucs4char** scheme::getCommandLine(int argc, char* argv[])
 ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 {
 #if defined(_WIN32)
-    wchar_t tmp[MAX_PATH]; 
+    wchar_t tmp[MAX_PATH];
     if (GetModuleFileNameW(NULL,tmp,MAX_PATH)) {
         if(PathRemoveFileSpecW(tmp)){
             PathAddBackslashW(tmp);
@@ -304,84 +307,6 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 #endif
 }
 
-// TODO: This funcion should be placed on File Class ?.
-int scheme::openFd(const ucs4string& file, int flags, int mode)
-{
-#ifdef _WIN32
-    // Add O_BINARY flag!
-    // TODO file should be encoded
-    return open(file.ascii_c_str(), O_BINARY | flags, mode);
-#else
-    return open((char*)utf32toUtf8(file)->data(), flags, mode);
-#endif
-}
-
-// TODO: This funcion should be placed on File Class ?.
-// N.B. This funcion can raise I/O error, caller should handle it.
-int scheme::readFromFd(int fd, uint8_t* buf, size_t size)
-{
-    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
-    for (;;) {
-        const int result = read(fd, buf, size);
-        if (result < 0 && errno == EINTR) {
-            // read again
-            errno = 0;
-        } else {
-            if (result < 0) {
-                throwIOError2(IOError::READ, stringError(errno));
-                return result;
-            } else {
-                return result;
-            }
-        }
-    }
-}
-
-// TODO: This funcion should be placed on File Class ?.
-// N.B. This funcion can raise I/O error, caller should handle it.
-int scheme::writeToFd(int fd, uint8_t* buf, size_t count)
-{
-    MOSH_ASSERT(fd != BinaryPort::INVALID_FILENO);
-
-    for (;;) {
-        const int result = write(fd, buf, count);
-        if (result < 0 && errno == EINTR) {
-            // write again
-            errno = 0;
-        } else {
-            if (result < 0) {
-                throwIOError2(IOError::WRITE, stringError(errno));
-                return result;
-            } else {
-                return result;
-            }
-        }
-    }
-}
-
-
-#ifdef _WIN32
-    #define F_OK 0
-    #define W_OK 2
-    #define R_OK 4
-#endif
-
-bool scheme::fileExistsP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), F_OK) == 0;
-}
-
-bool scheme::fileWritableP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), W_OK | R_OK) == 0;
-}
-
-bool scheme::fileReadableP(const ucs4string& path)
-{
-    return access(path.ascii_c_str(), R_OK) == 0;
-}
-
-
 ucs4string scheme::stringError(int num)
 {
     const char* text = strerror(num);
@@ -391,7 +316,7 @@ ucs4string scheme::stringError(int num)
 
 ucs4char* scheme::getEnv(const ucs4string& key)
 {
-    const char* value = getenv(key.ascii_c_str());
+    const char* value = getenv((char*)utf32toUtf8(key)->data());
     if (NULL == value) {
         return NULL;
     }
@@ -425,7 +350,7 @@ Object scheme::readDirectory(const ucs4string& path)
 {
 #ifdef _MSC_VER
     // TODO
-	return Object::False;
+    return Object::False;
 #else
     DIR* dir;
     if (NULL == (dir = opendir((char*)utf32toUtf8(path)->data()))) {

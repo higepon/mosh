@@ -189,9 +189,9 @@ void VM::loadFileWithGuard(const ucs4string& file)
     TRY_VM {
         ucs4string moshLibPath(UC(MOSH_LIB_PATH));
         moshLibPath += UC("/") + file;
-        if (fileExistsP(file)) {
+        if (File::isExist(file)) {
             loadFileUnsafe(file);
-        } else if (fileExistsP(moshLibPath)) {
+        } else if (File::isExist(moshLibPath)) {
             loadFileUnsafe(moshLibPath);
         } else {
             callAssertionViolationImmidiaImmediately(this,
