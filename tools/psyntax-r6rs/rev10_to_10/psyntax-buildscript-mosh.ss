@@ -264,6 +264,7 @@
     (apply                                   interaction    r ba se)
     (asin                                    interaction    r ba se)
     (assert                               interaction       r ba)
+    (assertion-error                             )
     (assertion-violation                  interaction       r ba)
     (atan                                  interaction      r ba se)
     (boolean=?                            interaction       r ba)

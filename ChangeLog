@@ -1,5 +1,7 @@
 2009-04-10  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax-buildscript-mosh.ss (identifier->library-map): Added assertion-error.
+
         * VM.cpp (mayBeStackPointer): Fixed the bug of Stack trace.
 
         * lib/srfi/%3a19/srfi-19.scm (date->julian-day): Merged bug fix.

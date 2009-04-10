@@ -1,5 +1,5 @@
 (import (rnrs)
-                                         (srfi :99))
+        (prefix (srfi :99) srfi-99))
 
 ;; (define rtd1
 ;;   (make-rtd 'rtd1 '#((immutable x1) (immutable x2))))
