@@ -70,6 +70,7 @@ Added SRFIs written by Derick Eddington.
   (srfi :67 compare-procedures)
   (srfi :78 lightweight-testing)
   (srfi :98 os-environment-variables)
+  (srfi :99 records)
 
 Added many optimizations.
   Instruction combination.

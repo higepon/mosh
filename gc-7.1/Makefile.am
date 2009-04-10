@@ -207,3 +207,4 @@ include doc/doc.am
 clean:
 test:
 check:
+install:

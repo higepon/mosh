@@ -89,7 +89,6 @@ Group: R6RS  {
    File: Mutable pairs  (doc/text/setcar.tex.txt)
    File: Mutable strings  (doc/text/stringset.tex.txt)
    File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
-   File: Entry format  (doc/text/entry.tex.txt)
    }  # Group: R6RS
 
 Group: Index  {

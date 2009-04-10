@@ -82,7 +82,10 @@ library: (srfi :67 compare-procedures)
 library: (srfi :78 lightweight-testing)
 <http://srfi.schemers.org/srfi-78/srfi-78.html>
 
-library: (srfi :98)
+library: (srfi :98 os-environment-variables)
 <http://srfi.schemers.org/srfi-98/srfi-98.html>
+
+library: (srfi :99 records)
+<http://srfi.schemers.org/srfi-99/srfi-99.html>
 
 

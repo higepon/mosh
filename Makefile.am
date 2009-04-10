@@ -248,9 +248,13 @@ lib/srfi/%3a78/lightweight-testing.sls \
 lib/srfi/%3a78/lightweight-testing/compat.mosh.sls \
 lib/srfi/78/check.scm \
 lib/srfi/%3a98.ss \
-lib/srfi/%3a98/os-environment-variables.sls
-
-
+lib/srfi/%3a98/os-environment-variables.sls\
+lib/srfi/%3a99.sls \
+lib/srfi/%3a99/records.sls \
+lib/srfi/%3a99/records/helper.sls \
+lib/srfi/%3a99/records/inspection.sls \
+lib/srfi/%3a99/records/procedural.sls \
+lib/srfi/%3a99/records/syntactic.sls
 
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
 

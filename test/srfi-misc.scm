@@ -24,6 +24,7 @@
         (srfi :61)
         (srfi :67)
         (srfi :78)
+        (except (srfi :99) define-record-type)
         (rnrs mutable-pairs)
         (mosh test))
 
@@ -196,5 +197,28 @@
 
 ;;;;;  SRFI-78   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (check (+ 1 1) => 2)
+
+;;;;;  SRFI-99   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(test-begin "srfi-99")
+(let ()
+  (define :point
+    (make-rtd 'point '#((mutable x) (mutable y))))
+
+  (define make-point (rtd-constructor :point))
+
+  (define point? (rtd-predicate :point))
+  (define point-x (rtd-accessor :point 'x))
+  (define point-y (rtd-accessor :point 'y))
+  (define point-x-set! (rtd-mutator :point 'x))
+  (define point-y-set! (rtd-mutator :point 'y))
+
+  (define p1 (make-point 1 2))
+  (test-true (point? p1))
+  (test-eqv 1 (point-x p1))
+  (test-eqv 2 (point-y p1))
+  (point-x-set! p1 5)
+  (test-eqv 5 (point-x p1))
+  (test-end))
+
 
 (test-end)
