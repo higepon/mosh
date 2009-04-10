@@ -1,3 +1,7 @@
+2009-04-10  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/srfi/%3a19/srfi-19.scm (date->julian-day): Merged bug fix.
+
 2009-04-09  higepon  <higepon@users.sourceforge.jp>
 
         * BufferedFileBinaryOutputPort.h : Changed fd_ => File Class.
