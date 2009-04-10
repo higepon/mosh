@@ -277,7 +277,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     char path[MAXPATHLEN];
     uint32_t pathLen = MAXPATHLEN;
     if (_NSGetExecutablePath(path, &pathLen) == 0) {
-        std::string chop(path, pathLen);
+        std::string chop(path);
         int pos = chop.find_last_of('/');
         if (pos > 0) {
             const char* execPath = chop.substr(0, pos + 1).c_str();
