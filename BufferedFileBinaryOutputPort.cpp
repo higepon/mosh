@@ -58,13 +58,13 @@ BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(int fd) : file_(new F
 
 BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(const ucs4string& file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
-    file_->open(file, O_WRONLY | O_CREAT, 0644);
+    file_->open(file, File::Write | File::Create);
     initializeBuffer();
 }
 
 BufferedFileBinaryOutputPort::BufferedFileBinaryOutputPort(const ucs4string& file, int openFlags) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), bufIdx_(0), position_(0)
 {
-    file_->open(file, O_WRONLY | O_CREAT | openFlags, 0644);
+    file_->open(file, File::Write | File::Create | openFlags);
     initializeBuffer();
 }
 

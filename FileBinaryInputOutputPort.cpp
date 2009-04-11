@@ -60,7 +60,7 @@ FileBinaryInputOutputPort::FileBinaryInputOutputPort(const ucs4string& file, int
     isClosed_(false),
     isPseudoClosed_(false)
 {
-    file_->open(file, O_RDWR | O_CREAT | openFlags, 0644);
+    file_->open(file, File::Read | File::Write | File::Create | openFlags);
 }
 
 FileBinaryInputOutputPort::~FileBinaryInputOutputPort()

@@ -61,13 +61,13 @@ FileBinaryInputPort::FileBinaryInputPort(int fd) : file_(new File(fd)), fileName
 
 FileBinaryInputPort::FileBinaryInputPort(const ucs4string& file) : file_(new File), fileName_(file), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
-    file_->open(file, O_RDONLY, 0);
+    file_->open(file, File::Read);
 }
 
 FileBinaryInputPort::FileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
     fileName_ = ucs4string::from_c_str(file, strlen(file));
-    file_->open(fileName_, O_RDONLY, 0);
+    file_->open(fileName_, File::Read);
 }
 
 FileBinaryInputPort::~FileBinaryInputPort()

@@ -46,13 +46,30 @@ namespace scheme {
     class File EXTEND_GC
     {
     public:
-        File();
-        File(int desc);
+        enum Mode {
+            Read            = 0x00000001,
+            Write           = 0x00000002,
+            Create          = 0x00000010,
+            Truncate        = 0x00000020,
+            FORBIT_EXTRA_COMMA
+        };
+        enum PositionOffset {
+            Top,
+            Current,
+            End
+        };
+#ifdef _WIN32
+        File(HANDLE desc = INVALID_HANDLE_VALUE);
+#else
+        File(int desc = -1);
+#endif
+        bool open(const ucs4string& file, int flags);
+
         virtual ~File();
 
-        bool open(const ucs4string& file, int flags, int mode);
+
         bool isOpen() const;
-        void close();
+        bool close();
         int write(uint8_t* buf, size_t size);
         int read(uint8_t* buf, size_t size);
         int64_t seek(int64_t offset, int whence);
@@ -64,8 +81,11 @@ namespace scheme {
         static bool isReadable(const ucs4string& path);
 
     private:
+#ifdef _WIN32
+        HANDLE desc_;
+#else
         int desc_;
-        bool isOpen_;
+#endif
     };
 }; // namespace scheme
 

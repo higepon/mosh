@@ -77,7 +77,7 @@ BufferedFileBinaryInputOutputPort::BufferedFileBinaryInputOutputPort(const ucs4s
     bufferSize_(0),
     bufferIndex_(0)
 {
-    file_->open(fileName_, O_RDWR | O_CREAT | openFlags, 0644);
+    file_->open(fileName_, File::Read | File::Write | File::Create | openFlags);
     initializeBuffer();
 }
 

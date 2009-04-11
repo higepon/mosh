@@ -1,3 +1,7 @@
+2009-04-11  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompat.cpp: Adjust open flags.
+
 2009-04-10  higepon  <higepon@users.sourceforge.jp>
 
         * Added (srfi :99) and tests.

@@ -28,21 +28,26 @@
  *
  *  $Id: OScompat.cpp 183 2008-07-04 06:19:28Z higepon $
  */
+#ifdef _WIN32
+#define UNICODE
+#define _UNICODE
+#include <stdio.h>
+#include <windows.h>
+#include <shlwapi.h>
+#include <tchar.h>
+#include <sys/types.h>
+#pragma comment(lib, "shlwapi.lib")
 
-#ifndef _WIN32
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+
+#else // NOT Windows
 #include <sys/resource.h>
 #define _LARGEFILE64_SOURCE
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-#ifdef _WIN32
-#include <windows.h>
-#include <shlwapi.h>
-#include <tchar.h>
-#pragma comment(lib, "shlwapi.lib")
-#else
-#include <unistd.h>
-#endif
+
 #ifndef _MSC_VER
 #include <dirent.h>
 #endif
@@ -56,7 +61,6 @@
 #include <dlfcn.h>
 extern int main(int argc, char *argv[]);
 #endif /* __FreeBSD__ */
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -80,32 +84,85 @@ using namespace scheme;
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
 
-File::File() : desc_(-1), isOpen_(false)
+#ifdef _WIN32
+wchar_t* utf32ToUtf16(const ucs4string& s)
 {
+    ByteArrayBinaryOutputPort out;
+    UTF16Codec codec(UTF16Codec::UTF_16LE);
+    Transcoder tcoder(&codec);
+    tcoder.putString(&out, s);
+    return (wchar_t*)out.toByteVector()->data();
 }
 
-// For stdin/stdout/stderr
-File::File(int desc) : desc_(desc), isOpen_(true)
+#endif // _WIN32
+
+#ifdef _WIN32
+File::File(HANDLE desc /* = INVALID_HANDLE_VALUE */)
+    : desc_(desc) {}
+#else
+File::File(int desc /* = -1 */)
+    : desc_(desc) {}
+#endif
+
+
+bool File::open(const ucs4string& file, int flags)
 {
+#ifdef _WIN32
+    DWORD access = 0, share = 0, disposition = 0;
+
+    if (isOpen()) {
+        return false;
+    }
+    if (mode & Read) {
+        access |= GENERIC_READ;
+    }
+    if (mode & Write) {
+        access |= GENERIC_WRITE;
+    }
+    if (mode & ShareRead) {
+        share |= FILE_SHARE_READ;
+    }
+    if (mode & ShareWrite) {
+        share |= FILE_SHARE_WRITE;
+    }
+    if (mode & OpenExisting) {
+        disposition = OPEN_EXISTING;
+    }
+    if (mode & CreateAlways) {
+        disposition = CREATE_ALWAYS;
+    }
+    desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    return isOpen();
+#else
+    if (isOpen()) {
+        return false;
+    }
+
+    int mode = 0;
+    if ((flags & Read) && (flags & Write)) {
+        mode |= O_RDWR;
+    } else {
+        if (flags & Write) {
+            mode |= O_WRONLY;
+        }
+        if (flags & Read) {
+            mode |= O_RDONLY;
+        }
+    }
+    if (flags & Create) {
+        mode |= O_CREAT;
+    }
+    if (flags & Truncate) {
+        mode |= O_TRUNC;
+    }
+    desc_ = ::open((char*)utf32toUtf8(file)->data(), mode, 0644);
+    return isOpen();
+#endif
 }
 
 File::~File()
 {
-}
-
-bool File::open(const ucs4string& file, int flags, int mode)
-{
-#ifdef _WIN32
-    // Add O_BINARY flag!
-    // TODO file should be encoded
-    desc_ = ::open(file.ascii_c_str(), O_BINARY | flags, mode);
-    isOpen_ = desc_ != -1;
-    return isOpen_;
-#else
-    desc_ = ::open((char*)utf32toUtf8(file)->data(), flags, mode);
-    isOpen_ = desc_ != -1;
-    return isOpen_;
-#endif
+    close();
 }
 
 int File::dup(int target)
@@ -115,28 +172,59 @@ int File::dup(int target)
     // TODO windows
 }
 
-void File::close()
+bool File::close()
 {
-    // TODO windows
-    if (isOpen_) {
-        ::close(desc_);
+#ifdef _WIN32
+    if (isOpen()) {
+        const bool isOK = CloseHandle(desc_) != 0;
+        desc_ = INVALID_HANDLE_VALUE;
+        return isOK;
     }
+    return false;
+#else
+    if (isOpen()) {
+        const bool isOK = ::close(desc_) != 0;
+        desc_ = -1;
+        return isOK;
+    }
+#endif
 }
 
 int64_t File::size() const
 {
-    // TODO windows
+#ifdef _WIN32
+    LARGE_INTEGER size;
+    int isOK = GetFileSizeEx(hdl_, &size);
+    if (isOK) {
+        return size.QuadPart;
+    } else {
+        return -1;
+    }
+#else
     struct stat st;
     const int result = fstat(desc_, &st);
-    MOSH_ASSERT(result == 0); // will never happen?
-    return st.st_size;
+    if (result != 0) {
+        return -1;
+    } else {
+        return st.st_size;
+    }
+#endif
 }
 
 // N.B. This funcion can raise I/O error, caller should handle it.
 int File::write(uint8_t* buf, size_t size)
 {
-    MOSH_ASSERT(desc_ != BinaryPort::INVALID_FILENO);
-
+#ifdef _WIN32
+    MOSH_ASSERT(isOpen());
+    DWORD writeSize;
+    int isOK = WriteFile(desc_, buf, size, &writeSize, NULL);
+    if (isOK) {
+        return writeSize;
+    } else {
+        return -1;
+    }
+#else
+    MOSH_ASSERT(isOpen());
     for (;;) {
         const int result = ::write(desc_, buf, size);
         if (result < 0 && errno == EINTR) {
@@ -152,11 +240,21 @@ int File::write(uint8_t* buf, size_t size)
         }
     }
     return 0;
+#endif
 }
 
 int File::read(uint8_t* buf, size_t size)
 {
-    MOSH_ASSERT(desc_ != BinaryPort::INVALID_FILENO);
+#ifdef _WIN32
+    DWORD readSize;
+    int isOK = ReadFile(desc_, buf, size, &readSize, NULL);
+    if (isOK) {
+        return readSize;
+    } else {
+        return -1;
+    }
+#else
+    MOSH_ASSERT(isOpen());
     for (;;) {
         const int result = ::read(desc_, buf, size);
         if (result < 0 && errno == EINTR) {
@@ -172,18 +270,21 @@ int File::read(uint8_t* buf, size_t size)
         }
     }
     return 0;
+#endif
 }
 
 bool File::isOpen() const
 {
-    return isOpen_;
+#ifdef _WIN32
+    return desc_ != INVALID_HANDLE_VALUE;
+#else
+    return desc_ != -1;
+#endif
 }
 
 int64_t File::seek(int64_t offset, int whence)
 {
-#if defined(_WIN32) // TODO
-    return lseek(desc_, offset, whence);
-#elif defined(__APPLE__)
+#ifdef _WIN32
     return lseek(desc_, offset, whence);
 #else
     // Don't use lseek64.

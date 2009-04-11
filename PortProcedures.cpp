@@ -233,21 +233,21 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             }
         } else if (noCreateP) {
             if (isFileExist) {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             } else {
                 return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             }
         } else if (noFailP) {
-            openFlags |= O_TRUNC;
+            openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
                 return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
             } else {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             }
         }
 
@@ -1520,21 +1520,21 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             }
         } else if (noCreateP) {
             if (isFileExist) {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             } else {
                 return callIoFileNotExistAfter(theVM, argv[0], procedureName, "file-options no-create: file not exist", L1(argv[0]));
             }
         } else if (noFailP && noTruncateP) {
             if (!isFileExist) {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             }
         } else if (noFailP) {
-            openFlags |= O_TRUNC;
+            openFlags |= File::Truncate;
         } else if (noTruncateP) {
             if (isFileExist) {
                 return callIoFileAlreadyExistAfter(theVM, argv[0], procedureName, "file-options no-trucate: file already exists", L1(argv[0]));
             } else {
-                openFlags |= O_TRUNC;
+                openFlags |= File::Truncate;
             }
         }
 
