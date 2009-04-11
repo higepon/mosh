@@ -236,7 +236,7 @@ Object BufferedFileBinaryInputPort::position() const
 
 bool BufferedFileBinaryInputPort::setPosition(int position)
 {
-    const int ret = file_->seek(position, SEEK_SET);
+    const int ret = file_->seek(position);
     if (position == ret) {
         position_ =  position;
 

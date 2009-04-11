@@ -282,15 +282,47 @@ bool File::isOpen() const
 #endif
 }
 
-int64_t File::seek(int64_t offset, int whence)
+int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
 {
 #ifdef _WIN32
-    return lseek(desc_, offset, whence);
+    LARGE_INTEGER largePos;
+    largePos.QuadPart = offset;
+    DWORD posMode = FILE_BEGIN;
+    switch (whence) {
+    case Begin:
+        posMode = FILE_BEGIN;
+        break;
+    case Current:
+        posMode = FILE_CURRENT;
+        break;
+    case End:
+        posMode = FILE_END;
+        break;
+    }
+    LARGE_INTEGER resultPos;
+    const bool isOK = SetFilePointerEx(desc_, largePos, &resultPos, offset) == 0;
+    if (isOK) {
+        return resultPos.QuadPart;
+    } else {
+        return -1;
+    }
 #else
     // Don't use lseek64.
     // We handle 64bit offset With -D _FILE_OFFSET_BITS=64 and lseek.
     // See http://www.linux.or.jp/JM/html/LDP_man-pages/man7/feature_test_macros.7.html
-    return lseek(desc_, offset, whence);
+    int w = SEEK_SET;
+    switch (whence) {
+    case Begin:
+        w = SEEK_SET;
+        break;
+    case Current:
+        w = SEEK_CUR;
+        break;
+    case End:
+        w = SEEK_END;
+        break;
+    }
+    return lseek(desc_, offset, w);
 #endif
 }
 

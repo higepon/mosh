@@ -52,7 +52,7 @@ protected:
             isDirty_ = true;
         }
         size_t writeSize = 0;
-        const int origPositon = file_->seek(0, SEEK_CUR);
+        const int origPositon = file_->seek(0, File::Current);
         MOSH_ASSERT(origPositon >= 0);
         bool needUnwind = false;
 
@@ -74,7 +74,7 @@ protected:
             }
         }
         if (needUnwind) {
-            file_->seek(origPositon, SEEK_SET);
+            file_->seek(origPositon);
         }
         return writeSize;
     }

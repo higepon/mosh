@@ -135,7 +135,7 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int position)
         invalidateBuffer();
     }
 
-    const int currentOffset = file_->seek(position, SEEK_SET);
+    const int currentOffset = file_->seek(position);
     if (position == currentOffset) {
         // Don't change postion_ before flush() done.
         position_ =  position;
@@ -267,7 +267,7 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    const int result = file_->seek(position_ - bufferIndex_, SEEK_SET);
+    const int result = file_->seek(position_ - bufferIndex_);
    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
@@ -325,7 +325,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
     MOSH_ASSERT(dest != NULL);
     MOSH_ASSERT(requestSize >= 0);
 
-    const int origPositon = file_->seek(0, SEEK_CUR);
+    const int origPositon = file_->seek(0, File::Current);
     MOSH_ASSERT(origPositon >= 0);
     bool needUnwind = false;
 
@@ -339,7 +339,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
-                const int result = file_->seek(origPositon, SEEK_SET);
+                const int result = file_->seek(origPositon);
                 MOSH_ASSERT(result >= 0);
             }
             // done
@@ -354,7 +354,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
-                    const int result = file_->seek(origPositon, SEEK_SET);
+                    const int result = file_->seek(origPositon);
                     MOSH_ASSERT(result >= 0);
                 }
                 return readSize;
@@ -372,7 +372,7 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
 void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
 {
     position_ += offset;
-    const int currentPosition = file_->seek(position_, SEEK_SET);
+    const int currentPosition = file_->seek(position_);
     MOSH_ASSERT(position_ == currentPosition);
 }
 

@@ -50,7 +50,7 @@ protected:
         if (reqSize > 0) {
             isDirty_ = true;
         }
-        const int origPositon = file_->seek(0, SEEK_CUR);
+        const int origPositon = file_->seek(0, File::Current);
         bool needUnwind = false;
 
         size_t writeSize = 0;
@@ -69,7 +69,7 @@ protected:
             }
         }
         if (needUnwind) {
-            file_->seek(origPositon, SEEK_SET);
+            file_->seek(origPositon);
         }
         return writeSize;
     }

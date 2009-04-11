@@ -155,7 +155,7 @@ Object FileBinaryOutputPort::position() const
 
 bool FileBinaryOutputPort::setPosition(int position)
 {
-    const int64_t ret = file_->seek(position, SEEK_SET);
+    const int64_t ret = file_->seek(position);
     if (position == ret) {
         position_ = position;
         return true;

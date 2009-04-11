@@ -174,7 +174,7 @@ Object BufferedFileBinaryOutputPort::position() const
 bool BufferedFileBinaryOutputPort::setPosition(int position)
 {
     flush();
-    const int ret = file_->seek(position, SEEK_SET);
+    const int ret = file_->seek(position);
     if (position == ret) {
         position_ =  position;
         return true;

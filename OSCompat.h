@@ -53,8 +53,8 @@ namespace scheme {
             Truncate        = 0x00000020,
             FORBIT_EXTRA_COMMA
         };
-        enum PositionOffset {
-            Top,
+        enum Whence {
+            Begin,
             Current,
             End
         };
@@ -72,7 +72,7 @@ namespace scheme {
         bool close();
         int write(uint8_t* buf, size_t size);
         int read(uint8_t* buf, size_t size);
-        int64_t seek(int64_t offset, int whence);
+        int64_t seek(int64_t offset, Whence whece = Begin);
         int dup(int target);
         int64_t size() const;
 
