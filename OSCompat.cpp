@@ -519,3 +519,9 @@ Transcoder* scheme::nativeTranscoder()
     return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
 #endif
 }
+
+// Default Reading/Writing encoding is UTF8.(compatible with ASCII)
+Transcoder* scheme::nativeFileTranscoder()
+{
+    return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+}

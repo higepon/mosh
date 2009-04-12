@@ -62,6 +62,7 @@ namespace scheme {
     ucs4string stringError(int num);
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
     Transcoder* nativeTranscoder();
+    Transcoder* nativeFileTranscoder();
 
     class File EXTEND_GC
     {
