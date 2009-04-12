@@ -32,13 +32,13 @@
 #ifndef SCHEME_VM_H_
 #define SCHEME_VM_H_
 
-#include <set>
 #include "scheme.h"
 #include <setjmp.h>
 #include "Instruction.h"
 
 namespace scheme {
 
+//typedef gc_set<Object> Ports;
 typedef std::set<Object> Ports;
 
 #define L1(a) Pair::list1(a)
@@ -145,12 +145,14 @@ public:
     void countCall(Object proc);
 #endif
     Object getClosureName(Object closure);
-    void register_port(Object obj);
-    void unregister_port(Object obj);
+    void registerPort(Object obj);
+    void unregisterPort(Object obj);
+    void flushAllPorts(void);
 
 protected:
     virtual int exit(int status)
     {
+        flushAllPorts();
         ::exit(status);
         return status;
     }
@@ -208,7 +210,7 @@ protected:
     Object* values_;
     jmp_buf returnPoint_;
     bool isR6RSMode_;
-    Ports active_ports;
+    Ports activePorts_;
 };
 
 } // namespace scheme

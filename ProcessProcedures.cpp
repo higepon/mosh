@@ -154,7 +154,10 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
         return Object::Undef;
     }
-    return theVM->values2(Object::makeBinaryInputPort(new File(fds[0])), Object::makeBinaryOutputPort(new File(fds[1])));
+    const Object fds_0 = Object::makeBinaryInputPort(new File(fds[0]));
+    const Object fds_1 = Object::makeBinaryOutputPort(new File(fds[1]));
+    theVM->registerPort(fds_1);
+    return theVM->values2(fds_0, fds_1);
 #endif
 }
 

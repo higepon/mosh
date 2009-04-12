@@ -200,6 +200,7 @@ int main(int argc, char *argv[])
     const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort(), transcoder);
 
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
+    theVM->registerPort(outPort);
     theVM->loadCompiler();
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argv));
 //     if (initFile != NULL) {

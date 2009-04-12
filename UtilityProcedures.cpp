@@ -635,6 +635,9 @@ Object scheme::exitEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("exit");
     checkArgumentLengthBetween(0, 1);
+
+    theVM->flushAllPorts();
+
     if (0 == argc) {
         exit(EXIT_SUCCESS);
     }

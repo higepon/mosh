@@ -71,6 +71,9 @@
 #include "Fasl.h"
 #include "Gloc.h"
 #include "OSCompat.h"
+#include "BinaryOutputPort.h"
+#include "BinaryInputOutputPort.h"
+#include "TranscodedTextualInputOutputPort.h"
 
 #define TRY_VM     jmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \
@@ -807,19 +810,39 @@ Object scheme::getCProcedureName(Object proc)
 }
 
 
-void VM::register_port(Object obj)
+void VM::registerPort(Object obj)
 {
-    if (obj.isPort()) {
-        active_ports.insert(obj);
+    if (obj.isOutputPort()) {
+        activePorts_.insert(obj);
     }
 }
 
-void VM::unregister_port(Object obj)
+void VM::unregisterPort(Object obj)
 {
-    if (obj.isPort()) {
-        const Ports::iterator it = active_ports.find(obj);
-        if (it != active_ports.end()) {
-            active_ports.erase(it);
+    if (obj.isOutputPort()) {
+        const Ports::iterator it = activePorts_.find(obj);
+        if (it != activePorts_.end()) {
+            activePorts_.erase(it);
         }
+    }
+}
+
+void VM::flushAllPorts(void)
+{
+    Ports::iterator it = activePorts_.begin();
+    while (it != activePorts_.end()) {
+        const Object outputPort = *it;
+        if (outputPort.isBinaryOutputPort()) {
+            outputPort.toBinaryOutputPort()->flush();
+        } else if (outputPort.isBinaryInputOutputPort()) {
+            outputPort.toBinaryInputOutputPort()->flush();
+        } else if (outputPort.isTextualOutputPort()) {
+            outputPort.toTextualOutputPort()->flush();
+        } else if (outputPort.isTextualInputOutputPort()) {
+            outputPort.toTextualInputOutputPort()->flush();
+        }
+
+        activePorts_.erase(it);
+        it++;
     }
 }
