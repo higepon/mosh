@@ -85,6 +85,9 @@ using namespace scheme;
 //
 
 #ifdef _WIN32
+const HANDLE File::STANDARD_IN  = STD_INPUT_HANDLE;
+const HANDLE File::STANDARD_OUT = STD_OUTPUT_HANDLE;
+const HANDLE File::STANDARD_ERR = STD_ERROR_HANDLE;
 
 #else
 const int File::STANDARD_IN  = 0;
@@ -173,12 +176,19 @@ File::~File()
     close();
 }
 
-int File::dup(int target)
+#ifdef _WIN32
+int File::dup(HANDLE target)
 {
-    MOSH_ASSERT(desc_ != -1);
-    return dup2(desc_, target);
+    MOSH_ASSERT(isOpen());
     // TODO windows
 }
+#else
+int File::dup(int target)
+{
+    MOSH_ASSERT(isOpen());
+    return dup2(desc_, target);
+}
+#endif
 
 bool File::close()
 {
@@ -225,7 +235,13 @@ int File::write(uint8_t* buf, size_t size)
 #ifdef _WIN32
     MOSH_ASSERT(isOpen());
     DWORD writeSize;
-    int isOK = WriteFile(desc_, buf, size, &writeSize, NULL);
+    int isOK;
+    // Writing to console is automatically converted into encoding of console.
+    if (desc_ == STANDARD_OUT || desc_ == STANDARD_ERR) {
+        isOK = WriteConsole(desc_, buf, size, &writeSize, NULL);
+    } else {
+        isOK = WriteFile(desc_, buf, size, &writeSize, NULL);
+    }
     if (isOK) {
         return writeSize;
     } else {

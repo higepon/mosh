@@ -73,7 +73,11 @@ namespace scheme {
         int write(uint8_t* buf, size_t size);
         int read(uint8_t* buf, size_t size);
         int64_t seek(int64_t offset, Whence whece = Begin);
+#ifdef _WIN32
+        int dup(HANDLE target);
+#else
         int dup(int target);
+#endif
         int64_t size() const;
 
         static bool isExist(const ucs4string& path);
@@ -81,7 +85,9 @@ namespace scheme {
         static bool isReadable(const ucs4string& path);
 
 #ifdef _WIN32
-
+        static const HANDLE STANDARD_IN;
+        static const HANDLE STANDARD_OUT;
+        static const HANDLE STANDARD_ERR;
 #else
         static const int STANDARD_IN;
         static const int STANDARD_OUT;
