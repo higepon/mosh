@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
     signal(SIGINT, SIG_IGN);
 
-    Transcoder* transcoder = nativeTranscoder();
+    Transcoder* transcoder = nativeConsoleTranscoder();
     const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
     const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
     const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort(), transcoder);
