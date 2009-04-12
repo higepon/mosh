@@ -510,3 +510,12 @@ Object scheme::readDirectory(const ucs4string& path)
     return ret;
 #endif
 }
+
+Transcoder* scheme::nativeTranscoder()
+{
+#ifdef _WIN32
+    return new Transcoder(new UTF16Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+#else
+    return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+#endif
+}

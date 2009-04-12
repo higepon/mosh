@@ -40,6 +40,7 @@
 #include "Bignum.h"
 #include "VM.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -111,7 +112,7 @@ void CustomTextualOutputPort::putChar(ucs4char c)
 
 Transcoder* CustomTextualOutputPort::transcoder() const
 {
-    return Transcoder::nativeTranscoder();
+    return nativeTranscoder();
 }
 
 bool CustomTextualOutputPort::hasPosition() const

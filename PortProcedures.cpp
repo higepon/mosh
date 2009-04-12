@@ -886,7 +886,7 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, file);
 
-    Transcoder* transcoder = Transcoder::nativeTranscoder();
+    Transcoder* transcoder = nativeTranscoder();
     BlockBufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
@@ -1369,7 +1369,7 @@ Object scheme::nativeTranscoderEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("native-transcoder");
     checkArgumentLength(0);
-    return Object::makeTranscoder(Transcoder::nativeTranscoder());
+    return Object::makeTranscoder(nativeTranscoder());
 }
 
 Object scheme::transcoderCodecEx(VM* theVM, int argc, const Object* argv)
@@ -1615,7 +1615,7 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
 
     argumentAsString(0, path);
 
-    Transcoder* transcoder = Transcoder::nativeTranscoder();
+    Transcoder* transcoder = nativeTranscoder();
     // we choose buffered port
     BufferedFileBinaryInputPort* const fileBinaryInputPort = new BufferedFileBinaryInputPort(path->data());
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {

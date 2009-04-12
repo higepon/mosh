@@ -61,6 +61,7 @@ namespace scheme {
     Object readDirectory(const ucs4string& dir);
     ucs4string stringError(int num);
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
+    Transcoder* nativeTranscoder();
 
     class File EXTEND_GC
     {

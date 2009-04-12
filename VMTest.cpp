@@ -53,6 +53,7 @@
 #include "VM-inl.h"
 #include "StandardInputPort.h"
 #include "StandardOutputPort.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -63,7 +64,7 @@ protected:
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         mosh_init();
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        Transcoder* transcoder = Transcoder::nativeTranscoder();
+        Transcoder* transcoder = nativeTranscoder();
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
@@ -86,7 +87,7 @@ protected:
     virtual void SetUp() {
         mosh_init();
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        Transcoder* transcoder = Transcoder::nativeTranscoder();
+        Transcoder* transcoder = nativeTranscoder();
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug

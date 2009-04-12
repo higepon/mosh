@@ -37,6 +37,7 @@
 #include "Transcoder.h"
 #include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -121,6 +122,6 @@ bool StringTextualInputPort::setPosition(int position)
 
 Transcoder* StringTextualInputPort::transcoder() const
 {
-    return Transcoder::nativeTranscoder();
+    return nativeTranscoder();
 }
 

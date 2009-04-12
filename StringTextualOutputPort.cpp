@@ -34,6 +34,7 @@
 #include "Bignum.h"
 #include "StringTextualOutputPort.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -119,5 +120,5 @@ enum OutputPort::bufferMode StringTextualOutputPort::bufferMode() const
 
 Transcoder* StringTextualOutputPort::transcoder() const
 {
-    return Transcoder::nativeTranscoder();
+    return nativeTranscoder();
 }

@@ -160,14 +160,14 @@ Object Object::makeTextualInputFilePort(const ucs4char* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
                                                         reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
-                                                                                                    , Transcoder::nativeTranscoder())))));
+                                                                                                    , nativeTranscoder())))));
 }
 
 Object Object::makeTextualInputFilePort(const char* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
                                                         reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new BufferedFileBinaryInputPort(file)
-                                                                                                    , Transcoder::nativeTranscoder())))));
+                                                                                                    , nativeTranscoder())))));
 }
 
 
@@ -187,7 +187,7 @@ Object Object::makeStringInputPort(const uint8_t* buf, int size)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::TextualInputPort,
                                                         reinterpret_cast<intptr_t>(new TranscodedTextualInputPort(new ByteArrayBinaryInputPort(buf, size)
-                                                                                                    , Transcoder::nativeTranscoder())))));
+                                                                                                    , nativeTranscoder())))));
 }
 
 Object Object::makeCustomTextualInputPort(VM* theVM,

@@ -91,11 +91,6 @@ Object Transcoder::errorHandlingModeSymbol()
     return errorHandlingModeToSymbol(errorHandlingMode_);
 }
 
-Transcoder* Transcoder::nativeTranscoder()
-{
-    return new Transcoder(new UTF8Codec(), nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
-}
-
 enum EolStyle Transcoder::nativeEolStyle()
 {
 #if LINE_FEED_CODE_LF

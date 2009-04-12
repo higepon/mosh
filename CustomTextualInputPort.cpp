@@ -40,6 +40,7 @@
 #include "SString.h"
 #include "VM.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -99,7 +100,7 @@ void CustomTextualInputPort::unGetChar(ucs4char c)
 
 Transcoder* CustomTextualInputPort::transcoder() const
 {
-    return Transcoder::nativeTranscoder();
+    return nativeTranscoder();
 }
 
 bool CustomTextualInputPort::hasPosition() const

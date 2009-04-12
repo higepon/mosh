@@ -1,3 +1,7 @@
+2009-04-12  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompat.cpp (scheme::nativeTranscoder): Added native-transcoder for Windows.
+
 2009-04-12  kokosabu  <kokosabu@gmail.com>
 
         * Added : manage active ports.

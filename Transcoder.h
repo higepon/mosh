@@ -60,13 +60,13 @@ public:
     void unGetChar(ucs4char c);
     int getLineNo() const;
 
-    static Transcoder* nativeTranscoder();
+    static enum EolStyle nativeEolStyle();
     static bool validateEolStyle(Object eolStyle, enum EolStyle& result);
     static bool validateErrorHandlingMode(Object handlingMode, enum ErrorHandlingMode& result);
 
 private:
     ucs4char getCharInternal(BinaryInputPort* port);
-    static enum EolStyle nativeEolStyle();
+
     static Object eolStyleToSymbol(const enum EolStyle eolstyle);
     static Object errorHandlingModeToSymbol(enum ErrorHandlingMode errorHandlingMode);
 
