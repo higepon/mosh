@@ -32,6 +32,25 @@
 #ifndef SCHEME_OSCOMPAT_
 #define SCHEME_OSCOMPAT_
 
+#ifdef _WIN32
+//#define UNICODE
+//#define _UNICODE
+#include <stdio.h>
+#include <windows.h>
+#include <shlwapi.h>
+#include <tchar.h>
+#include <sys/types.h>
+#pragma comment(lib, "shlwapi.lib")
+
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+
+#else // NOT Windows
+#include <sys/resource.h>
+#define _LARGEFILE64_SOURCE
+#include <sys/types.h>
+#include <unistd.h>
+#endif
 #include "scheme.h"
 
 namespace scheme {

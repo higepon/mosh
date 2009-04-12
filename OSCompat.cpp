@@ -28,25 +28,7 @@
  *
  *  $Id: OScompat.cpp 183 2008-07-04 06:19:28Z higepon $
  */
-#ifdef _WIN32
-#define UNICODE
-#define _UNICODE
-#include <stdio.h>
-#include <windows.h>
-#include <shlwapi.h>
-#include <tchar.h>
-#include <sys/types.h>
-#pragma comment(lib, "shlwapi.lib")
 
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-
-#else // NOT Windows
-#include <sys/resource.h>
-#define _LARGEFILE64_SOURCE
-#include <sys/types.h>
-#include <unistd.h>
-#endif
 
 #ifndef _MSC_VER
 #include <dirent.h>
@@ -85,9 +67,9 @@ using namespace scheme;
 //
 
 #ifdef _WIN32
-const HANDLE File::STANDARD_IN  = STD_INPUT_HANDLE;
-const HANDLE File::STANDARD_OUT = STD_OUTPUT_HANDLE;
-const HANDLE File::STANDARD_ERR = STD_ERROR_HANDLE;
+const HANDLE File::STANDARD_IN  = GetStdHandle(STD_INPUT_HANDLE);
+const HANDLE File::STANDARD_OUT = GetStdHandle(STD_OUTPUT_HANDLE);
+const HANDLE File::STANDARD_ERR = GetStdHandle(STD_ERROR_HANDLE);
 
 #else
 const int File::STANDARD_IN  = 0;
@@ -124,22 +106,26 @@ bool File::open(const ucs4string& file, int flags)
     if (isOpen()) {
         return false;
     }
-    if (mode & Read) {
+    if (flags & Read) {
         access |= GENERIC_READ;
     }
-    if (mode & Write) {
+    if (flags & Write) {
         access |= GENERIC_WRITE;
     }
-    if (mode & ShareRead) {
+	/*
+    if (flags & ShareRead) {
         share |= FILE_SHARE_READ;
     }
-    if (mode & ShareWrite) {
+    if (flags & ShareWrite) {
         share |= FILE_SHARE_WRITE;
     }
-    if (mode & OpenExisting) {
+    if (flags & OpenExisting) {
         disposition = OPEN_EXISTING;
-    }
-    if (mode & CreateAlways) {
+    }*/
+	if (flags & Truncate) {
+		disposition = TRUNCATE_EXISTING;
+	}
+    if (flags & Create) {
         disposition = CREATE_ALWAYS;
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -181,6 +167,7 @@ int File::dup(HANDLE target)
 {
     MOSH_ASSERT(isOpen());
     // TODO windows
+	return -1;
 }
 #else
 int File::dup(int target)
@@ -212,7 +199,7 @@ int64_t File::size() const
 {
 #ifdef _WIN32
     LARGE_INTEGER size;
-    int isOK = GetFileSizeEx(hdl_, &size);
+    int isOK = GetFileSizeEx(desc_, &size);
     if (isOK) {
         return size.QuadPart;
     } else {
