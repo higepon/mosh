@@ -806,3 +806,20 @@ Object scheme::getCProcedureName(Object proc)
     return Symbol::intern(UC("<unknwon subr>"));
 }
 
+
+void VM::register_port(Object obj)
+{
+    if (obj.isPort()) {
+        active_ports.insert(obj);
+    }
+}
+
+void VM::unregister_port(Object obj)
+{
+    if (obj.isPort()) {
+        const Ports::iterator it = active_ports.find(obj);
+        if (it != active_ports.end()) {
+            active_ports.erase(it);
+        }
+    }
+}

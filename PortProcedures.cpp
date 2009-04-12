@@ -277,9 +277,13 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
 
     if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
         if (transcoder == NULL) {
-            return Object::makeBinaryInputOutputPort(port);
+            const Object ret = Object::makeBinaryInputOutputPort(port);
+            theVM->register_port(ret);
+            return ret;
         } else {
-            return Object::makeTextualInputOutputPort(port, transcoder);
+            const Object ret = Object::makeTextualInputOutputPort(port, transcoder);
+            theVM->register_port(ret);
+            return ret;
         }
     } else {
         switch(errno) {
@@ -498,14 +502,20 @@ Object scheme::openBytevectorInputPortEx(VM* theVM, int argc, const Object* argv
     checkArgumentLengthBetween(1, 2);
     argumentAsByteVector(0, bv);
     if (1 == argc) {
-        return Object::makeBinaryInputPort(new ByteArrayBinaryInputPort(bv->data(), bv->length()));
+        const Object ret = Object::makeBinaryInputPort(new ByteArrayBinaryInputPort(bv->data(), bv->length()));
+        theVM->register_port(ret);
+        return ret;
     } else { // 2 == argc
         argumentCheckTranscoderOrFalse(1, maybeTranscoder);
         BinaryInputPort* in = new ByteArrayBinaryInputPort(bv->data(), bv->length());
         if (maybeTranscoder.isFalse()) {
-            return Object::makeBinaryInputPort(in);
+            const Object ret = Object::makeBinaryInputPort(in);
+            theVM->register_port(ret);
+            return ret;
         } else {
-            return Object::makeTextualInputPort(in, maybeTranscoder.toTranscoder());
+            const Object ret = Object::makeTextualInputPort(in, maybeTranscoder.toTranscoder());
+            theVM->register_port(ret);
+            return ret;
         }
     }
 }
@@ -702,6 +712,7 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     }
+    theVM->unregister_port(argv[0]);
     return Object::Undef;
 }
 
@@ -850,12 +861,16 @@ Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("string-input-port");
     argumentAsString(0, text);
-    return Object::makeStringInputPort(text->data());
+    const Object ret = Object::makeStringInputPort(text->data());
+    theVM->register_port(ret);
+    return ret;
 }
 
 Object scheme::openOutputStringEx(VM* theVM, int argc, const Object* argv)
 {
-    return Object::makeStringOutputPort();
+    const Object ret = Object::makeStringOutputPort();
+    theVM->register_port(ret);
+    return ret;
 }
 
 Object scheme::sysPortSeekEx(VM* theVM, int argc, const Object* argv)
@@ -875,7 +890,9 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
     BlockBufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
 
     if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        return Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+        const Object ret = Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
+        theVM->register_port(ret);
+        return ret;
     } else {
         const bool isReadable = File::isReadable(file->data());
         switch(errno) {
@@ -1433,10 +1450,14 @@ Object scheme::sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* 
     DeclareProcedureName("open-bytevector-output-port");
     checkArgumentLengthBetween(0, 1);
     if (0 == argc || argv[0].isFalse()) {
-        return Object::makeBinaryOutputPort(new ByteArrayBinaryOutputPort);
+        const Object ret = Object::makeBinaryOutputPort(new ByteArrayBinaryOutputPort);
+        theVM->register_port(ret);
+        return ret;
     } else {
         argumentAsTranscoder(0, transcoder);
-        return Object::makeTextualOutputPort(new ByteArrayBinaryOutputPort(), transcoder);
+        const Object ret = Object::makeTextualOutputPort(new ByteArrayBinaryOutputPort(), transcoder);
+        theVM->register_port(ret);
+        return ret;
     }
 }
 
@@ -1564,9 +1585,13 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
 
     if ((port != NULL) && (MOSH_SUCCESS == port->open())) {
         if (transcoder == NULL) {
-            return Object::makeBinaryOutputPort(port);
+            const Object ret = Object::makeBinaryOutputPort(port);
+            theVM->register_port(ret);
+            return ret;
         } else {
-            return Object::makeTextualOutputPort(port, transcoder);
+            const Object ret = Object::makeTextualOutputPort(port, transcoder);
+            theVM->register_port(ret);
+            return ret;
         }
     } else {
         switch(errno) {
@@ -1594,7 +1619,9 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     // we choose buffered port
     BufferedFileBinaryInputPort* const fileBinaryInputPort = new BufferedFileBinaryInputPort(path->data());
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
-        return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
+        const Object ret = Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
+        theVM->register_port(ret);
+        return ret;
     } else {
         switch(errno) {
         case EACCES:
@@ -1658,9 +1685,13 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
 
     if ((in != NULL) && (MOSH_SUCCESS == in->open())) {
         if (transcoder == NULL) {
-            return Object::makeBinaryInputPort(in);
+            const Object ret = Object::makeBinaryInputPort(in);
+            theVM->register_port(ret);
+            return ret;
         } else {
-            return Object::makeTextualInputPort(in, transcoder);
+            const Object ret = Object::makeTextualInputPort(in, transcoder);
+            theVM->register_port(ret);
+            return ret;
         }
     } else {
         switch(errno) {

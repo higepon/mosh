@@ -178,22 +178,6 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
 #endif
 };
 
-
-// from Gauche
-#define SCM_SYSCALL3(result, expr, check)       \
-    do {                                        \
-        (result) = (expr);                      \
-        if ((check) && errno == EINTR) {        \
-            /* ScmVM *vm__ = Scm_VM(); */       \
-            errno = 0;                          \
-            /* SCM_SIGCHECK(vm__); */           \
-        } else {                                \
-            break;                              \
-        }                                       \
-    } while (1)
-#define SCM_SYSCALL(result, expr) \
-    SCM_SYSCALL3(result, expr, (result < 0))
-
 inline uint8_t* allocatePointerFreeU8Array(int size)
 {
 #ifdef USE_BOEHM_GC

@@ -1,3 +1,7 @@
+2009-04-12  kokosabu  <kokosabu@gmail.com>
+
+        * Added : manage active ports.
+
 2009-04-12  higepon  <higepon@users.sourceforge.jp>
 
         * Replaced (srfi :64) from ikarus-srfi.
