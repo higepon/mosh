@@ -24,15 +24,15 @@ Mosh becomes R6RS compliant.
   Run like following.
     mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
 
-Added new reference manual
+Added new reference manual.
   http://mosh.monaos.org/
 
 Added FFI (Foreign Function Interface). 
   See test/ffi.scm or reference manual.
 
-Supported build on Windows with Visual C++ by herumi
+Supported build on Windows with Visual C++ by herumi.
 
-Supported build on Mingw by .mjt
+Supported build on Mingw by .mjt.
 
 Implemented R6RS Numric tower.
 

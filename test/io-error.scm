@@ -58,7 +58,7 @@
 ;; utf-8-code
 ;;   error-handling-mode: replace
 (let ([s (bytevector->string #vu8(97 #xff 98 99) (make-transcoder (utf-8-codec) (native-eol-style) (error-handling-mode replace)))])
-  (test-equal (string-ref s 0) #\a)
+  (test-equal #\a (string-ref s 0))
   (test-equal (string-ref s 1) (integer->char #xfffd))
   (test-equal (string-ref s 2) #\b)
   (test-equal (string-ref s 3) #\c))

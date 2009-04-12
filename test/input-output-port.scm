@@ -566,7 +566,7 @@
       (put-char p #\q)
       (flush-output-port p)
       (test-equal save #\q)
-      (test-equal (get-char p) #\!)
+      (test-equal #\! (get-char p))
       (close-port p))
 
 (test-end)

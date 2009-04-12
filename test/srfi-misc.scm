@@ -1,6 +1,5 @@
 (import (except (rnrs) let-values error define-record-type cond)
         (srfi :0)
-        (srfi :1)
         (srfi :2)
         (srfi :6)
         (srfi :8)
@@ -38,10 +37,6 @@
   (define name 'other)))
 
 (test-equal name 'mosh)
-
-;;;;;  SRFI-1   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(test-equal (first '(1 2)) 1)
-(test-equal (second '(1 2)) 2)
 
 ;;;;;  SRFI-6   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test-equal (let ((q (open-output-string))

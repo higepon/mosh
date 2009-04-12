@@ -1,3 +1,11 @@
+2009-04-12  higepon  <higepon@users.sourceforge.jp>
+
+        * Replaced (srfi :64) from ikarus-srfi.
+
+        * lib/srfi/%3a1/lists.sls : Updated from ikarus-srfi.
+
+        * test/lists.scm : Added from ikarus-srfi.
+
 2009-04-11  higepon  <higepon@users.sourceforge.jp>
 
         * OSCompat.cpp: Adjust open flags.

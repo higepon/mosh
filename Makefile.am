@@ -184,7 +184,6 @@ lib/srfi/%3a1.sls \
 lib/srfi/%3a1/lists.sls \
 lib/srfi/%3a2.sls \
 lib/srfi/%3a2/and-let%2a.sls \
-lib/srfi/%3a1/lists/compat.mosh.sls \
 lib/srfi/%3a6.sls \
 lib/srfi/%3a6/basic-string-ports.sls \
 lib/srfi/%3a6/basic-string-ports/compat.mosh.sls \
@@ -240,6 +239,7 @@ lib/srfi/%3a61.sls \
 lib/srfi/%3a61/cond.sls \
 lib/srfi/%3a64.sls \
 lib/srfi/%3a64/testing.sls \
+lib/srfi/64/testing.scm \
 lib/srfi/%3a67.sls \
 lib/srfi/%3a67/compare-procedures.sls \
 lib/srfi/67/compare.ss \
@@ -410,6 +410,7 @@ bench:
 check: test
 
 test: ./mosh all-tests.scm update
+	./mosh test/testing.scm
 	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
 	./mosh test/input-port.scm
@@ -421,12 +422,12 @@ test: ./mosh all-tests.scm update
 	./mosh test/unicode.scm
 	./mosh test/srfi8.scm
 	./mosh test/srfi19.scm
-	./mosh lib/srfi/%3a64/srfi-64-test.scm
 	./mosh test/ffi.scm
 	./mosh test/mysql.scm
 	./mosh test/clos.scm
 	./mosh test/dbi.scm
 	./mosh test/srfi-misc.scm
+	./mosh test/lists.scm
 	./mosh -5 all-tests.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 

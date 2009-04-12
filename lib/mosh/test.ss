@@ -336,6 +336,7 @@
 
 (define-record-type failure
   (fields
+    (immutable name)
     (immutable expr)
     (immutable expected)
     (immutable actual)))
@@ -391,6 +392,7 @@
            (when (memq kind '(fail))
              (add-failure! (make-failure
                             (assq-ref 'test-name result)
+                            (assq-ref 'source-form result)
                             (assq-ref 'expected-value result)
                             (assq-ref 'actual-value result)))))))
     (test-runner-on-final! runner
@@ -400,8 +402,10 @@
            (for-each
             (lambda (f)
               (display "=======================================\n")
+              (when (valid? (failure-name f))
+                (format (current-error-port) " Test     : ~a \n" (failure-name f)))
               (when (valid? (failure-expr f))
-                (format (current-error-port) " Test     : ~a \n" (failure-expr f)))
+                (format (current-error-port) " Expr     : ~a \n" (failure-expr f)))
               (when (valid? (failure-expected f))
                 (format (current-error-port) " Expected : ~a \n" (failure-expected f)))
               (when (valid? (failure-actual f))

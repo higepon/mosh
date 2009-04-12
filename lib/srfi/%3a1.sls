@@ -94,7 +94,7 @@
     take-while!
     tenth
     third
-    tree-copy
+;    tree-copy
     unfold
     unfold-right
     unzip1

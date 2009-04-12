@@ -1,12 +1,16 @@
-;; This suite srfi-64-test.scm was contributed by Donovan Kolbly <donovan@rscheme.org>.
-(import (except (rnrs) error)
-        (srfi :23)
-        (srfi :64))
-
 ;;;
 ;;;  This is a test suite written in the notation of 
 ;;;  SRFI-64, A Scheme API for test suites
 ;;;
+
+#!r6rs
+(import
+  (except (rnrs base) error)
+  (rnrs lists)
+  (srfi :64 testing))
+
+(define (error msg)
+  (assertion-violation "(srfi :64 testing) test program" msg))
 
 (test-begin "SRFI 64 - Meta-Test Suite")
 
