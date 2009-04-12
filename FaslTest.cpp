@@ -82,8 +82,7 @@ protected:
 
     virtual void Store(Object obj)
     {
-        const char* TMP_FILE = "/tmp/fasl-test.tmp";
-        BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+        BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test.tmp"));
         FaslWriter writer(out);
         writer.put(obj);
         out->close();
@@ -91,8 +90,7 @@ protected:
 
     virtual Object Restore()
     {
-        const char* TMP_FILE = "/tmp/fasl-test.tmp";
-        BinaryInputPort* const in = new BufferedFileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+        BinaryInputPort* const in = new BufferedFileBinaryInputPort(UC("/tmp/fasl-test.tmp"));
         FaslReader reader(theVM_, in);
         return reader.get();
     }
@@ -127,14 +125,13 @@ TEST_F(FaslTest, EqHashTable) {
     ht->set(Symbol::intern(UC("mobe")), Pair::list2(Object::makeFixnum(2), Symbol::intern(UC("hage"))));
 
     // Write
-    const char* TMP_FILE = "/tmp/fasl-test4.dat";
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test4.dat"));
     FaslWriter writer(out);
     writer.put(table);
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test4.dat"));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     ASSERT_TRUE(restored.isEqHashTable());
@@ -169,14 +166,13 @@ TEST_F(FaslTest, RecordTypeDescriptor) {
     const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
     EXPECT_TRUE(rtd.isRecordTypeDescriptor());
     // Write
-    const char* TMP_FILE = "/tmp/fasl-test0.dat";
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test0.dat"));
     FaslWriter writer(out);
     writer.put(rtd);
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test0.dat"));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(rtd.eq(restored));
@@ -222,14 +218,13 @@ TEST_F(FaslTest, Record) {
     EXPECT_EQ(2, theVM_->callClosure1(pointY, point).toFixnum());
 
     // Write
-    const char* TMP_FILE = "/tmp/fasl-test1.dat";
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test1.dat"));
     FaslWriter writer(out);
     writer.put(point);
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test1.dat"));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(eqv(point, restored));
@@ -278,14 +273,13 @@ TEST_F(FaslTest, RecordWithPair) {
     EXPECT_TRUE(theVM_->callClosure1(pointY, point).isString());
 
     // Write
-    const char* TMP_FILE = "/tmp/fasl-test2.dat";
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(fileno(fopen(TMP_FILE, "wb")));
+    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test2.dat"));
     FaslWriter writer(out);
     writer.put(point);
     out->close();
 
     // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(fileno(fopen(TMP_FILE, "rb")));
+    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test2.dat"));
     FaslReader reader(theVM_, in);
     const Object restored = reader.get();
     EXPECT_TRUE(eqv(point, restored));

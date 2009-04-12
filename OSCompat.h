@@ -80,6 +80,14 @@ namespace scheme {
         static bool isWritable(const ucs4string& path);
         static bool isReadable(const ucs4string& path);
 
+#ifdef _WIN32
+
+#else
+        static const int STANDARD_IN;
+        static const int STANDARD_OUT;
+        static const int STANDARD_ERR;
+#endif
+
     private:
 #ifdef _WIN32
         HANDLE desc_;

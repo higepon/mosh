@@ -55,7 +55,7 @@
 
 using namespace scheme;
 
-FileBinaryInputPort::FileBinaryInputPort(int fd) : file_(new File(fd)), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
+FileBinaryInputPort::FileBinaryInputPort(File* file) : file_(file), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), aheadU8_(EOF), position_(0)
 {
 }
 

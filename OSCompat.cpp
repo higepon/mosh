@@ -85,6 +85,14 @@ using namespace scheme;
 //
 
 #ifdef _WIN32
+
+#else
+const int File::STANDARD_IN  = 0;
+const int File::STANDARD_OUT = 1;
+const int File::STANDARD_ERR = 2;
+#endif
+
+#ifdef _WIN32
 wchar_t* utf32ToUtf16(const ucs4string& s)
 {
     ByteArrayBinaryOutputPort out;

@@ -40,7 +40,7 @@ namespace scheme {
 class StandardErrorPort : public FileBinaryOutputPort
 {
 public:
-    StandardErrorPort() : FileBinaryOutputPort(fileno(stderr)) {}
+    StandardErrorPort() : FileBinaryOutputPort(new File(File::STANDARD_ERR)) {}
     virtual ~StandardErrorPort() {}
 
     ucs4string toString()

@@ -154,7 +154,7 @@ Object scheme::internalPipeEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "pipe() failed");
         return Object::Undef;
     }
-    return theVM->values2(Object::makeBinaryInputPort(fds[0]), Object::makeBinaryOutputPort(fds[1]));
+    return theVM->values2(Object::makeBinaryInputPort(new File(fds[0])), Object::makeBinaryOutputPort(new File(fds[1])));
 #endif
 }
 
@@ -177,7 +177,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(fileno(stdin))) {
+        if (-1 ==  file->dup(File::STANDARD_IN)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }
@@ -190,7 +190,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(fileno(stdout))) {
+        if (-1 ==  file->dup(File::STANDARD_OUT)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }
@@ -203,7 +203,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(fileno(stderr))) {
+        if (-1 ==  file->dup(File::STANDARD_ERR)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
             return Object::Undef;
         }

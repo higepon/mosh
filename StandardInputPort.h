@@ -40,7 +40,7 @@ namespace scheme {
 class StandardInputPort : public FileBinaryInputPort
 {
 public:
-    StandardInputPort() : FileBinaryInputPort(fileno(stdin)) {}
+    StandardInputPort() : FileBinaryInputPort(new File(File::STANDARD_IN)) {}
     virtual ~StandardInputPort() {}
     ucs4string toString()
     {

@@ -40,7 +40,7 @@ namespace scheme {
 class BufferedFileBinaryInputPort : public BinaryInputPort
 {
 public:
-    BufferedFileBinaryInputPort(int fd);
+    BufferedFileBinaryInputPort(File* file);
     BufferedFileBinaryInputPort(ucs4string file);
     BufferedFileBinaryInputPort(const char* file);
     virtual ~BufferedFileBinaryInputPort();

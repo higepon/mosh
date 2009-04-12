@@ -43,7 +43,7 @@ class File;
 class FileBinaryInputPort : public BinaryInputPort
 {
 public:
-    FileBinaryInputPort(int fd);
+    FileBinaryInputPort(File* file);
     FileBinaryInputPort(const ucs4string& file);
     FileBinaryInputPort(const char* file);
     virtual ~FileBinaryInputPort();

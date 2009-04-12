@@ -75,6 +75,7 @@ class Port;
 class Gloc;
 class BinaryInputOutputPort;
 class TextualInputOutputPort;
+class File;
 
 enum {
     CONST_NIL     = 0,
@@ -111,7 +112,7 @@ enum ErrorHandlingMode
 class Object
 {
 public:
-	Object() {}
+    Object() {}
     Object(const ucs4char* str);
     Object(const ucs4string& str);
     Object(const char* str);
@@ -191,8 +192,8 @@ public:
     static Object makeString(const ucs4string& str);
     static Object makeString(const char* str);
     static Object makeObjectPointer(Object* p);
-    static Object makeBinaryInputPort(int fd);
-    static Object makeBinaryOutputPort(int fd);
+    static Object makeBinaryInputPort(File* file);
+    static Object makeBinaryOutputPort(File* file);
     static Object makeBinaryInputOutputPort(BinaryInputOutputPort* port);
     static Object makeBinaryInputPort(BinaryInputPort* port);
     static Object makeBinaryOutputPort(BinaryOutputPort* port);

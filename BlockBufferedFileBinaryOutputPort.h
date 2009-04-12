@@ -40,7 +40,7 @@ namespace scheme {
 class BlockBufferedFileBinaryOutputPort : public BufferedFileBinaryOutputPort
 {
 public:
-    BlockBufferedFileBinaryOutputPort(int fd) : BufferedFileBinaryOutputPort(fd) {}
+    BlockBufferedFileBinaryOutputPort(File* file) : BufferedFileBinaryOutputPort(file) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file) : BufferedFileBinaryOutputPort(file) {}
     BlockBufferedFileBinaryOutputPort(ucs4string file, int openFlags) : BufferedFileBinaryOutputPort(file, openFlags) {}
     virtual ~BlockBufferedFileBinaryOutputPort() {}

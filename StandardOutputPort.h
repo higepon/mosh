@@ -43,7 +43,7 @@ namespace scheme {
 class StandardOutputPort : public LineBufferedFileBinaryOutputPort
 {
 public:
-    StandardOutputPort() : LineBufferedFileBinaryOutputPort(fileno(stdout)) {}
+    StandardOutputPort() : LineBufferedFileBinaryOutputPort(new File(File::STANDARD_OUT)) {}
     virtual ~StandardOutputPort() {}
 
     ucs4string toString()

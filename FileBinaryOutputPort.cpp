@@ -52,7 +52,7 @@
 
 using namespace scheme;
 
-FileBinaryOutputPort::FileBinaryOutputPort(int fd) : file_(new File(fd)), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), position_(0)
+FileBinaryOutputPort::FileBinaryOutputPort(File* file) : file_(file), fileName_(UC("<unknown file>")), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
 }
 

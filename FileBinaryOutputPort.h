@@ -41,7 +41,7 @@ namespace scheme {
 class FileBinaryOutputPort : public BinaryOutputPort
 {
 public:
-    FileBinaryOutputPort(int fd);
+    FileBinaryOutputPort(File* file);
     FileBinaryOutputPort(ucs4string file);
     FileBinaryOutputPort(ucs4string file, int openFlags);
     virtual ~FileBinaryOutputPort();

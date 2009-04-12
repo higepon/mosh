@@ -111,16 +111,16 @@ bool Object::equal(VM* theVM, Object o) const
     return ::equal(*this, o, new EqHashTable());
 }
 
-Object Object::makeBinaryInputPort(int fd)
+Object Object::makeBinaryInputPort(File* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputPort,
-                                                        reinterpret_cast<intptr_t>(new FileBinaryInputPort(fd)))));
+                                                        reinterpret_cast<intptr_t>(new FileBinaryInputPort(file)))));
 }
 
-Object Object::makeBinaryOutputPort(int fd)
+Object Object::makeBinaryOutputPort(File* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryOutputPort,
-                                                        reinterpret_cast<intptr_t>(new FileBinaryOutputPort(fd)))));
+                                                        reinterpret_cast<intptr_t>(new FileBinaryOutputPort(file)))));
 }
 
 Object Object::makeBinaryInputPort(BinaryInputPort* port)
