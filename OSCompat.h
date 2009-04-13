@@ -118,6 +118,7 @@ namespace scheme {
     private:
 #ifdef _WIN32
         HANDLE desc_;
+        int prevC_; // to keep half of wchar_t
 #else
         int desc_;
 #endif

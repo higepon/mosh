@@ -104,7 +104,9 @@ std::wstring utf8ToUtf16(const uint8_t* s, int len)
 
 #ifdef _WIN32
 File::File(HANDLE desc /* = INVALID_HANDLE_VALUE */)
-    : desc_(desc) {}
+    : desc_(desc)
+    , prevC_(-1)
+    {}
 #else
 File::File(int desc /* = -1 */)
     : desc_(desc) {}
@@ -277,19 +279,18 @@ int File::read(uint8_t* buf, size_t size)
     if (desc_ == STANDARD_IN) {
 #if 1
         assert(size == 1); // temporary restriction
-        static int prevC = -1; // not thread safe
-        if (prevC != -1) {
+        if (prevC_ != -1) {
             isOK = true;
             readSize = 1;
-            *buf = prevC;
-            prevC = -1;
+            *buf = static_cast<uint8_t>(prevC_);
+            prevC_ = -1;
         } else {
             wchar_t wc;
             isOK = ReadConsole(desc_, &wc, 1, &readSize, NULL);
             if (isOK) {
                 readSize = 1;
-                *buf = (char)wc;
-                prevC = (char)(wc >> 8);
+                *buf = static_cast<uint8_t>(wc);
+                prevC_ = wc >> 8;
             }
         }
 #else
