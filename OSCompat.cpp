@@ -141,6 +141,7 @@ bool File::open(const ucs4string& file, int flags)
     if (flags & Create) {
         disposition = CREATE_ALWAYS;
     }
+    if (disposition == 0) disposition = OPEN_EXISTING; // is this correct ?
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
     return isOpen();
 #else
