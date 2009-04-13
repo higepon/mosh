@@ -104,11 +104,11 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    // for Shell mode.
-    // VM(=parent) ignores SIGINT, but child use default handler
-    if (pid == 0) {
-        signal(SIGINT, SIG_DFL);
-    }
+//     // for Shell mode.
+//     // VM(=parent) ignores SIGINT, but child use default handler
+//     if (pid == 0) {
+//         signal(SIGINT, SIG_DFL);
+//     }
     return Bignum::makeIntegerFromU64(pid);
 #endif
 }

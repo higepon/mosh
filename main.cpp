@@ -120,6 +120,24 @@ void signal_handler(int signo)
 }
 #endif
 
+#include <sys/types.h>
+#include <sys/wait.h>
+void signal_handler2(int signo)
+{
+    int status;
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    if (-1 == waitpid(-1, &status, 0)) {
+        printf("parent exit %s %d", strerror(errno), ECHILD == errno);
+        exit(-1);
+    } else {
+        // child
+        kill(0, SIGINT);
+        printf("child exit");
+        exit(-1);
+
+    }
+}
+
 int main(int argc, char *argv[])
 {
     ucs4char opt;
@@ -192,7 +210,9 @@ int main(int argc, char *argv[])
 
     // for Shell mode.
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
-    signal(SIGINT, SIG_IGN);
+//    signal(SIGINT, SIG_IGN);
+
+
 
     Transcoder* transcoder = nativeConsoleTranscoder();
     const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);

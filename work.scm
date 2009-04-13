@@ -1,5 +1,7 @@
 (import (rnrs)
         (srfi :64))
 
-(test-begin "hello")
-(test-end)
+(define (foo)
+  (foo))
+
+(foo)

@@ -1,3 +1,7 @@
+2009-04-13  higepon  <higepon@users.sourceforge.jp>
+
+        * main.cpp (main): Not to touch SIGINT.
+
 2009-04-13  kokosabu  <kokosabu@gmail.com>
 
         * VM.h : Changed std::map => gc_vector.
