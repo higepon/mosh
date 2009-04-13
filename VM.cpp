@@ -812,24 +812,27 @@ Object scheme::getCProcedureName(Object proc)
 
 void VM::registerPort(Object obj)
 {
-    if (obj.isOutputPort()) {
-        activePorts_.insert(obj);
-    }
+    MOSH_ASSERT(obj.isOutputPort());
+    activePorts_.push_back(obj);
 }
 
 void VM::unregisterPort(Object obj)
 {
     if (obj.isOutputPort()) {
-        const Ports::iterator it = activePorts_.find(obj);
-        if (it != activePorts_.end()) {
-            activePorts_.erase(it);
+        MOSH_ASSERT(obj.isOutputPort());
+        Ports::iterator it = activePorts_.begin();
+        while (it != activePorts_.end()) {
+            if (obj.eq(*it)) {
+                activePorts_.erase(it);
+                break;
+            }
+            it++;
         }
     }
 }
 
 void VM::flushAllPorts(void)
 {
-#if 0
     Ports::iterator it = activePorts_.begin();
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
@@ -843,8 +846,6 @@ void VM::flushAllPorts(void)
             outputPort.toTextualInputOutputPort()->flush();
         }
 
-        activePorts_.erase(it);
-        it++; // this iterator is not valid
+        it = activePorts_.erase(it);
     }
-#endif
 }

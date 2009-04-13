@@ -87,8 +87,6 @@ template <class T1, class T2>
 class gc_map : public std::map<T1, T2, std::less<T1>, gc_allocator<std::pair<const T1, T2> > >, public gc { };
 template <class T1>
 class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
-template <class T1>
-class gc_set : public std::set<T1, gc_allocator<T1> >, public gc { };
 #else
 #define EXTEND_GC
 template <class T1, class T2>
@@ -96,9 +94,6 @@ class gc_map : public std::map<T1, T2> {};
 
 template <class T1>
 class gc_vector : public std::vector<T1> {};
-
-template <class T1>
-class gc_set : public std::set<T1> {};
 #endif
 
 #define LOG1(fmt, a)       fprintf(stderr, "%s", format(UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);

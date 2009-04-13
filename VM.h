@@ -38,8 +38,7 @@
 
 namespace scheme {
 
-//typedef gc_set<Object> Ports;
-typedef std::set<Object> Ports;
+typedef gc_vector<Object> Ports;
 
 #define L1(a) Pair::list1(a)
 #define L2(a, b) Pair::list2(a, b)
