@@ -86,7 +86,19 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
     tcoder.putString(&out, s);
     return (wchar_t*)out.toByteVector()->data();
 }
-
+std::wstring utf8ToUtf16(const uint8_t* s, int len)
+{
+    /* sorry, I don't know how to use UTF8Codec */
+    std::wstring out;
+    size_t outSize = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, 0, 0);
+    if (outSize > 0) {
+		out.resize(outSize);
+		MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, &out[0], outSize);
+	} else {
+//		printf("ERR %08x\n", GetLastError());
+	}
+	return out;
+}
 #endif // _WIN32
 
 #ifdef _WIN32
@@ -225,7 +237,8 @@ int File::write(uint8_t* buf, size_t size)
     int isOK;
     // Writing to console is automatically converted into encoding of console.
     if (desc_ == STANDARD_OUT || desc_ == STANDARD_ERR) {
-        isOK = WriteConsole(desc_, buf, size, &writeSize, NULL);
+        isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
+        writeSize *= 2;
     } else {
         isOK = WriteFile(desc_, buf, size, &writeSize, NULL);
     }
@@ -258,7 +271,12 @@ int File::read(uint8_t* buf, size_t size)
 {
 #ifdef _WIN32
     DWORD readSize;
-    int isOK = ReadFile(desc_, buf, size, &readSize, NULL);
+    int isOK;
+    if (desc_ == STANDARD_IN) {
+		isOK = ReadConsole(desc_, buf, size, &readSize, NULL);
+	} else {
+	    isOK = ReadFile(desc_, buf, size, &readSize, NULL);
+	}
     if (isOK) {
         return readSize;
     } else {
@@ -514,7 +532,7 @@ Object scheme::readDirectory(const ucs4string& path)
 Transcoder* scheme::nativeConsoleTranscoder()
 {
 #ifdef _WIN32
-    return new Transcoder(new UTF16Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+    return new Transcoder(new UTF16Codec(UTF16Codec::UTF_16LE), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
 #else
     return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
 #endif
