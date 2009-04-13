@@ -276,7 +276,7 @@ int File::read(uint8_t* buf, size_t size)
     if (desc_ == STANDARD_IN) {
 #if 1
         assert(size == 1); // temporary restriction
-        static int prevC = -1;
+        static int prevC = -1; // not thread safe
         if (prevC != -1) {
             isOK = true;
             readSize = 1;
