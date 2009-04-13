@@ -44,7 +44,7 @@ namespace scheme {
 class ByteVector EXTEND_GC
 {
 public:
-    explicit ByteVector(uint32_t num) : length_(num)
+    explicit ByteVector(size_t num) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) uint8_t[num];
@@ -53,14 +53,14 @@ public:
 #endif
     }
 
-    ByteVector(uint32_t num, uint8_t v) : length_(num)
+    ByteVector(size_t num, uint8_t v) : length_(num)
     {
 #ifdef USE_BOEHM_GC
         data_ = new(PointerFreeGC) uint8_t[num];
 #else
         data_ = new uint8_t[num];
 #endif
-        for (unsigned int i = 0; i < num; i++) {
+        for (size_t i = 0; i < num; i++) {
             data_[i] = v;
         }
     }
@@ -72,7 +72,7 @@ public:
 #else
         data_ = new uint8_t[length_];
 #endif
-        for (unsigned int i = 0; i < length_; i++) {
+        for (size_t i = 0; i < length_; i++) {
             data_[i] = v[i];
         }
     }
@@ -86,7 +86,7 @@ public:
 #else
         data_ = new uint8_t[length_];
 #endif
-        int i = 0;
+        size_t i = 0;
         for (Object p = pair; !p.isNil(); p = p.cdr()) {
             MOSH_ASSERT(p.car().isFixnum());
             MOSH_ASSERT(p.car().toFixnum() >= -128 && p.car().toFixnum() <= 255);
@@ -96,7 +96,7 @@ public:
 
     }
 
-    ByteVector(uint32_t num, uint8_t* data) : data_(data), length_(num)
+    ByteVector(size_t num, uint8_t* data) : data_(data), length_(num)
     {
     }
 
@@ -106,37 +106,37 @@ public:
 
     ~ByteVector() {}
 
-    uint8_t u8Ref(int index) const
+    uint8_t u8Ref(size_t index) const
     {
         return data_[index];
     }
 
-    int8_t s8Ref(int index) const
+    int8_t s8Ref(size_t index) const
     {
         return static_cast<int8_t>(data_[index]);
     }
 
-    void u8Set(int index, uint8_t value)
+    void u8Set(size_t index, uint8_t value)
     {
         data_[index] = value;
     }
 
-    void s8Set(int index, int8_t value)
+    void s8Set(size_t index, int8_t value)
     {
         data_[index] = static_cast<uint8_t>(value);
     }
 
-    uint16_t u16RefNative(int index) const
+    uint16_t u16RefNative(size_t index) const
     {
         return *(reinterpret_cast<uint16_t*>((&data_[index])));
     }
 
-    uint16_t u16RefLittle(int index) const
+    uint16_t u16RefLittle(size_t index) const
     {
         return (data_[index + 1] << 8) | data_[index];
     }
 
-    uint32_t u32RefLittle(int index) const
+    uint32_t u32RefLittle(size_t index) const
     {
         return data_[index + 3] << 24 |
                data_[index + 2] << 16 |
@@ -144,7 +144,7 @@ public:
                data_[index];
     }
 
-    int32_t s32RefLittle(int index) const
+    int32_t s32RefLittle(size_t index) const
     {
         return data_[index + 3] << 24 |
                data_[index + 2] << 16 |
@@ -152,7 +152,7 @@ public:
                data_[index];
     }
 
-    void u64SetLittle(int index, uint64_t value)
+    void u64SetLittle(size_t index, uint64_t value)
     {
         data_[index + 7] = value >> 56;
         data_[index + 6] = value >> 48;
@@ -164,7 +164,7 @@ public:
         data_[index + 0] = value & 0xff;
     }
 
-    void s64SetLittle(int index, int64_t value)
+    void s64SetLittle(size_t index, int64_t value)
     {
         data_[index + 7] = value >> 56;
         data_[index + 6] = value >> 48;
@@ -176,7 +176,7 @@ public:
         data_[index + 0] = value & 0xff;
     }
 
-    void u64SetBig(int index, uint64_t value)
+    void u64SetBig(size_t index, uint64_t value)
     {
         data_[index + 0] = value >> 56;
         data_[index + 1] = value >> 48;
@@ -188,7 +188,7 @@ public:
         data_[index + 7] = value & 0xff;
     }
 
-    void s64SetBig(int index, int64_t value)
+    void s64SetBig(size_t index, int64_t value)
     {
         data_[index + 0] = value >> 56;
         data_[index + 1] = value >> 48;
@@ -200,7 +200,7 @@ public:
         data_[index + 7] = value & 0xff;
     }
 
-    uint64_t u64RefLittle(int index) const
+    uint64_t u64RefLittle(size_t index) const
     {
         return
             static_cast<uint64_t>(data_[index + 7]) << 56 |
@@ -213,7 +213,7 @@ public:
             static_cast<uint64_t>(data_[index + 0]);
     }
 
-    uint64_t u64RefBig(int index) const
+    uint64_t u64RefBig(size_t index) const
     {
         return
             static_cast<uint64_t>(data_[index + 0]) << 56 |
@@ -226,7 +226,7 @@ public:
             static_cast<uint64_t>(data_[index + 7]);
     }
 
-    int64_t s64RefLittle(int index) const
+    int64_t s64RefLittle(size_t index) const
     {
         return
             static_cast<int64_t>(data_[index + 7]) << 56 |
@@ -239,7 +239,7 @@ public:
             static_cast<int64_t>(data_[index + 0]);
     }
 
-    int64_t s64RefBig(int index) const
+    int64_t s64RefBig(size_t index) const
     {
         return
             static_cast<int64_t>(data_[index + 0]) << 56 |
@@ -253,7 +253,7 @@ public:
     }
 
 
-    uint32_t u32RefBig(int index) const
+    uint32_t u32RefBig(size_t index) const
     {
         return data_[index + 0] << 24 |
                data_[index + 1] << 16 |
@@ -261,7 +261,7 @@ public:
                data_[index + 3];
     }
 
-    int32_t s32RefBig(int index) const
+    int32_t s32RefBig(size_t index) const
     {
         return data_[index + 0] << 24 |
                data_[index + 1] << 16 |
@@ -269,40 +269,40 @@ public:
                data_[index + 3];
     }
 
-    int32_t s32RefNative(int index) const
+    int32_t s32RefNative(size_t index) const
     {
         return *(reinterpret_cast<int32_t*>((&data_[index])));
     }
 
-    uint32_t u32RefNative(int index) const
+    uint32_t u32RefNative(size_t index) const
     {
         return *(reinterpret_cast<uint32_t*>((&data_[index])));
     }
 
-    int64_t s64RefNative(int index) const
+    int64_t s64RefNative(size_t index) const
     {
         return *(reinterpret_cast<int64_t*>((&data_[index])));
     }
 
-    uint64_t u64RefNative(int index) const
+    uint64_t u64RefNative(size_t index) const
     {
         return *(reinterpret_cast<uint64_t*>((&data_[index])));
     }
 
 
-    void u16SetLittle(int index, uint16_t value)
+    void u16SetLittle(size_t index, uint16_t value)
     {
         data_[index] = value & 0xff;
         data_[index + 1] = value >> 8;
     }
 
-    void u16SetBig(int index, uint16_t value)
+    void u16SetBig(size_t index, uint16_t value)
     {
         data_[index] = value >> 8;
         data_[index + 1] = value & 0xff;
     }
 
-    void u32SetLittle(int index, uint32_t value)
+    void u32SetLittle(size_t index, uint32_t value)
     {
         data_[index + 3] = value >> 24;
         data_[index + 2] = value >> 16;
@@ -310,7 +310,7 @@ public:
         data_[index + 0] = value;
     }
 
-    void u32SetBig(int index, uint32_t value)
+    void u32SetBig(size_t index, uint32_t value)
     {
         data_[index + 0] = value >> 24;
         data_[index + 1] = value >> 16;
@@ -318,7 +318,7 @@ public:
         data_[index + 3] = value;
     }
 
-    void s32SetLittle(int index, int32_t value)
+    void s32SetLittle(size_t index, int32_t value)
     {
         data_[index + 3] = value >> 24;
         data_[index + 2] = value >> 16;
@@ -326,7 +326,7 @@ public:
         data_[index + 0] = value & 0xff;
     }
 
-    void s32SetBig(int index, int32_t value)
+    void s32SetBig(size_t index, int32_t value)
     {
         data_[index + 0] = value >> 24;
         data_[index + 1] = value >> 16;
@@ -335,79 +335,79 @@ public:
     }
 
 
-    uint16_t u16RefBig(int index)
+    uint16_t u16RefBig(size_t index)
     {
         return (data_[index] << 8) | data_[index + 1];
     }
 
-    int16_t s16RefLittle(int index)
+    int16_t s16RefLittle(size_t index)
     {
         return ((data_[index + 1] << 8) | data_[index]);
     }
 
-    int16_t s16RefBig(int index)
+    int16_t s16RefBig(size_t index)
     {
         return ((data_[index] << 8) | data_[index + 1]);
     }
 
-    void s16SetLittle(int index, int16_t value)
+    void s16SetLittle(size_t index, int16_t value)
     {
         data_[index] = value & 0xff;
         data_[index + 1] = value >> 8;
     }
 
-    void s16SetBig(int index, int16_t value)
+    void s16SetBig(size_t index, int16_t value)
     {
         data_[index] = value >> 8;
         data_[index + 1] = value & 0xff;
     }
 
-    int16_t s16RefNative(int index)
+    int16_t s16RefNative(size_t index)
     {
         return *(reinterpret_cast<int16_t*>((&data_[index])));
     }
 
-    void s16SetNative(int index, int16_t value)
+    void s16SetNative(size_t index, int16_t value)
     {
         *(reinterpret_cast<int16_t*>(&data_[index])) = value;
     }
 
-    void s32SetNative(int index, int32_t value)
+    void s32SetNative(size_t index, int32_t value)
     {
         *(reinterpret_cast<int32_t*>(&data_[index])) = value;
     }
 
-    void s64SetNative(int index, int64_t value)
+    void s64SetNative(size_t index, int64_t value)
     {
         *(reinterpret_cast<int64_t*>(&data_[index])) = value;
     }
 
-    void u16SetNative(int index, uint16_t value)
+    void u16SetNative(size_t index, uint16_t value)
     {
         *(reinterpret_cast<uint16_t*>(&data_[index])) = value;
     }
 
-    void u32SetNative(int index, uint32_t value)
+    void u32SetNative(size_t index, uint32_t value)
     {
         *(reinterpret_cast<uint32_t*>(&data_[index])) = value;
     }
 
-    void u64SetNative(int index, uint64_t value)
+    void u64SetNative(size_t index, uint64_t value)
     {
         *(reinterpret_cast<uint64_t*>(&data_[index])) = value;
     }
 
-    float ieeeSingleNativeRef(int index)
+    float ieeeSingleNativeRef(size_t index)
     {
         return *(reinterpret_cast<float*>(&data_[index]));
     }
 
-    float ieeeSingleRefLittle(int index)
+    float ieeeSingleRefLittle(size_t index)
     {
 #if WORDS_BIGENDIAN
-        const int size = sizeof(float);
+        const size_t size = sizeof(float);
         uint8_t data[size];
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data[i] = data_[index + size - i - 1];
         }
         return *(reinterpret_cast<float*>(data));
@@ -416,46 +416,46 @@ public:
 #endif
     }
 
-    float ieeeSingleRefBig(int index)
+    float ieeeSingleRefBig(size_t index)
     {
 #if WORDS_BIGENDIAN
         return *(reinterpret_cast<float*>(&data_[index]));
 #else
-        const int size = sizeof(float);
+        const size_t size = sizeof(float);
         uint8_t data[size];
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data[i] = data_[index + size - i - 1];
         }
         return *(reinterpret_cast<float*>(data));
 #endif
     }
 
-    void ieeeSingleNativeSet(int index, float value)
+    void ieeeSingleNativeSet(size_t index, float value)
     {
         *(reinterpret_cast<float*>((&data_[index]))) = value;
     }
 
-    void ieeeSingleSetBig(int index, float value)
+    void ieeeSingleSetBig(size_t index, float value)
     {
 #if WORDS_BIGENDIAN
         *(reinterpret_cast<float*>((&data_[index]))) = value;
 #else
-        const int size = sizeof(float);
+        const size_t size = sizeof(float);
         uint8_t data[size];
         *(reinterpret_cast<float*>(data)) = value;
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data_[index + size - i - 1] = data[i];
         }
 #endif
     }
 
-    void ieeeSingleSetLittle(int index, float value)
+    void ieeeSingleSetLittle(size_t index, float value)
     {
 #if WORDS_BIGENDIAN
-        const int size = sizeof(float);
+        const size_t size = sizeof(float);
         uint8_t data[size];
         *(reinterpret_cast<float*>(data)) = value;
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data_[index + size - i - 1] = data[i];
         }
 #else
@@ -463,31 +463,31 @@ public:
 #endif
     }
 
-    double ieeeDoubleNativeRef(int index)
+    double ieeeDoubleNativeRef(size_t index)
     {
         return *(reinterpret_cast<double*>(&data_[index]));
     }
 
-    double ieeeDoubleRefBig(int index)
+    double ieeeDoubleRefBig(size_t index)
     {
 #if WORDS_BIGENDIAN
         return *(reinterpret_cast<double*>(&data_[index]));
 #else
-        const int size = sizeof(double);
+        const size_t size = sizeof(double);
         uint8_t data[size];
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data[i] = data_[index + size - i - 1];
         }
         return *(reinterpret_cast<double*>(data));
 #endif
     }
 
-    double ieeeDoubleRefLittle(int index)
+    double ieeeDoubleRefLittle(size_t index)
     {
 #if WORDS_BIGENDIAN
-        const int size = sizeof(double);
+        const size_t size = sizeof(double);
         uint8_t data[size];
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data[i] = data_[index + size - i - 1];
         }
         return *(reinterpret_cast<double*>(data));
@@ -496,32 +496,32 @@ public:
 #endif
     }
 
-    void ieeeDoubleNativeSet(int index, double value)
+    void ieeeDoubleNativeSet(size_t index, double value)
     {
         *(reinterpret_cast<double*>((&data_[index]))) = value;
     }
 
-    void ieeeDoubleSetBig(int index, double value)
+    void ieeeDoubleSetBig(size_t index, double value)
     {
 #if WORDS_BIGENDIAN
         *(reinterpret_cast<double*>((&data_[index]))) = value;
 #else
-        const int size = sizeof(double);
+        const size_t size = sizeof(double);
         uint8_t data[size];
         *(reinterpret_cast<double*>(data)) = value;
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data_[index + size - i - 1] = data[i];
         }
 #endif
     }
 
-    void ieeeDoubleSetLittle(int index, double value)
+    void ieeeDoubleSetLittle(size_t index, double value)
     {
 #if WORDS_BIGENDIAN
-        const int size = sizeof(double);
+        const size_t size = sizeof(double);
         uint8_t data[size];
         *(reinterpret_cast<double*>(data)) = value;
-        for (int i = 0; i < size; i++) {
+        for (size_t i = 0; i < size; i++) {
             data_[index + size - i - 1] = data[i];
         }
 #else
@@ -535,23 +535,28 @@ public:
         memset(data_, value, length_);
     }
 
-    void s8set(int index, Object obj)
+    void s8set(size_t index, Object obj)
     {
         MOSH_ASSERT(obj.isFixnum());
         data_[index] = (uint8_t)obj.toFixnum();
     }
 
-    uint32_t length() const
+    size_t length() const
     {
         return length_;
     }
 
-    uint8_t* data() const
+    const uint8_t* data() const
     {
         return data_;
     }
 
-    bool equal(ByteVector* bytevector) const
+    uint8_t* data()
+    {
+        return data_;
+    }
+
+    bool equal(const ByteVector* bytevector) const
     {
         if (bytevector->length() == length()) {
             return memcmp(bytevector->data(), data(), length()) == 0;
@@ -560,27 +565,27 @@ public:
         }
     }
 
-    bool isValidIndex(int index) const
+    bool isValidIndex(size_t index) const
     {
-        return ((uint32_t)index >= 0 && (uint32_t)index < length_);
+        return index < length_;
     }
 
     // 16Ref will access k and k + 1
-    bool isValid16RefIndex(int index) const
+    bool isValid16RefIndex(size_t index) const
     {
-        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 1);
+        return (length_ > 1) && (index < length_ - 1);
     }
 
     // 32Ref will access between k and k + 3
-    bool isValid32RefIndex(int index) const
+    bool isValid32RefIndex(size_t index) const
     {
-        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 3);
+        return (length_ > 3) && (index < length_ - 3);
     }
 
     // 64Ref will access between k and k + 7
-    bool isValid64RefIndex(int index) const
+    bool isValid64RefIndex(size_t index) const
     {
-        return ((uint32_t)index >= 0 && (uint32_t)index < length_ - 7);
+        return (length_ > 7) && (index < length_ - 7);
     }
 
     ByteVector* copy()
@@ -607,7 +612,7 @@ public:
     }
 
     // todo
-    static bool inS32Range(long long value)
+    static bool inS32Range(int64_t value)
     {
         // mm..
         return (-2147483648LL <= value) && (value <= 2147483647LL);
@@ -625,7 +630,7 @@ public:
 
 private:
     uint8_t* data_;
-    const uint32_t length_;
+    const size_t length_;
 };
 
 inline Object Object::makeByteVector(const gc_vector<uint8_t>& v)
