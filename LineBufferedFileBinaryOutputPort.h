@@ -63,7 +63,8 @@ protected:
             bufIdx_++;
             writeSize++;
             if (buffer_[bufIdx_-1] == '\n') {
-                flush();
+                  // compare correct type for Win(not char but wchar_t)
+//                flush();
             }
         }
         return writeSize;

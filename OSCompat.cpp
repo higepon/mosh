@@ -46,6 +46,7 @@ extern int main(int argc, char *argv[]);
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Pair.h"
@@ -92,12 +93,12 @@ std::wstring utf8ToUtf16(const uint8_t* s, int len)
     std::wstring out;
     size_t outSize = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, 0, 0);
     if (outSize > 0) {
-		out.resize(outSize);
-		MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, &out[0], outSize);
-	} else {
-//		printf("ERR %08x\n", GetLastError());
-	}
-	return out;
+        out.resize(outSize);
+        MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, &out[0], outSize);
+    } else {
+//      printf("ERR %08x\n", GetLastError());
+    }
+    return out;
 }
 #endif // _WIN32
 
@@ -124,7 +125,7 @@ bool File::open(const ucs4string& file, int flags)
     if (flags & Write) {
         access |= GENERIC_WRITE;
     }
-	/*
+    /*
     if (flags & ShareRead) {
         share |= FILE_SHARE_READ;
     }
@@ -134,9 +135,9 @@ bool File::open(const ucs4string& file, int flags)
     if (flags & OpenExisting) {
         disposition = OPEN_EXISTING;
     }*/
-	if (flags & Truncate) {
-		disposition = TRUNCATE_EXISTING;
-	}
+    if (flags & Truncate) {
+        disposition = TRUNCATE_EXISTING;
+    }
     if (flags & Create) {
         disposition = CREATE_ALWAYS;
     }
@@ -179,7 +180,7 @@ int File::dup(HANDLE target)
 {
     MOSH_ASSERT(isOpen());
     // TODO windows
-	return -1;
+    return -1;
 }
 #else
 int File::dup(int target)
@@ -273,10 +274,29 @@ int File::read(uint8_t* buf, size_t size)
     DWORD readSize;
     int isOK;
     if (desc_ == STANDARD_IN) {
-		isOK = ReadConsole(desc_, buf, size, &readSize, NULL);
-	} else {
-	    isOK = ReadFile(desc_, buf, size, &readSize, NULL);
-	}
+#if 1
+        assert(size == 1); // temporary restriction
+        static int prevC = -1;
+        if (prevC != -1) {
+            isOK = true;
+            readSize = 1;
+            *buf = prevC;
+            prevC = -1;
+        } else {
+            wchar_t wc;
+            isOK = ReadConsole(desc_, &wc, 1, &readSize, NULL);
+            if (isOK) {
+                readSize = 1;
+                *buf = (char)wc;
+                prevC = (char)(wc >> 8);
+            }
+        }
+#else
+        isOK = ReadConsole(desc_, buf, size, &readSize, NULL);
+#endif
+    } else {
+        isOK = ReadFile(desc_, buf, size, &readSize, NULL);
+    }
     if (isOK) {
         return readSize;
     } else {

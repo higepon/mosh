@@ -829,6 +829,7 @@ void VM::unregisterPort(Object obj)
 
 void VM::flushAllPorts(void)
 {
+#if 0
     Ports::iterator it = activePorts_.begin();
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
@@ -843,6 +844,7 @@ void VM::flushAllPorts(void)
         }
 
         activePorts_.erase(it);
-        it++;
+        it++; // this iterator is not valid
     }
+#endif
 }
