@@ -77,34 +77,7 @@ const int File::STANDARD_OUT = 1;
 const int File::STANDARD_ERR = 2;
 #endif
 
-#ifdef _WIN32
-static ucs4string getLastErrorMessageInternal(DWORD e)
-{
-    const int msgSize = 128;
-    wchar_t msg[msgSize];
-    int size = FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        0,
-        e,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        msg,
-        msgSize,
-        NULL
-    );
-    // remove last "\r\n"
-    if (size > 2 && msg[size - 2] == '\r') {
-        msg[size - 2] = 0;
-        size -= 2;
-    }
-    return utf16ToUtf32(msg);
-}
-#else
-static ucs4string getLastErrorMessageInternal(int e)
-{
-    const char* message = strerror(e);
-    return ucs4string::from_c_str(message, strlen(message));
-}
-#endif
+
 
 #ifdef _WIN32
 wchar_t* utf32ToUtf16(const ucs4string& s)
@@ -142,6 +115,35 @@ ucs4string utf16ToUtf32(const std::wstring& s)
     return out;
 }
 #endif // _WIN32
+
+#ifdef _WIN32
+static ucs4string getLastErrorMessageInternal(DWORD e)
+{
+    const int msgSize = 128;
+    wchar_t msg[msgSize];
+    int size = FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0,
+        e,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        msg,
+        msgSize,
+        NULL
+    );
+    // remove last "\r\n"
+    if (size > 2 && msg[size - 2] == '\r') {
+        msg[size - 2] = 0;
+        size -= 2;
+    }
+    return utf16ToUtf32(msg);
+}
+#else
+static ucs4string getLastErrorMessageInternal(int e)
+{
+    const char* message = strerror(e);
+    return ucs4string::from_c_str(message, strlen(message));
+}
+#endif
 
 #ifdef _WIN32
 File::File(HANDLE desc /* = INVALID_HANDLE_VALUE */)
