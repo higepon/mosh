@@ -61,6 +61,10 @@ public:
     Object position() const;
     bool setPosition(int64_t position);
     File* getFile();
+    ucs4string getLastErrorMessage()
+    {
+        return file_->getLastErrorMessage();
+    }
 
 protected:
     File* file_;

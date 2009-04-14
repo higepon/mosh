@@ -57,6 +57,11 @@ public:
     Object position() const;
     bool setPosition(int64_t position);
     File* getFile() { return NULL; }
+    ucs4string getLastErrorMessage()
+    {
+        return UC("");
+    }
+
 private:
     bool hasAheadU8() const;
 

@@ -76,6 +76,11 @@ public:
             return true;
         }
     }
+    ucs4string getLastErrorMessage()
+    {
+        return UC("");
+    }
+
 
 private:
     const uint8_t* const buf_;

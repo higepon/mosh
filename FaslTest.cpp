@@ -40,6 +40,7 @@
 #include "SString.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 #include "FileBinaryInputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "Bignum.h"

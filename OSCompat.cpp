@@ -78,6 +78,35 @@ const int File::STANDARD_ERR = 2;
 #endif
 
 #ifdef _WIN32
+static ucs4string getLastErrorMessageInternal(DWORD e)
+{
+    const int msgSize = 128;
+    wchar_t msg[msgSize];
+    int size = FormatMessageW(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        0,
+        e,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        msg,
+        msgSize,
+        NULL
+    );
+    // remove last "\r\n"
+    if (size > 2 && msg[size - 2] == '\r') {
+        msg[size - 2] = 0;
+        size -= 2;
+    }
+    return utf16ToUtf32(msg);
+}
+#else
+static ucs4string getLastErrorMessageInternal(int e)
+{
+    const char* message = strerror(e);
+    return ucs4string::from_c_str(message, strlen(message));
+}
+#endif
+
+#ifdef _WIN32
 wchar_t* utf32ToUtf16(const ucs4string& s)
 {
     ByteArrayBinaryOutputPort out;
@@ -234,28 +263,7 @@ bool File::close()
 
 ucs4string File::getLastErrorMessage() const
 {
-#ifdef _WIN32
-    const int msgSize = 128;
-    wchar_t msg[msgSize];
-    int size = FormatMessageW(
-        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-        0,
-        lastError_,
-        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-        msg,
-        msgSize,
-        NULL
-    );
-    // remove last "\r\n"
-    if (size > 2 && msg[size - 2] == '\r') {
-        msg[size - 2] = 0;
-        size -= 2;
-    }
-    return utf16ToUtf32(msg);
-#else
-    const char* message = strerror(lastError_);
-    return ucs4string::from_c_str(message, strlen(message));
-#endif
+    return getLastErrorMessageInternal(lastError_);
 }
 
 int64_t File::size()
@@ -313,7 +321,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
             errno = 0;
         } else {
             if (result < 0) {
-                throwIOError2(IOError::WRITE, stringError(errno));
+                throwIOError2(IOError::WRITE, getLastErrorMessage());
                 return result;
             } else {
                 return result;
@@ -370,7 +378,7 @@ int64_t File::read(uint8_t* buf, int64_t _size)
             errno = 0;
         } else {
             if (result < 0) {
-                throwIOError2(IOError::READ, stringError(errno));
+                throwIOError2(IOError::READ, getLastErrorMessage());
                 return result;
             } else {
                 return result;
@@ -553,13 +561,6 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 #endif
 }
 
-ucs4string scheme::stringError(int num)
-{
-    const char* text = strerror(num);
-    return ucs4string::from_c_str(text, strlen(text));
-    // use _wcserror_s on Windows ?
-}
-
 ucs4char* scheme::getEnv(const ucs4string& key)
 {
     const char* value = getenv((char*)utf32toUtf8(key)->data());
@@ -624,4 +625,14 @@ Transcoder* scheme::nativeConsoleTranscoder()
 Transcoder* scheme::nativeTranscoder()
 {
     return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(IGNORE_ERROR));
+}
+
+
+ucs4string scheme::getLastErrorMessage()
+{
+#ifdef _WIN32
+    return getLastErrorMessageInternal(GetLastError());
+#else
+    return getLastErrorMessageInternal(errno);
+#endif
 }

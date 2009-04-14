@@ -63,6 +63,7 @@
 #include "Fasl.h"
 #include "Arithmetic.h"
 #include "ByteVector.h"
+#include "OSCompat.h"
 #include "CustomBinaryInputPort.h"
 #include "CustomBinaryOutputPort.h"
 #include "CustomTextualInputPort.h"
@@ -83,7 +84,6 @@
 #include "ListProcedures.h"
 #include "CustomBinaryInputOutputPort.h"
 #include "ByteArrayBinaryOutputPort.h"
-#include "OSCompat.h"
 
 using namespace scheme;
 
@@ -285,12 +285,12 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -884,12 +884,12 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1581,12 +1581,12 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         switch(errno) {
         case EACCES:
             if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+                return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             }
         default:
-            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1607,9 +1607,9 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     } else {
         switch(errno) {
         case EACCES:
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
         default:
-            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }
@@ -1674,9 +1674,9 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
     } else {
         switch(errno) {
         case EACCES:
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, stringError(errno), L1(argv[0]));
+            return callIoFileProtectionAfter(theVM, argv[0], procedureName, in->getLastErrorMessage(), L1(argv[0]));
         default:
-            callErrorAfter(theVM, procedureName, stringError(errno), L1(argv[0]));
+            callErrorAfter(theVM, procedureName, in->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }

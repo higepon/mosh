@@ -69,7 +69,7 @@ Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     char buf[PATH_MAX];
     if (getcwd(buf, PATH_MAX) == NULL) {
-        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(stringError(errno)));
+        callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(getLastErrorMessage()));
         return Object::Undef;
     } else {
         return Object::makeString(buf);
@@ -82,7 +82,7 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsString(0, path);
     if (-1 == chdir(path->data().ascii_c_str())) {
-        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(stringError(errno), argv[0]));
+        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(getLastErrorMessage(), argv[0]));
         return Object::Undef;
     } else {
         return Object::Undef;
@@ -100,7 +100,7 @@ Object scheme::internalForkEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     const pid_t pid = fork();
     if (-1 == pid) {
-        callAssertionViolationAfter(theVM, procedureName, "can't fork", L1(stringError(errno)));
+        callAssertionViolationAfter(theVM, procedureName, "can't fork", L1(getLastErrorMessage()));
         return Object::Undef;
     }
 
@@ -132,7 +132,7 @@ Object scheme::internalWaitpidEx(VM* theVM, int argc, const Object* argv)
     int status;
     pid_t child = waitpid(target, &status, 0);
     if (-1 == child) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], stringError(errno)));
+        callAssertionViolationAfter(theVM, procedureName, "failed", L2(argv[0], getLastErrorMessage()));
         return Object::Undef;
     }
 
@@ -181,7 +181,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         }
 
         if (-1 ==  file->dup(File::STANDARD_IN)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
     }
@@ -194,7 +194,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         }
 
         if (-1 ==  file->dup(File::STANDARD_OUT)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
     }
@@ -207,7 +207,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
         }
 
         if (-1 ==  file->dup(File::STANDARD_ERR)) {
-            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(stringError(errno)));
+            callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
     }
@@ -224,7 +224,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
     const int ret = execvp(command->data().ascii_c_str(), p);
 
     if (-1 == ret) {
-        callAssertionViolationImmidiaImmediately(theVM, procedureName, "failed", L2(argv[0], stringError(errno)));
+        callAssertionViolationImmidiaImmediately(theVM, procedureName, "failed", L2(argv[0], getLastErrorMessage()));
         exit(-1);
         return Object::Undef;
     }

@@ -57,10 +57,6 @@ TEST_F(MoshTest, getEnvAlist) {
     ASSERT_TRUE(getEnvAlist().isList());
 }
 
-TEST_F(MoshTest, stringError) {
-    ASSERT_TRUE(stringError(1).size() > 0);
-}
-
 TEST_F(MoshTest, FileAccess) {
     EXPECT_TRUE(File::isExist(UC("lib")));
     EXPECT_TRUE(File::isWritable(UC("lib")));

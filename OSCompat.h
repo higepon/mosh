@@ -59,7 +59,7 @@ namespace scheme {
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
-    ucs4string stringError(int num);
+    ucs4string getLastErrorMessage();
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
     Transcoder* nativeConsoleTranscoder();
     Transcoder* nativeTranscoder();

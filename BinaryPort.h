@@ -1,5 +1,5 @@
 /*
- * BinaryPort.h - 
+ * BinaryPort.h -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -54,6 +54,8 @@ public:
     virtual int open() = 0;
     virtual int pseudoClose() = 0;
     virtual File* getFile() = 0;
+    virtual ucs4string getLastErrorMessage() = 0;
+
 };
 
 } // namespace scheme

@@ -59,6 +59,10 @@ public:
     bool setPosition(int64_t position);
     ByteVector* toByteVector();
     File* getFile();
+    ucs4string getLastErrorMessage()
+    {
+        return UC("");
+    }
 
 
 protected:

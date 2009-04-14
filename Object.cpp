@@ -52,6 +52,7 @@
 #include "Record.h"
 #include "RecordTypeDescriptor.h"
 #include "RecordConstructorDescriptor.h"
+#include "OSCompat.h"
 #include "CompoundCondition.h"
 #include "FileBinaryInputPort.h"
 #include "FileBinaryOutputPort.h"

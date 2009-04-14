@@ -69,6 +69,10 @@ public:
     int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
     void flush();
     File* getFile();
+    ucs4string getLastErrorMessage()
+    {
+        return file_->getLastErrorMessage();
+    }
 
 private:
 

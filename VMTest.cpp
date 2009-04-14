@@ -39,6 +39,7 @@
 #include "SString.h"
 #include "UTF8Codec.h"
 #include "Transcoder.h"
+#include "OSCompat.h"
 #include "FileBinaryInputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "Ratnum.h"
@@ -53,7 +54,6 @@
 #include "VM-inl.h"
 #include "StandardInputPort.h"
 #include "StandardOutputPort.h"
-#include "OSCompat.h"
 
 using namespace scheme;
 

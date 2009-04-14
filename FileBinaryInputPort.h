@@ -63,6 +63,10 @@ public:
     Object position() const;
     bool setPosition(int64_t position);
     File* getFile() { return file_; }
+    ucs4string getLastErrorMessage()
+    {
+        return file_->getLastErrorMessage();
+    }
 
 private:
     bool hasAheadU8() const;

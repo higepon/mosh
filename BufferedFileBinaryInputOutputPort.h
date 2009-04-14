@@ -70,6 +70,10 @@ public:
     void flush();
     void internalFlush();
     File* getFile();
+    ucs4string getLastErrorMessage()
+    {
+        return file_->getLastErrorMessage();
+    }
 
 protected:
     enum {

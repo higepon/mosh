@@ -57,6 +57,10 @@ public:
     bool setPosition(int64_t position);
     ucs4string toString();
     File* getFile();
+    ucs4string getLastErrorMessage()
+    {
+        return UC("");
+    }
 
 private:
     VM* theVM_;
