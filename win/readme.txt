@@ -2,6 +2,10 @@
 requirements
 Microsoft Visual Stduio 2008 SP1
 
+Debug    ; for debug
+ReleaseT ; release(fast compile version)
+Release  ; release(full optimized version)
+
 getopt.(h|c) ; copied from PostgreSQL
 
 precompiled binary

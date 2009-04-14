@@ -103,7 +103,7 @@ bool BufferedFileBinaryInputOutputPort::hasSetPosition() const
 
 Object BufferedFileBinaryInputOutputPort::position() const
 {
-    return Bignum::makeInteger(position_);
+    return Bignum::makeIntegerFromS64(position_);
 }
 
 int BufferedFileBinaryInputOutputPort::close()
@@ -123,7 +123,7 @@ int BufferedFileBinaryInputOutputPort::pseudoClose()
     return MOSH_SUCCESS;
 }
 
-bool BufferedFileBinaryInputOutputPort::setPosition(int position)
+bool BufferedFileBinaryInputOutputPort::setPosition(int64_t position)
 {
     DEBUG_SHOW_POSITION();
     if (isBufferDirty()) {
@@ -135,7 +135,7 @@ bool BufferedFileBinaryInputOutputPort::setPosition(int position)
         invalidateBuffer();
     }
 
-    const int currentOffset = file_->seek(position);
+    const int64_t currentOffset = file_->seek(position);
     if (position == currentOffset) {
         // Don't change postion_ before flush() done.
         position_ =  position;
@@ -195,41 +195,41 @@ int BufferedFileBinaryInputOutputPort::lookaheadU8()
     }
 }
 
-int BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
-    const int readSize = readFromBuffer(buf, reqSize);
+    const int64_t readSize = readFromBuffer(buf, reqSize);
     forwardPosition(readSize);
     DEBUG_SHOW_POSITION();
     return readSize;
 }
 
-int BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
 
-    const int restSize = file_->size() - position_;
+    const int64_t restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
     }
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    const int readSize = readFromBuffer(dest, restSize);
+    const int64_t readSize = readFromBuffer(dest, restSize);
     forwardPosition(readSize);
     *buf = dest;
     return readSize;
 }
 
-int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     DEBUG_SHOW_POSITION();
-    const int bufferedSize = bufferSize_ > bufferIndex_;
+    const int64_t bufferedSize = bufferSize_ - bufferIndex_;
 
     // if we have buffered data, return them only.
-    const int tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
+    const int64_t tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
     uint8_t* dest = allocatePointerFreeU8Array(tryReadSize);
-    const int readSize = readFromBuffer(dest, tryReadSize);
+    const int64_t readSize = readFromBuffer(dest, tryReadSize);
     forwardPosition(readSize);
     *buf = dest;
     return readSize;
@@ -238,28 +238,28 @@ int BufferedFileBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccu
 // output interfaces
 int BufferedFileBinaryInputOutputPort::putU8(uint8_t v)
 {
-    return putU8(&v, 1);
+    return static_cast<int>(putU8(&v, 1));
 }
 
-int BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int size)
+int64_t BufferedFileBinaryInputOutputPort::putU8(uint8_t* v, int64_t size)
 {
     DEBUG_SHOW_POSITION();
-    const int writtenSize = writeToBuffer(v, size);
+    const int64_t writtenSize = writeToBuffer(v, size);
     forwardPosition(writtenSize);
     DEBUG_SHOW_POSITION();
     return writtenSize;
 }
 
-int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     DEBUG_SHOW_POSITION();
     uint8_t* buf = bv->data();
-    const int writtenSize = writeToBuffer(&buf[start], count);
+    const int64_t writtenSize = writeToBuffer(&buf[start], count);
     forwardPosition(writtenSize);
     DEBUG_SHOW_POSITION();
     return writtenSize;
@@ -267,8 +267,8 @@ int BufferedFileBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, 
 
 void BufferedFileBinaryInputOutputPort::flush()
 {
-    const int result = file_->seek(position_ - bufferIndex_);
-   MOSH_ASSERT(result >= 0);
+    const int64_t result = file_->seek(position_ - bufferIndex_);
+    MOSH_ASSERT(result >= 0);
     internalFlush();
 }
 
@@ -277,7 +277,7 @@ void BufferedFileBinaryInputOutputPort::internalFlush()
     DEBUG_SHOW_POSITION();
     uint8_t* buf = buffer_;
     while (bufferIndex_ > 0) {
-        const int writtenSize = file_->write(buf, bufferIndex_);
+        const int64_t writtenSize = file_->write(buf, bufferIndex_);
         buf += writtenSize;
         bufferIndex_ -= writtenSize;
         MOSH_ASSERT(bufferIndex_ >= 0);
@@ -304,9 +304,9 @@ void BufferedFileBinaryInputOutputPort::fillBuffer()
     if (isBufferDirty()) {
         flush();
     }
-    int readSize = 0;
+    int64_t readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
+        const int64_t result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
         MOSH_ASSERT(result >= 0); // error will raised by longjmp
         MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
@@ -320,33 +320,33 @@ void BufferedFileBinaryInputOutputPort::fillBuffer()
 }
 
 // N.B. readFromBuffer doesn't change the fd's position.
-int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int requestSize)
+int64_t BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int64_t requestSize)
 {
     MOSH_ASSERT(dest != NULL);
     MOSH_ASSERT(requestSize >= 0);
 
-    const int origPositon = file_->seek(0, File::Current);
+    const int64_t origPositon = file_->seek(0, File::Current);
     MOSH_ASSERT(origPositon >= 0);
     bool needUnwind = false;
 
-    for (int readSize = 0 ;;) {
+    for (int64_t readSize = 0 ;;) {
         MOSH_ASSERT(bufferIndex_ >= 0);
-        const int bufferedSize = bufferSize_ - bufferIndex_;
-        const int restSize = requestSize - readSize;
+        const int64_t bufferedSize = bufferSize_ - bufferIndex_;
+        const int64_t restSize = requestSize - readSize;
         // we have enough data in the buffer.
         if (bufferedSize >= restSize) {
-            memcpy(dest + readSize, buffer_ + bufferIndex_, restSize);
+            moshMemcpy(dest + readSize, buffer_ + bufferIndex_, restSize);
             bufferIndex_ += restSize;
             // unwind postion
             if (needUnwind) {
-                const int result = file_->seek(origPositon);
+                const int64_t result = file_->seek(origPositon);
                 MOSH_ASSERT(result >= 0);
             }
             // done
             return requestSize;
         } else {
             // read whole buffered data.
-            memcpy(dest + readSize, buffer_ + bufferIndex_, bufferedSize);
+            moshMemcpy(dest + readSize, buffer_ + bufferIndex_, bufferedSize);
             readSize += bufferedSize;
             // we need more
             fillBuffer();
@@ -354,7 +354,7 @@ int BufferedFileBinaryInputOutputPort::readFromBuffer(uint8_t* dest, int request
             // EOF
             if (0 == bufferSize_) {
                 if (needUnwind) {
-                    const int result = file_->seek(origPositon);
+                    const int64_t result = file_->seek(origPositon);
                     MOSH_ASSERT(result >= 0);
                 }
                 return readSize;
@@ -369,10 +369,10 @@ void BufferedFileBinaryInputOutputPort::invalidateBuffer()
     bufferIndex_ = 0;
 }
 
-void BufferedFileBinaryInputOutputPort::forwardPosition(int offset)
+void BufferedFileBinaryInputOutputPort::forwardPosition(int64_t offset)
 {
     position_ += offset;
-    const int currentPosition = file_->seek(position_);
+    const int64_t currentPosition = file_->seek(position_);
     MOSH_ASSERT(position_ == currentPosition);
 }
 

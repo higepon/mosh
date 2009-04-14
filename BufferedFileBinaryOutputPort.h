@@ -46,9 +46,9 @@ public:
     virtual ~BufferedFileBinaryOutputPort();
 
     int putU8(uint8_t v);
-    int putU8(uint8_t* v, int size);
-    int putByteVector(ByteVector* bv, int start = 0);
-    int putByteVector(ByteVector* bv, int start, int count);
+    int64_t putU8(uint8_t* v, int64_t size);
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
     int open();
     virtual int close();
     int pseudoClose();
@@ -59,7 +59,7 @@ public:
     virtual bool hasPosition() const;
     virtual bool hasSetPosition() const;
     virtual Object position() const;
-    virtual bool setPosition(int position);
+    virtual bool setPosition(int64_t position);
     File* getFile();
 
 protected:
@@ -68,15 +68,15 @@ protected:
     };
 
     void initializeBuffer();
-    virtual int writeToBuffer(uint8_t* data, int reqSize) = 0;
+    virtual int64_t writeToBuffer(uint8_t* data, int64_t reqSize) = 0;
 
     File* file_;
     ucs4string fileName_;
     bool isClosed_;
     bool isPseudoClosed_;
     uint8_t* buffer_;
-    int bufIdx_;
-    int position_;
+    int64_t bufIdx_;
+    int64_t position_;
 };
 
 } // namespace scheme

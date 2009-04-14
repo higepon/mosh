@@ -88,7 +88,7 @@ Object TextualOutputPort::position() const
     return Object::Undef;
 }
 
-bool TextualOutputPort::setPosition(int position)
+bool TextualOutputPort::setPosition(int64_t position)
 {
     return false;
 }

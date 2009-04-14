@@ -66,7 +66,7 @@ public:
     virtual bool hasPosition() const;
     virtual bool hasSetPosition() const;
     virtual Object position() const;
-    virtual bool setPosition(int position);
+    virtual bool setPosition(int64_t position);
 
 private:
     Object error_;

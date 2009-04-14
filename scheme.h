@@ -172,6 +172,24 @@ struct ltstr EXTEND_GC
   }
 };
 
+/*
+    @return always true if sizeof(size_t) == 8
+    @return true or false if sizeof(size_t) == 4
+*/
+inline bool isInSize_t(int64_t size)
+{
+    return static_cast<size_t>(size) == size;
+}
+
+/*
+    memcpy after checking size in size_t
+*/
+inline void moshMemcpy(void *dest, const void *src, int64_t size)
+{
+	MOSH_ASSERT(isInSize_t(size));
+	memcpy(dest, src, static_cast<size_t>(size));
+}
+
 #ifdef USE_BOEHM_GC
 class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocator<std::pair<const ucs4char* const, Object> > >, public gc { };
 #else
@@ -179,10 +197,11 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
 #endif
 };
 
-inline uint8_t* allocatePointerFreeU8Array(int size)
+inline uint8_t* allocatePointerFreeU8Array(int64_t size)
 {
+	MOSH_ASSERT(isInSize_t(size));
 #ifdef USE_BOEHM_GC
-    return new(PointerFreeGC) uint8_t[size];
+    return new(PointerFreeGC) uint8_t[static_cast<size_t>(size)];
 #else
     return new uint8_t[BUF_SIZE];
 #endif

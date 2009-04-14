@@ -44,11 +44,11 @@ class BinaryOutputPort : virtual public BinaryPort,
                          virtual public OutputPort
 {
 public:
-    virtual ~BinaryOutputPort() {};
+    virtual ~BinaryOutputPort() {}
     virtual int putU8(uint8_t v) = 0;
-    virtual int putU8(uint8_t* v, int size) = 0;
-    virtual int putByteVector(ByteVector* bv, int start = 0) = 0;
-    virtual int putByteVector(ByteVector* bv, int start, int count) = 0;
+    virtual int64_t putU8(uint8_t* v, int64_t size) = 0;
+    virtual int64_t putByteVector(ByteVector* bv, int64_t start = 0) = 0;
+    virtual int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count) = 0;
     virtual void flush() = 0;
 };
 

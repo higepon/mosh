@@ -46,7 +46,6 @@ extern int main(int argc, char *argv[]);
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h>
-#include <assert.h>
 #include "scheme.h"
 #include "Object.h"
 #include "Pair.h"
@@ -104,19 +103,18 @@ File::File(int desc /* = -1 */)
 bool File::open(const ucs4string& file, int flags)
 {
 #ifdef _WIN32
-    DWORD access = 0, share = 0, disposition = 0;
 
     if (isOpen()) {
         return false;
     }
-#if 1
-    share = FILE_SHARE_READ | FILE_SHARE_WRITE;
+    DWORD access = 0, disposition = 0;
+    DWORD share = FILE_SHARE_READ | FILE_SHARE_WRITE;
     switch (flags) {
     case Read | Write | Create:
         access = GENERIC_READ | GENERIC_WRITE;
         disposition = OPEN_ALWAYS;
         break;
-    case Read | Write | Create | Truncate: 
+    case Read | Write | Create | Truncate:
         access = GENERIC_READ | GENERIC_WRITE;
         disposition = CREATE_ALWAYS;
         break;
@@ -135,21 +133,6 @@ bool File::open(const ucs4string& file, int flags)
     default:
         MOSH_ASSERT(0);
     }
-#else
-    if (flags & Read) {
-        access |= GENERIC_READ;
-    }
-    if (flags & Write) {
-        access |= GENERIC_WRITE;
-    }
-    if (flags & Truncate) {
-        disposition = TRUNCATE_EXISTING;
-    }
-    if (flags & Create) {
-        disposition = CREATE_ALWAYS;
-    }
-    if (disposition == 0) disposition = OPEN_EXISTING; // is this correct ?
-#endif
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
     return isOpen();
 #else
@@ -239,8 +222,10 @@ int64_t File::size() const
 }
 
 // N.B. This funcion can raise I/O error, caller should handle it.
-int File::write(uint8_t* buf, size_t size)
+int64_t File::write(uint8_t* buf, int64_t _size)
 {
+    MOSH_ASSERT(isInSize_t(_size)); // loop is better if !isInSize_t(_size) on 32-bit
+    const size_t size = static_cast<size_t>(_size);
 #ifdef _WIN32
     MOSH_ASSERT(isOpen());
     DWORD writeSize;
@@ -277,14 +262,16 @@ int File::write(uint8_t* buf, size_t size)
 #endif
 }
 
-int File::read(uint8_t* buf, size_t size)
+int64_t File::read(uint8_t* buf, int64_t _size)
 {
+    MOSH_ASSERT(isInSize_t(_size)); // loop is better if !isInSize_t(_size) on 32-bit
+    const size_t size = static_cast<size_t>(_size);
 #ifdef _WIN32
     DWORD readSize;
     int isOK;
     if (desc_ == STANDARD_IN) {
 #if 1
-        assert(size == 1); // temporary restriction
+        MOSH_ASSERT(size == 1); // temporary restriction
         if (prevC_ != -1) {
             isOK = true;
             readSize = 1;

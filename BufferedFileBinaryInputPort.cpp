@@ -116,36 +116,36 @@ int BufferedFileBinaryInputPort::lookaheadU8()
     }
 }
 
-int BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    const int ret = readFromBuffer(buf, reqSize);
+    const int64_t ret = readFromBuffer(buf, reqSize);
     position_ += ret;
     return ret;
 }
 
-int BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    const int restSize = file_->size() - position_;
+    const int64_t restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
     }
 
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    const int ret = readFromBuffer(dest, restSize);
+    const int64_t ret = readFromBuffer(dest, restSize);
     position_ += ret;
     *buf = dest;
     return ret;
 }
 
-int BufferedFileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t BufferedFileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
-    const int bufferedSize = bufLen_ > bufIdx_;
+    const int64_t bufferedSize = bufLen_ - bufIdx_;
 
     // if we have buffered data, return them only.
-    const int tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
+    const int64_t tryReadSize = (bufferedSize > 0) ? bufferedSize : BUF_SIZE;
     uint8_t* dest = allocatePointerFreeU8Array(tryReadSize);
-    const int ret = readFromBuffer(dest, tryReadSize);
+    const int64_t ret = readFromBuffer(dest, tryReadSize);
     position_ += ret;
     *buf = dest;
     return ret;
@@ -173,9 +173,9 @@ int BufferedFileBinaryInputPort::pseudoClose()
 
 void BufferedFileBinaryInputPort::fillBuffer()
 {
-    int readSize = 0;
+    int64_t readSize = 0;
     while (readSize < BUF_SIZE) {
-        const int result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
+        const int64_t result = file_->read(buffer_ + readSize, BUF_SIZE - readSize);
         MOSH_ASSERT(result >= 0); // error will be raised by longjmp
         if (0 == result) { // EOF
             break;
@@ -187,21 +187,21 @@ void BufferedFileBinaryInputPort::fillBuffer()
     bufIdx_ = 0;
 }
 
-int BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int reqSize)
+int64_t BufferedFileBinaryInputPort::readFromBuffer(uint8_t* dest, int64_t reqSize)
 {
-    int readSize = 0;
+    int64_t readSize = 0;
     while (readSize < reqSize) {
-        const int bufDiff = bufLen_ - bufIdx_;
+        const int64_t bufDiff = bufLen_ - bufIdx_;
         MOSH_ASSERT(bufLen_ >= bufIdx_);
-        const int sizeDiff = reqSize - readSize;
+        const int64_t sizeDiff = reqSize - readSize;
         MOSH_ASSERT(readSize >= readSize);
         // we found datum in buffer
         if (bufDiff >= sizeDiff) {
-            memcpy(dest + readSize, buffer_ + bufIdx_, sizeDiff);
+            moshMemcpy(dest + readSize, buffer_ + bufIdx_, sizeDiff);
             bufIdx_ += sizeDiff;
             readSize += sizeDiff;
         } else {
-            memcpy(dest + readSize, buffer_ + bufIdx_, bufDiff);
+            moshMemcpy(dest + readSize, buffer_ + bufIdx_, bufDiff);
             readSize += bufDiff;
             fillBuffer();
             if (bufLen_ == 0) { // EOF
@@ -231,12 +231,12 @@ bool BufferedFileBinaryInputPort::hasSetPosition() const
 
 Object BufferedFileBinaryInputPort::position() const
 {
-    return Bignum::makeInteger(position_);
+    return Bignum::makeIntegerFromS64(position_);
 }
 
-bool BufferedFileBinaryInputPort::setPosition(int position)
+bool BufferedFileBinaryInputPort::setPosition(int64_t position)
 {
-    const int ret = file_->seek(position);
+    const int64_t ret = file_->seek(position);
     if (position == ret) {
         position_ =  position;
 

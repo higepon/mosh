@@ -44,9 +44,9 @@ public:
     virtual ~ByteArrayBinaryOutputPort();
 
     int putU8(uint8_t v);
-    int putU8(uint8_t* v, int size);
-    int putByteVector(ByteVector* bv, int start = 0);
-    int putByteVector(ByteVector* bv, int start, int count);
+    int64_t putU8(uint8_t* v, int64_t size);
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
     int open();
     int close();
     int pseudoClose();
@@ -56,7 +56,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position);
+    bool setPosition(int64_t position);
     ByteVector* toByteVector();
     File* getFile();
 

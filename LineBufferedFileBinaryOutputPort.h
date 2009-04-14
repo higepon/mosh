@@ -51,11 +51,11 @@ public:
     }
 
 protected:
-    int writeToBuffer(uint8_t* data, int reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
     {
-        int writeSize = 0;
+        int64_t writeSize = 0;
         while (writeSize < reqSize) {
-            const int bufDiff = BUF_SIZE - bufIdx_;
+            const int64_t bufDiff = BUF_SIZE - bufIdx_;
             if (bufDiff == 0) {
                 flush();
             }

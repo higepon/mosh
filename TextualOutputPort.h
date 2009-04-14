@@ -64,7 +64,7 @@ public:
     virtual Object errorMessage() const;
     virtual Object irritants() const;
     virtual Object position() const;
-    virtual bool setPosition(int position);
+    virtual bool setPosition(int64_t position);
     virtual bool hasPosition() const;
     virtual bool hasSetPosition() const;
 

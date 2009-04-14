@@ -1,5 +1,5 @@
 /*
- * StringTextualOutputPort.cpp - 
+ * StringTextualOutputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -49,7 +49,7 @@ StringTextualOutputPort::~StringTextualOutputPort()
 
 void StringTextualOutputPort::putChar(ucs4char c)
 {
-    if ((int)buffer_.size() > index_) {
+    if (buffer_.size() > index_) {
         buffer_[index_] = c;
     } else {
         buffer_ += c;
@@ -104,8 +104,10 @@ Object StringTextualOutputPort::position() const
     return Bignum::makeInteger(index_);
 }
 
-bool StringTextualOutputPort::setPosition(int position)
+bool StringTextualOutputPort::setPosition(int64_t _position)
 {
+    MOSH_ASSERT(isInSize_t(_position));
+    const size_t position = static_cast<size_t>(_position);
     if (position > index_) {
         buffer_.resize(position, ' ');
     }

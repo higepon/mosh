@@ -1,5 +1,5 @@
 /*
- * StringTextualInputPort.cpp - 
+ * StringTextualInputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -110,12 +110,13 @@ Object StringTextualInputPort::position() const
     return Bignum::makeInteger(index_);
 }
 
-bool StringTextualInputPort::setPosition(int position)
+bool StringTextualInputPort::setPosition(int64_t position)
 {
-    if (position >= (int)buffer_.size()) {
+    if (position >= buffer_.size()) {
         return false;
     } else {
-        index_ = position;
+        MOSH_ASSERT(isInSize_t(position));
+        index_ = static_cast<size_t>(position);
         return true;
     }
 }

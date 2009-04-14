@@ -39,7 +39,7 @@ namespace scheme {
 class ByteArrayBinaryInputPort : public BinaryInputPort
 {
 public:
-    ByteArrayBinaryInputPort(const uint8_t* buf, int size);
+    ByteArrayBinaryInputPort(const uint8_t* buf, int64_t size);
     ~ByteArrayBinaryInputPort();
 
     // profiler tells that this should be inlined
@@ -56,9 +56,9 @@ public:
     }
 
     ucs4string toString();
-    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
-    int readSome(uint8_t** buf, bool& isErrorOccured);
-    int readAll(uint8_t** buf, bool& isErrorOccured);
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
     int open();
     int close();
     bool isClosed() const;
@@ -67,7 +67,7 @@ public:
     bool hasSetPosition() const { return true; }
     Object position() const;
     File* getFile();
-    bool setPosition(int position)
+    bool setPosition(int64_t position)
     {
         if (position >= size_) {
             return false;
@@ -79,8 +79,8 @@ public:
 
 private:
     const uint8_t* const buf_;
-    const int size_;
-    int index_;
+    const int64_t size_;
+    int64_t index_;
     bool isClosed_;
     bool isPseudoClosed_;
 };

@@ -1,5 +1,5 @@
 /*
- * TranscodedTextualInputOutputPort.cpp - 
+ * TranscodedTextualInputOutputPort.cpp -
  *
  *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -85,7 +85,7 @@ Object TranscodedTextualInputOutputPort::position() const
     return Object::Undef;
 }
 
-bool TranscodedTextualInputOutputPort::setPosition(int position)
+bool TranscodedTextualInputOutputPort::setPosition(int64_t position)
 {
     return false;
 }

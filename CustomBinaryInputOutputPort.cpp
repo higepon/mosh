@@ -142,9 +142,9 @@ int CustomBinaryInputOutputPort::lookaheadU8()
 }
 
 
-int CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    int readSize;
+    int64_t readSize;
     for (readSize = 0; readSize < reqSize; readSize++) {
         const int v = getU8();
         if (EOF == v) {
@@ -155,7 +155,7 @@ int CustomBinaryInputOutputPort::readBytes(uint8_t* buf, int reqSize, bool& isEr
     return readSize;
 }
 
-int CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     const int v = getU8();
     if (EOF == v) {
@@ -168,7 +168,7 @@ int CustomBinaryInputOutputPort::readSome(uint8_t** buf, bool& isErrorOccured)
     }
 }
 
-int CustomBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputOutputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     gc_vector<uint8_t> accum;
     for (;;) {
@@ -213,12 +213,12 @@ Object CustomBinaryInputOutputPort::position() const
     }
 }
 
-bool CustomBinaryInputOutputPort::setPosition(int position)
+bool CustomBinaryInputOutputPort::setPosition(int64_t position)
 {
     MOSH_ASSERT(hasSetPosition());
     // we need to reset the aheadU8_
     aheadU8_ = EOF;
-    theVM_->callClosure1(setPositionProc_, Bignum::makeInteger(position));
+    theVM_->callClosure1(setPositionProc_, Bignum::makeIntegerFromS64(position));
     return true;
 }
 
@@ -233,8 +233,10 @@ int CustomBinaryInputOutputPort::putU8(uint8_t v)
     return result.toFixnum();
 }
 
-int CustomBinaryInputOutputPort::putU8(uint8_t* v, int size)
+int64_t CustomBinaryInputOutputPort::putU8(uint8_t* v, int64_t _size)
 {
+    MOSH_ASSERT(isInSize_t(size));
+    const size_t size = static_cast<size_t>(_size);
     const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
     if (Fixnum::canFit(size)) {
@@ -250,22 +252,22 @@ int CustomBinaryInputOutputPort::putU8(uint8_t* v, int size)
     }
 }
 
-int CustomBinaryInputOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t CustomBinaryInputOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int CustomBinaryInputOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t CustomBinaryInputOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     Object startObj;
     if (Fixnum::canFit(start)) {
-        startObj = Object::makeFixnum(start);
+        startObj = Object::makeFixnum(static_cast<fixedint>(start));
     } else {
         startObj = Object::makeBignum(start);
     }
     Object countObj;
     if (Fixnum::canFit(count)) {
-        countObj = Object::makeFixnum(count);
+        countObj = Object::makeFixnum(static_cast<fixedint>(count));
     } else {
         countObj = Object::makeBignum(count);
     }

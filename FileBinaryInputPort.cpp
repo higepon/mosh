@@ -102,7 +102,7 @@ int FileBinaryInputPort::getU8()
     }
 
     uint8_t c;
-    const int result = file_->read(&c, 1);
+    const int64_t result = file_->read(&c, 1);
     MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         position_++;
@@ -120,7 +120,7 @@ int FileBinaryInputPort::lookaheadU8()
     }
 
     uint8_t c;
-    const int result = file_->read(&c, 1);
+    const int64_t result = file_->read(&c, 1);
     MOSH_ASSERT(result >= 0); // error will be raised by longjmp
     if (0 == result) {
         return EOF;
@@ -130,9 +130,9 @@ int FileBinaryInputPort::lookaheadU8()
     }
 }
 
-int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    int ret;
+    int64_t ret;
     if (hasAheadU8()) {
         buf[0] = aheadU8_;
         aheadU8_ = EOF;
@@ -145,9 +145,9 @@ int FileBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccur
     return ret;
 }
 
-int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    const int restSize = file_->size() - position_;
+    const int64_t restSize = file_->size() - position_;
     MOSH_ASSERT(restSize >= 0);
     if (restSize == 0) {
         return 0;
@@ -159,11 +159,11 @@ int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
         aheadU8_ = EOF;
         *buf = dest;
         position_++;
-        const int ret = file_->read(dest + 1, restSize - 1);
+        const int64_t ret = file_->read(dest + 1, restSize - 1);
         MOSH_ASSERT(ret >= 0); // should never happen
         return ret;
     } else {
-        const int ret = file_->read(dest, restSize);
+        const int64_t ret = file_->read(dest, restSize);
         MOSH_ASSERT(ret >= 0); // should never happen
         *buf = dest;
         position_ += ret;
@@ -171,7 +171,7 @@ int FileBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
     }
 }
 
-int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     uint8_t* dest = allocatePointerFreeU8Array(1);
     if (hasAheadU8()) {
@@ -181,7 +181,7 @@ int FileBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
         position_++;
         return 1;
     } else {
-        const int ret = file_->read(dest, 1);
+        const int64_t ret = file_->read(dest, 1);
         *buf = dest;
         position_ += ret;
         return ret;
@@ -221,12 +221,12 @@ bool FileBinaryInputPort::hasSetPosition() const
 
 Object FileBinaryInputPort::position() const
 {
-    return Bignum::makeInteger(position_);
+    return Bignum::makeIntegerFromS64(position_);
 }
 
-bool FileBinaryInputPort::setPosition(int position)
+bool FileBinaryInputPort::setPosition(int64_t position)
 {
-    const int ret = file_->seek(position);
+    const int64_t ret = file_->seek(position);
     if (ret >= 0 && position == ret) {
         position_ =  position;
         return true;

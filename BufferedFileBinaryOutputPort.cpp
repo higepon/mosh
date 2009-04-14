@@ -84,7 +84,7 @@ bool BufferedFileBinaryOutputPort::isClosed() const
 
 int BufferedFileBinaryOutputPort::putU8(uint8_t v)
 {
-    return putU8(&v, 1);
+    return static_cast<int>(putU8(&v, 1));
 }
 
 File* BufferedFileBinaryOutputPort::getFile()
@@ -92,22 +92,22 @@ File* BufferedFileBinaryOutputPort::getFile()
     return NULL;
 }
 
-int BufferedFileBinaryOutputPort::putU8(uint8_t* v, int size)
+int64_t BufferedFileBinaryOutputPort::putU8(uint8_t* v, int64_t size)
 {
-    const int result = writeToBuffer(v, size);
+    const int64_t result = writeToBuffer(v, size);
     position_ += result;
     return result;
 }
 
-int BufferedFileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t BufferedFileBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int BufferedFileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t BufferedFileBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     uint8_t* buf = bv->data();
-    const int result = writeToBuffer(&buf[start], count);
+    const int64_t result = writeToBuffer(&buf[start], count);
     position_ += result;
     return result;
 }
@@ -141,7 +141,7 @@ void BufferedFileBinaryOutputPort::flush()
 {
     uint8_t* buf = buffer_;
     while (bufIdx_ > 0) {
-        const int result = file_->write(buf, bufIdx_);
+        const int64_t result = file_->write(buf, bufIdx_);
         buf += result;
         bufIdx_ -= result;
     }
@@ -168,13 +168,13 @@ bool BufferedFileBinaryOutputPort::hasSetPosition() const
 
 Object BufferedFileBinaryOutputPort::position() const
 {
-    return Bignum::makeInteger(position_);
+    return Bignum::makeIntegerFromS64(position_);
 }
 
-bool BufferedFileBinaryOutputPort::setPosition(int position)
+bool BufferedFileBinaryOutputPort::setPosition(int64_t position)
 {
     flush();
-    const int ret = file_->seek(position);
+    const int64_t ret = file_->seek(position);
     if (position == ret) {
         position_ =  position;
         return true;

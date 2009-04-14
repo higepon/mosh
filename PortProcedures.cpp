@@ -1170,7 +1170,7 @@ Object scheme::getBytevectorNEx(VM* theVM, int argc, const Object* argv)
     const uint32_t u32Count = Arithmetic::toU32(count);
     uint8_t* buffer = allocatePointerFreeU8Array(u32Count);
     bool isErrorOccured = false;
-    const int ret = binaryInputPort->readBytes(buffer, u32Count, isErrorOccured);
+    const uint32_t ret = static_cast<uint32_t>(binaryInputPort->readBytes(buffer, u32Count, isErrorOccured));
     if (isErrorOccured) {
         callAssertionViolationAfter(theVM, procedureName, "read error");
         return Object::Undef;
@@ -1190,14 +1190,15 @@ Object scheme::getBytevectorAllEx(VM* theVM, int argc, const Object* argv)
     checkPortIsOpen(binaryInputPort, argv[0]);
     bool isErrorOccured = false;
     uint8_t* dest;
-    const int ret = binaryInputPort->readAll(&dest, isErrorOccured);
+    const int64_t ret = binaryInputPort->readAll(&dest, isErrorOccured);
     if (isErrorOccured) {
         callAssertionViolationAfter(theVM, procedureName, "read error");
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
     } else {
-        return Object::makeByteVector(new ByteVector(ret, dest));
+        MOSH_ASSERT(isInSize_t(ret));
+        return Object::makeByteVector(new ByteVector(static_cast<size_t>(ret), dest));
     }
 }
 
@@ -1210,14 +1211,15 @@ Object scheme::getBytevectorSomeEx(VM* theVM, int argc, const Object* argv)
     checkPortIsOpen(binaryInputPort, argv[0]);
     bool isErrorOccured = false;
     uint8_t* dest;
-    const int ret = binaryInputPort->readSome(&dest, isErrorOccured);
+    const int64_t ret = binaryInputPort->readSome(&dest, isErrorOccured);
     if (isErrorOccured) {
         callAssertionViolationAfter(theVM, procedureName, "read error");
         return Object::Undef;
     } else if (ret == 0) {
         return Object::Eof;
     } else {
-        return Object::makeByteVector(new ByteVector(ret, dest));
+        MOSH_ASSERT(isInSize_t(ret));
+        return Object::makeByteVector(new ByteVector(static_cast<size_t>(ret), dest));
     }
 }
 
@@ -1242,7 +1244,7 @@ Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    const uint32_t u32Start  = Arithmetic::toU32(start);
+    const uint32_t u32Start = Arithmetic::toU32(start);
     const uint32_t u32Count = Arithmetic::toU32(count);
 
     if (bv->length() < u32Count + u32Start) {
@@ -1251,7 +1253,7 @@ Object scheme::getBytevectorNDEx(VM* theVM, int argc, const Object* argv)
     }
 
     bool isErrorOccured = false;
-    const int ret = binaryInputPort->readBytes(bv->data() + u32Start, u32Count, isErrorOccured);
+    const uint32_t ret = static_cast<uint32_t>(binaryInputPort->readBytes(bv->data() + u32Start, u32Count, isErrorOccured));
     if (isErrorOccured) {
         callAssertionViolationAfter(theVM, procedureName, "read error");
         return Object::Undef;

@@ -64,7 +64,7 @@ Object TextualInputPort::position() const
     return Object::Undef;;
 }
 
-bool TextualInputPort::setPosition(int position)
+bool TextualInputPort::setPosition(int64_t position)
 {
     // caller should check hasPosition().
     MOSH_ASSERT(false);

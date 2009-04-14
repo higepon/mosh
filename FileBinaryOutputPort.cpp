@@ -1,5 +1,5 @@
 /*
- * FileBinaryOutputPort.cpp - 
+ * FileBinaryOutputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *   Copyright (c) 2009  Kokosabu(MIURA Yasuyuki)  <kokosabu@gmail.com>
@@ -84,20 +84,20 @@ int FileBinaryOutputPort::pseudoClose()
 
 int FileBinaryOutputPort::putU8(uint8_t v)
 {
-    return putU8(&v, 1);
+    return static_cast<int>(putU8(&v, 1));
 }
 
-int FileBinaryOutputPort::putU8(uint8_t* v, int size)
+int64_t FileBinaryOutputPort::putU8(uint8_t* v, int64_t size)
 {
     return file_->write(v, size);
 }
 
-int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t FileBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int FileBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t FileBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     uint8_t* buf = bv->data();
     return file_->write(&buf[start], count);
@@ -150,10 +150,10 @@ bool FileBinaryOutputPort::hasSetPosition() const
 
 Object FileBinaryOutputPort::position() const
 {
-    return Bignum::makeInteger(position_);
+    return Bignum::makeIntegerFromS64(position_);
 }
 
-bool FileBinaryOutputPort::setPosition(int position)
+bool FileBinaryOutputPort::setPosition(int64_t position)
 {
     const int64_t ret = file_->seek(position);
     if (position == ret) {

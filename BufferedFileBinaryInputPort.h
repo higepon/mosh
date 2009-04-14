@@ -48,9 +48,9 @@ public:
     ucs4string toString();
     int getU8();
     int lookaheadU8();
-    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
-    int readSome(uint8_t** buf, bool& isErrorOccured);
-    int readAll(uint8_t** buf, bool& isErrorOccured);
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
     int open();
     int close();
     int pseudoClose();
@@ -58,7 +58,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position);
+    bool setPosition(int64_t position);
     File* getFile() { return NULL; }
 
 private:
@@ -67,7 +67,7 @@ private:
     };
 
     void initializeBuffer();
-    int readFromBuffer(uint8_t* dest, int reqSize);
+    int64_t readFromBuffer(uint8_t* dest, int64_t reqSize);
     void fillBuffer();
     void invalidateBuffer();
 
@@ -76,10 +76,9 @@ private:
     bool isClosed_;
     bool isPseudoClosed_;
     uint8_t* buffer_;
-    int bufLen_;
-    int bufIdx_;
-    int position_;
-
+    int64_t bufLen_;
+    int64_t bufIdx_;
+    int64_t position_;
 };
 
 } // namespace scheme

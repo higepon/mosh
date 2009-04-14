@@ -79,8 +79,10 @@ int CustomBinaryOutputPort::putU8(uint8_t v)
     return result.toFixnum();
 }
 
-int CustomBinaryOutputPort::putU8(uint8_t* v, int size)
+int64_t CustomBinaryOutputPort::putU8(uint8_t* v, int64_t _size)
 {
+    MOSH_ASSERT(isInSize_t(_size));
+    const size_t size = static_cast<size_t>(_size);
     const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
     if (Fixnum::canFit(size)) {
@@ -96,23 +98,25 @@ int CustomBinaryOutputPort::putU8(uint8_t* v, int size)
     }
 }
 
-int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t CustomBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int CustomBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t CustomBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     Object startObj;
     if (Fixnum::canFit(start)) {
-        startObj = Object::makeFixnum(start);
+        startObj = Object::makeFixnum(static_cast<fixedint>(start));
     } else {
+        MOSH_ASSERT(isInSize_t(start));
         startObj = Object::makeBignum(start);
     }
     Object countObj;
     if (Fixnum::canFit(count)) {
-        countObj = Object::makeFixnum(count);
+        countObj = Object::makeFixnum(static_cast<fixedint>(count));
     } else {
+        MOSH_ASSERT(isInSize_t(count));
         countObj = Object::makeBignum(count);
     }
     const Object result = theVM_->callClosure3(writeDProc_, Object::makeByteVector(bv), startObj, countObj);
@@ -170,10 +174,10 @@ Object CustomBinaryOutputPort::position() const
     return theVM_->callClosure0(getPositionProc_);
 }
 
-bool CustomBinaryOutputPort::setPosition(int position)
+bool CustomBinaryOutputPort::setPosition(int64_t position)
 {
     MOSH_ASSERT(hasSetPosition());
-    theVM_->callClosure1(setPositionDProc_, Bignum::makeInteger(position));
+    theVM_->callClosure1(setPositionDProc_, Bignum::makeIntegerFromS64(position));
     return true;
 }
 

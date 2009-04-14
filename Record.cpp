@@ -1,5 +1,5 @@
 /*
- * Record.cpp - 
+ * Record.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *

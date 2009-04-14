@@ -51,7 +51,7 @@
 using namespace scheme;
 
 #ifdef _WIN32
-	#undef ARCH_IA32
+    #undef ARCH_IA32
 #endif
 
 #ifdef ARCH_IA32

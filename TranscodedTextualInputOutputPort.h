@@ -43,7 +43,7 @@ class TextualInputOutputPort : public TextualOutputPort, public TextualInputPort
 public:
     virtual ~TextualInputOutputPort() {}
     Object position() const = 0;
-    bool setPosition(int position) = 0;
+    bool setPosition(int64_t position) = 0;
     bool hasPosition() const = 0;
     bool hasSetPosition() const = 0;
 
@@ -56,7 +56,7 @@ public:
     virtual ~TranscodedTextualInputOutputPort();
 
     Object position() const;
-    bool setPosition(int position);
+    bool setPosition(int64_t position);
     bool hasPosition() const;
     bool hasSetPosition() const;
     int close();

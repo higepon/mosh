@@ -133,10 +133,10 @@ Object CustomTextualOutputPort::position() const
     return position;
 }
 
-bool CustomTextualOutputPort::setPosition(int position)
+bool CustomTextualOutputPort::setPosition(int64_t position)
 {
     MOSH_ASSERT(hasSetPosition());
     // we need to reset the cache
-    theVM_->callClosure1(setPositionDProc_, Bignum::makeInteger(position));
+    theVM_->callClosure1(setPositionDProc_, Bignum::makeIntegerFromS64(position));
     return true;
 }

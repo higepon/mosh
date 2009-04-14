@@ -134,9 +134,9 @@ int CustomBinaryInputPort::lookaheadU8()
 }
 
 
-int CustomBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t CustomBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    int readSize;
+    size_t readSize;
     for (readSize = 0; readSize < reqSize; readSize++) {
         const int v = getU8();
         if (EOF == v) {
@@ -147,7 +147,7 @@ int CustomBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOcc
     return readSize;
 }
 
-int CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     const int v = getU8();
     if (EOF == v) {
@@ -160,7 +160,7 @@ int CustomBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
     }
 }
 
-int CustomBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t CustomBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
     gc_vector<uint8_t> accum;
     for (;;) {
@@ -205,11 +205,11 @@ Object CustomBinaryInputPort::position() const
     }
 }
 
-bool CustomBinaryInputPort::setPosition(int position)
+bool CustomBinaryInputPort::setPosition(int64_t position)
 {
     MOSH_ASSERT(hasSetPosition());
     // we need to reset the aheadU8_
     aheadU8_ = EOF;
-    theVM_->callClosure1(setPositionProc_, Bignum::makeInteger(position));
+    theVM_->callClosure1(setPositionProc_, Bignum::makeIntegerFromS64(position));
     return true;
 }

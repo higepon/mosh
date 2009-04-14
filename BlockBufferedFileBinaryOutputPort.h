@@ -51,20 +51,20 @@ public:
     }
 
 protected:
-    int writeToBuffer(uint8_t* data, int reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
     {
-        int writeSize = 0;
+        int64_t writeSize = 0;
         while (writeSize < reqSize) {
             MOSH_ASSERT(BUF_SIZE >= bufIdx_);
-            const int bufDiff = BUF_SIZE - bufIdx_;
+            const int64_t bufDiff = BUF_SIZE - bufIdx_;
             MOSH_ASSERT(reqSize > writeSize);
-            const int sizeDiff = reqSize - writeSize;
+            const int64_t sizeDiff = reqSize - writeSize;
             if (bufDiff >= sizeDiff) {
-                memcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
+                moshMemcpy(buffer_+bufIdx_, data+writeSize, sizeDiff);
                 bufIdx_ += sizeDiff;
                 writeSize += sizeDiff;
             } else {
-                memcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
+                moshMemcpy(buffer_+bufIdx_, data+writeSize, bufDiff);
                 bufIdx_ += bufDiff;
                 writeSize += bufDiff;
                 flush();

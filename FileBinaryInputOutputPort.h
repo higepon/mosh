@@ -48,7 +48,7 @@ public:
     Object position() const;
     int close();
     int pseudoClose();
-    bool setPosition(int position) ;
+    bool setPosition(int64_t position) ;
     ucs4string toString();
 
     // binary port interfaces
@@ -58,15 +58,15 @@ public:
     // input interfaces
     int getU8();
     int lookaheadU8();
-    int readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured);
-    int readSome(uint8_t** buf, bool& isErrorOccured);
-    int readAll(uint8_t** buf, bool& isErrorOccured);
+    int64_t readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured);
+    int64_t readSome(uint8_t** buf, bool& isErrorOccured);
+    int64_t readAll(uint8_t** buf, bool& isErrorOccured);
 
     // output interfaces
     int putU8(uint8_t v);
-    int putU8(uint8_t* v, int size);
-    int putByteVector(ByteVector* bv, int start = 0);
-    int putByteVector(ByteVector* bv, int start, int count);
+    int64_t putU8(uint8_t* v, int64_t size);
+    int64_t putByteVector(ByteVector* bv, int64_t start = 0);
+    int64_t putByteVector(ByteVector* bv, int64_t start, int64_t count);
     void flush();
     File* getFile();
 

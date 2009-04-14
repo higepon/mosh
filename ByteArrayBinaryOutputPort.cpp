@@ -66,22 +66,24 @@ int ByteArrayBinaryOutputPort::putU8(uint8_t v)
     return 1;
 }
 
-int ByteArrayBinaryOutputPort::putU8(uint8_t* v, int size)
+int64_t ByteArrayBinaryOutputPort::putU8(uint8_t* v, int64_t _size)
 {
+    MOSH_ASSERT(isInSize_t(_size));
+    const size_t size = static_cast<size_t>(_size);
     buffer_.resize(position_ + size, 0);
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         buffer_[position_ + i] = v[i];
     }
     position_ += size;
     return size;
 }
 
-int ByteArrayBinaryOutputPort::putByteVector(ByteVector* bv, int start /* = 0 */)
+int64_t ByteArrayBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start /* = 0 */)
 {
     return putByteVector(bv, start, bv->length() - start);
 }
 
-int ByteArrayBinaryOutputPort::putByteVector(ByteVector* bv, int start, int count)
+int64_t ByteArrayBinaryOutputPort::putByteVector(ByteVector* bv, int64_t start, int64_t count)
 {
     uint8_t* buf = bv->data();
     return putU8(&buf[start], count);
@@ -128,10 +130,11 @@ Object ByteArrayBinaryOutputPort::position() const
     return Bignum::makeInteger(position_);
 }
 
-bool ByteArrayBinaryOutputPort::setPosition(int position)
+bool ByteArrayBinaryOutputPort::setPosition(int64_t position)
 {
     if (position >= 0) {
-        position_ = position;
+        MOSH_ASSERT(isInSize_t(position));
+        position_ = static_cast<uintptr_t>(position);
         return true;
     } else {
         return false;

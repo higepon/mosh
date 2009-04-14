@@ -1,5 +1,5 @@
 /*
- * ByteArrayBinaryInputPort.cpp - 
+ * ByteArrayBinaryInputPort.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -41,7 +41,7 @@
 
 using namespace scheme;
 
-ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int size) : buf_(buf), size_(size), index_(0), isClosed_(false), isPseudoClosed_(false)
+ByteArrayBinaryInputPort::ByteArrayBinaryInputPort(const uint8_t* buf, int64_t size) : buf_(buf), size_(size), index_(0), isClosed_(false), isPseudoClosed_(false)
 {
 }
 
@@ -54,25 +54,25 @@ ucs4string ByteArrayBinaryInputPort::toString() {
     return UC("<byte-array-input-port>");
 }
 
-int ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int reqSize, bool& isErrorOccured)
+int64_t ByteArrayBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    const int restSize = size_ - index_;
-    const int sizeToRead = (reqSize > restSize) ? restSize : reqSize;
-    memcpy(buf, &(buf_[index_]), sizeToRead);
+    const int64_t restSize = size_ - index_;
+    const int64_t sizeToRead = (reqSize > restSize) ? restSize : reqSize;
+    moshMemcpy(buf, &(buf_[index_]), sizeToRead);
     index_ += sizeToRead;
     return sizeToRead;
 }
 
-int ByteArrayBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
+int64_t ByteArrayBinaryInputPort::readSome(uint8_t** buf, bool& isErrorOccured)
 {
     return readAll(buf, isErrorOccured);
 }
 
-int ByteArrayBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
+int64_t ByteArrayBinaryInputPort::readAll(uint8_t** buf, bool& isErrorOccured)
 {
-    const int restSize = size_ - index_;
+    const int64_t restSize = size_ - index_;
     uint8_t* dest = allocatePointerFreeU8Array(restSize);
-    memcpy(dest, &buf_[index_], restSize);
+    moshMemcpy(dest, &buf_[index_], restSize);
     *buf = dest;
     return restSize;
 }
@@ -101,7 +101,7 @@ int ByteArrayBinaryInputPort::pseudoClose()
 
 Object ByteArrayBinaryInputPort::position() const
 {
-    return Bignum::makeInteger(index_);
+    return Bignum::makeIntegerFromS64(index_);
 }
 
 File* ByteArrayBinaryInputPort::getFile()

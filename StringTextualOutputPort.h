@@ -50,7 +50,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position);
+    bool setPosition(int64_t position);
     void reset();
     Transcoder* transcoder() const;
     enum OutputPort::bufferMode bufferMode() const;
@@ -58,7 +58,7 @@ public:
 private:
     bool isClosed_;
     ucs4string buffer_;
-    intptr_t index_;
+    size_t index_;
 };
 
 } // namespace scheme

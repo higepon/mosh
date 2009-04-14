@@ -46,27 +46,27 @@ public:
 
 protected:
     // N.B. writeToFile doesn't change the fd's position.
-    int writeToBuffer(uint8_t* data, size_t reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
     {
         if (reqSize > 0) {
             isDirty_ = true;
         }
-        size_t writeSize = 0;
-        const int origPositon = file_->seek(0, File::Current);
+        int64_t writeSize = 0;
+        const int64_t origPositon = file_->seek(0, File::Current);
         MOSH_ASSERT(origPositon >= 0);
         bool needUnwind = false;
 
         while (writeSize < reqSize) {
             MOSH_ASSERT(BUF_SIZE >= bufferIndex_);
-            const int bufferRestSize = BUF_SIZE - bufferIndex_;
+            const int64_t bufferRestSize = BUF_SIZE - bufferIndex_;
             MOSH_ASSERT(reqSize > writeSize);
-            const int restSize = reqSize - writeSize;
+            const int64_t restSize = reqSize - writeSize;
             if (bufferRestSize >= restSize) {
-                memcpy(buffer_ + bufferIndex_, data + writeSize, restSize);
+                moshMemcpy(buffer_ + bufferIndex_, data + writeSize, restSize);
                 bufferIndex_ += restSize;
                 writeSize += restSize;
             } else {
-                memcpy(buffer_ + bufferIndex_, data + writeSize, bufferRestSize);
+                moshMemcpy(buffer_ + bufferIndex_, data + writeSize, bufferRestSize);
                 bufferIndex_ += bufferRestSize;
                 writeSize += bufferRestSize;
                 internalFlush();

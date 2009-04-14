@@ -58,7 +58,7 @@ public:
     bool hasPosition() const;
     bool hasSetPosition() const;
     Object position() const;
-    bool setPosition(int position);
+    bool setPosition(int64_t position);
 
 private:
     VM* theVM_;

@@ -45,17 +45,17 @@ public:
 
 protected:
     // N.B. writeToFile doesn't change the fd's position.
-    int writeToBuffer(uint8_t* data, size_t reqSize)
+    int64_t writeToBuffer(uint8_t* data, int64_t reqSize)
     {
         if (reqSize > 0) {
             isDirty_ = true;
         }
-        const int origPositon = file_->seek(0, File::Current);
+        const int64_t origPositon = file_->seek(0, File::Current);
         bool needUnwind = false;
 
-        size_t writeSize = 0;
+        int64_t writeSize = 0;
         while (writeSize < reqSize) {
-            const int bufferRestSize = BUF_SIZE - bufferIndex_;
+            const int64_t bufferRestSize = BUF_SIZE - bufferIndex_;
             if (0 == bufferRestSize) {
                 internalFlush();
                 needUnwind = true;

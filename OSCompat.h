@@ -91,8 +91,8 @@ namespace scheme {
 
         bool isOpen() const;
         bool close();
-        int write(uint8_t* buf, size_t size);
-        int read(uint8_t* buf, size_t size);
+        int64_t write(uint8_t* buf, int64_t size);
+        int64_t read(uint8_t* buf, int64_t size);
         int64_t seek(int64_t offset, Whence whece = Begin);
 #ifdef _WIN32
         int dup(HANDLE target);

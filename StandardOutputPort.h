@@ -71,7 +71,7 @@ public:
         return Object::Undef;
     }
 
-    bool setPosition(int position)
+    bool setPosition(int64_t position)
     {
         return false;
     }
