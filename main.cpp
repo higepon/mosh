@@ -120,6 +120,7 @@ void signal_handler(int signo)
 }
 #endif
 
+#ifndef _WIN32
 #include <sys/types.h>
 #include <sys/wait.h>
 void signal_handler2(int signo)
@@ -137,6 +138,7 @@ void signal_handler2(int signo)
 
     }
 }
+#endif
 
 int main(int argc, char *argv[])
 {

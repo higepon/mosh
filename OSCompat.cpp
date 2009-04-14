@@ -121,22 +121,39 @@ bool File::open(const ucs4string& file, int flags)
     if (isOpen()) {
         return false;
     }
+#if 1
+    share = FILE_SHARE_READ;
+    switch (flags) {
+    case Read | Write | Create:
+        access = GENERIC_READ | GENERIC_WRITE;
+        disposition = OPEN_ALWAYS;
+        break;
+    case Read | Write | Create | Truncate:
+        access = GENERIC_READ | GENERIC_WRITE;
+        disposition = TRUNCATE_EXISTING;
+        break;
+    case Read:
+        access = GENERIC_READ;
+        disposition = OPEN_EXISTING;
+        break;
+    case Write | Create:
+        access = GENERIC_WRITE;
+        disposition = OPEN_ALWAYS;
+        break;
+    case Write | Create | Truncate:
+        access = GENERIC_WRITE;
+        disposition = TRUNCATE_EXISTING;
+        break;
+    default:
+        MOSH_ASSERT(0);
+    }
+#else
     if (flags & Read) {
         access |= GENERIC_READ;
     }
     if (flags & Write) {
         access |= GENERIC_WRITE;
     }
-    /*
-    if (flags & ShareRead) {
-        share |= FILE_SHARE_READ;
-    }
-    if (flags & ShareWrite) {
-        share |= FILE_SHARE_WRITE;
-    }
-    if (flags & OpenExisting) {
-        disposition = OPEN_EXISTING;
-    }*/
     if (flags & Truncate) {
         disposition = TRUNCATE_EXISTING;
     }
@@ -144,7 +161,9 @@ bool File::open(const ucs4string& file, int flags)
         disposition = CREATE_ALWAYS;
     }
     if (disposition == 0) disposition = OPEN_EXISTING; // is this correct ?
+#endif
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
+//if (desc_ == (HANDLE)-1) { fprintf(stderr, "file=%S, access=%08x, disposition=%x, flags=%08x\n", utf32ToUtf16(file), access, disposition, flags); }
     return isOpen();
 #else
     if (isOpen()) {
