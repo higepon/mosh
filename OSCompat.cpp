@@ -377,7 +377,7 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
         break;
     }
     LARGE_INTEGER resultPos;
-    const bool isOK = SetFilePointerEx(desc_, largePos, &resultPos, posMode) == 0;
+    const BOOL isOK = SetFilePointerEx(desc_, largePos, &resultPos, posMode);
     if (isOK) {
         return resultPos.QuadPart;
     } else {
