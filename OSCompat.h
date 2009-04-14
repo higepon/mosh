@@ -99,7 +99,9 @@ namespace scheme {
 #else
         int dup(int target);
 #endif
-        int64_t size() const;
+        int64_t size();
+
+        ucs4string getLastErrorMessage() const;
 
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);
@@ -119,8 +121,10 @@ namespace scheme {
 #ifdef _WIN32
         HANDLE desc_;
         int prevC_; // to keep half of wchar_t
+        DWORD lastError_;
 #else
         int desc_;
+        int lastError_;
 #endif
     };
 }; // namespace scheme

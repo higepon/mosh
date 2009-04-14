@@ -93,10 +93,13 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
 File::File(HANDLE desc /* = INVALID_HANDLE_VALUE */)
     : desc_(desc)
     , prevC_(-1)
+    , lastError_(0)
     {}
 #else
 File::File(int desc /* = -1 */)
-    : desc_(desc) {}
+    : desc_(desc)
+    , lastError_(0)
+    {}
 #endif
 
 
@@ -134,6 +137,7 @@ bool File::open(const ucs4string& file, int flags)
         MOSH_ASSERT(0);
     }
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
+    lastError_ = GetLastError();
     return isOpen();
 #else
     if (isOpen()) {
@@ -158,6 +162,7 @@ bool File::open(const ucs4string& file, int flags)
         mode |= O_TRUNC;
     }
     desc_ = ::open((char*)utf32toUtf8(file)->data(), mode, 0644);
+    lastError_ = errno;
     return isOpen();
 #endif
 }
@@ -187,6 +192,7 @@ bool File::close()
 #ifdef _WIN32
     if (isOpen()) {
         const bool isOK = CloseHandle(desc_) != 0;
+        lastError_ = GetLastError();
         desc_ = INVALID_HANDLE_VALUE;
         return isOK;
     }
@@ -194,17 +200,30 @@ bool File::close()
 #else
     if (isOpen()) {
         const bool isOK = ::close(desc_) != 0;
+        lastError_ = errno;
         desc_ = -1;
         return isOK;
     }
 #endif
 }
 
-int64_t File::size() const
+ucs4string File::getLastErrorMessage() const
+{
+#ifdef _WIN32
+#error "TODO : FormatMessage"
+
+#else
+    const char* message = strerror(lastError_);
+    return ucs4string::from_c_str(message, strlen(message));
+#endif
+}
+
+int64_t File::size()
 {
 #ifdef _WIN32
     LARGE_INTEGER size;
     int isOK = GetFileSizeEx(desc_, &size);
+    lastError_ = GetLastError();
     if (isOK) {
         return size.QuadPart;
     } else {
@@ -213,6 +232,7 @@ int64_t File::size() const
 #else
     struct stat st;
     const int result = fstat(desc_, &st);
+    lastError_ = errno;
     if (result != 0) {
         return -1;
     } else {
@@ -237,6 +257,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     } else {
         isOK = WriteFile(desc_, buf, size, &writeSize, NULL);
     }
+    lastError_ = GetLastError();
     if (isOK) {
         return writeSize;
     } else {
@@ -246,6 +267,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     MOSH_ASSERT(isOpen());
     for (;;) {
         const int result = ::write(desc_, buf, size);
+        lastError_ = errno;
         if (result < 0 && errno == EINTR) {
             // write again
             errno = 0;
@@ -292,6 +314,7 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     } else {
         isOK = ReadFile(desc_, buf, size, &readSize, NULL);
     }
+    lastError_ = GetLastError();
     if (isOK) {
         return readSize;
     } else {
@@ -301,6 +324,7 @@ int64_t File::read(uint8_t* buf, int64_t _size)
     MOSH_ASSERT(isOpen());
     for (;;) {
         const int result = ::read(desc_, buf, size);
+        lastError_ = errno;
         if (result < 0 && errno == EINTR) {
             // read again
             errno = 0;
@@ -345,6 +369,7 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
     }
     LARGE_INTEGER resultPos;
     const BOOL isOK = SetFilePointerEx(desc_, largePos, &resultPos, posMode);
+    lastError_ = GetLastError();
     if (isOK) {
         return resultPos.QuadPart;
     } else {
@@ -366,7 +391,9 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
         w = SEEK_END;
         break;
     }
-    return lseek(desc_, offset, w);
+    const int64_t ret = lseek(desc_, offset, w);
+    lastError_ = errno;
+    return ret;
 #endif
 }
 

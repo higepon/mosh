@@ -1,6 +1,6 @@
 (import (rnrs)
         (mosh)
-        (srfi :1)
+        (except (srfi :1) assoc cons* filter find fold-right for-each map member partition remove)
         (srfi :26)
         (srfi :98))
 
