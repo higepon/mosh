@@ -61,6 +61,8 @@ namespace scheme {
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
+    Object getCurrentDirectory();
+    bool setCurrentDirectory(const ucs4string& dir);
     ucs4string getLastErrorMessage();
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
     Transcoder* nativeConsoleTranscoder();

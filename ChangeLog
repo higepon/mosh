@@ -1,5 +1,7 @@
 2009-04-14  higepon  <higepon@users.sourceforge.jp>
 
+        * OSCompat.cpp : Added getCurrentDirectory() and setCurrentDirectory();
+
         * Removed stringError, use getLastErrorMessage();
 
 2009-04-14 herumi <herumi@nifty.com>

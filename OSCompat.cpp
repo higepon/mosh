@@ -638,3 +638,19 @@ ucs4string scheme::getLastErrorMessage()
     return getLastErrorMessageInternal(errno);
 #endif
 }
+
+Object scheme::getCurrentDirectory()
+{
+// TODO Windows
+    char buf[PATH_MAX];
+    if (getcwd(buf, PATH_MAX) == NULL) {
+        return Object::False;
+    } else {
+        return Object::makeString(buf);
+   }
+}
+
+bool scheme::setCurrentDirectory(const ucs4string& dir)
+{
+    return (-1 != chdir((char*)utf32toUtf8(dir)->data()));
+}

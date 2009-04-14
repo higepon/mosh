@@ -67,12 +67,12 @@ Object scheme::currentDirectoryEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("current-directory");
     checkArgumentLength(0);
-    char buf[PATH_MAX];
-    if (getcwd(buf, PATH_MAX) == NULL) {
+    const Object path = getCurrentDirectory();
+    if (path.isFalse()) {
         callAssertionViolationAfter(theVM, procedureName, "current-directory failed", L1(getLastErrorMessage()));
         return Object::Undef;
     } else {
-        return Object::makeString(buf);
+        return path;
     }
 }
 
@@ -81,10 +81,10 @@ Object scheme::setCurrentDirectoryDEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("set-current-directory!");
     checkArgumentLength(1);
     argumentAsString(0, path);
-    if (-1 == chdir(path->data().ascii_c_str())) {
-        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(getLastErrorMessage(), argv[0]));
+    if (setCurrentDirectory(path->data())) {
         return Object::Undef;
     } else {
+        callAssertionViolationAfter(theVM, procedureName, "set-current-directory! failed", L2(getLastErrorMessage(), argv[0]));
         return Object::Undef;
     }
 }
