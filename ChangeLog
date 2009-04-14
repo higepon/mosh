@@ -1,6 +1,16 @@
+2009-04-14 herumi <herumi@nifty.com>
+
+        * OSCompat.cpp : fix some bug and test\test.bat runs well
+
+        * support 64-bit large file
+
 2009-04-14  higepon  <higepon@users.sourceforge.jp>
 
         * OSCompat.cpp (getLastErrorMessage): Added.
+
+2009-04-13 herumi <herumi@nifty.com>
+
+        * OSCompat.cpp : implementation for Windows for UTF16
 
 2009-04-13  higepon  <higepon@users.sourceforge.jp>
 
@@ -108,6 +118,10 @@
 
         * README-WINDOWS.txt: Added.
 
+2009-04-02 herumi <herumi@nifty.com>
+
+        * Object.h : optimize. remove unnecessary copy
+
 2009-04-02  higepon  <higepon@users.sourceforge.jp>
 
         * Scanner.cpp: Fixed the bug "'get-datum' and 'read' are greedy with their input"
@@ -141,6 +155,10 @@
         * Added (srfi :64 testing)
 
         * lib/srfi/%3a64.sls: Now porting.
+
+2009-03-25 herumi <herumi@nifty.com>
+
+        * Arithmetic.cpp : use /fp:precise option for exp
 
 2009-03-25  higepon  <higepon@users.sourceforge.jp>
 
@@ -203,6 +221,10 @@
 
         * thread_local_alloc.c : applied http://osdir.com/ml/programming.garbage-collection.boehmgc/2008-05/msg00013.html.
 
+2009-03-21 herumi <herumi@nifty.com>
+
+        * Bignum.h : check size of intptr_t in compling time
+
 2009-03-21  higepon  <higepon@users.sourceforge.jp>
 
         * ErrorProcedures.h : Renamed TRY -> TRY_WITHOUT_DSTR.
@@ -226,6 +248,10 @@
 2009-03-19  higepon  <higepon@users.sourceforge.jp>
 
         * Patch for build on Windows with VC++ by herumi.
+
+2009-03-18 herumi <herumi@nifty.com>
+
+        * start to compile mosh on Windows with VC
 
 2009-03-18  higepon  <higepon@users.sourceforge.jp>
 
