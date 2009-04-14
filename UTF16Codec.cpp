@@ -58,6 +58,19 @@ ucs4string UTF16Codec::getCodecName() const
     return UC("<utf-16-codec>");
 }
 
+namespace {
+void put2byte(uint8_t *out, uint16_t in, bool isLittleEndian)
+{
+    if (isLittleEndian) {
+        out[0] = static_cast<uint8_t>(in);
+        out[1] = static_cast<uint8_t>(in >> 8);
+    } else {
+        out[0] = static_cast<uint8_t>(in >> 8);
+        out[1] = static_cast<uint8_t>(in);
+    }
+}
+
+}
 
 int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
 {
@@ -74,13 +87,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         }
     }
     if (ch < 0x10000) {
-        if (isLittleEndian_) {
-            buf[0] = ch;
-            buf[1] = ch >> 8;
-        } else {
-            buf[0] = ch >> 8;
-            buf[1] = ch;
-        }
+        put2byte(buf, ch, isLittleEndian_);
         return 2;
     } else {
         const int u = (ch >> 16);
@@ -89,17 +96,8 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         const int part2 = u & 1023;
         const uint16_t val1 = (54 << 10) | (w << 6) | part1;
         const uint16_t val2 = (55 << 10) | part2;
-        if (isLittleEndian_) {
-            buf[0] = val1;
-            buf[1] = val1 >> 8;
-            buf[2] = val2;
-            buf[3] = val2 >> 8;
-        } else {
-            buf[0] = val1 >> 8;
-            buf[1] = val1;
-            buf[2] = val2 >> 8;
-            buf[3] = val2;
-        }
+        put2byte(buf + 0, val1, isLittleEndian_);
+        put2byte(buf + 2, val2, isLittleEndian_);
         return 4;
     }
 }
