@@ -195,11 +195,11 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
 #else
     class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, std::allocator<std::pair<const ucs4char* const, Object> > > {};
 #endif
-};
+}
 
 inline uint8_t* allocatePointerFreeU8Array(int64_t size)
 {
-	MOSH_ASSERT(isInSize_t(size));
+	MOSH_ASSERT(scheme::isInSize_t(size));
 #ifdef USE_BOEHM_GC
     return new(PointerFreeGC) uint8_t[static_cast<size_t>(size)];
 #else
