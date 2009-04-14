@@ -252,7 +252,6 @@ bool File::close()
         desc_ = INVALID_HANDLE_VALUE;
         return isOK;
     }
-    return false;
 #else
     if (isOpen()) {
         const bool isOK = ::close(desc_) != 0;
@@ -261,6 +260,7 @@ bool File::close()
         return isOK;
     }
 #endif
+    return false;
 }
 
 ucs4string File::getLastErrorMessage() const

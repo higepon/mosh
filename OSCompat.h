@@ -47,7 +47,9 @@ typedef unsigned __int64 uint64_t;
 
 #else // NOT Windows
 #include <sys/resource.h>
+#ifndef _LARGEFILE64_SOURCE
 #define _LARGEFILE64_SOURCE
+#endif // _LARGEFILE64_SOURCE
 #include <sys/types.h>
 #include <unistd.h>
 #endif
