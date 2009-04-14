@@ -178,7 +178,7 @@ struct ltstr EXTEND_GC
 */
 inline bool isInSize_t(int64_t size)
 {
-    return static_cast<size_t>(size) == size;
+    return static_cast<size_t>(size) == static_cast<uint64_t>(size);
 }
 
 /*
