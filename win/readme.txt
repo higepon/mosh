@@ -32,6 +32,9 @@ getrusage => use GetSystemTimes
 >cd win/gc
 >make_gc
 
+*installer
+win/installer/innosetup.iss
+see http://www.jrsoftware.org/
 
 *test
 
