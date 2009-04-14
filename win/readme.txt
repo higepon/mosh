@@ -36,6 +36,13 @@ getrusage => use GetSystemTimes
 win/installer/innosetup.iss
 see http://www.jrsoftware.org/
 
+<how to make setup.exe>
+1. download isetup-5.2.3.exe and install
+2. download http://www.jrsoftware.org/files/istrans/Japanese-5/Japanese-5-5.1.11.isl
+   and save it as Japanese.isl in C:\Program Files\Inno Setup 5\Languages .
+3. double click win/installer/innosetup.iss
+4. bulid
+
 *test
 
 ok:
