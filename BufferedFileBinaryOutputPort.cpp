@@ -142,6 +142,10 @@ void BufferedFileBinaryOutputPort::flush()
     uint8_t* buf = buffer_;
     while (bufIdx_ > 0) {
         const int64_t result = file_->write(buf, bufIdx_);
+        if (result < 0) {
+            // What should I do?
+            return;
+        }
         buf += result;
         bufIdx_ -= result;
     }
