@@ -44,7 +44,7 @@ namespace scheme {
 class BinaryInputOutputPort : public BinaryInputPort, public BinaryOutputPort
 {
 public:
-    virtual ~BinaryInputOutputPort() {};
+    virtual ~BinaryInputOutputPort() {}
 };
 
 } // namespace scheme
