@@ -48,6 +48,8 @@
 #include "Bignum.h"
 #include "BufferedFileBinaryOutputPort.h"
 #include "OSCompat.h"
+#include "SString.h"
+#include "ErrorProcedures.h"
 
 using namespace scheme;
 
@@ -143,7 +145,7 @@ void BufferedFileBinaryOutputPort::flush()
     while (bufIdx_ > 0) {
         const int64_t result = file_->write(buf, bufIdx_);
         if (result < 0) {
-            // What should I do?
+            throwIOError2(IOError::WRITE, stringError(errno));
             return;
         }
         buf += result;
