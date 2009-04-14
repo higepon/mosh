@@ -235,7 +235,7 @@ int CustomBinaryInputOutputPort::putU8(uint8_t v)
 
 int64_t CustomBinaryInputOutputPort::putU8(uint8_t* v, int64_t _size)
 {
-    MOSH_ASSERT(isInSize_t(size));
+    MOSH_ASSERT(isInSize_t(_size));
     const size_t size = static_cast<size_t>(_size);
     const Object bv = Object::makeByteVector(new ByteVector(size, v));
     const Object start = Object::makeFixnum(0);
