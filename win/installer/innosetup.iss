@@ -2,14 +2,14 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 [Setup]
-AppName=mosh-scheme
-AppVerName=mosh 0.8.0
+AppName=Mosh
+AppVerName=mosh 0.0.8
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
 AppUpdatesURL=http://code.google.com/p/mosh-scheme/
 DefaultDirName={pf}\mosh
-DefaultGroupName=mosh-scheme
+DefaultGroupName=mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
 OutputBaseFilename=setup_mosh
@@ -29,9 +29,9 @@ Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{group}\mosh-scheme"; Filename: "{app}\mosh.exe"
-Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh-scheme"; Filename: "{app}\mosh.exe"; Tasks: quicklaunchicon
+Name: "{group}\mosh"; Filename: "{app}\mosh.exe"
+Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "{app}\mosh.exe"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\mosh.exe"; Description: "{cm:LaunchProgram,mosh-scheme}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\mosh.exe"; Description: "{cm:LaunchProgram,mosh}"; Flags: nowait postinstall skipifsilent
 
