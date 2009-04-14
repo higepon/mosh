@@ -210,7 +210,7 @@ bool File::close()
 ucs4string File::getLastErrorMessage() const
 {
 #ifdef _WIN32
-#error "TODO : FormatMessage"
+///"TODO : FormatMessage"
 
 #else
     const char* message = strerror(lastError_);
