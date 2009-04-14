@@ -88,19 +88,6 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
     tcoder.putChar(&out, '\0');
     return (wchar_t*)out.toByteVector()->data();
 }
-std::wstring utf8ToUtf16(const uint8_t* s, int len)
-{
-    /* sorry, I don't know how to use UTF8Codec */
-    std::wstring out;
-    size_t outSize = MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, 0, 0);
-    if (outSize > 0) {
-        out.resize(outSize);
-        MultiByteToWideChar(CP_UTF8, 0, reinterpret_cast<const char*>(s), len, &out[0], outSize);
-    } else {
-//      printf("ERR %08x\n", GetLastError());
-    }
-    return out;
-}
 #endif // _WIN32
 
 #ifdef _WIN32
@@ -123,15 +110,15 @@ bool File::open(const ucs4string& file, int flags)
         return false;
     }
 #if 1
-    share = FILE_SHARE_READ;
+    share = FILE_SHARE_READ | FILE_SHARE_WRITE;
     switch (flags) {
     case Read | Write | Create:
         access = GENERIC_READ | GENERIC_WRITE;
         disposition = OPEN_ALWAYS;
         break;
-    case Read | Write | Create | Truncate:
+    case Read | Write | Create | Truncate: 
         access = GENERIC_READ | GENERIC_WRITE;
-        disposition = TRUNCATE_EXISTING;
+        disposition = CREATE_ALWAYS;
         break;
     case Read:
         access = GENERIC_READ;
@@ -142,8 +129,8 @@ bool File::open(const ucs4string& file, int flags)
         disposition = OPEN_ALWAYS;
         break;
     case Write | Create | Truncate:
-        access = GENERIC_WRITE;
-        disposition = TRUNCATE_EXISTING;
+        access = GENERIC_READ | GENERIC_WRITE;
+        disposition = CREATE_ALWAYS;
         break;
     default:
         MOSH_ASSERT(0);
@@ -164,13 +151,6 @@ bool File::open(const ucs4string& file, int flags)
     if (disposition == 0) disposition = OPEN_EXISTING; // is this correct ?
 #endif
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
-if (desc_ == (HANDLE)-1) {
-FILE *fp = fopen("c:/tmp/ttt.log", "wb");
-if (fp) {
-	fprintf(fp, "\nQQQ\nfile=%S, access=%08x, disposition=%x, flags=%08x\nQQQ\n", utf32ToUtf16(file), access, disposition, flags);
-	fclose(fp);
-}
-}
     return isOpen();
 #else
     if (isOpen()) {
