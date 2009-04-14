@@ -85,6 +85,7 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
     UTF16Codec codec(UTF16Codec::UTF_16LE);
     Transcoder tcoder(&codec);
     tcoder.putString(&out, s);
+    tcoder.putChar(&out, '\0');
     return (wchar_t*)out.toByteVector()->data();
 }
 std::wstring utf8ToUtf16(const uint8_t* s, int len)
@@ -163,7 +164,13 @@ bool File::open(const ucs4string& file, int flags)
     if (disposition == 0) disposition = OPEN_EXISTING; // is this correct ?
 #endif
     desc_ = CreateFile(utf32ToUtf16(file), access, share, NULL, disposition, FILE_ATTRIBUTE_NORMAL, NULL);
-//if (desc_ == (HANDLE)-1) { fprintf(stderr, "file=%S, access=%08x, disposition=%x, flags=%08x\n", utf32ToUtf16(file), access, disposition, flags); }
+if (desc_ == (HANDLE)-1) {
+FILE *fp = fopen("c:/tmp/ttt.log", "wb");
+if (fp) {
+	fprintf(fp, "\nQQQ\nfile=%S, access=%08x, disposition=%x, flags=%08x\nQQQ\n", utf32ToUtf16(file), access, disposition, flags);
+	fclose(fp);
+}
+}
     return isOpen();
 #else
     if (isOpen()) {
