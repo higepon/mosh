@@ -378,5 +378,5 @@ void BufferedFileBinaryInputOutputPort::forwardPosition(int64_t offset)
 
 File* BufferedFileBinaryInputOutputPort::getFile()
 {
-    return NULL;
+    return file_;
 }

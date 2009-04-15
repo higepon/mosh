@@ -106,6 +106,7 @@ namespace scheme {
         int64_t size();
 
         ucs4string getLastErrorMessage() const;
+        bool isLastErrorAcessError() const;
 
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);

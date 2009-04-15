@@ -282,14 +282,13 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
             return Object::makeTextualInputOutputPort(port, transcoder);
         }
     } else {
-        switch(errno) {
-        case EACCES:
+        if (port->getFile() && port->getFile()->isLastErrorAcessError()) {
             if (isReadable) {
                 return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             } else {
                 return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             }
-        default:
+        } else {
             callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
@@ -881,14 +880,13 @@ Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
         return ret;
     } else {
         const bool isReadable = File::isReadable(file->data());
-        switch(errno) {
-        case EACCES:
+        if (fileBinaryOutputPort->getFile() && fileBinaryOutputPort->getFile()->isLastErrorAcessError()) {
             if (isReadable) {
                 return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             } else {
                 return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             }
-        default:
+        } else {
             callErrorAfter(theVM, procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
@@ -1578,14 +1576,13 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             return ret;
         }
     } else {
-        switch(errno) {
-        case EACCES:
+        if (port->getFile() && port->getFile()->isLastErrorAcessError()) {
             if (isReadable) {
                 return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             } else {
                 return callIoFileProtectionAfter(theVM, argv[0], procedureName, port->getLastErrorMessage(), L1(argv[0]));
             }
-        default:
+        } else {
             callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
@@ -1605,10 +1602,9 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
     if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
         return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
     } else {
-        switch(errno) {
-        case EACCES:
+        if (fileBinaryInputPort->getFile() && fileBinaryInputPort->getFile()->isLastErrorAcessError()) {
             return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
-        default:
+        } else {
             callErrorAfter(theVM, procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
@@ -1672,10 +1668,9 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
             return Object::makeTextualInputPort(in, transcoder);
         }
     } else {
-        switch(errno) {
-        case EACCES:
+        if (in->getFile() && in->getFile()->isLastErrorAcessError()) {
             return callIoFileProtectionAfter(theVM, argv[0], procedureName, in->getLastErrorMessage(), L1(argv[0]));
-        default:
+        } else {
             callErrorAfter(theVM, procedureName, in->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }

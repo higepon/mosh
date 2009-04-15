@@ -40,7 +40,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #endif
-#include <errno.h>
 #include <sys/types.h>
 #include "Object.h"
 #include "Object-inl.h"

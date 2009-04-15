@@ -91,7 +91,7 @@ int BufferedFileBinaryOutputPort::putU8(uint8_t v)
 
 File* BufferedFileBinaryOutputPort::getFile()
 {
-    return NULL;
+    return file_;
 }
 
 int64_t BufferedFileBinaryOutputPort::putU8(uint8_t* v, int64_t size)

@@ -1,3 +1,7 @@
+2009-04-15  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompat.h (scheme): Addes isLastErrorAcessError();
+
 2009-04-14  higepon  <higepon@users.sourceforge.jp>
 
         * OSCompat.cpp : Added getCurrentDirectory() and setCurrentDirectory();

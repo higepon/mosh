@@ -467,6 +467,16 @@ bool File::isReadable(const ucs4string& path)
     return access((char*)utf32toUtf8(path)->data(), R_OK) == 0;
 }
 
+bool File::isLastErrorAcessError() const
+{
+    // TODO: Windows
+#ifdef _WIN32
+    return false;
+#else
+    return lastError_ == EACCES;
+#endif
+}
+
 ucs4char** scheme::getCommandLine(int argc, char* argv[])
 {
     // TODO: Windows
@@ -654,3 +664,4 @@ bool scheme::setCurrentDirectory(const ucs4string& dir)
 {
     return (-1 != chdir((char*)utf32toUtf8(dir)->data()));
 }
+
