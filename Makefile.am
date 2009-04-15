@@ -145,7 +145,13 @@ CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
-getoptU.h getoptU.cpp                                                        \
+getoptU.h getoptU.cpp                                                      \
+StandardOutputPort.h \
+StandardErrorPort.h \
+StandardInputPort.h \
+BlockBufferedFileBinaryOutputPort.h \
+BlockBufferedFileBinaryInputOutputPort.h \
+LineBufferedFileBinaryInputOutputPort.h \
 OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
