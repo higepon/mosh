@@ -134,7 +134,7 @@ Ratnum.h                       Ratnum.cpp                          \
 Bignum.h                       Bignum.cpp                          \
 Flonum.h                       Flonum.cpp                          \
 CodeBuilder.h                  CodeBuilder.cpp                     \
-FinxumProcedures.h             FixnumProcedures.cpp                \
+FixnumProcedures.h             FixnumProcedures.cpp                \
 Latin1Codec.h                  Latin1Codec.cpp                     \
 FFI.h                          FFI.cpp                             \
 FFIProcedures.h                FFIProcedures.cpp                   \
