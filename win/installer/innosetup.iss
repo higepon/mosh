@@ -8,14 +8,14 @@ AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
 AppUpdatesURL=http://code.google.com/p/mosh-scheme/
-DefaultDirName={pf}\mosh
-DefaultGroupName=mosh
+DefaultDirName={pf}\Mosh
+DefaultGroupName=Mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
 OutputBaseFilename=setup_mosh_0.0.1
 Compression=lzma
 SolidCompression=yes
-
+SetupIconFile="..\..\logo\mosh.ico"
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
