@@ -55,10 +55,6 @@
 #include "Bignum.h"
 #include "OSCompat.h"
 
-#ifdef _WIN32
-    #define PATH_MAX _MAX_PATH
-    #define dup2 _dup2
-#endif
 
 using namespace scheme;
 

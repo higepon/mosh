@@ -61,6 +61,16 @@ extern int main(int argc, char *argv[]);
 #include "ByteVector.h"
 #include "PortProcedures.h"
 
+#ifdef _WIN32
+    #include <stdlib.h>
+    #include <io.h>
+    #include <direct.h>
+    #include <process.h>
+    #define PATH_MAX _MAX_PATH
+    #define dup2 _dup2
+#endif
+
+
 using namespace scheme;
 //
 // N.B Dont't forget to add tests to OScompatTest.cpp.
