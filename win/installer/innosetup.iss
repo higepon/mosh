@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Mosh
-AppVerName=mosh 0.0.8
+AppVerName=mosh 0.1.0
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
