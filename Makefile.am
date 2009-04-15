@@ -61,7 +61,9 @@ ByteVector.h                                                       \
 HashTable.h                                                        \
 Pair.h                                                             \
 Stack.h                                                            \
-Box.h                                                              \
+Gloc.h                         BinaryInputOutputPort.h             \
+Box.h                          Port.h                              \
+BinaryPort.h                   OutputPort.h                        \
 Codec.h                                                            \
 Transcoder.h                   Transcoder.cpp                      \
 ProcedureMacro.h                                                   \
@@ -78,6 +80,7 @@ Regexp.h                       Regexp.cpp                          \
 Symbol.h                       Symbol.cpp                          \
 VM.h                           VM.cpp                              \
 VM-Profiler.cpp                VM-Run.cpp                          \
+VM-Run.h                                                           \
 Scanner.h                      Scanner.cpp                         \
 NumberScanner.h                NumberScanner.cpp                   \
 ByteArrayBinaryInputPort.h     ByteArrayBinaryInputPort.cpp        \
@@ -266,7 +269,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
 
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp
 
 GENERATED = \
 all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \
