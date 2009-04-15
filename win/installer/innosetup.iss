@@ -12,7 +12,7 @@ DefaultDirName={pf}\mosh
 DefaultGroupName=mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
-OutputBaseFilename=setup_mosh
+OutputBaseFilename=setup_mosh_0.0.1
 Compression=lzma
 SolidCompression=yes
 
@@ -31,6 +31,7 @@ Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesu
 
 [Icons]
 Name: "{group}\mosh"; Filename: "{app}\mosh.exe"
+Name: "{group}\manual.html"; Filename: "{app}\doc\index.html"
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "{app}\mosh.exe"; Tasks: quicklaunchicon
 
 [Run]
