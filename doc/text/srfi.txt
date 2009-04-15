@@ -5,7 +5,7 @@ Following SRFI libraries are supported.
 We use Derick Eddington's SRFI implmentations for R6RS.
 
 library: (srfi :0 cond-expand)
-<http://srfi.schemers.org/srfi-0/srfi-.html>
+<http://srfi.schemers.org/srfi-0/srfi-0.html>
 
 library: (srfi :1 lists)
 <http://srfi.schemers.org/srfi-1/srfi-1.html>

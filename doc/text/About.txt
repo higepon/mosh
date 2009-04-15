@@ -25,14 +25,16 @@ Mosh offers following functions for development
 It can be used for many kinds of software development.
 
 System Requirements:
-Mosh runs on Linux/Unix and Mac OS X. 
+Mosh runs on Linux/Unix, Mac OS X and Windows.
 
 License:
-Mosh is developed on <http://code.google.com/p/mosh-scheme/> by
+Mosh is distributed by MIT/X License.
+
+It is developed on <http://code.google.com/p/mosh-scheme/> by
 - higepon (higepon@users.sourceforge.jp)
 - kokosabu 
 - herumi
 - .mjt
 
-It is distributed by MIT/X License.
+
 

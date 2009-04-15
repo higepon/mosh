@@ -42,57 +42,53 @@ Don't Index: Files
 # time it is run.  When working with groups, just deal with the braces and
 # forget about the indentation and comments.
 # 
-# You can use this file on other computers even if they use different
-# directories.  As long as the command line points to the same source files,
-# Natural Docs will be able to correct the locations automatically.
-# 
 # --------------------------------------------------------------------------
 
 
 Group: Mosh  {
 
-   File: About  (no auto-title, /Users/taro/mosh/doc/text/About.txt)
-   File: Download  (/Users/taro/mosh/doc/text/Download.txt)
+   File: About  (no auto-title, doc/text/About.txt)
+   File: Download  (doc/text/Download.txt)
    }  # Group: Mosh
 
 Group: Mosh Library  {
 
-   File: Core  (no auto-title, /Users/taro/mosh/doc/text/Core.txt)
-   File: Configuration  (/Users/taro/mosh/lib/mosh/config.ss)
-   File: Control  (/Users/taro/mosh/lib/mosh/control.ss)
-   File: Database independent interface  (/Users/taro/mosh/lib/mosh/dbi.ss)
-   File: Foreign Function Interface  (/Users/taro/mosh/lib/mosh/ffi.ss)
-   File: Pretty Printing  (/Users/taro/mosh/lib/mosh/pp.ss)
-   File: Process  (/Users/taro/mosh/lib/mosh/process.ss)
-   File: Unit Testing  (/Users/taro/mosh/lib/mosh/test.ss)
+   File: Core  (no auto-title, doc/text/Core.txt)
+   File: Configuration  (lib/mosh/config.ss)
+   File: Control  (lib/mosh/control.ss)
+   File: Database independent interface  (lib/mosh/dbi.ss)
+   File: Foreign Function Interface  (lib/mosh/ffi.ss)
+   File: Pretty Printing  (lib/mosh/pp.ss)
+   File: Process  (lib/mosh/process.ss)
+   File: Unit Testing  (lib/mosh/test.ss)
    }  # Group: Mosh Library
 
-File: SRFIs  (/Users/taro/mosh/doc/text/srfi.txt)
+File: SRFIs  (doc/text/srfi.txt)
 
 Group: R6RS  {
 
-   File: Naming Conventions  (/Users/taro/mosh/doc/text/Naming.txt)
-   File: Composite library  (/Users/taro/mosh/doc/text/Compositelibrary.txt)
-   File: Base Library  (/Users/taro/mosh/doc/text/base.tex.txt)
-   File: Bytevectors  (/Users/taro/mosh/doc/text/bytevector.tex.txt)
-   File: List utilities  (/Users/taro/mosh/doc/text/list.tex.txt)
-   File: Sorting  (/Users/taro/mosh/doc/text/sort.tex.txt)
-   File: Control structures  (/Users/taro/mosh/doc/text/control.tex.txt)
-   File: Records  (/Users/taro/mosh/doc/text/records.tex.txt)
-   File: Exceptions and conditions  (/Users/taro/mosh/doc/text/exc.tex.txt)
-   File: I/O Condition types  (no auto-title, /Users/taro/mosh/doc/text/iocond.tex.txt)
-   File: Port I/O  (/Users/taro/mosh/doc/text/portio.tex.txt)
-   File: Simple I/O  (/Users/taro/mosh/doc/text/convio.tex.txt)
-   File: File system  (/Users/taro/mosh/doc/text/files.tex.txt)
-   File: Command-line access and exit values  (/Users/taro/mosh/doc/text/programlib.tex.txt)
-   File: Arithmetic  (/Users/taro/mosh/doc/text/arith.tex.txt)
-   File: syntax-case  (/Users/taro/mosh/doc/text/syntax-case.tex.txt)
-   File: Hashtables  (/Users/taro/mosh/doc/text/hashtable.tex.txt)
-   File: Enumerations  (/Users/taro/mosh/doc/text/enum.tex.txt)
-   File: eval  (/Users/taro/mosh/doc/text/eval.tex.txt)
-   File: Mutable pairs  (/Users/taro/mosh/doc/text/setcar.tex.txt)
-   File: Mutable strings  (/Users/taro/mosh/doc/text/stringset.tex.txt)
-   File: R5RS compatibility  (/Users/taro/mosh/doc/text/r5rscompat.tex.txt)
+   File: Naming Conventions  (doc/text/Naming.txt)
+   File: Composite library  (doc/text/Compositelibrary.txt)
+   File: Base Library  (doc/text/base.tex.txt)
+   File: Bytevectors  (doc/text/bytevector.tex.txt)
+   File: List utilities  (doc/text/list.tex.txt)
+   File: Sorting  (doc/text/sort.tex.txt)
+   File: Control structures  (doc/text/control.tex.txt)
+   File: Records  (doc/text/records.tex.txt)
+   File: Exceptions and conditions  (doc/text/exc.tex.txt)
+   File: I/O Condition types  (no auto-title, doc/text/iocond.tex.txt)
+   File: Port I/O  (doc/text/portio.tex.txt)
+   File: Simple I/O  (doc/text/convio.tex.txt)
+   File: File system  (doc/text/files.tex.txt)
+   File: Command-line access and exit values  (doc/text/programlib.tex.txt)
+   File: Arithmetic  (doc/text/arith.tex.txt)
+   File: syntax-case  (doc/text/syntax-case.tex.txt)
+   File: Hashtables  (doc/text/hashtable.tex.txt)
+   File: Enumerations  (doc/text/enum.tex.txt)
+   File: eval  (doc/text/eval.tex.txt)
+   File: Mutable pairs  (doc/text/setcar.tex.txt)
+   File: Mutable strings  (doc/text/stringset.tex.txt)
+   File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
    }  # Group: R6RS
 
 Group: Index  {
@@ -103,8 +99,3 @@ Group: Index  {
    Variable Index: Variables
    }  # Group: Index
 
-
-
-##### Do not change or remove these lines. #####
-Data: 1(D3333a6GH63tpHu3Eu6R)
-Data: 1(h3333a6GH63tpHu3Eu6R3tG6t)

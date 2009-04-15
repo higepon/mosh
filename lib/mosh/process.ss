@@ -33,6 +33,8 @@
     Process Management:
     The following procedures provide raw process management.
 
+    (mosh process) is not supported on Windows.
+
     library: (mosh process)
 
     Process Management Library

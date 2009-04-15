@@ -35,6 +35,9 @@
 
     With these methods, you can load shared library, call C-function in it and get a result of function call.
 
+
+    FFI is not supported on Windows.
+
     Example:
     (start code)
     ;; use mysql client library
