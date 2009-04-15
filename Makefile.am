@@ -60,6 +60,7 @@ scheme.h                                                           \
 ByteVector.h                                                       \
 HashTable.h                                                        \
 Pair.h                                                             \
+LineBufferedFileBinaryOutputPort.h                                 \
 Stack.h                                                            \
 Gloc.h                         BinaryInputOutputPort.h             \
 Box.h                          Port.h                              \
@@ -145,6 +146,8 @@ CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
+TestingFileBinaryOutputPort.h TestingFileBinaryInputPort.h \
+TestingVM.h \
 getoptU.h getoptU.cpp                                                      \
 StandardOutputPort.h \
 StandardErrorPort.h \
@@ -275,7 +278,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
 
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln
 
 GENERATED = \
 all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \

@@ -1,8 +1,7 @@
 #!@prefix@/bin/mosh
 (import (rnrs)
         (mosh)
-        (mosh config)
-        (srfi :1))
+        (mosh config))
 
 (define (main args)
   (cond
@@ -12,9 +11,9 @@
     (display " Options:\n" (current-error-port))
     (for-each
      (lambda (x)
-       (format (current-error-port) "    ~a: ~a\n" (first x) (second x)))
+       (format (current-error-port) "    ~a: ~a\n" (car x) (cadr x)))
      (get-configs))]
    [else
-    (display (get-config (second args)))]))
+    (display (get-config (cadr args)))]))
 
 (main (command-line))

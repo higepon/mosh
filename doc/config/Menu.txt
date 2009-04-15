@@ -91,61 +91,9 @@ Group: R6RS  {
    File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
    }  # Group: R6RS
 
-Group: Mosh-0.0.8  {
-
-   Group: Doc  {
-
-      File: SearchPanel  (mosh-0.0.8/doc/html/javascript/main.js)
-
-      Group: Text  {
-
-         File: About  (mosh-0.0.8/doc/text/About.txt)
-         File: Arithmetic  (mosh-0.0.8/doc/text/arith.tex.txt)
-         File: Base Library  (mosh-0.0.8/doc/text/base.tex.txt)
-         File: Bytevectors  (mosh-0.0.8/doc/text/bytevector.tex.txt)
-         File: Command-line access and exit values  (mosh-0.0.8/doc/text/programlib.tex.txt)
-         File: Composite library  (mosh-0.0.8/doc/text/Compositelibrary.txt)
-         File: Condition types  (mosh-0.0.8/doc/text/iocond.tex.txt)
-         File: Control structures  (mosh-0.0.8/doc/text/control.tex.txt)
-         File: Core  (mosh-0.0.8/doc/text/Core.txt)
-         File: Download  (mosh-0.0.8/doc/text/Download.txt)
-         File: Enumerations  (mosh-0.0.8/doc/text/enum.tex.txt)
-         File: eval  (mosh-0.0.8/doc/text/eval.tex.txt)
-         File: Exceptions and conditions  (mosh-0.0.8/doc/text/exc.tex.txt)
-         File: File system  (mosh-0.0.8/doc/text/files.tex.txt)
-         File: Hashtables  (mosh-0.0.8/doc/text/hashtable.tex.txt)
-         File: List utilities  (mosh-0.0.8/doc/text/list.tex.txt)
-         File: Mutable pairs  (mosh-0.0.8/doc/text/setcar.tex.txt)
-         File: Mutable strings  (mosh-0.0.8/doc/text/stringset.tex.txt)
-         File: Naming Conventions  (mosh-0.0.8/doc/text/Naming.txt)
-         File: Port I/O  (mosh-0.0.8/doc/text/portio.tex.txt)
-         File: R5RS compatibility  (mosh-0.0.8/doc/text/r5rscompat.tex.txt)
-         File: Records  (mosh-0.0.8/doc/text/records.tex.txt)
-         File: Simple I/O  (mosh-0.0.8/doc/text/convio.tex.txt)
-         File: Sorting  (mosh-0.0.8/doc/text/sort.tex.txt)
-         File: SRFIs  (mosh-0.0.8/doc/text/srfi.txt)
-         File: syntax-case  (mosh-0.0.8/doc/text/syntax-case.tex.txt)
-         }  # Group: Text
-
-      }  # Group: Doc
-
-   Group: Lib  {
-
-      File: Configuration  (mosh-0.0.8/lib/mosh/config.ss)
-      File: Control  (mosh-0.0.8/lib/mosh/control.ss)
-      File: Database independent interface  (mosh-0.0.8/lib/mosh/dbi.ss)
-      File: Foreign Function Interface  (mosh-0.0.8/lib/mosh/ffi.ss)
-      File: Pretty Printing  (mosh-0.0.8/lib/mosh/pp.ss)
-      File: Process  (mosh-0.0.8/lib/mosh/process.ss)
-      File: Unit Testing  (mosh-0.0.8/lib/mosh/test.ss)
-      }  # Group: Lib
-
-   }  # Group: Mosh-0.0.8
-
 Group: Index  {
 
    Index: Everything
-   Class Index: Classes
    Function Index: Functions
    Library Index: Libraries
    Variable Index: Variables
