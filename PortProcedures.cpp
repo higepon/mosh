@@ -299,7 +299,7 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("peek-char");
     checkArgumentLengthBetween(0, 1);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (0 == argc) {
             TextualInputPort* const port = theVM->currentInputPort().toTextualInputPort();
             checkPortIsOpen(port, theVM->currentInputPort());
@@ -311,11 +311,11 @@ Object scheme::peekCharEx(VM* theVM, int argc, const Object* argv)
             const ucs4char ch = textualInputPort->lookaheadChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
@@ -325,18 +325,18 @@ Object scheme::getDatumEx(VM* theVM, int argc, const Object* argv)
     bool errorOccured = false;
     argumentAsTextualInputPort(0, in);
     checkPortIsOpen(in, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         const Object object = in->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, in->error());
             return Object::Undef;
         }
         return object;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
@@ -344,18 +344,18 @@ Object scheme::getStringAllEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-string-all");
     argumentAsTextualInputPort(0, in);
     checkPortIsOpen(in, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         ucs4string text = in->getStringAll();
         if (text.empty()) {
             return Object::Undef;
         } else {
             return Object::makeString(text);
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
@@ -385,7 +385,7 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         ucs4string text = in->getString(u32Count);
         if (text.empty()) {
             return Object::Eof;
@@ -396,11 +396,11 @@ Object scheme::getStringNDEx(VM* theVM, int argc, const Object* argv)
             }
             return Bignum::makeInteger(text.size());
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
@@ -409,14 +409,14 @@ Object scheme::getCharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
     checkPortIsOpen(textualInputPort, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         const ucs4char ch = textualInputPort->getChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
@@ -426,7 +426,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualInputPort(0, inputPort);
     checkPortIsOpen(inputPort, argv[0]);
     argumentAsFixnum(1, size);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         ucs4string text = inputPort->getString(size);
 
         if (text.empty()) {
@@ -434,11 +434,11 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
         } else {
             return Object::makeString(text);
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::portHasPortPositionPEx(VM* theVM, int argc, const Object* argv)
@@ -514,7 +514,7 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("port-eof?");
     checkArgumentLength(1);
     const Object port = argv[0];
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (port.isBinaryInputPort()) {
             BinaryInputPort* const in = port.toBinaryInputPort();
             checkPortIsOpen(in, port);
@@ -535,11 +535,11 @@ Object scheme::portEofPEx(VM* theVM, int argc, const Object* argv)
             callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "port", port, L1(port));
             return Object::Undef;
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::putBytevectorEx(VM* theVM, int argc, const Object* argv)
@@ -584,14 +584,14 @@ Object scheme::putCharEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualOutputPort(0, textualOutputPort);
     checkPortIsOpen(textualOutputPort, argv[0]);
     argumentAsChar(1, ch);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         textualOutputPort->putChar(ch);
         return Object::Undef;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
@@ -600,14 +600,14 @@ Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualOutputPort(0, textualOutputPort);
     checkPortIsOpen(textualOutputPort, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         textualOutputPort->putDatum(argv[1]);
         return Object::Undef;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 
@@ -639,13 +639,13 @@ Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
     argumentAsBinaryOutputPort(1, outputPort);
     checkPortIsOpen(outputPort, argv[0]);
     FaslWriter writer(outputPort);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         writer.put(argv[0]);
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[1];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
     return Object::Undef;
 }
 
@@ -665,13 +665,13 @@ Object scheme::getLineEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, inputPort);
     checkPortIsOpen(inputPort, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         return inputPort->getLine();
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
@@ -679,7 +679,7 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("close-port");
     checkArgumentLength(1);
     argumentAsPort(0, port);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         port->close();
 //         if (port.isBinaryOutputPort()) {
 //             port.toBinaryOutputPort()->close();
@@ -696,11 +696,11 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
 //         } else {
 //             callAssertionViolationAfter(theVM, procedureName, "port required", L1(port));
 //         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
     theVM->unregisterPort(argv[0]);
     return Object::Undef;
 }
@@ -718,15 +718,15 @@ Object scheme::lookaheadCharEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsTextualInputPort(0, textualInputPort);
     checkPortIsOpen(textualInputPort, argv[0]);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         ucs4char ch;
         ch = textualInputPort->lookaheadChar();
         return ch == EOF ? Object::Eof : Object::makeChar(ch);
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::currentErrorPortEx(VM* theVM, int argc, const Object* argv)
@@ -741,7 +741,7 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("display");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
@@ -756,11 +756,11 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
             textualOutputPort->flush();
         }
         return Object::Undef;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
@@ -768,7 +768,7 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write-char");
     checkArgumentLengthBetween(1, 2);
     argumentAsChar(0, ch);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
@@ -779,11 +779,11 @@ Object scheme::writeCharEx(VM* theVM, int argc, const Object* argv)
             textualOutputPort->putChar(ch);
         }
         return Object::Undef;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::eofObjectPEx(VM* theVM, int argc, const Object* argv)
@@ -797,7 +797,7 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("read-char");
     checkArgumentLengthBetween(0, 1);
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (0 == argc) {
             TextualInputPort* const in = theVM->currentInputPort().toTextualInputPort();
             checkPortIsOpen(in, theVM->currentInputPort());
@@ -809,11 +809,11 @@ Object scheme::readCharEx(VM* theVM, int argc, const Object* argv)
             const ucs4char ch = textualInputPort->getChar();
             return ch == EOF ? Object::Eof : Object::makeChar(ch);
         }
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::readEx(VM* theVM, int argc, const Object* argv)
@@ -832,18 +832,18 @@ Object scheme::readEx(VM* theVM, int argc, const Object* argv)
         inputPort = textualInputPort;
     }
 
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         const Object object = inputPort->getDatum(errorOccured);
         if (errorOccured) {
             callLexicalAndIOReadAfter(theVM, procedureName, inputPort->error());
             return Object::Undef;
         }
         return object;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = (0 == argc) ? theVM->currentInputPort() : argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::openStringInputPortEx(VM* theVM, int argc, const Object* argv)
@@ -961,82 +961,88 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("format");
 
-    const Object arg1 = argv[0];
-    if (arg1.isTextualOutputPort()) {
-        checkArgumentLengthAtLeast(2);
-        argumentAsTextualOutputPort(0, textualOutputPort);
-        checkPortIsOpen(textualOutputPort, argv[0]);
-        argumentAsString(1, formatString);
-        Object lst = Object::Nil;
-        for (int i = argc - 1; i >= 2; i--) {
-            lst = Object::cons(argv[i], lst);
-        }
-        textualOutputPort->format(formatString->data(), lst);
-        if (textualOutputPort->isErrorOccured()) {
-            callAssertionViolationAfter(theVM, procedureName,
-                                        textualOutputPort->errorMessage(),
-                                        textualOutputPort->irritants());
-            return Object::Undef;
-        } else {
-            return Object::Undef;
-        }
-    } else if (arg1.isTrue()) {
-        checkArgumentLengthAtLeast(2);
-        argumentAsString(1, formatString);
-        Object lst = Object::Nil;
-        for (int i = argc - 1; i >= 2; i--) {
-            lst = Object::cons(argv[i], lst);
-        }
-        TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
-        checkPortIsOpen(outputPort, theVM->currentOutputPort());
-        outputPort->format(formatString->data(), lst);
-        if (outputPort->isErrorOccured()) {
-            callAssertionViolationAfter(theVM, procedureName,
-                                        outputPort->errorMessage(),
-                                        outputPort->irritants());
-            return Object::Undef;
-        } else {
-            return Object::Undef;
-        }
-    } else if (arg1.isFalse()) {
-        checkArgumentLengthAtLeast(2);
-        argumentAsString(1, formatString);
-        const Object port = Object::makeStringOutputPort();
-        StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
-        Object lst = Object::Nil;
-        for (int i = argc - 1; i >= 2; i--) {
-            lst = Object::cons(argv[i], lst);
-        }
+    TRY_WITHOUT_DSTR
+        const Object arg1 = argv[0];
+        if (arg1.isTextualOutputPort()) {
+            checkArgumentLengthAtLeast(2);
+            argumentAsTextualOutputPort(0, textualOutputPort);
+            checkPortIsOpen(textualOutputPort, argv[0]);
+            argumentAsString(1, formatString);
+            Object lst = Object::Nil;
+            for (int i = argc - 1; i >= 2; i--) {
+                lst = Object::cons(argv[i], lst);
+            }
+            textualOutputPort->format(formatString->data(), lst);
+            if (textualOutputPort->isErrorOccured()) {
+                callAssertionViolationAfter(theVM, procedureName,
+                                            textualOutputPort->errorMessage(),
+                                            textualOutputPort->irritants());
+                return Object::Undef;
+            } else {
+                return Object::Undef;
+            }
+        } else if (arg1.isTrue()) {
+            checkArgumentLengthAtLeast(2);
+            argumentAsString(1, formatString);
+            Object lst = Object::Nil;
+            for (int i = argc - 1; i >= 2; i--) {
+                lst = Object::cons(argv[i], lst);
+            }
+            TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
+            checkPortIsOpen(outputPort, theVM->currentOutputPort());
+            outputPort->format(formatString->data(), lst);
+            if (outputPort->isErrorOccured()) {
+                callAssertionViolationAfter(theVM, procedureName,
+                                            outputPort->errorMessage(),
+                                            outputPort->irritants());
+                return Object::Undef;
+            } else {
+                return Object::Undef;
+            }
+        } else if (arg1.isFalse()) {
+            checkArgumentLengthAtLeast(2);
+            argumentAsString(1, formatString);
+            const Object port = Object::makeStringOutputPort();
+            StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
+            Object lst = Object::Nil;
+            for (int i = argc - 1; i >= 2; i--) {
+                lst = Object::cons(argv[i], lst);
+            }
 
-        p->format(formatString->data(), lst);
-        if (p->isErrorOccured()) {
-            callAssertionViolationAfter(theVM, procedureName,
-                                        p->errorMessage(),
-                                        p->irritants());
-            return Object::Undef;
+            p->format(formatString->data(), lst);
+            if (p->isErrorOccured()) {
+                callAssertionViolationAfter(theVM, procedureName,
+                                            p->errorMessage(),
+                                            p->irritants());
+                return Object::Undef;
+            } else {
+                return Object::makeString(p->getString());
+            }
+        } else if (arg1.isString()) {
+            const Object port = Object::makeStringOutputPort();
+            StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
+            Object lst = Object::Nil;
+            for (int i = argc - 1; i >= 1; i--) {
+                lst = Object::cons(argv[i], lst);
+            }
+            p->format(arg1.toString()->data(), lst);
+            if (p->isErrorOccured()) {
+                callAssertionViolationAfter(theVM, procedureName,
+                                            p->errorMessage(),
+                                            p->irritants());
+                return Object::Undef;
+            } else {
+                return Object::makeString(p->getString());
+            }
         } else {
-            return Object::makeString(p->getString());
-        }
-    } else if (arg1.isString()) {
-        const Object port = Object::makeStringOutputPort();
-        StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
-        Object lst = Object::Nil;
-        for (int i = argc - 1; i >= 1; i--) {
-            lst = Object::cons(argv[i], lst);
-        }
-        p->format(arg1.toString()->data(), lst);
-        if (p->isErrorOccured()) {
-            callAssertionViolationAfter(theVM, procedureName,
-                                        p->errorMessage(),
-                                        p->irritants());
+            callAssertionViolationAfter(theVM, procedureName, "port and format string required");
             return Object::Undef;
-        } else {
-            return Object::makeString(p->getString());
         }
-    } else {
-        callAssertionViolationAfter(theVM, procedureName, "port and format string required");
-        return Object::Undef;
-    }
+    CATCH(ioError)
+        ioError.arg1 = argv[0];
+        ioError.who = procedureName;
+        return callIOErrorAfter(theVM, ioError);
+    END_TRY
 }
 
 Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
@@ -1044,7 +1050,7 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("write");
     checkArgumentLengthBetween(1, 2);
     const Object obj = argv[0];
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
@@ -1056,11 +1062,11 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
             textualOutputPort->putDatum(obj);
         }
         return Object::Undef;
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::makeCustomBinaryInputPortEx(VM* theVM, int argc, const Object* argv)
@@ -1389,14 +1395,14 @@ Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
     argumentAsTranscoder(1, transcoder);
 
     BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data(), bytevector->length());
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         return Object::makeString(transcoder->getString(port));
-    } CATCH(ioError) {
+    CATCH(ioError)
         ioError.arg1 = Object::makeBinaryInputPort(port);
         ioError.who = procedureName;
         ioError.irritants = Object::cons(argv[1], ioError.irritants);
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
 }
 
 Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
@@ -1411,13 +1417,13 @@ Object scheme::stringTobytevectorEx(VM* theVM, int argc, const Object* argv)
 
     for (ucs4string::const_iterator it = text->data().begin();
          it != text->data().end(); ++it) {
-        TRY_WITHOUT_DSTR {
+        TRY_WITHOUT_DSTR
             out.putChar(*it);
-        } CATCH(ioError) {
+        CATCH(ioError)
             ioError.arg1 = Object::Nil;
             ioError.who = procedureName;
             return callIOErrorAfter(theVM, ioError);
-        }
+        END_TRY
     }
     return Object::makeByteVector(accum.toByteVector());
 }
@@ -1826,13 +1832,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(1, stringObj);
     const ucs4string string = stringObj->data();
     if (argc < 3) {
-        TRY_WITHOUT_DSTR {
+        TRY_WITHOUT_DSTR
             textualOutputPort->putString(string);
-        } CATCH(IOError){
+        CATCH(IOError)
             ioError.arg1 = argv[0];
             ioError.who = procedureName;
             return callIOErrorAfter(theVM, ioError);
-        }
+        END_TRY
         return Object::Undef;
     }
 
@@ -1844,13 +1850,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
         start = startObj.toBignum()->toS32();
     }
     if (argc < 4) {
-        TRY_WITHOUT_DSTR {
+        TRY_WITHOUT_DSTR
             textualOutputPort->putString(string.substr(start, string.length()-start));
-        } CATCH(IOError){
+        CATCH(IOError)
             ioError.arg1 = argv[0];
             ioError.who = procedureName;
             return callIOErrorAfter(theVM, ioError);
-        }
+        END_TRY
         return Object::Undef;
     }
 
@@ -1861,13 +1867,13 @@ Object scheme::putStringEx(VM* theVM, int argc, const Object* argv)
     } else { // countObj.isBignum()
         count = countObj.toBignum()->toS32();
     }
-    TRY_WITHOUT_DSTR {
+    TRY_WITHOUT_DSTR
         textualOutputPort->putString(string.substr(start, count));
-    } CATCH(IOError){
+    CATCH(IOError)
         ioError.arg1 = argv[0];
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
-    }
+    END_TRY
     return Object::Undef;
 }
 

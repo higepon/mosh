@@ -1,3 +1,9 @@
+2009-04-16  higepon  <higepon@users.sourceforge.jp>
+
+        * ErrorProcedures.h (TRY_WITHOUT_DSTR): Fixed.
+
+        * PortProcedures.cpp (formatEx): Added TRY_WITHOUT_DSTR and CATCH.
+
 2009-04-15  higepon  <higepon@users.sourceforge.jp>
 
         * OSCompat.h (scheme): Addes isLastErrorAcessError();

@@ -145,7 +145,7 @@ void BufferedFileBinaryOutputPort::flush()
     while (bufIdx_ > 0) {
         const int64_t result = file_->write(buf, bufIdx_);
         if (result < 0) {
-            // return correct error
+            throwIOError2(IOError::WRITE, getLastErrorMessage());
             return;
         }
         buf += result;

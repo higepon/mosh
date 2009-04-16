@@ -647,17 +647,17 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY_WITHOUT_DSTR {
+            TRY_WITHOUT_DSTR
                 ac_ = inputPort->getDatum(errorOccured);
                 if (errorOccured) {
                     callLexicalAndIOReadAfter(this, "read", inputPort->error());
                 }
-            } CATCH(ioError) {
+            CATCH(ioError)
                 ioError.arg1 = (ac_.isNil()) ? currentInputPort_ : ac_;
                 ioError.who = "read";
                 callIOErrorAfter(this, ioError);
                 NEXT1;
-            }
+            END_TRY
             NEXT1;
         }
         CASE(READ_CHAR)
@@ -675,15 +675,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     NEXT1;
                 }
             }
-            TRY_WITHOUT_DSTR {
+            TRY_WITHOUT_DSTR
                 const ucs4char c = inputPort->getChar();
                 ac_= c == EOF ? Object::Eof : Object::makeChar(c);
-            } CATCH(ioError) {
+            CATCH(ioError)
                 ioError.arg1 = (ac_.isNil()) ? currentInputPort_ : ac_;
                 ioError.who = "read-char";
                 callIOErrorAfter(this, ioError);
                 NEXT1;
-            }
+            END_TRY
             NEXT1;
         }
         CASE(REDUCE)

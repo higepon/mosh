@@ -72,12 +72,15 @@ extern bool isErrorBufInitialized;
 
 
 #ifdef DEBUG_VERSION
-  #define TRY_WITHOUT_DSTR isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0)
+#define TRY_WITHOUT_DSTR isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0) {
+#define CATCH(x) isErrorBufInitialized = false; } else { isErrorBufInitialized = false;
 #else
-  #define TRY_WITHOUT_DSTR if (setjmp(ioErrorJmpBuf) == 0)
+#define TRY_WITHOUT_DSTR if (setjmp(ioErrorJmpBuf) == 0) {
+#define CATCH(x) } else {
 #endif
 
-#define CATCH(x) else
+#define END_TRY }
+
 
     class VM;
 
