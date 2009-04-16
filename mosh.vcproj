@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="pre-compilation of Mosh libraries"
-				CommandLine="scripts\pre-compile.bat"
+				CommandLine="scripts\pre-compile.bat mosh"
 			/>
 		</Configuration>
 	</Configurations>
