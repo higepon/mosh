@@ -151,7 +151,7 @@ static ucs4string getLastErrorMessageInternal(DWORD e)
         msg[size - 2] = 0;
         size -= 2;
     }
-    return utf16ToUtf32(msg, wcslen(msg) * 2);
+    return utf16ToUtf32((char*)msg, wcslen(msg) * 2);
 }
 #else
 static ucs4string getLastErrorMessageInternal(int e)
@@ -500,7 +500,7 @@ ucs4char** scheme::getCommandLine(int argc, char* argv[])
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
     argvU[argc] = NULL;
     for (int i = 0; i < argc; i++) {
-        argvU[i] = utf16ToUtf32(argvw[i], wcslen(argvw) * 2).strdup();
+        argvU[i] = utf16ToUtf32((char*)argvw[i], wcslen(argvw) * 2).strdup();
     }
     LocalFree(argvw);
     return argvU;
@@ -608,7 +608,7 @@ ucs4char* scheme::getEnv(const ucs4string& key)
     if (size == 0 || size > valueSize) {
         return NULL;
     }
-    return utf16ToUtf32(value, wcslen(value) * 2).strdup();
+    return utf16ToUtf32((char*)value, wcslen(value) * 2).strdup();
 #else
     const char* value = getenv((char*)utf32toUtf8(key)->data());
     if (NULL == value) {
