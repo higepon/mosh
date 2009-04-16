@@ -1,3 +1,3 @@
 (import (rnrs)
-        (srfi :64))
-(open-input-file "aaa")
+        (mosh))
+(format #t "hige is")

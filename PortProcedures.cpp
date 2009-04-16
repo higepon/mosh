@@ -960,13 +960,18 @@ Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("format");
+
+    FileBinaryOutputPort bout(UC("format.log"));
+    Transcoder* transcoder = nativeConsoleTranscoder();
+    const Object outPort    = Object::makeTextualOutputPort(&bout, transcoder);
     const Object arg1 = argv[0];
+    outPort.toTextualOutputPort()->format(UC("argv[0]=~a \n"), Pair::list1(argv[0]));
     if (arg1.isTextualOutputPort()) {
         checkArgumentLengthAtLeast(2);
         argumentAsTextualOutputPort(0, textualOutputPort);
         checkPortIsOpen(textualOutputPort, argv[0]);
         argumentAsString(1, formatString);
-
+    outPort.toTextualOutputPort()->format(UC("argv[1]=~a \n"), Pair::list1(argv[1]));
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 2; i--) {
             lst = Object::cons(argv[i], lst);
@@ -983,9 +988,10 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
     } else if (arg1.isTrue()) {
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
-
+    outPort.toTextualOutputPort()->format(UC("argv[1]=~a \n"), Pair::list1(argv[1]));
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 2; i--) {
+            outPort.toTextualOutputPort()->format(UC("argv[i]=~a \n"), Pair::list1(argv[i]));
             lst = Object::cons(argv[i], lst);
         }
         TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
@@ -1002,11 +1008,12 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
     } else if (arg1.isFalse()) {
         checkArgumentLengthAtLeast(2);
         argumentAsString(1, formatString);
-
+    outPort.toTextualOutputPort()->format(UC("argv[1]=~a \n"), Pair::list1(argv[1]));
         const Object port = Object::makeStringOutputPort();
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 2; i--) {
+            outPort.toTextualOutputPort()->format(UC("argv[i]=~a \n"), Pair::list1(argv[i]));
             lst = Object::cons(argv[i], lst);
         }
 
@@ -1024,6 +1031,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
         StringTextualOutputPort* const p = static_cast<StringTextualOutputPort*>(port.toTextualOutputPort());
         Object lst = Object::Nil;
         for (int i = argc - 1; i >= 1; i--) {
+            outPort.toTextualOutputPort()->format(UC("argv[i]=~a \n"), Pair::list1(argv[i]));
             lst = Object::cons(argv[i], lst);
         }
         p->format(arg1.toString()->data(), lst);
@@ -1036,6 +1044,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             return Object::makeString(p->getString());
         }
     } else {
+        outPort.toTextualOutputPort()->format(UC("argv[i]=~a \n"), Object::Nil);
         callAssertionViolationAfter(theVM, procedureName, "port and format string required");
         return Object::Undef;
     }
