@@ -1,0 +1,46 @@
+README.MINGW 17-Apr-2009
+
+by OKUMURA Yuki <mjt@cltn.org>
+
+
+
+WARNING
+-------
+
+This is port of Mosh for mingw32msvc, and it's still an _experimental_ port.
+If you just wish to use Mosh under win32 environment, use MSVC port instead.
+
+Please consider using svn trunk :
+  http://code.google.com/p/mosh-scheme/source/checkout
+
+PREREQUISITES
+-------------
+
+- i386-mingw32msvc-g++,gcc (3.4.x or above, tested by 4.3.2)
+- bash
+- gnu make
+- gnu MP library
+
+
+CONFIGURATION & BUILD
+---------------------
+
+As usual product, run the configure script and make.
+Note that some options(--disable-*) are mandatory under win32.
+
+ ./configure CFLAGS="-DGTEST_OS_WINDOWS" CXXFLAGS="-DGTEST_OS_WINDOWS"  \
+ --disable-shared --disable-profiler && make
+
+To cross compilation, add "--host=i386-mingw32msvc" or so to configure's argument,
+and configure script autodetects binutils and compilers.
+
+INSTALL
+-------
+
+TBD.
+
+Run 
+ scripts\pre-compile.bat mosh.exe 
+
+
+
