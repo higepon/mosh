@@ -500,7 +500,7 @@ ucs4char** scheme::getCommandLine(int argc, char* argv[])
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
     argvU[argc] = NULL;
     for (int i = 0; i < argc; i++) {
-        argvU[i] = utf16ToUtf32((char*)argvw[i], wcslen(argvw) * 2).strdup();
+        argvU[i] = utf16ToUtf32((char*)(argvw[i]), wcslen(argvw[i]) * 2).strdup();
     }
     LocalFree(argvw);
     return argvU;
