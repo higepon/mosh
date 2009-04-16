@@ -1,5 +1,5 @@
 /*
- * ucs4string.cpp - 
+ * ucs4string.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -78,7 +78,7 @@ ucs4char* ucs4string::strdup()
     return ret;
 }
 
-void ucs4string::split(ucs4char ch, gc_vector<ucs4string>& v)
+void ucs4string::split(ucs4char ch, gc_vector<ucs4string>& v) const
 {
     size_type index = 0;
     size_type next = 0;

@@ -56,10 +56,10 @@ public:
     ucs4string(int n, ucs4char c = ' ') : ucs4string_base(n, c) {}
     ucs4string(const ucs4char* s) : ucs4string_base(s) {}
     ucs4string(const ucs4char* s, int n) : ucs4string_base(s, n) {}
-    ucs4string(ucs4string::iterator a, ucs4string::iterator b) : ucs4string_base(a, b) {}
+    ucs4string(ucs4string::const_iterator a, ucs4string::const_iterator b) : ucs4string_base(a, b) {}
     char* ascii_c_str() const;
     ucs4string substr(int x, int size) const;
-    void split(ucs4char ch, gc_vector<ucs4string>& v);
+    void split(ucs4char ch, gc_vector<ucs4string>& v) const;
     ucs4char* strdup();
     bool is_ascii() const;
     static ucs4string from_c_str(const char* s, int size);
