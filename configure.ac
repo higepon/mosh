@@ -225,7 +225,7 @@ i[[3456]]86|pentium)
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE"
+	 MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x500 -D_WIN32_WINNT=0x500"
          MOSH_LDADD_ARCH="-lshlwapi"
          ;;
         *)
@@ -250,6 +250,19 @@ x86?64*)
         ;;
 esac
 
+AC_MSG_CHECKING([whether to enable MinGW support])
+case "$host_os" in
+*mingw*)
+        mingw32=true
+        AC_MSG_RESULT([yes])
+	AC_CHECK_TOOL(WINDRES, windres)
+	;;
+*)
+        mingw32=true
+        AC_MSG_RESULT([no])
+	;;
+esac
+AM_CONDITIONAL(MINGW32, test x$ming32 = xtrue)
 
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)

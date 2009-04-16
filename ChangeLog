@@ -1,3 +1,9 @@
+2009-04-17 OKUMURA Yuki <mjt@cltn.org>
+
+        * configure.ac: mingw specific flag/vars/definition (WINDRES, MINGW32).
+
+        * README.MINGW: added.
+
 2009-04-16  higepon  <higepon@users.sourceforge.jp>
 
         * configure.ac: LDFLAGS for FreeBSD.
