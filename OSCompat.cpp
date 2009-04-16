@@ -66,8 +66,12 @@ extern int main(int argc, char *argv[]);
     #include <io.h>
     #include <direct.h>
     #include <process.h>
+    #include <shellapi.h>
     #define PATH_MAX _MAX_PATH
     #define dup2 _dup2
+    #ifdef _MSC_VER
+        #pragma comment(lib, "shell32.lib")
+    #endif
 #endif
 
 
@@ -491,13 +495,23 @@ bool File::isLastErrorAcessError() const
 
 ucs4char** scheme::getCommandLine(int argc, char* argv[])
 {
-    // TODO: Windows
+#ifdef _WIN32
+    wchar_t **argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
+    ucs4char** argvU = new(GC) ucs4char*[argc + 1];
+    argvU[argc] = NULL;
+    for (int i = 0; i < argc; i++) {
+        argvU[i] = utf16ToUtf32(argvw[i]).strdup();
+    }
+    LocalFree(argvw);
+    return argvU;
+#else
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
     argvU[argc] = NULL;
     for (int i = 0; i < argc; i++) {
         argvU[i] = utf8ToUtf32(argv[i], strlen(argv[i])).strdup();
     }
     return argvU;
+#endif
 }
 
 ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)

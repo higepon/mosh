@@ -1,8 +1,24 @@
+2009-04-16 herumi <herumi@nifty.com>
+
+        * ucs4string.cpp : fix ucs4string.split()
+
+        * fix longjmp destroy stack
+
+        * OSCompat.cpp : fix correct cosole handle for WriteConsole
+
+        * OSCompat.cpp : add getCommandLine for windows
+
 2009-04-16  higepon  <higepon@users.sourceforge.jp>
 
         * ErrorProcedures.h (TRY_WITHOUT_DSTR): Fixed.
 
         * PortProcedures.cpp (formatEx): Added TRY_WITHOUT_DSTR and CATCH.
+
+2009-04-15 herumi <herumi@nifty.com>
+
+        * windows installer script for innosetup
+
+        * OSCompat.cpp : add getLastErrorMessage() for windows
 
 2009-04-15  higepon  <higepon@users.sourceforge.jp>
 
