@@ -258,7 +258,7 @@ case "$host_os" in
 	AC_CHECK_TOOL(WINDRES, windres)
 	;;
 *)
-        mingw32=true
+        mingw32=false
         AC_MSG_RESULT([no])
 	;;
 esac
