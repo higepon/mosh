@@ -1,3 +1,3 @@
-(import (rnrs)
-        (mosh))
-(format #t "hige is")
+(import (rnrs))
+
+(display (command-line))
