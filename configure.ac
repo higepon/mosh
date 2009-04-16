@@ -220,6 +220,10 @@ i[[3456]]86|pentium)
             fi
           fi
           ;;
+       *freebsd*)
+         MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
+         MOSH_LDADD_ARCH="-lpthread"
+         ;;
        *mingw*)
          MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE"
          MOSH_LDADD_ARCH="-lshlwapi"

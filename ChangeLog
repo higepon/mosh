@@ -1,5 +1,9 @@
 2009-04-16  higepon  <higepon@users.sourceforge.jp>
 
+        * configure.ac: LDFLAGS for FreeBSD.
+
+        * OSCompat.cpp (scheme::getMoshExecutablePath): Fixed for FreeBSD.
+
         * PortProcedures.cpp : Added utf16ToUtf32()
 
 2009-04-16 herumi <herumi@nifty.com>

@@ -561,7 +561,8 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     std::string p = base;
     int pos = p.find_last_of('/');
     if (pos > 0) {
-        return Object::makeString(p.substr(0, pos + 1).c_str());
+        const char* ret = p.substr(0, pos + 1).c_str();
+        return ucs4string::from_c_str(ret, strlen(ret));
     }
     isErrorOccured = true;
     return UC("");
