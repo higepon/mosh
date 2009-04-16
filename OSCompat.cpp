@@ -105,31 +105,31 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
     tcoder.putChar(&out, '\0');
     return (wchar_t*)out.toByteVector()->data();
 }
-ucs4string utf16ToUtf32(const std::wstring& s)
-{
-    // use UTF16Codec
-    struct local {
-        static inline bool isLead(ucs4char c) { return (c & 0xfffffc00) == 0xd800; }
-        static inline bool isTrail(ucs4char c) { return (c & 0xfffffc00) == 0xdc00; }
-    };
-    size_t i = 0, n = s.size();
-    ucs4string out;
-    while (i < n) {
-        ucs4char c0 = s[i++];
-        if (local::isLead(c0)) {
-            ucs4char c1;
-            if (i < n && local::isTrail((c1 = s[i]))) {
-                i++;
-                const ucs4char offset = (0xd800 << 10UL) + 0xdc00 - 0x10000;
-                c0 = (c0 << 10) + c1 - offset;
-            } else {
-                return ucs4string::from_c_str("bad char", 8);
-            }
-        }
-        out.push_back(c0);
-    }
-    return out;
-}
+// ucs4string utf16ToUtf32(const std::wstring& s)
+// {
+//     // use UTF16Codec
+//     struct local {
+//         static inline bool isLead(ucs4char c) { return (c & 0xfffffc00) == 0xd800; }
+//         static inline bool isTrail(ucs4char c) { return (c & 0xfffffc00) == 0xdc00; }
+//     };
+//     size_t i = 0, n = s.size();
+//     ucs4string out;
+//     while (i < n) {
+//         ucs4char c0 = s[i++];
+//         if (local::isLead(c0)) {
+//             ucs4char c1;
+//             if (i < n && local::isTrail((c1 = s[i]))) {
+//                 i++;
+//                 const ucs4char offset = (0xd800 << 10UL) + 0xdc00 - 0x10000;
+//                 c0 = (c0 << 10) + c1 - offset;
+//             } else {
+//                 return ucs4string::from_c_str("bad char", 8);
+//             }
+//         }
+//         out.push_back(c0);
+//     }
+//     return out;
+// }
 #endif // _WIN32
 
 #ifdef _WIN32

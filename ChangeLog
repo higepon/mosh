@@ -1,3 +1,7 @@
+2009-04-16  higepon  <higepon@users.sourceforge.jp>
+
+        * PortProcedures.cpp : Added utf16ToUtf32()
+
 2009-04-16 herumi <herumi@nifty.com>
 
         * ucs4string.cpp : fix ucs4string.split()

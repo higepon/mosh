@@ -95,6 +95,14 @@ ucs4string scheme::utf8ToUtf32(const char* s, int len)
     return transcoderr.getString(&in);
 }
 
+ucs4string scheme::utf16ToUtf32(const char* s, int len)
+{
+    ByteArrayBinaryInputPort in((uint8_t*)s, len);
+    UTF16Codec codec;
+    Transcoder transcoderr(&codec, EolStyle(LF), ErrorHandlingMode(IGNORE_ERROR));
+    return transcoderr.getString(&in);
+}
+
 // output is NULL terminated
 ByteVector* scheme::utf32toUtf8(const ucs4string& s)
 {
