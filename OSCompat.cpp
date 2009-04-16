@@ -601,11 +601,21 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 
 ucs4char* scheme::getEnv(const ucs4string& key)
 {
+#ifdef _WIN32
+    const int valueSize = 1024;
+    wchar_t value[valueSize];
+    int size = GetEnvironmentVariableW(utf32ToUtf16(key), value, valueSize);
+    if (size == 0 || size > valueSize) {
+        return NULL;
+    }
+    return utf16ToUtf32(value).strdup();
+#else
     const char* value = getenv((char*)utf32toUtf8(key)->data());
     if (NULL == value) {
         return NULL;
     }
     return utf8ToUtf32(value, strlen(value)).strdup();
+#endif
 }
 
 #ifdef _WIN32
