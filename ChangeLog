@@ -1,3 +1,7 @@
+2009-04-17  higepon  <higepon@users.sourceforge.jp>
+
+        * Makefile.am: Added FreeBSD.
+
 2009-04-17 herumi <herumi@nifty.com>
 
         * OSCompat.cpp : correct handling of windows console and redirect. a little refactoring

@@ -28,11 +28,12 @@ On OSX you need to build GMP *32bit* version like following.
 Install:
 
 (start code)
+# On FreeBSD, use "gmake" instead of "make"
 % tar zvxf mosh-@PACKAGE_VERSION@.tar.gz
 % cd mosh-@PACKAGE_VERSION@
 % ./configure
 % make
-% make check
+% make test
 % sudo make install
 (end code)
 
