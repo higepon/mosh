@@ -679,9 +679,22 @@ Object scheme::getEnvAlist()
 
 Object scheme::readDirectory(const ucs4string& path)
 {
-#ifdef _MSC_VER
-    // TODO
-    return Object::False;
+#ifdef _WIN32
+    WIN32_FIND_DATA data;
+    HANDLE hdl;
+
+    Object ret = Object::Nil;
+    ucs4string path2(path);
+    const ucs4char suf[] = { '\\', '*', 0 };
+    path2.append(suf);
+    hdl = FindFirstFileW(utf32ToUtf16(path2), &data);
+    if (hdl != INVALID_HANDLE_VALUE) {
+        do {
+            ret = Object::cons(Object::makeString(my_utf16ToUtf32(data.cFileName)), ret);
+        } while (FindNextFileW(hdl, &data));
+        FindClose(hdl);
+    }
+    return ret;
 #else
     DIR* dir;
     if (NULL == (dir = opendir((char*)utf32toUtf8(path)->data()))) {

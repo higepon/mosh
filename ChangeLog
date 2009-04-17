@@ -8,7 +8,7 @@
 
         * OSCompat.cpp : add unicode version of getEnvAlist
 
-        * OSCompat.cpp : add unicode version of isExist/isWritable/isReadable
+        * OSCompat.cpp : add unicode version of isExist/isWritable/isReadable, other unicode version fuctions for win
 
 2009-04-17 OKUMURA Yuki <mjt@cltn.org>
 
