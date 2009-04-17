@@ -692,6 +692,7 @@ Object scheme::readDirectory(const ucs4string& path)
     {
         ret = Object::cons(Object::makeString(entry->d_name), ret);
     }
+    closedir(dir);
     return ret;
 #endif
 }
