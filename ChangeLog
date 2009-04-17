@@ -6,6 +6,8 @@
 
         * OSCompat.cpp : correct handling of windows console and redirect. a little refactoring
 
+        * OSCompat.cpp : add unicode version of getEnvAlist
+
 2009-04-17 OKUMURA Yuki <mjt@cltn.org>
 
         * configure.ac: mingw specific flag/vars/definition (WINDRES, MINGW32).

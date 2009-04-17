@@ -628,6 +628,27 @@ extern char** environ;
 
 Object scheme::getEnvAlist()
 {
+#ifdef _WIN32
+    Object ret = Object::Nil;
+    const wchar_t *env = GetEnvironmentStringsW();
+    for (;;) {
+        const wchar_t *p = wcschr(env + (*env == L'=' ? 1 : 0), L'=');
+        if (p) {
+            ucs4string key = my_utf16ToUtf32(std::wstring(env, p));
+            size_t len = wcslen(p + 1);
+            ucs4string value = my_utf16ToUtf32(std::wstring(p + 1, len));
+            env = p + 1 + len + 1;
+            ret = Object::cons(Object::cons(Object::makeString(key),
+                                            Object::makeString(value)),
+                               ret);
+        } else {
+            MOSH_ASSERT(0);
+            break;
+        }
+        if (*env == 0) break;
+    }
+    return ret;
+#else
     Object ret = Object::Nil;
     char** env = environ;
     while(*env) {
@@ -640,6 +661,7 @@ Object scheme::getEnvAlist()
         env++;
     }
     return ret;
+#endif
 }
 
 Object scheme::readDirectory(const ucs4string& path)
