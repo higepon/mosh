@@ -99,8 +99,6 @@ namespace scheme {
         bool isOpen() const;
         bool close();
         bool isUTF16Console() const;
-        bool operator==(const File& rhs) const { return desc_ == rhs.desc_; }
-        bool operator!=(const File& rhs) const { return !(*this == rhs); }
         int64_t write(uint8_t* buf, int64_t size);
         int64_t read(uint8_t* buf, int64_t size);
         int64_t seek(int64_t offset, Whence whece = Begin);

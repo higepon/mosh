@@ -8,6 +8,8 @@
 
         * OSCompat.cpp : add unicode version of getEnvAlist
 
+        * OSCompat.cpp : add unicode version of isExist/isWritable/isReadable
+
 2009-04-17 OKUMURA Yuki <mjt@cltn.org>
 
         * configure.ac: mingw specific flag/vars/definition (WINDRES, MINGW32).

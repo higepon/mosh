@@ -96,14 +96,14 @@ File File::STANDARD_ERR = File(2);
 
 
 #ifdef _WIN32
-wchar_t* utf32ToUtf16(const ucs4string& s)
+const wchar_t* utf32ToUtf16(const ucs4string& s)
 {
     ByteArrayBinaryOutputPort out;
     UTF16Codec codec(UTF16Codec::UTF_16LE);
     Transcoder tcoder(&codec);
     tcoder.putString(&out, s);
     tcoder.putChar(&out, '\0');
-    return (wchar_t*)out.toByteVector()->data();
+    return (const wchar_t*)out.toByteVector()->data();
 }
 ucs4string my_utf16ToUtf32(const std::wstring& s)
 {
@@ -469,18 +469,31 @@ int64_t File::seek(int64_t offset, Whence whence /* = Begin */)
     #define R_OK 4
 #endif
 
+namespace {
+
+bool wrapped_access(const ucs4string& path, int mode)
+{
+#ifdef _WIN32
+    return _waccess(utf32ToUtf16(path), mode) == 0;
+#else
+    return access((char*)utf32toUtf8(path)->data(), mode) == 0;
+#endif
+}
+
+}
+
 bool File::isExist(const ucs4string& path)
 {
-    return access((char*)utf32toUtf8(path)->data(), F_OK) == 0;
+    return wrapped_access(path, F_OK);
 }
 
 bool File::isWritable(const ucs4string& path)
 {
-    return access((char*)utf32toUtf8(path)->data(), W_OK | R_OK) == 0;
+    return wrapped_access(path, W_OK | F_OK);
 }
 bool File::isReadable(const ucs4string& path)
 {
-    return access((char*)utf32toUtf8(path)->data(), R_OK) == 0;
+    return wrapped_access(path, R_OK);
 }
 
 bool File::isLastErrorAcessError() const
