@@ -54,7 +54,7 @@
                       [else
                        (bytevector-u8-set! bv (+ start size) b)
                        (if (>= (+ size 1) count)
-                           '()
+                           size
                            (loop (+ size 1) (read-byte)))]))))
                #f #f #f)
               (make-transcoder (utf-8-codec)))])

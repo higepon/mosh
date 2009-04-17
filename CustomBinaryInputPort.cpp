@@ -96,6 +96,8 @@ bool CustomBinaryInputPort::isClosed() const
     return isClosed_ || isPseudoClosed_;
 }
 
+#include "SString.h"
+#include "StringProcedures.h"
 int CustomBinaryInputPort::getU8()
 {
     if (hasAheadU8()) {
