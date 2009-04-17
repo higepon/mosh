@@ -105,31 +105,31 @@ wchar_t* utf32ToUtf16(const ucs4string& s)
     tcoder.putChar(&out, '\0');
     return (wchar_t*)out.toByteVector()->data();
 }
-// ucs4string utf16ToUtf32(const std::wstring& s)
-// {
-//     // use UTF16Codec
-//     struct local {
-//         static inline bool isLead(ucs4char c) { return (c & 0xfffffc00) == 0xd800; }
-//         static inline bool isTrail(ucs4char c) { return (c & 0xfffffc00) == 0xdc00; }
-//     };
-//     size_t i = 0, n = s.size();
-//     ucs4string out;
-//     while (i < n) {
-//         ucs4char c0 = s[i++];
-//         if (local::isLead(c0)) {
-//             ucs4char c1;
-//             if (i < n && local::isTrail((c1 = s[i]))) {
-//                 i++;
-//                 const ucs4char offset = (0xd800 << 10UL) + 0xdc00 - 0x10000;
-//                 c0 = (c0 << 10) + c1 - offset;
-//             } else {
-//                 return ucs4string::from_c_str("bad char", 8);
-//             }
-//         }
-//         out.push_back(c0);
-//     }
-//     return out;
-// }
+ucs4string my_utf16ToUtf32(const std::wstring& s)
+{
+    // use UTF16Codec
+    struct local {
+        static inline bool isLead(ucs4char c) { return (c & 0xfffffc00) == 0xd800; }
+        static inline bool isTrail(ucs4char c) { return (c & 0xfffffc00) == 0xdc00; }
+    };
+    size_t i = 0, n = s.size();
+    ucs4string out;
+    while (i < n) {
+        ucs4char c0 = s[i++];
+        if (local::isLead(c0)) {
+            ucs4char c1;
+            if (i < n && local::isTrail((c1 = s[i]))) {
+                i++;
+                const ucs4char offset = (0xd800 << 10UL) + 0xdc00 - 0x10000;
+                c0 = (c0 << 10) + c1 - offset;
+            } else {
+                return ucs4string::from_c_str("bad char", 8);
+            }
+        }
+        out.push_back(c0);
+    }
+    return out;
+}
 #endif // _WIN32
 
 #ifdef _WIN32
@@ -151,7 +151,7 @@ static ucs4string getLastErrorMessageInternal(DWORD e)
         msg[size - 2] = 0;
         size -= 2;
     }
-    return utf16ToUtf32((char*)msg, wcslen(msg) * 2);
+    return my_utf16ToUtf32(msg);
 }
 #else
 static ucs4string getLastErrorMessageInternal(int e)
@@ -500,7 +500,7 @@ ucs4char** scheme::getCommandLine(int argc, char* argv[])
     ucs4char** argvU = new(GC) ucs4char*[argc + 1];
     argvU[argc] = NULL;
     for (int i = 0; i < argc; i++) {
-        argvU[i] = utf16ToUtf32((char*)(argvw[i]), wcslen(argvw[i]) * 2).strdup();
+        argvU[i] = my_utf16ToUtf32(argvw[i]).strdup();
     }
     LocalFree(argvw);
     return argvU;
@@ -609,7 +609,7 @@ ucs4char* scheme::getEnv(const ucs4string& key)
     if (size == 0 || size > valueSize) {
         return NULL;
     }
-    return utf16ToUtf32((char*)value, wcslen(value) * 2).strdup();
+    return my_utf16ToUtf32(value).strdup();
 #else
     const char* value = getenv((char*)utf32toUtf8(key)->data());
     if (NULL == value) {
