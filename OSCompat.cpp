@@ -723,17 +723,30 @@ ucs4string scheme::getLastErrorMessage()
 
 Object scheme::getCurrentDirectory()
 {
-// TODO Windows
+#ifdef _WIN32
+    wchar_t buf[PATH_MAX];
+    int size = GetCurrentDirectoryW(PATH_MAX, buf);
+    if (size > 0) {
+        return Object::makeString(my_utf16ToUtf32(buf));
+    } else {
+        return Object::False;
+    }
+#else
     char buf[PATH_MAX];
     if (getcwd(buf, PATH_MAX) == NULL) {
         return Object::False;
     } else {
         return Object::makeString(buf);
-   }
+    }
+#endif
 }
 
 bool scheme::setCurrentDirectory(const ucs4string& dir)
 {
+#ifdef _WIN32
+    return SetCurrentDirectoryW(utf32ToUtf16(dir)) != 0;
+#else
     return (-1 != chdir((char*)utf32toUtf8(dir)->data()));
+#endif
 }
 
