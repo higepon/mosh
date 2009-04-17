@@ -84,25 +84,27 @@ namespace scheme {
             End
         };
 #ifdef _WIN32
-        File(HANDLE desc = INVALID_HANDLE_VALUE);
+        explicit File(HANDLE desc = INVALID_HANDLE_VALUE);
 #else
-        File(int desc = -1);
+        explicit File(int desc = -1);
 #endif
         bool open(const ucs4string& file, int flags);
 
-        virtual ~File();
-
+        virtual ~File()
+        {
+            close();
+        }
+        // you must definel copy constructor and operator=()
 
         bool isOpen() const;
         bool close();
+        bool isUTF16Console() const;
+        bool operator==(const File& rhs) const { return desc_ == rhs.desc_; }
+        bool operator!=(const File& rhs) const { return !(*this == rhs); }
         int64_t write(uint8_t* buf, int64_t size);
         int64_t read(uint8_t* buf, int64_t size);
         int64_t seek(int64_t offset, Whence whece = Begin);
-#ifdef _WIN32
-        int dup(HANDLE target);
-#else
-        int dup(int target);
-#endif
+        bool dup(File& target);
         int64_t size();
 
         ucs4string getLastErrorMessage() const;
@@ -112,15 +114,9 @@ namespace scheme {
         static bool isWritable(const ucs4string& path);
         static bool isReadable(const ucs4string& path);
 
-#ifdef _WIN32
-        static const HANDLE STANDARD_IN;
-        static const HANDLE STANDARD_OUT;
-        static const HANDLE STANDARD_ERR;
-#else
-        static const int STANDARD_IN;
-        static const int STANDARD_OUT;
-        static const int STANDARD_ERR;
-#endif
+        static File STANDARD_IN;
+        static File STANDARD_OUT;
+        static File STANDARD_ERR;
 
     private:
 #ifdef _WIN32

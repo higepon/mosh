@@ -81,16 +81,16 @@ using namespace scheme;
 //
 
 #ifdef _WIN32
-//const HANDLE File::STANDARD_IN  = GetStdHandle(STD_INPUT_HANDLE);
-//const HANDLE File::STANDARD_OUT = GetStdHandle(STD_OUTPUT_HANDLE);
-const HANDLE File::STANDARD_IN = CreateFileA("CONIN$", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-const HANDLE File::STANDARD_OUT = CreateFileA("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-const HANDLE File::STANDARD_ERR = GetStdHandle(STD_ERROR_HANDLE);
+File File::STANDARD_IN  = File(GetStdHandle(STD_INPUT_HANDLE));
+File File::STANDARD_OUT = File(GetStdHandle(STD_OUTPUT_HANDLE));
+//File File::STANDARD_IN = File(CreateFileA("CONIN$", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+//File File::STANDARD_OUT = File(CreateFileA("CONOUT$", GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL));
+File File::STANDARD_ERR = File(GetStdHandle(STD_ERROR_HANDLE));
 
 #else
-const int File::STANDARD_IN  = 0;
-const int File::STANDARD_OUT = 1;
-const int File::STANDARD_ERR = 2;
+File File::STANDARD_IN  = File(0);
+File File::STANDARD_OUT = File(1);
+File File::STANDARD_ERR = File(2);
 #endif
 
 
@@ -174,6 +174,14 @@ File::File(int desc /* = -1 */)
     {}
 #endif
 
+bool File::isUTF16Console() const
+{
+#ifdef _WIN32
+    return GetFileType(desc_) == FILE_TYPE_CHAR;
+#else
+    return false;
+#endif
+}
 
 bool File::open(const ucs4string& file, int flags)
 {
@@ -239,25 +247,17 @@ bool File::open(const ucs4string& file, int flags)
 #endif
 }
 
-File::~File()
+bool File::dup(File& target)
 {
-    close();
-}
-
 #ifdef _WIN32
-int File::dup(HANDLE target)
-{
     MOSH_ASSERT(isOpen());
     // TODO windows
-    return -1;
-}
+    return false;
 #else
-int File::dup(int target)
-{
     MOSH_ASSERT(isOpen());
-    return dup2(desc_, target);
-}
+    return dup2(desc_, target.desc_) != -1;
 #endif
+}
 
 bool File::close()
 {
@@ -317,7 +317,7 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     DWORD writeSize;
     int isOK;
     // Writing to console is automatically converted into encoding of console.
-    if (desc_ == STANDARD_OUT || desc_ == STANDARD_ERR) {
+    if (isUTF16Console()) {
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;
     } else {
@@ -357,7 +357,7 @@ int64_t File::read(uint8_t* buf, int64_t _size)
 #ifdef _WIN32
     DWORD readSize;
     int isOK;
-    if (desc_ == STANDARD_IN) {
+    if (isUTF16Console()) {
 #if 1
         MOSH_ASSERT(size == 1); // temporary restriction
         if (prevC_ != -1) {

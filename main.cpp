@@ -202,8 +202,9 @@ int main(int argc, char *argv[])
 
 
     Transcoder* transcoder = nativeConsoleTranscoder();
-    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-    const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
+    Transcoder* native = nativeTranscoder();
+    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), File::STANDARD_IN.isUTF16Console() ? transcoder : native);
+    const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
     const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort(), transcoder);
 
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);

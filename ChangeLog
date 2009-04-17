@@ -1,3 +1,7 @@
+2009-04-17 herumi <herumi@nifty.com>
+
+        * OSCompat.cpp : correct handling of windows console and redirect. a little refactoring
+
 2009-04-17 OKUMURA Yuki <mjt@cltn.org>
 
         * configure.ac: mingw specific flag/vars/definition (WINDRES, MINGW32).

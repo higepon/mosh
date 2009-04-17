@@ -175,7 +175,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(File::STANDARD_IN)) {
+        if (!file->dup(File::STANDARD_IN)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
@@ -188,7 +188,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(File::STANDARD_OUT)) {
+        if (!file->dup(File::STANDARD_OUT)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
@@ -201,7 +201,7 @@ Object scheme::internalExecEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
 
-        if (-1 ==  file->dup(File::STANDARD_ERR)) {
+        if (!file->dup(File::STANDARD_ERR)) {
             callAssertionViolationAfter(theVM, procedureName, "dup failed", L1(file->getLastErrorMessage()));
             return Object::Undef;
         }
