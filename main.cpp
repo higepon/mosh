@@ -73,11 +73,11 @@ using namespace scheme;
 
 static VM* theVM;
 
-Object argsToList(int argc, int optind, char* argv[])
+Object argsToList(int argc, int optind, ucs4char** argvU)
 {
     Object p = Object::Nil;
     for (int i = optind; i < argc; i++) {
-        p = Object::cons(Object::makeString(argv[i]), p);
+        p = Object::cons(Object::makeString(argvU[i]), p);
     }
     return Pair::reverse(p);
 }
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
     theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
     theVM->registerPort(outPort);
     theVM->loadCompiler();
-    theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argv));
+    theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 //     if (initFile != NULL) {
 //         theVM->load(Object::makeString(initFile).toString()->data());
 //     }
