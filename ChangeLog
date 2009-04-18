@@ -1,3 +1,7 @@
+2009-04-18  higepon  <higepon@users.sourceforge.jp>
+
+        * COPYING: Added author of SRFI.
+
 2009-04-17  higepon  <higepon@users.sourceforge.jp>
 
         * Makefile.am: Added FreeBSD.

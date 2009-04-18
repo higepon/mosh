@@ -101,13 +101,13 @@ void showUsage()
 #ifdef ENABLE_PROFILER
             "  -p                Executes with profiler.\n"
 #endif
-            "  -t                Executes test.\n"
+//            "  -t                Executes test.\n"
             "  --help            Prints this help.\n"
             "  --loadpath=<path> Add libary loadpath.\n\n"
             " MOSH_LOADPATH\n"
             "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\' separated paths.\n\n"
             "bug report:\n"
-            "  http://code.google.com/p/mosh-scheme/\n"
+            "  http://code.google.com/p/mosh-scheme/issues\n"
             "  higepon@users.sourceforge.jp\n\n"
         );
     exit(EXIT_FAILURE);

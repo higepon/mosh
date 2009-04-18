@@ -29,7 +29,7 @@ Copyright and condition of use of main portion of the source:
 
 -----------------------------------------------------------------------------
 
-Copyright of pass2 at compiler.scm form Gauche -----------------
+Copyright of pass2 at compiler.scm form Gauche ------------------------------
 
     Copyright (c) 2000-2007  Shiro Kawai  <shiro@acm.org>
 
@@ -60,7 +60,7 @@ Copyright of pass2 at compiler.scm form Gauche -----------------
     NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Copyright of gc-7.1alpha3/* -------------------------------------------------
+Copyright of gc-7.1/* -------------------------------------------------------
 
     Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
     Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
@@ -111,24 +111,30 @@ Copyright of sort ------------------------------------------------------------
    Copyright (c) Oliver Laumann 
      http://www-rn.informatik.uni-bremen.de/software/elk/dist.html
 
-Copyright of SRFI-1 ----------------------------------------------------------
-   SRFI-1 list-processing library 			-*- Scheme -*-
-   Reference implementation
+Copyright of SRFI ----------------------------------------------------------
+   Copyright (c) 2009 Derick Eddington
 
-   Copyright (c) 1998, 1999 by Olin Shivers. You may do as you please with
-   this code as long as you do not remove this copyright notice or
-   hold me liable for its use. Please send bug reports to shivers@ai.mit.edu.
-       -Olin
+   Permission is hereby granted, free of charge, to any person obtaining a
+   copy of this software and associated documentation files (the "Software"),
+   to deal in the Software without restriction, including without limitation
+   the rights to use, copy, modify, merge, publish, distribute, sublicense,
+   and/or sell copies of the Software, and to permit persons to whom the
+   Software is furnished to do so, subject to the following conditions:
 
-   This is a library of list- and pair-processing functions. I wrote it after
-   carefully considering the functions provided by the libraries found in
-   R4RS/R5RS Scheme, MIT Scheme, Gambit, RScheme, MzScheme, slib, Common
-   Lisp, Bigloo, guile, T, APL and the SML standard basis. It is a pretty
-   rich toolkit, providing a superset of the functionality found in any of
-   the various Schemes I considered.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-   This implementation is intended as a portable reference implementation
-   for SRFI-1. See the porting notes below for more information.
+   Except as contained in this notice, the name(s) of the above copyright
+   holders shall not be used in advertising or otherwise to promote the sale,
+   use or other dealings in this Software without prior written authorization.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+   THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
 
 Copyright of string-titlecase ------------------------------------------------
 

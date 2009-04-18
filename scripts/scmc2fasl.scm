@@ -1,5 +1,4 @@
 (import (rnrs)
-        (srfi :1)
         (mosh))
 
 (define (extract obj)
@@ -7,18 +6,18 @@
    [(vector? obj)
     (vector-map extract obj)]
    [(and (pair? obj) (eq? (car obj) '*insn*))
-    (make-instruction (second obj))]
+    (make-instruction (cadr obj))]
    [(and (pair? obj) (eq? (car obj) '*compiler-insn*))
-    (make-compiler-instruction (second obj))]
+    (make-compiler-instruction (cadr obj))]
    [(list? obj)
     (map extract obj)]
    [else obj]))
 
 (define (main args)
-  (with-input-from-file (second args)
+  (with-input-from-file (cadr args)
     (lambda ()
       (let ([obj (extract (read))])
-        (call-with-port (open-file-output-port (third args) (file-options no-fail) (buffer-mode none))
+        (call-with-port (open-file-output-port (caddr args) (file-options no-fail) (buffer-mode none))
            (lambda (port)
              (fasl-write obj port)))
         )))

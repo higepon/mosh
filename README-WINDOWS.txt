@@ -1,15 +1,4 @@
-== How to install Mosh to 'C:\Users\<UserName>\Mosh' ==
+Get binary version of Mosh from http://mosh.monaos.org
 
-1. Create directory C:\Users\<UserName>\Mosh
-
-2. Copy mosh.exe to C:\Users\<UserName>\Mosh.
-
-3. Copy lib to C:\Users\<UserName>\Mosh.
-
-4. Start Mosh as follows
-
-C:\Users\<UserName>\Mosh> mosh.exe
-
-> mosh>(display "Hello, World")
-Hello, World#<unspecified>
-
+If you want to build Mosh from source.
+See the install section on http://mosh.monaos.org

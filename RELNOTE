@@ -1,4 +1,4 @@
-Mosh 0.0.8 Release Note
+Mosh 0.1.0 Release Note
 ============================
 
 What's Mosh
@@ -27,12 +27,12 @@ Mosh becomes R6RS compliant.
 Added new reference manual.
   http://mosh.monaos.org/
 
-Added FFI (Foreign Function Interface). 
-  See test/ffi.scm or reference manual.
-
 Supported build on Windows with Visual C++ by herumi.
 
 Supported build on Mingw by .mjt.
+
+Added FFI (Foreign Function Interface). 
+  See test/ffi.scm or reference manual.
 
 Implemented R6RS Numric tower.
 
