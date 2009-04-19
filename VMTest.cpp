@@ -54,6 +54,7 @@
 #include "VM-inl.h"
 #include "StandardInputPort.h"
 #include "StandardOutputPort.h"
+#include "BlockBufferedFileBinaryOutputPort.h"
 
 using namespace scheme;
 
@@ -146,6 +147,19 @@ TEST_F(VMTest, StackTrace2) {
                  theVM_->getLastError().toString()->data().ascii_c_str());
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
+
+TEST_F(VMTest, BinaryOutputPortFlush) {
+    extern FlushType lastFlushType;
+    Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/binary-output.txt")));
+    theVM_->registerPort(outPort);
+    //theVM_->activateR6RSMode(false);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    theVM_->flushAllPorts();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(lastFlushType, FLUSH_BINARY_OUTPUT_PORT);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+}
+
 // todo
 // TEST_F(VMErrorPortTest, StackTrace3) {
 //     theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace3.scm"));

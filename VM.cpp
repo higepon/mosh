@@ -86,6 +86,10 @@
 
 using namespace scheme;
 
+#ifdef DEBUG_VERSION
+FlushType lastFlushType = NONE;
+#endif // DEBUG_VERSION
+
 VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     dc_(Object::Nil),
@@ -837,12 +841,28 @@ void VM::flushAllPorts(void)
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
         if (outputPort.isBinaryOutputPort()) {
+#ifdef DEBUG_VERSION
+            fprintf(stderr, "binary output port\n");
+            lastFlushType = FLUSH_BINARY_OUTPUT_PORT;
+#endif // DEBUG_VERSION
             outputPort.toBinaryOutputPort()->flush();
         } else if (outputPort.isBinaryInputOutputPort()) {
+#ifdef DEBUG_VERSION
+            fprintf(stderr, "binary input output port\n");
+            lastFlushType = FLUSH_BINARY_INPUT_OUTPUT_PORT;
+#endif // DEBUG_VERSION
             outputPort.toBinaryInputOutputPort()->flush();
         } else if (outputPort.isTextualOutputPort()) {
+#ifdef DEBUG_VERSION
+            fprintf(stderr, "textual output port\n");
+            lastFlushType = FLUSH_TEXTUAL_OUTPUT_PORT;
+#endif // DEBUG_VERSION
             outputPort.toTextualOutputPort()->flush();
         } else if (outputPort.isTextualInputOutputPort()) {
+#ifdef DEBUG_VERSION
+            fprintf(stderr, "textual input output port\n");
+            lastFlushType = FLUSH_TEXTUAL_INPUT_OUTPUT_PORT;
+#endif // DEBUG_VERSION
             outputPort.toTextualInputOutputPort()->flush();
         }
 

@@ -70,6 +70,14 @@ typedef gc_vector<Object> Ports;
                  dc_.toClosure()->sourceInfoString(this), \
                  cl_.toClosure()->sourceInfoString(this)); \
                  ::exit(-1);}}
+
+enum FlushType {
+    NONE,
+    FLUSH_BINARY_OUTPUT_PORT,
+    FLUSH_BINARY_INPUT_OUTPUT_PORT,
+    FLUSH_TEXTUAL_OUTPUT_PORT,
+    FLUSH_TEXTUAL_INPUT_OUTPUT_PORT,
+};
 #else
 #define VM_ASSERT(condition) /* */
 #endif

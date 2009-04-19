@@ -248,5 +248,7 @@ int main(int argc, char *argv[])
         theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
 #endif
+
+    theVM->flushAllPorts();
     exit(EXIT_SUCCESS);
 }
