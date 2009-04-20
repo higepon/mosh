@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
         theVM->activateR6RSMode(isDebugExpand);
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
-        theVM->loadFileWithGuard(Object::makeString(argv[optindU]).toString()->data());
+        theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());
     } else {
         showUsage();
     }
