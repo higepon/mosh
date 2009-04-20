@@ -114,7 +114,7 @@ int FileBinaryOutputPort::open()
 
 int FileBinaryOutputPort::close()
 {
-    if (!isClosed()) {
+    if (!isClosed_) {
         isClosed_ = true;
         file_->close();
     }

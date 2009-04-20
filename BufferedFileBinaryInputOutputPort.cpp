@@ -108,7 +108,7 @@ Object BufferedFileBinaryInputOutputPort::position() const
 
 int BufferedFileBinaryInputOutputPort::close()
 {
-    if (!isClosed()) {
+    if (!isClosed_) {
 
         flush();
         isClosed_ = true;

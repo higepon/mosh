@@ -126,7 +126,7 @@ int BufferedFileBinaryOutputPort::open()
 int BufferedFileBinaryOutputPort::close()
 {
     flush();
-    if (!isClosed()) {
+    if (!isClosed_) {
         isClosed_ = true;
         file_->close();
     }

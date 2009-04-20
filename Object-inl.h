@@ -260,7 +260,7 @@ inline bool Object::isInputPort() const
 
 inline bool Object::isOutputPort() const
 {
-    return isTextualOutputPort() || isBinaryOutputPort() || isBinaryInputOutputPort();
+    return isTextualOutputPort() || isBinaryOutputPort() || isTextualInputOutputPort() | isBinaryInputOutputPort();
 }
 
 inline bool Object::isBinaryPort() const

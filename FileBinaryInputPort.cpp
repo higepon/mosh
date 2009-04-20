@@ -195,7 +195,7 @@ bool FileBinaryInputPort::isClosed() const
 
 int FileBinaryInputPort::close()
 {
-    if (!isClosed()) {
+    if (!isClosed_) {
         isClosed_ = true;
         file_->close();
     }

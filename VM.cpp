@@ -837,6 +837,7 @@ void VM::unregisterPort(Object obj)
 
 void VM::flushAllPorts(void)
 {
+//#if 0
     Ports::iterator it = activePorts_.begin();
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
@@ -851,21 +852,28 @@ void VM::flushAllPorts(void)
             fprintf(stderr, "binary input output port\n");
             lastFlushType = FLUSH_BINARY_INPUT_OUTPUT_PORT;
 #endif // DEBUG_VERSION
+/*
             outputPort.toBinaryInputOutputPort()->flush();
+*/
         } else if (outputPort.isTextualOutputPort()) {
 #ifdef DEBUG_VERSION
             fprintf(stderr, "textual output port\n");
             lastFlushType = FLUSH_TEXTUAL_OUTPUT_PORT;
 #endif // DEBUG_VERSION
+/*
             outputPort.toTextualOutputPort()->flush();
+*/
         } else if (outputPort.isTextualInputOutputPort()) {
 #ifdef DEBUG_VERSION
             fprintf(stderr, "textual input output port\n");
             lastFlushType = FLUSH_TEXTUAL_INPUT_OUTPUT_PORT;
 #endif // DEBUG_VERSION
+/*
             outputPort.toTextualInputOutputPort()->flush();
+*/
         }
 
         it = activePorts_.erase(it);
     }
+//#endif // 0
 }

@@ -55,6 +55,7 @@
 #include "StandardInputPort.h"
 #include "StandardOutputPort.h"
 #include "BlockBufferedFileBinaryOutputPort.h"
+#include "BlockBufferedFileBinaryInputOutputPort.h"
 
 using namespace scheme;
 
@@ -152,13 +153,49 @@ TEST_F(VMTest, BinaryOutputPortFlush) {
     extern FlushType lastFlushType;
     Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/binary-output.txt")));
     theVM_->registerPort(outPort);
-    //theVM_->activateR6RSMode(false);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->flushAllPorts();
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     EXPECT_EQ(lastFlushType, FLUSH_BINARY_OUTPUT_PORT);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
+
+/*
+TEST_F(VMTest, BinaryInputOutputPortFlush) {
+    extern FlushType lastFlushType;
+    Object outPort = Object::makeBinaryInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/binary-input-output.txt"), 0));
+    theVM_->registerPort(outPort);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    theVM_->flushAllPorts();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(lastFlushType, FLUSH_BINARY_INPUT_OUTPUT_PORT);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+}
+
+TEST_F(VMTest, TextualOutputPortFlush) {
+    extern FlushType lastFlushType;
+    Transcoder* transcoder = nativeTranscoder();
+    Object outPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/textual-output.txt")), transcoder);
+    theVM_->registerPort(outPort);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    theVM_->flushAllPorts();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(lastFlushType, FLUSH_TEXTUAL_OUTPUT_PORT);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+}
+
+TEST_F(VMTest, TextualInputOutputPortFlush) {
+    extern FlushType lastFlushType;
+    Transcoder* transcoder = nativeTranscoder();
+    Object outPort = Object::makeTextualInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/textual-input-output.txt"), 0), transcoder);
+    theVM_->registerPort(outPort);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    theVM_->flushAllPorts();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(lastFlushType, FLUSH_TEXTUAL_INPUT_OUTPUT_PORT);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+}
+*/
 
 // todo
 // TEST_F(VMErrorPortTest, StackTrace3) {
