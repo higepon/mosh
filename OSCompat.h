@@ -70,6 +70,26 @@ namespace scheme {
 
     class File EXTEND_GC
     {
+#ifdef _WIN32
+        typedef HANDLE Handle;
+        typedef DWORD ErrorCode;
+#else
+        typedef int Handle;
+        typedef int ErrorCode;
+        enum {
+            INVALID_HANDLE_VALUE = -1
+        };
+#endif
+        void setLastError()
+        {
+#ifdef _WIN32
+            lastError_ = GetLastError();
+#else
+            lastError_ = errno;
+#endif
+        }
+        void operator=(const File&);
+        File(const File& rhs);
     public:
         enum Mode {
             Read            = 0x00000001,
@@ -83,20 +103,25 @@ namespace scheme {
             Current,
             End
         };
+        File::File(Handle desc = INVALID_HANDLE_VALUE)
+            : desc_(desc)
+            , lastError_(0)
 #ifdef _WIN32
-        explicit File(HANDLE desc = INVALID_HANDLE_VALUE);
-#else
-        explicit File(int desc = -1);
+            , prevC_(-1)
 #endif
+        {
+        }
         bool open(const ucs4string& file, int flags);
 
         virtual ~File()
         {
             close();
         }
-        // you must definel copy constructor and operator=()
 
-        bool isOpen() const;
+        bool isOpen() const
+        {
+            return desc_ != INVALID_HANDLE_VALUE;
+        }
         bool close();
         bool isUTF16Console() const;
         int64_t write(uint8_t* buf, int64_t size);
