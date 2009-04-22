@@ -103,7 +103,7 @@ namespace scheme {
             Current,
             End
         };
-        File::File(Handle desc = INVALID_HANDLE_VALUE)
+        File(Handle desc = INVALID_HANDLE_VALUE)
             : desc_(desc)
             , lastError_(0)
 #ifdef _WIN32
@@ -142,13 +142,10 @@ namespace scheme {
         static File STANDARD_ERR;
 
     private:
+        Handle desc_;
+        ErrorCode lastError_;
 #ifdef _WIN32
-        HANDLE desc_;
         int prevC_; // to keep half of wchar_t
-        DWORD lastError_;
-#else
-        int desc_;
-        int lastError_;
 #endif
     };
 }; // namespace scheme
