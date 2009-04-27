@@ -49,6 +49,7 @@
     list-copy
     list-index
     list-tabulate
+    list-ref
     list=
     lset-adjoin
     lset-diff+intersection

@@ -66,6 +66,10 @@ echo srfi-misc
 mosh.exe test/srfi-misc.scm
 if errorlevel 1 goto end
 echo ----------------------------------------
+echo socket
+mosh.exe test/socket.scm
+if errorlevel 1 goto end
+echo ----------------------------------------
 echo R6RS Test Suite
 cd r6rs-test-suite
 ..\mosh.exe tests\r6rs\run-via-eval.sps

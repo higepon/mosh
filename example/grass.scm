@@ -1,3 +1,5 @@
+; ./mosh -5 grass.scm
+
 ;   grass.scm - Grass interpreter
 ;   http://www.blue.sky.or.jp/grass/
 ;

@@ -63,6 +63,7 @@ public:
     ucs4char* strdup();
     bool is_ascii() const;
     static ucs4string from_c_str(const char* s, int size);
+    static ucs4string from_c_str(const char* s);
     // see R6RS 11.11 Characters
     static bool isValidScalar(int ch)
     {

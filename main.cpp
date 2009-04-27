@@ -199,6 +199,9 @@ int main(int argc, char *argv[])
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
 //    signal(SIGINT, SIG_IGN);
 
+#ifndef _WIN32
+    signal(SIGPIPE, SIG_IGN);
+#endif
 
 
     Transcoder* transcoder = nativeConsoleTranscoder();

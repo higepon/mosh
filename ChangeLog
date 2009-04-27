@@ -1,4 +1,71 @@
+2009-04-27  higepon  <higepon@users.sourceforge.jp>
+
+        * Merged socket branch to trunk.
+          svn merge  ./branches/socket trunk -r1639:HEAD
+
+2009-04-27  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompat.cpp: Added #include <netinet/in.h> for FreeBSD.
+
+        * OSCompatSocket.cpp : Added WSAGetLastError call.
+
+        * lib/srfi/%3a19/time/compat.mosh.sls (srfi): Fixed the bug.
+
+        * UtilityProcedures.cpp (gensymEx): Rewrote gensym in C++.
+
+        * lib/match.ss Added Alex Shinn's match library.
+
+2009-04-25  higepon  <higepon@users.sourceforge.jp>
+
+        * test/socket.scm: Added tests for socket.
+
+        * main.cpp (main): Added SIGPIPE.
+
+        * os-constants.scm : Defined necessary OS constants related to Socket.
+
+        * lib/mosh/socket.ss : Added a document for Socket API.
+
+2009-04-24  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed the bug of write/display causes native stack overflow.
+
+2009-04-23  higepon  <higepon@users.sourceforge.jp>
+
+        * Added irc-client and markov sample.
+
+        * SocketProcedures.cpp : Added (socket-port socket).
+
+2009-04-22  higepon  <higepon@users.sourceforge.jp>
+
+        * example/echo-server.ss: Added.
+
+        * example/echo-client.ss: Added.
+
+        * lib/mosh/socket.ss : Added (mosh socket) library.
+
+        * lib/mosh/control.ss (mosh): Added let-optionals and :optional.
+
+        * Added (socket? obj) and (socket-accept socket).
+
+        * Added (socket-shutdown socket how).
+
+2009-04-21  higepon  <higepon@users.sourceforge.jp>
+
+        * Added socket-close.
+
+        * SocketProcedures.cpp : Added (make-client-socket ...) and (socket-recv ...).
+
+        * OSCompatSocket.cpp (createClientSocket): Added.
+
+        * ucs4string.cpp (from_c_str): Added from_c_str.
+
 2009-04-20  higepon  <higepon@users.sourceforge.jp>
+
+        * Object.h : Added accessors for Socket Object.
+
+        * UtilityProcedures.cpp : Added (os-constant) procedure.
+
+        * OSCompatSocket.h: Added.
 
         * main.cpp (main): Fixed wrong argv.
 

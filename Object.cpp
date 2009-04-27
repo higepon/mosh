@@ -80,6 +80,7 @@
 #include "TranscodedTextualInputPort.h"
 #include "TranscodedTextualOutputPort.h"
 #include "TranscodedTextualInputOutputPort.h"
+#include "OSCompatSocket.h"
 
 using namespace scheme;
 
@@ -459,6 +460,12 @@ Object Object::makeCompnum(Object real, Object imag)
         return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Compnum,
                                                             reinterpret_cast<intptr_t>(new Compnum(real, imag)))));
     }
+}
+
+Object Object::makeSocket(const Socket* socket)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Socket,
+                                                        reinterpret_cast<intptr_t>(socket))));
 }
 
 bool Object::isIntegerValued() const

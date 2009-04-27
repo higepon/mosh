@@ -1,5 +1,5 @@
 /*
- * ListProcedures.cpp - 
+ * ListProcedures.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -43,6 +43,50 @@
 #include "TextualOutputPort.h"
 
 using namespace scheme;
+
+Object scheme::listRefEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("list-ref");
+    checkArgumentLength(2);
+    argumentAsFixnum(1, index);
+
+    Object obj = argv[0];
+    while (--index >= 0) {
+        if (obj.isPair()) {
+            obj = obj.cdr();
+        } else {
+            return callAssertionViolationAfter(theVM, procedureName, "index out of range", Pair::list2(argv[0], argv[1]));
+        }
+    }
+
+    if (obj.isPair()) {
+        return obj.car();
+    } else {
+        return callAssertionViolationAfter(theVM, procedureName, "proper list required", Pair::list2(argv[0], argv[1]));
+    }
+}
+
+Object scheme::listTailEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("list-tail");
+    checkArgumentLength(2);
+    argumentAsFixnum(1, index);
+
+    if (index < 0) {
+        return callAssertionViolationAfter(theVM, procedureName, "index out of range", Pair::list2(argv[0], argv[1]));
+    }
+    Object obj = argv[0];
+
+    while (--index >= 0) {
+        if (obj.isPair()) {
+            obj = obj.cdr();
+        } else {
+            return callAssertionViolationAfter(theVM, procedureName, "proper list required", Pair::list2(argv[0], argv[1]));
+        }
+    }
+    return obj;
+}
+
 
 Object scheme::memberEx(VM* theVM, int argc, const Object* argv)
 {
@@ -290,4 +334,3 @@ Object scheme::listTovectorEx(VM* theVM, int argc, const Object* argv)
         return Object::makeVector(0);
     }
 }
-

@@ -30,8 +30,11 @@
  */
 
 
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <dirent.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h> // necesary for os-constant procedure.
 #endif
 #ifdef __APPLE__
 #include <sys/param.h>
@@ -48,6 +51,7 @@ extern int main(int argc, char *argv[]);
 #include <stdlib.h>
 #include "scheme.h"
 #include "Object.h"
+#include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Transcoder.h"
@@ -59,6 +63,9 @@ extern int main(int argc, char *argv[]);
 #include "OSCompat.h"
 #include "SString.h"
 #include "ByteVector.h"
+#include "EqHashTable.h"
+#include "Symbol.h"
+#include "Bignum.h"
 #include "PortProcedures.h"
 
 #ifdef _WIN32
@@ -67,18 +74,48 @@ extern int main(int argc, char *argv[]);
     #include <direct.h>
     #include <process.h>
     #include <shellapi.h>
+	#include <winsock2.h> // for OSConstants
+	#include <ws2tcpip.h> // for OSConstants
+
+	#define SHUT_RD SD_RECEIVE
+	#define SHUT_WR SD_SEND
+    #define SHUT_RDWR SD_BOTH
     #define PATH_MAX _MAX_PATH
     #define dup2 _dup2
     #ifdef _MSC_VER
+#define IPPROTO_UDP 17
+#define IPPROTO_TCP 6
+#define IPPROTO_RAW 255
         #pragma comment(lib, "shell32.lib")
     #endif
 #endif
-
 
 using namespace scheme;
 //
 // N.B Dont't forget to add tests to OScompatTest.cpp.
 //
+
+static EqHashTable* osConstants = NULL;
+
+void scheme::initOSConstants()
+{
+    osConstants = new EqHashTable;
+#include "OSConstants.h"
+}
+
+Object scheme::getOSConstant(Object key, bool& found)
+{
+    static const Object NOT_FOUND = Symbol::intern(UC("*not-found*"));
+    MOSH_ASSERT(osConstants);
+    const Object value = osConstants->ref(key, NOT_FOUND);
+    if (value == NOT_FOUND) {
+        found = false;
+        return Object::False;
+    } else {
+        found = true;
+        return value;
+    }
+}
 
 namespace {
 
@@ -110,7 +147,7 @@ ucs4string my_utf16ToUtf32(const std::wstring& s)
                 const ucs4char offset = (0xd800 << 10UL) + 0xdc00 - 0x10000;
                 c0 = (c0 << 10) + c1 - offset;
             } else {
-                return ucs4string::from_c_str("bad char", 8);
+                return ucs4string::from_c_str("bad char");
             }
         }
         out.push_back(c0);
@@ -120,7 +157,19 @@ ucs4string my_utf16ToUtf32(const std::wstring& s)
 #endif // _WIN32
 
 #ifdef _WIN32
-static ucs4string getLastErrorMessageInternal(DWORD e)
+HANDLE getHandle(int id)
+{
+    const DWORD tbl[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
+    return GetStdHandle(tbl[id]);
+}
+#else
+int getHandle(int id) { return id; }
+#endif
+
+} // end of namespace
+
+#ifdef _WIN32
+ucs4string scheme::getLastErrorMessageInternal(DWORD e)
 {
     const int msgSize = 128;
     wchar_t msg[msgSize];
@@ -141,24 +190,13 @@ static ucs4string getLastErrorMessageInternal(DWORD e)
     return my_utf16ToUtf32(msg);
 }
 #else
-static ucs4string getLastErrorMessageInternal(int e)
+ucs4string scheme::getLastErrorMessageInternal(int e)
 {
     const char* message = strerror(e);
-    return ucs4string::from_c_str(message, strlen(message));
+    return ucs4string::from_c_str(message);
 }
 #endif
 
-#ifdef _WIN32
-HANDLE getHandle(int id)
-{
-    const DWORD tbl[] = { STD_INPUT_HANDLE, STD_OUTPUT_HANDLE, STD_ERROR_HANDLE };
-    return GetStdHandle(tbl[id]);
-}
-#else
-int getHandle(int id) { return id; }
-#endif
-
-} // end of namespace
 
 File File::STANDARD_IN(getHandle(0));
 File File::STANDARD_OUT(getHandle(1));
@@ -505,7 +543,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         int pos = chop.find_last_of('/');
         if (pos > 0) {
             const char* v = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(v, strlen(v));
+            return ucs4string::from_c_str(v);
         }
     }
     isErrorOccured = true;
@@ -530,7 +568,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     int pos = p.find_last_of('/');
     if (pos > 0) {
         const char* ret = p.substr(0, pos + 1).c_str();
-        return ucs4string::from_c_str(ret, strlen(ret));
+        return ucs4string::from_c_str(ret);
     }
     isErrorOccured = true;
     return UC("");
@@ -542,7 +580,7 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
         int pos = chop.find_last_of('/');
         if (pos > 0) {
             const char* execPath = chop.substr(0, pos + 1).c_str();
-            return ucs4string::from_c_str(execPath, strlen(execPath));
+            return ucs4string::from_c_str(execPath);
         }
     }
     isErrorOccured = true;

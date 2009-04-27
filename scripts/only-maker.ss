@@ -2,6 +2,8 @@
         (mosh)
         (mosh process))
 
+; ./mosh scripts/only-maker.ss lib/match.ss "\(only "  
+
 ;; Read file, find (only (...) ...) and replace it to (only (...) ... sym)
 (define (add-only-sym! file regex sym)
   (let ([lst (map (lambda (line)

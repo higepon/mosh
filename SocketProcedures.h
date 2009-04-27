@@ -1,7 +1,7 @@
 /*
- * scheme.cpp - Scheme system objects and functions.
+ * SocketProcedures.h - <port> procedures.
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2009  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,46 +26,27 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: SocketProcedures.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <ws2tcpip.h> // for socklen_t
-#endif
+#ifndef SCHEME_SOCKET_PROCEDURES_
+#define SCHEME_SOCKET_PROCEDURES_
+
 #include "scheme.h"
-#include "Object.h"
-#include "Object-inl.h"
-#include "Symbol.h"
-#include "Ratnum.h"
-#include "Flonum.h"
-#include "OSCompat.h"
-#include <gc.h>
-#include <gmp.h>
 
-using namespace scheme;
-extern void initCprocedures();
-void mosh_init()
-{
-#ifdef USE_BOEHM_GC
-    GC_INIT();
-    mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
-#endif
-    initCprocedures();
-    Flonum::initialize();
-    Symbol::initBuitinSymbols();
-#ifdef _WIN32
-	WSADATA data;
-	WSAStartup(MAKEWORD(2, 2), &data);
-#endif
-    initOSConstants();
-}
+namespace scheme {
 
-void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
-{
-    return GC_REALLOC(ptr, newSize);
-}
+    Object socketPortEx(VM* theVM, int argc, const Object* argv);
+    Object socketPEx(VM* theVM, int argc, const Object* argv);
+    Object socketAcceptEx(VM* theVM, int argc, const Object* argv);
+    Object makeClientSocketEx(VM* theVM, int argc, const Object* argv);
+    Object makeServerSocketEx(VM* theVM, int argc, const Object* argv);
+    Object socketRecvEx(VM* theVM, int argc, const Object* argv);
+    Object socketRecvDEx(VM* theVM, int argc, const Object* argv);
+    Object socketSendEx(VM* theVM, int argc, const Object* argv);
+    Object socketCloseEx(VM* theVM, int argc, const Object* argv);
+    Object socketShutdownEx(VM* theVM, int argc, const Object* argv);
 
-void my_dont_free(void *ptr, size_t size)
-{
-}
+} // namespace scheme
+
+#endif // SCHEME_SOCKET_PROCEDURES_

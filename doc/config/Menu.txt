@@ -22,7 +22,7 @@ Timestamp: Updated month day, year
 # These are indexes you deleted, so Natural Docs will not add them again
 # unless you remove them from this line.
 
-Don't Index: Files
+Don't Index: Files, Classes
 
 
 # --------------------------------------------------------------------------
@@ -45,25 +45,7 @@ Don't Index: Files
 # --------------------------------------------------------------------------
 
 
-Group: Mosh  {
-
-   File: About  (no auto-title, doc/text/About.txt)
-   File: Download  (doc/text/Download.txt)
-   }  # Group: Mosh
-
-Group: Mosh Library  {
-
-   File: Core  (no auto-title, doc/text/Core.txt)
-   File: Configuration  (lib/mosh/config.ss)
-   File: Control  (lib/mosh/control.ss)
-   File: Database independent interface  (lib/mosh/dbi.ss)
-   File: Foreign Function Interface  (lib/mosh/ffi.ss)
-   File: Pretty Printing  (lib/mosh/pp.ss)
-   File: Process  (lib/mosh/process.ss)
-   File: Unit Testing  (lib/mosh/test.ss)
-   }  # Group: Mosh Library
-
-File: SRFIs  (doc/text/srfi.txt)
+File: About  (no auto-title, doc/text/About.txt)
 
 Group: R6RS  {
 
@@ -89,11 +71,29 @@ Group: R6RS  {
    File: Mutable pairs  (doc/text/setcar.tex.txt)
    File: Mutable strings  (doc/text/stringset.tex.txt)
    File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
+   File: Download  (doc/text/Download.txt)
    }  # Group: R6RS
+
+Group: Mosh Library  {
+
+   File: Core  (no auto-title, doc/text/Core.txt)
+   File: Configuration  (lib/mosh/config.ss)
+   File: Control  (lib/mosh/control.ss)
+   File: Database independent interface  (lib/mosh/dbi.ss)
+   File: Foreign Function Interface  (lib/mosh/ffi.ss)
+   File: Pretty Printing  (lib/mosh/pp.ss)
+   File: Process  (lib/mosh/process.ss)
+   File: Socket  (lib/mosh/socket.ss)
+   File: Unit Testing  (lib/mosh/test.ss)
+   File: Pattern Match  (lib/match.ss)
+   }  # Group: Mosh Library
+
+File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {
 
    Index: Everything
+   Constant Index: Constants
    Function Index: Functions
    Library Index: Libraries
    Variable Index: Variables

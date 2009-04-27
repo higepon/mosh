@@ -62,7 +62,7 @@ BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(ucs4string file) : file
 
 BufferedFileBinaryInputPort::BufferedFileBinaryInputPort(const char* file) : file_(new File), isClosed_(false), isPseudoClosed_(false), position_(0)
 {
-    fileName_ = ucs4string::from_c_str(file, strlen(file));
+    fileName_ = ucs4string::from_c_str(file);
     file_->open(fileName_, File::Read);
     initializeBuffer();
 }

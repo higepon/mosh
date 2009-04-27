@@ -491,6 +491,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\OSCompatSocket.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OSCompatSocket.h"
+				>
+			</File>
+			<File
 				RelativePath=".\PortProcedures.cpp"
 				>
 			</File>
@@ -544,6 +552,22 @@
 			</File>
 			<File
 				RelativePath=".\scheme.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SocketBinaryInputOutputPort.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SocketBinaryInputOutputPort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SocketProcedures.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SocketProcedures.h"
 				>
 			</File>
 			<File

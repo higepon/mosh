@@ -125,6 +125,11 @@ ucs4string ucs4string::from_c_str(const char* s, int size)
     return ucs4string(ret);
 }
 
+ucs4string ucs4string::from_c_str(const char* s)
+{
+    return from_c_str(s, strlen(s));
+}
+
 bool ucs4string::is_ascii() const
 {
     const int length = size();

@@ -507,6 +507,21 @@
     make-custom-textual-input/output-port
     ;;
     put-datum
+    (list-ref list-ref)
+    (list-tail list-tail)
     time-usage
     mosh-executable-path
+
+    ;; socket
+    socket?
+    socket-accept
+    make-client-socket
+    make-server-socket
+    os-constant
+    socket-recv
+    socket-recv!
+    socket-send
+    socket-close
+    socket-shutdown
+    socket-port
     )

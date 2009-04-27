@@ -69,6 +69,8 @@ public:
     virtual bool hasSetPosition() const;
 
 protected:
+    bool writeAbbreviated(Object obj);
+
     bool isErrorOccured_;
     Object errorMessage_;
     Object irritants_;

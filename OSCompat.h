@@ -68,6 +68,15 @@ namespace scheme {
     Transcoder* nativeConsoleTranscoder();
     Transcoder* nativeTranscoder();
 
+#ifdef _WIN32
+    ucs4string getLastErrorMessageInternal(DWORD e);
+#else
+    ucs4string getLastErrorMessageInternal(int e);
+#endif
+
+    void initOSConstants();
+    Object getOSConstant(Object key, bool& found);
+
     class File EXTEND_GC
     {
 #ifdef _WIN32

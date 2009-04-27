@@ -29,6 +29,7 @@
  *  $Id$
  */
 
+
 #ifdef _WIN32
 #include <windows.h>
 #include <shlwapi.h>
@@ -82,6 +83,20 @@
     #define pclose _pclose
 #endif
 using namespace scheme;
+
+Object scheme::osConstantEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("os-constant");
+    checkArgumentLength(1);
+    argumentCheckSymbol(0, key);
+    bool isFound = false;
+    const Object ret = getOSConstant(key, isFound);
+    if (isFound) {
+        return ret;
+    } else {
+        return Object::False;
+    }
+}
 
 Object scheme::moshExecutablePathEx(VM* theVM, int argc, const Object* argv)
 {
@@ -412,10 +427,23 @@ Object scheme::charPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isChar());
 }
 
+
+// This gensym returns "interned symbol"
+// See psyntax-r6rs/rev10_to_10/psyntax/compat.ss
 Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("gen-sym");
     checkArgumentLengthBetween(0, 1);
+
+    static int prefix = -1;
+    if (-1 == prefix) {
+        const ucs4char* prefixStr = getEnv(UC("MOSH_GENSYM_PREFIX"));
+        if (NULL == prefixStr) {
+            prefix = 'G';
+        } else {
+            prefix = prefixStr[0];
+        }
+    }
 
     static int next = 0;
     char ubuf[32];
@@ -425,20 +453,44 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
     ucs4char* ibuf = new ucs4char[32];
 #endif
 
-    sprintf(ubuf, "G%x", next++);
-    const int len = strlen(ubuf) + 1;
-    for (int i = 0; i < len; i++) {
-        ibuf[i] = ubuf[i];
-    }
-    if (1 == argc) {
-        if (argv[1].isSymbol()) {
-            return Object::makeSymbol(format(UC("~a@~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
-        } else {
-            return Object::makeSymbol(ibuf);
+    if (0 == argc) {
+        sprintf(ubuf, "%c%x", prefix, next++);
+        const int len = strlen(ubuf) + 1;
+        for (int i = 0; i < len; i++) {
+            ibuf[i] = ubuf[i];
         }
+
+        return Symbol::intern(ibuf);
     } else {
-        return Object::makeSymbol(ibuf);
+        sprintf(ubuf, "%c%x@", prefix, next++);
+        const int len = strlen(ubuf) + 1;
+        for (int i = 0; i < len; i++) {
+            ibuf[i] = ubuf[i];
+        }
+        ucs4string val = ibuf;
+        const Object sym = argv[1];
+        if (sym.isSymbol()) {
+            val += sym.toSymbol()->c_str();
+            return Symbol::intern(val.strdup());
+        } else {
+            sprintf(ubuf, "%c%x", prefix, next++);
+            const int len = strlen(ubuf) + 1;
+            for (int i = 0; i < len; i++) {
+                ibuf[i] = ubuf[i];
+            }
+
+            return Symbol::intern(ibuf);
+        }
     }
+//     if (1 == argc) {
+//         if (argv[1].isSymbol()) {
+//             return Object::makeSymbol(format(UC("~a@~a"), Pair::list2(ibuf, argv[1])).toString()->data().c_str());
+//         } else {
+//             return Object::makeSymbol(ibuf);
+//         }
+//     } else {
+//         return Object::makeSymbol(ibuf);
+//     }
 }
 
 Object scheme::vectorPEx(VM* theVM, int argc, const Object* argv)

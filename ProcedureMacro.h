@@ -155,6 +155,7 @@
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
 
+#define argumentAsSocket(index, variableName) castArgument(index, variableName, isSocket, socket, Socket*, toSocket)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
 #define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)
@@ -179,6 +180,7 @@
 #define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
+#define argumentCheckStringOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isString, string)
 #define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, record, compound-condition)
 
 #define argumentCheckBoolean(index, variableName) checkType(index, variableName, isBoolean, boolean)

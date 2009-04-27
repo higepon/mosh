@@ -968,7 +968,6 @@ Object scheme::fileExistsPEx(VM* theVM, int argc, const Object* argv)
 Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("format");
-
     TRY_WITHOUT_DSTR
         const Object arg1 = argv[0];
         if (arg1.isTextualOutputPort()) {

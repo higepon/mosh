@@ -84,6 +84,7 @@ public:
         Gloc                        = Type<33>::VALUE,
         BinaryInputOutputPort       = Type<34>::VALUE,
         TextualInputOutputPort      = Type<35>::VALUE,
+        Socket                      = Type<36>::VALUE,
         forbidden_comma
     };
 };

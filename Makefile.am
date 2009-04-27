@@ -128,6 +128,7 @@ ArithmeticProcedures.cpp       ArithmeticProcedures.h              \
 FlonumProcedures.cpp           FlonumProcedures.h                  \
 BitwiseProcedures.cpp          BitwiseProcedures.h                 \
 ByteVectorProcedures.cpp       ByteVectorProcedures.h              \
+SocketProcedures.cpp           SocketProcedures.h                  \
 Equivalent.h                   Equivalent.cpp                      \
 CompoundCondition.h            CompoundCondition.cpp               \
 ucs4string.h                   ucs4string.cpp                      \
@@ -144,10 +145,11 @@ FFI.h                          FFI.cpp                             \
 FFIProcedures.h                FFIProcedures.cpp                   \
 CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
 FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
+SocketBinaryInputOutputPort.h  SocketBinaryInputOutputPort.cpp     \
 TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
 BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
 TestingFileBinaryOutputPort.h TestingFileBinaryInputPort.h \
-TestingVM.h \
+TestingVM.h OSConstants.h \
 getoptU.h getoptU.cpp                                                      \
 StandardOutputPort.h \
 StandardErrorPort.h \
@@ -155,13 +157,16 @@ StandardInputPort.h \
 BlockBufferedFileBinaryOutputPort.h \
 BlockBufferedFileBinaryInputOutputPort.h \
 LineBufferedFileBinaryInputOutputPort.h \
+OSCompatSocket.h OSCompatSocket.cpp \
 OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
+lib/match.ss \
 lib/lambda/wiki.ss    \
 lib/mosh/ffi.ss    \
 lib/mosh/dbi.ss    \
 lib/mosh/mysql.ss    \
+lib/mosh/socket.ss    \
 lib/mosh/process.ss \
 lib/mosh/shell.ss \
 lib/mosh/shell/repl.ss \
@@ -275,16 +280,16 @@ data_DATA = all-tests.scm #repl.scm #tools/psyntax-r6rs/rev10_to_10/psyntax.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 
-PRECOMPILE_SRC   = compiler-with-library.scmc match.scmc psyntax.scmc
+PRECOMPILE_SRC   = compiler-with-library.scmc pmatch.scmc psyntax.scmc
 
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts match.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts pmatch.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm r6rs-examples tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo
 
 GENERATED = \
 all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \
 DebugInstruction.h cprocedures.cpp      \
 labels.cpp match.cpp compiler.cpp psyntax.scmc             \
-match.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
+pmatch.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
 compiler-vm.scm compiler-with-library.scm Instruction.h    \
 psyntax.h psyntax.fasl match.h match.fasl                  \
 compiler-with-library.h compiler-with-library.fasl
@@ -342,12 +347,12 @@ compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
 SUFFIXES: .scmc .h
 
 .scmc.h:
-	./mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	./mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 # 	(cd doc && mosh ../scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-match.scmc: ./match.scm ./compiler-vm.scm
+pmatch.scmc: ./pmatch.scm ./compiler-vm.scm
 	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
@@ -402,6 +407,9 @@ all-tests.scm: ./test-data.scm
 Object-accessors.h: ./accessors.scm
 	./mosh ./scripts/gen-accessors.scm > $@
 
+OSConstants.h: ./os-constants.scm
+	./mosh ./scripts/gen-os-constants.scm > $@
+
 doc:
 	./mosh scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
@@ -422,6 +430,7 @@ bench:
 check: test
 
 test: ./mosh all-tests.scm update
+	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
 	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
@@ -440,7 +449,8 @@ test: ./mosh all-tests.scm update
 	./mosh test/dbi.scm
 	./mosh test/srfi-misc.scm
 	./mosh test/lists.scm
-	./mosh -5 all-tests.scm
+	./mosh test/socket.scm
+	./mosh test/match.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 

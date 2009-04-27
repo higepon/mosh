@@ -37,9 +37,9 @@
     Control structure library
 |#
 (library (mosh control)
-  (export aif begin0 let1)
-  (import (only (rnrs) define-syntax syntax-case ... syntax let
-                       if lambda with-syntax datum->syntax quote
+  (export aif begin0 let1 let-optionals* :optional)
+  (import (only (rnrs) define-syntax syntax-case ... syntax let syntax-rules _ null? car cdr
+                       if lambda with-syntax datum->syntax quote begin error
                        call-with-values apply values))
 
   #|
@@ -99,5 +99,83 @@
       (syntax-case x ()
         [(_ var val body body* ...)
          #'(let ([var val]) body body* ...)])))
+
+; LET-OPTIONALS macros
+; Copyright (c) 2001 by Olin Shivers.
+
+; Copyright (c) 1993-2003 Richard Kelsey and Jonathan Rees
+; Copyright (c) 1994-2003 by Olin Shivers and Brian D. Carlstrom.
+; Copyright (c) 1999-2003 by Martin Gasbichler.
+; Copyright (c) 2001-2003 by Michael Sperber.
+
+  #|
+      Function: :optional
+
+  |#
+  (define-syntax :optional
+    (syntax-rules ()
+      ([_ rest default-exp]
+       (let ((maybe-arg rest))
+         (if (pair? maybe-arg)
+             (if (null? (cdr maybe-arg)) (car maybe-arg)
+                 (error ':optional "too many optional arguments" maybe-arg))
+             default-exp)))
+      ([_ rest default-exp arg-test]
+       (let ((maybe-arg rest))
+         (if (pair? maybe-arg)
+             (if (null? (cdr maybe-arg))
+                 (let ((val (car maybe-arg)))
+                   (if (arg-test val) val
+                       (error ':optional "optional argument failed test" val)))
+                 (error ':optional "too many optional arguments" maybe-arg))
+             default-exp)))))
+
+  #|
+      Function: let-optionals*
+
+  |#
+  (define-syntax let-optionals*
+    (syntax-rules ()
+      ((let-optionals* arg (opt-clause ...) body ...)
+       (let ((rest arg))
+         (%let-optionals* rest (opt-clause ...) body ...)))))
+
+  (define-syntax %let-optionals*
+    (syntax-rules ()
+      ((%let-optionals* arg (((var ...) xparser) opt-clause ...) body ...)
+       (call-with-values (lambda () (xparser arg))
+         (lambda (rest var ...)
+           (%let-optionals* rest (opt-clause ...) body ...))))
+
+      ((%let-optionals* arg ((var default) opt-clause ...) body ...)
+       (call-with-values (lambda () (if (null? arg) (values default '())
+                                        (values (car arg) (cdr arg))))
+         (lambda (var rest)
+           (%let-optionals* rest (opt-clause ...) body ...))))
+
+      ((%let-optionals* arg ((var default test) opt-clause ...) body ...)
+       (call-with-values (lambda ()
+                           (if (null? arg) (values default '())
+                               (let ((var (car arg)))
+                                 (if test (values var (cdr arg))
+                                     (error 'let-optionals* "arg failed LET-OPT test" var)))))
+         (lambda (var rest)
+           (%let-optionals* rest (opt-clause ...) body ...))))
+
+      ((%let-optionals* arg ((var default test supplied?) opt-clause ...) body ...)
+       (call-with-values (lambda ()
+                           (if (null? arg) (values default #f '())
+                               (let ((var (car arg)))
+                                 (if test (values var #t (cdr arg))
+                                     (error 'let-optionals* "arg failed LET-OPT test" var)))))
+         (lambda (var supplied? rest)
+           (%let-optionals* rest (opt-clause ...) body ...))))
+
+      ((%let-optionals* arg (rest) body ...)
+       (let ((rest arg)) body ...))
+
+      ((%let-optionals* arg () body ...)
+       (if (null? arg) (begin body ...)
+           (error 'let-optionals* "too many arguments in let-opt" arg)))))
 
 ) ;; library (mosh control)

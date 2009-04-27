@@ -65,6 +65,7 @@
 #include "UtilityProcedures.h"
 #include "RegexpProcedures.h"
 #include "FixnumProcedures.h"
+#include "SocketProcedures.h"
 #include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"

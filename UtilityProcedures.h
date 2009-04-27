@@ -34,6 +34,7 @@
 
 namespace scheme {
 
+    Object osConstantEx(VM* theVM, int argc, const Object* argv);
     Object moshExecutablePathEx(VM* theVM, int argc, const Object* argv);
     Object timeUsageEx(VM* theVM, int argc, const Object* argv);
     Object microsecondsEx(VM* theVM, int argc, const Object* argv);

@@ -30,7 +30,7 @@
     (except (mosh) make-parameter parameterize)
     (only (system) get-environment-variable)
     (only (psyntax system $bootstrap)
-          void #;gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
+          void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
 ;; N.B. We don't use backend's (gensym) for following reasons.
 ;;  (a) When we read serialized libraries, we need all symbols are interned.
@@ -39,25 +39,27 @@
 ;;  (b) When we precompile system libraries, we want to control the start index of gensym.
 ;;      Since we should avoid index overlapping between pre-compile libraries and pre-compiled psyntax.
 ;;      So using environment variable MOSH_GENSYM_START, we control the index.
-(define (make-gensym-counter i)
-  (define (inc)
-    (set! i (+ i 1))
-    i)
-  inc)
+;; (define (make-gensym-counter i)
+;;   (define (inc)
+;;     (set! i (+ i 1))
+;;     i)
+;;   inc)
 
-(define gen-sym-prefix
-  (let ([v (get-environment-variable "MOSH_GENSYM_PREFIX")])
-    (if v
-        (string->symbol v)
-        'A)))
+;; Finally this gensym is ported to backend.
 
-(define gen-sym-counter (make-gensym-counter 0))
+;; (define gen-sym-prefix
+;;   (let ([v (get-environment-variable "MOSH_GENSYM_PREFIX")])
+;;     (if v
+;;         (string->symbol v)
+;;         'A)))
 
-(define (gensym . x)
-  (string->symbol
-  (if (null? x)
-      (format "~a~a" gen-sym-prefix (gen-sym-counter))
-      (format "~a~a@~a" gen-sym-prefix (gen-sym-counter) (car x)))))
+;; (define gen-sym-counter (make-gensym-counter 0))
+
+;; (define (gensym . x)
+;;   (string->symbol
+;;   (if (null? x)
+;;       (format "~a~a" gen-sym-prefix (gen-sym-counter))
+;;       (format "~a~a@~a" gen-sym-prefix (gen-sym-counter) (car x)))))
 
 
   ;; defined for mosh

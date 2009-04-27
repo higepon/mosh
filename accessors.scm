@@ -30,3 +30,4 @@
 (define-accessor Gloc)
 (define-accessor BinaryInputOutputPort)
 (define-accessor TextualInputOutputPort)
+(define-accessor Socket)

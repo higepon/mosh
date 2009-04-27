@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+    Object listRefEx(VM* theVM, int argc, const Object* argv);
+    Object listTailEx(VM* theVM, int argc, const Object* argv);
     Object consEx(VM* theVM, int argc, const Object* argv);
     Object carEx(VM* theVM, int argc, const Object* argv);
     Object cdrEx(VM* theVM, int argc, const Object* argv);

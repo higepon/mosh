@@ -1,12 +1,8 @@
 (import (rnrs)
         (mosh)
-        (match)
-        (only (srfi :19) current-date date->string)
         (mosh socket))
 
-
-
-(define (irc-bot server port nick channel irc-client)
+(define (irc-bot server port nick channel)
   (let ([socket (make-client-socket server port)])
     (define (send text)
       (assert (<= (string-length text) 510))
@@ -18,27 +14,17 @@
     (send (format "NICK ~a" nick))
     (send (format "USER ~a 0 * :~a" nick nick))
     (send (format "JOIN ~a" channel))
-    (call/cc (lambda (return)
     (let loop ([data (recv)])
       (cond
-       [(zero? (string-length data)) '()]
        [(#/:([^!]+).*PRIVMSG[^:]+:(.*)/ data) =>
         (lambda (m)
-          (irc-client (list 'PRIVMSG (m 1) (m 2)) return say send))]
+          (format #t "<~a> ~a\n" (m 1) (m 2))
+          (say (format "~s ってなあに？" (m 2))))]
        [(#/^PING/ data)
         (send "PONG 0")]
        [(#/:.*433.*Nickname is already in use.*/ data)
-        (irc-client (list 'ERROR 433) return say send)
-        ])
-      (loop (recv)))))
+        (error 'irc "Nickname is already in use")])
+      (loop (recv)))
     (socket-close socket)))
 
-(irc-bot "irc.freenode.net" "6666" "kaela" "#higepon"
-         (lambda (msg return privmsg send)
-           (match msg
-             [('PRIVMSG who message)
-              (format #t "~a <~a> ~a\n" (date->string (current-date) "~H:~M") who message)]
-             [('ERROR 433)
-              (error 'irc "Nickname is already in use")]
-             [('ERROR e)
-              (return e)])))
+(irc-bot "irc.freenode.net" "6666" "kaela" "#higepon")

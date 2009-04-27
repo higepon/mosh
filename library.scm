@@ -105,13 +105,13 @@
 (define (call-with-values producer consumer)
   (receive vals (producer) (apply consumer vals)))
 
-(define (list-tail l k)
-  (if (= k 0)
-      l
-      (list-tail (cdr l) (- k 1))))
+;; (define (list-tail l k)
+;;   (if (= k 0)
+;;       l
+;;       (list-tail (cdr l) (- k 1))))
 
-(define (list-ref l k)
-  (car (list-tail l k)))
+;; (define (list-ref l k)
+;;   (car (list-tail l k)))
 
 (define (zero? n)
   (= 0 n))

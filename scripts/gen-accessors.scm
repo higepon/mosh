@@ -1,5 +1,5 @@
 (import (rnrs)
-        (srfi :1)
+        (only (srfi :1) first second)
         (mosh))
 
 (define (file->sexp-list file)

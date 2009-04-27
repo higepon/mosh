@@ -76,6 +76,7 @@ class Gloc;
 class BinaryInputOutputPort;
 class TextualInputOutputPort;
 class File;
+class Socket;
 
 enum {
     CONST_NIL     = 0,
@@ -172,6 +173,7 @@ public:
     bool eqv(VM* theVM, Object o) const;
 
     static Object makeGloc(Object value);
+    static Object makeSocket(const Socket* socket);
     static Object* makeObjectArray(int size);
     static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
