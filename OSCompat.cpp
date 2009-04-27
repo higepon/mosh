@@ -117,18 +117,7 @@ Object scheme::getOSConstant(Object key, bool& found)
     }
 }
 
-namespace {
-
 #ifdef _WIN32
-const wchar_t* utf32ToUtf16(const ucs4string& s)
-{
-    ByteArrayBinaryOutputPort out;
-    UTF16Codec codec(UTF16Codec::UTF_16LE);
-    Transcoder tcoder(&codec);
-    tcoder.putString(&out, s);
-    tcoder.putChar(&out, '\0');
-    return (const wchar_t*)out.toByteVector()->data();
-}
 ucs4string my_utf16ToUtf32(const std::wstring& s)
 {
     // use UTF16Codec
@@ -154,6 +143,20 @@ ucs4string my_utf16ToUtf32(const std::wstring& s)
     }
     return out;
 }
+#endif
+namespace {
+
+#ifdef _WIN32
+const wchar_t* utf32ToUtf16(const ucs4string& s)
+{
+    ByteArrayBinaryOutputPort out;
+    UTF16Codec codec(UTF16Codec::UTF_16LE);
+    Transcoder tcoder(&codec);
+    tcoder.putString(&out, s);
+    tcoder.putChar(&out, '\0');
+    return (const wchar_t*)out.toByteVector()->data();
+}
+
 #endif // _WIN32
 
 #ifdef _WIN32
