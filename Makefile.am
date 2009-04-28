@@ -294,7 +294,7 @@ compiler-vm.scm compiler-with-library.scm Instruction.h    \
 psyntax.h psyntax.fasl match.h match.fasl                  \
 compiler-with-library.h compiler-with-library.fasl
 
-CLEANFILES = gtest.a gtest_main.a
+CLEANFILES = gtest.a gtest_main.a libffitest.so.1.0
 MAINTAINERCLEANFILES = $(GENERATED)
 
 #  N.B. We don't use backend's (gensym) for following reasons.
