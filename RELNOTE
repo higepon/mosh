@@ -20,7 +20,7 @@ About This Release
 
 Mosh becomes R6RS compliant.
 
-  Passes all of "R6RS test suite" which is written by PLT Scheme project.
+  Passed all of "R6RS test suite" which is written by PLT Scheme project.
   Run like following.
     mosh --loadpath=r6rs-test-suite r6rs-test-suite/tests/r6rs/run-via-eval.sps
 
