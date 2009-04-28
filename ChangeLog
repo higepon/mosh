@@ -1,3 +1,7 @@
+2009-04-28  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed (mosh-executable-path) on FreeBSD.
+
 2009-04-27  higepon  <higepon@users.sourceforge.jp>
 
         * Merged socket branch to trunk.

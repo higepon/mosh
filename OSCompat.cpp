@@ -552,26 +552,15 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
     isErrorOccured = true;
     return UC("");
 #elif defined(__FreeBSD__)
-    Dl_info info;
-    char path[PATH_MAX + 1];
-
-    if (dladdr( (const void*)&main, &info) == 0) {
-        isErrorOccured = true;
-        return UC("");
-    }
-
-    strncpy(path, info.dli_fname, PATH_MAX + 1);
-    path[PATH_MAX + 1] = '\0';
-    char base[PATH_MAX];
-    if (NULL== realpath(path, base)) {
-        isErrorOccured = true;
-        return UC("");
-    }
-    std::string p = base;
-    int pos = p.find_last_of('/');
-    if (pos > 0) {
-        const char* ret = p.substr(0, pos + 1).c_str();
-        return ucs4string::from_c_str(ret);
+    char path[4096];
+    int ret = readlink("/proc/curproc/file", path, sizeof(path));
+    if (ret != -1) {
+        std::string chop(path, ret);
+        int pos = chop.find_last_of('/');
+        if (pos > 0) {
+            const char* v = chop.substr(0, pos + 1).c_str();
+            return ucs4string::from_c_str(v);
+        }
     }
     isErrorOccured = true;
     return UC("");
