@@ -26,15 +26,24 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
+if DEVELOPER
 bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt
+else
+bin_PROGRAMS = mosh
+endif
+
+
 bin_SCRIPTS = mosh_config
 
+if DEVELOPER
+DEBUG_FLAGS=-DDEBUG_VERSION
+endif
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
 mosh_SOURCES  = main.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I $(includedir)
-mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ -DDEBUG_VERSION -Wno-deprecated # temp -Wno-deprecated
+mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
