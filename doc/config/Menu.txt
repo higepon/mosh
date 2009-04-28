@@ -77,15 +77,25 @@ Group: R6RS  {
 Group: Mosh Library  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
-   File: Configuration  (lib/mosh/config.ss)
-   File: Control  (lib/mosh/control.ss)
-   File: Database independent interface  (lib/mosh/dbi.ss)
-   File: Foreign Function Interface  (lib/mosh/ffi.ss)
-   File: Pretty Printing  (lib/mosh/pp.ss)
-   File: Process  (lib/mosh/process.ss)
-   File: Socket  (lib/mosh/socket.ss)
-   File: Unit Testing  (lib/mosh/test.ss)
-   File: Pattern Match  (lib/match.ss)
+
+   Group: Lib  {
+
+      Group: Mosh  {
+
+         File: Configuration  (lib/mosh/config.ss)
+         File: Control  (lib/mosh/control.ss)
+         File: Database independent interface  (lib/mosh/dbi.ss)
+         File: Foreign Function Interface  (lib/mosh/ffi.ss)
+         File: IRC Client library  (lib/mosh/irc/client.ss)
+         File: Pretty Printing  (lib/mosh/pp.ss)
+         File: Process  (lib/mosh/process.ss)
+         File: Socket  (lib/mosh/socket.ss)
+         File: Unit Testing  (lib/mosh/test.ss)
+         }  # Group: Mosh
+
+      File: Pattern Match  (lib/match.ss)
+      }  # Group: Lib
+
    }  # Group: Mosh Library
 
 File: SRFIs  (doc/text/srfi.txt)

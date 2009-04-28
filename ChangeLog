@@ -1,5 +1,7 @@
 2009-04-28  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/irc/client.ss: Added IRC Client.
+
         * Fixed (mosh-executable-path) on FreeBSD.
 
 2009-04-27  higepon  <higepon@users.sourceforge.jp>
