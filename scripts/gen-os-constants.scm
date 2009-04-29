@@ -20,10 +20,10 @@
         (format #t "#ifdef ~a\n" val)
         (format #t "osConstants->set(Symbol::intern(UC(\"~a\")), Bignum::makeInteger((long int)~a));\n" val val)
         (format #t "#endif\n")]
-       [('define-sizeof val)
-        (format #t "osConstants->set(Symbol::intern(UC(\"sizeof:~a\")), Bignum::makeInteger(sizeof(~a)));\n" val val)]
-       [('define-alignof val)
-        (format #t "{\n    struct x { char y; ~a z; };\n    osConstants->set(Symbol::intern(UC(\"alignof:~a\")), Object::makeFixnum(offsetof(x, z)));\n}\n" val val)]
+       [('define-size-of val)
+        (format #t "osConstants->set(Symbol::intern(UC(\"size-of-~a\")), Bignum::makeInteger(sizeof(~a)));\n" val val)]
+       [('define-align-of val)
+        (format #t "{\n    struct x { char y; ~a z; };\n    osConstants->set(Symbol::intern(UC(\"align-of-~a\")), Object::makeFixnum(offsetof(x, z)));\n}\n" val val)]
        [else #f]))
   (file->sexp-list "./os-constants.scm")))
 

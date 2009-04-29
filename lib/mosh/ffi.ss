@@ -86,9 +86,9 @@
   (export make-c-function c-function open-shared-library find-shared-libray
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
                   (%ffi-supported? ffi-supported?))
-          sizeof:bool sizeof:short sizeof:int sizeof:long sizeof:void* sizeof:size_t
-          alignof:bool alignof:short alignof:int alignof:long alignof:void* alignof:size_t alignof:float
-          alignof:double alignof:int8_t alignof:int16_t alignof:int32_t alignof:int64_t
+          size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
+          align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
+          align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows)
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=?
                        quasiquote unless assertion-violation quote = length and number?
@@ -239,154 +239,154 @@
                         args)))))
 
 #|
-    Constant: sizeof:bool
+    Constant: size-of-bool
 
-    sizeof(bool)
+    size-of(bool)
 |#
-(define sizeof:bool (os-constant 'sizeof:bool))
+(define size-of-bool (os-constant 'size-of-bool))
 
 #|
-    Constant: sizeof:short
+    Constant: size-of-short
 
-    sizeof(short)
+    size-of(short)
 |#
-(define sizeof:short (os-constant 'sizeof:short))
+(define size-of-short (os-constant 'size-of-short))
 
 #|
-    Constant: sizeof:int
+    Constant: size-of-int
 
-    sizeof(int)
+    size-of(int)
 |#
-(define sizeof:int (os-constant 'sizeof:int))
+(define size-of-int (os-constant 'size-of-int))
 
 #|
-    Constant: sizeof:long
+    Constant: size-of-long
 
-    sizeof(long)
+    size-of(long)
 |#
-(define sizeof:long (os-constant 'sizeof:long))
+(define size-of-long (os-constant 'size-of-long))
 
 #|
-    Constant: sizeof:void*
+    Constant: size-of-void*
 
-    sizeof(void*)
+    size-of(void*)
 |#
-(define sizeof:void* (os-constant 'sizeof:void*))
+(define size-of-void* (os-constant 'size-of-void*))
 
 #|
-    Constant: sizeof:size_t
+    Constant: size-of-size_t
 
-    sizeof(size_t)
+    size-of(size_t)
 |#
-(define sizeof:size_t (os-constant 'sizeof:size_t))
+(define size-of-size_t (os-constant 'size-of-size_t))
 
 #|
-    Constant: alignof:bool
+    Constant: align-of-bool
 
     struct x { char y; bool z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:bool (os-constant 'alignof:bool))
+(define align-of-bool (os-constant 'align-of-bool))
 
 #|
-    Constant: alignof:short
+    Constant: align-of-short
 
     struct x { char y; short z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:short (os-constant 'alignof:short))
+(define align-of-short (os-constant 'align-of-short))
 
 #|
-    Constant: alignof:int
+    Constant: align-of-int
 
     struct x { char y; int z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:int (os-constant 'alignof:int))
+(define align-of-int (os-constant 'align-of-int))
 
 #|
-    Constant: alignof:long
+    Constant: align-of-long
 
     struct x { char y; long z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:long (os-constant 'alignof:long))
+(define align-of-long (os-constant 'align-of-long))
 
 #|
-    Constant: alignof:void*
+    Constant: align-of-void*
 
     struct x { char y; void* z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:void* (os-constant 'alignof:void*))
+(define align-of-void* (os-constant 'align-of-void*))
 
 #|
-    Constant: alignof:size_t
+    Constant: align-of-size_t
 
     struct x { char y; size_t z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:size_t (os-constant 'alignof:size_t))
+(define align-of-size_t (os-constant 'align-of-size_t))
 
 #|
-    Constant: alignof:float
+    Constant: align-of-float
 
     struct x { char y; float z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:float (os-constant 'alignof:float))
+(define align-of-float (os-constant 'align-of-float))
 
 #|
-    Constant: alignof:double
+    Constant: align-of-double
 
     struct x { char y; double z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:double (os-constant 'alignof:double))
+(define align-of-double (os-constant 'align-of-double))
 
 #|
-    Constant: alignof:int8_t
+    Constant: align-of-int8_t
 
     struct x { char y; int8_t z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:int8_t (os-constant 'alignof:int8_t))
+(define align-of-int8_t (os-constant 'align-of-int8_t))
 
 #|
-    Constant: alignof:int16_t
+    Constant: align-of-int16_t
 
     struct x { char y; int16_t z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:int16_t (os-constant 'alignof:int16_t))
+(define align-of-int16_t (os-constant 'align-of-int16_t))
 
 #|
-    Constant: alignof:int32_t
+    Constant: align-of-int32_t
 
     struct x { char y; int32_t z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:int32_t (os-constant 'alignof:int32_t))
+(define align-of-int32_t (os-constant 'align-of-int32_t))
 
 #|
-    Constant: alignof:int64_t
+    Constant: align-of-int64_t
 
     struct x { char y; int64_t z; };
 
-    offsetof(x, z)
+    -offset-of(x, z)
 |#
-(define alignof:int64_t (os-constant 'alignof:int64_t))
+(define align-of-int64_t (os-constant 'align-of-int64_t))
 
 #|
     Constant: on-darwin
