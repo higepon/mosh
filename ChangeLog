@@ -1,3 +1,7 @@
+2009-04-29  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/ffi.ss : Exported sizeof(c-type) align:of, on-linux and on-windows.
+
 2009-04-28  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/irc/client.ss: Added IRC Client.

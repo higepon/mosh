@@ -47,6 +47,10 @@ Imroved reader and scanner.
 
 Added Alex Shinn's match library.
 
+Added Tiny CLOS object system ported to R6RS by Christian Sloma.
+
+Added MySQL API.
+
 Added SRFIs written by Derick Eddington.
   (srfi :0 cond-expand)
   (srfi :1 lists)

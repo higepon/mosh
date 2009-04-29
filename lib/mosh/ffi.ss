@@ -85,12 +85,16 @@
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-libray
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
-                  (%ffi-supported? ffi-supported?)))
-  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists
+                  (%ffi-supported? ffi-supported?))
+          sizeof:bool sizeof:short sizeof:int sizeof:long sizeof:void* sizeof:size_t
+          alignof:bool alignof:short alignof:int alignof:long alignof:void* alignof:size_t alignof:float
+          alignof:double alignof:int8_t alignof:int16_t alignof:int32_t alignof:int64_t
+          on-darwin on-linux on-freebsd on-openbsd on-windows)
+  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=?
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
-          (only (mosh) alist->eq-hash-table format readdir)
+          (only (mosh) alist->eq-hash-table format readdir os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero))
 #|
@@ -233,4 +237,179 @@
                             valid-arg))
                         checkers
                         args)))))
+
+#|
+    Constant: sizeof:bool
+
+    sizeof(bool)
+|#
+(define sizeof:bool (os-constant 'sizeof:bool))
+
+#|
+    Constant: sizeof:short
+
+    sizeof(short)
+|#
+(define sizeof:short (os-constant 'sizeof:short))
+
+#|
+    Constant: sizeof:int
+
+    sizeof(int)
+|#
+(define sizeof:int (os-constant 'sizeof:int))
+
+#|
+    Constant: sizeof:long
+
+    sizeof(long)
+|#
+(define sizeof:long (os-constant 'sizeof:long))
+
+#|
+    Constant: sizeof:void*
+
+    sizeof(void*)
+|#
+(define sizeof:void* (os-constant 'sizeof:void*))
+
+#|
+    Constant: sizeof:size_t
+
+    sizeof(size_t)
+|#
+(define sizeof:size_t (os-constant 'sizeof:size_t))
+
+#|
+    Constant: alignof:bool
+
+    struct x { char y; bool z; };
+
+    offsetof(x, z)
+|#
+(define alignof:bool (os-constant 'alignof:bool))
+
+#|
+    Constant: alignof:short
+
+    struct x { char y; short z; };
+
+    offsetof(x, z)
+|#
+(define alignof:short (os-constant 'alignof:short))
+
+#|
+    Constant: alignof:int
+
+    struct x { char y; int z; };
+
+    offsetof(x, z)
+|#
+(define alignof:int (os-constant 'alignof:int))
+
+#|
+    Constant: alignof:long
+
+    struct x { char y; long z; };
+
+    offsetof(x, z)
+|#
+(define alignof:long (os-constant 'alignof:long))
+
+#|
+    Constant: alignof:void*
+
+    struct x { char y; void* z; };
+
+    offsetof(x, z)
+|#
+(define alignof:void* (os-constant 'alignof:void*))
+
+#|
+    Constant: alignof:size_t
+
+    struct x { char y; size_t z; };
+
+    offsetof(x, z)
+|#
+(define alignof:size_t (os-constant 'alignof:size_t))
+
+#|
+    Constant: alignof:float
+
+    struct x { char y; float z; };
+
+    offsetof(x, z)
+|#
+(define alignof:float (os-constant 'alignof:float))
+
+#|
+    Constant: alignof:double
+
+    struct x { char y; double z; };
+
+    offsetof(x, z)
+|#
+(define alignof:double (os-constant 'alignof:double))
+
+#|
+    Constant: alignof:int8_t
+
+    struct x { char y; int8_t z; };
+
+    offsetof(x, z)
+|#
+(define alignof:int8_t (os-constant 'alignof:int8_t))
+
+#|
+    Constant: alignof:int16_t
+
+    struct x { char y; int16_t z; };
+
+    offsetof(x, z)
+|#
+(define alignof:int16_t (os-constant 'alignof:int16_t))
+
+#|
+    Constant: alignof:int32_t
+
+    struct x { char y; int32_t z; };
+
+    offsetof(x, z)
+|#
+(define alignof:int32_t (os-constant 'alignof:int32_t))
+
+#|
+    Constant: alignof:int64_t
+
+    struct x { char y; int64_t z; };
+
+    offsetof(x, z)
+|#
+(define alignof:int64_t (os-constant 'alignof:int64_t))
+
+#|
+    Constant: on-darwin
+|#
+(define on-darwin        (string=? (host-os) "darwin"))
+
+#|
+    Constant: on-linux
+|#
+(define on-linux         (string=? (host-os) "linux"))
+
+#|
+    Constant: on-freebsd
+|#
+(define on-freebsd       (string=? (host-os) "freebsd"))
+
+#|
+    Constant: on-openbsd
+|#
+(define on-openbsd       (string=? (host-os) "openbsd"))
+
+#|
+    Constant: on-windows
+|#
+(define on-windows       (string=? (host-os) "windows"))
 )

@@ -1,9 +1,33 @@
 (import (rnrs)
         (mosh)
         (match)
+        (mosh ffi)
         (only (srfi :19 time) date->string current-date)
         (mosh irc client))
 
+(display sizeof:bool)
+(display sizeof:short)
+(display  sizeof:int)
+(display  sizeof:long)
+(display  sizeof:void*)
+(display  sizeof:size_t)
+(display alignof:bool)
+(display alignof:short)
+(display alignof:int)
+(display alignof:long)
+(display alignof:void*)
+(display alignof:size_t)
+(display alignof:float)
+(display alignof:double)
+(display alignof:int8_t)
+(display alignof:int16_t)
+(display alignof:int32_t)
+(display alignof:int64_t)
+(display on-darwin)
+(display on-linux)
+(display on-freebsd)
+(display on-openbsd)
+(display on-windows)
 
 
 ;; (define (irc-bot server port nick channel irc-client)
@@ -53,25 +77,25 @@
 ;;       (loop (recv)))))
 ;;     (socket-close socket)))
 
-(irc-client
- "irc.freenode.net" "6666" "kaela" "#higepon"
- (lambda (msg return privmsg send)
-   (match msg
-     [('PRIVMSG who message)
-      (format #t "~a <~a> ~a\n" (date->string (current-date) "~H:~M") who message)]
-     [('STATUS 433 messaage)
-      (error 'irc (format "~a" messaage))]
-     [('NICK from to)
-      (format #t "nick from =~a to =~a\n" from to)]
-     [('PART name)
-      (format #t "part name=~a\n" name)]
-     [('JOIN name)
-      (format #t "join name=~a\n" name)]
-     [('TOPIC who topic)
-      (format #t "topic who=~a topic=~a\n" who topic)]
-     [('ERROR e)
-      (return e)]
-     [('RAW text)
-      #;(format (current-error-port) "LOG:~a\n" text)
-      #f]
-     [else #f])))
+;; (irc-client
+;;  "irc.freenode.net" "6666" "kaela" "#higepon"
+;;  (lambda (msg return privmsg send)
+;;    (match msg
+;;      [('PRIVMSG who message)
+;;       (format #t "~a <~a> ~a\n" (date->string (current-date) "~H:~M") who message)]
+;;      [('STATUS 433 messaage)
+;;       (error 'irc (format "~a" messaage))]
+;;      [('NICK from to)
+;;       (format #t "nick from =~a to =~a\n" from to)]
+;;      [('PART name)
+;;       (format #t "part name=~a\n" name)]
+;;      [('JOIN name)
+;;       (format #t "join name=~a\n" name)]
+;;      [('TOPIC who topic)
+;;       (format #t "topic who=~a topic=~a\n" who topic)]
+;;      [('ERROR e)
+;;       (return e)]
+;;      [('RAW text)
+;;       #;(format (current-error-port) "LOG:~a\n" text)
+;;       #f]
+;;      [else #f])))
