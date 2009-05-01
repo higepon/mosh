@@ -64,7 +64,6 @@ Callable.h                                                         \
 GenericMap.h                                                       \
 BinaryInputPort.h                                                  \
 BinaryOutputPort.h                                                 \
-config.h                                                           \
 scheme.h                                                           \
 ByteVector.h                                                       \
 HashTable.h                                                        \
