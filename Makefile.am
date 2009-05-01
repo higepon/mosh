@@ -438,7 +438,7 @@ bench:
 #### test
 check: test
 
-test: ./mosh all-tests.scm update
+test: ./mosh all-tests.scm update libffitest.so.1.0
 	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
 	./mosh test/io-error.scm
