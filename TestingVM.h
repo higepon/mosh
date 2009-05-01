@@ -40,8 +40,16 @@ namespace scheme {
 class TestingVM : public VM
 {
 public:
+    enum FlushType {
+        NONE,
+        FLUSH_BINARY_OUTPUT_PORT,
+        FLUSH_BINARY_INPUT_OUTPUT_PORT,
+        FLUSH_TEXTUAL_OUTPUT_PORT,
+        FLUSH_TEXTUAL_INPUT_OUTPUT_PORT,
+    };
+
     TestingVM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false) :
-        VM(stackSize, outPort, errorPort, inputPort, isProfiler)
+        VM(stackSize, outPort, errorPort, inputPort, isProfiler), lastFlushType_(NONE)
     {
     }
 
@@ -50,6 +58,9 @@ public:
     }
 
     virtual int exit(int status);
+    virtual void flushAllPorts();
+
+    FlushType lastFlushType_;
 };
 
 } // namespace scheme

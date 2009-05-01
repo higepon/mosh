@@ -87,10 +87,6 @@
 
 using namespace scheme;
 
-#ifdef DEBUG_VERSION
-FlushType lastFlushType = NONE;
-#endif // DEBUG_VERSION
-
 VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler) :
     ac_(Object::Nil),
     dc_(Object::Nil),
@@ -828,43 +824,28 @@ void VM::unregisterPort(Object obj)
     while (it != activePorts_.end()) {
         if (obj.eq(*it)) {
             activePorts_.erase(it);
-            break;
+            return;
         }
         it++;
     }
 }
 
-void VM::flushAllPorts(void)
+void VM::flushAllPorts()
 {
     Ports::iterator it = activePorts_.begin();
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
         if (outputPort.isBinaryOutputPort()) {
-#ifdef DEBUG_VERSION
-            fprintf(stderr, "%s\n", outputPort.toBinaryOutputPort()->toString().ascii_c_str());
-            lastFlushType = FLUSH_BINARY_OUTPUT_PORT;
-#endif // DEBUG_VERSION
             outputPort.toBinaryOutputPort()->flush();
         } else if (outputPort.isBinaryInputOutputPort()) {
-#ifdef DEBUG_VERSION
-            fprintf(stderr, "%s\n", outputPort.toBinaryInputOutputPort()->toString().ascii_c_str());
-            lastFlushType = FLUSH_BINARY_INPUT_OUTPUT_PORT;
-#endif // DEBUG_VERSION
             outputPort.toBinaryInputOutputPort()->flush();
         } else if (outputPort.isTextualOutputPort()) {
-#ifdef DEBUG_VERSION
-            fprintf(stderr, "%s\n", outputPort.toTextualOutputPort()->toString().ascii_c_str());
-            lastFlushType = FLUSH_TEXTUAL_OUTPUT_PORT;
-#endif // DEBUG_VERSION
             outputPort.toTextualOutputPort()->flush();
         } else if (outputPort.isTextualInputOutputPort()) {
-#ifdef DEBUG_VERSION
-            fprintf(stderr, "%s\n", outputPort.toTextualInputOutputPort()->toString().ascii_c_str());
-            lastFlushType = FLUSH_TEXTUAL_INPUT_OUTPUT_PORT;
-#endif // DEBUG_VERSION
             outputPort.toTextualInputOutputPort()->flush();
+        } else {
+            MOSH_ASSERT(false);
         }
-
         it = activePorts_.erase(it);
     }
 }

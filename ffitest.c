@@ -6,6 +6,35 @@ int return3()
   return 3;
 }
 
+typedef struct Struct1 {
+  int a;
+  int b;
+  int c;
+} Struct1;
+
+void fillStruct1(Struct1* s)
+{
+    s->a = 1234;
+    s->b = -2;
+    s->c = 30;
+}
+
+int sizeOfStruct1() {
+  return sizeof(Struct1);
+}
+
+int aOfStruct1(Struct1* s) {
+  return s->a;
+}
+
+int bOfStruct1(Struct1* s) {
+  return s->b;
+}
+
+int cOfStruct1(Struct1* s) {
+  return s->c;
+}
+
 
 // for x86-64
 // 6 register arguments + 2 stack arguments

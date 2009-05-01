@@ -49,11 +49,25 @@ using namespace scheme;
 
 int TestingVM::exit(int status)
 {
-    // Testing VM never exit on any errror.
-#ifdef _WIN32
-    printf("%s %s:%d\n", __FUNCTION__, __FILE__, __LINE__);fflush(stdout);// debug
-#else
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-#endif
+    flushAllPorts();
     return status;
+}
+
+void TestingVM::flushAllPorts()
+{
+    Ports::iterator it = activePorts_.begin();
+    while (it != activePorts_.end()) {
+        const Object outputPort = *it;
+        if (outputPort.isBinaryOutputPort()) {
+            lastFlushType_ = FLUSH_BINARY_OUTPUT_PORT;
+        } else if (outputPort.isBinaryInputOutputPort()) {
+            lastFlushType_ = FLUSH_BINARY_INPUT_OUTPUT_PORT;
+        } else if (outputPort.isTextualOutputPort()) {
+            lastFlushType_ = FLUSH_TEXTUAL_OUTPUT_PORT;
+        } else if (outputPort.isTextualInputOutputPort()) {
+            lastFlushType_ = FLUSH_TEXTUAL_INPUT_OUTPUT_PORT;
+        }
+        it++;
+    }
+    VM::flushAllPorts();
 }

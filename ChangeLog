@@ -1,3 +1,7 @@
+2009-05-01  higepon  <higepon@users.sourceforge.jp>
+
+        * TestingVM.cpp : Moved last Flash type.
+
 2009-05-01  kokosabu  <kokosabu@gmail.com>
 
         * Added : auto port close.

@@ -61,27 +61,16 @@ using namespace scheme;
 
 class VMTest : public testing::Test {
 protected:
-    VM* theVM_;
+    TestingVM* theVM_;
     virtual void SetUp() {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         mosh_init();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Transcoder* transcoder = nativeTranscoder();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        fprintf(stderr, "%s %s:%d\n", __func__, __FILE__, __LINE__);// debug
         theVM_->loadCompiler();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-        fprintf(stderr, "%s %s:%d\n", __func__, __FILE__, __LINE__);// debug
         theVM_->setValueString(UC("%loadpath"), Object::False);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
 };
 
@@ -90,19 +79,12 @@ protected:
     VM* theVM_;
     virtual void SetUp() {
         mosh_init();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Transcoder* transcoder = nativeTranscoder();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         errorPort_ = Object::makeStringOutputPort();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_ = new TestingVM(10000, outPort, errorPort_, inPort, false /* isProfiler */);
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_->loadCompiler();
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_->setValueString(UC("%loadpath"), Object::False);
     }
     Object errorPort_;
@@ -129,11 +111,8 @@ TEST_F(VMTest, StackTrace1) {
 }
 
 TEST_F(VMTest, StackTrace2) {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->activateR6RSMode(false);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
                  " Stack trace:\n"
@@ -148,57 +127,40 @@ TEST_F(VMTest, StackTrace2) {
                  "    9. (dynamic-wind in body out):  compiler-with-library.scm:808\n"
                  "    10. (<top-level>): <unknown location>\n\n",
                  theVM_->getLastError().toString()->data().ascii_c_str());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
 
 TEST_F(VMTest, BinaryOutputPortFlush) {
-    extern FlushType lastFlushType;
     Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/binary-output.txt")));
     theVM_->registerPort(outPort);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->flushAllPorts();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    EXPECT_EQ(lastFlushType, FLUSH_BINARY_OUTPUT_PORT);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_BINARY_OUTPUT_PORT);
 }
 
 
 TEST_F(VMTest, BinaryInputOutputPortFlush) {
-    extern FlushType lastFlushType;
     Object outPort = Object::makeBinaryInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/binary-input-output.txt"), 0));
     theVM_->registerPort(outPort);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->flushAllPorts();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    EXPECT_EQ(lastFlushType, FLUSH_BINARY_INPUT_OUTPUT_PORT);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_BINARY_INPUT_OUTPUT_PORT);
 }
 
 
 TEST_F(VMTest, TextualOutputPortFlush) {
-    extern FlushType lastFlushType;
     Transcoder* transcoder = nativeTranscoder();
     Object outPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/textual-output.txt")), transcoder);
     theVM_->registerPort(outPort);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->flushAllPorts();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    EXPECT_EQ(lastFlushType, FLUSH_TEXTUAL_OUTPUT_PORT);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_TEXTUAL_OUTPUT_PORT);
 }
 
 
 TEST_F(VMTest, TextualInputOutputPortFlush) {
-    extern FlushType lastFlushType;
     Transcoder* transcoder = nativeTranscoder();
     Object outPort = Object::makeTextualInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/textual-input-output.txt"), 0), transcoder);
     theVM_->registerPort(outPort);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     theVM_->flushAllPorts();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    EXPECT_EQ(lastFlushType, FLUSH_TEXTUAL_INPUT_OUTPUT_PORT);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    EXPECT_EQ(theVM_->lastFlushType_, TestingVM::FLUSH_TEXTUAL_INPUT_OUTPUT_PORT);
 }
 
 
