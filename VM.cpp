@@ -823,58 +823,48 @@ void VM::registerPort(Object obj)
 
 void VM::unregisterPort(Object obj)
 {
-    if (obj.isOutputPort()) {
-        MOSH_ASSERT(obj.isOutputPort());
-        Ports::iterator it = activePorts_.begin();
-        while (it != activePorts_.end()) {
-            if (obj.eq(*it)) {
-                activePorts_.erase(it);
-                break;
-            }
-            it++;
+    MOSH_ASSERT(obj.isOutputPort());
+    Ports::iterator it = activePorts_.begin();
+    while (it != activePorts_.end()) {
+        if (obj.eq(*it)) {
+            activePorts_.erase(it);
+            break;
         }
+        it++;
     }
 }
 
 void VM::flushAllPorts(void)
 {
-//#if 0
     Ports::iterator it = activePorts_.begin();
     while (it != activePorts_.end()) {
         const Object outputPort = *it;
         if (outputPort.isBinaryOutputPort()) {
 #ifdef DEBUG_VERSION
-            fprintf(stderr, "binary output port\n");
+            fprintf(stderr, "%s\n", outputPort.toBinaryOutputPort()->toString().ascii_c_str());
             lastFlushType = FLUSH_BINARY_OUTPUT_PORT;
 #endif // DEBUG_VERSION
             outputPort.toBinaryOutputPort()->flush();
         } else if (outputPort.isBinaryInputOutputPort()) {
 #ifdef DEBUG_VERSION
-            fprintf(stderr, "binary input output port\n");
+            fprintf(stderr, "%s\n", outputPort.toBinaryInputOutputPort()->toString().ascii_c_str());
             lastFlushType = FLUSH_BINARY_INPUT_OUTPUT_PORT;
 #endif // DEBUG_VERSION
-/*
             outputPort.toBinaryInputOutputPort()->flush();
-*/
         } else if (outputPort.isTextualOutputPort()) {
 #ifdef DEBUG_VERSION
-            fprintf(stderr, "textual output port\n");
+            fprintf(stderr, "%s\n", outputPort.toTextualOutputPort()->toString().ascii_c_str());
             lastFlushType = FLUSH_TEXTUAL_OUTPUT_PORT;
 #endif // DEBUG_VERSION
-/*
             outputPort.toTextualOutputPort()->flush();
-*/
         } else if (outputPort.isTextualInputOutputPort()) {
 #ifdef DEBUG_VERSION
-            fprintf(stderr, "textual input output port\n");
+            fprintf(stderr, "%s\n", outputPort.toTextualInputOutputPort()->toString().ascii_c_str());
             lastFlushType = FLUSH_TEXTUAL_INPUT_OUTPUT_PORT;
 #endif // DEBUG_VERSION
-/*
             outputPort.toTextualInputOutputPort()->flush();
-*/
         }
 
         it = activePorts_.erase(it);
     }
-//#endif // 0
 }

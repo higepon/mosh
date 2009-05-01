@@ -1,3 +1,7 @@
+2009-05-01  kokosabu  <kokosabu@gmail.com>
+
+        * Added : auto port close.
+
 2009-04-29  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/ffi.ss : Exported sizeof(c-type) align:of, on-linux and on-windows.

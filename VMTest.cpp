@@ -76,8 +76,10 @@ protected:
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         theVM_ = new TestingVM(10000, outPort, errorPort, inPort, false /* isProfiler */);
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        fprintf(stderr, "%s %s:%d\n", __func__, __FILE__, __LINE__);// debug
         theVM_->loadCompiler();
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        fprintf(stderr, "%s %s:%d\n", __func__, __FILE__, __LINE__);// debug
         theVM_->setValueString(UC("%loadpath"), Object::False);
         printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
@@ -149,18 +151,19 @@ TEST_F(VMTest, StackTrace2) {
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
+
 TEST_F(VMTest, BinaryOutputPortFlush) {
-//    extern FlushType lastFlushType;
+    extern FlushType lastFlushType;
     Object outPort = Object::makeBinaryOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/binary-output.txt")));
     theVM_->registerPort(outPort);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//    theVM_->flushAllPorts();
+    theVM_->flushAllPorts();
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//    EXPECT_EQ(lastFlushType, FLUSH_BINARY_OUTPUT_PORT);
+    EXPECT_EQ(lastFlushType, FLUSH_BINARY_OUTPUT_PORT);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
-/*
+
 TEST_F(VMTest, BinaryInputOutputPortFlush) {
     extern FlushType lastFlushType;
     Object outPort = Object::makeBinaryInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/binary-input-output.txt"), 0));
@@ -171,6 +174,7 @@ TEST_F(VMTest, BinaryInputOutputPortFlush) {
     EXPECT_EQ(lastFlushType, FLUSH_BINARY_INPUT_OUTPUT_PORT);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
+
 
 TEST_F(VMTest, TextualOutputPortFlush) {
     extern FlushType lastFlushType;
@@ -184,6 +188,7 @@ TEST_F(VMTest, TextualOutputPortFlush) {
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
 
+
 TEST_F(VMTest, TextualInputOutputPortFlush) {
     extern FlushType lastFlushType;
     Transcoder* transcoder = nativeTranscoder();
@@ -195,7 +200,7 @@ TEST_F(VMTest, TextualInputOutputPortFlush) {
     EXPECT_EQ(lastFlushType, FLUSH_TEXTUAL_INPUT_OUTPUT_PORT);
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 }
-*/
+
 
 // todo
 // TEST_F(VMErrorPortTest, StackTrace3) {

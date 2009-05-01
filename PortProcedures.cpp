@@ -709,7 +709,11 @@ Object scheme::closePortEx(VM* theVM, int argc, const Object* argv)
         ioError.who = procedureName;
         return callIOErrorAfter(theVM, ioError);
     END_TRY
-    theVM->unregisterPort(argv[0]);
+    const Object outPort = argv[0];
+    if (outPort.isBinaryOutputPort() || outPort.isBinaryInputOutputPort() ||
+        outPort.isTextualOutputPort() || outPort.isTextualInputOutputPort()) {
+        theVM->unregisterPort(outPort);
+    }
     return Object::Undef;
 }
 
