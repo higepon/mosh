@@ -262,7 +262,7 @@ case "$host_os" in
         AC_MSG_RESULT([no])
 	;;
 esac
-AM_CONDITIONAL(MINGW32, test x$ming32 = xtrue)
+AM_CONDITIONAL(MINGW32, test x$mingw32 = xtrue)
 
 AC_SUBST(MOSH_OPTS)
 AC_SUBST(MOSH_LDADD_ARCH)

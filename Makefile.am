@@ -47,6 +47,12 @@ mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ 
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
+if MINGW32
+mosh_LDADD += mosh-icon.o
+mosh-icon.o : win/mosh.rc logo/mosh.ico
+	$(WINDRES) win/mosh.rc -o mosh-icon.o
+endif 
+
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
