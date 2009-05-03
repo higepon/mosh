@@ -20,6 +20,7 @@ Mosh offers following functions for development
 - Enumration
 - Database
 - Foreign Function Interface
+- Socket
 - CGI
 
 It can be used for many kinds of software development.
