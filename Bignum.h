@@ -364,7 +364,32 @@ public:
 
     MAKE_BIGNUM_OP(add)
     MAKE_BIGNUM_OP(sub)
-    MAKE_BIGNUM_OP(mul)
+//    MAKE_BIGNUM_OP(mul)
+
+    static Object mul(int n1, Bignum* n2)
+    {
+        mpz_t ret;
+        mpz_init(ret);
+        mpz_set_si(ret, n1);
+        mpz_mul(ret, ret, n2->value);
+        return makeInteger(ret);
+    }
+    static Object mul(Bignum* n1, int n2)
+    {
+        mpz_t ret;
+        mpz_init(ret);
+        mpz_set_si(ret, n2);
+        mpz_mul(ret, n1->value, ret);
+        return makeInteger(ret);
+    }
+    static Object mul(Bignum* n1, Bignum* n2)
+    {
+        mpz_t ret;
+        mpz_init(ret);
+        mpz_mul(ret, n1->value, n2->value);
+        return makeInteger(ret);
+    }
+
 
 #define MAKE_BIGNUM_COMPARE(compare, symbol)\
     static bool compare(Bignum* n1, int n2)\

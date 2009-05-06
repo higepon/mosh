@@ -1208,7 +1208,68 @@ bool Arithmetic::eq(Object n1, Object n2)
 
 MAKE_OP_FUNC(add, +)
 MAKE_OP_FUNC(sub, -)
-MAKE_OP_FUNC(mul, *)
+//MAKE_OP_FUNC(mul, *)
+
+    Object Arithmetic::mul(Object n1, Object n2)
+    {
+        if (n1.isFixnum()) {
+            if (n2.isFixnum()) {
+                return Bignum::mul(n1.toFixnum(), n2.toFixnum());
+            } else if (n2.isRatnum()) {
+                return Ratnum::mul(n1.toFixnum(), n2.toRatnum());
+            } else if (n2.isFlonum()) {
+                return Flonum::mul(n1.toFixnum(), n2.toFlonum());
+            } else if (n2.isBignum()) {
+                return Bignum::mul(n1.toFixnum(), n2.toBignum());
+            } else if (n2.isCompnum()) {
+                return Compnum::mul(n1, n2.toCompnum());
+            }
+        } else if (n1.isBignum()) {
+            if (n2.isFixnum()) {
+                return Bignum::mul(n1.toBignum(), n2.toFixnum());
+            } else if (n2.isFlonum()) {
+                return Flonum::mul(n1.toBignum(), n2.toFlonum());
+            } else if (n2.isBignum()) {
+                return Bignum::mul(n1.toBignum(), n2.toBignum());
+            } else if (n2.isRatnum()) {
+                return Ratnum::mul(n1.toBignum(), n2.toRatnum());
+            } else if (n2.isCompnum()) {
+                return Compnum::mul(n1, n2.toCompnum());
+            }
+        } else if (n1.isRatnum()) {
+            if (n2.isFixnum()) {
+                return Ratnum::mul(n1.toRatnum(), new Ratnum(n2.toFixnum(), 1));
+            } else if (n2.isRatnum()) {
+                return Ratnum::mul(n1.toRatnum(), n2.toRatnum());
+            } else if (n2.isFlonum()) {
+                return Flonum::mul(n1.toRatnum(), n2.toFlonum());
+            } else if (n2.isBignum()) {
+                return Ratnum::mul(n1.toRatnum(), n2.toBignum());
+            } else if (n2.isCompnum()) {
+                return Compnum::mul(n1, n2.toCompnum());
+            }
+        } else if (n1.isFlonum()) {
+            if (n2.isFixnum()) {
+                return Flonum::mul(n1.toFlonum(), n2.toFixnum());
+            } else if (n2.isRatnum()) {
+                return Flonum::mul(n1.toFlonum(), n2.toRatnum());
+            } else if (n2.isFlonum()) {
+                return Flonum::mul(n1.toFlonum(), n2.toFlonum());
+            } else if (n2.isBignum()) {
+                return Flonum::mul(n1.toFlonum(), n2.toBignum());
+            } else if (n2.isCompnum()) {
+                return Compnum::mul(n1, n2.toCompnum());
+            }
+        } else if (n1.isCompnum()) {
+            if (n2.isFixnum() || n2.isBignum() || n2.isRatnum() || n2.isFlonum()) {
+                return Compnum::mul(n1.toCompnum(), n2);
+            } else if (n2.isCompnum()) {
+                return Compnum::mul(n1.toCompnum(), n2.toCompnum());
+            }
+        }
+        return Object::False;
+    }
+
 
 Object Arithmetic::mul(int number1, Object number2)
 {
