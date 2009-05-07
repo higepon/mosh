@@ -29,6 +29,8 @@
  *  $Id$
  */
 
+#include <stdio.h>
+#include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"

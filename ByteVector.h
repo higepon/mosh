@@ -399,52 +399,70 @@ public:
 
     float ieeeSingleNativeRef(size_t index)
     {
-        return *(reinterpret_cast<float*>(&data_[index]));
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+        memcpy(n.data, data_ + index, sizeof(float));
+        return n.fvalue;
     }
 
     float ieeeSingleRefLittle(size_t index)
     {
 #if WORDS_BIGENDIAN
-        const size_t size = sizeof(float);
-        uint8_t data[size];
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+
         for (size_t i = 0; i < size; i++) {
-            data[i] = data_[index + size - i - 1];
+            n.data[i] = data_[index + size - i - 1];
         }
-        return *(reinterpret_cast<float*>(data));
+        return n.fvalue;
 #else
-        return *(reinterpret_cast<float*>(&data_[index]));
+        return ieeeSingleNativeRef(index);
 #endif
     }
 
     float ieeeSingleRefBig(size_t index)
     {
 #if WORDS_BIGENDIAN
-        return *(reinterpret_cast<float*>(&data_[index]));
+        return ieeeSingleNativeRef(index);
 #else
-        const size_t size = sizeof(float);
-        uint8_t data[size];
-        for (size_t i = 0; i < size; i++) {
-            data[i] = data_[index + size - i - 1];
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+
+        for (size_t i = 0; i < sizeof(float); i++) {
+            n.data[i] = data_[index + sizeof(float) - i - 1];
         }
-        return *(reinterpret_cast<float*>(data));
+        return n.fvalue;
 #endif
     }
 
     void ieeeSingleNativeSet(size_t index, float value)
     {
-        *(reinterpret_cast<float*>((&data_[index]))) = value;
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+        n.fvalue = value;
+        memcpy(data_ + index, n.data, sizeof(float));
     }
 
     void ieeeSingleSetBig(size_t index, float value)
     {
 #if WORDS_BIGENDIAN
-        *(reinterpret_cast<float*>((&data_[index]))) = value;
+        ieeeSingleNativeSet(index, value);
 #else
-        const size_t size = sizeof(float);
-        uint8_t data[size];
-        *(reinterpret_cast<float*>(data)) = value;
-        for (size_t i = 0; i < size; i++) {
-            data_[index + size - i - 1] = data[i];
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+        n.fvalue = value;
+        for (size_t i = 0; i < sizeof(float); i++) {
+            data_[index + sizeof(float) - i - 1] = n.data[i];
         }
 #endif
     }
@@ -452,65 +470,84 @@ public:
     void ieeeSingleSetLittle(size_t index, float value)
     {
 #if WORDS_BIGENDIAN
-        const size_t size = sizeof(float);
-        uint8_t data[size];
-        *(reinterpret_cast<float*>(data)) = value;
-        for (size_t i = 0; i < size; i++) {
-            data_[index + size - i - 1] = data[i];
+        union {
+            float   fvalue;
+            uint8_t data[sizeof(float)];
+        } n;
+        n.fvalue = value;
+
+        for (size_t i = 0; i < sizeof(float); i++) {
+            data_[index + sizeof(float) - i - 1] = n.data[i];
         }
 #else
-        *(reinterpret_cast<float*>((&data_[index]))) = value;
+        ieeeSingleNativeSet(index, value);
 #endif
     }
 
     double ieeeDoubleNativeRef(size_t index)
     {
-        return *(reinterpret_cast<double*>(&data_[index]));
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        memcpy(n.data, data_ + index, sizeof(double));
+        return n.fvalue;
     }
 
     double ieeeDoubleRefBig(size_t index)
     {
 #if WORDS_BIGENDIAN
-        return *(reinterpret_cast<double*>(&data_[index]));
+        return ieeeDoubleNativeRef(index);
 #else
-        const size_t size = sizeof(double);
-        uint8_t data[size];
-        for (size_t i = 0; i < size; i++) {
-            data[i] = data_[index + size - i - 1];
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        for (size_t i = 0; i < sizeof(double); i++) {
+            n.data[i] = data_[index + sizeof(double) - i - 1];
         }
-        return *(reinterpret_cast<double*>(data));
+        return n.fvalue;
 #endif
     }
 
     double ieeeDoubleRefLittle(size_t index)
     {
 #if WORDS_BIGENDIAN
-        const size_t size = sizeof(double);
-        uint8_t data[size];
-        for (size_t i = 0; i < size; i++) {
-            data[i] = data_[index + size - i - 1];
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        for (size_t i = 0; i < sizeof(double); i++) {
+            n.data[i] = data_[index + sizeof(double) - i - 1];
         }
-        return *(reinterpret_cast<double*>(data));
+        return n.fvalue;
 #else
-        return *(reinterpret_cast<double*>(&data_[index]));
+        return ieeeDoubleNativeRef(index);
 #endif
     }
 
     void ieeeDoubleNativeSet(size_t index, double value)
     {
-        *(reinterpret_cast<double*>((&data_[index]))) = value;
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        n.fvalue = value;
+        memcpy(data_ + index, n.data, sizeof(double));
     }
 
     void ieeeDoubleSetBig(size_t index, double value)
     {
 #if WORDS_BIGENDIAN
-        *(reinterpret_cast<double*>((&data_[index]))) = value;
+        ieeeDoubleNativeSet(index, value);
 #else
-        const size_t size = sizeof(double);
-        uint8_t data[size];
-        *(reinterpret_cast<double*>(data)) = value;
-        for (size_t i = 0; i < size; i++) {
-            data_[index + size - i - 1] = data[i];
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        n.fvalue = value;
+        for (size_t i = 0; i < sizeof(double); i++) {
+            data_[index + sizeof(double) - i - 1] = n.data[i];
         }
 #endif
     }
@@ -518,14 +555,16 @@ public:
     void ieeeDoubleSetLittle(size_t index, double value)
     {
 #if WORDS_BIGENDIAN
-        const size_t size = sizeof(double);
-        uint8_t data[size];
-        *(reinterpret_cast<double*>(data)) = value;
-        for (size_t i = 0; i < size; i++) {
-            data_[index + size - i - 1] = data[i];
+        union {
+            double   fvalue;
+            uint8_t data[sizeof(double)];
+        } n;
+        n.fvalue = value;
+        for (size_t i = 0; i < sizeof(double); i++) {
+            data_[index + sizeof(double) - i - 1] = n.data[i];
         }
 #else
-        *(reinterpret_cast<double*>((&data_[index]))) = value;
+        ieeeDoubleNativeSet(index, value);
 #endif
     }
 
