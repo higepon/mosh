@@ -548,5 +548,5 @@ test_getopt_LDADD = $(TEST_LDADD_)
 
 
 install-data-hook :
-	MOSH_GENSYM_PREFIX=I mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
+	MOSH_GENSYM_PREFIX=I @bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 
