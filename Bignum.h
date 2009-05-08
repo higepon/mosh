@@ -53,6 +53,462 @@
 
 namespace scheme {
 
+// Integer Class
+// Don't use mpz_xxx outside of this class.
+//
+// N.B.
+// We don't use GC_malloc for GNU MP allocator.
+// Because mpz_xxx buffer may have many many "false pointer".
+//
+// Instead we use normal malloc and free with gc_cleanup
+// For each destruction of Integer instance, we free the mpz_xxx buffer.
+class Integer : public gc_cleanup
+{
+public:
+    Integer()
+    {
+        mpz_init(value_);
+    }
+
+    Integer(const char* str)
+    {
+        mpz_init(value_);
+        mpz_init_set_str(value_, str, 10);
+    }
+
+    Integer(long v)
+    {
+        mpz_init(value_);
+        mpz_set_si(value_, v);
+    }
+
+    Integer(const Integer& i)
+    {
+        mpz_init_set(value_, i.value_);
+    }
+
+    // This class should not be inherited.
+    ~Integer()
+    {
+        mpz_clear(value_);
+    }
+
+    double toDouble() const
+    {
+        return mpz_get_d(value_);
+    }
+
+    bool isEven() const
+    {
+        return mpz_even_p(value_) != 0;
+    }
+
+    void setAbsolute()
+    {
+        mpz_abs(value_, value_);
+    }
+
+    Integer* abs() const
+    {
+        Integer* ret = new Integer(*this);
+        ret->setAbsolute();
+        return ret;
+    }
+
+    bool isNegative() const
+    {
+        return mpz_cmp_si(value_, 0) < 0;
+    }
+
+    int bitCount() const
+    {
+        MOSH_ASSERT(!isNegative());
+        return mpz_popcount(value_);
+    }
+
+    bool fitsU32() const
+    {
+        return !isNegative() && bitCount() <= 32;
+    }
+
+    bool fitsS32() const
+    {
+        Integer temp(*this);
+        temp.setAbsolute();
+        return temp.bitCount() <= 31;
+    }
+
+    uint32_t toU32() const
+    {
+        return (uint32_t)mpz_get_ui(value_);
+    }
+
+    int32_t toS32() const
+    {
+        MOSH_ASSERT(fitsS32());
+        return (int32_t)mpz_get_si(value_);
+    }
+
+    bool fitsU64() const
+    {
+        return !isNegative() && bitCount() <= 64;
+    }
+
+    bool fitsS64() const
+    {
+        Integer temp(*this);
+        temp.setAbsolute();
+        return temp.bitCount() <= 63;
+    }
+
+    uint64_t toU64() const
+    {
+        MOSH_ASSERT(fitsU64());
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value_, 32);
+        ret = mpz_get_ui(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value_, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        mpz_clear(temp);
+        return ret;
+#else
+        return mpz_get_ui(value_);
+#endif
+    }
+
+    int64_t toS64() const
+    {
+        MOSH_ASSERT(fitsS64());
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        uint64_t ret = 0;
+        mpz_t temp;
+        mpz_init(temp);
+        mpz_fdiv_q_2exp(temp, value_, 32);
+        ret = mpz_get_si(temp);
+        ret = ret << 32; // upper 32bit
+        mpz_set_ui(temp, 0xffffffff);
+        mpz_and(temp, value_, temp);
+        ret += mpz_get_ui(temp); // lower 32bit
+        mpz_clear(temp);
+        return ret;
+#else
+        return mpz_get_si(value_);
+#endif
+    }
+
+    void setU32(uint32_t value)
+    {
+        mpz_set_ui(value_, value);
+    }
+
+    void setDouble(double value)
+    {
+        mpz_set_d(value_, value);
+    }
+
+    Integer* bitwiseNot() const
+    {
+        Integer* ret = new Integer(*this);
+        mpz_com(ret->value_, value_);
+        return ret;
+    }
+
+    Integer* bitwiseAnd(int n) const
+    {
+        Integer temp(n);
+        return bitwiseAnd(&temp);
+    }
+
+    Integer* bitwiseAnd(const Integer* i) const
+    {
+        Integer* ret = new Integer(*this);
+        mpz_and(ret->value_, value_, i->value_);
+        return ret;
+    }
+
+    Integer* bitwiseIor(int n) const
+    {
+        Integer temp(n);
+        return bitwiseIor(&temp);
+    }
+
+    Integer* bitwiseIor(const Integer* i) const
+    {
+        Integer* ret = new Integer(*this);
+        mpz_ior(ret->value_, value_, i->value_);
+        return ret;
+    }
+
+    Integer* bitwiseXor(int n) const
+    {
+        Integer temp(n);
+        return bitwiseXor(&temp);
+    }
+
+    Integer* bitwiseXor(const Integer* i) const
+    {
+        Integer* ret = new Integer(*this);
+        mpz_xor(ret->value_, value_, i->value_);
+        return ret;
+    }
+
+    int bitwiseBitCount() const
+    {
+        if (isNegative()) {
+            mpz_t temp;
+            mpz_com(temp, value_);
+            const unsigned long ret = mpz_popcount(temp);
+            mpz_clear(temp);
+            return ~ret;
+        } else {
+            return mpz_popcount(value_);
+        }
+    }
+
+    size_t bitwiseLength() const
+    {
+        if (isNegative()) {
+            return bitwiseNot()->bitwiseLength();
+        } else {
+            return mpz_sizeinbase(value_, 2);
+        }
+    }
+
+    int bitwiseFirstBitSet() const
+    {
+        const unsigned long int found = mpz_scan1(value_, 0);
+        if (found == ULONG_MAX) {
+            return -1;
+        } else {
+            return found;
+        }
+    }
+
+    static Integer* quotient(int n1, const Integer* n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_tdiv_q(ret->value_, ret->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* quotient(const Integer* n1, int n2)
+    {
+        Integer* ret = new Integer(n2);
+        mpz_tdiv_q(ret->value_, n1->value_, ret->value_);
+        return ret;
+    }
+
+    static Integer* quotient(const Integer* n1, const Integer* n2)
+    {
+        Integer* ret = new Integer;
+        mpz_tdiv_q(ret->value_, n1->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* remainder(int n1, const Integer* n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_tdiv_r(ret->value_, ret->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* remainder(const Integer* n1, int n2)
+    {
+        Integer* ret = new Integer(n2);
+        mpz_tdiv_r(ret->value_, n1->value_, ret->value_);
+        return ret;
+    }
+
+    static Integer* remainder(const Integer* n1, const Integer* n2)
+    {
+        Integer* ret = new Integer;
+        mpz_tdiv_r(ret->value_, n1->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* bitwiseShiftLeft(const Integer* n1, unsigned long n2)
+    {
+        Integer* ret = new Integer;
+        mpz_mul_2exp(ret->value_, n1->value_, n2);
+        return ret;
+    }
+
+    static Integer* bitwiseShiftLeft(int n1, unsigned long n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_mul_2exp(ret->value_, ret->value_, n2);
+        return ret;
+    }
+
+    static Integer* bitwiseShiftRight(const Integer* n1, unsigned long n2)
+    {
+        Integer* ret = new Integer;
+        mpz_fdiv_q_2exp(ret->value_, n1->value_, n2);
+        return ret;
+    }
+
+    static Integer* bitwiseShiftRight(int n1, unsigned long n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_fdiv_q_2exp(ret->value_, ret->value_, n2);
+        return ret;
+    }
+
+    static Integer* add(int n1, const Integer* n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_add(ret->value_, ret->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* add(const Integer* n1, int n2)
+    {
+        Integer* ret = new Integer(n2);
+        mpz_add(ret->value_, n1->value_, ret->value_);
+        return ret;
+    }
+
+    static Integer* add(Integer* n1, Integer* n2)
+    {
+        Integer* ret = new Integer();
+        mpz_add(ret->value_, n1->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* sub(int n1, const Integer* n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_sub(ret->value_, ret->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* sub(const Integer* n1, int n2)
+    {
+        Integer* ret = new Integer(n2);
+        mpz_sub(ret->value_, n1->value_, ret->value_);
+        return ret;
+    }
+
+    static Integer* sub(Integer* n1, Integer* n2)
+    {
+        Integer* ret = new Integer();
+        mpz_sub(ret->value_, n1->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* mul(int n1, const Integer* n2)
+    {
+        Integer* ret = new Integer(n1);
+        mpz_mul(ret->value_, ret->value_, n2->value_);
+        return ret;
+    }
+
+    static Integer* mul(const Integer* n1, int n2)
+    {
+        Integer* ret = new Integer(n2);
+        mpz_mul(ret->value_, n1->value_, ret->value_);
+        return ret;
+    }
+
+    static Integer* mul(Integer* n1, Integer* n2)
+    {
+        Integer* ret = new Integer();
+        mpz_mul(ret->value_, n1->value_, n2->value_);
+        return ret;
+    }
+
+    static bool gt(Integer* n1, int n2)
+    {
+        return mpz_cmp_si(n1->value_, n2) > 0;
+    }
+    static bool gt(int n1, Integer* n2)
+    {
+        return (- mpz_cmp_si(n2->value_, n1)) > 0;
+    }
+    static bool gt(Integer* n1, Integer* n2)
+    {
+        return mpz_cmp(n1->value_, n2->value_) > 0;
+    }
+
+    static bool ge(Integer* n1, int n2)
+    {
+        return mpz_cmp_si(n1->value_, n2) >= 0;
+    }
+    static bool ge(int n1, Integer* n2)
+    {
+        return (- mpz_cmp_si(n2->value_, n1)) >= 0;
+    }
+    static bool ge(Integer* n1, Integer* n2)
+    {
+        return mpz_cmp(n1->value_, n2->value_) >= 0;
+    }
+
+    static bool lt(Integer* n1, int n2)
+    {
+        return mpz_cmp_si(n1->value_, n2) < 0;
+    }
+    static bool lt(int n1, Integer* n2)
+    {
+        return (- mpz_cmp_si(n2->value_, n1)) < 0;
+    }
+    static bool lt(Integer* n1, Integer* n2)
+    {
+        return mpz_cmp(n1->value_, n2->value_) < 0;
+    }
+
+    static bool le(Integer* n1, int n2)
+    {
+        return mpz_cmp_si(n1->value_, n2) <= 0;
+    }
+    static bool le(int n1, Integer* n2)
+    {
+        return (- mpz_cmp_si(n2->value_, n1)) <= 0;
+    }
+    static bool le(Integer* n1, Integer* n2)
+    {
+        return mpz_cmp(n1->value_, n2->value_) <= 0;
+    }
+
+    static bool eq(Integer* n1, int n2)
+    {
+        return mpz_cmp_si(n1->value_, n2) == 0;
+    }
+    static bool eq(int n1, Integer* n2)
+    {
+        return (- mpz_cmp_si(n2->value_, n1)) == 0;
+    }
+    static bool eq(Integer* n1, Integer* n2)
+    {
+        return mpz_cmp(n1->value_, n2->value_) == 0;
+    }
+
+    static Integer* fromU64(uint64_t n)
+    {
+        Integer* ret = new Integer;
+        ret->setU32(n >> 32);
+        mpz_mul_2exp(ret->value_, ret->value_, 32);
+        mpz_add_ui(ret->value_, ret->value_, (n & 0xffffffff));
+        return ret;
+    }
+
+    static Integer* fromS64(int64_t n)
+    {
+        Integer* ret = new Integer;
+        mpz_set_si(ret->value_, n >> 32);
+        mpz_mul_2exp(ret->value_, ret->value_, 32);
+        mpz_add_ui(ret->value_, ret->value_, (n & 0xffffffff));
+        return ret;
+    }
+
+private:
+   mpz_t value_;
+};
+
 class Bignum EXTEND_GC
 {
 public:
