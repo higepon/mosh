@@ -439,10 +439,10 @@ Object Object::makeRatnum(int numerator, int denominator)
                                                         reinterpret_cast<intptr_t>(new Ratnum(numerator, denominator)))));
 }
 
-Object Object::makeRatnum(mpq_t r)
+Object Object::makeRatnum(Fraction* fraction)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<intptr_t>(new Ratnum(r)))));
+                                                        reinterpret_cast<intptr_t>(new Ratnum(fraction)))));
 }
 
 

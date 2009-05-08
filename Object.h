@@ -69,6 +69,8 @@ class CompoundCondition;
 class Ratnum;
 class Flonum;
 class Bignum;
+class Integer;
+class Fraction;
 class Compnum;
 class VM;
 class Port;
@@ -178,7 +180,7 @@ public:
     static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
-    static Object makeBignum(const mpz_t v);
+    static Object makeBignum(Integer* integer);
     static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
@@ -266,7 +268,7 @@ public:
     static Object makeCallable(Callable* callable);
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRatnum(int numerator, int denominator);
-    static Object makeRatnum(mpq_t r);
+    static Object makeRatnum(Fraction* r);
     static Object makeRatnum(Ratnum* r);
     static Object makeCompnum(Object real, Object imag);
     static Object makeRecordTypeDescriptor(Object name,

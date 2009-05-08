@@ -68,18 +68,12 @@ void Flonum::initialize()
 
 Object Flonum::toRatnum() const
 {
-    mpq_t v;
-    mpq_init(v);
-    mpq_set_d(v, value_);
-    return Object::makeRatnum(v);
+    return Object::makeRatnum(new Fraction(value_));
 }
 
 Object Flonum::toExact() const
 {
-    mpq_t v;
-    mpq_init(v);
-    mpq_set_d(v, value_);
-    return Ratnum::makeNumber(v);
+    return Ratnum::makeNumber(new Fraction(value_));
 }
 
 Object Flonum::numerator() const

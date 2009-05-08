@@ -1,5 +1,7 @@
 2009-05-08  higepon  <higepon@users.sourceforge.jp>
 
+        * scheme.cpp : Added Fraction class, all tests passed.
+
         * Bignum.h : Added Integer class.
 
 2009-05-07  higepon  <higepon@users.sourceforge.jp>
