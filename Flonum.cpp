@@ -39,6 +39,7 @@
 #include "Arithmetic.h"
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
+#include <limits>
 
 using namespace scheme;
 
@@ -46,24 +47,11 @@ Object Flonum::POSITIVE_INF;
 Object Flonum::NEGATIVE_INF;
 Object Flonum::NOT_A_NUMBER;
 
-static double zero(void) { return 0.0; }
-static double one (void) { return 1.0; }
-static double mone (void) { return -1.0; }
-
 void Flonum::initialize()
 {
-#ifdef _WIN32
-    unsigned int pos_inf[2] = { 0x0, 0x7ff00000 };
-    unsigned int neg_inf[2] = { 0x0, 0xfff00000 };
-    unsigned int not_num[2] = { 0x0, 0xfff80000 };
-    POSITIVE_INF = Object::makeFlonum(*(double*)pos_inf);
-    NEGATIVE_INF = Object::makeFlonum(*(double*)neg_inf);
-    NOT_A_NUMBER = Object::makeFlonum(*(double*)not_num);
-#else
-    POSITIVE_INF = Object::makeFlonum(one() / zero());
-    NEGATIVE_INF = Object::makeFlonum(mone() / zero());
-    NOT_A_NUMBER = Object::makeFlonum(zero() / zero());
-#endif
+    POSITIVE_INF = Object::makeFlonum(std::numeric_limits<double>::infinity());
+    NEGATIVE_INF = Object::makeFlonum(-std::numeric_limits<double>::infinity());
+    NOT_A_NUMBER = Object::makeFlonum(std::numeric_limits<double>::quiet_NaN());
 }
 
 Object Flonum::toRatnum() const
