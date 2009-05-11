@@ -1,5 +1,7 @@
 2009-05-11  higepon  <higepon@users.sourceforge.jp>
 
+        * VM-Run.cpp (run): Fixed Issue 55. check argument of append.
+
         * ByteVector.h (scheme): Fixed the bug on Big Endian.
 
 2009-05-07  higepon  <higepon@users.sourceforge.jp>

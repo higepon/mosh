@@ -491,7 +491,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(APPEND2)
         {
-            ac_ = Pair::append2(pop(), ac_);
+            const Object head = pop();
+            if (head.isList()) {
+                ac_ = Pair::append2(head, ac_);
+            } else {
+                callWrongTypeOfArgumentViolationAfter(this, "append", "list", L1(head));
+            }
             NEXT1;
         }
         CASE(NUMBER_ADD)
