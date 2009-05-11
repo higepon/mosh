@@ -415,8 +415,8 @@ public:
             uint8_t data[sizeof(float)];
         } n;
 
-        for (size_t i = 0; i < size; i++) {
-            n.data[i] = data_[index + size - i - 1];
+        for (size_t i = 0; i < sizeof(float); i++) {
+            n.data[i] = data_[index + sizeof(float) - i - 1];
         }
         return n.fvalue;
 #else
