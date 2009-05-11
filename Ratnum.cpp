@@ -39,43 +39,55 @@ using namespace scheme;
 
 Object Ratnum::sqrt() const
 {
-    if (Fraction::ge(fraction_, 0)) {
-        return makeNumber(fraction_->sqrtAbs());
+    if (mpq_sgn(value) >= 0) {
+        return sqrtUnsigned(value);
     } else {
+        mpq_t neg;
+        mpq_init(neg);
+        mpq_neg(neg, value);
         return Object::makeCompnum(Object::makeFixnum(0),
-                                   makeNumber(fraction_->sqrtAbs()));
+                                   sqrtUnsigned(neg));
     }
 }
 
-// Object Ratnum::sqrtUnsigned(const mpq_t r) const
-// {
-//     MOSH_ASSERT(mpq_sgn(value) >= 0);
-//     mpz_t num;
-//     mpz_t den;
-//     mpz_init(num);
-//     mpz_init(den);
-//     mpz_sqrt(num, mpq_numref(value));
-//     mpz_sqrt(den, mpq_denref(value));
-//     mpq_t ret;
-//     mpq_init(ret);
-//     mpq_set_num(ret, num);
-//     mpq_set_den(ret, den);
-//     return makeNumber(ret);
-// }
+Object Ratnum::sqrtUnsigned(const mpq_t r) const
+{
+    MOSH_ASSERT(mpq_sgn(value) >= 0);
+    mpz_t num;
+    mpz_t den;
+    mpz_init(num);
+    mpz_init(den);
+    mpz_sqrt(num, mpq_numref(value));
+    mpz_sqrt(den, mpq_denref(value));
+    mpq_t ret;
+    mpq_init(ret);
+    mpq_set_num(ret, num);
+    mpq_set_den(ret, den);
+    return makeNumber(ret);
+}
 
 Object Ratnum::floor() const
 {
-    return Bignum::makeInteger(fraction_->floor());
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_fdiv_q(ret,  mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
 }
 
 Object Ratnum::ceiling() const
 {
-    return Bignum::makeInteger(fraction_->ceiling());
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_cdiv_q(ret, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
 }
 
 Object Ratnum::truncate() const
 {
-    return Bignum::makeInteger(fraction_->truncate());
+    mpz_t ret;
+    mpz_init(ret);
+    mpz_tdiv_q(ret, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(ret);
 }
 
 Object Ratnum::round() const

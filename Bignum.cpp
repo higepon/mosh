@@ -38,12 +38,20 @@ using namespace scheme;
 
 Object Bignum::sqrt() const
 {
-    return makeInteger(integer_->sqrt());
+    Bignum* const b = new Bignum;
+    if (isNegative()) {
+        mpz_neg(b->value, value);
+        mpz_sqrt(b->value, b->value);
+        return makeInteger(b);
+    } else {
+        mpz_sqrt(b->value, value);
+        return makeInteger(b);
+    }
 }
 
 
 char* Bignum::toString(int radix /* = 10 */) const
 {
-    return integer_->toString(radix);
+    return mpz_get_str(NULL, radix, value);
 }
 
