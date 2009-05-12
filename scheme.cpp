@@ -61,8 +61,8 @@ void mosh_init()
     Flonum::initialize();
     Symbol::initBuitinSymbols();
 #ifdef _WIN32
-	WSADATA data;
-	WSAStartup(MAKEWORD(2, 2), &data);
+    WSADATA data;
+    WSAStartup(MAKEWORD(2, 2), &data);
 #endif
     initOSConstants();
 }

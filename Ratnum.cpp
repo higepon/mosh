@@ -63,31 +63,30 @@ Object Ratnum::sqrtUnsigned(const mpq_t r) const
     mpq_init(ret);
     mpq_set_num(ret, num);
     mpq_set_den(ret, den);
+    mpz_clear(num); // we have to this. mpq_set_den/num just copy
+    mpz_clear(den);
     return makeNumber(ret);
 }
 
 Object Ratnum::floor() const
 {
-    mpz_t ret;
-    mpz_init(ret);
-    mpz_fdiv_q(ret,  mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(ret);
+    Bignum temp;
+    mpz_fdiv_q(temp.value,  mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value);
 }
 
 Object Ratnum::ceiling() const
 {
-    mpz_t ret;
-    mpz_init(ret);
-    mpz_cdiv_q(ret, mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(ret);
+    Bignum temp;
+    mpz_cdiv_q(temp.value, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value);
 }
 
 Object Ratnum::truncate() const
 {
-    mpz_t ret;
-    mpz_init(ret);
-    mpz_tdiv_q(ret, mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(ret);
+    Bignum temp;
+    mpz_tdiv_q(temp.value, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value);
 }
 
 Object Ratnum::round() const
