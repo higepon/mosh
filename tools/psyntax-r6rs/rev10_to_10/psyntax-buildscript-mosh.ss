@@ -1074,7 +1074,7 @@
 ;;     (circular-list? srfi-1)
 ;;     (dotted-list? srfi-1)
     (read-line mosh)
-    (regexp? r)
+    (regexp? mosh interaction r)
     ;;;
     (char-ready?                                )
     (interaction-environment                    )

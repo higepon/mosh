@@ -10,11 +10,13 @@
 (library (mosh pp)
   (export pretty-print p pp)
   (import (only (rnrs) define if make-string case else let* and pair? symbol?
-                car cdr + null? let cond > string-length symbol->string or
-                vector? lambda set! cons - vector->list quote min < substring
-                boolean? number? number->string procedure? string? char=? string-ref values
-                char? input-port? output-port? eof-object? cadr begin display newline apply
-                current-output-port define-syntax syntax-case ... syntax call-with-values)
+                car cdr + null? let cond > string-length symbol->string or identifier?
+                vector? lambda set! cons - vector->list quote min < substring bytevector? bytevector->u8-list
+                boolean? number? number->string procedure? string? char=? string-ref values record-type-descriptor?
+                char? input-port? output-port? eof-object? cadr begin display newline apply eq? condition?
+                current-output-port define-syntax syntax-case ... syntax call-with-values hashtable? record?)
+          (only (system) socket?)
+          (only (mosh) regexp?)
           (only (rnrs mutable-strings) string-set!))
 
 ; File; "pp.scm"   (c) 1991, Marc Feeley
@@ -45,13 +47,17 @@
 ;
 ; where display-string = (lambda (s) (for-each write-char (string->list s)) #t)
 
-(define (generic-write obj display? width output)
 
+(define (generic-write obj display? width output)
+  (define unspec (if #f #t))
   (define (read-macro? l)
     (define (length1? l) (and (pair? l) (null? (cdr l))))
     (let ((head (car l)) (tail (cdr l)))
       (case head
-        ((QUOTE QUASIQUOTE UNQUOTE UNQUOTE-SPLICING) (length1? tail))
+        ((QUOTE QUASIQUOTE UNQUOTE UNQUOTE-SPLICING
+          quote quasiquote unquote unquote-splicing
+          syntax quasisyntax unsyntax unsyntax-splicing
+          SYNTAX QUASISYNTAX UNSYNTAX UNSYNTAX-SPLICING) (length1? tail))
         (else                                        #f))))
 
   (define (read-macro-body l)
@@ -60,10 +66,14 @@
   (define (read-macro-prefix l)
     (let ((head (car l)) (tail (cdr l)))
       (case head
-        ((QUOTE)            "'")
-        ((QUASIQUOTE)       "`")
-        ((UNQUOTE)          ",")
-        ((UNQUOTE-SPLICING) ",@"))))
+        ((QUOTE quote)            "'")
+        ((QUASIQUOTE quasiquote)       "`")
+        ((UNQUOTE unquote)          ",")
+        ((UNQUOTE-SPLICING unquote-splicing) ",@")
+        ((SYNTAX syntax)            "#'")
+        ((QUASISYNTAX quasisyntax)       "#`")
+        ((UNSYNTAX unsyntax)          "#,")
+        ((UNSYNTAX-SPLICING unsyntax-splicing) "#,@"))))
 
   (define (out str col)
     (and col (output str) (+ col (string-length str))))
@@ -90,6 +100,13 @@
           ((boolean? obj)     (out (if obj "#t" "#f") col))
           ((number? obj)      (out (number->string obj) col))
           ((symbol? obj)      (out (symbol->string obj) col))
+          ((bytevector? obj)  (wr-lst (bytevector->u8-list obj) (out "#vu8" col))) ;; added for Mosh
+          ((regexp? obj)   (out "#[regexp]" col)) ;; added for Mosh
+          ((record? obj)   (out "#[record]" col)) ;; added for Mosh
+          ((identifier? obj) (out "#[identifier]" col)) ;; added for Mosh
+          ((condition? obj)   (out "#[condition]" col)) ;; added for Mosh
+          ((record-type-descriptor? obj)   (out "#[record-type-descriptor]" col)) ;; added for Mosh
+          ((eq? unspec obj)   (out "#[unspecified]" col)) ;; added for Mosh
           ((procedure? obj)   (out "#[procedure]" col))
           ((string? obj)      (if display?
                                 (out obj col)
@@ -116,6 +133,8 @@
           ((input-port? obj)  (out "#[input-port]" col))
           ((output-port? obj) (out "#[output-port]" col))
           ((eof-object? obj)  (out "#[eof-object]" col))
+          ((socket? obj)      (out "#[socket]" col)) ;; added for Mosh
+          ((hashtable? obj)   (out "#[hashtable]" col)) ;; added for Mosh
           (else               (out "#[unknown]" col))))
 
   (define (pp obj col)

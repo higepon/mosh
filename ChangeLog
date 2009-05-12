@@ -1,3 +1,9 @@
+2009-05-12  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/pp.ss (mosh): Improved the output of pp. (Issue 56).
+
+        * test/print.scm: Added.
+
 2009-05-11  higepon  <higepon@users.sourceforge.jp>
 
         * VM-Run.cpp (run): Fixed Issue 55. check argument of append.

@@ -82,13 +82,23 @@ public:
     static Object QUASIQUOTE;
     static Object UNQUOTE;
     static Object UNQUOTE_SPLICING;
-    static Object AFTER;
-    static Object BEFORE;
-    static Object TOP_LEVEL;
+    static Object QUOTE_B;
+    static Object QUASIQUOTE_B;
+    static Object UNQUOTE_B;
+    static Object UNQUOTE_SPLICING_B;
     static Object SYNTAX;
     static Object QUASISYNTAX;
     static Object UNSYNTAX;
     static Object UNSYNTAX_SPLICING;
+    static Object SYNTAX_B;
+    static Object QUASISYNTAX_B;
+    static Object UNSYNTAX_B;
+    static Object UNSYNTAX_SPLICING_B;
+
+
+    static Object AFTER;
+    static Object BEFORE;
+    static Object TOP_LEVEL;
     static Object BIG;
     static Object LITTLE;
 

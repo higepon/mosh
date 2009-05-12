@@ -207,7 +207,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isUnbound()) {
         putString(UC("#<unbound variable>"));
     } else if (o.isEof()) {
-        putString(UC("#<eof>"));
+        putString(UC("#<eof-object>"));
     } else if (o.isCallable()) {
         putString(UC("callable"));
     } else if (o.isFixnum()) {
@@ -407,13 +407,19 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isRegMatch()) {
         putString(UC("#<reg-match>"));
     } else if (o.isEqHashTable()) {
-        putString(UC("#<eq-hash-table>"));
+        putString(UC("#<eq-hashtable>"));
+    } else if (o.isEqvHashTable()) {
+        putString(UC("#<eqv-hashtable>"));
+    } else if (o.isGenericHashTable()) {
+        putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
+        putString(UC("#<subr "));
         putDatum(getCProcedureName(o));
+        putString(UC(">"));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -451,15 +457,16 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
         CompoundCondition* const c = o.toCompoundCondition();
         const ObjectVector& conditions = c->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            if (it != conditions.begin()) {
+                putString(UC(" "));
+            }
             putDatum(*it);
-            putString(UC(" "));
         }
         putString(UC(">"));
     } else if (o.isRecord()) {
         Record* const record = o.toRecord();
         putString(UC("#<record "));
         putDatum(record->recordTypeDescriptor()->name(), inList);
-        putString(UC(" "));
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             putDatum(record->fieldAt(i));
 //             putString(UC(" "));
@@ -516,19 +523,32 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
 bool TextualOutputPort::writeAbbreviated(Object obj)
 {
     if (obj.isSymbol()) {
-        if (obj == Symbol::QUOTE) {
+        if (obj == Symbol::QUOTE || obj == Symbol::QUOTE_B) {
             putChar('\'');
             return true;
-        } else if (obj == Symbol::UNQUOTE) {
+        } else if (obj == Symbol::UNQUOTE || obj == Symbol::UNQUOTE_B) {
             putChar(',');
             return true;
-        } else if (obj == Symbol::UNQUOTE_SPLICING) {
+        } else if (obj == Symbol::UNQUOTE_SPLICING || obj == Symbol::UNQUOTE_SPLICING_B) {
             putString(",@");
             return true;
-        } else if (obj == Symbol::QUASIQUOTE) {
+        } else if (obj == Symbol::QUASIQUOTE || obj == Symbol::QUASIQUOTE_B) {
             putChar('`');
             return true;
+        } else if (obj == Symbol::SYNTAX || obj == Symbol::SYNTAX_B) {
+            putString(UC("#\'"));
+            return true;
+        } else if (obj == Symbol::UNSYNTAX || obj == Symbol::UNSYNTAX_B) {
+            putString(UC("#,"));
+            return true;
+        } else if (obj == Symbol::UNSYNTAX_SPLICING || obj == Symbol::UNSYNTAX_SPLICING_B) {
+            putString("#,@");
+            return true;
+        } else if (obj == Symbol::QUASISYNTAX || obj == Symbol::QUASISYNTAX_B) {
+            putString(UC("#`"));
+            return true;
         }
+
     }
     return false;
 }
@@ -548,7 +568,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isUnbound()) {
         putString(UC("#<unbound variable>"));
     } else if (o.isEof()) {
-        putString(UC("#<eof>"));
+        putString(UC("#<eof-object>"));
     } else if (o.isFixnum()) {
         static char buf[32];
         snprintf(buf, 32, "%ld", (long)o.toFixnum());
@@ -635,13 +655,19 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isRegMatch()) {
         putString(UC("#<reg-match>"));
     } else if (o.isEqHashTable()) {
-        putString(UC("#<eq-hash-table>"));
+        putString(UC("#<eq-hashtable>"));
+    } else if (o.isEqvHashTable()) {
+        putString(UC("#<eqv-hashtable>"));
+    } else if (o.isGenericHashTable()) {
+        putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
         putDatum(Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
+        putString(UC("#<subr "));
         putDatum(getCProcedureName(o));
+        putString(UC(">"));
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -660,7 +686,10 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     } else if (o.isStack()) {
         putString(UC("#<stack>"));
     } else if (o.isCodec()) {
-        putString(UC("#<codec>"));
+        Codec* codec = o.toCodec();
+        putString(UC("#<codec "));
+        putString(codec->getCodecName());
+        putString(UC(">"));
     } else if (o.isBinaryInputPort()) {
         putString(o.toBinaryInputPort()->toString().data());
     } else if (o.isBinaryOutputPort()) {
@@ -676,20 +705,32 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
         CompoundCondition* const c = o.toCompoundCondition();
         const ObjectVector& conditions = c->conditions();
         for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
+            if (it != conditions.begin()) {
+                putString(UC(" "));
+            }
             putDatum(*it);
-            putString(UC(" "));
+
         }
         putString(UC(">"));
     } else if (o.isRecord()) {
+//        Record* const record = o.toRecord();
+//         putString(UC("#<record "));
+//         putDatum(record->recordTypeDescriptor()->name(), inList);
+//         putString(UC(" "));
+//         for (int i = 0; i < record->fieldsLength(); i++) {
+//             putDatum(record->fieldAt(i));
+//             putString(UC(" "));
+//         }
+//        putString(UC(">"));
         Record* const record = o.toRecord();
         putString(UC("#<record "));
         putDatum(record->recordTypeDescriptor()->name(), inList);
-        putString(UC(" "));
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             putDatum(record->fieldAt(i));
 //             putString(UC(" "));
 //         }
         putString(UC(">"));
+
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
     } else if (o.isTextualOutputPort()) {
