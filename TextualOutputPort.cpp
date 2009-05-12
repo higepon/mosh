@@ -193,7 +193,7 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
     return;
 }
 
-void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
+void TextualOutputPort::putDatum(Object o)
 {
     // todo more faster code
     if (o.isTrue()) {
@@ -466,7 +466,7 @@ void TextualOutputPort::putDatum(Object o, bool inList /* = false */)
     } else if (o.isRecord()) {
         Record* const record = o.toRecord();
         putString(UC("#<record "));
-        putDatum(record->recordTypeDescriptor()->name(), inList);
+        putDatum(record->recordTypeDescriptor()->name());
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             putDatum(record->fieldAt(i));
 //             putString(UC(" "));
@@ -554,7 +554,7 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
 }
 
 
-void TextualOutputPort::display(Object o, bool inList /* = false */)
+void TextualOutputPort::display(Object o)
 {
     // todo more faster code
     if (o.isTrue()) {
@@ -724,7 +724,7 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
 //        putString(UC(">"));
         Record* const record = o.toRecord();
         putString(UC("#<record "));
-        putDatum(record->recordTypeDescriptor()->name(), inList);
+        putDatum(record->recordTypeDescriptor()->name());
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             putDatum(record->fieldAt(i));
 //             putString(UC(" "));
@@ -772,62 +772,62 @@ void TextualOutputPort::display(Object o, bool inList /* = false */)
     }
 }
 
-void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
-{
-    if (!inList) {
-        const Object kar = obj.car();
-        if (obj.cdr().isPair()) {
-            if (Symbol::UNQUOTE == kar) {
-                putString(UC(","));
-                putDatum(obj.second(), false);
-                return;
-            } else if (Symbol::UNQUOTE_SPLICING == kar) {
-                putString(UC(",@"));
-                putDatum(obj.second(), false);
-                return;
-            } else if (Symbol::QUOTE == kar) {
-                putString(UC("'"));
-                putDatum(obj.second(), false);
-                return;
-            } else if (Symbol::QUASIQUOTE == kar) {
-                putString(UC("`"));
-                putDatum(obj.second(), false);
-                return;
-            }
-        }
-    }
+// void TextualOutputPort::putPair(Object obj, bool inList /* = false */)
+// {
+//     if (!inList) {
+//         const Object kar = obj.car();
+//         if (obj.cdr().isPair()) {
+//             if (Symbol::UNQUOTE == kar) {
+//                 putString(UC(","));
+//                 putDatum(obj.second(), false);
+//                 return;
+//             } else if (Symbol::UNQUOTE_SPLICING == kar) {
+//                 putString(UC(",@"));
+//                 putDatum(obj.second(), false);
+//                 return;
+//             } else if (Symbol::QUOTE == kar) {
+//                 putString(UC("'"));
+//                 putDatum(obj.second(), false);
+//                 return;
+//             } else if (Symbol::QUASIQUOTE == kar) {
+//                 putString(UC("`"));
+//                 putDatum(obj.second(), false);
+//                 return;
+//             }
+//         }
+//     }
 
-    if (obj.cdr().isPair()) {
-        if (inList) {
-            putDatum(obj.car(), false);
-            putString(UC(" "));
-            putDatum(obj.cdr(), true);
-        } else {
-            putString(UC("("));
-            putDatum(obj.car(), false);
-            putString(UC(" "));
-            putDatum(obj.cdr(), true);
-            putString(UC(")"));
-        }
-    } else if (obj.cdr().isNil()) {
-        if (inList) {
-            putDatum(obj.car(), false);
-        } else {
-            putString(UC("("));
-            putDatum(obj.car(), false);
-            putString(UC(")"));
-        }
-    } else {
-        if (inList) {
-            putDatum(obj.car(), false);
-            putString(UC(" . "));
-            putDatum(obj.cdr(), false);
-        } else {
-            putString(UC("("));
-            putDatum(obj.car(), false);
-            putString(UC(" . "));
-            putDatum(obj.cdr(), false);
-            putString(UC(")"));
-        }
-    }
-}
+//     if (obj.cdr().isPair()) {
+//         if (inList) {
+//             putDatum(obj.car(), false);
+//             putString(UC(" "));
+//             putDatum(obj.cdr(), true);
+//         } else {
+//             putString(UC("("));
+//             putDatum(obj.car(), false);
+//             putString(UC(" "));
+//             putDatum(obj.cdr(), true);
+//             putString(UC(")"));
+//         }
+//     } else if (obj.cdr().isNil()) {
+//         if (inList) {
+//             putDatum(obj.car(), false);
+//         } else {
+//             putString(UC("("));
+//             putDatum(obj.car(), false);
+//             putString(UC(")"));
+//         }
+//     } else {
+//         if (inList) {
+//             putDatum(obj.car(), false);
+//             putString(UC(" . "));
+//             putDatum(obj.cdr(), false);
+//         } else {
+//             putString(UC("("));
+//             putDatum(obj.car(), false);
+//             putString(UC(" . "));
+//             putDatum(obj.cdr(), false);
+//             putString(UC(")"));
+//         }
+//     }
+// }

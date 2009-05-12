@@ -56,9 +56,8 @@ public:
     virtual void putString(String* str);
     virtual void putString(const ucs4string& s);
     virtual void putString(const char* s);
-    virtual void putDatum(Object o, bool inList = false);
-    virtual void display(Object o, bool inList = false);
-    virtual void putPair(Object obj, bool inList = false);
+    virtual void putDatum(Object o);
+    virtual void display(Object o);
     virtual void format(const ucs4string& fmt, Object args);
     virtual bool isErrorOccured() const;
     virtual Object errorMessage() const;
