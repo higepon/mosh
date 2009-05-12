@@ -53,10 +53,13 @@
 
 namespace scheme {
 
-class Bignum EXTEND_GC
+class Bignum : public gc_cleanup
 {
 public:
-    ~Bignum();
+    ~Bignum()
+    {
+        mpz_clear(this->value);
+    }
     Bignum()
     {
         mpz_init(this->value);
@@ -372,7 +375,9 @@ public:
         mpz_init(ret);
         mpz_set_si(ret, n1);
         mpz_mul(ret, ret, n2->value);
-        return makeInteger(ret);
+        const Object o = makeInteger(ret);
+        mpz_clear(ret);
+        return o;
     }
     static Object mul(Bignum* n1, int n2)
     {
@@ -380,14 +385,18 @@ public:
         mpz_init(ret);
         mpz_set_si(ret, n2);
         mpz_mul(ret, n1->value, ret);
-        return makeInteger(ret);
+        const Object o = makeInteger(ret);
+        mpz_clear(ret);
+        return o;
     }
     static Object mul(Bignum* n1, Bignum* n2)
     {
         mpz_t ret;
         mpz_init(ret);
         mpz_mul(ret, n1->value, n2->value);
-        return makeInteger(ret);
+        const Object o = makeInteger(ret);
+        mpz_clear(ret);
+        return o;
     }
 
 

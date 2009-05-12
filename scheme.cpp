@@ -45,11 +45,17 @@
 
 using namespace scheme;
 extern void initCprocedures();
+
+void* gmp_func(size_t size)
+{
+    return GC_malloc(size);
+}
+
 void mosh_init()
 {
 #ifdef USE_BOEHM_GC
     GC_INIT();
-    mp_set_memory_functions(GC_malloc, my_realloc, my_dont_free);
+    mp_set_memory_functions(gmp_func, my_realloc, my_dont_free);
 #endif
     initCprocedures();
     Flonum::initialize();
@@ -68,4 +74,5 @@ void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
 
 void my_dont_free(void *ptr, size_t size)
 {
+    GC_free(ptr);
 }
