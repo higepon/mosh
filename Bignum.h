@@ -176,7 +176,7 @@ public:
         mpz_fdiv_q_2exp(temp.value, value, 32);
         ret = mpz_get_si(temp.value);
         ret = ret << 32; // upper 32bit
-        mpz_set_ui(temp, 0xffffffff);
+        mpz_set_ui(temp.value, 0xffffffff);
         mpz_and(temp.value, value, temp.value);
         ret += mpz_get_ui(temp.value); // lower 32bit
         return ret;
