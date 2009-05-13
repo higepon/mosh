@@ -44,7 +44,7 @@ private:
 
     Ratnum(mpq_t rational)
     {
-        mpq_set(value, rational);
+        value[0] = rational[0];
     }
 
     Object sqrtUnsigned(const mpq_t r) const;
@@ -265,11 +265,11 @@ public:
     MAKE_RATNUM_COMPARE(le, <=0);
     MAKE_RATNUM_COMPARE(eq, ==0);
 
-    static Object makeNumber(double value)
+    static Object makeNumber(double v)
     {
         mpq_t ret;
         mpq_init(ret);
-        mpq_set_d(ret, value);
+        mpq_set_d(ret, v);
         return makeNumber(ret);
     }
 
@@ -278,8 +278,9 @@ public:
         if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
             if (mpz_cmp_si(mpq_numref(r), Fixnum::MIN) >= 0 &&
                 mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
+                const Object ret = Object::makeFixnum(mpz_get_si(mpq_numref(r)));
                 mpq_clear(r);
-                return Object::makeFixnum(mpz_get_si(mpq_numref(r)));
+                return ret;
             } else {
                 mpz_t copy;
                 mpz_init_set(copy, mpq_numref(r));

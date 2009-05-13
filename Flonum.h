@@ -74,7 +74,6 @@ public:
 
     double value() const { return value_; }
     Object toExact() const;
-    Object toRatnum() const;
     bool isNan() const { return isnan(value_) != 0; }
     bool isInfinite() const { return isinf(value_) != 0; }
 

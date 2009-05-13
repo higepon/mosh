@@ -881,8 +881,8 @@ Object Arithmetic::denominator(Object n)
     if (n.isRatnum()) {
         return n.toRatnum()->denominator();
     } else if (n.isFlonum()) {
-        Object ratnum = n.toFlonum()->toRatnum();
-        return inexact(ratnum.toRatnum()->denominator());
+        Object m = n.toFlonum()->toExact();
+        return inexact(denominator(m));
     } else {
         return Object::makeFixnum(1);
     }

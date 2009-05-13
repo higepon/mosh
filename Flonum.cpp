@@ -54,11 +54,6 @@ void Flonum::initialize()
     NOT_A_NUMBER = Object::makeFlonum(std::numeric_limits<double>::quiet_NaN());
 }
 
-Object Flonum::toRatnum() const
-{
-    return Ratnum::makeNumber(value_);
-}
-
 Object Flonum::toExact() const
 {
     return Ratnum::makeNumber(value_);
@@ -73,7 +68,7 @@ Object Flonum::numerator() const
     } else if (value_ == 0.0) {
         return Object::makeFlonum(0.0);
     }
-    return Arithmetic::inexact(toRatnum().toRatnum()->numerator());
+    return Arithmetic::inexact(Arithmetic::numerator(toExact()));
 }
 
 Object Flonum::denominator() const
@@ -85,6 +80,6 @@ Object Flonum::denominator() const
     } else if (value_ == 0.0) {
         return Object::makeFlonum(1.0);
     }
-    return Arithmetic::inexact(toRatnum().toRatnum()->denominator());
+    return Arithmetic::inexact(Arithmetic::denominator(toExact()));
 }
 
