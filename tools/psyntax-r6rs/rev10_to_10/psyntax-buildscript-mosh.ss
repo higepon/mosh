@@ -975,7 +975,7 @@
     (parameterize                            sys)
     (os-constant                             mosh)
     (time-usage                              mosh)
-    (time                                    mosh)
+    (time                                    mosh interaction)
     (fasl-write                              mosh)
     (fasl-read                               mosh)
     (fast-equal?                             mosh)
