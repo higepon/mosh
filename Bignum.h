@@ -55,42 +55,49 @@ namespace scheme {
 
 class Bignum : public gc_cleanup
 {
+    friend class Ratnum; // Ratnum and Bignum share the mpz_t and mpq_t
+    friend Object Object::makeBignum(Bignum b);
+
+// N.B. Don't expose the mpz_t to outside of this class.
+private:
+    mpz_t value_;
+
+    Bignum(const mpz_t value)
+    {
+        mpz_init_set(this->value_, value);
+    }
+
 public:
     virtual ~Bignum()
     {
-        mpz_clear(this->value);
+        mpz_clear(this->value_);
     }
     Bignum()
     {
-        mpz_init(this->value);
+        mpz_init(this->value_);
     }
 
     Bignum(long value)
     {
-        mpz_init(this->value);
-        mpz_set_si(this->value, value);
+        mpz_init(this->value_);
+        mpz_set_si(this->value_, value);
     }
 
     Bignum(const Bignum& b)
     {
-        mpz_init_set(this->value, b.value);
-    }
-
-    Bignum(const mpz_t value)
-    {
-        mpz_init_set(this->value, value);
+        mpz_init_set(this->value_, b.value_);
     }
 
     char* toString(int radix = 10) const;
 
     double toDouble() const
     {
-        return mpz_get_d(value);
+        return mpz_get_d(value_);
     }
 
     bool isEven() const
     {
-        return mpz_even_p(value) != 0;
+        return mpz_even_p(value_) != 0;
     }
 
     Object sqrt() const;
@@ -98,55 +105,52 @@ public:
     Object abs() const
     {
         Bignum temp;
-        mpz_abs(temp.value, value);
-        return makeInteger(temp.value);
+        mpz_abs(temp.value_, value_);
+        return makeInteger(temp);
     }
 
     bool isNegative() const
     {
-        return mpz_cmp_si(value, 0) < 0;
+        return mpz_cmp_si(value_, 0) < 0;
     }
 
     bool fitsU32() const
     {
-        return mpz_cmp_si(value, 0)
-            && mpz_popcount(value) <= 32;
+        return mpz_cmp_si(value_, 0)
+            && mpz_popcount(value_) <= 32;
     }
 
     // todo fix me
     bool fitsS32() const
     {
-        mpz_t temp;
-        mpz_init(temp);
-        mpz_abs(temp, value);
-        bool ret = mpz_popcount(temp) <= 31;
-        mpz_clear(temp);
-        return ret;
+        Bignum temp;
+        mpz_abs(temp.value_, value_);
+        return mpz_popcount(temp.value_) <= 31;
     }
 
     uint32_t toU32() const
     {
-        return (uint32_t)mpz_get_ui(value);
+        return (uint32_t)mpz_get_ui(value_);
     }
 
     int32_t toS32() const
     {
         MOSH_ASSERT(fitsS32());
-            return (int32_t)mpz_get_si(value);
+            return (int32_t)mpz_get_si(value_);
     }
 
     bool fitsU64() const
     {
-        return mpz_cmp_si(value, 0)
-            && mpz_popcount(value) <= 64;
+        return mpz_cmp_si(value_, 0)
+            && mpz_popcount(value_) <= 64;
     }
 
     // todo fix me
     bool fitsS64() const
     {
         Bignum temp;
-        mpz_abs(temp.value, value);
-        return mpz_popcount(temp.value) <= 63;
+        mpz_abs(temp.value_, value_);
+        return mpz_popcount(temp.value_) <= 63;
     }
 
     uint64_t toU64() const
@@ -155,15 +159,15 @@ public:
 #if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
         uint64_t ret = 0;
         Bignum temp;
-        mpz_fdiv_q_2exp(temp.value, value, 32);
-        ret = mpz_get_ui(temp.value);
+        mpz_fdiv_q_2exp(temp.value_, value_, 32);
+        ret = mpz_get_ui(temp.value_);
         ret = ret << 32; // upper 32bit
-        mpz_set_ui(temp.value, 0xffffffff);
-        mpz_and(temp.value, value, temp.value);
-        ret += mpz_get_ui(temp.value); // lower 32bit
+        mpz_set_ui(temp.value_, 0xffffffff);
+        mpz_and(temp.value_, value_, temp.value_);
+        ret += mpz_get_ui(temp.value_); // lower 32bit
         return ret;
 #else
-        return mpz_get_ui(value);
+        return mpz_get_ui(value_);
 #endif
     }
 
@@ -173,96 +177,99 @@ public:
 #if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
         uint64_t ret = 0;
         Bignum temp;
-        mpz_fdiv_q_2exp(temp.value, value, 32);
-        ret = mpz_get_si(temp.value);
+        mpz_fdiv_q_2exp(temp.value_, value_, 32);
+        ret = mpz_get_si(temp.value_);
         ret = ret << 32; // upper 32bit
-        mpz_set_ui(temp.value, 0xffffffff);
-        mpz_and(temp.value, value, temp.value);
-        ret += mpz_get_ui(temp.value); // lower 32bit
+        mpz_set_ui(temp.value_, 0xffffffff);
+        mpz_and(temp.value_, value_, temp.value_);
+        ret += mpz_get_ui(temp.value_); // lower 32bit
         return ret;
 #else
-        return mpz_get_si(value);
+        return mpz_get_si(value_);
 #endif
     }
 
-    void setU32(uint32_t value)
+    void setU32(uint32_t value_)
     {
-        mpz_set_ui(this->value, value);
+        mpz_set_ui(this->value_, value_);
     }
 
-    void setDouble(double value)
+    void setDouble(double value_)
     {
-        mpz_set_d(this->value, value);
+        mpz_set_d(this->value_, value_);
     }
 
     Object bitwiseNot() const
     {
         Bignum temp;
-        mpz_com(temp.value, value);
-        return Object::makeBignum(temp.value);
+        mpz_com(temp.value_, value_);
+        return makeInteger(temp);
     }
 
     Object bitwiseAnd(int n)
     {
-        return bitwiseAnd(new Bignum(n));
+        Bignum b(n);
+        return bitwiseAnd(&b);
     }
 
     Object bitwiseAnd(Bignum* b)
     {
         Bignum temp;
-        mpz_and(temp.value, value, b->value);
-        return makeInteger(temp.value);
+        mpz_and(temp.value_, value_, b->value_);
+        return makeInteger(temp);
     }
 
     Object bitwiseIor(int n)
     {
-        return bitwiseIor(new Bignum(n));
+        Bignum b(n);
+        return bitwiseIor(&b);
     }
 
     Object bitwiseIor(Bignum* b)
     {
         Bignum temp;
-        mpz_ior(temp.value, value, b->value);
-        return Object::makeBignum(temp.value);
+        mpz_ior(temp.value_, value_, b->value_);
+        return Object::makeBignum(temp);
     }
 
     Object bitwiseXor(int n)
     {
-        return bitwiseXor(new Bignum(n));
+        Bignum b(n);
+        return bitwiseXor(&b);
     }
 
     Object bitwiseXor(Bignum* b)
     {
         Bignum temp;
-        mpz_xor(temp.value, value, b->value);
-        return Object::makeBignum(temp.value);
+        mpz_xor(temp.value_, value_, b->value_);
+        return Object::makeBignum(temp);
     }
 
     Object bitwiseBitCount()
     {
         if (gt(this, 0)) {
-            return makeInteger(mpz_popcount(value));
+            return makeInteger(mpz_popcount(value_));
         } else {
             Bignum temp;
-            mpz_com(temp.value, value);
-            const unsigned long ret = mpz_popcount(temp.value);
+            mpz_com(temp.value_, value_);
+            const unsigned long ret = mpz_popcount(temp.value_);
             return makeInteger(~ret);
         }
     }
 
     Object bitwiseLength()
     {
-        if (mpz_cmp_si(value, 0) < 0) {
+        if (mpz_cmp_si(value_, 0) < 0) {
             return bitwiseNot().toBignum()->bitwiseLength();
         } else {
-            size_t size = mpz_sizeinbase(value, 2);
+            size_t size = mpz_sizeinbase(value_, 2);
             return makeInteger(size);
         }
     }
 
     Object bitwiseFirstBitSet()
     {
-        const unsigned long int found = mpz_scan1(value, 0);
+        const unsigned long int found = mpz_scan1(value_, 0);
         if (found == ULONG_MAX) {
             return Object::makeFixnum(-1);
         } else {
@@ -273,92 +280,92 @@ public:
     static Object quotient(int n1, const Bignum* n2)
     {
         Bignum temp(n1);
-        mpz_tdiv_q(temp.value, temp.value, n2->value);
-        return makeInteger(temp.value);
+        mpz_tdiv_q(temp.value_, temp.value_, n2->value_);
+        return makeInteger(temp);
     }
 
     static Object quotient(const Bignum* n1, int n2)
     {
         Bignum temp(n2);
-        mpz_tdiv_q(temp.value, n1->value, temp.value);
-        return makeInteger(temp.value);
+        mpz_tdiv_q(temp.value_, n1->value_, temp.value_);
+        return makeInteger(temp.value_);
     }
 
     static Object quotient(const Bignum* n1, const Bignum* n2)
     {
         Bignum temp;
-        mpz_tdiv_q(temp.value, n1->value, n2->value);
-        return makeInteger(temp.value);
+        mpz_tdiv_q(temp.value_, n1->value_, n2->value_);
+        return makeInteger(temp);
     }
 
     static Object remainder(int n1, const Bignum* n2)
     {
         Bignum temp(n1);
-        mpz_tdiv_r(temp.value, temp.value, n2->value);
-        return makeInteger(temp.value);
+        mpz_tdiv_r(temp.value_, temp.value_, n2->value_);
+        return makeInteger(temp);
     }
 
     static Object remainder(const Bignum* n1, int n2)
     {
         Bignum temp(n2);
-        mpz_tdiv_r(temp.value, n1->value, temp.value);
-        return makeInteger(temp.value);
+        mpz_tdiv_r(temp.value_, n1->value_, temp.value_);
+        return makeInteger(temp);
     }
 
     static Object remainder(const Bignum* n1, const Bignum* n2)
     {
         Bignum temp;
-        mpz_tdiv_r(temp.value, n1->value, n2->value);
-        return makeInteger(temp.value);
+        mpz_tdiv_r(temp.value_, n1->value_, n2->value_);
+        return makeInteger(temp);
     }
 
 
     static Object bitwiseShiftLeft(const Bignum* n1, unsigned long n2)
     {
         Bignum temp;
-        mpz_mul_2exp(temp.value, n1->value, n2);
-        return makeInteger(temp.value);
+        mpz_mul_2exp(temp.value_, n1->value_, n2);
+        return makeInteger(temp);
     }
 
     static Object bitwiseShiftLeft(int n1, unsigned long n2)
     {
         Bignum temp(n1);
-        mpz_mul_2exp(temp.value, temp.value, n2);
-        return makeInteger(temp.value);
+        mpz_mul_2exp(temp.value_, temp.value_, n2);
+        return makeInteger(temp);
     }
 
     static Object bitwiseShiftRight(const Bignum* n1, unsigned long n2)
     {
         Bignum temp;
-        mpz_fdiv_q_2exp(temp.value, n1->value, n2);
-        return makeInteger(temp.value);
+        mpz_fdiv_q_2exp(temp.value_, n1->value_, n2);
+        return makeInteger(temp);
     }
 
     static Object bitwiseShiftRight(int n1, unsigned long n2)
     {
         Bignum temp(n1);
-        mpz_fdiv_q_2exp(temp.value, temp.value, n2);
-        return makeInteger(temp.value);
+        mpz_fdiv_q_2exp(temp.value_, temp.value_, n2);
+        return makeInteger(temp);
     }
 
 #define MAKE_BIGNUM_OP(op)\
     static Object op(int n1, Bignum* n2)\
     {\
         Bignum temp(n1);\
-        mpz_##op(temp.value, temp.value, n2->value);\
-        return makeInteger(temp.value);\
+        mpz_##op(temp.value_, temp.value_, n2->value_);\
+        return makeInteger(temp);\
     }\
     static Object op(Bignum* n1, int n2)\
     {\
         Bignum temp(n2);\
-        mpz_##op(temp.value, n1->value, temp.value);\
-        return makeInteger(temp.value);\
+        mpz_##op(temp.value_, n1->value_, temp.value_);\
+        return makeInteger(temp);                   \
     }\
     static Object op(Bignum* n1, Bignum* n2)\
     {\
         Bignum temp;\
-        mpz_##op(temp.value, n1->value, n2->value);\
-        return makeInteger(temp.value);\
+        mpz_##op(temp.value_, n1->value_, n2->value_);\
+        return makeInteger(temp);\
     }
 
     MAKE_BIGNUM_OP(add)
@@ -368,35 +375,35 @@ public:
     static Object mul(int n1, Bignum* n2)
     {
         Bignum temp(n1); // we use stack alloced Bignum instead of using mpz_t directlly for cleanup safety.
-        mpz_mul(temp.value, temp.value, n2->value);
-        return makeInteger(temp.value);
+        mpz_mul(temp.value_, temp.value_, n2->value_);
+        return makeInteger(temp);
     }
     static Object mul(Bignum* n1, int n2)
     {
         Bignum temp(n2);
-        mpz_mul(temp.value, temp.value, n1->value);
-        return makeInteger(temp.value);
+        mpz_mul(temp.value_, temp.value_, n1->value_);
+        return makeInteger(temp);
     }
     static Object mul(Bignum* n1, Bignum* n2)
     {
         Bignum temp;
-        mpz_mul(temp.value, n1->value, n2->value);
-        return makeInteger(temp.value);
+        mpz_mul(temp.value_, n1->value_, n2->value_);
+        return makeInteger(temp);
     }
 
 
 #define MAKE_BIGNUM_COMPARE(compare, symbol)\
     static bool compare(Bignum* n1, int n2)\
     {\
-        return mpz_cmp_si(n1->value, n2) symbol;\
+        return mpz_cmp_si(n1->value_, n2) symbol;\
     }\
     static bool compare(int n1, Bignum* n2)\
     {\
-        return (- mpz_cmp_si(n2->value, n1)) symbol;\
+        return (- mpz_cmp_si(n2->value_, n1)) symbol;\
     }\
     static bool compare(Bignum* n1, Bignum* n2)\
     {\
-        return mpz_cmp(n1->value, n2->value) symbol;\
+        return mpz_cmp(n1->value_, n2->value_) symbol;\
     }
 
     MAKE_BIGNUM_COMPARE(gt, >0)
@@ -441,9 +448,9 @@ public:
         if (Fixnum::canFit(n)) {
             return Object::makeFixnum(n);
         } else {
-            Bignum* const b = new Bignum();
-            b->setU32(n);
-            return Object::makeBignum(b);
+            Bignum temp;
+            temp.setU32(n);
+            return Object::makeBignum(temp);
         }
     }
 
@@ -451,18 +458,18 @@ public:
     {
         Bignum temp;
         temp.setU32(n >> 32);
-        mpz_mul_2exp(temp.value, temp.value, 32);
-        mpz_add_ui(temp.value, temp.value, (n & 0xffffffff));
-        return makeInteger(temp.value);
+        mpz_mul_2exp(temp.value_, temp.value_, 32);
+        mpz_add_ui(temp.value_, temp.value_, (n & 0xffffffff));
+        return makeInteger(temp);
     }
 
     static Object makeIntegerFromS64(int64_t n)
     {
         Bignum temp;
-        mpz_set_si(temp.value, n >> 32);
-        mpz_mul_2exp(temp.value, temp.value, 32);
-        mpz_add_ui(temp.value, temp.value, (n & 0xffffffff));
-        return makeInteger(temp.value);
+        mpz_set_si(temp.value_, n >> 32);
+        mpz_mul_2exp(temp.value_, temp.value_, 32);
+        mpz_add_ui(temp.value_, temp.value_, (n & 0xffffffff));
+        return makeInteger(temp);
     }
 
     static Object makeIntegerFromIntprt_t(intptr_t p)
@@ -550,37 +557,24 @@ public:
         }
     }
 
-    static Object makeInteger(const mpz_t n)
+    static Object makeInteger(const Bignum& b)
     {
-        if (mpz_fits_slong_p(n) != 0) {
-            const intptr_t val = mpz_get_si(n);
+        if (mpz_fits_slong_p(b.value_) != 0) {
+            const intptr_t val = mpz_get_si(b.value_);
             if (val >= Fixnum::MIN &&
                 val <= Fixnum::MAX) {
                 return Object::makeFixnum(val);
             }
         }
-        return Object::makeBignum(n);
-    }
-
-    static Object makeInteger(Bignum* b)
-    {
-        return makeInteger(b->value);
+        return Object::makeBignum(b.value_);
     }
 
     static Object makeInteger(const ucs4string& text)
     {
-        mpz_t v;
-        mpz_init(v);
-        mpz_init_set_str(v, text.ascii_c_str(), 10);
-        const Object ret =  makeInteger(v);
-        mpz_clear(v);
-        return ret;
+        Bignum temp;
+        mpz_init_set_str(temp.value_, text.ascii_c_str(), 10);
+        return makeInteger(temp);
     }
-
-
-    mpz_t value;
-
-private:
 };
 
 inline Object Object::makeBignum(long n)
@@ -589,10 +583,11 @@ inline Object Object::makeBignum(long n)
                                                         reinterpret_cast<intptr_t>(new Bignum(n)))));
 }
 
-inline Object Object::makeBignum(const mpz_t b)
+// copy constructor
+inline Object Object::makeBignum(Bignum b)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Bignum,
-                                                        reinterpret_cast<intptr_t>(new Bignum(b)))));
+                                                        reinterpret_cast<intptr_t>(new Bignum(b.value_)))));
 }
 
 inline Object Object::makeBignum(Bignum* b)

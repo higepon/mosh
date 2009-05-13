@@ -71,22 +71,22 @@ Object Ratnum::sqrtUnsigned(const mpq_t r) const
 Object Ratnum::floor() const
 {
     Bignum temp;
-    mpz_fdiv_q(temp.value,  mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(temp.value);
+    mpz_fdiv_q(temp.value_,  mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value_);
 }
 
 Object Ratnum::ceiling() const
 {
     Bignum temp;
-    mpz_cdiv_q(temp.value, mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(temp.value);
+    mpz_cdiv_q(temp.value_, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value_);
 }
 
 Object Ratnum::truncate() const
 {
     Bignum temp;
-    mpz_tdiv_q(temp.value, mpq_numref(value), mpq_denref(value));
-    return Bignum::makeInteger(temp.value);
+    mpz_tdiv_q(temp.value_, mpq_numref(value), mpq_denref(value));
+    return Bignum::makeInteger(temp.value_);
 }
 
 Object Ratnum::round() const

@@ -40,17 +40,17 @@ Object Bignum::sqrt() const
 {
     Bignum temp;
     if (isNegative()) {
-        mpz_neg(temp.value, value);
-        mpz_sqrt(temp.value, temp.value);
-        return makeInteger(temp.value);
+        mpz_neg(temp.value_, value_);
+        mpz_sqrt(temp.value_, temp.value_);
+        return makeInteger(temp);
     } else {
-        mpz_sqrt(temp.value, value);
-        return makeInteger(temp.value);
+        mpz_sqrt(temp.value_, value_);
+        return makeInteger(temp.value_);
     }
 }
 
 char* Bignum::toString(int radix /* = 10 */) const
 {
-    return mpz_get_str(NULL, radix, value);
+    return mpz_get_str(NULL, radix, value_);
 }
 

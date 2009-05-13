@@ -37,9 +37,13 @@
 
 namespace scheme {
 
-class Ratnum EXTEND_GC
+class Ratnum : public gc_cleanup
 {
 public:
+    Ratnum()
+    {
+        mpq_init(value);
+    }
     Ratnum(int numerator, int denominator)
     {
         mpq_init(value);
@@ -58,6 +62,11 @@ public:
         mpq_set(value, rational);
     }
 
+    virtual ~Ratnum()
+    {
+        mpq_clear(value);
+    }
+
     Object sqrt() const;
     Object floor() const;
     Object ceiling() const;
@@ -66,10 +75,9 @@ public:
 
     Object abs() const
     {
-        mpq_t ret;
-        mpq_init(ret);
-        mpq_abs(ret, value);
-        return makeNumber(ret);
+        Ratnum temp;
+        mpq_abs(temp.value, value);
+        return makeNumber(temp.value);
     }
 
     Object numerator() const
@@ -110,7 +118,7 @@ public:
 
         mpq_t num2;
         mpq_init(num2);
-        mpq_set_z(num2, n2->value);
+        mpq_set_z(num2, n2->value_);
         mpq_div(ret, ret, num2);
         return makeNumber(ret);
     }
@@ -119,7 +127,7 @@ public:
     {
         mpq_t ret;
         mpq_init(ret);
-        mpq_set_z(ret, n1->value);
+        mpq_set_z(ret, n1->value_);
 
         mpq_t num2;
         mpq_init(num2);
@@ -132,11 +140,11 @@ public:
     {
         mpq_t ret;
         mpq_init(ret);
-        mpq_set_z(ret, n1->value);
+        mpq_set_z(ret, n1->value_);
 
         mpq_t num2;
         mpq_init(num2);
-        mpq_set_z(num2, n2->value);
+        mpq_set_z(num2, n2->value_);
         mpq_div(ret, ret, num2);
         return makeNumber(ret);
     }
@@ -154,7 +162,7 @@ public:
     {\
         mpq_t ret;\
         mpq_init(ret);\
-        mpq_set_z(ret, number2->value);\
+        mpq_set_z(ret, number2->value_);\
         mpq_##op(ret, number1->value, ret);\
         return makeNumber(ret);\
     }\
@@ -162,7 +170,7 @@ public:
     {\
         mpq_t ret;\
         mpq_init(ret);\
-        mpq_set_z(ret, number1->value);\
+        mpq_set_z(ret, number1->value_);\
         mpq_##op(ret, ret, number2->value);\
         return makeNumber(ret);\
     }\
@@ -199,14 +207,14 @@ public:
     {\
         mpq_t n2;\
         mpq_init(n2);\
-        mpq_set_z(n2, number2->value);\
+        mpq_set_z(n2, number2->value_);\
         return mpq_cmp(number1->value, n2) symbol;\
     }\
     static bool compare(Bignum* number1, Ratnum* number2)\
     {\
         mpq_t n1;\
         mpq_init(n1);                            \
-        mpq_set_z(n1, number1->value);\
+        mpq_set_z(n1, number1->value_);\
         return mpq_cmp(n1, number2->value) symbol;\
     }\
     static bool compare(Ratnum* number1, int number2)\

@@ -60,8 +60,8 @@ static void* gmp_realloc(void *ptr, size_t oldSize, size_t newSize)
 {
     static uintptr_t totalSize = 0;
     totalSize += newSize;
-    // At least every 20MB, we invoke GC()
-    if (totalSize > 20 * 1024 * 1024) {
+    // At least every 30MB, we invoke GC()
+    if (totalSize > 30 * 1024 * 1024) {
         GC_gcollect();
         totalSize = 0;
     }
