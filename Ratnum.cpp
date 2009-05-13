@@ -45,20 +45,22 @@ Object Ratnum::sqrt() const
         mpq_t neg;
         mpq_init(neg);
         mpq_neg(neg, value);
-        return Object::makeCompnum(Object::makeFixnum(0),
-                                   sqrtUnsigned(neg));
+        const Object ret = Object::makeCompnum(Object::makeFixnum(0),
+                                               sqrtUnsigned(neg));
+        mpq_clear(neg);
+        return ret;
     }
 }
 
 Object Ratnum::sqrtUnsigned(const mpq_t r) const
 {
-    MOSH_ASSERT(mpq_sgn(value) >= 0);
+    MOSH_ASSERT(mpq_sgn(r) >= 0);
     mpz_t num;
     mpz_t den;
     mpz_init(num);
     mpz_init(den);
-    mpz_sqrt(num, mpq_numref(value));
-    mpz_sqrt(den, mpq_denref(value));
+    mpz_sqrt(num, mpq_numref(r));
+    mpz_sqrt(den, mpq_denref(r));
     mpq_t ret;
     mpq_init(ret);
     mpq_set_num(ret, num);
@@ -72,7 +74,7 @@ Object Ratnum::floor() const
 {
     mpz_t ret;
     mpz_init(ret);
-    mpz_fdiv_q(ret,  mpq_numref(value), mpq_denref(value));
+    mpz_fdiv_q(ret, mpq_numref(value), mpq_denref(value));
     return Bignum::makeInteger(ret);
 }
 

@@ -265,7 +265,6 @@ public:
     static Object makeCallable(Callable* callable);
     static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRatnum(int numerator, int denominator);
-    static Object makeRatnum(mpq_t r);
     static Object makeRatnum(Ratnum* r);
     static Object makeCompnum(Object real, Object imag);
     static Object makeRecordTypeDescriptor(Object name,

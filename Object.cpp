@@ -439,13 +439,6 @@ Object Object::makeRatnum(int numerator, int denominator)
                                                         reinterpret_cast<intptr_t>(new Ratnum(numerator, denominator)))));
 }
 
-Object Object::makeRatnum(mpq_t r)
-{
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<intptr_t>(new Ratnum(r)))));
-}
-
-
 Object Object::makeRatnum(Ratnum* r)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,

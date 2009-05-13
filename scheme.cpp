@@ -46,10 +46,25 @@
 using namespace scheme;
 extern void initCprocedures();
 
-static void* gmp_alloc_gc(size_t size)
+#define USE_GMP_WITH_GC 0
+
+#if USE_GMP_WITH_GC
+static void* gmp_alloc(size_t size)
 {
     return GC_malloc(size);
 }
+
+static void* gmp_realloc(void *ptr, size_t oldSize, size_t newSize)
+{
+    return GC_REALLOC(ptr, newSize);
+}
+
+static void gmp_free(void *ptr, size_t size)
+{
+    GC_free(ptr);
+}
+
+#else
 
 static void* gmp_alloc(size_t size)
 {
@@ -68,20 +83,12 @@ static void* gmp_realloc(void *ptr, size_t oldSize, size_t newSize)
     return realloc(ptr, newSize);
 }
 
-static void* gmp_realloc_gc(void *ptr, size_t oldSize, size_t newSize)
-{
-    return GC_REALLOC(ptr, newSize);
-}
 
 static void gmp_free(void *ptr, size_t size)
 {
     free(ptr);
 }
-
-static void gmp_free_gc(void *ptr, size_t size)
-{
-    GC_free(ptr);
-}
+#endif
 
 void mosh_init()
 {
@@ -92,7 +99,6 @@ void mosh_init()
     // we allocate gmp buffers by malloc not GC_malloc.
     // Allocated memory are freed on Bignum's destructor.
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
-//    mp_set_memory_functions(gmp_alloc_gc, gmp_realloc_gc, gmp_free_gc);
 #endif
     initCprocedures();
     Flonum::initialize();

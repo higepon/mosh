@@ -39,11 +39,22 @@ namespace scheme {
 
 class Ratnum : public gc_cleanup
 {
+private:
+    mpq_t value;
+
+    Ratnum(mpq_t rational)
+    {
+        mpq_set(value, rational);
+    }
+
+    Object sqrtUnsigned(const mpq_t r) const;
+
 public:
     Ratnum()
     {
         mpq_init(value);
     }
+
     Ratnum(int numerator, int denominator)
     {
         mpq_init(value);
@@ -55,11 +66,6 @@ public:
             mpq_set_si(value, numerator, denominator);
         }
         mpq_canonicalize(value);
-    }
-
-    Ratnum(mpq_t rational)
-    {
-        mpq_set(value, rational);
     }
 
     virtual ~Ratnum()
@@ -75,9 +81,10 @@ public:
 
     Object abs() const
     {
-        Ratnum temp;
-        mpq_abs(temp.value, value);
-        return makeNumber(temp.value);
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_abs(ret, value);
+        return makeNumber(ret);
     }
 
     Object numerator() const
@@ -122,10 +129,11 @@ public:
         mpq_init(ret);
         mpq_set_si(ret, n1, 1);
 
-        mpq_t num2;
-        mpq_init(num2);
-        mpq_set_z(num2, n2->value_);
-        mpq_div(ret, ret, num2);
+        mpq_t temp;
+        mpq_init(temp);
+        mpq_set_z(temp, n2->value_);
+        mpq_div(ret, ret, temp);
+        mpq_clear(temp);
         return makeNumber(ret);
     }
 
@@ -133,12 +141,14 @@ public:
     {
         mpq_t ret;
         mpq_init(ret);
+        // mpq_set_z do copy mpz_t, so this is safe
         mpq_set_z(ret, n1->value_);
 
-        mpq_t num2;
-        mpq_init(num2);
-        mpq_set_si(num2, n2, 1);
-        mpq_div(ret, ret, num2);
+        mpq_t temp;
+        mpq_init(temp);
+        mpq_set_si(temp, n2, 1);
+        mpq_div(ret, ret, temp);
+        mpq_clear(temp);
         return makeNumber(ret);
     }
 
@@ -148,10 +158,11 @@ public:
         mpq_init(ret);
         mpq_set_z(ret, n1->value_);
 
-        mpq_t num2;
-        mpq_init(num2);
-        mpq_set_z(num2, n2->value_);
-        mpq_div(ret, ret, num2);
+        mpq_t temp;
+        mpq_init(temp);
+        mpq_set_z(temp, n2->value_);
+        mpq_div(ret, ret, temp);
+        mpq_clear(temp);
         return makeNumber(ret);
     }
 
@@ -205,39 +216,47 @@ public:
     MAKE_RATNUM_OP(div)
 
 #define MAKE_RATNUM_COMPARE(compare, symbol)\
-    static bool compare(Ratnum* number1, Ratnum* number2)\
+    static bool compare(const Ratnum* number1, const Ratnum* number2)\
     {\
         return mpq_cmp(number1->value, number2->value) symbol;\
     }\
-    static bool compare(Ratnum* number1, Bignum* number2)\
+    static bool compare(const Ratnum* number1, const Bignum* number2)\
     {\
-        mpq_t n2;\
-        mpq_init(n2);\
-        mpq_set_z(n2, number2->value_);\
-        return mpq_cmp(number1->value, n2) symbol;\
+        mpq_t temp;\
+        mpq_init(temp);                             \
+        mpq_set_z(temp, number2->value_);\
+        bool ret = mpq_cmp(number1->value, temp) symbol;\
+        mpq_clear(temp);\
+        return ret;\
     }\
     static bool compare(Bignum* number1, Ratnum* number2)\
     {\
-        mpq_t n1;\
-        mpq_init(n1);                            \
-        mpq_set_z(n1, number1->value_);\
-        return mpq_cmp(n1, number2->value) symbol;\
+        mpq_t temp;\
+        mpq_init(temp);\
+        mpq_set_z(temp, number1->value_);\
+        bool ret = mpq_cmp(temp, number2->value) symbol;\
+        mpq_clear(temp);\
+        return ret;\
     }\
     static bool compare(Ratnum* number1, int number2)\
     {\
-        mpq_t n2;\
-        mpq_init(n2);\
-        mpq_set_si(n2, number2, 1);\
-        mpq_canonicalize(n2);\
-        return mpq_cmp(number1->value, n2) symbol;\
+        mpq_t temp;\
+        mpq_init(temp);\
+        mpq_set_si(temp, number2, 1);\
+        mpq_canonicalize(temp);\
+        bool ret = mpq_cmp(number1->value, temp) symbol;\
+        mpq_clear(temp);\
+        return ret;\
     }\
     static bool compare(int number1, Ratnum* number2)\
     {\
-        mpq_t n1;\
-        mpq_init(n1);\
-        mpq_set_si(n1, number1, 1);\
-        mpq_canonicalize(n1);\
-        return mpq_cmp(n1, number2->value) symbol;\
+        mpq_t temp;\
+        mpq_init(temp);\
+        mpq_set_si(temp, number1, 1);\
+        mpq_canonicalize(temp);\
+        bool ret = mpq_cmp(temp, number2->value) symbol;\
+        mpq_clear(temp);\
+        return ret;\
     }
 
     MAKE_RATNUM_COMPARE(gt, >0);
@@ -246,28 +265,31 @@ public:
     MAKE_RATNUM_COMPARE(le, <=0);
     MAKE_RATNUM_COMPARE(eq, ==0);
 
+    static Object makeNumber(double value)
+    {
+        mpq_t ret;
+        mpq_init(ret);
+        mpq_set_d(ret, value);
+        return makeNumber(ret);
+    }
+
     static Object makeNumber(mpq_t r)
     {
         if (mpz_cmp_si(mpq_denref(r), 1) == 0) {
             if (mpz_cmp_si(mpq_numref(r), Fixnum::MIN) >= 0 &&
                 mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
+                mpq_clear(r);
                 return Object::makeFixnum(mpz_get_si(mpq_numref(r)));
             } else {
                 mpz_t copy;
                 mpz_init_set(copy, mpq_numref(r));
+                mpq_clear(r);
                 return Object::makeBignum(new Bignum(copy));
             }
         } else {
-            return Object::makeRatnum(r);
+            return Object::makeRatnum(new Ratnum(r));
         }
     }
-
-    mpq_t value;
-
-private:
-
-    Object sqrtUnsigned(const mpq_t r) const;
-
 };
 
 } // namespace scheme
