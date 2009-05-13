@@ -244,7 +244,6 @@ int main(int argc, char *argv[])
     } else {
         showUsage();
     }
-
 #ifdef ENABLE_PROFILER
     if (isProfiler) {
         const Object result = theVM->getProfileResult();

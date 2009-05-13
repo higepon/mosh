@@ -1,3 +1,7 @@
+2009-05-13  higepon  <higepon@users.sourceforge.jp>
+
+        * Bignum.h : Reduce the memory allocation in aritmetic operations.
+
 2009-05-12  higepon  <higepon@users.sourceforge.jp>
 
         * Bignum.h (scheme): Be sure to call mpz_clear when Bignum is GCed. thanks to enami-san.

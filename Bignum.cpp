@@ -36,21 +36,21 @@
 using namespace scheme;
 
 
-Object Bignum::sqrt() const
-{
-    Bignum temp;
-    if (isNegative()) {
-        mpz_neg(temp.value_, value_);
-        mpz_sqrt(temp.value_, temp.value_);
-        return makeInteger(temp);
-    } else {
-        mpz_sqrt(temp.value_, value_);
-        return makeInteger(temp.value_);
-    }
-}
+// Object Bignum::sqrt() const
+// {
+//     Bignum temp;
+//     if (isNegative()) {
+//         mpz_neg(temp.value_, value_);
+//         mpz_sqrt(temp.value_, temp.value_);
+//         return makeInteger(temp);
+//     } else {
+//         mpz_sqrt(temp.value_, value_);
+//         return makeInteger(temp.value_);
+//     }
+// }
 
-char* Bignum::toString(int radix /* = 10 */) const
-{
-    return mpz_get_str(NULL, radix, value_);
-}
+// char* Bignum::toString(int radix /* = 10 */) const
+// {
+//     return mpz_get_str(NULL, radix, value_);
+// }
 

@@ -82,12 +82,18 @@ public:
 
     Object numerator() const
     {
-        return Bignum::makeInteger(mpq_numref(value));
+        // Since mpq_numref returns reference, copy it.
+        mpz_t ret;
+        mpz_init_set(ret, mpq_numref(value));
+        return Bignum::makeInteger(ret);
     }
 
     Object denominator() const
     {
-        return Bignum::makeInteger(mpq_denref(value));
+        // Since mpq_denref returns reference, copy it.
+        mpz_t ret;
+        mpz_init_set(ret, mpq_denref(value));
+        return Bignum::makeInteger(ret);
     }
 
     char* toString(int radix = 10) const
@@ -247,7 +253,9 @@ public:
                 mpz_cmp_si(mpq_numref(r), Fixnum::MAX) <= 0) {
                 return Object::makeFixnum(mpz_get_si(mpq_numref(r)));
             } else {
-                return Object::makeBignum(mpq_numref(r));
+                mpz_t copy;
+                mpz_init_set(copy, mpq_numref(r));
+                return Object::makeBignum(new Bignum(copy));
             }
         } else {
             return Object::makeRatnum(r);

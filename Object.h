@@ -178,7 +178,6 @@ public:
     static Object makeFixnum(fixedint n);
     static Object makeBignum(signed long int n);
     static Object makeBignum(Bignum* b);
-    static Object makeBignum(Bignum b);
     static Object makeFlonum(double value);
     static Object makeRaw(int n);
     static Object makeRaw(void* n);
