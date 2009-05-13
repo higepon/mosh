@@ -56,7 +56,7 @@ namespace scheme {
 class Bignum : public gc_cleanup
 {
 public:
-    ~Bignum()
+    virtual ~Bignum()
     {
         mpz_clear(this->value);
     }

@@ -46,16 +46,53 @@
 using namespace scheme;
 extern void initCprocedures();
 
-void* gmp_func(size_t size)
+static void* gmp_alloc_gc(size_t size)
 {
     return GC_malloc(size);
+}
+
+static void* gmp_alloc(size_t size)
+{
+    return malloc(size);
+}
+
+static void* gmp_realloc(void *ptr, size_t oldSize, size_t newSize)
+{
+    static uintptr_t totalSize = 0;
+    totalSize += newSize;
+    // At least every 20MB, we invoke GC()
+    if (totalSize > 20 * 1024 * 1024) {
+        GC_gcollect();
+        totalSize = 0;
+    }
+    return realloc(ptr, newSize);
+}
+
+static void* gmp_realloc_gc(void *ptr, size_t oldSize, size_t newSize)
+{
+    return GC_REALLOC(ptr, newSize);
+}
+
+static void gmp_free(void *ptr, size_t size)
+{
+    free(ptr);
+}
+
+static void gmp_free_gc(void *ptr, size_t size)
+{
+    GC_free(ptr);
 }
 
 void mosh_init()
 {
 #ifdef USE_BOEHM_GC
     GC_INIT();
-    mp_set_memory_functions(gmp_func, my_realloc, my_dont_free);
+    // N.B
+    // Since GNU MP mpz makes many many "false pointer",
+    // we allocate gmp buffers by malloc not GC_malloc.
+    // Allocated memory are freed on Bignum's destructor.
+    mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
+//    mp_set_memory_functions(gmp_alloc_gc, gmp_realloc_gc, gmp_free_gc);
 #endif
     initCprocedures();
     Flonum::initialize();
@@ -67,12 +104,3 @@ void mosh_init()
     initOSConstants();
 }
 
-void* my_realloc(void *ptr, size_t oldSize, size_t newSize)
-{
-    return GC_REALLOC(ptr, newSize);
-}
-
-void my_dont_free(void *ptr, size_t size)
-{
-    GC_free(ptr);
-}
