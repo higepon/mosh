@@ -1,3 +1,26 @@
+Mosh 0.1.2 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and .mjt.
+
+About This Release
+------------------
+
+  Great improvement of Bignum.
+
+
 Mosh 0.1.1 Release Note
 ============================
 
