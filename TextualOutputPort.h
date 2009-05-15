@@ -69,6 +69,7 @@ public:
 
 protected:
     bool writeAbbreviated(Object obj);
+    template<bool isHumanReadable> void print(Object o);
 
     bool isErrorOccured_;
     Object errorMessage_;
