@@ -524,4 +524,25 @@
     socket-close
     socket-shutdown
     socket-port
+    ;; mutliple vm
+    make-vm
+    vm-start!
+    vm?
+    vm-set-value!
+    vm-join!
+    main-vm?
+    vm-self
+    register
+    whereis
+    ;; condition-variable
+    make-condition-variable
+    condition-variable-wait!
+    condition-variable-notify!
+    condition-variable-notify-all!
+    ;; mutex
+    mutex?
+    make-mutex
+    mutex-lock!
+    mutex-try-lock!
+    mutex-unlock!
     )

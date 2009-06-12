@@ -52,8 +52,9 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "scheme.h"
-#include "VM.h"
+#include "OSCompatThread.h"
 #include "EqHashTable.h"
+#include "VM.h"
 #include "Symbol.h"
 #include "Closure.h"
 #include "Gloc.h"
@@ -690,17 +691,20 @@ Object scheme::exitEx(VM* theVM, int argc, const Object* argv)
 
     theVM->flushAllPorts();
 
-    if (0 == argc) {
-        exit(EXIT_SUCCESS);
-    }
-
-    const Object exitValue = argv[0];
-    if (exitValue.isFixnum()) {
-        exit(exitValue.toFixnum());
-    } else if (exitValue.isFalse()) {
-        exit(EXIT_FAILURE);
-    } else {
-        exit(EXIT_FAILURE);
+    if (theVM->isMainThread()) {
+        if (0 == argc) {
+            exit(EXIT_SUCCESS);
+        }
+        const Object exitValue = argv[0];
+        if (exitValue.isFixnum()) {
+            exit(exitValue.toFixnum());
+        } else if (exitValue.isFalse()) {
+            exit(EXIT_FAILURE);
+        } else {
+            exit(EXIT_FAILURE);
+        }
+    } else { // return value of vm-join!
+        Thread::exit(new Object(argv[0]));
     }
     return Object::Undef;
 }

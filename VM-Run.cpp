@@ -47,11 +47,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #endif
     returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
     returnCode_[1] = Object::makeFixnum(0);
-    static Object callCode[] = {
-        Object::makeRaw(INSTRUCTION(CALL)),
-        Object::makeFixnum(0),
-        Object::makeRaw(INSTRUCTION(HALT)),
-    };
+    callCode_[0] = Object::makeRaw(INSTRUCTION(CALL));
+    callCode_[1] = Object::makeFixnum(0);
+    callCode_[2] = Object::makeRaw(INSTRUCTION(HALT));
 
     Object operand = Object::Undef;
 
@@ -75,8 +73,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object args = pop();
             if (args.isNil()) {
-                callCode[1] = Object::makeFixnum(0);
-                pc_  = callCode;
+                callCode_[1] = Object::makeFixnum(0);
+                pc_  = callCode_;
             } else {
                 if (! args.isPair()) {
                     callAssertionViolationAfter(this, "apply", "bug?", L1(ac_));
@@ -86,8 +84,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int shiftLen = length > 1 ? length - 1 : 0;
                 Object* const sp = sp_ + shiftLen + 1; //unShiftArgs(sp_, 0, shiftLen);////
                 pairArgsToStack(sp, 0, args);
-                callCode[1] = Object::makeFixnum(length);
-                pc_ = callCode;
+                callCode_[1] = Object::makeFixnum(length);
+                pc_ = callCode_;
                 sp_ = sp;
             }
             NEXT;
@@ -913,7 +911,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 
             cl_ = index(sp, 1);
             if (!cl_.isProcedure()) {
-                LOG1("proc = ~a\n", cl_);
+                VM_LOG1("proc = ~a\n", cl_);
             }
             VM_ASSERT(cl_.isProcedure());
 

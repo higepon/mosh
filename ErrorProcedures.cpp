@@ -163,14 +163,14 @@ void scheme::callNotImplementedAssertionViolationAfter(VM* theVM, Object who, Ob
 
 void scheme::callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants /* = Object::Nil */)
 {
-    const Object message = format(UC("~a required, but got ~a"),
+    const Object message = format(theVM, UC("~a required, but got ~a"),
                                   Pair::list2(requiredType, gotValue));
     callAssertionViolationAfter(theVM, who, message, irritants);
 }
 
 void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants /* = Object::Nil */)
 {
-    const Object message = format(UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
+    const Object message = format(theVM, UC("wrong number of arguments (required between ~d and ~d, got ~d)"),
                                   Pair::list3(Object::makeFixnum(startCounts),
                                               Object::makeFixnum(endCounts),
                                               Object::makeFixnum(gotCounts)));
@@ -179,7 +179,7 @@ void scheme::callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object w
 
 void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
 {
-    const Object message = format(UC("wrong number of arguments (required ~d, got ~d)"),
+    const Object message = format(theVM, UC("wrong number of arguments (required ~d, got ~d)"),
                                   Pair::list2(Object::makeFixnum(requiredCounts),
                                               Object::makeFixnum(gotCounts)));
     callAssertionViolationAfter(theVM, who, message, irritants);
@@ -187,7 +187,7 @@ void scheme::callWrongNumberOfArgumentsViolationAfter(VM* theVM, Object who, int
 
 void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object who, int requiredCounts, int gotCounts, Object irritants /* Object::Nil */ )
 {
-    const Object message = format(UC("wrong number of arguments (required at least ~d, got ~d)"),
+    const Object message = format(theVM, UC("wrong number of arguments (required at least ~d, got ~d)"),
                                   Pair::list2(Object::makeFixnum(requiredCounts),
                                               Object::makeFixnum(gotCounts)));
     callAssertionViolationAfter(theVM, who, message, irritants);
@@ -197,12 +197,13 @@ void scheme::callWrongNumberOfArgumentsAtLeastViolationAfter(VM* theVM, Object w
 void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
-   const Object condition =  format(UC(" Condition components:\n"
+    const Object condition =  format(theVM,
+                                    UC(" Condition components:\n"
                                        "    1. &assertion\n"
                                        "    2. &who: ~a\n"
                                        "    3. &message: ~s\n"
                                        "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
@@ -216,7 +217,7 @@ Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message,
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
-	return Object::Undef;
+    return Object::Undef;
 }
 
 void scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
@@ -228,12 +229,14 @@ void scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message, 
 void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
     MOSH_ASSERT(theVM);
-    const Object condition = format(UC(" Condition components:\n"
+    const Object condition = format(theVM,
+                              UC(
+                                 " Condition components:\n"
                                  "    1. &lexical\n"
                                  "    2. &who: ~a\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
     theVM->throwException(condition);
 }
 
@@ -380,7 +383,9 @@ Object raiseAfter1(VM* theVM,
         conditions = Object::cons(makeCondition(theVM, errorRcdName, argument1), conditions);
         condition = Object::makeCompoundCondition(conditions);
     } else {
-        condition = format(UC(" Condition components:\n"
+        condition = format(theVM,
+                           UC(
+                              " Condition components:\n"
                               "    1. ~a\n"
                               "    2. &who: ~a\n"
                               "    3. &message: ~s\n"
@@ -391,7 +396,7 @@ Object raiseAfter1(VM* theVM,
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
@@ -428,7 +433,8 @@ Object raiseAfter2(VM* theVM,
         conditions = Object::cons(makeCondition2(theVM, errorRcdName, argument1, argument2), conditions);
         condition = Object::makeCompoundCondition(conditions);
     } else {
-        condition = format(UC(" Condition components:\n"
+        condition = format(theVM,
+                           UC(" Condition components:\n"
                               "    1. ~a\n"
                               "    2. &who: ~a\n"
                               "    3. &message: ~s\n"
@@ -439,7 +445,7 @@ Object raiseAfter2(VM* theVM,
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
@@ -481,7 +487,8 @@ Object raiseAfter(VM* theVM,
         }
         condition = Object::makeCompoundCondition(conditions);
     } else {
-        condition = format(UC(" Condition components:\n"
+        condition = format(theVM,
+                           UC(" Condition components:\n"
                               "    1. ~a\n"
                               "    2. &who: ~a\n"
                               "    3. &message: ~s\n"
@@ -492,7 +499,7 @@ Object raiseAfter(VM* theVM,
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);
@@ -544,7 +551,8 @@ Object raiseAfterB(VM* theVM,
 
         condition = Object::makeCompoundCondition(conditions);
     } else {
-        condition = format(UC(" Condition components:\n"
+        condition = format(theVM,
+                           UC(" Condition components:\n"
                               "    1. ~a\n"
                               "    2. ~a\n"
                               "    3. &who: ~a\n"
@@ -560,7 +568,7 @@ Object raiseAfterB(VM* theVM,
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(" WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger1(raiseProcedure, condition);

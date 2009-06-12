@@ -1130,6 +1130,8 @@
          (pass1/s->i-non-tail 0)]
         [(*)
          (pass1/s->i-non-tail 1)]
+        [(append)
+         (pass1/s->i-non-tail '())]
         [else
          (error operator " got too few argment")])]
      [(= 1 len)
@@ -1225,7 +1227,7 @@
       ;;---------------------------- quote -------------------------------------
       [(quote)
        ($const (second sexp))]
-      [(append)           (pass1/asm-n-args         'APPEND2      'dummy (cdr sexp) lvars)]
+      [(append)           (pass1/asm-n-args         'APPEND2      'append (cdr sexp) lvars)]
       [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp)    lvars)]
       [(-)
        (if (for-all number? (cdr sexp))
@@ -2943,9 +2945,9 @@
          (let ([args-size (pass3/compile-args let-cb ($call.args iform) locals frees-here can-frees sets #f
                                               (+ depth (pass3/let-frame-size)) (if need-display? (+ display-count 1) display-count))]
                [args-length (length ($call.args iform))])
-           (pass3/make-boxes let-cb sets-for-this-lvars vars)
            (code-builder-put-insn-arg1! let-cb 'ENTER args-length)
            (cput! let-cb label)
+           (pass3/make-boxes let-cb sets-for-this-lvars vars)
            ($label.set-visited?! label #t)
            (let1 body-size (pass3/rec let-cb
                                       body

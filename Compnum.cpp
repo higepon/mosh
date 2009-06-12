@@ -37,8 +37,8 @@
 #include "Pair-inl.h"
 #include "Arithmetic.h"
 #include "Compnum.h"
-#include "VM.h"
 #include "TextualOutputPort.h"
+#include "EqHashTable.h"
 #include "ProcedureMacro.h"
 
 using namespace scheme;

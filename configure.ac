@@ -186,6 +186,32 @@ MOSH_INTEL_OPTS="$MOSH_GENERIC_OPTS -momit-leaf-frame-pointer -fomit-frame-point
 
 #MOSH_INTEL_OPTS="-O3 -momit-leaf-frame-pointer -pg"
 
+# Checks for threads
+AC_MSG_CHECKING([check threads])
+case "$target_os" in
+*darwin*)
+  AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
+  ;;
+*linux*)
+  AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  ;;
+freebsd*)
+  AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
+  ;;
+cygwin)
+  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support])
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+  ;;
+
+mingw*)
+  AC_MSG_ERROR([Please modify configure.ac for mingw])
+  ;;
+*)
+  AC_MSG_ERROR([Please modify configure.ac for $target_os])
+  ;;
+esac
+
 # Checks for cpu
 AC_MSG_CHECKING([for supported architecture])
 MOSH_LDADD_ARCH="-ldl -lpthread"
@@ -194,7 +220,7 @@ i[[3456]]86|pentium)
         arch=i386
         case "$target_os" in
         *darwin*)
-#          MOSH_LDADD_ARCH="$MOSH_LDADD_ARCH -framework CoreFoundation"
+          AC_DEFINE(GC_DARWIN_THREADS,1,[Define to use Darwin threads])
           if test -n "`system_profiler |grep 'Intel Core 2'`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse2 -mfpmath=sse"
           else
@@ -202,6 +228,9 @@ i[[3456]]86|pentium)
           fi
           ;;
         *linux*)
+          AC_DEFINE(GC_LINUX_THREADS,1,[Define to use Linux threads])
+          AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc])
+
           if test -n "`grep 'Core(TM)2 CPU' /proc/cpuinfo`" ; then
              MOSH_OPTS="$MOSH_INTEL_OPTS -march=pentium-m -msse3 -mfpmath=sse"
           else
@@ -221,11 +250,12 @@ i[[3456]]86|pentium)
           fi
           ;;
        *freebsd*)
+         AC_DEFINE(GC_FREEBSD_THREADS,1,[Define to use FreeBSD threads])
          MOSH_OPTS="$MOSH_INTEL_OPTS -march=$host_cpu"
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-	 MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501"
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501"
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
         *)

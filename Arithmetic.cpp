@@ -94,8 +94,8 @@ Object Arithmetic::numberToString(Object n, int radix)
         return Object::makeString(r->toString(radix));
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
-        return format(UC("~d+~di"), Pair::list2(numberToString(c->real(), radix),
-                                                numberToString(c->imag(), radix)));
+        return format(NULL, UC("~d+~di"), Pair::list2(numberToString(c->real(), radix),
+                                                      numberToString(c->imag(), radix)));
     } else {
         MOSH_ASSERT(false);
         return Object::Undef;

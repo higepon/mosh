@@ -35,6 +35,7 @@
 #include "Pair-inl.h"
 #include "Regexp.h"
 #include "SString.h"
+#include "EqHashTable.h"
 #include "VM.h"
 
 using namespace scheme;

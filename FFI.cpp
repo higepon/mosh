@@ -33,6 +33,7 @@
 #else
 #include <dlfcn.h>
 #endif
+#include "scheme.h"
 #include "Object.h"
 #include "Object-inl.h"
 #include "SString.h"

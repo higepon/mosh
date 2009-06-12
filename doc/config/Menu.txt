@@ -57,10 +57,11 @@ Group: Mosh Library  {
    File: Foreign Function Interface  (lib/mosh/ffi.ss)
    File: Pretty Printing  (lib/mosh/pp.ss)
    File: Process  (lib/mosh/process.ss)
-   File: Pattern Match  (lib/match.ss)
    File: Socket  (lib/mosh/socket.ss)
    File: IRC Client  (lib/mosh/irc/client.ss)
    File: Unit Testing  (lib/mosh/test.ss)
+   File: Concurrent  (lib/mosh/concurrent.ss)
+   File: Pattern Match  (lib/match.ss)
    }  # Group: Mosh Library
 
 File: SRFIs  (doc/text/srfi.txt)

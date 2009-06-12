@@ -35,7 +35,7 @@
 #include "Symbol.h"
 using namespace scheme;
 
-Symbols Symbol::symbols;
+Symbols* Symbol::symbols;
 Object Symbol::QUOTE;
 Object Symbol::QUASIQUOTE;
 Object Symbol::UNQUOTE;
@@ -76,6 +76,7 @@ Object Symbol::NO_TRUNCATE;
 
 void Symbol::initBuitinSymbols()
 {
+    symbols = new Symbols;
     QUOTE             = Symbol::intern(UC("quote"));
     QUASIQUOTE        = Symbol::intern(UC("quasiquote"));
     UNQUOTE           = Symbol::intern(UC("unquote"));

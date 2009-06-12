@@ -76,7 +76,7 @@
         (display "line:46\n")))
 
 (define (scm->fasl filename)
-  (string-append filename ".fasl"))
+  (string-append filename ".mosh-fasl"))
 
 (define (fasl-save filename obj)
   (call-with-port (open-file-output-port filename) (lambda (port) ((symbol-value 'fasl-write!) obj port))))

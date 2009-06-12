@@ -244,7 +244,9 @@ Socket* Socket::createClientSocket(const char* node,
     errorMessage = getLastErrorMessageInternal(lastError);
     return NULL;
 }
+#ifndef __CYGWIN__
 extern ucs4string my_utf16ToUtf32(const std::wstring& s);
+#endif
 Socket* Socket::createServerSocket(const char* service,
                                    int ai_family,
                                    int ai_socktype,

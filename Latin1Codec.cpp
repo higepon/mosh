@@ -53,7 +53,7 @@ Codec* Latin1Codec::getCodec()
 
 int Latin1Codec::putChar(BinaryOutputPort* port, ucs4char u, enum ErrorHandlingMode mode)
 {
-    static uint8_t buf[1];
+    uint8_t buf[1];
     const int size = putChar(buf, u, mode);
     return static_cast<int>(port->putU8(buf, size));
 }

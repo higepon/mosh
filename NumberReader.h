@@ -36,18 +36,32 @@
 
 namespace scheme {
 
-class NumberReader EXTEND_GC
-{
-public:
-    static Object read(const ucs4string& text, bool& isErrorOccured);
-    static TextualInputPort* port() { return in_; }
-    static Object parsed;
-private:
-    static Object read(TextualInputPort* port, bool& isErrorOccured);
-    static TextualInputPort* in_;
-};
-
-
+    class NumberReaderContext EXTEND_GC
+    {
+    public:
+        Object read(TextualInputPort* port, bool& isErrorOccured);
+        Object read(const ucs4string& text, bool& isErrorOccured);
+        TextualInputPort* port()
+        {
+            MOSH_ASSERT(port_ != NULL);
+            return port_;
+        }
+        void setPort(TextualInputPort* port)
+        {
+            port_ = port;
+        }
+        void setParsed(Object parsed)
+        {
+            parsed_ = parsed;
+        }
+        Object parsed()
+        {
+            return parsed_;
+        }
+    private:
+        Object parsed_;
+        TextualInputPort* port_;
+    };
 } // namespace scheme
 
 #endif // SCHEME_NUMBER_READER_

@@ -280,6 +280,13 @@
              (compile-r6rs-top-level x*) ; i assume this is needed
              (serialize-all serialize-library compile-core-expr)))))))
 
+   ;; mosh-only
+  (define (load-r6rs-top-level-sexp import-spec thunk)
+    (parameterize ([library-path (local-library-path "")])
+      (parameterize ([command-line '()])
+;        (display `((import ,@import-spec) (,thunk)))
+        ((compile-r6rs-top-level `((import ,@import-spec) (,thunk)))))))
+
 
   (current-precompiled-library-loader load-serialized-library)
 
@@ -304,7 +311,7 @@
 
 
                                         ;  (library-path (get-library-paths))
-                                        ;  (library-path '("." "/tmp/"))
+                                        ;  (library-path '("." "/tmp/")
 
 
   ;; (cond [(get-environment-variable "MOSH_LOADPATH")
@@ -367,10 +374,15 @@
            (condition-printer c (current-error-port))
            (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)))
      (lambda ()
-       (if (null? args)
-           (repl)
-           (load-r6rs-top-level (car args) 'load (cdr args))
-           ))))
+       (cond
+        ;; mulitple vm
+        [(guard [c (#t #f)] (symbol-value '%vm-import-spec))
+         (load-r6rs-top-level-sexp (symbol-value '%vm-import-spec) (symbol-value '%vm-thunk))]
+        ;; REPL
+        [(null? args) (repl)]
+        ;; load file
+        [else
+           (load-r6rs-top-level (car args) 'load (cdr args))]))))
 
 
   ;;   (display "r6rs psyntax ready\n")

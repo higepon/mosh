@@ -33,8 +33,6 @@
         (mosh shell)
         (mosh test))
 
-(test-begin "io-error.scm")
-
 ;; utf-8-codec
 ;;   error-handling-mode: raise
 (test-error i/o-decoding-error?
@@ -348,7 +346,6 @@
                   (get-u8 binary-port) ;; port is already closed!
                   (display (read-char text-port))))
 
-(test-begin "pseudo-close")
 (unless (string=? (host-os) "win32")
 (let ()
   (define (text-pipe)
@@ -362,27 +359,23 @@
   (define p-reader (car p))
   (define p-writer (cdr p))
 
-  (test-external-rep "<transcoded-textual-input-port <binary-input-port <unknown file>>>"
+  (test-write-equal "<transcoded-textual-input-port <binary-input-port <unknown file>>>"
                      p-reader)
   (test-true (textual-port? p-reader))
-  (test-external-rep "<transcoded-textual-output-port <binary-output-port <unknown file>>>"
+  (test-write-equal "<transcoded-textual-output-port <binary-output-port <unknown file>>>"
                      p-writer)
   (test-true (textual-port? p-writer))
 
-  (test-no-error (display "asd" p-writer))
+  (display "asd" p-writer)
   (flush-output-port p-writer)
   (test-eqv #\a (read-char p-reader))
   (close-port p-reader)
   (close-port p-writer)))
-(test-end)
 
-(test-begin "executable path")
 (cond
  [(member (host-os) '("win32" "linux"))
   (test-true (string? (mosh-executable-path)))]
  [else
   '()])
 
-(test-end)
-
-(test-end)
+(test-results)

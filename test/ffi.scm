@@ -3,7 +3,6 @@
         (mosh)
         (mosh test))
 
-(test-begin "ffi")
 
 (when (ffi-supported?)
   (let ()
@@ -57,4 +56,4 @@
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))))
 
-(test-end)
+(test-results)

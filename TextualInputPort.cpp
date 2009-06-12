@@ -43,6 +43,7 @@
 #include "Pair-inl.h"
 #include "TextualOutputPort.h"
 #include "ProcedureMacro.h"
+#include "MultiVMProcedures.h"
 
 using namespace scheme;
 
@@ -157,5 +158,5 @@ Object TextualInputPort::error() const
 
 Object TextualInputPort::getDatum(bool& errorOccured)
 {
-    return Reader::read(this, errorOccured);
+    return currentVM()->readerContext()->read(this, errorOccured);
 }

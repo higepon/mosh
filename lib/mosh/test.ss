@@ -32,15 +32,14 @@
 
     Defines a set of functions to write test scripts.
 
-    (mosh test) uses (srfi :64 testing) as backend.
+    N.B. (mosh test) used to use (srfi :64 testing) as backend, but it is rewritten for performance reason.
 
     Example:
     (start code)
     (import (rnrs)
             (mosh test)
-      (test-begin "number predicate")
       (test-false (number? 'a))
-      (test-end))
+      (test-results))
     (end code)
 
     library: (mosh test)
@@ -48,120 +47,157 @@
     Unit Testing library
 |#
 (library (mosh test)
-  (export    test-true test-false test-null test-external-rep test-no-error;; mosh only
-   test-begin test-not-match-name
-   test-end test-assert test-eqv test-eq test-equal
-   test-approximate  test-error test-apply test-with-runner
-   test-match-nth test-match-all test-match-any test-match-name
-   test-skip test-expect-fail test-read-eval-string
-   test-runner-group-path test-group-with-cleanup
-   test-result-ref test-result-set! test-result-clear test-result-remove
-   test-result-kind test-passed?
-   test-log-to-file test-group)
-  (import (only (rnrs) ... _ define define-record-type fields immutable let cond not eq? syntax-case string=? begin dynamic-wind lambda display define-syntax if syntax quote null? caar cdar else cdr let* when memq > for-each current-error-port set! cons member and boolean? let-values open-string-output-port write)
-;   (rnrs)
-          (rename (srfi :64 testing) (test-begin %test-begin))
-          (only (mosh) format host-os))
+         (export test-true test-false test-eq test-eqv test-equal test-null
+                 test-write-equal
+                 test-error test-results fail
+                 test-error-string   ; exported for tests of xunit
+                 test-summary-string ; exported for tests of xunit
+                 )
+         (import (only (rnrs) define apply max map lambda string-length symbol->string record-type-name record-rtd simple-conditions
+                       display let when newline null? car cdr write define-syntax syntax-case _ ... syntax if string=? cond quote else
+                       unless + - append cons vector->list record-type-field-names record-type-parent symbol? record-accessor
+                       reverse <= string-append do let-values open-string-output-port set! quasiquote call/cc with-exception-handler
+                       for-each zero? dynamic-wind exit > begin not eq? eqv? equal? unquote)
+                 (only (mosh) host-os format ungensym)
+                 (only (match) match))
 
-  #|
-      Function: test-begin
+(define (condition-printer e port)
+    (define max-condition-len (apply max (map (lambda (c) (string-length (symbol->string (record-type-name (record-rtd c))))) (simple-conditions e))))
+    (display "    Condition components:\n" port)
+    (for-each-with-index
+     (lambda (i x)
+       (let ([rtd (record-rtd x)]
+             [fields-alist (record->field-alist x)])
+        (format port "     ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+        (when (null? fields-alist)
+          (newline port))
+         (let loop ([first #t]
+                    [fields-alist fields-alist])
+           (cond
+            [(null? fields-alist) '()]
+            [else
+             (let ([field (car fields-alist)])
+               (unless first
+                 (display (rpad "" " " (+ 4 max-condition-len)) port))
+             (display "       " port)
+             (display (car field) port)
+             (display ": " port)
+             (write (cdr field) port)
+             (newline port)
+             (loop #f (cdr fields-alist)))
+             ]
+          ))))
+     (simple-conditions e)))
 
-      A test-begin enters a new test group.
-      The suite-name becomes the current test group name, and is added to the end of the test group path.
+(define (record->field-alist r)
+  (define (ref rtd i x)
+    (let ([val ((record-accessor rtd i) x)])
+      (if (symbol? val)
+          (ungensym val)
+          val)))
+  (let loop ([ret '()]
+             [rtd (record-rtd r)])
+    (cond
+     [rtd
+      (loop (append ret
+      (map-with-index
+       (lambda (i field)
+         (cons field (ref rtd i r)))
+       (vector->list (record-type-field-names rtd)))) (record-type-parent rtd))]
+     [else ret])))
 
-      Portable test suites should use a sting literal for suite-name; the effect of expressions or other kinds of literals is unspecified.
+(define (map-with-index proc lst)
+  (let loop ([i 0]
+             [lst lst]
+             [ret '()])
+    (if (null? lst)
+        (reverse ret)
+        (loop (+ i 1) (cdr lst) (cons (proc i (car lst)) ret)))))
+
+(define (rpad str pad n)
+  (let ([rest (- n (string-length (format "~a" str)))])
+    (let loop ([rest rest]
+               [ret (format "~a" str)])
+      (if (<= rest 0)
+          ret
+          (loop (- rest 1) (string-append ret pad))))))
+  (define (for-each-with-index proc lst)
+    (do ((i 1 (+ i 1)) ; start with 1
+         (lst lst (cdr lst)))
+        ((null? lst))
+      (proc i (car lst))))
+
+(define (exception->string e)
+  (let-values (([out get-string] (open-string-output-port)))
+    (condition-printer e out)
+    (get-string)))
+
+(define run-count 0)
+(define failed-count 0)
+(define error* '())
+
+(define (run-count++)
+  (set! run-count (+ run-count 1)))
+
+(define (failed-count++)
+  (set! failed-count (+ failed-count 1)))
+
+(define (add-error! expr)
+  (set! error* (cons expr error*)))
+
+#|
+      Function: fail
+
+      Always fail.
 
       Prototype:
-      > (test-begin suite-name [count])
+      > (fail message)
 
       Parameters:
 
-        suite-name - test suite name.
-        count - The optional count must match the number of test-cases executed by this group. (Nested test groups count as a single test case for this count.) This extra test may be useful to catch cases where a test doesn't get executed because of some unexpected error.
+        message - failure message
 
       Returns:
 
         unspecified.
-  |#
+|#
+(define (fail message)
+  (failed-count++)
+  (add-error! `(failure ,message)))
 
-  #|
-      Function: test-end
+(define (test-bool expr thunk true?)
+  (run-count++)
+  (call/cc
+   (lambda (escape)
+     (with-exception-handler
+      (lambda (e)
+        (failed-count++)
+        (add-error! `(unexpected ,expr ,e))
+        (escape e))
+      (lambda ()
+        (let ([val (thunk)])
+          (unless (true? val)
+            (add-error! expr)
+            (failed-count++))
+          val))))))
 
-      A test-end leaves the current test group. An error is reported if the suite-name does not match the current test group name.
+(define (test-cmp expr pred thunk expected)
+  (run-count++)
+  (call/cc
+   (lambda (escape)
+     (with-exception-handler
+      (lambda (e)
+        (failed-count++)
+        (add-error! `(unexpected ,expr ,e))
+        (escape e))
+      (lambda ()
+        (let ([val (thunk)])
+          (unless (pred val expected)
+            (add-error! `(compare-error ,expr ,expected ,val))
+            (failed-count++))
+          val))))))
 
-      Additionally, if the matching test-begin installed a new test-runner, then the test-end will de-install it, after reporting the accumulated test results in an implementation-defined manner.
-
-      Prototype:
-      > (test-end [suite-name])
-
-      Parameters:
-
-        suite-name - test suite name.
-
-      Returns:
-
-        unspecified.
-  |#
-
-  #|
-      Function: test-group
-
-      This is usually equivalent to executing the decl-or-exprs within the named test group.
-
-      However, the entire group is skipped if it matched an active test-skip (see later).
-
-      Also, the test-end is executed in case of an exception.
-
-      Equivalent to
-      (start code)
-      (if (not (test-to-skip% suite-name))
-        (dynamic-wind
-          (lambda () (test-begin suite-name))
-          (lambda () decl-or-expr ...)
-          (lambda () (test-end suite-name))))
-      (end code)
-
-      Prototype:
-      > (test-group suite-name decl-or-expr ...)
-
-      Parameters:
-
-        suite-name - test suite name.
-        decl-or-expr - decl-or-expr
-
-      Returns:
-
-        unspecified.
-  |#
-
-
-  #|
-      Function: test-assert
-
-      This evaluates the expression.
-
-      The test passes if the result is true; if the result is false, a test failure is reported.
-      The test also fails if an exception is raised.
-
-      The test-name is a string that names the test case.
-
-      (Though the test-name is a string literal in the examples, it is an expression.
-      It is evaluated only once.)
-
-      It is used when reporting errors, and also when skipping tests, as described below. It is an error to invoke test-assert if there is no current test runner.
-
-      Prototype:
-      > (test-assert [test-name] expression)
-
-      Parameters:
-
-        test-name - test name.
-        expression - expression to evaluate.
-
-      Returns:
-
-        unspecified.
-  |#
+(define (identity x) x)
 
   #|
       Function: test-true
@@ -169,17 +205,21 @@
       Run the test and check the result is not #f.
 
       Prototype:
-      > (test-true [test-name] expression)
+      > (test-true expression)
 
       Parameters:
 
-        test-name - test name.
         expression - expression to evaluate.
 
       Returns:
 
         unspecified.
   |#
+(define-syntax test-true
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expr)
+       #'(test-bool '(test-true expr) (lambda () expr) identity)])))
 
 #|
       Function: test-false
@@ -187,54 +227,35 @@
       Run the test and check the result is #f.
 
       Prototype:
-      > (test-false [test-name] expression)
+      > (test-false expression)
 
       Parameters:
 
-        test-name - test name.
         expression - expression to evaluate.
 
       Returns:
 
         unspecified.
 |#
-
-#|
-      Function: test-eqv
-
-      This is equivalent to
-      > (test-assert [test-name] (eqv? expected test-expr))
-
-      Run the test and check the result is #f.
-
-      Prototype:
-      > (test-eqv [test-name] expected test-expr)
-
-      Parameters:
-
-        test-name - test name.
-        expected - expected values
-        test-expr - test-expr to evaluate.
-
-      Returns:
-
-        unspecified.
-|#
+(define-syntax test-false
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expr)
+       #'(test-bool '(test-false expr) (lambda () expr) not)])))
 
 #|
       Function: test-eq
 
       This is equivalent to
-      > (test-assert [test-name] (eq? expected test-expr))
+      > (test-assert (eq? expected test-expr))
 
       Run the test and check the result is #f.
 
       Prototype:
-      > (test-eq [test-name] expected test-expr)
+      > (test-eq expected test-expr)
 
       Parameters:
 
-        test-name - test name.
         expected - expected values
         test-expr - test-expr to evaluate.
 
@@ -242,21 +263,51 @@
 
         unspecified.
 |#
+(define-syntax test-eq
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expected expr)
+       #'(test-cmp 'expr eq? (lambda () expr) expected)])))
+
+#|
+      Function: test-eqv
+
+      This is equivalent to
+      > (test-assert (eqv? expected test-expr))
+
+      Run the test and check the result is #f.
+
+      Prototype:
+      > (test-eqv expected test-expr)
+
+      Parameters:
+
+        expected - expected values
+        test-expr - test-expr to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+(define-syntax test-eqv
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expected expr)
+       #'(test-cmp 'expr eqv? (lambda () expr) expected)])))
 
 #|
       Function: test-equal
 
       This is equivalent to
-      > (test-assert [test-name] (equal? expected test-expr))
+      > (test-assert (equal? expected test-expr))
 
       Run the test and check the result is #f.
 
       Prototype:
-      > (test-equal [test-name] expected test-expr)
+      > (test-equal expected test-expr)
 
       Parameters:
 
-        test-name - test name.
         expected - expected values
         test-expr - test-expr to evaluate.
 
@@ -264,52 +315,37 @@
 
         unspecified.
 |#
+(define-syntax test-equal
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expected expr)
+       #'(test-cmp 'expr equal? (lambda () expr) expected)])))
 
 #|
-      Function: test-approximate
+      Function: test-write-equal
 
-      This is equivalent to (except that each argument is only evaluated once)
-      (start code)
-      (test-assert [test-name]
-        (and (>= test-expr (- expected error))
-         (<= test-expr (+ expected error))))
-      (end code)
-
-      Run the test and check the result is #f.
+      Check (write expr) is equal to expected.
 
       Prototype:
-      > (test-approximate [test-name] expected test-expr error)
+      > (test-write-equal expected test-expr)
 
       Parameters:
 
-        test-name - test name.
         expected - expected values
         test-expr - test-expr to evaluate.
-        error - allowed error.
 
       Returns:
 
         unspecified.
 |#
+(define-syntax test-write-equal
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expected expr)
+       #'(let-values ([(port get-string) (open-string-output-port)])
+           (write expr port)
+           (test-cmp '(write expr) string=? get-string expected))])))
 
-#|
-      Function: test-read-eval-string
-
-      This function parses string (using read) and evaluates the result.
-
-      The result of evaluation is returned from test-read-eval-string. An error is signalled if there are unread characters after the read is done.
-
-      Prototype:
-      > (test-read-eval-string string)
-
-      Parameters:
-
-        string - string to evaluate.
-
-      Returns:
-
-        evalated result.
-|#
 
 #|
       Function: test-error
@@ -320,42 +356,60 @@
 
 
       Prototype:
-      > (test-error [[test-name] error-type] test-expr)
+      > (test-error error-type test-expr)
 
       Parameters:
 
         test-name - test name.
-        error-type - error-type
+        error-type - error-type pred
         test-expr - test-expr to evaluate.
 
       Returns:
 
         unspecified.
 |#
+(define-syntax test-error
+  (lambda (x)
+    (syntax-case x ()
+      [(_ pred expr)
+       #'(begin
+           (run-count++)
+           (call/cc
+            (lambda (escape)
+              (with-exception-handler
+               (lambda (e)
+                 (unless (pred e)
+                   (failed-count++)
+                   (add-error! `(error-not-pred expr pred)))
+                 (escape e))
+               (lambda ()
+                 (let ([val expr])
+                   (add-error! `(error-not-raised expr pred))
+                     (failed-count++)
+                   val))))))])))
 
+#|
+      Function: test-null
 
-(define-record-type failure
-  (fields
-    (immutable name)
-    (immutable expr)
-    (immutable expected)
-    (immutable actual)))
+      Run the test and check the result is null.
 
-(define *nul* '*runner-nul*)
+      Prototype:
+      > (test-null expression)
 
-;; We may store #f as value of a-list.
-;; So returns *nul* instead of #f.
-(define (assq-ref obj alist)
-  (let loop ([lst alist])
-    (cond
-     [(null? lst) *nul*]
-     [(eq? (caar lst) obj)
-      (cdar lst)]
-     [else
-      (loop (cdr lst))])))
+      Parameters:
 
-(define (valid? obj)
-  (not (eq? obj *nul*)))
+        expression - expression to evaluate.
+
+      Returns:
+
+        unspecified.
+|#
+(define-syntax test-null
+  (lambda (x)
+    (syntax-case x ()
+      [(_ expr)
+       #'(test-cmp 'expr eq? (lambda () expr) '())])))
+
 
 (define-syntax with-color
   (lambda (x)
@@ -380,101 +434,60 @@
       [(_ expr more ...)
        #'(with-color "\x1b;[0;31m" expr more ...)])))
 
-(define (mosh-test-runner)
-  (let ([runner (test-runner-null)]
-        [failures '()])
-    (define (add-failure! failure)
-      (set! failures (cons failure failures)))
-    (test-runner-on-test-end! runner
-       (lambda (runner)
-         (let* ([result (test-result-alist runner)]
-                [kind (test-result-ref runner 'result-kind)])
-           (when (memq kind '(fail))
-             (add-failure! (make-failure
-                            (assq-ref 'test-name result)
-                            (assq-ref 'source-form result)
-                            (assq-ref 'expected-value result)
-                            (assq-ref 'actual-value result)))))))
-    (test-runner-on-final! runner
-       (lambda (runner)
-         (cond
-          [(> (test-runner-fail-count runner) 0)
-           (for-each
-            (lambda (f)
-              (display "=======================================\n")
-              (when (valid? (failure-name f))
-                (format (current-error-port) " Test     : ~a \n" (failure-name f)))
-              (when (valid? (failure-expr f))
-                (format (current-error-port) " Expr     : ~a \n" (failure-expr f)))
-              (when (valid? (failure-expected f))
-                (format (current-error-port) " Expected : ~a \n" (failure-expected f)))
-              (when (valid? (failure-actual f))
-                (format (current-error-port) " Actual   : ~a \n" (failure-actual f))))
-            failures)
-           (display "=======================================\n")
-           (with-color-red
-            (format #t "[  FAILED  ] ~d passed, ~d failed.\n"
-                    (test-runner-pass-count runner)
-                    (test-runner-fail-count runner)))]
-          [else
-           (with-color-green
-            (format #t "[  PASSED  ] ~d tests\n" (test-runner-pass-count runner)))])))
-    runner))
+(define (test-error-string)
+  (let-values (([out get-string] (open-string-output-port)))
+    (for-each
+     (lambda (error)
+       (display "============================================================" out)
+       (newline out)
+       (match error
+        [('unexpected expr exception)
+         (format out "\n  ERROR : ~s\n~a\n" expr (exception->string exception))]
+        [('compare-error expr expected actual)
+         (format out "  ~s : expected ~a, actual ~a\n" expr expected actual)]
+        [('failure message)
+         (format out "  FAILURE : ~a\n" message)]
+        [('error-not-raised expr pred)
+         (format out "  ~a :\n    expected to raise error which satisfies ~a predicate\n"
+                 expr pred)]
+        [('error-not-pred expr pred)
+         (format out "  ~a :\n    raised error doesn't satisfy ~a predicate\n" expr pred)]
+        [else
+         (format out "  ~s\n" error)]))
+     (reverse error*))
+    (get-string)))
 
-(define (test-not-match-name name)
-  (lambda (runner)
-    (not (member name (test-runner-group-stack runner)))))
+(define (test-summary-string)
+  (if (zero? failed-count)
+      (format "[  PASSED  ] ~d tests." run-count failed-count)
+      (format "[  FAILED  ] ~d passed, ~d failed." (- run-count failed-count) failed-count)))
 
-(define-syntax test-begin
-  (lambda (x)
-    (syntax-case x ()
-      [(_ args ...)
-      #'(begin (test-runner-factory mosh-test-runner)
-               (%test-begin args ...))])))
+#|
+      Function: test-results
 
-(define-syntax test-true
-  (lambda (x)
-    (syntax-case x ()
-      [(_ tname expr)
-       #'(test-assert tname (let ([x expr]) (and (boolean? x) x)))]
-      [(_ expr)
-       #'(test-assert (let ([x expr]) (and (boolean? x) x)))])))
+      Show the test results.
 
-(define-syntax test-false
-  (lambda (x)
-    (syntax-case x ()
-      [(_ tname expr)
-       #'(test-assert tname (let ([x expr]) (and (boolean? x) (not x))))]
-      [(_ expr)
-       #'(test-assert (let ([x expr]) (and (boolean? x) (not x))))])))
+      Prototype:
+      > (test-results)
 
-(define-syntax test-null
-  (lambda (x)
-    (syntax-case x ()
-      [(_ tname expr)
-       #'(test-assert tname (null? expr))]
-      [(_ expr)
-       #'(test-assert (null? expr))])))
+      Returns:
 
-(define (%test-external-rep tname expected obj)
-  (let-values ([(port get-string) (open-string-output-port)])
-    (write obj port)
-    (test-equal tname expected (get-string))))
-
-(define-syntax test-external-rep
-  (lambda (x)
-    (syntax-case x ()
-      [(_ tname expected expr)
-       #'(%test-external-rep tname expected expr)]
-      [(_ expected expr)
-       #'(%test-external-rep 'expr expected expr)])))
-
-(define-syntax test-no-error
-  (lambda (x)
-    (syntax-case x ()
-      [(_ tname expr)
-       #'(test-assert tname expr)]
-      [(_ expr)
-       #'(test-assert 'expr expr)])))
+        unspecified.
+|#
+(define (test-results)
+  (define has-error? (> failed-count 0))
+  (display (test-error-string))
+  (when has-error?
+    (newline))
+  (cond
+   [has-error?
+    (with-color-red
+     (display (test-summary-string)))]
+   [else
+    (with-color-green
+     (display (test-summary-string)))])
+  (newline)
+  (when has-error?
+    (exit -1)))
 
 )

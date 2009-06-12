@@ -37,7 +37,7 @@ using namespace scheme;
 
 int Codec::putChar(BinaryOutputPort* port, ucs4char c, enum ErrorHandlingMode mode)
 {
-    static uint8_t buf[4];
+    uint8_t buf[4];
     const int size = putChar(buf, c, mode);
     return static_cast<int>(port->putU8(buf, size));
 }

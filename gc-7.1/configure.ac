@@ -44,7 +44,7 @@ AC_PROG_INSTALL
 
 ## Mosh start
 gc_cflags="${gc_cflags} -fomit-frame-pointer -DUSE_I686_PREFETCH"
-AC_DEFINE(DONT_ADD_BYTE_AT_END) ## N.B. gc-7.1 has bug about this. Use patch by Hans Boehm
+##AC_DEFINE(DONT_ADD_BYTE_AT_END) ## N.B. gc-7.1 has bug about this. Use patch by Hans Boehm
 AC_DEFINE(LARGE_CONFIG)
 AC_DEFINE(NO_CLOCK)
 ## Mosh end
@@ -67,10 +67,19 @@ AC_ARG_ENABLE(threads,
 case "$host" in
  *-*-freebsd*)
    ;;
+ *-*-darwin*)
+   THREADS=posix
+   AC_MSG_RESULT([$THREADS])
+   ;;
+ *-*-linux*)
+   THREADS=posix
+   AC_MSG_RESULT([$THREADS])
+   ;;
  *)
    THREADS=no
    ;;
 esac
+
 ## MOSH end
 
 AC_ARG_ENABLE(parallel-mark,

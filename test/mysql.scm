@@ -4,8 +4,6 @@
         (mosh ffi)
         (mosh test))
 
-(test-begin "mysql")
-
 (define mysql (guard (c (#t #f)) (mysql-init)))
 
 (guard (con
@@ -113,5 +111,5 @@
 ;  (mysql-library-end)
   '())))
 
-(test-end)
+(test-results)
 )

@@ -38,7 +38,7 @@ namespace scheme {
 
     Object stringCopyEx(VM* theVM, int argc, const Object* argv);
     Object stringTosymbol(Object str);
-    Object format(const ucs4char* message, Object values);
+    Object format(const VM* theVM, const ucs4char* message, Object values);
     Object stringEx(VM* theVM, int argc, const Object* argv);
     Object makeStringEx(VM* theVM, int argc, const Object* argv);
     Object stringSetDEx(VM* theVM, int argc, const Object* argv);

@@ -44,7 +44,9 @@ class StandardOutputPort : public LineBufferedFileBinaryOutputPort
 {
 public:
     StandardOutputPort() : LineBufferedFileBinaryOutputPort(&File::STANDARD_OUT) {}
-    virtual ~StandardOutputPort() {}
+    virtual ~StandardOutputPort()
+    {
+    }
 
     ucs4string toString()
     {

@@ -27,7 +27,7 @@ libffitest.so.1.0: ffitest.c
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
 if DEVELOPER
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
 else
 bin_PROGRAMS = mosh
 endif
@@ -171,12 +171,16 @@ StandardInputPort.h \
 BlockBufferedFileBinaryOutputPort.h \
 BlockBufferedFileBinaryInputOutputPort.h \
 LineBufferedFileBinaryInputOutputPort.h \
+MultiVMProcedures.h MultiVMProcedures.cpp \
 OSCompatSocket.h OSCompatSocket.cpp \
+OSCompatThread.h OSCompatThread.cpp \
+VMFactory.cpp VMFactory.h \
 OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
 lib/match.ss \
 lib/lambda/wiki.ss    \
+lib/mosh/queue.ss    \
 lib/mosh/ffi.ss    \
 lib/mosh/dbi.ss    \
 lib/mosh/mysql.ss    \
@@ -188,6 +192,7 @@ lib/mosh/dbd/mysql.ss  \
 lib/mosh/test.ss   \
 lib/mosh/pp.ss     \
 lib/mosh/control.ss     \
+lib/mosh/concurrent.ss     \
 lib/mosh/config.ss \
 lib/mosh/cgi.ss  \
 lib/clos/core.ss  lib/clos/helpers.ss  lib/clos/introspection.ss  lib/clos/slot-access.ss  lib/clos/user.ss \
@@ -318,10 +323,14 @@ MAINTAINERCLEANFILES = $(GENERATED)
 #   (b) When we precompile system libraries, we want to control the start index of gensym.
 #       Since we should avoid index overlapping between pre-compile libraries and pre-compiled psyntax.
 #       So using environment variable MOSH_GENSYM_PREFIX, we control the prefix.
-update:
-	(find . -name "*.ss.fasl" | xargs rm) ; true
-	(find . -name "*.sls.fasl" | xargs rm) ; true
+
+# all fasl should be newer than *.ss and psyntax.h binary
+lib/mosh/queue.ss.mosh-fasl: $(mosh_core_libraries) psyntax.h
+	(find . -name "*.ss.mosh-fasl" | xargs rm) ; true
+	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
 	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
+
+update: lib/mosh/queue.ss.mosh-fasl
 
 # when you release comment out start
 if DEVELOPER
@@ -446,6 +455,7 @@ check: test
 test: ./mosh all-tests.scm update libffitest.so.1.0
 	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
+	./mosh test/mosh-test.scm
 	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
 	./mosh test/input-port.scm
@@ -466,6 +476,8 @@ test: ./mosh all-tests.scm update libffitest.so.1.0
 	./mosh test/socket.scm
 	./mosh test/match.scm
 	./mosh test/print.scm
+	./mosh test/concurrent.scm
+	./mosh test/concurrent-crash.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
@@ -546,8 +558,15 @@ test_getopt_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_getopt_SOURCES = getoptUTest.cpp TestingSignalHandler.cpp
 test_getopt_LDADD = $(TEST_LDADD_)
 
+TESTS += test_thread
+check_PROGRAMS += test_thread
+test_thread_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_thread_SOURCES = OSCompatThreadTest.cpp TestingSignalHandler.cpp
+test_thread_LDADD = $(TEST_LDADD_)
+
 
 
 install-data-hook :
-	MOSH_GENSYM_PREFIX=I @bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
+	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 

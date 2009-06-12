@@ -15,7 +15,6 @@
 (define (ppo obj)
   (print-object obj (current-output-port)))
 
-(test-begin "clos")
 ;; 'name is not set, so '()
 (test-null (slot-ref person1 'name))
 (test-null (get-name person1))
@@ -86,4 +85,4 @@
 (test-equal "<(collected moge)>" (work painter2 'moge))
 (test-equal "<(collected moge)>" (apply work painter2 '(moge)))
 
-(test-end)
+(test-results)

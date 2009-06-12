@@ -41,24 +41,21 @@
 
 using namespace scheme;
 
-Object NumberReader::parsed;
-TextualInputPort* NumberReader::in_;
-
-Object NumberReader::read(TextualInputPort* port, bool& errorOccured)
+Object NumberReaderContext::read(TextualInputPort* port, bool& errorOccured)
 {
     extern int number_yyparse ();
     MOSH_ASSERT(port);
-    in_ = port;
+    port_ = port;
     const bool isParseError = number_yyparse() == 1;
     if (isParseError) {
         errorOccured = true;
         return Object::Undef;
     } else {
-        return parsed;
+        return parsed_;
     }
 }
 
-Object NumberReader::read(const ucs4string& text, bool& isErrorOccured)
+Object NumberReaderContext::read(const ucs4string& text, bool& isErrorOccured)
 {
     return read(new StringTextualInputPort(text), isErrorOccured);
 }

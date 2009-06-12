@@ -35,6 +35,8 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Closure.h"
+#include "OSCompatThread.h"
+#include "EqHashTable.h"
 #include "VM.h"
 #include "StringProcedures.h"
 #include "TextualOutputPort.h"
@@ -49,9 +51,9 @@ Object Closure::sourceInfoString(VM* theVM)
         return "#<closure>";
     } else if (sourceInfo.isPair()) {
         if (sourceInfo.car().isPair()) {
-            return format(UC("~a :~a:~d"), Pair::list3(unGenSyms(sourceInfo.cdr()), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
+            return format(theVM, UC("~a :~a:~d"), Pair::list3(unGenSyms(sourceInfo.cdr()), sourceInfo.car().car(), sourceInfo.car().cdr().car()));
         } else {
-            return format(UC("~a : unknown location"), Pair::list1(unGenSyms(sourceInfo.cdr())));
+            return format(theVM, UC("~a : unknown location"), Pair::list1(unGenSyms(sourceInfo.cdr())));
         }
     } else {
         return "#<closure>";

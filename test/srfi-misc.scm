@@ -27,8 +27,6 @@
         (rnrs mutable-pairs)
         (mosh test))
 
-(test-begin "srfi misc")
-
 ;;;;;  SRFI-0   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (cond-expand
  (mosh
@@ -67,7 +65,7 @@
 (test-equal (string-concatenate '("ab" "cd")) "abcd")
 
 ;;;;;  SRFI-14   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(test-assert (char-set #\a #\b #\c))
+(test-true (char-set #\a #\b #\c))
 
 ;;;;;  SRFI-16   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test-true (let ()
@@ -194,7 +192,6 @@
 (check (+ 1 1) => 2)
 
 ;;;;;  SRFI-99   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(test-begin "srfi-99")
 (let ()
   (define :point
     (make-rtd 'point '#((mutable x) (mutable y))))
@@ -212,8 +209,7 @@
   (test-eqv 1 (point-x p1))
   (test-eqv 2 (point-y p1))
   (point-x-set! p1 5)
-  (test-eqv 5 (point-x p1))
-  (test-end))
+  (test-eqv 5 (point-x p1)))
 
 
-(test-end)
+(test-results)

@@ -34,6 +34,7 @@
 #include "Object-inl.h"
 #include "EqHashTable.h"
 #include "Vector.h"
+#include "OSCompatThread.h"
 #include "UtilityProcedures.h"
 
 using namespace scheme;

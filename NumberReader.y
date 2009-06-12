@@ -50,6 +50,7 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "ProcedureMacro.h"
+#include "MultiVMProcedures.h"
 
 using namespace scheme;
 extern int number_yylex();
@@ -98,8 +99,8 @@ static Object suffixToNumber(const ucs4string& text)
 %start top_level
 
 %%
-top_level : datum { NumberReader::parsed = $$; YYACCEPT; }
-          | END_OF_FILE { NumberReader::parsed = Object::Eof; YYACCEPT; }
+top_level : datum { currentVM()->numberReaderContext()->setParsed($$); YYACCEPT; }
+| END_OF_FILE { currentVM()->numberReaderContext()->setParsed(Object::Eof); YYACCEPT; }
 
 datum     : num2 | num8| num10 | num16;
 
@@ -382,8 +383,8 @@ naninf    : MY_NAN { $$ = Flonum::NOT_A_NUMBER; }
 extern ucs4char* token;
 int number_yyerror(char const *str)
 {
-    TextualInputPort* const port = Reader::port();
-    port->setError(format(UC("~a near [~a] at ~a:~d. "),
+  TextualInputPort* const port = currentVM()->readerContext()->port();
+    port->setError(format(NULL, UC("~a near [~a] at ~a:~d. "),
                           Pair::list4(str, Object::makeString(port->scanner()->currentToken()), port->toString(), Object::makeFixnum(port->getLineNo()))));
     return 0;
 }

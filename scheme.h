@@ -34,25 +34,16 @@
 
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
+#else
+#  error "config.h not found"
 #endif
 
-// #include <iostream>
-// #include <stdint.h>
-// #include <stdarg.h>
-// #include <string.h>
 #ifdef _WIN32
 #else
 #include <unistd.h>
 #endif
-// #include <assert.h>
 #include <errno.h>
 
-
-// #include "dirent.h"
-// #include <setjmp.h>
-// #include <sys/time.h>
-// #include <stdio.h>
-// #include <signal.h>
 #ifdef _WIN32
     typedef unsigned char uint8_t;
     typedef unsigned short uint16_t;
@@ -81,13 +72,19 @@
 #include <vector>
 #include <set>
 #ifdef USE_BOEHM_GC
-#define EXTEND_GC : public gc
-#include <gc_cpp.h>
-#include <gc_allocator.h>
-template <class T1, class T2>
-class gc_map : public std::map<T1, T2, std::less<T1>, gc_allocator<std::pair<const T1, T2> > >, public gc { };
-template <class T1>
-class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
+#  define EXTEND_GC : public gc
+   // Boehm GC 7.1 lacks this prototype.
+   // http://article.gmane.org/gmane.comp.programming.garbage-collection.boehmgc/2581/match=gc_dlopen
+   extern "C" {
+       void* GC_dlopen(const char* path, int mode);
+   }
+#  include <gc.h>
+#  include <gc_cpp.h>
+#  include <gc_allocator.h>
+   template <class T1, class T2>
+   class gc_map : public std::map<T1, T2, std::less<T1>, gc_allocator<std::pair<const T1, T2> > >, public gc { };
+   template <class T1>
+   class gc_vector : public std::vector<T1, gc_allocator<T1> >, public gc { };
 #else
 #define EXTEND_GC
 template <class T1, class T2>
@@ -97,9 +94,13 @@ template <class T1>
 class gc_vector : public std::vector<T1> {};
 #endif
 
-#define LOG1(fmt, a)       fprintf(stderr, "%s", format(UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);
-#define LOG2(fmt, a, b)    fprintf(stderr, "%s", format(UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);
-#define LOG3(fmt, a, b, c) fprintf(stderr, "%s", format(UC(fmt), L3(a, b, c)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG1(fmt, a)       fprintf(stderr, "%s", format(theVM, UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG2(fmt, a, b)    fprintf(stderr, "%s", format(theVM, UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG3(fmt, a, b, c) fprintf(stderr, "%s", format(theVM, UC(fmt), L3(a, b, c)).toString()->data().ascii_c_str());fflush(stderr);
+
+#define VM_LOG1(fmt, a)       fprintf(stderr, "%s", format(this, UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);
+#define VM_LOG2(fmt, a, b)    fprintf(stderr, "%s", format(this, UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);
+#define VM_LOG3(fmt, a, b, c) fprintf(stderr, "%s", format(this, UC(fmt), L3(a, b, c)).toString()->data().ascii_c_str());fflush(stderr);
 
 
 #ifdef DEBUG_VERSION
@@ -126,7 +127,7 @@ enum {
 typedef int32_t ucs4char; // use -1 for EOF
 typedef intptr_t fixedint;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 const ucs4char* UC(const char *str);
 #else
 #define UC_(x) L ## x
@@ -148,6 +149,7 @@ void* my_realloc(void *ptr, size_t oldSize, size_t newSize);
 void my_dont_free(void *ptr, size_t size);
 void mosh_init();
 
+
 namespace scheme {
 
 
@@ -158,6 +160,7 @@ typedef std::vector<Object, gc_allocator<Object> > ObjectVector;
 class Object;
 typedef std::vector<Object> ObjectVector;
 #endif
+
 
 //extern int strcmp99(const ucs4char *s1, const ucs4char *s2);
 struct ltstr EXTEND_GC
@@ -187,8 +190,8 @@ inline bool isInSize_t(int64_t size)
 */
 inline void moshMemcpy(void *dest, const void *src, int64_t size)
 {
-	MOSH_ASSERT(isInSize_t(size));
-	memcpy(dest, src, static_cast<size_t>(size));
+    MOSH_ASSERT(isInSize_t(size));
+    memcpy(dest, src, static_cast<size_t>(size));
 }
 
 #ifdef USE_BOEHM_GC
@@ -200,7 +203,7 @@ class gc_map2 : public std::map<const ucs4char* const, Object, ltstr, gc_allocat
 
 inline uint8_t* allocatePointerFreeU8Array(int64_t size)
 {
-	MOSH_ASSERT(scheme::isInSize_t(size));
+    MOSH_ASSERT(scheme::isInSize_t(size));
 #ifdef USE_BOEHM_GC
     return new(PointerFreeGC) uint8_t[static_cast<size_t>(size)];
 #else

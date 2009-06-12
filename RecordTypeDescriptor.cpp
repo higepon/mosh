@@ -102,7 +102,9 @@ bool RecordTypeDescriptor::isFieldMutable(int index) const
 
 bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd) const
 {
-    if (this == rtd) {
+//    if (this == rtd) {
+    // multiple vm need this!
+    if (name_ == rtd->name_) {
         return true;
     } else if (!parent_.isFalse()) {
         return parent_.toRecordTypeDescriptor()->isA(rtd);

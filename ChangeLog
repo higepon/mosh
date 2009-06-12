@@ -1,3 +1,128 @@
+2009-06-12  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/concurrent.ss: Added document.
+
+2009-06-11  higepon  <higepon@users.sourceforge.jp>
+
+        * Added one argument to spawn.
+
+2009-06-10  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompatThread.h : Conditional variables waitWithTimeout works.
+
+2009-06-09  higepon  <higepon@users.sourceforge.jp>
+
+        * test/concurrent-crash.ss : Added.
+
+2009-06-05  higepon  <higepon@users.sourceforge.jp>
+
+        * test/concurrent.ss : Added.
+
+2009-06-03  higepon  <higepon@users.sourceforge.jp>
+
+        * compiler.scm (pass3/$call): Fixed Issue 63.
+
+        * Rewrote whole (mosh test) for performance reason.
+
+        * Retry Issue 59.
+
+        * Changed fasl file extension from *.fasl to *.mosh-fasl.
+
+        * Makefile.am : Fixed the Issue 59.
+
+2009-06-01  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/xunit.ss (xunit): it works.
+
+2009-05-30  higepon  <higepon@users.sourceforge.jp>
+
+        * Fixed append. (append) => '().  Issue 62.
+
+        * example/echo-load.ss : OK this works.
+
+        * Reader.y : Now reader context becomes thread safe.
+
+        * COPYING: Fixed COPYING.
+
+2009-05-29  higepon  <higepon@users.sourceforge.jp>
+
+        * VMFactory.cpp : never close the standard ports.
+
+2009-05-28  higepon  <higepon@users.sourceforge.jp>
+
+        * example/process-pool-echo-server.ss : Added not working yet.
+
+        * Codec.cpp (putChar): Fixed thread unsafe buffer.
+
+        * VMFactory.cpp : Fixed a bug of stdio close problem.
+
+2009-05-27  higepon  <higepon@users.sourceforge.jp>
+
+        * example/multi-process-echo-server.ss : Added.
+
+        * First implementation of (mosh concurrent)
+
+2009-05-26  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/concurrent.ss: Added register and whereis procedure.
+
+        * VM.cpp : Fixed invalid share of CProcedure::returnCode.
+                 : Made getCProcedureName function VM instance method.
+
+2009-05-25  higepon  <higepon@users.sourceforge.jp>
+
+        * recevie with timeout works.
+
+        * Added recevie with pattern match.
+
+        * RecordProcedures.cpp : Fixed. generative rtds were global.
+
+2009-05-23  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/queue.ss: Added simple queue library.
+
+        * test/queue.scm: Added tests for queue.
+
+2009-05-22  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/concurrent.ss : Added.
+
+        * MultiVMProcedures.cpp : Added mutex things.
+
+        * VMFactory.cpp (create): Added.
+
+        * MultiVMProcedures.cpp : vm-join! works.
+
+2009-05-21  higepon  <higepon@users.sourceforge.jp>
+
+        * Added (make-condition-variable . name) (condition-variable-notify! c) etc.
+
+        * OSCompatThread.h : Added Condition variable class.
+
+        * Symbol.h (scheme): Fixed. Avoid from being called static destructor.
+
+2009-05-20  higepon  <higepon@users.sourceforge.jp>
+
+        * main.cpp : wait all threads.
+
+2009-05-19  higepon  <higepon@users.sourceforge.jp>
+
+        * scheme.h: Added prototype of GC_dlopen. (Boehm GC 7.1 lacks it).
+
+        * configure.ac: Added GC_XXX_THREADS.
+
+        * MultiVMProcedures.cpp : Added (make-vm thunk-sexp import-spec-sexp . name) procedure.
+
+2009-05-18  higepon  <higepon@users.sourceforge.jp>
+
+        * Added Mutex.
+
+        * OSCompatThread.h: Added basic functionality.
+
+        * OSCompatThreadTest.cpp : Added.
+
+        * OSCompatThread.h : Added for threads. Not yet working.
+
 2009-05-15  higepon  <higepon@users.sourceforge.jp>
 
         * TextualOutputPort.cpp : Refactoring display and putDatum using C++ function template.

@@ -77,6 +77,9 @@ class BinaryInputOutputPort;
 class TextualInputOutputPort;
 class File;
 class Socket;
+class Object;
+class ConditionVariable;
+class Mutex;
 
 enum {
     CONST_NIL     = 0,
@@ -172,6 +175,9 @@ public:
     bool equal(VM* theVM, Object o) const;
     bool eqv(VM* theVM, Object o) const;
 
+    static Object makeVM(VM* vm);
+    static Object makeConditionVariable(ConditionVariable* c);
+    static Object makeMutex(Mutex* m);
     static Object makeGloc(Object value);
     static Object makeSocket(const Socket* socket);
     static Object* makeObjectArray(int size);

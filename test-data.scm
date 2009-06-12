@@ -273,6 +273,7 @@
 (3 ((lambda (a b c d . e) c) 1 2 3 4))
 (4 ((lambda (a b c d . e) d) 1 2 3 4))
 ((1 2 3 4) (append '(1 2) '(3 4)))
+(() (append))
 
 (3 (begin (define x 3) x))
 ((1 2 3) (begin (define (hoge . a) a) (hoge 1 2 3)))

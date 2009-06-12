@@ -56,9 +56,9 @@ public:
     virtual void putString(String* str);
     virtual void putString(const ucs4string& s);
     virtual void putString(const char* s);
-    virtual void putDatum(Object o);
-    virtual void display(Object o);
-    virtual void format(const ucs4string& fmt, Object args);
+    virtual void putDatum(const VM* theVM, Object o);
+    virtual void display(const VM* theVM, Object o);
+    virtual void format(const VM* theVM, const ucs4string& fmt, Object args);
     virtual bool isErrorOccured() const;
     virtual Object errorMessage() const;
     virtual Object irritants() const;
@@ -69,7 +69,7 @@ public:
 
 protected:
     bool writeAbbreviated(Object obj);
-    template<bool isHumanReadable> void print(Object o);
+    template<bool isHumanReadable> void print(const VM* theVM, Object o);
 
     bool isErrorOccured_;
     Object errorMessage_;

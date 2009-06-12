@@ -34,6 +34,7 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "GenericHashTable.h"
+#include "EqHashTable.h"
 #include "EqvHashTable.h"
 #include "VM.h"
 #include "UtilityProcedures.h"

@@ -609,7 +609,7 @@ Object scheme::putDatumEx(VM* theVM, int argc, const Object* argv)
     argumentAsTextualOutputPort(0, textualOutputPort);
     checkPortIsOpen(textualOutputPort, argv[0]);
     TRY_WITHOUT_DSTR
-        textualOutputPort->putDatum(argv[1]);
+        textualOutputPort->putDatum(theVM, argv[1]);
         return Object::Undef;
     CATCH(ioError)
         ioError.arg1 = argv[0];
@@ -757,13 +757,13 @@ Object scheme::sysDisplayEx(VM* theVM, int argc, const Object* argv)
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
-            out->display(obj);
+            out->display(theVM, obj);
             // todo
             out->flush();
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
             checkPortIsOpen(textualOutputPort, argv[1]);
-            textualOutputPort->display(obj);
+            textualOutputPort->display(theVM, obj);
             // todo
             textualOutputPort->flush();
         }
@@ -983,7 +983,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             for (int i = argc - 1; i >= 2; i--) {
                 lst = Object::cons(argv[i], lst);
             }
-            textualOutputPort->format(formatString->data(), lst);
+            textualOutputPort->format(theVM, formatString->data(), lst);
             if (textualOutputPort->isErrorOccured()) {
                 callAssertionViolationAfter(theVM, procedureName,
                                             textualOutputPort->errorMessage(),
@@ -1001,7 +1001,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             }
             TextualOutputPort* const outputPort = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(outputPort, theVM->currentOutputPort());
-            outputPort->format(formatString->data(), lst);
+            outputPort->format(theVM, formatString->data(), lst);
             if (outputPort->isErrorOccured()) {
                 callAssertionViolationAfter(theVM, procedureName,
                                             outputPort->errorMessage(),
@@ -1020,7 +1020,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
                 lst = Object::cons(argv[i], lst);
             }
 
-            p->format(formatString->data(), lst);
+            p->format(theVM, formatString->data(), lst);
             if (p->isErrorOccured()) {
                 callAssertionViolationAfter(theVM, procedureName,
                                             p->errorMessage(),
@@ -1036,7 +1036,7 @@ Object scheme::formatEx(VM* theVM, int argc, const Object* argv)
             for (int i = argc - 1; i >= 1; i--) {
                 lst = Object::cons(argv[i], lst);
             }
-            p->format(arg1.toString()->data(), lst);
+            p->format(theVM, arg1.toString()->data(), lst);
             if (p->isErrorOccured()) {
                 callAssertionViolationAfter(theVM, procedureName,
                                             p->errorMessage(),
@@ -1065,12 +1065,12 @@ Object scheme::writeEx(VM* theVM, int argc, const Object* argv)
         if (1 == argc) {
             TextualOutputPort* const out = theVM->currentOutputPort().toTextualOutputPort();
             checkPortIsOpen(out, theVM->currentOutputPort());
-            out->putDatum(obj);
+            out->putDatum(theVM, obj);
 
         } else {
             argumentAsTextualOutputPort(1, textualOutputPort);
             checkPortIsOpen(textualOutputPort, argv[1]);
-            textualOutputPort->putDatum(obj);
+            textualOutputPort->putDatum(theVM, obj);
         }
         return Object::Undef;
     CATCH(ioError)
@@ -1608,7 +1608,6 @@ Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("open-input-file");
     checkArgumentLength(1);
-
     argumentAsString(0, path);
 
     Transcoder* transcoder = nativeTranscoder();

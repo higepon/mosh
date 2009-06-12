@@ -43,6 +43,7 @@
 #include "NumberReader.h"
 #include "NumberReader.tab.hpp"
 #include "VM.h"
+#include "MultiVMProcedures.h"
 
 #define YYCTYPE ucs4char
 #define YYCURSOR cursor_
@@ -76,7 +77,7 @@ NumberScanner::~NumberScanner()
 
 void NumberScanner::fill(int n)
 {
-    TextualInputPort* const inputPort = NumberReader::port();
+    TextualInputPort* const inputPort = currentVM()->numberReaderContext()->port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
     if (buffer_ == NULL) {
@@ -122,7 +123,7 @@ void NumberScanner::fill(int n)
 
 int number_yylex()
 {
-    return NumberReader::port()->numberScanner()->scan();
+    return currentVM()->numberReaderContext()->port()->numberScanner()->scan();
 }
 
 int NumberScanner::scan()

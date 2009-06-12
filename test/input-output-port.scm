@@ -33,7 +33,6 @@
         (mosh process)
         (mosh shell)
         (mosh test))
-(test-begin "input/output")
 
 ;; N.B rm and cp should be written in pure scheme
 (define (rm file-name)
@@ -569,4 +568,4 @@
       (test-equal #\! (get-char p))
       (close-port p))
 
-(test-end)
+(test-results)

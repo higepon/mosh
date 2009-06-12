@@ -37,41 +37,32 @@
 #include <sys/resource.h>
 #endif
 
-
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "scheme.h"
-#include "Vector.h"
 #include "VM.h"
-#include "Closure.h"
-#include "Symbol.h"
-#include "EqHashTable.h"
-#include "Gloc.h"
-#include "VM-inl.h"
-#include "ErrorProcedures.h"
-#include "BinaryOutputPort.h"
-#include "TextualOutputPort.h"
-#include "StandardOutputPort.h"
-#include "StandardErrorPort.h"
-#include "StandardInputPort.h"
-#include "TextualInputPort.h"
-#include "UTF8Codec.h"
-#include "Transcoder.h"
 #include "SString.h"
 #include "Symbol.h"
-#include "EqHashTable.h"
 #include "Record.h"
-#include "Equivalent.h"
-#include "Ratnum.h"
-#include "Flonum.h"
 #include "getoptU.h"
 #include "OSCompat.h"
+#include "OSCompatThread.h"
+#include "MultiVMProcedures.h"
+#include "VMFactory.h"
 
+#ifdef __CYGWIN__ //gcc3?
+#include "Gloc.h"
+#include "Closure.h"
+#include "VM-inl.h"
+#endif
+bool debug_on;
 using namespace scheme;
 
 static VM* theVM;
+
+
 
 Object argsToList(int argc, int optind, ucs4char** argvU)
 {
@@ -127,11 +118,13 @@ void signal_handler(int signo)
 
 int main(int argc, char *argv[])
 {
+    // call this before any allocation.
+    mosh_init();
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
     bool isCompileString = false;
-    bool isProfiler      = false;
+    bool isProfilerOn      = false;
     bool isR6RSBatchMode = true;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     ucs4char* initFile = NULL;
@@ -169,7 +162,7 @@ int main(int argc, char *argv[])
             isTestOption = true;
             break;
         case 'p':
-            isProfiler = true;
+            isProfilerOn = true;
             break;
         case 'c':
             isCompileString = true;
@@ -187,13 +180,12 @@ int main(int argc, char *argv[])
         }
     }
 
-    if (isProfiler && argc == optindU) {
+    if (isProfilerOn && argc == optindU) {
         fprintf(stderr, "[file] not specified\n");
         showUsage();
         exit(EXIT_FAILURE);
     }
 
-    mosh_init();
 
     // for Shell mode.
     // VM(=parent) ignores SIGINT, but child use default handler. (See %fork)
@@ -203,20 +195,21 @@ int main(int argc, char *argv[])
     signal(SIGPIPE, SIG_IGN);
 #endif
 
+    VMFactory factory;
+    const int INITIAL_STACK_SIZE = 10000;
 
-    Transcoder* transcoder = nativeConsoleTranscoder();
-    Transcoder* native = nativeTranscoder();
-    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), File::STANDARD_IN.isUTF16Console() ? transcoder : native);
-    const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
-    const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort(), transcoder);
+    // N.B.
+    // We store the VM instance in thread specific storage.
+    // Used for storing yylex and re2c which has only global interfaces.
+    theVM = factory.create(INITIAL_STACK_SIZE, isProfilerOn);
 
-    theVM = new VM(10000, outPort, errorPort, inPort, isProfiler);
-    theVM->registerPort(outPort);
-    theVM->loadCompiler();
+    if (!setCurrentVM(theVM)) {
+        fprintf(stderr, "fatal vm specific failure\n");
+        exit(-1);
+    }
+
+
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
-//     if (initFile != NULL) {
-//         theVM->load(Object::makeString(initFile).toString()->data());
-//     }
 
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
@@ -245,12 +238,17 @@ int main(int argc, char *argv[])
         showUsage();
     }
 #ifdef ENABLE_PROFILER
-    if (isProfiler) {
+    if (isProfilerOn) {
         const Object result = theVM->getProfileResult();
         theVM->callClosureByName(Symbol::intern(UC("show-profile")), result);
     }
 #endif
-
     theVM->flushAllPorts();
+
+    // N.B.
+    // static destructor will be called.
+    // this means that static member *can be freed*.
+    // Don't rely on static initializer and destructor on multithreads.
+    // See Symbol::symbols for more detailed information.
     exit(EXIT_SUCCESS);
 }

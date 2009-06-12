@@ -60,6 +60,9 @@
 #include "VM-inl.h"
 #include "BlockBufferedFileBinaryOutputPort.h"
 #include "BufferedFileBinaryInputPort.h"
+#include "OSCompatThread.h"
+#include "VMFactory.h"
+#include "MultiVMProcedures.h"
 
 bool scheme::portIsClosed = false;
 
@@ -67,47 +70,14 @@ using namespace scheme;
 
 class PortTest : public testing::Test {
 protected:
+    VM* theVM_;
     virtual void SetUp() {
         mosh_init();
+        VMFactory factory;
+        theVM_ = factory.create(1000, false);
+        setCurrentVM(theVM_);
     }
 };
-
-// We are not sure when auto close.
-
-// TEST_F(PortTest, BinaryInputPortAutoClose) {
-//     portIsClosed = false;
-//     EXPECT_FALSE(::portIsClosed);
-//     volatile BinaryInputPort* port = new TestingFileBinaryInputPort(UC("/tmp/hoge.log"));
-//     EXPECT_FALSE(::portIsClosed);
-//     port = NULL; // port is no more referenced!
-
-//     // some tough work that invoke gc().
-//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-//     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-//     Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
-//     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-//     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-//     vm->loadCompiler();
-
-//     // closed!
-//     EXPECT_TRUE(::portIsClosed);
-// }
-
-
-// TEST_F(PortTest, BinaryOutputPortAutoClose) {
-//     portIsClosed = false;
-//     EXPECT_FALSE(::portIsClosed);
-//     volatile BinaryOutputPort* port = new TestingFileBinaryOutputPort(UC("/tmp/hoge.log"));
-//     EXPECT_FALSE(::portIsClosed);
-//     port = NULL;
-//     Transcoder* transcoder = new Transcoder(new UTF8Codec, Transcoder::LF, Transcoder::IGNORE_ERROR);
-//     Object inPort    = Object::makeTextualInputPort(new FileBinaryInputPort(fileno(stdin)), transcoder);
-//     Object outPort   = Object::makeTextualOutputPort(new FileBinaryOutputPort(fileno(stdout)), transcoder);
-//     Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
-//     VM* vm = new VM(10000, outPort, errorPort, inPort, false /* isProfiler */);
-//     vm->loadCompiler();
-//     EXPECT_TRUE(::portIsClosed);
-// }
 
 TEST_F(PortTest, PortPredicate) {
     const Object stringPort = Object::makeStringOutputPort();

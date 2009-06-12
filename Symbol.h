@@ -44,7 +44,13 @@ class Symbol EXTEND_GC
 private:
     const ucs4char* const name_;
     ucs4char* savedName_;
-    static Symbols symbols;
+
+    // N.B.
+    // Once this is static Symbols symbols.
+    // But this causes crash on multi thread.
+    // If main thread exit earlier than sub thread.
+    // main thread's exit() calls static destructor and frees symbols.
+    static Symbols* symbols;
 
 public:
     Symbol(const ucs4char* name) : name_(name)
@@ -58,11 +64,11 @@ public:
     const ucs4char* c_str();
     static Object intern(const ucs4char* name)
     {
-        Symbols::const_iterator it = symbols.find(name);
-        if (it == symbols.end()) {
+        Symbols::const_iterator it = (*symbols).find(name);
+        if (it == (*symbols).end()) {
             const Object o = Object::makeSymbol(name);
 //            symbols.insert(std::pair<const ucs4char*, Object>(name, o));
-            symbols[name] = o;
+            (*symbols)[name] = o;
             return o;
         } else {
             return (*it).second;
@@ -75,7 +81,7 @@ public:
     }
     static Object add(const ucs4char* name)
     {
-        return (symbols[name] = Object::makeSymbol(name));
+        return ((*symbols)[name] = Object::makeSymbol(name));
     }
 
     static Object QUOTE;

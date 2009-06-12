@@ -57,6 +57,7 @@
 #include "BinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "OSCompatSocket.h"
+#include "OSCompatThread.h"
 
 #ifdef _WIN32
     #define snprintf _snprintf
@@ -129,7 +130,7 @@ Object TextualOutputPort::irritants() const
     return irritants_;
 }
 
-void TextualOutputPort::format(const ucs4string& fmt, Object args)
+void TextualOutputPort::format(const VM* theVM, const ucs4string& fmt, Object args)
 {
     ucs4string buffer = UC("");
     for (uint32_t i = 0; i < fmt.size(); i++) {
@@ -141,10 +142,10 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
             }
             switch (fmt[i]) {
             case '~':
-                display(Object::makeChar('~'));
+                display(theVM, Object::makeChar('~'));
                 break;
             case '%':
-                display(Object::makeChar('\n'));
+                display(theVM, Object::makeChar('\n'));
                 break;
             case 'a':
             case 'A':
@@ -152,7 +153,7 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
             case 'D':
             {
                 if (args.isPair()) {
-                    display(args.car());
+                    display(theVM, args.car());
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
@@ -166,7 +167,7 @@ void TextualOutputPort::format(const ucs4string& fmt, Object args)
             case 'S':
             {
                 if (args.isPair()) {
-                    putDatum(args.car());
+                    putDatum(theVM, args.car());
                     args = args.cdr();
                 } else {
                     isErrorOccured_ = true;
@@ -209,25 +210,28 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
         } else if (obj == Symbol::QUASIQUOTE || obj == Symbol::QUASIQUOTE_B) {
             putChar('`');
             return true;
-        } else if (obj == Symbol::SYNTAX || obj == Symbol::SYNTAX_B) {
-            putString(UC("#\'"));
-            return true;
-        } else if (obj == Symbol::UNSYNTAX || obj == Symbol::UNSYNTAX_B) {
-            putString(UC("#,"));
-            return true;
-        } else if (obj == Symbol::UNSYNTAX_SPLICING || obj == Symbol::UNSYNTAX_SPLICING_B) {
-            putString("#,@");
-            return true;
-        } else if (obj == Symbol::QUASISYNTAX || obj == Symbol::QUASISYNTAX_B) {
-            putString(UC("#`"));
-            return true;
         }
+
+        // Gauche Can't read this! (psyntax)
+//         } else if (obj == Symbol::SYNTAX || obj == Symbol::SYNTAX_B) {
+//             putString(UC("#\'"));
+//             return true;
+//         } else if (obj == Symbol::UNSYNTAX || obj == Symbol::UNSYNTAX_B) {
+//             putString(UC("#,"));
+//             return true;
+//         } else if (obj == Symbol::UNSYNTAX_SPLICING || obj == Symbol::UNSYNTAX_SPLICING_B) {
+//             putString("#,@");
+//             return true;
+//         } else if (obj == Symbol::QUASISYNTAX || obj == Symbol::QUASISYNTAX_B) {
+//             putString(UC("#`"));
+//             return true;
+//         }
 
     }
     return false;
 }
 
-template<bool isHumanReadable> void TextualOutputPort::print(Object o)
+template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o)
 {
     if (o.isTrue()) {
         putString(UC("#t"));
@@ -244,12 +248,12 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
     } else if (o.isCallable()) {
         putString(UC("callable"));
     } else if (o.isFixnum()) {
-        static char buf[32];
+        char buf[32];
         snprintf(buf, 32, "%ld", (long)o.toFixnum());
         putString(buf);
     } else if (o.isFlonum()) {
         Flonum* const flonum = o.toFlonum();
-        static char buf[512];
+        char buf[512];
         if (flonum->isNan()) {
             putString(UC("+nan.0"));
         } else if (flonum->isInfinite()) {
@@ -266,11 +270,11 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
             putString(buf);
         }
     } else if (o.isInstruction()) {
-        static char buf[32];
+        char buf[32];
         snprintf(buf, 32, "[insn %d]", o.toInstruction());
         putString(buf);
     } else if (o.isCompilerInstruction()) {
-        static char buf[32];
+        char buf[32];
         snprintf(buf, 32, "[comp:%d]", o.toCompilerInstruction());
         putString(buf);
     } else if (o.isChar()) {
@@ -391,14 +395,14 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
                 if (e.car() == Symbol::UNQUOTE) {
                     if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
                         putString(". ,");
-                        print<isHumanReadable>(e.cdr().car());
+                        print<isHumanReadable>(theVM, e.cdr().car());
                         break;
                     }
                 }
-                print<isHumanReadable>(e.car());
+                print<isHumanReadable>(theVM, e.car());
             } else {
                 putString(". ");
-                print<isHumanReadable>(e);
+                print<isHumanReadable>(theVM, e);
                 break;
             }
         }
@@ -410,7 +414,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
         Vector* v = o.toVector();
         putString(UC("#("));
         for (int i = 0; i < v->length(); i++) {
-            print<isHumanReadable>(v->ref(i));
+            print<isHumanReadable>(theVM, v->ref(i));
             if (i != v->length() - 1) putChar(' ');
         }
         putString(UC(")"));
@@ -455,12 +459,18 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
         putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        print<isHumanReadable>(Object::makeFixnum(o.val));
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isCProcedure()) {
-        putString(UC("#<subr "));
-        print<isHumanReadable>(getCProcedureName(o));
-        putString(UC(">"));
+
+        // Reader.y doesn't have VM instance.
+        if (theVM != NULL) {
+            putString(UC("#<subr "));
+            print<isHumanReadable>(theVM, theVM->getCProcedureName(o));
+            putString(UC(">"));
+        } else {
+            putString(UC("#<subr>"));
+        }
     } else if (o.isByteVector()) {
         ByteVector* const byteVector = o.toByteVector();
         const int length = byteVector->length();
@@ -469,7 +479,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
             if (i != 0) {
                 putString(" ");
             }
-            print<isHumanReadable>(Object::makeFixnum(byteVector->u8Ref(i)));
+            print<isHumanReadable>(theVM, Object::makeFixnum(byteVector->u8Ref(i)));
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -501,13 +511,13 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
             if (it != conditions.begin()) {
                 putString(UC(" "));
             }
-            print<isHumanReadable>(*it);
+            print<isHumanReadable>(theVM, *it);
         }
         putString(UC(">"));
     } else if (o.isRecord()) {
         Record* const record = o.toRecord();
         putString(UC("#<record "));
-        print<isHumanReadable>(record->recordTypeDescriptor()->name());
+        print<isHumanReadable>(theVM, record->recordTypeDescriptor()->name());
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             print<isHumanReadable>(record->fieldAt(i));
 //             putString(UC(" "));
@@ -523,32 +533,38 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
         putString(o.toRatnum()->toString());
     } else if (o.isBignum()) {
         putString(o.toBignum()->toString());
+    } else if (o.isVM()) {
+        putString(o.toVM()->toString());
+    } else if (o.isConditionVariable()) {
+        putString(o.toConditionVariable()->toString());
+    } else if (o.isMutex()) {
+        putString(UC("#<mutex>"));
     } else if (o.isCompnum()) {
         Compnum* const c = o.toCompnum();
         const Object real = c->real();
         const Object imag = c->imag();
         if (!Arithmetic::isExactZero(real)) {
-            print<isHumanReadable>(real);
+            print<isHumanReadable>(theVM, real);
         }
         if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
             !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
         }
-        print<isHumanReadable>(imag);
+        print<isHumanReadable>(theVM, imag);
         putString(UC("i"));
     } else if (o.isCodeBuilder()) {
         putString(UC("<code-builder "));
-        print<isHumanReadable>(Object::makeFixnum(o.val));
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val));
         putString(UC(">"));
     } else if (o.isTranscoder()) {
         Transcoder* transcoder = o.toTranscoder();
         putString(UC("<transcoder codec="));
-        print<isHumanReadable>(transcoder->codec());
+        print<isHumanReadable>(theVM, transcoder->codec());
         putString(UC(", eol-style="));
-        print<isHumanReadable>(transcoder->eolStyleSymbol());
+        print<isHumanReadable>(theVM, transcoder->eolStyleSymbol());
         putString(UC(", error-handling-mode="));
-        print<isHumanReadable>(transcoder->errorHandlingModeSymbol());
+        print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol());
         putString(UC(">"));
 
     } else {
@@ -556,12 +572,12 @@ template<bool isHumanReadable> void TextualOutputPort::print(Object o)
     }
 }
 
-void TextualOutputPort::display(Object o)
+void TextualOutputPort::display(const VM* theVM, Object o)
 {
-    print<true>(o);
+    print<true>(theVM, o);
 }
 
-void TextualOutputPort::putDatum(Object o)
+void TextualOutputPort::putDatum(const VM* theVM, Object o)
 {
-    print<false>(o);
+    print<false>(theVM, o);
 }

@@ -35,6 +35,7 @@
 #include "scheme.h"
 #include <setjmp.h>
 #include "Instruction.h"
+#include "EqHashTable.h"
 
 namespace scheme {
 
@@ -66,7 +67,7 @@ typedef gc_vector<Object> Ports;
 #ifdef DEBUG_VERSION
 #define VM_ASSERT(condition) { if (!(condition)) { \
             fprintf(stderr, "*** ASSERT failure %s:%d: %s\n", __FILE__, __LINE__, #condition); \
-            LOG2("    dc_ = ~a\n    cl_=~a\n", \
+            VM_LOG2("    dc_ = ~a\n    cl_=~a\n", \
                  dc_.toClosure()->sourceInfoString(this), \
                  cl_.toClosure()->sourceInfoString(this)); \
                  ::exit(-1);}}
@@ -76,7 +77,9 @@ typedef gc_vector<Object> Ports;
 #endif
 
 class TextualOutputPort;
-Object getCProcedureName(Object proc);
+class Thread;
+class ReaderContext;
+class NumberReaderContext;
 
 class VM EXTEND_GC
 {
@@ -84,12 +87,30 @@ public:
     VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false);
     virtual ~VM();
 
+    bool isMainThread() const
+    {
+        return NULL == thread_;
+    }
+
+    ucs4string toString() const
+    {
+        ucs4string ret = UC("#<vm ");
+        ret += name_;
+        char buf[32];
+        snprintf(buf, sizeof(buf), " %lx", (uintptr_t)this);
+        ret += ucs4string::from_c_str(buf);
+        ret += UC(">");
+        return ret;
+    }
+    void setName(const ucs4string& name) { name_ = name; }
     Object getLastError() const { return errorObj_; }
     void loadCompiler();
     void dumpCompiledCode(Object code) const;
     void printStack() const;
     void copyJmpBuf(jmp_buf dst, jmp_buf src);
     void collectProfile();
+    void setThread(Thread* thread);
+    Thread* thread();
 
     Object values(int num, const Object* v);
     Object values2(Object obj1, Object obj2);
@@ -129,7 +150,7 @@ public:
     Object getTopLevelGlobalValue(Object id);
     Object getTopLevelGlobalValueOrFalse(Object id);
     bool isR6RSMode() const;
-    void activateR6RSMode(bool isDebugExpand);
+    Object activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
@@ -145,9 +166,16 @@ public:
     void countCall(Object proc);
 #endif
     Object getClosureName(Object closure);
+    Object getCProcedureName(Object proc) const;
     void registerPort(Object obj);
     void unregisterPort(Object obj);
     virtual void flushAllPorts();
+
+    Object findGenerativeRtd(Object uid);
+    void addGenerativeRtd(Object uid, Object rtd);
+
+    ReaderContext* readerContext() { return readerContext_; }
+    NumberReaderContext* numberReaderContext() { return numberReaderContext_; }
 
 protected:
     virtual int exit(int status)
@@ -211,6 +239,43 @@ protected:
     jmp_buf returnPoint_;
     bool isR6RSMode_;
     Ports activePorts_;
+    ucs4string name_;
+    Thread* thread_;
+    ObjectMap generativeRtds_;
+    Object* cProcs_;
+
+    // on the fly instructions array.
+    Object closureForEvaluate_;
+    Object closureForApply_;
+
+    Object* applyCodeForCallClosure0_;
+    int applyCodeForCallClosure0Length_;
+
+    Object* applyCodeForCallClosure1_;
+    int applyCodeForCallClosure1Length_;
+
+    Object* applyCodeForCallClosure2_;
+    int applyCodeForCallClosure2Length_;
+
+    Object* applyCodeForCallClosure3_;
+    int applyCodeForCallClosure3Length_;
+
+    Object* callCodeForSetAfterTrigger0_;
+    int callCodeForSetAfterTrigger0Length_;
+
+    Object* callCodeForSetAfterTrigger1_;
+    int callCodeForSetAfterTrigger1Length_;
+
+    Object* applyCodeForApplyClosure_;
+    int applyCodeForApplyClosureLength_;
+
+    Object* applyCodeForCallClosureByName_;
+    int applyCodeForCallClosureByNameLength_;
+
+    Object* callCode_;
+    int callCodeLength_;
+    ReaderContext* readerContext_;
+    NumberReaderContext* numberReaderContext_;
 };
 
 } // namespace scheme

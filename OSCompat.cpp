@@ -285,12 +285,20 @@ bool File::dup(File& target)
 
 bool File::close()
 {
+    if (desc_ == getHandle(0) ||
+        desc_ == getHandle(1) ||
+        desc_ == getHandle(2)) {
+        // we never close standard handles.
+        return true;
+    }
+
     if (isOpen()) {
 #ifdef _WIN32
         const bool isOK = CloseHandle(desc_) != 0;
 #else
         const bool isOK = ::close(desc_) != 0;
 #endif
+
         setLastError();
         desc_ = INVALID_HANDLE_VALUE;
         return isOK;

@@ -5,8 +5,6 @@
         (mosh shell)
         (mosh shell repl))
 
-(test-begin "shell")
-
 (unless (string=? (host-os) "win32")
   (display "IN")
   (flush-output-port (current-output-port))
@@ -24,4 +22,4 @@
 
 ))
 
-(test-end)
+(test-results)

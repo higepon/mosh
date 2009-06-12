@@ -37,35 +37,32 @@
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"
 #include "Reader.h"
+#include "EqHashTable.h"
 #include "ProcedureMacro.h"
 #include "Scanner.h"
 
 using namespace scheme;
 
-Object Reader::parsed;
-TextualInputPort* Reader::in_;
-
-Object Reader::read(TextualInputPort* port, bool& errorOccured)
+Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
 {
     extern int yyparse ();
     MOSH_ASSERT(port);
-    in_ = port;
+    port_ = port;
     for (;;) {
         const bool isParseError = yyparse() == 1;
         port->scanner()->emptyBuffer();
-//        LOG1("parsed=~a\n", parsed);
         if (isParseError) {
             errorOccured = true;
             return Object::Undef;
         }
         // undef means #; ignored datum
-        if (!parsed.isUndef()) {
-            return parsed;
+        if (!parsed_.isUndef()) {
+            return parsed_;
         }
     }
 }
 
-ucs4string Reader::readSymbol(const ucs4string& s)
+ucs4string ReaderHelper::readSymbol(const ucs4string& s)
 {
     ucs4string ret;
     for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {
@@ -111,7 +108,7 @@ ucs4string Reader::readSymbol(const ucs4string& s)
     return ret;
 }
 
-ucs4string Reader::readString(const ucs4string& s)
+ucs4string ReaderHelper::readString(const ucs4string& s)
 {
     ucs4string ret;
     for (ucs4string::const_iterator it = s.begin(); it != s.end(); ++it) {

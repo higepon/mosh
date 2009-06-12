@@ -37,20 +37,37 @@
 
 namespace scheme {
 
-    Object readOld(TextualInputPort* port, bool& errorOccured);
-    Object readNumber(const ucs4string& text, bool& errorOccured);
-    Object read(TextualInputPort* port, bool& errorOccured);
-
-    class Reader EXTEND_GC
+    class ReaderContext EXTEND_GC
     {
     public:
-        static Object read(TextualInputPort* port, bool& isErrorOccured);
+        Object read(TextualInputPort* port, bool& isErrorOccured);
+        TextualInputPort* port()
+        {
+            MOSH_ASSERT(port_ != NULL);
+            return port_;
+        }
+        void setPort(TextualInputPort* port)
+        {
+            port_ = port;
+        }
+        void setParsed(Object parsed)
+        {
+            parsed_ = parsed;
+        }
+        Object parsed()
+        {
+            return parsed_;
+        }
+    private:
+        Object parsed_;
+        TextualInputPort* port_;
+    };
+
+    class ReaderHelper EXTEND_GC
+    {
+    public:
         static ucs4string readString(const ucs4string& s);
         static ucs4string readSymbol(const ucs4string& s);
-        static TextualInputPort* port() { return in_; }
-        static Object parsed;
-    private:
-        static TextualInputPort* in_;
     };
 };
 

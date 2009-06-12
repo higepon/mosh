@@ -9,7 +9,7 @@
     (syntax-case x ()
       [(_ expected expr write-proc)
        (regexp? (syntax->datum #'expected))
-       #'(test-assert (expected (call-with-values open-string-output-port (lambda (port proc) (write-proc expr port) (proc)))))]
+       #'(test-true (expected (call-with-values open-string-output-port (lambda (port proc) (write-proc expr port) (proc)))))]
       [(_ expected expr write-proc)
        #'(test-equal expected (call-with-values open-string-output-port (lambda (port proc) (write-proc expr port) (proc))))])))
 
@@ -28,7 +28,6 @@
            (test-print* more ...))]
       [(_) #'#f])))
 
-(test-begin "print object")
 
 (test-print* ['(a b) "(a b)"]
              ['(a . b) "(a . b)"]
@@ -73,14 +72,14 @@
              ['(UNQUOTE 3) ",3"]
              ['(unquote-splicing 3) ",@3"]
              ['(UNQUOTE-SPLICING 3) ",@3"]
-             ['(syntax a) "#'a"]
-             ['(SYNTAX a) "#'a"]
-             ['(quasisyntax 3) "#`3"]
-             ['(QUASISYNTAX 3) "#`3"]
-             ['(unsyntax a) "#,a"]
-             ['(UNSYNTAX a) "#,a"]
-             ['(unsyntax-splicing a) "#,@a"]
-             ['(UNSYNTAX-SPLICING a) "#,@a"]
+;;              ['(syntax a) "#'a"]
+;;              ['(SYNTAX a) "#'a"]
+;;              ['(quasisyntax 3) "#`3"]
+;;              ['(QUASISYNTAX 3) "#`3"]
+;;              ['(unsyntax a) "#,a"]
+;;              ['(UNSYNTAX a) "#,a"]
+;;              ['(unsyntax-splicing a) "#,@a"]
+;;              ['(UNSYNTAX-SPLICING a) "#,@a"]
              [(eof-object) "#<eof-object>" "#<eof-object>" "#[eof-object]"]
              [(condition '()) "#<compound-condition ()>" "#<compound-condition ()>" "#[condition]"]
              [(make-record-type-descriptor 'hoge #f #f #f #f '#(a b c)) "#<record-type-descriptor>" "#<record-type-descriptor>" "#[record-type-descriptor]"]
@@ -89,4 +88,4 @@
 )
 
 
-(test-end)
+(test-results)

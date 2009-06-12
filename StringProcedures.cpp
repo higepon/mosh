@@ -42,17 +42,18 @@
 #include "TextualOutputPort.h"
 #include "StringTextualOutputPort.h"
 #include "NumberReader.h"
+#include "MultiVMProcedures.h"
 
 using namespace scheme;
 
 static Object makeList(gc_vector<ucs4string>& v, gc_vector<ucs4string>::size_type i);
 
-Object scheme::format(const ucs4char* message, Object values)
+Object scheme::format(const VM* theVM, const ucs4char* message, Object values)
 {
     MOSH_ASSERT(values.isNil() || values.isPair());
     const Object sport = Object::makeStringOutputPort();
     TextualOutputPort* const port = sport.toTextualOutputPort();
-    port->format(message, values);
+    port->format(theVM, message, values);
     StringTextualOutputPort* p = reinterpret_cast<StringTextualOutputPort*>(port);
     return Object::makeString(p->getString());
 }
@@ -175,7 +176,7 @@ Object scheme::stringTosymbolEx(VM* theVM, int argc, const Object* argv)
 Object stringToNumber(const ucs4string& text)
 {
     bool isErrorOccured = false;
-    const Object number = NumberReader::read(text, isErrorOccured);
+    const Object number = currentVM()->numberReaderContext()->read(text, isErrorOccured);
 
     if (isErrorOccured) {
         return Object::False;

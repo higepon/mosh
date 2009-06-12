@@ -37,10 +37,11 @@
 #include "ucs4string.h"
 #include "ScannerHelper.h"
 #include "Scanner.h"
-
+#include "OSCompatThread.h"
 #include "Reader.h"
 #include "Reader.tab.hpp"
 #include "VM.h"
+#include "MultiVMProcedures.h"
 
 #define YYCTYPE ucs4char
 #define YYCURSOR cursor_
@@ -63,6 +64,7 @@ Scanner::Scanner() : eofP_(false), dummy_('Z'),  // for YYDEBUG
                      marker_(buffer_),
                      bufferSize_(32)
 {
+
 }
 
 Scanner::~Scanner()
@@ -73,7 +75,7 @@ Scanner::~Scanner()
 // we need to give back read buffer to input-port.
 void Scanner::emptyBuffer()
 {
-    TextualInputPort* const inputPort = Reader::port();
+    TextualInputPort* const inputPort = currentVM()->readerContext()->port();
 
     for (ucs4char* p = limit_ - 1; p >= cursor_; p--) {
         // special case
@@ -96,7 +98,7 @@ void Scanner::emptyBuffer()
 void Scanner::fill(int n)
 {
     if (eofP_) return;
-    TextualInputPort* const inputPort = Reader::port();
+    TextualInputPort* const inputPort = currentVM()->readerContext()->port();
     const int restCharCount = limit_ - token_;
     const int tokenOffset = token_ - buffer_;
 
@@ -148,7 +150,7 @@ void Scanner::fill(int n)
 
 int yylex()
 {
-    return Reader::port()->scanner()->scan();
+    return currentVM()->readerContext()->port()->scanner()->scan();
 }
 
 int Scanner::scan()

@@ -47,6 +47,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "scheme.h"
+#include "EqHashTable.h"
 #include "VM.h"
 #include "ProcessProcedures.h"
 #include "ProcedureMacro.h"

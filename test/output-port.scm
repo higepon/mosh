@@ -34,8 +34,6 @@
         (mosh shell)
         (mosh process))
 
-(test-begin "output-port")
-
 ;; test utilitiy
 ;; (def-command rm)
 ;; (define (cp from to)
@@ -574,4 +572,4 @@
       (test-equal accum '(#\z #\b #\a))
       (close-port p))
 
-(test-end)
+(test-results)

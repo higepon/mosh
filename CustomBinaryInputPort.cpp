@@ -136,7 +136,7 @@ int CustomBinaryInputPort::lookaheadU8()
 
 int64_t CustomBinaryInputPort::readBytes(uint8_t* buf, int64_t reqSize, bool& isErrorOccured)
 {
-    size_t readSize;
+    int64_t readSize;
     for (readSize = 0; readSize < reqSize; readSize++) {
         const int v = getU8();
         if (EOF == v) {

@@ -1,10 +1,6 @@
 (import (rnrs)
         (mosh test))
 
-(test-begin "condition")
-
-(test-begin "basic")
-
 (let ()
   (define-record-type (&cond1 make-cond1 real-cond1?)
     (parent &condition)
@@ -21,10 +17,6 @@
   (test-true (condition? foo))
   (test-true (cond1? foo))
   (test-eq (cond1-x foo) 'foo))
-
-(test-end)
-
-(test-begin "parent")
 
 (let ()
   (define-record-type (&cond1 make-cond1 real-cond1?)
@@ -64,7 +56,6 @@
            (list foo bar))
 )
 
-(test-end)
 
 (let ()
   (define-record-type (&cond1 make-cond1 real-cond1?)
@@ -134,4 +125,4 @@
   (test-true  (syntax-violation? (make-syntax-violation 'form 'subform)))
   (test-true  (undefined-violation? (make-undefined-violation)))
 )
-(test-end)
+(test-results)

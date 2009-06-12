@@ -110,18 +110,17 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
                                                fields);
     // generative
     } else {
-        static ObjectMap generatedRtd;
-        ObjectMap::const_iterator found = generatedRtd.find(uid);
-        if (found != generatedRtd.end()) {
-            return found->second;
-        } else {
+        const Object found = theVM->findGenerativeRtd(uid);
+        if (found.isFalse()) {
             rtd = Object::makeRecordTypeDescriptor(name,
                                                    parent,
                                                    uid,
                                                    isSealed,
                                                    isOpaque,
                                                    fields);
-            generatedRtd[uid] = rtd;
+            theVM->addGenerativeRtd(uid, rtd);
+        } else {
+            return found;
         }
     }
     // psyntax requires &xxx-rtd global defined.

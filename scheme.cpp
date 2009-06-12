@@ -40,11 +40,10 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "OSCompat.h"
-#include <gc.h>
 #include <gmp.h>
+#include "OSCompatThread.h"
 
 using namespace scheme;
-extern void initCprocedures();
 
 #define USE_GMP_WITH_GC 0
 
@@ -100,9 +99,12 @@ void mosh_init()
     // Allocated memory are freed on Bignum's destructor.
     mp_set_memory_functions(gmp_alloc, gmp_realloc, gmp_free);
 #endif
-    initCprocedures();
+// moved to VM constructor
+//    initCprocedures();
     Flonum::initialize();
+    Thread::initialize();
     Symbol::initBuitinSymbols();
+
 #ifdef _WIN32
     WSADATA data;
     WSAStartup(MAKEWORD(2, 2), &data);

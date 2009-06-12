@@ -39,10 +39,10 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "SString.h"
+#include "EqHashTable.h"
 #include "VM.h"
 #include "ErrorProcedures.h"
 #include "TextualOutputPort.h"
-#include "EqHashTable.h"
 #include "StringProcedures.h"
 
 using namespace scheme;
@@ -108,7 +108,7 @@ void VM::collectProfile()
     static int i = 0;
     if (!profilerRunning_) return;
     if (i >= SAMPLE_NUM) {
-        currentErrorPort_.toTextualOutputPort()->display(UC("buffer full profiler stopped."));
+        currentErrorPort_.toTextualOutputPort()->display(this, UC("buffer full profiler stopped."));
         stopTimer();
     } else if ((*pc_).val == labelReturn_ && ac_.isCProcedure()) {
         samples_[i++] = ac_;

@@ -1,13 +1,6 @@
 (import (rnrs)
         (mosh test))
 
-(test-begin "record")
-
-(when (>= (length (command-line)) 2)
-  (test-skip (test-not-match-name (cadr (command-line)))))
-
-
-(test-begin "basic")
 (let ()
   (define :point
     (make-record-type-descriptor
@@ -29,9 +22,7 @@
   (test-eqv 2 (point-y p1))
   (point-y-set! p1 3)
   (test-eqv 3 (point-y p1)))
-(test-end)
 
-(test-begin "generative")
 (let ()
   (define-record-type (point make-point point?)
     (fields (immutable x point-x)
@@ -64,9 +55,7 @@
   (set-point-y! p1 17)
   (test-eqv 17 (point-y p1)))
 
-(test-end)
 
-(test-begin "protocol")
 (let ()
   (define-record-type (ex1 make-ex1 ex1?)
     (protocol (lambda (p) (lambda a (p a))))
@@ -135,5 +124,4 @@
   (test-eqv 18 (ex3-thickness ex3-i1))
   (test-false (record? ex3-i1)))
 
-(test-end)
-(test-end)
+(test-results)
