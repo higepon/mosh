@@ -1,5 +1,7 @@
 2009-06-15  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: Fixed load-library-path. Thanks to mrc.mgg.
+
         * VM-inl.h: Added #include pointed out by mrc.mgg.
 
         * OSCompatThread.h : Fixed condition-variable-wait!. Thanks to Shiro Kawai for pointing out the bug.

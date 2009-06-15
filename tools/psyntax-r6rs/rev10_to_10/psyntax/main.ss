@@ -62,7 +62,7 @@
                           (add-library-path! (expand-path path))]
                          [else
                           (format (current-error-port) message path)]))
-                 (reverse (string-split paths #\:))))]))
+                (string-split paths #\:)))]))
 
   (define (for-each-with-index proc lst)
     (do ((i 1 (+ i 1)) ; start with 1
@@ -228,7 +228,7 @@
   (define command-line (make-parameter (get-command-line)))
 
   (define (local-library-path filename)
-    (cons (expand-path ".") (library-path)))
+    (library-path))
 
 
   (define (load/args filename . args)
@@ -349,10 +349,13 @@
                       )))
 
   (if (mosh-executable-path)
-      (add-library-path! (string-append (mosh-executable-path) "/lib"))
-      (add-library-path! (string-append (current-directory) "/lib")))
+      (when (file-exists? (string-append (mosh-executable-path) "/lib"))
+          (add-library-path! (string-append (mosh-executable-path) "/lib")))
+      (when (file-exists? (string-append (current-directory) "/lib"))
+        (add-library-path! (string-append (current-directory) "/lib"))))
 
-  (add-library-path! (string-append (standard-library-path) "/lib"))
+  (when (file-exists? (string-append (standard-library-path) "/lib"))
+    (add-library-path! (string-append (standard-library-path) "/lib")))
 
   (let ([prefix
            (lambda (ext ls)
