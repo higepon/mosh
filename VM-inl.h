@@ -33,6 +33,7 @@
 #define SCHEME_VM_INL_
 
 #include "config.h"
+#include "Gloc.h"
 
 namespace scheme {
 

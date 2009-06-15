@@ -1,5 +1,7 @@
 2009-06-15  higepon  <higepon@users.sourceforge.jp>
 
+        * VM-inl.h: Added #include pointed out by mrc.mgg.
+
         * OSCompatThread.h : Fixed condition-variable-wait!. Thanks to Shiro Kawai for pointing out the bug.
 
 2009-06-12  higepon  <higepon@users.sourceforge.jp>
