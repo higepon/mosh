@@ -41,7 +41,7 @@
           make-process-error process-error? process-error process-arg)
   (import (only (mosh) main-vm? vm-set-value! vm-self make-condition-variable make-mutex mutex-lock! mutex-unlock! condition-variable-notify!
                 whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time)
-          (only (rnrs) define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
+          (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
                 syntax-case syntax integer? syntax->datum when let quasiquote unless error if let* memq remq cons cond pair? not car cadr
                 else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote)
           (only (mosh queue) make-queue queue-push! queue-empty? queue-pop! queue-append!)
@@ -162,8 +162,8 @@
     (let ([mb (pid-mail-box p)])
       (mutex-lock! (mail-box-mutex mb))
       (queue-push! (mail-box-mails mb) obj)
-      (mutex-unlock! (mail-box-mutex mb))
-      (condition-variable-notify! (mail-box-condition mb)))))
+      (condition-variable-notify! (mail-box-condition mb))
+      (mutex-unlock! (mail-box-mutex mb)))))
 
 #|
     Function: link
@@ -240,7 +240,7 @@
     Function: receive
 
     Receive a message which matches <match clause>. If there is no message or no matched message, receive is blocked.
-    <match clause> may have [after timeout ...], receive wait timeout msec and returns 
+    <match clause> may have [after timeout ...], receive wait timeout msec and returns
 
     Prototype:
     > (receive <match clause> ...)
@@ -281,7 +281,6 @@
                             ;; restore!
                               (mutex-lock! (mail-box-mutex (pid-mail-box (self))))
                             (let ([mails (mail-box-mails (pid-mail-box (self)))])
-
                               (queue-append! saved mails)
                               (mail-box-mails-set! (pid-mail-box (self)) saved)
                               (mutex-unlock! (mail-box-mutex (pid-mail-box (self)))))
@@ -320,12 +319,15 @@
      [(queue-empty? (mail-box-mails mb))
       (cond
        [(pair? timeout)
-        (let ([timeout? (not (condition-variable-wait! (mail-box-condition mb) (car timeout)))])
+        (mutex-lock! (mail-box-mutex mb))
+        (let ([timeout? (not (condition-variable-wait! (mail-box-condition mb) (mail-box-mutex mb) (car timeout)))])
           (if timeout?
-              '%timeout
+              (begin (mutex-unlock! (mail-box-mutex mb)) '%timeout)
               (loop)))]
        [else
-        (condition-variable-wait! (mail-box-condition mb))
+        (mutex-lock! (mail-box-mutex mb))
+        (condition-variable-wait! (mail-box-condition mb) (mail-box-mutex mb))
+        (mutex-unlock! (mail-box-mutex mb))
         (loop)])]
      [else
       (mutex-lock! (mail-box-mutex mb))

@@ -198,17 +198,18 @@ Object scheme::conditionVariableNotifyDEx(VM* theVM, int argc, const Object* arg
     return Object::makeBool(c->notify());
 }
 
-// (condition-variable-wait c . timeout-msec) => boolean (returns false when timeout)
+// (condition-variable-wait c mutex . timeout-msec) => boolean (returns false when timeout)
 Object scheme::conditionVariableWaitDEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("condition-variable-wait!");
-    checkArgumentLengthBetween(1, 2);
+    checkArgumentLengthBetween(2, 3);
     argumentAsConditionVariable(0, c);
-    if (1 == argc) {
-        return Object::makeBool(c->wait());
+    argumentAsMutex(1, mutex);
+    if (2 == argc) {
+        return Object::makeBool(c->wait(mutex));
     } else {
-        argumentAsFixnum(1, timeout);
-        return Object::makeBool(c->waitWithTimeout(timeout));
+        argumentAsFixnum(2, timeout);
+        return Object::makeBool(c->waitWithTimeout(mutex, timeout));
     }
 }
 

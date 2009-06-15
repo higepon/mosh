@@ -213,44 +213,56 @@ TEST_F(MoshTest, checkMutex2) {
 static int value = 0;
 static bool valueOK = false;
 
+static Mutex* mutex1;
+
 void* checkConditionVariable(void* param)
 {
     ConditionVariable* conditionVariable = (ConditionVariable*)param;
     value = 2;
     valueOK = true;
+    mutex1->lock();
     EXPECT_TRUE(conditionVariable->notify());
+    mutex1->unlock();
     return NULL;
 }
 
 TEST_F(MoshTest, conditionVariable) {
     ConditionVariable conditionVariable;
     Thread thread;
+    mutex1 = new Mutex;
     ASSERT_TRUE(thread.create(checkConditionVariable, &conditionVariable));
+    mutex1->lock();
     while (!valueOK) {
-        ASSERT_TRUE(conditionVariable.wait());
+        ASSERT_TRUE(conditionVariable.wait(mutex1));
     }
+    mutex1->unlock();
     EXPECT_EQ(2, value);
 }
 
 static int value2 = 0;
 static bool valueOK2 = false;
-
+static Mutex* mutex3;
 void* checkConditionVariable2(void* param)
 {
     ConditionVariable* conditionVariable = (ConditionVariable*)param;
     value2 = 2;
     valueOK2 = true;
+    mutex3->lock();
     EXPECT_TRUE(conditionVariable->notifyAll());
+    mutex3->unlock();
     return NULL;
 }
 
 TEST_F(MoshTest, conditon2) {
     ConditionVariable conditionVariable;
     Thread thread;
+    mutex3 = new Mutex;
     ASSERT_TRUE(thread.create(checkConditionVariable2, &conditionVariable));
+    mutex3->lock();
     while (!valueOK2) {
-        ASSERT_TRUE(conditionVariable.wait());
+        ASSERT_TRUE(conditionVariable.wait(mutex3));
     }
+    mutex3->unlock();
     EXPECT_EQ(2, value2);
 }
 

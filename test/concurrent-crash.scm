@@ -16,15 +16,21 @@
     [x (fail (format "unexpected ~a\n" x))])
   (join! pid))
 
-(let ([pid (spawn-link
-            (lambda (arg)
+(let* ([pid (spawn-link
+            (lambda (mutex)
               (define (sleep msec)
-                (condition-variable-wait! (make-condition-variable) msec))
+                (let ([mutex (make-mutex)])
+                  (mutex-lock! mutex)
+                  (condition-variable-wait! (make-condition-variable) (make-mutex) msec)
+                  (mutex-unlock! mutex)))
               (sleep 600) (car 3)) ;; this causes error
             '()
             '((rnrs) (mosh) (mosh concurrent)))])
   (define (sleep msec)
-    (condition-variable-wait! (make-condition-variable) msec))
+    (let ([mutex (make-mutex)])
+      (mutex-lock! mutex)
+      (condition-variable-wait! (make-condition-variable) (make-mutex) msec)
+      (mutex-unlock! mutex)))
   (unlink pid)
   (test-eq 'timeout
     (receive

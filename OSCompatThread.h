@@ -110,7 +110,6 @@ namespace scheme {
     class ConditionVariable : public gc_cleanup
     {
     private:
-        Mutex mutex_;
         pthread_cond_t cond_;
         ucs4string name_;
 
@@ -147,30 +146,24 @@ namespace scheme {
 
         bool notify()
         {
-            mutex_.lock();
             int ret = pthread_cond_signal(&cond_);
-            mutex_.unlock();
             return 0 == ret;
         }
 
         bool notifyAll()
         {
-            mutex_.lock();
             int ret = pthread_cond_broadcast(&cond_);
-            mutex_.unlock();
             return 0 == ret;
         }
 
-        bool wait()
+        bool wait(Mutex* mutex)
         {
-            mutex_.lock();
-            int ret = pthread_cond_wait(&cond_, &mutex_.mutex_);
-            mutex_.unlock();
+            int ret = pthread_cond_wait(&cond_, &mutex->mutex_);
             return 0 == ret;
         }
 
         // returns false if timeout
-        bool waitWithTimeout(int msecs)
+        bool waitWithTimeout(Mutex* mutex, int msecs)
         {
             struct timeval  now;
             struct timespec timeout;
@@ -189,13 +182,11 @@ namespace scheme {
                 timeout.tv_sec++;
                 timeout.tv_nsec -= 1000000000;
             }
-            mutex_.lock();
             int ret = 0;
             do {
-                ret = pthread_cond_timedwait(&cond_, &mutex_.mutex_, &timeout);
+                ret = pthread_cond_timedwait(&cond_, &mutex->mutex_, &timeout);
             } while (ret == EINTR);
             MOSH_ASSERT(ret != EINVAL);
-            mutex_.unlock();
             return ETIMEDOUT != ret;
         }
     };
