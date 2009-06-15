@@ -1,5 +1,7 @@
 2009-06-15  higepon  <higepon@users.sourceforge.jp>
 
+        * OSCompatThread.h : Writing Thread library for Windows, not completed.
+
         * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: Fixed load-library-path. Thanks to mrc.mgg.
 
         * VM-inl.h: Added #include pointed out by mrc.mgg.

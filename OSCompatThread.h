@@ -70,6 +70,43 @@
 
 namespace scheme {
 
+#ifdef _MSC_VER
+
+    class Mutex : public gc_cleanup
+    {
+        friend class ConditionVariable; // share the mutex_
+    private:
+        HANDLE mutex_;
+
+    public:
+        Mutex()
+        {
+            mutex_ = CreateMutex(NULL, FALSE, NULL);
+        }
+
+        ~Mutex()
+        {
+            CloseHandle(mutex_);
+        }
+
+        void lock()
+        {
+            WaitForSingleObject(mutex_, INFINITE);
+        }
+
+        void unlock()
+        {
+            ReleaseMutex(mutex_);
+        }
+
+        bool tryLock()
+        {
+            return WAIT_OBJECT_0 == WaitForSingleObject(mutex_, 0);
+        }
+    };
+
+#else
+
     class Mutex : public gc_cleanup
     {
         friend class ConditionVariable; // share the mutex_
@@ -107,15 +144,29 @@ namespace scheme {
         }
     };
 
+#endif
+
     class ConditionVariable : public gc_cleanup
     {
     private:
+#ifdef _MSC_VER
+        HANDLE cond_;
+#else
         pthread_cond_t cond_;
+#endif
         ucs4string name_;
 
         void initialize()
         {
+#ifdef _MSC_VER
+            cond_ = CreateEvent(NULL, true, false, NULL);
+            if (NULL == cond_ == NULL) {
+                fprintf(stderr, "CreateEvent failed\n");
+                exit(-1);
+            }
+#else
             pthread_cond_init(&cond_, NULL);
+#endif
         }
     public:
         ConditionVariable() : name_(UC(""))
@@ -130,7 +181,11 @@ namespace scheme {
 
         virtual ~ConditionVariable()
         {
+#ifdef _MSC_VER
+            CloseHandle(cond_);
+#else
             pthread_cond_destroy(&cond_);
+#endif
         }
 
         ucs4string toString() const
@@ -146,25 +201,50 @@ namespace scheme {
 
         bool notify()
         {
+#ifdef _MSC_VER
+            int ret = SetEvent(cond_);
+#else
             int ret = pthread_cond_signal(&cond_);
+#endif
             return 0 == ret;
         }
 
         bool notifyAll()
         {
+#ifdef _MSC_VER
+            int ret = SetEvent(cond_);
+#else
             int ret = pthread_cond_broadcast(&cond_);
+#endif
             return 0 == ret;
         }
 
         bool wait(Mutex* mutex)
         {
+#ifdef _MSC_VER
+            mutex->unlock();
+            WaitForSingleObject(cond_, INFINITE);
+            mutex->lock();
+            return true;
+#else
             int ret = pthread_cond_wait(&cond_, &mutex->mutex_);
             return 0 == ret;
+#endif
         }
 
         // returns false if timeout
         bool waitWithTimeout(Mutex* mutex, int msecs)
         {
+#ifdef _MSC_VER
+            mutex->unlock();
+            DWORD res = WaitForSingleObject(cond_, msecs);
+            mutex->lock();
+            if (res == WAIT_TIMEOUT) {
+                return false;
+            } else {
+                return true;
+            }
+#else
             struct timeval  now;
             struct timespec timeout;
             if (gettimeofday(&now, NULL) !=0 ) {
@@ -188,6 +268,7 @@ namespace scheme {
             } while (ret == EINTR);
             MOSH_ASSERT(ret != EINVAL);
             return ETIMEDOUT != ret;
+#endif
         }
     };
 
@@ -259,12 +340,19 @@ namespace scheme {
 
         bool join(void** returnValue)
         {
+#ifdef _MSC_VER
+            const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
+            // todo
+            // http://www-online.kek.jp/~keibun/pukiwiki/index.php?Pthread%20for%20Win32%20%A4%CE%BC%C2%C1%F5%A4%CE%BB%EE%A4%DF(1)
+            return ret;
+#else
             if (GC_pthread_join(thread_, returnValue) == 0) {
                 return true;
             } else {
                 setLastError();
                 return false;
             }
+#endif
         }
 
         static void yield()
@@ -283,7 +371,11 @@ namespace scheme {
             lastError_ = errno;
         }
 
+#ifdef _MSC_VER
+        HANDLE thread_;
+#else
         pthread_t thread_;
+#endif
         int lastError_;
     };
 
