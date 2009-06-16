@@ -67,6 +67,7 @@ public:
 
     static Object fromString(const ucs4string& text)
     {
+        printf("%s\n", text.ascii_c_str());
         const double ret = strtod(text.ascii_c_str(), NULL);
         // should check errno?
         return Object::makeFlonum(ret);

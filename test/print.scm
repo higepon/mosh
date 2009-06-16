@@ -81,6 +81,7 @@
 ;;              ['(unsyntax-splicing a) "#,@a"]
 ;;              ['(UNSYNTAX-SPLICING a) "#,@a"]
              [(eof-object) "#<eof-object>" "#<eof-object>" "#[eof-object]"]
+             [1.0e99 "1e99"]
              [(condition '()) "#<compound-condition ()>" "#<compound-condition ()>" "#[condition]"]
              [(make-record-type-descriptor 'hoge #f #f #f #f '#(a b c)) "#<record-type-descriptor>" "#<record-type-descriptor>" "#[record-type-descriptor]"]
              [(if #f #t) "#<unspecified>" "#<unspecified>" "#[unspecified]"] ;; unspecified
