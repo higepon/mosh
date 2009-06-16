@@ -87,5 +87,8 @@
 
 )
 
+(test-equal "+inf.0" (number->string +inf.0))
+(test-equal "-inf.0" (number->string -inf.0))
+(test-equal "+nan.0" (number->string +nan.0))
 
 (test-results)

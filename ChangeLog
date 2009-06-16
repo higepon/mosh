@@ -1,3 +1,7 @@
+2009-06-16  higepon  <higepon@users.sourceforge.jp>
+
+        * Arithmetic.cpp (numberToString): Fixed number->string +nan.0, +inf.0 and -inf.0 . Thanks to mrc.mgg.
+
 2009-06-15  higepon  <higepon@users.sourceforge.jp>
 
         * OSCompatThread.h : Writing Thread library for Windows, not completed.

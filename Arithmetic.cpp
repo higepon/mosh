@@ -84,9 +84,16 @@ Object Arithmetic::numberToString(Object n, int radix)
         return Object::makeString(buf);
     } else if (n.isFlonum()) {
         MOSH_ASSERT(radix == 10);
-        char buf[256];
-        snprintf(buf, 256, "%f", n.toFlonum()->value());
-        return Object::makeString(buf);
+        const double value = n.toFlonum()->value();
+        if (n.toFlonum()->isNan()) {
+            return Object::makeString("+nan.0");
+        } else if (n.toFlonum()->isInfinite()) {
+            return Object::makeString((value > 0) ? "+inf.0" : "-inf.0");
+        } else {
+            char buf[256];
+            snprintf(buf, 256, "%f", value);
+            return Object::makeString(buf);
+        }
     } else if (n.isBignum()) {
         return Object::makeString(n.toBignum()->toString(radix));
     } else if (n.isRatnum()) {
