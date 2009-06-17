@@ -56,6 +56,10 @@ namespace scheme {
     Object append2Ex(VM* theVM, int argc, const Object* argv);
     Object appendDEx(VM* theVM, int argc, const Object* argv);
     Object lengthEx(VM* theVM, int argc, const Object* argv);
+    Object makeVectorEx(VM* theVM, int argc, const Object* argv);
+    Object vectorRefEx(VM* theVM, int argc, const Object* argv);
+    Object vectorSetDEx(VM* theVM, int argc, const Object* argv);
+    Object vectorLengthEx(VM* theVM, int argc, const Object* argv);
 
     inline bool existsInList(Object o, Object list)
     {

@@ -334,3 +334,46 @@ Object scheme::listTovectorEx(VM* theVM, int argc, const Object* argv)
         return Object::makeVector(0);
     }
 }
+
+// (make-vector k . fill)
+Object scheme::makeVectorEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-vector");
+    checkArgumentLengthBetween(1, 2);
+    argumentAsFixnum(0, k);
+    if (argc == 1) {
+        return Object::makeVector(k);
+    } else {
+        return Object::makeVector(k, argv[1]);
+    }
+}
+
+// (vector-length v)
+Object scheme::vectorLengthEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("vector-length");
+    checkArgumentLength(1);
+    argumentAsVector(0, v);
+    return Object::makeFixnum(v->length());
+}
+
+// (vector-ref v k)
+Object scheme::vectorRefEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("vector-ref");
+    checkArgumentLength(2);
+    argumentAsVector(0, v);
+    argumentAsFixnum(1, k);
+    return v->ref(k);
+}
+
+// (vector-set! v k value)
+Object scheme::vectorSetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("vector-set!");
+    checkArgumentLength(3);
+    argumentAsVector(0, v);
+    argumentAsFixnum(1, k);
+    v->set(k, argv[2]);
+    return Object::Undef;
+}

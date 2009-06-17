@@ -545,4 +545,9 @@
     mutex-lock!
     mutex-try-lock!
     mutex-unlock!
+
+    make-vector
+    vector-length
+    vector-ref
+    vector-set!
     )

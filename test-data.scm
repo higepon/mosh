@@ -3438,6 +3438,15 @@
 (0 (round 1/2))
 (1 (round 2/3))
 (2 (round 3/2))
+(#t (vector? (make-vector 3)))
+(#t (vector? (apply make-vector '(3))))
+(3 (vector-length (make-vector 3)))
+(3 (apply vector-length (list (make-vector 3))))
+(#f (vector? 3))
+(#f (apply vector? '(3)))
+(1 (vector-ref '#(1 2 3) 0))
+(1 (apply vector-ref '(#(1 2 3) 0)))
+(#t (procedure? vector-set!))
 
 ;; don't const inline (+ 1 #f).
 (#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))

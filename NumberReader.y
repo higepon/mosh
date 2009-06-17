@@ -308,14 +308,14 @@ decimal10 : uinteger10String suffix {
           | uinteger10String DOT uinteger10String suffix {
               ucs4string ret = $1;
               ret += UC(".") + $3;
-              printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+///              printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
               if (!$4.empty()) {
-                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($4));
-                  ret += $4;
-                $$ = Flonum::fromString(ret);
+//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($4));
+                  //                 ret += $4;
+//                $$ = Flonum::fromString(ret);
               } else {
-                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 $$ = Flonum::fromString(ret);
               }
           }
@@ -323,10 +323,10 @@ decimal10 : uinteger10String suffix {
               ucs4string ret = $1;
               ret += UC(".0");
               if (!$3.empty()) {
-                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
               } else {
-                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                   $$ = Flonum::fromString(ret);
               }
           }

@@ -263,6 +263,9 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                 putString(UC("-inf.0"));
             }
         } else {
+            snprintf(buf, sizeof(buf), "%f", flonum->value());
+            putString(buf);
+            #if 0
             snprintf(buf, sizeof(buf), "%.20g", flonum->value());
             size_t n = strcspn(buf, ".eE");
             if (buf[n]) {
@@ -271,6 +274,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                 strcat(buf,".0");
                 putString(buf);
             }
+            #endif
         }
     } else if (o.isInstruction()) {
         char buf[32];
