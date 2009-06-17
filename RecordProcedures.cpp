@@ -233,7 +233,9 @@ RecordAccessor::~RecordAccessor()
 
 Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("record-accessor for record");
+    Object name = format(theVM, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    const ucs4char* procedureName = name.toString()->data().data();
+    //DeclareProcedureName("record-accessor for record");
     checkArgumentLength(1);
     argumentAsRecord(0, record);
     const RecordTypeDescriptor* rtd = record->recordTypeDescriptor();
