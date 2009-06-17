@@ -1414,3 +1414,129 @@ Object Arithmetic::div(Object n1, Object n2, bool& isDiv0Error)
     }
     return Object::False;
 }
+
+class AlgorithmR EXTEND_GC
+{
+public:
+    static double bestApprox(Object f, const int e, const double z0)
+    {
+        double z = z0;
+        Object x0;
+        Object pow10e;
+        if (e >= 0) {
+            x0 = Arithmetic::mul(f, Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(e)));
+            pow10e = Object::Undef;
+        } else {
+            x0 = Object::Undef;
+            pow10e = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(-e));
+        }
+//         while (1) {
+//             if (isinf(z)) return z;
+//             int k;
+//             int sign;
+//             int64_t m = decode_double(z, &k, &sign);
+//             assert(sign >= 0);
+//             Object x;
+//             Object y;
+//             if (e >= 0) {
+//                 if (k >= 0) {
+//                     x = x0;
+//                     y = Bignum::makeIntegerFromS64(m);
+//                     y = Arithmetic::bitwiseShiftLeft(y, k);
+//                 } else {
+//                     x = arith_logash(heap, x0, Object::makeFixnum(-k));
+//                     y = int64_to_integer(heap, m);
+//                 }
+//             } else {
+//                 if (k >= 0) {
+//                     x = f;
+//                     y = arith_mul(heap, integer_init_n_alloc(heap, m, k), pow10e);
+//                 } else {
+//                     x = arith_logash(heap, f, Object::makeFixnum(-k));
+//                     y = arith_mul(heap, int64_to_integer(heap, m), pow10e);
+//                 }
+//             }
+//             Object D = arith_sub(heap, x, y);
+//             Object D2 = arith_mul(heap, int64_to_integer(heap, m + m), D);
+//             bool negD = n_negative_pred(D);
+//             if (negD) {
+//                 if (BIGNUMP(D2)) bn_set_sign((scm_bignum_t)D2, -bn_get_sign((scm_bignum_t)D2));
+//                 else D2 = Object::makeFixnum(-FIXNUM(D2));
+//             }
+//             int test = n_compare(heap, D2, y);
+//             if (test < 0) {
+//                 if (negD && m == iexpt_2n52 && integer_ucmp3(D2, D2, y) > 0) {
+//                     z = prevfloat(z);
+//                     continue;
+//                 }
+//                 return z;
+//             }
+//             if (test == 0) {
+//                 if ((m & 1) == 0) {
+//                     if (negD && m == iexpt_2n52) {
+//                         z = prevfloat(z);
+//                         continue;
+//                     }
+//                     return z;
+//                 }
+//                 return negD ? prevfloat(z) : nextfloat(z);
+//             }
+//             z = negD ? prevfloat(z) : nextfloat(z);
+//         }
+    }
+
+private:
+    static const int64_t iexpt_2n52 = 0x10000000000000LL; // 2^(53-1)
+    static const int64_t iexpt_2n53 = 0x20000000000000LL; // 2^53
+
+    static double nextfloat(double z)
+    {
+        int k;
+        int sign;
+        int64_t m = decode_double(z, &k, &sign);
+        assert(sign >= 0);
+        if (m == iexpt_2n53 - 1) return ldexp((double)iexpt_2n52, k + 1);
+        return ldexp((double)(m + 1), k);
+    }
+
+    static double prevfloat(double z)
+    {
+        int k;
+        int sign;
+        int64_t m = decode_double(z, &k, &sign);
+        MOSH_ASSERT(sign >= 0);
+        if (m == iexpt_2n52) return ldexp((double)(iexpt_2n53 - 1), k - 1);
+        return ldexp((double)(m - 1), k);
+    }
+
+
+    static int64_t decode_double(double n, int* exp, int* sign)
+    {
+        union { double f64; uint64_t u64; } datum;
+        datum.f64 = n;
+        uint64_t bits = datum.u64;
+        uint64_t mant_bits = bits & (iexpt_2n52 - 1);
+        uint32_t sign_bits = bits >> 63;
+        uint32_t exp_bits = (bits >> 52) & 0x7ff;
+        if (n == 0.0) {
+            *exp = 0;
+            *sign = sign_bits ? -1 : 1;
+            return 0;
+        }
+        if (isnan(n)) {
+            *exp = 972;
+            *sign = 1;
+            return 0x18000000000000LL; // (uint64_t)0x180000 << 32;
+        }
+        if (isinf(n)) {
+            *exp = 972;
+            *sign = sign_bits ? -1 : 1;
+            return 0x10000000000000LL; // (uint64_t)0x100000 << 32;
+        }
+        assert(exp_bits != 0x7ff);
+        *exp = (exp_bits ? (int)exp_bits - 1023 : -1022) - 52;
+        *sign = sign_bits ? -1 : 1;
+        if (exp_bits) mant_bits |= iexpt_2n52;
+        return mant_bits;
+    }
+};
