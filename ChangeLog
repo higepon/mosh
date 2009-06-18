@@ -1,3 +1,7 @@
+2009-06-18  higepon  <higepon@users.sourceforge.jp>
+
+        * Arithmetic.h : Added AlgorithmR for reading floating point.
+
 2009-06-17  higepon  <higepon@users.sourceforge.jp>
 
         * ListProcedures.cpp : Added vector-set!, vector-ref, vector-length and make-vector. Thanks to mrc.mgg.

@@ -41,6 +41,10 @@
 #include "ByteVector.h"
 #include "SString.h"
 #include "PortProcedures.h"
+#include "Arithmetic.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+
 
 using namespace scheme;
 
@@ -189,7 +193,6 @@ TEST_F(ObjectTest, Vector) {
     EXPECT_TRUE(v.toVector()->ref(2).isUndef());
 }
 
-
 TEST_F(ObjectTest, Symbol) {
     const Object hoge = Symbol::intern(UC("hoge"));
     const Object hige = Symbol::intern(UC("hige"));
@@ -212,3 +215,12 @@ TEST_F(ObjectTest, Symbol) {
     EXPECT_TRUE(hoge != hige2);
     EXPECT_TRUE(hoge != hige);
 }
+
+TEST_F(ObjectTest, AlgorithmR) {
+
+    double z0 = Arithmetic::mul(Object::makeFlonum(1.), Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(9))).toFlonum()->value();
+    char buf[256];
+    snprintf(buf, sizeof(buf), "%.20g", AlgorithmR::bestApprox(Object::makeFixnum(1), 99, 1.0e99));
+    EXPECT_STREQ("1.0e9", buf);
+}
+

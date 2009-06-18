@@ -1,5 +1,5 @@
 /*
- * Arithmetic.h - 
+ * Arithmetic.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -142,8 +142,28 @@ public:
     {
         return nbits(~x & (x - 1));
     }
-
 };
+
+//  Reference:
+//  William D. Clinger.
+//  How to read floating point numbers accurately
+//  Proceedings of the ACM SIGPLAN 1990 conference on Programming language design and implementation, p.92-101, June 1990
+//
+//  Originally from Ypsilon Scheme
+class AlgorithmR EXTEND_GC
+{
+public:
+    static double bestApprox(Object f, const int e, const double z0);
+
+private:
+    static const int64_t iexpt_2n52 = 0x10000000000000LL; // 2^(53-1)
+    static const int64_t iexpt_2n53 = 0x20000000000000LL; // 2^53
+
+    static double nextfloat(double z);
+    static double prevfloat(double z);
+    static int64_t decode_double(double n, int* exp, int* sign);
+};
+
 
 } // namespace scheme
 
