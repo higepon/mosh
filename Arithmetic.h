@@ -154,7 +154,7 @@ class AlgorithmR EXTEND_GC
 {
 public:
     static double bestApprox(Object f, const int e, const double z0);
-
+    static ucs4string cnvt_flonum_to_string(double v, bool no_exponential);
 private:
     static const int64_t iexpt_2n52 = 0x10000000000000LL; // 2^(53-1)
     static const int64_t iexpt_2n53 = 0x20000000000000LL; // 2^53

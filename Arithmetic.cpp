@@ -1545,3 +1545,172 @@ int64_t AlgorithmR::decode_double(double n, int* exp, int* sign)
     if (exp_bits) mant_bits |= iexpt_2n52;
     return mant_bits;
 }
+
+ucs4string AlgorithmR::cnvt_flonum_to_string(double v, bool no_exponential)
+{
+    char digits[32];
+    int digit_count = 0;
+    int exponent;
+    int e;
+    int sign;
+    int64_t f = decode_double(v, &e, &sign);
+    if (v == 0.0) return (sign > 0) ? UC("0.0") : UC("-0.0");
+    if (isnan(v)) return (sign > 0) ? UC("+nan.0") : UC("-nan.0");
+    if (isinf(v)) return (sign > 0) ? UC("+inf.0") : UC("-inf.0");
+    if (sign == -1) v = -v;
+    bool meven = ((f & 1) == 0);
+    bool eq_mp_mm = true;
+    int test;
+    Object r;
+    Object s;
+    Object mp;
+    Object mm;
+    if (e >= 0) {
+        Object be = Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(e));
+        if (f != iexpt_2n52) {
+            r = Bignum::makeIntegerFromS64(f);
+            r = Arithmetic::bitwiseShiftLeft(r, e + 1);
+            s = Object::makeFixnum(2);
+            mp = be;
+            mm = be;
+        } else {
+            Object be1 = Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(e + 1));
+            r = Bignum::makeIntegerFromS64(f);
+            r = Arithmetic::bitwiseShiftLeft(r, e + 2);
+            s = Object::makeFixnum(4);
+            mp = be1;
+            mm = be;
+            eq_mp_mm = false;
+        }
+    } else {
+        if (e == -1023 || f != iexpt_2n52) {
+            r = Bignum::makeIntegerFromS64(f << 1);
+            s = Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(1 - e));
+            mp = Object::makeFixnum(1);
+            mm = Object::makeFixnum(1);
+        } else {
+            r = Bignum::makeIntegerFromS64(f << 2);
+            s = Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(2 - e));
+            mp = Object::makeFixnum(2);
+            mm = Object::makeFixnum(1);
+            eq_mp_mm = false;
+        }
+    }
+    // scale
+    int est = (int)(ceil(log10(v) - 0.1));
+    if (est > 0) {
+        s = Arithmetic::mul(s, Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(est)));
+    } else {
+        Object scale10 = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(-est));
+        r = Arithmetic::mul(r, scale10);
+        mp = Arithmetic::mul(mp, scale10);
+        mm = eq_mp_mm ? mp : Arithmetic::mul(mm, scale10);
+    }
+    // fixup
+    if (Arithmetic::gt(Arithmetic::add(r, mp), s) || (meven && Arithmetic::eq(Arithmetic::add(r, mp), s))) {
+        s = Arithmetic::mul(s, Object::makeFixnum(10));
+        exponent = est + 1;
+    } else {
+        exponent = est;
+    }
+    // generate
+//     BN_TEMPORARY(bn_q);
+//     BN_TEMPORARY(bn_s);
+//     BN_ALLOC_FIXNUM(bn_q);
+//     BN_ALLOC_FIXNUM(bn_s);
+//loop:
+//     mp = Arithmetic::mul(mp, Object::makeFixnum(10));
+//     mm = eq_mp_mm ? mp : Arithmetic::mul(mm, Object::makeFixnum(10));
+//     r = Arithmetic::mul(r, Object::makeFixnum(10));
+//     intptr_t dig = '0';
+//     if (Arithmetic::eq(r, s)) {
+//         dig += 1;
+//         r = Object::makeFixnum(0);
+//     } else if (Arithmetic::gt(r, s)) {
+//         if (r.isFixnum()) {
+//             assert(s.isFixnum());
+//             intptr_t nq = r.toFixnum() / s.toFixnum();
+//             intptr_t nr = r.toFixnum() - (nq * s.toFixnum());
+//             dig += nq;
+//             r = Object::makeFixnum(nr);
+//         } else {
+//             bn_div_ans_t ans;
+//             ans.quotient = &bn_q;
+//             ans.remainder = r;
+//             if (BIGNUMP(s)) {
+//                 bn_div(heap, &ans, (scm_bignum_t)r, (scm_bignum_t)s);
+//             } else {
+//                 bn_let(&bn_s, (scm_fixnum_t)s);
+//                 bn_div(heap, &ans, (scm_bignum_t)r, &bn_s);
+//             }
+//             bn_set_sign((scm_bignum_t)ans.quotient, 1);
+//             bn_set_sign((scm_bignum_t)ans.remainder, 1);
+//             dig += FIXNUM(bn_demote((scm_bignum_t)ans.quotient));
+//             r = bn_demote((scm_bignum_t)ans.remainder);
+//         }
+//     }
+//     test = n_compare(heap, r, mm);
+//     bool tc1 = (test < 0 || (meven && test == 0));
+//     test = integer_ucmp3(r, mp, s);
+//     bool tc2 = (test > 0 || (meven && test == 0));
+//     if (!tc1) {
+//         if (!tc2) {
+//             digits[digit_count++] = dig;
+//             if (digit_count >= array_sizeof(digits)) {
+//                 fatal("%s:%u something wrong", __FILE__, __LINE__);
+//             }
+//             goto loop;
+//         } else {
+//             digits[digit_count++] = dig + 1;
+//         }
+//     } else {
+//         if (!tc2) {
+//             digits[digit_count++] = dig;
+//         } else {
+//             if (integer_ucmp3(r, r, s) < 0) {
+//                 digits[digit_count++] = dig;
+//             } else {
+//                 digits[digit_count++] = dig + 1;
+//             }
+//         }
+//     }
+//     // todo: support misc format
+//     char out[512];
+//     int out_count = 0;
+//     digits[digit_count] = 0;
+//     if (no_exponential || (exponent >= -10 && exponent <= 10)) {
+//         if (sign == -1) out[out_count++] = '-';
+//         if (exponent <= 0) {
+//             out[out_count++] = '0';
+//             out[out_count++] = '.';
+//             while (++exponent <= 0) out[out_count++] = '0';
+//             for (int i = 0; digits[i] != 0; i++) out[out_count++] = digits[i];
+//         } else {
+//             for (int i = 0; digits[i] != 0; i++) {
+//                 out[out_count++] = digits[i];
+//                 if (--exponent == 0) out[out_count++] = '.';
+//             }
+//             if (exponent >= 0) {
+//                 if (exponent == 0) {
+//                     out[out_count++] = '0';
+//                 } else {
+//                     while (exponent > 0) {
+//                         out[out_count++] = '0';
+//                         exponent--;
+//                     }
+//                     out[out_count++] = '.';
+//                     out[out_count++] = '0';
+//                 }
+//             }
+//         }
+//         out[out_count] = 0;
+//     } else {
+//         if (sign == -1) out[out_count++] = '-';
+//         out[out_count++] = digits[0];
+//         if (digits[1]) out[out_count++] = '.';
+//         for (int i = 1; digits[i] != 0; i++) out[out_count++] = digits[i];
+//         out[out_count] = 0;
+//         snprintf(&out[out_count], sizeof(out) - out_count, "e%d", exponent-1);
+//     }
+//     return make_string(heap, out);
+}
