@@ -85,14 +85,16 @@ Object Arithmetic::numberToString(Object n, int radix)
     } else if (n.isFlonum()) {
         MOSH_ASSERT(radix == 10);
         const double value = n.toFlonum()->value();
+
         if (n.toFlonum()->isNan()) {
             return Object::makeString("+nan.0");
         } else if (n.toFlonum()->isInfinite()) {
             return Object::makeString((value > 0) ? "+inf.0" : "-inf.0");
         } else {
-            char buf[256];
-            snprintf(buf, 256, "%f", value);
-            return Object::makeString(buf);
+        return Object::makeString(FlonumUtil::flonumToUcs4String(value, false));
+//             char buf[256];
+//             snprintf(buf, 256, "%f", value);
+//             return Object::makeString(buf);
         }
     } else if (n.isBignum()) {
         return Object::makeString(n.toBignum()->toString(radix));
@@ -1419,9 +1421,7 @@ Object Arithmetic::div(Object n1, Object n2, bool& isDiv0Error)
 //  William D. Clinger.
 //  How to read floating point numbers accurately
 //  Proceedings of the ACM SIGPLAN 1990 conference on Programming language design and implementation, p.92-101, June 1990
-//
-//  Originally from Ypsilon Scheme
-double AlgorithmR::bestApprox(Object f, const int e, const double z0)
+double FlonumUtil::algorithmR(Object f, const int e, const double z0)
 {
     double z = z0;
     Object x0;
@@ -1440,7 +1440,7 @@ double AlgorithmR::bestApprox(Object f, const int e, const double z0)
         int k;
         int sign;
         int64_t m = decode_double(z, &k, &sign);
-        assert(sign >= 0);
+        MOSH_ASSERT(sign >= 0);
         Object x;
         Object y;
         if (e >= 0) {
@@ -1475,7 +1475,7 @@ double AlgorithmR::bestApprox(Object f, const int e, const double z0)
             }
         }
         if (Arithmetic::lt(D2, y)) {
-            if (negD && m == iexpt_2n52 && 
+            if (negD && m == iexpt_2n52 &&
                 Arithmetic::gt(Arithmetic::bitwiseShiftLeft(D2, 1), y)) {
                 z = prevfloat(z);
                 continue;
@@ -1496,17 +1496,17 @@ double AlgorithmR::bestApprox(Object f, const int e, const double z0)
     }
 }
 
-double AlgorithmR::nextfloat(double z)
+double FlonumUtil::nextfloat(double z)
 {
     int k;
     int sign;
     int64_t m = decode_double(z, &k, &sign);
-    assert(sign >= 0);
+    MOSH_ASSERT(sign >= 0);
     if (m == iexpt_2n53 - 1) return ldexp((double)iexpt_2n52, k + 1);
     return ldexp((double)(m + 1), k);
 }
 
-double AlgorithmR::prevfloat(double z)
+double FlonumUtil::prevfloat(double z)
 {
     int k;
     int sign;
@@ -1516,7 +1516,7 @@ double AlgorithmR::prevfloat(double z)
     return ldexp((double)(m - 1), k);
 }
 
-int64_t AlgorithmR::decode_double(double n, int* exp, int* sign)
+int64_t FlonumUtil::decode_double(double n, int* exp, int* sign)
 {
     union { double f64; uint64_t u64; } datum;
     datum.f64 = n;
@@ -1539,14 +1539,20 @@ int64_t AlgorithmR::decode_double(double n, int* exp, int* sign)
         *sign = sign_bits ? -1 : 1;
         return 0x10000000000000LL; // (uint64_t)0x100000 << 32;
     }
-    assert(exp_bits != 0x7ff);
+    MOSH_ASSERT(exp_bits != 0x7ff);
     *exp = (exp_bits ? (int)exp_bits - 1023 : -1022) - 52;
     *sign = sign_bits ? -1 : 1;
     if (exp_bits) mant_bits |= iexpt_2n52;
     return mant_bits;
 }
 
-ucs4string AlgorithmR::cnvt_flonum_to_string(double v, bool no_exponential)
+//  Robert G. Burger and R. Kent Dybvig.
+//  Printing floatingpoint numbers quickly and accurately.
+//  In Proceedings of the ACM SIGPLAN '96 Conference on Programming Language Design and Implementation, pages 108--116.
+//
+//  Originally from Ypsilon Scheme
+#define array_sizeof(a) ((int)(sizeof(a)/sizeof(a[0])))
+ucs4string FlonumUtil::flonumToUcs4String(double v, bool no_exponential)
 {
     char digits[32];
     int digit_count = 0;
@@ -1560,7 +1566,6 @@ ucs4string AlgorithmR::cnvt_flonum_to_string(double v, bool no_exponential)
     if (sign == -1) v = -v;
     bool meven = ((f & 1) == 0);
     bool eq_mp_mm = true;
-    int test;
     Object r;
     Object s;
     Object mp;
@@ -1618,15 +1623,22 @@ ucs4string AlgorithmR::cnvt_flonum_to_string(double v, bool no_exponential)
 //     BN_TEMPORARY(bn_s);
 //     BN_ALLOC_FIXNUM(bn_q);
 //     BN_ALLOC_FIXNUM(bn_s);
-//loop:
-//     mp = Arithmetic::mul(mp, Object::makeFixnum(10));
-//     mm = eq_mp_mm ? mp : Arithmetic::mul(mm, Object::makeFixnum(10));
-//     r = Arithmetic::mul(r, Object::makeFixnum(10));
-//     intptr_t dig = '0';
-//     if (Arithmetic::eq(r, s)) {
-//         dig += 1;
-//         r = Object::makeFixnum(0);
-//     } else if (Arithmetic::gt(r, s)) {
+loop:
+    mp = Arithmetic::mul(mp, Object::makeFixnum(10));
+    mm = eq_mp_mm ? mp : Arithmetic::mul(mm, Object::makeFixnum(10));
+    r = Arithmetic::mul(r, Object::makeFixnum(10));
+    intptr_t dig = '0';
+    if (Arithmetic::eq(r, s)) {
+        dig += 1;
+        r = Object::makeFixnum(0);
+    } else if (Arithmetic::gt(r, s)) {
+
+        bool isDiv0Error = false;
+        Object nq = Arithmetic::floor(Arithmetic::div(r, s, isDiv0Error)); // floor is correct?
+        Object nr = Arithmetic::sub(r, Arithmetic::mul(nq, s));
+        MOSH_ASSERT(nq.isFixnum());
+        dig += nq.toFixnum();
+        r = nr;
 //         if (r.isFixnum()) {
 //             assert(s.isFixnum());
 //             intptr_t nq = r.toFixnum() / s.toFixnum();
@@ -1648,69 +1660,67 @@ ucs4string AlgorithmR::cnvt_flonum_to_string(double v, bool no_exponential)
 //             dig += FIXNUM(bn_demote((scm_bignum_t)ans.quotient));
 //             r = bn_demote((scm_bignum_t)ans.remainder);
 //         }
-//     }
-//     test = n_compare(heap, r, mm);
-//     bool tc1 = (test < 0 || (meven && test == 0));
-//     test = integer_ucmp3(r, mp, s);
-//     bool tc2 = (test > 0 || (meven && test == 0));
-//     if (!tc1) {
-//         if (!tc2) {
-//             digits[digit_count++] = dig;
-//             if (digit_count >= array_sizeof(digits)) {
-//                 fatal("%s:%u something wrong", __FILE__, __LINE__);
-//             }
-//             goto loop;
-//         } else {
-//             digits[digit_count++] = dig + 1;
-//         }
-//     } else {
-//         if (!tc2) {
-//             digits[digit_count++] = dig;
-//         } else {
-//             if (integer_ucmp3(r, r, s) < 0) {
-//                 digits[digit_count++] = dig;
-//             } else {
-//                 digits[digit_count++] = dig + 1;
-//             }
-//         }
-//     }
-//     // todo: support misc format
-//     char out[512];
-//     int out_count = 0;
-//     digits[digit_count] = 0;
-//     if (no_exponential || (exponent >= -10 && exponent <= 10)) {
-//         if (sign == -1) out[out_count++] = '-';
-//         if (exponent <= 0) {
-//             out[out_count++] = '0';
-//             out[out_count++] = '.';
-//             while (++exponent <= 0) out[out_count++] = '0';
-//             for (int i = 0; digits[i] != 0; i++) out[out_count++] = digits[i];
-//         } else {
-//             for (int i = 0; digits[i] != 0; i++) {
-//                 out[out_count++] = digits[i];
-//                 if (--exponent == 0) out[out_count++] = '.';
-//             }
-//             if (exponent >= 0) {
-//                 if (exponent == 0) {
-//                     out[out_count++] = '0';
-//                 } else {
-//                     while (exponent > 0) {
-//                         out[out_count++] = '0';
-//                         exponent--;
-//                     }
-//                     out[out_count++] = '.';
-//                     out[out_count++] = '0';
-//                 }
-//             }
-//         }
-//         out[out_count] = 0;
-//     } else {
-//         if (sign == -1) out[out_count++] = '-';
-//         out[out_count++] = digits[0];
-//         if (digits[1]) out[out_count++] = '.';
-//         for (int i = 1; digits[i] != 0; i++) out[out_count++] = digits[i];
-//         out[out_count] = 0;
-//         snprintf(&out[out_count], sizeof(out) - out_count, "e%d", exponent-1);
-//     }
-//     return make_string(heap, out);
+    }
+    bool tc1 = (Arithmetic::lt(r, mm) || (meven && Arithmetic::eq(r, mm)));
+    bool tc2 = (Arithmetic::gt(Arithmetic::add(r, mp), s) > 0 || (meven && Arithmetic::eq(Arithmetic::add(r, mp), s)));
+    if (!tc1) {
+        if (!tc2) {
+            digits[digit_count++] = dig;
+            if (digit_count >= array_sizeof(digits)) {
+                MOSH_FATAL("something wrong");
+            }
+            goto loop;
+        } else {
+            digits[digit_count++] = dig + 1;
+        }
+    } else {
+        if (!tc2) {
+            digits[digit_count++] = dig;
+        } else {
+            if (Arithmetic::lt(Arithmetic::add(r, r), s)) {
+                digits[digit_count++] = dig;
+            } else {
+                digits[digit_count++] = dig + 1;
+            }
+        }
+    }
+    // todo: support misc format
+    char out[512];
+    int out_count = 0;
+    digits[digit_count] = 0;
+    if (no_exponential || (exponent >= -10 && exponent <= 10)) {
+        if (sign == -1) out[out_count++] = '-';
+        if (exponent <= 0) {
+            out[out_count++] = '0';
+            out[out_count++] = '.';
+            while (++exponent <= 0) out[out_count++] = '0';
+            for (int i = 0; digits[i] != 0; i++) out[out_count++] = digits[i];
+        } else {
+            for (int i = 0; digits[i] != 0; i++) {
+                out[out_count++] = digits[i];
+                if (--exponent == 0) out[out_count++] = '.';
+            }
+            if (exponent >= 0) {
+                if (exponent == 0) {
+                    out[out_count++] = '0';
+                } else {
+                    while (exponent > 0) {
+                        out[out_count++] = '0';
+                        exponent--;
+                    }
+                    out[out_count++] = '.';
+                    out[out_count++] = '0';
+                }
+            }
+        }
+        out[out_count] = 0;
+    } else {
+        if (sign == -1) out[out_count++] = '-';
+        out[out_count++] = digits[0];
+        if (digits[1]) out[out_count++] = '.';
+        for (int i = 1; digits[i] != 0; i++) out[out_count++] = digits[i];
+        out[out_count] = 0;
+        snprintf(&out[out_count], sizeof(out) - out_count, "e%d", exponent-1);
+    }
+    return ucs4string::from_c_str(out);
 }

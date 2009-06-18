@@ -3085,7 +3085,7 @@
 ("a" (number->string 10 16))
 ("12" (number->string 10 8))
 (error (number->string 1.0 8))
-("1.000000" (number->string 1.0))
+("1.0" (number->string 1.0))
 ("1/a" (number->string 1/10 16))
 ("1+1i" (number->string 1+i))
 (-5 (string->number (number->string -5 16)))

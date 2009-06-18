@@ -1,6 +1,8 @@
 2009-06-18  higepon  <higepon@users.sourceforge.jp>
 
-        * Arithmetic.h : Added AlgorithmR for reading floating point.
+        * UtilityProcedures.cpp : Uses FlonumUtil::flonumToUcs4String for number->string.
+
+        * Arithmetic.h : Added FlonumUtil for reading/writing flonum.
 
 2009-06-17  higepon  <higepon@users.sourceforge.jp>
 
