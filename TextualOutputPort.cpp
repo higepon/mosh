@@ -253,29 +253,30 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(buf);
     } else if (o.isFlonum()) {
         Flonum* const flonum = o.toFlonum();
-        char buf[512];
-        if (flonum->isNan()) {
-            putString(UC("+nan.0"));
-        } else if (flonum->isInfinite()) {
-            if (flonum->value() > 0.0) {
-                putString(UC("+inf.0"));
-            } else {
-                putString(UC("-inf.0"));
-            }
-        } else {
-            snprintf(buf, sizeof(buf), "%f", flonum->value());
-            putString(buf);
-            #if 0
-            snprintf(buf, sizeof(buf), "%.20g", flonum->value());
-            size_t n = strcspn(buf, ".eE");
-            if (buf[n]) {
-                putString(buf);
-            } else {
-                strcat(buf,".0");
-                putString(buf);
-            }
-            #endif
-        }
+        putString(FlonumUtil::flonumToUcs4String(flonum->value(), false));
+//         char buf[512];
+//         if (flonum->isNan()) {
+//             putString(UC("+nan.0"));
+//         } else if (flonum->isInfinite()) {
+//             if (flonum->value() > 0.0) {
+//                 putString(UC("+inf.0"));
+//             } else {
+//                 putString(UC("-inf.0"));
+//             }
+//         } else {
+//             snprintf(buf, sizeof(buf), "%f", flonum->value());
+//             putString(buf);
+//             #if 0
+//             snprintf(buf, sizeof(buf), "%.20g", flonum->value());
+//             size_t n = strcspn(buf, ".eE");
+//             if (buf[n]) {
+//                 putString(buf);
+//             } else {
+//                 strcat(buf,".0");
+//                 putString(buf);
+//             }
+//             #endif
+//         }
     } else if (o.isInstruction()) {
         char buf[32];
         snprintf(buf, 32, "[insn %d]", o.toInstruction());

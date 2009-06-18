@@ -1,5 +1,7 @@
 2009-06-18  higepon  <higepon@users.sourceforge.jp>
 
+        * TextualOutputPort.cpp : Uses FlonumUtil::flonumToUcs4String for display/write.
+
         * UtilityProcedures.cpp : Uses FlonumUtil::flonumToUcs4String for number->string.
 
         * Arithmetic.h : Added FlonumUtil for reading/writing flonum.
