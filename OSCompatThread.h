@@ -48,8 +48,10 @@
 
 // Check sanity
 // Boehm GC redirects pthread_create => GC_pthread_create with C macro.
-#ifndef pthread_create
-#error "pthread_create redirect does not exist"
+#ifndef _MSC_VER
+  #ifndef pthread_create
+  #error "pthread_create redirect does not exist"
+  #endif
 #endif
 
 // Check sanity
