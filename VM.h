@@ -80,7 +80,7 @@ class TextualOutputPort;
 class Thread;
 class ReaderContext;
 class NumberReaderContext;
-
+#define snprintf _snprintf
 class VM EXTEND_GC
 {
 public:

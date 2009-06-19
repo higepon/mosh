@@ -37,7 +37,14 @@
 #define pthread_yield sched_yield
 #endif
 #include "scheme.h"
-#include <sys/time.h> // gettimeofday
+
+#ifdef _MSC_VER
+    #include <windows.h>
+    #include <process.h>
+    #pragma warning(disable : 4127)
+#else
+    #include <sys/time.h> // gettimeofday
+#endif
 
 // Check sanity
 // Boehm GC redirects pthread_create => GC_pthread_create with C macro.
