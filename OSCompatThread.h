@@ -275,25 +275,49 @@ namespace scheme {
     class ThreadSpecificKey : public gc_cleanup
     {
     private:
+#ifdef _MSC_VER
+        DWORD key_;
+#else
         pthread_key_t key_;
+#endif
     public:
         ThreadSpecificKey()
         {
+#ifdef _MSC_VER
+            key_ = TlsAlloc();
+            if (key_ == 0xFFFFFFFF) {
+                fprintf(stderr, "fatal : ThreadSpecificKey create\n");
+                ::exit(-1);
+            }
+#else
             if (pthread_key_create(&key_, NULL) != 0) {
                 fprintf(stderr, "fatal : ThreadSpecificKey create\n");
                 ::exit(-1);
             }
+#endif
+
         }
 
         virtual~ ThreadSpecificKey()
         {
+#ifdef _MSC_VER
+            if (0 == TlsFree(key_)) {
+                fprintf(stderr, "fatal : ThreadSpecificKey delete\n");
+                ::exit(-1);
+            }
+#else
             if (pthread_key_delete(key_) != 0) {
                 fprintf(stderr, "fatal : ThreadSpecificKey delete\n");
                 ::exit(-1);
             }
+#endif
         }
 
+#ifdef _MSC_VER
+        DWORD key()
+#else
         pthread_key_t key()
+#endif
         {
             return key_;
         }
@@ -323,12 +347,20 @@ namespace scheme {
 
         static bool setSpecific(ThreadSpecificKey* key, void* value)
         {
+#ifdef _MSC_VER
+            return TlsSetValue(key->key() , value);
+#else
             return pthread_setspecific(key->key(), value) == 0;
+#endif
         }
 
         static void* getSpecific(ThreadSpecificKey* key)
         {
+#ifdef _MSC_VER
+            return TlsGetValue(key->key());
+#else
             return pthread_getspecific(key->key());
+#endif
         }
 
 
@@ -343,6 +375,7 @@ namespace scheme {
 #ifdef _MSC_VER
             const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
             // todo
+            // 値を返せるようにする事
             // http://www-online.kek.jp/~keibun/pukiwiki/index.php?Pthread%20for%20Win32%20%A4%CE%BC%C2%C1%F5%A4%CE%BB%EE%A4%DF(1)
             return ret;
 #else
