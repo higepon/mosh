@@ -58,6 +58,27 @@ extern int number_yyerror(const char *);
 //#define YYDEBUG 1
 // yydebug = 1
 
+static int ucs4stringToInt(const ucs4string& text)
+{
+    int ret = strtol(text.ascii_c_str(), NULL, 10);
+    if (errno == ERANGE) {
+        MOSH_FATAL("reader suffix");
+    }
+    return ret;
+}
+
+// e1000 => 1000 e+100 => 100, e-100 =>-100
+static int suffix(const ucs4string& text)
+{
+    MOSH_ASSERT(text.size() > 0);
+    const char* p = text.ascii_c_str();
+    int ret = strtol(p + 1, NULL, 10);
+    if (errno == ERANGE) {
+        MOSH_FATAL("reader suffix");
+    }
+    return ret;
+}
+
 // text => "e100", "e+100" or "e-100" style
 static Object suffixToNumber(const ucs4string& text)
 {
@@ -291,16 +312,22 @@ decimal10 : uinteger10String suffix {
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
-                $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumber($2));
+                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumber($2));
+// todo ("#e-1e-1000" (- (expt 10 -1000)))
+//                   int suffixNum = suffix($2);
+//                   Object z0 = Arithmetic::mul(Bignum::makeInteger($1),
+//                                               Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(suffixNum)));
+//                   z0 = Arithmetic::inexact(z0);
+//                   $$ = Object::makeFlonum(FlonumUtil::algorithmR(Bignum::makeInteger($1), suffixNum, z0.toFlonum()->value()));
               }
           }
           | DOT uinteger10String suffix {
               ucs4string ret = UC(".");
               ret += $2;
               if (!$3.empty()) {
-
-                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
               } else {
+
                   $$ = Flonum::fromString(ret);
               }
 

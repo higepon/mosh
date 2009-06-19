@@ -219,7 +219,8 @@ TEST_F(ObjectTest, Symbol) {
 TEST_F(ObjectTest, AlgorithmR) {
     EXPECT_STREQ("1e99", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(10), 98, 1.0e99), false).ascii_c_str());
     EXPECT_STREQ("1000000000.0", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(10), 8, 1.0e9), false).ascii_c_str());
+    EXPECT_STREQ("1e-99", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(1), -99, 1.0e-99), false).ascii_c_str());
+    EXPECT_STREQ("1e99", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(1), +99, 1.0e+99), false).ascii_c_str());
 
-    FlonumUtil::flonumToUcs4String(123.3456, false);
 }
 

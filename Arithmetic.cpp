@@ -1427,11 +1427,9 @@ double FlonumUtil::algorithmR(Object f, const int e, const double z0)
     Object x0;
     Object pow10e;
     if (e >= 0) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         x0 = Arithmetic::mul(f, Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(e)));
         pow10e = Object::Undef;
     } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         x0 = Object::Undef;
         pow10e = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(-e));
     }
