@@ -325,9 +325,16 @@ namespace scheme {
 
     class Thread EXTEND_GC
     {
-    private:
-        static ThreadSpecificKey* selfKey;
     public:
+        struct StubInfo EXTEND_GC
+        {
+            void* (*func)(void*);
+            void* argument;
+            Thread* thread;
+            ThreadSpecificKey* selfKey;
+            void* returnValue;
+        };
+
         static void initialize()
         {
             selfKey = new ThreadSpecificKey;
@@ -367,6 +374,12 @@ namespace scheme {
         Thread() : lastError_(0)
         {
         }
+        virtual ~Thread()
+        {
+#ifdef _MSC_VER
+            CloseHandle(thread_);
+#endif
+        }
 
         bool create(void* (*start)(void*), void* arg);
 
@@ -374,9 +387,9 @@ namespace scheme {
         {
 #ifdef _MSC_VER
             const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
-            // todo
-            // 値を返せるようにする事
-            // http://www-online.kek.jp/~keibun/pukiwiki/index.php?Pthread%20for%20Win32%20%A4%CE%BC%C2%C1%F5%A4%CE%BB%EE%A4%DF(1)
+            if(returnValue != NULL) {
+                *thread_return = stubInfo_->returnValue;
+            }
             return ret;
 #else
             if (GC_pthread_join(thread_, returnValue) == 0) {
@@ -388,14 +401,19 @@ namespace scheme {
 #endif
         }
 
-        static void yield()
-        {
-            pthread_yield();
-        }
+/// not used
+//         static void yield()
+//         {
+//             pthread_yield();
+//         }
 
         static void exit(void* exitValue)
         {
+#ifdef _MSC_VER
+            _endthreadex(exitValue);
+#else
             pthread_exit(exitValue);
+#endif
         }
 
     private:
@@ -410,6 +428,10 @@ namespace scheme {
         pthread_t thread_;
 #endif
         int lastError_;
+    private:
+        static ThreadSpecificKey* selfKey;
+        StubInfo* stubInfo_;
+
     };
 
 }; // namespace scheme

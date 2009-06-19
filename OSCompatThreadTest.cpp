@@ -125,17 +125,17 @@ TEST_F(MoshTest, self) {
     thread.join(NULL);
 }
 
-static void* checkYield(void* param)
-{
-    Thread::yield();
-    return NULL;
-}
+// static void* checkYield(void* param)
+// {
+//     Thread::yield();
+//     return NULL;
+// }
 
-TEST_F(MoshTest, yield) {
-    Thread thread;
-    ASSERT_TRUE(thread.create(checkYield, &thread));
-    thread.join(NULL);
-}
+// TEST_F(MoshTest, yield) {
+//     Thread thread;
+//     ASSERT_TRUE(thread.create(checkYield, &thread));
+//     thread.join(NULL);
+// }
 
 static void* checkExit(void* param)
 {

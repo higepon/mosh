@@ -43,40 +43,35 @@ using namespace scheme;
 
 ThreadSpecificKey* Thread::selfKey;
 
-struct StubInfo
-{
-    void* (*func)(void*);
-    void* argument;
-    Thread* thread;
-    ThreadSpecificKey* selfKey;
-};
 
 static void* stubFunction(void* param)
 {
-    StubInfo* info = (StubInfo*)param;
+    Thread::StubInfo* info = (Thread::StubInfo*)param;
     if (!Thread::setSpecific(info->selfKey, info->thread)) {
         fprintf(stderr, "fatal : Thread store self\n");
         exit(-1);
     }
-    return info->func(info->argument);
+    info->returnValue = info->func(info->argument);
+    return info->returnValue;
 }
 
 bool Thread::create(void* (*start)(void*), void* arg)
 {
-    StubInfo* info = new StubInfo;
-    info->func = start;
-    info->argument = arg;
-    info->thread = this;
-    info->selfKey = selfKey;
-//    pthread_attr_t thattr;
-//    pthread_attr_init(&thattr);
-//    pthread_attr_setdetachstate(&thattr, PTHREAD_CREATE_DETACHED);
-    if (GC_pthread_create(&thread_, NULL, stubFunction , info) == 0) {
-//        pthread_attr_destroy(&thattr);
+    stubInfo_ = new StubInfo;
+    stubInfo_->func = start;
+    stubInfo_->argument = arg;
+    stubInfo_->thread = this;
+    stubInfo_->selfKey = selfKey;
+#ifdef _MSC_VER
+    unsigned int threadId;
+    thread_ = _beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
+    return thread_ != 0;
+#else
+    if (GC_pthread_create(&thread_, NULL, stubFunction , stubInfo_) == 0) {
         return true;
     } else {
         setLastError();
-//        pthread_attr_destroy(&thattr);
         return false;
     }
+#endif
 }
