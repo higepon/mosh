@@ -44,7 +44,11 @@ using namespace scheme;
 ThreadSpecificKey* Thread::selfKey;
 
 
+#ifdef _MSC_VER
+static unsigned int __stdcall stubFunction(void* param)
+#else
 static void* stubFunction(void* param)
+#endif
 {
     Thread::StubInfo* info = (Thread::StubInfo*)param;
     if (!Thread::setSpecific(info->selfKey, info->thread)) {

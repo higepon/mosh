@@ -364,7 +364,7 @@ namespace scheme {
         static bool setSpecific(ThreadSpecificKey* key, void* value)
         {
 #ifdef _MSC_VER
-            return TlsSetValue(key->key() , value);
+            return TlsSetValue(key->key() , value) != 0;
 #else
             return pthread_setspecific(key->key(), value) == 0;
 #endif
@@ -397,7 +397,7 @@ namespace scheme {
 #ifdef _MSC_VER
             const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
             if(returnValue != NULL) {
-                *thread_return = stubInfo_->returnValue;
+                *returnValue = stubInfo_->returnValue;
             }
             return ret;
 #else
@@ -419,7 +419,7 @@ namespace scheme {
         static void exit(void* exitValue)
         {
 #ifdef _MSC_VER
-            _endthreadex(exitValue);
+            _endthreadex((unsigned int)exitValue);
 #else
             pthread_exit(exitValue);
 #endif
