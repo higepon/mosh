@@ -516,11 +516,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(NUMBER_EQUAL)
         {
             const Object n = pop();
-            // short cut for Fixnum. Benmarks tell me this is strongly required.
+            // short cut for Fixnum. Benchmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
                 ac_ = Object::makeBool(n.toFixnum() == ac_.toFixnum());
             } else {
-                ac_ = Object::makeBool(Arithmetic::eq(n, ac_));
+                if (n.isNumber() && ac_.isNumber()) {
+                    ac_ = Object::makeBool(Arithmetic::eq(n, ac_));
+                } else {
+                    callWrongTypeOfArgumentViolationAfter(this, "=", "number", L2(n, ac_));
+                }
             }
             NEXT1;
         }
