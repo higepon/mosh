@@ -56,7 +56,11 @@ static void* stubFunction(void* param)
         exit(-1);
     }
     info->returnValue = info->func(info->argument);
+#ifdef _MSC_VER
+	return (unsigned int)info->returnValue;
+#else
     return info->returnValue;
+#endif
 }
 
 bool Thread::create(void* (*start)(void*), void* arg)
@@ -68,7 +72,7 @@ bool Thread::create(void* (*start)(void*), void* arg)
     stubInfo_->selfKey = selfKey;
 #ifdef _MSC_VER
     unsigned int threadId;
-    thread_ = _beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
+    thread_ = (HANDLE)_beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
     return thread_ != 0;
 #else
     if (GC_pthread_create(&thread_, NULL, stubFunction , stubInfo_) == 0) {

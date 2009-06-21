@@ -471,6 +471,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MultiVMProcedures.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MultiVMProcedures.h"
+				>
+			</File>
+			<File
 				RelativePath=".\NumberReader.cpp"
 				>
 			</File>
@@ -496,6 +504,14 @@
 			</File>
 			<File
 				RelativePath=".\OSCompatSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\OSCompatThread.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\OSCompatThread.h"
 				>
 			</File>
 			<File
@@ -656,6 +672,14 @@
 			</File>
 			<File
 				RelativePath=".\VM.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VMFactory.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VMFactory.h"
 				>
 			</File>
 			<Filter

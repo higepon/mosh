@@ -169,7 +169,7 @@ namespace scheme {
         {
 #ifdef _MSC_VER
             cond_ = CreateEvent(NULL, true, false, NULL);
-            if (NULL == cond_ == NULL) {
+            if (NULL == cond_) {
                 fprintf(stderr, "CreateEvent failed\n");
                 exit(-1);
             }
