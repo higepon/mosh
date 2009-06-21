@@ -45,7 +45,7 @@ using namespace scheme;
 ThreadSpecificKey* Thread::selfKey;
 
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 static unsigned int __stdcall stubFunction(void* param)
 #else
 static void* stubFunction(void* param)
@@ -71,7 +71,7 @@ bool Thread::create(void* (*start)(void*), void* arg)
     stubInfo_->argument = arg;
     stubInfo_->thread = this;
     stubInfo_->selfKey = selfKey;
-#ifdef _MSC_VER
+#ifdef _WIN32
     unsigned int threadId;
     thread_ = (HANDLE)GC_beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
     return thread_ != 0;

@@ -38,7 +38,7 @@
 #endif
 #include "scheme.h"
 
-#ifdef _MSC_VER
+#ifdef _WIN32
     #include <windows.h>
     //#include <process.h>
     #pragma warning(disable : 4127)
@@ -48,7 +48,7 @@
 
 // Check sanity
 // Boehm GC redirects pthread_create => GC_pthread_create with C macro.
-#ifndef _MSC_VER
+#ifndef _WIN32
   #ifndef pthread_create
   #error "pthread_create redirect does not exist"
   #endif
@@ -79,7 +79,7 @@
 
 namespace scheme {
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 
     class Mutex : public gc_cleanup
     {
@@ -158,7 +158,7 @@ namespace scheme {
     class ConditionVariable : public gc_cleanup
     {
     private:
-#ifdef _MSC_VER
+#ifdef _WIN32
         HANDLE cond_;
 #else
         pthread_cond_t cond_;
@@ -167,7 +167,7 @@ namespace scheme {
 
         void initialize()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             cond_ = CreateEvent(NULL, true, false, NULL);
             if (NULL == cond_) {
                 fprintf(stderr, "CreateEvent failed\n");
@@ -190,7 +190,7 @@ namespace scheme {
 
         virtual ~ConditionVariable()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             CloseHandle(cond_);
 #else
             pthread_cond_destroy(&cond_);
@@ -210,7 +210,7 @@ namespace scheme {
 
         bool notify()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             int ret = SetEvent(cond_);
 #else
             int ret = pthread_cond_signal(&cond_);
@@ -220,7 +220,7 @@ namespace scheme {
 
         bool notifyAll()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             int ret = SetEvent(cond_);
 #else
             int ret = pthread_cond_broadcast(&cond_);
@@ -230,7 +230,7 @@ namespace scheme {
 
         bool wait(Mutex* mutex)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             mutex->unlock();
             WaitForSingleObject(cond_, INFINITE);
             mutex->lock();
@@ -244,7 +244,7 @@ namespace scheme {
         // returns false if timeout
         bool waitWithTimeout(Mutex* mutex, int msecs)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             mutex->unlock();
             DWORD res = WaitForSingleObject(cond_, msecs);
             mutex->lock();
@@ -284,7 +284,7 @@ namespace scheme {
     class ThreadSpecificKey : public gc_cleanup
     {
     private:
-#ifdef _MSC_VER
+#ifdef _WIN32
         DWORD key_;
 #else
         pthread_key_t key_;
@@ -292,7 +292,7 @@ namespace scheme {
     public:
         ThreadSpecificKey()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             key_ = TlsAlloc();
             if (key_ == 0xFFFFFFFF) {
                 fprintf(stderr, "fatal : ThreadSpecificKey create\n");
@@ -309,7 +309,7 @@ namespace scheme {
 
         virtual~ ThreadSpecificKey()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             if (0 == TlsFree(key_)) {
                 fprintf(stderr, "fatal : ThreadSpecificKey delete\n");
                 ::exit(-1);
@@ -322,7 +322,7 @@ namespace scheme {
 #endif
         }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         DWORD key()
 #else
         pthread_key_t key()
@@ -363,7 +363,7 @@ namespace scheme {
 
         static bool setSpecific(ThreadSpecificKey* key, void* value)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             return TlsSetValue(key->key() , value) != 0;
 #else
             return pthread_setspecific(key->key(), value) == 0;
@@ -372,7 +372,7 @@ namespace scheme {
 
         static void* getSpecific(ThreadSpecificKey* key)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             return TlsGetValue(key->key());
 #else
             return pthread_getspecific(key->key());
@@ -385,7 +385,7 @@ namespace scheme {
         }
         virtual ~Thread()
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             CloseHandle(thread_);
 #endif
         }
@@ -394,7 +394,7 @@ namespace scheme {
 
         bool join(void** returnValue)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
             if(returnValue != NULL) {
                 *returnValue = stubInfo_->returnValue;
@@ -418,7 +418,7 @@ namespace scheme {
 
         static void exit(void* exitValue)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             GC_endthreadex((unsigned int)exitValue);
 #else
             pthread_exit(exitValue);
@@ -431,7 +431,7 @@ namespace scheme {
             lastError_ = errno;
         }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         HANDLE thread_;
 #else
         pthread_t thread_;
