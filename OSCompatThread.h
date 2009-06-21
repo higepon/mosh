@@ -40,7 +40,7 @@
 
 #ifdef _MSC_VER
     #include <windows.h>
-    #include <process.h>
+    //#include <process.h>
     #pragma warning(disable : 4127)
 #else
     #include <sys/time.h> // gettimeofday
@@ -419,7 +419,7 @@ namespace scheme {
         static void exit(void* exitValue)
         {
 #ifdef _MSC_VER
-            _endthreadex((unsigned int)exitValue);
+            GC_endthreadex((unsigned int)exitValue);
 #else
             pthread_exit(exitValue);
 #endif

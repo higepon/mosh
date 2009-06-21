@@ -38,6 +38,7 @@
 #include "Transcoder.h"
 #include "OSCompat.h"
 #include "OSCompatThread.h"
+#include "gc.h"
 
 using namespace scheme;
 
@@ -72,7 +73,7 @@ bool Thread::create(void* (*start)(void*), void* arg)
     stubInfo_->selfKey = selfKey;
 #ifdef _MSC_VER
     unsigned int threadId;
-    thread_ = (HANDLE)_beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
+    thread_ = (HANDLE)GC_beginthreadex(0, 0, stubFunction,stubInfo_, 0, &threadId);
     return thread_ != 0;
 #else
     if (GC_pthread_create(&thread_, NULL, stubFunction , stubInfo_) == 0) {
