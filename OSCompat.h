@@ -61,6 +61,8 @@ namespace scheme {
     ucs4char* getEnv(const ucs4string& key);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
+    bool createDirectory(const ucs4string& path);
+    bool isDirectory(const ucs4string& path);
     Object getCurrentDirectory();
     bool setCurrentDirectory(const ucs4string& dir);
     ucs4string getLastErrorMessage();
@@ -145,7 +147,12 @@ namespace scheme {
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);
         static bool isReadable(const ucs4string& path);
-
+        static bool isExecutable(const ucs4string& path);
+        static bool isRegular(const ucs4string& path);
+        static bool isSymbolicLink(const ucs4string& path);
+        static bool rename(const ucs4string& oldPath, const ucs4string& newPath);
+        static bool createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPath);
+        static bool deleteFileOrDirectory(const ucs4string& path);
         static File STANDARD_IN;
         static File STANDARD_OUT;
         static File STANDARD_ERR;

@@ -64,12 +64,7 @@ TEST_F(MoshTest, FileAccess) {
 }
 
 TEST_F(MoshTest, utf32toUtf8) {
-    ByteVector* bv = utf32toUtf8(UC("abc"));
-    ASSERT_EQ(4, bv->length());
-    EXPECT_EQ('a', bv->u8Ref(0));
-    EXPECT_EQ('b', bv->u8Ref(1));
-    EXPECT_EQ('c', bv->u8Ref(2));
-    EXPECT_EQ('\0', bv->u8Ref(3));
+    EXPECT_STREQ("abc", utf32toUtf8(UC("abc")));
 }
 
 TEST_F(MoshTest, readDirectory) {
@@ -77,3 +72,48 @@ TEST_F(MoshTest, readDirectory) {
     ASSERT_TRUE(directories.isList());
 }
 
+TEST_F(MoshTest, createDirectory) {
+    const ucs4char* dir = UC("OSCompatTestDir");
+    ucs4string subdir = dir;
+    subdir += UC("/hige");
+    ASSERT_TRUE(createDirectory(dir));
+    ASSERT_TRUE(createDirectory(subdir));
+    const Object directories = readDirectory(dir);
+    ASSERT_TRUE(directories.isList());
+    EXPECT_EQ(3, Pair::length(directories));
+    ASSERT_TRUE(File::deleteFileOrDirectory(subdir));
+    ASSERT_TRUE(File::deleteFileOrDirectory(dir));
+    EXPECT_FALSE(File::isExist(dir));
+    EXPECT_FALSE(File::isExist(subdir));
+}
+
+TEST_F(MoshTest, renameFile) {
+    const ucs4char* dir = UC("OSCompatTestDir");
+    const ucs4char* dir2 = UC("OSCompatTestDir.bak");
+    ASSERT_TRUE(createDirectory(dir));
+    EXPECT_TRUE(File::isExist(dir));
+    ASSERT_TRUE(File::rename(dir, dir2));
+    EXPECT_FALSE(File::isExist(dir));
+    EXPECT_TRUE(File::isExist(dir2));
+    ASSERT_TRUE(File::deleteFileOrDirectory(dir2));
+    EXPECT_FALSE(File::isExist(dir2));
+}
+
+TEST_F(MoshTest, isDirectory) {
+    const ucs4char* dir = UC("OSCompatTestDir");
+    ASSERT_TRUE(createDirectory(dir));
+    EXPECT_TRUE(isDirectory(dir));
+    ASSERT_TRUE(File::deleteFileOrDirectory(dir));
+}
+
+TEST_F(MoshTest, isDirectory2) {
+    EXPECT_FALSE(isDirectory(UC("main.cpp")));
+}
+
+TEST_F(MoshTest, SymbolicLink) {
+    const ucs4char* file = UC("hige");
+    ASSERT_TRUE(File::createSymbolicLink(UC("."), file));
+    EXPECT_FALSE(File::isRegular(file));
+    EXPECT_TRUE(File::isSymbolicLink(file));
+    ASSERT_TRUE(File::deleteFileOrDirectory(file));
+}

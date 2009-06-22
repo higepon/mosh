@@ -104,7 +104,7 @@ ucs4string scheme::utf16ToUtf32(const char* s, int len)
 }
 
 // output is NULL terminated
-ByteVector* scheme::utf32toUtf8(const ucs4string& s)
+char* scheme::utf32toUtf8(const ucs4string& s)
 {
     ByteArrayBinaryOutputPort out;
     UTF8Codec codec;
@@ -113,9 +113,8 @@ ByteVector* scheme::utf32toUtf8(const ucs4string& s)
     if (!s.empty()) {
         transcoderr.putChar(&out, '\0');
     }
-    return out.toByteVector();
+    return (char*)out.toByteVector()->data();
 }
-
 
 static bool isExistOption(Record* fileOptions, Object option)
 {

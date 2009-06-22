@@ -74,11 +74,11 @@ extern int main(int argc, char *argv[]);
     #include <direct.h>
     //#include <process.h>
     #include <shellapi.h>
-	#include <winsock2.h> // for OSConstants
-	#include <ws2tcpip.h> // for OSConstants
+    #include <winsock2.h> // for OSConstants
+    #include <ws2tcpip.h> // for OSConstants
 
-	#define SHUT_RD SD_RECEIVE
-	#define SHUT_WR SD_SEND
+    #define SHUT_RD SD_RECEIVE
+    #define SHUT_WR SD_SEND
     #define SHUT_RDWR SD_BOTH
     #define PATH_MAX _MAX_PATH
     #define dup2 _dup2
@@ -265,7 +265,7 @@ bool File::open(const ucs4string& file, int flags)
     if (flags & Truncate) {
         mode |= O_TRUNC;
     }
-    desc_ = ::open((char*)utf32toUtf8(file)->data(), mode, 0644);
+    desc_ = ::open(utf32toUtf8(file), mode, 0644);
 #endif
     setLastError();
     return isOpen();
@@ -480,7 +480,7 @@ bool wrapped_access(const ucs4string& path, int mode)
 #ifdef _WIN32
     return _waccess(utf32ToUtf16(path), mode) == 0;
 #else
-    return access((char*)utf32toUtf8(path)->data(), mode) == 0;
+    return access(utf32toUtf8(path), mode) == 0;
 #endif
 }
 
@@ -498,6 +498,113 @@ bool File::isWritable(const ucs4string& path)
 bool File::isReadable(const ucs4string& path)
 {
     return wrapped_access(path, R_OK);
+}
+
+static bool endsWith(const ucs4string& str, const ucs4string& key)
+{
+    size_t keylen = key.length();
+    size_t slen = str.length();
+    if(keylen <= slen) {
+        return std::equal(str.begin() + str.size() - key.size(), str.end(), key.begin());
+    } else {
+        return false;
+    }
+}
+
+bool File::isRegular(const ucs4string& path)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    HANDLE fd = CreateFileW(utf32ToUtf16(path), 0, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fd != INVALID_HANDLE_VALUE) {
+        DWORD type = GetFileType(fd) & ~FILE_TYPE_REMOTE;
+        CloseHandle(fd);
+        return (type == FILE_TYPE_DISK);
+    }
+    return false;
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+        return S_ISREG(st.st_mode);
+    }
+    return false;
+#endif
+}
+
+bool File::isSymbolicLink(const ucs4string& path)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    DWORD attr = GetFileAttributesW(utf32ToUtf16(path));
+    if (attr == INVALID_FILE_ATTRIBUTES) {
+        return false;
+    }
+    return (attr & FILE_ATTRIBUTE_REPARSE_POINT);
+#else
+    struct stat st;
+    if (lstat(utf32toUtf8(path), &st) == 0) {
+        return S_ISLNK(st.st_mode);
+    }
+    return false;
+#endif
+}
+
+bool File::isExecutable(const ucs4string& path)
+{
+#ifdef _WIN32
+    if (isExist(path)) {
+        const ucs4char* extensions[] = { UC(".COM"), UC(".EXE"), UC(".BAT"), UC(".VBS"), UC("VBE"),
+                                         UC(".JS"), UC(".JSE"), UC(".WSF"), UC(".WSH"), UC(".MSC")};
+        for (int i = 0; i < sizeof(extensions); i++) {
+            if (endsWith(path, extensions[i])) {
+                return true;
+            }
+        }
+    }
+    return false;
+#else
+    return wrapped_access(path, X_OK);
+#endif
+}
+
+bool File::deleteFileOrDirectory(const ucs4string& path)
+{
+#ifdef _WIN32
+    return DeleteFileW(utf32ToUtf16(path));
+#else
+    return remove(utf32toUtf8(path)) == 0;
+#endif
+}
+
+bool File::rename(const ucs4string& oldPath, const ucs4string& newPath)
+{
+#ifdef _WIN32
+    return MoveFileExW(utf32toUtf16(oldPath), utf32toUtf16(newPath), MOVEFILE_REPLACE_EXISTING);
+#else
+    return ::rename(utf32toUtf8(oldPath), utf32toUtf8(newPath)) == 0;
+#endif
+}
+
+#ifdef _WIN32
+typedef BOOL (WINAPI* ProcCreateSymbolicLink) (LPCTSTR, LPCTSTR, DWORD);
+#endif
+
+bool File::createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPath)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    ProcCreateSymbolicLink win32CreateSymbolicLink = (ProcCreateSymbolicLink)GetProcAddress(LoadLibraryA("kernel32"), "CreateSymbolicLinkW");
+    if (win32CreateSymbolicLink) {
+        const wchar_t* newPathW = utf32toUtf16(newPath);
+        DWORD flag = PathIsDirectoryW(newPathW) ? 1 : 0; // SYMBOLIC_LINK_FLAG_DIRECTORY == 1
+        if (win32CreateSymbolicLink(newPathW, utf32toUtf16(oldPath), flag)) {
+            return true;
+        }
+    }
+    return false;
+#else
+    return symlink(utf32toUtf8(oldPath), utf32toUtf8(newPath)) == 0;
+#endif
 }
 
 bool File::isLastErrorAcessError() const
@@ -617,7 +724,7 @@ ucs4char* scheme::getEnv(const ucs4string& key)
     }
     return my_utf16ToUtf32(value).strdup();
 #else
-    const char* value = getenv((char*)utf32toUtf8(key)->data());
+    const char* value = getenv(utf32toUtf8(key));
     if (NULL == value) {
         return NULL;
     }
@@ -690,7 +797,7 @@ Object scheme::readDirectory(const ucs4string& path)
     return ret;
 #else
     DIR* dir;
-    if (NULL == (dir = opendir((char*)utf32toUtf8(path)->data()))) {
+    if (NULL == (dir = opendir(utf32toUtf8(path)))) {
         return Object::False;
     }
     Object ret = Object::Nil;
@@ -753,7 +860,29 @@ bool scheme::setCurrentDirectory(const ucs4string& dir)
 #ifdef _WIN32
     return SetCurrentDirectoryW(utf32ToUtf16(dir)) != 0;
 #else
-    return (-1 != chdir((char*)utf32toUtf8(dir)->data()));
+    return (-1 != chdir(utf32toUtf8(dir)));
 #endif
 }
 
+bool scheme::createDirectory(const ucs4string& path)
+{
+#ifdef _WIN32
+    return CreateDirectoryW(utf32ToUtf16(path), NULL);
+#else
+    return mkdir(utf32toUtf8(path), S_IRWXU | S_IRWXG | S_IRWXO) == 0;
+#endif
+}
+
+
+bool scheme::isDirectory(const ucs4string& path)
+{
+#ifdef _WIN32
+    return PathIsDirectoryW(utf32toUtf16(path));
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+        return S_ISDIR(st.st_mode) ? true : false;
+    }
+    return false;
+#endif
+}
