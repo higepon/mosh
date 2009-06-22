@@ -232,7 +232,7 @@ namespace scheme {
         {
 #ifdef _WIN32
             mutex->unlock();
-            WaitForSingleObject(cond_, INFINITE);
+            SignalObjectAndWait(mutex->mutex_, cond_, INFINITE, FALSE);
             mutex->lock();
             return true;
 #else
@@ -245,8 +245,8 @@ namespace scheme {
         bool waitWithTimeout(Mutex* mutex, int msecs)
         {
 #ifdef _WIN32
-            mutex->unlock();
-            DWORD res = WaitForSingleObject(cond_, msecs);
+//            mutex->unlock();
+            DWORD res = SignalObjectAndWait(mutex->mutex_, cond_, msecs, FALSE);
             mutex->lock();
             if (res == WAIT_TIMEOUT) {
                 return false;
