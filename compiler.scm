@@ -814,7 +814,7 @@
                  ($lvar.set-count++! it)
                  ($local-assign it iform)]
                 [#t ($global-assign symbol iform)]))]
-            [else 
+            [else
     (let1 iform (pass1/sexp->iform val lvars tail?)
        (acond
         [(pass1/find-symbol-in-lvars symbol lvars) ;; don't use find, it requires closure creation.
@@ -1048,7 +1048,16 @@
 (define (pass1/letrec vars vals body source-info lvars tail?)
   (let* ([this-lvars (imap (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
          [inits      (imap (lambda (x) (pass1/sexp->iform x (append this-lvars lvars) tail?)) vals)])
-    (for-each (lambda (lvar init) ($lvar.set-init-val! lvar init)) this-lvars inits)
+    (for-each (lambda (lvar init)
+                ;; this name, used for error message.(etc. wrong number arguments)
+                ;; named let
+                (when (tag? init $LAMBDA)
+                  ;; set name to src-info
+                  (when (and ($lambda.src init) (pair? ($lambda.src init)) (pair? (cdr ($lambda.src init))))
+                    (set-car! (cdr ($lambda.src init)) ($lvar.sym lvar)))
+                  ($lambda.set-name! init ($lvar.sym lvar)))
+                ($lvar.set-init-val! lvar init))
+              this-lvars inits)
     (let1 found-error (find (lambda (init)
                               (and (tag? init $LOCAL-REF) (memq ($local-ref.lvar init) this-lvars))) inits)
     ($let 'rec
@@ -1792,7 +1801,7 @@
   (let1 t (tag iform)
     (cond
      [(= $DEFINE t)
-      ($define  
+      ($define
                 ($define.sym iform)
                 (iform-copy ($define.val iform) lv-alist))]
      [(= $LOCAL-REF t)
@@ -1911,11 +1920,26 @@
                      (rec (car iform-list) cnt)))))
   (rec iform 0))
 
-;; Adjust argument list according to reqargs and optarg count.
-;; Used in procedure inlining and local call optimization.
-(define (adjust-arglist reqargs optarg iargs name)
+;; Adjust argument list according to reqargs and optarg count.  Used in procedure inlining and local call optimization.
+(define (adjust-arglist reqargs optarg iargs name src)
   (unless (argcount-ok? iargs reqargs (> optarg 0))
-    (errorf "wrong number of arguments: ~a requires ~a, but got ~a at ~a"
+    (if (and src (pair? src) (pair? (car src)))
+        (errorf
+         "wrong number of arguments: ~a requires ~a, but got ~a at ~a ~a:~a"
+         (ungensym name)
+         reqargs
+         (length iargs)
+         (cdr src)
+         (caar src)
+         (cadar src))
+        (errorf
+         "wrong number of arguments: ~a requires ~a, but got ~a"
+         (ungensym name)
+         reqargs
+         (length iargs)
+         )))
+  #;(unless (argcount-ok? iargs reqargs (> optarg 0))
+    (errorf "wrong number of arguments: letrec/named let requires ~a, but got ~a at ~a"
             name reqargs (length iargs) (source-info iargs)))
   (if (zero? optarg)
       iargs
@@ -1976,7 +2000,7 @@
         (name    ($lambda.name lambda-node))
         )
     ($call.set-args! call (adjust-arglist reqargs optarg ($call.args call)
-                                          name))
+                                          name ($lambda.src lambda-node)))
     ($lvar.ref-count--! lvar)
     ($call.set-type! call 'embed)
     ($call.set-proc! call lambda-node)
@@ -1989,7 +2013,7 @@
           ($lvar.ref-count--! lvar)
           ($call.set-args! jcall (adjust-arglist reqargs optarg
                                                  ($call.args jcall)
-                                                 name))
+                                                 name ($lambda.src lambda-node)))
           ($call.set-proc! jcall call)
           ($call.set-type! jcall 'jump))))))
 
@@ -2005,7 +2029,7 @@
       ($call.set-args! (car call)
                        (adjust-arglist reqargs optarg
                                        ($call.args (car call))
-                                       name))
+                                       name ($lambda.src lambda-node)))
       ($call.set-type! (car call) 'local))
     ;; We clear the calls list, just in case if the lambda-node is
     ;; traversed more than once.

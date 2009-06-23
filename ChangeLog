@@ -1,5 +1,7 @@
 2009-06-23  higepon  <higepon@users.sourceforge.jp>
 
+        * compiler.scm (adjust-arglist): Improved error message of named let.
+
         * lib/mosh/concurrent.ss: Fixed receive-internal.
 
 2009-06-22  higepon  <higepon@users.sourceforge.jp>
