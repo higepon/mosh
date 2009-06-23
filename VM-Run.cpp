@@ -1164,17 +1164,24 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object n = pop();
             const Object obj = pop();
             if (obj.isVector()) {
-                MOSH_ASSERT(n.isFixnum());
-                const int index = n.toFixnum();
-                Vector* const v = obj.toVector();
-                if (v->isValidIndex(index)) {
-                    v->set(index, ac_);
-                    ac_ = Object::Undef;
+                if (n.isFixnum()) {
+                    const int index = n.toFixnum();
+                    Vector* const v = obj.toVector();
+                    if (v->isValidIndex(index)) {
+                        v->set(index, ac_);
+                        ac_ = Object::Undef;
+                    } else {
+                        callAssertionViolationAfter(this,
+                                                    "vector-set!",
+                                                    "index out of range",
+                                                    L1(n));
+                    }
                 } else {
                     callAssertionViolationAfter(this,
                                                 "vector-set!",
-                                                "index out of range",
+                                                "index, number required",
                                                 L1(n));
+
                 }
             } else {
                 callAssertionViolationAfter(this,
