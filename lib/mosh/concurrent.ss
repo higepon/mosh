@@ -43,7 +43,7 @@
                 whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time)
           (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
                 syntax-case syntax integer? syntax->datum when let quasiquote unless error if let* memq remq cons cond pair? not car cadr
-                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote)
+                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote apply)
           (only (mosh queue) make-queue queue-push! queue-empty? queue-pop! queue-append!)
           (only (rnrs mutable-pairs) set-car!)
           (only (match) match))
@@ -313,27 +313,22 @@
            (rec)))])))
 
 (define (receive-internal! . timeout)
-  (let ([mb (pid-mail-box (self))])
-  (let loop ()
-    (cond
-     [(queue-empty? (mail-box-mails mb))
+  (let* ([mb (pid-mail-box (self))]
+         [mutex (mail-box-mutex mb)])
+    (mutex-lock! mutex)
+    (let loop ()
       (cond
-       [(pair? timeout)
-        (mutex-lock! (mail-box-mutex mb))
-        (let ([timeout? (not (condition-variable-wait! (mail-box-condition mb) (mail-box-mutex mb) (car timeout)))])
-          (if timeout?
-              (begin (mutex-unlock! (mail-box-mutex mb)) '%timeout)
-              (loop)))]
+       [(queue-empty? (mail-box-mails mb))
+        (let ([timeout? (not (apply condition-variable-wait! (mail-box-condition mb) mutex timeout))])
+          (cond
+           [timeout?
+            (mutex-unlock! mutex)
+            '%timeout]
+           [else (loop)]))]
        [else
-        (mutex-lock! (mail-box-mutex mb))
-        (condition-variable-wait! (mail-box-condition mb) (mail-box-mutex mb))
-        (mutex-unlock! (mail-box-mutex mb))
-        (loop)])]
-     [else
-      (mutex-lock! (mail-box-mutex mb))
-      (let ([val (queue-pop! (mail-box-mails mb))])
-        (mutex-unlock! (mail-box-mutex mb))
-        val)]))))
+        (let ([val (queue-pop! (mail-box-mails mb))])
+            (mutex-unlock! mutex)
+            val)]))))
 
 #|
     Function: join!
