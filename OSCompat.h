@@ -144,6 +144,7 @@ namespace scheme {
         ucs4string getLastErrorMessage() const;
         bool isLastErrorAcessError() const;
 
+        static Object size(const ucs4string& path);
         static bool isExist(const ucs4string& path);
         static bool isWritable(const ucs4string& path);
         static bool isReadable(const ucs4string& path);

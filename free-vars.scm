@@ -550,4 +550,20 @@
     vector-length
     vector-ref
     vector-set!
+
+    ;; file system
+    create-directory
+    delete-directory
+    rename-file
+    create-symbolic-link
+    file-directory?
+    file-symbolic-link?
+    file-regular?
+    file-readable?
+    file-executable?
+    file-writable?
+    file-size-in-bytes
+    file-stat-mtime
+    file-stat-atime
+    file-stat-ctime
     )

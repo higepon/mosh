@@ -132,6 +132,20 @@ namespace scheme {
     Object putStringEx(VM* theVM, int argc, const Object* argv);
     Object flushOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object outputPortBufferModeEx(VM* theVM, int argc, const Object* argv);
+    Object fileStatCtimeEx(VM* theVM, int argc, const Object* argv);
+    Object fileStatAtimeEx(VM* theVM, int argc, const Object* argv);
+    Object fileStatMtimeEx(VM* theVM, int argc, const Object* argv);
+    Object fileSizeInBytesEx(VM* theVM, int argc, const Object* argv);
+    Object fileExecutablePEx(VM* theVM, int argc, const Object* argv);
+    Object fileReadablePEx(VM* theVM, int argc, const Object* argv);
+    Object fileWritablePEx(VM* theVM, int argc, const Object* argv);
+    Object fileRegularPEx(VM* theVM, int argc, const Object* argv);
+    Object fileSymbolicLinkPEx(VM* theVM, int argc, const Object* argv);
+    Object fileDirectoryPEx(VM* theVM, int argc, const Object* argv);
+    Object createSymbolicLinkEx(VM* theVM, int argc, const Object* argv);
+    Object renameFileEx(VM* theVM, int argc, const Object* argv);
+    Object deleteDirectoryEx(VM* theVM, int argc, const Object* argv);
+    Object createDirectoryEx(VM* theVM, int argc, const Object* argv);
 
 } // namespace scheme
 

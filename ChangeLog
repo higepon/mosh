@@ -1,5 +1,21 @@
 2009-06-24  higepon  <higepon@users.sourceforge.jp>
 
+        * Added follows, not exported yet.
+            create-directory
+            delete-directory
+            rename-file
+            create-symbolic-link
+            file-directory?
+            file-symbolic-link?
+            file-regular?
+            file-readable?
+            file-executable?
+            file-writable?
+            file-size-in-bytes
+            file-stat-mtime
+            file-stat-atime
+            file-stat-ctime
+
         * OSCompat.cpp : Added changeTime, accessTime and modifyTime.
 
         * OSCompatThread.h (scheme): Rewrote Conditional Variables on Windows.

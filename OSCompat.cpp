@@ -627,14 +627,14 @@ Object File::modifyTime(const ucs4string& path)
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_mtimespec.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_mtimespec.tv_sec)));
 #elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
         return Arithmetic::add(Bignum::makeInteger(st.st_mtim.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_mtim.tv_sec)));
 #else
-        return Arithmetic::mul(Object::makeFixnum(1000000000),
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
                                Bignum::makeInteger(st.st_mtime));
 #endif
     }
@@ -662,14 +662,14 @@ Object File::accessTime(const ucs4string& path)
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_atimespec.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_atimespec.tv_sec)));
 #elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
         return Arithmetic::add(Bignum::makeInteger(st.st_atim.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_atim.tv_sec)));
 #else
-        return Arithmetic::mul(Object::makeFixnum(1000000000),
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
                                Bignum::makeInteger(st.st_atime));
 #endif
     }
@@ -698,18 +698,41 @@ Object File::changeTime(const ucs4string& path)
     if (stat(utf32toUtf8(path), &st) == 0) {
 #if __DARWIN_64_BIT_INO_T
         return Arithmetic::add(Bignum::makeInteger(st.st_ctimespec.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_ctimespec.tv_sec)));
 #elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
         return Arithmetic::add(Bignum::makeInteger(st.st_ctim.tv_nsec),
-                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Arithmetic::mul(Bignum::makeInteger(1000000000),
                                                Bignum::makeInteger(st.st_ctim.tv_sec)));
 #else
-        return Arithmetic::mul(Object::makeFixnum(1000000000),
+        return Arithmetic::mul(Bignum::makeInteger(1000000000),
                                Bignum::makeInteger(st.st_ctime));
 #endif
     }
     return Object::Undef;
+#endif
+}
+
+Object File::size(const ucs4string& path)
+{
+#ifdef _WIN32
+    HANDLE fd = CreateFileW(utf32ToUtf16(path), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fd != INVALID_HANDLE_VALUE) {
+        LARGE_INTEGER bsize;
+        if (GetFileSizeEx(fd, &bsize)) {
+            CloseHandle(fd);
+            return Bignum::makeIntegerFromS64(bsize.QuadPart);
+        }
+        CloseHandle(fd);
+    }
+    return Object::Undef;
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+        return Bignum::makeIntegerFromS64(st.st_size);
+    } else {
+        return Object::Undef;
+    }
 #endif
 }
 

@@ -1929,3 +1929,161 @@ Object scheme::outputPortBufferModeEx(VM* theVM, int argc, const Object* argv)
         return Symbol::NONE;
     }
 }
+
+Object scheme::fileStatCtimeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-stat-ctime");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    const Object tm = File::changeTime(path->data());
+    if (tm.isUndef()) {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return tm;
+    }
+}
+
+Object scheme::fileStatAtimeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-stat-atime");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    const Object tm = File::accessTime(path->data());
+    if (tm.isUndef()) {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return tm;
+    }
+}
+
+Object scheme::fileStatMtimeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-stat-mtime");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    const Object tm = File::modifyTime(path->data());
+    if (tm.isUndef()) {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return tm;
+    }
+}
+
+Object scheme::fileExecutablePEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-executable?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(File::isExecutable(path->data()));
+}
+
+Object scheme::fileWritablePEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-writable?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(File::isWritable(path->data()));
+}
+
+Object scheme::fileReadablePEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-readable?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(File::isReadable(path->data()));
+}
+
+Object scheme::fileRegularPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-regular?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(File::isRegular(path->data()));
+}
+
+Object scheme::fileDirectoryPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-directory?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(isDirectory(path->data()));
+}
+
+Object scheme::fileSymbolicLinkPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-symbolic-link?");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    return Object::makeBool(File::isSymbolicLink(path->data()));
+}
+
+Object scheme::fileSizeInBytesEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("file-size-in-bytes");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    const Object size = File::size(path->data());
+    if (size.isUndef()) {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    } else {
+        return size;
+    }
+}
+
+Object scheme::createSymbolicLinkEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("create-symbolic-link");
+    checkArgumentLength(2);
+    argumentAsString(0, oldPath);
+    argumentAsString(1, newPath);
+    if (File::createSymbolicLink(oldPath->data(), newPath->data())) {
+        return Object::Undef;
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L2(argv[0], argv[1]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::renameFileEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("rename-file");
+    checkArgumentLength(2);
+    argumentAsString(0, oldPath);
+    argumentAsString(1, newPath);
+    if (File::rename(oldPath->data(), newPath->data())) {
+        return Object::Undef;
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L2(argv[0], argv[1]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::deleteDirectoryEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("delete-directory");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    if (File::deleteFileOrDirectory(path->data())) {
+        return Object::Undef;
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::createDirectoryEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("create-directory");
+    checkArgumentLength(1);
+    argumentAsString(0, path);
+    if (createDirectory(path->data())) {
+        return Object::Undef;
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, getLastErrorMessage(), L1(argv[0]));
+        return Object::Undef;
+    }
+}
