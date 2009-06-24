@@ -1,3 +1,7 @@
+2009-06-24  higepon  <higepon@users.sourceforge.jp>
+
+        * OSCompatThread.h (scheme): Rewrote Conditional Variables on Windows.
+
 2009-06-23  higepon  <higepon@users.sourceforge.jp>
 
         * compiler.scm (adjust-arglist): Improved error message of named let.

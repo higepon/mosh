@@ -155,11 +155,29 @@ namespace scheme {
 
 #endif
 
+    // Windows implementation is based on http://www.cs.wustl.edu/~schmidt/win32-cv-1.html
     class ConditionVariable : public gc_cleanup
     {
     private:
 #ifdef _WIN32
-        HANDLE cond_;
+        int waiters_count_;
+        // Number of waiting threads.
+
+        CRITICAL_SECTION waiters_count_lock_;
+        // Serialize access to <waiters_count_>.
+
+        HANDLE sema_;
+        // Semaphore used to queue up threads waiting for the condition to
+        // become signaled. 
+
+        HANDLE waiters_done_;
+        // An auto-reset event used by the broadcast/signal thread to wait
+        // for all the waiting thread(s) to wake up and be released from the
+        // semaphore. 
+
+        size_t was_broadcast_;
+        // Keeps track of whether we were broadcasting or signaling.  This
+        // allows us to optimize the code if we're just signaling.
 #else
         pthread_cond_t cond_;
 #endif
@@ -168,11 +186,18 @@ namespace scheme {
         void initialize()
         {
 #ifdef _WIN32
-            cond_ = CreateEvent(NULL, true, false, NULL);
-            if (NULL == cond_) {
-                fprintf(stderr, "CreateEvent failed\n");
-                exit(-1);
-            }
+            waiters_count_ = 0;
+            was_broadcast_ = 0;
+            sema_ = CreatedSemaphore (NULL,       // no security
+                                      0,          // initially 0
+                                      0x7fffffff, // max count
+                                      NULL);      // unnamed 
+            InitializeCriticalSection (&waiters_count_lock_);
+            waiters_done_ = CreateEvent (NULL,  // no security
+                                         FALSE, // auto-reset
+                                         FALSE, // non-signaled initially
+                                         NULL); // unnamed
+        }
 #else
             pthread_cond_init(&cond_, NULL);
 #endif
@@ -211,7 +236,13 @@ namespace scheme {
         bool notify()
         {
 #ifdef _WIN32
-            int ret = SetEvent(cond_);
+            EnterCriticalSection (&waiters_count_lock_);
+            int have_waiters = waiters_count_ > 0;
+            LeaveCriticalSection (&waiters_count_lock_);
+
+            // If there aren't any waiters, then this is a no-op.  
+            if (have_waiters)
+                ReleaseSemaphore (sema_, 1, 0);
 #else
             int ret = pthread_cond_signal(&cond_);
 #endif
@@ -221,20 +252,46 @@ namespace scheme {
         bool notifyAll()
         {
 #ifdef _WIN32
-            int ret = SetEvent(cond_);
+            // This is needed to ensure that <waiters_count_> and <was_broadcast_> are
+            // consistent relative to each other.
+            EnterCriticalSection (&waiters_count_lock_);
+            int have_waiters = 0;
+
+            if (waiters_count_ > 0) {
+                // We are broadcasting, even if there is just one waiter...
+                // Record that we are broadcasting, which helps optimize
+                // <pthread_cond_wait> for the non-broadcast case.
+                was_broadcast_ = 1;
+                have_waiters = 1;
+            }
+
+            if (have_waiters) {
+                // Wake up all the waiters atomically.
+                ReleaseSemaphore (sema_, waiters_count_, 0);
+
+                LeaveCriticalSection (&waiters_count_lock_);
+
+                // Wait for all the awakened threads to acquire the counting
+                // semaphore. 
+                WaitForSingleObject (waiters_done_, INFINITE);
+                // This assignment is okay, even without the <waiters_count_lock_> held 
+                // because no other waiter threads can wake up to access it.
+                was_broadcast_ = 0;
+            }
+            else
+                LeaveCriticalSection (waiters_count_lock_);
+            return true;
 #else
             int ret = pthread_cond_broadcast(&cond_);
-#endif
             return 0 == ret;
+#endif
+
         }
 
         bool wait(Mutex* mutex)
         {
 #ifdef _WIN32
-            mutex->unlock();
-            SignalObjectAndWait(mutex->mutex_, cond_, INFINITE, FALSE);
-            mutex->lock();
-            return true;
+            return waitInternal(mutex, INFINITE);
 #else
             int ret = pthread_cond_wait(&cond_, &mutex->mutex_);
             return 0 == ret;
@@ -245,14 +302,7 @@ namespace scheme {
         bool waitWithTimeout(Mutex* mutex, int msecs)
         {
 #ifdef _WIN32
-//            mutex->unlock();
-            DWORD res = SignalObjectAndWait(mutex->mutex_, cond_, msecs, FALSE);
-            mutex->lock();
-            if (res == WAIT_TIMEOUT) {
-                return false;
-            } else {
-                return true;
-            }
+            return waitInternal(mutex, msecs);
 #else
             struct timeval  now;
             struct timespec timeout;
@@ -279,6 +329,44 @@ namespace scheme {
             return ETIMEDOUT != ret;
 #endif
         }
+    private:
+#ifdef _WIN32
+        bool waitInternal(Mutex* mutex, int msec)
+        {
+            // Avoid race conditions.
+            EnterCriticalSection (&waiters_count_lock_);
+            waiters_count_++;
+            LeaveCriticalSection (&waiters_count_lock_);
+
+            // This call atomically releases the mutex and waits on the
+            // semaphore until <pthread_cond_signal> or <pthread_cond_broadcast>
+            // are called by another thread.
+            SignalObjectAndWait (mutex->mutex_, sema_, INFINITE, FALSE);
+
+            // Reacquire lock to avoid race conditions.
+            EnterCriticalSection (&waiters_count_lock_);
+
+            // We're no longer waiting...
+            waiters_count_--;
+
+            // Check to see if we're the last waiter after <pthread_cond_broadcast>.
+            int last_waiter = was_broadcast_ && waiters_count_ == 0;
+
+            LeaveCriticalSection (&waiters_count_lock_);
+
+            // If we're the last waiter thread during this particular broadcast
+            // then let all the other threads proceed.
+            if (last_waiter)
+                // This call atomically signals the <waiters_done_> event and waits until
+                // it can acquire the <external_mutex>.  This is required to ensure fairness. 
+                SignalObjectAndWait (waiters_done_, mutex->mutex_, msec, FALSE);
+            else
+                // Always regain the external mutex since that's the guarantee we
+                // give to our callers. 
+                mutex->lock();
+            return true;
+        }
+#endif
     };
 
     class ThreadSpecificKey : public gc_cleanup
