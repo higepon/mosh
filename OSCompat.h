@@ -153,6 +153,9 @@ namespace scheme {
         static bool rename(const ucs4string& oldPath, const ucs4string& newPath);
         static bool createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPath);
         static bool deleteFileOrDirectory(const ucs4string& path);
+        static Object modifyTime(const ucs4string& path);
+        static Object accessTime(const ucs4string& path);
+        static Object changeTime(const ucs4string& path);
         static File STANDARD_IN;
         static File STANDARD_OUT;
         static File STANDARD_ERR;

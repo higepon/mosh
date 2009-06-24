@@ -607,6 +607,112 @@ bool File::createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPa
 #endif
 }
 
+Object File::modifyTime(const ucs4string& path)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    HANDLE fd = CreateFileW(utf32ToUtf16(path), 0, 0, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fd != INVALID_HANDLE_VALUE) {
+        BY_HANDLE_FILE_INFORMATION fileInfo;
+        if (GetFileInformationByHandle(fd, &fileInfo)) {
+            CloseHandle(fd);
+            int64_t tm = ((int64_t)fileInfo.ftLastWriteTime.dwHighDateTime << 32) + fileInfo.ftLastWriteTime.dwLowDateTime;
+            return Bignum::makeIntegerFromS64(tm);
+        }
+        CloseHandle(fd);
+    }
+    return Object::Undef;
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+#if __DARWIN_64_BIT_INO_T
+        return Arithmetic::add(Bignum::makeInteger(st.st_mtimespec.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_mtimespec.tv_sec)));
+#elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
+        return Arithmetic::add(Bignum::makeInteger(st.st_mtim.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_mtim.tv_sec)));
+#else
+        return Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Bignum::makeInteger(st.st_mtime));
+#endif
+    }
+    return Object::Undef;
+#endif
+}
+
+Object File::accessTime(const ucs4string& path)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    HANDLE fd = CreateFileW(utf32ToUtf16(path), 0, 0, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fd != INVALID_HANDLE_VALUE) {
+        BY_HANDLE_FILE_INFORMATION fileInfo;
+        if (GetFileInformationByHandle(fd, &fileInfo)) {
+            CloseHandle(fd);
+            int64_t tm = ((int64_t)fileInfo.ftLastAccessTime.dwHighDateTime << 32) + fileInfo.ftLastAccessTime.dwLowDateTime;
+            return Bignum::makeIntegerFromS64(tm);
+        }
+        CloseHandle(fd);
+    }
+    return Object::Undef;
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+#if __DARWIN_64_BIT_INO_T
+        return Arithmetic::add(Bignum::makeInteger(st.st_atimespec.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_atimespec.tv_sec)));
+#elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
+        return Arithmetic::add(Bignum::makeInteger(st.st_atim.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_atim.tv_sec)));
+#else
+        return Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Bignum::makeInteger(st.st_atime));
+#endif
+    }
+    return Object::Undef;
+#endif
+}
+
+// On Windows returns creation time, otherwise last changed time.
+Object File::changeTime(const ucs4string& path)
+{
+//  Originally from Ypsilon Scheme
+#ifdef _WIN32
+    HANDLE fd = CreateFileW(utf32ToUtf16(path), 0, 0, NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS | FILE_ATTRIBUTE_NORMAL, NULL);
+    if (fd != INVALID_HANDLE_VALUE) {
+        BY_HANDLE_FILE_INFORMATION fileInfo;
+        if (GetFileInformationByHandle(fd, &fileInfo)) {
+            CloseHandle(fd);
+            int64_t tm = ((int64_t)fileInfo.ftLastCreationTime.dwHighDateTime << 32) + fileInfo.ftLastCreationTime.dwLowDateTime;
+            return Bignum::makeIntegerFromS64(tm);
+        }
+        CloseHandle(fd);
+    }
+    return Object::Undef;
+#else
+    struct stat st;
+    if (stat(utf32toUtf8(path), &st) == 0) {
+#if __DARWIN_64_BIT_INO_T
+        return Arithmetic::add(Bignum::makeInteger(st.st_ctimespec.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_ctimespec.tv_sec)));
+#elif defined(_BSD_SOURCE) || defined(_SVID_SOURCE)
+        return Arithmetic::add(Bignum::makeInteger(st.st_ctim.tv_nsec),
+                               Arithmetic::mul(Object::makeFixnum(1000000000),
+                                               Bignum::makeInteger(st.st_ctim.tv_sec)));
+#else
+        return Arithmetic::mul(Object::makeFixnum(1000000000),
+                               Bignum::makeInteger(st.st_ctime));
+#endif
+    }
+    return Object::Undef;
+#endif
+}
+
 bool File::isLastErrorAcessError() const
 {
     // TODO: Windows
