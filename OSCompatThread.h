@@ -343,7 +343,9 @@ namespace scheme {
             // This call atomically releases the mutex and waits on the
             // semaphore until <pthread_cond_signal> or <pthread_cond_broadcast>
             // are called by another thread.
-            SignalObjectAndWait (mutex->mutex_, sema_, msec, FALSE);
+            if (WAIT_TIMEOUT == SignalObjectAndWait (mutex->mutex_, sema_, msec, FALSE)) {
+                return false;
+            }
 
             // Reacquire lock to avoid race conditions.
             EnterCriticalSection (&waiters_count_lock_);
@@ -361,7 +363,7 @@ namespace scheme {
             if (last_waiter)
                 // This call atomically signals the <waiters_done_> event and waits until
                 // it can acquire the <external_mutex>.  This is required to ensure fairness. 
-                SignalObjectAndWait (waiters_done_, mutex->mutex_, msec, FALSE);
+                SignalObjectAndWait (waiters_done_, mutex->mutex_, INFINITE, FALSE);
             else
                 // Always regain the external mutex since that's the guarantee we
                 // give to our callers. 
