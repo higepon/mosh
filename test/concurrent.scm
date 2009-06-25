@@ -13,30 +13,37 @@
                            (test-false #t)]
                           [('greeting what)
                            what]))
+	(display "[1]")
                (test-equal '(some hello)
                            (receive
                             [x x]))
+	(display "[1]")
                (test-equal 'good
                            (receive
                             ['good 'good]))
+	(display "[1]")
                (test-eqv 'hello2
                          (receive
                           [('greeting what)
                            what]))
+	(display "[1]")
                (test-eqv 'hello3
                          (receive
                           [('greeting what)
                            what]))
+	(display "[1]")
                (test-equal '(a . pen)
                            (let-values ([(x y) (receive
                                                 [('this 'is x y) (values x y)])])
                              (cons x y)))
+	(display "[2]")
                ;; timeout
                (test-eqv 'time-out
                          (receive
                           [('greeting what) what]
                           [after 1
                                  'time-out]))
+	(display "[3]")
                (display "after")
 
                (register 'sub (self))
@@ -58,7 +65,6 @@
             )])
 
 (link pid)
-
 (! pid '(some hello))
 (! pid '(greeting hello))
 (! pid '(greeting hello2))
@@ -67,9 +73,10 @@
 (! pid '(this is a pen))
 
 (! pid `(register ,(self) "higepon"))
+
 (receive
     [('ok name) (test-equal "higepon" name)])
-
+#|
 (! 'sub `(register ,(self) "higepon"))
 (receive
     [('ok name) (test-equal "higepon" name)])
@@ -86,7 +93,8 @@
 
 (let ([pid (spawn (lambda (arg) (test-eq 1234 arg) (test-results)) 1234 '((rnrs) (mosh test) (mosh concurrent)))])
   (join! pid))
-
+|#
+)
 (test-results)
 
 

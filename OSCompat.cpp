@@ -579,7 +579,7 @@ bool File::deleteFileOrDirectory(const ucs4string& path)
 bool File::rename(const ucs4string& oldPath, const ucs4string& newPath)
 {
 #ifdef _WIN32
-    return MoveFileExW(utf32toUtf16(oldPath), utf32toUtf16(newPath), MOVEFILE_REPLACE_EXISTING);
+    return MoveFileExW(utf32ToUtf16(oldPath), utf32ToUtf16(newPath), MOVEFILE_REPLACE_EXISTING);
 #else
     return ::rename(utf32toUtf8(oldPath), utf32toUtf8(newPath)) == 0;
 #endif
@@ -595,9 +595,9 @@ bool File::createSymbolicLink(const ucs4string& oldPath, const ucs4string& newPa
 #ifdef _WIN32
     ProcCreateSymbolicLink win32CreateSymbolicLink = (ProcCreateSymbolicLink)GetProcAddress(LoadLibraryA("kernel32"), "CreateSymbolicLinkW");
     if (win32CreateSymbolicLink) {
-        const wchar_t* newPathW = utf32toUtf16(newPath);
+        const wchar_t* newPathW = utf32ToUtf16(newPath);
         DWORD flag = PathIsDirectoryW(newPathW) ? 1 : 0; // SYMBOLIC_LINK_FLAG_DIRECTORY == 1
-        if (win32CreateSymbolicLink(newPathW, utf32toUtf16(oldPath), flag)) {
+        if (win32CreateSymbolicLink(newPathW, utf32ToUtf16(oldPath), flag)) {
             return true;
         }
     }
@@ -687,7 +687,7 @@ Object File::changeTime(const ucs4string& path)
         BY_HANDLE_FILE_INFORMATION fileInfo;
         if (GetFileInformationByHandle(fd, &fileInfo)) {
             CloseHandle(fd);
-            int64_t tm = ((int64_t)fileInfo.ftLastCreationTime.dwHighDateTime << 32) + fileInfo.ftLastCreationTime.dwLowDateTime;
+            int64_t tm = ((int64_t)fileInfo.ftCreationTime.dwHighDateTime << 32) + fileInfo.ftCreationTime.dwLowDateTime;
             return Bignum::makeIntegerFromS64(tm);
         }
         CloseHandle(fd);
@@ -1006,7 +1006,7 @@ bool scheme::createDirectory(const ucs4string& path)
 bool scheme::isDirectory(const ucs4string& path)
 {
 #ifdef _WIN32
-    return PathIsDirectoryW(utf32toUtf16(path));
+    return PathIsDirectoryW(utf32ToUtf16(path));
 #else
     struct stat st;
     if (stat(utf32toUtf8(path), &st) == 0) {

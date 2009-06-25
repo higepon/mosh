@@ -188,7 +188,7 @@ namespace scheme {
 #ifdef _WIN32
             waiters_count_ = 0;
             was_broadcast_ = 0;
-            sema_ = CreatedSemaphore (NULL,       // no security
+            sema_ = CreateSemaphore (NULL,       // no security
                                       0,          // initially 0
                                       0x7fffffff, // max count
                                       NULL);      // unnamed 
@@ -197,7 +197,6 @@ namespace scheme {
                                          FALSE, // auto-reset
                                          FALSE, // non-signaled initially
                                          NULL); // unnamed
-        }
 #else
             pthread_cond_init(&cond_, NULL);
 #endif
@@ -216,7 +215,8 @@ namespace scheme {
         virtual ~ConditionVariable()
         {
 #ifdef _WIN32
-            CloseHandle(cond_);
+            //CloseHandle(cond_);
+			// todo
 #else
             pthread_cond_destroy(&cond_);
 #endif
@@ -243,10 +243,12 @@ namespace scheme {
             // If there aren't any waiters, then this is a no-op.  
             if (have_waiters)
                 ReleaseSemaphore (sema_, 1, 0);
+			return true;
 #else
             int ret = pthread_cond_signal(&cond_);
+			return 0 == ret;
 #endif
-            return 0 == ret;
+
         }
 
         bool notifyAll()
@@ -279,7 +281,7 @@ namespace scheme {
                 was_broadcast_ = 0;
             }
             else
-                LeaveCriticalSection (waiters_count_lock_);
+                LeaveCriticalSection (&waiters_count_lock_);
             return true;
 #else
             int ret = pthread_cond_broadcast(&cond_);
