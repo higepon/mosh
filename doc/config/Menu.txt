@@ -48,7 +48,7 @@ Don't Index: Files, Classes
 File: About  (no auto-title, doc/text/About.txt)
 File: Download  (doc/text/Download.txt)
 
-Group: Mosh Library  {
+Group: Mosh  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
    File: Configuration  (lib/mosh/config.ss)
@@ -61,8 +61,9 @@ Group: Mosh Library  {
    File: IRC Client  (lib/mosh/irc/client.ss)
    File: Unit Testing  (lib/mosh/test.ss)
    File: Concurrent  (lib/mosh/concurrent.ss)
+   File: File  (lib/mosh/file.ss)
    File: Pattern Match  (lib/match.ss)
-   }  # Group: Mosh Library
+   }  # Group: Mosh
 
 File: SRFIs  (doc/text/srfi.txt)
 

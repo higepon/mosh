@@ -40,7 +40,7 @@
     (close-output-port close-output-port)
     (digit->integer digit->integer)
     (get-remaining-input-string get-remaining-input-string)
-    (readdir sys-readdir)
+    (directory-list sys-readdir)
     (file-exists? file-exists?)
     delete-file
     (get-output-string get-output-string)
@@ -274,7 +274,6 @@
     fasl-write
     fasl-read
     get-string-n
-    stat-mtime
     rational?
     flonum?
     fixnum?

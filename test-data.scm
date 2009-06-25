@@ -692,23 +692,23 @@
  (match 123
    ((? string? x) (list 'string x))
    ((? number? x) (list 'number x)))]
-[mosh-only "normal let, vars=(a c) exprs=(b d)"
- (define let-analyzer
-   (match-lambda
-    (('let (? symbol?)
-           ((var expr) ...)
-       body ...)
-     (format "named let, vars=~s exprs=~s" var expr))
-    (('let ((var expr) ...)
-       body ...)
-     (format "normal let, vars=~s exprs=~s" var expr))
-    (_
-     (format "malformed let"))))
-(let-analyzer '(let ((a b) (c d)) e f g))]
-[mosh-only "named let, vars=(x y) exprs=((f a b) (f c d))"
- (let-analyzer '(let foo ((x (f a b)) (y (f c d))) e f g))]
-[mosh-only "malformed let"
- (let-analyzer '(let (a) b c d))]
+;; [mosh-only "normal let, vars=(a c) exprs=(b d)"
+;;  (define let-analyzer
+;;    (match-lambda
+;;     (('let (? symbol?)
+;;            ((var expr) ...)
+;;        body ...)
+;;      (format "named let, vars=~s exprs=~s" var expr))
+;;     (('let ((var expr) ...)
+;;        body ...)
+;;      (format "normal let, vars=~s exprs=~s" var expr))
+;;     (_
+;;      (format "malformed let"))))
+;; (let-analyzer '(let ((a b) (c d)) e f g))]
+;; [mosh-only "named let, vars=(x y) exprs=((f a b) (f c d))"
+;;  (let-analyzer '(let foo ((x (f a b)) (y (f c d))) e f g))]
+;; [mosh-only "malformed let"
+;;  (let-analyzer '(let (a) b c d))]
 [mosh-only 42
  (match '(the answer is 42)
    (`(the answer is ,value) value)

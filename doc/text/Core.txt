@@ -216,21 +216,3 @@ Returns:
 See Also:
 
 
-Function: readdir
-
-Read directory and returns result as list of string.
-
-Prototype:
-> (readdir path)
-
-Parameters:
-  path - Path to directory.
-
-Returns:
-
-  directory entries list of string.
-
-See Also:
-
-  <current-directory> and <set-current-directory!>
-

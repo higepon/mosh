@@ -1,3 +1,7 @@
+2009-06-25  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/file.ss (mosh): Added.
+
 2009-06-24  higepon  <higepon@users.sourceforge.jp>
 
         * Added follows, not exported yet.

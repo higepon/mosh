@@ -62,7 +62,6 @@ namespace scheme {
     Object putDatumEx(VM* theVM, int argc, const Object* argv);
     Object outputPortPEx(VM* theVM, int argc, const Object* argv);
     Object getStringNEx(VM* theVM, int argc, const Object* argv);
-    Object statMtimeEx(VM* theVM, int argc, const Object* argv);
     Object faslWriteEx(VM* theVM, int argc, const Object* argv);
     Object faslReadEx(VM* theVM, int argc, const Object* argv);
     Object openInputFileEx(VM* theVM, int argc, const Object* argv);
@@ -82,7 +81,7 @@ namespace scheme {
     Object openOutputFileEx(VM* theVM, int argc, const Object* argv);
     Object closeOutputPortEx(VM* theVM, int argc, const Object* argv);
     Object closeInputPortEx(VM* theVM, int argc, const Object* argv);
-    Object readdirEx(VM* theVM, int argc, const Object* argv);
+    Object directoryListEx(VM* theVM, int argc, const Object* argv);
     Object fileExistsPEx(VM* theVM, int argc, const Object* argv);
     Object deleteFileEx(VM* theVM, int argc, const Object* argv);
     Object getOutputStringEx(VM* theVM, int argc, const Object* argv);

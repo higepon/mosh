@@ -1,24 +1,24 @@
 ;;; Copyright (c) 2006, 2007 Abdulaziz Ghuloum and Kent Dybvig
-;;; 
+;;;
 ;;; Permission is hereby granted, free of charge, to any person obtaining a
 ;;; copy of this software and associated documentation files (the "Software"),
 ;;; to deal in the Software without restriction, including without limitation
 ;;; the rights to use, copy, modify, merge, publish, distribute, sublicense,
 ;;; and/or sell copies of the Software, and to permit persons to whom the
 ;;; Software is furnished to do so, subject to the following conditions:
-;;; 
+;;;
 ;;; The above copyright notice and this permission notice shall be included in
 ;;; all copies or substantial portions of the Software.
-;;; 
+;;;
 ;;; THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 ;;; IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 ;;; FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
 ;;; THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 ;;; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 ;;; FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-;;; DEALINGS IN THE SOFTWARE. 
+;;; DEALINGS IN THE SOFTWARE.
 
-(import 
+(import
   (rnrs base)
   (rnrs control)
   (rnrs io simple)
@@ -69,11 +69,11 @@
     (if                  (core-macro . if))
     (and                 (core-macro . and))
     (or                  (core-macro . or))
-    (when                (macro . when))         
+    (when                (macro . when))
     (unless              (macro . unless))
     (parameterize        (macro . parameterize))
     (case                (macro . case))
-;;     (when                (core-macro . when))         
+;;     (when                (core-macro . when))
 ;;     (unless              (core-macro . unless))
 ;;     (parameterize        (core-macro . parameterize))
 ;;     (case                (core-macro . case))
@@ -115,9 +115,9 @@
     (buffer-mode           (macro . buffer-mode))
     (file-options          (macro . file-options))
     (error-handling-mode   (macro . error-handling-mode))
-    (fields                (macro . fields)) 
+    (fields                (macro . fields))
     (mutable               (macro . mutable))
-    (immutable             (macro . immutable)) 
+    (immutable             (macro . immutable))
     (parent                (macro . parent))
     (protocol              (macro . protocol))
     (sealed                (macro . sealed))
@@ -129,10 +129,10 @@
     (define-condition-type (macro . define-condition-type))
     ;;; for (record-type-descriptor &condition-type) and
     ;;; (record-constructor-descriptor &condition-type) to
-    ;;; expand properly, the implementation must export 
-    ;;; the identifiers &condition-type-rtd, which must 
-    ;;; be bound to the run-time value of the rtd, and 
-    ;;; &condition-type-rcd which must be bound to the 
+    ;;; expand properly, the implementation must export
+    ;;; the identifiers &condition-type-rtd, which must
+    ;;; be bound to the run-time value of the rtd, and
+    ;;; &condition-type-rcd which must be bound to the
     ;;; corresponding record-constructor-descriptor.
     (&condition                ($core-rtd . (&condition-rtd &condition-rcd)))
     (&message                  ($core-rtd . (&message-rtd &message-rcd)))
@@ -207,13 +207,13 @@
 ;;     (srfi-1     (mosh srfi :1)                              #f    #t)  ;; for mosh
     ))
 
-;;; required? flag means that said library is required for 
+;;; required? flag means that said library is required for
 ;;; building the system.  The only non-r6rs required libraries
 ;;; should be (psyntax system $bootstrap) and (psyntax system $all).
-;;; (psyntax system $bootstrap) should export, at a minimum, the 
+;;; (psyntax system $bootstrap) should export, at a minimum, the
 ;;; following procedures: gensym, symbol-value, set-symbol-value!,
 ;;; eval-core, and pretty-print.
-;;; (psyntax system $all) is fabricated by the system to include 
+;;; (psyntax system $all) is fabricated by the system to include
 ;;; every identifier in the system.
 
 
@@ -436,9 +436,9 @@
     (bitwise-rotate-bit-field                   interaction r bw)
     ;;;
     (fixnum?                                    interaction r fx)
-    (fixnum-width                               interaction r fx) 
+    (fixnum-width                               interaction r fx)
     (least-fixnum                               interaction r fx)
-    (greatest-fixnum                            interaction r fx) 
+    (greatest-fixnum                            interaction r fx)
     (fx*                                        interaction r fx)
     (fx*/carry                                  interaction r fx)
     (fx+                                        interaction r fx)
@@ -1010,6 +1010,20 @@
     (get-timeofday mosh)
     (get-environment-variable sys)
     (get-environment-variables sys)
+    (create-directory sys)
+    (delete-directory sys)
+    (rename-file sys)
+    (create-symbolic-link sys)
+    (file-directory? sys)
+    (file-symbolic-link? sys)
+    (file-regular? sys)
+    (file-readable? sys)
+    (file-executable? sys)
+    (file-writable? sys)
+    (file-size-in-bytes sys)
+    (file-stat-mtime sys)
+    (file-stat-atime sys)
+    (file-stat-ctime sys)
     (get-output-string sys)
     (open-output-string sys)
     (p interaction mosh)
@@ -1030,7 +1044,7 @@
     (current-directory interaction mosh)
     (expand-path interaction sys mosh)
     (set-current-directory! interaction mosh)
-    (readdir mosh)
+    (directory-list sys)
     (microseconds sys)
     (local-tz-offset sys)
     (call-process interaction sys)
@@ -1043,9 +1057,9 @@
     (call-with-string-io mosh)
     (call-with-string-input-port mosh)
     (digit->integer              mosh)
-    (file->string mosh)
-    (file->list mosh)
-    (write-to-file mosh)
+    (file->string sys)
+    (file->list sys)
+    (write-to-file sys)
     (stat-mtime mosh)
     (file-newer?  mosh)
     (standard-library-path mosh)
@@ -1231,7 +1245,7 @@
 
 (define identifier->library-map-hashtable
   (let ((ht (make-eq-hashtable)))
-    (for-each 
+    (for-each
       (lambda (x)
         (hashtable-set! ht (car x) x))
       identifier->library-map)
@@ -1309,7 +1323,7 @@
        (lambda ()
          (let f ()
            (let ((x (read)))
-             (unless (eof-object? x) 
+             (unless (eof-object? x)
                (proc x)
                (f)))))))
   (let-values (((code* subst env) (make-init-code)))
@@ -1339,8 +1353,8 @@
   (let ((ls '()))
     (case-lambda
       (() ls)
-      ((x) 
-       (unless (memq x ls) 
+      ((x)
+       (unless (memq x ls)
          (set! ls (cons x ls)))))))
 
 (verify-map)
@@ -1348,7 +1362,7 @@
 
 (let ((all-names (map car identifier->library-map))
       (all-labels (map (lambda (x) (gensym)) identifier->library-map))
-      (all-bindings (map (lambda (x) 
+      (all-bindings (map (lambda (x)
                            (cond
                              ((macro-identifier x) => cadr)
                              (else `(core-prim . ,x))))
@@ -1373,7 +1387,7 @@
                               (values
                                 (get-export-subset key export-subst)
                                 '()))))
-              (parameterize ((current-library-collection 
+              (parameterize ((current-library-collection
                               bootstrap-collection))
                 (install-library
                    id name version import-libs visit-libs invoke-libs
@@ -1389,14 +1403,14 @@
          (for-each set-symbol-value! g* v*)
          (let ((alist (map cons '(name* ...) g*)))
            (current-primitive-locations
-             (lambda (x) 
+             (lambda (x)
                (cond
                  ((assq x alist) => cdr)
                  (else (error #f "undefined prim ~s" x))))))))))
   (define-prims
     syntax-dispatch apply cons append map list syntax-error
     generate-temporaries = + datum->syntax string->symbol
-    string-append symbol->string syntax->datum gensym length 
+    string-append symbol->string syntax->datum gensym length
     open-string-output-port identifier? free-identifier=? exists
     values call-with-values for-all null? cdr car pair? vector eq? bound-identifier=? reverse ellipsis-map assertion-violation))
 

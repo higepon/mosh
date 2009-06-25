@@ -32,6 +32,7 @@
         (except (srfi :99) define-record-type)
         (clos user)
         (mosh pp)
+        (mosh file)
         (except (mosh test) test-end test-begin)
         (mosh ffi)
         (mosh shell)

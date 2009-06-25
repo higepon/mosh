@@ -191,6 +191,7 @@ lib/mosh/shell/repl.ss \
 lib/mosh/dbd/mysql.ss  \
 lib/mosh/test.ss   \
 lib/mosh/pp.ss     \
+lib/mosh/file.ss     \
 lib/mosh/control.ss     \
 lib/mosh/concurrent.ss     \
 lib/mosh/config.ss \

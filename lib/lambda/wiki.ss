@@ -4,7 +4,8 @@
           (rnrs mutable-pairs)
           (only (system) get-environment-variable)
           (only (srfi :1) first second third alist-cons)
-          (only (mosh) readdir assoc-ref read-line file->string write-to-file string-split format call-with-string-input-port string->regexp rxmatch)
+          (only (mosh) assoc-ref read-line string-split format call-with-string-input-port string->regexp rxmatch)
+          (only (mosh file) directory-list file->string write-to-file)
           (prefix (mosh cgi) cgi:))
 
 (define (print msg)
@@ -281,7 +282,7 @@
   (map cgi:decode
        (map (lambda (f) ((#/\.dat$/ f) 'before))
             (filter (lambda (f) (#/\.dat$/ f))
-                    (readdir data-dir)))))
+                    (directory-list data-dir)))))
 
 (define (print-a uri text)
   (format #t "<a href='~a'>~a</a>" uri text))

@@ -94,9 +94,9 @@
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
-          (only (mosh) alist->eq-hash-table format readdir os-constant host-os)
+          (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
-          (only (system) %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero))
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero))
 #|
     Function: ffi-supported?
 
@@ -211,7 +211,7 @@
 (define (find-shared-libray regex)
   (exists
    (lambda (path)
-     (find regex (guard [c (#t '())] (readdir path))))
+     (find regex (guard [c (#t '())] (directory-list path))))
    (filter file-exists? '("/lib" "/usr/lib/" "/usr/local/lib"))))
 
 (define (make-c-function lib ret-type name arg-types)

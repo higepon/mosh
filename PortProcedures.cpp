@@ -625,20 +625,6 @@ Object scheme::outputPortPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isOutputPort());
 }
 
-Object scheme::statMtimeEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("stat-mtime");
-    checkArgumentLength(1);
-    argumentAsString(0, path);
-    struct stat sb;
-    if (-1 == stat(path->data().ascii_c_str(), &sb)) {
-        callAssertionViolationAfter(theVM, procedureName, "failed", L1(argv[0]));
-        return Object::Undef;
-    } else {
-        return Object::makeFixnum(sb.st_mtime);
-    }
-}
-
 Object scheme::faslWriteEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("fasl-write");
@@ -1749,9 +1735,9 @@ Object scheme::standardErrorPortEx(VM* theVM, int argc, const Object* argv)
 }
 
 
-Object scheme::readdirEx(VM* theVM, int argc, const Object* argv)
+Object scheme::directoryListEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("readdir");
+    DeclareProcedureName("directory-list");
     checkArgumentLength(1);
     argumentAsString(0, path);
     const Object directories = readDirectory(path->data());

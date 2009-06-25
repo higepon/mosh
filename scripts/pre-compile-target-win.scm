@@ -34,6 +34,7 @@
         (mosh pp)
         (except (mosh test) test-end test-begin)
         (mosh ffi)
+        (mosh file)
 ;        (mosh shell)
 ;        (mosh shell repl)
 ;        (mosh mysql)
