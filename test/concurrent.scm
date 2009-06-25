@@ -83,7 +83,6 @@
 
 (receive
     [('ok name) (test-equal "higepon" name)])
-#|
 (! 'sub `(register ,(self) "higepon"))
 (receive
     [('ok name) (test-equal "higepon" name)])
@@ -100,8 +99,6 @@
 
 (let ([pid (spawn (lambda (arg) (test-eq 1234 arg) (test-results)) 1234 '((rnrs) (mosh test) (mosh concurrent)))])
   (join! pid))
-|#
-)
 (test-results)
 
 
