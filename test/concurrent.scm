@@ -5,6 +5,13 @@
         (mosh concurrent)
         (mosh test))
 
+(let ([cv (make-condition-variable)]
+      [mutex (make-mutex)])
+  (mutex-lock! mutex)
+  (condition-variable-wait! cv mutex 1)
+  (mutex-unlock! mutex)
+  (test-true #t))
+
 (let ([pid (spawn
              (lambda (x)
                (test-eqv 'hello
