@@ -511,6 +511,7 @@ namespace scheme {
         static void exit(void* exitValue)
         {
 #ifdef _WIN32
+            self()->stubInfo_->returnValue = exitValue;
             GC_endthreadex((unsigned int)exitValue);
 #else
             pthread_exit(exitValue);
