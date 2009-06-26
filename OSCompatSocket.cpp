@@ -223,7 +223,7 @@ Socket* Socket::createClientSocket(const char* node,
         if (-1 == fd) {
 #ifdef _WIN32
             lastError = WSAGetLastError();
-            printf("%s %s:%d %d\n", __func__, __FILE__, __LINE__, lastError);fflush(stdout);// debug
+            printf(" %s:%d %d\n", __FILE__, __LINE__, lastError);fflush(stdout);// debug
 #else
             lastError = errno;
 #endif
@@ -237,7 +237,7 @@ Socket* Socket::createClientSocket(const char* node,
         } else {
 #ifdef _WIN32
             lastError = WSAGetLastError();
-            printf("%s %s:%d %d\n", __func__, __FILE__, __LINE__, lastError);fflush(stdout);// debug
+            printf("%s:%d %d\n", __FILE__, __LINE__, lastError);fflush(stdout);// debug
 #else
             lastError = errno;
 #endif
