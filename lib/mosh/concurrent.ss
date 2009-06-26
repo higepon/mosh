@@ -38,7 +38,7 @@
 |#
 (library (mosh concurrent)
   (export ! receive spawn self join! register whereis link unlink process-exit spawn-link
-          make-process-error process-error? process-error process-arg)
+          make-process-error process-error? process-error process-arg condition-printer)
   (import (only (mosh) main-vm? vm-set-value! vm-self make-condition-variable make-mutex mutex-lock! mutex-unlock! condition-variable-notify!
                 whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time)
           (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
@@ -210,7 +210,7 @@
 
 
 (define (spawn-internal thunk args import-spec)
-  (let* ([vm (make-vm `(lambda () (guard (c [#t (process-exit (make-process-error c))])
+  (let* ([vm (make-vm `(lambda () (guard (c [#t (display (condition-printer c (current-error-port)) (process-exit (make-process-error c))])
                                          (,thunk (process-arg)) (process-exit 'normal))) import-spec)]
          [pid (make-pid vm)])
     (vm-set-value! vm 'self pid)
@@ -421,6 +421,120 @@
     Returns:
       Returns error state of process-error condition.
 |#
+
+  (define (for-each-with-index proc lst)
+    (do ((i 1 (+ i 1)) ; start with 1
+         (lst lst (cdr lst)))
+        ((null? lst))
+      (proc i (car lst))))
+
+#;  (define (conditioon-printer e port)
+    (define (ref rtd i x)
+      (let ([val ((record-accessor rtd i) x)])
+        (if (symbol? val)
+            (ungensym val)
+            val)))
+    (display " Condition components:\n" port)
+    (for-each-with-index
+     (lambda (i x)
+       (let ([rtd (record-rtd x)])
+         (format port "   ~d. ~a" i (record-type-name rtd))
+         (let ([v (record-type-field-names rtd)])
+           (case (vector-length v)
+             [(0) (newline port)]
+             [(1)
+              (display ": " port)
+              (write (ref rtd 0 x) port)
+              (newline port)]
+             [else
+              (display ":\n" port)
+              (let f ([i 0])
+                (unless (= i (vector-length v))
+                  (display "       " port)
+                  (display (vector-ref v i) port)
+                  (display ": " port)
+                  (write (ref rtd i x) port)
+                  (newline port)
+                  (f (+ i 1))))]))))
+     (simple-conditions e)))
+
+(define (rpad str pad n)
+  (let ([rest (- n (string-length (format "~a" str)))])
+    (let loop ([rest rest]
+               [ret (format "~a" str)])
+      (if (<= rest 0)
+          ret
+          (loop (- rest 1) (string-append ret pad))))))
+
+(define (condition-printer e port)
+    (define max-condition-len (apply max (map (lambda (c) (string-length (symbol->string (record-type-name (record-rtd c))))) (simple-conditions e))))
+    (display " Condition components:\n" port)
+    (for-each-with-index
+     (lambda (i x)
+       (let ([rtd (record-rtd x)]
+             [fields-alist (record->field-alist x)])
+        (format port " ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+        (when (null? fields-alist)
+          (newline port))
+         (let loop ([first #t]
+                    [fields-alist fields-alist])
+           (cond
+            [(null? fields-alist) '()]
+            [else
+             (let ([field (car fields-alist)])
+               (unless first
+                 (display (rpad "" " " (+ 4 max-condition-len)) port))
+             (display "       " port)
+             (display (car field) port)
+             (display ": " port)
+             (write (cdr field) port)
+             (newline port)
+             (loop #f (cdr fields-alist)))
+             ]
+          ))))
+     (simple-conditions e)))
+
+;; このコードを使いたいが使うと vm_test の $? が 1 になりテスト失敗する
+#;(define (condition-printer e port)
+    (display " Condition components:\n" port)
+    (for-each-with-index
+     (lambda (i x)
+       (let ([rtd (record-rtd x)])
+        (format port "   ~d. ~a" i (record-type-name rtd))
+         (for-each
+          (lambda (field)
+            (display "       " port)
+           (display (car field) port)
+           (display ": " port)
+           (write (cdr field) port)
+            (newline port))
+          (record->field-alist x))))
+     (simple-conditions e)))
+
+(define (record->field-alist r)
+  (define (ref rtd i x)
+    (let ([val ((record-accessor rtd i) x)])
+      (if (symbol? val)
+          (ungensym val)
+          val)))
+  (let loop ([ret '()]
+             [rtd (record-rtd r)])
+    (cond
+     [rtd
+      (loop (append ret
+      (map-with-index
+       (lambda (i field)
+         (cons field (ref rtd i r)))
+       (vector->list (record-type-field-names rtd)))) (record-type-parent rtd))]
+     [else ret])))
+
+(define (map-with-index proc lst)
+  (let loop ([i 0]
+             [lst lst]
+             [ret '()])
+    (if (null? lst)
+        (reverse ret)
+        (loop (+ i 1) (cdr lst) (cons (proc i (car lst)) ret)))))
 
 (when (main-vm?)
   (let ([pid (make-pid (vm-self))])
