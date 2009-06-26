@@ -83,7 +83,7 @@
     Foreign Function Interface Library
 |#
 (library (mosh ffi)
-  (export make-c-function c-function open-shared-library find-shared-libray
+  (export make-c-function c-function open-shared-library find-shared-library
           (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
                   (%ffi-supported? ffi-supported?))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
@@ -208,7 +208,7 @@
                                               [else #f])))
                       (char*  . ,(lambda (x) (and (or (and (number? x) (zero? x)) string?) x))))))
 
-(define (find-shared-libray regex)
+(define (find-shared-library regex)
   (exists
    (lambda (path)
      (find regex (guard [c (#t '())] (directory-list path))))

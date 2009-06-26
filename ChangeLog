@@ -1,3 +1,7 @@
+2009-06-26  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/ffi.ss (find-shared-library): Fixed type thanks to mrc.mgg.
+
 2009-06-25  higepon  <higepon@users.sourceforge.jp>
 
         * lib/mosh/file.ss (mosh): Added.
