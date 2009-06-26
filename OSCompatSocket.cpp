@@ -221,7 +221,11 @@ Socket* Socket::createClientSocket(const char* node,
     for (struct addrinfo* p = result; p != NULL; p = p->ai_next) {
         const int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (-1 == fd) {
+#ifdef _WIN32
+            lastError = WSAGetLastError();
+#else
             lastError = errno;
+#endif
             continue;
         }
         if (connect(fd, p->ai_addr, p->ai_addrlen) == 0) {
