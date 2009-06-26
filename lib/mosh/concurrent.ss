@@ -40,10 +40,12 @@
   (export ! receive spawn self join! register whereis link unlink process-exit spawn-link
           make-process-error process-error? process-error process-arg condition-printer)
   (import (only (mosh) main-vm? vm-set-value! vm-self make-condition-variable make-mutex mutex-lock! mutex-unlock! condition-variable-notify!
-                whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time)
+                whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time format ungensym)
           (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
                 syntax-case syntax integer? syntax->datum when let quasiquote unless error if let* memq remq cons cond pair? not car cadr
-                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote apply)
+                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote apply do null? +  cdr <= -
+                string-append string-length symbol->string record-type-name newline write record-rtd simple-conditions max map append
+                vector->list record-type-field-names record-type-parent symbol? record-accessor reverse)
           (only (mosh queue) make-queue queue-push! queue-empty? queue-pop! queue-append!)
           (only (rnrs mutable-pairs) set-car!)
           (only (match) match))
@@ -210,7 +212,7 @@
 
 
 (define (spawn-internal thunk args import-spec)
-  (let* ([vm (make-vm `(lambda () (guard (c [#t (display (condition-printer c (current-error-port)) (process-exit (make-process-error c))])
+  (let* ([vm (make-vm `(lambda () (guard (c [#t (condition-printer c (current-error-port)) (process-exit (make-process-error c))])
                                          (,thunk (process-arg)) (process-exit 'normal))) import-spec)]
          [pid (make-pid vm)])
     (vm-set-value! vm 'self pid)
@@ -428,36 +430,6 @@
         ((null? lst))
       (proc i (car lst))))
 
-#;  (define (conditioon-printer e port)
-    (define (ref rtd i x)
-      (let ([val ((record-accessor rtd i) x)])
-        (if (symbol? val)
-            (ungensym val)
-            val)))
-    (display " Condition components:\n" port)
-    (for-each-with-index
-     (lambda (i x)
-       (let ([rtd (record-rtd x)])
-         (format port "   ~d. ~a" i (record-type-name rtd))
-         (let ([v (record-type-field-names rtd)])
-           (case (vector-length v)
-             [(0) (newline port)]
-             [(1)
-              (display ": " port)
-              (write (ref rtd 0 x) port)
-              (newline port)]
-             [else
-              (display ":\n" port)
-              (let f ([i 0])
-                (unless (= i (vector-length v))
-                  (display "       " port)
-                  (display (vector-ref v i) port)
-                  (display ": " port)
-                  (write (ref rtd i x) port)
-                  (newline port)
-                  (f (+ i 1))))]))))
-     (simple-conditions e)))
-
 (define (rpad str pad n)
   (let ([rest (- n (string-length (format "~a" str)))])
     (let loop ([rest rest]
@@ -492,23 +464,6 @@
              (loop #f (cdr fields-alist)))
              ]
           ))))
-     (simple-conditions e)))
-
-;; このコードを使いたいが使うと vm_test の $? が 1 になりテスト失敗する
-#;(define (condition-printer e port)
-    (display " Condition components:\n" port)
-    (for-each-with-index
-     (lambda (i x)
-       (let ([rtd (record-rtd x)])
-        (format port "   ~d. ~a" i (record-type-name rtd))
-         (for-each
-          (lambda (field)
-            (display "       " port)
-           (display (car field) port)
-           (display ": " port)
-           (write (cdr field) port)
-            (newline port))
-          (record->field-alist x))))
      (simple-conditions e)))
 
 (define (record->field-alist r)
