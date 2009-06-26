@@ -264,7 +264,7 @@ void* vmEntry(void* param)
     VM* vm = (VM*)param;
     setCurrentVM(vm);
     const Object ret = vm->activateR6RSMode(false);
-    Thread::exit(new Object(ret));
-    return NULL;
+//    Thread::exit();
+    return new Object(ret);
 }
 
