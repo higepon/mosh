@@ -490,6 +490,7 @@ namespace scheme {
 #ifdef _WIN32
             const bool ret = WaitForSingleObject(thread_, INFINITE) == WAIT_OBJECT_0;
             if(returnValue != NULL) {
+				MOSH_ASSERT(stubInfo_->returnValue != NULL);
                 *returnValue = stubInfo_->returnValue;
             }
             return ret;
