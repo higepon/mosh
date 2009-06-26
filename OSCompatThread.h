@@ -215,8 +215,9 @@ namespace scheme {
         virtual ~ConditionVariable()
         {
 #ifdef _WIN32
-            //CloseHandle(cond_);
-			// todo
+            CloseHandle(sema_);
+            CloseHandle(waiters_done_);
+            DeleteCriticalSection(&waiters_count_lock_);
 #else
             pthread_cond_destroy(&cond_);
 #endif
