@@ -234,7 +234,11 @@ Socket* Socket::createClientSocket(const char* node,
             freeaddrinfo(result);
             return new Socket(fd, Socket::CLIENT, addressString);
         } else {
+#ifdef _WIN32
+            lastError = WSAGetLastError();
+#else
             lastError = errno;
+#endif
 #ifdef _WIN32
             ::shutdown(fd, SD_SEND);
             ::closesocket(fd);
