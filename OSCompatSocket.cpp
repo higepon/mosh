@@ -222,6 +222,7 @@ Socket* Socket::createClientSocket(const char* node,
         const int fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
         if (-1 == fd) {
 #ifdef _WIN32
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             lastError = WSAGetLastError();
 #else
             lastError = errno;
@@ -235,6 +236,7 @@ Socket* Socket::createClientSocket(const char* node,
             return new Socket(fd, Socket::CLIENT, addressString);
         } else {
 #ifdef _WIN32
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             lastError = WSAGetLastError();
 #else
             lastError = errno;
