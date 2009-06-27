@@ -1,5 +1,5 @@
 /*
- * HeapObject.h - 
+ * HeapObject.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -88,6 +88,7 @@ public:
         VM                          = Type<37>::VALUE,
         ConditionVariable           = Type<38>::VALUE,
         Mutex                       = Type<39>::VALUE,
+        Pointer                     = Type<40>::VALUE,
         forbidden_comma
     };
 };

@@ -81,6 +81,7 @@
 #include "TranscodedTextualOutputPort.h"
 #include "TranscodedTextualInputOutputPort.h"
 #include "OSCompatSocket.h"
+#include "FFI.h"
 
 using namespace scheme;
 
@@ -477,6 +478,12 @@ Object Object::makeMutex(Mutex* c)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Mutex,
                                                         reinterpret_cast<intptr_t>(c))));
+}
+
+Object Object::makePointer(uintptr_t pointer)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Pointer,
+                                                            reinterpret_cast<intptr_t>(new Pointer(pointer)))));
 }
 
 

@@ -44,6 +44,7 @@
 #include "Arithmetic.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "FFI.h"
 
 
 using namespace scheme;
@@ -221,6 +222,17 @@ TEST_F(ObjectTest, AlgorithmR) {
     EXPECT_STREQ("1000000000.0", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(10), 8, 1.0e9), false).ascii_c_str());
     EXPECT_STREQ("1e-99", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(1), -99, 1.0e-99), false).ascii_c_str());
     EXPECT_STREQ("1e99", FlonumUtil::flonumToUcs4String(FlonumUtil::algorithmR(Object::makeFixnum(1), +99, 1.0e+99), false).ascii_c_str());
-
 }
 
+TEST_F(ObjectTest, Pointer) {
+    uint8_t buf[32];
+    const Object p = Object::makePointer((uintptr_t)buf);
+    EXPECT_TRUE(p.isPointer());
+    EXPECT_FALSE(p.isFalse());
+    EXPECT_FALSE(p.isTrue());
+    EXPECT_FALSE(p.isEof());
+    EXPECT_FALSE(p.isUndef());
+    EXPECT_FALSE(p.isUnbound());
+    EXPECT_FALSE(p.isByteVector());
+    EXPECT_EQ((uintptr_t)buf, p.toPointer()->pointer());
+}

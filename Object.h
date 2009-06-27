@@ -80,6 +80,7 @@ class Socket;
 class Object;
 class ConditionVariable;
 class Mutex;
+class Pointer;
 
 enum {
     CONST_NIL     = 0,
@@ -178,6 +179,7 @@ public:
     static Object makeVM(VM* vm);
     static Object makeConditionVariable(ConditionVariable* c);
     static Object makeMutex(Mutex* m);
+    static Object makePointer(uintptr_t pointer);
     static Object makeGloc(Object value);
     static Object makeSocket(const Socket* socket);
     static Object* makeObjectArray(int size);

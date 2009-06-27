@@ -34,3 +34,4 @@
 (define-accessor VM)
 (define-accessor ConditionVariable)
 (define-accessor Mutex)
+(define-accessor Pointer)

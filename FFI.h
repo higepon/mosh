@@ -49,6 +49,26 @@ public:
     static const char* lastError();
 };
 
+class Pointer EXTEND_GC
+{
+public:
+    Pointer(uintptr_t pointer) : pointer_(pointer)
+    {
+    }
+
+    ~Pointer()
+    {
+    }
+
+    uintptr_t pointer() const
+    {
+        return pointer_;
+    }
+
+private:
+    const uintptr_t pointer_;
+};
+
 class CStack EXTEND_GC
 {
 public:
