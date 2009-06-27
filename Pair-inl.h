@@ -58,7 +58,7 @@ inline Object& Object::cdr() const
 
 inline bool Object::isPair() const
 {
-    return isPointer() && ((toPair()->car.val & 0x03) != 0x03);
+    return isRawPointer() && ((toPair()->car.val & 0x03) != 0x03);
 }
 
 inline Object& Object::sourceInfo() const

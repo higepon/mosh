@@ -159,7 +159,7 @@ inline bool Object::isObjectPointer() const
 #endif
 }
 
-inline bool Object::isPointer() const
+inline bool Object::isRawPointer() const
 {
     return (val & 0x03) == 0;
 }
@@ -220,7 +220,7 @@ inline Object Object::makeBool(bool a)
 
 inline bool Object::isHeapObject() const
 {
-    return isPointer() && ((reinterpret_cast<HeapObject*>(val)->type & 0x03) == 0x03);
+    return isRawPointer() && ((reinterpret_cast<HeapObject*>(val)->type & 0x03) == 0x03);
 }
 
 inline Pair* Object::toPair() const

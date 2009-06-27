@@ -152,7 +152,7 @@ public:
     bool operator==(Object o) const;
     bool operator!=(Object o) const;
     bool isObjectPointer() const;
-    bool isPointer() const;
+    bool isRawPointer() const;
     bool isHeapObject() const;
 
     ucs4char toChar() const;

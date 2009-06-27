@@ -634,7 +634,7 @@ Object VM::getStackTrace()
             // next fp is Object pointer, so 4byte aligned.
             // if it is not Object pointer, may be tail call
             Object* nextFp = fp - FP_OFFSET_IN_FRAME;
-            if (!(nextFp->isPointer())) {
+            if (!(nextFp->isRawPointer())) {
                 break;
             }
 
