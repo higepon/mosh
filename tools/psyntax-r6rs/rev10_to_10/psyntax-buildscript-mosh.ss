@@ -1039,6 +1039,8 @@
     (%ffi-pointer->string interaction sys)
     (%ffi-pointer-ref interaction sys)
     (%ffi-supported? interaction sys)
+    (pointer? interaction sys)
+    (pointer->integer sys)
     (%waitpid interaction sys)
     (%spawn interaction sys)
     (current-directory interaction mosh)

@@ -96,7 +96,8 @@
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero))
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero
+                pointer? pointer->integer))
 #|
     Function: ffi-supported?
 
@@ -108,6 +109,32 @@
     Returns:
 
       #t when ffi is supported, otherwise #f.
+|#
+
+#|
+    Function: pointer?
+
+    Returns #t if obj is pointer, otherwise #f
+
+    Prototype:
+    > (pointer? obj)
+
+    Returns:
+
+      #t if obj is pointer, otherwise #f
+|#
+
+#|
+    Function: pointer->integer
+
+    convert pointer to integer
+
+    Prototype:
+    > (pointer->integer pointer)
+
+    Returns:
+
+      integer represention of pointer.
 |#
 
 #|

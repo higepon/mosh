@@ -158,6 +158,7 @@
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
 
+#define argumentAsPointer(index, variableName) castArgument(index, variableName, isPointer, pointer, Pointer*, toPointer)
 #define argumentAsSocket(index, variableName) castArgument(index, variableName, isSocket, socket, Socket*, toSocket)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)

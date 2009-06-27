@@ -48,6 +48,9 @@ Object internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
 //Object internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv);
 
+Object pointerPEx(VM* theVM, int argc, const Object* argv);
+Object pointerTointegerEx(VM* theVM, int argc, const Object* argv);
+
 } // namespace scheme
 
 #endif // SCHEME_FFI_PROCEDURES_

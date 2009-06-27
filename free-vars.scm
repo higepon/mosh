@@ -565,4 +565,8 @@
     file-stat-mtime
     file-stat-atime
     file-stat-ctime
+
+    ;; pointer
+    pointer?
+    pointer->integer
     )

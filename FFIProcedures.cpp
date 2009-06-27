@@ -459,3 +459,20 @@ Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
 //         return Object::Undef;
 //     }
 // }
+
+// (pointer? obj) => boolean
+Object scheme::pointerPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isPointer());
+}
+
+// (pointer->integer pointer) => integer
+Object scheme::pointerTointegerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer->integer");
+    checkArgumentLength(1);
+    argumentAsPointer(0, pointer);
+    return Bignum::makeIntegerFromUintprt_t(pointer->pointer());
+}
