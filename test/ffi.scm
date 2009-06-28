@@ -14,6 +14,10 @@
     (define string_length (c-function libffitest int string_length char*))
     (define return_pointer_string (c-function libffitest int return_pointer_string))
     (define return_array_of_pointer_string (c-function libffitest void* return_array_of_pointer_string))
+    (define return_struct (c-function libffitest void* return_struct))
+    (define return_double_struct (c-function libffitest void* return_double_struct))
+    (define return_longlong_struct (c-function libffitest void* return_longlong_struct))
+    (define return_uint8_t_struct (c-function libffitest void* return_uint8_t_struct))
 
     (test-equal (sub 3 2) 1)
     (test-equal (subf2 1.0 0.0) 1.0)
@@ -24,6 +28,30 @@
     (test-equal (pointer->string (return_pointer_string)) "hello")
     (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 0)) "hello")
     (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 1)) "world")
+
+    (test-eq -1 (pointer-ref-c-signed-char (integer->pointer (return_struct)) 0))
+    (test-eq 255 (pointer-ref-c-unsigned-char (integer->pointer (return_struct)) 1))
+    (test-true (fl=? 3.14 (pointer-ref-c-double (integer->pointer (return_double_struct)) 0)))
+    (test-equal 123456789123456789 (pointer-ref-c-unsigned-long-long (integer->pointer (return_longlong_struct)) 0))
+    (let ([p (integer->pointer (return_struct))])
+      (pointer-set-c-char! p 0 127)
+      (test-eq 127 (pointer-ref-c-signed-char p 0))
+      (test-error assertion-violation? (pointer-set-c-char! p 0 300)))
+
+    (let ([p (integer->pointer (return_longlong_struct))])
+      (pointer-set-c-long-long! p 0 123456789123456780)
+      (test-equal 123456789123456780 (pointer-ref-c-signed-long-long p 0)))
+
+    (let ([p (integer->pointer (return_double_struct))])
+      (pointer-set-c-double! p 0 1.234)
+      (fl=? 1.234 (pointer-ref-c-double p 0)))
+
+    (let ([p (integer->pointer (return_uint8_t_struct))])
+      (test-true (pointer=? p p p))
+      (pointer-set-c-int8! p 0 127)
+      (test-eq 127 (pointer-ref-c-uint8 p 0))
+      (test-error assertion-violation? (pointer-set-c-int8! p 0 300)))
+
 
     (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))

@@ -50,6 +50,45 @@ Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
 
 Object pointerPEx(VM* theVM, int argc, const Object* argv);
 Object pointerTointegerEx(VM* theVM, int argc, const Object* argv);
+Object integerTopointerEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt8DEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt16DEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt32DEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt8Ex(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt16Ex(VM* theVM, int argc, const Object* argv);
+Object pointerSetCInt32Ex(VM* theVM, int argc, const Object* argv);
+Object pointerSetCUint64Ex(VM* theVM, int argc, const Object* argv);
+Object pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCDoubleDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCLongDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCIntDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCShortDEx(VM* theVM, int argc, const Object* argv);
+Object pointerSetCCharDEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCPointerEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCDoubleEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCFloatEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUint8Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUint16Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUint32Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUint64Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCInt8Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCInt16Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCInt32Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCInt64Ex(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUnsignedLongLongEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCSignedLongLongEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUnsignedLongEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCSignedLongEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUnsignedIntEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCSignedIntEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUnsignedShortEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCSignedShortEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCUnsignedCharEx(VM* theVM, int argc, const Object* argv);
+Object pointerRefCSignedCharEx(VM* theVM, int argc, const Object* argv);
+
 
 } // namespace scheme
 

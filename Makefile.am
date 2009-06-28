@@ -21,7 +21,7 @@ GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
 # for FFI test
 libffitest.so.1.0: ffitest.c
-	$(CC) -fPIC -c $<
+	$(CC) -Wall -fPIC -c $<
 	$(CC) -Wl @SHLIB_SO_LDFLAGS@ -o $@ ffitest.o
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .

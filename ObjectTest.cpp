@@ -226,7 +226,7 @@ TEST_F(ObjectTest, AlgorithmR) {
 
 TEST_F(ObjectTest, Pointer) {
     uint8_t buf[32];
-    const Object p = Object::makePointer((uintptr_t)buf);
+    const Object p = Object::makePointer(buf);
     EXPECT_TRUE(p.isPointer());
     EXPECT_FALSE(p.isFalse());
     EXPECT_FALSE(p.isTrue());

@@ -52,6 +52,12 @@ public:
         return Fixnum::MIN <= n && n <= Fixnum::MAX;
     }
 
+    static bool canFitU(uint64_t n)
+    {
+        return n <= Fixnum::MAX;
+    }
+
+
     static Object sqrt(Object n);
 
     static bool isEven(int n)

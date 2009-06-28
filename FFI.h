@@ -52,9 +52,10 @@ public:
 class Pointer EXTEND_GC
 {
 public:
-    Pointer(uintptr_t pointer) : pointer_(pointer)
+    Pointer(void* pointer) : pointer_((uintptr_t)pointer)
     {
     }
+
 
     ~Pointer()
     {
@@ -63,6 +64,16 @@ public:
     uintptr_t pointer() const
     {
         return pointer_;
+    }
+
+    template <typename T> T ref(int offset)
+    {
+        return *((T*)pointer_ + offset);
+    }
+
+    template <typename T> void set(int offset, T value)
+    {
+        *((T*)pointer_ + offset) = value;
     }
 
 private:

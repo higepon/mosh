@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <string.h>
+#include <stdint.h>
 
 int return3()
 {
@@ -105,4 +106,51 @@ void* return_array_of_pointer_string()
   p[0] = "hello";
   p[1] = "world";
   return (void*)p;
+}
+
+typedef struct FFITestStruct {
+  char charVal;
+  unsigned char ucharVal;
+
+} FFITestStruct;
+
+void* return_struct()
+{
+  static FFITestStruct st;
+  st.charVal = -1;
+  st.ucharVal = 255;
+  return &st;
+}
+
+typedef struct FFITestDoubleStruct {
+  double val;
+} FFITestDoubleStruct;
+
+void* return_double_struct()
+{
+  static FFITestDoubleStruct st;
+  st.val = 3.14;
+  return &st;
+}
+
+typedef struct FFITestLongLongStruct {
+  long long val;
+} FFITestLongLongStruct;
+
+void* return_longlong_struct()
+{
+  static FFITestLongLongStruct st;
+  st.val = 123456789123456789;
+  return &st;
+}
+
+typedef struct FFITestUint8tStruct {
+  uint8_t val;
+} FFITestUint8tStruct;
+
+void* return_uint8_t_struct()
+{
+  static FFITestUint8tStruct st;
+  st.val = 130;
+  return &st;
 }

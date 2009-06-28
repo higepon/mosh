@@ -285,4 +285,16 @@ TEST_F(FFITest, CStackUnsupportedArgument) {
     EXPECT_STREQ("unsupported ffi argument", err.ascii_c_str());
 }
 
+TEST_F(FFITest, refChar) {
+    char c = 'z';
+    Pointer p(&c);
+    EXPECT_EQ('z', p.ref<char>(0));
+}
+
+TEST_F(FFITest, refUint64_t) {
+    uint64_t c = 0xffffffffeeeeeeee;
+    Pointer p(&c);
+    EXPECT_EQ(0xffffffffeeeeeeee, p.ref<uint64_t>(0));
+}
+
 #endif

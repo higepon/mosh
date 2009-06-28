@@ -34,6 +34,8 @@
 #endif
 
 #include <errno.h>
+#define __STDC_LIMIT_MACROS
+#include <stdint.h>
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"
@@ -47,6 +49,7 @@
 #include "Flonum.h"
 #include "Bignum.h"
 #include "Symbol.h"
+
 
 using namespace scheme;
 
@@ -288,7 +291,7 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
     }
 
     const uintptr_t ret = callStub(func, &cstack);
-    return Bignum::makeIntegerFromUintprt_t(ret);
+    return Bignum::makeIntegerFromUnsigned<uintptr_t>(ret);
 }
 
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
@@ -335,7 +338,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
     }
 
     const intptr_t ret = callStub(func, &cstack);
-    return Bignum::makeIntegerFromIntprt_t(ret);
+    return Bignum::makeIntegerFromSigned<intptr_t>(ret);
 }
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
@@ -356,7 +359,7 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
     if (NULL == symbol) {
         return Object::False;
     } else {
-        return Bignum::makeIntegerFromUintprt_t(reinterpret_cast<uintptr_t>(symbol));
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(reinterpret_cast<uintptr_t>(symbol));
     }
 }
 
@@ -376,7 +379,7 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromUintprt_t(reinterpret_cast<uintptr_t>(handle));
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(reinterpret_cast<uintptr_t>(handle));
     }
 }
 
@@ -437,10 +440,10 @@ Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLengthBetween(1, 2);
     argumentAsUintptr_t(0, p, "pointer required");
     if (argc == 1) {
-        return Bignum::makeIntegerFromUintprt_t(*(uintptr_t*)p);
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(*(uintptr_t*)p);
     } else { // argc == 2
         argumentAsFixnum(1, index);
-        return Bignum::makeIntegerFromUintprt_t(((uintptr_t*)p)[index]);
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(((uintptr_t*)p)[index]);
     }
 }
 
@@ -474,5 +477,239 @@ Object scheme::pointerTointegerEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("pointer->integer");
     checkArgumentLength(1);
     argumentAsPointer(0, pointer);
-    return Bignum::makeIntegerFromUintprt_t(pointer->pointer());
+    return Bignum::makeIntegerFromUnsigned<uintptr_t>(pointer->pointer());
+}
+
+// (integer->pointer integer) => pointer
+Object scheme::integerTopointerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("integer->pointer");
+    checkArgumentLength(1);
+    argumentCheckExactInteger(0, integer);
+    if (integer.isBignum()) {
+        return Object::makePointer((void*)integer.toBignum()->toUintptr_t());
+    } else {
+        return Object::makePointer((void*)integer.toFixnum());
+    }
+}
+
+Object scheme::pointerSetCDoubleDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer-set-c-double!");
+    checkArgumentLength(3);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    argumentAsFlonum(2, value);
+    pointer->set<double>(offset, value->value());
+    return Object::Undef;
+}
+
+Object scheme::pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer-set-c-float!");
+    checkArgumentLength(3);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    argumentAsFlonum(2, value);
+    pointer->set<float>(offset, value->value());
+    return Object::Undef;
+}
+
+template <typename T> static Object pointerSet(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
+{
+    checkArgumentLength(3);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    argumentCheckExactInteger(2, v);
+    intptr_t value;
+    if (v.isBignum()) {
+        value = v.toBignum()->toIntptr_t();
+    } else {
+        value = v.toFixnum();
+    }
+    if (value >= static_cast<intptr_t>(min) && value <= static_cast<intptr_t>(max)) {
+        pointer->set<T>(offset, static_cast<T>(value));
+    } else {
+        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));
+    }
+    return Object::Undef;
+}
+
+Object scheme::pointerSetCInt8DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<int8_t>(UC("pointer-set-c-int8!"), INT8_MIN, INT8_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCInt16DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<int16_t>(UC("pointer-set-c-int16!"), INT16_MIN, INT16_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCInt32DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<int32_t>(UC("pointer-set-c-int32!"), INT32_MIN, INT32_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<int64_t>(UC("pointer-set-c-int64!"), INT64_MIN, INT64_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<long long>(UC("pointer-set-c-long-long!"), LLONG_MIN, LLONG_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<uintptr_t>(UC("pointer-set-c-pointer!"), 0, UINTPTR_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCLongDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<long>(UC("pointer-set-c-long!"), LONG_MIN, LONG_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCIntDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<int>(UC("pointer-set-c-int!"), INT_MIN, INT_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCShortDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<short>(UC("pointer-set-c-short!"), SHRT_MIN, SHRT_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCCharDEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<char>(UC("pointer-set-c-char!"), SCHAR_MIN, SCHAR_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerRefCDoubleEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer-ref-c-double");
+    checkArgumentLength(2);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    return Object::makeFlonum(pointer->ref<double>(offset));
+}
+
+Object scheme::pointerRefCFloatEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("pointer-ref-c-float");
+    checkArgumentLength(2);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    return Object::makeFlonum(pointer->ref<float>(offset));
+}
+
+template <typename T> static Object pointerRefU(const ucs4char* procedureName, VM* theVM, int argc, const Object* argv)
+{
+    checkArgumentLength(2);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    return Bignum::makeIntegerFromUnsigned<T>(pointer->ref<T>(offset));
+}
+
+template <typename T> static Object pointerRefS(const ucs4char* procedureName, VM* theVM, int argc, const Object* argv)
+{
+    checkArgumentLength(2);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    return Bignum::makeIntegerFromSigned<T>(pointer->ref<T>(offset));
+}
+
+Object scheme::pointerRefCUint8Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<uint8_t>(UC("pointer-ref-c-uint8"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUint16Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<uint16_t>(UC("pointer-ref-c-uint16"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUint32Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<uint32_t>(UC("pointer-ref-c-uint32"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUint64Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<uint64_t>(UC("pointer-ref-c-uint64"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCInt8Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<int8_t>(UC("pointer-ref-c-int8"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCInt16Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<int16_t>(UC("pointer-ref-c-int16"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCInt32Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<int32_t>(UC("pointer-ref-c-int32"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCInt64Ex(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<int64_t>(UC("pointer-ref-c-int64"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCPointerEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<uintptr_t>(UC("pointer-ref-c-pointer"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUnsignedLongLongEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<unsigned long long>(UC("pointer-ref-c-unsigned-long-long"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCSignedLongLongEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefS<signed long long>(UC("pointer-ref-c-signed-long-long"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUnsignedLongEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<unsigned long>(UC("pointer-ref-c-unsigned-long"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCSignedLongEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefS<signed long>(UC("pointer-ref-c-signed-long"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUnsignedIntEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<unsigned int>(UC("pointer-ref-c-unsigned-int"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCSignedIntEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefS<signed int>(UC("pointer-ref-c-signed-int"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUnsignedShortEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<unsigned short>(UC("pointer-ref-c-unsigned-short"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCSignedShortEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefS<signed short>(UC("pointer-ref-c-signed-short"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCUnsignedCharEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefU<unsigned char>(UC("pointer-ref-c-unsigned-char"), theVM, argc, argv);
+}
+
+Object scheme::pointerRefCSignedCharEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerRefS<signed char>(UC("pointer-ref-c-signed-char"), theVM, argc, argv);
 }

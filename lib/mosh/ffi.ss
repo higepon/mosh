@@ -89,15 +89,98 @@
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
-          on-darwin on-linux on-freebsd on-openbsd on-windows)
+          on-darwin on-linux on-freebsd on-openbsd on-windows
+          pointer?
+          pointer->integer
+          integer->pointer ;; temp
+          pointer-set-c-int8!
+          pointer-set-c-int16!
+          pointer-set-c-int32!
+          pointer-set-c-int64!
+          pointer-ref-c-uint8
+          pointer-ref-c-uint16
+          pointer-ref-c-uint32
+          pointer-ref-c-uint64
+          pointer-ref-c-int8
+          pointer-ref-c-int16
+          pointer-ref-c-int32
+          pointer-ref-c-int64
+          pointer-ref-c-signed-char
+          pointer-ref-c-unsigned-char
+          pointer-ref-c-signed-short
+          pointer-ref-c-unsigned-short
+          pointer-ref-c-signed-int
+          pointer-ref-c-unsigned-int
+          pointer-ref-c-signed-long
+          pointer-ref-c-unsigned-long
+          pointer-ref-c-signed-long-long
+          pointer-ref-c-unsigned-long-long
+          pointer-ref-c-float
+          pointer-ref-c-double
+          pointer-ref-c-pointer
+          pointer-set-c-char!
+          pointer-set-c-short!
+          pointer-set-c-int!
+          pointer-set-c-long!
+          pointer-set-c-long-long!
+          pointer-set-c-float!
+          pointer-set-c-double!
+          pointer-set-c-pointer!
+          pointer-null
+          pointer-null?
+          pointer-diff
+          pointer-add
+          pointer=?
+          pointer<?
+          pointer>?
+          pointer<=?
+          pointer>=?
+          pointer<>?)
   (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=?
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter
-                       for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find)
+                       for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
+                       + case-lambda cons)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero
-                pointer? pointer->integer))
+                pointer?
+                pointer->integer
+                integer->pointer ;; temp
+                pointer-ref-c-signed-char
+                pointer-ref-c-unsigned-char
+                pointer-ref-c-signed-short
+                pointer-ref-c-unsigned-short
+                pointer-ref-c-signed-int
+                pointer-ref-c-unsigned-int
+                pointer-ref-c-signed-long
+                pointer-ref-c-unsigned-long
+                pointer-ref-c-signed-long-long
+                pointer-ref-c-unsigned-long-long
+                pointer-ref-c-float
+                pointer-ref-c-double
+                pointer-ref-c-pointer
+                pointer-set-c-char!
+                pointer-set-c-short!
+                pointer-set-c-int!
+                pointer-set-c-long!
+                pointer-set-c-long-long!
+                pointer-set-c-float!
+                pointer-set-c-double!
+                pointer-set-c-pointer!
+                pointer-set-c-int8!
+                pointer-set-c-int16!
+                pointer-set-c-int32!
+                pointer-set-c-int64!
+                pointer-ref-c-uint8
+                pointer-ref-c-uint16
+                pointer-ref-c-uint32
+                pointer-ref-c-uint64
+                pointer-ref-c-int8
+                pointer-ref-c-int16
+                pointer-ref-c-int32
+                pointer-ref-c-int64
+                ))
 #|
     Function: ffi-supported?
 
@@ -439,4 +522,49 @@
     Constant: on-windows
 |#
 (define on-windows       (string=? (host-os) "windows"))
+
+(define pointer-null
+  (integer->pointer 0))
+
+(define (pointer-null? pointer)
+  (= 0 (pointer->integer pointer)))
+
+(define (pointer-diff pointer-1 pointer-2)
+  (- (pointer->integer pointer-1)
+     (pointer->integer pointer-2)))
+
+(define (pointer-add pointer offset)
+  (integer->pointer (+ (pointer->integer pointer)
+                       offset)))
+
+(define-syntax define-pointer-comparison
+  (syntax-rules ()
+    ((_ ?name ?func)
+     (define ?name
+       (case-lambda
+        (()
+         #f)
+        ((pointer)
+         #t)
+        ((pointer-a pointer-b)
+         (?func (pointer->integer pointer-a)
+                (pointer->integer pointer-b)))
+        ((pointer-a pointer-b . pointers)
+         (apply ?func (map pointer->integer
+                           (cons pointer-a (cons pointer-b pointers))))))))))
+
+(define-pointer-comparison pointer=? =)
+(define-pointer-comparison pointer<? <)
+(define-pointer-comparison pointer>? >)
+(define-pointer-comparison pointer<=? <=)
+(define-pointer-comparison pointer>=? >=)
+
+(define pointer<>?
+  (case-lambda
+   (()
+    #f)
+   ((pointer . pointers)
+    (not (apply pointer=? pointer pointers)))))
+
+
 )

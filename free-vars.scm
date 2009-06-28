@@ -569,4 +569,38 @@
     ;; pointer
     pointer?
     pointer->integer
+    integer->pointer ;; temp
+    pointer-ref-c-uint8
+    pointer-ref-c-uint16
+    pointer-ref-c-uint32
+    pointer-ref-c-uint64
+    pointer-ref-c-int8
+    pointer-ref-c-int16
+    pointer-ref-c-int32
+    pointer-ref-c-int64
+    pointer-ref-c-signed-char
+    pointer-ref-c-unsigned-char
+    pointer-ref-c-signed-short
+    pointer-ref-c-unsigned-short
+    pointer-ref-c-signed-int
+    pointer-ref-c-unsigned-int
+    pointer-ref-c-signed-long
+    pointer-ref-c-unsigned-long
+    pointer-ref-c-signed-long-long
+    pointer-ref-c-unsigned-long-long
+    pointer-ref-c-float
+    pointer-ref-c-double
+    pointer-ref-c-pointer
+    pointer-set-c-int8!
+    pointer-set-c-int16!
+    pointer-set-c-int32!
+    pointer-set-c-int64!
+    pointer-set-c-char!
+    pointer-set-c-short!
+    pointer-set-c-int!
+    pointer-set-c-long!
+    pointer-set-c-long-long!
+    pointer-set-c-float!
+    pointer-set-c-double!
+    pointer-set-c-pointer!
     )

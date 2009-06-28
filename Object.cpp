@@ -480,7 +480,7 @@ Object Object::makeMutex(Mutex* c)
                                                         reinterpret_cast<intptr_t>(c))));
 }
 
-Object Object::makePointer(uintptr_t pointer)
+Object Object::makePointer(void* pointer)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Pointer,
                                                             reinterpret_cast<intptr_t>(new Pointer(pointer)))));
