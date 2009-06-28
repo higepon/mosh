@@ -90,7 +90,7 @@
 ;; .form (row-ref row . index)
 ;; .returns Field as string
 (define (mysql-row-ref row . index)
-  (pointer->string (apply pointer-ref row index)))
+  (pointer->string (pointer->integer (apply pointer-ref-c-pointer (integer->pointer row) index))))
 
 ;; Closes a previously opened connection
 ;; .form (close obj)
@@ -154,7 +154,7 @@
 
 ;; Returns the field name of field. TODO: this depends on MYSQL_FIELD structure.
 ;; .form (field-name result)
-(define (mysql-field-name field) (pointer->string (pointer-ref field 0)))
+(define (mysql-field-name field) (pointer->string (pointer-ref-c-pointer (integer->pointer field) 0)))
 
 ;; Given a field number fieldnr for a column within a result set, returns that column's field definition as a MYSQL_FIELD structure.
 ;; .form (mysql-fetch-field-direct result fieldnr)

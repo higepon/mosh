@@ -428,24 +428,24 @@ Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* a
     return Object::makeString((char*)p);
 }
 
-Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-pinter-ref");
+// Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("%ffi-pinter-ref");
 
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
+// #ifndef FFI_SUPPORTED
+//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+//     return Object::Undef;
+// #endif
 
-    checkArgumentLengthBetween(1, 2);
-    argumentAsUintptr_t(0, p, "pointer required");
-    if (argc == 1) {
-        return Bignum::makeIntegerFromUnsigned<uintptr_t>(*(uintptr_t*)p);
-    } else { // argc == 2
-        argumentAsFixnum(1, index);
-        return Bignum::makeIntegerFromUnsigned<uintptr_t>(((uintptr_t*)p)[index]);
-    }
-}
+//     checkArgumentLengthBetween(1, 2);
+//     argumentAsUintptr_t(0, p, "pointer required");
+//     if (argc == 1) {
+//         return Bignum::makeIntegerFromUnsigned<uintptr_t>(*(uintptr_t*)p);
+//     } else { // argc == 2
+//         argumentAsFixnum(1, index);
+//         return Bignum::makeIntegerFromUnsigned<uintptr_t>(((uintptr_t*)p)[index]);
+//     }
+// }
 
 // Object scheme::internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv)
 // {
@@ -661,7 +661,11 @@ Object scheme::pointerRefCInt64Ex(VM* theVM, int argc, const Object* argv)
 
 Object scheme::pointerRefCPointerEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerRefU<uintptr_t>(UC("pointer-ref-c-pointer"), theVM, argc, argv);
+    DeclareProcedureName("pointer-ref-c-pointer");
+    checkArgumentLength(2);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    return Object::makePointer((void*)pointer->ref<uintptr_t>(offset));
 }
 
 Object scheme::pointerRefCUnsignedLongLongEx(VM* theVM, int argc, const Object* argv)

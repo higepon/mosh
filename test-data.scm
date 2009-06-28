@@ -3398,11 +3398,11 @@
 (#t (try-ffi
      (let* ([handle (%ffi-open "./libffitest.so.1.0")]
             [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-       (string=? "hello" (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p)))))))
+       (string=? "hello" (%ffi-pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (%ffi-call->void* p)) 0)))))))
 (#t (try-ffi
      (let* ([handle (%ffi-open "./libffitest.so.1.0")]
             [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-       (string=? "world" (%ffi-pointer->string (%ffi-pointer-ref (%ffi-call->void* p) 1))))))
+       (string=? "world" (%ffi-pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (%ffi-call->void* p)) 1)))))))
 (#t (try-ffi
      (let* ([handle (%ffi-open "./libffitest.so.1.0")]
             [add8 (%ffi-lookup handle 'add8)])

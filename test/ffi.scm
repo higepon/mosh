@@ -26,8 +26,8 @@
     (test-equal (string_length "1234567") 7)
     (test-true  (integer? (return_pointer_string)))
     (test-equal (pointer->string (return_pointer_string)) "hello")
-    (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 0)) "hello")
-    (test-equal (pointer->string (pointer-ref (return_array_of_pointer_string) 1)) "world")
+    (test-equal (pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (return_array_of_pointer_string)) 0))) "hello")
+    (test-equal (pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (return_array_of_pointer_string)) 1))) "world")
 
     (test-eq -1 (pointer-ref-c-signed-char (integer->pointer (return_struct)) 0))
     (test-eq 255 (pointer-ref-c-unsigned-char (integer->pointer (return_struct)) 1))
@@ -68,7 +68,7 @@
         (define mysql-free-result  (c-function libmysqlclient void* mysql_free_result  void*))
         (let ([mysql-obj (mysql-init NULL)])
           (cond
-           [(zero? (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
+           [(zero? (mysql-real-connect mysql-obj "127.0.0.1" "root" "root" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
             (display "mysql connect failed\n" (current-error-port))]
            [else
             (mysql-query mysql-obj "select User from user;")
@@ -79,7 +79,7 @@
                 (cond
                  [(= i count) '()]
                  [else
-                  (test-true  (string? (pointer->string (pointer-ref record))))
+                  (test-true  (string? (pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer record) 0)))))
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))))

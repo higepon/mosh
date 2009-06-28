@@ -84,7 +84,7 @@
 |#
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library
-          (rename (%ffi-pointer->string pointer->string) (%ffi-pointer-ref pointer-ref)
+          (rename (%ffi-pointer->string pointer->string)
                   (%ffi-supported? ffi-supported?))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
@@ -235,24 +235,6 @@
     Returns:
 
       string value at which pointer points.
-|#
-
-#|
-    Function: pointer-ref
-
-    Refer the value of pointer[index].
-
-    Prototype:
-    > (pointer-ref pointer . index)
-
-    Parameters:
-
-      pointer - integer valued pointer. When not-pointer integer is passed, it may cause crash.
-      index   - index. default values is 0.
-
-    Returns:
-
-      pointer value of pointer[index]
 |#
 
 

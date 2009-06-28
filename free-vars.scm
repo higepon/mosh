@@ -482,7 +482,6 @@
     %ffi-call->double
     %ffi-call->string-or-zero
     %ffi-pointer->string
-    %ffi-pointer-ref
     %ffi-supported?
     host-os
     output-port?

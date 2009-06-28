@@ -1037,7 +1037,6 @@
     (%ffi-call->double interaction sys)
     (%ffi-call->string-or-zero interaction sys)
     (%ffi-pointer->string interaction sys)
-    (%ffi-pointer-ref interaction sys)
     (%ffi-supported? interaction sys)
     (pointer? interaction sys)
     (integer->pointer interaction sys)
