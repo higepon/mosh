@@ -1,5 +1,7 @@
 2009-06-28  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/srfi/%3a27/random.ss (mrg32k3a-state-set): fixed length bug pointed out by mrc.mgg.
+
         * Addes following procedures.
           pointer?
           pointer->integer

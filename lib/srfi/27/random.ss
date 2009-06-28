@@ -246,7 +246,8 @@
         (error "illegal value" x)))
   
   (if (and (list? external-state)
-           (= (length external-state) 7)
+           (= (length external-state) 6)
+;;           (= (length external-state) 7) ;; bug
            (eq? (car external-state) 'lecuyer-mrg32k3a))
       (let ((s (cdr external-state)))
         (check-value (list-ref s 0) mrg32k3a-m1)
