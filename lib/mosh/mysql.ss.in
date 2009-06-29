@@ -154,7 +154,7 @@
 
 ;; Returns the field name of field. TODO: this depends on MYSQL_FIELD structure.
 ;; .form (field-name result)
-(define (mysql-field-name field) (pointer->string (pointer-ref-c-pointer (integer->pointer field) 0)))
+(define (mysql-field-name field) (pointer->string (pointer-ref-c-pointer field 0)))
 
 ;; Given a field number fieldnr for a column within a result set, returns that column's field definition as a MYSQL_FIELD structure.
 ;; .form (mysql-fetch-field-direct result fieldnr)
@@ -368,7 +368,7 @@
 ;;  mysql-ssl-set() is used for establishing secure connections using SSL. It must be called before mysql-real-connect.
 ;; .form (mysql-ssl-set mysql-obj key cert ca capath cipher)
 ;; .returns This function always returns 0. If SSL setup is incorrect, mysql-real-connect returns an error when you attempt to connect.
-(define mysql-ssl-set  (c-function-wrap libmysqlclient int mysql_ssl_set char* char* char* char* char*))
+(define mysql-ssl-set  (c-function-wrap libmysqlclient int mysql_ssl_set void* char* char* char* char*))
 
 ;; Returns a character string containing information similar to that provided by the mysqladmin status  command. This includes uptime in seconds and the number of running threads, questions, reloads, and open tables.
 ;; .form (mysql-stat mysql-obj)
