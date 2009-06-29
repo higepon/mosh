@@ -292,9 +292,9 @@ TEST_F(FFITest, refChar) {
 }
 
 TEST_F(FFITest, refUint64_t) {
-    uint64_t c = 0xffffffffeeeeeeee;
+    uint64_t c = 0xffffffffeeeeeeeeLL;
     Pointer p(&c);
-    EXPECT_EQ(0xffffffffeeeeeeee, p.ref<uint64_t>(0));
+    EXPECT_EQ(0xffffffffeeeeeeeeLL, p.ref<uint64_t>(0));
 }
 
 #endif

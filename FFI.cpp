@@ -202,6 +202,8 @@ bool CStack::push(Object obj)
     // ByteVector -> char*
     } else if (obj.isByteVector()) {
         return pushInt((intptr_t)(obj.toByteVector()->data()));
+    } else if (obj.isPointer()) {
+        return pushInt(obj.toPointer()->pointer());
     } else {
         lastError_ = UC("unsupported ffi argument");
         return false;

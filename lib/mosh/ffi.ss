@@ -84,8 +84,8 @@
 |#
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library
-          (rename (%ffi-pointer->string pointer->string)
-                  (%ffi-supported? ffi-supported?))
+          pointer->string
+          (rename (%ffi-supported? ffi-supported?))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
@@ -140,10 +140,11 @@
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons)
+                       + case-lambda cons let* make-string char->integer integer->char if)
+          (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double %ffi-call->string-or-zero
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double
                 pointer?
                 pointer->integer
                 integer->pointer ;; temp
@@ -236,7 +237,23 @@
 
       string value at which pointer points.
 |#
-
+(define (pointer->string pointer)
+  (define nul (char->integer #\nul))
+  (define (c-strlen pointer)
+    (let loop ([index 0]
+               [c (pointer-ref-c-signed-char pointer 0)])
+      (cond
+       [(= c nul) index]
+       [else
+        (loop (+ index 1) (pointer-ref-c-signed-char pointer (+ index 1)))])))
+  (let* ([len (c-strlen pointer)]
+         [str (make-string len)])
+    (let loop ([i 0])
+      (cond
+       [(= len i) str]
+       [else
+        (string-set! str i (integer->char (pointer-ref-c-signed-char pointer i)))
+        (loop (+ i 1))]))))
 
 #|
     Function: open-shared-library
@@ -284,21 +301,28 @@
       [(_ lib ret func arg ...)
        #'(make-c-function lib 'ret 'func '(arg ...)))]))
 
+(define (%ffi-call->char* func . args)
+  (let ([p (apply %ffi-call->void* func args)])
+    (if (pointer-null? p)
+        p
+        (pointer->string p))))
+
 (define stub-ht (alist->eq-hash-table
                  `((void*  . ,%ffi-call->void*)
-                   (char*  . ,%ffi-call->string-or-zero) ;; char* may be NULL,
+                   (char*  . ,%ffi-call->char*) ;; char* may be NULL,
                    (void   . ,%ffi-call->void)
                    (double . ,%ffi-call->double)
+                   (char    . ,%ffi-call->int)
                    (int    . ,%ffi-call->int))))
 
 (define checker-ht (alist->eq-hash-table
-                    `((void*  . ,(lambda (x) (and (integer? x) x)))
+                    `((void*  . ,(lambda (x) (and (pointer? x) x)))
                       (int    . ,(lambda (x) (and (integer? x) x)))
                       (double . ,(lambda (x) (cond
                                               [(flonum? x) x]
                                               [(fixnum? x) (inexact x)]
                                               [else #f])))
-                      (char*  . ,(lambda (x) (and (or (and (number? x) (zero? x)) string?) x))))))
+                      (char*  . ,(lambda (x) (and (or (pointer-null? x) (string? x)) x))))))
 
 (define (find-shared-library regex)
   (exists
@@ -509,7 +533,7 @@
   (integer->pointer 0))
 
 (define (pointer-null? pointer)
-  (= 0 (pointer->integer pointer)))
+  (and (pointer? pointer) (= 0 (pointer->integer pointer))))
 
 (define (pointer-diff pointer-1 pointer-2)
   (- (pointer->integer pointer-1)

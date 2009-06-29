@@ -63,7 +63,7 @@ using namespace scheme;
 #define FFI_SUPPORTED 1
 #endif
 
-static double callStubDouble(uintptr_t func, CStack* cstack)
+static double callStubDouble(Pointer* func, CStack* cstack)
 {
 #ifdef ARCH_IA32
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
@@ -78,7 +78,7 @@ static double callStubDouble(uintptr_t func, CStack* cstack)
         "call    *%%eax       ;"
         "movl    %%edi, %%esp ;"
         : "=t" (ret) // t: st[0]
-        : "c" (bytes), "S" (cstack->frame()), "a" (func) // c:ecx, S:esi a:eax
+        : "c" (bytes), "S" (cstack->frame()), "a" (func->pointer()) // c:ecx, S:esi a:eax
         : "edi", "edx", "memory"); // we have memory destructions.
     return ret;
 #elif defined ARCH_X86_64
@@ -149,7 +149,7 @@ static double callStubDouble(uintptr_t func, CStack* cstack)
 #endif
 }
 
-static intptr_t callStub(uintptr_t func, CStack* cstack)
+static intptr_t callStub(Pointer* func, CStack* cstack)
 {
 #ifdef ARCH_IA32
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
@@ -164,7 +164,7 @@ static intptr_t callStub(uintptr_t func, CStack* cstack)
         "call    *%%eax       ;"
         "movl    %%edi, %%esp ;"
         : "=a" (ret)
-        : "c" (bytes), "S" (cstack->frame()), "0" (func) // c:ecx, S:esi 0:match to the 0th output
+        : "c" (bytes), "S" (cstack->frame()), "0" (func->pointer()) // c:ecx, S:esi 0:match to the 0th output
         : "edi", "edx", "memory"); // we have memory destructions.
     return ret;
 #elif defined ARCH_X86_64
@@ -255,7 +255,7 @@ Object scheme::internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv
 #endif
 
     checkArgumentLengthAtLeast(1);
-    argumentAsUintptr_t(0, func, "Invalid FFI function");
+    argumentAsPointer(0, func);
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -279,7 +279,7 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
 #endif
 
     checkArgumentLengthAtLeast(1);
-    argumentAsUintptr_t(0, func, "Invalid FFI function");
+    argumentAsPointer(0, func);
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -291,7 +291,7 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
     }
 
     const uintptr_t ret = callStub(func, &cstack);
-    return Bignum::makeIntegerFromUnsigned<uintptr_t>(ret);
+    return Object::makePointer((void*)ret);
 }
 
 Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
@@ -303,7 +303,7 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
 #endif
 
     checkArgumentLengthAtLeast(1);
-    argumentAsUintptr_t(0, func, "Invalid FFI function");
+    argumentAsPointer(0, func);
     CStack cstack;
     for (int i = 1; i < argc; i++) {
         if (!cstack.push(argv[i])) {
@@ -326,7 +326,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 #endif
 
     checkArgumentLengthAtLeast(1);
-    argumentAsUintptr_t(0, func, "Invalid FFI function");
+    argumentAsPointer(0, func);
 
     CStack cstack;
     for (int i = 1; i < argc; i++) {
@@ -350,16 +350,16 @@ Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 #endif
 
     checkArgumentLength(2);
-    argumentAsUintptr_t(0, handle, "invalid shared library handle");
+    argumentAsPointer(0, handle);
     argumentAsSymbol(1, name);
 
     ucs4string n = name->c_str();
-    void* symbol = FFI::lookup((void*)handle, n.ascii_c_str());
+    void* symbol = FFI::lookup((void*)handle->pointer(), n.ascii_c_str());
 
     if (NULL == symbol) {
         return Object::False;
     } else {
-        return Bignum::makeIntegerFromUnsigned<uintptr_t>(reinterpret_cast<uintptr_t>(symbol));
+        return Object::makePointer(symbol);
     }
 }
 
@@ -379,54 +379,54 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
         callAssertionViolationAfter(theVM, procedureName, "shared library not found", L2(FFI::lastError(), argv[0]));
         return Object::Undef;
     } else {
-        return Bignum::makeIntegerFromUnsigned<uintptr_t>(reinterpret_cast<uintptr_t>(handle));
+        return Object::makePointer(handle);
     }
 }
 
-Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->string-or-zero");
+// Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("%ffi-call->string-or-zero");
 
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
+// #ifndef FFI_SUPPORTED
+//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+//     return Object::Undef;
+// #endif
 
-    checkArgumentLengthAtLeast(1);
-    argumentAsUintptr_t(0, func, "Invalid FFI function");
+//     checkArgumentLengthAtLeast(1);
+//     argumentAsUintptr_t(0, func, "Invalid FFI function");
 
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
-    }
+//     CStack cstack;
+//     for (int i = 1; i < argc; i++) {
+//         if (!cstack.push(argv[i])) {
+//             callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+//                                                                                    argv[i]));
+//             return Object::Undef;
+//         }
+//     }
 
-    const uintptr_t ret = callStub(func, &cstack);
-    if (ret == 0) {
-        return Object::makeFixnum(0);
-    } else {
+//     const uintptr_t ret = callStub(func, &cstack);
+//     if (ret == 0) {
+//         return Object::makeFixnum(0);
+//     } else {
 
-        return Object::makeString((char*)ret);
-    }
+//         return Object::makeString((char*)ret);
+//     }
 
-}
+// }
 
-Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-pointer->string");
+// Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
+// {
+//     DeclareProcedureName("%ffi-pointer->string");
 
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
+// #ifndef FFI_SUPPORTED
+//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+//     return Object::Undef;
+// #endif
 
-    checkArgumentLength(1);
-    argumentAsUintptr_t(0, p, "pointer required");
-    return Object::makeString((char*)p);
-}
+//     checkArgumentLength(1);
+//     argumentAsUintptr_t(0, p, "pointer required");
+//     return Object::makeString((char*)p);
+// }
 
 // Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
 // {
@@ -521,13 +521,14 @@ template <typename T> static Object pointerSet(const ucs4char* procedureName, T 
     argumentAsPointer(0, pointer);
     argumentAsFixnum(1, offset);
     argumentCheckExactInteger(2, v);
-    intptr_t value;
+    int64_t value;
     if (v.isBignum()) {
-        value = v.toBignum()->toIntptr_t();
+        value = v.toBignum()->toS64();
     } else {
         value = v.toFixnum();
     }
-    if (value >= static_cast<intptr_t>(min) && value <= static_cast<intptr_t>(max)) {
+    MOSH_ASSERT(sizeof(T) <= sizeof(int64_t));
+    if (value >= static_cast<int64_t>(min) && value <= static_cast<int64_t>(max)) {
         pointer->set<T>(offset, static_cast<T>(value));
     } else {
         callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));

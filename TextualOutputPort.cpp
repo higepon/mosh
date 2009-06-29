@@ -58,6 +58,7 @@
 #include "BinaryInputOutputPort.h"
 #include "OSCompatSocket.h"
 #include "OSCompatThread.h"
+#include "FFI.h"
 
 #ifdef _WIN32
     #define snprintf _snprintf
@@ -574,7 +575,12 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC(", error-handling-mode="));
         print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol());
         putString(UC(">"));
-
+    } else if (o.isPointer()) {
+        putString(UC("#<pointer "));
+        char buf[16];
+        snprintf(buf, 16, "\\p%x;", o.toPointer()->pointer());
+        putString(buf);
+        putString(UC(">"));
     } else {
         putString(UC("#<unknown datum>"));
     }

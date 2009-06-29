@@ -480,8 +480,6 @@
     %ffi-call->void
     %ffi-call->void*
     %ffi-call->double
-    %ffi-call->string-or-zero
-    %ffi-pointer->string
     %ffi-supported?
     host-os
     output-port?

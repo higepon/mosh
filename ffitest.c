@@ -100,6 +100,11 @@ void* return_pointer_string()
   return "hello";
 }
 
+char* return_pointer_null()
+{
+  return NULL;
+}
+
 void* return_array_of_pointer_string()
 {
   static char* p[2];
@@ -121,6 +126,10 @@ void* return_struct()
   st.ucharVal = 255;
   return &st;
 }
+char struct_ref(FFITestStruct* st)
+{
+  return st->charVal;
+}
 
 typedef struct FFITestDoubleStruct {
   double val;
@@ -140,7 +149,7 @@ typedef struct FFITestLongLongStruct {
 void* return_longlong_struct()
 {
   static FFITestLongLongStruct st;
-  st.val = 123456789123456789;
+  st.val = 123456789123456789LL;
   return &st;
 }
 
@@ -153,4 +162,12 @@ void* return_uint8_t_struct()
   static FFITestUint8tStruct st;
   st.val = 130;
   return &st;
+}
+
+
+char* append_hello(const char* text)
+{
+  static char buf[256];
+  snprintf(buf, 256, "%shello", text);
+  return buf;
 }
