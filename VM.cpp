@@ -113,7 +113,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     name_(UC("")),
     thread_(NULL),
     readerContext_(new ReaderContext),
-    numberReaderContext_(new NumberReaderContext)
+    numberReaderContext_(new NumberReaderContext),
+    errno_(0)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);

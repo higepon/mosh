@@ -64,7 +64,7 @@ using namespace scheme;
 #endif
 
 // Originally from Ypsilon Scheme.
-class SynchronizedErrno EXTEND_GC
+class SynchronizedErrno : public gc_cleanup
 {
     VM* vm_;
 public:
