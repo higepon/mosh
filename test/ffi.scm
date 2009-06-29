@@ -61,7 +61,7 @@
       (test-error assertion-violation? (pointer-set-c-int8! p 0 300)))
 
    (let ([p (return_struct)])
-     (test-eq -1 (struct_ref p)))
+     (test-eq 255 (struct_ref p)))
 
    (begin
      (change_errno)
@@ -73,7 +73,7 @@
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
     (when libmysqlclient
       (let ()
-        (define NULL 0)
+        (define NULL pointer-null)
         (define mysql-init         (c-function libmysqlclient void* mysql_init         void*))
         (define mysql-real-connect (c-function libmysqlclient void* mysql_real_connect void* char* char* char* char* int char* int))
         (define mysql-query        (c-function libmysqlclient void* mysql_query        void* char*))
@@ -84,7 +84,7 @@
         (define mysql-free-result  (c-function libmysqlclient void* mysql_free_result  void*))
         (let ([mysql-obj (mysql-init NULL)])
           (cond
-           [(zero? (mysql-real-connect mysql-obj "127.0.0.1" "root" "root" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
+           [(pointer-null? (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
             (display "mysql connect failed\n" (current-error-port))]
            [else
             (mysql-query mysql-obj "select User from user;")
@@ -95,7 +95,7 @@
                 (cond
                  [(= i count) '()]
                  [else
-                  (test-true  (string? (pointer->string (pointer-ref-c-pointer (integer->pointer record) 0))))
+                  (test-true  (string? (pointer->string (pointer-ref-c-pointer record 0))))
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))))

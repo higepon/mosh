@@ -5,6 +5,10 @@
         (mosh test)
         (mosh concurrent))
 
+<<<<<<< .mine
+                  (f (- n 1) (* r n)))))
+(display (fact 100000))
+=======
 
 ;; ;; crash test
 ;; (let ([pid (spawn-link (lambda () (car 3)) '((rnrs) (mosh concurrent)))])
@@ -101,3 +105,4 @@
 
 
 (join! pid))
+>>>>>>> .r1834

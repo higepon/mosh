@@ -5,14 +5,13 @@
         (mosh test))
 
 (define mysql (guard (c (#t #f)) (mysql-init)))
-
-(guard (con
-        ((violation? con)
-         (display "no test because mysql connect failed\n")))
+;; (guard (con
+;;         ((violation? con)
+;;          (display "no test because mysql connect failed\n")))
 (when mysql
   (let ()
 (define (test/mysql-result result)
-  (when (zero? result)
+  (when (pointer-null? result)
     (assertion-violation 'mysql-store-result "failed"))
   (test-true (integer? (mysql-fetch-lengths result)))
   (test-true (integer? (mysql-field-count mysql)))
@@ -21,23 +20,23 @@
   (test-true (integer? (mysql-row-tell result)))
   (let loop ([row (mysql-fetch-row result)])
     (cond
-     [(= row NULL) '()]
+     [(pointer-null? row) '()]
      [else
-      (test-true (string? (mysql-row-ref row)))
+;      (test-true (string? (mysql-row-ref row 0)))
       (loop (mysql-fetch-row result))]))
   (mysql-free-result result))
 
-(when (zero? (mysql-real-connect mysql "127.0.0.1" "root" "" "mysql" 3306 NULL 0))
+(when (pointer-null? (mysql-real-connect mysql "127.0.0.1" "root" "" "mysql" 3306 NULL 0))
   (assertion-violation 'mysql-real-connect "failed"))
 
-(unless (zero? (mysql-query mysql "select Host, User from user"))
+(unless (pointer-null? (mysql-query mysql "select Host, User from user"))
   (assertion-violation 'mysql-query "failed"))
 
 (test-true (integer? (mysql-set-character-set mysql "utf8")))
 
 (test-true (integer? (mysql-select-db mysql "mysql")))
 (let* ([result (mysql-store-result mysql)])
-  (when (zero? result)
+  (when (pointer-null? result)
     (assertion-violation 'mysql-store-result "failed"))
   (mysql-num-rows result)
   (test-true (integer? (mysql-fetch-lengths result)))
@@ -45,14 +44,14 @@
   (test-true (integer? (mysql-set-server-option mysql 0)))
   (let loop ([row (mysql-fetch-row result)])
     (cond
-     [(= row NULL) '()]
+     [(pointer-null? row) '()]
      [else
-      (mysql-row-ref row)
+;      (mysql-row-ref row 0)
       (loop (mysql-fetch-row result))]))
 
   (let loop ([field (mysql-fetch-field result)])
     (cond
-     [(= field NULL) '()]
+     [(pointer-null? field) '()]
      [else
       (test-true (string? (mysql-field-name field)))
       (loop (mysql-fetch-field result))]))
@@ -60,7 +59,7 @@
   (test-true (string? (mysql-error mysql)))
   (mysql-data-seek result 1)
   (test-true (integer? (mysql-errno mysql)))
-  (test-true (zero? (mysql-dump-debug-info mysql)))
+  (test-true (pointer-null? (mysql-dump-debug-info mysql)))
   (test-true (string? (mysql-get-client-info)))
   (test-true (number? (mysql-affected-rows mysql)))
   (test-true (zero? (mysql-autocommit mysql 1)))
@@ -86,7 +85,7 @@
   (test/mysql-result (mysql-list-processes mysql))
   (test/mysql-result (mysql-list-tables mysql NULL))
 
-  (test-true (= 0 (mysql-more-results mysql)))
+  (test-true (pointer-null? (mysql-more-results mysql)))
   (test-true (integer? (mysql-next-result mysql)))
   (test-true (zero? (mysql-options mysql 2 NULL)))
   (test-true (zero? (mysql-ping mysql)))
@@ -109,7 +108,7 @@
   (test-true (integer? (mysql-warning-count mysql)))
   (mysql-close mysql)
 ;  (mysql-library-end)
-  '())))
+  '()))
 
 (test-results)
 )

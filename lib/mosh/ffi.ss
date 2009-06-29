@@ -141,7 +141,7 @@
                        quasiquote unless assertion-violation quote = length and number?
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons let* make-string char->integer integer->char if)
+                       + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
@@ -324,7 +324,7 @@
                                               [(flonum? x) x]
                                               [(fixnum? x) (inexact x)]
                                               [else #f])))
-                      (char*  . ,(lambda (x) (and (or (pointer-null? x) (string? x)) x))))))
+                      (char*  . ,(lambda (x) (and (or (pointer-null? x) (string? x) (bytevector? x)) x))))))
 
 (define (find-shared-library regex)
   (exists

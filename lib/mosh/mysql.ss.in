@@ -44,7 +44,7 @@
   (import (only (rnrs) define guard apply define-syntax syntax-case ... cond lambda syntax else set!)
           (mosh ffi))
 
-(define NULL 0)
+(define NULL pointer-null)
 
 (define-syntax c-function-wrap
   (lambda (x)
@@ -87,10 +87,10 @@
 (define mysql-fetch-row    (c-function-wrap libmysqlclient void* mysql_fetch_row void*))
 
 ;; Retrieves the index field
-;; .form (row-ref row . index)
+;; .form (row-ref row index)
 ;; .returns Field as string
-(define (mysql-row-ref row . index)
-  (pointer->string (pointer->integer (apply pointer-ref-c-pointer (integer->pointer row) index))))
+(define (mysql-row-ref row index)
+  (pointer->string (pointer-ref-c-pointer row index)))
 
 ;; Closes a previously opened connection
 ;; .form (close obj)
