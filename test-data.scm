@@ -3389,10 +3389,6 @@
 ;; pointer test
 (#t (try-ffi
      (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-            [p (%ffi-lookup handle 'pointer)])
-       (string=? "12345678" (number->string (%ffi-call->void* p) 16)))))
-(#t (try-ffi
-     (let* ([handle (%ffi-open "./libffitest.so.1.0")]
             [p (%ffi-lookup handle 'return_pointer_string)])
        (string=? "hello" (%ffi-pointer->string (%ffi-call->void* p))))))
 (#t (try-ffi
