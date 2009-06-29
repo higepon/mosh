@@ -63,6 +63,27 @@ using namespace scheme;
 #define FFI_SUPPORTED 1
 #endif
 
+// Originally from Ypsilon Scheme.
+class SynchronizedErrno EXTEND_GC
+{
+    VM* vm_;
+public:
+    SynchronizedErrno(VM* vm) {
+        vm_ = vm;
+        errno = vm_->getErrno();
+#if _MSC_VER
+        SetLastError(vm_->getErrno());
+#endif
+    }
+    ~SynchronizedErrno() {
+        vm_->setErrno(errno);
+#if _MSC_VER
+        vm_->setErrno(GetLastError());
+#endif
+    }
+};
+
+
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
 #ifdef ARCH_IA32
@@ -265,7 +286,7 @@ Object scheme::internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv
             return Object::Undef;
         }
     }
-
+    SynchronizedErrno s(theVM);
     const double ret = callStubDouble(func, &cstack);
     return Object::makeFlonum(ret);
 }
@@ -290,6 +311,7 @@ Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* arg
         }
     }
 
+    SynchronizedErrno s(theVM);
     const uintptr_t ret = callStub(func, &cstack);
     return Object::makePointer((void*)ret);
 }
@@ -313,6 +335,7 @@ Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
         }
     }
 
+    SynchronizedErrno s(theVM);
     callStub(func, &cstack);
     return Object::Undef;
 }
@@ -336,7 +359,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
             return Object::Undef;
         }
     }
-
+    SynchronizedErrno s(theVM);
     const intptr_t ret = callStub(func, &cstack);
     return Bignum::makeIntegerFromSigned<intptr_t>(ret);
 }
@@ -717,4 +740,29 @@ Object scheme::pointerRefCUnsignedCharEx(VM* theVM, int argc, const Object* argv
 Object scheme::pointerRefCSignedCharEx(VM* theVM, int argc, const Object* argv)
 {
     return pointerRefS<signed char>(UC("pointer-ref-c-signed-char"), theVM, argc, argv);
+}
+
+Object scheme::sharedErrnoEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("shared-errno");
+    checkArgumentLengthBetween(0, 1);
+    if (0 == argc) {
+#ifdef _MSC_VER
+        return Bignum::makeIntegerFromUnsigned<uint32_t>(theVM->getErrno());
+#else
+        return Bignum::makeIntegerFromSigned<int>(theVM->getErrno());
+#endif
+    } else {
+        argumentCheckExactInteger(0, val);
+        if (val.isBignum()) {
+#ifdef _MSC_VER
+            theVM->setErrno(val.toBignum()->toU32());
+#else
+            theVM->setErrno(val.toBignum()->toS32());
+#endif
+        } else {
+            theVM->setErrno(val.toFixnum());
+        }
+        return Object::Undef;
+    }
 }

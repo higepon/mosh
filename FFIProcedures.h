@@ -43,10 +43,7 @@ Object internalFfiCallTointEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv);
-//Object internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv);
-//Object internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv);
-//Object internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv);
-//Object internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv);
+Object sharedErrnoEx(VM* theVM, int argc, const Object* argv);
 
 Object pointerPEx(VM* theVM, int argc, const Object* argv);
 Object pointerTointegerEx(VM* theVM, int argc, const Object* argv);

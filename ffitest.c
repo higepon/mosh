@@ -1,6 +1,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdint.h>
+#include <errno.h>
+#include <stdio.h>
 
 int return3()
 {
@@ -170,4 +172,9 @@ char* append_hello(const char* text)
   static char buf[256];
   snprintf(buf, 256, "%shello", text);
   return buf;
+}
+
+void change_errno()
+{
+  errno = 3;
 }

@@ -90,6 +90,7 @@
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
+          shared-errno
           pointer?
           pointer->integer
           integer->pointer ;; temp
@@ -145,6 +146,7 @@
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
           (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double
+                shared-errno
                 pointer?
                 pointer->integer
                 integer->pointer ;; temp

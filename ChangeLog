@@ -1,5 +1,7 @@
 2009-06-29  higepon  <higepon@users.sourceforge.jp>
 
+        * FFIProcedures.cpp : added shared-errno.
+
         * lib/mosh/ffi.ss : Use pointer object for arguments and functions.
 
 2009-06-28  higepon  <higepon@users.sourceforge.jp>

@@ -106,6 +106,13 @@ public:
         return ret;
     }
     void setName(const ucs4string& name) { name_ = name; }
+#ifdef _MSC_VER
+    uint32_t getErrno() const { return errno_; }
+    void setErrno(uint32_t e) { errno_ = e; }
+#else
+    int getErrno() const { return errno_; }
+    void setErrno(int e) { errno_ = e; }
+#endif
     Object getLastError() const { return errorObj_; }
     void loadCompiler();
     void dumpCompiledCode(Object code) const;
@@ -279,6 +286,11 @@ protected:
     int callCodeLength_;
     ReaderContext* readerContext_;
     NumberReaderContext* numberReaderContext_;
+#if _MSC_VER
+    uint32_t errno_;
+#else
+    int errno_;
+#endif
 };
 
 } // namespace scheme

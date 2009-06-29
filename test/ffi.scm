@@ -22,6 +22,7 @@
     (define return_uint8_t_struct (c-function libffitest void* return_uint8_t_struct))
     (define append_hello (c-function libffitest char* append_hello char*))
     (define struct_ref (c-function libffitest char struct_ref void*))
+    (define change_errno (c-function libffitest void change_errno))
 
     (test-equal (sub 3 2) 1)
     (test-equal (subf2 1.0 0.0) 1.0)
@@ -62,6 +63,11 @@
    (let ([p (return_struct)])
      (test-eq -1 (struct_ref p)))
 
+   (begin
+     (change_errno)
+     (test-eq 3 (shared-errno))
+     (shared-errno 4)
+     (test-eq 4 (shared-errno)))
 
     (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))

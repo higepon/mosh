@@ -111,14 +111,14 @@ TEST_F(VMErrorPortTest, loadAndlookupScheme) {
     // open
     const Object name = "./libffitest.so.1.0";
     const Object handle = internalFfiOpenEx(theVM_, 1, &name);
-    ASSERT_TRUE(handle.isExactInteger());
+    ASSERT_TRUE(handle.isPointer());
 
     // lookup
     Object args[2];
     args[0] = handle;
     args[1] = Symbol::intern(UC("sub"));
     const Object sym = internalFfiLookupEx(theVM_, 2, args);
-    ASSERT_TRUE(sym.isExactInteger());
+    ASSERT_TRUE(sym.isPointer());
 
     // lookup
     args[0] = handle;

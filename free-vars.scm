@@ -600,4 +600,5 @@
     pointer-set-c-float!
     pointer-set-c-double!
     pointer-set-c-pointer!
+    shared-errno
     )
