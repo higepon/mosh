@@ -123,7 +123,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
                      "call *%%rax ;"
                      "movq %%xmm0, %%rax ;"
                      : "=a" (ret)
-                     : "0" (func), "S" (cstack->reg()), "D"(cstack->xmm())
+                     : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
                      : "memory"
             );
     } else {
@@ -160,7 +160,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
             "call *%%rax ;"
             "movq %%xmm0, %%rax ;"
             : "=a" (ret)
-            : "c" (bytes), "0" (func), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
+            : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
             : "memory"
             );
     }
@@ -208,7 +208,7 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
                      "movq 40(%%r10), %%r9 ;"   // register argument 6
                      "call *%%rax ;"
                      : "=a" (ret)
-                     : "0" (func), "S" (cstack->reg()), "D"(cstack->xmm())
+                     : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
                      : "memory"
             );
     } else {
@@ -244,7 +244,7 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
             "2:   ;"
             "call *%%rax ;"
             : "=a" (ret)
-            : "c" (bytes), "0" (func), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
+            : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
             : "memory"
             );
     }
