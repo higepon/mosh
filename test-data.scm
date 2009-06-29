@@ -3389,18 +3389,6 @@
 ;; pointer test
 (#t (try-ffi
      (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-            [p (%ffi-lookup handle 'return_pointer_string)])
-       (string=? "hello" (%ffi-pointer->string (%ffi-call->void* p))))))
-(#t (try-ffi
-     (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-            [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-       (string=? "hello" (%ffi-pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (%ffi-call->void* p)) 0)))))))
-(#t (try-ffi
-     (let* ([handle (%ffi-open "./libffitest.so.1.0")]
-            [p (%ffi-lookup handle 'return_array_of_pointer_string)])
-       (string=? "world" (%ffi-pointer->string (pointer->integer (pointer-ref-c-pointer (integer->pointer (%ffi-call->void* p)) 1)))))))
-(#t (try-ffi
-     (let* ([handle (%ffi-open "./libffitest.so.1.0")]
             [add8 (%ffi-lookup handle 'add8)])
       (= 36 (%ffi-call->int add8 1 2 3 4 5 6 7 8)))))
 ;; record is sealed
