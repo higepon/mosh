@@ -37,6 +37,9 @@
     (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 1)) "world")
     (test-equal "Yeah hello" (append_hello "Yeah "))
 
+   (let ([p (return_struct)])
+     (test-eq -1 (struct_ref p)))
+
     (test-eq -1 (pointer-ref-c-signed-char (return_struct) 0))
     (test-eq 255 (pointer-ref-c-unsigned-char (return_struct) 1))
     (test-true (fl=? 3.14 (pointer-ref-c-double (return_double_struct) 0)))
@@ -59,9 +62,6 @@
       (pointer-set-c-int8! p 0 127)
       (test-eq 127 (pointer-ref-c-uint8 p 0))
       (test-error assertion-violation? (pointer-set-c-int8! p 0 300)))
-
-   (let ([p (return_struct)])
-     (test-eq 255 (struct_ref p)))
 
    (begin
      (change_errno)
