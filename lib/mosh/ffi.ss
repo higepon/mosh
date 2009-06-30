@@ -198,6 +198,20 @@
 |#
 
 #|
+    Function: shared-errno
+
+    When invoked with no argument, returns errno (On Windows getLastError()).
+    Invoked with one argument, set value to errno.
+
+    Prototype:
+    > (shared-errno . value)
+
+    Returns:
+
+      errno
+|#
+
+#|
     Function: pointer?
 
     Returns #t if obj is pointer, otherwise #f
@@ -355,6 +369,491 @@
                             valid-arg))
                         checkers
                         args)))))
+
+#|
+    Function: pointer-ref-c-uint16
+
+    Get a value from pointer + offset as uint16.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as uint16.
+|#
+#|
+    Function: pointer-ref-c-uint32
+
+    Get a value from pointer + offset as uint32.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as uint32.
+|#
+#|
+    Function: pointer-ref-c-uint64
+
+    Get a value from pointer + offset as uint64.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as uint64.
+|#
+#|
+    Function: pointer-ref-c-int8
+
+    Get a value from pointer + offset as int8.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as int8.
+|#
+#|
+    Function: pointer-ref-c-int16
+
+    Get a value from pointer + offset as int16.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as int16.
+|#
+#|
+    Function: pointer-ref-c-int32
+
+    Get a value from pointer + offset as int32.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as int32.
+|#
+#|
+    Function: pointer-ref-c-int64
+
+    Get a value from pointer + offset as int64.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as int64.
+|#
+#|
+    Function: pointer-ref-c-signed-char
+
+    Get a value from pointer + offset as signed-char.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as signed-char.
+|#
+#|
+    Function: pointer-ref-c-unsigned-char
+
+    Get a value from pointer + offset as unsigned-char.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as unsigned-char.
+|#
+#|
+    Function: pointer-ref-c-signed-short
+
+    Get a value from pointer + offset as signed-short.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as signed-short.
+|#
+#|
+    Function: pointer-ref-c-unsigned-short
+
+    Get a value from pointer + offset as unsigned-short.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as unsigned-short.
+|#
+#|
+    Function: pointer-ref-c-signed-int
+
+    Get a value from pointer + offset as signed-int.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as signed-int.
+|#
+#|
+    Function: pointer-ref-c-unsigned-int
+
+    Get a value from pointer + offset as unsigned-int.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as unsigned-int.
+|#
+#|
+    Function: pointer-ref-c-signed-long
+
+    Get a value from pointer + offset as signed-long.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as signed-long.
+|#
+#|
+    Function: pointer-ref-c-unsigned-long
+
+    Get a value from pointer + offset as unsigned-long.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as unsigned-long.
+|#
+#|
+    Function: pointer-ref-c-signed-long-long
+
+    Get a value from pointer + offset as signed-long-long.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as signed-long-long.
+|#
+#|
+    Function: pointer-ref-c-unsigned-long-long
+
+    Get a value from pointer + offset as unsigned-long-long.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as unsigned-long-long.
+|#
+#|
+    Function: pointer-ref-c-float
+
+    Get a value from pointer + offset as float.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as float.
+|#
+#|
+    Function: pointer-ref-c-double
+
+    Get a value from pointer + offset as double.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as double.
+|#
+#|
+    Function: pointer-ref-c-pointer
+
+    Get a value from pointer + offset as pointer.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+
+    Returns:
+      A value from pointer + offset as pointer.
+|#
+
+#|
+    Function: pointer-set-c-char!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-char! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+#|
+    Function: pointer-set-c-short!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-short! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+#|
+    Function: pointer-set-c-int!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-int! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+#|
+    Function: pointer-set-c-long!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-long! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-long-long!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-long-long! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-float!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-float! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+
+#|
+    Function: pointer-set-c-double!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-double! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+
+#|
+    Function: pointer-set-c-int8!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-int8! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-int16!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-int16! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-int32!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-int32! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-int64!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-int64! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
 
 #|
     Constant: size-of-bool

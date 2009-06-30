@@ -586,7 +586,13 @@ Object scheme::pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<uintptr_t>(UC("pointer-set-c-pointer!"), 0, UINTPTR_MAX, theVM, argc, argv);
+    DeclareProcedureName("pointer-set-c-pointer!");
+    checkArgumentLength(3);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    argumentAsPointer(2, p);
+    pointer->set<uintptr_t>(offset, p->pointer());
+    return Object::Undef;
 }
 
 Object scheme::pointerSetCLongDEx(VM* theVM, int argc, const Object* argv)

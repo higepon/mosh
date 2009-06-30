@@ -1,3 +1,7 @@
+2009-06-30  higepon  <higepon@users.sourceforge.jp>
+
+        * lib/mosh/ffi.ss: Added new FFI documents.
+
 2009-06-29  higepon  <higepon@users.sourceforge.jp>
 
         * FFIProcedures.cpp : added shared-errno.
