@@ -177,10 +177,20 @@
     (apply for-each proc (vector->list v1)
            (map vector->list v2)))
 
-(define (vector-map proc vec1 . vec2)
-  (list->vector
-   (apply map proc (vector->list vec1)
-          (map vector->list vec2))))
+;; (define (vector-map proc vec1 . vec2)
+;;   (list->vector
+;;    (apply map proc (vector->list vec1)
+;;           (map vector->list vec2))))
+;; Originaly from Chicken Scheme.
+(define vector-map
+  (lambda (f vec . vecs)
+    (let* ((n (vector-length vec))
+           (vr (make-vector n)))
+      (if (pair? vecs)
+          (if (null? (cdr vecs))        ; special case binary f, too
+              (letrec ((loop (lambda (i vec1) (if (= i n) (begin #f vr) (begin (vector-set! vr i (f (vector-ref vec i) (vector-ref vec1 i))) (loop (+ 1 i) vec1)))))) (loop 0 (car vecs)))
+              (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (apply f (vector-ref vec i) (map (lambda (v) (vector-ref v i)) vecs))) (loop (+ 1 i))))))) (loop 0)))
+          (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (f (vector-ref vec i))) (loop (+ 1 i))))))) (loop 0))))))
 
 ; used internal
 (define (foldl1 binop l)
