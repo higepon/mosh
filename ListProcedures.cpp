@@ -111,7 +111,7 @@ Object scheme::consMulEx(VM* theVM, int argc, const Object* argv)
     if (argc == 1) {
         return argv[0];
     } else {
-        Object obj = Object::cons(argv[1], Object::Nil);
+        Object obj = Object::cons(argv[0], Object::Nil);
         Object tail = obj;
         for (int i = 1; i < argc - 1; i++) {
             Object e = Object::cons(argv[i], Object::Nil);
