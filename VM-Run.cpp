@@ -1042,7 +1042,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not equal?
         CASE(BRANCH_NOT_EQUAL)
         {
-            ac_ = Object::makeBool(equal(pop(), ac_));
+            Equal e;
+            ac_ = e.equalP(pop(), ac_);
+//            ac_ = Object::makeBool(equal(pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }
