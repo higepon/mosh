@@ -62,7 +62,7 @@ Object-accessors.h                                                 \
 Pair-inl.h                                                         \
 VM-inl.h                                                           \
 psyntax.h                                                          \
-match.h                                                            \
+pmatch.h                                                           \
 compiler-with-library.h                                            \
 CProcedure.h                                                       \
 Instruction.h                                                      \
@@ -311,7 +311,7 @@ DebugInstruction.h cprocedures.cpp      \
 labels.cpp match.cpp compiler.cpp psyntax.scmc             \
 pmatch.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
 compiler-vm.scm compiler-with-library.scm Instruction.h    \
-psyntax.h psyntax.fasl match.h match.fasl                  \
+psyntax.h psyntax.fasl pmatch.h match.fasl                  \
 compiler-with-library.h compiler-with-library.fasl
 
 CLEANFILES = gtest.a gtest_main.a libffitest.so.1.0
@@ -359,7 +359,7 @@ r6rs-test:
 Instruction.h: ./instruction.scm
 	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-main.cpp: psyntax.h compiler-with-library.h match.h
+main.cpp: psyntax.h compiler-with-library.h pmatch.h
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
 	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@

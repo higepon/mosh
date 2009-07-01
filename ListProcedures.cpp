@@ -121,6 +121,7 @@ Object scheme::consMulEx(VM* theVM, int argc, const Object* argv)
         tail.cdr() = argv[argc - 1];
         return obj;
     }
+
 }
 
 Object scheme::consEx(VM* theVM, int argc, const Object* argv)

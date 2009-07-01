@@ -94,9 +94,9 @@ template <class T1>
 class gc_vector : public std::vector<T1> {};
 #endif
 
-#define LOG1(fmt, a)       fprintf(stderr, "%s", format(theVM, UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);
-#define LOG2(fmt, a, b)    fprintf(stderr, "%s", format(theVM, UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);
-#define LOG3(fmt, a, b, c) fprintf(stderr, "%s", format(theVM, UC(fmt), L3(a, b, c)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG1(fmt, a)       fprintf(stderr, "%s", format(NULL, UC(fmt), Pair::list1(a)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG2(fmt, a, b)    fprintf(stderr, "%s", format(NULL, UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);
+#define LOG3(fmt, a, b, c) fprintf(stderr, "%s", format(NULL, UC(fmt), L3(a, b, c)).toString()->data().ascii_c_str());fflush(stderr);
 
 #define VM_LOG1(fmt, a)       fprintf(stderr, "%s", format(this, UC(fmt), L1(a)).toString()->data().ascii_c_str());fflush(stderr);
 #define VM_LOG2(fmt, a, b)    fprintf(stderr, "%s", format(this, UC(fmt), L2(a, b)).toString()->data().ascii_c_str());fflush(stderr);

@@ -242,7 +242,7 @@ VM::~VM() {}
 
 void VM::loadCompiler()
 {
-#   include "match.h"
+#   include "pmatch.h"
 #   include "compiler-with-library.h"
     const Object libCompiler = FASL_GET(compiler_with_library_image);
 #ifdef ENABLE_PROFILER
@@ -252,7 +252,7 @@ void VM::loadCompiler()
 #endif
     TRY_VM {
         evaluateCodeVector(libCompiler);
-        const Object libMatch = FASL_GET(match_image);
+        const Object libMatch = FASL_GET(pmatch_image);
         evaluateCodeVector(libMatch);
         CATCH_VM
         // call default error handler

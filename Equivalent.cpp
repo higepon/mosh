@@ -43,6 +43,8 @@
 #include "Arithmetic.h"
 #include "Equivalent.h"
 #include "Box.h"
+#include "StringProcedures.h"
+#include "Symbol.h"
 
 using namespace scheme;
 
@@ -408,7 +410,7 @@ Object Equal::preP(Object x, Object y, Object k)
             return k;
         } else {
             Object k2 = preP(x.car(), y.car(), Object::makeFixnum(k.toFixnum() - 1));
-            if (k.isFalse()) {
+            if (k2.isFalse()) {
                 return Object::False;
             }
             return preP(x.cdr(), y.cdr(), k2);
@@ -423,6 +425,7 @@ Object Equal::preP(Object x, Object y, Object k)
             return Object::False;
         }
         int i = 0;
+        MOSH_ASSERT(k.isFixnum());
         for (;;) {
             if (i == n || k.toFixnum() <= 0) {
                 return k;
@@ -462,7 +465,7 @@ Object Equal::preP(Object x, Object y, Object k)
         if (y.isRegexp()) {
             Regexp* const regexp1 = x.toRegexp();
             Regexp* const regexp2 = y.toRegexp();
-            return Object::makeBool(regexp1->pattern() == regexp2->pattern());
+            return k;
         } else {
             return Object::False;
         }
@@ -472,7 +475,7 @@ Object Equal::preP(Object x, Object y, Object k)
         if (y.isCProcedure()) {
             CProcedure* const cprocedure1 = x.toCProcedure();
             CProcedure* const cprocedure2 = y.toCProcedure();
-            return Object::makeBool(cprocedure1->proc == cprocedure2->proc);
+            return k;
         } else {
             return Object::False;
         }
@@ -552,6 +555,7 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
         if (!callUnionFind(pht, x, y).isFalse()) {
             return Object::makeFixnum(0);
         } else {
+            MOSH_ASSERT(k.isFixnum());
             k = eP(pht, x.car(), y.car(), Object::makeFixnum(k.toFixnum() - 1));
             if (k.isFalse()) {
                 return Object::False;
@@ -571,6 +575,7 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
             return Object::makeFixnum(0);
         }
         int i = 0;
+        MOSH_ASSERT(k.isFixnum());
         k = Object::makeFixnum(k.toFixnum() - 1);
         for (;;) {
             if (i == n) {
@@ -768,6 +773,8 @@ Object Equal::precheckInterleaveEqualP(Object x, Object y)
     if (k.isFalse()) {
         return Object::False;
     }
+
+    MOSH_ASSERT(k.isFixnum());
 
     if (k.toFixnum() > 0) {
         return Object::True;
