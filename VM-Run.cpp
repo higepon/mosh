@@ -370,7 +370,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(EQUAL)
         {
-            ac_ = Object::makeBool(equal(pop(), ac_, new EqHashTable()));
+            Equal e;
+            ac_ =  e.equalP(pop(), ac_);
+//            ac_ = Object::makeBool(equal(pop(), ac_, new EqHashTable()));
             NEXT1;
         }
         CASE(PUSH_FRAME)

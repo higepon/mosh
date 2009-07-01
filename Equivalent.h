@@ -35,6 +35,7 @@
 #include "Arithmetic.h"
 #include "Codec.h"
 #include "scheme.h"
+#include "Box.h"
 
 namespace scheme {
     bool equal(Object object1, Object object2, EqHashTable* visited);
@@ -70,6 +71,34 @@ namespace scheme {
         }
         return o1.eq(o2);
     }
+
+//  Copied from
+//  Efficient Nondestructive Equality Checking for Trees and Graphs
+//  Michael D. Adams and R. Kent Dybvig
+//  ICFP 2008
+
+class Equal EXTEND_GC
+{
+public:
+    Equal();
+    Object equalP(Object x, Object y);
+
+private:
+    const Object k0_;
+    const Object kb_;
+
+    Object find(Object b);
+    Object unionFind(EqHashTable* ht, Object x, Object y);
+    Object preP(Object x, Object y, Object k);
+    Object eP(EqHashTable** pht, Object x, Object y, Object k);
+    Object callUnionFind(EqHashTable** pht, Object x, Object y);
+    Object slowP(EqHashTable** pht, Object x, Object y, Object k);
+    Object fastP(EqHashTable** pht, Object x, Object y, Object k);
+    Object interleaveP(Object x, Object y, Object k);
+    Object interleaveEqualP(Object x, Object y);
+    Object precheckInterleaveEqualP(Object x, Object y);
+};
+
 
 } // namespace scheme
 

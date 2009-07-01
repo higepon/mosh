@@ -104,6 +104,7 @@ void mosh_init()
     Flonum::initialize();
     Thread::initialize();
     Symbol::initBuitinSymbols();
+    srand((unsigned)time(NULL)); // equal? uses rand()
 
 #ifdef _WIN32
     WSADATA data;
