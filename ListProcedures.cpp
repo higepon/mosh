@@ -95,8 +95,9 @@ Object scheme::memberEx(VM* theVM, int argc, const Object* argv)
 
     const Object arg1 = argv[0];
     argumentCheckList(1, p);
+    Equal e;
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (o.car().equal(theVM, arg1)) {
+        if (!e.equalP(o.car(), arg1).isFalse()) {
             return o;
         }
     }
