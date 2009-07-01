@@ -504,11 +504,11 @@
 (define third caddr)
 (define fourth cadddr)
 
-(define (cons* first . rest)
-  (let recur ((x first) (rest rest))
-    (if (pair? rest)
-        (cons x (recur (car rest) (cdr rest)))
-        x)))
+;; (define (cons* first . rest)
+;;   (let recur ((x first) (rest rest))
+;;     (if (pair? rest)
+;;         (cons x (recur (car rest) (cdr rest)))
+;;         x)))
 
 (define-macro (receive . args)
  `(call-with-values (lambda () ,(cadr args)) (lambda ,(car args) ,@(cddr args))))

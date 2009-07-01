@@ -41,6 +41,7 @@ namespace scheme {
     Object consEx(VM* theVM, int argc, const Object* argv);
     Object carEx(VM* theVM, int argc, const Object* argv);
     Object cdrEx(VM* theVM, int argc, const Object* argv);
+    Object consMulEx(VM* theVM, int argc, const Object* argv);
     Object setSourceInfoDEx(VM* theVM, int argc, const Object* argv);
     Object sourceInfoEx(VM* theVM, int argc, const Object* argv);
     Object nullPEx(VM* theVM, int argc, const Object* argv);

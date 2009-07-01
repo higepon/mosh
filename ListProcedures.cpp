@@ -104,6 +104,25 @@ Object scheme::memberEx(VM* theVM, int argc, const Object* argv)
     return Object::False;
 }
 
+Object scheme::consMulEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cons*");
+    checkArgumentLengthAtLeast(1);
+    if (argc == 1) {
+        return argv[0];
+    } else {
+        Object obj = Object::cons(argv[1], Object::Nil);
+        Object tail = obj;
+        for (int i = 1; i < argc - 1; i++) {
+            Object e = Object::cons(argv[i], Object::Nil);
+            tail.cdr()  = e;
+            tail = e;
+        }
+        tail.cdr() = argv[argc - 1];
+        return obj;
+    }
+}
+
 Object scheme::consEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("cons");

@@ -1,5 +1,7 @@
 2009-07-01  higepon  <higepon@users.sourceforge.jp>
 
+        * Rewrote cons* in C++ for performance.
+
         * Equivalent.h : Added fast equal?.
           Efficient Nondestructive Equality Checking for Trees and Graphs
           Michael D. Adams and R. Kent Dybvig

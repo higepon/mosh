@@ -1,6 +1,7 @@
 (define-free-vars
     (number? number?)
     (cons cons)
+    (cons* cons*)
     (car car)
     (cdr cdr)
     (null? null?)
@@ -601,4 +602,5 @@
     pointer-set-c-double!
     pointer-set-c-pointer!
     shared-errno
+
     )
