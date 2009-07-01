@@ -59,7 +59,7 @@
             } else if (ac_.isClosure()) {
                 const Closure* const c = ac_.toClosure();
                 if (c->maxStack + sp_ >= stackEnd_) {
-                    printf("CALL: stack expansion\n");
+//                    printf("CALL: stack expansion\n");
                     expandStack(stackSize_ / 10);
                 }
                 COUNT_CALL(ac_);
