@@ -35,7 +35,34 @@
 #include "scheme.h"
 
 namespace scheme {
-
+    Object caaaarEx(VM* theVM, int argc, const Object* argv);
+    Object caaadrEx(VM* theVM, int argc, const Object* argv);
+    Object caaarEx(VM* theVM, int argc, const Object* argv);
+    Object caadarEx(VM* theVM, int argc, const Object* argv);
+    Object caaddrEx(VM* theVM, int argc, const Object* argv);
+    Object caadrEx(VM* theVM, int argc, const Object* argv);
+    Object caarEx(VM* theVM, int argc, const Object* argv);
+    Object cadaarEx(VM* theVM, int argc, const Object* argv);
+    Object cadadrEx(VM* theVM, int argc, const Object* argv);
+    Object cadarEx(VM* theVM, int argc, const Object* argv);
+    Object caddarEx(VM* theVM, int argc, const Object* argv);
+    Object cadddrEx(VM* theVM, int argc, const Object* argv);
+    Object caddrEx(VM* theVM, int argc, const Object* argv);
+    Object cadrEx(VM* theVM, int argc, const Object* argv);
+    Object cdaaarEx(VM* theVM, int argc, const Object* argv);
+    Object cdaadrEx(VM* theVM, int argc, const Object* argv);
+    Object cdaarEx(VM* theVM, int argc, const Object* argv);
+    Object cdadarEx(VM* theVM, int argc, const Object* argv);
+    Object cdaddrEx(VM* theVM, int argc, const Object* argv);
+    Object cdadrEx(VM* theVM, int argc, const Object* argv);
+    Object cdarEx(VM* theVM, int argc, const Object* argv);
+    Object cddaarEx(VM* theVM, int argc, const Object* argv);
+    Object cddadrEx(VM* theVM, int argc, const Object* argv);
+    Object cddarEx(VM* theVM, int argc, const Object* argv);
+    Object cdddarEx(VM* theVM, int argc, const Object* argv);
+    Object cddddrEx(VM* theVM, int argc, const Object* argv);
+    Object cdddrEx(VM* theVM, int argc, const Object* argv);
+    Object cddrEx(VM* theVM, int argc, const Object* argv);
     Object listRefEx(VM* theVM, int argc, const Object* argv);
     Object listTailEx(VM* theVM, int argc, const Object* argv);
     Object consEx(VM* theVM, int argc, const Object* argv);

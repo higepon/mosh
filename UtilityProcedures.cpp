@@ -529,7 +529,7 @@ Object scheme::eqvPEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::booleanPEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("bool?");
+    DeclareProcedureName("boolean?");
     checkArgumentLength(1);
     const Object arg1 = argv[0];
     if (arg1.isFalse() || arg1.isTrue()) {

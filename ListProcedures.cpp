@@ -398,3 +398,596 @@ Object scheme::vectorSetDEx(VM* theVM, int argc, const Object* argv)
     v->set(k, argv[2]);
     return Object::Undef;
 }
+
+Object scheme::caaaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caaaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caaadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caaadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caadarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caadar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caaddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caaddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cadaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cadaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cadadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cadadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cadarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cadar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caddarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caddar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cadddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cadddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::caddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("caddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    return p;
+}
+Object scheme::cdaaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdaaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdaadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdaadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdadarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdadar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdaddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdaddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cddaarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cddaar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cddadrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cddadr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cddarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cddar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdddarEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdddar");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.car();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cddddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cddddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cdddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cdddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}
+Object scheme::cddrEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("cddr");
+    checkArgumentLength(1);
+    argumentCheckPair(0, q);
+    Object p = q;
+    p = p.cdr();
+    if (!p.isPair()) {
+        callAssertionViolationAfter(theVM, procedureName, "pair required", Pair::list1(argv[0]));
+        return Object::Undef;
+    }
+    p = p.cdr();
+    return p;
+}

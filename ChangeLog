@@ -1,3 +1,7 @@
+2009-07-02  higepon  <higepon@users.sourceforge.jp>
+
+        * Rewrote cxxxxr  in C++ for Performance reason.
+
 2009-07-01  higepon  <higepon@users.sourceforge.jp>
 
         * library.scm (vector-map): Rewrote for performance.
