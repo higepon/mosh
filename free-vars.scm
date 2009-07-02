@@ -505,6 +505,7 @@
   ;; ffi
   %ffi-open
   %ffi-lookup
+  %ffi-call->char
   %ffi-call->int
   %ffi-call->void
   %ffi-call->void*

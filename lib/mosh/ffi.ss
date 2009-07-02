@@ -145,7 +145,7 @@
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->double
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
                 shared-errno
                 pointer?
                 pointer->integer
@@ -328,7 +328,7 @@
                    (char*  . ,%ffi-call->char*) ;; char* may be NULL,
                    (void   . ,%ffi-call->void)
                    (double . ,%ffi-call->double)
-                   (char    . ,%ffi-call->int)
+                   (char    . ,%ffi-call->char)
                    (int    . ,%ffi-call->int))))
 
 (define checker-ht (alist->eq-hash-table

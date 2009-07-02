@@ -125,7 +125,7 @@ void* return_struct()
 {
   static FFITestStruct st;
   st.charVal = -1;
-  st.ucharVal = 255;
+  st.ucharVal = 255 ;
   return &st;
 }
 char struct_ref(FFITestStruct* st)

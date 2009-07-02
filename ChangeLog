@@ -18,6 +18,8 @@
 
 2009-06-29  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/mosh/mysql.ss.in: Fixed.
+
         * FFIProcedures.cpp : added shared-errno.
 
         * lib/mosh/ffi.ss : Use pointer object for arguments and functions.
