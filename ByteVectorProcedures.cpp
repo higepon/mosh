@@ -404,15 +404,24 @@ Object scheme::bytevectorS32NativeSetDEx(VM* theVM, int argc, const Object* argv
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
     argumentAsFixnum(1, index);
-    argumentAsFixnum(2, value);
+    argumentCheckExactInteger(2, v);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
     }
 
-    if (!ByteVector::inS32Range(value)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
-        return Object::Undef;
+    int32_t value;
+    if (v.isFixnum()) {
+        value = v.toFixnum();
+    } else { // Bignum
+        MOSH_ASSERT(v.isBignum());
+        Bignum* const b = v.toBignum();
+        if (b->fitsS32()) {
+            value = b->toS32();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
     }
 
     bytevector->s32SetNative(index, value);
@@ -421,19 +430,33 @@ Object scheme::bytevectorS32NativeSetDEx(VM* theVM, int argc, const Object* argv
 
 Object scheme::bytevectorU32NativeSetDEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("bytevector-s32-native-set!");
+    DeclareProcedureName("bytevector-u32-native-set!");
     checkArgumentLength(3);
     argumentAsByteVector(0, bytevector);
     argumentAsFixnum(1, index);
-    argumentAsFixnum(2, value);
+    argumentCheckExactInteger(2, v);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
     }
 
-    if (!ByteVector::inU32Range(value)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
-        return Object::Undef;
+    uint32_t value;
+    if (v.isFixnum()) {
+        int32_t temp = v.toFixnum();
+        if (temp < 0) {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
+        value = (uint32_t)temp;
+    } else { // Bignum
+        MOSH_ASSERT(v.isBignum());
+        Bignum* const b = v.toBignum();
+        if (b->fitsU32()) {
+            value = b->toU32();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
     }
 
     bytevector->u32SetNative(index, value);
@@ -446,16 +469,25 @@ Object scheme::bytevectorS32SetDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
     argumentAsFixnum(1, index);
-    argumentAsFixnum(2, value);
+    argumentCheckExactInteger(2, v);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
     }
 
-    if (!ByteVector::inS32Range(value)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
-        return Object::Undef;
+    int32_t value;
+    if (v.isFixnum()) {
+        value = v.toFixnum();
+    } else { // Bignum
+        MOSH_ASSERT(v.isBignum());
+        Bignum* const b = v.toBignum();
+        if (b->fitsS32()) {
+            value = b->toS32();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
     }
 
     if (endianness == Symbol::LITTLE) {
@@ -473,16 +505,30 @@ Object scheme::bytevectorU32SetDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(4);
     argumentAsByteVector(0, bytevector);
     argumentAsFixnum(1, index);
-    argumentAsFixnum(2, value);
+    argumentCheckExactInteger(2, v);
     argumentCheckSymbol(3, endianness);
     if (!bytevector->isValid32RefIndex(index)) {
         callAssertionViolationAfter(theVM, procedureName, "index out of range", L1(argv[1]));
         return Object::Undef;
     }
 
-    if (!ByteVector::inU32Range(value)) {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
-        return Object::Undef;
+    uint32_t value;
+    if (v.isFixnum()) {
+        int32_t temp = v.toFixnum();
+        if (temp < 0) {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
+        value = (uint32_t)temp;
+    } else { // Bignum
+        MOSH_ASSERT(v.isBignum());
+        Bignum* const b = v.toBignum();
+        if (b->fitsU32()) {
+            value = b->toU32();
+        } else {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
     }
 
     if (endianness == Symbol::LITTLE) {

@@ -164,7 +164,7 @@ public:
     int32_t toS32() const
     {
         MOSH_ASSERT(fitsS32());
-            return (int32_t)mpz_get_si(value_);
+        return (int32_t)mpz_get_si(value_);
     }
 
     bool fitsU64() const
