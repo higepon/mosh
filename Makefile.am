@@ -448,7 +448,7 @@ endif
 
 bench:
 #	@GOSH@ ./scripts/bench.scm > /dev/null
-#	LANG=C @GOSH@ ./scripts/bench2.scm
+	LANG=C @GOSH@ ./scripts/bench2.scm
 
 #### test
 check: test
