@@ -156,6 +156,8 @@
   eval-compiled
   (apply apply-proc)
   (assq assq)
+  (assoc assoc)
+  (assv assv)
   (exit exit)
   (macroexpand-1 pass1/macroexpand)
   (memv memv)

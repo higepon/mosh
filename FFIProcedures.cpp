@@ -579,7 +579,7 @@ template <typename T> static Object pointerSet(const ucs4char* procedureName, T 
     if (value >= static_cast<int64_t>(min) && value <= static_cast<int64_t>(max)) {
         pointer->set<T>(offset, static_cast<T>(value));
     } else {
-        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[1]));
+        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
     }
     return Object::Undef;
 }

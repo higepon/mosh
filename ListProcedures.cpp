@@ -280,6 +280,39 @@ Object scheme::assqEx(VM* theVM, int argc, const Object* argv)
     return Object::False;
 }
 
+Object scheme::assvEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("assv");
+    checkArgumentLength(2);
+
+    const Object obj = argv[0];
+    argumentCheckList(1, list);
+
+    for (Object o = list; o != Object::Nil; o = o.cdr()) {
+        if (eqv(o.car().car(), obj)) {
+            return o.car();
+        }
+    }
+    return Object::False;
+}
+
+Object scheme::assocEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("assoc");
+    checkArgumentLength(2);
+    const Object obj = argv[0];
+    argumentCheckList(1, list);
+
+    Equal e;
+    for (Object o = list; o != Object::Nil; o = o.cdr()) {
+        if (!e.equalP(o.car().car(), obj).isFalse()) {
+            return o.car();
+        }
+    }
+    return Object::False;
+}
+
+
 Object scheme::appendEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("append");

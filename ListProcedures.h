@@ -80,6 +80,8 @@ namespace scheme {
     Object memvEx(VM* theVM, int argc, const Object* argv);
     Object memberEx(VM* theVM, int argc, const Object* argv);
     Object assqEx(VM* theVM, int argc, const Object* argv);
+    Object assocEx(VM* theVM, int argc, const Object* argv);
+    Object assvEx(VM* theVM, int argc, const Object* argv);
     Object appendEx(VM* theVM, int argc, const Object* argv);
     Object append2Ex(VM* theVM, int argc, const Object* argv);
     Object appendDEx(VM* theVM, int argc, const Object* argv);

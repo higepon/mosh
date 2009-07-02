@@ -302,17 +302,17 @@
             (loop (cdr lst))))))
 
 ; internal use
-(define (generic-assoc releq obj alist)
-  (cond ((null? alist)
-         #f)
-        ((releq (car (car alist)) obj)
-         (car alist))
-        (else
-         (generic-assoc releq obj (cdr alist)))))
+;; (define (generic-assoc releq obj alist)
+;;   (cond ((null? alist)
+;;          #f)
+;;         ((releq (car (car alist)) obj)
+;;          (car alist))
+;;         (else
+;;          (generic-assoc releq obj (cdr alist)))))
 
-(define (assq obj alist) (generic-assoc eq? obj alist))
-(define (assv obj alist) (generic-assoc eqv? obj alist))
-(define (assoc obj alist) (generic-assoc equal? obj alist))
+;; (define (assq obj alist) (generic-assoc eq? obj alist))
+;; (define (assv obj alist) (generic-assoc eqv? obj alist))
+;; (define (assoc obj alist) (generic-assoc equal? obj alist))
 
 (define (for-all proc lst . lists)
   (define (for-all-1 proc lst1)
