@@ -1,3 +1,9 @@
+2009-07-03  higepon  <higepon@users.sourceforge.jp>
+
+        * RecordProcedures.cpp : Fixed very slow error message generation.
+                                 This make R6RS expantion much faster.
+        http://code.google.com/p/mosh-scheme/source/diff?spec=svn1819&r=1819&format=side&path=/trunk/RecordProcedures.cpp
+
 2009-07-02  higepon  <higepon@users.sourceforge.jp>
 
         * ByteVectorProcedures.cpp : Fixed bytevector-u32-native-set! bug pointed out by mrc.mgg.

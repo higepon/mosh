@@ -225,26 +225,37 @@ Object RecordPrediate::call(VM* theVM, int argc, const Object* argv)
 
 RecordAccessor::RecordAccessor(Object rtd, int index) : rtd_(rtd), index_(index)
 {
+    Object name = format(NULL, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    name_ = name.toString()->data();
 }
 
 RecordAccessor::~RecordAccessor()
 {
 }
 
+// N.B.
+// For kindly understandable error message, we don't use MACROS defined on ProcedureMacro.h.
+// We should take care of performance, error message is dynamically genarated only when error occurs.
 Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
 {
-    Object name = format(theVM, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
-    const ucs4char* procedureName = name.toString()->data().data();
-    //DeclareProcedureName("record-accessor for record");
-    checkArgumentLength(1);
-    argumentAsRecord(0, record);
+    if (argc != 1) {
+        callWrongNumberOfArgumentsViolationAfter(theVM, name(), 1, argc);
+        return Object::Undef;
+    }
+
+    if (!argv[0].isRecord()) {
+        callWrongTypeOfArgumentViolationAfter(theVM, name(), "record", argv[0]);
+        return Object::Undef;
+    }
+    Record* record = argv[0].toRecord();
+
     const RecordTypeDescriptor* rtd = record->recordTypeDescriptor();
 
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record->fieldAt(index_);
     } else {
         callAssertionViolationAfter(theVM,
-                                    procedureName,
+                                    name(),
                                     "invalid accessor for record",
                                     L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
         return Object::Undef;

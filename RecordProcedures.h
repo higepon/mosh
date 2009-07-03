@@ -91,10 +91,12 @@ namespace scheme {
         ~RecordAccessor();
 
         Object call(VM* vm, int argc, const Object* argv);
+        const ucs4char* name() const { return name_.c_str(); }
 
     private:
         const Object rtd_;
         const int index_;
+        ucs4string name_;
     };
 
     class RecordMutator : public Callable
