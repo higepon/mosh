@@ -91,7 +91,7 @@ namespace scheme {
         ~RecordAccessor();
 
         Object call(VM* vm, int argc, const Object* argv);
-        const ucs4char* name() const { return name_.c_str(); }
+        const ucs4char* name() const;
 
     private:
         const Object rtd_;

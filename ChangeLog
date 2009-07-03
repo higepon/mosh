@@ -1,5 +1,7 @@
 2009-07-03  higepon  <higepon@users.sourceforge.jp>
 
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/expander.ss (psyntax): id->sym was bottleneck.
+
         * RecordProcedures.cpp : Fixed very slow error message generation.
                                  This make R6RS expantion much faster.
         http://code.google.com/p/mosh-scheme/source/diff?spec=svn1819&r=1819&format=side&path=/trunk/RecordProcedures.cpp

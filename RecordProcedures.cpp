@@ -225,12 +225,16 @@ Object RecordPrediate::call(VM* theVM, int argc, const Object* argv)
 
 RecordAccessor::RecordAccessor(Object rtd, int index) : rtd_(rtd), index_(index)
 {
-    Object name = format(NULL, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
-    name_ = name.toString()->data();
 }
 
 RecordAccessor::~RecordAccessor()
 {
+}
+
+const ucs4char* RecordAccessor::name() const
+{
+    Object name = format(NULL, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    return name.toString()->data().c_str();
 }
 
 // N.B.
@@ -269,6 +273,8 @@ RecordMutator::RecordMutator(Object rtd, int index) : rtd_(rtd), index_(index)
 RecordMutator::~RecordMutator()
 {
 }
+
+
 
 Object RecordMutator::call(VM* theVM, int argc, const Object* argv)
 {

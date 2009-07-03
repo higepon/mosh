@@ -509,25 +509,32 @@
               '()
               (assertion-violation 'syntax->list "BUG: invalid argument" x)))))
 
+;;   (define id?
+;;     (lambda (x)
+;;       (and (stx? x)
+;;         (let ([expr (stx-expr x)])
+;;           (symbol? (if (annotation? expr)
+;;                        (annotation-stripped expr)
+;;                        expr))))))
+
+  ;; On Mosh, id? and id->sym can be implementated more simple.
+  ;; This is necessary for performance reason.
   (define id?
-    (lambda (x)
-      (and (stx? x)
-        (let ([expr (stx-expr x)])
-          (symbol? (if (annotation? expr)
-                       (annotation-stripped expr)
-                       expr))))))
+    (lambda (x) (and (stx? x) (symbol? (stx-expr x)))))
 
   (define id->sym
     (lambda (x)
-      (unless (stx? x)
-        (error 'id->sym "BUG in ikarus: not an id" x))
-      (let ([expr (stx-expr x)])
-        (let ([sym (if (annotation? expr)
-                       (annotation-stripped expr)
-                       expr)])
-          (if (symbol? sym)
-              sym
-              (error 'id->sym "BUG in ikarus: not an id" x))))))
+      (stx-expr x)))
+
+;;       (unless (stx? x)
+;;         (error 'id->sym "BUG in ikarus: not an id" x))
+;;       (let ([expr (stx-expr x)])
+;;         (let ([sym (if (annotation? expr)
+;;                        (annotation-stripped expr)
+;;                        expr)])
+;;           (if (symbol? sym)
+;;               sym
+;;               (error 'id->sym "BUG in ikarus: not an id" x))))))
 
   ;;; Two lists of marks are considered the same if they have the
   ;;; same length and the corresponding marks on each are eq?.
