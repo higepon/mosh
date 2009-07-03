@@ -38,7 +38,7 @@
 |#
 (library (mosh concurrent)
   (export ! receive spawn self join! register whereis link unlink process-exit spawn-link
-          make-process-error process-error? process-error process-arg condition-printer)
+          make-process-error process-error? process-error process-arg condition-printer sleep)
   (import (only (mosh) main-vm? vm-set-value! vm-self make-condition-variable make-mutex mutex-lock! mutex-unlock! condition-variable-notify!
                 whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time format ungensym)
           (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
@@ -429,6 +429,20 @@
          (lst lst (cdr lst)))
         ((null? lst))
       (proc i (car lst))))
+
+#|
+    Function: sleep
+
+    sleep n msec.
+
+    Prototype:
+    > (sleep n)
+|#
+(define (sleep msec)
+  (let ([mutex (make-mutex)])
+    (mutex-lock! mutex)
+    (condition-variable-wait! (make-condition-variable) mutex msec)
+    (mutex-unlock! mutex)))
 
 (define (rpad str pad n)
   (let ([rest (- n (string-length (format "~a" str)))])
