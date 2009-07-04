@@ -63,6 +63,13 @@
       (test-eq 127 (pointer-ref-c-uint8 p 0))
       (test-error assertion-violation? (pointer-set-c-int8! p 0 300)))
 
+
+    (let ([p (return_uint8_t_struct)])
+      (test-true (pointer=? p p p))
+      (pointer-set-c-uint8! p 0 255)
+      (test-eq -1 (pointer-ref-c-int8 p 0)))
+
+
    (begin
      (change_errno)
      (test-eq 3 (shared-errno))

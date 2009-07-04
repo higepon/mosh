@@ -98,6 +98,10 @@
           pointer-set-c-int16!
           pointer-set-c-int32!
           pointer-set-c-int64!
+          pointer-set-c-uint8!
+          pointer-set-c-uint16!
+          pointer-set-c-uint32!
+          pointer-set-c-uint64!
           pointer-ref-c-uint8
           pointer-ref-c-uint16
           pointer-ref-c-uint32
@@ -175,6 +179,10 @@
                 pointer-set-c-int16!
                 pointer-set-c-int32!
                 pointer-set-c-int64!
+                pointer-set-c-uint8!
+                pointer-set-c-uint16!
+                pointer-set-c-uint32!
+                pointer-set-c-uint64!
                 pointer-ref-c-uint8
                 pointer-ref-c-uint16
                 pointer-ref-c-uint32
@@ -847,6 +855,66 @@
 
     Prototype:
     > (pointer-set-c-int64! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-uint8!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-uint8! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-uint16!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-uint16! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-uint32!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-uint32! pointer offset value)
+
+    Parameters:
+
+      pointer - pointer.
+      offset - offset from pointer.
+      value - value to set.
+|#
+
+#|
+    Function: pointer-set-c-uint64!
+
+    Returns #t when ffi is supported, otherwise #f.
+
+    Prototype:
+    > (pointer-set-c-uint64! pointer offset value)
 
     Parameters:
 

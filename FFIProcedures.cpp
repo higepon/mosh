@@ -584,6 +584,26 @@ template <typename T> static Object pointerSet(const ucs4char* procedureName, T 
     return Object::Undef;
 }
 
+Object scheme::pointerSetCUint8DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<uint8_t>(UC("pointer-set-c-uint8!"), 0, UINT8_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCUint16DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<uint16_t>(UC("pointer-set-c-uint16!"), 0, UINT16_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCUint32DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<uint32_t>(UC("pointer-set-c-uint32!"), 0, UINT32_MAX, theVM, argc, argv);
+}
+
+Object scheme::pointerSetCUint64DEx(VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<uint64_t>(UC("pointer-set-c-uint64!"), 0, UINT64_MAX, theVM, argc, argv);
+}
+
 Object scheme::pointerSetCInt8DEx(VM* theVM, int argc, const Object* argv)
 {
     return pointerSet<int8_t>(UC("pointer-set-c-int8!"), INT8_MIN, INT8_MAX, theVM, argc, argv);
@@ -696,22 +716,22 @@ Object scheme::pointerRefCUint64Ex(VM* theVM, int argc, const Object* argv)
 
 Object scheme::pointerRefCInt8Ex(VM* theVM, int argc, const Object* argv)
 {
-    return pointerRefU<int8_t>(UC("pointer-ref-c-int8"), theVM, argc, argv);
+    return pointerRefS<int8_t>(UC("pointer-ref-c-int8"), theVM, argc, argv);
 }
 
 Object scheme::pointerRefCInt16Ex(VM* theVM, int argc, const Object* argv)
 {
-    return pointerRefU<int16_t>(UC("pointer-ref-c-int16"), theVM, argc, argv);
+    return pointerRefS<int16_t>(UC("pointer-ref-c-int16"), theVM, argc, argv);
 }
 
 Object scheme::pointerRefCInt32Ex(VM* theVM, int argc, const Object* argv)
 {
-    return pointerRefU<int32_t>(UC("pointer-ref-c-int32"), theVM, argc, argv);
+    return pointerRefS<int32_t>(UC("pointer-ref-c-int32"), theVM, argc, argv);
 }
 
 Object scheme::pointerRefCInt64Ex(VM* theVM, int argc, const Object* argv)
 {
-    return pointerRefU<int64_t>(UC("pointer-ref-c-int64"), theVM, argc, argv);
+    return pointerRefS<int64_t>(UC("pointer-ref-c-int64"), theVM, argc, argv);
 }
 
 Object scheme::pointerRefCPointerEx(VM* theVM, int argc, const Object* argv)

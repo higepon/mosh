@@ -624,6 +624,10 @@
   pointer-set-c-int16!
   pointer-set-c-int32!
   pointer-set-c-int64!
+  pointer-set-c-uint8!
+  pointer-set-c-uint16!
+  pointer-set-c-uint32!
+  pointer-set-c-uint64!
   pointer-set-c-char!
   pointer-set-c-short!
   pointer-set-c-int!
