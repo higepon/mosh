@@ -20,6 +20,7 @@
     (define return_double_struct (c-function libffitest void* return_double_struct))
     (define return_longlong_struct (c-function libffitest void* return_longlong_struct))
     (define return_uint8_t_struct (c-function libffitest void* return_uint8_t_struct))
+    (define return_uint64_t_struct (c-function libffitest void* return_uint64_t_struct))
     (define append_hello (c-function libffitest char* append_hello char*))
     (define struct_ref (c-function libffitest char struct_ref void*))
     (define change_errno (c-function libffitest void change_errno))
@@ -64,10 +65,16 @@
       (test-error assertion-violation? (pointer-set-c-int8! p 0 300)))
 
 
-    (let ([p (return_uint8_t_struct)])
-      (test-true (pointer=? p p p))
+    (let ([p (return_uint64_t_struct)])
+      (test-true (pointer? p))
       (pointer-set-c-uint8! p 0 255)
-      (test-eq -1 (pointer-ref-c-int8 p 0)))
+      (test-eq 255 (pointer-ref-c-uint8 p 0))
+      (pointer-set-c-uint16! p 0 255)
+      (test-eq 255 (pointer-ref-c-uint16 p 0))
+      (pointer-set-c-uint32! p 0 255)
+      (test-eq 255 (pointer-ref-c-uint32 p 0))
+      (pointer-set-c-uint64! p 0 255)
+      (test-eq 255 (pointer-ref-c-uint64 p 0)))
 
 
    (begin

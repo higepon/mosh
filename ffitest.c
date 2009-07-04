@@ -166,6 +166,17 @@ void* return_uint8_t_struct()
   return &st;
 }
 
+typedef struct FFITestUint64tStruct {
+  uint64_t val;
+} FFITestUint64tStruct;
+
+void* return_uint64_t_struct()
+{
+  static FFITestUint64tStruct st;
+  st.val = 130;
+  return &st;
+}
+
 
 char* append_hello(const char* text)
 {

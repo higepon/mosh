@@ -563,20 +563,20 @@ Object scheme::pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-template <typename T> static Object pointerSet(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
+template <typename T, typename S> static Object pointerSet(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
 {
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
     argumentAsFixnum(1, offset);
     argumentCheckExactInteger(2, v);
-    int64_t value;
+    S value;
     if (v.isBignum()) {
         value = v.toBignum()->toS64();
     } else {
         value = v.toFixnum();
     }
-    MOSH_ASSERT(sizeof(T) <= sizeof(int64_t));
-    if (value >= static_cast<int64_t>(min) && value <= static_cast<int64_t>(max)) {
+    MOSH_ASSERT(sizeof(S) <= sizeof(int64_t));
+    if (value >= static_cast<S>(min) && value <= static_cast<S>(max)) {
         pointer->set<T>(offset, static_cast<T>(value));
     } else {
         callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
@@ -584,49 +584,59 @@ template <typename T> static Object pointerSet(const ucs4char* procedureName, T 
     return Object::Undef;
 }
 
+template <typename T> static Object pointerSetU(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<T, uint64_t>(procedureName, min, max, theVM, argc, argv);
+}
+
+template <typename T> static Object pointerSetS(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
+{
+    return pointerSet<T, int64_t>(procedureName, min, max, theVM, argc, argv);
+}
+
 Object scheme::pointerSetCUint8DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<uint8_t>(UC("pointer-set-c-uint8!"), 0, UINT8_MAX, theVM, argc, argv);
+    return pointerSetU<uint8_t>(UC("pointer-set-c-uint8!"), 0, UINT8_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCUint16DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<uint16_t>(UC("pointer-set-c-uint16!"), 0, UINT16_MAX, theVM, argc, argv);
+    return pointerSetU<uint16_t>(UC("pointer-set-c-uint16!"), 0, UINT16_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCUint32DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<uint32_t>(UC("pointer-set-c-uint32!"), 0, UINT32_MAX, theVM, argc, argv);
+    return pointerSetU<uint32_t>(UC("pointer-set-c-uint32!"), 0, UINT32_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCUint64DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<uint64_t>(UC("pointer-set-c-uint64!"), 0, UINT64_MAX, theVM, argc, argv);
+    return pointerSetU<uint64_t>(UC("pointer-set-c-uint64!"), 0, UINT64_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCInt8DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<int8_t>(UC("pointer-set-c-int8!"), INT8_MIN, INT8_MAX, theVM, argc, argv);
+    return pointerSetS<int8_t>(UC("pointer-set-c-int8!"), INT8_MIN, INT8_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCInt16DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<int16_t>(UC("pointer-set-c-int16!"), INT16_MIN, INT16_MAX, theVM, argc, argv);
+    return pointerSetS<int16_t>(UC("pointer-set-c-int16!"), INT16_MIN, INT16_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCInt32DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<int32_t>(UC("pointer-set-c-int32!"), INT32_MIN, INT32_MAX, theVM, argc, argv);
+    return pointerSetS<int32_t>(UC("pointer-set-c-int32!"), INT32_MIN, INT32_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<int64_t>(UC("pointer-set-c-int64!"), INT64_MIN, INT64_MAX, theVM, argc, argv);
+    return pointerSetS<int64_t>(UC("pointer-set-c-int64!"), INT64_MIN, INT64_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<long long>(UC("pointer-set-c-long-long!"), LLONG_MIN, LLONG_MAX, theVM, argc, argv);
+    return pointerSetS<long long>(UC("pointer-set-c-long-long!"), LLONG_MIN, LLONG_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv)
@@ -642,22 +652,22 @@ Object scheme::pointerSetCPointerDEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::pointerSetCLongDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<long>(UC("pointer-set-c-long!"), LONG_MIN, LONG_MAX, theVM, argc, argv);
+    return pointerSetS<long>(UC("pointer-set-c-long!"), LONG_MIN, LONG_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCIntDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<int>(UC("pointer-set-c-int!"), INT_MIN, INT_MAX, theVM, argc, argv);
+    return pointerSetS<int>(UC("pointer-set-c-int!"), INT_MIN, INT_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCShortDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<short>(UC("pointer-set-c-short!"), SHRT_MIN, SHRT_MAX, theVM, argc, argv);
+    return pointerSetS<short>(UC("pointer-set-c-short!"), SHRT_MIN, SHRT_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCCharDEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<char>(UC("pointer-set-c-char!"), SCHAR_MIN, SCHAR_MAX, theVM, argc, argv);
+    return pointerSetS<char>(UC("pointer-set-c-char!"), SCHAR_MIN, SCHAR_MAX, theVM, argc, argv);
 }
 
 Object scheme::pointerRefCDoubleEx(VM* theVM, int argc, const Object* argv)
