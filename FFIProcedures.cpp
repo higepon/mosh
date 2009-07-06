@@ -563,15 +563,36 @@ Object scheme::pointerSetCFloatDEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
-template <typename T, typename S> static Object pointerSet(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
+template <typename T, typename S, bool isSigned> static Object pointerSet(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
 {
     checkArgumentLength(3);
     argumentAsPointer(0, pointer);
     argumentAsFixnum(1, offset);
     argumentCheckExactInteger(2, v);
+    if (!isSigned) {
+        if (Arithmetic::lt(v, Object::makeFixnum(0))) {
+            callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+            return Object::Undef;
+        }
+    }
+
     S value;
     if (v.isBignum()) {
-        value = v.toBignum()->toS64();
+        if (isSigned) {
+            if (v.toBignum()->fitsS64()) {
+                value = v.toBignum()->toS64();
+            } else {
+                callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+                return Object::Undef;
+            }
+        } else {
+            if (v.toBignum()->fitsU64()) {
+                value = v.toBignum()->toU64();
+            } else {
+                callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+                return Object::Undef;
+            }
+        }
     } else {
         value = v.toFixnum();
     }
@@ -586,12 +607,12 @@ template <typename T, typename S> static Object pointerSet(const ucs4char* proce
 
 template <typename T> static Object pointerSetU(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<T, uint64_t>(procedureName, min, max, theVM, argc, argv);
+    return pointerSet<T,uint64_t, false>(procedureName, min, max, theVM, argc, argv);
 }
 
 template <typename T> static Object pointerSetS(const ucs4char* procedureName, T min, T max, VM* theVM, int argc, const Object* argv)
 {
-    return pointerSet<T, int64_t>(procedureName, min, max, theVM, argc, argv);
+    return pointerSet<T, int64_t, true>(procedureName, min, max, theVM, argc, argv);
 }
 
 Object scheme::pointerSetCUint8DEx(VM* theVM, int argc, const Object* argv)
@@ -631,7 +652,25 @@ Object scheme::pointerSetCInt32DEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
 {
-    return pointerSetS<int64_t>(UC("pointer-set-c-int64!"), INT64_MIN, INT64_MAX, theVM, argc, argv);
+    DeclareProcedureName("pointer-set-c-int64!");
+    checkArgumentLength(3);
+    argumentAsPointer(0, pointer);
+    argumentAsFixnum(1, offset);
+    argumentCheckExactInteger(2, v);
+    static Object minVal = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)));
+    static Object maxVal = Arithmetic::sub(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)),
+                                           Object::makeFixnum(1));
+    if (Arithmetic::lt(v, minVal) || Arithmetic::gt(v, maxVal)) {
+        callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
+    }
+    int64_t value;
+    if (v.isBignum()) {
+        value = v.toBignum()->toS64();
+    } else {
+        value = v.toFixnum();
+    }
+    pointer->set<int64_t>(offset, value);
+    return Object::Undef;
 }
 
 Object scheme::pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv)

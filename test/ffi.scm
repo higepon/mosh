@@ -76,7 +76,88 @@
       (pointer-set-c-uint64! p 0 255)
       (test-eq 255 (pointer-ref-c-uint64 p 0)))
 
+    ;; min, max, out of range
+    (let ([p (return_uint64_t_struct)])
+      ;; uint8
+      (let* ([ceiling (expt 2 8)]
+             [max (- ceiling 1)])
+        (pointer-set-c-uint8! p 0 0) ;; min
+        (test-eqv 0 (pointer-ref-c-uint8 p 0))
+        (pointer-set-c-uint8! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-uint8 p 0))
+        (test-error assertion-violation? (pointer-set-c-uint8! p 0 -1)) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-uint8! p 0 ceiling)))
 
+      ;; uint16
+      (let* ([ceiling (expt 2 16)]
+             [max (- ceiling 1)])
+        (pointer-set-c-uint16! p 0 0) ;; min
+        (test-eqv 0 (pointer-ref-c-uint16 p 0))
+        (pointer-set-c-uint16! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-uint16 p 0))
+        (test-error assertion-violation? (pointer-set-c-uint16! p 0 -1)) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-uint16! p 0 ceiling)))
+
+      ;; uint32
+      (let* ([ceiling (expt 2 32)]
+             [max (- ceiling 1)])
+        (pointer-set-c-uint32! p 0 0) ;; min
+        (test-eqv 0 (pointer-ref-c-uint32 p 0))
+        (pointer-set-c-uint32! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-uint32 p 0))
+        (test-error assertion-violation? (pointer-set-c-uint32! p 0 -1)) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-uint32! p 0 ceiling)))
+
+      ;; uint64
+      (let* ([ceiling (expt 2 64)]
+             [max (- ceiling 1)])
+        (pointer-set-c-uint64! p 0 0) ;; min
+        (test-eqv 0 (pointer-ref-c-uint64 p 0))
+        (pointer-set-c-uint64! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-uint64 p 0))
+        (test-error assertion-violation? (pointer-set-c-uint64! p 0 -1)) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-uint64! p 0 ceiling)))
+
+      ;; int8
+      (let* ([min (* -1 (expt 2 (- 8 1)))]
+             [max (- (expt 2 (- 8 1)) 1)])
+        (pointer-set-c-int8! p 0 min) ;; min
+        (test-eqv min (pointer-ref-c-int8 p 0))
+        (pointer-set-c-int8! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-int8 p 0))
+        (test-error assertion-violation? (pointer-set-c-int8! p 0 (- min 1))) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-int8! p 0 (+ max 1))))
+
+      ;; int16
+      (let* ([min (* -1 (expt 2 (- 16 1)))]
+             [max (- (expt 2 (- 16 1)) 1)])
+        (pointer-set-c-int16! p 0 min) ;; min
+        (test-eqv min (pointer-ref-c-int16 p 0))
+        (pointer-set-c-int16! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-int16 p 0))
+        (test-error assertion-violation? (pointer-set-c-int16! p 0 (- min 1))) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-int16! p 0 (+ max 1))))
+
+      ;; int32
+      (let* ([min (* -1 (expt 2 (- 32 1)))]
+             [max (- (expt 2 (- 32 1)) 1)])
+        (pointer-set-c-int32! p 0 min) ;; min
+        (test-eqv min (pointer-ref-c-int32 p 0))
+        (pointer-set-c-int32! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-int32 p 0))
+        (test-error assertion-violation? (pointer-set-c-int32! p 0 (- min 1))) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-int32! p 0 (+ max 1))))
+
+      ;; int64
+      (let* ([min (* -1 (expt 2 (- 64 1)))]
+             [max (- (expt 2 (- 64 1)) 1)])
+        (pointer-set-c-int64! p 0 min) ;; min
+        (test-eqv min (pointer-ref-c-int64 p 0))
+        (pointer-set-c-int64! p 0 max) ;; max
+        (test-eqv max (pointer-ref-c-int64 p 0))
+        (test-error assertion-violation? (pointer-set-c-int64! p 0 (- min 1))) ;; out of range
+        (test-error assertion-violation? (pointer-set-c-int64! p 0 (+ max 1))))
+      )
    (begin
      (change_errno)
      (test-eq 3 (shared-errno))

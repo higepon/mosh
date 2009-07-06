@@ -142,8 +142,8 @@ public:
 
     bool fitsU32() const
     {
-        return mpz_cmp_si(value_, 0)
-            && mpz_popcount(value_) <= 32;
+        return mpz_cmp_si(value_, 0) >= 0
+            && mpz_sizeinbase(value_, 2) <= 32;
     }
 
     bool fitsS32() const
@@ -151,7 +151,7 @@ public:
         mpz_t temp;
         mpz_init(temp);
         mpz_abs(temp, value_);
-        bool ret = mpz_popcount(temp) <= 31;
+        bool ret = mpz_sizeinbase(temp, 2) <= 32;
         mpz_clear(temp);
         return ret;
     }
@@ -169,8 +169,8 @@ public:
 
     bool fitsU64() const
     {
-        return mpz_cmp_si(value_, 0)
-            && mpz_popcount(value_) <= 64;
+        return mpz_cmp_si(value_, 0) >= 0
+            && mpz_sizeinbase(value_, 2) <= 64;
     }
 
     bool fitsS64() const
@@ -178,7 +178,7 @@ public:
         mpz_t temp;
         mpz_init(temp);
         mpz_abs(temp, value_);
-        bool ret = mpz_popcount(temp) <= 63;
+        bool ret = mpz_sizeinbase(temp, 2) <= 64;
         mpz_clear(temp);
         return ret;
     }
