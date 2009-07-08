@@ -1,8 +1,8 @@
- (library (lambda wiki)
+(library (lambda wiki)
   (export main)
   (import (rnrs)
           (rnrs mutable-pairs)
-          (only (system) get-environment-variable)
+          (only (system) get-environment-variable make-parameter)
           (only (srfi :1) first second third alist-cons)
           (only (mosh) assoc-ref read-line string-split format call-with-string-input-port string->regexp rxmatch)
           (only (mosh file) directory-list file->string write-to-file)
@@ -13,8 +13,8 @@
   (newline))
 
 ;; Configuration
-(define data-dir "please/set/data/dir")
-(define wiki-top-url "http://please/set/top-url")
+(define data-dir (make-parameter "please/set/data/dir"))
+(define wiki-top-url (make-parameter "http://please/set/top-url"))
 
 (define (set-data-dir! dir)
   (set! data-dir dir))

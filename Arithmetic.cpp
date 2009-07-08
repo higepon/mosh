@@ -875,6 +875,9 @@ Object Arithmetic::numerator(Object n)
     MOSH_ASSERT(n.isRational());
     if (n.isRatnum()) {
         return n.toRatnum()->numerator();
+    } else if (n.isFlonum()) {
+        Object m = n.toFlonum()->toExact();
+        return inexact(numerator(m));
     } else {
         return n;
     }
