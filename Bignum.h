@@ -151,7 +151,7 @@ public:
         mpz_t temp;
         mpz_init(temp);
         mpz_abs(temp, value_);
-        bool ret = mpz_sizeinbase(temp, 2) <= 32;
+        bool ret = mpz_sizeinbase(temp, 2) <= 31;
         mpz_clear(temp);
         return ret;
     }
