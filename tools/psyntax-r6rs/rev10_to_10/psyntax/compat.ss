@@ -203,9 +203,10 @@
                    swap)))))))))
 
 ;;; define-record vector version
-;;;   Some problems
-;;     printing syntax object dumps vector.
-(define-syntax define-record-accessor
+;;;   two problems
+;;     (1)printing syntax object dumps huge vector.
+;;     (2)record returns #t for vector?, this causes annoying behaviour.
+#;(define-syntax define-record-accessor
   (lambda (x)
     (define (str->syn id s)
       (datum->syntax id (string->symbol s)))
@@ -225,7 +226,7 @@
                         (define-record-accessor name next-index field* ...)))])))
 
 
-(define-syntax define-record
+#;(define-syntax define-record
   (lambda (x)
     (define (syn->str s)
       (symbol->string
@@ -259,7 +260,7 @@
                         (define-record-accessor name 1 field* ...)))])))
 
 
-#;(define-syntax define-record
+(define-syntax define-record
   (lambda (x)
       (define (syn->str s)
           (symbol->string

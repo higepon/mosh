@@ -987,7 +987,10 @@ Object scheme::quotientEx(VM* theVM, int argc, const Object* argv)
             Flonum f(x.toFixnum() / value);
             return f.toExact();
         } else if (y.isBignum()) { // fixnum, bignum
-            MOSH_ASSERT(y.toBignum()->toS32() != 0);
+            if (Arithmetic::eq(y, Object::makeFixnum(0))) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
             return Bignum::quotient(x.toFixnum(), y.toBignum());
         } else if (y.isCompnum()) {
             if (y.toCompnum()->isReal()) {
@@ -1093,7 +1096,10 @@ Object scheme::remainderEx(VM* theVM, int argc, const Object* argv)
             Flonum f(fmod(x.toFixnum(), value));
             return f.toExact();
         } else if (y.isBignum()) { // fixnum, bignum
-            MOSH_ASSERT(y.toBignum()->toS32() != 0);
+            if (Arithmetic::eq(y, Object::makeFixnum(0))) {
+                callAssertionViolationAfter(theVM, procedureName, "must be non-zero", L2(x, y));
+                return Object::Undef;
+            }
             return Bignum::remainder(x.toFixnum(), y.toBignum());
         } else if (y.isCompnum()) {
             if (y.toCompnum()->isReal()) {
