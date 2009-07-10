@@ -637,5 +637,9 @@
   pointer-set-c-double!
   pointer-set-c-pointer!
   shared-errno
-
+  simple-struct?
+  make-simple-struct
+  simple-struct-ref
+  simple-struct-set!
+  simple-struct-name
   )

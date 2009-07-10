@@ -82,6 +82,7 @@
 #include "TranscodedTextualInputOutputPort.h"
 #include "OSCompatSocket.h"
 #include "FFI.h"
+#include "SimpleStruct.h"
 
 using namespace scheme;
 
@@ -486,6 +487,11 @@ Object Object::makePointer(void* pointer)
                                                             reinterpret_cast<intptr_t>(new Pointer(pointer)))));
 }
 
+Object Object::makeSimpleStruct(Object name, int fieldCount)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::SimpleStruct,
+                                                            reinterpret_cast<intptr_t>(new SimpleStruct(name, fieldCount)))));
+}
 
 bool Object::isIntegerValued() const
 {

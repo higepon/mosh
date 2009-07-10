@@ -89,6 +89,7 @@ public:
         ConditionVariable           = Type<38>::VALUE,
         Mutex                       = Type<39>::VALUE,
         Pointer                     = Type<40>::VALUE,
+        SimpleStruct                = Type<41>::VALUE,
         forbidden_comma
     };
 };

@@ -57,6 +57,7 @@
 #include "VM-inl.h"
 #include "RecordProcedures.h"
 #include "StringProcedures.h"
+#include "SimpleStruct.h"
 #include "Fasl.h"
 #include "ErrorProcedures.h"
 #include "Record.h"
@@ -65,6 +66,7 @@
 #include "BlockBufferedFileBinaryOutputPort.h"
 #include "StandardInputPort.h"
 #include "StandardOutputPort.h"
+
 
 using namespace scheme;
 
@@ -289,4 +291,14 @@ TEST_F(FaslTest, RecordWithPair) {
     ASSERT_TRUE(p.isPair());
     EXPECT_TRUE(p.car().eq(Symbol::intern(UC("hage"))));
     ASSERT_TRUE(theVM_->callClosure1(pointY, point).isString());
+}
+
+TEST_F(FaslTest, SimpleStruct) {
+    Object st = Object::makeSimpleStruct(Symbol::intern(UC("struct1")), 1);
+    SimpleStruct* pst = st.toSimpleStruct();
+    pst->set(0, Object::makeFixnum(1234));
+    const Object restored = StoreAndRestore(st);
+    ASSERT_TRUE(restored.isSimpleStruct());
+    ASSERT_TRUE(restored.toSimpleStruct()->name() == Symbol::intern(UC("struct1")));
+    EXPECT_TRUE(restored.toSimpleStruct()->ref(0) == Object::makeFixnum(1234));
 }

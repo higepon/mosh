@@ -60,6 +60,7 @@
 #include "Symbol.h"
 #include "EqHashTable.h"
 #include "Bignum.h"
+#include "SimpleStruct.h"
 #include "Fasl.h"
 #include "Arithmetic.h"
 #include "ByteVector.h"

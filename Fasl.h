@@ -74,6 +74,7 @@ public:
         TAG_FIXNUM_1,
         TAG_ASCII_UNINTERNED_SYMBOL,
         TAG_UNINTERNED_SYMBOL,
+        TAG_SIMPLE_STRUCT,
         forbidden_comma
     };
 };
@@ -245,6 +246,27 @@ private:
             }
             return record;
         }
+        case Fasl::TAG_SIMPLE_STRUCT:
+        {
+            // Readin SimpleStruct.
+            // SimpleStructis collected as lookup object, but is not written at lookup section.
+            // Instead written in at normal section.
+            Object uid = getDatum();
+            MOSH_ASSERT(uid.isFixnum());
+            Object name = getDatum();
+            MOSH_ASSERT(name.isSymbol());
+
+            Object length = getDatum();
+            MOSH_ASSERT(length.isFixnum());
+            const int len = length.toFixnum();
+            Object st = Object::makeSimpleStruct(name, len);
+            MOSH_ASSERT(symbolsAndStringsArray_[uid.toFixnum()] == Object::Ignore);
+            symbolsAndStringsArray_[uid.toFixnum()] = st;
+            for (int i = 0; i < len; i++) {
+                st.toSimpleStruct()->set(i, getDatum());
+            }
+            return st;
+        }
         case Fasl::TAG_EQ_HASH_TABLE:
         {
             Object length = getDatum();
@@ -292,7 +314,9 @@ private:
 
     EqHashTable* symbolsAndStringsTable_;
     EqHashTable* writtenRecord_;
+    EqHashTable* writtenSimpleStruct_;
     int recordCount_;
+    int simpleStructCount_;
     BinaryOutputPort* outputPort_;
 };
 

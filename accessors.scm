@@ -35,3 +35,4 @@
 (define-accessor ConditionVariable)
 (define-accessor Mutex)
 (define-accessor Pointer)
+(define-accessor SimpleStruct)

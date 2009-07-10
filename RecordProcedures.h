@@ -36,6 +36,12 @@
 
 namespace scheme {
 
+    Object simpleStructPEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructSetDEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructRefEx(VM* theVM, int argc, const Object* argv);
+    Object makeSimpleStructEx(VM* theVM, int argc, const Object* argv);
+    Object simpleStructNameEx(VM* theVM, int argc, const Object* argv);
+
     Object makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* argv);
     Object makeRecordConstructorDescriptorEx(VM* theVM, int argc, const Object* argv);
     Object recordPredicateEx(VM* theVM, int argc, const Object* argv);

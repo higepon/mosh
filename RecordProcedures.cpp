@@ -45,6 +45,7 @@
 #include "VM-inl.h"
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"
+#include "SimpleStruct.h"
 
 
 using namespace scheme;
@@ -432,4 +433,64 @@ Object scheme::recordTypeDescriptorPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("record-type-descriptor?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isRecordTypeDescriptor());
+}
+
+Object scheme::simpleStructSetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("simple-struct-set!");
+    checkArgumentLength(3);
+    argumentAsSimpleStruct(0, s);
+    argumentAsFixnum(1, index);
+
+    if (s->isValidIndex(index)) {
+        s->set(index, argv[2]);
+        return Object::Undef;
+    } else {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    "index out of range",
+                                                L1(argv[1]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::simpleStructRefEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("simple-struct-ref");
+    checkArgumentLength(2);
+    argumentAsSimpleStruct(0, s);
+    argumentAsFixnum(1, index);
+    if (s->isValidIndex(index)) {
+        return s->ref(index);
+    } else {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    "index out of range",
+                                                L1(argv[1]));
+        return Object::Undef;
+    }
+}
+
+Object scheme::makeSimpleStructEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-simple-struct");
+    checkArgumentLength(2);
+    argumentCheckSymbol(0, name);
+    argumentAsFixnum(1, fieldCount);
+    return Object::makeSimpleStruct(name, fieldCount);
+}
+
+Object scheme::simpleStructNameEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("simple-struct-name");
+    checkArgumentLength(1);
+    argumentAsSimpleStruct(0, s);
+    return s->name();
+}
+
+Object scheme::simpleStructPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("simple-struct?");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isSimpleStruct());
 }

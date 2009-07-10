@@ -48,7 +48,9 @@
 #include "Record.h"
 #include "RecordTypeDescriptor.h"
 #include "EqHashTable.h"
+#include "SimpleStruct.h"
 #include "Fasl.h"
+
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -134,6 +136,23 @@ loop:
         return;
     }
 
+    if (obj.isSimpleStruct()) {
+        SimpleStruct* const record = obj.toSimpleStruct();
+        collectSymbolsAndStrings(record->name());
+        const int length = record->fieldCount();
+        for (int i = 0; i < length; i++) {
+            collectSymbolsAndStrings(record->ref(i));
+        }
+        if (symbolsAndStringsTable_->containsP(obj)) {
+            return;
+        } else {
+            simpleStructCount_++;
+            symbolsAndStringsTable_->set(obj, Object::makeFixnum(symbolsAndStringsTable_->size()));
+        }
+        return;
+    }
+
+
     if (obj.isChar()                ||
         obj.isByteVector()          ||
         obj.isRegexp()              ||
@@ -204,7 +223,9 @@ void FaslReader::getSymbolsAndStrings()
 
 FaslWriter::FaslWriter(BinaryOutputPort* outputPort) : symbolsAndStringsTable_(new EqHashTable),
                                                        writtenRecord_(new EqHashTable),
+                                                       writtenSimpleStruct_(new EqHashTable),
                                                        recordCount_(0),
+                                                       simpleStructCount_(0),
                                                        outputPort_(outputPort)
 {
 }
@@ -259,7 +280,7 @@ void FaslWriter::putSymbolsAndStrings()
         objects[value.toFixnum()] = key;
     }
     emitU32(size); // table size
-    emitU32(size - recordCount_); // number of datum
+    emitU32(size - recordCount_ - simpleStructCount_); // number of datum
     for (int i = 0; i < size; i++) {
         const Object obj = objects[i];
         if (obj.isSymbol()) {
@@ -309,7 +330,7 @@ void FaslWriter::putSymbolsAndStrings()
             emitU8(Fasl::TAG_RTD);
             emitU32(i);
             emitAsciiString(text);
-        } else if (obj.isRecord()) {
+        } else if (obj.isRecord() || obj.isSimpleStruct()) {
             // just skip
             // Record is written after lookup entry initialized.
         } else {
@@ -374,6 +395,36 @@ void FaslWriter::putDatum(Object obj)
         }
         return;
     }
+    if (obj.isSimpleStruct()) {
+        // Writing SimpleStruct.
+        // SimpleStruct is collected as lookup object, but is not written at lookup section.
+        // Instead written in at normal section.
+
+        // not yet written
+        if (writtenSimpleStruct_->ref(obj, Object::False).isFalse()) {
+            emitU8(Fasl::TAG_SIMPLE_STRUCT);
+            const Object uid = symbolsAndStringsTable_->ref(obj, Object::False);
+            MOSH_ASSERT(uid.isFixnum());
+            putDatum(uid);
+            writtenSimpleStruct_->set(obj, Object::True);
+            SimpleStruct* const simpleStruct = obj.toSimpleStruct();
+            putDatum(simpleStruct->name());
+            const int length = simpleStruct->fieldCount();
+            putDatum(Object::makeFixnum(length));
+            for (int i = 0; i < length; i++) {
+                // We don't support this pattern?
+                MOSH_ASSERT(!simpleStruct->ref(i).isSimpleStruct());
+                putDatum(simpleStruct->ref(i));
+            }
+        } else {
+            emitU8(Fasl::TAG_LOOKUP);
+            const Object id = symbolsAndStringsTable_->ref(obj, Object::False);
+            MOSH_ASSERT(!id.isFalse());
+            emitU32(id.toFixnum());
+        }
+        return;
+    }
+
 //     if (obj.isRecordTypeDescriptor()) {
 //         RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
 //         MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported

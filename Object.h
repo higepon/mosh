@@ -81,6 +81,7 @@ class Object;
 class ConditionVariable;
 class Mutex;
 class Pointer;
+class SimpleStruct;
 
 enum {
     CONST_NIL     = 0,
@@ -248,6 +249,7 @@ public:
                               int maxStack,
                               Object sourceInfo);
     static Object makeClosure(const Closure* closure);
+    static Object makeSimpleStruct(Object name, int fieldCount);
     static Object makeSymbol(const ucs4char* str);
     static Object makeInputFilePort(const ucs4char* str);
     static Object makeStack(Object* src, int size);

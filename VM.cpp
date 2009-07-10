@@ -71,6 +71,7 @@
 #include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
+#include "SimpleStruct.h"
 #include "Fasl.h"
 #include "Gloc.h"
 #include "OSCompat.h"
