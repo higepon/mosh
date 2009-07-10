@@ -28,7 +28,7 @@
     (rnrs)
     (rnrs mutable-pairs)
     (except (mosh) make-parameter parameterize)
-    (only (system) get-environment-variable)
+    (only (system) get-environment-variable make-simple-struct simple-struct-set! simple-struct-ref simple-struct-name simple-struct?)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
 
@@ -259,8 +259,61 @@
                           (and (vector? x) (> (vector-length x) 0) (eq? (vector-ref x 0) 'name)))
                         (define-record-accessor name 1 field* ...)))])))
 
+(define-syntax define-record-accessor
+  (lambda (x)
+    (define (str->syn id s)
+      (datum->syntax id (string->symbol s)))
+    (define (syn->str s)
+      (symbol->string
+       (syntax->datum s)))
+    (syntax-case x ()
+      [(_ name index)
+       #'(define dummy 3)]
+      [(_ name index field field* ...)
+       (with-syntax ([getter-name (str->syn #'field (string-append (syn->str #'name) "-" (syn->str #'field)))]
+                     [setter-name (str->syn #'field (string-append "set-" (syn->str #'name) "-" (syn->str #'field) "!"))]
+                     [next-index (+ (syntax->datum #'index) 1)])
+                    #'(begin
+                        (define (getter-name x) (simple-struct-ref x index))
+                        (define (setter-name x val) (simple-struct-set! x index val))
+                        (define-record-accessor name next-index field* ...)))])))
+
 
 (define-syntax define-record
+  (lambda (x)
+    (define (syn->str s)
+      (symbol->string
+       (syntax->datum s)))
+    (define (str->syn id s)
+      (datum->syntax id (string->symbol s)))
+    (syntax-case x ()
+      [(_ name (field* ...) printer)
+       #`(begin
+           (define rp (make-record-printer 'name printer))
+           (define-record name (field* ...))
+           )]
+      [(_ name (field* ...))
+       (with-syntax ([record-name (str->syn #'name (string-append "make-" (syn->str #'name)))]
+                     [pred (str->syn #'name (string-append (syn->str #'name) "?"))]
+                     [field-len (+ 1 (length #'(field* ...)))])
+                    #`(begin
+                        (define (record-name . args)
+                          (let ([ret (make-simple-struct 'name field-len)])
+                            (let loop ([i 0]
+                                       [args args])
+                              (if (null? args)
+                                  '()
+                                  (begin
+                                    (simple-struct-set! ret i (car args))
+                                    (loop (+ i 1) (cdr args)))))
+                            ret))
+                        (define (pred x)
+                          (and (simple-struct? x) (eq? (simple-struct-name x) 'name)))
+                        (define-record-accessor name 0 field* ...)))])))
+
+
+
+#;(define-syntax define-record
   (lambda (x)
       (define (syn->str s)
           (symbol->string

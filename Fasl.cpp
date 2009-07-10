@@ -137,6 +137,7 @@ loop:
     }
 
     if (obj.isSimpleStruct()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         SimpleStruct* const record = obj.toSimpleStruct();
         collectSymbolsAndStrings(record->name());
         const int length = record->fieldCount();
@@ -399,7 +400,7 @@ void FaslWriter::putDatum(Object obj)
         // Writing SimpleStruct.
         // SimpleStruct is collected as lookup object, but is not written at lookup section.
         // Instead written in at normal section.
-
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         // not yet written
         if (writtenSimpleStruct_->ref(obj, Object::False).isFalse()) {
             emitU8(Fasl::TAG_SIMPLE_STRUCT);
