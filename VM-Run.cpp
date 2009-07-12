@@ -1136,6 +1136,29 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             }
             NEXT1;
         }
+        CASE(SIMPLE_STRUCT_REF)
+        {
+            const Object obj = pop();
+            if (obj.isSimpleStruct()) {
+                MOSH_ASSERT(ac_.isFixnum());
+                const int index = ac_.toFixnum();
+                SimpleStruct* const s = obj.toSimpleStruct();
+                if (s->isValidIndex(index)) {
+                    ac_ = s->ref(index);
+                } else {
+                    callAssertionViolationAfter(this,
+                                                "simple-struct-ref",
+                                                "index out of range",
+                                                L1(ac_));
+                }
+            } else {
+                callAssertionViolationAfter(this,
+                                            "simple-struct-ref",
+                                            "simple-struct required",
+                                            L1(obj));
+            }
+            NEXT1;
+        }
 //         CASE(VECTOR_REF_PUSH)
 //         {
 //             const Object v = pop();

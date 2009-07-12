@@ -50,6 +50,9 @@ namespace scheme {
             MOSH_ASSERT(name_.isSymbol());
             MOSH_ASSERT(fieldCount_ >= 0);
             fields_ = Object::makeObjectArray(fieldCount_);
+            for (int i = 0; i< fieldCount; i++) {
+                fields_[i] = Object::Undef;
+            }
         }
         // not virtual for size and performance
         ~SimpleStruct() {}

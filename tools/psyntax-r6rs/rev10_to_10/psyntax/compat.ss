@@ -301,11 +301,14 @@
                           (let ([ret (make-simple-struct 'name field-len)])
                             (let loop ([i 0]
                                        [args args])
-                              (if (null? args)
-                                  '()
-                                  (begin
+                              (cond
+                               [(= i field-len) '()]
+                               [(null? args)
+                                  (simple-struct-set! ret i 'uninitialized)
+                                  (loop (+ i 1) args)]
+                               [else
                                     (simple-struct-set! ret i (car args))
-                                    (loop (+ i 1) (cdr args)))))
+                                    (loop (+ i 1) (cdr args))]))
                             ret))
                         (define (pred x)
                           (and (simple-struct? x) (eq? (simple-struct-name x) 'name)))

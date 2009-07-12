@@ -106,6 +106,7 @@
 (define-insn REFER_LOCAL_CALL 2)
 (define-insn LOCAL_CALL 1)
 (define-insn VECTOR 1)
+(define-insn SIMPLE_STRUCT_REF 0)
 ;; (define-insn REFER_LOCAL_CAR 1)
 ;; (define-insn REFER_LOCAL_CDR 1)
 ;; (define-insn REFER_LOCAL_CONS 1)

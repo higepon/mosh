@@ -63,6 +63,7 @@
 #include "Flonum.h"
 #include "Gloc.h"
 #include "TranscodedTextualInputOutputPort.h"
+#include "SimpleStruct.h"
 
 
 #ifdef ENABLE_PROFILER

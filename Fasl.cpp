@@ -137,20 +137,21 @@ loop:
     }
 
     if (obj.isSimpleStruct()) {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         SimpleStruct* const record = obj.toSimpleStruct();
         collectSymbolsAndStrings(record->name());
         const int length = record->fieldCount();
-        for (int i = 0; i < length; i++) {
-            collectSymbolsAndStrings(record->ref(i));
-        }
+
         if (symbolsAndStringsTable_->containsP(obj)) {
             return;
         } else {
             simpleStructCount_++;
             symbolsAndStringsTable_->set(obj, Object::makeFixnum(symbolsAndStringsTable_->size()));
+
+            for (int i = 0; i < length; i++) {
+                collectSymbolsAndStrings(record->ref(i));
+            }
+            return;
         }
-        return;
     }
 
 
@@ -162,10 +163,12 @@ loop:
         obj.isInstruction()         ||
         obj.isFlonum()              ||
         obj.isFixnum()              ||
-        obj.isBignum())
+        obj.isBignum()              ||
+        obj.isUndef())
         {
         return;
     }
+    LOG1("~a", obj);
     throwIOError2(IOError::WRITE, "not supported serialization", L1(obj));
 }
 
@@ -400,7 +403,6 @@ void FaslWriter::putDatum(Object obj)
         // Writing SimpleStruct.
         // SimpleStruct is collected as lookup object, but is not written at lookup section.
         // Instead written in at normal section.
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         // not yet written
         if (writtenSimpleStruct_->ref(obj, Object::False).isFalse()) {
             emitU8(Fasl::TAG_SIMPLE_STRUCT);

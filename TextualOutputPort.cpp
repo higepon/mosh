@@ -59,6 +59,7 @@
 #include "OSCompatSocket.h"
 #include "OSCompatThread.h"
 #include "FFI.h"
+#include "SimpleStruct.h"
 
 #ifdef _WIN32
     #define snprintf _snprintf
@@ -531,6 +532,10 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
 //             print<isHumanReadable>(record->fieldAt(i));
 //             putString(UC(" "));
 //         }
+        putString(UC(">"));
+    } else if (o.isSimpleStruct()) {
+        putString(UC("#<"));
+        print<isHumanReadable>(theVM, o.toSimpleStruct()->name());
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
