@@ -297,8 +297,8 @@
                      [pred (str->syn #'name (string-append (syn->str #'name) "?"))]
                      [field-len (+ 1 (length #'(field* ...)))])
                     #`(begin
-                        (define (record-name . args)
-                          (let ([ret (make-simple-struct 'name field-len)])
+                        (define (record-name . args) (make-simple-struct 'name field-len args))
+                          #;(let ([ret (make-simple-struct 'name field-len)])
                             (let loop ([i 0]
                                        [args args])
                               (cond
@@ -309,7 +309,7 @@
                                [else
                                     (simple-struct-set! ret i (car args))
                                     (loop (+ i 1) (cdr args))]))
-                            ret))
+                            ret);)
                         (define (pred x)
                           (and (simple-struct? x) (eq? (simple-struct-name x) 'name)))
                         (define-record-accessor name 0 field* ...)))])))

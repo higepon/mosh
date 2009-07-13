@@ -473,11 +473,23 @@ Object scheme::simpleStructRefEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::makeSimpleStructEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("make-simple-struct");
-    checkArgumentLength(2);
-    argumentCheckSymbol(0, name);
-    argumentAsFixnum(1, fieldCount);
-    return Object::makeSimpleStruct(name, fieldCount);
+        DeclareProcedureName("make-simple-struct");
+        checkArgumentLength(3);
+        argumentCheckSymbol(0, name);
+        argumentAsFixnum(1, fieldCount);
+        Object stArgs = argv[2];
+        const Object st = Object::makeSimpleStruct(name, fieldCount);
+        const Object uninitialized = Symbol::intern(UC("uninitialized"));
+        SimpleStruct* const simpleStruct = st.toSimpleStruct();
+        for (int i = 0; i < fieldCount; i++) {
+            if (stArgs.isNil()) {
+                simpleStruct->set(i, uninitialized);
+            } else {
+                simpleStruct->set(i, stArgs.car());
+                stArgs = stArgs.cdr();
+            }
+        }
+        return st;
 }
 
 Object scheme::simpleStructNameEx(VM* theVM, int argc, const Object* argv)
