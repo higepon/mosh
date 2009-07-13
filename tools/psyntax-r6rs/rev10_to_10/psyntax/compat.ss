@@ -297,7 +297,12 @@
                      [pred (str->syn #'name (string-append (syn->str #'name) "?"))]
                      [field-len (+ 1 (length #'(field* ...)))])
                     #`(begin
-                        (define (record-name . args) (make-simple-struct 'name field-len args))
+;                        (define (record-name . args) (make-simple-struct 'name field-len args))
+                        (define-syntax record-name
+                          (lambda (y)
+                          (syntax-case y ()
+                            [(_ m-args (... ...))
+                             #'(make-simple-struct 'name field-len (list m-args (... ...)))])))
                           #;(let ([ret (make-simple-struct 'name field-len)])
                             (let loop ([i 0]
                                        [args args])

@@ -479,11 +479,10 @@ Object scheme::makeSimpleStructEx(VM* theVM, int argc, const Object* argv)
         argumentAsFixnum(1, fieldCount);
         Object stArgs = argv[2];
         const Object st = Object::makeSimpleStruct(name, fieldCount);
-        const Object uninitialized = Symbol::intern(UC("uninitialized"));
         SimpleStruct* const simpleStruct = st.toSimpleStruct();
         for (int i = 0; i < fieldCount; i++) {
             if (stArgs.isNil()) {
-                simpleStruct->set(i, uninitialized);
+                simpleStruct->set(i, Symbol::UNINITIALIZED);
             } else {
                 simpleStruct->set(i, stArgs.car());
                 stArgs = stArgs.cdr();

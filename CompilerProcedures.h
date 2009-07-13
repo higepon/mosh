@@ -70,7 +70,7 @@ namespace scheme {
     Object sameMarksMulPEx(VM* theVM, int argc, const Object* argv);
     Object sameMarksPEx(VM* theVM, int argc, const Object* argv);
     Object idTorealLabelEx(VM* theVM, int argc, const Object* argv);
-
+    Object joinWrapsEx(VM* theVM, int argc, const Object* argv);
 } // namespace scheme
 
 #endif // SCHEME_COMPILER_PROCEDURES_

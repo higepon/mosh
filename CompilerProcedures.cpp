@@ -882,6 +882,63 @@ Object scheme::printStackEx(VM* theVM, int argc, const Object* argv)
 }
 
 /* psyntax/expander.ss
+(define join-wraps
+    (lambda (m1* s1* ae1* e)
+      (define cancel
+        (lambda (ls1 ls2)
+          (let f ((x (car ls1)) (ls1 (cdr ls1)))
+            (if (null? ls1)
+                (cdr ls2)
+                (cons x (f (car ls1) (cdr ls1)))))))
+      (let ((m2* (stx-mark* e))
+            (s2* (stx-subst* e))
+            (ae2* (stx-ae* e)))
+        (if (and (not (null? m1*))
+                 (not (null? m2*))
+                 (anti-mark? (car m2*)))
+            ; cancel mark, anti-mark, and corresponding shifts
+            (values (cancel m1* m2*) (cancel s1* s2*) (cancel ae1* ae2*))
+            (values (append m1* m2*) (append s1* s2*) (append ae1* ae2*))))))
+*/
+static Object f(Object x, Object ls1, Object ls2)
+{
+    if (ls1.isNil()) {
+        return ls2.cdr();
+    } else {
+        return Object::cons(x, f(ls1.car(), ls1.cdr(), ls2));
+    }
+}
+
+static Object cancel(Object ls1, Object ls2)
+{
+    MOSH_ASSERT(ls1.isPair());
+    return f(ls1.car(), ls1.cdr(), ls2);
+}
+
+Object scheme::joinWrapsEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("join-wraps");
+    checkArgumentLength(4);
+    Object m1Mul = argv[0];
+    Object s1Mul = argv[1];
+    Object ae1Mul = argv[2];
+    Object e = argv[3];
+    Object m2Mul = e.toSimpleStruct()->ref(1);
+    Object s2Mul = e.toSimpleStruct()->ref(2);
+    Object ae2Mul = e.toSimpleStruct()->ref(3);
+    if (!m1Mul.isNil() && !m2Mul.isNil() && m2Mul.car().isFalse()) {
+        return theVM->values3(cancel(m1Mul, m2Mul),
+                              cancel(s1Mul, s2Mul),
+                              cancel(ae1Mul, ae2Mul));
+    } else {
+        return theVM->values3(Pair::append2(m1Mul, m2Mul),
+                       Pair::append2(s1Mul, s2Mul),
+                       Pair::append2(ae1Mul, ae2Mul));
+
+    }
+}
+
+/* psyntax/expander.ss
   ;;; Two lists of marks are considered the same if they have the
   ;;; same length and the corresponding marks on each are eq?.
   (define same-marks?
@@ -1001,14 +1058,13 @@ Object scheme::idTorealLabelEx(VM* theVM, int argc, const Object* argv)
     Object sym = id.toSimpleStruct()->ref(0);
     Object substMul = id.toSimpleStruct()->ref(2);
     Object markMul = id.toSimpleStruct()->ref(1);
-    Object shift = Symbol::intern(UC("shift"));
     for (;;) {
 
         if (substMul.isNil()) {
             return Object::False;
         }
         MOSH_ASSERT(substMul.isPair());
-        if (substMul.car() == shift) {
+        if (substMul.car() == Symbol::SHIFT) {
             substMul = substMul.cdr();
             MOSH_ASSERT(markMul.isPair());
             markMul = markMul.cdr();

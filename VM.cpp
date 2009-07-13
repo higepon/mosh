@@ -811,6 +811,15 @@ Object VM::values2(Object obj1, Object obj2)
     return obj1; // set to ac_ later.
 }
 
+Object VM::values3(Object obj1, Object obj2, Object obj3)
+{
+    values_[0] = obj2;
+    values_[1] = obj3;
+    numValues_ = 3;
+    return obj1; // set to ac_ later.
+}
+
+
 Object VM::getCProcedureName(Object proc) const
 {
     for (int k = 0; k < cProcNum; k++) {

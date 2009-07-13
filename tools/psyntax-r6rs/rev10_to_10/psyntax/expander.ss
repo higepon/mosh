@@ -54,7 +54,7 @@
     (psyntax internal)
     (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
-    (only (system) same-marks? same-marks*? id->real-label)
+    (only (system) same-marks? same-marks*? id->real-label join-wraps)
     (prefix (rnrs syntax-case) sys.))
 
   (define file-options-macro
@@ -407,7 +407,8 @@
   ;;; and s2* is (sy sy* ...)
   ;;; then the resulting substs should be (sx* ... sy* ...)
   ;;; Notice that both sx and sy would be shift marks.
-  (define join-wraps
+;; Mosh, written in C++
+#;  (define join-wraps
     (lambda (m1* s1* ae1* e)
       (define cancel
         (lambda (ls1 ls2)

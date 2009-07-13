@@ -131,6 +131,10 @@ public:
     static Object RAISE_ERROR;
     static Object REPLACE_ERROR;
 
+    // psyntax
+    static Object UNINITIALIZED;
+    static Object SHIFT;
+
     static void initBuitinSymbols();
 };
 

@@ -73,6 +73,8 @@ Object Symbol::BLOCK;
 Object Symbol::NO_CREATE;
 Object Symbol::NO_FAIL;
 Object Symbol::NO_TRUNCATE;
+Object Symbol::UNINITIALIZED;
+Object Symbol::SHIFT;
 
 void Symbol::initBuitinSymbols()
 {
@@ -123,6 +125,9 @@ void Symbol::initBuitinSymbols()
     IGNORE_ERROR      = Symbol::intern(UC("ignore"));
     RAISE_ERROR       = Symbol::intern(UC("raise"));
     REPLACE_ERROR     = Symbol::intern(UC("replace"));
+
+    UNINITIALIZED = Symbol::intern(UC("uninitialized"));
+    SHIFT = Symbol::intern(UC("shift"));
 }
 
 const ucs4char* Symbol::c_str()
