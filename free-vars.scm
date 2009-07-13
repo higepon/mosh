@@ -642,4 +642,9 @@
   simple-struct-ref
   simple-struct-set!
   simple-struct-name
+
+  ;; for faster psyntax.
+  same-marks*?
+  same-marks?
+  id->real-label
   )

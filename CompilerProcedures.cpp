@@ -44,6 +44,7 @@
 #include "Symbol.h"
 #include "Gloc.h"
 #include "VM-inl.h"
+#include "SimpleStruct.h"
 
 using namespace scheme;
 
@@ -878,4 +879,182 @@ Object scheme::printStackEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(0);
     theVM->printStack();
     return Object::Undef;
+}
+
+/* psyntax/expander.ss
+  ;;; Two lists of marks are considered the same if they have the
+  ;;; same length and the corresponding marks on each are eq?.
+  (define same-marks?
+    (lambda (x y)
+      (or (and (null? x) (null? y)) ;(eq? x y)
+          (and (pair? x) (pair? y)
+               (eq? (car x) (car y))
+               (same-marks? (cdr x) (cdr y))))))
+*/
+bool isSameMarks(Object x, Object y)
+{
+    for (;;) {
+        if (x.isNil() && y.isNil()) {
+            return true;
+        }
+        if (x.isNil() && !y.isNil()) {
+            return false;
+        }
+        if (!x.isNil() && y.isNil()) {
+            return false;
+        }
+        if (x.isPair() && !y.isPair()) {
+            return false;
+        }
+        if (!x.isPair() && y.isPair()) {
+            return false;
+        }
+        if (x.car() != y.car()) {
+            return false;
+        }
+        x = x.cdr();
+        y = y.cdr();
+    }
+    return true;
+}
+Object scheme::sameMarksPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("same-marks*?");
+    checkArgumentLength(2);
+    return Object::makeBool(isSameMarks(argv[0], argv[1]));
+}
+
+/* psyntax/expander.ss
+(define (same-marks*? mark* mark** si)
+    (if (null? si)
+        #f
+        (if (same-marks? mark* (vector-ref mark** (car si)))
+            (car si)
+            (same-marks*? mark* mark** (cdr si)))))
+*/
+Object scheme::sameMarksMulPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("same-marks*?");
+    checkArgumentLength(3);
+    Object markMul = argv[0];
+    Object markMulMul = argv[1];
+    Object si = argv[2];
+    for (;;) {
+        if (si.isNil()) {
+            return Object::False;
+        }
+        MOSH_ASSERT(markMulMul.isVector());
+        MOSH_ASSERT(si.isPair());
+        MOSH_ASSERT(si.car().isFixnum());
+        if (isSameMarks(markMul, markMulMul.toVector()->ref(si.car().toFixnum()))) {
+            return si.car();
+        }
+        si = si.cdr();
+    }
+    MOSH_ASSERT(false);
+    return Object::Undef;
+}
+
+/* psyntax/expander.ss
+(define id->real-label
+    (lambda (id)
+      (let ((sym (id->sym id)))
+        (let search ((subst* (stx-subst* id)) (mark* (stx-mark* id)))
+          (cond
+            ((null? subst*) #f)
+            ((eq? (car subst*) 'shift)
+             ;;; a shift is inserted when a mark is added.
+             ;;; so, we search the rest of the substitution
+             ;;; without the mark.
+             (search (cdr subst*) (cdr mark*)))
+            (else
+             (let ((rib (car subst*)))
+               (cond
+                 ((rib-sealed/freq rib) =>
+                  (lambda (ht)
+                    (let ((si (hashtable-ref ht sym #f)))
+                      (let ((i (and si
+                            (same-marks*? mark*
+                              (rib-mark** rib) (reverse si)))))
+                        (if i
+                          (vector-ref (rib-label* rib) i)
+                        (search (cdr subst*) mark*))))))
+;                 ((find-label rib sym mark*))
+                 (else
+                  (let f ((sym* (rib-sym* rib))
+                          (mark** (rib-mark** rib))
+                          (label* (rib-label* rib)))
+                    (cond
+                      ((null? sym*) (search (cdr subst*) mark*))
+                      ((and (eq? (car sym*) sym)
+                            (same-marks? (car mark**) mark*))
+                       (car label*))
+                      (else (f (cdr sym*) (cdr mark**) (cdr label*))))))))))))))
+*/
+
+Object scheme::idTorealLabelEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("id->real-label");
+    checkArgumentLength(1);
+    Object id = argv[0];
+    MOSH_ASSERT(id.isSimpleStruct());
+    Object sym = id.toSimpleStruct()->ref(0);
+    Object substMul = id.toSimpleStruct()->ref(2);
+    Object markMul = id.toSimpleStruct()->ref(1);
+    Object shift = Symbol::intern(UC("shift"));
+    for (;;) {
+
+        if (substMul.isNil()) {
+            return Object::False;
+        }
+        MOSH_ASSERT(substMul.isPair());
+        if (substMul.car() == shift) {
+            substMul = substMul.cdr();
+            MOSH_ASSERT(markMul.isPair());
+            markMul = markMul.cdr();
+            continue;
+        } else {
+            Object rib = substMul.car();
+            MOSH_ASSERT(rib.isSimpleStruct());
+            Object ribSealedFreq = rib.toSimpleStruct()->ref(3);
+            if (!ribSealedFreq.isFalse()) {
+                MOSH_ASSERT(ribSealedFreq.isEqHashTable());
+                Object si = ribSealedFreq.toEqHashTable()->ref(sym, Object::False);
+                Object i;
+                if (si.isFalse()) {
+                    i = Object::False;
+                } else {
+                    Object as[3];
+                    as[0] = markMul;
+                    as[1] = rib.toSimpleStruct()->ref(1);
+                    as[2] = Pair::reverse(si);
+                    i = sameMarksMulPEx(theVM, 3, as);
+                }
+
+                if (i.isFalse()) {
+                    substMul = substMul.cdr();
+                    continue;
+                } else {
+                    MOSH_ASSERT(i.isFixnum());
+                    return rib.toSimpleStruct()->ref(2).toVector()->ref(i.toFixnum());
+                }
+            } else {
+                Object symMul = rib.toSimpleStruct()->ref(0);
+                Object markMulMul = rib.toSimpleStruct()->ref(1);
+                Object labelMul = rib.toSimpleStruct()->ref(2);
+                for (;;) {
+                    if (symMul.isNil()) {
+                        substMul = substMul.cdr();
+                        break;
+                    } else if (sym == symMul.car() && isSameMarks(markMulMul.car(), markMul)) {
+                        return labelMul.car();
+                    } else {
+                        symMul = symMul.cdr();
+                        markMulMul = markMulMul.cdr();
+                        labelMul = labelMul.cdr();
+                    }
+                }
+            }
+        }
+    }
 }

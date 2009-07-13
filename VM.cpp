@@ -68,6 +68,7 @@
 #include "FixnumProcedures.h"
 #include "SocketProcedures.h"
 #include "MultiVMProcedures.h"
+#include "CompilerProcedures.h"
 #include "Bignum.h"
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"

@@ -54,6 +54,7 @@
     (psyntax internal)
     (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
     (only (rnrs syntax-case) syntax-case syntax with-syntax)
+    (only (system) same-marks? same-marks*? id->real-label)
     (prefix (rnrs syntax-case) sys.))
 
   (define file-options-macro
@@ -538,7 +539,9 @@
 
   ;;; Two lists of marks are considered the same if they have the
   ;;; same length and the corresponding marks on each are eq?.
-  (define same-marks?
+
+;; Mosh, written in C++
+#;  (define same-marks?
     (lambda (x y)
       (or (and (null? x) (null? y)) ;(eq? x y)
           (and (pair? x) (pair? y)
@@ -630,7 +633,8 @@
     (lambda (x)
       (strip x '())))
 
-  (define (same-marks*? mark* mark** si)
+;; Mosh, written in C++
+#;  (define (same-marks*? mark* mark** si)
     (if (null? si)
         #f
         (if (same-marks? mark* (vector-ref mark** (car si)))
@@ -652,7 +656,7 @@
                  lab)))]
           [else #f])))
 
-  (define id->real-label
+#;  (define id->real-label
     (lambda (id)
       (let ((sym (id->sym id)))
         (let search ((subst* (stx-subst* id)) (mark* (stx-mark* id)))

@@ -1008,6 +1008,9 @@
     (sys-display mosh)
     (get-command-line mosh)
     (get-timeofday mosh)
+    (same-marks*? sys) ;; for psyntax, Written in C++
+    (same-marks? sys) ;; for psyntax, Written in C++
+    (id->real-label sys) ;; for psyntax, Written in C++
     (get-environment-variable sys)
     (get-environment-variables sys)
     (create-directory sys)
