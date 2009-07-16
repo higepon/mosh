@@ -47,7 +47,7 @@
     (psyntax library-manager)
     (psyntax expander)
     (psyntax config)
-    (only (system) get-environment-variable); get-environment-variable
+    (only (system) create-mosh-cache-dir get-environment-variable); get-environment-variable
 )
 
   (define (add-library-path! path)
@@ -273,8 +273,14 @@
         (case how
           ((closure)   (pre-compile-r6rs-top-level x*))
           ((load)
-           (parameterize ([command-line (cons filename (car args))])
-             ((compile-r6rs-top-level x*))))
+            (parameterize ([command-line (cons filename (car args))]
+                           [mosh-cache-dir (create-mosh-cache-dir)])
+             (display "before compile\n")
+             (let ([compiled (compile-r6rs-top-level x*)])
+             (display "before compile2\n")
+               (serialize-all serialize-library compile-core-expr)
+             (display "before compile3\n")
+               (compiled))))
           ((compile)
            (begin
              (compile-r6rs-top-level x*) ; i assume this is needed

@@ -842,6 +842,11 @@ ucs4string scheme::getMoshExecutablePath(bool& isErrorOccured)
 #endif
 }
 
+void scheme::setEnv(const ucs4string& key, const ucs4string& value)
+{
+    setenv(utf32toUtf8(key), utf32toUtf8(value), 1);
+}
+
 ucs4char* scheme::getEnv(const ucs4string& key)
 {
 #ifdef _WIN32

@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
 {
     // call this before any allocation.
     mosh_init();
+
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;

@@ -3863,6 +3863,19 @@
 (define fasl-read! fasl-read)
 (define eval-compiled! eval-compiled)
 
+(define (create-mosh-cache-dir)
+  (let ([base-dir (get-environment-variable "HOME")])
+    (cond
+     [(and base-dir (file-exists? base-dir))
+      (let ([cache-dir (string-append base-dir "/.mosh")])
+        (guard
+         (c
+          [#t #f])
+         (unless (file-exists? cache-dir)
+           (create-directory cache-dir))
+         cache-dir))]
+     [else #f])))
+
 
 (define (%spawn command args . io-list)
   (define (parse-io-list l)
@@ -3891,3 +3904,4 @@
   (display obj)
   (newline)
   (apply values obj))
+

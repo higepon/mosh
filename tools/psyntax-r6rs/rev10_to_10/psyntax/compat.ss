@@ -23,14 +23,48 @@
           gensym void eval-core symbol-value set-symbol-value! file-options-spec
           read-annotated annotation? annotation-expression annotation-source
           load-serialized-library serialize-library
-          annotation-stripped make-record-printer read-library-source-file)
+          annotation-stripped make-record-printer read-library-source-file scm->fasl
+          mosh-cache-dir)
   (import
     (rnrs)
     (rnrs mutable-pairs)
+    (rnrs r5rs)
     (except (mosh) make-parameter parameterize)
     (only (system) get-environment-variable make-simple-struct simple-struct-set! simple-struct-ref simple-struct-name simple-struct?)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh
+
+(define (library-file-path->cache-path x)
+    (let-values (((p extract) (open-string-output-port)))
+      (define (display-hex n)
+        (cond
+          ((<= 0 n 9) (display n p))
+          (else (display
+                  (integer->char
+                    (+ (char->integer #\a)
+                       (- n 10)))
+                  p))))
+      (let f ((ls (string-split x #\/)))
+        (unless (null? ls)
+          (display "_" p)
+          (for-each
+            (lambda (c)
+              (cond
+                ((or (char<=? #\a c #\z)
+                     (char<=? #\A c #\Z)
+                     (char<=? #\0 c #\9)
+                     (memv c '(#\- #\. #\_ #\~)))
+                 (display c p))
+                (else
+                 (display "%" p)
+                 (let ((n (char->integer c)))
+                   (display-hex (quotient n 16))
+                   (display-hex (remainder n 16))))))
+            (string->list
+              (car ls)))
+          (f (cdr ls))))
+      (extract)))
+
 
 ;; N.B. We don't use backend's (gensym) for following reasons.
 ;;  (a) When we read serialized libraries, we need all symbols are interned.
@@ -75,8 +109,15 @@
         (cons (car x) (cdr x))
         (display "line:46\n")))
 
-(define (scm->fasl filename)
-  (string-append filename ".mosh-fasl"))
+;; (define (scm->fasl filename)
+;;   (string-append filename ".mosh-fasl"))
+
+ (define (scm->fasl filename)
+;  (string-append filename ".mosh-fasl"))
+;  (display (string-append "/Users/taro/.mosh/" (library-name->file-name2 (map string->symbol (string-split filename #\/))) ".mosh-fasl"))
+;  (display (string-append "/home/taro/.mosh/" (library-file-path->cache-path filename) ".mosh-fasl"))
+  (string-append (mosh-cache-dir) "/" (library-file-path->cache-path filename) ".mosh-fasl"))
+
 
 (define (fasl-save filename obj)
   (call-with-port (open-file-output-port filename) (lambda (port) ((symbol-value 'fasl-write!) obj port))))
@@ -155,8 +196,9 @@
           (let* ([pivot (cdr pivot)]
                  [invoke (car pivot)])
             (set-car! pivot (lambda () (eval-compiled-core invoke)))
-            (apply obj code))
-          #t)
+            ;; obj is try-load-from-file's case-labmda procedure
+            ;; The return valu of this apply tells whether succeed or not.
+            (apply obj code)))
         #f)))
 
 
@@ -181,6 +223,8 @@
          (case-lambda
            (() x)
            ((v) (set! x (fender v))))))))
+
+  (define mosh-cache-dir (make-parameter #f))
 
   (define-syntax parameterize
     (lambda (x)

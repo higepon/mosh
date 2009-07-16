@@ -59,6 +59,7 @@ namespace scheme {
 
     ucs4char** getCommandLine(int argc, char* argv[]);
     ucs4char* getEnv(const ucs4string& key);
+    void setEnv(const ucs4string& key, const ucs4string& value);
     Object getEnvAlist();
     Object readDirectory(const ucs4string& dir);
     bool createDirectory(const ucs4string& path);

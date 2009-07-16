@@ -1014,6 +1014,7 @@
     (join-wraps sys) ;; for psyntax, Written in C++
     (get-environment-variable sys)
     (get-environment-variables sys)
+    (create-mosh-cache-dir sys)
     (create-directory sys)
     (delete-directory sys)
     (rename-file sys)
