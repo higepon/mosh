@@ -648,4 +648,5 @@
   same-marks?
   id->real-label
   join-wraps
+  gensym-prefix-set!
   )

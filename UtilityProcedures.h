@@ -62,6 +62,7 @@ namespace scheme {
     Object integerTocharEx(VM* theVM, int argc, const Object* argv);
     Object charPEx(VM* theVM, int argc, const Object* argv);
     Object gensymEx(VM* theVM, int argc, const Object* argv);
+    Object gensymPrefixSetDEx(VM* theVM, int argc, const Object* argv);
     Object ungensymEx(VM* theVM, int argc, const Object* argv);
     Object vectorPEx(VM* theVM, int argc, const Object* argv);
     Object eqPEx(VM* theVM, int argc, const Object* argv);

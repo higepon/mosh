@@ -114,13 +114,13 @@ void mosh_init()
 #endif
     initOSConstants();
 
-    // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
-    if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
-        // 'A', 'B' and 'C' are reserved for psyntax expansion
-        const char* data = "abcdefghijklmopqrstuvwxyzDEFGHIJKLMOPQRSTUVWXYZ";
-        ucs4char prefix = data[random() % strlen(data)];
-//        printf("[%c]", prefix);
-        setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
-    }
+//     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
+//     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
+//         // 'A', 'B' and 'C' are reserved for psyntax expansion
+//         const char* data = "abcdefghijklmopqrstuvwxyzDEFGHIJKLMOPQRSTUVWXYZ";
+//         ucs4char prefix = data[random() % strlen(data)];
+// //        printf("[%c]", prefix);
+//         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
+//     }
 }
 

@@ -47,7 +47,7 @@
     (psyntax library-manager)
     (psyntax expander)
     (psyntax config)
-    (only (system) create-mosh-cache-dir get-environment-variable); get-environment-variable
+    (only (system) create-mosh-cache-dir get-environment-variable gensym-prefix-set! directory-list)
 )
 
   (define (add-library-path! path)
@@ -275,6 +275,12 @@
           ((load)
             (parameterize ([command-line (cons filename (car args))]
                            [mosh-cache-dir (create-mosh-cache-dir)])
+             (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
+             ;; clean auto compile cache
+             (when (symbol-value '%clean-acc)
+               (for-each
+                (lambda (file) (guard (c (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
+                (directory-list (mosh-cache-dir))))
              (let ([compiled (compile-r6rs-top-level x*)])
                (unless (symbol-value '%disable-acc)
                  (serialize-all serialize-library compile-core-expr))
@@ -288,9 +294,47 @@
   (define (load-r6rs-top-level-sexp import-spec thunk)
     (parameterize ([library-path (local-library-path "")]
                    [mosh-cache-dir (create-mosh-cache-dir)])
+      (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
       (parameterize ([command-line '()])
 ;        (display `((import ,@import-spec) (,thunk)))
         ((compile-r6rs-top-level `((import ,@import-spec) (,thunk)))))))
+
+   ;; increment alphabet symbol
+   ;; (ex) a   -> b
+   ;;      z   -> A
+   ;;      abZ -> aca
+   (define (prefix-inc prefix-string)
+      (let* ([prefix (symbol->string prefix-string)]
+             [len (string-length prefix)])
+        (let loop ([i (- len 1)]
+                   [carry? #t]
+                   [accum '()])
+          (cond
+           [(< i 0)
+            (string->symbol
+             (list->string (if carry?
+                               (cons #\a accum)
+                               accum)))]
+           [carry?
+            (let ([next-integer (+ 1 (char->integer (string-ref prefix i)))])
+              (cond
+               [(= next-integer 123) ;; (+ (char->integer #\z) 1) => 123
+                (loop (- i 1) #f (cons #\A accum))]
+               [(= next-integer 91) ;; (+ (char->integer #\Z) 1) => 90
+                (loop (- i 1) #t (cons #\a accum))]
+               [else
+                (loop (- i 1) #f (cons (integer->char next-integer) accum))]))]
+           [else
+            (loop (- i 1) #f (cons (string-ref prefix i) accum))]))))
+
+    (define (prefix-inc! file)
+      (unless (file-exists? file)
+        (call-with-output-file file (lambda (port) (write 'd port)))) ;; a, b and c is reserved
+      (let* ([prefix (call-with-input-file file read)]
+             [next-prefix (prefix-inc prefix)])
+        (call-with-output-file file (lambda (port) (write next-prefix port)))
+        prefix))
+
 
 
   (current-precompiled-library-loader load-serialized-library)

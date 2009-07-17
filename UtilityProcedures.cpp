@@ -430,23 +430,23 @@ Object scheme::charPEx(VM* theVM, int argc, const Object* argv)
     return Object::makeBool(argv[0].isChar());
 }
 
+static const char* gensymPrefix = "a";
+
+Object scheme::gensymPrefixSetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("gensym-prefix-set!");
+    checkArgumentLength(1);
+    argumentAsSymbol(0, prefix);
+    gensymPrefix = ucs4string(prefix->c_str()).ascii_c_str();
+    return Object::Undef;
+}
 
 // This gensym returns "interned symbol"
 // See psyntax-r6rs/rev10_to_10/psyntax/compat.ss
 Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("gen-sym");
+    DeclareProcedureName("gensym");
     checkArgumentLengthBetween(0, 1);
-
-    static int prefix = -1;
-    if (-1 == prefix) {
-        const ucs4char* prefixStr = getEnv(UC("MOSH_GENSYM_PREFIX"));
-        if (NULL == prefixStr) {
-            prefix = 'G';
-        } else {
-            prefix = prefixStr[0];
-        }
-    }
 
     static int next = 0;
     char ubuf[32];
@@ -457,7 +457,7 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 #endif
 
     if (0 == argc) {
-        sprintf(ubuf, "%c%x", prefix, next++);
+        sprintf(ubuf, "%s%x", gensymPrefix, next++);
         const int len = strlen(ubuf) + 1;
         for (int i = 0; i < len; i++) {
             ibuf[i] = ubuf[i];
@@ -465,7 +465,7 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
 
         return Symbol::intern(ibuf);
     } else {
-        sprintf(ubuf, "%c%x@", prefix, next++);
+        sprintf(ubuf, "%s%x@", gensymPrefix, next++);
         const int len = strlen(ubuf) + 1;
         for (int i = 0; i < len; i++) {
             ibuf[i] = ubuf[i];
@@ -476,7 +476,7 @@ Object scheme::gensymEx(VM* theVM, int argc, const Object* argv)
             val += sym.toSymbol()->c_str();
             return Symbol::intern(val.strdup());
         } else {
-            sprintf(ubuf, "%c%x", prefix, next++);
+            sprintf(ubuf, "%s%x", gensymPrefix, next++);
             const int len = strlen(ubuf) + 1;
             for (int i = 0; i < len; i++) {
                 ibuf[i] = ubuf[i];

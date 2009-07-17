@@ -1124,6 +1124,7 @@
     (assoc-ref mosh)
     (alist->eq-hash-table mosh interaction)
     (ungensym mosh)
+    (gensym-prefix-set! sys)
 ;;     (every srfi-1)
 ;;     (iota srfi-1)
 ;;     (first srfi-1)
