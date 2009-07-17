@@ -275,11 +275,9 @@
           ((load)
             (parameterize ([command-line (cons filename (car args))]
                            [mosh-cache-dir (create-mosh-cache-dir)])
-             (display "before compile\n")
              (let ([compiled (compile-r6rs-top-level x*)])
-             (display "before compile2\n")
-               (serialize-all serialize-library compile-core-expr)
-             (display "before compile3\n")
+               (unless (symbol-value '%disable-acc)
+                 (serialize-all serialize-library compile-core-expr))
                (compiled))))
           ((compile)
            (begin
@@ -288,7 +286,8 @@
 
    ;; mosh-only
   (define (load-r6rs-top-level-sexp import-spec thunk)
-    (parameterize ([library-path (local-library-path "")])
+    (parameterize ([library-path (local-library-path "")]
+                   [mosh-cache-dir (create-mosh-cache-dir)])
       (parameterize ([command-line '()])
 ;        (display `((import ,@import-spec) (,thunk)))
         ((compile-r6rs-top-level `((import ,@import-spec) (,thunk)))))))

@@ -92,6 +92,7 @@ void showUsage()
 #endif
 //            "  -t                Executes test.\n"
             "  --help            Prints this help.\n"
+            "--disable-acc       disables auto-compile-cache.\n"
             "  --loadpath=<path> Add libary loadpath.\n\n"
             " MOSH_LOADPATH\n"
             "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\' separated paths.\n\n"
@@ -125,6 +126,7 @@ int main(int argc, char *argv[])
     bool isCompileString = false;
     bool isProfilerOn      = false;
     bool isR6RSBatchMode = true;
+    bool disableAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     ucs4char* initFile = NULL;
     ucs4char* loadPath = NULL;
@@ -132,6 +134,7 @@ int main(int argc, char *argv[])
    static struct optionU long_options[] = {
        {UC("loadpath"), optional_argument, 0, 'L'},
        {UC("help"), 0, 0, 'h'},
+       {UC("disable-acc"), 0, 0, 'd'},
        {0, 0, 0, 0}
    };
 
@@ -141,6 +144,9 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'h':
             showUsage();
+            break;
+        case 'd':
+            disableAcc = true;
             break;
         case 'l':
             initFile = optargU;
@@ -229,6 +235,7 @@ int main(int argc, char *argv[])
         } else {
             theVM->setValueString(UC("%loadpath"), Object::makeString(loadPath));
         }
+        theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->activateR6RSMode(isDebugExpand);
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));

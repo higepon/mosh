@@ -327,12 +327,12 @@ MAINTAINERCLEANFILES = $(GENERATED)
 #       So using environment variable MOSH_GENSYM_PREFIX, we control the prefix.
 
 # all fasl should be newer than *.ss and psyntax.h binary
-lib/mosh/queue.ss.mosh-fasl: $(mosh_core_libraries) psyntax.h
-	(find . -name "*.ss.mosh-fasl" | xargs rm) ; true
-	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
-	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
+# lib/mosh/queue.ss.mosh-fasl: $(mosh_core_libraries) psyntax.h
+# 	(find . -name "*.ss.mosh-fasl" | xargs rm) ; true
+# 	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
+# 	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
-update: lib/mosh/queue.ss.mosh-fasl
+# update: lib/mosh/queue.ss.mosh-fasl
 
 # when you release comment out start
 if DEVELOPER
@@ -454,7 +454,7 @@ bench:
 #### test
 check: test
 
-test: ./mosh all-tests.scm update libffitest.so.1.0
+test: ./mosh all-tests.scm libffitest.so.1.0
 	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
 	./mosh test/mosh-test.scm
@@ -570,6 +570,7 @@ test_thread_LDADD = $(TEST_LDADD_)
 
 
 install-data-hook :
-	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
+	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
+#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 

@@ -3870,7 +3870,7 @@
       (let ([cache-dir (string-append base-dir "/.mosh")])
         (guard
          (c
-          [#t #f])
+          [#t  #f])
          (unless (file-exists? cache-dir)
            (create-directory cache-dir))
          cache-dir))]

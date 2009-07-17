@@ -497,7 +497,7 @@ Object Equal::eP(EqHashTable** pht, Object x, Object y, Object k)
     MOSH_ASSERT(k.isFixnum());
     if (k.toFixnum() <= 0) {
         if (k == kb_) {
-            fastP(pht, x, y, Object::makeFixnum(rand() % (2 * k0_.toFixnum())));
+            fastP(pht, x, y, Object::makeFixnum(random() % (2 * k0_.toFixnum())));
         } else {
             slowP(pht, x, y, k);
         }

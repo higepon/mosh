@@ -116,6 +116,7 @@
 ;  (string-append filename ".mosh-fasl"))
 ;  (display (string-append "/Users/taro/.mosh/" (library-name->file-name2 (map string->symbol (string-split filename #\/))) ".mosh-fasl"))
 ;  (display (string-append "/home/taro/.mosh/" (library-file-path->cache-path filename) ".mosh-fasl"))
+;   (format #t "(mosh-cache-dir)=~a, ~a\n" (mosh-cache-dir) (library-file-path->cache-path filename))
   (string-append (mosh-cache-dir) "/" (library-file-path->cache-path filename) ".mosh-fasl"))
 
 
@@ -162,7 +163,7 @@
 ;;         #f)))
 
 (define (serialize-library filename obj)
-  (format #t "serialize-library ~a\n..." filename)
+;  (format #t "serialize-library ~a\n..." filename)
   (let* ([expanded2core (symbol-value 'expanded2core)]
          [compile (symbol-value 'compile-w/o-halt)]
          [code obj]
@@ -175,12 +176,12 @@
   (let ([fasl-file (scm->fasl filename)])
     (when (file-exists? fasl-file)
       (delete-file fasl-file))
-    (guard [c (#t (format #t "Warning:serialize-library failed " filename)
+    (guard [c (#t (format (current-error-port) "Warning:serialize-library failed " filename)
                   (when (file-exists? fasl-file)
                     (delete-file fasl-file))
                   #f)]
            (fasl-save fasl-file obj)
-           (display "OK\n"))))
+           )))
 
 (define (load-serialized-library filename obj)
   (let ([fasl-file (scm->fasl filename)])

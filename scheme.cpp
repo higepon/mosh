@@ -91,8 +91,8 @@ static void gmp_free(void *ptr, size_t size)
 
 void mosh_init()
 {
-    // MOSH_GENSYM_PREFIX needs this.
-    srand(time(NULL));
+    // MOSH_GENSYM_PREFIX and equal? need this.
+    srandom(time(NULL));
 #ifdef USE_BOEHM_GC
     GC_INIT();
     // N.B
@@ -106,7 +106,7 @@ void mosh_init()
     Flonum::initialize();
     Thread::initialize();
     Symbol::initBuitinSymbols();
-    srand((unsigned)time(NULL)); // equal? uses rand()
+
 
 #ifdef _WIN32
     WSADATA data;
@@ -117,8 +117,8 @@ void mosh_init()
     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
         const char* data = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
-        ucs4char prefix = data[rand() % (strlen(data) - 1)];
-        printf("[%c]", prefix);
+        ucs4char prefix = data[random() % strlen(data)];
+//        printf("[%c]", prefix);
         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
     }
 }
