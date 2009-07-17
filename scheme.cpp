@@ -116,7 +116,8 @@ void mosh_init()
 
     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
-        const char* data = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ";
+        // 'A', 'B' and 'C' are reserved for psyntax expansion
+        const char* data = "abcdefghijklmopqrstuvwxyzDEFGHIJKLMOPQRSTUVWXYZ";
         ucs4char prefix = data[random() % strlen(data)];
 //        printf("[%c]", prefix);
         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
