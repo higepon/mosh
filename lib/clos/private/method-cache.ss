@@ -7,6 +7,6 @@
 
   (import (clos private slow-method-cache))
  
-  ) ;; libary (clos private method-cache)
+  ) ;; library (clos private method-cache)
 
 

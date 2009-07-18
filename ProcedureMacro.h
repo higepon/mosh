@@ -210,7 +210,7 @@
 #define argumentAsString(index, variableName) castArgument(index, variableName, isString, string, String*, toString)
 
 
-#define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, charcter, ucs4char, toChar)
+#define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, character, ucs4char, toChar)
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 #define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)

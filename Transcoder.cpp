@@ -151,7 +151,7 @@ void Transcoder::putString(BinaryOutputPort* port, const ucs4string& s)
 void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
 {
     if (!buffer_.empty()) {
-        // remove 1 charcter
+        // remove 1 character
         buffer_.erase(0, 1);
     }
     if (eolStyle_ == EolStyle(E_NONE)) {

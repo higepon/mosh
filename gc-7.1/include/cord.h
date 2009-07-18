@@ -147,7 +147,7 @@ int CORD_riter(CORD x, CORD_iter_fn f1, void * client_data);
 /* Functions that operate on cord positions.  The easy way to traverse	*/
 /* cords.  A cord position is logically a pair consisting of a cord	*/
 /* and an index into that cord.  But it is much faster to retrieve a	*/
-/* charcter based on a position than on an index.  Unfortunately,	*/
+/* character based on a position than on an index.  Unfortunately,	*/
 /* positions are big (order of a few 100 bytes), so allocate them with	*/
 /* caution.								*/
 /* Things in cord_pos.h should be treated as opaque, except as		*/

@@ -17,4 +17,4 @@
     (fast:invalidate-method-caches!)
     (slow:invalidate-method-caches!))
  
-  ) ;; libary (clos private method-cache)
+  ) ;; library (clos private method-cache)

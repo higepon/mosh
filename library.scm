@@ -3569,7 +3569,7 @@
                         [next-char #\space])
                (cond
                 [(eof-object? ch) (get-string)]
-                ;; when final charcter of form is sigma.
+                ;; when final character of form is sigma.
                 [(and (or (char-whitespace? next-char) (eof-object? next-char))
                       (not (char-whitespace? prev-char))
                       (or (char=? ch #\x03A3) (char=? ch #\x03C3)))

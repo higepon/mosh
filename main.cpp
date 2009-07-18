@@ -94,7 +94,7 @@ void showUsage()
             "  --help            Prints this help.\n"
             "  --disable-acc     disables auto-compile-cache.\n"
             "  --clean-acc       cleans auto-compile-cache.\n"
-            "  --loadpath=<path> Add libary loadpath.\n\n"
+            "  --loadpath=<path> Add library loadpath.\n\n"
             " MOSH_LOADPATH\n"
             "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\' separated paths.\n\n"
             "bug report:\n"
