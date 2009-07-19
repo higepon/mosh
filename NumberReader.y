@@ -80,7 +80,7 @@ static int suffix(const ucs4string& text)
 }
 
 // text => "e100", "e+100" or "e-100" style
-static Object suffixToNumber(const ucs4string& text)
+static Object suffixToNumberOld(const ucs4string& text)
 {
     int sign = 1;
     ucs4string decimal10(UC(""));
@@ -99,6 +99,26 @@ static Object suffixToNumber(const ucs4string& text)
     MOSH_ASSERT(!exponent.isBignum());
     return Arithmetic::expt(Object::makeFixnum(10), exponent);
 }
+
+static Object suffixToNumber(const ucs4string& text)
+{
+    int sign = 1;
+    ucs4string decimal10(UC(""));
+    if (text[1] == '-') {
+        sign = -1;
+        decimal10 = text.substr(2, text.size() - 2);
+    } else if (text[1] == '+') {
+        decimal10 = text.substr(2, text.size() - 2);
+    } else {
+        decimal10 = text.substr(1, text.size() - 1);
+    }
+    Object exponent = Bignum::makeInteger(decimal10);
+    if (sign == -1) {
+        exponent = Arithmetic::negate(exponent);
+    }
+    return exponent;
+}
+
 %}
 
 %token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
@@ -312,7 +332,7 @@ decimal10 : uinteger10String suffix {
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
-                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumber($2));
+                  $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumberOld($2));
 // todo ("#e-1e-1000" (- (expt 10 -1000)))
 //                   int suffixNum = suffix($2);
 //                   Object z0 = Arithmetic::mul(Bignum::makeInteger($1),
@@ -325,7 +345,7 @@ decimal10 : uinteger10String suffix {
               ucs4string ret = UC(".");
               ret += $2;
               if (!$3.empty()) {
-                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+                  $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumberOld($3));
               } else {
 
                   $$ = Flonum::fromString(ret);
@@ -333,16 +353,26 @@ decimal10 : uinteger10String suffix {
 
           }
           | uinteger10String DOT uinteger10String suffix {
-              ucs4string ret = $1;
-              ret += UC(".") + $3;
-///              printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+              ucs4string uinteger10 = $1;
+              uinteger10 += $3;
+              Object f = Bignum::makeInteger(uinteger10);
               if (!$4.empty()) {
-//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($4));
-                  //                 ret += $4;
-//                $$ = Flonum::fromString(ret);
+                Object e = suffixToNumber($4);
+                ucs4string fstring = $1;
+                fstring += UC(".");
+                fstring += $3;
+                double z0 = Arithmetic::mul(Flonum::fromString(fstring), suffixToNumberOld($4)).toFlonum()->value();
+                if (!e.isFixnum()) {
+                  yyerror("invalid flonum expression: suffix");
+                }
+                if (!f.isFixnum()) {
+                  yyerror("invalid flonum expression: too large significand");
+                }
+                const int digit = $3.size();
+                $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, e.toFixnum() - digit, z0));
               } else {
-//                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                ucs4string ret = $1;
+                ret += UC(".") + $3;
                 $$ = Flonum::fromString(ret);
               }
           }
@@ -351,7 +381,7 @@ decimal10 : uinteger10String suffix {
               ret += UC(".0");
               if (!$3.empty()) {
 //                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumber($3));
+                $$ = Arithmetic::mul(Flonum::fromString(ret), suffixToNumberOld($3));
               } else {
 //                  printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                   $$ = Flonum::fromString(ret);

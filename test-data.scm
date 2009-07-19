@@ -3431,7 +3431,8 @@
 (1 (vector-ref '#(1 2 3) 0))
 (1 (apply vector-ref '(#(1 2 3) 0)))
 (#t (procedure? vector-set!))
-
+(#t (=  #i1.2e-3 #i12e-4))
+(#t (= 1.2e-3 12e-4))
 ;; don't const inline (+ 1 #f).
 (#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))
 ;; invalid string

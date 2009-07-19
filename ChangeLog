@@ -1,3 +1,7 @@
+2009-07-19  higepon  <higepon@users.sourceforge.jp>
+
+        * NumberReader.y : Fixed (=  #i1.2e-3 #i12e-4) => #f should be #t (Issue 75 pointed out by mrc.mgg).
+
 2009-07-18  higepon  <higepon@users.sourceforge.jp>
 
         * main.cpp: Fixed the type pointed out by dmoerner. (Issue 76)
