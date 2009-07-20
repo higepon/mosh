@@ -26,6 +26,8 @@ libffitest.so.1.0: ffitest.c
 
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
+man_MANS = mosh.1 mosh_config.1
+
 if DEVELOPER
 bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
 else

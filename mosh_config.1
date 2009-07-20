@@ -1,0 +1,36 @@
+.TH MOSH_CONFIG 1 "2009-07-17"
+.SH NAME
+mosh_config \- tool to show configuration for mosh
+.SH SYNOPSIS
+.B mosh_config
+[
+.I option
+] 
+.SH DESCRIPTION
+.B mosh_config
+allows the user to observe the options used to compile mosh. It prints
+the information requested by each command-line siwtch to STDOUT, with
+no newlines.
+.PP
+mosh_config is a part of the mosh Scheme interpreter, for the full
+mosh manual please visit http://monaos.mosh.org
+.SH OPTIONS
+.TP
+\fBlibrary-path\fP
+Show core library path.
+.TP
+\fBversion\fP
+Show version.
+.TP
+\fBprefix\fP
+Show prefix.
+.SH SEE ALSO
+.BR mosh (1)
+.SH MORE INFORMATION
+http://code.google.com/p/mosh-scheme (source)
+.br
+http://code.google.com/p/mosh-scheme/issues (bug reports)
+.br
+http://mosh.monaos.org (user manual)
+.SH AUTHOR
+Taro Minowa (higepon) <higepon@users.sourceforge.jp>
