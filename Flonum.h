@@ -230,6 +230,15 @@ public:
         return !isEven();
     }
 
+    static bool eq(const Flonum* n1, const Flonum* n2)
+    {
+        if (n1->isNan() && n2->isNan()) {
+            return true;
+        } else {
+            return n1->value() == n2->value();
+        }
+    }
+
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
     static bool compare(const Flonum* n1, const Flonum* n2)\
     {\
@@ -240,7 +249,6 @@ public:
     MAKE_FLONUM_COMPARE_FUNC(ge, >=)
     MAKE_FLONUM_COMPARE_FUNC(lt, <)
     MAKE_FLONUM_COMPARE_FUNC(le, <=)
-    MAKE_FLONUM_COMPARE_FUNC(eq, ==)
 
 
 #define MAKE_RATIONAL_COMPARE_FUNC(compare, symbol) \
