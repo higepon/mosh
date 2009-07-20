@@ -232,11 +232,11 @@ public:
 
     static bool eq(const Flonum* n1, const Flonum* n2)
     {
-        if (n1->isNan() && n2->isNan()) {
-            return true;
-        } else {
+//         if (n1->isNan() && n2->isNan()) {
+//             return true;
+//         } else {
             return n1->value() == n2->value();
-        }
+//        }
     }
 
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
