@@ -86,7 +86,7 @@
   (export make-c-function c-function open-shared-library find-shared-library
           pointer->string
           (rename (%ffi-supported? ffi-supported?))
-          size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t
+          size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t size-of-pointer
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
@@ -957,6 +957,13 @@
     size-of(void*)
 |#
 (define size-of-void* (os-constant 'size-of-void*))
+
+#|
+    Constant: size-of-pointer
+
+    alias for size-of(void*)
+|#
+(define size-of-pointer (os-constant 'size-of-void*))
 
 #|
     Constant: size-of-size_t

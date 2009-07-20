@@ -1,5 +1,7 @@
 2009-07-20  higepon  <higepon@users.sourceforge.jp>
 
+        * FFI.h : Changed the offset not to scale to size of Type (See Issue 70).
+
         * mosh.1, mosh_config.1: Added man by dmoerner. (Issue 77: Manpages for mosh)
 
 2009-07-19  higepon  <higepon@users.sourceforge.jp>

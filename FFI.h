@@ -68,12 +68,12 @@ public:
 
     template <typename T> T ref(int offset)
     {
-        return *((T*)pointer_ + offset);
+        return *((T*)(pointer_ + offset));
     }
 
     template <typename T> void set(int offset, T value)
     {
-        *((T*)pointer_ + offset) = value;
+        *((T*)(pointer_ + offset)) = value;
     }
 
 private:

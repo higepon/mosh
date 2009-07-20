@@ -35,7 +35,7 @@
     (test-true (pointer-null? (return_pointer_null)))
     (test-equal (pointer->string (return_pointer_string)) "hello")
     (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 0)) "hello")
-    (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 1)) "world")
+    (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) size-of-pointer)) "world")
     (test-equal "Yeah hello" (append_hello "Yeah "))
 
    (let ([p (return_struct)])
@@ -56,7 +56,7 @@
 
     (let ([p (return_double_struct)])
       (pointer-set-c-double! p 0 1.234)
-      (fl=? 1.234 (pointer-ref-c-double p 0)))
+      (test-true (fl=? 1.234 (pointer-ref-c-double p 0))))
 
     (let ([p (return_uint8_t_struct)])
       (test-true (pointer=? p p p))
@@ -164,7 +164,7 @@
      (shared-errno 4)
      (test-eq 4 (shared-errno)))
 
-    (let ()
+   (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
     (when libmysqlclient
       (let ()
@@ -179,7 +179,7 @@
         (define mysql-free-result  (c-function libmysqlclient void* mysql_free_result  void*))
         (let ([mysql-obj (mysql-init NULL)])
           (cond
-           [(pointer-null? (mysql-real-connect mysql-obj "127.0.0.1" "root" "" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
+           [(pointer-null? (mysql-real-connect mysql-obj "127.0.0.1" "root" "root" "mysql" 3306 "/var/run/mysqld/mysqld.sock" 0))
             (display "mysql connect failed\n" (current-error-port))]
            [else
             (mysql-query mysql-obj "select User from user;")
@@ -193,6 +193,7 @@
                   (test-true  (string? (pointer->string (pointer-ref-c-pointer record 0))))
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
-              (mysql-free-result result))])))))))
+              (mysql-free-result result))])))))
+))
 
 (test-results)
