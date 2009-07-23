@@ -2982,10 +2982,6 @@
 (+inf.0 (string->number "+inf.0"))
 (-inf.0 (string->number "-inf.0"))
 (#t (nan? (string->number "+nan.0")))
-(#t (fl=? (inexact (expt 10 100)) (string->number "1.0e100")))
-;(#t (fl=? (inexact (expt 10 99)) (string->number ".1e100")))
-(#t (fl=? (inexact (expt 10 100)) (string->number "1.e100")))
-;(#t (almost=? (inexact (expt 10 99)) (string->number "0.1e100")))
 
 ;; magnitude
 (10 (magnitude 10))

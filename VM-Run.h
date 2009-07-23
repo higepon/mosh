@@ -53,6 +53,8 @@
 #include "UtilityProcedures.h"
 #include "TextualInputPort.h"
 #include "Codec.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "VM.h"
 #include "Symbol.h"

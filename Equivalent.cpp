@@ -41,6 +41,8 @@
 #include "EqHashTable.h"
 #include "ByteVector.h"
 #include "Arithmetic.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "Box.h"
 #include "StringProcedures.h"

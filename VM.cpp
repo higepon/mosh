@@ -56,6 +56,8 @@
 #include "FFIProcedures.h"
 #include "Record.h"
 #include "Codec.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "TextualOutputPort.h"
 #include "TextualInputPort.h"

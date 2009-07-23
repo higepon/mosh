@@ -482,6 +482,7 @@ test: ./mosh all-tests.scm libffitest.so.1.0
 	./mosh test/print.scm
 	./mosh test/concurrent.scm
 	./mosh test/concurrent-crash.scm
+	./mosh test/number.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 

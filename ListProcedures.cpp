@@ -37,6 +37,8 @@
 #include "SString.h"
 #include "Closure.h"
 #include "Record.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "ListProcedures.h"
 #include "ProcedureMacro.h"

@@ -34,6 +34,8 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "Record.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "Vector.h"
 #include "SString.h"

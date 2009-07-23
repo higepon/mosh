@@ -61,6 +61,8 @@
 #include "Fasl.h"
 #include "ErrorProcedures.h"
 #include "Record.h"
+#include "Ratnum.h"
+#include "Flonum.h"
 #include "Equivalent.h"
 #include "BufferedFileBinaryInputPort.h"
 #include "BlockBufferedFileBinaryOutputPort.h"

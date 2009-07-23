@@ -56,7 +56,12 @@ namespace scheme {
 
         if (o1.isNumber()) {
             if (o2.isNumber()) {
-                return Arithmetic::eq(o1, o2);
+                // See Flonum.h.
+                if (o1.isFlonum() && o2.isFlonum()) {
+                    return Flonum::eqv(o1.toFlonum(), o2.toFlonum());
+                } else {
+                    return Arithmetic::eq(o1, o2);
+                }
             } else {
                 return false;
             }

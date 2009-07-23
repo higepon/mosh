@@ -1,3 +1,7 @@
+2009-07-23  higepon  <higepon@users.sourceforge.jp>
+
+        * eqv? and equal? now guarantee #t when given two NaNs (unspecified by R6RS).
+
 2009-07-20  higepon  <higepon@users.sourceforge.jp>
 
         * Flonum.h : Changed the equivalence of nan. (See Issue 78).

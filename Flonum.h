@@ -230,13 +230,22 @@ public:
         return !isEven();
     }
 
+    // eqv? and equal
+    // (eqv? +nan.0 +nan.0) => #t (not R6RS, but Mosh extension)
+    static bool eqv(const Flonum* n1, const Flonum* n2)
+    {
+        if (n1->isNan() && n2->isNan()) {
+            return true;
+        } else {
+            return eq(n1, n2);
+        }
+    }
+
+    // fl=? and =
+    // (= +nan.0 +nan.0) => #f (R6RS)
     static bool eq(const Flonum* n1, const Flonum* n2)
     {
-//         if (n1->isNan() && n2->isNan()) {
-//             return true;
-//         } else {
-            return n1->value() == n2->value();
-//        }
+        return n1->value() == n2->value();
     }
 
 #define MAKE_FLONUM_COMPARE_FUNC(compare, symbol) \
