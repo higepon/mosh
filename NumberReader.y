@@ -139,11 +139,17 @@ static Object suffixToNumber(const ucs4string& text)
 
 %start top_level
 
+%{
+  int foundExactness;
+%}
+
 %%
 top_level : datum { currentVM()->numberReaderContext()->setParsed($$); YYACCEPT; }
 | END_OF_FILE { currentVM()->numberReaderContext()->setParsed(Object::Eof); YYACCEPT; }
 
-datum     : num2 | num8| num10 | num16;
+datum     : num2 | num8| num10 | num16 {
+            foundExactness = 0;
+          };
 
 num2      : prefix2 complex2 { $$ = ScannerHelper::applyExactness($1, $2); }
           ;
@@ -289,7 +295,14 @@ digit16   : digit10
           | DIGIT_16 { $$ = $1; }
           ;
 
-num10     : prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
+num10     : prefix10 complex10 {
+                if ($1 == 0 && foundExactness == -1) {
+                  $$ = Arithmetic::inexact($2);
+                } else {
+                  $$ = ScannerHelper::applyExactness($1, $2);
+                }
+          }
+          ;
 
 complex10 : real10
           | real10 AT    real10       { $$ = Arithmetic::makePolar($1, $3); }
@@ -328,17 +341,14 @@ sreal10   : PLUS  ureal10 { $$ = $2; }
           | MINUS ureal10 { $$ = Arithmetic::mul(-1, $2); }
           ;
 
+// We can't know whether this token has exactness prefix or not.
+// So we return exact value.
 decimal10 : uinteger10String suffix {
               if ($2.empty()) {
                   $$ = Bignum::makeInteger($1);
               } else {
+                  foundExactness = -1; // we have suffix, so inexact
                   $$ = Arithmetic::mul(Bignum::makeInteger($1), suffixToNumberOld($2));
-// todo ("#e-1e-1000" (- (expt 10 -1000)))
-//                   int suffixNum = suffix($2);
-//                   Object z0 = Arithmetic::mul(Bignum::makeInteger($1),
-//                                               Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(suffixNum)));
-//                   z0 = Arithmetic::inexact(z0);
-//                   $$ = Object::makeFlonum(FlonumUtil::algorithmR(Bignum::makeInteger($1), suffixNum, z0.toFlonum()->value()));
               }
           }
           | DOT uinteger10String suffix {
@@ -353,28 +363,39 @@ decimal10 : uinteger10String suffix {
 
           }
           | uinteger10String DOT uinteger10String suffix {
-              ucs4string uinteger10 = $1;
-              uinteger10 += $3;
-              Object f = Bignum::makeInteger(uinteger10);
-              if (!$4.empty()) {
-                Object e = suffixToNumber($4);
-                ucs4string fstring = $1;
-                fstring += UC(".");
-                fstring += $3;
-                double z0 = Arithmetic::mul(Flonum::fromString(fstring), suffixToNumberOld($4)).toFlonum()->value();
-                if (!e.isFixnum()) {
-                  yyerror("invalid flonum expression: suffix");
-                }
-                if (!f.isFixnum()) {
-                  yyerror("invalid flonum expression: too large significand");
-                }
-                const int digit = $3.size();
-                $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, e.toFixnum() - digit, z0));
-              } else {
-                ucs4string ret = $1;
-                ret += UC(".") + $3;
-                $$ = Flonum::fromString(ret);
-              }
+            // we return exact value to uppper layer, since we can't know this toke has exactness prefix.
+            // TODO? : we should call algorithmR in inexact procedure?
+            ucs4string uinteger10 = $1;
+            uinteger10 += $3;
+            Object ret = Bignum::makeInteger(uinteger10);
+            ret = Arithmetic::mul(ret, Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(-$3.size())));
+            foundExactness = -1; // we have DOT, so inexact
+            if (!$4.empty()) {
+              ret = Arithmetic::mul(ret, Arithmetic::expt(Object::makeFixnum(10), suffixToNumber($4)));
+            }
+            $$ = ret;
+/*               ucs4string uinteger10 = $1; */
+/*               uinteger10 += $3; */
+/*               Object f = Bignum::makeInteger(uinteger10); */
+/*               if (!$4.empty()) { */
+/*                 Object e = suffixToNumber($4); */
+/*                 ucs4string fstring = $1; */
+/*                 fstring += UC("."); */
+/*                 fstring += $3; */
+/*                 double z0 = Arithmetic::mul(Flonum::fromString(fstring), suffixToNumberOld($4)).toFlonum()->value(); */
+/*                 if (!e.isFixnum()) { */
+/*                   yyerror("invalid flonum expression: suffix"); */
+/*                 } */
+/*                 if (!f.isFixnum()) { */
+/*                   yyerror("invalid flonum expression: too large significand"); */
+/*                 } */
+/*                 const int digit = $3.size(); */
+/*                 $$ = Object::makeFlonum(FlonumUtil::algorithmR(f, e.toFixnum() - digit, z0)); */
+/*               } else { */
+/*                 ucs4string ret = $1; */
+/*                 ret += UC(".") + $3; */
+/*                 $$ = Flonum::fromString(ret); */
+/*               } */
           }
           | uinteger10String DOT suffix {
               ucs4string ret = $1;
