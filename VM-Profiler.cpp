@@ -44,6 +44,7 @@
 #include "ErrorProcedures.h"
 #include "TextualOutputPort.h"
 #include "StringProcedures.h"
+#include "Callable.h"
 
 using namespace scheme;
 
@@ -159,6 +160,8 @@ Object VM::getClosureName(Object closure)
 //    EqHashTable* nameSpace = nameSpace_.toEqHashTable()->swap().toEqHashTable();
     if (closure.isCProcedure()) {
         return getCProcedureName(closure);
+    } else if (closure.isCallable()) {
+        return closure.toCallable()->toString();
     } else if (closure.isClosure()) {
         return "my-todo";
 //         const Object name = nameSpace->ref(closure, notFound_);

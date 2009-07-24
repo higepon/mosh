@@ -68,7 +68,7 @@ namespace scheme {
 
         Object call(VM* vm, int argc, const Object* argv);
         void setParentFields(Object* parentFields, int parentFieldsLength);
-
+        ucs4string toString() const;
     private:
         RecordConstructorDescriptor* rcd_;
         RecordInitializer* childConstructor_;
@@ -85,7 +85,7 @@ namespace scheme {
         ~RecordPrediate();
 
         Object call(VM* vm, int argc, const Object* argv);
-
+        ucs4string toString() const;
     private:
         const Object rtd_;
     };
@@ -97,8 +97,7 @@ namespace scheme {
         ~RecordAccessor();
 
         Object call(VM* vm, int argc, const Object* argv);
-        const ucs4char* name() const;
-
+        ucs4string toString() const;
     private:
         const Object rtd_;
         const int index_;
@@ -112,7 +111,7 @@ namespace scheme {
         ~RecordMutator();
 
         Object call(VM* vm, int argc, const Object* argv);
-
+        ucs4string toString() const;
     private:
         const Object rtd_;
         const int index_;

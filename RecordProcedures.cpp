@@ -210,6 +210,12 @@ RecordPrediate::~RecordPrediate()
 {
 }
 
+ucs4string RecordPrediate::toString() const
+{
+    Object name = format(NULL, UC("#<record-predicate ~s?>"), Pair::list1(rtd_.toRecordTypeDescriptor()->name()));
+    return name.toString()->data();
+}
+
 Object RecordPrediate::call(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("record-predicate for record");
@@ -232,10 +238,10 @@ RecordAccessor::~RecordAccessor()
 {
 }
 
-const ucs4char* RecordAccessor::name() const
+ucs4string RecordAccessor::toString() const
 {
-    Object name = format(NULL, UC("Record ~a accessor ~d"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
-    return name.toString()->data().c_str();
+    Object name = format(NULL, UC("#<record-accessor ~s ~dth>"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    return name.toString()->data();
 }
 
 // N.B.
@@ -244,12 +250,12 @@ const ucs4char* RecordAccessor::name() const
 Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
 {
     if (argc != 1) {
-        callWrongNumberOfArgumentsViolationAfter(theVM, name(), 1, argc);
+        callWrongNumberOfArgumentsViolationAfter(theVM, toString(), 1, argc);
         return Object::Undef;
     }
 
     if (!argv[0].isRecord()) {
-        callWrongTypeOfArgumentViolationAfter(theVM, name(), "record", argv[0]);
+        callWrongTypeOfArgumentViolationAfter(theVM, toString(), "record", argv[0]);
         return Object::Undef;
     }
     Record* record = argv[0].toRecord();
@@ -260,7 +266,7 @@ Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
         return record->fieldAt(index_);
     } else {
         callAssertionViolationAfter(theVM,
-                                    name(),
+                                    toString(),
                                     "invalid accessor for record",
                                     L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
         return Object::Undef;
@@ -275,7 +281,11 @@ RecordMutator::~RecordMutator()
 {
 }
 
-
+ucs4string RecordMutator::toString() const
+{
+    Object name = format(NULL, UC("#<record-mutator ~s ~dth>"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    return name.toString()->data();
+}
 
 Object RecordMutator::call(VM* theVM, int argc, const Object* argv)
 {
@@ -306,6 +316,13 @@ RecordInitializer::RecordInitializer(RecordConstructorDescriptor* rcd, RecordIni
 RecordInitializer::~RecordInitializer()
 {
 }
+
+ucs4string RecordInitializer::toString() const
+{
+    Object name = format(NULL, UC("#<record-constructor ~s>"), Pair::list1(rcd_->rtd().toRecordTypeDescriptor()->name()));
+    return name.toString()->data();
+}
+
 
 void RecordInitializer::setParentFields(Object* parentFields, int parentFieldsLength)
 {

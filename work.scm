@@ -1,9 +1,13 @@
 (import (rnrs))
-(write (list (equal? +nan.0 +nan.0)
-            (equal? +nan.0 -nan.0)
-            (equal? -nan.0 +nan.0)
-            (equal? +nan.0 (string->number "+nan.0"))
-            (equal? +nan.0 (string->number "-nan.0"))
-            (equal? -nan.0 (string->number "+nan.0"))
-            (equal? -nan.0 (string->number "-nan.0"))
-            ))
+
+(define-record-type a
+  (fields
+   (mutable value)))
+(define ar (make-a 3))
+(let loop ([i 0])
+  (cond
+   [(= i 1000000)
+    (display "done\n")]
+   [else
+    (make-a 3)
+    (loop (+ i 1))]))
