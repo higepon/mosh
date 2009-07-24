@@ -1,5 +1,7 @@
 2009-07-24  higepon  <higepon@users.sourceforge.jp>
 
+        * lib/memcached.ss: Added but undocumented.
+
         * lib/mosh/cgi.ss (encode): Fixed a bug in encode procedure.
 
         * Profiler shows a correct name for callable object.
