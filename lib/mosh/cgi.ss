@@ -20,13 +20,13 @@
   (call-with-string-output-port
    (lambda(out)
      (bytevector-for-each
+      (lambda (b)
+        (display "%" out)
+        (display (number->string b 16) out))
       (call-with-bytevector-output-port
        (lambda (port)
          (display text port))
-       (make-transcoder (utf-8-codec)))
-      (lambda (b)
-        (display "%" out)
-        (display (number->string b 16) out))))))
+       (make-transcoder (utf-8-codec)))))))
 
 (define (decode s)
   (call-with-string-io
