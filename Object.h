@@ -174,7 +174,6 @@ public:
     Object& fifth() const;
 
     bool eq(Object o) const;
-    bool equal(VM* theVM, Object o) const;
     bool eqv(VM* theVM, Object o) const;
 
     static Object makeVM(VM* vm);

@@ -112,11 +112,6 @@ bool Object::isInteger() const
     return isFixnum() || isBignum() || (isNumber() && Arithmetic::isInteger(*this));
 }
 
-bool Object::equal(VM* theVM, Object o) const
-{
-    return ::equal(*this, o, new EqHashTable());
-}
-
 Object Object::makeBinaryInputPort(File* file)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::BinaryInputPort,
