@@ -1,8 +1,6 @@
-README.MINGW 17-Apr-2009
+README.MINGW 26-Jun-2009
 
 by OKUMURA Yuki <mjt@cltn.org>
-
-
 
 WARNING
 -------
@@ -16,7 +14,7 @@ Please consider using svn trunk :
 PREREQUISITES
 -------------
 
-- i386-mingw32msvc-g++,gcc (3.4.x or above, tested by 4.3.2)
+- i386-mingw32msvc-g++,gcc (4.2.x or above, tested by 4.4.0)
 - bash
 - gnu make
 - gnu MP library
@@ -28,19 +26,16 @@ CONFIGURATION & BUILD
 As usual product, run the configure script and make.
 Note that some options(--disable-*) are mandatory under win32.
 
- ./configure CFLAGS="-DGTEST_OS_WINDOWS" CXXFLAGS="-DGTEST_OS_WINDOWS"  \
- --disable-shared --disable-profiler && make
+ ./configure CFLAGS="-DGTEST_OS_WINDOWS -DGC_THREADS" \
+ CXXFLAGS="-DGTEST_OS_WINDOWS -DGC_THREADS"  \
+ --disable-shared --disable-profiler win32_threads=true && make
 
-To cross compilation, add "--host=i386-mingw32msvc" or so to configure's argument,
+To cross compilation, add "--host=i586-mingw32msvc" or so to configure's argument,
 and configure script autodetects binutils and compilers.
 
 INSTALL
 -------
 
 TBD.
-
-Run 
- scripts\pre-compile.bat mosh.exe 
-
 
 

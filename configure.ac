@@ -205,7 +205,8 @@ cygwin)
   ;;
 
 mingw*)
-  AC_MSG_ERROR([Please modify configure.ac for mingw])
+  AC_DEFINE(GC_THREADS,1,[Define to use generic thread support]) # FIXME
+  AC_DEFINE(_REENTRANT,1,[Define to use reentrant libc]) # FIXME
   ;;
 *)
   AC_MSG_ERROR([Please modify configure.ac for $target_os])
@@ -255,7 +256,7 @@ i[[3456]]86|pentium)
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501"
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501" #forcing WinXP & Gcc > 4.2
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
         *)
@@ -268,7 +269,7 @@ i[[3456]]86|pentium)
         ;;
 x86?64*)
         arch=x86_64
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -msse3 -mfpmath=sse"
+        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
         AC_MSG_RESULT([x86_64])
         AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
         ;;
@@ -276,7 +277,7 @@ x86?64*)
         AC_MSG_RESULT([$host_cpu])
         MOSH_OPTS="-O3"
         AC_MSG_WARN([architecture $host_cpu is not supported, but may work other than FFI])
-        AC_DEFINE([ARCH_UNKNOWN], 1, [Define for the AMD x86-64 architecture.])
+        AC_DEFINE([ARCH_UNKNOWN], 1, [Define for the unknown architecture.])
         ;;
 esac
 
