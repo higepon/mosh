@@ -34,8 +34,10 @@
 #endif
 
 #include <errno.h>
+#ifndef _WIN32
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
+#endif
 #include "Object.h"
 #include "Object-inl.h"
 #include "Pair.h"

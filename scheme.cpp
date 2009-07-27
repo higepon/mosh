@@ -89,6 +89,10 @@ static void gmp_free(void *ptr, size_t size)
 }
 #endif
 
+#ifdef _WIN32
+#define srandom srand
+#endif
+
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.

@@ -369,6 +369,10 @@ Object Equal::preP(Object x, Object y, Object k)
     }
 }
 
+
+#ifdef _WIN32
+#define random rand
+#endif
 //       (define (e? x y k)
 //         (if (<= k 0)
 //             (if (= k kb) (fast? x y (random (* 2 k0))) (slow? x y k))
