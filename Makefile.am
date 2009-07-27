@@ -575,7 +575,8 @@ test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
-	chmod a+w  ~/.mosh/prefix.txt # really, really ugly.
+	chmod a+w  ~/.mosh/prefix.txt ; true # really, really ugly.
+	chmod a+w  /tmp/.mosh/prefix.txt ; true # really, really ugly.
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 

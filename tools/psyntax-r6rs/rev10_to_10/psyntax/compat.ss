@@ -184,23 +184,24 @@
            )))
 
 (define (load-serialized-library filename obj)
-  (let ([fasl-file (scm->fasl filename)])
-    ;; todo we may use file-newer? directory.
-    (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
-        (let* ([expanded2core (symbol-value 'expanded2core)]
-               [eval-compiled-core (symbol-value 'eval-compiled!)]
-               [code (fasl-load fasl-file)]
-               [pivot (cddddr (cddddr code))]
-               [visit (car pivot)]
-               [visit-proc (lambda () (eval-compiled-core visit))])
-          (set-car! pivot visit-proc)
-          (let* ([pivot (cdr pivot)]
-                 [invoke (car pivot)])
-            (set-car! pivot (lambda () (eval-compiled-core invoke)))
-            ;; obj is try-load-from-file's case-labmda procedure
-            ;; The return valu of this apply tells whether succeed or not.
-            (apply obj code)))
-        #f)))
+  (and (mosh-cache-dir)
+       (let ([fasl-file (scm->fasl filename)])
+         ;; todo we may use file-newer? directory.
+         (if (and (file-exists? fasl-file) ((symbol-value 'file-newer?) fasl-file filename))
+             (let* ([expanded2core (symbol-value 'expanded2core)]
+                    [eval-compiled-core (symbol-value 'eval-compiled!)]
+                    [code (fasl-load fasl-file)]
+                    [pivot (cddddr (cddddr code))]
+                    [visit (car pivot)]
+                    [visit-proc (lambda () (eval-compiled-core visit))])
+               (set-car! pivot visit-proc)
+               (let* ([pivot (cdr pivot)]
+                      [invoke (car pivot)])
+                 (set-car! pivot (lambda () (eval-compiled-core invoke)))
+                 ;; obj is try-load-from-file's case-labmda procedure
+                 ;; The return valu of this apply tells whether succeed or not.
+                 (apply obj code)))
+             #f))))
 
 
   (define (make-record-printer name printer)

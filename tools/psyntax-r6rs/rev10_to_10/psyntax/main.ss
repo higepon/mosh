@@ -275,14 +275,16 @@
           ((load)
             (parameterize ([command-line (cons filename (car args))]
                            [mosh-cache-dir (create-mosh-cache-dir)])
-             (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
+              (when (mosh-cache-dir)
+                (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
              ;; clean auto compile cache
              (when (symbol-value '%clean-acc)
                (for-each
                 (lambda (file) (guard (c (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
                 (directory-list (mosh-cache-dir))))
              (let ([compiled (compile-r6rs-top-level x*)])
-               (unless (symbol-value '%disable-acc)
+               (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
+                 (format (current-error-port) "cacheing ~a\n" (mosh-cache-dir))
                  (serialize-all serialize-library compile-core-expr))
                (compiled))))
           ((compile)
@@ -294,7 +296,8 @@
   (define (load-r6rs-top-level-sexp import-spec thunk)
     (parameterize ([library-path (local-library-path "")]
                    [mosh-cache-dir (create-mosh-cache-dir)])
-      (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
+      (when (mosh-cache-dir)
+        (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
       (parameterize ([command-line '()])
 ;        (display `((import ,@import-spec) (,thunk)))
         ((compile-r6rs-top-level `((import ,@import-spec) (,thunk)))))))
@@ -434,7 +437,8 @@
         [(null? args)
          (parameterize ([command-line '()]
                         [mosh-cache-dir (create-mosh-cache-dir)])
-           (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
+           (when (mosh-cache-dir)
+             (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
            (repl))]
         ;; load file
         [else

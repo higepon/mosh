@@ -3864,7 +3864,7 @@
 (define eval-compiled! eval-compiled)
 
 (define (create-mosh-cache-dir)
-  (let ([base-dir (get-environment-variable "HOME")])
+  (define (try-create base-dir)
     (cond
      [(and base-dir (file-exists? base-dir))
       (let ([cache-dir (string-append base-dir "/.mosh")])
@@ -3874,7 +3874,9 @@
          (unless (file-exists? cache-dir)
            (create-directory cache-dir))
          cache-dir))]
-     [else #f])))
+     [else #f]))
+  (or (try-create (get-environment-variable "HOME"))
+      (try-create "/tmp")))
 
 
 (define (%spawn command args . io-list)
