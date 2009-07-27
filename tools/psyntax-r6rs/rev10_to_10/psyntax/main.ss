@@ -284,7 +284,6 @@
                 (directory-list (mosh-cache-dir))))
              (let ([compiled (compile-r6rs-top-level x*)])
                (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
-                 (format (current-error-port) "cacheing ~a\n" (mosh-cache-dir))
                  (serialize-all serialize-library compile-core-expr))
                (compiled))))
           ((compile)
