@@ -34,7 +34,9 @@
           memcached-connect
           memcached-set!
           memcached-get
-          memcached-gets)
+          memcached-gets
+          memcached-bv-set!
+          memcached-bv-gets)
          (import (rnrs)
                  (mosh)
                  (only (srfi :1) alist-cons)
@@ -44,6 +46,30 @@
 (define-record-type memcached-client
   (fields
    (immutable socket)))
+
+
+(define (memcached-set! conn key flags expiry value)
+  (let-values (([port get] (open-bytevector-output-port)))
+    (fasl-write value port)
+    (memcached-bv-set! conn key flags expiry (get))))
+
+(define (memcached-get conn key)
+  (let ([ret (assoc key (memcached-gets conn key))])
+    (if ret
+        (cdr ret)
+        #f)))
+
+(define (memcached-gets conn . key*)
+  (map (lambda (key-value) (cons (car key-value)
+                            (fasl-read (open-bytevector-input-port (cdr key-value)))))
+       (apply memcached-bv-gets conn key*)))
+
+(define (memcached-bv-get conn key)
+  (let ([ret (assoc key (memcached-bv-gets conn key))])
+    (if ret
+        (cdr ret)
+        #f)))
+
 
 (define (memcached-connect server port)
   (make-memcached-client (make-client-socket server port)))
@@ -67,13 +93,13 @@
 (define (memcached-send-bv conn bv)
   (socket-send (memcached-client-socket conn) bv))
 
-(define (memcached-set! conn key flags expiry bv-value)
+(define (memcached-bv-set! conn key flags expiry bv-value)
     (memcached-send conn (format "set ~a 0 0 ~d\r\n" key (bytevector-length bv-value)))
     (memcached-send-bv conn bv-value)
     (memcached-send conn "\r\n")
     (memcached-recv conn))
 
-(define (memcached-gets conn . keys)
+(define (memcached-bv-gets conn . keys)
   (memcached-send conn (format "get ~a\r\n" (string-join keys " ")))
   (parse-response (memcached-recv conn)))
 
@@ -154,9 +180,4 @@
 (define (partial-bytevector->string bv start end)
   (utf8->string (partial-bytevector bv start end)))
 
-(define (memcached-get conn key)
-  (let ([ret (assoc key (memcached-gets conn key))])
-    (if ret
-        (cdr ret)
-        #f)))
 )
