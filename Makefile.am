@@ -182,6 +182,7 @@ OSCompat.h OSCompat.cpp
 
 mosh_core_libraries = \
 lib/match.ss \
+lib/memcached.ss \
 lib/lambda/wiki.ss    \
 lib/mosh/queue.ss    \
 lib/mosh/ffi.ss    \

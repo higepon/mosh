@@ -1,5 +1,5 @@
 (import (rnrs)
         (lambda wiki))
 
-(main '((data-dir . ".")))
+(wiki-main)
 
