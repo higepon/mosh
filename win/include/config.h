@@ -202,3 +202,24 @@
 /* Define to empty if the keyword `volatile' does not work. Warning: valid
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
+
+    #define INT8_MIN            _I8_MIN
+    #define INT8_MAX            _I8_MAX
+    #define INT16_MIN           _I16_MIN
+    #define INT16_MAX           _I16_MAX
+    #define INT32_MIN           _I32_MIN
+    #define INT32_MAX           _I32_MAX
+    #define INT64_MIN           _I64_MIN
+    #define INT64_MAX           _I64_MAX
+    #define INTPTR_MIN          _I32_MIN
+    #define INTPTR_MAX          _I32_MAX
+    #define UINT8_MIN           _UI8_MIN
+    #define UINT8_MAX           _UI8_MAX
+    #define UINT16_MIN          _UI16_MIN
+    #define UINT16_MAX          _UI16_MAX
+    #define UINT32_MIN          _UI32_MIN
+    #define UINT32_MAX          _UI32_MAX
+    #define UINT64_MIN          _UI64_MIN
+    #define UINT64_MAX          _UI64_MAX
+    #define UINTPTR_MIN         _UI32_MIN
+    #define UINTPTR_MAX         _UI32_MAX
