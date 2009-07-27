@@ -3876,8 +3876,8 @@
          cache-dir))]
      [else #f]))
   (or (try-create (get-environment-variable "HOME"))
-      (try-create "/tmp")
-      (try-create (get-environment-variable "APPDATA"))))
+      (try-create (get-environment-variable "APPDATA"))(get-environment-variable "HOME")
+      (try-create "/tmp")))
 
 
 (define (%spawn command args . io-list)
