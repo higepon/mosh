@@ -34,7 +34,7 @@
 #endif
 
 #include <errno.h>
-#ifndef _WIN32
+#ifndef _MSC_VER
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
 #endif

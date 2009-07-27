@@ -57,7 +57,7 @@ static void* stubFunction(void* param)
         exit(-1);
     }
     info->returnValue = info->func(info->argument);
-#ifdef _MSC_VER
+#ifdef _WIN32
 	return (unsigned int)info->returnValue;
 #else
     return info->returnValue;
