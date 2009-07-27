@@ -1,3 +1,7 @@
+2009-07-27  higepon  <higepon@users.sourceforge.jp>
+
+        * tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: Fixed a bug REPL didn't know about mosh-cache-dir. (issue 79).
+
 2009-07-24  OKUMURA Yuki <mjt@cltn.org>
 
         * configure.ac: x86_64: -msse3, -mfpmath=sse removed.

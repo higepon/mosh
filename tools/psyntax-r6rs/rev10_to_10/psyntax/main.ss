@@ -431,7 +431,11 @@
         [(guard [c (#t #f)] (symbol-value '%vm-import-spec))
          (load-r6rs-top-level-sexp (symbol-value '%vm-import-spec) (symbol-value '%vm-thunk))]
         ;; REPL
-        [(null? args) (repl)]
+        [(null? args)
+         (parameterize ([command-line '()]
+                        [mosh-cache-dir (create-mosh-cache-dir)])
+           (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt")))
+           (repl))]
         ;; load file
         [else
            (load-r6rs-top-level (car args) 'load (cdr args))]))))
