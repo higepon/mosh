@@ -73,21 +73,86 @@
     (memcached-send conn "\r\n")
     (memcached-recv conn))
 
-;; todo: return value should be bytevector
 (define (memcached-gets conn . keys)
   (memcached-send conn (format "get ~a\r\n" (string-join keys " ")))
-  (let ([response (memcached-recv conn)])
-    (display (utf8->string response))
-    (let loop ([lines (string-split (utf8->string response) #\newline)]
-               [ret '()])
+  (parse-response (memcached-recv conn)))
+
+(define (parse-response res)
+  (let loop ([i 0]
+             [ret '()])
+    ;; END of response?
+    (if (and (bytevector-u8-ref res i) (char->integer #\E)
+             (let-values (([token-found? token-start token-end] (token-until-next-char res i #\return)))
+               (and token-found?
+                    (bytevector-eqv? res token-start (string->utf8 "END") 0 (string-length "END")))))
+        (reverse ret)
+        ;; VALUE
+        (let-values (([token-found? token-start token-end] (token-until-next-space res i)))
+          (unless token-found?
+            (error 'parse-res "malformed response : VALUE expected"))
+          (unless (bytevector-eqv? res token-start (string->utf8 "VALUE") 0 (string-length "VALUE"))
+            (error 'parse-res "malformed res : VALUE expected"))
+          ;; Key
+          (let-values (([token-found? token-start token-end] (token-until-next-space res (+ token-end 2))))
+            (unless token-found?
+              (error 'parse-res "malformed response : Key expected"))
+            (let ([key (partial-bytevector->string res token-start token-end)])
+            ;; flags
+            (let-values (([token-found? token-start token-end] (token-until-next-space res (+ token-end 2))))
+              (unless token-found?
+                (error 'parse-res "malformed response : flags expected"))
+              ;; length of value terminate with \r\n
+              (let-values (([token-found? token-start token-end] (token-until-next-char res (+ token-end 2) #\return)))
+                (unless token-found?
+                  (error 'parse-res "malformed response : length of value expected"))
+                (let ([value-length (string->number (partial-bytevector->string res token-start token-end))])
+                  (loop (+ (+ token-end 2 value-length) 3)
+                        (cons (cons key (partial-bytevector res
+                                                            (+ token-end 3) ;; skip \n
+                                                            (+ token-end 2 value-length))) ret)))))))))))
+
+(define (token-until-next-space bv start)
+  (token-until-next-char bv start #\space))
+
+(define (token-until-next-char bv start char)
+  (let ([len (bytevector-length bv)])
+    (let loop ([i start])
       (cond
-       [(#/^VALUE ([^\s]+) [^\s]+ \d+$/ (car lines)) =>
-        (lambda (m)
-          (loop (cddr lines) (alist-cons (m 1) (cadr lines) ret)))]
-       [(#/END/ (car lines))
-        (reverse ret)]
+       [(= len i)
+        ;; End of bytevector
+        (values #f start (- len 1))]
+       [(= (bytevector-u8-ref bv i) (char->integer char))
+        ;; char found
+        ;; Returns (values found token-start token-end)
+        (values #t start (- i 1))]
        [else
-        (error 'memcach-get/s "malformed gets replry" (car lines))]))))
+        (loop (+ i 1))]))))
+
+(define (bytevector-eqv? bv1 bv1-start bv2 bv2-start len)
+  (let ([len1 (bytevector-length bv1)]
+        [len2 (bytevector-length bv2)])
+    (let loop ([i bv1-start]
+               [j bv2-start])
+      (cond
+       [(= len (- i bv1-start)) #t]
+       [(and (= i len1) (= j len2)) #t]
+       [(= i len1) #f]
+       [(= j len2) #f]
+       [(= (bytevector-u8-ref bv1 i) (bytevector-u8-ref bv2 j))
+        (loop (+ i 1) (+ j 1))]
+       [else #f]))))
+
+(define (partial-bytevector bv start end)
+  (let loop ([i start]
+             [ret '()])
+    (cond
+     [(= i (+ end 1))
+      (u8-list->bytevector (reverse ret))]
+     [else
+      (loop (+ i 1) (cons (bytevector-u8-ref bv i) ret))])))
+
+(define (partial-bytevector->string bv start end)
+  (utf8->string (partial-bytevector bv start end)))
 
 (define (memcached-get conn key)
   (let ([ret (assoc key (memcached-gets conn key))])
