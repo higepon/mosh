@@ -459,7 +459,14 @@ void FaslWriter::putDatum(Object obj)
     }
     if (obj.isBignum()) {
         emitU8(Fasl::TAG_BIGNUM);
-        emitU64(obj.toBignum()->toS64());
+        Bignum* b = obj.toBignum();
+        size_t size = 0;
+        uint8_t* data = b->serialize(&size);
+        MOSH_ASSERT(size < 65535);
+        emitU16(size);
+        for (size_t i = 0; i < size; i++) {
+            emitU8(data[i]);
+        }
         return;
     }
     if (obj.isFixnum()) {

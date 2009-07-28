@@ -322,3 +322,10 @@ TEST_F(FaslTest, SerializeBignum2) {
     const Object restored = Bignum::deserialize(data, size);
     EXPECT_TRUE(eqv(num, restored));
 }
+
+TEST_F(FaslTest, Bignum) {
+    const Object num = Arithmetic::expt(Object::makeFixnum(-10), Object::makeFixnum(100));
+    const Object restored = StoreAndRestore(num);
+    ASSERT_TRUE(restored.isBignum());
+    EXPECT_TRUE(eqv(restored, num));
+}

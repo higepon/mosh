@@ -175,8 +175,12 @@ private:
             return list;
         }
         case Fasl::TAG_BIGNUM: {
-            int64_t value = fetchU64();
-            return Bignum::makeIntegerFromS64(value);
+            uint16_t size = fetchU16();
+            uint8_t* data = allocatePointerFreeU8Array(size);
+            for (uint16_t i = 0; i < size; i++) {
+                data[i] = fetchU8();
+            }
+            return Bignum::deserialize(data, size);
         }
         case Fasl::TAG_DLIST: {
             const int count = fetchU32();
