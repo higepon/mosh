@@ -1,4 +1,4 @@
-README.MINGW 26-Jun-2009
+README.MINGW 29-Jul-2009
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -7,16 +7,26 @@ WARNING
 
 This is port of Mosh for mingw32msvc, and it's still an _experimental_ port.
 If you just wish to use Mosh under win32 environment, use MSVC port instead.
+I also recommend Cygwin port.
 
 Please consider using svn trunk :
   http://code.google.com/p/mosh-scheme/source/checkout
 
+STATUS
+------
+
+NOT supported :
+- "make check"
+- FFI
+- profiler
+- unix process functions (fork, waitpid, ...)
+
 PREREQUISITES
 -------------
 
-- i386-mingw32msvc-g++,gcc (4.2.x or above, tested by 4.4.0)
+- MinGW + MSYS (tested by 4.4.0)
 - bash
-- gnu make
+- MSYS make
 - gnu MP library
 
 
@@ -26,16 +36,30 @@ CONFIGURATION & BUILD
 As usual product, run the configure script and make.
 Note that some options(--disable-*) are mandatory under win32.
 
- ./configure CFLAGS="-DGTEST_OS_WINDOWS -DGC_THREADS" \
- CXXFLAGS="-DGTEST_OS_WINDOWS -DGC_THREADS"  \
+ ./configure CFLAGS="-DGC_THREADS" CXXFLAGS="-DGC_THREADS"  \
  --disable-shared --disable-profiler win32_threads=true && make
 
-To cross compilation, add "--host=i586-mingw32msvc" or so to configure's argument,
-and configure script autodetects binutils and compilers.
+or using gc-7.2alpha2(copy it to gc-7.1/) :
+
+ ./configure --disable-shared --disable-profiler --enable-threads=win32
 
 INSTALL
 -------
 
-TBD.
+Copy mosh.exe and lib/.
 
+Current version of Mosh won't use Windows' registry, unless you installed Mosh
+with binary distribution installer.
+
+AUTO-COMPILE-CACHE (ACC)
+------------------------
+
+Mosh caches parsed script into following directory :
+
+- %HOME%\.mosh
+- %LOCALAPPDATA%\.mosh
+- %APPDATA%\.mosh
+
+This is called "ACC (Auto-Compile-Cache)" and you can disable it with
+ --disable-acc commandline option.
 
