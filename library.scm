@@ -3876,7 +3876,9 @@
          cache-dir))]
      [else #f]))
   (or (try-create (get-environment-variable "HOME"))
-      (try-create (get-environment-variable "APPDATA"))(get-environment-variable "HOME")
+      (try-create (get-environment-variable "LOCALAPPDATA")) ;; Vista
+      (try-create (get-environment-variable "APPDATA")) ;; XP
+      (get-environment-variable "HOME")
       (try-create "/tmp")))
 
 
