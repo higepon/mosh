@@ -135,7 +135,7 @@ bool ucs4string::is_ascii() const
     const int length = size();
     for (int i = 0; i < length; i++) {
         const ucs4char ch = (*this)[i];
-        if (ch < 0 && ch > 255) {
+        if (ch > 255) {
             return false;
         }
     }

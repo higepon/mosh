@@ -371,8 +371,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(EQUAL)
         {
             Equal e;
-            ac_ =  e.equalP(pop(), ac_);
-//            ac_ = Object::makeBool(equal(pop(), ac_, new EqHashTable()));
+            ac_ =  Object::makeBool(e.equal(pop(), ac_));
             NEXT1;
         }
         CASE(PUSH_FRAME)
@@ -1043,8 +1042,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(BRANCH_NOT_EQUAL)
         {
             Equal e;
-            ac_ = e.equalP(pop(), ac_);
-//            ac_ = Object::makeBool(equal(pop(), ac_));
+            ac_ = Object::makeBool(e.equal(pop(), ac_));
             BRANCH_ON_FALSE;
             NEXT;
         }

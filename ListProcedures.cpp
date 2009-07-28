@@ -99,7 +99,7 @@ Object scheme::memberEx(VM* theVM, int argc, const Object* argv)
     argumentCheckList(1, p);
     Equal e;
     for (Object o = p; o != Object::Nil; o = o.cdr()) {
-        if (!e.equalP(o.car(), arg1).isFalse()) {
+        if (e.equal(o.car(), arg1)) {
             return o;
         }
     }
@@ -307,7 +307,7 @@ Object scheme::assocEx(VM* theVM, int argc, const Object* argv)
 
     Equal e;
     for (Object o = list; o != Object::Nil; o = o.cdr()) {
-        if (!e.equalP(o.car().car(), obj).isFalse()) {
+        if (e.equal(o.car().car(), obj)) {
             return o.car();
         }
     }

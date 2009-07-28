@@ -75,6 +75,8 @@ public:
         TAG_ASCII_UNINTERNED_SYMBOL,
         TAG_UNINTERNED_SYMBOL,
         TAG_SIMPLE_STRUCT,
+        TAG_RATNUM,
+        TAG_COMPNUM,
         forbidden_comma
     };
 };
@@ -181,6 +183,17 @@ private:
                 data[i] = fetchU8();
             }
             return Bignum::deserialize(data, size);
+        }
+        case Fasl::TAG_RATNUM: {
+            const Object numerator = getDatum();
+            const Object denominator = getDatum();
+            bool isDiv0Error = false;
+            return Arithmetic::div(numerator, denominator, isDiv0Error);
+        }
+        case Fasl::TAG_COMPNUM: {
+            const Object real = getDatum();
+            const Object imag = getDatum();
+            return Object::makeCompnum(real, imag);
         }
         case Fasl::TAG_DLIST: {
             const int count = fetchU32();

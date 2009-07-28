@@ -45,6 +45,7 @@
 #include "Bignum.h"
 #include "Ratnum.h"
 #include "Flonum.h"
+#include "Compnum.h"
 #include "Record.h"
 #include "RecordTypeDescriptor.h"
 #include "EqHashTable.h"
@@ -164,6 +165,8 @@ loop:
         obj.isFlonum()              ||
         obj.isFixnum()              ||
         obj.isBignum()              ||
+        obj.isRatnum()              ||
+        obj.isCompnum()             ||
         obj.isUndef())
         {
         return;
@@ -531,6 +534,20 @@ void FaslWriter::putDatum(Object obj)
         const ucs4char ch = obj.toChar();
         emitU8(Fasl::TAG_CHAR);
         emitU32(ch);
+        return;
+    }
+    if (obj.isRatnum()) {
+        emitU8(Fasl::TAG_RATNUM);
+        Ratnum* r = obj.toRatnum();
+        putDatum(r->numerator());
+        putDatum(r->denominator());
+        return;
+    }
+    if (obj.isCompnum()) {
+        emitU8(Fasl::TAG_COMPNUM);
+        Compnum* c = obj.toCompnum();
+        putDatum(c->real());
+        putDatum(c->imag());
         return;
     }
     MOSH_ASSERT(false);

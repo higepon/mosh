@@ -606,8 +606,15 @@ public:
         const size_t size = 1;
         const int numb = 8 * size - nails;
         const int count = (mpz_sizeinbase (value_, 2) + numb - 1) / numb;
-        uint8_t* rop = allocatePointerFreeU8Array(count * size);
-        return (uint8_t*)mpz_export(rop, countp, order, size, endian, nails, value_);
+        uint8_t* rop = allocatePointerFreeU8Array(count * size + 1); // 1 for sign
+        uint8_t* ret = (uint8_t*)mpz_export(rop, countp, order, size, endian, nails, value_);
+        if (mpz_sgn(value_) < 0) {
+            rop[*countp] = 1;
+        } else {
+            rop[*countp] = 0;
+        }
+        (*countp)++;
+        return ret;
     }
 
     static Object deserialize(uint8_t* data, size_t count)
@@ -618,7 +625,10 @@ public:
         const int endian = 1;
         const size_t nails = 0;
         const size_t size = 1;
-        mpz_import(z, count, order, size, endian, nails, data);
+        mpz_import(z, count - 1, order, size, endian, nails, data);
+        if (data[count - 1]) {
+            mpz_neg(z, z);
+        }
         return Object::makeBignum(new Bignum(z));
     }
 

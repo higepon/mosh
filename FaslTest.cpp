@@ -315,7 +315,7 @@ TEST_F(FaslTest, SerializeBignum1) {
 }
 
 TEST_F(FaslTest, SerializeBignum2) {
-    const Object num = Arithmetic::expt(Object::makeFixnum(-10), Object::makeFixnum(10));
+    const Object num = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(32)));
     ASSERT_TRUE(num.isBignum());
     size_t size = 0;
     uint8_t* data = num.toBignum()->serialize(&size);
@@ -329,3 +329,32 @@ TEST_F(FaslTest, Bignum) {
     ASSERT_TRUE(restored.isBignum());
     EXPECT_TRUE(eqv(restored, num));
 }
+
+TEST_F(FaslTest, Ratnum) {
+    const Object num = Object::makeRatnum(1, 1000);
+    const Object restored = StoreAndRestore(num);
+    ASSERT_TRUE(restored.isRatnum());
+    EXPECT_TRUE(eqv(restored, num));
+}
+
+TEST_F(FaslTest, MultibyteString) {
+    const ucs4char ch[] = {0x12354, 0};
+    const Object x = Object::makeString(ch);
+    ASSERT_TRUE(x.isString());
+    ucs4string str = x.toString()->data();
+    EXPECT_EQ(1, str.size());
+    ASSERT_FALSE(str.is_ascii());
+    const Object restored = StoreAndRestore(x);
+    Equal e;
+    EXPECT_TRUE(e.equal(restored, x));
+}
+
+TEST_F(FaslTest, SerializeBignum3) {
+    const Object num = Bignum::makeInteger(UC("-144115188075855873"));
+    ASSERT_TRUE(num.isBignum());
+    size_t size = 0;
+    uint8_t* data = num.toBignum()->serialize(&size);
+    const Object restored = Bignum::deserialize(data, size);
+    EXPECT_TRUE(eqv(num, restored));
+}
+

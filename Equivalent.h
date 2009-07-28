@@ -84,7 +84,7 @@ class Equal EXTEND_GC
 {
 public:
     Equal();
-    Object equalP(Object x, Object y);
+    bool equal(Object x, Object y);
 
 private:
     const Object k0_;
@@ -97,9 +97,9 @@ private:
     Object callUnionFind(EqHashTable** pht, Object x, Object y);
     Object slowP(EqHashTable** pht, Object x, Object y, Object k);
     Object fastP(EqHashTable** pht, Object x, Object y, Object k);
-    Object interleaveP(Object x, Object y, Object k);
-    Object interleaveEqualP(Object x, Object y);
-    Object precheckInterleaveEqualP(Object x, Object y);
+    bool interleaveP(Object x, Object y, Object k);
+    bool interleaveEqualP(Object x, Object y);
+    bool precheckInterleaveEqualP(Object x, Object y);
 };
 
 

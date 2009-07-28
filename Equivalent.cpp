@@ -155,7 +155,7 @@ Equal::Equal() : k0_(Object::makeFixnum(400)),
 
 //   (define (equal? x y)
 //     (precheck/interleave-equal? x y))
-Object Equal::equalP(Object x, Object y)
+bool Equal::equal(Object x, Object y)
 {
     return precheckInterleaveEqualP(x, y);
 }
@@ -346,7 +346,11 @@ Object Equal::preP(Object x, Object y, Object k)
         if (y.isRegexp()) {
             Regexp* const regexp1 = x.toRegexp();
             Regexp* const regexp2 = y.toRegexp();
-            return k;
+            if (regexp1->pattern() == regexp2->pattern()) {
+                return k;
+            } else {
+                return Object::False;
+            }
         } else {
             return Object::False;
         }
@@ -356,7 +360,11 @@ Object Equal::preP(Object x, Object y, Object k)
         if (y.isCProcedure()) {
             CProcedure* const cprocedure1 = x.toCProcedure();
             CProcedure* const cprocedure2 = y.toCProcedure();
-            return k;
+            if (cprocedure1->proc == cprocedure2->proc) {
+                return k;
+            } else {
+                return Object::False;
+            }
         } else {
             return Object::False;
         }
@@ -382,9 +390,9 @@ Object Equal::eP(EqHashTable** pht, Object x, Object y, Object k)
     MOSH_ASSERT(k.isFixnum());
     if (k.toFixnum() <= 0) {
         if (k == kb_) {
-            fastP(pht, x, y, Object::makeFixnum(random() % (2 * k0_.toFixnum())));
+            return fastP(pht, x, y, Object::makeFixnum(random() % (2 * k0_.toFixnum())));
         } else {
-            slowP(pht, x, y, k);
+            return slowP(pht, x, y, k);
         }
     } else {
         return fastP(pht, x, y, k);
@@ -633,18 +641,18 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
 
 //     (define (interleave? x y k)
 //       (and (e? x y k) #t))
-Object Equal::interleaveP(Object x, Object y, Object k)
+bool Equal::interleaveP(Object x, Object y, Object k)
 {
     EqHashTable* ht = NULL;
     if (eP(&ht, x, y, k).isFalse()) {
-        return Object::False;
+        return false;
     }
-    return Object::True;
+    return true;
 }
 
 //   (define (interleave-equal? x y)
 //     (interleave? x y k0))
-Object Equal::interleaveEqualP(Object x, Object y)
+bool Equal::interleaveEqualP(Object x, Object y)
 {
     return interleaveP(x, y, k0_);
 }
@@ -652,17 +660,17 @@ Object Equal::interleaveEqualP(Object x, Object y)
 //   (define (precheck/interleave-equal? x y)
 //     (let ([k (pre? x y k0)])
 //       (and k (or (> k 0) (interleave? x y 0)))))
-Object Equal::precheckInterleaveEqualP(Object x, Object y)
+bool Equal::precheckInterleaveEqualP(Object x, Object y)
 {
     Object k = preP(x, y, k0_);
     if (k.isFalse()) {
-        return Object::False;
+        return false;
     }
 
     MOSH_ASSERT(k.isFixnum());
 
     if (k.toFixnum() > 0) {
-        return Object::True;
+        return true;
     }
     return interleaveP(x, y, Object::makeFixnum(0));
 }

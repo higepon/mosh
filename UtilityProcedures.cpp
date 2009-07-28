@@ -361,9 +361,7 @@ Object scheme::equalPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("equal?");
     checkArgumentLength(2);
     Equal e;
-    return e.equalP(argv[0], argv[1]);
-//    return Object::makeBool(equal(argv[0], argv[1], new EqHashTable()));
-//    return argv[0].equal(argv[1]);
+    return Object::makeBool(e.equal(argv[0], argv[1]));
 }
 
 Object scheme::fastEqualPEx(VM* theVM, int argc, const Object* argv)
