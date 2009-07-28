@@ -61,7 +61,9 @@
 
 (define (memcached-gets conn . key*)
   (map (lambda (key-value) (cons (car key-value)
-                            (fasl-read (open-bytevector-input-port (cdr key-value)))))
+                            (if (zero? (bytevector-length (cdr key-value)))
+                                #f
+                                (fasl-read (open-bytevector-input-port )))))
        (apply memcached-bv-gets conn key*)))
 
 (define (memcached-bv-get conn key)
@@ -107,7 +109,7 @@
   (let loop ([i 0]
              [ret '()])
     ;; END of response?
-    (if (and (bytevector-u8-ref res i) (char->integer #\E)
+    (if (and (= (bytevector-u8-ref res i) (char->integer #\E))
              (let-values (([token-found? token-start token-end] (token-until-next-char res i #\return)))
                (and token-found?
                     (bytevector-eqv? res token-start (string->utf8 "END") 0 (string-length "END")))))
