@@ -304,3 +304,21 @@ TEST_F(FaslTest, SimpleStruct) {
     ASSERT_TRUE(restored.toSimpleStruct()->name() == Symbol::intern(UC("struct1")));
     EXPECT_TRUE(restored.toSimpleStruct()->ref(0) == Object::makeFixnum(1234));
 }
+
+TEST_F(FaslTest, SerializeBignum1) {
+    const Object num = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(10));
+    ASSERT_TRUE(num.isBignum());
+    size_t size = 0;
+    uint8_t* data = num.toBignum()->serialize(&size);
+    const Object restored = Bignum::deserialize(data, size);
+    EXPECT_TRUE(eqv(num, restored));
+}
+
+TEST_F(FaslTest, SerializeBignum2) {
+    const Object num = Arithmetic::expt(Object::makeFixnum(-10), Object::makeFixnum(10));
+    ASSERT_TRUE(num.isBignum());
+    size_t size = 0;
+    uint8_t* data = num.toBignum()->serialize(&size);
+    const Object restored = Bignum::deserialize(data, size);
+    EXPECT_TRUE(eqv(num, restored));
+}

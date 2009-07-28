@@ -1,4 +1,4 @@
-MOSH=../mosh --disable-acc # bignum/flonum serialization is not supported
+MOSH=../mosh #--disable-acc # bignum/flonum serialization is not supported
 
 test:
 	$(MOSH) tests/r6rs/run/io/ports.sps

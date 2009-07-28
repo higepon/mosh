@@ -598,6 +598,30 @@ public:
 #endif
     }
 
+    uint8_t* serialize(size_t* countp)
+    {
+        const int order = 1;
+        const int endian = 1;
+        const size_t nails = 0;
+        const size_t size = 1;
+        const int numb = 8 * size - nails;
+        const int count = (mpz_sizeinbase (value_, 2) + numb - 1) / numb;
+        uint8_t* rop = allocatePointerFreeU8Array(count * size);
+        return (uint8_t*)mpz_export(rop, countp, order, size, endian, nails, value_);
+    }
+
+    static Object deserialize(uint8_t* data, size_t count)
+    {
+        mpz_t z;
+        mpz_init(z);
+        const int order = 1;
+        const int endian = 1;
+        const size_t nails = 0;
+        const size_t size = 1;
+        mpz_import(z, count, order, size, endian, nails, data);
+        return Object::makeBignum(new Bignum(z));
+    }
+
     static intptr_t toIntptr_t(Object n)
     {
         MOSH_ASSERT(n.isFixnum() || n.isBignum());
