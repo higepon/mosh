@@ -63,7 +63,7 @@
   (map (lambda (key-value) (cons (car key-value)
                             (if (zero? (bytevector-length (cdr key-value)))
                                 #f
-                                (fasl-read (open-bytevector-input-port )))))
+                                (fasl-read (open-bytevector-input-port (cdr key-value))))))
        (apply memcached-bv-gets conn key*)))
 
 (define (memcached-bv-get conn key)
