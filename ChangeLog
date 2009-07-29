@@ -1,5 +1,7 @@
 2009-07-29  higepon  <higepon@users.sourceforge.jp>
 
+        * r6rs-examples/wiki: Fixed some new features.
+
         * lib/mosh/cgi.ss (decode): Fixed a bug about make-custom-binary-input-port.
 
         * test/cgi.scm: Added tests for (mosh cgi).

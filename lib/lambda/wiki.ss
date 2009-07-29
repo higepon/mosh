@@ -271,7 +271,7 @@
   (for-each iter wiki))
 
 (define (page-name->path page-name)
-  (string-append (wiki-data-direcoty) (cgi:encode page-name) ".dat"))
+  (string-append (wiki-data-direcoty) "/" (cgi:encode page-name) ".dat"))
 
 (define (wiki-enum-pages)
   (map cgi:decode
@@ -386,6 +386,7 @@
 (define (wiki-main)
   (define (get-page-cmd)
     (let ([path-info (get-environment-variable "PATH_INFO")])
+      (display path-info)
       (cond
        [path-info
         (let ([it (#/\/([^\/]+)\/(edit|page|list|post|plugin|create)/ path-info)])

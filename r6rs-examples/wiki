@@ -1,12 +1,31 @@
-#!/usr/local/bin/mosh
-(import (prefix (lambda wiki) wiki:)
-        (rnrs))
+#!/Users/taro/mosh/mosh
+;/usr/local/bin/mosh
+(import (rnrs)
+        (srfi :39)
+        (lambda wiki))
 
-;; run from commandline like following
-;; PATH_INFO="/wiki/TopPage/post" REQUEST_METHOD="POST" COMMAND_LINE=1 QUERY_STRING="body=hage" ../mosh -b wiki
-;; PATH_INFO="/wiki/TopPage/post" REQUEST_METHOD="POST" COMMAND_LINE=1 QUERY_STRING="body=hige" sudo -u www-data  ../mosh -b wiki
+(parameterize ([wiki-data-direcoty "wikidata"]
+               [wiki-top-url "http://localhost:8001/wiki"])
+  (wiki-main))
 
-
-(wiki:main '((data-dir . "/home/taro/repos-mosh/trunk/r6rs-examples/wikidata/")
-;(wiki:main '((data-dir . "/home/taro/repos-mosh/trunk/r6rs-examples/wikidata/")
-             (top-url  . "http://127.0.0.1:8001/wiki")))
+#| Apache configuration
+Listen 8001
+<VirtualHost *:8001>
+    DocumentRoot /Users/taro/repos-mosh/trunk/r6rs-examples
+    AllowEncodedSlashes On
+    AcceptPathInfo On
+    <Directory "/Users/taro/repos-mosh/trunk/r6rs-examples">
+        DirectoryIndex wiki
+        Options Indexes FollowSymLinks
+        AllowOverride None
+        <FilesMatch "^wiki$">
+        SetHandler cgi-script
+        </FilesMatch>
+        Options ExecCGI
+        Order allow,deny
+        Allow from all
+    </Directory>
+    ErrorLog  /var/log/apache2/wiki.error_log
+    CustomLog /var/log/apache2/wiki.access_log combined env=!nolog
+</VirtualHost>
+|#
