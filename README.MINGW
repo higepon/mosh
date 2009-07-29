@@ -1,4 +1,4 @@
-README.MINGW 29-Jul-2009
+README.MINGW 30-Jul-2009
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -17,7 +17,6 @@ STATUS
 
 NOT supported :
 - "make check"
-- FFI
 - profiler
 - unix process functions (fork, waitpid, ...)
 

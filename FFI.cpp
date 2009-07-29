@@ -30,6 +30,7 @@
  */
 
 #ifdef _WIN32
+#include <windows.h>
 #else
 #include <dlfcn.h>
 #endif
@@ -51,7 +52,7 @@ using namespace scheme;
 void* FFI::open(const char* name)
 {
 #ifdef _WIN32
-    return 0;
+    return (void *)LoadLibraryA(name);
 #else
     return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 #endif
@@ -60,7 +61,7 @@ void* FFI::open(const char* name)
 void* FFI::lookup(void* handle, const char* symbol)
 {
 #ifdef _WIN32
-    return 0;
+    return (void *)GetProcAddress((HMODULE)handle,symbol);
 #else
     return dlsym(handle, symbol);
 #endif
@@ -69,7 +70,7 @@ void* FFI::lookup(void* handle, const char* symbol)
 int FFI::close(void* handle)
 {
 #ifdef _WIN32
-    return 0;
+    return FreeLibrary((HMODULE)handle);
 #else
     return dlclose(handle);
 #endif

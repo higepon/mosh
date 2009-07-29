@@ -56,7 +56,9 @@
 using namespace scheme;
 
 #ifdef _WIN32
+    #ifndef MOSH_MINGW32
     #undef ARCH_IA32
+    #endif
 #endif
 
 #ifdef ARCH_IA32
