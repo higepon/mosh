@@ -1,10 +1,4 @@
-#!/usr/local/bin/mosh
 (import (rnrs)
-        (srfi :39)
-        (lambda wiki))
+        (srfi :2 and-let*))
 
-(parameterize ([wiki-data-direcoty "."]
-               [wiki-top-url "http://localhost:8001"])
-  (wiki-main))
-
-
+(and-let* ((entry (assoc 'hige '()))) (cdr entry))
