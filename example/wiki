@@ -1,19 +1,19 @@
-#!/Users/taro/mosh/mosh ;; edit here
+#!/Users/taro/mosh/mosh
 (import (rnrs)
         (srfi :39)
         (lambda wiki))
 
-(parameterize ([wiki-data-direcoty "wikidata"]              ;; edit here
-               [wiki-top-url "http://localhost:8001/wiki"]) ;; edit here
+(parameterize ([wiki-data-direcoty "wikidata"]              ;; edit here. www user'permission of this directory should be writable.
+               [wiki-top-url "http://localhost:8001/wiki"]) ;; edit here.
   (wiki-main))
 
 #| Apache configuration sample
 Listen 8001
 <VirtualHost *:8001>
-    DocumentRoot /Users/taro/repos-mosh/trunk/r6rs-examples
+    DocumentRoot /Users/taro/repos-mosh/trunk/example
     AllowEncodedSlashes On
     AcceptPathInfo On
-    <Directory "/Users/taro/repos-mosh/trunk/r6rs-examples">
+    <Directory "/Users/taro/repos-mosh/trunk/example">
         DirectoryIndex wiki
         Options Indexes FollowSymLinks
         AllowOverride None
