@@ -36,6 +36,9 @@
 
 (test-equal name 'mosh)
 
+;;;;;  SRFI-2   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(test-equal 'pon (and-let* ((entry (assoc 'hige '((hige . pon))))) (cdr entry)))
+
 ;;;;;  SRFI-6   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (test-equal (let ((q (open-output-string))
              (x '(a b c)))

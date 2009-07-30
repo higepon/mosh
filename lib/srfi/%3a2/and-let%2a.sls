@@ -27,7 +27,7 @@
   (export 
     and-let*)
   (import 
-   (only (rnrs) define-syntax lambda define syntax-case ... _ for-all identifier? filter values map syntax or syntax-violation if positive? length)
+   (only (rnrs) define-syntax lambda define syntax-case ... _ for-all identifier? filter values map syntax or syntax-violation if positive? length let begin)
     )
   
   (define-syntax and-let*
