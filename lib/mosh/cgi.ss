@@ -52,6 +52,8 @@
                      (cond
                       [(eof-object? b) size]
                       [else
+                       (when (or (< b 0) (> b 255))
+                         (error "cgi decode" "malformed encoded data" s))
                        (bytevector-u8-set! bv (+ start size) b)
                        (if (>= (+ size 1) count)
                            (+ size 1)

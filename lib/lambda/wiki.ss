@@ -285,6 +285,7 @@
 (define (read-raw-page page-name)
   (file->string (page-name->path page-name)))
 
+;; page-name should be not encoded
 (define (print-edit-form page-name)
   (format #t "<h1>Edit ~a</h1>" (cgi:escape page-name))
   (format #t "<form method='POST' action='~a/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n  <input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" (wiki-top-url) (cgi:encode page-name) (read-raw-page page-name) page-name))
@@ -385,16 +386,17 @@
 
 (define (wiki-main)
   (define (get-page-cmd)
+    ;; N.B. PATH_INFO is NOT uri encoded.
     (let ([path-info (get-environment-variable "PATH_INFO")])
-      (display path-info)
+      (format (current-error-port) "path-info=~s" path-info)
       (cond
        [path-info
         (let ([it (#/\/([^\/]+)\/(edit|page|list|post|plugin|create)/ path-info)])
           (if it
-              (values (cgi:decode (it 1)) (it 2))
+              (values (it 1) (it 2))
               (let ([it (#/\/(.+)/ path-info)])
                  (if it
-                     (values (cgi:decode (it 1)) "show")
+                     (values (it 1) "show")
                      (values "TopPage" "show")))))]
        [else
          (values "TopPage" "show")])))
@@ -426,7 +428,7 @@
           [(equal? "create" cmd)
            (let ([it (get-parameter "page")])
              (if it
-                 (print-edit-form it)
+                 (print-edit-form (cgi:decode it))
                  (print-new-page-form page-name)))]
           [(equal? "list" cmd) (list-page)]
           [else

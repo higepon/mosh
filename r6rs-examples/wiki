@@ -1,11 +1,11 @@
-#!/Users/taro/mosh/mosh
+#!/Users/taro/mosh/mosh ;; change here
 ;/usr/local/bin/mosh
 (import (rnrs)
         (srfi :39)
         (lambda wiki))
 
-(parameterize ([wiki-data-direcoty "wikidata"]
-               [wiki-top-url "http://localhost:8001/wiki"])
+(parameterize ([wiki-data-direcoty "wikidata"] ;; change here
+               [wiki-top-url "http://localhost:8001/wiki"]) ;; change here
   (wiki-main))
 
 #| Apache configuration
