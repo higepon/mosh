@@ -380,15 +380,16 @@
          [else path]))))
   (let ([prev-body (if (file-exists? path) (file->string path) #f)]
         [backup-file (backup-file-path path)])
+  (format (current-error-port) "path=~a save-to-file=body=<~s>\n" path body)
     (write-to-file path body)
     (when (and prev-body backup-file)
+      (format (current-error-port) "back=~a body=<~s>\n" backup-file prev-body)
       (write-to-file backup-file prev-body))))
 
 (define (wiki-main)
   (define (get-page-cmd)
     ;; N.B. PATH_INFO is NOT uri encoded.
     (let ([path-info (get-environment-variable "PATH_INFO")])
-      (format (current-error-port) "path-info=~s" path-info)
       (cond
        [path-info
         (let ([it (#/\/([^\/]+)\/(edit|page|list|post|plugin|create)/ path-info)])
@@ -405,6 +406,7 @@
      (format #t "lambda wiki wiki-data-direcoty ~s not found\n" (wiki-data-direcoty)))
   (let-values (([get-parameter get-request-method] (cgi:init))
                ([page-name cmd] (get-page-cmd)))
+      (format (current-error-port) "cmd=~s" cmd)
       (cond
        [(equal? "post" cmd)
          (when (eq? 'POST (get-request-method))

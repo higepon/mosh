@@ -1,4 +1,4 @@
-#!/Users/taro/mosh/mosh
+#!/home/taro/mosh/mosh
 (import (rnrs)
         (srfi :39)
         (lambda wiki))

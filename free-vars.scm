@@ -37,7 +37,7 @@
   (open-string-input-port open-input-string)
   (open-output-string open-output-string)
   (sys-port-seek port-seek)
-  (open-output-file open-output-file)
+;  (open-output-file open-output-file)
   (close-output-port close-output-port)
   (digit->integer digit->integer)
   (get-remaining-input-string get-remaining-input-string)
@@ -146,7 +146,7 @@
   get-bytevector-n
   (open-file-output-port open-output-file)
   (open-file-input-port open-input-file)
-  (open-input-file open-input-file)
+;  (open-input-file open-input-file)
   (close-input-port close-input-port)
   (vector vector)
   (regexp-replace regexp-replace)

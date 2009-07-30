@@ -3910,3 +3910,9 @@
   (newline)
   (apply values obj))
 
+(define (open-output-file filename)
+  (open-file-output-port filename (make-file-options '()) 'block (native-transcoder)))
+
+(define (open-input-file filename)
+  (open-file-input-port filename (make-file-options '()) 'block (native-transcoder)))
+

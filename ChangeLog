@@ -1,3 +1,7 @@
+2009-07-31  higepon  <higepon@users.sourceforge.jp>
+
+        * library.scm (open-output-file): Fixed for existing file.
+
 2009-07-30  higepon  <higepon@users.sourceforge.jp>
 
         * lib/srfi/%3a2/and-let%2a.sls (srfi): Fixed a wrong import on (srfi :2).

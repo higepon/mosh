@@ -1,4 +1,9 @@
 (import (rnrs)
-        (srfi :2 and-let*))
+        )
 
-(display (and-let* ((entry (assoc 'hige '()))) (cdr entry)))
+(define (write-to-file path content)
+  (call-with-output-file path
+    (lambda (port)
+      (display content port))))
+
+(write-to-file "./hige.txt" "abcde")

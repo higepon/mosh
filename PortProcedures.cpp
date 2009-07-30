@@ -862,35 +862,6 @@ Object scheme::sysPortSeekEx(VM* theVM, int argc, const Object* argv)
     return Object::UnBound;
 }
 
-Object scheme::openOutputFileEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("open-output-file");
-    checkArgumentLength(1);
-
-    argumentAsString(0, file);
-
-    Transcoder* transcoder = nativeTranscoder();
-    BlockBufferedFileBinaryOutputPort* const fileBinaryOutputPort = new BlockBufferedFileBinaryOutputPort(file->data());
-
-    if (MOSH_SUCCESS == fileBinaryOutputPort->open()) {
-        const Object ret = Object::makeTextualOutputPort(fileBinaryOutputPort, transcoder);
-        theVM->registerPort(ret);
-        return ret;
-    } else {
-        const bool isReadable = File::isReadable(file->data());
-        if (fileBinaryOutputPort->getFile() && fileBinaryOutputPort->getFile()->isLastErrorAcessError()) {
-            if (isReadable) {
-                return callIoFileReadOnlyAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
-            } else {
-                return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
-            }
-        } else {
-            callErrorAfter(theVM, procedureName, fileBinaryOutputPort->getLastErrorMessage(), L1(argv[0]));
-            return Object::Undef;
-        }
-    }
-}
-
 Object scheme::closeOutputPortEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("close-output-port");
@@ -1585,27 +1556,6 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
             }
         } else {
             callErrorAfter(theVM, procedureName, port->getLastErrorMessage(), L1(argv[0]));
-            return Object::Undef;
-        }
-    }
-}
-
-Object scheme::openInputFileEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("open-input-file");
-    checkArgumentLength(1);
-    argumentAsString(0, path);
-
-    Transcoder* transcoder = nativeTranscoder();
-    // we choose buffered port
-    BufferedFileBinaryInputPort* const fileBinaryInputPort = new BufferedFileBinaryInputPort(path->data());
-    if (MOSH_SUCCESS == fileBinaryInputPort->open()) {
-        return Object::makeTextualInputPort(fileBinaryInputPort, transcoder);
-    } else {
-        if (fileBinaryInputPort->getFile() && fileBinaryInputPort->getFile()->isLastErrorAcessError()) {
-            return callIoFileProtectionAfter(theVM, argv[0], procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
-        } else {
-            callErrorAfter(theVM, procedureName, fileBinaryInputPort->getLastErrorMessage(), L1(argv[0]));
             return Object::Undef;
         }
     }

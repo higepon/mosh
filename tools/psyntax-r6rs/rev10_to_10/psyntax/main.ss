@@ -334,7 +334,7 @@
         (call-with-output-file file (lambda (port) (write 'd port)))) ;; a, b and c is reserved
       (let* ([prefix (call-with-input-file file read)]
              [next-prefix (prefix-inc prefix)])
-        (call-with-output-file file (lambda (port) (write next-prefix port)))
+        (call-with-port (open-file-output-port file (file-options no-fail) 'block (native-transcoder)) (lambda (port) (write next-prefix port)))
         prefix))
 
 
