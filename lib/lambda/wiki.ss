@@ -1,6 +1,6 @@
 (library (lambda wiki)
   (export wiki-main wiki-data-direcoty wiki-top-url
-          spam-block-qustion spam-block-answer)
+          spam-block-question spam-block-answer)
   (import (rnrs)
           (rnrs mutable-pairs)
           (only (system) get-environment-variable make-parameter)
@@ -13,11 +13,11 @@
 ;; Configuration
 (define wiki-data-direcoty (make-parameter #f))
 (define wiki-top-url (make-parameter #f))
-(define spam-block-qustion
+(define spam-block-question
   (make-parameter #f
                   (lambda (x)
                     (when (and x (not (string? x)))
-                      (error 'spam-block-qustion "should be string"))
+                      (error 'spam-block-question "should be string"))
                      x)))
 (define spam-block-answer
   (make-parameter #f (lambda (x)
@@ -302,8 +302,8 @@
 (define (print-edit-form page-name)
   (format #t "<h1>Edit ~a</h1>" (cgi:escape page-name))
   (format #t "<form method='POST' action='~a/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n" (wiki-top-url) (cgi:encode page-name) (read-raw-page page-name))
-  (when (and (spam-block-answer) (spam-block-qustion))
-    (format #t "~a<input type='password' name='answer'>" (spam-block-qustion)))
+  (when (and (spam-block-answer) (spam-block-question))
+    (format #t "~a<input type='password' name='answer'>" (spam-block-question)))
   (format #t "<input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" page-name))
 
 (define (print-page get-parameter page-name)
@@ -417,7 +417,7 @@
       (cond
        [(and (equal? "post" cmd) (eq? 'POST (get-request-method)))
          (cond
-           [(and (spam-block-answer) (spam-block-qustion))
+           [(and (spam-block-answer) (spam-block-question))
              (if (and-let* ([body (get-parameter "body")]
                             [answer (get-parameter "answer")] ;; check spam
                             [(string=? answer (spam-block-answer))])

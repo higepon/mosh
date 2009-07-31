@@ -5,7 +5,7 @@
 
 (parameterize ([wiki-data-direcoty "wikidata"]                   ;; edit here. www user'permission of this directory should be writable.
                [wiki-top-url "http://localhost:8001/wiki"]       ;; edit here.
-               [spam-block-qustion "spam block question:1+1=?"]  ;; optional
+               [spam-block-question "spam block question:1+1=?"] ;; optional
                [spam-block-answer "2"])                          ;; optional
   (wiki-main))
 
