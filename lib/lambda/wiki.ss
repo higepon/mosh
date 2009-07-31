@@ -465,8 +465,8 @@
 
 (register-plugin (define-plugin "comment"
               (lambda (get-parameter page-name . args)
-                (let ([comment-page (format "comment/~a" page-name)])
-                  (print-a (format "~a/~a" (wiki-top-url) (cgi:encode comment-page))
+                (let ([comment-page (format "comment/~a" (cgi:encode page-name))])
+                  (print-a (format "~a/~a" (wiki-top-url) comment-page)
                            "See comment page")
                   (print
                    (string-append
@@ -480,7 +480,6 @@
                     "</form>\n"
                     ))
                   (call-with-string-input-port (cgi:escape (read-raw-page comment-page))
-;                  (call-with-string-input-port (read-raw-page comment-page)
                     (lambda (port)
                       (wiki->html get-parameter page-name (wiki-parse (make-reader port)))))))
               (lambda (get-parameter page-name)
