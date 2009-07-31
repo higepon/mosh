@@ -129,7 +129,9 @@ Object scheme::makeStringEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("make-string");
     checkArgumentLengthBetween(1, 2);
     argumentAsFixnum(0, stringSize);
-
+    if (stringSize < 0) {
+        return callAssertionViolationAfter(theVM, procedureName, "size should be positive", L1(argv[0]));
+    }
     if (2 == argc) {
         argumentAsChar(1, ch);
         return Object::makeString(stringSize, ch);
@@ -146,8 +148,11 @@ Object scheme::stringSetDEx(VM* theVM, int argc, const Object* argv)
     argumentAsString(0, text);
     argumentAsFixnum(1, index);
     argumentAsChar(2, ch);
-
-    text->data()[index] = ch;
+    if (index >= text->data().size()) {
+        callAssertionViolationAfter(theVM, procedureName, "index out of range");
+    } else {
+        text->data()[index] = ch;
+    }
     return Object::Undef;
 }
 

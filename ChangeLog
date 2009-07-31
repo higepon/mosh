@@ -1,5 +1,8 @@
 2009-07-31  higepon  <higepon@users.sourceforge.jp>
 
+	* StringProcedures.cpp : Fixed string-set didn't check index.
+	                         Fixed make-string didn't check size.
+
 	* lib/lambda/wiki.ss : Delete on empty body.
 
 	* lib/lambda/wiki.ss : Added backup function.
