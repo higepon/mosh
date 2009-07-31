@@ -385,14 +385,19 @@
   (cgi:header)
   (print str))
 
-(define (save-to-file path body)
+(define (save-or-delete-file path body)
   (define (backup-file-path path)
     (format "~a.bak" path))
-  (let ([prev-body (if (file-exists? path) (file->string path) #f)]
-        [backup-file (backup-file-path path)])
-    (write-to-file path body)
-    (when (and prev-body backup-file)
-      (write-to-file backup-file prev-body))))
+  (cond
+   [(and (file-exists? path) (zero? (string-length body)))
+    (write-to-file (backup-file-path path) (file->string path))
+    (delete-file path)]
+   [else
+    (let ([prev-body (if (file-exists? path) (file->string path) #f)]
+          [backup-file (backup-file-path path)])
+      (write-to-file path body)
+      (when (and prev-body backup-file)
+        (write-to-file backup-file prev-body)))]))
 
 (define (wiki-main)
   (define (get-page-cmd)
@@ -421,13 +426,13 @@
              (if (and-let* ([body (get-parameter "body")]
                             [answer (get-parameter "answer")] ;; check spam
                             [(string=? answer (spam-block-answer))])
-                   (save-to-file (page-name->path page-name) (cgi:decode body)))
+                   (save-or-delete-file (page-name->path page-name) (cgi:decode body)))
                  (cgi:moved-temporarily-header (format "~a/~a" (wiki-top-url) (cgi:encode page-name)))
                  (begin (cgi:unauthorized-header)
                     (display "Lambda wiki:unauthorized post")))]
            [else
              (and-let* ([body (get-parameter "body")])
-               (save-to-file (page-name->path page-name) (cgi:decode body)))
+               (save-or-delete-file (page-name->path page-name) (cgi:decode body)))
                (cgi:moved-temporarily-header (format "~a/~a" (wiki-top-url) (cgi:encode page-name)))])]
        [(equal? "plugin" cmd)
         (let ([plugin (get-plugin (get-parameter "plugin"))])
