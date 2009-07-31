@@ -174,7 +174,7 @@
 (define (wiki-parse-inline content)
   (cond [(#/\[\[([^>^\]]+)>(https?:\/\/[^\]^\s]+)\]\]/ content) => make-alias-link] ;; [[alias>http://example.com]]
         [(#/\[\[([^\]]+)\]\]/ content) => make-wiki-name] ;; [[wiki-name]]
-        [(#/https?:\/\/[^\s]+/ content) => make-link] ;; http://example.com
+        [(#/https?:\/\/[^\s\)]+/ content) => make-link] ;; http://example.com
         [(#/&new\{([^\}]+)\}\;/ content) => make-amp]
         [else (if (equal? "" content) "" (make-inline content))]))
 
