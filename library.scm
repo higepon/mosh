@@ -475,7 +475,7 @@
                                                 (begin (loop (apply read-char port) (cons char clist))))))) (loop char '())))))
 
 (define (write-to-file path content)
-  (call-with-output-file path
+  (call-with-port (open-file-output-port path (make-file-options '(no-fail)) 'block (native-transcoder))
     (lambda (port)
       (display content port))))
 

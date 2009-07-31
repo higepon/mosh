@@ -1,13 +1,15 @@
-#!/home/taro/mosh/mosh
+#!/Users/taro/mosh/mosh
 (import (rnrs)
         (srfi :39)
         (lambda wiki))
 
-(parameterize ([wiki-data-direcoty "wikidata"]              ;; edit here. www user'permission of this directory should be writable.
-               [wiki-top-url "http://localhost:8001/wiki"]) ;; edit here.
+(parameterize ([wiki-data-direcoty "wikidata"]                   ;; edit here. www user'permission of this directory should be writable.
+               [wiki-top-url "http://localhost:8001/wiki"]       ;; edit here.
+               [spam-block-qustion "spam block question:1+1=?"]  ;; optional
+               [spam-block-answer "2"])                          ;; optional
   (wiki-main))
 
-#| Apache configuration sample
+#| Apache configuration sample 1
 Listen 8001
 <VirtualHost *:8001>
     DocumentRoot /Users/taro/repos-mosh/trunk/example
@@ -27,4 +29,9 @@ Listen 8001
     ErrorLog  /var/log/apache2/wiki.error_log
     CustomLog /var/log/apache2/wiki.access_log combined env=!nolog
 </VirtualHost>
+|#
+
+#| Apache configuration sample2
+   .httaccess
+   <FilesMatch "^wiki$">SetHandler cgi-script</FilesMatch>
 |#

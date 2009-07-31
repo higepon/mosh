@@ -1,5 +1,13 @@
 2009-07-31  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/lambda/wiki.ss : Added backup function.
+
+	* lib/lambda/wiki.ss : Added spam-block-qustion.
+
+	* lib/mosh/cgi.ss (unauthorized-header): Added.
+
+	* Fixed a behavior of write-to-file when a file doesn't exist.
+
         * library.scm (open-output-file): Fixed for existing file.
 
 2009-07-30  higepon  <higepon@users.sourceforge.jp>

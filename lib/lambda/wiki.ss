@@ -1,9 +1,11 @@
 (library (lambda wiki)
-  (export wiki-main wiki-data-direcoty wiki-top-url)
+  (export wiki-main wiki-data-direcoty wiki-top-url
+          spam-block-qustion spam-block-answer)
   (import (rnrs)
           (rnrs mutable-pairs)
           (only (system) get-environment-variable make-parameter)
           (only (srfi :1) first second third alist-cons)
+          (only (srfi :2) and-let*)
           (only (mosh) assoc-ref read-line string-split format call-with-string-input-port string->regexp rxmatch)
           (only (mosh file) directory-list file->string write-to-file)
           (prefix (mosh cgi) cgi:))
@@ -11,6 +13,17 @@
 ;; Configuration
 (define wiki-data-direcoty (make-parameter #f))
 (define wiki-top-url (make-parameter #f))
+(define spam-block-qustion
+  (make-parameter #f
+                  (lambda (x)
+                    (when (and x (not (string? x)))
+                      (error 'spam-block-qustion "should be string"))
+                     x)))
+(define spam-block-answer
+  (make-parameter #f (lambda (x)
+                       (when (and x (not (string? x)))
+                         (error 'spam-block-answer "should be string"))
+                       x)))
 
 (define (print msg)
   (display msg)
@@ -288,7 +301,10 @@
 ;; page-name should be not encoded
 (define (print-edit-form page-name)
   (format #t "<h1>Edit ~a</h1>" (cgi:escape page-name))
-  (format #t "<form method='POST' action='~a/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n  <input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" (wiki-top-url) (cgi:encode page-name) (read-raw-page page-name) page-name))
+  (format #t "<form method='POST' action='~a/~a/post'>\n  <textarea cols=50 rows=20 name='body'>~a</textarea>\n<input class='submit' type='submit' value='post'>\n" (wiki-top-url) (cgi:encode page-name) (read-raw-page page-name))
+  (when (and (spam-block-answer) (spam-block-qustion))
+    (format #t "~a<input type='password' name='answer'>" (spam-block-qustion)))
+  (format #t "<input type='hidden' name='cmd' value='post'>\n  <input type='hidden' name='page' value='~a'>\n</form>" page-name))
 
 (define (print-page get-parameter page-name)
   (let ([path (page-name->path page-name)])
@@ -371,19 +387,11 @@
 
 (define (save-to-file path body)
   (define (backup-file-path path)
-    (let loop ([i 0])
-      (let ([path (format "~a.bak~d" path i)])
-        (cond
-         [(> i 100) #f]
-         [(file-exists? path)
-          (loop (+ i 1))]
-         [else path]))))
+    (format "~a.bak" path))
   (let ([prev-body (if (file-exists? path) (file->string path) #f)]
         [backup-file (backup-file-path path)])
-  (format (current-error-port) "path=~a save-to-file=body=<~s>\n" path body)
     (write-to-file path body)
     (when (and prev-body backup-file)
-      (format (current-error-port) "back=~a body=<~s>\n" backup-file prev-body)
       (write-to-file backup-file prev-body))))
 
 (define (wiki-main)
@@ -406,14 +414,21 @@
      (format #t "lambda wiki wiki-data-direcoty ~s not found\n" (wiki-data-direcoty)))
   (let-values (([get-parameter get-request-method] (cgi:init))
                ([page-name cmd] (get-page-cmd)))
-      (format (current-error-port) "cmd=~s" cmd)
       (cond
-       [(equal? "post" cmd)
-         (when (eq? 'POST (get-request-method))
-;           (format #t "bod=~a" (get-parameter "body"))
-           (save-to-file (page-name->path page-name)
-                         (cgi:decode (get-parameter "body")))
-           (cgi:moved-temporarily-header (format "~a/~a" (wiki-top-url) (cgi:encode page-name))))]
+       [(and (equal? "post" cmd) (eq? 'POST (get-request-method)))
+         (cond
+           [(and (spam-block-answer) (spam-block-qustion))
+             (if (and-let* ([body (get-parameter "body")]
+                            [answer (get-parameter "answer")] ;; check spam
+                            [(string=? answer (spam-block-answer))])
+                   (save-to-file (page-name->path page-name) (cgi:decode body)))
+                 (cgi:moved-temporarily-header (format "~a/~a" (wiki-top-url) (cgi:encode page-name)))
+                 (begin (cgi:unauthorized-header)
+                    (display "Lambda wiki:unauthorized post")))]
+           [else
+             (and-let* ([body (get-parameter "body")])
+               (save-to-file (page-name->path page-name) (cgi:decode body)))
+               (cgi:moved-temporarily-header (format "~a/~a" (wiki-top-url) (cgi:encode page-name)))])]
        [(equal? "plugin" cmd)
         (let ([plugin (get-plugin (get-parameter "plugin"))])
           (cond [plugin

@@ -1,5 +1,5 @@
  (library (mosh cgi)
-  (export init encode decode escape moved-temporarily-header header)
+  (export init encode decode escape moved-temporarily-header header unauthorized-header)
   (import (rnrs)
           (only (system) get-environment-variable)
           (only (mosh) digit->integer  string-split format call-with-string-io bytevector-for-each  regexp-replace-all)
@@ -114,6 +114,10 @@
 
 (define (moved-temporarily-header url)
    (format #t "Status: 302 Moved Temporarily\nLocation: ~a\n\n" url)
+   (set! header-out? #t))
+
+(define (unauthorized-header)
+   (format #t "Status: 401 Unauthorized\n\n")
    (set! header-out? #t))
 
 )
