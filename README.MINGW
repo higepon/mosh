@@ -1,4 +1,4 @@
-README.MINGW 30-Jul-2009
+README.MINGW 02-Aug-2009
 
 by OKUMURA Yuki <mjt@cltn.org>
 
@@ -33,14 +33,8 @@ CONFIGURATION & BUILD
 ---------------------
 
 As usual product, run the configure script and make.
-Note that some options(--disable-*) are mandatory under win32.
 
- ./configure CFLAGS="-DGC_THREADS" CXXFLAGS="-DGC_THREADS"  \
- --disable-shared --disable-profiler win32_threads=true && make
-
-or using gc-7.2alpha2(copy it to gc-7.1/) :
-
- ./configure --disable-shared --disable-profiler --enable-threads=win32
+ ./configure --disable-profiler && make
 
 INSTALL
 -------
