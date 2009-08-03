@@ -46,6 +46,32 @@
 
 using namespace scheme;
 
+// Originaly from Ypsilon Scheme.
+static Object do_transpose(int each_len, int argc, Object* argv)
+{
+    Object ans = Object::Nil;
+    Object ans_tail = Object::Nil;
+    for (int i = 0; i < each_len; i++) {
+        Object elt = Object::cons(argv[0].car(), Object::Nil);
+        Object elt_tail = elt;
+        argv[0] = argv[0].cdr();
+        for (int n = 1; n < argc; n++) {
+            elt_tail.cdr() = Object::cons(argv[n].car(), Object::Nil);
+            elt_tail = elt_tail.cdr();
+            argv[n] = argv[n].cdr();
+        }
+        if (ans == Object::Nil) {
+            ans = Object::cons(elt, Object::Nil);
+            ans_tail = ans;
+        } else {
+            ans_tail.cdr() = Object::cons(elt, Object::Nil);
+            ans_tail = ans_tail.cdr();
+        }
+    }
+    return ans;
+}
+
+
 Object scheme::listRefEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("list-ref");
@@ -1027,14 +1053,10 @@ Object scheme::cddrEx(VM* theVM, int argc, const Object* argv)
     return p;
 }
 
-// (lists-same-length? . lsts)
-Object scheme::listsSameLengthPEx(VM* theVM, int argc, const Object* argv)
+Object scheme::listTransposeAddEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("lists-same-length?");
+    DeclareProcedureName("list-transpose+");
     checkArgumentLengthAtLeast(1);
-    if (argc == 1) {
-        return Object::True;
-    }
     const Object lst0 = argv[0];
     if (!lst0.isList()) {
         return Object::False;
@@ -1050,5 +1072,5 @@ Object scheme::listsSameLengthPEx(VM* theVM, int argc, const Object* argv)
             return Object::False;
         }
     }
-    return Object::True;
+    return do_transpose(length, argc, /* un-const, we know it's safe */(Object*)argv);
 }

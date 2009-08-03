@@ -35,7 +35,7 @@
 #include "scheme.h"
 
 namespace scheme {
-    Object listsSameLengthPEx(VM* theVM, int argc, const Object* argv);
+    Object listTransposeAddEx(VM* theVM, int argc, const Object* argv);
     Object caaaarEx(VM* theVM, int argc, const Object* argv);
     Object caaadrEx(VM* theVM, int argc, const Object* argv);
     Object caaarEx(VM* theVM, int argc, const Object* argv);
