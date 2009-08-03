@@ -1026,3 +1026,29 @@ Object scheme::cddrEx(VM* theVM, int argc, const Object* argv)
     p = p.cdr();
     return p;
 }
+
+// (lists-same-length? . lsts)
+Object scheme::listsSameLengthPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("lists-same-length?");
+    checkArgumentLengthAtLeast(1);
+    if (argc == 1) {
+        return Object::True;
+    }
+    const Object lst0 = argv[0];
+    if (!lst0.isList()) {
+        return Object::False;
+    }
+    const int length = Pair::length(lst0);
+    for (int i = 1; i < argc; i++) {
+        const Object lst = argv[i];
+        if (lst.isList()) {
+            if (Pair::length(lst) != length) {
+                return Object::False;
+            }
+        } else {
+            return Object::False;
+        }
+    }
+    return Object::True;
+}

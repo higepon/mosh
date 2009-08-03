@@ -131,8 +131,22 @@
 ;;       n
 ;;       (* -1 n)))
 
+;; (define (map proc . ll)
+;;   (cond
+;;    [(apply lists-same-length? ll)
+;;     (if (null? (car ll))
+;;       '()
+;;       (if (null? (cdr ll))
+;;           (map1 proc (car ll))
+;;           (let ((tetes (map1 car ll))
+;;                 (queues (map1 cdr ll)))
+;;             (cons (apply proc tetes)
+;;                   (apply map (cons proc queues))))))]
+;;     [else
+;;      (error 'map "expect expected same length proper lists" ll)]))
+
 (define (map proc . ll)
-  (if (null? (car ll))
+    (if (null? (car ll))
       '()
       (if (null? (cdr ll))
           (map1 proc (car ll))

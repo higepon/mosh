@@ -196,6 +196,7 @@
   (pass1/find-symbol-in-lvars pass1/find-symbol-in-lvars)
   ($label $label)
   ($local-ref $local-ref)
+  (lists-same-length? (lambda x #t))
   symbol-value
   set-symbol-value!
   make-hashtable
