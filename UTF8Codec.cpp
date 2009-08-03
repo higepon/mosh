@@ -86,7 +86,7 @@ bool UTF8Codec::isUtf8Tail(uint8_t b)
 }
 
 #define decodeError() \
-    if (mode == ErrorHandlingMode(RAISE_ERROR)) {                             \
+    if (mode == ErrorHandlingMode(RAISE_ERROR)) { \
         throwIOError2(IOError::DECODE, "invalid utf-8 byte sequence");  \
     } else if (mode == ErrorHandlingMode(REPLACE_ERROR)) {                    \
         return 0xFFFD;                                                  \
@@ -120,9 +120,9 @@ retry:
         uint8_t third =  port->getU8();
         if (!isUtf8Tail(third)) {
             decodeError();
-        } else if ((0xe0 == first && 0xa0 <= second && second <= 0xbf)    |
-                   (0xed == first && 0x80 <= second && second <= 0x9f)    |
-                   (0xe1 <= first && first <= 0xec && isUtf8Tail(second)) |
+        } else if ((0xe0 == first && 0xa0 <= second && second <= 0xbf)    ||
+                   (0xed == first && 0x80 <= second && second <= 0x9f)    ||
+                   (0xe1 <= first && first <= 0xec && isUtf8Tail(second)) ||
                    (0xee == first || 0xef == first) && isUtf8Tail(second)) {
             return ((first & 0xf) << 12) | ((second & 0x3f) << 6) | (third & 0x3f);
         } else {
@@ -136,8 +136,8 @@ retry:
         uint8_t fourth = port->getU8();
         if (!isUtf8Tail(third) || !isUtf8Tail(fourth)) {
             decodeError();
-        } else if ((0xf0 == first && 0x90 <= second && second <= 0xbf)     |
-                   (0xf4 == first && 0x80 <= second && second <= 0x8f)     |
+        } else if ((0xf0 == first && 0x90 <= second && second <= 0xbf)     ||
+                   (0xf4 == first && 0x80 <= second && second <= 0x8f)     ||
                    (0xf1 <= first && first <= 0xf3 && isUtf8Tail(second))) {
             return ((first & 0x7) << 18) | ((second & 0x3f) << 12) | ((third & 0x3f) << 6) | fourth;
         } else {

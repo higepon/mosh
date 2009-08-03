@@ -220,7 +220,6 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
-
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 
     if (isTestOption) {
