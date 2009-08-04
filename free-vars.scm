@@ -196,7 +196,26 @@
   (pass1/find-symbol-in-lvars pass1/find-symbol-in-lvars)
   ($label $label)
   ($local-ref $local-ref)
-  list-transpose+
+  (list-transpose+ (lambda ll 
+                     (define (map1 f l)
+                       (if (null? l)
+                           l
+                           (cons (f (car l)) (map1 f (cdr l)))))
+                     (define (map proc . ll)
+                       (if (null? (car ll))
+                           '()
+                           (if (null? (cdr ll))
+                               (map1 proc (car ll))
+                               (let ((tetes (map1 car ll))
+                                     (queues (map1 cdr ll)))
+                                 (cons (apply proc tetes)
+                                       (apply map (cons proc queues)))))))
+                     (let loop ([lst ll]
+                                [ret '()])
+                       (cond
+                        [(null? (car lst)) (reverse ret)]
+                        [else
+                         (loop (map cdr lst) (cons (map car lst) ret))]))))
   symbol-value
   set-symbol-value!
   make-hashtable

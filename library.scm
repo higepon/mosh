@@ -27,7 +27,6 @@
 ;
 ;  $Id$
 
-; document is written at manual.scm
 (define-macro (acond . clauses)
   (if (null? clauses)
       '()
@@ -38,39 +37,7 @@
                (let ((it ,sym)) ,@(cdr cl1))
                (acond ,@(cdr clauses)))))))
 
-;(define integer? number?)
-
 (define (not x) (if x #f #t))
-
-;; written in C++
-;; (define (caar p) (car (car p)))
-;; (define (cdar p) (cdr (car p)))
-;; (define (cadr p) (car (cdr p)))
-;; (define (cddr p) (cdr (cdr p)))
-;; (define (caaar p) (car (car (car p))))
-;; (define (cdaar p) (cdr (car (car p))))
-;; (define (cadar p) (car (cdr (car p))))
-;; (define (cddar p) (cdr (cdr (car p))))
-;; (define (caadr p) (car (car (cdr p))))
-;; (define (cdadr p) (cdr (car (cdr p))))
-;; (define (caddr p) (car (cdr (cdr p))))
-;; (define (cdddr p) (cdr (cdr (cdr p))))
-;; (define (caaaar p) (car (car (car (car p)))))
-;; (define (cdaaar p) (cdr (car (car (car p)))))
-;; (define (cadaar p) (car (cdr (car (car p)))))
-;; (define (cddaar p) (cdr (cdr (car (car p)))))
-;; (define (caadar p) (car (car (cdr (car p)))))
-;; (define (cdadar p) (cdr (car (cdr (car p)))))
-;; (define (caddar p) (car (cdr (cdr (car p)))))
-;; (define (cdddar p) (cdr (cdr (cdr (car p)))))
-;; (define (caaadr p) (car (car (car (cdr p)))))
-;; (define (cdaadr p) (cdr (car (car (cdr p)))))
-;; (define (cadadr p) (car (cdr (car (cdr p)))))
-;; (define (cddadr p) (cdr (cdr (car (cdr p)))))
-;; (define (caaddr p) (car (car (cdr (cdr p)))))
-;; (define (cdaddr p) (cdr (car (cdr (cdr p)))))
-;; (define (cadddr p) (car (cdr (cdr (cdr p)))))
-;; (define (cddddr p) (cdr (cdr (cdr (cdr p)))))
 (define (caaaaar p) (car (car (car (car (car p))))))
 (define (cdaaaar p) (cdr (car (car (car (car p))))))
 (define (cadaaar p) (car (cdr (car (car (car p))))))
@@ -107,14 +74,6 @@
 (define (call-with-values producer consumer)
   (receive vals (producer) (apply consumer vals)))
 
-;; (define (list-tail l k)
-;;   (if (= k 0)
-;;       l
-;;       (list-tail (cdr l) (- k 1))))
-
-;; (define (list-ref l k)
-;;   (car (list-tail l k)))
-
 (define (zero? n)
   (= 0 n))
 
@@ -126,12 +85,16 @@
 
 (define (list . a) a)
 
-;; (define (abs n)
-;;   (if (>= n 0)
-;;       n
-;;       (* -1 n)))
+(define (unspecified) (if #f #t))
 
-#;(define map
+;; Originaly from Ypsilon Scheme start
+(define wrong-type-argument-message
+  (lambda (expect got . nth)
+    (if (null? nth)
+        (format "expected ~a, but got ~a" expect got)
+        (format "expected ~a, but got ~a, as argument ~a" expect got (car nth)))))
+
+(define map
   (lambda (proc lst1 . lst2)
 
     (define map-1
@@ -151,62 +114,185 @@
     (if (null? lst2)
         (if (list? lst1)
             (map-1 proc lst1)
-            (assertion-violation 'map "proper list required" (cons* proc lst1 lst2)))
+            (assertion-violation 'map (wrong-type-argument-message "proper list" lst1 2) (cons* proc lst1 lst2)))
         (cond ((apply list-transpose+ lst1 lst2)
                => (lambda (lst) (map-n proc lst)))
               (else
                (assertion-violation 'map "expected same length proper lists" (cons* proc lst1 lst2)))))))
 
-;; (define (map proc lst . more)
-;;   (define (map-1 proc lst)
-;;     (if (null? lst)
-;;         '()
-;;         (cons (proc (car lst))
-;;               (map-1 proc (cdr lst)))))
-;;   (define (map-n proc lst)
-;;     (if (null? lst)
-;;         '()
-;;         (cons (apply proc (car lst))
-;;               (map-n proc (cdr lst)))))
-;;   (if (null? lst2)
-;;       (if (list? lst1)
-;;           (map-1 proc lst1)
-;;           (assertion-violation 'map "proper list required" (cons* proc lst1 lst2)))
-;;       (cond ((apply list-transpose+ lst1 more)
-;;              => (lambda (lst) (map-n proc lst)))
-;;             (else
-;;              (assertion-violation 'map "expected same length proper lists" (cons* proc lst1 lst2))))))
+(define for-each
+  (lambda (proc lst1 . lst2)
+    (define for-each-1 (lambda (proc lst)
+                         (if (null? lst)
+                             (unspecified)
+                             (begin
+                               (proc (car lst))
+                               (for-each-1 proc (cdr lst))))))
+    (define for-each-n (lambda (proc lst)
+                         (cond ((null? lst) (unspecified))
+                               (else
+                                (apply proc (car lst))
+                                (for-each-n proc (cdr lst))))))
+    (if (null? lst2)
+        (if (list? lst1)
+            (for-each-1 proc lst1)
+            (assertion-violation 'for-each (wrong-type-argument-message "proper list" lst1 2) (cons* proc lst1 lst2)))
+        (cond ((apply list-transpose+ lst1 lst2)
+               => (lambda (lst) (for-each-n proc lst)))
+              (else
+               (assertion-violation 'for-each "expected same length proper lists" (cons* proc lst1 lst2)))))))
 
+(define for-all
+  (lambda (pred lst1 . lst2)
+    (cond ((null? lst2)
+           (for-all-1 pred lst1))
+          ((apply list-transpose+ lst1 lst2)
+           => (lambda (lst) (for-all-n-quick pred lst)))
+          (else
+           (assertion-violation 'for-all "expected same length proper lists" (cons* lst1 lst2))))))
 
-;; (define (map proc . ll)
-;;   (cond
-;;    [(apply lists-same-length? ll)
-;;     (if (null? (car ll))
-;;       '()
-;;       (if (null? (cdr ll))
-;;           (map1 proc (car ll))
-;;           (let ((tetes (map1 car ll))
-;;                 (queues (map1 cdr ll)))
-;;             (cons (apply proc tetes)
-;;                   (apply map (cons proc queues))))))]
-;;     [else
-;;      (error 'map "expect expected same length proper lists" ll)]))
+(define for-all-1
+  (lambda (pred lst)
+    (cond ((null? lst) #t)
+          ((pair? lst)
+           (let loop ((head (car lst)) (rest (cdr lst)))
+             (cond ((null? rest) (pred head))
+                   ((pair? rest)
+                    (and (pred head)
+                         (loop (car rest) (cdr rest))))
+                   (else
+                    (and (pred head)
+                         (assertion-violation 'for-all (format "traversal reached to non-pair element ~s" rest) (list pred lst)))))))
+          (else
+           (assertion-violation 'for-all (format "expected chain of pairs, but got ~r, as argument 2" lst) (list pred lst))))))
 
-(define (map proc . ll)
-    (if (null? (car ll))
-      '()
-      (if (null? (cdr ll))
-          (map1 proc (car ll))
-          (let ((tetes (map1 car ll))
-                (queues (map1 cdr ll)))
-            (cons (apply proc tetes)
-                  (apply map (cons proc queues)))))))
+(define collect-cdr
+  (lambda (lst)
+    (let loop ((lst lst))
+      (cond ((null? lst) '())
+            ((null? (cdar lst)) (loop (cdr lst)))
+            (else (cons (cdar lst) (loop (cdr lst))))))))
 
-;; (define (reverse l)
-;;   (let loop ((l l) (rl '()))
-;;     (if (null? l)
-;;         rl
-;;         (loop (cdr l) (cons (car l) rl)))))
+(define for-all-n
+    (lambda (pred list-of-lists)
+      (let ((argc (length list-of-lists)))
+
+        (define collect-car
+          (lambda (lst)
+            (let loop ((lst lst))
+              (cond ((null? lst) '())
+                    ((pair? (car lst))
+                     (cons (caar lst) (loop (cdr lst))))
+                    (else
+                     (assertion-violation 'for-all (format "traversal reached to non-pair element ~s" (car lst)) list-of-lists))))))
+
+        (let loop ((head (collect-car list-of-lists)) (rest (collect-cdr list-of-lists)))
+          (or (= (length head) argc)
+              (assertion-violation 'for-all "expected same length chains of pairs" list-of-lists))
+          (if (null? rest)
+              (apply pred head)
+              (and (apply pred head)
+                   (loop (collect-car rest) (collect-cdr rest))))))))
+
+(define for-all-n-quick
+  (lambda (pred lst)
+    (or (null? lst)
+        (let loop ((head (car lst)) (rest (cdr lst)))
+          (if (null? rest)
+              (apply pred head)
+              (and (apply pred head)
+                   (loop (car rest) (cdr rest))))))))
+
+(define exists
+  (lambda (pred lst1 . lst2)
+    (cond ((null? lst2)
+           (exists-1 pred lst1))
+          ((apply list-transpose+ lst1 lst2)
+           => (lambda (lst) (exists-n-quick pred lst)))
+          (else
+           (assertion-violation 'exists "expected same length proper lists" (cons* lst1 lst2))))))
+
+(define exists-n
+  (lambda (pred list-of-lists)
+    (let ((argc (length list-of-lists)))
+
+      (define collect-car
+        (lambda (lst)
+          (let loop ((lst lst))
+            (cond ((null? lst) '())
+                  ((pair? (car lst))
+                   (cons (caar lst) (loop (cdr lst))))
+                  (else
+                   (assertion-violation 'exists (format "traversal reached to non-pair element ~s" (car lst)) list-of-lists))))))
+
+      (let loop ((head (collect-car list-of-lists)) (rest (collect-cdr list-of-lists)))
+        (or (= (length head) argc)
+            (assertion-violation 'exists "expected same length chains of pairs" list-of-lists))
+        (if (null? rest)
+            (apply pred head)
+            (or (apply pred head)
+                (loop (collect-car rest) (collect-cdr rest))))))))
+
+(define exists-1
+  (lambda (pred lst)
+    (cond ((null? lst) #f)
+          ((pair? lst)
+           (let loop ((head (car lst)) (rest (cdr lst)))
+             (cond ((null? rest) (pred head))
+                   ((pred head))
+                   ((pair? rest) (loop (car rest) (cdr rest)))
+                   (else
+                    (assertion-violation 'exists (format "traversal reached to non-pair element ~s" rest) (list pred lst))))))
+          (else
+           (assertion-violation 'exists (format "expected chain of pairs, but got ~r, as argument 2" lst) (list pred lst))))))
+
+(define fold-left-1
+  (lambda (proc seed lst)
+    (cond ((null? lst) seed)
+          (else
+           (fold-left-1 proc (proc seed (car lst)) (cdr lst))))))
+
+(define fold-left-n
+  (lambda (proc seed lst)
+    (cond ((null? lst) seed)
+          (else
+           (fold-left-n proc (apply proc (append (list seed) (car lst))) (cdr lst))))))
+
+(define fold-left
+  (lambda (proc seed lst1 . lst2)
+    (if (null? lst2)
+        (if (list? lst1)
+            (fold-left-1 proc seed lst1)
+            (assertion-violation 'fold-left (format "expected proper list, but got ~r, as argument 3" lst1) (cons* proc seed lst1 lst2)))
+        (cond ((apply list-transpose+ lst1 lst2)
+               => (lambda (lst) (fold-left-n proc seed lst)))
+              (else
+               (assertion-violation 'fold-left "expected same length proper lists" (cons* proc seed lst1 lst2)))))))
+
+(define fold-right-1
+  (lambda (proc seed lst)
+    (cond ((null? lst) seed)
+          (else
+           (proc (car lst) (fold-right-1 proc seed (cdr lst)))))))
+
+(define fold-right-n
+  (lambda (proc seed lst)
+    (cond ((null? lst) seed)
+          (else
+           (apply proc (append (car lst) (list (fold-right-n proc seed (cdr lst)))))))))
+
+(define fold-right
+  (lambda (proc seed lst1 . lst2)
+    (if (null? lst2)
+        (if (list? lst1)
+            (fold-right-1 proc seed lst1)
+            (assertion-violation 'fold-right (format "expected proper list, but got ~r, as argument 3" lst1) (cons* proc seed lst1 lst2)))
+        (cond ((apply list-transpose+ lst1 lst2)
+               => (lambda (lst) (fold-right-n proc seed lst)))
+              (else
+               (assertion-violation 'fold-right "expected same length proper lists" (cons* proc seed lst1 lst2)))))))
+
+;; Originaly from Ypsilon Scheme end
 
 (define (list->string l)
   (let* ((len (length l))
@@ -219,31 +305,10 @@
     (iter iter l 0)
     newstring))
 
-(define (for-each proc . ll)
-  (if (null? (car ll))
-      #f
-      (if (null? (cdr ll))
-          (for-each-1 proc (car ll))
-          (let* ((tetes (map car ll))
-                 (queues (map cdr ll)))
-            (apply proc tetes)
-            (apply for-each (cons proc queues))))))
-
-(define (for-each-1 proc lst)
-  (if (null? lst)
-      #f
-      (begin
-        (proc (car lst))
-        (for-each-1 proc (cdr lst)))))
-
 (define (vector-for-each proc v1 . v2)
     (apply for-each proc (vector->list v1)
            (map vector->list v2)))
 
-;; (define (vector-map proc vec1 . vec2)
-;;   (list->vector
-;;    (apply map proc (vector->list vec1)
-;;           (map vector->list vec2))))
 ;; Originaly from Chicken Scheme.
 (define vector-map
   (lambda (f vec . vecs)
@@ -255,66 +320,17 @@
               (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (apply f (vector-ref vec i) (map (lambda (v) (vector-ref v i)) vecs))) (loop (+ 1 i))))))) (loop 0)))
           (letrec ((loop (lambda (i) (if (= i n) (begin #f vr) (begin (vector-set! vr i (f (vector-ref vec i))) (loop (+ 1 i))))))) (loop 0))))))
 
-; used internal
-(define (foldl1 binop l)
-  (if (null? (cdr l))
-      (car l)
-      (foldl1 binop (cons (binop (car l) (cadr l))
-                          (cddr l)))))
-; used internal
-(define (foldl binop start l)
-  (if (null? l)
-      start
-      (foldl binop (binop start (car l)) (cdr l))))
-
-(define (fold-left combine nil list1 . lists)
-  (if (null? list1)
-      nil
-      (apply fold-left
-             (cons*
-              combine
-              (apply combine (cons* nil (car list1) (map car lists)))
-              (cdr list1)
-              (map cdr lists)))))
-
-; used internal
-(define (foldr binop start l)
-    (if (null? l)
-        start
-        (binop (car l) (foldr binop start (cdr l)))))
-
-; used internal
-(define (foldr1 binop l)
-    (if (null? (cdr l))
-        (car l)
-        (binop (car l) (foldr1 binop (cdr l)))))
-
-; used internal
+;; ; used internal
 (define (foldr2 binop start l1 l2)
     (if (null? l1)
         start
         (binop (car l1) (car l2) (foldr2 binop start (cdr l1) (cdr l2)))))
 
-; used internal
+;; ; used internal
 (define (fold kons knil lis1)
   (let lp ((lis lis1) (ans knil))
     (if (null? lis) ans
       (lp (cdr lis) (kons (car lis) ans)))))
-
-(define (fold-right combine nil list1 . lists)
-  (if (null? list1)
-      nil
-      (apply combine
-             (append
-              (list (car list1))
-              (map car lists)
-              (list
-               (apply fold-right
-                      (cons*
-                       combine
-                       nil
-                       (cdr list1)
-                       (map cdr lists))))))))
 
 (define (remp proc l)
   (let loop ([l l]
@@ -361,55 +377,6 @@
         (if (pred (car lst))
             (car lst)
             (loop (cdr lst))))))
-
-; internal use
-;; (define (generic-assoc releq obj alist)
-;;   (cond ((null? alist)
-;;          #f)
-;;         ((releq (car (car alist)) obj)
-;;          (car alist))
-;;         (else
-;;          (generic-assoc releq obj (cdr alist)))))
-
-;; (define (assq obj alist) (generic-assoc eq? obj alist))
-;; (define (assv obj alist) (generic-assoc eqv? obj alist))
-;; (define (assoc obj alist) (generic-assoc equal? obj alist))
-
-(define (for-all proc lst . lists)
-  (define (for-all-1 proc lst1)
-    (if (null? lst1)
-        #t
-        (let loop ([lst lst1])
-          (cond
-           [(not (pair? lst))
-            (assertion-violation 'for-all "proper list required" lst1)]
-           [(proc (car lst))
-            => (lambda (ret)
-                 (if (null? (cdr lst))
-                     ret
-                     (loop (cdr lst))))]
-           [else #f]))))
-  (define (for-all-n proc list-n)
-    (define (map-car l)
-      (let loop ([l l])
-        (cond
-         [(null? l)
-          '()]
-         [(pair? (car l))
-          (cons (caar l) (loop (cdr l)))]
-         [else
-          (assertion-violation 'for-all "the lists all should have the same length" list-n)])))
-    (if (null*? list-n)
-        #t
-        (let loop ([head (map-car list-n)]
-                   [rest (map cdr list-n)])
-          (if (null? (car rest))
-              (apply proc head)
-              (and (apply proc head)
-                   (loop (map-car rest) (map cdr rest)))))))
-    (if (null? lists)
-        (for-all-1 proc lst)
-        (for-all-n proc (cons lst lists))))
 
 (define (null*? lst)
   (let loop ([lst lst])
@@ -494,7 +461,6 @@
         (cons (f i (car l)) (iter f (cdr l) (+ i 1)))))
   (iter f l 0))
 
-
 (define (symbol-concat . symbols)
   (define (concat a b)
     (if (null? b)
@@ -576,12 +542,6 @@
 (define second cadr)
 (define third caddr)
 (define fourth cadddr)
-
-;; (define (cons* first . rest)
-;;   (let recur ((x first) (rest rest))
-;;     (if (pair? rest)
-;;         (cons x (recur (car rest) (cdr rest)))
-;;         x)))
 
 (define-macro (receive . args)
  `(call-with-values (lambda () ,(cadr args)) (lambda ,(car args) ,@(cddr args))))
@@ -781,43 +741,6 @@
 
 (define (ellipsis-map proc ls . ls*)
   (apply map proc ls ls*))
-
-(define (exists proc lst . lists)
-  (define (exists-1 proc lst1)
-    (if (null? lst1)
-        #f
-        (let loop ([lst lst1])
-          (cond
-           [(not (pair? lst))
-            (assertion-violation 'exists "proper list required" lst1)]
-           [(proc (car lst))
-            => (lambda (ret)
-                 ret)]
-           [else
-            (if (null? (cdr lst))
-                #f
-                (loop (cdr lst)))]))))
-  (define (exists-n proc list-n)
-    (define (map-car l)
-      (let loop ([l l])
-        (cond
-         [(null? l)
-          '()]
-         [(pair? (car l))
-          (cons (caar l) (loop (cdr l)))]
-         [else
-          (assertion-violation 'exists "the lists all should have the same length" list-n)])))
-    (if (null*? list-n)
-        #f
-        (let loop ([head (map-car list-n)]
-                   [rest (map cdr list-n)])
-          (if (null? (car rest))
-              (apply proc head)
-              (or (apply proc head)
-                   (loop (map-car rest) (map cdr rest)))))))
-  (if (null? lists)
-      (exists-1 proc lst)
-      (exists-n proc (cons lst lists))))
 
 (define (partition proc lst)
   (let loop ([lst lst]

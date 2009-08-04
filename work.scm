@@ -16,9 +16,9 @@
              [ret '()])
     (format #t "lst=~a\n" lst)
     (cond
-     [(null? lst) (reverse ret)]
+     [(null? (car lst)) (reverse ret)]
      [else
-      (loop (cdr lst) (cons (map car (car lst)) ret))])))
+      (loop (map cdr lst) (cons (map car lst) ret))])))
 
 (display (list-transpose+ '(a b c) '(A B C)))
 

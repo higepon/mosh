@@ -1,3 +1,7 @@
+2009-08-04  higepon  <higepon@users.sourceforge.jp>
+
+	* Check lists are same length on map, for-each, for-all, exists, fold-right, and fold-left. (Issue 31 pointed out by leque).
+
 2009-08-03  higepon  <higepon@users.sourceforge.jp>
 
 	* OSCompat.cpp (nativeTranscoder): Change the error policy to RAISE_ERROR. (Issue 80).
