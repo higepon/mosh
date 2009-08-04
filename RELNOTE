@@ -1,3 +1,78 @@
+Mosh 0.2.0 Release Note
+============================
+
+What's Mosh
+----------------
+
+Mosh is A Fast R6RS Scheme interpreter.
+
+  Homepage:
+    http://mosh.monaos.org/
+
+  Reference Manual:
+    http://mosh.monaos.org/
+
+  Developed by:
+    Higepon, kokosabu, herumi and .mjt.
+
+About This Release
+------------------
+
+Added (mosh concurrent) library.
+  (mosh concurrent) offeres "Erlang (or termite) like" message passing concurrent system.
+  This is alpha version. Please give us your feedback.
+  You can see some samples on mosh/example directory.
+
+Added auto-compilation-cache.
+  Loaded libraries will be compiled automatically and stored to the cache directory on first execution.
+  This offer far greater efficiency.
+  --disable-acc and --clean-acc option are avalable.
+
+Added (mosh file) library which exports as following procedures.
+  create-directory
+  delete-directory
+  rename-file
+  create-symbolic-link
+  file-directory?
+  file-symbolic-link?
+  file-regular?
+  file-readable?
+  file-executable?
+  file-writable?
+  file-size-in-bytes
+  file-stat-mtime
+  file-stat-atime
+  file-stat-ctime
+
+Improved (mosh ffi).
+  Added pointer procedures.
+    pointer?, shared-errno, pointer->integer, integer->pointer
+    pointer-set-c-int8!, pointer-set-c-int16!,
+    pointer-set-c-int32!, pointer-set-c-int64!, pointer-ref-c-uint8,
+    pointer-ref-c-uint16, pointer-ref-c-uint32, pointer-ref-c-uint64,
+    pointer-ref-c-int8, pointer-ref-c-int16, pointer-ref-c-int32,
+    pointer-ref-c-int64, pointer-ref-c-signed-char, pointer-ref-c-unsigned-char,
+    pointer-ref-c-signed-short, pointer-ref-c-unsigned-short, pointer-ref-c-signed-int,
+    pointer-ref-c-unsigned-int, pointer-ref-c-signed-long, pointer-ref-c-unsigned-long,
+    pointer-ref-c-signed-long-long, pointer-ref-c-unsigned-long-long, pointer-ref-c-float,
+    pointer-ref-c-double, pointer-ref-c-pointer, pointer-set-c-char!, pointer-set-c-short!,
+    pointer-set-c-int!, pointer-set-c-long!, pointer-set-c-long-long!,
+    pointer-set-c-float!, pointer-set-c-double!, pointer-set-c-pointer!,
+    pointer-null, pointer-null?, pointer-diff, pointer-add,
+    pointer=?, pointer<?, pointer>?, pointer<=?, pointer>=?, pointer<>?
+
+Rewrite equal? for perfomance reason.
+    Using Efficient Nondestructive Equality Checking for Trees and Graphs Michael D. Adams and R. Kent Dybvig.
+
+Improved compilation time.
+  Some critical procedures are rewritten in C++.
+
+Updated (lambda wiki).
+  See example/wiki
+
+Many bug fixes.
+  Thanks to Marco Maggi, he gave us many detailed bug reports.
+
 Mosh 0.1.2 Release Note
 ============================
 
