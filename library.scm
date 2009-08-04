@@ -212,6 +212,15 @@
           (else
            (assertion-violation 'exists "expected same length proper lists" (cons* lst1 lst2))))))
 
+(define exists-n-quick
+    (lambda (pred lst)
+      (and (pair? lst)
+           (let loop ((head (car lst)) (rest (cdr lst)))
+             (if (null? rest)
+                 (apply pred head)
+                 (or (apply pred head)
+                     (loop (car rest) (cdr rest))))))))
+
 (define exists-n
   (lambda (pred list-of-lists)
     (let ((argc (length list-of-lists)))
