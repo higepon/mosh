@@ -126,6 +126,12 @@
          (display b)
          (newline)))
 
+(error (map cons '(1) '(1 2)))
+(error (for-each + '(1) '(1 2)))
+(error (for-all = '(1) '(1 2)))
+(error (exists = '(1) '(1 2)))
+(error (fold-right list '() '(1) '(1 2)))
+(error (fold-left list '() '(1) '(1 2)))
 ((#t . #f) (letrec ((even?
                      (lambda (n)
                        (if (= 0 n)
