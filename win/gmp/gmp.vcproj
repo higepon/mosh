@@ -178,32 +178,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="mpq\abs.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\abs.c"
 				>
 				<FileConfiguration
@@ -252,6 +226,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpf/"
 						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpq\abs.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -386,32 +386,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\add_ui.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\add_ui.c"
 				>
 				<FileConfiguration
@@ -434,6 +408,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\add_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1024,32 +1024,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\clear.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\clear.c"
 				>
 				<FileConfiguration
@@ -1102,6 +1076,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpq\clear.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpz\clrbit.c"
 				>
 				<FileConfiguration
@@ -1124,32 +1124,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\cmp.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1232,6 +1206,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\cmp.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpf\cmp_d.c"
 				>
 				<FileConfiguration
@@ -1284,32 +1284,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\cmp_si.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\cmp_si.c"
 				>
 				<FileConfiguration
@@ -1358,6 +1332,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpf/"
 						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpq\cmp_si.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -1904,32 +1904,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\divis.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\divis.c"
 				>
 				<FileConfiguration
@@ -1952,6 +1926,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpn\generic\divis.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2326,6 +2326,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\mpz\export.c"
+				>
+			</File>
+			<File
 				RelativePath="extract-dbl.c"
 				>
 				<FileConfiguration
@@ -2556,32 +2560,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\fib2_ui.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\fib2_ui.c"
 				>
 				<FileConfiguration
@@ -2608,7 +2586,59 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpn\generic\fib2_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpz\fib_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpz\fits_sint.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2660,7 +2690,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\fits_sint.c"
+				RelativePath="mpz\fits_slong.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2712,7 +2742,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\fits_slong.c"
+				RelativePath="mpz\fits_sshort.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2760,32 +2790,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpf/"
 						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpz\fits_sshort.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -2842,32 +2846,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\fits_ulong.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\fits_ulong.c"
 				>
 				<FileConfiguration
@@ -2894,7 +2872,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\fits_ushort.c"
+				RelativePath="mpf\fits_ulong.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -2942,6 +2920,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\fits_ushort.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3012,32 +3016,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\gcd.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\gcd.c"
 				>
 				<FileConfiguration
@@ -3060,6 +3038,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpn\generic\gcd.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3168,7 +3172,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\get_d.c"
+				RelativePath="mpf\get_d.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3177,8 +3181,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3188,8 +3192,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3220,7 +3224,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\get_d.c"
+				RelativePath="mpq\get_d.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3229,8 +3233,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3240,34 +3244,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\get_d_2exp.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3294,6 +3272,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\get_d_2exp.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3402,6 +3406,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpz\get_si.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpf\get_si.c"
 				>
 				<FileConfiguration
@@ -3428,7 +3458,33 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\get_si.c"
+				RelativePath="mpq\get_str.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpz\get_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3502,58 +3558,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpn/"
 						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpq\get_str.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpz\get_str.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3636,32 +3640,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\hamdist.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\hamdist.c"
 				>
 				<FileConfiguration
@@ -3688,7 +3666,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\init.c"
+				RelativePath="mpn\generic\hamdist.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3697,8 +3675,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3708,8 +3686,38 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\mpz\import.c"
+				>
+			</File>
+			<File
+				RelativePath="mpz\init.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3740,7 +3748,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\init.c"
+				RelativePath="mpf\init.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3749,8 +3757,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3760,8 +3768,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3844,7 +3852,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\inp_str.c"
+				RelativePath="mpf\inp_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3853,8 +3861,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3864,8 +3872,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -3896,7 +3904,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\inp_str.c"
+				RelativePath="mpq\inp_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -3905,8 +3913,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -3916,8 +3924,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4152,32 +4160,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\iset_si.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\iset_si.c"
 				>
 				<FileConfiguration
@@ -4204,7 +4186,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\iset_str.c"
+				RelativePath="mpf\iset_si.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -4256,7 +4238,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\iset_ui.c"
+				RelativePath="mpf\iset_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -4304,6 +4286,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\iset_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4886,7 +4894,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\mul.c"
+				RelativePath="mpz\mul.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -4895,8 +4903,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -4906,34 +4914,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpn\generic\mul.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -4964,7 +4946,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\mul.c"
+				RelativePath="mpn\generic\mul.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -4973,8 +4955,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -4984,8 +4966,34 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\mul.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5016,32 +5024,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\mul_2exp.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\mul_2exp.c"
 				>
 				<FileConfiguration
@@ -5064,6 +5046,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\mul_2exp.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5172,32 +5180,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\mul_ui.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\mul_ui.c"
 				>
 				<FileConfiguration
@@ -5224,7 +5206,59 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\mul_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpz\n_pow_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpz\neg.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -5298,32 +5332,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpq/"
 						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpz\neg.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5446,6 +5454,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\out_str.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpq\out_str.c"
 				>
 				<FileConfiguration
@@ -5494,32 +5528,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\out_str.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5602,32 +5610,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\popcount.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\popcount.c"
 				>
 				<FileConfiguration
@@ -5654,6 +5636,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpn\generic\popcount.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpn\generic\pow_1.c"
 				>
 				<FileConfiguration
@@ -5672,32 +5680,6 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\pow_ui.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -5724,6 +5706,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\pow_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6086,7 +6094,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\random2.c"
+				RelativePath="mpf\random2.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -6095,8 +6103,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6106,8 +6114,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6138,7 +6146,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\random2.c"
+				RelativePath="mpn\generic\random2.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -6147,8 +6155,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6158,8 +6166,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6560,32 +6568,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpn\generic\scan1.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\scan1.c"
 				>
 				<FileConfiguration
@@ -6612,6 +6594,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpn\generic\scan1.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="scanf\scanf.c"
 				>
 				<FileConfiguration
@@ -6630,6 +6638,32 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\set.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6686,7 +6720,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\set.c"
+				RelativePath="mpz\set_d.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -6695,8 +6729,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6706,34 +6740,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\set_d.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6764,7 +6772,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\set_d.c"
+				RelativePath="mpf\set_d.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -6773,8 +6781,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -6784,8 +6792,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -6842,32 +6850,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\set_f.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\set_f.c"
 				>
 				<FileConfiguration
@@ -6890,6 +6872,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpq\set_f.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7024,7 +7032,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\set_si.c"
+				RelativePath="mpf\set_si.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7033,8 +7041,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpq/"
-						ProgramDataBaseFileName="Debug\mpq/"
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -7044,8 +7052,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpq/"
-						ProgramDataBaseFileName="Release\mpq/"
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7076,85 +7084,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\set_si.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\set_str.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpn\generic\set_str.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpn/"
-						ProgramDataBaseFileName="Debug\mpn/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpn/"
-						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpq\set_str.c"
+				RelativePath="mpq\set_si.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7206,7 +7136,33 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpq\set_ui.c"
+				RelativePath="mpf\set_str.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpq\set_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7232,7 +7188,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpz\set_ui.c"
+				RelativePath="mpn\generic\set_str.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7241,8 +7197,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
+						ObjectFile=".\Debug\mpn/"
+						ProgramDataBaseFileName="Debug\mpn/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -7252,8 +7208,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
+						ObjectFile=".\Release\mpn/"
+						ProgramDataBaseFileName="Release\mpn/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7284,7 +7240,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\set_z.c"
+				RelativePath="mpz\set_ui.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7293,8 +7249,8 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
 					/>
 				</FileConfiguration>
 				<FileConfiguration
@@ -7304,8 +7260,34 @@
 						Name="VCCLCompilerTool"
 						AdditionalIncludeDirectories=""
 						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpq\set_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpq/"
+						ProgramDataBaseFileName="Debug\mpq/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpq/"
+						ProgramDataBaseFileName="Release\mpq/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7336,7 +7318,59 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\set_z.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpz\setbit.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpz/"
+						ProgramDataBaseFileName="Debug\mpz/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpz/"
+						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpz\size.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -7384,32 +7418,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpf/"
 						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpz\size.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpz/"
-						ProgramDataBaseFileName="Debug\mpz/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpz/"
-						ProgramDataBaseFileName="Release\mpz/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7554,32 +7562,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\sqrt.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\sqrt.c"
 				>
 				<FileConfiguration
@@ -7602,6 +7584,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\sqrt.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7728,6 +7736,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\sub.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpn\generic\sub.c"
 				>
 				<FileConfiguration
@@ -7776,32 +7810,6 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\sub.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -7858,32 +7866,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\sub_ui.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\sub_ui.c"
 				>
 				<FileConfiguration
@@ -7910,6 +7892,32 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="mpf\sub_ui.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath="mpn\generic\submul_1.c"
 				>
 				<FileConfiguration
@@ -7932,32 +7940,6 @@
 						PreprocessorDefinitions="OPERATION_submul_1"
 						ObjectFile=".\Release\mpn/"
 						ProgramDataBaseFileName="Release\mpn/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="mpf\swap.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -8010,6 +7992,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\swap.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
@@ -8404,32 +8412,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="mpf\urandomb.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Debug\mpf/"
-						ProgramDataBaseFileName="Debug\mpf/"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions=""
-						ObjectFile=".\Release\mpf/"
-						ProgramDataBaseFileName="Release\mpf/"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath="mpz\urandomb.c"
 				>
 				<FileConfiguration
@@ -8452,6 +8434,32 @@
 						PreprocessorDefinitions=""
 						ObjectFile=".\Release\mpz/"
 						ProgramDataBaseFileName="Release\mpz/"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="mpf\urandomb.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Debug\mpf/"
+						ProgramDataBaseFileName="Debug\mpf/"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						AdditionalIncludeDirectories=""
+						PreprocessorDefinitions=""
+						ObjectFile=".\Release\mpf/"
+						ProgramDataBaseFileName="Release\mpf/"
 					/>
 				</FileConfiguration>
 			</File>
