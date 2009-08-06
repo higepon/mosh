@@ -1,6 +1,5 @@
-(import (rnrs)
-        (system)
-        (mosh))
-
-(display (mosh-cache-dir))
+(import (rnrs))
+(display (char->integer #\□))
+(newline)
+(char->integer #\□)
 (newline)
