@@ -55,12 +55,6 @@
 
 using namespace scheme;
 
-#ifdef _WIN32
-    #ifndef MOSH_MINGW32
-    #undef ARCH_IA32
-    #endif
-#endif
-
 #ifdef ARCH_IA32
 #define FFI_SUPPORTED 1
 #elif defined ARCH_X86_64
@@ -90,7 +84,7 @@ public:
 
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
-#ifdef ARCH_IA32
+#if defined(ARCH_IA32) && defined(MOSH_MINGW32)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
     double ret;
     asm volatile(
@@ -106,6 +100,24 @@ static double callStubDouble(Pointer* func, CStack* cstack)
         : "c" (bytes), "S" (cstack->frame()), "a" (func->pointer()) // c:ecx, S:esi a:eax
         : "edi", "edx", "memory"); // we have memory destructions.
     return ret;
+#elif defined(ARCH_IA32) && defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    uintptr_t p = func->pointer();
+    void* s = cstack->frame();
+    double dret; 
+    __asm {
+        MOV    EDX,ESP
+        MOV    ESI,s
+        MOV    ECX,bytes
+        SUB    ESP,bytes
+        MOV    EDI,ESP
+        REP    MOVSB
+        MOV    EDI,EDX
+        CALL   p
+        MOV    ESP,EDI
+        FSTP   dret
+    }
+    return dret;
 #elif defined ARCH_X86_64
     double ret;
     if (cstack->count() == 0) {
@@ -176,7 +188,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
 
 static intptr_t callStub(Pointer* func, CStack* cstack)
 {
-#ifdef ARCH_IA32
+#if defined(ARCH_IA32) && defined(MOSH_MINGW32)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
     intptr_t ret;
     asm volatile(
@@ -192,6 +204,24 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
         : "c" (bytes), "S" (cstack->frame()), "0" (func->pointer()) // c:ecx, S:esi 0:match to the 0th output
         : "edi", "edx", "memory"); // we have memory destructions.
     return ret;
+#elif defined(ARCH_IA32) && defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    uintptr_t p = func->pointer();
+    intptr_t temp;
+    void* s = cstack->frame();
+    __asm {
+        MOV    ECX,bytes
+        MOV    ESI,s
+        MOV    EDX,ESP
+        SUB    ESP,bytes
+        MOV    EDI,ESP
+        REP    MOVSB
+        MOV    EDI,EDX
+        CALL   p
+        MOV    ESP,EDI
+        MOV    temp,EAX
+    }
+    return temp;
 #elif defined ARCH_X86_64
     intptr_t ret = 0;
     if (cstack->count() == 0) {
