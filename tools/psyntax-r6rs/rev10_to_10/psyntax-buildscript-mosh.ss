@@ -1099,6 +1099,7 @@
     (microseconds sys)
     (local-tz-offset sys)
     (call-process interaction sys)
+    (mosh-cache-dir sys)
     (hashtable-for-each mosh)
     (regexp-replace-all mosh)
     (rxmatch mosh mosh)

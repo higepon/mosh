@@ -572,12 +572,10 @@ test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_thread_SOURCES = OSCompatThreadTest.cpp TestingSignalHandler.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
-
-
 install-data-hook :
+	./mosh --clean-acc --disable-acc misc/empty.scm
+	$(INSTALL) -m 666 misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
-	chmod a+w  ~/.mosh/prefix.txt ; true # really, really ugly.
-	chmod a+w  /tmp/.mosh/prefix.txt ; true # really, really ugly.
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 

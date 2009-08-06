@@ -1,3 +1,7 @@
+2009-08-06  higepon  <higepon@users.sourceforge.jp>
+
+	* Makefile.am (install-data-hook): Fixed a premission problem on installation.
+
 2009-08-04  higepon  <higepon@users.sourceforge.jp>
 
 	* RELNOTE: Updated for next release.

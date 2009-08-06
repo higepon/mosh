@@ -50,16 +50,19 @@
     See mosh --help.
 
 |#
+
 (library (mosh config)
   (export get-config get-configs)
   (import (only (rnrs) define cond else assoc => car list map lambda
                        quote cadr error caddr quasiquote unquote)
-          (only (mosh) standard-library-path))
+          (only (mosh) standard-library-path)
+          (only (system) mosh-cache-dir))
 
 
   (define configurations
     `(("library-path" . ("Show core library path." ,(standard-library-path)))
-      ("version"      . ("Show version." "@PACKAGE_VERSION@"))
+      ("mosh-cache-dir" . ("Show auto-compilation-cache direcotry path" ,(mosh-cache-dir)))
+      ("version"      . ("Show version." "0.1.2"))
       ("prefix"       . ("Show prefix." "@prefix@"))))
 
   #|
