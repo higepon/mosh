@@ -84,7 +84,7 @@ public:
 
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
-#if defined(ARCH_IA32) && defined(MOSH_MINGW32)
+#if defined(ARCH_IA32) && !defined(_MSC_VER)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
     double ret;
     asm volatile(
@@ -188,7 +188,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
 
 static intptr_t callStub(Pointer* func, CStack* cstack)
 {
-#if defined(ARCH_IA32) && defined(MOSH_MINGW32)
+#if defined(ARCH_IA32) && !defined(_MSC_VER)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
     intptr_t ret;
     asm volatile(

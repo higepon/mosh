@@ -457,7 +457,7 @@ bench:
 #### test
 check: test
 
-test: ./mosh all-tests.scm libffitest.so.1.0
+test: libffitest.so.1.0 ./mosh all-tests.scm
 	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
 	./mosh test/mosh-test.scm
