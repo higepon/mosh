@@ -307,7 +307,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 PRECOMPILE_SRC   = compiler-with-library.scmc pmatch.scmc psyntax.scmc
 
 INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts pmatch.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm mosh.1 mosh_config.1 tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo r6rs-test-suite README-WINDOWS.txt README.MINGW
+EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts pmatch.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm mosh.1 mosh_config.1 tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo r6rs-test-suite README-WINDOWS.txt README.MINGW misc/empty.scm
 
 GENERATED = \
 all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \
