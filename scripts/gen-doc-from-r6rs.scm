@@ -150,17 +150,18 @@
 (for-each
  (lambda (file)
    (format (current-error-port) "~a\n" (first file))
-   (with-output-to-file (string-append out-dir (first file) ".txt")
-     (lambda ()
+   (call-with-port (open-file-output-port (string-append out-dir (first file) ".txt")
+                                          (make-file-options '(no-fail)) 'block (native-transcoder))
+     (lambda (port)
    (let ([proto* (file->prot* (string-append r6rs-dir (first file)))])
-     (format #t "Title: ~a\n\n~a\n\n" (third file) (fifth file))
+     (format port "Title: ~a\n\n~a\n\n" (third file) (fifth file))
      (if (fourth file) ;; library-name
-         (for-each (lambda (x) (format #t "library: ~a\n\n" x)) (fourth file))
+         (for-each (lambda (x) (format port "library: ~a\n\n" x)) (fourth file))
          (format (current-error-port) "~a : library name not specified\n" (first file)))
      (for-each
       (lambda (prot)
         (format (current-error-port) "~a\n" prot)
-        (format #t
+        (format port
 "Function: ~a
 
 See <~a>
