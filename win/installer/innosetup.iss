@@ -26,12 +26,14 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 [Files]
 Source: "..\..\mosh.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\example\*"; DestDir: "{app}\example"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\..\doc\html\*"; DestDir: "{app}\doc"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
 Name: "{group}\mosh"; Filename: "{app}\mosh.exe"
 Name: "{group}\manual.html"; Filename: "{app}\doc\index.html"
+Name: "{group}\example"; Filename: "{app}\example"
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\mosh"; Filename: "{app}\mosh.exe"; Tasks: quicklaunchicon
 
 [Run]
