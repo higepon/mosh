@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=Mosh
-AppVerName=mosh 0.1.2
+AppVerName=mosh 0.2.0
 AppPublisher=higepon
 AppPublisherURL=http://code.google.com/p/mosh-scheme/
 AppSupportURL=http://code.google.com/p/mosh-scheme/
@@ -12,7 +12,7 @@ DefaultDirName={pf}\Mosh
 DefaultGroupName=Mosh
 AllowNoIcons=yes
 LicenseFile=..\..\COPYING
-OutputBaseFilename=setup_mosh_0.0.2
+OutputBaseFilename=setup_mosh_0.2.0
 Compression=lzma
 SolidCompression=yes
 SetupIconFile="..\..\logo\mosh.ico"
