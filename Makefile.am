@@ -437,6 +437,8 @@ Object-accessors.h: ./accessors.scm
 
 OSConstants.h: ./os-constants.scm
 	./mosh ./scripts/gen-os-constants.scm > $@
+# when you release comment out end
+endif
 
 doc:
 	./mosh scripts/gen-doc-from-r6rs.scm
@@ -445,8 +447,6 @@ doc:
 # 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
 
-# when you release comment out end
-endif
 
 .PHONY: bench doc test install
 
