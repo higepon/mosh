@@ -45,6 +45,7 @@ Added (mosh file) library which exports as following procedures.
   file-stat-ctime
 
 Improved (mosh ffi).
+  Now FFI works on Windows too. (by OKUMURA Yuki)
   Added pointer procedures.
     pointer?, shared-errno, pointer->integer, integer->pointer
     pointer-set-c-int8!, pointer-set-c-int16!,
