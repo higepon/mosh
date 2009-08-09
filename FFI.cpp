@@ -52,7 +52,7 @@ using namespace scheme;
 void* FFI::open(const char* name)
 {
 #ifdef _WIN32
-    return (void *)LoadLibraryA(name);
+    return (void *)LoadLibraryA(name); // FIXME : handle MBCS path
 #else
     return dlopen(name, RTLD_LAZY | RTLD_GLOBAL);
 #endif
@@ -79,7 +79,7 @@ int FFI::close(void* handle)
 const char* FFI::lastError()
 {
 #ifdef _WIN32
-    return 0;
+    return "win32 error"; //FIXME : stub
 #else
     return dlerror();
 #endif
