@@ -89,6 +89,18 @@ static void gmp_free(void *ptr, size_t size)
 }
 #endif
 
+#ifdef _MSC_VER
+static BOOL handler(DWORD ctrlChar)
+{
+    if(CTRL_C_EVENT == ctrlChar){
+        exit(-1);
+        return FALSE;
+    }
+    return TRUE;
+}
+#endif
+
+
 #ifdef _WIN32
 #define srandom srand
 #endif
@@ -115,6 +127,10 @@ void mosh_init()
 #ifdef _WIN32
     WSADATA data;
     WSAStartup(MAKEWORD(2, 2), &data);
+#endif
+
+#ifdef _MSC_VER
+    ::SetConsoleCtrlHandler(handler, TRUE);
 #endif
     initOSConstants();
 

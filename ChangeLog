@@ -1,5 +1,7 @@
 2009-08-10  higepon  <higepon@users.sourceforge.jp>
 
+	* scheme.cpp (mosh_init): Ctrl-c for Windows.
+
 	* configure.ac (CXXFLAGS): Commente out Gauche check.
 
 	* win/include/config.h (VERSION): Changed VERSION for Windows.
