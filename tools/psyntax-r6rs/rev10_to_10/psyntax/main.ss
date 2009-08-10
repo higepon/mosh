@@ -180,7 +180,7 @@
 
   (define (repl . x)
     (define (rec)
-      (display "mosh>")
+      (display "mosh> ")
       (guard (e
               (#t
                (display "\nUnhandled exception:\n\n" (current-error-port))

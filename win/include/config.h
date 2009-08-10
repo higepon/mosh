@@ -151,7 +151,7 @@
 #define TIME_WITH_SYS_TIME 1
 
 /* Version number of package */
-#define VERSION "0.0.8"
+#define VERSION "0.2.0"
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

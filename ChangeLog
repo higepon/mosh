@@ -1,3 +1,11 @@
+2009-08-10  higepon  <higepon@users.sourceforge.jp>
+
+	* configure.ac (CXXFLAGS): Commente out Gauche check.
+
+	* win/include/config.h (VERSION): Changed VERSION for Windows.
+
+	* tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: Added space to repl ">mosh" => ">mosh " thanks to http://pc12.2ch.net/test/read.cgi/tech/1248657331/240.
+
 2009-08-07  higepon  <higepon@users.sourceforge.jp>
 
 	* RELNOTE: Updated RELNOTE for the next release.
