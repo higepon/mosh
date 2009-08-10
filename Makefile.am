@@ -361,15 +361,15 @@ r6rs-test:
 
 #### Instruction.h
 Instruction.h: ./instruction.scm
-	@GOSH@ ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+	gosh ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
 main.cpp: psyntax.h compiler-with-library.h pmatch.h
 
 ./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
-	@GOSH@ ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+	gosh ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
 compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+	gosh ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $(PWD)/$@
 
 SUFFIXES: .scmc .h
@@ -381,13 +381,13 @@ SUFFIXES: .scmc .h
 # 	(cd doc && mosh ../scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
 pmatch.scmc: ./pmatch.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+	gosh ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 # we need to replace #\null => #\nul and |...| => ...
 # It is the difference between gauche and mosh.
 psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
-	@GOSH@ ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+	gosh ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 CORE_LIBS =                 \
@@ -404,7 +404,7 @@ CORE_LIBS =                 \
 	cat $^ > $(PWD)/$@
 
 ./free-vars-decl.scm: ./free-vars.scm
-	@GOSH@ ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+	gosh ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
 ./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
 	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
@@ -416,17 +416,17 @@ CORE_LIBS =                 \
 	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 labels.cpp: ./instruction.scm
-	@GOSH@ ./scripts/gen-label.scm $< > $(PWD)/$@
+	gosh ./scripts/gen-label.scm $< > $(PWD)/$@
 
 DebugInstruction.h: instruction.scm
-	@GOSH@ ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+	gosh ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
 VM.cpp: cprocedures.cpp labels.cpp
 
 Object.h: Object-accessors.h
 
 ./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
-	@GOSH@ ./scripts/gen-cproc.scm > $@
+	gosh ./scripts/gen-cproc.scm > $@
 
 all-tests.scm: ./test-data.scm
 	mosh -5 ./scripts/gen-test.scm $< $@
@@ -452,7 +452,7 @@ doc:
 
 bench:
 #	@GOSH@ ./scripts/bench.scm > /dev/null
-	LANG=C @GOSH@ ./scripts/bench2.scm
+	LANG=C gosh ./scripts/bench2.scm
 
 #### test
 check: test
