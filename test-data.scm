@@ -3342,7 +3342,7 @@
 ;; FFI
 [definition
   (define-macro (try-ffi obj)
-    `(if (and (%ffi-supported?) (not (string=? (host-os) "windows")))
+    `(if (and (%ffi-supported?) (not (string=? (host-os) "win32")))
          ,obj
          #t))
 ]
