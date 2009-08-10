@@ -90,7 +90,7 @@ static void gmp_free(void *ptr, size_t size)
 #endif
 
 #ifdef _MSC_VER
-static BOOL handler(DWORD ctrlChar)
+BOOL WINAPI handler(DWORD ctrlChar)
 {
     if(CTRL_C_EVENT == ctrlChar){
         exit(-1);
