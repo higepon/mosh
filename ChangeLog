@@ -1,3 +1,7 @@
+2009-08-11  higepon  <higepon@users.sourceforge.jp>
+
+	* scanner.re (Scanner): Added '-' to shebang character.
+
 2009-08-10  higepon  <higepon@users.sourceforge.jp>
 
 	* scheme.cpp (mosh_init): Ctrl-c for Windows.
