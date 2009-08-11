@@ -1,5 +1,7 @@
 2009-08-11  higepon  <higepon@users.sourceforge.jp>
 
+	* test/mysql.scm: Fixe test/mysql.ss (Issue 85).
+
 	* scanner.re (Scanner): Added '-' to shebang character.
 
 2009-08-10  higepon  <higepon@users.sourceforge.jp>
