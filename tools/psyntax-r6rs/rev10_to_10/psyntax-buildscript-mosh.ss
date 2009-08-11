@@ -30,8 +30,8 @@
   (psyntax compat)
   (psyntax library-manager)
   (psyntax expander)
-  (except (system) make-parameter parameterize)
-  (except (mosh) library-path)
+  (except (system) make-parameter parameterize mosh-cache-dir)
+  (except (mosh) library-path mosh-cache-dir)
   )
 
 

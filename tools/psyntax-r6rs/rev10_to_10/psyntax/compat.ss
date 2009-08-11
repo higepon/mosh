@@ -29,7 +29,7 @@
     (rnrs)
     (rnrs mutable-pairs)
     (rnrs r5rs)
-    (except (mosh) make-parameter parameterize)
+    (except (mosh) make-parameter parameterize mosh-cache-dir)
     (only (system) get-environment-variable make-simple-struct simple-struct-set! simple-struct-ref simple-struct-name simple-struct?)
     (only (psyntax system $bootstrap)
           void gensym eval-core set-symbol-value! symbol-value)) ;; removed compile-core for mosh

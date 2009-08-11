@@ -1,4 +1,6 @@
 (import (rnrs)
+        (mosh test)
         (foo bar compat))
 
-(display message (current-error-port))
+(test-eq 'compat-mosh message)
+(test-results)

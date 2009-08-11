@@ -458,6 +458,7 @@ bench:
 check: test
 
 test: libffitest.so.1.0 ./mosh all-tests.scm
+	./mosh --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
 	./mosh -5 all-tests.scm
 	./mosh test/testing.scm
 	./mosh test/mosh-test.scm

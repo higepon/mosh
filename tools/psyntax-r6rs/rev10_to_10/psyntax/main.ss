@@ -37,7 +37,7 @@
     (rnrs records procedural)
     ;(rename (rnrs programs) (command-line get-command-line))
     (only (rnrs programs) exit)
-    (except (mosh) library-path);; for get-command-line
+    (except (mosh) library-path  mosh-cache-dir);; for get-command-line
     (rnrs lists)
     (only (rnrs conditions) condition? condition make-non-continuable-violation make-who-condition make-message-condition make-irritants-condition serious-condition? who-condition? message-condition? violation? irritants-condition? condition-who condition-message condition-irritants simple-conditions)
     (only (rnrs exceptions) raise with-exception-handler guard)
@@ -54,6 +54,7 @@
     (library-path (append (library-path) (list path))))
 
   (define (parse-and-add-library-path paths message)
+    (define separator (if (string=? (host-os) "win32") #\; #\:))
     (cond [paths
            => (lambda (paths)
                 (for-each
@@ -62,7 +63,7 @@
                           (add-library-path! (expand-path path))]
                          [else
                           (format (current-error-port) message path)]))
-                (string-split paths #\:)))]))
+                (string-split paths separator)))]))
 
   (define (for-each-with-index proc lst)
     (do ((i 1 (+ i 1)) ; start with 1

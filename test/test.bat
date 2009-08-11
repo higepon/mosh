@@ -3,6 +3,10 @@ setlocal
 if not exist mosh.exe goto notfound
 echo ----------------------------------------
 echo base
+mosh --loadpath=".;./test/mylib" test/use-foo.scm # test ; separated loadpath
+if errorlevel 1 goto end
+echo ----------------------------------------
+echo base
 mosh.exe -5 all-tests.scm
 if errorlevel 1 goto end
 echo ----------------------------------------
