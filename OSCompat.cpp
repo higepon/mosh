@@ -347,12 +347,17 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     // Writing to console is automatically converted into encoding of console.
     if (isUTF16Console() && !IN_EMACS) {
 #if 1
-        uint8_t* dest = allocatePointerFreeU8Array(_size + 1);
-        if (WideCharToMultiByte(CP_ACP, 0, buf, _size, desc, _size, 0, 0) == 0){
+        int destSize = 0;
+        if ((destSize = WideCharToMultiByte(CP_ACP , 0,(const wchar_t *)data, len, NULL, 0, NULL, NULL)) == 0) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return;
         }
-        isOK = WriteFile(desc_, dest, strlen(dest) + 1, &writeSize, NULL);
+        uint8_t* dest = allocatePointerFreeU8Array(destSize + 1);
+        if (WideCharToMultiByte(CP_ACP, 0, buf, _size, dest, destSize, 0, 0) == 0){
+            throwIOError2(IOError::WRITE, getLastErrorMessage());
+            return;
+        }
+        isOK = WriteFile(desc_, dest, destSize, &writeSize, NULL);
 #else
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;
