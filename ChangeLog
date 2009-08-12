@@ -1,5 +1,7 @@
 2009-08-12  higepon  <higepon@users.sourceforge.jp>
 
+	* OSCompat.cpp (write): Handled Emacs.
+
 	* OSCompatSocket.h: Added include wspiapi.h.
 
 2009-08-11  higepon  <higepon@users.sourceforge.jp>

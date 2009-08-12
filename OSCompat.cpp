@@ -338,13 +338,14 @@ int64_t File::size()
 int64_t File::write(uint8_t* buf, int64_t _size)
 {
     MOSH_ASSERT(isInSize_t(_size)); // loop is better if !isInSize_t(_size) on 32-bit
+    static const bool IN_EMACS = getEnv(UC("emacs")) != NULL;
     const size_t size = static_cast<size_t>(_size);
 #ifdef _WIN32
     MOSH_ASSERT(isOpen());
     DWORD writeSize;
     int isOK;
     // Writing to console is automatically converted into encoding of console.
-    if (isUTF16Console()) {
+    if (isUTF16Console() && !IN_EMACS) {
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;
     } else {
