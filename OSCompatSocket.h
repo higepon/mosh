@@ -36,6 +36,7 @@
 #ifdef _WIN32
 	#include <winsock2.h>
 	#include <ws2tcpip.h> // for socklen_t
+    #include <wspiapi.h>  // Windows 2000 doesn't have freeaddrinfo
 	#pragma comment(lib, "ws2_32.lib")
 	#pragma comment(lib, "iphlpapi.lib")
 	#define snprintf _snprintf
