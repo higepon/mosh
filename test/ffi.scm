@@ -24,6 +24,7 @@
     (define append_hello (c-function libffitest char* append_hello char*))
     (define struct_ref (c-function libffitest char struct_ref void*))
     (define change_errno (c-function libffitest void change_errno))
+    (define abc (c-function libffitest void abc void*))
 
     (test-equal (sub 3 2) 1)
     (test-equal (subf2 1.0 0.0) 1.0)
@@ -163,6 +164,12 @@
      (test-eq 3 (shared-errno))
      (shared-errno 4)
      (test-eq 4 (shared-errno)))
+
+   (let ([buffer (make-bytevector 4)]) ;; for abc\0
+     (abc buffer)
+     (test-eq #\a (integer->char (bytevector-u8-ref buffer 0)))
+     (test-eq #\b (integer->char (bytevector-u8-ref buffer 1)))
+     (test-eq #\c (integer->char (bytevector-u8-ref buffer 2))))
 
    (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))

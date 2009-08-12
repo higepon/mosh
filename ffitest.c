@@ -189,3 +189,8 @@ void change_errno()
 {
   errno = 3;
 }
+
+void abc(void* p)
+{
+  strcpy(p, "abc");
+}
