@@ -531,22 +531,22 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_GE)
         {
-            NUM_CMP_LOCAL(>=, ge);
+            NUM_CMP_LOCAL(>=, >=, ge);
             NEXT1;
         }
         CASE(NUMBER_GT)
         {
-            NUM_CMP_LOCAL(>, gt);
+            NUM_CMP_LOCAL(>, >, gt);
             NEXT1;
         }
         CASE(NUMBER_LE)
         {
-            NUM_CMP_LOCAL(<=, le);
+            NUM_CMP_LOCAL(<=, <=, le);
             NEXT1;
         }
         CASE(NUMBER_LT)
         {
-            NUM_CMP_LOCAL(<, lt);
+            NUM_CMP_LOCAL(<, <, lt);
             NEXT1;
         }
         CASE(NUMBER_MUL)
@@ -841,7 +841,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object i = fetchOperand();
             MOSH_ASSERT(i.isFixnum());
             ac_ = referLocal(i.toFixnum());
-            NUM_CMP_LOCAL(<, lt);
+            NUM_CMP_LOCAL(<, <, lt);
             BRANCH_ON_FALSE;
             NEXT;
         }
@@ -852,7 +852,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(i.isFixnum());
             // we can omit "PUSH" insruction
             ac_ = fetchOperand();
-            NUM_CMP(<=, le, referLocal(i.toFixnum()));
+            NUM_CMP(<=, <=, le, referLocal(i.toFixnum()));
             BRANCH_ON_FALSE;
             NEXT;
         }
@@ -862,7 +862,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(i.isFixnum());
             // we can omit "PUSH" insruction
             ac_ = fetchOperand();
-            NUM_CMP(>=, ge, referLocal(i.toFixnum()));
+            NUM_CMP(>=, >=, ge, referLocal(i.toFixnum()));
             BRANCH_ON_FALSE;
             NEXT;
         }
@@ -873,7 +873,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             MOSH_ASSERT(i.isFixnum());
             // we can omit "PUSH" insruction
             ac_ = fetchOperand();
-            NUM_CMP(==, eq, referLocal(i.toFixnum()));
+            NUM_CMP(==, =, eq, referLocal(i.toFixnum()));
             BRANCH_ON_FALSE;
             NEXT;
         }
@@ -1049,35 +1049,35 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not less than or equal
         CASE(BRANCH_NOT_LE)
         {
-            NUM_CMP_LOCAL(<=, le);
+            NUM_CMP_LOCAL(<=, <=, le);
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not less than
         CASE(BRANCH_NOT_LT)
         {
-            NUM_CMP_LOCAL(<, lt);
+            NUM_CMP_LOCAL(<, <, lt);
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not greater than or equal
         CASE(BRANCH_NOT_GE)
         {
-            NUM_CMP_LOCAL(>=, ge);
+            NUM_CMP_LOCAL(>=, >=, ge);
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not greater than
         CASE(BRANCH_NOT_GT)
         {
-            NUM_CMP_LOCAL(>, gt);
+            NUM_CMP_LOCAL(>, >, gt);
             BRANCH_ON_FALSE;
             NEXT;
         }
         // Branch on not number equal
         CASE(BRANCH_NOT_NUMBER_EQUAL)
         {
-            NUM_CMP_LOCAL(==, eq);
+            NUM_CMP_LOCAL(==, =, eq);
             BRANCH_ON_FALSE;
             NEXT;
         }

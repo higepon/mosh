@@ -83,7 +83,7 @@
         pc_++;                                  \
     }
 
-#define NUM_CMP_LOCAL(op, func)                                                             \
+#define NUM_CMP_LOCAL(op, opstring, func)                                                   \
    const Object n = pop();                                                                  \
    if (n.isFixnum() && ac_.isFixnum()) {                                                    \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
@@ -93,12 +93,12 @@
        if (n.isReal() && ac_.isReal()) {                                                    \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
-           callWrongTypeOfArgumentViolationAfter(this, #op, "number required", L2(n, ac_)); \
+           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_)); \
            NEXT1;                                                                           \
        }                                                                                    \
    }
 
-#define NUM_CMP(op, func, val)                                                              \
+#define NUM_CMP(op, opstring, func, val)                                 \
    const Object n = val;                                                                    \
    if (n.isFixnum() && ac_.isFixnum()) {                                                    \
        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
@@ -108,7 +108,7 @@
        if (n.isReal() && ac_.isReal()) {                                                    \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
-           callWrongTypeOfArgumentViolationAfter(this, #op, "number required", L2(n, ac_)); \
+           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_)); \
            NEXT;                                                                            \
        }                                                                                    \
    }
