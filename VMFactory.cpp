@@ -59,7 +59,7 @@ VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
     Transcoder* native = nativeTranscoder();
     const Object inPort    = Object::makeTextualInputPort(new StandardInputPort, File::STANDARD_IN.isUTF16Console() ? transcoder : native);
     const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort, File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
-    const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort, transcoder);
+    const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort, File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
 
     VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn);
     vm->registerPort(outPort);

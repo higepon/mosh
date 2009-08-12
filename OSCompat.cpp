@@ -338,26 +338,32 @@ int64_t File::size()
 int64_t File::write(uint8_t* buf, int64_t _size)
 {
     MOSH_ASSERT(isInSize_t(_size)); // loop is better if !isInSize_t(_size) on 32-bit
-    static const bool IN_EMACS = getEnv(UC("emacs")) != NULL;
+    //static const bool IN_EMACS = getEnv(UC("emacs")) != NULL;
     const size_t size = static_cast<size_t>(_size);
 #ifdef _WIN32
     MOSH_ASSERT(isOpen());
     DWORD writeSize;
     int isOK;
     // Writing to console is automatically converted into encoding of console.
-    if (isUTF16Console() && !IN_EMACS) {
+    if (isUTF16Console()) {
 #if 1
         int destSize = 0;
-        if ((destSize = WideCharToMultiByte(CP_ACP , 0,(const wchar_t *)data, len, NULL, 0, NULL, NULL)) == 0) {
+        if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, _size / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
-            return;
+            return 0;
         }
         uint8_t* dest = allocatePointerFreeU8Array(destSize + 1);
-        if (WideCharToMultiByte(CP_ACP, 0, buf, _size, dest, destSize, 0, 0) == 0){
+        if (WideCharToMultiByte(GetConsoleOutputCP(), 0, (const wchar_t *)buf, _size / 2 , (LPSTR)dest, destSize, NULL, NULL) == 0){
             throwIOError2(IOError::WRITE, getLastErrorMessage());
-            return;
+            return 0;
         }
         isOK = WriteFile(desc_, dest, destSize, &writeSize, NULL);
+		// This never happens?
+		if (writeSize != destSize) {
+            throwIOError2(IOError::WRITE, getLastErrorMessage());
+            return 0;
+		}
+		writeSize = _size;
 #else
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;
