@@ -1663,7 +1663,7 @@ loop:
 //         }
     }
     bool tc1 = (Arithmetic::lt(r, mm) || (meven && Arithmetic::eq(r, mm)));
-    bool tc2 = (Arithmetic::gt(Arithmetic::add(r, mp), s) > 0 || (meven && Arithmetic::eq(Arithmetic::add(r, mp), s)));
+    bool tc2 = ((Arithmetic::gt(Arithmetic::add(r, mp), s)) || (meven && Arithmetic::eq(Arithmetic::add(r, mp), s)));
     if (!tc1) {
         if (!tc2) {
             digits[digit_count++] = dig;
