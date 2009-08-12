@@ -346,6 +346,10 @@ int64_t File::write(uint8_t* buf, int64_t _size)
     int isOK;
     // Writing to console is automatically converted into encoding of console.
     if (isUTF16Console()) {
+
+// We used to use WriteConsole, since we have to convert UTF16(input) to an encoding of console.
+// But WriteConsole can't be redirected to a file.
+// So we use WideCharToMultiByte and GetConsoleOutputCP.
 #if 1
         int destSize = 0;
         if ((destSize = WideCharToMultiByte(GetConsoleOutputCP() , 0,(const wchar_t *)buf, _size / 2, (LPSTR)NULL, 0, NULL, NULL)) == 0) {
@@ -358,12 +362,12 @@ int64_t File::write(uint8_t* buf, int64_t _size)
             return 0;
         }
         isOK = WriteFile(desc_, dest, destSize, &writeSize, NULL);
-		// This never happens?
-		if (writeSize != destSize) {
+        // This never happens?
+        if (writeSize != destSize) {
             throwIOError2(IOError::WRITE, getLastErrorMessage());
             return 0;
-		}
-		writeSize = _size;
+        }
+        writeSize = _size;
 #else
         isOK = WriteConsole(desc_, buf, size / 2, &writeSize, NULL);
         writeSize *= 2;

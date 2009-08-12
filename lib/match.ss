@@ -58,7 +58,7 @@
     Pattern Match Library
 |#
 (library (match)
-  (export match)
+  (export match match-lambda match-lambda*)
   (import
    (only (rnrs) define-syntax syntax-rules _ ... define if let pair? let-syntax begin car cdr lambda error quote null? equal? and)
    (rnrs mutable-pairs))

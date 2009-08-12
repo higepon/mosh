@@ -1,5 +1,7 @@
 2009-08-12  higepon  <higepon@users.sourceforge.jp>
 
+	* OSCompat.cpp (File::write): Not to use WriteConsole for redirection problem.
+
 	* VM-Run.h (NUM_CMP_LOCAL): Fixed Issue 86.
 
 	* lib/mosh/ffi.ss: Added malloc and free.
