@@ -36,6 +36,8 @@
 
 namespace scheme {
 
+Object internalFfiMallocEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiFreeEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiLookupEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiOpenEx(VM* theVM, int argc, const Object* argv);

@@ -171,6 +171,14 @@
      (test-eq #\b (integer->char (bytevector-u8-ref buffer 1)))
      (test-eq #\c (integer->char (bytevector-u8-ref buffer 2))))
 
+   (let ([buffer (malloc 4)]) ;; for abc\0
+     (abc buffer)
+     (test-equal "abc" (pointer->string buffer)))
+
+   (let ([p (malloc 3)])
+     (test-true (pointer? p))
+     (free p))
+
    (let ()
       (define libmysqlclient (guard [c (#t #f)] (open-shared-library "libmysqlclient.so.15.0.0")))
     (when libmysqlclient

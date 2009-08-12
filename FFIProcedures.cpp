@@ -900,3 +900,25 @@ Object scheme::sharedErrnoEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 }
+
+Object scheme::internalFfiFreeEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("free");
+    checkArgumentLength(1);
+    argumentAsPointer(0, p);
+    free((void*)p->pointer());
+    return Object::Undef;
+}
+
+Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("malloc");
+    checkArgumentLength(1);
+    argumentCheckExactInteger(0, size);
+    if (!Arithmetic::fitsU64(size)) {
+        callAssertionViolationAfter(theVM, procedureName, "size out of range", L1(argv[0]));
+        return Object::Undef;
+    }
+    const uint64_t u64Size = Arithmetic::toU64(size);
+    return Object::makePointer(malloc(u64Size));
+}

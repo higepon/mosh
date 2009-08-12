@@ -533,6 +533,8 @@
   %ffi-call->void*
   %ffi-call->double
   %ffi-supported?
+  %ffi-malloc
+  %ffi-free
   host-os
   output-port?
   textual-port?

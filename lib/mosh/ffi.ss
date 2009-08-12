@@ -85,7 +85,7 @@
 (library (mosh ffi)
   (export make-c-function c-function open-shared-library find-shared-library
           pointer->string
-          (rename (%ffi-supported? ffi-supported?))
+          (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t size-of-pointer
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
@@ -324,6 +324,37 @@
     (syntax-case x ()
       [(_ lib ret func arg ...)
        #'(make-c-function lib 'ret 'func '(arg ...)))]))
+
+#|
+    Function: malloc
+
+    Allocate n bytes of memory. Allocated memory will never collected by GC. Use <<free>> procedure.
+
+    Prototype:
+    > (malloc n)
+
+    Parameters:
+
+      n - n bytes of memory to allocate.
+
+    Returns:
+
+      A pointer to the allocated memory.
+|#
+
+#|
+    Function: free
+
+    Frees the memory allocated by <<malloc>>.
+
+    Prototype:
+    > (free p)
+
+    Parameters:
+
+      p - the pointer allocated by <<malloc>.
+
+|#
 
 (define (%ffi-call->char* func . args)
   (let ([p (apply %ffi-call->void* func args)])

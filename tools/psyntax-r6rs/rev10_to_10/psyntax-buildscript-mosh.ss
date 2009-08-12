@@ -1044,6 +1044,8 @@
     (%ffi-call->string-or-zero interaction sys)
     (%ffi-pointer->string interaction sys)
     (%ffi-supported? interaction sys)
+    (%ffi-malloc sys)
+    (%ffi-free sys)
     (shared-errno interaction sys)
     (pointer? interaction sys)
     (integer->pointer interaction sys)

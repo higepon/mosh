@@ -1,5 +1,7 @@
 2009-08-12  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/mosh/ffi.ss: Added malloc and free.
+
 	* lib/mosh/ffi.ss: Allow bytevector can be passed to void*.
 
 	* OSCompat.cpp (write): Handled Emacs.
