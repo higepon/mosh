@@ -1,9 +1,20 @@
 (import (rnrs))
+(define (ctak x y z)
+  (call-with-current-continuation
+   (lambda (k) (ctak-aux k x y z))))
 
-(define-syntax let1
-    (lambda (x)
-      (syntax-case x ()
-        [(_ var val body body* ...)
-         #'(let ([var val]) body body* ...)])))
+(define (ctak-aux k x y z)
+  (if (not (< y x))
+      (k z)
+      (call-with-current-continuation
+       (lambda (k)
+         (ctak-aux
+          k
+          (call-with-current-continuation
+           (lambda (k) (ctak-aux k (- x 1) y z)))
+          (call-with-current-continuation
+           (lambda (k) (ctak-aux k (- y 1) z x)))
+          (call-with-current-continuation
+           (lambda (k) (ctak-aux k (- z 1) x y))))))))
 
-(display (let1 x 3 x x))
+(ctak 18 12 6)
