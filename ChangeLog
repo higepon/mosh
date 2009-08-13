@@ -1,3 +1,6 @@
+2009-08-13  higepon  <higepon@users.sourceforge.jp>
+
+	* Now memcached client conects to mulitple servers.
 2009-08-12  higepon  <higepon@users.sourceforge.jp>
 
 	* OSCompat.cpp (File::write): Not to use WriteConsole for redirection problem.

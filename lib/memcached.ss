@@ -39,14 +39,21 @@
           memcached-bv-gets)
          (import (rnrs)
                  (mosh)
+                 (match)
                  (only (srfi :1) alist-cons)
                  (only (srfi :13) string-join)
+                 (srfi :27)
                  (mosh socket))
 
 (define-record-type memcached-client
   (fields
-   (immutable socket)))
+   (immutable socket*)))
 
+(define (random-socket conn)
+  (let ([socket* (memcached-client-socket* conn)])
+    (if (= 1 (vector-length socket*))
+        (vector-ref socket* 0)
+        (vector-ref socket* (random-integer (vector-length socket*))))))
 
 (define (memcached-set! conn key flags expiry value)
   (let-values (([port get] (open-bytevector-output-port)))
@@ -72,13 +79,17 @@
         (cdr ret)
         #f)))
 
+(define memcached-connect
+  (match-lambda*
+   [(server port)
+    (random-source-randomize! default-random-source)
+    (make-memcached-client (vector (make-client-socket server port)))]
+   [(spec*)
+    (random-source-randomize! default-random-source)
+    (make-memcached-client (list->vector (map (lambda (spec) (make-client-socket (car spec) (cdr spec))) spec*)))]))
 
-(define (memcached-connect server port)
-  (make-memcached-client (make-client-socket server port)))
-
-(define (memcached-recv conn)
-  (let ([buffer-size 4096]
-        [socket (memcached-client-socket conn)])
+(define (memcached-recv socket)
+  (let ([buffer-size 4096])
       (let loop ([ret (make-bytevector 0)]
                  [data (socket-recv socket buffer-size)])
         (let* ([total-size (+ (bytevector-length ret) (bytevector-length data))]
@@ -89,21 +100,23 @@
               (loop new (socket-recv socket buffer-size))
               new)))))
 
-(define (memcached-send conn text)
-  (memcached-send-bv conn (string->utf8 text)))
+(define (memcached-send socket text)
+  (memcached-send-bv socket (string->utf8 text)))
 
-(define (memcached-send-bv conn bv)
-  (socket-send (memcached-client-socket conn) bv))
+(define (memcached-send-bv socket bv)
+  (socket-send socket bv))
 
 (define (memcached-bv-set! conn key flags expiry bv-value)
-    (memcached-send conn (format "set ~a 0 0 ~d\r\n" key (bytevector-length bv-value)))
-    (memcached-send-bv conn bv-value)
-    (memcached-send conn "\r\n")
-    (memcached-recv conn))
+  (let ([socket (random-socket conn)])
+    (memcached-send socket (format "set ~a 0 0 ~d\r\n" key (bytevector-length bv-value)))
+    (memcached-send-bv socket bv-value)
+    (memcached-send socket "\r\n")
+    (memcached-recv socket)))
 
 (define (memcached-bv-gets conn . keys)
-  (memcached-send conn (format "get ~a\r\n" (string-join keys " ")))
-  (parse-response (memcached-recv conn)))
+  (let ([socket (random-socket conn)])
+    (memcached-send socket (format "get ~a\r\n" (string-join keys " ")))
+    (parse-response (memcached-recv socket))))
 
 (define (parse-response res)
   (let loop ([i 0]

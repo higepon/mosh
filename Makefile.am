@@ -486,6 +486,7 @@ test: libffitest.so.1.0 ./mosh all-tests.scm
 	./mosh test/concurrent-crash.scm
 	./mosh test/number.scm
 	./mosh test/cgi.scm
+	./mosh test/memcached.scm
 	(cd r6rs-test-suite && $(MAKE) $@)
 
 
