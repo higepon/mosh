@@ -1,5 +1,5 @@
 /*
- * VM-inl.h - 
+ * VM-inl.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -34,6 +34,7 @@
 
 #include "config.h"
 #include "Gloc.h"
+#include <sys/time.h>
 
 namespace scheme {
 
@@ -151,7 +152,9 @@ inline Object VM::makeContinuation(Object n)
     code[4] = Object::makeStack(stack_, sp_ - stack_);
     code[5] = Object::makeRaw(Instruction::RETURN);
     code[6] = n;
-    return Object::makeClosure(getDirectThreadedCode(code, codeSize), codeSize, 1, true, sp_, 0, 1, Object::False);
+    Object* c = getDirectThreadedCode(code, codeSize);
+    const Object closure = Object::makeClosure(c, codeSize, 1, true, sp_, 0, 1, Object::False);
+    return closure;
 }
 
 inline Object* VM::disasm(Closure* closure)
