@@ -11,4 +11,6 @@
 (test-true (equal? +nan.0 (string->number "-nan.0")))
 (test-true (equal? -nan.0 (string->number "+nan.0")))
 (test-true (equal? -nan.0 (string->number "-nan.0")))
+
+(test-error assertion-violation? (bitwise-bit-field #xFF 2 1))
 (test-results)

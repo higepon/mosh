@@ -39,6 +39,8 @@
     (bitwise-if mask (bitwise-arithmetic-shift-left ei3 ei2) ei1)))
 
 (define (bitwise-bit-field ei1 ei2 ei3)
+  (when (> ei2 ei3)
+    (assertion-violation 'bitwise-bit-field "2nd parameter must be less than or equal to 3rd parameter" ei1 ei2 ei3))
   (let ((mask (bitwise-not (bitwise-arithmetic-shift-left -1 ei3))))
     (bitwise-arithmetic-shift-right (bitwise-and ei1 mask) ei2)))
 

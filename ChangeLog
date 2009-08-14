@@ -1,3 +1,9 @@
+2009-08-14  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/core/bitwise.scm (bitwise-bit-field): Fixed argument check Issue 88.
+
+	* ErrorProcedures.cpp (assertionViolationEx): Fixed an order of irritants.
+
 2009-08-13  higepon  <higepon@users.sourceforge.jp>
 
 	* Now memcached client conects to mulitple servers.
