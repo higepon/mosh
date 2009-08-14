@@ -1,6 +1,6 @@
-(import (rnrs)
+;(import (rnrs)
 ;        (core)
-        (mosh))
+;        (mosh))
 
 #;(define-syntax time
   (syntax-rules ()
@@ -20,5 +20,5 @@
   (cond
    [(= i 100000) '()]
    [else
-    (call/cc (lambda (c) (set! a 3)c))
+    (%call/cc (lambda (c) (set! a 3)c))
     (loop (+ i 1))]))

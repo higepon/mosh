@@ -803,11 +803,12 @@
                 (set! winders l)))))))
   (set! call/cc
       (lambda (f)
-        (%call/cc (lambda (k)
-             (f (let ((save winders))
-                  (lambda x
-                    (if (not (eq? save winders)) (do-wind save))
-                    (apply k x))))))))
+        (%call/cc
+         (lambda (k)
+           (f (let ((save winders))
+                (lambda x
+                  (if (not (eq? save winders)) (do-wind save))
+                  (apply k x))))))))
   (set! call-with-current-continuation call/cc)
   (set! dynamic-wind
     (lambda (in body out)
