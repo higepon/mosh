@@ -157,18 +157,35 @@
 #define argumentAsVector(index, variableName) castArgument(index, variableName, isVector, vector, Vector*, toVector)
 #define argumentAsCodeBuilder(index, variableName) castArgument(index, variableName, isCodeBuilder, code-builder, CodeBuilder*, toCodeBuilder)
 
-
 #define argumentAsPointer(index, variableName) castArgument(index, variableName, isPointer, pointer, Pointer*, toPointer)
 #define argumentAsSocket(index, variableName) castArgument(index, variableName, isSocket, socket, Socket*, toSocket)
 #define argumentAsSimpleStruct(index, variableName) castArgument(index, variableName, isSimpleStruct, simple-struct, SimpleStruct*, toSimpleStruct)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
-// #define argumentAsPositiveFixnum(index, variableName) \
-//     argumentAsFixnum(index, variableName);            \
-//     if (variableName < 0) {                                             \
-//         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "positive integer required", variableName); \
-//         return Object::Undef;                                           \
-//     }
+
+inline const char* nth(int index) {
+    switch(index) {
+    case(0):
+        return "1st";
+    case(1):
+        return "2nd";
+    case(2):
+        return "3rd";
+    default:
+        static char buf[16];
+        sprintf(buf, "%dth", index + 1);
+        return buf;
+    }
+}
+
+#define argumentAsPositiveFixnum(index, variableName) \
+    argumentAsFixnum(index, variableName);            \
+    if (variableName < 0) {                                             \
+        static char buf[64];                                            \
+        sprintf(buf, "%s argument: positive integer required", nth(index)); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, ucs4string::from_c_str(buf), argv[index]); \
+        return Object::Undef;                                           \
+    }
 
 
 #define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)

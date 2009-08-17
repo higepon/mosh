@@ -294,6 +294,9 @@ Object scheme::numberTostringEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("number->string");
     checkArgumentLengthBetween(1, 3);
     argumentCheckNumber(0, z);
+    if (3 == argc) {
+        argumentAsPositiveFixnum(2, precision);
+    }
 
     if (2 == argc || 3 == argc) {
         // we ignore precision parameter
