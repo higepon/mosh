@@ -66,7 +66,7 @@
 #include "Gloc.h"
 #include "TranscodedTextualInputOutputPort.h"
 #include "SimpleStruct.h"
-
+#include "Continuation.h"
 
 #ifdef ENABLE_PROFILER
 #define COUNT_CALL(a) countCall(a)

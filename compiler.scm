@@ -1229,9 +1229,9 @@
       [(undef)
        ($undef)]
       ;;---------------------------- call/cc -----------------------------------
-      [(%call/cc)
+      [(call/cc)
        ($call-cc (pass1/s->i (second sexp)) tail?)]
-      [(%call-with-current-continuation)
+      [(call-with-current-continuation)
        ($call-cc (pass1/s->i (second sexp)) tail?)]
       ;;---------------------------- quote -------------------------------------
       [(quote)
@@ -3018,7 +3018,8 @@
   (let1 end-of-frame (make-label)
     (unless tail
       (code-builder-put-insn-arg1! cb 'FRAME (ref-label end-of-frame)))
-    (cput! cb 'MAKE_CONTINUATION (if tail 1 0))
+;    (cput! cb 'MAKE_CONTINUATION (if tail 1 0))
+    (cput! cb 'MAKE_CONTINUATION (if tail tail 0))
     (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f depth display-count)

@@ -163,6 +163,14 @@
 #define argumentAsSimpleStruct(index, variableName) castArgument(index, variableName, isSimpleStruct, simple-struct, SimpleStruct*, toSimpleStruct)
 #define argumentAsFlonum(index, variableName) castArgument(index, variableName, isFlonum, flonum, Flonum*, toFlonum)
 #define argumentAsFixnum(index, variableName) castArgument(index, variableName, isFixnum, fixnum, int, toFixnum)
+// #define argumentAsPositiveFixnum(index, variableName) \
+//     argumentAsFixnum(index, variableName);            \
+//     if (variableName < 0) {                                             \
+//         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, "positive integer required", variableName); \
+//         return Object::Undef;                                           \
+//     }
+
+
 #define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
 #define argumentAsHashTable(index, variableName) castArgument(index, variableName, isHashTable, hashtable, HashTable*, toHashTable)

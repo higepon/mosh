@@ -90,6 +90,7 @@ public:
         Mutex                       = Type<39>::VALUE,
         Pointer                     = Type<40>::VALUE,
         SimpleStruct                = Type<41>::VALUE,
+        Continuation                = Type<42>::VALUE,
         forbidden_comma
     };
 };

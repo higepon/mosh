@@ -100,7 +100,7 @@ namespace scheme {
     Object internalsetUnionEx(VM* theVM, int argc, const Object* argv);
     Object internalsetIntersectEx(VM* theVM, int argc, const Object* argv);
     Object hostOsEx(VM* theVM, int argc, const Object* argv);
-
+    Object currentDynamicWindersEx(VM* theVM, int argc, const Object* argv);
 
 
     int mod(int x, int y);

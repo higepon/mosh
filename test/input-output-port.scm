@@ -143,7 +143,7 @@
        (test-equal (get-bytevector-n! port bv1 0 10000) 10000)
        ;; write!
        (put-u8 port #xfc)
-       (test-true (equal? bv1 bv2)))
+       (test-equal bv1 bv2))
      ;; read-some
      (set-port-position! port 4000)
      (let ([bv (get-bytevector-some port)])

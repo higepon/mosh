@@ -671,4 +671,7 @@
   id->real-label
   join-wraps
   gensym-prefix-set!
+
+  ;; for dynamic-wind
+  current-dynamic-winders
   )

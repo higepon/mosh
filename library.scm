@@ -765,11 +765,26 @@
 ;; dynamic-wind implementation
 ;;   The Scheme Programming Language
 ;;   Third Edition by R. Kent Dybvig.
-(define (dynamic-wind before thunk after) #f)
-(define (call/cc cont) #f)
-(define (call-with-current-continuation cont) #f)
+;; (define (dynamic-wind before thunk after) #f)
+;; (define (call/cc cont) #f)
+;; (define (call-with-current-continuation cont) #f)
 
-(let ((winders '()))
+;; (define (call/cc x) (%call/cc x))
+(define (call-with-current-continuation proc) (call/cc proc));; (define call-with-current-continuation call/cc)
+
+(define dynamic-wind
+  (lambda (in body out)
+    (in)
+    (current-dynamic-winders (cons (cons in out) (current-dynamic-winders)))
+    (call-with-values
+        body
+        (lambda ans
+          (current-dynamic-winders (cdr (current-dynamic-winders)))
+          (out)
+          (apply values ans)))))
+
+(define perform-dynamic-wind
+  (lambda (new)
   (define common-tail
     (lambda (x y)
       (let ((lx (length x)) (ly (length y)))
@@ -786,39 +801,69 @@
                 (if (> ly lx)
                     (list-tail y (- ly lx))
                     y))))))
-  (define do-wind
-    (lambda (new)
-      (let ((tail (common-tail new winders)))
-        (let f ((l winders))
-          (if (not (eq? l tail))
-              (begin
-                (set! winders (cdr l))
-                ((cdar l))
-                (f (cdr l)))))
-        (let f ((l new))
-          (if (not (eq? l tail))
-              (begin
-                (f (cdr l))
-                ((caar l))
-                (set! winders l)))))))
-  (set! call/cc
-      (lambda (f)
-        (%call/cc
-         (lambda (k)
-           (f (let ((save winders))
-                (lambda x
-                  (if (not (eq? save winders)) (do-wind save))
-                  (apply k x))))))))
-  (set! call-with-current-continuation call/cc)
-  (set! dynamic-wind
-    (lambda (in body out)
-      (in)
-      (set! winders (cons (cons in out) winders))
-      ;; we need multiple values
-      (receive ans (body)
-        (set! winders (cdr winders))
-        (out)
-        (apply values ans)))))
+    (let ((tail (common-tail new (current-dynamic-winders))))
+      (let loop ((rec (current-dynamic-winders)))
+        (cond ((not (eq? rec tail))
+               (current-dynamic-winders (cdr rec))
+               ((cdar rec))
+               (loop (cdr rec)))))
+      (let loop ((rec new))
+        (cond ((not (eq? rec tail))
+               (loop (cdr rec))
+               ((caar rec))
+               (current-dynamic-winders rec)))))))
+
+;; This implmentation is rewritten in C++ for performance reason.
+;; (let ((winders '()))
+;;   (define common-tail
+;;     (lambda (x y)
+;;       (let ((lx (length x)) (ly (length y)))
+;;         ;; (do ((x (if (> lx ly) (list-tail x (- lx ly)) x) (cdr x))
+;; ;;              (y (if (> ly lx) (list-tail y (- ly lx)) y) (cdr y)))
+;; ;;             ((eq? x y) x))
+;;         (letrec ([loop (lambda (x y)
+;;                          (if (eq? x y)
+;;                              x
+;;                              (loop (cdr x) (cdr y))))])
+;;           (loop (if (> lx ly)
+;;                     (list-tail x (- lx ly))
+;;                     x)
+;;                 (if (> ly lx)
+;;                     (list-tail y (- ly lx))
+;;                     y))))))
+;;   (define do-wind
+;;     (lambda (new)
+;;       (let ((tail (common-tail new winders)))
+;;         (let f ((l winders))
+;;           (if (not (eq? l tail))
+;;               (begin
+;;                 (set! winders (cdr l))
+;;                 ((cdar l))
+;;                 (f (cdr l)))))
+;;         (let f ((l new))
+;;           (if (not (eq? l tail))
+;;               (begin
+;;                 (f (cdr l))
+;;                 ((caar l))
+;;                 (set! winders l)))))))
+;;   (set! call/cc
+;;       (lambda (f)
+;;         (%call/cc
+;;          (lambda (k)
+;;            (f (let ((save winders))
+;;                 (lambda x
+;;                   (if (not (eq? save winders)) (do-wind save))
+;;                   (apply k x))))))))
+;;   (set! call-with-current-continuation call/cc)
+;;   (set! dynamic-wind
+;;     (lambda (in body out)
+;;       (in)
+;;       (set! winders (cons (cons in out) winders))
+;;       ;; we need multiple values
+;;       (receive ans (body)
+;;         (set! winders (cdr winders))
+;;         (out)
+;;         (apply values ans)))))
 
 ;; srfi-39 parameter objects
 (define make-parameter

@@ -958,3 +958,15 @@ Object scheme::timeUsageEx(VM* theVM, int argc, const Object* argv)
                        Object::makeFlonum((double)ru.ru_stime.tv_sec + ru.ru_stime.tv_usec / 1000000.0));
 #endif
 }
+
+Object scheme::currentDynamicWindersEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("current-dynamic-winders");
+    checkArgumentLengthBetween(0, 1);
+    if (argc == 0) {
+        return theVM->dynamicWinders();
+    } else {
+        theVM->setDynamicWinders(argv[0]);
+        return Object::Undef;
+    }
+}

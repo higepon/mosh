@@ -188,6 +188,16 @@ public:
     ReaderContext* readerContext() { return readerContext_; }
     NumberReaderContext* numberReaderContext() { return numberReaderContext_; }
 
+    void setDynamicWinders(Object winders)
+    {
+        dynamicWinders_ = winders;
+    }
+
+    Object dynamicWinders() const
+    {
+        return dynamicWinders_;
+    }
+
 protected:
     virtual int exit(int status)
     {
@@ -292,6 +302,7 @@ protected:
 #else
     int errno_;
 #endif
+    Object dynamicWinders_;
 };
 
 } // namespace scheme

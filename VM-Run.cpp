@@ -1218,24 +1218,18 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CONTINUATION_VALUES)
         {
-            MOSH_ASSERT(ac_.isPair() || ac_.isNil());
-            const int num = Pair::length(ac_);
+            Object n = fetchOperand();
+            MOSH_ASSERT(n.isFixnum());
+            const int num = n.toFixnum();
             if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(Object::makeFixnum(num)));
-            } else {
-                numValues_ = num;
-                if (ac_.isPair()) {
-                    Object p = ac_.cdr();
-                    if (num >= 0) {
-                        for (int i = 0; i < num - 1; i++) {
-                            values_[i] = p.car();
-                            p = p.cdr();
-                        }
-                        ac_ = ac_.car();
-                    }
-                } else { // isNil()
-                    /* do nothing */
+                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(n));
+            }
+            numValues_ = num;
+            if (num != 0) {
+                for (int i = 0; i < num - 1; i++) {
+                    values_[i] = index(sp_, num - i - 2);
                 }
+                ac_ = index(sp_, num -  1);
             }
             NEXT;
         }

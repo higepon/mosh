@@ -36,3 +36,4 @@
 (define-accessor Mutex)
 (define-accessor Pointer)
 (define-accessor SimpleStruct)
+(define-accessor Continuation)

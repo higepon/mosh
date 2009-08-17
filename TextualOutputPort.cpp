@@ -586,6 +586,8 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         snprintf(buf, 16, "\\p%x;", o.toPointer()->pointer());
         putString(buf);
         putString(UC(">"));
+    } else if (o.isContinuation()) {
+        putString(UC("#<continuation>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

@@ -45,6 +45,9 @@ Don't Index: Files, Classes
 # --------------------------------------------------------------------------
 
 
+File: About  (no auto-title, doc/text/About.txt)
+File: Download  (doc/text/Download.txt)
+
 Group: Mosh  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
@@ -62,18 +65,16 @@ Group: Mosh  {
    File: Pattern Match  (lib/match.ss)
    }  # Group: Mosh
 
-File: fib  (hoge.pl)
+Group: R6RS  {
 
-Group: Doc  {
-
-   File: About  (no auto-title, doc/text/About.txt)
+   File: Naming Conventions  (doc/text/Naming.txt)
+   File: Composite library  (doc/text/Compositelibrary.txt)
    File: Arithmetic  (doc/text/arith.tex.txt)
    File: Base Library  (doc/text/base.tex.txt)
    File: Bytevectors  (doc/text/bytevector.tex.txt)
    File: Command-line access and exit values  (doc/text/programlib.tex.txt)
    File: Condition types  (doc/text/iocond.tex.txt)
    File: Control structures  (doc/text/control.tex.txt)
-   File: Download  (doc/text/Download.txt)
    File: Enumerations  (doc/text/enum.tex.txt)
    File: eval  (doc/text/eval.tex.txt)
    File: Exceptions and conditions  (doc/text/exc.tex.txt)
@@ -87,16 +88,10 @@ Group: Doc  {
    File: Records  (doc/text/records.tex.txt)
    File: Simple I/O  (doc/text/convio.tex.txt)
    File: Sorting  (doc/text/sort.tex.txt)
-   File: SRFIs  (doc/text/srfi.txt)
-
-   Group: R6RS  {
-
-      File: Naming Conventions  (doc/text/Naming.txt)
-      File: Composite library  (doc/text/Compositelibrary.txt)
-      }  # Group: R6RS
-
    File: syntax-case  (doc/text/syntax-case.tex.txt)
-   }  # Group: Doc
+   }  # Group: R6RS
+
+File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {
 

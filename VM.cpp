@@ -118,7 +118,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     thread_(NULL),
     readerContext_(new ReaderContext),
     numberReaderContext_(new NumberReaderContext),
-    errno_(0)
+    errno_(0),
+    dynamicWinders_(Object::Nil)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);

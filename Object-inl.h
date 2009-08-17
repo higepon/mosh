@@ -116,7 +116,7 @@ inline bool Object::isFalse() const
 
 inline bool Object::isProcedure() const
 {
-    return isClosure() || isCProcedure() || isRegexp() || isRegMatch() || isCallable();
+    return isClosure() || isCProcedure() || isRegexp() || isRegMatch() || isCallable() || isContinuation();
 }
 
 inline bool Object::isHashTable() const

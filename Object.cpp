@@ -85,6 +85,7 @@
 #include "OSCompatSocket.h"
 #include "FFI.h"
 #include "SimpleStruct.h"
+#include "Continuation.h"
 
 using namespace scheme;
 
@@ -488,6 +489,12 @@ Object Object::makeSimpleStruct(Object name, int fieldCount)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::SimpleStruct,
                                                             reinterpret_cast<intptr_t>(new SimpleStruct(name, fieldCount)))));
+}
+
+Object Object::makeContinuation(Object stack, Object shiftSize, Object winders)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Continuation,
+                                                            reinterpret_cast<intptr_t>(new Continuation(stack, shiftSize, winders)))));
 }
 
 bool Object::isIntegerValued() const
