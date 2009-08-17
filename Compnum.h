@@ -191,7 +191,7 @@ public:
     static bool eq(Compnum* n1, Compnum* n2)
     {
         return Arithmetic::eq(n1->real(), n2->real()) &&
-               Arithmetic::eq(n2->imag(), n2->imag());
+               Arithmetic::eq(n1->imag(), n2->imag());
     }
 
     static bool eq(Object n1, Compnum* n2)

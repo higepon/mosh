@@ -90,10 +90,10 @@
    } else if (n.isFlonum() && ac_.isFlonum()) {                                             \
        ac_ = Object::makeBool(Flonum::func(n.toFlonum(), ac_.toFlonum()));                  \
    } else {                                                                                 \
-       if (n.isReal() && ac_.isReal()) {                                                    \
+       if (n.isNumber() && ac_.isNumber()) {                                                \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
-           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_)); \
+           callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_));    \
            NEXT1;                                                                           \
        }                                                                                    \
    }
@@ -105,7 +105,7 @@
    } else if (n.isFlonum() && ac_.isFlonum()) {                                             \
        ac_ = Object::makeBool(Flonum::func(n.toFlonum(), ac_.toFlonum()));                  \
    } else {                                                                                 \
-       if (n.isReal() && ac_.isReal()) {                                                    \
+       if (n.isNumber() && ac_.isNumber()) {                                                  \
            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
        } else {                                                                             \
            callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_)); \
