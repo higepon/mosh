@@ -182,7 +182,7 @@ inline const char* nth(int index) {
     argumentAsFixnum(index, variableName);            \
     if (variableName < 0) {                                             \
         static char buf[64];                                            \
-        sprintf(buf, "%s argument: positive integer required", nth(index)); \
+        sprintf(buf, "%s argument: positive integer", nth(index)); \
         callWrongTypeOfArgumentViolationAfter(theVM, procedureName, ucs4string::from_c_str(buf), argv[index]); \
         return Object::Undef;                                           \
     }
