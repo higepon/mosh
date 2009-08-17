@@ -8,7 +8,9 @@
   (memcached-set! conn "key2" 0 0 "value2")
   (test-equal "value1" (memcached-get conn "key1"))
   (test-equal "value2" (memcached-get conn "key2"))
-)
+  (test-true (memcached-delete! conn "key1" 0 #f))
+  (test-false (memcached-delete! conn "key-not-exist" 0 #f))
+  (test-false  (memcached-get conn "key1")))
 
 (and-let* ([conn (guard (c (#t #f)) (memcached-connect '(("localhost" . "11211") ("localhost" . "11212"))))])
   (memcached-set! conn "key1" 0 0 "value1")

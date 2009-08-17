@@ -1,5 +1,7 @@
 2009-08-17  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/memcached.ss (memcached-delete!): Added.
+
 	* UtilityProcedures.cpp (number->string): Fixed Issue 90.
 
 	* VM-Run.cpp (run): call/cc restoring code is now generated on restoring time not on capturing time.

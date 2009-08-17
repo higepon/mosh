@@ -35,13 +35,14 @@
           memcached-set!
           memcached-get
           memcached-gets
+          memcached-delete!
           memcached-bv-set!
           memcached-bv-gets)
          (import (rnrs)
                  (mosh)
                  (match)
                  (only (srfi :1) alist-cons)
-                 (only (srfi :13) string-join)
+                 (only (srfi :13) string-join string-contains)
                  (srfi :27)
                  (mosh socket))
 
@@ -54,6 +55,16 @@
     (if (= 1 (vector-length socket*))
         (vector-ref socket* 0)
         (vector-ref socket* (random-integer (vector-length socket*))))))
+
+(define (memcached-delete! conn key timeout noreply)
+  (let ([socket (random-socket conn)])
+    (if noreply
+        (memcached-send socket (format "delete ~a ~d ~d\r\n" key timeout noreply))
+        (memcached-send socket (format "delete ~a ~d\r\n" key timeout)))
+    (memcached-send socket "\r\n")
+    (if noreply
+        #t
+        (eq? 0 (string-contains (utf8->string (memcached-recv socket)) "DELETED")))))
 
 (define (memcached-set! conn key flags expiry value)
   (let-values (([port get] (open-bytevector-output-port)))
