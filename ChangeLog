@@ -1,5 +1,7 @@
 2009-08-17  higepon  <higepon@users.sourceforge.jp>
 
+	* VM-Run.cpp (VM::run): Added error check on set-c[ad]r! reported by mtakuya.
+
 	* VM-Run.h (NUM_CMP_LOCAL): Fixed Issue 91. (by mrc.mgg).
 
 	* PortProcedures.cpp (getStringNEx): Fixed Issue 92.

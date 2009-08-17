@@ -933,6 +933,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(SET_CAR)
         {
             const Object p = pop();
+            if (!p.isPair()) {
+                callAssertionViolationAfter(this, "set-car!", "pair required", Pair::list1(p));
+                NEXT1;
+            }
+
             p.car() = ac_;
             ac_ = Object::Undef;
             NEXT1;
@@ -940,6 +945,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(SET_CDR)
         {
             const Object p = pop();
+            if (!p.isPair()) {
+                callAssertionViolationAfter(this, "set-cdr!", "pair required", Pair::list1(p));
+                NEXT1;
+            }
             p.cdr() = ac_;
             ac_ = Object::Undef;
             NEXT1;
