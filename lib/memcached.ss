@@ -61,7 +61,6 @@
     (if noreply
         (memcached-send socket (format "delete ~a ~d ~d\r\n" key timeout noreply))
         (memcached-send socket (format "delete ~a ~d\r\n" key timeout)))
-    (memcached-send socket "\r\n")
     (if noreply
         #t
         (eq? 0 (string-contains (utf8->string (memcached-recv socket)) "DELETED")))))
@@ -141,9 +140,9 @@
         ;; VALUE
         (let-values (([token-found? token-start token-end] (token-until-next-space res i)))
           (unless token-found?
-            (error 'parse-res "malformed response : VALUE expected"))
+            (error 'parse-response "malformed response : VALUE expected"))
           (unless (bytevector-eqv? res token-start (string->utf8 "VALUE") 0 (string-length "VALUE"))
-            (error 'parse-res "malformed res : VALUE expected"))
+            (error 'parse-response "malformed res : VALUE expected"))
           ;; Key
           (let-values (([token-found? token-start token-end] (token-until-next-space res (+ token-end 2))))
             (unless token-found?
