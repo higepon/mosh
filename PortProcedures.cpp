@@ -433,7 +433,7 @@ Object scheme::getStringNEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsTextualInputPort(0, inputPort);
     checkPortIsOpen(inputPort, argv[0]);
-    argumentAsFixnum(1, size);
+    argumentAsNonNegativeFixnum(1, size);
     TRY_WITHOUT_DSTR
         ucs4string text = inputPort->getString(size);
 

@@ -187,6 +187,15 @@ inline const char* nth(int index) {
         return Object::Undef;                                           \
     }
 
+#define argumentAsNonNegativeFixnum(index, variableName) \
+    argumentAsFixnum(index, variableName);            \
+    if (variableName < 0) {                                             \
+        static char buf[64];                                            \
+        sprintf(buf, "%s argument: non-negative integer", nth(index)); \
+        callWrongTypeOfArgumentViolationAfter(theVM, procedureName, ucs4string::from_c_str(buf), argv[index]); \
+        return Object::Undef;                                           \
+    }
+
 
 #define argumentAsOctet(index, variableName) castArgument(index, variableName, isOctet, octet, uint8_t, toFixnum)
 #define argumentAsCompnum(index, variableName) castArgument(index, variableName, isCompnum, Complex number, Compnum*, toCompnum)
