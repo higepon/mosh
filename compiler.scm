@@ -877,7 +877,7 @@
 ;;              '()
 ;;              '())))
 
-(define (pass1/and->iform sexp lvars tail?)
+(define (pass1/and->iform test* lvars tail?)
   (define (rec s)
     (match s
       [() ($const #t)]
@@ -889,9 +889,9 @@
             ($it))]
       [else
        (error 'compiler "syntax-error: malformed and:" sexp)]))
-  (rec (cdr sexp)))
+  (rec test*))
 
-(define (pass1/or->iform sexp lvars tail?)
+(define (pass1/or->iform test* lvars tail?)
   (define (rec s)
     (match s
       [() ($const #f)]
@@ -903,7 +903,7 @@
             (rec more))]
       [else
        (error 'compiler "syntax-error: malformed or:" sexp)]))
-  (rec (cdr sexp)))
+  (rec test*))
 
 (define (pass1/cond->iform sexp lvars tail?)
   (define (process-clauses cls)
@@ -1168,17 +1168,17 @@
       [('cons x y)
        (pass1/asm-2-arg 'CONS x y lvars)]
       ;;---------------------------- and ---------------------------------------
-      [('and . _)
-       (pass1/and->iform sexp lvars tail?)]
+      [('and . test*)
+       (pass1/and->iform test* lvars tail?)]
       ;;---------------------------- and ---------------------------------------
-      [('or . _)
-       (pass1/or->iform sexp lvars tail?)]
+      [('or . test*)
+       (pass1/or->iform test* lvars tail?)]
       ;;---------------------------- begin -------------------------------------
       [('begin . body)
        (pass1/body->iform (pass1/expand body) lvars tail?)]
       ;;---------------------------- cond --------------------------------------
       [('cond . _)
-       (pass1/cond->iform (pass1/expand sexp) lvars tail?)]
+       (pass1/cond->iform sexp lvars tail?)]
       ;;---------------------------- values ------------------------------------
       [('values . vars)
        ($asm 'VALUES (pass1/map-s->i-non-tail vars))]
@@ -1232,8 +1232,7 @@
       [('call-with-current-continuation proc)
        ($call-cc (pass1/s->i proc) tail?)]
       ;;---------------------------- quote -------------------------------------
-      [('quote val)
-       ($const val)]
+      [('quote val) ($const val)]
       [('append . args) (pass1/asm-n-args 'APPEND2 'append args lvars)]
       [('+ . args)      (pass1/asm-n-args 'NUMBER_ADD '+ args lvars)]
       [('- . args)
@@ -1247,8 +1246,8 @@
       [('> . args)                (pass1/asm-numcmp         'NUMBER_GT    '>  args    lvars)]
       [('< . args)                (pass1/asm-numcmp         'NUMBER_LT    '<  args    lvars)]
       [('<= . args)               (pass1/asm-numcmp         'NUMBER_LE    '<= args    lvars)]
-      [('vector? obj)          (pass1/asm-1-arg          'VECTOR_P      obj    lvars)]
-      [('vector-length v)    (pass1/asm-1-arg          'VECTOR_LENGTH v    lvars)]
+      [('vector? obj)             (pass1/asm-1-arg          'VECTOR_P      obj    lvars)]
+      [('vector-length v)         (pass1/asm-1-arg          'VECTOR_LENGTH v    lvars)]
       [('vector-set! v index value)      (pass1/asm-3-arg          'VECTOR_SET    v    index value lvars)]
       [('vector-ref v index)       (pass1/asm-2-arg          'VECTOR_REF    v    index lvars)]
       [('simple-struct-ref s index) (pass1/asm-2-arg          'SIMPLE_STRUCT_REF    s    index lvars)]
