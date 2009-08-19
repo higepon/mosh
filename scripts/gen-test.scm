@@ -50,7 +50,7 @@
               (write `(let1 val (begin ,@test)
                         (if (equal? (quote ,expected) val)
                             (format #t " Running ~d/~d" ,index ,test-num)
-                            (add-error (quote ,@test) (quote ,expected) val))) p)]
+                            (add-error (quote ,test) (quote ,expected) val))) p)]
              [('definition . definitions)
               (for-each (lambda (x) (write x p)) definitions)]
              [('todo . test)
@@ -61,7 +61,7 @@
                         (if (equal? (quote ,expected) val)
                             (format #t " Running ~d/~d" ,index ,test-num)
                             (begin
-                              (add-error (quote ,@test) (quote ,expected) val)))) p)
+                              (add-error (quote ,test) (quote ,expected) val)))) p)
               (newline p)
               ]
              [else

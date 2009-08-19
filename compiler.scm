@@ -1160,118 +1160,116 @@
 (define (pass1/sexp->iform sexp lvars tail?)
   (cond
    [(pair? sexp)
-    (case (car sexp)
+    (match sexp
       ;;---------------------------- lambda ------------------------------------
-      [(lambda)
+      [('lambda . _)
        (pass1/lambda->iform 'lambda sexp lvars)]
       ;;---------------------------- cons --------------------------------------
-      [(cons)
-       (pass1/asm-2-arg 'CONS (second sexp) (third sexp) lvars)]
+      [('cons x y)
+       (pass1/asm-2-arg 'CONS x y lvars)]
       ;;---------------------------- and ---------------------------------------
-      [(and)
+      [('and . _)
        (pass1/and->iform sexp lvars tail?)]
       ;;---------------------------- and ---------------------------------------
-      [(or)
+      [('or . _)
        (pass1/or->iform sexp lvars tail?)]
       ;;---------------------------- begin -------------------------------------
-      [(begin)
-       (pass1/body->iform (pass1/expand (cdr sexp)) lvars tail?)]
+      [('begin . body)
+       (pass1/body->iform (pass1/expand body) lvars tail?)]
       ;;---------------------------- cond --------------------------------------
-      [(cond)
+      [('cond . _)
        (pass1/cond->iform (pass1/expand sexp) lvars tail?)]
       ;;---------------------------- values ------------------------------------
-      [(values)
-       ($asm 'VALUES (pass1/map-s->i-non-tail (cdr sexp)))]
+      [('values . vars)
+       ($asm 'VALUES (pass1/map-s->i-non-tail vars))]
       ;;---------------------------- vector ------------------------------------
-      [(vector)
-       ($asm 'VECTOR (pass1/map-s->i-non-tail (cdr sexp)))]
+      [('vector . vars)
+       ($asm 'VECTOR (pass1/map-s->i-non-tail vars))]
       ;;---------------------------- define ------------------------------------
-      [(define)
+      [('define . _)
        (pass1/define sexp lvars tail?)]
       ;;---------------------------- define-macro ------------------------------
-      [(define-macro)
+      [('define-macro . _)
        (pass1/define-macro sexp lvars tail?)]
       ;;---------------------------- receive -----------------------------------
-      [(receive)
+      [('receive . _)
        (pass1/receive sexp lvars tail?)]
       ;;---------------------------- let ---------------------------------------
-      [(let)
-       (pass1/let (imap car (second sexp))  ; vars
-                  (imap cadr (second sexp)) ; vals
-                  (cddr sexp)                ; body
-                  (source-info sexp)         ; source-info
+      [('let var+val . body)
+       (pass1/let (imap car var+val)  ; vars
+                  (imap cadr var+val) ; vals
+                  body                ; body
+                  (source-info sexp)  ; source-info
                   lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
-      [(letrec)
-       (pass1/letrec (imap car (second sexp))  ; vars
-                     (imap cadr (second sexp)) ; vals
-                     (cddr sexp)                ; body
-                     (source-info sexp)         ; source-info
+      [('letrec var+val . body)
+       (pass1/letrec (imap car var+val)  ; vars
+                     (imap cadr var+val) ; vals
+                     body                ; body
+                     (source-info sexp)  ; source-info
                      lvars tail?)]
       ;;---------------------------- letrec ------------------------------------
-      [(letrec*)
-       (pass1/letrec (imap car (second sexp))  ; vars
-                     (imap cadr (second sexp)) ; vals
-                     (cddr sexp)                ; body
-                     (source-info sexp)         ; source-info
+      [('letrec* var+val)
+       (pass1/letrec (imap car var+val)  ; vars
+                     (imap cadr var+val) ; vals
+                     body                ; body
+                     (source-info sexp)  ; source-info
                      lvars tail?)]
       ;;---------------------------- set! --------------------------------------
-      [(set!)
-       (pass1/assign (second sexp)                ;; symbol
-                     (pass1/expand (third sexp))  ;; value
+      [('set! sym value)
+       (pass1/assign sym                   ;; symbol
+                     (pass1/expand value)  ;; value
                      lvars tail?)]
       ;;---------------------------- if ----------------------------------------
-      [(if)
-       (pass1/if (second sexp) ;; test
-                 (third sexp)  ;; then
-                 (cdddr sexp)  ;; else if exists.
+      [('if test then . else)
+       (pass1/if test then else  ;; else if exists.
                  lvars tail?)]
-      [(undef)
+      [('undef)
        ($undef)]
       ;;---------------------------- call/cc -----------------------------------
-      [(call/cc)
-       ($call-cc (pass1/s->i (second sexp)) tail?)]
-      [(call-with-current-continuation)
-       ($call-cc (pass1/s->i (second sexp)) tail?)]
+      [('call/cc proc)
+       ($call-cc (pass1/s->i proc) tail?)]
+      [('call-with-current-continuation proc)
+       ($call-cc (pass1/s->i proc) tail?)]
       ;;---------------------------- quote -------------------------------------
-      [(quote)
-       ($const (second sexp))]
-      [(append)           (pass1/asm-n-args         'APPEND2      'append (cdr sexp) lvars)]
-      [(+)                (pass1/asm-n-args         'NUMBER_ADD   '+  (cdr sexp)    lvars)]
-      [(-)
-       (if (for-all number? (cdr sexp))
+      [('quote val)
+       ($const val)]
+      [('append . args) (pass1/asm-n-args 'APPEND2 'append args lvars)]
+      [('+ . args)      (pass1/asm-n-args 'NUMBER_ADD '+ args lvars)]
+      [('- . args)
+       (if (for-all number? args)
            (pass1/asm-n-args 'NUMBER_ADD   '+  (cdr (sub->add sexp))    lvars)
-           (pass1/asm-n-args 'NUMBER_SUB   '-  (cdr sexp)    lvars))]
-      [(*)                (pass1/asm-n-args         'NUMBER_MUL   '*  (cdr sexp)    lvars)]
-      [(/)                (pass1/asm-n-args         'NUMBER_DIV   '/  (cdr sexp)    lvars)]
-      [(=)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  (cdr sexp)    lvars)]
-      [(>=)               (pass1/asm-numcmp         'NUMBER_GE    '>= (cdr sexp)    lvars)]
-      [(>)                (pass1/asm-numcmp         'NUMBER_GT    '>  (cdr sexp)    lvars)]
-      [(<)                (pass1/asm-numcmp         'NUMBER_LT    '<  (cdr sexp)    lvars)]
-      [(<=)               (pass1/asm-numcmp         'NUMBER_LE    '<= (cdr sexp)    lvars)]
-      [(vector?)          (pass1/asm-1-arg          'VECTOR_P      (second sexp)    lvars)]
-      [(vector-length)    (pass1/asm-1-arg          'VECTOR_LENGTH (second sexp)    lvars)]
-      [(vector-set!)      (pass1/asm-3-arg          'VECTOR_SET    (second sexp)    (third sexp) (fourth sexp) lvars)]
-      [(vector-ref)       (pass1/asm-2-arg          'VECTOR_REF    (second sexp)    (third sexp) lvars)]
-      [(simple-struct-ref) (pass1/asm-2-arg          'SIMPLE_STRUCT_REF    (second sexp)    (third sexp) lvars)]
-      [(make-vector)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   (second sexp)    (cddr sexp) lvars)]
-      [(car)              (pass1/asm-1-arg          'CAR           (second sexp)    lvars)]
-      [(cdr)              (pass1/asm-1-arg          'CDR           (second sexp)    lvars)]
-      [(caar)             (pass1/asm-1-arg          'CAAR          (second sexp)    lvars)]
-      [(cadr)             (pass1/asm-1-arg          'CADR          (second sexp)    lvars)]
-      [(cdar)             (pass1/asm-1-arg          'CDAR          (second sexp)    lvars)]
-      [(cddr)             (pass1/asm-1-arg          'CDDR          (second sexp)    lvars)]
-      [(set-car!)         (pass1/asm-2-arg          'SET_CAR       (second sexp)    (third sexp) lvars)]
-      [(set-cdr!)         (pass1/asm-2-arg          'SET_CDR       (second sexp)    (third sexp) lvars)]
-      [(eq?)              (pass1/asm-2-arg          'EQ            (second sexp)    (third sexp) lvars)]
-      [(eqv?)             (pass1/asm-2-arg          'EQV           (second sexp)    (third sexp) lvars)]
-      [(equal?)           (pass1/asm-2-arg          'EQUAL         (second sexp)    (third sexp) lvars)]
-      [(not)              (pass1/asm-1-arg          'NOT           (second sexp)    lvars)]
-      [(null?)            (pass1/asm-1-arg          'NULL_P        (second sexp)    lvars)]
-      [(pair?)            (pass1/asm-1-arg          'PAIR_P        (second sexp)    lvars)]
-      [(symbol?)          (pass1/asm-1-arg          'SYMBOL_P      (second sexp)    lvars)]
-      [(read)             (pass1/asm-1-arg-optional 'READ          (cdr sexp)       lvars)]
-      [(read-char)        (pass1/asm-1-arg-optional 'READ_CHAR     (cdr sexp)       lvars)]
+           (pass1/asm-n-args 'NUMBER_SUB   '-  args lvars))]
+      [('* . args)                (pass1/asm-n-args         'NUMBER_MUL   '*  args    lvars)]
+      [('/ . args)                (pass1/asm-n-args         'NUMBER_DIV   '/  args    lvars)]
+      [('= . args)                (pass1/asm-numcmp         'NUMBER_EQUAL '=  args    lvars)]
+      [('>= . args)               (pass1/asm-numcmp         'NUMBER_GE    '>= args    lvars)]
+      [('> . args)                (pass1/asm-numcmp         'NUMBER_GT    '>  args    lvars)]
+      [('< . args)                (pass1/asm-numcmp         'NUMBER_LT    '<  args    lvars)]
+      [('<= . args)               (pass1/asm-numcmp         'NUMBER_LE    '<= args    lvars)]
+      [('vector? obj)          (pass1/asm-1-arg          'VECTOR_P      obj    lvars)]
+      [('vector-length v)    (pass1/asm-1-arg          'VECTOR_LENGTH v    lvars)]
+      [('vector-set! v index value)      (pass1/asm-3-arg          'VECTOR_SET    v    index value lvars)]
+      [('vector-ref v index)       (pass1/asm-2-arg          'VECTOR_REF    v    index lvars)]
+      [('simple-struct-ref s index) (pass1/asm-2-arg          'SIMPLE_STRUCT_REF    s    index lvars)]
+      [('make-vector v . more)      (pass1/asm-2-arg-optional 'MAKE_VECTOR   v    more lvars)]
+      [('car obj)              (pass1/asm-1-arg          'CAR           obj    lvars)]
+      [('cdr obj)              (pass1/asm-1-arg          'CDR           obj    lvars)]
+      [('caar obj)             (pass1/asm-1-arg          'CAAR          obj    lvars)]
+      [('cadr obj)             (pass1/asm-1-arg          'CADR          obj    lvars)]
+      [('cdar obj)             (pass1/asm-1-arg          'CDAR          obj    lvars)]
+      [('cddr obj)             (pass1/asm-1-arg          'CDDR          obj    lvars)]
+      [('set-car! obj value)         (pass1/asm-2-arg          'SET_CAR       obj    value lvars)]
+      [('set-cdr! obj value)         (pass1/asm-2-arg          'SET_CDR       obj    value lvars)]
+      [('eq? x y)              (pass1/asm-2-arg          'EQ            x y lvars)]
+      [('eqv? x y)             (pass1/asm-2-arg          'EQV           x y lvars)]
+      [('equal? x y)           (pass1/asm-2-arg          'EQUAL         x y lvars)]
+      [('not obj)              (pass1/asm-1-arg          'NOT           obj    lvars)]
+      [('null? obj)            (pass1/asm-1-arg          'NULL_P        obj    lvars)]
+      [('pair? obj)            (pass1/asm-1-arg          'PAIR_P        obj    lvars)]
+      [('symbol? obj)          (pass1/asm-1-arg          'SYMBOL_P      obj    lvars)]
+      [('read . port)             (pass1/asm-1-arg-optional 'READ          port       lvars)]
+      [('read-char . port)        (pass1/asm-1-arg-optional 'READ_CHAR     port       lvars)]
       ;;---------------------------- call or macro------------------------------
       [else
        (pass1/call (car sexp) ; proc

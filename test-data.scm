@@ -3439,3 +3439,7 @@
 (#f ((lambda (G59@x) (if G59@x (+ G59@x '1) '#f)) '#f))
 ;; invalid string
 (error (call-with-port (open-string-input-port (list->string '(#\" #\1 #\2 #\3 #\\ #\0 #\"))) read))
+
+(error (eq? 'a 'a 'b))
+(error (eqv? 'a 'a 'b))
+(error (equal? 'a 'a 'b))

@@ -124,7 +124,7 @@ TEST_F(VMTest, StackTrace2) {
                  "\n"
                  " Stack trace:\n"
                  "    1. throw: <subr>\n"
-                 "    2. (raise c):  compiler-with-library.scm:940\n"
+                 "    2. (raise c):  compiler-with-library.scm:941\n"
                  "    3. sys-display: <subr>\n"
                  "    4. (a): <unknown location>\n"
                  "    5. (b): <unknown location>\n"

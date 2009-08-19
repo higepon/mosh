@@ -1,3 +1,7 @@
+2009-08-19  higepon  <higepon@users.sourceforge.jp>
+
+	* compiler.scm : Fixed Issue 93 "equivalence predicates take arbitrary number of arguments" reported by tabe.fixedpoint.
+
 2009-08-17  higepon  <higepon@users.sourceforge.jp>
 
 	* VM-Run.cpp (VM::run): Added error check on set-c[ad]r! reported by mtakuya.
