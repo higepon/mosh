@@ -1,6 +1,6 @@
-;; (import (rnrs)
-;;    (core)
-;; #;       (mosh))
+(import (rnrs)
+;   (core)
+       (mosh))
 
 ;; (define-syntax time
 ;;   (syntax-rules ()
