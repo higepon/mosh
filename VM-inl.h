@@ -141,48 +141,6 @@ inline Object VM::referFree(int n)
     return dc_.toClosure()->referFree(n);
 }
 
-inline Object VM::makeContinuation(Object n)
-{
-//     struct timeval tv1, tv2;
-
-//     static uintptr_t msec = 0;
-//     static int i = 0;
-
-//     gettimeofday(&tv1, NULL);
-
-//     const int codeSize = 17;
-//     Object* code = Object::makeObjectArray(codeSize);
-//     code[0] = Object::makeRaw(Instruction::FRAME);
-//     code[1] = Object::makeFixnum(6);
-//     code[2] = Object::makeRaw(Instruction::CONSTANT_PUSH);
-//     code[3] = dynamicWinders();
-//     code[4] = Object::makeRaw(Instruction::REFER_GLOBAL_CALL);
-//     code[5] = Symbol::intern(UC("perform-dynamic-wind"));
-//     code[6] = Object::makeFixnum(1);
-//     code[7] = Object::makeRaw(Instruction::REFER_LOCAL);
-//     code[8] = Object::makeFixnum(0);
-//     code[9] = Object::makeRaw(Instruction::CONTINUATION_VALUES);
-//     code[10] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
-//     code[11] = Object::makeStack(stack_, sp_ - stack_);
-//     code[12] = Object::makeRaw(Instruction::SHIFT); // shift is issued just after restore.
-//     code[13] = Object::makeFixnum(0);
-//     code[14] = n;
-//     code[15] = Object::makeRaw(Instruction::RETURN);
-//     code[16] = Object::makeFixnum(0);
-//     Object* c = getDirectThreadedCode(code, codeSize);
-//     const Object closure = Object::makeClosure(c, codeSize, 1, true, sp_, 0, 1, Object::False);
-//     gettimeofday(&tv2, NULL);
-//     msec += (tv2.tv_sec - tv1.tv_sec) * 1000 * 1000 + (tv2.tv_usec - tv1.tv_usec);
-//     if (i++ == 100000) {
-//         printf("msec=%d\n", msec / 1000);
-//     }
-
-
-    return Object::makeContinuation(Object::makeStack(stack_, sp_ - stack_),
-                                    n,
-                                    dynamicWinders());
-}
-
 inline Object* VM::disasm(Closure* closure)
 {
     return disasm(closure->pc - Closure::HEADER_SIZE, closure->size + Closure::HEADER_SIZE);

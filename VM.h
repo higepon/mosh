@@ -218,7 +218,6 @@ protected:
     Object referLocal(int n) const;
     Object referFree(Object n);
     Object referFree(int n);
-    Object makeContinuation(Object n);
     Object* getDirectThreadedCode(Object* code, int length);
     void expandStack(int plusSize);
     Object compileWithoutHalt(Object sexp);

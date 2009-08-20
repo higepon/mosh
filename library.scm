@@ -801,7 +801,7 @@
                 (if (> ly lx)
                     (list-tail y (- ly lx))
                     y))))))
-  (unless (and (null? new) (null? (current-dynamic-winders))) ;; short cut
+  (unless (eq? new (current-dynamic-winders))
     (let ((tail (common-tail new (current-dynamic-winders))))
       (let loop ((rec (current-dynamic-winders)))
         (cond ((not (eq? rec tail))
@@ -809,10 +809,10 @@
                ((cdar rec))
                (loop (cdr rec)))))
       (let loop ((rec new))
-        (cond ((not (eq? rec tail))
+        (cond [(not (eq? rec tail))
                (loop (cdr rec))
                ((caar rec))
-               (current-dynamic-winders rec))))))))
+               (current-dynamic-winders rec)]))))))
 
 ;; This implmentation is rewritten in C++ for performance reason.
 ;; (let ((winders '()))

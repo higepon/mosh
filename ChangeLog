@@ -1,3 +1,7 @@
+2009-08-20  higepon  <higepon@users.sourceforge.jp>
+
+	* library.scm (perform-dynamic-wind): Improved perform-dynamic-wind.
+
 2009-08-19  higepon  <higepon@users.sourceforge.jp>
 
 	* compiler.scm : Fixed Issue 93 "equivalence predicates take arbitrary number of arguments" reported by tabe.fixedpoint.

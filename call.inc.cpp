@@ -142,7 +142,7 @@
                 goto return_entry;
             } else if (ac_.isContinuation()) {
                 Continuation* const c = ac_.toContinuation();
-                const int codeSize = 16;
+                const int codeSize = 11;
 
                 // This memory allocation is not time consuming. (I've checked)
                 Object* code = Object::makeObjectArray(codeSize);
@@ -153,15 +153,10 @@
                 code[4] = Object::makeRaw(Instruction::REFER_GLOBAL_CALL);
                 code[5] = Symbol::intern(UC("perform-dynamic-wind"));
                 code[6] = Object::makeFixnum(1);
-                code[7] = Object::makeRaw(Instruction::CONTINUATION_VALUES);
-                code[8] = operand; // length of arguments
-                code[9] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
-                code[10] = c->stack();
-                code[11] = Object::makeRaw(Instruction::SHIFT); // shift is issued just after restore.
-                code[12] = Object::makeFixnum(0);
-                code[13] = c->shiftSize();
-                code[14] = Object::makeRaw(Instruction::RETURN);
-                code[15] = Object::makeFixnum(0);
+                code[7] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
+                code[8] = operand;         // length of arguments
+                code[9] = c->stack();      // stack
+                code[10] = c->shiftSize(); // shift size
                 Object* nextPc = getDirectThreadedCode(code, codeSize);
                 pc_ = nextPc;
             } else {

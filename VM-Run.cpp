@@ -446,7 +446,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(MAKE_CONTINUATION)
         {
             const Object n = fetchOperand();
-            ac_ = makeContinuation(n);
+            ac_ = Object::makeContinuation(Object::makeStack(stack_, sp_ - stack_),
+                                           n,
+                                           dynamicWinders());
             NEXT1;
         }
         CASE(VECTOR)
@@ -886,8 +888,34 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(RESTORE_CONTINUATION)
         {
-            const Object s = fetchOperand();
-            sp_ = stack_ + s.toStack()->restore(stack_);
+            // Stores arguments of the continuation to values registers.
+            const Object argumentsLength = fetchOperand();
+            VM_ASSERT(argumentsLength.isFixnum());
+            const int num = argumentsLength.toFixnum();
+            if (num > maxNumValues_ + 1) {
+                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(argumentsLength));
+            }
+            numValues_ = num;
+            if (num != 0) {
+                for (int i = 0; i < num - 1; i++) {
+                    values_[i] = index(sp_, num - i - 2);
+                }
+                ac_ = index(sp_, num -  1);
+            }
+
+            // Restore the stack
+            const Object stack = fetchOperand();
+            sp_ = stack_ + stack.toStack()->restore(stack_);
+
+            // Shift unnecessary stack
+            const int depth = 0;
+
+            const Object diffObject = fetchOperand();
+            VM_ASSERT(diffObject.isFixnum());
+            const int diff  = diffObject.toFixnum();
+            sp_ = shiftArgsToBottom(sp_, depth, diff);
+            operand = Object::makeFixnum(0);
+            goto return_entry;
             NEXT;
         }
 //         CASE(NUMBER_ADD_RETURN)
@@ -1224,23 +1252,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                                             L1(obj));
             }
             NEXT1;
-        }
-        CASE(CONTINUATION_VALUES)
-        {
-            Object n = fetchOperand();
-            MOSH_ASSERT(n.isFixnum());
-            const int num = n.toFixnum();
-            if (num > maxNumValues_ + 1) {
-                callAssertionViolationAfter(this, "values", "too many values", Pair::list1(n));
-            }
-            numValues_ = num;
-            if (num != 0) {
-                for (int i = 0; i < num - 1; i++) {
-                    values_[i] = index(sp_, num - i - 2);
-                }
-                ac_ = index(sp_, num -  1);
-            }
-            NEXT;
         }
         CASE(VALUES)
         {

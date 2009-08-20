@@ -69,7 +69,6 @@
 (define-insn RECEIVE 2)
 (define-insn UNFIXED_JUMP 1)
 (define-insn STOP 0)
-(define-insn CONTINUATION_VALUES 0)
 (define-insn SHIFTJ 3)
 (define-insn UNDEF 0)
 (define-insn VECTOR_LENGTH 0)
