@@ -47,8 +47,17 @@
     (psyntax library-manager)
     (psyntax expander)
     (psyntax config)
-    (only (system) create-mosh-cache-dir get-environment-variable gensym-prefix-set! directory-list)
+    (only (system) current-exception-handler create-mosh-cache-dir get-environment-variable gensym-prefix-set! directory-list)
 )
+
+(define (ref rtd i x)
+  (let ([val ((record-accessor rtd i) x)])
+    (if (symbol? val)
+        (ungensym val)
+        val)))
+
+(define x* '())
+
 
   (define (add-library-path! path)
     (library-path (append (library-path) (list path))))
@@ -262,7 +271,9 @@
     (load-r6rs-top-level filename 'compile))
 
   (define (load-r6rs-top-level filename how . args)
-    (parameterize ([library-path (local-library-path filename)])
+    ; we don't use parameterize, since it uses dynamic-wind. It causes slow execution of call/cc
+    ;(parameterize ([library-path (local-library-path filename)])
+    (library-path (local-library-path filename))
       (let ((x*
              (with-input-from-file filename
                (lambda ()
@@ -274,8 +285,10 @@
         (case how
           ((closure)   (pre-compile-r6rs-top-level x*))
           ((load)
-            (parameterize ([command-line (cons filename (car args))]
-                           [mosh-cache-dir (create-mosh-cache-dir)])
+;            (parameterize ([command-line (cons filename (car args))]
+;                           [mosh-cache-dir (create-mosh-cache-dir)])
+           (command-line (cons filename (car args)))
+           (mosh-cache-dir (create-mosh-cache-dir))
               (when (mosh-cache-dir)
                 (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
              ;; clean auto compile cache
@@ -286,11 +299,11 @@
              (let ([compiled (compile-r6rs-top-level x*)])
                (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
                  (serialize-all serialize-library compile-core-expr))
-               (compiled))))
+               (compiled)))
           ((compile)
            (begin
              (compile-r6rs-top-level x*) ; i assume this is needed
-             (serialize-all serialize-library compile-core-expr)))))))
+             (serialize-all serialize-library compile-core-expr))))))
 
    ;; mosh-only
   (define (load-r6rs-top-level-sexp import-spec thunk)
@@ -416,41 +429,51 @@
           (prefix ".mosh"
             (library-extensions))))
 
-  (let ([args (command-line)]
-        [port (current-error-port)])
-    (define (ref rtd i x)
-      (let ([val ((record-accessor rtd i) x)])
-        (if (symbol? val)
-            (ungensym val)
-            val)))
-    (with-exception-handler
-     (lambda (c)
-       (if (condition? c)
-           (condition-printer c (current-error-port))
-           (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)))
-     (lambda ()
-       (cond
-        ;; mulitple vm
-        [(guard [c (#t #f)] (symbol-value '%vm-import-spec))
-         (load-r6rs-top-level-sexp (symbol-value '%vm-import-spec) (symbol-value '%vm-thunk))]
-        ;; REPL
-        [(null? args)
-         (parameterize ([command-line '()]
-                        [mosh-cache-dir (create-mosh-cache-dir)])
-           (when (mosh-cache-dir)
-             (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
-           (repl))]
-        ;; load file
-        [else
-           (load-r6rs-top-level (car args) 'load (cdr args))]))))
+; use less stack, don't use let here. (Initial stack usage, causes poor performance of call/cc
+; for performance reason
+;    (with-exception-handler
+(current-exception-handler
+ (lambda (c)
+   (if (condition? c)
+       (condition-printer c (current-error-port))
+       (format (current-error-port) "\n Non-condition object:\n     ~a\n" c))))
+                                        ;     (lambda ()
+(cond
+ ;; mulitple vm
+ [(guard [c (#t #f)] (symbol-value '%vm-import-spec))
+  (load-r6rs-top-level-sexp (symbol-value '%vm-import-spec) (symbol-value '%vm-thunk))]
+ ;; REPL
+ [(null? (command-line))
+  (parameterize ([command-line '()]
+                 [mosh-cache-dir (create-mosh-cache-dir)])
+    (when (mosh-cache-dir)
+      (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
+    (repl))]
+ ;; load file
+ [else
+; inlined all for stack performance reason.
+;  (load-r6rs-top-level (car (command-line)) 'load (cdr (command-line)))])
 
-
-  ;;   (display "r6rs psyntax ready\n")
-  ;;   (let ((args (command-line)))
-  ;;     (unless (= (length args) 2)
-  ;;       (display "provide a script name argument\n")
-  ;;     )
-  ;;     (let ((script-name (car args)) (args (cdr args)))
-  ;;       (load-r6rs-top-level (car args) 'load)))
+  (library-path (local-library-path (car (command-line))))
+  (set! x* (with-input-from-file (car (command-line))
+                (lambda ()
+                  (let f ()
+                    (let ((x (read-annotated)))
+                      (if (eof-object? x)
+                          '()
+                          (cons x (f))))))))
+  (command-line (cons (car (command-line)) (cdr (command-line))))
+  (mosh-cache-dir (create-mosh-cache-dir))
+  (when (mosh-cache-dir)
+    (gensym-prefix-set! (prefix-inc! (string-append (mosh-cache-dir) "/prefix.txt"))))
+  ;; clean auto compile cache
+  (when (symbol-value '%clean-acc)
+    (for-each
+     (lambda (file) (guard (c (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
+     (directory-list (mosh-cache-dir))))
+  (let ([compiled (compile-r6rs-top-level x*)])
+    (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
+      (serialize-all serialize-library compile-core-expr))
+    (compiled))])
 
   )

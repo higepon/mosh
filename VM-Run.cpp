@@ -446,6 +446,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(MAKE_CONTINUATION)
         {
             const Object n = fetchOperand();
+//            VM_LOG1("size=~a\n", Object::makeFixnum(sp_ - stack_));
             ac_ = Object::makeContinuation(Object::makeStack(stack_, sp_ - stack_),
                                            n,
                                            dynamicWinders());

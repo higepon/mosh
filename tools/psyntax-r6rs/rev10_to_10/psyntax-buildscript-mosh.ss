@@ -1013,6 +1013,7 @@
     (id->real-label sys) ;; for psyntax, Written in C++
     (join-wraps sys) ;; for psyntax, Written in C++
     (get-environment-variable sys)
+    (current-exception-handler sys)
     (get-environment-variables sys)
     (create-mosh-cache-dir sys)
     (create-directory sys)

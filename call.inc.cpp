@@ -157,6 +157,7 @@
                 code[8] = Object::makeFixnum(6);
                 code[9] = Object::makeRaw(Instruction::CONSTANT_PUSH);
                 code[10] = c->winders();
+//                VM_LOG1("winders=~a\n", c->winders());
                 code[11] = Object::makeRaw(Instruction::REFER_GLOBAL_CALL);
                 code[12] = Symbol::intern(UC("perform-dynamic-wind"));
                 code[13] = Object::makeFixnum(1);
