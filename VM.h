@@ -231,10 +231,10 @@ private:
     Object* sp_; // stack pointer   register
     Object* pc_; // program counter register
 protected:
+
     int stackSize_;
     Object* stack_;
     Object* stackEnd_;
-    Object* maxStack_;
     Object nameSpace_;
     Object notFound_;
     Object currentOutputPort_;

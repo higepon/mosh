@@ -53,6 +53,16 @@ public:
         return size_;
     }
 
+    Object* stack() const
+    {
+        return stack_;
+    }
+
+    int size() const
+    {
+        return size_;
+    }
+
 protected:
     Object* stack_;
     const int size_;

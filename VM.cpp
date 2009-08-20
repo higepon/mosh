@@ -102,7 +102,6 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     cl_(Object::Nil),
     pc_(NULL),
     stackSize_(stackSize),
-    maxStack_(NULL),
     currentOutputPort_(outPort),
     currentErrorPort_(errorPort),
     currentInputPort_(inputPort),
