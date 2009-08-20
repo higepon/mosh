@@ -1365,6 +1365,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             printf("STOP for debug\n");
             exit(-1);
         }
+        CASE(DYNAMIC_WINDERS)
+        {
+            ac_ = dynamicWinders();
+            NEXT1;
+        }
         DEFAULT
         {
             callAssertionViolationAfter(this, "VM", "unknown instruction, bug of VM");

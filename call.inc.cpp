@@ -1,5 +1,5 @@
 /*
- * call.inc.cpp - 
+ * call.inc.cpp -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -142,24 +142,30 @@
                 goto return_entry;
             } else if (ac_.isContinuation()) {
                 Continuation* const c = ac_.toContinuation();
-                const int codeSize = 11;
+                const int codeSize = 18;
 
                 // This memory allocation is not time consuming. (I've checked)
                 Object* code = Object::makeObjectArray(codeSize);
-                code[0] = Object::makeRaw(Instruction::FRAME);
-                code[1] = Object::makeFixnum(6);
-                code[2] = Object::makeRaw(Instruction::CONSTANT_PUSH);
-                code[3] = c->winders();
-                code[4] = Object::makeRaw(Instruction::REFER_GLOBAL_CALL);
-                code[5] = Symbol::intern(UC("perform-dynamic-wind"));
-                code[6] = Object::makeFixnum(1);
-                code[7] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
-                code[8] = operand;         // length of arguments
-                code[9] = c->stack();      // stack
-                code[10] = c->shiftSize(); // shift size
+                code[0] = Object::makeRaw(Instruction::CONSTANT_PUSH);
+                code[1] = c->winders();
+                code[2] = Object::makeRaw(Instruction::DYNAMIC_WINDERS);
+                code[3] = Object::makeRaw(Instruction::BRANCH_NOT_EQ);// (if (not (eq? new (current-dynamic-winders))) perform-dynamic-wind)
+                code[4] = Object::makeFixnum(3);
+                code[5] = Object::makeRaw(Instruction::LOCAL_JMP);
+                code[6] = Object::makeFixnum(8);
+                code[7] = Object::makeRaw(Instruction::FRAME);
+                code[8] = Object::makeFixnum(6);
+                code[9] = Object::makeRaw(Instruction::CONSTANT_PUSH);
+                code[10] = c->winders();
+                code[11] = Object::makeRaw(Instruction::REFER_GLOBAL_CALL);
+                code[12] = Symbol::intern(UC("perform-dynamic-wind"));
+                code[13] = Object::makeFixnum(1);
+                code[14] = Object::makeRaw(Instruction::RESTORE_CONTINUATION);
+                code[15] = operand;         // length of arguments
+                code[16] = c->stack();      // stack
+                code[17] = c->shiftSize(); // shift size
                 Object* nextPc = getDirectThreadedCode(code, codeSize);
                 pc_ = nextPc;
             } else {
                 callAssertionViolationAfter(this, "apply", "invalid application", L1(ac_));
             }
-
