@@ -94,9 +94,7 @@
         (format "expected ~a, but got ~a" expect got)
         (format "expected ~a, but got ~a, as argument ~a" expect got (car nth)))))
 
-(define map
-  (lambda (proc lst1 . lst2)
-
+    ;; lift up
     (define map-1
       (lambda (proc lst)
         (cond ((null? lst) '())
@@ -111,6 +109,9 @@
                (cons (apply proc (car lst))
                      (map-n proc (cdr lst)))))))
 
+(define map
+  (lambda (proc lst1 . lst2)
+
     (if (null? lst2)
         (if (list? lst1)
             (map-1 proc lst1)
@@ -120,8 +121,6 @@
               (else
                (assertion-violation 'map "expected same length proper lists" (cons* proc lst1 lst2)))))))
 
-(define for-each
-  (lambda (proc lst1 . lst2)
     (define for-each-1 (lambda (proc lst)
                          (if (null? lst)
                              (unspecified)
@@ -133,6 +132,9 @@
                                (else
                                 (apply proc (car lst))
                                 (for-each-n proc (cdr lst))))))
+
+(define for-each
+  (lambda (proc lst1 . lst2)
     (if (null? lst2)
         (if (list? lst1)
             (for-each-1 proc lst1)
