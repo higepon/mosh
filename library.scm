@@ -83,7 +83,7 @@
 (define (negative? x)
   (< x 0))
 
-(define (list . a) a)
+;(define (list . a) a)
 
 (define (unspecified) (if #f #t))
 

@@ -89,6 +89,7 @@
   boolean=?
   (vector? vector?)
   (list? list?)
+  (list list)
   (memq memq)
   (eq? eq?)
   (eqv? eqv?)
@@ -664,7 +665,6 @@
   simple-struct-ref
   simple-struct-set!
   simple-struct-name
-
   ;; for faster psyntax.
   same-marks*?
   same-marks?

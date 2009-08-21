@@ -1074,3 +1074,14 @@ Object scheme::listTransposeAddEx(VM* theVM, int argc, const Object* argv)
     }
     return do_transpose(length, argc, /* un-const, we know it's safe */(Object*)argv);
 }
+
+// (list . obj)
+// gambit-benchmarks deriv requires this.
+Object scheme::listEx(VM* theVM, int argc, const Object* argv)
+{
+    Object obj = Object::Nil;
+    for (int i = argc - 1; i >= 0; i--) {
+        obj = Object::cons(argv[i], obj);
+    }
+    return obj;
+}

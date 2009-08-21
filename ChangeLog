@@ -1,3 +1,7 @@
+2009-08-21  higepon  <higepon@users.sourceforge.jp>
+
+	* ListProcedures.cpp (listEx): Rewrote list in C++.
+
 2009-08-20  higepon  <higepon@users.sourceforge.jp>
 
 	* library.scm (perform-dynamic-wind): Improved perform-dynamic-wind.
