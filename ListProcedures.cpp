@@ -446,7 +446,16 @@ Object scheme::vectorRefEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(2);
     argumentAsVector(0, v);
     argumentAsFixnum(1, k);
-    return v->ref(k);
+    if (v->isValidIndex(k)) {
+        return v->ref(k);
+    } else {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    "index out of range",
+                                    L1(argv[1]));
+
+        return Object::Undef;
+    }
 }
 
 // (vector-set! v k value)
@@ -456,7 +465,14 @@ Object scheme::vectorSetDEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(3);
     argumentAsVector(0, v);
     argumentAsFixnum(1, k);
-    v->set(k, argv[2]);
+    if (v->isValidIndex(k)) {
+        v->set(k, argv[2]);
+    } else {
+        callAssertionViolationAfter(theVM,
+                                    procedureName,
+                                    "index out of range",
+                                    L1(argv[1]));
+    }
     return Object::Undef;
 }
 

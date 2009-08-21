@@ -102,7 +102,7 @@ inline int Vector::length() const
 
 inline bool Vector::isValidIndex(int index) const
 {
-    return num_ >= 0 && index < num_;
+    return index >= 0 && index < num_;
 }
 
 inline Object::Object(int n, Object o)
