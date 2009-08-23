@@ -109,7 +109,7 @@
 ;; ;(time-bench destruc 100)
 ;; (time-bench diviter 200000)
 ;; (time-bench divrec 140000)
-;; (time-bench puzzle 12)
+;(time-bench puzzle 12)
 ;; (time-bench takl 35)
 ;; (time-bench triangl 1)
 

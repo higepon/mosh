@@ -4054,14 +4054,24 @@
   (define syntax->datum
     (lambda (x) (stx->datum x)))
 
+  (define (ungensym-all code)
+    (cond
+     [(pair? code)
+      (cons (ungensym-all (car code))
+            (ungensym-all (cdr code)))]
+     [(symbol? code)
+      (ungensym code)]
+     [else code]))
+
   (define compile-r6rs-top-level
     (lambda (x*)
       (let-values (((lib* invoke-code) (top-level-expander x*)))
         (lambda ()
           (for-each invoke-library lib*)
-          (when (symbol-value 'debug-expand)
-            (format #t "psyntax expanded=~a\n" (expanded->core invoke-code)))
-          (eval-core (expanded->core invoke-code))))))
+          (let ([expanded (expanded->core invoke-code)])
+            (when (symbol-value 'debug-expand)
+              (format #t "psyntax expanded=~a\n" (ungensym-all expanded)))
+            (eval-core expanded))))))
 
   (define pre-compile-r6rs-top-level
     (lambda (x*)

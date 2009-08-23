@@ -973,6 +973,7 @@
     (socket-port sys)
     (make-parameter                           sys)
     (parameterize                            sys)
+    (disasm                                  sys)
     (os-constant                             mosh)
     (time-usage                              mosh)
     (time                                    mosh interaction)

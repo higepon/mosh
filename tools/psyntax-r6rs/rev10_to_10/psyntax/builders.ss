@@ -25,7 +25,7 @@
     build-case-lambda build-let build-primref build-foreign-call
     build-data build-sequence build-void build-letrec build-letrec*
     build-global-define build-library-letrec* build-and build-or)
-  (import (rnrs) (psyntax compat) (psyntax config))
+  (import (rnrs) (psyntax compat) (psyntax config) (mosh))
 
   (define (build-global-define x)
     (if-wants-global-defines
@@ -151,9 +151,21 @@
                        (build-lexical-assignment ae lhs rhs))
                      vars val-exps)
                 (list body-exp)))))))))
+  ;; For Mosh.
+  ;; The default expansion of psyntax is clean, but slow since it makes some global procedures local.
+  ;; This makes Mosh slower, since GLOC optimization doesn't work.
+  ;; So we use this build-library-letrec*.
   (define build-library-letrec*
     (lambda (ae name vars locs val-exps body-exp)
-      `(library-letrec* ,name ,(map list vars locs val-exps) ,body-exp)))
+      `(begin
+        ,@(map (lambda (var) `(set! ,var (unspecified))) vars)
+        ,@(map (lambda (var loc val-exp)
+                 `(begin (set! ,var ,val-exp)
+                         (set! ,loc ,var))) vars locs val-exps)
+        ,body-exp)))
+
+; default
+;      `(library-letrec* ,name ,(map list vars locs val-exps) ,body-exp)))
   (define build-receive
     (lambda (ae vars producer body*)
       (display "************** in ")

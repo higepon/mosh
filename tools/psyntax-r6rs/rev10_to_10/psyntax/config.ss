@@ -64,5 +64,5 @@
   ;;; (let ([lhs* #f] ...) (set! lhs* rhs*) ... body)
   
   
-  (define-option if-wants-library-letrec*  #f)
+  (define-option if-wants-library-letrec*  #t)
 )

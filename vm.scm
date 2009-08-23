@@ -1604,7 +1604,8 @@
                                 define-structure
                                 define-const-structure
                                 define-simple-struct
-                                parameterize))
+                                parameterize
+                                ))
 
 (define (compile-file file allowed-macro . for-vm-cpp?)
   (with-input-from-file file
