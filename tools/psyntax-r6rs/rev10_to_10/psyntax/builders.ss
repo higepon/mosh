@@ -146,7 +146,7 @@
   (define build-named-let
     (lambda (ae name vars val-exps body-exp)
       (display `(let ,name ,(map list vars val-exps) ,body-exp) (current-error-port))
-      (if (null? vars) body-exp `(let ,name ,(map list vars val-exps) ,body-exp))))
+      `(let ,name ,(map list vars val-exps) ,body-exp)))
 
   (define build-letrec*
     (lambda (ae vars val-exps body-exp)
