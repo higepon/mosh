@@ -991,6 +991,40 @@
                                              rhs*) r mr)))
                    (build no-source lex* rhs* body)))))))))
 
+  (define let-transformer
+    (lambda (e r mr)
+      (syntax-match e ()
+        ((_ ((lhs* rhs*) ...) b b* ...)
+         (if (not (valid-bound-ids? lhs*))
+             (invalid-fmls-error e lhs*)
+             (let ((lex* (map gen-lexical lhs*))
+                   (lab* (map gen-label lhs*))
+                   (rhs* (chi-expr* rhs* r mr)))
+               (let ((rib (make-full-rib lhs* lab*))
+                     (r (add-lexicals lab* lex* r)))
+                 (let ((body (chi-internal
+                               (add-subst rib (cons b b*)) r mr))
+                       ;; (rhs* (chi-expr* (map (lambda (x) (add-subst rib x))
+;;                                              rhs*) r mr))
+                       )
+                   (build-let no-source lex* rhs* body))))))
+        ((_ loop ((lhs* rhs*) ...) b b* ...)
+         (if (not (valid-bound-ids? lhs*))
+             (invalid-fmls-error e lhs*)
+             (let ((lex* (map gen-lexical lhs*))
+                   (lab* (map gen-label lhs*))
+                   (rhs* (chi-expr* rhs* r mr))
+                   (loop-lex (gen-lexical loop))
+                   (loop-lab (gen-label loop)))
+               (let ((rib (make-full-rib (cons loop lhs*) (cons loop-lab lab*)))
+                     (r (add-lexicals (cons loop-lab lab*) (cons loop-lex lex*) r)))
+                 (let ((body (chi-internal
+                               (add-subst rib (cons b b*)) r mr))
+                       ;; (rhs* (chi-expr* (map (lambda (x) (add-subst rib x))
+;;                                              rhs*) r mr))
+                       )
+                   (build-named-let no-source loop-lex lex* rhs* body)))))))))
+
   (define letrec-transformer
     (lambda (e r mr) (letrec-helper e r mr build-letrec)))
 
@@ -2653,6 +2687,7 @@
         ((case-lambda)            case-lambda-transformer)
         ((letrec)                 letrec-transformer)
         ((letrec*)                letrec*-transformer)
+        ((let)                let-transformer)
         ((if)                     if-transformer)
         ((and)                    and-transformer)
         ((or)                    or-transformer)

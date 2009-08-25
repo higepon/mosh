@@ -66,6 +66,7 @@
     (type-descriptor     (core-macro . type-descriptor))
     (letrec              (core-macro . letrec))
     (letrec*             (core-macro . letrec*))
+    (let                 (core-macro . let))
     (if                  (core-macro . if))
     (and                 (core-macro . and))
     (or                  (core-macro . or))
