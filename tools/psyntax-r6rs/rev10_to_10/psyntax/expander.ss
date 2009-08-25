@@ -991,6 +991,8 @@
                                              rhs*) r mr)))
                    (build no-source lex* rhs* body)))))))))
 
+  ;; Since Mosh has an optimized let/named-let, we pass them to backend instead of converting into lambda or letrec.
+  ;; So we use core-macro-transformer, here is transformer for let.
   (define let-transformer
     (lambda (e r mr)
       (syntax-match e ()
@@ -999,15 +1001,13 @@
              (invalid-fmls-error e lhs*)
              (let ((lex* (map gen-lexical lhs*))
                    (lab* (map gen-label lhs*))
-                   (rhs* (chi-expr* rhs* r mr)))
+                   (rhs* (chi-expr* rhs* r mr))) ;; unlink letrec, let's rhs* should be evaluated out of rib.
                (let ((rib (make-full-rib lhs* lab*))
                      (r (add-lexicals lab* lex* r)))
                  (let ((body (chi-internal
-                               (add-subst rib (cons b b*)) r mr))
-                       ;; (rhs* (chi-expr* (map (lambda (x) (add-subst rib x))
-;;                                              rhs*) r mr))
-                       )
+                               (add-subst rib (cons b b*)) r mr)))
                    (build-let no-source lex* rhs* body))))))
+        ;; named-let
         ((_ loop ((lhs* rhs*) ...) b b* ...)
          (if (not (valid-bound-ids? lhs*))
              (invalid-fmls-error e lhs*)
@@ -1016,13 +1016,11 @@
                    (rhs* (chi-expr* rhs* r mr))
                    (loop-lex (gen-lexical loop))
                    (loop-lab (gen-label loop)))
+               ;; Adding loop to lexical environment is needed.
                (let ((rib (make-full-rib (cons loop lhs*) (cons loop-lab lab*)))
                      (r (add-lexicals (cons loop-lab lab*) (cons loop-lex lex*) r)))
                  (let ((body (chi-internal
-                               (add-subst rib (cons b b*)) r mr))
-                       ;; (rhs* (chi-expr* (map (lambda (x) (add-subst rib x))
-;;                                              rhs*) r mr))
-                       )
+                               (add-subst rib (cons b b*)) r mr)))
                    (build-named-let no-source loop-lex lex* rhs* body)))))))))
 
   (define letrec-transformer
@@ -2687,10 +2685,10 @@
         ((case-lambda)            case-lambda-transformer)
         ((letrec)                 letrec-transformer)
         ((letrec*)                letrec*-transformer)
-        ((let)                let-transformer)
+        ((let)                    let-transformer)
         ((if)                     if-transformer)
         ((and)                    and-transformer)
-        ((or)                    or-transformer)
+        ((or)                     or-transformer)
         ((foreign-call)           foreign-call-transformer)
         ((syntax-case)            syntax-case-transformer)
         ((syntax)                 syntax-transformer)

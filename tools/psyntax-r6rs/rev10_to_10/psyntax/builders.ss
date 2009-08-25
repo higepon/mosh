@@ -82,9 +82,9 @@
                   (build-data ae "invalid arg count"))))
         (define (build-pred ae n vars) 
           (let-values (((count pred) 
-                        (let f3 ((vars vars) (count 0))
+                        (let f ((vars vars) (count 0))
                           (cond
-                            ((pair? vars) (f3 (cdr vars) (+ count 1)))
+                            ((pair? vars) (f (cdr vars) (+ count 1)))
                             ((null? vars) (values count '=))
                             (else (values count '>=))))))
             (build-application ae (build-primref ae pred) 
@@ -101,13 +101,13 @@
                   (list n) (list (build-application ae
                                    (build-primref ae 'length)
                                    (list (build-lexical-reference ae g))))
-                  (let f4 ((vars* vars*) (exp* exp*))
+                  (let f ((vars* vars*) (exp* exp*))
                     (if (null? vars*)
                         (build-error ae)
                         (build-conditional ae
                           (build-pred ae n (car vars*))
                           (build-apply ae g (car vars*) (car exp*))
-                          (f4 (cdr vars*) (cdr exp*)))))))))
+                          (f (cdr vars*) (cdr exp*)))))))))
         (if (= (length exp*) 1) 
             (build-lambda ae (car vars*) (car exp*))
             (expand-case-lambda ae vars* exp*)))))
@@ -140,12 +140,10 @@
 
   (define build-let
     (lambda (ae vars val-exps body-exp)
-;      (display `(let ,(map list vars val-exps) ,body-exp) (current-error-port))
       (if (null? vars) body-exp `(let ,(map list vars val-exps) ,body-exp))))
 
   (define build-named-let
     (lambda (ae name vars val-exps body-exp)
-      (display `(let ,name ,(map list vars val-exps) ,body-exp) (current-error-port))
       `(let ,name ,(map list vars val-exps) ,body-exp)))
 
   (define build-letrec*

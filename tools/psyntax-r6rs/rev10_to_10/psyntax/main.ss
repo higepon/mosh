@@ -277,11 +277,11 @@
       (let ((x*
              (with-input-from-file filename
                (lambda ()
-                 (let f1 ()
+                 (let 1 ()
                    (let ((x (read-annotated)))
                      (if (eof-object? x)
                          '()
-                         (cons x (f1)))))))))
+                         (cons x (f)))))))))
         (case how
           ((closure)   (pre-compile-r6rs-top-level x*))
           ((load)
@@ -457,11 +457,11 @@
   (library-path (local-library-path (car (command-line))))
   (set! x* (with-input-from-file (car (command-line))
                 (lambda ()
-                  (let f2 ()
+                  (let f ()
                     (let ((x (read-annotated)))
                       (if (eof-object? x)
                           '()
-                          (cons x (f2))))))))
+                          (cons x (f))))))))
   (command-line (cons (car (command-line)) (cdr (command-line))))
   (mosh-cache-dir (create-mosh-cache-dir))
   (when (mosh-cache-dir)
