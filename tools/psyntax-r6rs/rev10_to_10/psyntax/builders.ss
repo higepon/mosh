@@ -168,9 +168,9 @@
     (lambda (ae name vars locs val-exps body-exp)
       `(begin
         ,@(map (lambda (var) `(set! ,var (unspecified))) vars)
-        ,@(map (lambda (var loc val-exp)
-                 `(begin (set! ,var ,val-exp)
-                         (set! ,loc ,var))) vars locs val-exps)
+        ,@(apply append (map (lambda (var loc val-exp)
+                 `((set! ,var ,val-exp)
+                   (set! ,loc ,var))) vars locs val-exps))
         ,body-exp)))
 
 ; default

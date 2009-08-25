@@ -277,7 +277,7 @@
       (let ((x*
              (with-input-from-file filename
                (lambda ()
-                 (let 1 ()
+                 (let f ()
                    (let ((x (read-annotated)))
                      (if (eof-object? x)
                          '()
