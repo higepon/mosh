@@ -1017,10 +1017,11 @@
                    (loop-lex (gen-lexical loop))
                    (loop-lab (gen-label loop)))
                ;; Adding loop to lexical environment is needed.
-               (let ((rib (make-full-rib (cons loop lhs*) (cons loop-lab lab*)))
+               (let ((loop-rib (make-full-rib (list loop) (list loop-lab)))
+                     (rib (make-full-rib lhs* lab*))
                      (r (add-lexicals (cons loop-lab lab*) (cons loop-lex lex*) r)))
                  (let ((body (chi-internal
-                               (add-subst rib (cons b b*)) r mr)))
+                               (add-subst loop-rib (add-subst rib (cons b b*))) r mr)))
                    (build-named-let no-source loop-lex lex* rhs* body)))))))))
 
   (define letrec-transformer
