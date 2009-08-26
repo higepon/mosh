@@ -1,3 +1,9 @@
+2009-08-26  higepon  <higepon@users.sourceforge.jp>
+
+	* test/list.scm : Passed.	
+
+	* compiler.scm (pass1/let): Fixed compilation of let's value non-tail.
+
 2009-08-25  higepon  <higepon@users.sourceforge.jp>
 
 	* test/list.scm : Failed.

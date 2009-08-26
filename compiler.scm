@@ -1031,7 +1031,7 @@
 
 
 (define (pass1/let vars vals body source-info lvars tail?)
-  (let* ([inits      (pass1/map-s->i vals)]
+  (let* ([inits      (pass1/map-s->i-non-tail vals)]
          [this-lvars (map (lambda (sym init) ($lvar sym init 0 0)) vars inits)])
     ($let 'let
           this-lvars
