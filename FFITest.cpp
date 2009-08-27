@@ -67,6 +67,7 @@
 #include "ByteVector.h"
 #include "StandardOutputPort.h"
 #include "StandardInputPort.h"
+#include "ExecutableMemory.h"
 
 using namespace scheme;
 
@@ -296,5 +297,49 @@ TEST_F(FFITest, refUint64_t) {
     Pointer p(&c);
     EXPECT_EQ(0xffffffffeeeeeeeeLL, p.ref<uint64_t>(0));
 }
+
+#if defined(ARCH_IA32) || defined(ARCH_X86_64)
+TEST_F(FFITest, ExecutableMemory) {
+    ExecutableMemory mem(32);
+    ASSERT_TRUE(mem.allocate());
+
+    /*
+    int return3()
+    {
+        return 3;
+    }
+    */
+#ifdef ARCH_IA32
+    ASSERT_TRUE(mem.push(0x55)); // push   %ebp
+    ASSERT_TRUE(mem.push(0x89)); // mov    %esp,%ebp
+    ASSERT_TRUE(mem.push(0xe5));
+    ASSERT_TRUE(mem.push(0x83)); // sub    $0x8,%esp
+    ASSERT_TRUE(mem.push(0xec));
+    ASSERT_TRUE(mem.push(0x08));
+    ASSERT_TRUE(mem.push(0xb8)); // mov    $0x3,%eax
+    ASSERT_TRUE(mem.push(0x03));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0xc9)); // leave
+    ASSERT_TRUE(mem.push(0xc3)); // ret
+#else
+    ASSERT_TRUE(mem.push(0x55)); // push   %rbp
+    ASSERT_TRUE(mem.push(0x48)); // mov    %rsp,%rbp
+    ASSERT_TRUE(mem.push(0x89));
+    ASSERT_TRUE(mem.push(0xe5));
+    ASSERT_TRUE(mem.push(0xb8)); // mov    $0x3,%eax
+    ASSERT_TRUE(mem.push(0x03));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0x00));
+    ASSERT_TRUE(mem.push(0xc9)); // leaveq
+    ASSERT_TRUE(mem.push(0xc3)); // retq
+#endif
+
+    int (*return3) () = (int (*) ())mem.address();
+    EXPECT_EQ(3, return3());
+}
+#endif
 
 #endif
