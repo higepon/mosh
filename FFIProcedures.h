@@ -46,6 +46,7 @@ Object internalFfiCallTocharEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* argv);
 Object sharedErrnoEx(VM* theVM, int argc, const Object* argv);
 
 Object pointerPEx(VM* theVM, int argc, const Object* argv);

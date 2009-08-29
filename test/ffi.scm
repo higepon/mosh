@@ -209,6 +209,14 @@
                   (loop (+ i 1) (mysql-fetch-row result))]))
               (mysql-close mysql-obj)
               (mysql-free-result result))])))))
-))
+)
+  (let ()
+    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define returnCallback (c-function libffitest int returnCallback void*))
+    (let ([callback (make-c-callback 'int '(void) (lambda () 3))])
+      (test-true (pointer? callback))
+      (test-eq 3 (returnCallback callback))))
+
+) ;; when
 
 (test-results)

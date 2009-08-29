@@ -51,6 +51,7 @@
 #include "Flonum.h"
 #include "Bignum.h"
 #include "Symbol.h"
+#include "ExecutableMemory.h"
 
 
 using namespace scheme;
@@ -81,6 +82,38 @@ public:
     }
 };
 
+struct CallBackTrampoline
+{
+    uint8_t push_rbp;
+    uint8_t mov_rsp_rbp[3];
+    uint8_t mov_imm64_eax[5];
+    uint8_t leaveq;
+    uint8_t retq;
+public:
+    CallBackTrampoline()
+    {
+        push_rbp = 0x55;
+        mov_rsp_rbp[0] = 0x48;
+        mov_rsp_rbp[1] = 0x89;
+        mov_rsp_rbp[2] = 0xe5;
+        mov_imm64_eax[0] = 0xb8;
+        mov_imm64_eax[1] = 0x03;
+        mov_imm64_eax[2] = 0x00;
+        mov_imm64_eax[3] = 0x00;
+        mov_imm64_eax[4] = 0x00;
+        leaveq = 0xc9;
+        retq = 0xc3;
+    }
+
+    static void* operator new(size_t size)
+    {
+        ExecutableMemory* ex = ::new ExecutableMemory(size);
+        ex->allocate();
+        return static_cast<void*>(ex->address());
+    }
+
+};
+
 
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
@@ -104,7 +137,7 @@ static double callStubDouble(Pointer* func, CStack* cstack)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
     uintptr_t p = func->pointer();
     void* s = cstack->frame();
-    double dret; 
+    double dret;
     __asm {
         MOV    EDX,ESP
         MOV    ESI,s
@@ -921,4 +954,11 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     }
     const uint64_t u64Size = Arithmetic::toU64(size);
     return Object::makePointer(malloc(u64Size));
+}
+
+Object scheme::internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("make-c-callback");
+    checkArgumentLength(3);
+    return Object::makePointer(new CallBackTrampoline());
 }

@@ -194,3 +194,8 @@ void abc(void* p)
 {
   strcpy(p, "abc");
 }
+
+int returnCallback(int (*func) (void))
+{
+  return func();
+}

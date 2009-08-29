@@ -340,6 +340,40 @@ TEST_F(FFITest, ExecutableMemory) {
     int (*return3) () = (int (*) ())mem.address();
     EXPECT_EQ(3, return3());
 }
-#endif
 
+static int a = 0;
+
+static void set_a_4()
+{
+    a = 4;
+}
+
+TEST_F(FFITest, CallFromExecutableMemory) {
+    ExecutableMemory mem(64);
+    ASSERT_TRUE(mem.allocate());
+    EXPECT_EQ(0, a);
+#ifdef ARCH_IA32
+#else
+    ASSERT_TRUE(mem.push(0x55)); // push   %rbp
+    ASSERT_TRUE(mem.push(0x48)); // mov    %rsp,%rbp
+    ASSERT_TRUE(mem.push(0x89));
+    ASSERT_TRUE(mem.push(0xe5));
+    ASSERT_TRUE(mem.push(0x48)); // mov    $imm64,%rax
+    ASSERT_TRUE(mem.push(0xb8));
+
+    // set pointer address of set_a_4
+    intptr_t p = reinterpret_cast<intptr_t>(set_a_4);
+    for (int i = 0; i < 8; i++) {
+        ASSERT_TRUE(mem.push((p >> (i * 8)) & 0xff));
+    }
+    ASSERT_TRUE(mem.push(0xff)); // callq *%rax
+    ASSERT_TRUE(mem.push(0xd0));
+    ASSERT_TRUE(mem.push(0xc9)); // leaveq
+    ASSERT_TRUE(mem.push(0xc3)); // retq
+#endif
+    void (*func) () = (void (*) ())mem.address();
+    func();
+    EXPECT_EQ(4, a);
+}
+#endif
 #endif

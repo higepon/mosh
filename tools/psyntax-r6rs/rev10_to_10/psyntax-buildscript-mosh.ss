@@ -1049,6 +1049,7 @@
     (%ffi-supported? interaction sys)
     (%ffi-malloc sys)
     (%ffi-free sys)
+    (%ffi-make-c-callback sys)
     (shared-errno interaction sys)
     (pointer? interaction sys)
     (integer->pointer interaction sys)

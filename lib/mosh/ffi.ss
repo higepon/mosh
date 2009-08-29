@@ -90,7 +90,7 @@
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
-          shared-errno
+          shared-errno make-c-callback
           pointer?
           pointer->integer
           integer->pointer ;; temp
@@ -148,8 +148,8 @@
                        + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
-          (rename (system) (%ffi-open open-shared-library))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
+          (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback make-c-callback))
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double %ffi-make-c-callback
                 shared-errno
                 pointer?
                 pointer->integer
@@ -324,6 +324,23 @@
     (syntax-case x ()
       [(_ lib ret func arg ...)
        #'(make-c-function lib 'ret 'func '(arg ...)))]))
+
+#|
+    Function: make-c-callback
+
+    Make c-callback
+
+    Prototype:
+    > (make-c-callback return-type arg-type* proc)
+
+    Parameters:
+
+      return-tupe - todo
+
+    Returns:
+
+      A pointer of c-callback
+|#
 
 #|
     Function: malloc
