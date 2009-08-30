@@ -396,6 +396,10 @@ static int64_t args[8];
 
 void getArgumentsStub2()
 {
+// this breaks stack
+//     char buf[32];
+//     sprintf(buf, "hige");
+//     printf(buf);
 #ifdef ARCH_IA32
 #else
     //RDI, RSI, RDX, RCX, R8, R9 and in stack.

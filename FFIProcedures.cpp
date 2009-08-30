@@ -91,22 +91,40 @@ int return4()
     return ret.toFixnum();
 }
 
+void callbackStub()
+{
+    // don't place stack variables here.
+#ifdef ARCH_IA32
+#else
+    // arguments are RDI, RSI, RDX, RCX, R8, R9 and in stack.
+    asm volatile("movq %%rdi, %0;"
+                 "movq %%rsi, %1;"
+                 "movq %%rdx, %2;"
+                 "movq %%rcx, %3;"
+                 "movq %%r8,  %4;"
+                 "movq %%r9,  %5;"
+                 "movq 8(%%rsp), %6;"
+                 "movq 16(%%rsp), %7;"
+                 : "=m" (args[0]),
+                   "=m" (args[1]),
+                   "=m" (args[2]),
+                   "=m" (args[3]),
+                   "=m" (args[4]),
+                   "=m" (args[5]),
+                   "=r" (args[6]),
+                   "=r" (args[7]): :);
+#endif
+}
+
+
 struct CallBackTrampoline
 {
-    uint8_t push_rbp;
-    uint8_t mov_rsp_rbp[3];
     uint8_t mov_imm64_rax[10];
-    uint8_t callq_rax[2];
-    uint8_t leaveq;
-    uint8_t retq;
+    uint8_t jmpq_rax[2];
+    uint8_t ud2[2];
 public:
     CallBackTrampoline()
     {
-        push_rbp = 0x55;
-        mov_rsp_rbp[0] = 0x48;
-        mov_rsp_rbp[1] = 0x89;
-        mov_rsp_rbp[2] = 0xe5;
-
         mov_imm64_rax[0] = 0x48;
         mov_imm64_rax[1] = 0xb8;
 
@@ -115,10 +133,11 @@ public:
             mov_imm64_rax[i + 2] = ((p >> (i * 8)) & 0xff);
         }
 
-        callq_rax[0] = 0xff;
-        callq_rax[1] = 0xd0;
-        leaveq = 0xc9;
-        retq = 0xc3;
+        jmpq_rax[0] = 0xff;
+        jmpq_rax[1] = 0xe0;
+
+        ud2[0] = 0x0f;
+        ud2[1] = 0x0b;
     }
 
     static void* operator new(size_t size)
