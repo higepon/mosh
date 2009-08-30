@@ -82,11 +82,17 @@ public:
     }
 };
 
+int return4()
+{
+    return 3;
+}
+
 struct CallBackTrampoline
 {
     uint8_t push_rbp;
     uint8_t mov_rsp_rbp[3];
-    uint8_t mov_imm64_eax[5];
+    uint8_t mov_imm64_rax[10];
+    uint8_t callq_rax[2];
     uint8_t leaveq;
     uint8_t retq;
 public:
@@ -96,11 +102,17 @@ public:
         mov_rsp_rbp[0] = 0x48;
         mov_rsp_rbp[1] = 0x89;
         mov_rsp_rbp[2] = 0xe5;
-        mov_imm64_eax[0] = 0xb8;
-        mov_imm64_eax[1] = 0x03;
-        mov_imm64_eax[2] = 0x00;
-        mov_imm64_eax[3] = 0x00;
-        mov_imm64_eax[4] = 0x00;
+
+        mov_imm64_rax[0] = 0x48;
+        mov_imm64_rax[1] = 0xb8;
+
+        intptr_t p = reinterpret_cast<intptr_t>(return4);
+        for (int i = 0; i < 8; i++) {
+            mov_imm64_rax[i + 2] = ((p >> (i * 8)) & 0xff);
+        }
+
+        callq_rax[0] = 0xff;
+        callq_rax[1] = 0xd0;
         leaveq = 0xc9;
         retq = 0xc3;
     }
