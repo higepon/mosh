@@ -82,9 +82,13 @@ public:
     }
 };
 
+#include "MultiVMProcedures.h"
+
+Object closure;
 int return4()
 {
-    return 3;
+    Object ret = currentVM()->callClosure0(closure);
+    return ret.toFixnum();
 }
 
 struct CallBackTrampoline
@@ -972,5 +976,6 @@ Object scheme::internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* arg
 {
     DeclareProcedureName("make-c-callback");
     checkArgumentLength(3);
+    closure = argv[2];
     return Object::makePointer(new CallBackTrampoline());
 }
