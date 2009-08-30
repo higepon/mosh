@@ -1,3 +1,7 @@
+2009-08-30  higepon  <higepon@users.sourceforge.jp>
+
+	* FFITest.cpp (getArgumentsStub): Added.
+
 2009-08-28  higepon  <higepon@users.sourceforge.jp>
 
 	* FFIProcedures.cpp (struct CallBackTrampoline): Added for FFI callback.

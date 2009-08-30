@@ -375,5 +375,22 @@ TEST_F(FFITest, CallFromExecutableMemory) {
     func();
     EXPECT_EQ(4, a);
 }
+
+static int64_t arg1 = 0;
+
+void getArgumentsStub()
+{
+#ifdef ARCH_IA32
+#else
+    asm volatile("movq %%rdi, %0;" : "=D" (arg1) : :);
+#endif
+}
+
+TEST_F(FFITest, getArguments) {
+    void (*func)(int) = (void (*)(int))getArgumentsStub;
+    func(1234);
+    EXPECT_EQ(1234, arg1);
+}
+
 #endif
 #endif
