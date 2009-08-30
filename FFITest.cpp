@@ -382,7 +382,7 @@ void getArgumentsStub()
 {
 #ifdef ARCH_IA32
 #else
-    asm volatile("movq %%rdi, %0;" : "=D" (arg1) : :);
+    asm volatile("movq %%rdi, %0;" : "=m" (arg1) : :);
 #endif
 }
 
@@ -391,6 +391,47 @@ TEST_F(FFITest, getArguments) {
     func(1234);
     EXPECT_EQ(1234, arg1);
 }
+
+static int64_t args[8];
+
+void getArgumentsStub2()
+{
+#ifdef ARCH_IA32
+#else
+    //RDI, RSI, RDX, RCX, R8, R9 and in stack.
+    asm volatile("movq %%rdi, %0;"
+                 "movq %%rsi, %1;"
+                 "movq %%rdx, %2;"
+                 "movq %%rcx, %3;"
+                 "movq %%r8,  %4;"
+                 "movq %%r9,  %5;"
+                 "movq 8(%%rsp), %6;"
+                 "movq 16(%%rsp), %7;"
+                 : "=m" (args[0]),
+                   "=m" (args[1]),
+                   "=m" (args[2]),
+                   "=m" (args[3]),
+                   "=m" (args[4]),
+                   "=m" (args[5]),
+                   "=r" (args[6]),
+                   "=r" (args[7]): :);
+#endif
+}
+
+TEST_F(FFITest, getArguments2) {
+    void (*func)(int, int, int, int, int, int, int, int) = (void (*)(int, int, int, int, int, int, int, int))getArgumentsStub2;
+    func(1, 2, 3, 4, 5, 6, 7, 8);
+    EXPECT_EQ(1, args[0]);
+    EXPECT_EQ(2, args[1]);
+    EXPECT_EQ(3, args[2]);
+    EXPECT_EQ(4, args[3]);
+    EXPECT_EQ(5, args[4]);
+    EXPECT_EQ(6, args[5]);
+    EXPECT_EQ(7, args[6]);
+    EXPECT_EQ(8, args[7]);
+
+}
+
 
 #endif
 #endif
