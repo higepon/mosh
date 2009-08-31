@@ -27,6 +27,7 @@ fi
 # Checks for programs.
 dnl AC_PROG_LIBTOOL # use LTLIBRARIES
 dnl AC_LIBTOOL_DLOPEN # use dlopen
+AM_PROG_AS
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_MAKE_SET
@@ -268,12 +269,14 @@ i[[3456]]86|pentium)
 
         AC_MSG_RESULT([$host_cpu])
         AC_DEFINE([ARCH_IA32], 1, [Define for the IA32 architecture.])
+        AM_CONDITIONAL(FFI_I386, true)
         ;;
 x86?64*)
         arch=x86_64
         MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
         AC_MSG_RESULT([x86_64])
         AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+        AM_CONDITIONAL(FFI_X86_64, true)
         ;;
 *)
         AC_MSG_RESULT([$host_cpu])

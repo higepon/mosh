@@ -1,3 +1,7 @@
+2009-08-31  higepon  <higepon@users.sourceforge.jp>
+
+	* Makefile.am : Added ffi_stub_xx.s support.
+
 2009-08-30  higepon  <higepon@users.sourceforge.jp>
 
 	* FFITest.cpp (getArgumentsStub): Added.

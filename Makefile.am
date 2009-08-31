@@ -180,6 +180,14 @@ VMFactory.cpp VMFactory.h \
 SimpleStruct.h \
 OSCompat.h OSCompat.cpp
 
+if FFI_I386
+libmosh_a_SOURCES += ffi_stub_i386.s
+endif
+
+if FFI_X86_64
+libmosh_a_SOURCES += ffi_stub_x86_64.s
+endif
+
 mosh_core_libraries = \
 lib/match.ss \
 lib/memcached.ss \
