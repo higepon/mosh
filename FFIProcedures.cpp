@@ -106,13 +106,8 @@ public:
 //                    "=r" (args[7]): :);
 // #endif
 // }
-
-#ifdef ARCH_IA32
-
-#pragma pack(push, 1)
-
 extern "C" void        c_callback_stub_intptr();
-
+extern "C" void        c_callback_stub_intptr_x64();
 extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr_t* stack)
 {
     VM* vm = currentVM();
@@ -128,6 +123,29 @@ extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return ret.toFixnum();
 }
+
+extern "C" intptr_t c_callback_intptr_x64(uintptr_t uid, intptr_t signatures, intptr_t* stack)
+{
+    VM* vm = currentVM();
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    Object closure = vm->getCallBackTrampoline(uid);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    MOSH_ASSERT(closure.isProcedure());
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+// apply doesn't work!
+    Object ret = vm->apply(closure, Object::Nil);
+//    Object ret = vm->callClosure0(closure);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return ret.toFixnum();
+}
+
+
+#ifdef ARCH_IA32
+
+#pragma pack(push, 1)
+
+
 
 
 struct CallBackTrampoline
@@ -167,25 +185,36 @@ public:
 #pragma pack(push, 1)
 struct CallBackTrampoline
 {
-    uint8_t mov_imm64_rax[10];
-    uint8_t jmpq_rax[2];
-    uint8_t ud2[2];
+    uint8_t     mov_r10_imm64[2];   // 49 BA                    : mov r10, imm64
+    uint64_t    imm64_uid;          // 00 00 00 00 00 00 00 00
+    uint8_t     mov_r11_imm64[2];   // 49 BB                    : mov r11, imm64
+    uint64_t    imm64_stub;         // 00 00 00 00 00 00 00 00
+    uint8_t     jmp_r11[3];         // 41 FF 23                 : jmp [r11]
+//    uint8_t     forever[8];
+    uint8_t     ud2[2];             // 0F 0B
+    uint32_t     hoge;
+    uintptr_t uid;
+    uintptr_t stub;
+    intptr_t    m_signatures;
 public:
-    CallBackTrampoline()
+    CallBackTrampoline(Object closure)
     {
-        mov_imm64_rax[0] = 0x48;
-        mov_imm64_rax[1] = 0xb8;
-
-        intptr_t p = reinterpret_cast<intptr_t>(return4);
-        for (int i = 0; i < 8; i++) {
-            mov_imm64_rax[i + 2] = ((p >> (i * 8)) & 0xff);
-        }
-
-        jmpq_rax[0] = 0xff;
-        jmpq_rax[1] = 0xe0;
-
-        ud2[0] = 0x0f;
-        ud2[1] = 0x0b;
+        stub = reinterpret_cast<uint64_t>(&c_callback_stub_intptr_x64);
+        MOSH_ASSERT(closure.isProcedure());
+        mov_r10_imm64[0] = 0x49;
+        mov_r10_imm64[1] = 0xBA;
+        imm64_uid = reinterpret_cast<uint64_t>(&uid);
+        mov_r11_imm64[0] = 0x49;
+        mov_r11_imm64[1] = 0xBB;
+        imm64_stub = (intptr_t)(&stub);
+        jmp_r11[0] = 0x41;
+        jmp_r11[1] = 0xFF;
+        jmp_r11[2] = 0x23;
+        ud2[0] = 0x0F;
+        ud2[1] = 0x0B;
+//         forever[0] = 0xeb;
+//         forever[1] = 0xfe;
+        uid = currentVM()->registerCallBackTrampoline(closure);
     }
 
     static void* operator new(size_t size)
@@ -196,7 +225,7 @@ public:
     }
 
 };
-    #pragma pack(pop)
+#pragma pack(pop)
 #endif
 
 static double callStubDouble(Pointer* func, CStack* cstack)
