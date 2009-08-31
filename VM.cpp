@@ -138,6 +138,18 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     closureForEvaluate_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 0, outerSourceInfo_);
     closureForApply_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 1, outerSourceInfo_);;
 
+    applyCodeForApplyLength_= 9;
+    applyCodeForApply_ = Object::makeObjectArray(applyCodeForApplyLength_);
+    applyCodeForApply_[0] = Object::makeRaw(Instruction::FRAME);
+    applyCodeForApply_[1] = Object::makeFixnum(7);
+    applyCodeForApply_[2] = Object::makeRaw(Instruction::CONSTANT);
+    applyCodeForApply_[3] = Object::Undef;
+    applyCodeForApply_[4] = Object::makeRaw(Instruction::PUSH);
+    applyCodeForApply_[5] = Object::makeRaw(Instruction::CONSTANT);
+    applyCodeForApply_[6] = Object::Undef;
+    applyCodeForApply_[7] = Object::makeRaw(Instruction::APPLY);
+    applyCodeForApply_[8] = Object::makeRaw(Instruction::HALT);
+
     applyCodeForCallClosure0Length_ = 7;
     applyCodeForCallClosure0_ = Object::makeObjectArray(applyCodeForCallClosure0Length_);
     applyCodeForCallClosure0_[0] = Object::makeRaw(Instruction::FRAME);
@@ -535,20 +547,11 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
 
 Object VM::apply(Object proc, Object args)
 {
-    const int length = 9;
-    Object* code = Object::makeObjectArray(length);
-    code[0] = Object::makeRaw(Instruction::FRAME);
-    code[1] = Object::makeFixnum(7);
-    code[2] = Object::makeRaw(Instruction::CONSTANT);
-    code[3] = args;
-    code[4] = Object::makeRaw(Instruction::PUSH);
-    code[5] = Object::makeRaw(Instruction::CONSTANT);
-    code[6] = proc;
-    code[7] = Object::makeRaw(Instruction::APPLY);
-    code[8] = Object::makeRaw(Instruction::HALT);
+    applyCodeForApply_[3] = args;
+    applyCodeForApply_[6] = proc;
 
     SAVE_REGISTERS();
-    Object* const direct = getDirectThreadedCode(code, length);
+    Object* const direct = getDirectThreadedCode(applyCodeForApply_, applyCodeForApplyLength_);
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
     return ret;

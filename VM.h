@@ -283,6 +283,9 @@ protected:
     Object closureForEvaluate_;
     Object closureForApply_;
 
+    Object* applyCodeForApply_;
+    int applyCodeForApplyLength_;
+
     Object* applyCodeForCallClosure0_;
     int applyCodeForCallClosure0Length_;
 
