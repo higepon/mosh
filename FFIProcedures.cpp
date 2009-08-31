@@ -91,32 +91,62 @@ int return4()
     return ret.toFixnum();
 }
 
-void callbackStub()
-{
-    // don't place stack variables here.
+// void callbackStub()
+// {
+//     // don't place stack variables here.
+//     // arguments are RDI, RSI, RDX, RCX, R8, R9 and in stack.
+//     asm volatile("movq %%rdi, %0;"
+//                  "movq %%rsi, %1;"
+//                  "movq %%rdx, %2;"
+//                  "movq %%rcx, %3;"
+//                  "movq %%r8,  %4;"
+//                  "movq %%r9,  %5;"
+//                  "movq 8(%%rsp), %6;"
+//                  "movq 16(%%rsp), %7;"
+//                  : "=m" (args[0]),
+//                    "=m" (args[1]),
+//                    "=m" (args[2]),
+//                    "=m" (args[3]),
+//                    "=m" (args[4]),
+//                    "=m" (args[5]),
+//                    "=r" (args[6]),
+//                    "=r" (args[7]): :);
+// #endif
+// }
+
 #ifdef ARCH_IA32
-#else
-    // arguments are RDI, RSI, RDX, RCX, R8, R9 and in stack.
-    asm volatile("movq %%rdi, %0;"
-                 "movq %%rsi, %1;"
-                 "movq %%rdx, %2;"
-                 "movq %%rcx, %3;"
-                 "movq %%r8,  %4;"
-                 "movq %%r9,  %5;"
-                 "movq 8(%%rsp), %6;"
-                 "movq 16(%%rsp), %7;"
-                 : "=m" (args[0]),
-                   "=m" (args[1]),
-                   "=m" (args[2]),
-                   "=m" (args[3]),
-                   "=m" (args[4]),
-                   "=m" (args[5]),
-                   "=r" (args[6]),
-                   "=r" (args[7]): :);
-#endif
-}
+struct CallBackTrampoline
+{
+    uint8_t mov_imm32_eax[5]; //mov    $imm32,%eax
+    uint8_t jmpq_rax[2];
+    uint8_t ud2[2];
+public:
+    CallBackTrampoline()
+    {
+        mov_imm32_eax[0] = 0xb8;
 
+        intptr_t p = reinterpret_cast<intptr_t>(return4);
+        for (int i = 0; i < 4; i++) {
+            mov_imm32_eax[i + 1] = ((p >> (i * 8)) & 0xff);
+        }
 
+        jmpq_rax[0] = 0xff;
+        jmpq_rax[1] = 0xe0;
+
+        ud2[0] = 0x0f;
+        ud2[1] = 0x0b;
+    }
+
+    static void* operator new(size_t size)
+    {
+        ExecutableMemory* ex = ::new ExecutableMemory(size);
+        ex->allocate();
+        return static_cast<void*>(ex->address());
+    }
+
+};
+
+#elif defined(ARCH_X86_64)
 struct CallBackTrampoline
 {
     uint8_t mov_imm64_rax[10];
@@ -148,7 +178,7 @@ public:
     }
 
 };
-
+#endif
 
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
