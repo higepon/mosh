@@ -115,26 +115,38 @@ int return4()
 // }
 
 #ifdef ARCH_IA32
+
+#pragma pack(push, 1)
+
+extern "C" void        c_callback_stub_intptr();
+
+extern "C" intptr_t c_callback_intptr(intptr_t uid, intptr_t signatures, intptr_t* stack)
+{
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return 4;
+}
+
+
 struct CallBackTrampoline
 {
-    uint8_t mov_imm32_eax[5]; //mov    $imm32,%eax
-    uint8_t jmpq_rax[2];
-    uint8_t ud2[2];
+    uint8_t     mov_ecx_imm32;  // B9           : mov ecx, imm16/32
+    uint32_t    imm32_uid;      // 00 00 00 00
+    uint8_t     mov_eax_imm32;  // B8           ; mov eax, imm16/32
+    uint32_t    imm32_stub;     // 00 00 00 00
+    uint8_t     jmp_eax[2];     // FF 20        ; jmp [eax]
+    uint8_t     ud2[2];         // 0F 0B
+    uint32_t uid;
 public:
     CallBackTrampoline()
     {
-        mov_imm32_eax[0] = 0xb8;
-
-        intptr_t p = reinterpret_cast<intptr_t>(return4);
-        for (int i = 0; i < 4; i++) {
-            mov_imm32_eax[i + 1] = ((p >> (i * 8)) & 0xff);
-        }
-
-        jmpq_rax[0] = 0xff;
-        jmpq_rax[1] = 0xe0;
-
-        ud2[0] = 0x0f;
-        ud2[1] = 0x0b;
+        mov_ecx_imm32 = 0xB9;
+        imm32_uid = reinterpret_cast<uint32_t>(&uid);
+        mov_eax_imm32 = 0xB8;
+        imm32_stub = reinterpret_cast<uint32_t>(c_callback_stub_intptr);
+        jmp_eax[0] = 0xFF;
+        jmp_eax[1] = 0xe0;
+        ud2[0] = 0x0F;
+        ud2[1] = 0x0B;
     }
 
     static void* operator new(size_t size)
@@ -143,10 +155,11 @@ public:
         ex->allocate();
         return static_cast<void*>(ex->address());
     }
-
 };
+#pragma pack(pop)
 
 #elif defined(ARCH_X86_64)
+#pragma pack(push, 1)
 struct CallBackTrampoline
 {
     uint8_t mov_imm64_rax[10];
@@ -178,6 +191,7 @@ public:
     }
 
 };
+    #pragma pack(pop)
 #endif
 
 static double callStubDouble(Pointer* func, CStack* cstack)
