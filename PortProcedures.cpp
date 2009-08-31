@@ -43,6 +43,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "Record.h"
+#include "Closure.h"
 #include "ByteVector.h"
 #include "PortProcedures.h"
 #include "ProcedureMacro.h"

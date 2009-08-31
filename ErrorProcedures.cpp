@@ -36,6 +36,7 @@
 #include "SString.h"
 #include "Symbol.h"
 #include "RecordConstructorDescriptor.h"
+#include "Closure.h"
 #include "VM.h"
 #include "ErrorProcedures.h"
 #include "ProcedureMacro.h"
@@ -216,6 +217,9 @@ Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message,
 
 Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
+//     LOG1("message=~a\n", message);
+//     LOG1("who=~a\n", who);
+//     LOG1("who=~a\n", irritants);
     raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
     return Object::Undef;
 }

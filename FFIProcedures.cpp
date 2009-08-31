@@ -84,13 +84,6 @@ public:
 
 #include "MultiVMProcedures.h"
 
-Object closure;
-int return4()
-{
-    Object ret = currentVM()->callClosure0(closure);
-    return ret.toFixnum();
-}
-
 // void callbackStub()
 // {
 //     // don't place stack variables here.
@@ -120,10 +113,20 @@ int return4()
 
 extern "C" void        c_callback_stub_intptr();
 
-extern "C" intptr_t c_callback_intptr(intptr_t uid, intptr_t signatures, intptr_t* stack)
+extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr_t* stack)
 {
+    VM* vm = currentVM();
     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    return 4;
+    Object closure = vm->getCallBackTrampoline(uid);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    MOSH_ASSERT(closure.isProcedure());
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+// apply doesn't work!
+    Object ret = vm->apply(closure, Object::Nil);
+//    Object ret = vm->callClosure0(closure);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return ret.toFixnum();
 }
 
 
@@ -135,10 +138,11 @@ struct CallBackTrampoline
     uint32_t    imm32_stub;     // 00 00 00 00
     uint8_t     jmp_eax[2];     // FF 20        ; jmp [eax]
     uint8_t     ud2[2];         // 0F 0B
-    uint32_t uid;
+    uintptr_t uid;
 public:
-    CallBackTrampoline()
+    CallBackTrampoline(Object closure)
     {
+        MOSH_ASSERT(closure.isProcedure());
         mov_ecx_imm32 = 0xB9;
         imm32_uid = reinterpret_cast<uint32_t>(&uid);
         mov_eax_imm32 = 0xB8;
@@ -147,6 +151,7 @@ public:
         jmp_eax[1] = 0xe0;
         ud2[0] = 0x0F;
         ud2[1] = 0x0B;
+        uid = currentVM()->registerCallBackTrampoline(closure);
     }
 
     static void* operator new(size_t size)
@@ -1039,6 +1044,5 @@ Object scheme::internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* arg
 {
     DeclareProcedureName("make-c-callback");
     checkArgumentLength(3);
-    closure = argv[2];
-    return Object::makePointer(new CallBackTrampoline());
+    return Object::makePointer(new CallBackTrampoline(argv[2]));
 }

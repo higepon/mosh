@@ -118,7 +118,9 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     readerContext_(new ReaderContext),
     numberReaderContext_(new NumberReaderContext),
     errno_(0),
-    dynamicWinders_(Object::Nil)
+    dynamicWinders_(Object::Nil),
+    callBackTrampolines_(new EqHashTable),
+    callBackTrampolinesUid_(0)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -532,6 +534,27 @@ Object VM::callClosureByName(Object procSymbol, Object arg)
 }
 
 Object VM::apply(Object proc, Object args)
+{
+    const int length = 9;
+    Object* code = Object::makeObjectArray(length);
+    code[0] = Object::makeRaw(Instruction::FRAME);
+    code[1] = Object::makeFixnum(7);
+    code[2] = Object::makeRaw(Instruction::CONSTANT);
+    code[3] = args;
+    code[4] = Object::makeRaw(Instruction::PUSH);
+    code[5] = Object::makeRaw(Instruction::CONSTANT);
+    code[6] = proc;
+    code[7] = Object::makeRaw(Instruction::APPLY);
+    code[8] = Object::makeRaw(Instruction::HALT);
+
+    SAVE_REGISTERS();
+    Object* const direct = getDirectThreadedCode(code, length);
+    const Object ret = run(direct, NULL);
+    RESTORE_REGISTERS();
+    return ret;
+}
+
+Object VM::vmapply(Object proc, Object args)
 {
     const int procLength = Pair::length(proc);
     const int length  = procLength + 7;

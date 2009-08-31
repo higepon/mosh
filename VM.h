@@ -139,6 +139,7 @@ public:
     Object evalAfter(Object sexp);
     Object evalCompiledAfter(Object code);
     void applyClosure(Object closure, Object args);
+    Object vmapply(Object proc, Object args);
     Object apply(Object proc, Object args);
     void loadFileWithGuard(const ucs4string& file);
     void loadFileUnsafe(const ucs4string& file);
@@ -196,6 +197,20 @@ public:
     Object dynamicWinders() const
     {
         return dynamicWinders_;
+    }
+
+    // returns uid
+    uintptr_t registerCallBackTrampoline(Object closure)
+    {
+        uintptr_t uid = callBackTrampolinesUid_++;
+        callBackTrampolines_->set(Object::makeFixnum(uid),
+                                  closure);
+        return uid;
+    }
+
+    Object getCallBackTrampoline(uintptr_t uid)
+    {
+        return callBackTrampolines_->ref(Object::makeFixnum(uid), Object::False);
     }
 
 protected:
@@ -302,6 +317,8 @@ protected:
     int errno_;
 #endif
     Object dynamicWinders_;
+    EqHashTable* callBackTrampolines_;
+    uintptr_t callBackTrampolinesUid_;
 };
 
 } // namespace scheme

@@ -217,6 +217,13 @@
       (test-true (pointer? callback))
       (test-eq 10 (returnCallback callback))))
 
+;;   (let ()
+;;     (define libffitest (open-shared-library "./libffitest.so.1.0"))
+;;     (define returnCallback (c-function libffitest int returnCallback void*))
+;;     (let ([callback (make-c-callback 'int '(int) (lambda (i) 10))])
+;;       (test-true (pointer? callback))
+;;       (test-eq 10 (returnCallback callback))))
+;
 ) ;; when
 
 (test-results)

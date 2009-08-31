@@ -581,7 +581,7 @@ Object scheme::vmApplyEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("vm-apply");
     checkArgumentLength(2);
-    return theVM->apply(argv[0], argv[1]);
+    return theVM->vmapply(argv[0], argv[1]);
 }
 
 Object scheme::pairPEx(VM* theVM, int argc, const Object* argv)
