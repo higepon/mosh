@@ -136,7 +136,7 @@ Copyright of SRFI ----------------------------------------------------------
    FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
    DEALINGS IN THE SOFTWARE.
 
-Copyright of string-titlecase ------------------------------------------------
+Copyright of FFI and string-titlecase -------------------------------------------
 
 Copyright (c) 2004-2008 Yoshikatsu Fujita. All rights reserved.
 Copyright (c) 2004-2008 LittleWing Company Limited. All rights reserved.

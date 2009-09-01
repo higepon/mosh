@@ -49,6 +49,11 @@
 
 using namespace scheme;
 
+/*
+ *  A part of FFI functions are originally from Ypsilon Scheme by Yoshikatsu Fujita.
+ *  They are ported or modified for Mosh.
+ */
+
 void* FFI::open(const char* name)
 {
 #ifdef _WIN32

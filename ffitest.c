@@ -204,3 +204,13 @@ int callCallback1(int (*func) (int))
 {
   return func(0x1234);
 }
+
+int callCallback2(int (*func) (int, int))
+{
+  return func(0x1235, 0x1234);
+}
+
+int callCallback3(int (*func) (double, int))
+{
+  return func(123.4, 100);
+}

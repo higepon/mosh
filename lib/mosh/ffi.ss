@@ -27,6 +27,9 @@
 ;
 ;  $Id: ffi.ss 621 2008-11-09 06:22:47Z higepon $
 
+;  A part of FFI functions are originally from Ypsilon Scheme by Yoshikatsu Fujita.
+;  They are ported or modified for Mosh.
+
 #|
     Title: Foreign Function Interface
 
@@ -90,8 +93,9 @@
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
-          shared-errno make-c-callback
+          shared-errno make-c-callback c-callback
           make-c-callback-trampoline ;; exported for test
+          make-callback-signature    ;; exported for test
           pointer?
           pointer->integer
           integer->pointer ;; temp
@@ -142,9 +146,9 @@
           pointer<=?
           pointer>=?
           pointer<>?)
-  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=?
-                       quasiquote unless assertion-violation quote = length and number?
-                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter
+  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=? string
+                       quasiquote unless assertion-violation quote = length and number? assq => cdr
+                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
                        + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
@@ -342,7 +346,27 @@
 
       A pointer of c-callback
 |#
-(define (make-c-callback) 'todo)
+(define (make-c-callback ret args proc)
+  (cond [(assq ret callback-return-type-alist)
+         => (lambda (type)
+              (make-c-callback-trampoline (cdr type)
+                                          (make-callback-signature 'make-c-callback ret args proc)
+                                          proc))]
+        [else
+         (assertion-violation 'make-c-callback (format "invalid return type ~a" ret) (list ret args proc))]))
+
+(define-syntax c-callback
+  (lambda (x)
+    (syntax-case x ()
+      [(_ ret args proc)
+       #'(make-c-callback 'ret 'args proc)])))
+
+(define (make-callback-signature name ret args proc)
+  (apply string
+         (map (lambda (a)
+                (cond ((assq a callback-argument-type-class) => cdr)
+                      (else (assertion-violation name (format "invalid argument type ~u" a) (list ret args proc)))))
+              args)))
 
 #|
     Function: malloc
@@ -1154,6 +1178,56 @@
     Constant: on-windows
 |#
 (define on-windows       (string=? (host-os) "windows"))
+
+(define callback-argument-type-class
+    `((bool               . #\L)
+      (char               . #\U)
+      (short              . #\b)
+      (int                . ,(if (= size-of-int 4) #\q #\o))
+      (long               . ,(if (= size-of-long 4) #\q #\o))
+      (long-long          . #\o)
+      (unsigned-short     . #\B)
+      (unsigned-int       . ,(if (= size-of-int 4) #\Q #\O))
+      (unsigned-long      . ,(if (= size-of-long 4) #\Q #\O))
+      (unsigned-long-long . #\O)
+      (int8_t             . #\u)
+      (int16_t            . #\b)
+      (int32_t            . #\q)
+      (int64_t            . #\o)
+      (uint8_t            . #\U)
+      (uint16_t           . #\B)
+      (uint32_t           . #\Q)
+      (uint64_t           . #\O)
+      (float              . #\f)
+      (double             . #\d)
+      (size_t             . ,(if (= size-of-size_t 4) #\Q #\O))
+      (void*              . ,(if (= size-of-void* 4) #\Q #\O))))
+
+  (define callback-return-type-alist
+    '((bool               . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (void               . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (char               . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (short              . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (int                . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (long               . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (long-long          . #x01)    ; CALLBACK_RETURN_TYPE_INT64_T
+      (unsigned-short     . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (unsigned-int       . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (unsigned-long      . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (unsigned-long-long . #x01)    ; CALLBACK_RETURN_TYPE_INT64_T
+      (int8_t             . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (int16_t            . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (int32_t            . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (int64_t            . #x01)    ; CALLBACK_RETURN_TYPE_INT64_T
+      (uint8_t            . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (uint16_t           . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (uint32_t           . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (uint64_t           . #x01)    ; CALLBACK_RETURN_TYPE_INT64_T
+      (float              . #x02)    ; CALLBACK_RETURN_TYPE_FLOAT
+      (double             . #x03)    ; CALLBACK_RETURN_TYPE_DOUBLE
+      (size_t             . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
+      (void*              . #x00)))  ; CALLBACK_RETURN_TYPE_INTPTR
+
 
 (define pointer-null
   (integer->pointer 0))

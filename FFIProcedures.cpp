@@ -29,6 +29,11 @@
  *  $Id: FFIProcedures.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
+/*
+ *  A part of FFI functions are originally from Ypsilon Scheme by Yoshikatsu Fujita.
+ *  They are ported or modified for Mosh.
+ */
+
 #ifdef HAVE_CONFIG_H
 #  include "config.h"
 #endif
@@ -117,63 +122,63 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
     const int argc = strlen(sigs);
 
     int offset = 0;
-    Object argv = Object::Nil;
+    Object args = Object::Nil;
     for (int i = 0; i < argc; i++) {
         char c = *(const char*)(signatures + i);
         switch (c) {
         case 'L': {
             int8_t s8 = stack[offset];
-            argv = Object::cons(s8 ? Object::makeFixnum(1) : Object::makeFixnum(0), argv);
+            args = Object::cons(s8 ? Object::makeFixnum(1) : Object::makeFixnum(0), args);
             offset += 1;
         } break;
         case 'u': {
             int8_t s8 = stack[offset];
-            argv = Object::cons(Object::makeFixnum(s8), argv);
+            args = Object::cons(Object::makeFixnum(s8), args);
             offset += 1;
         } break;
         case 'U': {
             uint8_t u8 = stack[offset];
-            argv = Object::cons(Object::makeFixnum(u8), argv);
+            args = Object::cons(Object::makeFixnum(u8), args);
             offset += 1;
         } break;
         case 'b': {
             int16_t s16 = stack[offset];
-            argv = Object::cons(Object::makeFixnum(s16), argv);
+            args = Object::cons(Object::makeFixnum(s16), args);
             offset += 1;
         } break;
         case 'B': {
             uint16_t u16 = stack[offset];
-            argv = Object::cons(Object::makeFixnum(u16), argv);
+            args = Object::cons(Object::makeFixnum(u16), args);
             offset += 1;
         } break;
         case 'q': {
             int32_t s32 = stack[offset];
-            argv = Object::cons(Object::makeFixnum(s32), argv);
+            args = Object::cons(Object::makeFixnum(s32), args);
             offset += 1;
         } break;
         case 'Q': {
             uint32_t u32 = stack[offset];
-            argv = Object::cons(Bignum::makeIntegerFromU32(u32), argv);
+            args = Object::cons(Bignum::makeIntegerFromU32(u32), args);
             offset += 1;
         } break;
         case 'o': {
             int64_t* s64 = (int64_t*)(&stack[offset]);
-            argv = Object::cons(Bignum::makeIntegerFromS64(*s64), argv);
+            args = Object::cons(Bignum::makeIntegerFromS64(*s64), args);
             offset += 2;
         } break;
         case 'O': {
             uint64_t* u64 = (uint64_t*)(&stack[offset]);
-            argv = Object::cons(Bignum::makeIntegerFromS64(*u64), argv);
+            args = Object::cons(Bignum::makeIntegerFromS64(*u64), args);
             offset += 2;
         } break;
         case 'f': {
             float* f32 = (float*)(&stack[offset]);
-            argv = Object::cons(Object::makeFlonum(*f32), argv);
+            args = Object::cons(Object::makeFlonum(*f32), args);
             offset += 1;
         } break;
         case 'd': {
             double* f64 = (double*)(&stack[offset]);
-            argv = Object::cons(Object::makeFlonum(*f64), argv);
+            args = Object::cons(Object::makeFlonum(*f64), args);
             offset += 2;
         } break;
 
@@ -182,7 +187,9 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
             break;
         }
     }
-    return vm->apply(closure, argv);
+    // this reverse can be omitted for optimization
+    args = Pair::reverse(args);
+    return vm->apply(closure, args);
 }
 
 extern "C" void        c_callback_stub_intptr();
@@ -1157,11 +1164,13 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     return Object::makePointer(malloc(u64Size));
 }
 
+// (make-c-callback-trampoline type signatures proc)
 Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-c-callback-trampoline");
     checkArgumentLength(3);
+    argumentAsFixnum(0, type);
     argumentAsString(1, signatures);
-   
-    return Object::makePointer(new CallBackTrampoline(argv[2], signatures->data().ascii_c_str()));
+    argumentCheckProcedure(2, closure);
+    return Object::makePointer(new CallBackTrampoline(closure, signatures->data().ascii_c_str()));
 }
