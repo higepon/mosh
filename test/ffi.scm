@@ -213,14 +213,14 @@
   (let ()
     (define libffitest (open-shared-library "./libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback0 void*))
-    (let ([callback (make-c-callback 'int "" (lambda () 10))])
+    (let ([callback (make-c-callback-trampoline 'int "" (lambda () 10))])
       (test-true (pointer? callback))
       (test-eq 10 (callCallback callback))))
 
   (let ()
     (define libffitest (open-shared-library "./libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback1 void*))
-    (let ([callback (make-c-callback 'int "q" (lambda (i) 10))])
+    (let ([callback (make-c-callback-trampoline 'int "q" (lambda (i) 10))])
       (test-true (pointer? callback))
       (test-eq 10 (callCallback callback))))
 ;

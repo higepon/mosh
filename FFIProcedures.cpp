@@ -1157,9 +1157,9 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     return Object::makePointer(malloc(u64Size));
 }
 
-Object scheme::internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* argv)
+Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("make-c-callback");
+    DeclareProcedureName("make-c-callback-trampoline");
     checkArgumentLength(3);
     argumentAsString(1, signatures);
    

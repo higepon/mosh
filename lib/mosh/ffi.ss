@@ -91,6 +91,7 @@
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
           shared-errno make-c-callback
+          make-c-callback-trampoline ;; exported for test
           pointer?
           pointer->integer
           integer->pointer ;; temp
@@ -148,8 +149,8 @@
                        + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
-          (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback make-c-callback))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double %ffi-make-c-callback
+          (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline))
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
                 shared-errno
                 pointer?
                 pointer->integer
@@ -341,6 +342,7 @@
 
       A pointer of c-callback
 |#
+(define (make-c-callback) 'todo)
 
 #|
     Function: malloc
