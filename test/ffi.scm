@@ -212,17 +212,17 @@
 )
   (let ()
     (define libffitest (open-shared-library "./libffitest.so.1.0"))
-    (define returnCallback (c-function libffitest int returnCallback void*))
-    (let ([callback (make-c-callback 'int '(void) (lambda () 10))])
+    (define callCallback (c-function libffitest int callCallback0 void*))
+    (let ([callback (make-c-callback 'int "" (lambda () 10))])
       (test-true (pointer? callback))
-      (test-eq 10 (returnCallback callback))))
+      (test-eq 10 (callCallback callback))))
 
-;;   (let ()
-;;     (define libffitest (open-shared-library "./libffitest.so.1.0"))
-;;     (define returnCallback (c-function libffitest int returnCallback void*))
-;;     (let ([callback (make-c-callback 'int '(int) (lambda (i) 10))])
-;;       (test-true (pointer? callback))
-;;       (test-eq 10 (returnCallback callback))))
+  (let ()
+    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define callCallback (c-function libffitest int callCallback1 void*))
+    (let ([callback (make-c-callback 'int "q" (lambda (i) 10))])
+      (test-true (pointer? callback))
+      (test-eq 10 (callCallback callback))))
 ;
 ) ;; when
 

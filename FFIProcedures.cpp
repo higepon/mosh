@@ -106,21 +106,102 @@ public:
 //                    "=r" (args[7]): :);
 // #endif
 // }
+
+Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
+{
+    VM* vm = currentVM();
+    Object closure = vm->getCallBackTrampoline(uid);
+    MOSH_ASSERT(closure.isProcedure());
+
+    const char* sigs = reinterpret_cast<const char*>(signatures);
+    const int argc = strlen(sigs);
+
+    int offset = 0;
+    Object argv = Object::Nil;
+    for (int i = 0; i < argc; i++) {
+        char c = *(const char*)(signatures + i);
+        switch (c) {
+        case 'L': {
+            int8_t s8 = stack[offset];
+            argv = Object::cons(s8 ? Object::makeFixnum(1) : Object::makeFixnum(0), argv);
+            offset += 1;
+        } break;
+        case 'u': {
+            int8_t s8 = stack[offset];
+            argv = Object::cons(Object::makeFixnum(s8), argv);
+            offset += 1;
+        } break;
+        case 'U': {
+            uint8_t u8 = stack[offset];
+            argv = Object::cons(Object::makeFixnum(u8), argv);
+            offset += 1;
+        } break;
+        case 'b': {
+            int16_t s16 = stack[offset];
+            argv = Object::cons(Object::makeFixnum(s16), argv);
+            offset += 1;
+        } break;
+        case 'B': {
+            uint16_t u16 = stack[offset];
+            argv = Object::cons(Object::makeFixnum(u16), argv);
+            offset += 1;
+        } break;
+        case 'q': {
+            int32_t s32 = stack[offset];
+            argv = Object::cons(Object::makeFixnum(s32), argv);
+            offset += 1;
+        } break;
+        case 'Q': {
+            uint32_t u32 = stack[offset];
+            argv = Object::cons(Bignum::makeIntegerFromU32(u32), argv);
+            offset += 1;
+        } break;
+        case 'o': {
+            int64_t* s64 = (int64_t*)(&stack[offset]);
+            argv = Object::cons(Bignum::makeIntegerFromS64(*s64), argv);
+            offset += 2;
+        } break;
+        case 'O': {
+            uint64_t* u64 = (uint64_t*)(&stack[offset]);
+            argv = Object::cons(Bignum::makeIntegerFromS64(*u64), argv);
+            offset += 2;
+        } break;
+        case 'f': {
+            float* f32 = (float*)(&stack[offset]);
+            argv = Object::cons(Object::makeFlonum(*f32), argv);
+            offset += 1;
+        } break;
+        case 'd': {
+            double* f64 = (double*)(&stack[offset]);
+            argv = Object::cons(Object::makeFlonum(*f64), argv);
+            offset += 2;
+        } break;
+
+        default:
+            MOSH_FATAL("fatal: invalid callback argument signature \n[exit]\n");
+            break;
+        }
+    }
+    return vm->apply(closure, argv);
+}
+
 extern "C" void        c_callback_stub_intptr();
 extern "C" void        c_callback_stub_intptr_x64();
 extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr_t* stack)
 {
-    VM* vm = currentVM();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    Object closure = vm->getCallBackTrampoline(uid);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    MOSH_ASSERT(closure.isProcedure());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     VM* vm = currentVM();
+//     Object closure = vm->getCallBackTrampoline(uid);
+//     MOSH_ASSERT(closure.isProcedure());
 
-// apply doesn't work!
-    Object ret = vm->apply(closure, Object::Nil);
-//    Object ret = vm->callClosure0(closure);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     const char* sigs = reinterpret_cast<const char*>(signatures);
+//     const int argc = strlen(sigs);
+
+//     Object args = Object::Nil;
+//     for (int i = argc - 1; i >= 0; i--) {
+//         args = Object::cons(Object::makeFixnum(stack[i]), args);
+//     }
+
+    Object ret = callbackScheme(uid, signatures, stack);
     return ret.toFixnum();
 }
 
@@ -156,15 +237,22 @@ struct CallBackTrampoline
     uint32_t    imm32_stub;     // 00 00 00 00
     uint8_t     jmp_eax[2];     // FF 20        ; jmp [eax]
     uint8_t     ud2[2];         // 0F 0B
-    uintptr_t uid;
+    intptr_t    stub;
+    intptr_t    uid;
+    intptr_t    signatures;
+    char        signatures_buffer[CStack::MAX_ARGC];
+
 public:
-    CallBackTrampoline(Object closure)
+    CallBackTrampoline(Object closure, const char* sig)
     {
+        strncpy(signatures_buffer, sig, sizeof(signatures_buffer));
+        signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
+        stub = reinterpret_cast<intptr_t>(c_callback_stub_intptr);
         MOSH_ASSERT(closure.isProcedure());
         mov_ecx_imm32 = 0xB9;
-        imm32_uid = reinterpret_cast<uint32_t>(&uid);
+        imm32_uid = reinterpret_cast<intptr_t>(&uid);
         mov_eax_imm32 = 0xB8;
-        imm32_stub = reinterpret_cast<uint32_t>(c_callback_stub_intptr);
+        imm32_stub = static_cast<uint32_t>(stub);
         jmp_eax[0] = 0xFF;
         jmp_eax[1] = 0xe0;
         ud2[0] = 0x0F;
@@ -1073,5 +1161,7 @@ Object scheme::internalFfiMakeCCallbackEx(VM* theVM, int argc, const Object* arg
 {
     DeclareProcedureName("make-c-callback");
     checkArgumentLength(3);
-    return Object::makePointer(new CallBackTrampoline(argv[2]));
+    argumentAsString(1, signatures);
+   
+    return Object::makePointer(new CallBackTrampoline(argv[2], signatures->data().ascii_c_str()));
 }
