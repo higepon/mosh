@@ -10,20 +10,20 @@
 
     .align  4,0x90
 
-    .globl  c_callback_stub_intptr_x64
-    .globl  c_callback_stub_float_x64
-    .globl  c_callback_stub_double_x64
+    .globl  c_callback_stub_intptr
+    .globl  c_callback_stub_float
+    .globl  c_callback_stub_double
 
-c_callback_stub_double_x64:
-    movq        $c_callback_double_x64, %r11
+c_callback_stub_double:
+    movq        $c_callback_double, %r11
     jmp         callback_stub_common
 
-c_callback_stub_float_x64:
-    movq        $c_callback_float_x64, %r11
+c_callback_stub_float:
+    movq        $c_callback_float, %r11
     jmp         callback_stub_common
 
-c_callback_stub_intptr_x64:
-    movq        $c_callback_intptr_x64, %r11
+c_callback_stub_intptr:
+    movq        $c_callback_intptr, %r11
     jmp         callback_stub_common
 
 callback_stub_common:
