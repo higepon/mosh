@@ -380,6 +380,16 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t
     return vm->apply(closure, args);
 }
 
+extern "C" float c_callback_float(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, reg, stack);
+    if (Arithmetic::isRealValued(ret)) {
+        return Arithmetic::realToDouble(ret);
+    } else {
+        return 0.0;
+    }
+}
+
 extern "C" double c_callback_double(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
     Object ret = callbackScheme(uid, signatures, reg, stack);
