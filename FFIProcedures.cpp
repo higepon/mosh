@@ -493,31 +493,29 @@ struct CallBackTrampoline
     uint8_t     mov_r11_imm64[2];   // 49 BB                    : mov r11, imm64
     uint64_t    imm64_stub;         // 00 00 00 00 00 00 00 00
     uint8_t     jmp_r11[3];         // 41 FF 23                 : jmp [r11]
-//    uint8_t     forever[8];
     uint8_t     ud2[2];             // 0F 0B
-    uint32_t     hoge;
-    uintptr_t uid;
-    uintptr_t stub;
-    intptr_t    m_signatures;
+    intptr_t    stub;
+    intptr_t    uid;
+    intptr_t    signatures;
+    char        buffer[CStack::MAX_ARGC];
 public:
-    CallBackTrampoline(Object closure)
+    CallBackTrampoline(intptr_t stub, Object closure, const char* sig)
     {
-        stub = reinterpret_cast<uint64_t>(&c_callback_stub_intptr_x64);
-        MOSH_ASSERT(closure.isProcedure());
+        strncpy(buffer, signatures, sizeof(buffer));
+        this->stub = stub;
+        uid = currentVM()->registerCallBackTrampoline(closure);
+        signatures = (intptr_t)(&buffer[0]);
         mov_r10_imm64[0] = 0x49;
         mov_r10_imm64[1] = 0xBA;
-        imm64_uid = reinterpret_cast<uint64_t>(&uid);
+        imm64_uid = (uint64_t)&uid;
         mov_r11_imm64[0] = 0x49;
         mov_r11_imm64[1] = 0xBB;
-        imm64_stub = (intptr_t)(&stub);
+        imm64_stub = (uint64_t)&stub;
         jmp_r11[0] = 0x41;
         jmp_r11[1] = 0xFF;
         jmp_r11[2] = 0x23;
         ud2[0] = 0x0F;
         ud2[1] = 0x0B;
-//         forever[0] = 0xeb;
-//         forever[1] = 0xfe;
-        uid = currentVM()->registerCallBackTrampoline(closure);
     }
 
     static void* operator new(size_t size)
