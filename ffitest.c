@@ -214,3 +214,14 @@ int callCallback3(int (*func) (double, int))
 {
   return func(123.4, 100);
 }
+
+double callCallback4(double (*func) (double, double))
+{
+  return func(123.5, 10.0);
+}
+
+int64_t callCallback5(int64_t (*func) (int64_t))
+{
+  const int64_t v = 0x1234567887654321;
+  return func(v);
+}

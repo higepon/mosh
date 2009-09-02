@@ -67,7 +67,6 @@ using namespace scheme;
 #define FFI_SUPPORTED 1
 #endif
 
-// Originally from Ypsilon Scheme.
 class SynchronizedErrno : public gc_cleanup
 {
     VM* vm_;
@@ -112,6 +111,7 @@ public:
 // #endif
 // }
 
+#ifdef ARCH_IA32
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
 {
     VM* vm = currentVM();
@@ -177,7 +177,9 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
             offset += 1;
         } break;
         case 'd': {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             double* f64 = (double*)(&stack[offset]);
+            printf("%f \n", *f64);
             args = Object::cons(Object::makeFlonum(*f64), args);
             offset += 2;
         } break;
@@ -192,50 +194,256 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
     return vm->apply(closure, args);
 }
 
-extern "C" void        c_callback_stub_intptr();
-extern "C" void        c_callback_stub_intptr_x64();
+extern "C" double c_callback_double(intptr_t uid, intptr_t signatures, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, stack);
+    if (Arithmetic::isRealValued(ret)) {
+        return Arithmetic::realToDouble(ret);
+    } else {
+        return 0.0;
+    }
+}
+
 extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr_t* stack)
 {
-//     VM* vm = currentVM();
-//     Object closure = vm->getCallBackTrampoline(uid);
-//     MOSH_ASSERT(closure.isProcedure());
-
-//     const char* sigs = reinterpret_cast<const char*>(signatures);
-//     const int argc = strlen(sigs);
-
-//     Object args = Object::Nil;
-//     for (int i = argc - 1; i >= 0; i--) {
-//         args = Object::cons(Object::makeFixnum(stack[i]), args);
-//     }
-
     Object ret = callbackScheme(uid, signatures, stack);
-    return ret.toFixnum();
+    if (ret.isExactInteger()) {
+        if (ret.isBignum()) {
+            return ret.toBignum()->toS64();
+        } else {
+            return ret.toFixnum();
+        }
+    } else {
+        return 0;
+    }
 }
 
-extern "C" intptr_t c_callback_intptr_x64(uintptr_t uid, intptr_t signatures, intptr_t* stack)
+extern "C" int64_t c_callback_int64(uintptr_t uid, intptr_t signatures, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, stack);
+    if (ret.isExactInteger()) {
+        if (ret.isBignum()) {
+            return ret.toBignum()->toS64();
+        } else {
+            return ret.toFixnum();
+        }
+    } else {
+        return 0;
+    }
+}
+
+#else
+Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
     VM* vm = currentVM();
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object closure = vm->getCallBackTrampoline(uid);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     MOSH_ASSERT(closure.isProcedure());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
 
-// apply doesn't work!
-    Object ret = vm->apply(closure, Object::Nil);
-//    Object ret = vm->callClosure0(closure);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    return ret.toFixnum();
+    int argc = strlen((const char*)signatures);
+    Object args = Object::Nil;
+    int reg_offset = 0;
+    int sse_offset = 0;
+    int stack_offset = 0;
+    for (int i = 0; i < argc; i++) {
+        char c = *(const char*)(signatures + i);
+        switch (c) {
+        case 'L': {
+            int8_t s8;
+            if (reg_offset < 6) {
+                s8 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                s8 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(s8 ? Object::makeFixnum(1) : Object::makeFixnum(0), args);
+        } break;
+        case 'u': {
+            int8_t s8;
+            if (reg_offset < 6) {
+                s8 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                s8 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFixnum(s8), args);
+        } break;
+        case 'U': {
+            uint8_t u8;
+            if (reg_offset < 6) {
+                u8 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                u8 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFixnum(u8), args);
+        } break;
+        case 'b': {
+            int16_t s16;
+            if (reg_offset < 6) {
+                s16 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                s16 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFixnum(s16), args);
+        } break;
+        case 'B': {
+            uint16_t u16;
+            if (reg_offset < 6) {
+                u16 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                u16 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFixnum(u16), args);
+        } break;
+        case 'q': {
+            int32_t s32;
+            if (reg_offset < 6) {
+                s32 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                s32 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Bignum::makeInteger(s32), args);
+        } break;
+        case 'Q': {
+            uint32_t u32;
+            if (reg_offset < 6) {
+                u32 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                u32 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Bignum::makeIntegerFromU32(u32), args);
+        } break;
+        case 'o': {
+            int64_t s64;
+            if (reg_offset < 6) {
+                s64 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                s64 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Bignum::makeIntegerFromS64(s64), args);
+        } break;
+        case 'O': {
+            uint64_t u64;
+            if (reg_offset < 6) {
+                u64 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                u64 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Bignum::makeIntegerFromU64(u64), args);
+        } break;
+        case 'f': {
+            float* f32;
+            if (sse_offset < 8) {
+                f32 = (float*)(&reg[6 + sse_offset]);
+                sse_offset += 1;
+            } else {
+                f32 = (float*)(&stack[stack_offset]);
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFlonum(*f32), args);
+        } break;
+        case 'd': {
+            double* f64;
+            if (sse_offset < 8) {
+                f64 = (double*)(&reg[6 + sse_offset]);
+                sse_offset += 1;
+            } else {
+                f64 = (double*)(&stack[stack_offset]);
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makeFlonum(*f64), args);
+        } break;
+
+
+        default:
+            MOSH_FATAL("fatal: invalid callback argument signature \n[exit]\n");
+            break;
+        }
+    }
+    // this reverse can be omitted for optimization
+    args = Pair::reverse(args);
+    return vm->apply(closure, args);
 }
 
+extern "C" double c_callback_double(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, reg, stack);
+    if (Arithmetic::isRealValued(ret)) {
+        return Arithmetic::realToDouble(ret);
+    } else {
+        return 0.0;
+    }
+}
+
+extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, reg, stack);
+    if (ret.isExactInteger()) {
+        if (ret.isBignum()) {
+            return ret.toBignum()->toS64();
+        } else {
+            return ret.toFixnum();
+        }
+    } else {
+        return 0;
+    }
+}
+
+extern "C" int64_t c_callback_int64(uintptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
+{
+    Object ret = callbackScheme(uid, signatures, reg, stack);
+    if (ret.isExactInteger()) {
+        if (ret.isBignum()) {
+            return ret.toBignum()->toS64();
+        } else {
+            return ret.toFixnum();
+        }
+    } else {
+        return 0;
+    }
+}
+#endif
+
+extern "C" void        c_callback_stub_intptr();
+extern "C" void        c_callback_stub_int64();
+extern "C" void        c_callback_stub_double();
+extern "C" void        c_callback_stub_intptr_x64();
+
+
+// extern "C" intptr_t c_callback_intptr_x64(uintptr_t uid, intptr_t signatures, intptr_t* stack)
+// {
+//     VM* vm = currentVM();
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     Object closure = vm->getCallBackTrampoline(uid);
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     MOSH_ASSERT(closure.isProcedure());
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+
+// // apply doesn't work!
+//     Object ret = vm->apply(closure, Object::Nil);
+// //    Object ret = vm->callClosure0(closure);
+//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+//     return ret.toFixnum();
+// }
 
 #ifdef ARCH_IA32
 
 #pragma pack(push, 1)
-
-
-
-
 struct CallBackTrampoline
 {
     uint8_t     mov_ecx_imm32;  // B9           : mov ecx, imm16/32
@@ -250,11 +458,11 @@ struct CallBackTrampoline
     char        signatures_buffer[CStack::MAX_ARGC];
 
 public:
-    CallBackTrampoline(Object closure, const char* sig)
+    CallBackTrampoline(intptr_t stub, Object closure, const char* sig)
     {
         strncpy(signatures_buffer, sig, sizeof(signatures_buffer));
-        signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
-        stub = reinterpret_cast<intptr_t>(c_callback_stub_intptr);
+        this->signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
+        this->stub = stub;
         MOSH_ASSERT(closure.isProcedure());
         mov_ecx_imm32 = 0xB9;
         imm32_uid = reinterpret_cast<intptr_t>(&uid);
@@ -1164,6 +1372,14 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
     return Object::makePointer(malloc(u64Size));
 }
 
+#define CALLBACK_RETURN_TYPE_INTPTR     0x0000
+#define CALLBACK_RETURN_TYPE_INT64_T    0x0001
+#define CALLBACK_RETURN_TYPE_FLOAT      0x0002
+#define CALLBACK_RETURN_TYPE_DOUBLE     0x0003
+#define CALLBACK_RETURN_TYPE_MASK       0x00ff
+#define CALLBACK_CALL_TYPE_STDCALL      0x0100
+#define CALLBACK_CALL_TYPE_MASK         0xff00
+
 // (make-c-callback-trampoline type signatures proc)
 Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
@@ -1172,5 +1388,31 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
     argumentAsFixnum(0, type);
     argumentAsString(1, signatures);
     argumentCheckProcedure(2, closure);
-    return Object::makePointer(new CallBackTrampoline(closure, signatures->data().ascii_c_str()));
+
+    CallBackTrampoline* thunk;
+    switch (type & CALLBACK_RETURN_TYPE_MASK) {
+// 32bit
+#ifdef ARCH_IA32
+    case CALLBACK_RETURN_TYPE_INTPTR:
+        thunk = new CallBackTrampoline((intptr_t)c_callback_stub_intptr, closure, signatures->data().ascii_c_str());
+        break;
+    case CALLBACK_RETURN_TYPE_INT64_T:
+        thunk = new CallBackTrampoline((intptr_t)c_callback_stub_int64, closure, signatures->data().ascii_c_str());
+        break;
+// 64bit
+#else
+    case CALLBACK_RETURN_TYPE_INTPTR:
+    case CALLBACK_RETURN_TYPE_INT64_T:
+        thunk = new CallBackTrampoline((intptr_t)c_callback_stub_intptr, closure, signatures->data().ascii_c_str());
+        break;
+#endif
+    case CALLBACK_RETURN_TYPE_FLOAT:
+    case CALLBACK_RETURN_TYPE_DOUBLE:
+        thunk = new CallBackTrampoline((intptr_t)c_callback_stub_double, closure, signatures->data().ascii_c_str());
+        break;
+    default:
+        callAssertionViolationAfter(theVM, procedureName, "invalid callback type specifier", L1(argv[1]));
+        return Object::Undef;
+    }
+    return Object::makePointer(thunk);
 }

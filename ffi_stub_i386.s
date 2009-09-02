@@ -4,22 +4,32 @@
     See license.txt for terms and conditions of use
 */
 
-    .file   "ffi_stub_darwin.s"
+/*
+    Modified for Mosh by higepon
+*/
+
+#ifdef __APPLE__
+#define SYM(x) _ ## x
+#else
+#define SYM(x) x
+#endif
+
+    .file   "ffi_stub_i386.s"
 
     .text
 
     .align  4,0x90
 
-    .globl  _c_func_stub_intptr
-    .globl  _c_func_stub_int64
-    .globl  _c_func_stub_double
-    .globl  _c_callback_stub_intptr
-/*    .globl  _c_callback_stub_int64
-    .globl  _c_callback_stub_double*/
+    .globl  SYM(c_func_stub_intptr)
+    .globl  SYM(c_func_stub_int64)
+    .globl  SYM(c_func_stub_double)
+    .globl  SYM(c_callback_stub_intptr)
+    .globl  SYM(c_callback_stub_int64)
+    .globl  SYM(c_callback_stub_double)
 
-_c_func_stub_intptr:
-_c_func_stub_int64:
-_c_func_stub_double:
+SYM(c_func_stub_intptr):
+SYM(c_func_stub_int64):
+SYM(c_func_stub_double):
 
     pushl   %ebp
     movl    %esp, %ebp
@@ -50,21 +60,20 @@ _c_func_stub_double:
 
     .align  4,0x90
 
-        /*
-_c_callback_stub_double:
-    movl    $_c_callback_double, %edx
-    jmp     callback_stub_common
-
-    .align  4,0x90
-
-_c_callback_stub_int64:
+SYM(c_callback_stub_int64):
     movl    $_c_callback_int64, %edx
     jmp     callback_stub_common
 
     .align  4,0x90
-*/
-_c_callback_stub_intptr:
-    movl    $_c_callback_intptr, %edx
+
+SYM(c_callback_stub_double):
+    movl    $SYM(c_callback_double), %edx
+    jmp     callback_stub_common
+
+    .align  4,0x90
+
+SYM(c_callback_stub_intptr):
+    movl    $SYM(c_callback_intptr), %edx
     jmp     callback_stub_common
 
     .align  4,0x90

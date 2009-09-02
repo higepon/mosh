@@ -686,7 +686,7 @@ int64_t Arithmetic::toS64(Object n)
 
 double Arithmetic::realToDouble(Object n)
 {
-    MOSH_ASSERT(n.isReal());
+    MOSH_ASSERT(isRealValued(n));
     if (n.isFixnum()) {
         return n.toFixnum();
     } else if (n.isBignum()) {

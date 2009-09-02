@@ -259,6 +259,21 @@
       (test-true (pointer? callback))
       (test-eq 1134 (callCallback callback))))
 
+  (let ()
+    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define callCallback (c-function libffitest double callCallback4 void*))
+    (let ([callback (c-callback double (double double) (lambda (i j) (* i j)))])
+      (test-true (pointer? callback))
+      (test-equal 1235.0 (callCallback callback))))
+
+  (let ()
+    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define callCallback (c-function libffitest int64_t callCallback5 void*))
+    (let ([callback (c-callback int64_t (int64_t) (lambda (i) (+ i 1)))])
+      (test-true (pointer? callback))
+      (test-equal #x1234567887654322 (callCallback callback))))
+
+
 ;
 ) ;; when
 

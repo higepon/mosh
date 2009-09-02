@@ -407,6 +407,7 @@
 
 (define stub-ht (alist->eq-hash-table
                  `((void*  . ,%ffi-call->void*)
+                   (int64_t . ,%ffi-call->int)
                    (char*  . ,%ffi-call->char*) ;; char* may be NULL,
                    (void   . ,%ffi-call->void)
                    (double . ,%ffi-call->double)
