@@ -501,7 +501,7 @@ struct CallBackTrampoline
 public:
     CallBackTrampoline(intptr_t stub, Object closure, const char* sig)
     {
-        strncpy(buffer, signatures, sizeof(buffer));
+        strncpy(buffer, sig, sizeof(buffer));
         this->stub = stub;
         uid = currentVM()->registerCallBackTrampoline(closure);
         signatures = (intptr_t)(&buffer[0]);
