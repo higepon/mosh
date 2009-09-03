@@ -146,7 +146,7 @@
           pointer<=?
           pointer>=?
           pointer<>?)
-  (import (only (rnrs) define define-syntax syntax-case lambda map let syntax exists string=? string
+  (import (only (rnrs) display define define-syntax syntax-case lambda map let syntax exists string=? string
                        quasiquote unless assertion-violation quote = length and number? assq => cdr
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
@@ -434,6 +434,7 @@
   (let ([func (%ffi-lookup lib name)]
         [stub (hashtable-ref stub-ht ret-type #f)]
         [checkers (map (lambda (type) (hashtable-ref checker-ht type #f)) arg-types)])
+    (display func)
     (unless (for-all procedure? checkers)
       (assertion-violation 'c-function "invalid argument type for c-function"))
     (unless stub

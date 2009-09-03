@@ -225,3 +225,13 @@ int64_t callCallback5(int64_t (*func) (int64_t))
   const int64_t v = 0x1234567887654321;
   return func(v);
 }
+
+void qsort(void *base, size_t num, size_t size, 
+           int (*compare)(const void*, const void*))
+{
+  int i;
+  for (i = 0; i < num; i++) {
+    printf("[%d]=%d\n", i, ((uint8_t*)base)[i]);
+  }
+  compare(1, 2);
+}
