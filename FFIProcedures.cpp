@@ -177,7 +177,6 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
             offset += 1;
         } break;
         case 'd': {
-            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             double* f64 = (double*)(&stack[offset]);
             printf("%f \n", *f64);
             args = Object::cons(Object::makeFlonum(*f64), args);
@@ -434,23 +433,6 @@ extern "C" void        c_callback_stub_int64();
 extern "C" void        c_callback_stub_double();
 extern "C" void        c_callback_stub_intptr_x64();
 
-
-// extern "C" intptr_t c_callback_intptr_x64(uintptr_t uid, intptr_t signatures, intptr_t* stack)
-// {
-//     VM* vm = currentVM();
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     Object closure = vm->getCallBackTrampoline(uid);
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     MOSH_ASSERT(closure.isProcedure());
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-
-// // apply doesn't work!
-//     Object ret = vm->apply(closure, Object::Nil);
-// //    Object ret = vm->callClosure0(closure);
-//     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-//     return ret.toFixnum();
-// }
-
 #ifdef ARCH_IA32
 
 #pragma pack(push, 1)
@@ -495,7 +477,6 @@ public:
 #pragma pack(pop)
 
 #elif defined(ARCH_X86_64)
-#pragma pack(push, 1)
 struct CallBackTrampoline
 {
     uint8_t     mov_r10_imm64[2];   // 49 BA                    : mov r10, imm64
@@ -517,15 +498,16 @@ public:
         signatures = (intptr_t)(&buffer[0]);
         mov_r10_imm64[0] = 0x49;
         mov_r10_imm64[1] = 0xBA;
-        imm64_uid = (uint64_t)&uid;
+        imm64_uid = (uint64_t)&(this->uid);
         mov_r11_imm64[0] = 0x49;
         mov_r11_imm64[1] = 0xBB;
-        imm64_stub = (uint64_t)&stub;
+        imm64_stub = (uint64_t)&(this->stub);
         jmp_r11[0] = 0x41;
         jmp_r11[1] = 0xFF;
         jmp_r11[2] = 0x23;
         ud2[0] = 0x0F;
         ud2[1] = 0x0B;
+        __asm__ __volatile__ ("sfence" ::: "memory");
     }
 
     static void* operator new(size_t size)
@@ -535,8 +517,7 @@ public:
         return static_cast<void*>(ex->address());
     }
 
-};
-#pragma pack(pop)
+} __attribute__((packed));
 #endif
 
 static double callStubDouble(Pointer* func, CStack* cstack)

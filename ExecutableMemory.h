@@ -72,7 +72,7 @@ public:
 
     bool allocate()
     {
-        addr_ = new uint8_t[size_];
+        addr_ = (uint8_t*)valloc(size_);
 
         // Originally from xbyak
 #ifdef __GNUC__
