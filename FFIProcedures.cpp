@@ -57,7 +57,7 @@
 #include "Bignum.h"
 #include "Symbol.h"
 #include "ExecutableMemory.h"
-
+#include "MultiVMProcedures.h"
 
 using namespace scheme;
 
@@ -86,30 +86,15 @@ public:
     }
 };
 
-#include "MultiVMProcedures.h"
+static void inline memoryStoreFence()
+{
+    asm volatile ("sfence" ::: "memory");
+}
 
-// void callbackStub()
-// {
-//     // don't place stack variables here.
-//     // arguments are RDI, RSI, RDX, RCX, R8, R9 and in stack.
-//     asm volatile("movq %%rdi, %0;"
-//                  "movq %%rsi, %1;"
-//                  "movq %%rdx, %2;"
-//                  "movq %%rcx, %3;"
-//                  "movq %%r8,  %4;"
-//                  "movq %%r9,  %5;"
-//                  "movq 8(%%rsp), %6;"
-//                  "movq 16(%%rsp), %7;"
-//                  : "=m" (args[0]),
-//                    "=m" (args[1]),
-//                    "=m" (args[2]),
-//                    "=m" (args[3]),
-//                    "=m" (args[4]),
-//                    "=m" (args[5]),
-//                    "=r" (args[6]),
-//                    "=r" (args[7]): :);
-// #endif
-// }
+extern "C" void        c_callback_stub_intptr();
+extern "C" void        c_callback_stub_int64();
+extern "C" void        c_callback_stub_double();
+extern "C" void        c_callback_stub_intptr_x64();
 
 #ifdef ARCH_IA32
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
@@ -231,7 +216,48 @@ extern "C" int64_t c_callback_int64(uintptr_t uid, intptr_t signatures, intptr_t
     }
 }
 
+struct CallBackTrampoline
+{
+    uint8_t     mov_ecx_imm32;  // B9           : mov ecx, imm16/32
+    uint32_t    imm32_uid;      // 00 00 00 00
+    uint8_t     mov_eax_imm32;  // B8           ; mov eax, imm16/32
+    uint32_t    imm32_stub;     // 00 00 00 00
+    uint8_t     jmp_eax[2];     // FF 20        ; jmp [eax]
+    uint8_t     ud2[2];         // 0F 0B
+    intptr_t    stub;
+    intptr_t    uid;
+    intptr_t    signatures;
+    char        signatures_buffer[CStack::MAX_ARGC];
+
+public:
+    CallBackTrampoline(intptr_t stub, Object closure, const char* sig)
+    {
+        strncpy(signatures_buffer, sig, sizeof(signatures_buffer));
+        this->signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
+        this->stub = stub;
+        MOSH_ASSERT(closure.isProcedure());
+        mov_ecx_imm32 = 0xB9;
+        imm32_uid = reinterpret_cast<intptr_t>(&uid);
+        mov_eax_imm32 = 0xB8;
+        imm32_stub = static_cast<uint32_t>(stub);
+        jmp_eax[0] = 0xFF;
+        jmp_eax[1] = 0xe0;
+        ud2[0] = 0x0F;
+        ud2[1] = 0x0B;
+        uid = currentVM()->registerCallBackTrampoline(closure);
+        memoryStoreFence();
+    }
+
+    static void* operator new(size_t size)
+    {
+        ExecutableMemory* ex = ::new ExecutableMemory(size);
+        ex->allocate();
+        return static_cast<void*>(ex->address());
+    }
+} __attribute__((packed));
+
 #else
+
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
     VM* vm = currentVM();
@@ -426,57 +452,7 @@ extern "C" int64_t c_callback_int64(uintptr_t uid, intptr_t signatures, intptr_t
         return 0;
     }
 }
-#endif
 
-extern "C" void        c_callback_stub_intptr();
-extern "C" void        c_callback_stub_int64();
-extern "C" void        c_callback_stub_double();
-extern "C" void        c_callback_stub_intptr_x64();
-
-#ifdef ARCH_IA32
-
-#pragma pack(push, 1)
-struct CallBackTrampoline
-{
-    uint8_t     mov_ecx_imm32;  // B9           : mov ecx, imm16/32
-    uint32_t    imm32_uid;      // 00 00 00 00
-    uint8_t     mov_eax_imm32;  // B8           ; mov eax, imm16/32
-    uint32_t    imm32_stub;     // 00 00 00 00
-    uint8_t     jmp_eax[2];     // FF 20        ; jmp [eax]
-    uint8_t     ud2[2];         // 0F 0B
-    intptr_t    stub;
-    intptr_t    uid;
-    intptr_t    signatures;
-    char        signatures_buffer[CStack::MAX_ARGC];
-
-public:
-    CallBackTrampoline(intptr_t stub, Object closure, const char* sig)
-    {
-        strncpy(signatures_buffer, sig, sizeof(signatures_buffer));
-        this->signatures = reinterpret_cast<intptr_t>(&signatures_buffer[0]);
-        this->stub = stub;
-        MOSH_ASSERT(closure.isProcedure());
-        mov_ecx_imm32 = 0xB9;
-        imm32_uid = reinterpret_cast<intptr_t>(&uid);
-        mov_eax_imm32 = 0xB8;
-        imm32_stub = static_cast<uint32_t>(stub);
-        jmp_eax[0] = 0xFF;
-        jmp_eax[1] = 0xe0;
-        ud2[0] = 0x0F;
-        ud2[1] = 0x0B;
-        uid = currentVM()->registerCallBackTrampoline(closure);
-    }
-
-    static void* operator new(size_t size)
-    {
-        ExecutableMemory* ex = ::new ExecutableMemory(size);
-        ex->allocate();
-        return static_cast<void*>(ex->address());
-    }
-};
-#pragma pack(pop)
-
-#elif defined(ARCH_X86_64)
 struct CallBackTrampoline
 {
     uint8_t     mov_r10_imm64[2];   // 49 BA                    : mov r10, imm64
@@ -507,7 +483,7 @@ public:
         jmp_r11[2] = 0x23;
         ud2[0] = 0x0F;
         ud2[1] = 0x0B;
-        __asm__ __volatile__ ("sfence" ::: "memory");
+        memoryStoreFence();
     }
 
     static void* operator new(size_t size)
@@ -516,8 +492,8 @@ public:
         ex->allocate();
         return static_cast<void*>(ex->address());
     }
-
 } __attribute__((packed));
+
 #endif
 
 static double callStubDouble(Pointer* func, CStack* cstack)
@@ -1373,6 +1349,8 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
 Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("make-c-callback-trampoline");
+
+#ifdef FFI_SUPPORTED
     checkArgumentLength(3);
     argumentAsFixnum(0, type);
     argumentAsString(1, signatures);
@@ -1404,4 +1382,8 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
         return Object::Undef;
     }
     return Object::makePointer(thunk);
+#else
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
 }

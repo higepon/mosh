@@ -1,3 +1,7 @@
+2009-09-03  higepon  <higepon@users.sourceforge.jp>
+
+	* test/ffi.scm: Now callback works on OSX and Ubuntu amd64.
+
 2009-08-31  higepon  <higepon@users.sourceforge.jp>
 
 	* Makefile.am : Added ffi_stub_xx.s support.

@@ -416,6 +416,7 @@
 
 (define checker-ht (alist->eq-hash-table
                     `((void*  . ,(lambda (x) (and (or (pointer? x) (bytevector? x)) x)))
+                      (callback . ,(lambda (x) (and (pointer? x) x)))
                       (int    . ,(lambda (x) (and (integer? x) x)))
                       (double . ,(lambda (x) (cond
                                               [(flonum? x) x]
