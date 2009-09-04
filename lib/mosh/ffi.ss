@@ -39,8 +39,6 @@
     With these methods, you can load shared library, call C-function in it and get a result of function call.
 
 
-    FFI is not supported on Windows.
-
     Example:
     (start code)
     ;; use mysql client library
@@ -78,6 +76,24 @@
              (TOY-show-text ctx "mosh")
              (stroke ctx)
              (display (cairo-surface-write-to-png surface "test.png"))))
+    (end code)
+
+    (start code)
+    ;; callback example
+    (import
+     (mosh)
+     (mosh ffi)
+     (rnrs))
+
+    (define array (u8-list->bytevector '(6 5 3 4 1 7 2)))
+
+    (let* ([libc (open-shared-library "libc.so.6")] ;; Ubuntu
+           [qsort (c-function libc void qsort void* int int callback)]
+           [compare (c-callback int (void* void*) (lambda (x y) (if (> (pointer-ref-c-uint8 x 0)
+                                                                       (pointer-ref-c-uint8 y 0)) 1 0)))])
+        (qsort array (bytevector-length array) 1 compare)
+        (display array)
+        (free-c-callback qsort))
     (end code)
 
 
@@ -333,14 +349,16 @@
 #|
     Function: make-c-callback
 
-    Make c-callback
+    Make c-callback. c-callback object should be free-ed with <<free-c-callback>>.
 
     Prototype:
     > (make-c-callback return-type arg-type* proc)
 
     Parameters:
 
-      return-tupe - todo
+      return-tupe - return value type as symbol. bool, void, char, short, int, long, long-long, unsigned-short, unsigned-int, unsigned-long, unsigned-long-long, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, float, double, size_t and void* are supported.
+      arg-type* - arguments type as list of symbols. bool, void, char, short, int, long, long-long, unsigned-short, unsigned-int, unsigned-long, unsigned-long-long, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t, float, double, size_t and void* are supported.
+      proc - procedure
 
     Returns:
 
@@ -355,11 +373,42 @@
         [else
          (assertion-violation 'make-c-callback (format "invalid return type ~a" ret) (list ret args proc))]))
 
+#|
+    Function: c-callback
+
+    Make c-callback
+
+    Prototype:
+    > (c-callback return-type arg-type* proc)
+
+    Parameters:
+
+      return-tupe - Same as make-c-callback but should not be quoted.
+      arg-type* - Same as make-c-callback but should not be quoted.
+      proc - procedure
+
+    Returns:
+
+      A pointer of c-callback
+|#
 (define-syntax c-callback
   (lambda (x)
     (syntax-case x ()
       [(_ ret args proc)
        #'(make-c-callback 'ret 'args proc)])))
+
+#|
+    Function: free-c-callback
+
+    Free c-callback object.
+
+    Prototype:
+    > (free-c-callback callback)
+
+    Parameters:
+
+      callback - callback object as pointer.
+|#
 
 (define (make-callback-signature name ret args proc)
   (apply string
