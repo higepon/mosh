@@ -255,6 +255,7 @@ public:
 
     ~CallBackTrampoline()
     {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         currentVM()->unregisterCallBackTrampoline(uid);
     }
 
@@ -505,6 +506,12 @@ public:
         ud2[0] = 0x0F;
         ud2[1] = 0x0B;
         memoryStoreFence();
+    }
+
+    ~CallBackTrampoline()
+    {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        currentVM()->unregisterCallBackTrampoline(uid);
     }
 
     static void* operator new(size_t size)
