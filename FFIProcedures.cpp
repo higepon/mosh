@@ -39,7 +39,9 @@
 #endif
 
 #include <errno.h>
-#ifndef _MSC_VER
+#ifdef _MSC_VER
+#include <xmmintrin.h>
+#else
 #define __STDC_LIMIT_MACROS
 #include <stdint.h>
 #endif
@@ -88,7 +90,11 @@ public:
 
 static void inline memoryStoreFence()
 {
+#ifdef _MSC_VER
+	_mm_sfence();
+#else
     asm volatile ("sfence" ::: "memory");
+#endif
 }
 
 extern "C" void        c_callback_stub_intptr();
@@ -96,7 +102,7 @@ extern "C" void        c_callback_stub_int64();
 extern "C" void        c_callback_stub_double();
 extern "C" void        c_callback_stub_intptr_x64();
 
-#ifdef ARCH_IA32
+#if defined(ARCH_IA32) && !defined(_MSC_VER)
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
 {
     VM* vm = currentVM();
@@ -265,7 +271,7 @@ public:
     }
 } __attribute__((packed));
 
-#else
+#elif defined(ARCH_X86_64) && !defined(_MSC_VER)
 
 Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
@@ -1374,7 +1380,7 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const O
 {
     DeclareProcedureName("free-c-callback-trampoline");
 
-#ifdef FFI_SUPPORTED
+#if defined(FFI_SUPPORTED) && !defined(_MSC_VER)
     checkArgumentLength(1);
     argumentAsPointer(0, callback);
     CallBackTrampoline* trampoline = (CallBackTrampoline*)callback->pointer();
@@ -1390,7 +1396,7 @@ Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const O
 {
     DeclareProcedureName("make-c-callback-trampoline");
 
-#ifdef FFI_SUPPORTED
+#if defined(FFI_SUPPORTED) && !defined(_MSC_VER)
     checkArgumentLength(3);
     argumentAsFixnum(0, type);
     argumentAsString(1, signatures);

@@ -32,7 +32,6 @@
 #ifndef SCHEME_STACK_H_
 #define SCHEME_STACK_H_
 
-#include <sys/time.h>
 
 namespace scheme {
 

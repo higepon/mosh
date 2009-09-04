@@ -72,11 +72,12 @@ public:
 
     bool allocate()
     {
-        // obsolete?
-        addr_ = (uint8_t*)valloc(size_);
 
         // Originally from xbyak
 #ifdef __GNUC__
+        // obsolete?
+        addr_ = (uint8_t*)valloc(size_);
+
         size_t pageSize = sysconf(_SC_PAGESIZE);
         size_t iaddr = reinterpret_cast<size_t>(addr_);
         size_t roundAddr = iaddr & ~(pageSize - static_cast<size_t>(1));
@@ -84,9 +85,10 @@ public:
         roundAddr_ = (uint8_t*)roundAddr;
         return mprotect(reinterpret_cast<void*>(roundAddr), size_ + (iaddr - roundAddr), mode) == 0;
 #elif defined(_WIN32)
+		addr_ = new uint8_t[size_];
         DWORD oldProtect;
         roundAddr_ = addr_;
-        return VirtualProtect(const_cast<void*>(addr_), size_, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
+        return VirtualProtect(static_cast<void*>(addr_), size_, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
 #else
         return true;
 #endif
