@@ -1204,7 +1204,7 @@
       (float              . #\f)
       (double             . #\d)
       (size_t             . ,(if (= size-of-size_t 4) #\Q #\O))
-      (void*              . ,(if (= size-of-void* 4) #\Q #\O))))
+      (void*              . #\P)))
 
   (define callback-return-type-alist
     '((bool               . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR

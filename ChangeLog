@@ -1,5 +1,7 @@
 2009-09-04  higepon  <higepon@users.sourceforge.jp>
 
+	* FFIProcedures.cpp : void* argument of callback is converted to pointer object.
+
 	* ffi_stub_x86_64.S : Renamed.
 
 2009-09-03  higepon  <higepon@users.sourceforge.jp>

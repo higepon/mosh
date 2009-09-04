@@ -146,6 +146,11 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
             args = Object::cons(Bignum::makeIntegerFromU32(u32), args);
             offset += 1;
         } break;
+        case 'P': {
+            uint32_t u32 = stack[offset];
+            args = Object::cons(Object::makePointer((void*)u32), args);
+            offset += 1;
+        } break;
         case 'o': {
             int64_t* s64 = (int64_t*)(&stack[offset]);
             args = Object::cons(Bignum::makeIntegerFromS64(*s64), args);
@@ -370,6 +375,17 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t
                 stack_offset += 1;
             }
             args = Object::cons(Bignum::makeIntegerFromU64(u64), args);
+        } break;
+        case 'P': {
+            uint64_t u64;
+            if (reg_offset < 6) {
+                u64 = reg[reg_offset];
+                reg_offset += 1;
+            } else {
+                u64 = stack[stack_offset];
+                stack_offset += 1;
+            }
+            args = Object::cons(Object::makePointer((void*)u64), args);
         } break;
         case 'f': {
             float* f32;
