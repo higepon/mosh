@@ -253,6 +253,11 @@ public:
         memoryStoreFence();
     }
 
+    ~CallBackTrampoline()
+    {
+        currentVM()->unregisterCallBackTrampoline(uid);
+    }
+
     static void* operator new(size_t size)
     {
         ExecutableMemory* ex = ::new ExecutableMemory(size);
@@ -1361,6 +1366,21 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
 #define CALLBACK_CALL_TYPE_STDCALL      0x0100
 #define CALLBACK_CALL_TYPE_MASK         0xff00
 
+Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("free-c-callback-trampoline");
+
+#ifdef FFI_SUPPORTED
+    checkArgumentLength(1);
+    argumentAsPointer(0, callback);
+    CallBackTrampoline* trampoline = (CallBackTrampoline*)callback->pointer();
+    delete trampoline;
+    return Object::Undef;
+#else
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+}
 // (make-c-callback-trampoline type signatures proc)
 Object scheme::internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {

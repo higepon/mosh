@@ -537,6 +537,7 @@
   %ffi-malloc
   %ffi-free
   %ffi-make-c-callback-trampoline
+  %ffi-free-c-callback-trampoline
   host-os
   output-port?
   textual-port?

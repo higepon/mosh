@@ -208,6 +208,12 @@ public:
         return uid;
     }
 
+    void unregisterCallBackTrampoline(uintptr_t uid)
+    {
+        callBackTrampolines_->deleteD(Object::makeFixnum(uid));
+    }
+
+
     Object getCallBackTrampoline(uintptr_t uid)
     {
         return callBackTrampolines_->ref(Object::makeFixnum(uid), Object::False);

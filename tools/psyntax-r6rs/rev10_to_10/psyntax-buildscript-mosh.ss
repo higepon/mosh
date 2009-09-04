@@ -1050,6 +1050,7 @@
     (%ffi-malloc sys)
     (%ffi-free sys)
     (%ffi-make-c-callback-trampoline sys)
+    (%ffi-free-c-callback-trampoline sys)
     (shared-errno interaction sys)
     (pointer? interaction sys)
     (integer->pointer interaction sys)

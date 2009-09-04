@@ -72,6 +72,7 @@ public:
 
     bool allocate()
     {
+        // obsolete?
         addr_ = (uint8_t*)valloc(size_);
 
         // Originally from xbyak

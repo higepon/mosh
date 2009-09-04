@@ -47,6 +47,7 @@ Object internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiMakeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv);
 Object sharedErrnoEx(VM* theVM, int argc, const Object* argv);
 
 Object pointerPEx(VM* theVM, int argc, const Object* argv);

@@ -93,7 +93,7 @@
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
-          shared-errno make-c-callback c-callback
+          shared-errno make-c-callback c-callback free-c-callback
           make-c-callback-trampoline ;; exported for test
           make-callback-signature    ;; exported for test
           pointer?
@@ -153,7 +153,7 @@
                        + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
-          (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline))
+          (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline) (%ffi-free-c-callback-trampoline free-c-callback))
           (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
                 shared-errno
                 pointer?
