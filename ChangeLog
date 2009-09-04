@@ -1,3 +1,7 @@
+2009-09-04  higepon  <higepon@users.sourceforge.jp>
+
+	* ffi_stub_x86_64.S : Renamed.
+
 2009-09-03  higepon  <higepon@users.sourceforge.jp>
 
 	* test/ffi.scm: Now callback works on OSX and Ubuntu amd64.

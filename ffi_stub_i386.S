@@ -8,7 +8,7 @@
     Modified for Mosh by higepon
 */
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(_WIN32)
 #define SYM(x) _ ## x
 #else
 #define SYM(x) x

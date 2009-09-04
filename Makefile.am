@@ -181,11 +181,11 @@ SimpleStruct.h \
 OSCompat.h OSCompat.cpp
 
 if FFI_I386
-libmosh_a_SOURCES += ffi_stub_i386.s
+libmosh_a_SOURCES += ffi_stub_i386.S
 endif
 
 if FFI_X86_64
-libmosh_a_SOURCES += ffi_stub_x86_64.s
+libmosh_a_SOURCES += ffi_stub_x86_64.S
 endif
 
 mosh_core_libraries = \
