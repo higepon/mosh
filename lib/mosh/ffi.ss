@@ -434,7 +434,6 @@
   (let ([func (%ffi-lookup lib name)]
         [stub (hashtable-ref stub-ht ret-type #f)]
         [checkers (map (lambda (type) (hashtable-ref checker-ht type #f)) arg-types)])
-    (display func)
     (unless (for-all procedure? checkers)
       (assertion-violation 'c-function "invalid argument type for c-function"))
     (unless stub
