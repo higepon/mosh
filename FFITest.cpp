@@ -348,12 +348,11 @@ static void set_a_4()
     a = 4;
 }
 
+#ifdef ARCH_X86_64
 TEST_F(FFITest, CallFromExecutableMemory) {
     ExecutableMemory mem(64);
     ASSERT_TRUE(mem.allocate());
     EXPECT_EQ(0, a);
-#ifdef ARCH_IA32
-#else
     ASSERT_TRUE(mem.push(0x55)); // push   %rbp
     ASSERT_TRUE(mem.push(0x48)); // mov    %rsp,%rbp
     ASSERT_TRUE(mem.push(0x89));
@@ -370,11 +369,13 @@ TEST_F(FFITest, CallFromExecutableMemory) {
     ASSERT_TRUE(mem.push(0xd0));
     ASSERT_TRUE(mem.push(0xc9)); // leaveq
     ASSERT_TRUE(mem.push(0xc3)); // retq
-#endif
     void (*func) () = (void (*) ())mem.address();
     func();
     EXPECT_EQ(4, a);
 }
+#endif
+
+#ifdef ARCH_X86_64
 
 static int64_t arg1 = 0;
 
@@ -392,6 +393,7 @@ TEST_F(FFITest, getArguments) {
     EXPECT_EQ(1234, arg1);
 }
 
+
 static int64_t args[8];
 
 void getArgumentsStub2()
@@ -400,8 +402,6 @@ void getArgumentsStub2()
 //     char buf[32];
 //     sprintf(buf, "hige");
 //     printf(buf);
-#ifdef ARCH_IA32
-#else
     //RDI, RSI, RDX, RCX, R8, R9 and in stack.
     asm volatile("movq %%rdi, %0;"
                  "movq %%rsi, %1;"
@@ -419,7 +419,6 @@ void getArgumentsStub2()
                    "=m" (args[5]),
                    "=r" (args[6]),
                    "=r" (args[7]): :);
-#endif
 }
 
 TEST_F(FFITest, getArguments2) {
@@ -433,8 +432,9 @@ TEST_F(FFITest, getArguments2) {
     EXPECT_EQ(6, args[5]);
     EXPECT_EQ(7, args[6]);
     EXPECT_EQ(8, args[7]);
-
 }
+
+#endif
 
 
 #endif
