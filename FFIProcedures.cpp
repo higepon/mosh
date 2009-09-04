@@ -168,7 +168,6 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
         } break;
         case 'd': {
             double* f64 = (double*)(&stack[offset]);
-            printf("%f \n", *f64);
             args = Object::cons(Object::makeFlonum(*f64), args);
             offset += 2;
         } break;
@@ -255,7 +254,6 @@ public:
 
     ~CallBackTrampoline()
     {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         currentVM()->unregisterCallBackTrampoline(uid);
     }
 
@@ -510,7 +508,6 @@ public:
 
     ~CallBackTrampoline()
     {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         currentVM()->unregisterCallBackTrampoline(uid);
     }
 
