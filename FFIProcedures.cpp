@@ -1384,7 +1384,11 @@ Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const O
     checkArgumentLength(1);
     argumentAsPointer(0, callback);
     CallBackTrampoline* trampoline = (CallBackTrampoline*)callback->pointer();
+#ifndef MOSH_MINGW32
     delete trampoline;
+#else
+    //VirtualFree here
+#endif
     return Object::Undef;
 #else
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
