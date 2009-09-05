@@ -34,8 +34,10 @@
 
 #include "scheme.h"
 
-#ifdef __GNUC__
+#ifndef _WIN32
 #include <sys/mman.h>
+#else
+#include <windows.h>
 #endif
 
 
@@ -74,7 +76,7 @@ public:
     {
 
         // Originally from xbyak
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(MOSH_MINGW32)
         // obsolete?
         addr_ = (uint8_t*)valloc(size_);
 
@@ -85,10 +87,12 @@ public:
         roundAddr_ = (uint8_t*)roundAddr;
         return mprotect(reinterpret_cast<void*>(roundAddr), size_ + (iaddr - roundAddr), mode) == 0;
 #elif defined(_WIN32)
-		addr_ = new uint8_t[size_];
-        DWORD oldProtect;
-        roundAddr_ = addr_;
-        return VirtualProtect(static_cast<void*>(addr_), size_, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
+		// addr_ = new uint8_t[size_];
+        // DWORD oldProtect;
+        // roundAddr_ = addr_;
+        // return VirtualProtect(static_cast<void*>(addr_), size_, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
+	roundAddr_ = addr_ = (uint8_t*)VirtualAlloc(NULL, size_, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+	return ((addr_)!=NULL);
 #else
         return true;
 #endif
