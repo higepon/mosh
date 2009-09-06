@@ -21,8 +21,6 @@
 
     .align  4,0x90
 
-    .globl  SYM(c_func_stub_intptr)
-    .globl  SYM(c_func_stub_int64)
     .globl  SYM(c_func_stub_double)
     .globl  SYM(c_callback_stub_intptr)
     .globl  SYM(c_callback_stub_int64)
@@ -62,7 +60,7 @@ SYM(c_func_stub_double):
     .align  4,0x90
 
 SYM(c_callback_stub_int64):
-    movl    $_c_callback_int64, %edx
+    movl    $SYM(c_callback_int64), %edx
     jmp     callback_stub_common
 
     .align  4,0x90
