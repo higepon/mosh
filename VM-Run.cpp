@@ -1123,8 +1123,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not null
         CASE(BRANCH_NOT_NULL)
         {
+            asm volatile(" \t # -- Branch on not null start");
             ac_ = Object::makeBool(ac_.isNil());
             BRANCH_ON_FALSE;
+            asm volatile(" \t # -- end");
             NEXT;
         }
         CASE(UNDEF)
