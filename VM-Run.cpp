@@ -308,10 +308,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(CONSTANT)
         {
-            asm volatile(" \t # -- CONSTANT start");    \
-            const Object c = fetchOperand();
-            ac_ = c;
-            asm volatile(" \t # -- CONSTANT end");    \
+            asm volatile(" \t # -- CONSTANT start");
+            ac_ = fetchOperand();
+            asm volatile(" \t # -- CONSTANT end");
             NEXT1;
         }
         CASE(PUSH_CONSTANT)

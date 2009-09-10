@@ -676,4 +676,7 @@
 
   ;; for dynamic-wind
   current-dynamic-winders
+
+  ;; Jit experiment
+  return-jit
   )

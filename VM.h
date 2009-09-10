@@ -244,7 +244,7 @@ protected:
     Object compileWithoutHalt(Object sexp);
     bool mayBeStackPointer(Object* obj) const;
 
-private:
+public:
     Object ac_;  // accumulator     register
     Object dc_;  // display closure register, used for refer-free
     Object cl_;  // current closure register, used for profiler.

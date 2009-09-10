@@ -92,6 +92,7 @@ namespace scheme {
     Object vectorRefEx(VM* theVM, int argc, const Object* argv);
     Object vectorSetDEx(VM* theVM, int argc, const Object* argv);
     Object vectorLengthEx(VM* theVM, int argc, const Object* argv);
+    Object returnJitEx(VM* theVM, int argc, const Object* argv);
 
     inline bool existsInList(Object o, Object list)
     {

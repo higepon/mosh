@@ -43,6 +43,7 @@
 #include "ListProcedures.h"
 #include "ProcedureMacro.h"
 #include "TextualOutputPort.h"
+#include "ExecutableMemory.h"
 
 using namespace scheme;
 
@@ -71,6 +72,35 @@ static Object do_transpose(int each_len, int argc, Object* argv)
     return ans;
 }
 
+Object scheme::returnJitEx(VM* theVM, int argc, const Object* argv)
+{
+    ExecutableMemory* mem = new ExecutableMemory(256);
+    if (!mem->allocate()) {
+        fprintf(stderr, "returnJit Error");
+        exit(-1);
+    }
+
+    mem->push(0x48); // movq   $0xd,0x8(%rdi)
+    mem->push(0xc7); 
+    mem->push(0x47); 
+    mem->push(0x08);
+    mem->push(0x0d);
+    mem->push(0x00);
+    mem->push(0x00);
+    mem->push(0x00);
+
+    mem->push(0x48);// movq    0x8(%rdi),%rax
+    mem->push(0x8b);
+    mem->push(0x47);
+    mem->push(0x08);
+
+    mem->push(0xc3);// retq
+
+
+    uint8_t* address = mem->address();
+
+    return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
+}
 
 Object scheme::listRefEx(VM* theVM, int argc, const Object* argv)
 {
