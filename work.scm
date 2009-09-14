@@ -1,1 +1,2 @@
-(display ((return-jit)))
+(import (rnrs)
+        (mosh jit))

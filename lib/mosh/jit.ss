@@ -1,8 +1,8 @@
 (library (mosh jit)
   (export compile)
-  (import (rnrs9))
+  (import (rnrs) (mosh)
+          (match)
+          (only (srfi private include) include/resolve))
 
-(define (compile x)
-  #f)
-
-
+  (include/resolve ("mosh" "jit") "jit-impl.ss")
+)
