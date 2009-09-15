@@ -23,5 +23,7 @@
     (test-equal '(#x48 #x89 #xe3) (assemble '(movq rbx rsp)))
     (test-equal '(#x48 #x89 #xeb) (assemble '(movq rbx rbp)))
     (test-equal '(#x48 #x89 #xc4) (assemble '(movq rsp rax)))
+
+    (test-equal '(#x48 #x8b #x5c #x24 #x50) (assemble '(movq rbx (& rsp 80))))
     )
 )

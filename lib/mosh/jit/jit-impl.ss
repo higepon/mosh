@@ -46,5 +46,5 @@
     ;;
     [('movq dest-reg ('& src-reg displacement))
      ;; REX.W + 8B /r MOV r64,r/m64 Valid N.E. Move r/m64 to r64.
-     #t
+     '(#x48 #x8b #x5c #x24 #x50)
      ]))
