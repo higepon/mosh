@@ -24,14 +24,31 @@
 
 
 ;; See Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
-(define (mod-r-m dest src)
+(define (mod-r-m mod dest src)
   (assert (for-all register? (list dest src)))
-  (let ([mod #b11]
-        [reg (register->number src)]
+  (let ([reg (register->number src)]
         [r/m (register->number dest)])
     (+ (bitwise-arithmetic-shift-left mod 6)
        (bitwise-arithmetic-shift-left reg 3)
        r/m)))
+
+(define-syntax opcode
+  (lambda (x)
+    (syntax-case x ()
+      [(_ v) #'v])))
+
+(define (addr+disp8 base-reg other-reg)
+  (assert (for-all register? (list base-reg other-reg)))
+  (values
+   (mod-r-m #b01 base-reg other-reg)
+   (if (eq? base-reg 'rsp)
+       (list (sib #b00 base-reg))
+       '())))
+
+(define (sib scaled-index reg)
+  (+ (bitwise-arithmetic-shift-left scaled-index 6)
+     (bitwise-arithmetic-shift-left (register->number reg) 3)
+     (register->number reg)))
 
 ;; (oprand dest src)
 (define (assemble code)
@@ -39,12 +56,15 @@
   (match code
     [('movq (? register? dest) (? register? src))
      ;; rex.w
-     `(,rex.w #x89 ,(mod-r-m dest src))
+     `(,rex.w ,(opcode #x89) ,(mod-r-m #b11 dest src))
      ]
     ;; (movq rbx (& rsp 80))
 
     ;;
     [('movq dest-reg ('& src-reg displacement))
      ;; REX.W + 8B /r MOV r64,r/m64 Valid N.E. Move r/m64 to r64.
-     '(#x48 #x8b #x5c #x24 #x50)
+     (if (< displacement #xff);; disp8
+         (receive (modrm sib) (addr+disp8 src-reg dest-reg)
+           `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))
+         (error 'assemble "not implemented"))
      ]))
