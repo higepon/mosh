@@ -27,7 +27,7 @@
 
     (test-equal '(#x48 #x8b #x5c #x24 #x50) (assemble '(movq rbx (& rsp 80))))
     (test-equal '(#x48 #x8b #x45 #x50) (assemble '(movq rax (& rbp 80))))
-
-;;leaq	8(%rax), %rcx
+    (test-equal '(#x48 #x8d #x48 #x08) (assemble '(leaq rcx (& rax 8))))
+    (test-equal '(#x48 #x8b #x10) (assemble '(movq rdx (& rax))))
     )
 )

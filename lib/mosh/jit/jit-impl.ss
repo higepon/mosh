@@ -45,6 +45,14 @@
        (list (sib #b00 base-reg))
        '())))
 
+(define (addr base-reg other-reg)
+  (assert (for-all register? (list base-reg other-reg)))
+  (values
+   (mod-r-m #b00 base-reg other-reg)
+   (if (eq? base-reg 'rsp)
+       (list (sib #b00 base-reg))
+       '())))
+
 (define (sib scaled-index reg)
   (+ (bitwise-arithmetic-shift-left scaled-index 6)
      (bitwise-arithmetic-shift-left (register->number reg) 3)
@@ -63,8 +71,19 @@
     ;;
     [('movq dest-reg ('& src-reg displacement))
      ;; REX.W + 8B /r MOV r64,r/m64 Valid N.E. Move r/m64 to r64.
+     (cond
+      [(zero? displacement)
+       (receive (modrm sib) (addr src-reg dest-reg)
+         `(,rex.w ,(opcode #x8b) ,modrm ,@sib))]
+      [(< displacement #xff);; disp8
+       (receive (modrm sib) (addr+disp8 src-reg dest-reg)
+         `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))]
+      [else
+         (error 'assemble "not implemented")])]
+    [('movq dest-reg ('& src-reg))
+     (assemble `(movq ,dest-reg (& ,src-reg 0)))]
+    [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
          (receive (modrm sib) (addr+disp8 src-reg dest-reg)
-           `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))
-         (error 'assemble "not implemented"))
-     ]))
+           `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement))
+         (error 'assemble "not implemented"))]))
