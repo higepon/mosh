@@ -40,31 +40,35 @@
 
 
 ;; See Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
-(define (mod-r-m mod dest src)
-  (assert (for-all register? (list dest src)))
-  (let ([reg (register->number src)]
-        [r/m (register->number dest)])
+(define mod.disp0    #b00)
+(define mod.disp8    #b01)
+(define mod.register #b11)
+
+(define (mod-r-m mod r/m reg)
+  (assert (for-all register? (list r/m reg)))
+  (let ([reg-n (register->number reg)]
+        [r/m-n (register->number r/m)])
     (+ (bitwise-arithmetic-shift-left mod 6)
-       (bitwise-arithmetic-shift-left reg 3)
-       r/m)))
+       (bitwise-arithmetic-shift-left reg-n 3)
+       r/m-n)))
 
 (define-syntax opcode
   (lambda (x)
     (syntax-case x ()
       [(_ v) #'v])))
 
-(define (addr+disp8 base-reg other-reg)
-  (assert (for-all register? (list base-reg other-reg)))
+(define (effective-addr+disp8 r/m-reg other-reg)
+  (assert (for-all register? (list r/m-reg other-reg)))
   (values
-   (mod-r-m #b01 base-reg other-reg)
-   (if (eq? base-reg 'rsp)
-       (list (sib #b00 base-reg))
+   (mod-r-m mod.disp8 r/m-reg other-reg)
+   (if (eq? r/m-reg 'rsp)
+       (list (sib #b00 r/m-reg))
        '())))
 
-(define (addr base-reg other-reg)
+(define (effective-addr base-reg other-reg)
   (assert (for-all register? (list base-reg other-reg)))
   (values
-   (mod-r-m #b00 base-reg other-reg)
+   (mod-r-m mod.disp0 base-reg other-reg)
    (if (eq? base-reg 'rsp)
        (list (sib #b00 base-reg))
        '())))
@@ -81,32 +85,33 @@
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    ;; MOV r/m64,r64
+    ;;   REX.W + 89 /r
     [('movq (? register? dest) (? register? src))
-     ;; rex.w
-     `(,rex.w ,(opcode #x89) ,(mod-r-m #b11 dest src))
-     ]
-    ;; (movq rbx (& rsp 80))
-
-    ;;
+     `(,rex.w ,(opcode #x89) ,(mod-r-m mod.register dest src))]
+    ;; MOV r64,r/m64
+    ;;   REX.W + 8B /r
     [('movq dest-reg ('& src-reg displacement))
-     ;; REX.W + 8B /r MOV r64,r/m64 Valid N.E. Move r/m64 to r64.
      (cond
       [(zero? displacement)
-       (receive (modrm sib) (addr src-reg dest-reg)
+       (receive (modrm sib) (effective-addr src-reg dest-reg)
          `(,rex.w ,(opcode #x8b) ,modrm ,@sib))]
       [(< displacement #xff);; disp8
-       (receive (modrm sib) (addr+disp8 src-reg dest-reg)
+       (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
          `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))]
       [else
          (error 'assemble "not implemented")])]
     [('movq ('& dest-reg displacement) src-reg)
-       (receive (modrm sib) (addr+disp8 dest-reg src-reg)
+       (receive (modrm sib) (effective-addr+disp8 dest-reg src-reg)
          `(,rex.w ,(opcode #x89) ,modrm ,displacement))]
+;;     [('movq ('& dest-reg displacement) (? number? immediate))
+;;        (receive (modrm sib) (addr+disp8 dest-reg src-reg)
+;;          `(,rex.w ,(opcode #x89) ,modrm ,immediate))]
     [('movq dest-reg ('& src-reg))
      (assemble1 `(movq ,dest-reg (& ,src-reg 0)))]
     [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
-         (receive (modrm sib) (addr+disp8 src-reg dest-reg)
+         (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
            `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement))
          (error 'assemble "not implemented"))]))
 
