@@ -678,5 +678,5 @@
   current-dynamic-winders
 
   ;; Jit experiment
-  return-jit
+  u8-list->c-procedure
   )

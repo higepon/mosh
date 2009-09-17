@@ -2,6 +2,22 @@
 
 ;       movq    80(%rsp), %rbx
 
+;;     Object ac_;  // accumulator     register
+;;     Object dc_;  // display closure register, used for refer-free
+;;     Object cl_;  // current closure register, used for profiler.
+;;     Object* fp_; // frame pointer   register
+;;     Object* sp_; // stack pointer   register
+;;     Object* pc_; // program counter register
+
+(define vm-register* '(ac dc cl fp sp pc))
+
+;; depends on architecture.
+(define vm-register-offset 8)
+
+(define (vm-register reg)
+  `(& rdi ,(* (+ (receive (_ index) (find-with-index (cut eq? <> reg) vm-register*)
+                   index) 1) vm-register-offset)))
+
 (define register* '(rax rcx rdx rbx rsp rbp rsi rdi
                     r8  r9  r10 r11 r12 r13 r14 r15))
 
@@ -58,8 +74,11 @@
      (bitwise-arithmetic-shift-left (register->number reg) 3)
      (register->number reg)))
 
+(define (assemble code*)
+  (append-map assemble1 code*))
+
 ;; (oprand dest src)
-(define (assemble code)
+(define (assemble1 code)
   (define rex.w #x48)
   (match code
     [('movq (? register? dest) (? register? src))
@@ -80,10 +99,22 @@
          `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))]
       [else
          (error 'assemble "not implemented")])]
+    [('movq ('& dest-reg displacement) src-reg)
+       (receive (modrm sib) (addr+disp8 dest-reg src-reg)
+         `(,rex.w ,(opcode #x89) ,modrm ,displacement))]
     [('movq dest-reg ('& src-reg))
-     (assemble `(movq ,dest-reg (& ,src-reg 0)))]
+     (assemble1 `(movq ,dest-reg (& ,src-reg 0)))]
     [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
          (receive (modrm sib) (addr+disp8 src-reg dest-reg)
            `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement))
          (error 'assemble "not implemented"))]))
+
+;; (define CONSTANT
+;;   `(
+
+
+;; ToDo
+;; (0) make constant op directory
+;; (1) make constant op through assemble
+;; (1) vm->reg offset support

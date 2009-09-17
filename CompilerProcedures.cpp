@@ -45,6 +45,7 @@
 #include "Gloc.h"
 #include "VM-inl.h"
 #include "SimpleStruct.h"
+#include "ExecutableMemory.h"
 
 using namespace scheme;
 
@@ -77,6 +78,32 @@ enum {
     TAG_IT            = 17,
     TAG_RECEIVE       = 18
 };
+
+// (u8-list->c-procedure u8-list)
+// Used for Jit compilation.
+Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("u8-list->c-procedure");
+    checkArgumentLength(1);
+    argumentCheckList(0, u8List);
+    const int length = Pair::length(u8List);
+
+    ExecutableMemory* mem = new ExecutableMemory(length);
+    if (!mem->allocate()) {
+        callAssertionViolationAfter(theVM, procedureName, "Memory allocation error");
+        return Object::Undef;
+    }
+    uint8_t* address = mem->address();
+    int i = 0;
+    for (Object obj = u8List; !obj.isNil(); obj = obj.cdr()) {
+        if (!obj.car().isFixnum()) {
+            callAssertionViolationAfter(theVM, procedureName, "u8 list required", L1(u8List));
+            return Object::Undef;
+        }
+        address[i++] = obj.car().toFixnum();
+    }
+    return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
+}
 
 Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
 {
