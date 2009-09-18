@@ -81,6 +81,15 @@
 (define (assemble code*)
   (append-map assemble1 code*))
 
+(define (imm32? n)
+  (and (integer? n) (<= (- (expt 2 31)) n (- (expt 2 31) 1))))
+
+(define (imm32->u8-list n)
+  (list (bitwise-and n #xff)
+        (bitwise-and (bitwise-arithmetic-shift-left n 8) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-left n 16) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-left n 24) #xff)))
+
 ;; (oprand dest src)
 (define (assemble1 code)
   (define rex.w #x48)
@@ -96,28 +105,52 @@
       [(zero? displacement)
        (receive (modrm sib) (effective-addr src-reg dest-reg)
          `(,rex.w ,(opcode #x8b) ,modrm ,@sib))]
-      [(< displacement #xff);; disp8
+      ;; disp8
+      [(< displacement #xff)
        (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
          `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))]
       [else
          (error 'assemble "not implemented")])]
-    [('movq ('& dest-reg displacement) src-reg)
-       (receive (modrm sib) (effective-addr+disp8 dest-reg src-reg)
-         `(,rex.w ,(opcode #x89) ,modrm ,displacement))]
-;;     [('movq ('& dest-reg displacement) (? number? immediate))
-;;        (receive (modrm sib) (addr+disp8 dest-reg src-reg)
-;;          `(,rex.w ,(opcode #x89) ,modrm ,immediate))]
     [('movq dest-reg ('& src-reg))
      (assemble1 `(movq ,dest-reg (& ,src-reg 0)))]
+    ;; MOV r/m64,r64
+    ;;   REX.W + 89 /r
+    [('movq ('& (? register? dest-reg) displacement) (? register? src-reg))
+       (receive (modrm sib) (effective-addr+disp8 dest-reg src-reg)
+         `(,rex.w ,(opcode #x89) ,modrm ,displacement))]
+    [('movq ('& (? register? dest-reg)) (? register? src-reg))
+     (assemble1 `(movq (& ,dest-reg 0) ,src-reg))]
+    ;; MOV r/m64, imm32
+    ;;   REX.W + C7 /0
+    [('movq ('& dest-reg displacement) (? imm32? imm32))
+       ;; rax means 0
+       (receive (modrm sib) (effective-addr+disp8 dest-reg 'rax)
+         `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)))]
+    ;; RET
+    ;;   C3
+    [('retq)
+     '(#xc3)]
     [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
          (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
            `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement))
-         (error 'assemble "not implemented"))]))
+         (error 'assemble "not implemented"))]
+    [x
+     (error 'assemble "assemble error: unknown syntax" x)]))
 
-;; (define CONSTANT
-;;   `(
 
+;;    (define (compile insn*)
+;;      (match insn*
+;;        [('CONSTANT val)
+;;         (assemble
+;;         ]
+;;        [else
+;;         (error 'compile "unknwon instruction" x)]))
+
+(define (CONSTANT val)
+  `((movq ,(vm-register 'ac) ,val)
+    (movq rax ,(vm-register 'ac))
+    (retq)))
 
 ;; ToDo
 ;; (0) make constant op directory

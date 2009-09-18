@@ -26,6 +26,8 @@
     ;; vm registers
     (test-equal '(& rdi 8) (vm-register 'ac))
 
+    (test-equal '(13 0 0 0) (imm32->u8-list 13))
+
     ;; assemble1
     (test-equal '(#x48 #x89 #xe3) (assemble1 '(movq rbx rsp)))
     (test-equal '(#x48 #x89 #xeb) (assemble1 '(movq rbx rbp)))
@@ -37,38 +39,41 @@
     (test-equal '(#x48 #x8b #x10) (assemble1 '(movq rdx (& rax))))
 
     (test-equal '(#x48 #x89 #x4b #x30) (assemble1 '(movq (& rbx #x30) rcx)))
-;;     (test-equal '(#x48 #x89 #x53 #x08) (assemble1 '(movq (& rbx #x08) rdx)))
+    (test-equal '(#x48 #x89 #x53 #x08) (assemble1 '(movq (& rbx #x08) rdx)))
 
-;;     ;; (movq dest-reg immediate)
-;;     (test-equal '(movq #x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00) (assemble1 '(mov (& rdi 8) 13)))
+    ;; (movq dest-reg immediate)
+    (test-equal '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00) (assemble1 '(movq (& rdi 8) 13)))
 
-;;     ;; assemble
-;; ;    (test-equal '(#x48 #x89 #xe3 #x48 #x89 #xeb) (assemble '((movq rbx rsp) (movq rbx rbp))))
+    ;; assemble
+    (test-equal '(#x48 #x89 #xe3 #x48 #x89 #xeb) (assemble '((movq rbx rsp) (movq rbx rbp))))
 
-;;     ;; CONSTANT instruction
-;;     ;;   CONSTANT 3
-;;     ;;     vm: %rdi
-;;     ;;     vm->ac: 0x8(rdi)
-;;     (let ([proc (u8-list->c-procedure '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00   ;movq   $0xd,0x8(%rdi)
-;;                                              #x48 #x8b #x47 #x08                  ;movq    0x8(%rdi),%rax
-;;                                              #xc3))]) ;;retq
-;;       (test-true (procedure? proc))
-;;       (test-eq 3 (proc)))
+    ;; CONSTANT instruction
+    ;;   CONSTANT 3
+    ;;     vm: %rdi
+    ;;     vm->ac: 0x8(rdi)
+    (let ([proc (u8-list->c-procedure '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00   ;movq   $0xd,0x8(%rdi)
+                                             #x48 #x8b #x47 #x08                  ;movq    0x8(%rdi),%rax
+                                             #xc3))]) ;;retq
+      (test-true (procedure? proc))
+      (test-eq 3 (proc)))
 
-;;     (let ([proc (u8-list->c-procedure (assemble `((movq ,(vm-register ac) 13
-                                        
-                                        
-;;       (test-true (procedure? proc))
-;;       (test-eq 3 (proc)))
+    ;; CONSTANT instruction
+    (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
+                            (movq rax ,(vm-register 'ac))
+                            (retq)))]
+           [proc (u8-list->c-procedure asm)])
+      (test-equal '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00
+                                             #x48 #x8b #x47 #x08
+                                             #xc3) asm)
+      (test-true (procedure? proc))
+      (test-eq 3 (proc)))
 
-;;  movq    48(%rbx), %rax ;; %rax = this->pc_
-;;  .LBE14145:
-;;  movq    (%rax), %rdx   ;; %rdx = *(this->pc_)
-;;  .LBB14146:
-;;  leaq    8(%rax), %rcx  ;; %rcx = this->pc_ + 8
-;;  movq    %rcx, 48(%rbx) ;; this->pc_ = %rcx
-;;  .loc 3 312 0
-;;  movq    %rdx, 8(%rbx)  ;; this->ac_ = %rdx
+    ;; CONSTANT instruction
+    (let* ([code (assemble (CONSTANT 13))]
+           [proc (u8-list->c-procedure code)])
+      (test-true (procedure? proc))
+      (test-eq 3 (proc)))
+
 
     )
 )
