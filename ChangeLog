@@ -1,5 +1,7 @@
 2009-09-23  higepon  <higepon@users.sourceforge.jp>
 
+	* ExecutableMemory.h : Added flush() function.
+
 	* lib/mosh/jit/test.ss: REFER_LOCAL_PUSH_CONSTAT.
 
 	* main.cpp : Added -O option, shows vm-register offset.

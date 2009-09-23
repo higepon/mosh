@@ -72,6 +72,11 @@ public:
         return roundAddr_;
     }
 
+    void flush()
+    {
+
+    }
+
     bool allocate()
     {
 
@@ -87,12 +92,12 @@ public:
         roundAddr_ = (uint8_t*)roundAddr;
         return mprotect(reinterpret_cast<void*>(roundAddr), size_ + (iaddr - roundAddr), mode) == 0;
 #elif defined(_WIN32)
-		// addr_ = new uint8_t[size_];
+        // addr_ = new uint8_t[size_];
         // DWORD oldProtect;
         // roundAddr_ = addr_;
         // return VirtualProtect(static_cast<void*>(addr_), size_, PAGE_EXECUTE_READWRITE, &oldProtect) != 0;
-	roundAddr_ = addr_ = (uint8_t*)VirtualAlloc(NULL, size_, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-	return ((addr_)!=NULL);
+    roundAddr_ = addr_ = (uint8_t*)VirtualAlloc(NULL, size_, MEM_RESERVE|MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    return ((addr_)!=NULL);
 #else
         return true;
 #endif

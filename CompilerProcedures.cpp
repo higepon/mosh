@@ -102,6 +102,7 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
         }
         address[i++] = obj.car().toFixnum();
     }
+    mem->flush();
     return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
 }
 
