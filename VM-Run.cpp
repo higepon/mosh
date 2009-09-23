@@ -824,10 +824,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL_PUSH_CONSTANT)
         {
+            asm volatile(" \t # -- REFER_LOCAL_PUSH_CONSTANT start");
             const Object index = fetchOperand();
             MOSH_ASSERT(index.isFixnum());
             push(referLocal(index.toFixnum()));
             ac_= fetchOperand();
+            asm volatile(" \t # -- REFER_LOCAL_PUSH_CONSTANT end");
             NEXT1;
         }
         // appears on typical named let loop

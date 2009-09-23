@@ -35,6 +35,7 @@ bin_PROGRAMS = mosh
 endif
 
 
+
 bin_SCRIPTS = mosh_config
 
 if DEVELOPER
@@ -585,6 +586,7 @@ test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
 	./mosh --clean-acc --disable-acc misc/empty.scm
+	./mosh -O lib/mosh/jit/offset.ss
 	$(INSTALL) -m 666 misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm

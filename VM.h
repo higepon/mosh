@@ -245,6 +245,8 @@ protected:
     bool mayBeStackPointer(Object* obj) const;
 
 public:
+    // DONT change the order or offset.
+    // JIT compiler depends on them.
     Object ac_;  // accumulator     register
     Object dc_;  // display closure register, used for refer-free
     Object cl_;  // current closure register, used for profiler.

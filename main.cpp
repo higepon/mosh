@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     bool disableAcc = false;
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
+    bool showOffset = false;
     ucs4char* initFile = NULL;
     ucs4char* loadPath = NULL;
 
@@ -143,10 +144,13 @@ int main(int argc, char *argv[])
 
    ucs4char** argvU = getCommandLine(argc, argv);
 
-   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rze"), long_options, &optionIndex)) != -1) {
+   while ((opt = getopt_longU(argc, argvU, UC("htvpVcl:5rzeO"), long_options, &optionIndex)) != -1) {
         switch (opt) {
         case 'h':
             showUsage();
+            break;
+        case 'O':
+            showOffset = true;
             break;
         case 'd':
             disableAcc = true;
@@ -224,17 +228,8 @@ int main(int argc, char *argv[])
 
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
-//     } else if (isCompileString) {
-//         ucs4string text
-//         const Object port = Object::makeStringInputPort((const uint8_t*)argvU[optindU], strlen(argv[optindU]));
-//         bool errorOccured = false;
-//         const Object code = port.toTextualInputPort()->getDatum(errorOccured);
-//         if (errorOccured) {
-//             callLexicalViolationImmidiaImmediately(theVM, "read", port.toTextualInputPort()->error());
-//         } else {
-//             const Object compiled = theVM->compile(code);
-//             theVM->currentOutputPort().toTextualOutputPort()->display(compiled);
-//         }
+    } else if (showOffset) {
+        printf("(define vm-register-offset %d)", (uintptr_t)(&(theVM->ac_)) - (uintptr_t)theVM);
     } else if (isR6RSBatchMode) {
         if (NULL == loadPath) {
             theVM->setValueString(UC("%loadpath"), Object::False);
