@@ -1,5 +1,7 @@
 2009-09-24  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/mosh/jit/jit-impl.ss (u8-list->c-procedure+retq): Added. It addes (retq) instruction at tail of u8-list.
+
 	* lib/mosh/jit/test.ss : Removed tests for VM instruction assembled results, since it is hard to maintainance.
 	                         Instead, we test a behavior of jit compiled VM instruction.
 

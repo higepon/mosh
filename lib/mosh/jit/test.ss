@@ -81,24 +81,22 @@
 
     ;; CONSTANT instruction
     (let* ([code (assemble (CONSTANT 13))]
-           [proc (u8-list->c-procedure code)])
+           [proc (u8-list->c-procedure+retq code)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
     ;; REFER_LOCAL_PUSH_CONSTANT instruction
     (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 0 13))]
            [code2  (assemble (POP))]
-           [proc (u8-list->c-procedure (append code1 code2))])
+           [proc (u8-list->c-procedure+retq (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1234 (proc 1234)))
 
     (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 1 13))]
            [code2  (assemble (POP))]
-           [proc (u8-list->c-procedure (append code1 code2))])
+           [proc (u8-list->c-procedure+retq (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1235 (proc 1234 1235)))
-
-
 
     ;; gas -> sassy
     (test-equal '(movq rbx rsp) (gas->sassy "mov   %rsp,%rbx"))

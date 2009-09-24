@@ -209,8 +209,7 @@
 
 (define (CONSTANT val)
   `((movq ,(vm-register 'ac) ,val)
-    (movq rax ,(vm-register 'ac))
-    (retq)))
+    (movq rax ,(vm-register 'ac))))
 
 (define (REFER_LOCAL_PUSH_CONSTANT index constant)
 `(
@@ -251,9 +250,7 @@
     (subq rcx 8)
     (movq rax (& rcx))
     (movq ,(vm-register 'ac) rax)
-    (movq ,(vm-register 'sp) rcx)
-    (retq)
-    ))
+    (movq ,(vm-register 'sp) rcx)))
 
 (define (FOREVER)
   '(#xeb #xfe))
@@ -309,6 +306,9 @@
       `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3))
         ,(string->number (m 2) 16)))]
    ))
+
+(define (u8-list->c-procedure+retq lst)
+  (u8-list->c-procedure (append lst (assemble '((retq))))))
 
 ;; '(movq rbx (& rsp #x38))
 
