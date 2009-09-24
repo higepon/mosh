@@ -1097,8 +1097,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         // Branch on not less than
         CASE(BRANCH_NOT_LT)
         {
+            asm volatile(" \t # -- BRANCH_NOT_LT start");
             NUM_CMP_LOCAL(<, <, lt);
             BRANCH_ON_FALSE;
+            asm volatile(" \t # -- BRANCH_NOT_LT end");
             NEXT;
         }
         // Branch on not greater than or equal

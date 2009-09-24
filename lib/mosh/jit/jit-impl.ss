@@ -40,6 +40,9 @@
 (define (register32->64 reg)
   (number->register64 (register32->number reg)))
 
+(define (register64->32 reg)
+  (number->register32 (register64->number reg)))
+
 (define (find-with-index pred lst)
   (let loop ([i 0]
              [lst lst])
@@ -204,27 +207,35 @@
     [x
      (error 'assemble "assemble error: invalid syntax" x)]))
 
-(define (make-fixnum n)
+(define (vm-make-fixnum n)
   (+ (bitwise-arithmetic-shift-left n 2) 1))
+
+(define (macro-to-fixnum reg)
+  `((sarq ,reg 2)                        ; reg = reg >> 2
+   (movslq ,reg ,(register64->32 reg)))) ; reg = reg32 (with sign)
+
+(define (macro-refer-local dest-reg fp-reg index-reg)
+  `((movq ,dest-reg (& ,fp-reg ,index-reg 8))))
+
+(define (macro-push sp-reg value-reg)
+  `((movq (& ,sp-reg) ,value-reg)
+    (addq ,sp-reg 8)))
+
+(define (REFER_LOCAL_PUSH_CONSTANT index constant)
+  `((movq rcx ,(vm-register 'sp))
+    (movq rdx ,(vm-make-fixnum index))
+    (movq rax ,(vm-register 'fp))
+    ,@(macro-to-fixnum 'rdx)
+    ,@(macro-refer-local 'rax 'rax 'rdx)
+    ,@(macro-push 'rcx 'rax)
+    (movq ,(vm-register 'sp) rcx)
+    (movq rcx ,constant)
+    (movq ,(vm-register 'ac) rcx)))
 
 (define (CONSTANT val)
   `((movq ,(vm-register 'ac) ,val)
     (movq rax ,(vm-register 'ac))))
 
-(define (REFER_LOCAL_PUSH_CONSTANT index constant)
-`(
-  (movq rcx ,(vm-register 'sp))
-  (movq rdx ,(make-fixnum index))
-  (movq rax ,(vm-register 'fp))
-  (sarq rdx 2)                    ;; rdx = rdx >> 2 (= toFixnum())
-  (movslq rdx edx)       ;; rdx = edx (with sign)
-  (movq rax (& rax rdx 8))       ;; rax = *(fp + n)
-  (movq (& rcx) rax)    ;; *sp = rax
-  (addq rcx 8)
-  (movq ,(vm-register 'sp) rcx)
-  (movq rcx ,constant)
-  (movq ,(vm-register 'ac) rcx)
-))
 
 ;; (define (REFER_LOCAL_PUSH_CONSTANT index constant)
 ;; `(

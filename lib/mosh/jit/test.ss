@@ -64,7 +64,7 @@
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
-    (test-eq 13 (make-fixnum 3))
+    (test-eq 13 (vm-make-fixnum 3))
 
     (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
                             (movq rax ,(vm-register 'ac))
