@@ -66,7 +66,6 @@
 
     (test-eq 13 (make-fixnum 3))
 
-    ;; CONSTANT instruction
     (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
                             (movq rax ,(vm-register 'ac))
                             (retq)))]
@@ -77,95 +76,35 @@
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
+    ;; VM instruction tests.
+    ;;   We don't test the assmebled code, but a behaviour of VM instruction.
+
     ;; CONSTANT instruction
     (let* ([code (assemble (CONSTANT 13))]
            [proc (u8-list->c-procedure code)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
-    ;; REFER_LOCAL_PUSH_CONSTANT
-#;    (let* ([code (assemble (REFER_LOCAL_PUSH_CONSTANT 0 (make-fixnum 3)))])
-           (test-equal '(
-                         #x48 #x8b #x47 #x30
-                         #x48 #x8b #x4F #x28
-;                          #x48 #x8b #x10
-                         #x48 #xc7 #xc2 #x01 #x00 #x00 #x00
-;                          #x48 #x83 #xc0 #x08
-                          #x48 #x89 #x47 #x30
-                          #x48 #x8b #x47 #x20
-                          #x48 #xc1 #xfa #x02
-                          #x48 #x63 #xd2
-                          #x48 #x8b #x04 #xd0
-                          #x48 #x89 #x01
-                          #x48 #x8b #x57 #x30
-                          #x48 #x83 #xc1 #x08
-                          #x48 #x89 #x4f #x20
-                          #x48 #x8b #x0a
-                          #x48 #x8d #x42 #x08
-                          #x48 #x89 #x47 #x28
-                          #x48 #x89 #x4f #x08
-                         ) code))
-
-(display (vm-register 'sp))
     ;; REFER_LOCAL_PUSH_CONSTANT instruction
-    (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 0 13))
-#;            `(
-                         #x48 #x8b #x47 #x30
-                         #x48 #x8b #x4F #x28
-                          #x48 #x8b #x10
-                          #x48 #x83 #xc0 #x08
-                          #x48 #x89 #x47 #x30
-              #x48 #xc7 #xc0 #x0d 0 0 0 #;,@(FOREVER) #xc3
-;                         #xcc
-;;                           #x48 #x8b #x47 #x20
-;;                           #x48 #xc1 #xfa #x02
-;;                           #x48 #x63 #xd2
-;;                           #x48 #x8b #x04 #xd0
-;;                           #x48 #x89 #x01 
-;;                           #x48 #x8b #x57 #x30 
-;;                           #x48 #x83 #xc1 #x08
-;;                           #x48 #x89 #x4f #x20
-;;                           #x48 #x8b #x0a 
-;;                           #x48 #x8d #x42 #x08
-;;                           #x48 #x89 #x47 #x28 
-;;                           #x48 #x89 #x4f #x08 ;,@(FOREVER) 
-
-;;                          #x48 #x8b #x47 #x30
-;;                          #x48 #x8b #x4F #x28 
-;;                           #x48 #x8b #x10 
-;;                           #x48 #x83 #xc0 #x08 
-;;                           #x48 #x89 #x47 #x30 
-;;                           #x48 #x8b #x47 #x20
-;;                           #x48 #xc1 #xfa #x02
-;;                           #x48 #x63 #xd2 
-;;                           #x48 #x8b #x04 #xd0 
-;;                           #x48 #x89 #x01 ; #xcc
-;;                           #x48 #x8b #x57 #x30  
-;;                           #x48 #x83 #xc1 #x08 ; 
-;;                           #x48 #x89 #x4b #x28
-;;                           #x48 #x8b #x0a
-;;                           #x48 #x8d #x42 #x08
-;;                           #x48 #x89 #x43 #x30
-;;                           #x48 #x89 #x4b #x08 
-                         )]
-           [code2  (assemble (POP))
-#;            `(72 139 79 40
-              72 131 233 8  
-              72 139 1 
-              72 137 71 8 
-                 #;#xcc  #;,@(FOREVER) #xc3  )]
-           [proc (u8-list->c-procedure (append code1 #;'(#xeb #xfe) code2))])
-      (display (append code1 code2))
-      (display code2)
+    (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 0 13))]
+           [code2  (assemble (POP))]
+           [proc (u8-list->c-procedure (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1234 (proc 1234)))
 
+    (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 1 13))]
+           [code2  (assemble (POP))]
+           [proc (u8-list->c-procedure (append code1 code2))])
+      (test-true (procedure? proc))
+      (test-eq 1235 (proc 1234 1235)))
 
+
+
+    ;; gas -> sassy
     (test-equal '(movq rbx rsp) (gas->sassy "mov   %rsp,%rbx"))
     (test-equal '(movq rdx (& rbx #x30)) (gas->sassy "mov    0x30(%rbx),%rdx"))
     (test-equal '(addq rcx #x8) (gas->sassy "add    $0x8,%rcx"))
     (test-equal '(movq (& rbx #x28) rcx) (gas->sassy "mov    %rcx,0x28(%rbx)"))
     (test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
     )
-(display (gas->sassy "mov %rcx,0x8(%rbx)"))
 )
