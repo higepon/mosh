@@ -133,6 +133,10 @@
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    ;; CMP r64, r/m64
+    ;;   REX.W + 3B /r
+    [('cmpq (? register64? dest) (? register64? src))
+     `(,rex.w ,(opcode #x39) ,(mod-r-m mod.register dest src))]
     ;; INT 3
     [('int 3) '(#xcc)]
     ;; MOV r/m64, imm32 Valid

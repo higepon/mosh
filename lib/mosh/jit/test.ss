@@ -30,6 +30,7 @@
     (test-equal '(13 0 0 0) (imm32->u8-list 13))
 
     ;; assemble1
+    (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
     (test-equal '(#x48 #x89 #xe3) (assemble1 '(movq rbx rsp)))
     (test-equal '(#x48 #x89 #xeb) (assemble1 '(movq rbx rbp)))
     (test-equal '(#x48 #x89 #xc4) (assemble1 '(movq rsp rax)))
@@ -53,6 +54,18 @@
 
     ;; assemble
     (test-equal '(#x48 #x89 #xe3 #x48 #x89 #xeb) (assemble '((movq rbx rsp) (movq rbx rbp))))
+
+
+    (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
+                            (movq rax ,(vm-register 'ac))
+                            (retq)))]
+           [proc (u8-list->c-procedure asm)])
+      (test-equal '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00
+                                             #x48 #x8b #x47 #x08
+                                             #xc3) asm)
+      (test-true (procedure? proc))
+      (test-eq 3 (proc)))
+
 
     ;; CONSTANT instruction
     ;;   CONSTANT 3
