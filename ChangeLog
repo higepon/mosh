@@ -1,3 +1,8 @@
+2009-09-27  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/jit-impl.ss : Added label fixup function.
+	                             Now only supportd je imm8 only.
+
 2009-09-24  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/jit-impl.ss (u8-list->c-procedure+retq): Added. It addes (retq) instruction at tail of u8-list.

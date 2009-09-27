@@ -106,6 +106,22 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
     return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
 }
 
+// (get-c-address name)
+Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("get-c-address");
+    checkArgumentLength(1);
+    argumentAsSymbol(0, name);
+//     uintptr_t address = 0;
+//         asm volatile("movq %%rax, %0;"
+//                      : "=a" (address)
+//                      : "a" (&Object::isNumber));
+
+                     
+
+//     return Object::makeFixnum(address);
+}
+
 Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("$label");

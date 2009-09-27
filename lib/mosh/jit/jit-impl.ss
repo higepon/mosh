@@ -112,15 +112,49 @@
      (register64->number base-reg)))
 
 
-
+;; asm* : list of asm
+;; asm  : (assembled-byte* addr-of-net-instruction label-to-fixup)
 (define (assemble code*)
-  (append-map assemble1 code*))
+  (let loop ([code* code*]
+             [addr 0]
+             [asm* '()]
+             [label* '()])
+    (cond
+     [(null? code*)
+      (append-map (match-lambda
+                      [(byte* addr #f) byte*]
+                      [(byte* addr label-to-fixup)
+                       (cond
+                        [(assoc label-to-fixup label*) =>
+                         (lambda (x)
+                           (assert (imm8? (cdr x)))
+                           (append (drop-right byte* 1) (list (imm8->u8 (- (cdr x) addr)))))]
+                        [else
+                         (error 'assemble (format "BUG: label:~a not found on ~a" label-to-fixup label*))])])
+                  (reverse asm*))]
+     [else
+      (match (car code*)
+        [('label label)
+         (loop (cdr code*)
+               addr
+               asm*
+               (cons (cons label addr) label*))]
+        [x
+         (let-values (([asm label-to-fixup] (assemble1 x)))
+           (loop (cdr code*)
+                 (+ (length asm) addr)
+                 (cons (list asm (+ (length asm) addr) label-to-fixup) asm*)
+                 label*))])])))
 
 (define (imm32? n)
   (and (integer? n) (<= (- (expt 2 31)) n (- (expt 2 31) 1))))
 
 (define (imm8? n)
   (and (integer? n) (<= -128 n 127)))
+
+(define (imm8->u8 n)
+  (assert (imm8? n))
+  (bitwise-and n #xff))
 
 
 (define (imm32->u8-list n)
@@ -130,34 +164,37 @@
         (bitwise-and (bitwise-arithmetic-shift-left n 24) #xff)))
 
 ;; (oprand dest src)
+;; returns (values byte* label-to-fixup)
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    [('je (? symbol? label))
+     (values `(,(opcode #x74) #x00) label)]
     ;; CMP r64, r/m64
     ;;   REX.W + 3B /r
     [('cmpq (? register64? dest) (? register64? src))
-     `(,rex.w ,(opcode #x39) ,(mod-r-m mod.register dest src))]
+     (values `(,rex.w ,(opcode #x39) ,(mod-r-m mod.register dest src)) #f)]
     ;; INT 3
-    [('int 3) '(#xcc)]
+    [('int 3) (values '(#xcc) #f)]
     ;; MOV r/m64, imm32 Valid
     ;;   REX.W + C7 /0
     [('movq (? register64? dest) (? imm32? imm32))
-     `(,rex.w ,(opcode #xc7) ,(mod-r-m mod.register dest (number->register64 0)) ,@(imm32->u8-list imm32))]
+     (values `(,rex.w ,(opcode #xc7) ,(mod-r-m mod.register dest (number->register64 0)) ,@(imm32->u8-list imm32)) #f)]
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq (? register64? dest) (? register64? src))
-     `(,rex.w ,(opcode #x89) ,(mod-r-m mod.register dest src))]
+     (values `(,rex.w ,(opcode #x89) ,(mod-r-m mod.register dest src)) #f)]
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
     [('movq dest-reg ('& src-reg displacement))
      (cond
       [(zero? displacement)
        (receive (modrm sib) (effective-addr src-reg dest-reg)
-         `(,rex.w ,(opcode #x8b) ,modrm ,@sib))]
+         (values `(,rex.w ,(opcode #x8b) ,modrm ,@sib) #f))]
       ;; disp8
       [(< displacement #xff)
        (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
-         `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement))]
+         (values `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement) #f))]
       [else
          (error 'assemble "not implemented")])]
     ;; MOV r64,r/m64
@@ -166,7 +203,7 @@
      (cond
       [(= scaled-index 8)
        (receive (modrm sib) (effective-addr+scale8 (number->register64 4) dest-reg base-reg src-reg)
-         `(,rex.w ,(opcode #x8b) ,modrm ,@sib))]
+         (values `(,rex.w ,(opcode #x8b) ,modrm ,@sib) #f))]
       [else
          (error 'assemble "not implemented")])]
     [('movq dest-reg ('& src-reg))
@@ -177,36 +214,36 @@
      (cond
       [(zero? displacement)
        (receive (modrm sib) (effective-addr dest-reg src-reg)
-         `(,rex.w ,(opcode #x89) ,modrm))]
+         (values `(,rex.w ,(opcode #x89) ,modrm) #f))]
       [else
        (receive (modrm sib) (effective-addr+disp8 dest-reg src-reg)
-         `(,rex.w ,(opcode #x89) ,modrm ,displacement))])]
+         (values `(,rex.w ,(opcode #x89) ,modrm ,displacement) #f))])]
     [('movq ('& (? register64? dest-reg)) (? register64? src-reg))
      (assemble1 `(movq (& ,dest-reg 0) ,src-reg))]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? register64? dest-reg) displacement) (? imm32? imm32))
        (receive (modrm sib) (effective-addr+disp8 dest-reg (number->register64 0))
-         `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)))]
+         (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
     ;; ADD r/m64, imm8 : REX.W + 83 /0 ib Valid N.E.
     [('addq (? register64? dest-reg) (? imm8? imm8))
-     `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 0)) ,imm8)]
+     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 0)) ,imm8) #f)]
     [('subq (? register64? dest-reg) (? imm8? imm8))
-     `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 5)) ,imm8)]
+     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 5)) ,imm8) #f)]
     ;; RET : C3
     [('retq)
-     '(#xc3)]
+     (values '(#xc3) #f)]
     ;; SAR r/m64, imm8 : REX.W + C1 /7 ib
     [('sarq (? register64? dest-reg) (? imm8? imm8))
-     `(,rex.w ,(opcode #xc1) ,(mod-r-m mod.register dest-reg (number->register64 7)) ,imm8)]
+     (values `(,rex.w ,(opcode #xc1) ,(mod-r-m mod.register dest-reg (number->register64 7)) ,imm8) #f)]
     ; MOVSXD r64, r/m32 : REX.W** + 63 /r
     [('movslq (? register64? dest-reg) (? register32? src-reg))
-     `(,rex.w ,(opcode #x63) ,(mod-r-m mod.register dest-reg (register32->64 src-reg)))
+     (values `(,rex.w ,(opcode #x63) ,(mod-r-m mod.register dest-reg (register32->64 src-reg))) #f)
      ]
     [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
          (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
-           `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement))
+           (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement) #f))
          (error 'assemble "not implemented"))]
     [x
      (error 'assemble "assemble error: invalid syntax" x)]))

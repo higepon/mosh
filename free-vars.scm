@@ -679,4 +679,5 @@
 
   ;; Jit experiment
   u8-list->c-procedure
+  get-c-address
   )

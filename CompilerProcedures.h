@@ -42,7 +42,7 @@ namespace scheme {
     {
         return lvar.toVector()->ref(1);
     }
-
+    Object getCAddressEx(VM* theVM, int argc, const Object* argv);
     Object u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv);
     Object pass1FindSymbolInLvarsEx(VM* theVM, int argc, const Object* argv);
     Object printStackEx(VM* theVM, int argc, const Object* argv);

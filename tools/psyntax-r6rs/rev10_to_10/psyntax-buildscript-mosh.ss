@@ -1051,7 +1051,10 @@
     (%ffi-free sys)
     (%ffi-make-c-callback-trampoline sys)
     (%ffi-free-c-callback-trampoline sys)
+    ;; Jit start
     (u8-list->c-procedure sys)
+    (get-c-address sys)
+    ;; Jit end
     (shared-errno interaction sys)
     (pointer? interaction sys)
     (integer->pointer interaction sys)
@@ -1175,7 +1178,7 @@
     (load                                       )
     ;;;
     (void                     $boot)
-    (gensym                   $boot)
+    (gensym                   $boot mosh)
     (symbol-value             $boot mosh)
     (set-symbol-value!        $boot mosh)
     (eval-core                $boot)
