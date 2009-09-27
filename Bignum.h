@@ -561,24 +561,24 @@ public:
 //         }
 //     }
 
-//     static Object makeIntegerFromUintprt_t(uintptr_t p)
-//     {
-// #if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
-//         const uint32_t val = static_cast<uint32_t>(p);
-//         if (Fixnum::canFit(val)) {
-//             return Object::makeFixnum(val);
-//         } else {
-//             return makeIntegerFromU32(val);
-//         }
-// #else
-//         const uint64_t val = static_cast<uint64_t>(p);
-//         if (Fixnum::canFit(val)) {
-//             return Object::makeFixnum(static_cast<int>(val));
-//         } else {
-//             return makeIntegerFromU64(val);
-//         }
-// #endif
-//     }
+    static Object makeIntegerFromUintprt_t(uintptr_t p)
+    {
+#if (MOSH_BIGNUM_SIZEOF_INTPTR_T == 4)
+        const uint32_t val = static_cast<uint32_t>(p);
+        if (Fixnum::canFit(val)) {
+            return Object::makeFixnum(val);
+        } else {
+            return makeIntegerFromU32(val);
+        }
+#else
+        const uint64_t val = static_cast<uint64_t>(p);
+        if (Fixnum::canFit(val)) {
+            return Object::makeFixnum(static_cast<int>(val));
+        } else {
+            return makeIntegerFromU64(val);
+        }
+#endif
+    }
 
     intptr_t toIntptr_t()
     {

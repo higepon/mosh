@@ -1,3 +1,7 @@
+2009-09-28  higepon  <higepon@users.sourceforge.jp>
+
+	* CompilerProcedures.cpp (getClassMemberPointer): Added to get an address of Class member function.
+
 2009-09-27  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/jit-impl.ss : Added label fixup function.

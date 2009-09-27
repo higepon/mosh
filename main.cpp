@@ -121,6 +121,16 @@ int main(int argc, char *argv[])
     // call this before any allocation.
     mosh_init();
 
+//     const Object t = Object::makeFixnum(1234);
+//     fixedint (Object::*func1)() const = &Object::toFixnum;
+
+//     // normal
+//     printf("func1=%d\n", (t.*func1)());
+    
+//     void** p = reinterpret_cast<void**>(&func1);
+//     fixedint (*func2)(const Object*) = reinterpret_cast<fixedint (*)(const Object*)>(*p);
+//     printf("func2=%d %p\n", (*func2)(&t), func2);
+
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;

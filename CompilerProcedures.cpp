@@ -46,6 +46,7 @@
 #include "VM-inl.h"
 #include "SimpleStruct.h"
 #include "ExecutableMemory.h"
+#include "Bignum.h"
 
 using namespace scheme;
 
@@ -106,20 +107,19 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
     return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
 }
 
+static inline uintptr_t getClassMemberPointer(bool (Object::*func)() const)
+{
+    uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
+    return *p;
+}
+
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("get-c-address");
     checkArgumentLength(1);
     argumentAsSymbol(0, name);
-//     uintptr_t address = 0;
-//         asm volatile("movq %%rax, %0;"
-//                      : "=a" (address)
-//                      : "a" (&Object::isNumber));
-
-                     
-
-//     return Object::makeFixnum(address);
+    return Bignum::makeIntegerFromUintprt_t(getClassMemberPointer(&Object::isNumber));
 }
 
 Object scheme::labelEx(VM* theVM, int argc, const Object* argv)
