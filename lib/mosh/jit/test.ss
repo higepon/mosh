@@ -34,7 +34,8 @@
     (test-equal '(13 0 0 0) (imm32->u8-list 13))
 
     ;; assemble1
-    (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
+
+    ;; mov family
     (test-equal '(#x48 #x89 #xe3) (assemble1 '(movq rbx rsp)))
     (test-equal '(#x48 #x89 #xeb) (assemble1 '(movq rbx rbp)))
     (test-equal '(#x48 #x89 #xc4) (assemble1 '(movq rsp rax)))
@@ -46,6 +47,18 @@
     (test-equal '(#x48 #x8b #x5c #x24 #x38) (assemble1 '(movq rbx (& rsp #x38))))
     (test-equal '(#x48 #x8b #x43 #x30)    (assemble1 '(movq rax (& rbx #x30))))
     (test-equal '(#x48 #x8b #x4b #x28)    (assemble1 '(movq rcx (& rbx #x28))))
+    (test-equal '(#x48 #xc7 #xc0 #xb0 #x11 #x42 #x00) (assemble1 '(movq rax #x4211b0)))
+    (test-equal '(#x48 #xc7 #x84 #x24 #x96 #x00 #x00 #x00 #x0d #x00 #x00 #x00) (assemble1 '(movq (& rsp #x96) 13)))
+
+    ;; cmp
+    (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
+
+    ;; leaq
+    (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))
+
+    ;; call
+    (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
+    (test-equal '(#xff #xd2) (assemble1 '(callq rdx)))
 
     ;; label
     (test-equal '(#x74 #x00) (assemble '((je a) (label a))))
@@ -86,6 +99,21 @@
            [proc (u8-list->c-procedure asm)])
       (test-true (procedure? proc))
       (test-eq 2 (proc)))
+
+    (display (number->string (get-c-address 'Object::isNumber) 16))
+    (newline)
+
+    ;; call
+#;    (let* ([asm (assemble `(                            ,(DEBUGGER)
+                            (movq (& rsp 150) ,(vm-make-fixnum 3))
+                            (leaq rdi (& rsp 150))  ;; 1st argument is this pointer
+                            (movq rax ,(get-c-address 'Object::isNumber))
+                            (callq rax)
+                            (movq ,(vm-register 'ac) rax)
+                            (retq)))]
+           [proc (u8-list->c-procedure asm)])
+      (test-true (procedure? proc))
+      (test-eq #f (proc)))
 
     ;; CONSTANT instruction
     ;;   CONSTANT 3

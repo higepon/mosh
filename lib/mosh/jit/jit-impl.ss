@@ -58,6 +58,7 @@
 ;; See Table 2-1. 16-Bit Addressing Forms with the ModR/M Byte
 (define mod.disp0    #b00)
 (define mod.disp8    #b01)
+(define mod.disp32   #b10)
 (define mod.register #b11)
 
 (define sib.scale1 #b00)
@@ -83,6 +84,15 @@
    (if (eq? r/m-reg 'rsp)
        (list (sib sib.scale1 'rsp 'rsp))
        '())))
+
+(define (effective-addr+disp32 r/m-reg other-reg)
+  (assert (for-all register64? (list r/m-reg other-reg)))
+  (values
+   (mod-r-m mod.disp32 r/m-reg other-reg)
+   (if (eq? r/m-reg 'rsp)
+       (list (sib sib.scale1 'rsp 'rsp))
+       '())))
+
 
 (define (effective-addr+scale8 r/m-reg other-reg base-reg src-reg)
   (assert (for-all register64? (list r/m-reg other-reg)))
@@ -146,8 +156,15 @@
                  (cons (list asm (+ (length asm) addr) label-to-fixup) asm*)
                  label*))])])))
 
+(define (imm16? n)
+  (and (integer? n) (<= (- (expt 2 15)) n (- (expt 2 15) 1))))
+
 (define (imm32? n)
   (and (integer? n) (<= (- (expt 2 31)) n (- (expt 2 31) 1))))
+
+(define (imm64? n)
+  (and (integer? n) (<= (- (expt 2 63)) n (- (expt 2 63) 1))))
+
 
 (define (imm8? n)
   (and (integer? n) (<= -128 n 127)))
@@ -159,9 +176,19 @@
 
 (define (imm32->u8-list n)
   (list (bitwise-and n #xff)
-        (bitwise-and (bitwise-arithmetic-shift-left n 8) #xff)
-        (bitwise-and (bitwise-arithmetic-shift-left n 16) #xff)
-        (bitwise-and (bitwise-arithmetic-shift-left n 24) #xff)))
+        (bitwise-and (bitwise-arithmetic-shift-right n 8) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 16) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 24) #xff)))
+
+(define (imm64->u8-list n)
+  (list (bitwise-and n #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 8) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 16) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 24) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 32) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 40) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 48) #xff)
+        (bitwise-and (bitwise-arithmetic-shift-right n 56) #xff)))
 
 ;; (oprand dest src)
 ;; returns (values byte* label-to-fixup)
@@ -174,12 +201,20 @@
     ;;   REX.W + 3B /r
     [('cmpq (? register64? dest) (? register64? src))
      (values `(,rex.w ,(opcode #x39) ,(mod-r-m mod.register dest src)) #f)]
+    ;; CALL r/m64
+    ;;   FF /2
+    [('callq (? register64? dest))
+     (values `(,(opcode #xff) ,(mod-r-m mod.register dest (number->register64 2))) #f)]
     ;; INT 3
     [('int 3) (values '(#xcc) #f)]
-    ;; MOV r/m64, imm32 Valid
-    ;;   REX.W + C7 /0
+    ;; MOV r/m64, imm32 Valid : Move imm32 sign extended to 64-bits to r/m64.
+    ;;   REX.W + C7 /0 
     [('movq (? register64? dest) (? imm32? imm32))
      (values `(,rex.w ,(opcode #xc7) ,(mod-r-m mod.register dest (number->register64 0)) ,@(imm32->u8-list imm32)) #f)]
+;;     ;; MOV r/m64, imm64 Valid
+;;     ;;   REX.W + B8+ rd
+;;     [('movq (? register64? dest) (? imm64? imm64))
+;;      (values `(,rex.w ,(opcode #xb8) ,(mod-r-m mod.register dest (number->register64 0)) ,@(imm64->u8-list imm64)) #f)]
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq (? register64? dest) (? register64? src))
@@ -222,8 +257,11 @@
      (assemble1 `(movq (& ,dest-reg 0) ,src-reg))]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
-    [('movq ('& (? register64? dest-reg) displacement) (? imm32? imm32))
+    [('movq ('& (? register64? dest-reg) (? imm8? displacement)) (? imm32? imm32))
        (receive (modrm sib) (effective-addr+disp8 dest-reg (number->register64 0))
+         (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
+    [('movq ('& (? register64? dest-reg) (? imm32? displacement)) (? imm32? imm32))
+       (receive (modrm sib) (effective-addr+disp32 dest-reg (number->register64 0))
          (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
     ;; ADD r/m64, imm8 : REX.W + 83 /0 ib Valid N.E.
     [('addq (? register64? dest-reg) (? imm8? imm8))
@@ -240,10 +278,17 @@
     [('movslq (? register64? dest-reg) (? register32? src-reg))
      (values `(,rex.w ,(opcode #x63) ,(mod-r-m mod.register dest-reg (register32->64 src-reg))) #f)
      ]
+    [('leaq dest-reg ('& (? register64? src-reg)))
+     (assemble1 `(leaq ,dest-reg (& ,src-reg 0)))]
     [('leaq dest-reg ('& src-reg displacement))
      (if (< displacement #xff);; disp8
-         (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
-           (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement) #f))
+        (cond
+         [(zero? displacement)
+          (receive (modrm sib) (effective-addr src-reg dest-reg)
+            (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib) #f))]
+         [else
+          (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
+            (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement) #f))])
          (error 'assemble "not implemented"))]
     [x
      (error 'assemble "assemble error: invalid syntax" x)]))

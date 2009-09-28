@@ -120,7 +120,10 @@ int main(int argc, char *argv[])
 {
     // call this before any allocation.
     mosh_init();
-
+            asm volatile(" \t # -- CONSTANT start");
+    const Object t = Object::makeFixnum(3);
+    t.isNumber();
+            asm volatile(" \t # -- CONSTANT end");
 //     const Object t = Object::makeFixnum(1234);
 //     fixedint (Object::*func1)() const = &Object::toFixnum;
 
