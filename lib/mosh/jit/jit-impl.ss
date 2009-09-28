@@ -262,7 +262,7 @@
          (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
     [('movq ('& (? register64? dest-reg) (? imm32? displacement)) (? imm32? imm32))
        (receive (modrm sib) (effective-addr+disp32 dest-reg (number->register64 0))
-         (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
+         (values `(,rex.w ,(opcode #xc7) ,modrm ,@sib ,@(imm32->u8-list displacement) ,@(imm32->u8-list imm32)) #f))]
     ;; ADD r/m64, imm8 : REX.W + 83 /0 ib Valid N.E.
     [('addq (? register64? dest-reg) (? imm8? imm8))
      (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 0)) ,imm8) #f)]

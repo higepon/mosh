@@ -55,6 +55,7 @@
 
     ;; leaq
     (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))
+    (test-equal '(#x48 #x8d #x7c #x24 #x70) (assemble1 '(leaq rdi (& rsp 112))))
 
     ;; call
     (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
@@ -103,14 +104,15 @@
     (display (number->string (get-c-address 'Object::isNumber) 16))
     (newline)
 
+    (display "***********************\n")
+
     ;; call
-#;    (let* ([asm (assemble `(                            ,(DEBUGGER)
-                            (movq (& rsp 150) ,(vm-make-fixnum 3))
-                            (leaq rdi (& rsp 150))  ;; 1st argument is this pointer
-                            (movq rax ,(get-c-address 'Object::isNumber))
-                            (callq rax)
-                            (movq ,(vm-register 'ac) rax)
-                            (retq)))]
+   (let* ([asm (assemble `((movq (& rsp 64) ,(vm-make-fixnum 3))
+                           (leaq rdi (& rsp 64))  ;; 1st argument : this pointer
+                           (movq rax ,(get-c-address 'Object::isNumber))
+                           (callq rax)
+                           (movq ,(vm-register 'ac) rax)
+                           (retq)))]
            [proc (u8-list->c-procedure asm)])
       (test-true (procedure? proc))
       (test-eq #f (proc)))
