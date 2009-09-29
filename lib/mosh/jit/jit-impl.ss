@@ -195,6 +195,13 @@
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    ;; LEAVE
+    ;;   C9
+    [('leave) (values '(#xc9) #f)]
+    ;; PUSH r64
+    ;;   50+rd
+    [('push (? register64? reg))
+     (values `(,(+ (opcode #x50) (register64->number reg))) #f)]
     [('je (? symbol? label))
      (values `(,(opcode #x74) #x00) label)]
     ;; CMP r64, r/m64

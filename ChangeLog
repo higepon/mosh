@@ -1,3 +1,9 @@
+2009-09-29  higepon  <higepon@users.sourceforge.jp>
+
+	* calling Object::isNumber works.
+
+	* lib/mosh/jit/jit-impl.ss (assemble1): Added leave and push instruction.
+
 2009-09-28  higepon  <higepon@users.sourceforge.jp>
 
 	* CompilerProcedures.cpp (getClassMemberPointer): Added to get an address of Class member function.

@@ -125,10 +125,10 @@ int main(int argc, char *argv[])
 //     t.isNumber();
 //     uintptr_t a = 0x12345678;
 //     ((void (*)())a)();
-             asm volatile(" \t # -- CONSTANT end");
-    const Object t = Object::makeFixnum(3);
-    t.isNumber();
-             asm volatile(" \t # -- CONSTANT start");
+//              asm volatile(" \t # -- CONSTANT end");
+//     const Object t = Object::makeFixnum(3);
+//     t.isNumber();
+//              asm volatile(" \t # -- CONSTANT start");
 //     // normal
 //     printf("func1=%d\n", (t.*func1)());
     

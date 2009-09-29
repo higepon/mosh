@@ -53,6 +53,12 @@
     ;; cmp
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
 
+    ;; push
+    (test-equal '(#x55) (assemble1 '(push rbp)))
+    (test-equal '(#x48 #x89 #xe5) (assemble1 '(movq rbp rsp)))
+    (test-equal '(#x48 #x83 #xec #x10) (assemble1 '(subq rsp #x10)))
+    (test-equal '(#xc9) (assemble1 '(leave)))
+
     ;; leaq
     (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))
     (test-equal '(#x48 #x8d #x7c #x24 #x70) (assemble1 '(leaq rdi (& rsp 112))))
@@ -105,17 +111,48 @@
     (newline)
 
     (display "***********************\n")
-
-    ;; call
-   (let* ([asm (assemble `((movq (& rsp 64) ,(vm-make-fixnum 3))
-                           (leaq rdi (& rsp 64))  ;; 1st argument : this pointer
-                           (movq rax ,(get-c-address 'Object::isNumber))
-                           (callq rax)
-                           (movq ,(vm-register 'ac) rax)
-                           (retq)))]
+    
+    ;; leave
+    (let* ([asm (assemble `((push rbp)
+                            (movq rbp rsp)
+                            (subq rsp 16)
+                            (movq (& rbp 16) ,(vm-make-fixnum 5))
+                            (movq rax (& rbp 16))
+                            (movq ,(vm-register 'ac) rax)
+                            (leave)
+                            (retq)))]
            [proc (u8-list->c-procedure asm)])
       (test-true (procedure? proc))
-      (test-eq #f (proc)))
+      (test-eq 5 (proc)))
+
+    ;; N.B.
+    ;;   vm-register refers rdi.
+
+    ;; call
+    (let* ([asm (assemble `((push rbp)
+                            (movq rbp rsp)
+                            (subq rsp 8)
+                            (movq rax ,(get-c-address 'Object::isNumber))
+                            (movq rbx rdi)                        ;; save rdi
+                            (leaq rdi (& rbp 16))                 ;; 1st argument : this pointer
+                            (movq (& rbp 16) ,(vm-make-fixnum 3))
+                            (callq rax)                           ;; 3.isNumber?
+                            (movq rdi rbx)                        ;; restore rdi
+                            (movq rbx 1)
+                            (cmpq rax rbx)
+                            (je a)
+                            (movq ,(vm-register 'ac) ,(vm-make-fixnum 0)) ;; refer rdi
+                            (movq rax ,(vm-make-fixnum 0))
+                            (leave)
+                            (retq)
+                            (label a)
+                            (movq ,(vm-register 'ac) ,(vm-make-fixnum 1)) ;; refer rdi
+                            (movq rax ,(vm-make-fixnum 1))
+                            (leave)
+                            (retq)))]
+           [proc (u8-list->c-procedure asm)])
+      (test-true (procedure? proc))
+      (test-eq 1 (proc)))
 
     ;; CONSTANT instruction
     ;;   CONSTANT 3
