@@ -1,155 +1,147 @@
-;;; PUZZLE -- Forest Baskett's Puzzle benchmark, originally written in Pascal.
-;; (import (rnrs)
-;;         (mosh)
-;;         (system))
+;;;!ypsilon
 
-(define (my-iota n)
-  (do ((n n (- n 1))
-       (list '() (cons (- n 1) list)))
-      ((zero? n) list)))
+(import (rnrs)
+  (for (proof) run expand))
 
-(define size 511)
-(define classmax 3)
-(define typemax 12)
+(define-syntax with-record-fields
+  (syntax-rules ()
+    ((_ () ?form0 ?form ...)
+     (begin ?form0 ?form ...))
 
-(define *iii* 0)
-(define *kount* 0)
-(define *d* 8)
+    ((_ (((?field-name ...) ?record-name ?expr))
+	?form0 ?form ...)
+     (let-syntax
+	 ((dummy (lambda (stx)
 
-(define *piececount* (make-vector (+ classmax 1) 0))
-(define *class* (make-vector (+ typemax 1) 0))
-(define *piecemax* (make-vector (+ typemax 1) 0))
-(define *puzzle* (make-vector (+ size 1)))
-(define *p* (make-vector (+ typemax 1)))
+		   (define (vector-index item vec)
+		     (let ((len (vector-length vec)))
+		       (let loop ((i 0))
+			 (and (< i len)
+			      (if (eq? item (vector-ref vec i))
+				  i
+				(loop (+ i 1)))))))
 
-(define (fit i j)
-  (let ((end (vector-ref *piecemax* i)))
-    (do ((k 0 (+ k 1)))
-        ((or (> k end)
-             (and (vector-ref (vector-ref *p* i) k)
-                  (vector-ref *puzzle* (+ j k))))
-         (if (> k end) #t #f)))))
+		   (define (%record-field-accessor rtd-name rtd field-name)
+		     (if rtd
+			 (let ((idx (vector-index field-name (record-type-field-names rtd))))
+			   (if idx
+			       (record-accessor rtd idx)
+			     (%record-field-accessor rtd-name (record-type-parent rtd) field-name)))
+		       (assertion-violation #f
+			 (string-append "unknown field name in record type hierarchy of \""
+					(symbol->string rtd-name) "\"")
+			 field-name)))
 
-(define (place i j)
-  (let ((end (vector-ref *piecemax* i)))
-    (do ((k 0 (+ k 1)))
-        ((> k end))
-        (cond ((vector-ref (vector-ref *p* i) k)
-               (vector-set! *puzzle* (+ j k) #t)
-               #t)))
-    (vector-set! *piececount*
-                 (vector-ref *class* i)
-                 (- (vector-ref *piececount* (vector-ref *class* i)) 1))
-    (do ((k j (+ k 1)))
-        ((or (> k size) (not (vector-ref *puzzle* k)))
-         (if (> k size) 0 k)))))
+		   (define (%record-field-mutator rtd-name rtd field-name)
+		     (if rtd
+			 (let ((idx (vector-index field-name (record-type-field-names rtd))))
+			   (cond ((not idx)
+				  (%record-field-mutator rtd-name (record-type-parent rtd) field-name))
+				 ((record-field-mutable? rtd idx)
+				  (record-mutator rtd idx))
+				 (else
+				  (lambda args
+				    (assertion-violation #f
+				      (string-append "attempt to mutate immutable field for record \""
+						     (symbol->string (record-type-name rtd)) "\"")
+				      field-name)))))
+		       (assertion-violation #f
+			 (string-append "unknown field name in record type hierarchy of \""
+					(symbol->string rtd-name) "\"")
+			 field-name)))
 
-(define (puzzle-remove i j)
-  (let ((end (vector-ref *piecemax* i)))
-    (do ((k 0 (+ k 1)))
-        ((> k end))
-        (cond ((vector-ref (vector-ref *p* i) k)
-               (vector-set! *puzzle* (+ j k) #f)
-               #f)))
-    (vector-set! *piececount*
-                 (vector-ref *class* i)
-                 (+ (vector-ref *piececount* (vector-ref *class* i)) 1))))
+		   (syntax-case stx ()
+		     ((_ ?kontext)
+		      (with-syntax
+			  (((EXPR)	(datum->syntax #'?kontext '(?expr)))
+			   ((FIELD (... ...))
+			    (datum->syntax #'?kontext '(?field-name ...)))
+			   ((ACCESSOR (... ...))
+			    (datum->syntax #'?kontext
+					   (list
+					    (%record-field-accessor (quote ?record-name)
+								    (record-type-descriptor ?record-name)
+								    (quote ?field-name))
+					    ...)))
+			   ((MUTATOR (... ...))
+			    (datum->syntax #'?kontext
+					   (list
+					    (%record-field-mutator  (quote ?record-name)
+								    (record-type-descriptor ?record-name)
+								    (quote ?field-name))
+					    ...)))
+			   ((FORMS (... ...))
+			    (datum->syntax #'?kontext '(?form0 ?form ...))))
+			(syntax (let ((the-record EXPR))
+				  (let-syntax
+				      ((FIELD (identifier-syntax
+					       (_		('ACCESSOR the-record))
+					       ((set! _ e)	('MUTATOR the-record e))))
+				       (... ...))
+				    FORMS (... ...))))))))))
+       (dummy ?record-name)))
 
-(define (trial j)
-  (let ((k 0))
-    (call-with-current-continuation
-     (lambda (return)
-       (do ((i 0 (+ i 1)))
-           ((> i typemax) (set! *kount* (+ *kount* 1)) #f)
-           (cond
-            ((not
-              (zero?
-               (vector-ref *piececount* (vector-ref *class* i))))
-             (cond
-              ((fit i j)
-               (set! k (place i j))
-               (cond
-                ((or (trial k) (zero? k))
-                 (set! *kount* (+ *kount* 1))
-                 (return #t))
-                (else (puzzle-remove i j))))))))))))
+    ((_ (((?field-name0 ...) ?record-name0 ?expr0) ?bindings ...) ?form0 ?form ...)
+     (with-record-fields (((?field-name0 ...) ?record-name0 ?expr0))
+       (with-record-fields (?bindings ...) ?form0 ?form ...)))
 
-(define (definePiece iclass ii jj kk)
-  (let ((index 0))
-    (do ((i 0 (+ i 1)))
-        ((> i ii))
-        (do ((j 0 (+ j 1)))
-            ((> j jj))
-            (do ((k 0 (+ k 1)))
-                ((> k kk))
-                (set! index (+ i (* *d* (+ j (* *d* k)))))
-                (vector-set! (vector-ref *p* *iii*) index  #t))))
-    (vector-set! *class* *iii* iclass)
-    (vector-set! *piecemax* *iii* index)
-    (cond ((not (= *iii* typemax))
-           (set! *iii* (+ *iii* 1))))))
+    ((_ ((?field-name0 ?record-name0 ?expr0) ?bindings ...) ?form0 ?form ...)
+     (with-record-fields (((?field-name0) ?record-name0 ?expr0))
+       (with-record-fields (?bindings ...) ?form0 ?form ...)))))
 
-(define (start)
-  (set! *kount* 0)
-  (do ((m 0 (+ m 1)))
-      ((> m size))
-      (vector-set! *puzzle* m #t))
-  (do ((i 1 (+ i 1)))
-      ((> i 5))
-      (do ((j 1 (+ j 1)))
-          ((> j 5))
-          (do ((k 1 (+ k 1)))
-              ((> k 5))
-              (vector-set! *puzzle* (+ i (* *d* (+ j (* *d* k)))) #f))))
-  (do ((i 0 (+ i 1)))
-      ((> i typemax))
-      (do ((m 0 (+ m 1)))
-          ((> m size))
-          (vector-set! (vector-ref *p* i) m #f)))
-  (set! *iii* 0)
-  (definePiece 0 3 1 0)
-  (definePiece 0 1 0 3)
-  (definePiece 0 0 3 1)
-  (definePiece 0 1 3 0)
-  (definePiece 0 3 0 1)
-  (definePiece 0 0 1 3)
-  
-  (definePiece 1 2 0 0)
-  (definePiece 1 0 2 0)
-  (definePiece 1 0 0 2)
-  
-  (definePiece 2 1 1 0)
-  (definePiece 2 1 0 1)
-  (definePiece 2 0 1 1)
-  
-  (definePiece 3 1 1 1)
-  
-  (vector-set! *piececount* 0 13)
-  (vector-set! *piececount* 1 3)
-  (vector-set! *piececount* 2 1)
-  (vector-set! *piececount* 3 1)
-  (let ((m (+ (* *d* (+ *d* 1)) 1))
-        (n 0))
-    (cond ((fit 0 m) (set! n (place 0 m)))
-          (else (begin (newline) (display "Error."))))
-    (if (trial n)
-      *kount*
-      #f)))
+(let ((o (make-<gamma> 1 2 3
+			 4 5 6
+			 7 8 9)))
 
-(for-each (lambda (i) (vector-set! *p* i (make-vector (+ size 1))))
-          (my-iota (+ typemax 1)))
+  (with-record-fields ((a <gamma> o))
+    a)
 
-(disasm fit)
-;(start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
-;; (start)
+  (with-record-fields (((a) <gamma> o))
+    a)
+
+  (with-record-fields ((a <gamma> o)
+		       (b <gamma> o)
+		       (c <gamma> o)
+		       (d <gamma> o)
+		       (e <gamma> o)
+		       (f <gamma> o)
+		       (g <gamma> o)
+		       (h <gamma> o)
+		       (i <gamma> o))
+    (list a b c d e f g h i))
+
+    ;; (check
+    ;; 	(with-record-fields (((a b c d e f g h i) <gamma> o))
+    ;; 	  (list a b c d e f g h i))
+    ;; 	=> '(1 2 3 4 5 6 7 8 9))
+
+    ;; (check
+    ;; 	(with-record-fields (((a b c) <gamma> o)
+    ;; 			     (d <gamma> o)
+    ;; 			     (e <gamma> o)
+    ;; 			     ((f g) <gamma> o)
+    ;; 			     (h <gamma> o)
+    ;; 			     (i <gamma> o))
+    ;; 	  (list a b c d e f g h i))
+    ;; 	=> '(1 2 3 4 5 6 7 8 9))
+
+    ;; (check
+    ;; 	(with-record-fields (((a b c) <gamma> o)
+    ;; 			     ((d e) <gamma> o)
+    ;; 			     ((f g) <gamma> o)
+    ;; 			     ((h i) <gamma> o))
+    ;; 	  (set! a 10)
+    ;; 	  (set! c 30)
+    ;; 	  (set! d 40)
+    ;; 	  (set! f 60)
+    ;; 	  (set! g 70)
+    ;; 	  (set! i 90)
+    ;; 	  (list a b c d e f g h i))
+    ;;   => '(10 2 30 40 5 60 70 8 90))
+
+    )
+
+;;; end of file
+;; Local Variables:
+;; coding: utf-8-unix
+;; End:

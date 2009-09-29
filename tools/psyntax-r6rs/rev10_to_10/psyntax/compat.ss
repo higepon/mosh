@@ -106,8 +106,7 @@
 ;  (define (annotation-source x) x)
   (define (annotation-expression x)
     (if (pair? x)
-        (cons (car x) (cdr x))
-        (display "line:46\n")))
+        (cons (car x) (cdr x)) '()))
 
 ;; (define (scm->fasl filename)
 ;;   (string-append filename ".mosh-fasl"))

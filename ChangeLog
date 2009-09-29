@@ -1,3 +1,8 @@
+2009-09-29  higepon  <higepon@users.sourceforge.jp>
+
+	* tools/psyntax-r6rs/rev10_to_10/psyntax/compat.ss: Removed unused debug message.
+	                                                    Issue 100 pointed out by mrc.mgg.
+
 2009-09-04  higepon  <higepon@users.sourceforge.jp>
 
 	* Transcoder.cpp (Transcoder::Transcoder): Fixed the default EolStyle of Transcoder ponted out by mtakuya.
