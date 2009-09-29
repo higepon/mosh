@@ -49,6 +49,7 @@
     (test-equal '(#x48 #x8b #x4b #x28)    (assemble1 '(movq rcx (& rbx #x28))))
     (test-equal '(#x48 #xc7 #xc0 #xb0 #x11 #x42 #x00) (assemble1 '(movq rax #x4211b0)))
     (test-equal '(#x48 #xc7 #x84 #x24 #x96 #x00 #x00 #x00 #x0d #x00 #x00 #x00) (assemble1 '(movq (& rsp #x96) 13)))
+    (test-equal '(#x49 #x89 #xfa) (assemble1 '(movq r10 rdi)))
 
     ;; cmp
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))

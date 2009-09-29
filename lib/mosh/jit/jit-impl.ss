@@ -190,6 +190,13 @@
         (bitwise-and (bitwise-arithmetic-shift-right n 48) #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 56) #xff)))
 
+(define (rex-prefix w? r? x? b?)
+  (+ #b01000000
+     (if w? #b1000 0)
+     (if r? #b100  0)
+     (if x? #b10   0)
+     (if b? #b1    0)))
+
 ;; (oprand dest src)
 ;; returns (values byte* label-to-fixup)
 (define (assemble1 code)
@@ -225,7 +232,7 @@
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq (? register64? dest) (? register64? src))
-     (values `(,rex.w ,(opcode #x89) ,(mod-r-m mod.register dest src)) #f)]
+     (values `(,(rex-prefix #t #f #f (> (register64->number dest) 8)) ,(opcode #x89) ,(mod-r-m mod.register dest src)) #f)]
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
     [('movq dest-reg ('& src-reg displacement))
