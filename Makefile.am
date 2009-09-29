@@ -4,11 +4,11 @@ AM_CXXFLAGS = $(CFLAGS)
 
 # Boehm GC
 #BOEHM_GC_DIR = ./gc-7.1alpha3
-BOEHM_GC_DIR = ./gc-7.1
+BOEHM_GC_DIR = gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
 # Regexp library oniguruma
-ONIG_DIR   = ./onig-5.7.0
+ONIG_DIR   = onig-5.7.0
 REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
@@ -224,7 +224,6 @@ lib/srfi/private/include.sls \
 lib/srfi/private/include/compat.mosh.sls \
 lib/srfi/private/registry.sls \
 lib/srfi/private/let-opt.sls \
-lib/srfi/private/let-opt.sls \
 lib/srfi/private/platform-features.mosh.sls \
 lib/srfi/private/OS-id-features.sls \
 lib/srfi/%3a0.sls \
@@ -314,7 +313,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 PRECOMPILE_SRC   = compiler-with-library.scmc pmatch.scmc psyntax.scmc
 
-INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts pmatch.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm mosh.1 mosh_config.1 tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo r6rs-test-suite README-WINDOWS.txt README.MINGW misc
 
 GENERATED = \
@@ -584,9 +583,9 @@ test_thread_SOURCES = OSCompatThreadTest.cpp TestingSignalHandler.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
-	./mosh --clean-acc --disable-acc misc/empty.scm
-	$(INSTALL) -m 666 misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
-	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
+	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
+	$(INSTALL) -m 666 $(top_srcdir)/misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
+	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 
