@@ -9,6 +9,24 @@
 ;;     Object* sp_; // stack pointer   register
 ;;     Object* pc_; // program counter register
 
+;;
+;; x86-64 ABI : http://homepage1.nifty.com/herumi/prog/x64.html
+;;
+;; ========================================================
+;;                                             JIT
+;;     rdi            argument1       -        theVM
+;;     rsi            argument2       -        argc
+;;     rdx            argument3       -        argv
+;;     rcx            argument4       -          -
+;;     r8             argument5       -          -
+;;     r9             argument6       -          -
+;;     r10, r11           -           -          -
+;;     r12〜r15           -      callee saved    -
+;;     rbx, rbp, rsp      -      callee saved    -
+;; ========================================================
+
+;; register64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
+
 (define vm-register* '(ac dc cl fp sp pc))
 
 ;; VM register offset depends on your architecture.
@@ -21,16 +39,21 @@
 (define register64* '(rax rcx rdx rbx rsp rbp rsi rdi r8  r9  r10 r11 r12 r13 r14 r15))
 (define register32* '(eax ecx edx ebx esp ebp esi edi))
 
+(define register8* '(al  cl  dl bl  ah  ch  dh  bh))
 (define (register64? obj) (memq obj register64*))
 (define (register32? obj) (memq obj register32*))
+(define (register8? obj) (memq obj register8*))
 
-(define (register64->number reg)
-  (receive (_ index) (find-with-index (cut eq? <> reg) register64*)
-    index))
-(define (register32->number reg)
-  (receive (_ index) (find-with-index (cut eq? <> reg) register32*)
+(define (find-index-eq x x*)
+  (receive (_ index) (find-with-index (cut eq? <> x) x*)
     index))
 
+(define (register64->number reg) (find-index-eq reg register64*))
+(define (register32->number reg) (find-index-eq reg register32*))
+(define (register8->number reg) (find-index-eq reg register8*))
+
+(define (number->register8 n)
+  (list-ref register8* n))
 (define (number->register32 n)
   (list-ref register32* n))
 (define (number->register64 n)
@@ -69,8 +92,17 @@
   (let ([reg-n (register64->number reg)]
         [r/m-n (register64->number r/m)])
     (+ (bitwise-arithmetic-shift-left mod 6)
-       (bitwise-arithmetic-shift-left reg-n 3)
-       r/m-n)))
+       (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
+       (bitwise-and r/m-n #b111))))
+
+(define (mod-r-m8 mod r/m reg)
+  (assert (for-all register8? (list r/m reg)))
+  (let ([reg-n (register8->number reg)]
+        [r/m-n (register8->number r/m)])
+    (+ (bitwise-arithmetic-shift-left mod 6)
+       (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
+       (bitwise-and r/m-n #b111))))
+
 
 (define-syntax opcode
   (lambda (x)
@@ -197,11 +229,20 @@
      (if x? #b10   0)
      (if b? #b1    0)))
 
+
+(define (reg-need-ext-bit? reg)
+  (> (register64->number reg) 8))
+
+
 ;; (oprand dest src)
 ;; returns (values byte* label-to-fixup)
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    ;; TEST r/m8, imm8
+    ;;   F6 /0 ib
+    [('testb (? register8? dest) (? imm8? imm8))
+     (values `(,(opcode #xf6) ,(mod-r-m8 mod.register dest (number->register8 0)) ,imm8) #f)]
     ;; LEAVE
     ;;   C9
     [('leave) (values '(#xc9) #f)]
@@ -222,7 +263,7 @@
     ;; INT 3
     [('int 3) (values '(#xcc) #f)]
     ;; MOV r/m64, imm32 Valid : Move imm32 sign extended to 64-bits to r/m64.
-    ;;   REX.W + C7 /0 
+    ;;   REX.W + C7 /0
     [('movq (? register64? dest) (? imm32? imm32))
      (values `(,rex.w ,(opcode #xc7) ,(mod-r-m mod.register dest (number->register64 0)) ,@(imm32->u8-list imm32)) #f)]
 ;;     ;; MOV r/m64, imm64 Valid
@@ -232,7 +273,7 @@
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq (? register64? dest) (? register64? src))
-     (values `(,(rex-prefix #t #f #f (> (register64->number dest) 8)) ,(opcode #x89) ,(mod-r-m mod.register dest src)) #f)]
+     (values `(,(rex-prefix #t (reg-need-ext-bit? src) #f (reg-need-ext-bit? dest)) ,(opcode #x89) ,(mod-r-m mod.register dest src)) #f)]
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
     [('movq dest-reg ('& src-reg displacement))

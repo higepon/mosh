@@ -1,3 +1,7 @@
+2009-09-30  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/jit-impl.ss : Added r8-r15 support for movq.
+
 2009-09-29  higepon  <higepon@users.sourceforge.jp>
 
 	* calling Object::isNumber works.
