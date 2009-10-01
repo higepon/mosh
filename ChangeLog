@@ -1,3 +1,7 @@
+2009-10-02  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/test.ss (mosh): Added test for BRANCH_NOT_LT.
+
 2009-09-30  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/jit-impl.ss : Added r8-r15 support for movq.

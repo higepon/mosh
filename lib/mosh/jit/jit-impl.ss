@@ -103,6 +103,15 @@
        (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
        (bitwise-and r/m-n #b111))))
 
+(define (mod-r-m32 mod r/m reg)
+  (assert (for-all register32? (list r/m reg)))
+  (let ([reg-n (register32->number reg)]
+        [r/m-n (register32->number r/m)])
+    (+ (bitwise-arithmetic-shift-left mod 6)
+       (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
+       (bitwise-and r/m-n #b111))))
+
+
 
 (define-syntax opcode
   (lambda (x)
@@ -252,6 +261,10 @@
      (values `(,(+ (opcode #x50) (register64->number reg))) #f)]
     [('je (? symbol? label))
      (values `(,(opcode #x74) #x00) label)]
+    [('jmp (? symbol? label))
+     (values `(,(opcode #xeb) #x00) label)]
+    [('jne (? symbol? label))
+     (values `(,(opcode #x75) #x00) label)]
     ;; CMP r64, r/m64
     ;;   REX.W + 3B /r
     [('cmpq (? register64? dest) (? register64? src))
@@ -310,6 +323,18 @@
          (values `(,rex.w ,(opcode #x89) ,modrm ,displacement) #f))])]
     [('movq ('& (? register64? dest-reg)) (? register64? src-reg))
      (assemble1 `(movq (& ,dest-reg 0) ,src-reg))]
+    ;; MOV r/m32,r32
+    ;;   89 /r
+    [('movl (? register32? dest-reg) (? register32? src-reg))
+     `(,(opcode #x89) ,(mod-r-m32 mod.register dest-reg src-reg))]
+    ;; AND r/m32, imm8
+    ;;   83 /4 ib
+    [('andl (? register32? dest-reg) (? imm8? imm8))
+     `(,(opcode #x83) ,(mod-r-m32 mod.register dest-reg (number->register32 4)) ,imm8)]
+    ;; SUB AL, imm8
+    ;;   2C ib
+    [('subb 'al (? imm8? imm8))
+     `(,(opcode #x2c) ,imm8)]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? register64? dest-reg) (? imm8? displacement)) (? imm32? imm32))
@@ -373,6 +398,9 @@
     (movq rcx ,constant)
     (movq ,(vm-register 'ac) rcx)))
 
+(define (BRANCH_NOT_LT label)
+  `())
+
 (define (CONSTANT val)
   `((movq ,(vm-register 'ac) ,val)
     (movq rax ,(vm-register 'ac))))
@@ -403,6 +431,13 @@
     (movq rax (& rcx))
     (movq ,(vm-register 'ac) rax)
     (movq ,(vm-register 'sp) rcx)))
+
+;; Just remove
+(define (POP2)
+  `((movq rcx ,(vm-register 'sp))
+    (subq rcx 8)
+    (movq ,(vm-register 'sp) rcx)))
+
 
 (define (FOREVER)
   '(#xeb #xfe))

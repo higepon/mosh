@@ -51,6 +51,7 @@
     (test-equal '(#x48 #xc7 #x84 #x24 #x96 #x00 #x00 #x00 #x0d #x00 #x00 #x00) (assemble1 '(movq (& rsp #x96) 13)))
     (test-equal '(#x49 #x89 #xfa) (assemble1 '(movq r10 rdi)))
     (test-equal '(#x4c #x89 #xd7) (assemble1 '(movq rdi r10)))
+    (test-equal '(#x89 #xd0) (assemble1 '(movl eax edx)))
 
     ;; cmp
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
@@ -58,6 +59,11 @@
     ;; test
     (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
 
+    ;; andl
+    (test-equal '(#x83 #xe0 #x03) (assemble1 '(andl eax 3)))
+
+    ;; subb
+    (test-equal '(#x2c #x01) (assemble1 '(subb al 1)))
 
     ;; push
     (test-equal '(#x55) (assemble1 '(push rbp)))
@@ -73,10 +79,11 @@
     (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
     (test-equal '(#xff #xd2) (assemble1 '(callq rdx)))
 
-    ;; label
+    ;; jmp/label
     (test-equal '(#x74 #x00) (assemble '((je a) (label a))))
     (test-equal '(#x74 #xfe) (assemble '((label a) (je a))))
-
+    (test-equal '(#xeb #x00) (assemble '((jmp a) (label a))))
+    (test-equal '(#x75 #xfe) (assemble '((label a) (jne a))))
 
     (test-equal '(#x48 #x89 #x4b #x30) (assemble1 '(movq (& rbx #x30) rcx)))
     (test-equal '(#x48 #x89 #x53 #x08) (assemble1 '(movq (& rbx #x08) rdx)))
@@ -143,7 +150,7 @@
                             (leaq rdi (& rbp 16))                 ;; 1st argument : this pointer
                             (movq (& rbp 16) ,(vm-make-fixnum 3))
                             (callq rax)                           ;; 3.isNumber?
-                            (movq rdi rbx)                        ;; restore rdi
+                            (movq rdi r10)                        ;; restore rdi
                             (movq rbx 1)
                             (cmpq rax rbx)
                             (je a)
@@ -203,6 +210,18 @@
            [proc (u8-list->c-procedure+retq (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1235 (proc 1234 1235)))
+
+    ;; BRANCH_NOT_LT
+    (let* ([label (gensym)]
+           [code1 (assemble (append (REFER_LOCAL_PUSH_CONSTANT 0 (vm-make-fixnum 1))
+                                    (BRANCH_NOT_LT label)
+                                    (CONSTANT (vm-make-fixnum 3))
+                                    `((label ,label))
+                                    (POP2)))]
+           [proc (u8-list->c-procedure+retq code1)])
+      (test-true (procedure? proc))
+      (test-eq 2 (proc 2)))
+
 
     ;; gas -> sassy
     (test-equal '(movq rbx rsp) (gas->sassy "mov   %rsp,%rbx"))
