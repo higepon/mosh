@@ -1,3 +1,7 @@
+2009-10-02  higepon  <higepon@users.sourceforge.jp>
+
+	* tools/psyntax-r6rs/rev10_to_10/psyntax/compat.ss: Fixed Issue 102 pointed out by mrc.mgg.
+
 2009-09-29  higepon  <higepon@users.sourceforge.jp>
 
 	* Makefile.am : Added support for out-of-tree builds, patch by a.rottmann@gmx.at. Issue 99.
