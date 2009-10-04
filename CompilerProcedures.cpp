@@ -119,7 +119,22 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("get-c-address");
     checkArgumentLength(1);
     argumentAsSymbol(0, name);
-    return Bignum::makeIntegerFromUintprt_t(getClassMemberPointer(&Object::isNumber));
+    static const ucs4char* names[] = {UC("Object::isNumber"),
+                                      UC("Object::True"),
+                                      UC("Object::False")
+    };
+    static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
+                                   (uintptr_t)(&Object::True),
+                                   (uintptr_t)(&Object::False)
+    };
+    MOSH_ASSERT(sizeof(names) == sizeof(pointers));
+    for (size_t i = 0; i < sizeof(pointers) / sizeof(uintptr_t); i++) {
+        if (ucs4string(names[i]) == ucs4string(name->c_str())) {
+            return Bignum::makeIntegerFromUintprt_t(pointers[i]);
+        }
+    }
+    callAssertionViolationAfter(theVM, procedureName, "unknown c function", L1(argv[0]));
+    return Object::Undef;
 }
 
 Object scheme::labelEx(VM* theVM, int argc, const Object* argv)

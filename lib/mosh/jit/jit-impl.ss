@@ -178,7 +178,8 @@
                        (cond
                         [(assoc label-to-fixup label*) =>
                          (lambda (x)
-                           (assert (imm8? (cdr x)))
+                            (format #t "cdr=~a\n" (cdr x))
+                            (assert (imm8? (cdr x)))
                            (append (drop-right byte* 1) (list (imm8->u8 (- (cdr x) addr)))))]
                         [else
                          (error 'assemble (format "BUG: label:~a not found on ~a" label-to-fixup label*))])])
@@ -248,6 +249,14 @@
 (define (assemble1 code)
   (define rex.w #x48)
   (match code
+    ;; CMOVC r64, r/m64
+    ;;   REX.W + 0F 4C /r
+    [('cmovl (? register64? dest) (? register64? src))
+     (values `(,rex.w ,(opcode #x0f) #x4c ,(mod-r-m mod.register src dest)) #f)]
+    ;; CDQE Valid N.E. RAX ← sign-extend of EAX.
+    ;;   REX.W + 98
+    [('cltq)
+     (values `(,rex.w ,(opcode #x98)) #f)]
     ;; TEST r/m8, imm8
     ;;   F6 /0 ib
     [('testb (? register8? dest) (? imm8? imm8))
@@ -266,9 +275,14 @@
     [('jne (? symbol? label))
      (values `(,(opcode #x75) #x00) label)]
     ;; CMP r64, r/m64
-    ;;   REX.W + 3B /r
+    ;;   REX.W + 39 /r
     [('cmpq (? register64? dest) (? register64? src))
      (values `(,rex.w ,(opcode #x39) ,(mod-r-m mod.register dest src)) #f)]
+    ;; CMP r/m64, imm8
+    ;;   REX.W + 83 /7 ib
+    [('cmpq ('& (? register64? dest) (? imm8? displacement)) (? imm8? imm8))
+     (receive (modrm sib) (effective-addr+disp8 dest (number->register64 7))
+       (values `(,rex.w ,(opcode #x83) ,modrm ,@sib ,displacement ,imm8) #f))]
     ;; CALL r/m64
     ;;   FF /2
     [('callq (? register64? dest))
@@ -326,15 +340,19 @@
     ;; MOV r/m32,r32
     ;;   89 /r
     [('movl (? register32? dest-reg) (? register32? src-reg))
-     `(,(opcode #x89) ,(mod-r-m32 mod.register dest-reg src-reg))]
+     (values `(,(opcode #x89) ,(mod-r-m32 mod.register dest-reg src-reg)) #f)]
+    ;; MOV r32, imm32
+    ;;   B8+ rd
+    [('movl (? register32? dest-reg) (? imm32? imm32))
+     (values `(,(+ (opcode #xb8) (register32->number dest-reg)) ,@(imm32->u8-list imm32)) #f)]
     ;; AND r/m32, imm8
     ;;   83 /4 ib
     [('andl (? register32? dest-reg) (? imm8? imm8))
-     `(,(opcode #x83) ,(mod-r-m32 mod.register dest-reg (number->register32 4)) ,imm8)]
+     (values `(,(opcode #x83) ,(mod-r-m32 mod.register dest-reg (number->register32 4)) ,imm8) #f)]
     ;; SUB AL, imm8
     ;;   2C ib
     [('subb 'al (? imm8? imm8))
-     `(,(opcode #x2c) ,imm8)]
+     (values `(,(opcode #x2c) ,imm8) #f)]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? register64? dest-reg) (? imm8? displacement)) (? imm32? imm32))
@@ -398,8 +416,165 @@
     (movq rcx ,constant)
     (movq ,(vm-register 'ac) rcx)))
 
+;;             NUM_CMP_LOCAL(<, <, lt);
+;;             BRANCH_ON_FALSE;
+
+;;    const Object n = pop();                                                                  \
+;;    if (n.isFixnum() && ac_.isFixnum()) {                                                    \
+;;        ac_ = Object::makeBool(n.toFixnum() op ac_.toFixnum());                              \
+;;    } else if (n.isFlonum() && ac_.isFlonum()) {                                             \
+;;        ac_ = Object::makeBool(Flonum::func(n.toFlonum(), ac_.toFlonum()));                  \
+;;    } else {                                                                                 \
+;;        if (n.isNumber() && ac_.isNumber()) {                                                \
+;;            ac_ = Object::makeBool(Arithmetic::func(n, ac_));                                \
+;;        } else {                                                                             \
+;;            callWrongTypeOfArgumentViolationAfter(this, #opstring, "number", L2(n, ac_));    \
+;;            NEXT1;                                                                           \
+
+;; #define BRANCH_ON_FALSE                         \
+;;     if (ac_.isFalse()) {                        \
+;;         const Object skipSize = fetchOperand(); \
+;;         MOSH_ASSERT(skipSize.isFixnum());       \
+;;         skip(skipSize.toFixnum() - 1);          \
+;;     } else {                                    \
+;;         pc_++;                                  \
+;;     }
+
+
+
+;;       # -- BRANCH_NOT_LT start
+;; # 0 "" 2
+;; #NO_APP
+;; .loc 6 128 0
+;; movq 56(%rsp), %rbx ; rbx = vm
+;; movq 40(%rbx), %rax ; rax = sp
+;; leaq -8(%rax), %rdx ; rdx = sp - 8
+;; movq %rdx, 40(%rbx) ; sp = rdx
+;; movq -8(%rax), %rdx ; rdx = *sp
+;; movl %edx, %eax     ; eax = (32bit)(rdx)
+;; movq %rdx, 368(%rsp) ; どこか = *sp
+
+;; andl $3, %eax  ; n.isFixnum
+;; subb $1, %al
+;; je   .L1270
+
+;; .L1270:
+;; movq 8(%rbx), %rcx ; rcx = ac
+;; movl %ecx, %eax    ; eax = (32bit)ecx
+;; andl $3, %eax      ; ac.isFixnum
+;; subb $1, %al
+;; jne  .L796
+;; sarq $2, %rdx      ; rdx.toFixnum()
+;; sarq $2, %rcx      ; rcx.toFixnum()
+;; movl $_ZN6scheme6Object5FalseE, %eax ; eax = False
+;; cmpq %rcx, %rdx                      ; rcx < rdx ?
+;; movl $_ZN6scheme6Object4TrueE, %edx  ; edx = True
+;; cmovl    %rdx, %rax                      ; 条件成立で rax = true
+;; movq (%rax), %rax                    ; ac = 条件の結果
+;; movq %rax, 8(%rbx)                   ;
+;; .L799:
+;; movq 56(%rsp), %rsi                  ; rsi = vm
+;; cmpq $86, 8(%rsi)                    ; ac is false?
+;; je   .L1304
+;; addq $8, 48(%rsi)
+;;       # -- BRANCH_NOT_LT end
+
+
+;; .L1304:
+;; movq 48(%rsi), %rdx    ; rdx = pc
+;; movq (%rdx), %rax      ; rax = *pc
+;; sarq $2, %rax          ; rax.toFixnum()
+;; subl $1, %eax          ; eax = eax - 1
+;; cltq                      ; rax = (signed)eax
+;; leaq 8(%rdx,%rax,8), %rax ; rax = pc + skip
+;; movq %rax, 48(%rsi)   ; pc = pc
+;; jmp  .L807
+
+;; .L807:
+;;       # -- BRANCH_NOT_LT end
+
+
+
+
+
+
+
+
+
+
+
+
+
+;; movq 56(%rsp), %rbx ; rbx = vm
+;; movq 40(%rbx), %rax ; rax = sp
+;; leaq -8(%rax), %rdx ; 
+;; movq %rdx, 40(%rbx) ; sp = rdx
+;; movq -8(%rax), %rdx ; rdx = *sp
+;; movl %edx, %eax     ; eax = (32bit)(rdx)
+;; movq %rdx, 368(%rsp) ; どこか = *sp
+
+;; andl $3, %eax  ; n.isFixnum
+;; subb $1, %al
+
+;; (define (BRANCH_NOT_LT label)
+;;   '()
+;; )
+
 (define (BRANCH_NOT_LT label)
-  `())
+  (let ([label1 (gensym)]
+        [label2 (gensym)])
+  `((movq ,(vm-register 'sp) rax) ; rax = sp
+    (leaq rdx (& rax -8))         ; rdx = sp - 8
+    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
+    (movq rdx (& rax -8))         ; rax = *sp
+    (movl eax edx)                ; eax = (32bit)(rdx)
+    ;; movq %rdx, 368(%rsp) ; どこか = *sp
+    (andl eax 3)                  ; n.isFixnum
+    (subb al 1)                   ;
+    (je ,label1)                   ; 
+    ;; ToDo : not Fixnum case here
+    ,(DEBUGGER)
+    (label ,label1)
+    (movq rcx ,(vm-register 'ac)) ; rcx = ac
+    (movl eax ecx)                ; eax = (32bit)(rcx)
+    (andl eax 3)                  ; ac.isFixnum
+    (subb al 1)
+    (jne ,label2)
+    ,(DEBUGGER)
+    (label ,label2)
+    (sarq rdx 2)                  ; rdx.toFixnum()
+    (sarq rcx 2)                   ; rcx.toFixnum()
+    (movl edx ,(get-c-address 'Object::False)) ; eax = pointer to False
+    (cmpq rdx rcx)                ; lt condition?
+    (movl edx ,(get-c-address 'Object::True)) ; edx = pointer to True
+    (cmovl rax rdx)               ; if condition? then rax = rdx
+    (movq rax (& rax))             ; rax = True or False
+    (movq ,(vm-register 'ac) rax)
+    (cmpq ,(vm-register 'ac) 86)  ; ac.isFalse()
+    (je ,label))))
+
+
+
+;; movq 8(%rbx), %rcx ; rcx = ac
+;; movl %ecx, %eax    ; eax = (32bit)ecx
+;; andl $3, %eax      ; ac.isFixnum
+;; subb $1, %al
+;; jne  .L796
+;; sarq $2, %rdx      ; rdx.toFixnum()
+;; sarq $2, %rcx      ; rcx.toFixnum()
+;; movl $_ZN6scheme6Object5FalseE, %eax ; eax = False
+;; cmpq %rcx, %rdx                      ; rcx < rdx ?
+;; movl $_ZN6scheme6Object4TrueE, %edx  ; edx = True
+;; cmovl    %rdx, %rax                      ; 条件成立で rax = true
+;; movq (%rax), %rax                    ; ac = 条件の結果
+;; movq %rax, 8(%rbx)                   ;
+;; .L799:
+;; movq 56(%rsp), %rsi                  ; rsi = vm
+;; cmpq $86, 8(%rsi)                    ; ac is false?
+;; je   .L1304
+;; addq $8, 48(%rsi)
+;;       # -- BRANCH_NOT_LT end
+
 
 (define (CONSTANT val)
   `((movq ,(vm-register 'ac) ,val)
@@ -471,9 +646,14 @@
     (lambda (m)
       `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3)) ,(string->symbol (m 2))))]
    ;; mov 0x30(%rbx),%rdx
-   [(#/([^\s]+)\s+0x(\d+)\(%([^\s]+)\),%([^\s]+)/ gas) =>
+   [(#/([^\s]+)\s+0x([\d]+)\(%([^\s]+)\),%([^\s]+)/ gas) =>
     (lambda (m)
       `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 4))
+        (& ,(string->symbol (m 3)) , (string->number (m 2) 16))))]
+   ;; leaq  -8(%rax), %rdx
+   [(#/([^\s]+)\s+(-?[\d]+)\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
+    (lambda (m)
+      `(,(string->symbol (m 1)) ,(string->symbol (m 4))
         (& ,(string->symbol (m 3)) , (string->number (m 2) 16))))]
    ;; mov (%rbx),%rdx
    [(#/([^\s]+)\s+\(%([^\s]+)\),%([^\s]+)/ gas) =>
@@ -492,6 +672,8 @@
     (lambda (m)
       `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3))
         ,(string->number (m 2) 16)))]
+   [else
+    (error 'gas->sassy "invalid form" gas)]
    ))
 
 (define (u8-list->c-procedure+retq lst)

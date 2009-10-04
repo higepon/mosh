@@ -52,9 +52,14 @@
     (test-equal '(#x49 #x89 #xfa) (assemble1 '(movq r10 rdi)))
     (test-equal '(#x4c #x89 #xd7) (assemble1 '(movq rdi r10)))
     (test-equal '(#x89 #xd0) (assemble1 '(movl eax edx)))
+    (test-equal '(#xba #x78 #x56 #x34 #x12) (assemble1 '(movl edx #x12345678)))
+
+    ;; conditinal move
+    (test-equal '(#x48 #x0f #x4c #xc2) (assemble1 '(cmovl rax rdx)))
 
     ;; cmp
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
+    (test-equal '(#x48 #x83 #x7e #x08 #x56) (assemble1 '(cmpq (& rsi 8) #x56)))
 
     ;; test
     (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
@@ -90,6 +95,9 @@
 
     (test-equal '(#x48 #xc7 #xc2 #x01 0 0 0) (assemble1 '(movq rdx 1)))
 
+    ;; cltq
+    (test-equal '(#x48 #x98) (assemble1 '(cltq)))
+
     ;; (movq dest-reg immediate)
     (test-equal '(#x48 #xc7 #x47 #x08 #x0d #x00 #x00 #x00) (assemble1 '(movq (& rdi 8) 13)))
 
@@ -124,7 +132,7 @@
     (newline)
 
     (display "***********************\n")
-    
+
     ;; leave
     (let* ([asm (assemble `((push rbp)
                             (movq rbp rsp)
@@ -179,7 +187,7 @@
 
     (test-eq 13 (vm-make-fixnum 3))
 
-  (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
+    (let* ([asm (assemble `((movq ,(vm-register 'ac) 13)
                             (movq rax ,(vm-register 'ac))
                             (retq)))]
            [proc (u8-list->c-procedure asm)])
@@ -229,5 +237,19 @@
     (test-equal '(addq rcx #x8) (gas->sassy "add    $0x8,%rcx"))
     (test-equal '(movq (& rbx #x28) rcx) (gas->sassy "mov    %rcx,0x28(%rbx)"))
     (test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
+    (test-equal '(leaq rdx (& rax -8)) (gas->sassy "leaq    -8(%rax), %rdx"))
+
+;; movq 56(%rsp), %rbx ; rbx = vm
+;; movq 40(%rbx), %rax ; rax = sp
+;; leaq -8(%rax), %rdx ; rdx = sp - 8
+;; movq %rdx, 40(%rbx) ; sp = rdx
+;; movq -8(%rax), %rdx ; rdx = *sp
+;; movl %edx, %eax     ; eax = (32bit)(rdx)
+;; movq %rdx, 368(%rsp) ; どこか = *sp
+
+;; andl $3, %eax  ; n.isFixnum
+;; subb $1, %al
+
+;    (display (gas->sassy "movq %rdx, 40(%rbx)"))
     )
 )
