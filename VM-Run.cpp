@@ -382,6 +382,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(FRAME)
         {
+            asm volatile(" \t # -- FRAME start");
         frame_entry:
             const Object n = fetchOperand();
             VM_ASSERT(n.isFixnum());
@@ -390,6 +391,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             push(dc_);
             push(cl_);
             push(Object::makeObjectPointer(fp_));
+            asm volatile(" \t # -- FRAME end");
             NEXT;
         }
         CASE(INDIRECT)
@@ -824,12 +826,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL_PUSH_CONSTANT)
         {
-            asm volatile(" \t # -- REFER_LOCAL_PUSH_CONSTANT start");
             const Object index = fetchOperand();
             MOSH_ASSERT(index.isFixnum());
             push(referLocal(index.toFixnum()));
             ac_= fetchOperand();
-            asm volatile(" \t # -- REFER_LOCAL_PUSH_CONSTANT end");
             NEXT1;
         }
         // appears on typical named let loop
@@ -937,6 +937,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 //         }
         CASE(RETURN)
         {
+            asm volatile(" \t # -- RETURN start");
             operand = fetchOperand();
         return_entry:
             VM_ASSERT(operand.isFixnum());
@@ -947,9 +948,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             fp_ = fpObject.toObjectPointer();
 
             cl_ = index(sp, 1);
-            if (!cl_.isProcedure()) {
-                VM_LOG1("proc = ~a\n", cl_);
-            }
             VM_ASSERT(cl_.isProcedure());
 
             dc_ = index(sp, 2);
@@ -960,6 +958,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             pc_ = pcObject.toObjectPointer();
 
             sp_ = sp - 4;
+            asm volatile(" \t # --  RETURN end");
             NEXT;
         }
         CASE(SET_CAR)

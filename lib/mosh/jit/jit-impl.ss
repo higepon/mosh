@@ -178,9 +178,9 @@
                        (cond
                         [(assoc label-to-fixup label*) =>
                          (lambda (x)
-                            (format #t "cdr=~a\n" (cdr x))
-                            (assert (imm8? (cdr x)))
-                           (append (drop-right byte* 1) (list (imm8->u8 (- (cdr x) addr)))))]
+                           (let1 offset (- (cdr x) addr)
+                            (assert (imm8? offset))
+                           (append (drop-right byte* 1) (list (imm8->u8 offset)))))]
                         [else
                          (error 'assemble (format "BUG: label:~a not found on ~a" label-to-fixup label*))])])
                   (reverse asm*))]
@@ -260,7 +260,7 @@
     ;; TEST r/m8, imm8
     ;;   F6 /0 ib
     [('testb (? register8? dest) (? imm8? imm8))
-     (values `(,(opcode #xf6) ,(mod-r-m8 mod.register dest (number->register8 0)) ,imm8) #f)]
+     (values `(,(opcode #xf6) ,(mod-r-m8 mod.register dest (number->register8 0)) ,(imm8->u8 imm8)) #f)]
     ;; LEAVE
     ;;   C9
     [('leave) (values '(#xc9) #f)]
@@ -282,7 +282,7 @@
     ;;   REX.W + 83 /7 ib
     [('cmpq ('& (? register64? dest) (? imm8? displacement)) (? imm8? imm8))
      (receive (modrm sib) (effective-addr+disp8 dest (number->register64 7))
-       (values `(,rex.w ,(opcode #x83) ,modrm ,@sib ,displacement ,imm8) #f))]
+       (values `(,rex.w ,(opcode #x83) ,modrm ,@sib ,(imm8->u8 displacement) ,(imm8->u8 imm8)) #f))]
     ;; CALL r/m64
     ;;   FF /2
     [('callq (? register64? dest))
@@ -311,7 +311,7 @@
       ;; disp8
       [(< displacement #xff)
        (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
-         (values `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,displacement) #f))]
+         (values `(,rex.w ,(opcode #x8b) ,modrm ,@sib ,(imm8->u8 displacement)) #f))]
       [else
          (error 'assemble "not implemented")])]
     ;; MOV r64,r/m64
@@ -334,7 +334,7 @@
          (values `(,rex.w ,(opcode #x89) ,modrm) #f))]
       [else
        (receive (modrm sib) (effective-addr+disp8 dest-reg src-reg)
-         (values `(,rex.w ,(opcode #x89) ,modrm ,displacement) #f))])]
+         (values `(,rex.w ,(opcode #x89) ,modrm ,(imm8->u8 displacement)) #f))])]
     [('movq ('& (? register64? dest-reg)) (? register64? src-reg))
      (assemble1 `(movq (& ,dest-reg 0) ,src-reg))]
     ;; MOV r/m32,r32
@@ -348,30 +348,30 @@
     ;; AND r/m32, imm8
     ;;   83 /4 ib
     [('andl (? register32? dest-reg) (? imm8? imm8))
-     (values `(,(opcode #x83) ,(mod-r-m32 mod.register dest-reg (number->register32 4)) ,imm8) #f)]
+     (values `(,(opcode #x83) ,(mod-r-m32 mod.register dest-reg (number->register32 4)) ,(imm8->u8 imm8)) #f)]
     ;; SUB AL, imm8
     ;;   2C ib
     [('subb 'al (? imm8? imm8))
-     (values `(,(opcode #x2c) ,imm8) #f)]
+     (values `(,(opcode #x2c) ,(imm8->u8 imm8)) #f)]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? register64? dest-reg) (? imm8? displacement)) (? imm32? imm32))
        (receive (modrm sib) (effective-addr+disp8 dest-reg (number->register64 0))
-         (values `(,rex.w ,(opcode #xc7) ,modrm ,displacement ,@(imm32->u8-list imm32)) #f))]
+         (values `(,rex.w ,(opcode #xc7) ,modrm ,(imm8->u8 displacement) ,@(imm32->u8-list imm32)) #f))]
     [('movq ('& (? register64? dest-reg) (? imm32? displacement)) (? imm32? imm32))
        (receive (modrm sib) (effective-addr+disp32 dest-reg (number->register64 0))
          (values `(,rex.w ,(opcode #xc7) ,modrm ,@sib ,@(imm32->u8-list displacement) ,@(imm32->u8-list imm32)) #f))]
     ;; ADD r/m64, imm8 : REX.W + 83 /0 ib Valid N.E.
     [('addq (? register64? dest-reg) (? imm8? imm8))
-     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 0)) ,imm8) #f)]
+     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 0)) ,(imm8->u8 imm8)) #f)]
     [('subq (? register64? dest-reg) (? imm8? imm8))
-     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 5)) ,imm8) #f)]
+     (values `(,rex.w ,(opcode #x83) ,(mod-r-m mod.register dest-reg (number->register64 5)) ,(imm8->u8 imm8)) #f)]
     ;; RET : C3
     [('retq)
      (values '(#xc3) #f)]
     ;; SAR r/m64, imm8 : REX.W + C1 /7 ib
     [('sarq (? register64? dest-reg) (? imm8? imm8))
-     (values `(,rex.w ,(opcode #xc1) ,(mod-r-m mod.register dest-reg (number->register64 7)) ,imm8) #f)]
+     (values `(,rex.w ,(opcode #xc1) ,(mod-r-m mod.register dest-reg (number->register64 7)) ,(imm8->u8 imm8)) #f)]
     ; MOVSXD r64, r/m32 : REX.W** + 63 /r
     [('movslq (? register64? dest-reg) (? register32? src-reg))
      (values `(,rex.w ,(opcode #x63) ,(mod-r-m mod.register dest-reg (register32->64 src-reg))) #f)
@@ -386,7 +386,7 @@
             (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib) #f))]
          [else
           (receive (modrm sib) (effective-addr+disp8 src-reg dest-reg)
-            (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,displacement) #f))])
+            (values `(,rex.w ,(opcode #x8d) ,modrm ,@sib ,(imm8->u8 displacement)) #f))])
          (error 'assemble "not implemented"))]
     [x
      (error 'assemble "assemble error: invalid syntax" x)]))
@@ -415,6 +415,69 @@
     (movq ,(vm-register 'sp) rcx)
     (movq rcx ,constant)
     (movq ,(vm-register 'ac) rcx)))
+
+
+*[mosh] RETURN
+movq	56(%rsp), %rsi ;; ras = vm
+movq	48(%rsi), %rax ;; rax = pc
+movq	(%rax), %rdx   ;; rdx = *pc
+addq	$8, %rax       ;; rax = pc + 8
+movq	%rax, 48(%rsi) ;; pc = rax
+sarq	$2, %rdx         ;; rdx = rdx.toFixnum()
+leaq	0(,%rdx,8), %rax ;; rax = rdx * 8 * 1 ;; (mov edx (& (* 8 ecx)))
+negq	%rax             ;; rax = -rax
+movq	56(%rsp), %rcx ;; rcx = vm
+movq	%rax, %rdx      ;; rdx = rax
+addq	40(%rcx), %rdx  ;; rdx = rdx + sp : Object* const sp = sp_ - operand.toFixnum();
+movq	-8(%rdx), %rax  ;; rax = *(sp - 8)
+movq	%rax, 32(%rcx)  ;; fp = rax : fp_ = fpObject.toObjectPointer();
+movq	-16(%rdx), %rax ;; rax = *(sp - 16)
+movq	%rax, 24(%rcx)  ;; cl = rax : cl_ = index(sp, 1);
+movq	-24(%rdx), %rax ;; rax = *(sp - 24)
+movq	%rax, 16(%rcx)  ;; dc = rax : dc_ = index(sp, 2);
+movq	-32(%rdx), %rax ;; rax = *(sp - 32)
+leaq	-32(%rdx), %rcx ;; rcx = sp - 32
+movq	56(%rsp), %rbx  ;; vm = rbx
+movq	%rax, 48(%rbx)  ;; pc = rax ; pc_ = pcObject.toObjectPointer();
+movq	%rcx, 40(%rbx)  ;; sp = rcx
+
+frame_entry:
+    const Object n = fetchOperand();
+    VM_ASSERT(n.isFixnum());
+    const int skipSize = n.toFixnum();
+    push(Object::makeObjectPointer(pc_ + skipSize - 1));
+    push(dc_);
+    push(cl_);
+    push(Object::makeObjectPointer(fp_));
+    asm volatile(" \t # -- FRAME end");
+
+
+;; *[mosh] FRAME
+;; movq	56(%rsp), %rsi ;; rax = vm
+;; movq	48(%rsi), %rcx ;; rcx = pc
+;; movq	40(%rsi), %rdx ;; rdx = sp
+;; movq	(%rcx), %rax   ;; rax = *pc
+;; addq	$8, %rcx       ;; rcx = rcx + 8
+;; movq	%rcx, 48(%rsi) ;; pc = rcx
+;; sarq	$2, %rax       ;; rax.toFixnum
+;; cltq                   ;; rax = (32bit)eax
+;; leaq	-8(%rcx,%rax,8), %rax ;; 
+
+;; movq	%rax, (%rdx)   push(Object::makeObjectPointer(pc_ + skipSize - 1));
+;; movq	16(%rsi), %rax
+;; movq	%rax, 8(%rdx)  ;; push(dc_);
+;; movq	24(%rsi), %rax
+;; movq	%rax, 16(%rdx) ;;  push(cl_);
+;; movq	32(%rsi), %rax
+;; movq	%rax, 24(%rdx) ;; push(Object::makeObjectPointer(fp_));
+;; addq	$32, %rdx
+;; movq	%rdx, 40(%rsi)
+
+(define (FRAME label)
+  '())
+
+(define (RETURN n)
+  '())
 
 ;;             NUM_CMP_LOCAL(<, <, lt);
 ;;             BRANCH_ON_FALSE;
@@ -523,16 +586,17 @@
 (define (BRANCH_NOT_LT label)
   (let ([label1 (gensym)]
         [label2 (gensym)])
-  `((movq ,(vm-register 'sp) rax) ; rax = sp
+  `((movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
-    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
+    (movq rdx ,(vm-register 'sp)) ; sp = sp - 8
     (movq rdx (& rax -8))         ; rax = *sp
     (movl eax edx)                ; eax = (32bit)(rdx)
-    ;; movq %rdx, 368(%rsp) ; どこか = *sp
     (andl eax 3)                  ; n.isFixnum
     (subb al 1)                   ;
-    (je ,label1)                   ; 
+    (je ,label1)                  ;
     ;; ToDo : not Fixnum case here
+    ,(DEBUGGER)
+    (label ,label2)                  ; ac or n is not fixnum case
     ,(DEBUGGER)
     (label ,label1)
     (movq rcx ,(vm-register 'ac)) ; rcx = ac
@@ -540,15 +604,14 @@
     (andl eax 3)                  ; ac.isFixnum
     (subb al 1)
     (jne ,label2)
-    ,(DEBUGGER)
-    (label ,label2)
     (sarq rdx 2)                  ; rdx.toFixnum()
     (sarq rcx 2)                   ; rcx.toFixnum()
-    (movl edx ,(get-c-address 'Object::False)) ; eax = pointer to False
+    (movq rax ,(get-c-address 'Object::False)) ; eax = pointer to False
     (cmpq rdx rcx)                ; lt condition?
-    (movl edx ,(get-c-address 'Object::True)) ; edx = pointer to True
+    (movq rdx ,(get-c-address 'Object::True)) ; edx = pointer to True
     (cmovl rax rdx)               ; if condition? then rax = rdx
     (movq rax (& rax))             ; rax = True or False
+;    ,(DEBUGGER)
     (movq ,(vm-register 'ac) rax)
     (cmpq ,(vm-register 'ac) 86)  ; ac.isFalse()
     (je ,label))))

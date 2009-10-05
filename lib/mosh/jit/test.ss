@@ -1,6 +1,7 @@
 (library (mosh jit test)
   (export test)
   (import (rnrs) (mosh test) (mosh)
+          (mosh control)
           (match)
           (srfi :8)
           (srfi :26)
@@ -43,7 +44,9 @@
     (test-equal '(#x48 #x8b #x5c #x24 #x50) (assemble1 '(movq rbx (& rsp 80))))
     (test-equal '(#x48 #x8b #x45 #x50) (assemble1 '(movq rax (& rbp 80))))
     (test-equal '(#x48 #x8d #x48 #x08) (assemble1 '(leaq rcx (& rax 8))))
+    (test-equal '(#x48 #x8b #x50 #xf8) (assemble1 '(movq rdx (& rax -8))))
     (test-equal '(#x48 #x8b #x10) (assemble1 '(movq rdx (& rax))))
+    (test-equal '(#x48 #x8b #x00) (assemble1 '(movq rax (& rax))))
     (test-equal '(#x48 #x8b #x5c #x24 #x38) (assemble1 '(movq rbx (& rsp #x38))))
     (test-equal '(#x48 #x8b #x43 #x30)    (assemble1 '(movq rax (& rbx #x30))))
     (test-equal '(#x48 #x8b #x4b #x28)    (assemble1 '(movq rcx (& rbx #x28))))
@@ -228,7 +231,17 @@
                                     (POP2)))]
            [proc (u8-list->c-procedure+retq code1)])
       (test-true (procedure? proc))
-      (test-eq 2 (proc 2)))
+      ;; ac_ is result of compare
+      (test-eq #f (proc 2)))
+
+    ;; FRAME & RETURN
+    (let* ([label (gensym)]
+           [code1 (assemble (append (FRAME label)
+                                    (CONSTANT (vm-make-fixnum 100))
+                                    (RETURN 0)))]
+           [proc (u8-list->c-procedure+retq code1)])
+      (test-true (procedure? proc))
+      (test-eq 100 (proc)))
 
 
     ;; gas -> sassy
