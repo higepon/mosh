@@ -26,7 +26,7 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id$
+ *  $Id: main.cpp 2013 2009-08-11 03:46:06Z higepon $
  */
 
 #include <time.h>
@@ -73,7 +73,7 @@ Object argsToList(int argc, int optind, ucs4char** argvU)
 
 void showVersion()
 {
-    printf("Mosh R6RS scheme interpreter, version %s \n", PACKAGE_VERSION);
+    printf("Mosh R6RS scheme interpreter, version %s $Revision$\n", PACKAGE_VERSION);
     exit(0);
 }
 

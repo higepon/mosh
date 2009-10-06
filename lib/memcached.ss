@@ -32,6 +32,7 @@
 (library (memcached)
          (export
           memcached-connect
+          memcached-close
           memcached-set!
           memcached-get
           memcached-gets
@@ -49,6 +50,11 @@
 (define-record-type memcached-client
   (fields
    (immutable socket*)))
+
+(define (memcached-close conn)
+  (for-each
+   socket-close
+  (vector->list (memcached-client-socket* conn))))
 
 (define (random-socket conn)
   (let ([socket* (memcached-client-socket* conn)])
