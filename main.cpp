@@ -73,7 +73,11 @@ Object argsToList(int argc, int optind, ucs4char** argvU)
 
 void showVersion()
 {
-    printf("Mosh R6RS scheme interpreter, version %s $Revision$\n", PACKAGE_VERSION);
+    ucs4string revision("$Revision$");
+//     gc_vector<ucs4string> v;
+//     revision.split(':', v);
+    // todo
+    printf("Mosh R6RS scheme interpreter, version %s \n", PACKAGE_VERSION);
     exit(0);
 }
 
