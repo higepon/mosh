@@ -1392,28 +1392,28 @@
 
 (define guard-macro
     (lambda (x)
-      (define (gen-clauses con outerk clause*) 
-        (define (f x k) 
-          (syntax-match x (=>) 
-            ((e => p) 
+      (define (gen-clauses con outerk clause*)
+        (define (f x k)
+          (syntax-match x (=>)
+            ((e => p)
              (let ((t (gensym)))
-               `(let ((,t ,e)) 
+               `(let ((,t ,e))
                   (if ,t (,p ,t) ,k))))
-            ((e) 
+            ((e)
              (let ((t (gensym)))
                `(let ((,t ,e))
                   (if ,t ,t ,k))))
-            ((e v v* ...) 
+            ((e v v* ...)
              `(if ,e (begin ,v ,@v*) ,k))
             (_ (stx-error x "invalid guard clause"))))
         (define (f* x*)
           (syntax-match x* (else)
-            (() 
+            (()
              (let ((g (gensym)))
                (values `(,g (lambda () (raise-continuable ,con))) g)))
             (((else e e* ...))
              (values `(begin ,e ,@e*) #f))
-            ((cls . cls*) 
+            ((cls . cls*)
              (let-values (((e g) (f* cls*)))
                (values (f cls e) g)))
             (others (stx-error others "invalid guard clause"))))
@@ -1421,7 +1421,7 @@
           (if raisek
               `((call/cc
                   (lambda (,raisek)
-                    (,outerk 
+                    (,outerk
                       (lambda () ,code)))))
               `(,outerk (lambda () ,code)))))
       (syntax-match x ()
@@ -1535,6 +1535,14 @@
         ((_ expr)
          (bless `(make-promise (lambda () ,expr)))))))
 
+;;   (define assert-macro
+;;     (lambda (stx)
+;;       (syntax-match stx ()
+;;         ((_ expr)
+;;          (let ((pos (or (expression-position stx)
+;;                         (expression-position expr))))
+;;            (bless
+;;              `(unless ,expr (assertion-error ',expr ',pos))))))))
   (define assert-macro
     (lambda (stx)
       (syntax-match stx ()
@@ -1542,8 +1550,7 @@
          (let ((pos (or (expression-position stx)
                         (expression-position expr))))
            (bless
-             `(unless ,expr (assertion-error ',expr ',pos))))))))
-
+             `(let ([x ,expr]) (if x x (assertion-error ',expr ',pos)))))))))
   (define endianness-macro
     (lambda (stx)
       (syntax-match stx ()
@@ -3752,7 +3759,7 @@
   (define (environment-symbols x)
     (cond
       ((env? x) (vector->list (env-names x)))
-      ((interaction-env? x) 
+      ((interaction-env? x)
        (map values (rib-sym* (interaction-env-rib x))))
       (else
        (assertion-violation 'environment-symbols "not an environment" x))))
@@ -4138,6 +4145,3 @@
 
   ;;; register the expander with the library manager
   (current-library-expander library-expander))
-
-
-
