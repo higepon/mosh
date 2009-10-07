@@ -1,3 +1,7 @@
+2009-10-07  higepon  <higepon@users.sourceforge.jp>
+
+	* main.cpp (showVersion): Shows svn revision number. Issue 103 suggested by mrc.mgg.
+
 2009-10-02  higepon  <higepon@users.sourceforge.jp>
 
 	* tools/psyntax-r6rs/rev10_to_10/psyntax/compat.ss: Fixed Issue 102 pointed out by mrc.mgg.

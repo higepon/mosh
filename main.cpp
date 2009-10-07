@@ -71,13 +71,25 @@ Object argsToList(int argc, int optind, ucs4char** argvU)
     return Pair::reverse(p);
 }
 
+ucs4string revision()
+{
+    ucs4string rev(UC("$Revision$"));
+    gc_vector<ucs4string> v;
+    rev.split(':', v);
+    if (v.size() == 0) {
+        return UC("unknown");
+    }
+    gc_vector<ucs4string> v2;
+    v[1].split(' ', v2);
+    if (v2.size() == 0) {
+        return UC("unknown");
+    }
+    return v2[1];
+}
+
 void showVersion()
 {
-    ucs4string revision("$Revision$");
-//     gc_vector<ucs4string> v;
-//     revision.split(':', v);
-    // todo
-    printf("Mosh R6RS scheme interpreter, version %s \n", PACKAGE_VERSION);
+    printf("Mosh R6RS scheme interpreter, version %s (revision %s) \n", PACKAGE_VERSION, revision().ascii_c_str());
     exit(0);
 }
 
