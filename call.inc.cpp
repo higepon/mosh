@@ -84,7 +84,7 @@
                     } else {
                         callWrongNumberOfArgumentsViolationAfter(this,
                                                                  ac_.toClosure()->sourceInfoString(this),
-                                                                 requiredLength,
+                                                                 requiredLength - 1,
                                                                  operand.toFixnum());
                     }
                 } else if (requiredLength == argLength) {
