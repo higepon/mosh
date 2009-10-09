@@ -1,5 +1,7 @@
 2009-10-09  higepon  <higepon@users.sourceforge.jp>
 
+	* tools/psyntax-r6rs/rev10_to_10/psyntax/compat.ss: Refixed Issue 102.
+
 	* call.inc.cpp : Fixed Issue 98 pointed out by tabe.fixedpoint.
 
 2009-10-07  higepon  <higepon@users.sourceforge.jp>

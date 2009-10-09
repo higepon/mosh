@@ -105,8 +105,14 @@
   (define (annotation-source x) (source-info x))
 ;  (define (annotation-source x) x)
   (define (annotation-expression x)
-    (if (pair? x)
-        (cons (car x) (cdr x)) x))
+    (cond
+     [(pair? x)
+      (cons (car x) (cdr x))]
+     [(procedure? x)
+      ;; should return copy?
+      (set-source-info! x #f)]
+     [else
+      x]))
 
 ;; (define (scm->fasl filename)
 ;;   (string-append filename ".mosh-fasl"))
