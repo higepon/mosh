@@ -21,7 +21,7 @@
        (test-eq 2 index))
 
     (test-eq #xe3 (mod-r-m #b11 'rbx 'rsp))
-    (test-eq #x5c (effective-addr+disp8 'rsp 'rbx))
+    (test-eq #x5c (effective-addr+disp mod.disp8 'rsp 'rbx))
 
     (test-eq 4 (register64->number 'rsp))
     (test-eq 'rdi (number->register64 (register64->number 'rdi)))
@@ -57,6 +57,12 @@
     (test-equal '(#x89 #xd0) (assemble1 '(movl eax edx)))
     (test-equal '(#xba #x78 #x56 #x34 #x12) (assemble1 '(movl edx #x12345678)))
 
+    ;; negq
+    (test-equal '(#x48 #xf7 #xd8) (assemble1 '(negq rax)))
+
+    ;; cltq
+    (test-equal '(#x48 #x98) (assemble1 '(cltq)))
+
     ;; conditinal move
     (test-equal '(#x48 #x0f #x4c #xc2) (assemble1 '(cmovl rax rdx)))
 
@@ -70,6 +76,9 @@
     ;; andl
     (test-equal '(#x83 #xe0 #x03) (assemble1 '(andl eax 3)))
 
+    ;; addq
+    (test-equal '(#x48 #x03 #x51 #x28) (assemble1 '(addq rdx (& rcx 40))))
+
     ;; subb
     (test-equal '(#x2c #x01) (assemble1 '(subb al 1)))
 
@@ -82,6 +91,8 @@
     ;; leaq
     (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))
     (test-equal '(#x48 #x8d #x7c #x24 #x70) (assemble1 '(leaq rdi (& rsp 112))))
+    (test-equal '(#x48 #x8d #x04 #xd5 #x00 #x00 #x00 #x00) (assemble1 '(leaq rax (& (* rdx 8)))))
+    (test-equal '(#x48 #x8d #x44 #xc1 #xf8) (assemble1 '(leaq rax (& -8 rcx (* rax 8)))))
 
     ;; call
     (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
@@ -235,13 +246,29 @@
       (test-eq #f (proc 2)))
 
     ;; FRAME & RETURN
+;;     (let* ([label (gensym)]
+;;            [code1 (assemble (append (FRAME label)
+;;                                     (CONSTANT (vm-make-fixnum 100))
+;;                                     (RETURN 0)))]
+;;            [proc (u8-list->c-procedure+retq code1)])
+;;       (test-true (procedure? proc))
+;;       (test-eq 100 (proc)))
+
+    ;; FRAME
     (let* ([label (gensym)]
-           [code1 (assemble (append (FRAME label)
-                                    (CONSTANT (vm-make-fixnum 100))
-                                    (RETURN 0)))]
+           [code1 (assemble
+                   (append
+                    (FRAME label)
+                    (POP2)
+                    (POP2)
+                    (POP2)
+                    (POP2)
+                    (CONSTANT (vm-make-fixnum 3))
+                    ))]
            [proc (u8-list->c-procedure+retq code1)])
       (test-true (procedure? proc))
-      (test-eq 100 (proc)))
+      (test-eq 3 (proc)))
+
 
 
     ;; gas -> sassy

@@ -3044,7 +3044,7 @@
     (cput! cb
            'CLOSURE
            (ref-label end-of-closure)
-           vars-length                                              ;; length of arguments
+           (vars-length                                              ;; length of arguments
            (> ($lambda.optarg iform) 0)                             ;; optional-arg?
            frees-here-length)                                       ;; number of free variables
       ;; we want to know stack size of lambda body, before emit.
