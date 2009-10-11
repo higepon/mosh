@@ -84,9 +84,13 @@
 
     ;; push
     (test-equal '(#x55) (assemble1 '(push rbp)))
+    (test-equal '(#x50) (assemble1 '(push rax)))
     (test-equal '(#x48 #x89 #xe5) (assemble1 '(movq rbp rsp)))
     (test-equal '(#x48 #x83 #xec #x10) (assemble1 '(subq rsp #x10)))
     (test-equal '(#xc9) (assemble1 '(leave)))
+
+    ;; pop
+    (test-equal '(#x58) (assemble1 '(pop rax)))
 
     ;; leaq
     (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))
@@ -263,12 +267,82 @@
                     (POP2)
                     (POP2)
                     (POP2)
-                    (CONSTANT (vm-make-fixnum 3))
-                    ))]
+                    (CONSTANT (vm-make-fixnum 3))))]
            [proc (u8-list->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
+    ;; RETURN
+    (let ([ERROR (gensym)])
+      (define (save-vm-registers)
+        `((movq rax ,(vm-register 'fp))
+          (push rax)
+          (movq rax ,(vm-register 'cl))
+          (push rax)
+          (movq rax ,(vm-register 'dc))
+          (push rax)
+          (movq rax ,(vm-register 'pc))
+          (push rax)))
+      (define (restore-vm-registers)
+        `((pop rax)
+          (movq ,(vm-register 'pc) rax)
+          (pop rax)
+          (movq ,(vm-register 'dc) rax)
+          (pop rax)
+          (movq ,(vm-register 'cl) rax)
+          (pop rax)
+          (movq ,(vm-register 'fp) rax)))
+    (let* ([code1 (assemble
+                   (append
+                    (save-vm-registers)
+                    ;; set test data to vm registers
+                    `((movq ,(vm-register 'fp) 1)
+                      (movq ,(vm-register 'cl) 2)
+                      (movq ,(vm-register 'dc) 3)
+                      (movq ,(vm-register 'pc) 4))
+                    (FRAME 'label)
+                    ;; vm registers are dirty
+                    `((movq ,(vm-register 'fp) 5)
+                      (movq ,(vm-register 'cl) 6)
+                      (movq ,(vm-register 'dc) 7)
+                      (movq ,(vm-register 'pc) 8))
+                    `((movq rdx ,(vm-register 'sp))
+                      (movq rax ,(vm-make-fixnum 12)) ;; (push 12)
+                      (movq (& rdx) rax)
+                      (addq rdx 8)
+                      (movq ,(vm-register 'sp) rdx))
+                    (RETURN 1) ;; todo RETURN 1
+                    `(
+                      ;; check restored fp
+                      (movq rax ,(vm-register 'fp))
+                      (movq rcx 1)
+                      (cmpq rax rcx)
+                      (jne ,ERROR)
+                      ;; check restored cl
+                      (movq rax ,(vm-register 'cl))
+                      (movq rcx 2)
+                      (cmpq rax rcx)
+                      (jne ,ERROR)
+                      ;; check restored dc
+                      (movq rax ,(vm-register 'dc))
+                      (movq rcx 3)
+                      (cmpq rax rcx)
+                      (jne ,ERROR)
+                      ;; check restored pc
+                      (movq rax ,(vm-register 'pc))
+                      (movq rcx 4)
+                      (cmpq rax rcx)
+                      (jne ,ERROR)
+                      ,@(restore-vm-registers))
+                     (CONSTANT (vm-make-fixnum 10))
+                    `((retq)
+                      (label ,ERROR)
+                      ,@(restore-vm-registers)
+                      ,@(CONSTANT (vm-make-fixnum 11))
+                      (retq))))]
+           [proc (u8-list->c-procedure+retq code1)])
+      (test-true (procedure? proc))
+      (test-eq 10 (proc))))
 
 
     ;; gas -> sassy

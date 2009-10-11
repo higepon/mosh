@@ -260,6 +260,8 @@
     ;;   50+rd
     [('push (? register64? reg))
      (values `(,(+ (opcode #x50) (register64->number reg))) #f)]
+    [('pop (? register64? reg))
+     (values `(,(+ (opcode #x58) (register64->number reg))) #f)]
     [('je (? symbol? label))
      (values `(,(opcode #x74) #x00) label)]
     [('jmp (? symbol? label))
@@ -474,9 +476,10 @@
 ;; addq $32, %rdx
 ;; movq %rdx, 40(%rsi)
 
-(define (FRAME label)
+(define (FRAME label) ;; label is not used. pc is
   `((movq rdx ,(vm-register 'sp))
-    (movq (& rdx) rax)            ;; push(dummy_pc) Since JIT CALL discards pc on FRAME, this is dummy
+    (movq rax ,(vm-register 'pc)) ;; push(pc)
+    (movq (& rdx) rax)            ;; Other JIT instructions don't sync pc. So pc is not coreect. JIT CALL discards pc on FRAME.
     (movq rax ,(vm-register 'dc)) ;; push(dc_)
     (movq (& rdx 8) rax)
     (movq rax ,(vm-register 'cl)) ;; push(cl_)
@@ -511,17 +514,21 @@
 ;; movq %rcx, 40(%rbx)  ;; sp = rcx
 
 
-(define (RETURN n) ;; pc いらん
-  `((movq rax ,(vm-register 'pc))
-    (movq rdx (& rax))
-    (addq rax 8)
-    (movq ,(vm-register 'pc) rax)
-    (sarq rdx 2)
-    (leaq rax (& (* rdx 8)))
-    (negq rax)
-    (movq rdx rax)
-    (addq rdx (& rcx 40))
-    (movq rax (& rdx -8))
+(define (RETURN n)
+  `(;(movq rax ,(vm-register 'pc))
+ ;   ,(DEBUGGER)
+;    (movq rdx (& rax))
+;    (addq rax 8)
+ ;   (movq ,(vm-register 'pc) rax)
+;    (sarq rdx 2)
+;    (leaq rax (& (* rdx 8)))
+;    (negq rax)
+;    (movq rdx rax)
+    (movq rdx ,n)
+    (leaq rdx (& (* rdx 8)))
+    (negq rdx)
+    (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
+    (movq rax (& rdx -8))         ; sp - 
     (movq ,(vm-register 'fp) rax)
     (movq rax (& rdx -16))
     (movq ,(vm-register 'cl) rax)
