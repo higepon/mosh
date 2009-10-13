@@ -3064,7 +3064,7 @@
         (code-builder-append! cb lambda-cb)
         (code-builder-put-insn-arg1! cb 'RETURN vars-length)
         (cput! cb end-of-closure)
-        0)))
+        0))))
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail depth display-count)
   (let* ([vars ($receive.lvars iform)]

@@ -419,6 +419,12 @@
     (movq rcx ,constant)
     (movq ,(vm-register 'ac) rcx)))
 
+(define (PUSH)
+  `((movq rcx ,(vm-register 'sp))
+    (movq (& rcx) ,value-reg)
+    (addq ,sp-reg 8)))
+    (movq ,(vm-register 'sp) rcx)
+
 
 ;; *[mosh] RETURN
 ;; movq 56(%rsp), %rsi ;; ras = vm

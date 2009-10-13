@@ -249,15 +249,6 @@
       ;; ac_ is result of compare
       (test-eq #f (proc 2)))
 
-    ;; FRAME & RETURN
-;;     (let* ([label (gensym)]
-;;            [code1 (assemble (append (FRAME label)
-;;                                     (CONSTANT (vm-make-fixnum 100))
-;;                                     (RETURN 0)))]
-;;            [proc (u8-list->c-procedure+retq code1)])
-;;       (test-true (procedure? proc))
-;;       (test-eq 100 (proc)))
-
     ;; FRAME
     (let* ([label (gensym)]
            [code1 (assemble
@@ -271,6 +262,20 @@
            [proc (u8-list->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
+
+    ;; NUMBER_SUB_PUSH
+    (let* ([code1 (assemble
+                   (append
+                    (FRAME label)
+                    (POP2)
+                    (POP2)
+                    (POP2)
+                    (POP2)
+                    (CONSTANT (vm-make-fixnum 3))))]
+           [proc (u8-list->c-procedure+retq code1)])
+      (test-true (procedure? proc))
+      (test-eq 3 (proc)))
+
 
     ;; RETURN
     (let ([ERROR (gensym)])

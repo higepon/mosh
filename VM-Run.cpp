@@ -609,6 +609,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(NUMBER_SUB_PUSH)
         {
+            asm volatile(" \t # -- NUMBER_SUB_PUSH start");
             const Object n = pop();
             // short cut for Fixnum. Benmarks tell me this is strongly required.
             if (n.isFixnum() && ac_.isFixnum()) {
@@ -621,6 +622,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 callWrongTypeOfArgumentViolationAfter(this, "-", "number", L2(n, ac_));
             }
             push(ac_);
+            asm volatile(" \t # -- NUMBER_END_PUSH start");
             NEXT1;
         }
         CASE(NUMBER_ADD_PUSH)
