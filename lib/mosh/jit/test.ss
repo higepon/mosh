@@ -69,6 +69,7 @@
     ;; cmp
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
     (test-equal '(#x48 #x83 #x7e #x08 #x56) (assemble1 '(cmpq (& rsi 8) #x56)))
+    (test-equal '(#x48 #x3d #xff #xff #xff #x3f) (assemble1 '(cmpq rax #x3fffffff)))
 
     ;; test
     (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
@@ -79,8 +80,9 @@
     ;; addq
     (test-equal '(#x48 #x03 #x51 #x28) (assemble1 '(addq rdx (& rcx 40))))
 
-    ;; subb
+    ;; sub family
     (test-equal '(#x2c #x01) (assemble1 '(subb al 1)))
+    (test-equal '(#x29 #xd0) (assemble1 '(subl eax edx)))
 
     ;; push
     (test-equal '(#x55) (assemble1 '(push rbp)))
@@ -97,6 +99,9 @@
     (test-equal '(#x48 #x8d #x7c #x24 #x70) (assemble1 '(leaq rdi (& rsp 112))))
     (test-equal '(#x48 #x8d #x04 #xd5 #x00 #x00 #x00 #x00) (assemble1 '(leaq rax (& (* rdx 8)))))
     (test-equal '(#x48 #x8d #x44 #xc1 #xf8) (assemble1 '(leaq rax (& -8 rcx (* rax 8)))))
+    (test-equal '(#x49 #x8d #x84 #x24 #x00 #x00 #x00 #x20) (assemble1 '(leaq rax (& r12 #x20000000))))
+    (test-equal '(#x4a #x8d #x14 #xa5 #x01 #x00 #x00 #x00) (assemble1 '(leaq rdx (& 1 (* r12 4)))))
+
 
     ;; call
     (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
@@ -264,17 +269,17 @@
       (test-eq 3 (proc)))
 
     ;; NUMBER_SUB_PUSH
-    (let* ([code1 (assemble
+    (let* ([label (gensym)]
+           [code1 (assemble
                    (append
-                    (FRAME label)
-                    (POP2)
-                    (POP2)
-                    (POP2)
-                    (POP2)
-                    (CONSTANT (vm-make-fixnum 3))))]
+                    (CONSTANT (vm-make-fixnum 10))
+                    (PUSH)
+                    (CONSTANT (vm-make-fixnum 2))
+                    (NUMBER_SUB_PUSH)
+                    (POP)))]
            [proc (u8-list->c-procedure+retq code1)])
       (test-true (procedure? proc))
-      (test-eq 3 (proc)))
+      (test-eq 8 (proc)))
 
 
     ;; RETURN
