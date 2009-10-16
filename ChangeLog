@@ -1,3 +1,7 @@
+2009-10-16  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/test.ss : NUMBER_SUB_PUSH works.
+
 2009-10-14  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/jit-impl.ss Writing NUMBER_SUB_PUSH.

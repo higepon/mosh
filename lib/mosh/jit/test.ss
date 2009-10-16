@@ -57,6 +57,8 @@
     (test-equal '(#x89 #xd0) (assemble1 '(movl eax edx)))
     (test-equal '(#xba #x78 #x56 #x34 #x12) (assemble1 '(movl edx #x12345678)))
 
+    (test-equal '(#x4c #x63 #xe0) (assemble1 '(movslq r12 eax)))
+
     ;; negq
     (test-equal '(#x48 #xf7 #xd8) (assemble1 '(negq rax)))
 
