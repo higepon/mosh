@@ -1,7 +1,13 @@
-(import ;(except (srfi :1 lists) partition remove member fold-right find filter cons* assoc map for-each)
-        ;(only (srfi :1 lists) car+cdr)
-        (prefix (srfi :1 lists) srfi-1.)
-        (rnrs))
+(import (match) (rnrs))
 
-(display "hi\n")
-(display srfi-1.car+cdr)
+(display 
+ (match "3"
+ [(= string->number x)
+  (write x)]
+ [x 9]))
+
+;; (display 
+;;  (match 3
+;;  [(and (? number? _) (= (lambda (x) (< x 4)) x))
+;;   (write x)]
+;;  [x 9]))

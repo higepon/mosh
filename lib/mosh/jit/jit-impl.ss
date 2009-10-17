@@ -1,8 +1,8 @@
 ;; refactoring
-;; rex-prefix
-;; rex.w あとでまとめて
-;; r/m がどちらかをきっちり
-;; match デカン数滴用
+;; opcode
+;; (& base-reg 
+;; 引数の順序
+;; r/m 64 と r/64 の順序関係ないね
 
 ;; http://home.earthlink.net/~krautj/sassy/sassy-Z-H-7.html#node_sec_5.1.1
 
@@ -31,7 +31,7 @@
 ;;     rbx, rbp, rsp      -      callee saved    -
 ;; ========================================================
 
-;; register64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
+;; r64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
 
 (define vm-register* '(ac dc cl fp sp pc))
 
@@ -42,35 +42,35 @@
   `(& rdi ,(* (+ (receive (_ index) (find-with-index (cut eq? <> reg) vm-register*)
                    index) 1) vm-register-offset)))
 
-(define register64* '(rax rcx rdx rbx rsp rbp rsi rdi r8  r9  r10 r11 r12 r13 r14 r15))
-(define register32* '(eax ecx edx ebx esp ebp esi edi))
+(define r64* '(rax rcx rdx rbx rsp rbp rsi rdi r8  r9  r10 r11 r12 r13 r14 r15))
+(define r32* '(eax ecx edx ebx esp ebp esi edi))
 
-(define register8* '(al  cl  dl bl  ah  ch  dh  bh))
-(define (register64? obj) (memq obj register64*))
-(define (register32? obj) (memq obj register32*))
-(define (register8? obj) (memq obj register8*))
+(define r8* '(al  cl  dl bl  ah  ch  dh  bh))
+(define (r64? obj) (memq obj r64*))
+(define (r32? obj) (memq obj r32*))
+(define (r8? obj) (memq obj r8*))
 
 (define (find-index-eq x x*)
   (receive (_ index) (find-with-index (cut eq? <> x) x*)
     index))
 
-(define (register64->number reg) (find-index-eq reg register64*))
-(define (register32->number reg) (find-index-eq reg register32*))
-(define (register8->number reg) (find-index-eq reg register8*))
+(define (r64->number reg) (find-index-eq reg r64*))
+(define (r32->number reg) (find-index-eq reg r32*))
+(define (r8->number reg) (find-index-eq reg r8*))
 
-(define (number->register8 n)
-  (list-ref register8* n))
-(define (number->register32 n)
-  (list-ref register32* n))
-(define (number->register64 n)
-  (list-ref register64* n))
+(define (number->r8 n)
+  (list-ref r8* n))
+(define (number->r32 n)
+  (list-ref r32* n))
+(define (number->r64 n)
+  (list-ref r64* n))
 
 
-(define (register32->64 reg)
-  (number->register64 (register32->number reg)))
+(define (r32->64 reg)
+  (number->r64 (r32->number reg)))
 
-(define (register64->32 reg)
-  (number->register32 (register64->number reg)))
+(define (r64->32 reg)
+  (number->r32 (r64->number reg)))
 
 (define (find-with-index pred lst)
   (let loop ([i 0]
@@ -100,24 +100,19 @@
      (bitwise-and r/m-n #b111)))
 
 (define (mod-r-m mod r/m reg)
-  (assert (for-all register64? (list r/m reg)))
-  (mod-r-m-encode mod (register64->number reg) (register64->number r/m)))
+  (assert (for-all r64? (list r/m reg)))
+  (mod-r-m-encode mod (r64->number reg) (r64->number r/m)))
 
 (define (mod-r-m8 mod r/m reg)
-  (assert (for-all register8? (list r/m reg)))
-  (mod-r-m-encode mod (register8->number reg) (register8->number r/m)))
+  (assert (for-all r8? (list r/m reg)))
+  (mod-r-m-encode mod (r8->number reg) (r8->number r/m)))
 
 (define (mod-r-m32 mod r/m reg)
-  (assert (for-all register32? (list r/m reg)))
-  (mod-r-m-encode mod (register32->number reg) (register32->number r/m)))
-
-(define-syntax opcode
-  (lambda (x)
-    (syntax-case x ()
-      [(_ v) #'v])))
+  (assert (for-all r32? (list r/m reg)))
+  (mod-r-m-encode mod (r32->number reg) (r32->number r/m)))
 
 (define (effective-addr+disp mod r/m-reg reg-reg)
-  (assert (for-all register64? (list r/m-reg reg-reg)))
+  (assert (for-all r64? (list r/m-reg reg-reg)))
   (values
    (mod-r-m mod r/m-reg reg-reg)
    (cond
@@ -128,19 +123,42 @@
     [else
        '()])))
 
+(define (effective-addr+dispA mod reg-reg r/m-reg)
+  (values
+   (mod-r-m-encode mod reg-reg r/m-reg)
+   (cond
+    [(eq? (number->r64 r/m-reg) 'rsp) ;; todo
+     (list (sib sib.scale1 'rsp 'rsp))]
+    [(eq? (number->r64 r/m-reg) 'r12) ;; todo
+     (list (sib sib.scale1 'r12 'r12))]
+    [else
+       '()])))
+
 
 (define (effective-addr+scale mod r/m-reg reg-reg scale base-reg index-reg)
-  (assert (for-all register64? (list r/m-reg reg-reg)))
+  (assert (for-all r64? (list r/m-reg reg-reg)))
   (values
    (mod-r-m mod r/m-reg reg-reg)
    (if (eq? r/m-reg 'rsp)
        (list (sib scale base-reg index-reg))
        '())))
 
+(define (effective-addr+scale2 mod r/m-reg reg-reg scale base-reg index-reg)
+  (values
+   (mod-r-m-encode mod reg-reg r/m-reg)
+   (if (eq? (number->r64 r/m-reg) 'rsp)
+       (list (sib2 scale base-reg index-reg))
+       '())))
+
 
 (define (effective-addr r/m-reg reg-reg)
-  (assert (for-all register64? (list r/m-reg reg-reg)))
+  (assert (for-all r64? (list r/m-reg reg-reg)))
   (values (mod-r-m mod.disp0 r/m-reg reg-reg)
+          '()))
+
+(define (effective-addr2 reg-reg r/m-reg)
+;  (assert (for-all r64? (list r/m-reg reg-reg)))
+  (values (mod-r-m-encode mod.disp0 reg-reg r/m-reg)
           '()))
 
 
@@ -149,11 +167,22 @@
 (define (effective-addr+scale8 r/m-reg reg-reg base-reg index-reg)
   (effective-addr+scale mod.disp0 r/m-reg reg-reg sib.scale8 base-reg index-reg))
 
+(define (effective-addr+scale82 r/m-reg reg-reg base-reg index-reg)
+  (effective-addr+scale2 mod.disp0 r/m-reg reg-reg sib.scale8 base-reg index-reg))
+
+
 (define (effective-addr+scale88 r/m-reg reg-reg base-reg index-reg)
   (effective-addr+scale mod.disp8 r/m-reg reg-reg sib.scale8 base-reg index-reg))
 
+(define (effective-addr+scale882 r/m-reg reg-reg base-reg index-reg)
+  (effective-addr+scale2 mod.disp8 r/m-reg reg-reg sib.scale8 base-reg index-reg))
+
+
 (define (effective-addr+scale48 r/m-reg reg-reg base-reg index-reg)
   (effective-addr+scale mod.disp0 r/m-reg reg-reg sib.scale4 base-reg index-reg))
+
+(define (effective-addr+scale482 r/m-reg reg-reg base-reg index-reg)
+  (effective-addr+scale2 mod.disp0 r/m-reg reg-reg sib.scale4 base-reg index-reg))
 
 
 
@@ -162,8 +191,14 @@
 
 (define (sib scaled-index base-reg src-reg)
   (+ (bitwise-arithmetic-shift-left scaled-index 6)
-     (bitwise-arithmetic-shift-left (bitwise-and (register64->number src-reg) #b111) 3)
-     (bitwise-and (register64->number base-reg) #b111)))
+     (bitwise-arithmetic-shift-left (bitwise-and (r64->number src-reg) #b111) 3)
+     (bitwise-and (r64->number base-reg) #b111)))
+
+(define (sib2 scaled-index base-reg src-reg)
+  (+ (bitwise-arithmetic-shift-left scaled-index 6)
+     (bitwise-arithmetic-shift-left (bitwise-and src-reg #b111) 3)
+     (bitwise-and base-reg #b111)))
+
 
 
 ;; asm* : list of asm
@@ -219,13 +254,13 @@
   (bitwise-and n #xff))
 
 
-(define (imm32->u8-list n)
+(define (imm32->u8* n)
   (list (bitwise-and n #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 8) #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 16) #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 24) #xff)))
 
-(define (imm64->u8-list n)
+(define (imm64->u8* n)
   (list (bitwise-and n #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 8) #xff)
         (bitwise-and (bitwise-arithmetic-shift-right n 16) #xff)
@@ -236,7 +271,8 @@
         (bitwise-and (bitwise-arithmetic-shift-right n 56) #xff)))
 
 (define (ext-reg? reg)
-  (> (register64->number reg) 8))
+  (> reg 8))
+
 
 ;; REX prefix
 ;;    w - operand width.  #t - 64bit
@@ -250,6 +286,95 @@
      (if x? #b10   0)
      (if b? #b1    0)))
 
+;; (movq r/m64 imm8)
+(define ($r/m64-imm8 opcode r64 r/m64 imm8)
+  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64) ,imm8) #f))
+
+;; (movq r/m64 imm32)
+(define ($r/m64-imm32 opcode r64 r/m64 imm32)
+  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64) ,@imm32) #f))
+
+;; ;; (cmpq r/m64 r64)
+;; (define ($r/m64-r64 opcode r64 r/m64)
+;;   (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64)) #f))
+
+;; (cmpq r64 r/m64)
+(define ($r64-r/m64 opcode r64 r/m64)
+  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64)) #f))
+
+(define ($r/m32-r32 opcode r32 r/m32)
+  (values `(,opcode ,(mod-r-m-encode mod.register r32 r/m32)) #f))
+
+;; (cmpq (& r/m64 disp8) imm8)
+(define ($&-r/m64-disp8-imm8 opcode r64 r/m64 disp8 imm8)
+  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
+    (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,disp8 ,imm8) #f)))
+
+;; (movq r64 (& r/m64 (* index 8)))
+(define ($r64-r/m64-sib8 opcode r64 r/m64 index)
+  (receive (modrm sib) (effective-addr+scale82 4 r64 r/m64 index)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
+
+;; (movq r64 (& r/m64 disp8))
+(define ($r64-r/m64-disp8 opcode r64 r/m64 disp8)
+  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,disp8) #f)))
+
+;; (movq r64 (& r/m64 disp32))
+(define ($r64-r/m64-disp32 opcode r64 r/m64 disp32)
+  (receive (modrm sib) (effective-addr+dispA mod.disp32 r64 r/m64)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp32) #f)))
+
+;; (movq r64 (& r/m64 0)) ;; todo (movq r64 (& r/m64))
+(define ($r64-r/m64-disp0 opcode r64 r/m64)
+  (receive (modrm sib) (effective-addr+dispA mod.disp0 r64 r/m64)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
+
+;; (movq (& r/m64 0) r64) ;; todo(movq (& r/m64) r64)
+(define ($r/m64-r64-disp0 opcode r64 r/m64)
+  (receive (modrm sib) (effective-addr2 r64 r/m64)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm) #f)))
+
+;; (movq (& r/m64 disp8) r64)
+(define ($r/m64-disp8-r64 opcode r64 r/m64 disp8)
+  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,disp8) #f)))
+
+;; (movq (& r/m64 disp8) imm32)
+(define ($r/m64-disp8-imm32 opcode r64 r/m64 disp8 imm32)
+  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
+    (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,disp8 ,@imm32) #f)))
+
+;; (movq (& r/m64 disp32) imm32)
+(define ($r/m64-disp32-imm32 opcode r64 r/m64 disp32 imm32)
+  (receive (modrm sib) (effective-addr+dispA mod.disp32 r64 r/m64)
+    (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp32 ,@imm32) #f)))
+
+;; (movq r64 (& disp32 base (* index 8)))
+(define ($r64-r/m64-disp32-sib8 opcode r64 r/m64 base disp32 index)
+  (receive (modrm sib) (effective-addr+scale82 r/m64 r64 base index) ;; todo arg order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp32) #f)))
+
+;; (movq r64 (& disp32 base (* index 4)))
+(define ($r64-r/m64-disp32-sib4 opcode r64 r/m64 base disp32 index)
+  (receive (modrm sib) (effective-addr+scale482 r/m64 r64 base index) ;; todo arg order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp32) #f)))
+
+;; (movq r64 (& disp8 base (* index 8)))
+(define ($64-r/m64-disp8-sib8  opcode r64 r/m64 base disp8 index)
+  (receive (modrm sib) (effective-addr+scale882 4 r64 base index) ; argument order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,disp8) #f)))
+
+
+;; (push r64)
+(define ($r64 opcode r64)
+  (values `(,(+ opcode r64)) #f))
+
+;; (callq r/m64)
+(define ($r/m64 opcode r64 r/m64)
+  (values `(,opcode ,(mod-r-m-encode mod.register r64 r/m64)) #f))
+
+
 ;; (oprand dest src)
 ;; returns (values byte* label-to-fixup)
 (define (assemble1 code) ;; todo refactoring
@@ -257,169 +382,152 @@
   (match code
     ;; NEG r/m64
     ;;   REX.W + F7 /3
-    [('negq (? register64? r/m64))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #xf7) ,(mod-r-m mod.register r/m64 (number->register64 3))) #f)]
+    [('negq (? r64? (= r64->number r/m64)))
+     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) #xf7 ,(mod-r-m-encode mod.register 3 r/m64)) #f)]
     ;; CMOVC r64, r/m64
     ;;   REX.W + 0F 4C /r
-    [('cmovl (? register64? r64) (? register64? r/m64))
-     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x0f) #x4c ,(mod-r-m mod.register r/m64 r64)) #f)]
+    [('cmovl (? r64? (= r64->number r64)) (? r64? (= r64->number r/m64)))
+     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) #x0f #x4c ,(mod-r-m-encode mod.register r64 r/m64)) #f)]
     ;; CDQE Valid N.E. RAX ← sign-extend of EAX.
     ;;   REX.W + 98
     [('cltq)
-     (values `(,rex.w ,(opcode #x98)) #f)]
+     (values `(,rex.w #x98) #f)]
     ;; TEST r/m8, imm8
     ;;   F6 /0 ib
-    [('testb (? register8? r/m8) (? imm8? imm8))
-     (values `(,(opcode #xf6) ,(mod-r-m8 mod.register r/m8 (number->register8 0)) ,(imm8->u8 imm8)) #f)]
+    [('testb (? r8? (= r8->number r/m8)) (? imm8? (= imm8->u8 u8)))
+     (values `(#xf6 ,(mod-r-m-encode mod.register 0 r/m8) ,u8) #f)]
     ;; LEAVE
     ;;   C9
     [('leave) (values '(#xc9) #f)]
     ;; PUSH r64
     ;;   50+rd
-    [('push (? register64? r64))
-     (values `(,(+ (opcode #x50) (register64->number r64))) #f)]
-    [('pop (? register64? r64))
-     (values `(,(+ (opcode #x58) (register64->number r64))) #f)]
+    [('push (? r64? (= r64->number r64)))
+     ($r64 #x50 r64)]
+    [('pop (? r64? (= r64->number r64)))
+     ($r64 #x58 r64)]
     [('je (? symbol? label))
-     (values `(,(opcode #x74) #x00) label)]
+     (values `(#x74 #x00) label)]
     [('ja (? symbol? label))
-     (values `(,(opcode #x77) #x00) label)]
+     (values `(#x77 #x00) label)]
     [('jmp (? symbol? label))
-     (values `(,(opcode #xeb) #x00) label)]
+     (values `(#xeb #x00) label)]
     [('jne (? symbol? label))
-     (values `(,(opcode #x75) #x00) label)]
+     (values `(#x75 #x00) label)]
     ;; CMP r/m64,r64
     ;;   REX.W + 39 /r
-    [('cmpq (? register64? r/m64) (? register64? r64))
-     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x39) ,(mod-r-m mod.register r/m64 r64)) #f)]
+    [('cmpq (? r64? (= r64->number r/m64)) (? r64? (= r64->number r64)))
+     ($r64-r/m64 #x39 r64 r/m64)]
     ;; CMP RAX, imm32
     ;;    REX.W + 3D id
-    [('cmpq 'rax (? imm32? imm32))
-     (values `(,rex.w ,(opcode #x3d) ,@(imm32->u8-list imm32)) #f)]
+    [('cmpq 'rax (? imm32? (= imm32->u8* u8*)))
+     (values `(,rex.w #x3d ,@u8*) #f)]
     ;; CMP r/m64, imm8
     ;;   REX.W + 83 /7 ib
-    [('cmpq ('& (? register64? r/m64) (? imm8? displacement)) (? imm8? imm8))
-     (receive (modrm sib) (effective-addr+disp mod.disp8 r/m64 (number->register64 7))
-       (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #x83) ,modrm ,@sib ,(imm8->u8 displacement) ,(imm8->u8 imm8)) #f))]
+    [('cmpq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))) (? imm8? (= imm8->u8 imm8)))
+     ($&-r/m64-disp8-imm8 #x83 7 r/m64 disp8 imm8)]
     ;; CALL r/m64
     ;;   FF /2
-    [('callq (? register64? r/m64))
-     (values `(,(opcode #xff) ,(mod-r-m mod.register r/m64 (number->register64 2))) #f)]
+    [('callq (? r64? (= r64->number r/m64)))
+     ($r/m64 #xff 2 r/m64)]
     ;; INT 3
     [('int 3) (values '(#xcc) #f)]
-    ;; MOV r/m64, imm32 Valid : Move imm32 sign extended to 64-bits to r/m64.
+    ;; MOV r/m64, imm32 Valid
     ;;   REX.W + C7 /0
-    [('movq (? register64? r/m64) (? imm32? imm32))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #xc7) ,(mod-r-m mod.register r/m64 (number->register64 0)) ,@(imm32->u8-list imm32)) #f)]
+    [('movq (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* u8*)))
+     ($r/m64-imm32 #xc7 0 r/m64 u8*)]
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
-    [('movq (? register64? r/m64) (? register64? r64))
-     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x89) ,(mod-r-m mod.register r/m64 r64)) #f)]
+    [('movq (? r64? (= r64->number r/m64)) (? r64? (= r64->number r64)))
+     ($r64-r/m64 #x89 r64 r/m64)]
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
-    [('movq (? register64? r64) ('& base-reg ('* (? register64? index-reg) 8)))
-     (receive (modrm sib) (effective-addr+scale8 (number->register64 4) r64 base-reg index-reg)
-         (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x8b) ,modrm ,@sib) #f))]
+    [('movq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) ('* (? r64? (= r64->number index)) 8)))
+     ($r64-r/m64-sib8 #x8b r64 r/m64 index)]
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
-    [('movq (? register64? r64) ('& (? register64? r/m64) 0)) ;; special case for zero
-     (receive (modrm sib) (effective-addr r/m64 r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x8b) ,modrm ,@sib) #f))]
-    [('movq (? register64? r64) ('& (? register64? r/m64) (? imm8? displacement))) ;; disp8
-     (receive (modrm sib) (effective-addr+disp mod.disp8 r/m64 r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x8b) ,modrm ,@sib ,(imm8->u8 displacement)) #f))]
-    [('movq (? register64? r64) ('& (? register64? r/m64)))
+    [('movq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) 0)) ;; special case for zero
+     ($r64-r/m64-disp0 #x8b r64 r/m64)]
+    [('movq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))))
+     ($r64-r/m64-disp8 #x8b r64 r/m64 disp8)]
+    [('movq (? r64? r64) ('& (? r64? r/m64)))
      (assemble1 `(movq ,r64 (& ,r/m64 0)))]
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
-    [('movq ('& (? register64? r/m64) 0) (? register64? r64))
-     (receive (modrm sib) (effective-addr r/m64 r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x89) ,modrm) #f))]
-    [('movq ('& (? register64? r/m64) displacement) (? register64? r64))
-     (receive (modrm sib) (effective-addr+disp mod.disp8 r/m64 r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x89) ,modrm ,(imm8->u8 displacement)) #f))]
-    [('movq ('& (? register64? r/m64)) (? register64? r64))
-     (assemble1 `(movq (& ,r/m64 0) ,r64))]
+    [('movq ('& (? r64? (= r64->number r/m64)) 0) (? r64? (= r64->number r64)))
+     ($r64-r/m64-disp0 #x89 r64 r/m64)]
+    [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))) (? r64? (= r64->number r64)))
+     ($r/m64-disp8-r64 #x89 r64 r/m64 disp8)]
+    [('movq ('& (? r64? (= r64->number r/m64))) (? r64? (= r64->number r64)))
+     ($r/m64-r64-disp0 #x89 r64 r/m64)]
     ;; MOV r/m32,r32
     ;;   89 /r
-    [('movl (? register32? r/m32) (? register32? r32))
-     (values `(,(opcode #x89) ,(mod-r-m32 mod.register r/m32 r32)) #f)]
+    [('movl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
+     ($r/m32-r32 #x89 r32 r/m32)]
     ;; MOV r32,imm32
     ;;   B8+ rd
-    [('movl (? register32? r32) (? imm32? imm32))
-     (values `(,(+ (opcode #xb8) (register32->number r32)) ,@(imm32->u8-list imm32)) #f)]
+    [('movl (? r32? (= r32->number r32)) (? imm32? (= imm32->u8* u8*)))
+     (values `(,(+ #xb8 r32) ,@u8*) #f)]
     ;; AND r/m32, imm8
     ;;   83 /4 ib
-    [('andl (? register32? r/m32) (? imm8? imm8))
-     (values `(,(opcode #x83) ,(mod-r-m32 mod.register r/m32 (number->register32 4)) ,(imm8->u8 imm8)) #f)]
+    [('andl (? r32? (= r32->number r/m32)) (? imm8? (= imm8->u8 imm8)))
+     (values `(,#x83 ,(mod-r-m-encode mod.register 4 r/m32) ,imm8) #f)]
     ;; SUB AL, imm8
     ;;   2C ib
-    [('subb 'al (? imm8? imm8))
-     (values `(,(opcode #x2c) ,(imm8->u8 imm8)) #f)]
+    [('subb 'al (? imm8? (= imm8->u8 imm8)))
+     (values `(,#x2c ,imm8) #f)]
     ;; SUB r/m32, r32
     ;;   29 /r
-    [('subl (? register32? r/m32) (? register32? r32))
-     (values `(,(opcode #x29) ,(mod-r-m32 mod.register r/m32 r32)) #f)]
+    [('subl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
+     (values `(,#x29 ,(mod-r-m-encode mod.register r32 r/m32)) #f)]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
-    [('movq ('& (? register64? r/m64) (? imm8? displacement)) (? imm32? imm32))
-       (receive (modrm sib) (effective-addr+disp mod.disp8 r/m64 (number->register64 0))
-         (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #xc7) ,modrm ,(imm8->u8 displacement) ,@(imm32->u8-list imm32)) #f))]
-    [('movq ('& (? register64? r/m64) (? imm32? displacement)) (? imm32? imm32))
-       (receive (modrm sib) (effective-addr+disp mod.disp32 r/m64 (number->register64 0))
-         (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #xc7) ,modrm ,@sib ,@(imm32->u8-list displacement) ,@(imm32->u8-list imm32)) #f))]
+    [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))) (? imm32? (= imm32->u8* imm32)))
+     ($r/m64-disp8-imm32 #xc7 0 r/m64 disp8 imm32)]
+    [('movq ('& (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* disp32))) (? imm32? (= imm32->u8* imm32)))
+     ($r/m64-disp32-imm32 #xc7 0 r/m64 disp32 imm32)]
     ;; ADD r/m64, imm8
     ;;   REX.W + 83 /0 ib Valid N.E.
-    [('addq (? register64? r/m64) (? imm8? imm8))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #x83) ,(mod-r-m mod.register r/m64 (number->register64 0)) ,(imm8->u8 imm8)) #f)]
+    [('addq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 imm8)))
+     ($r/m64-imm8 #x83 0 r/m64 imm8)]
     ;; ADD r64, r/m64
     ;;   REX.W + 03 /r
-    [('addq (? register64? r64) ('& (? register64? r/m64) (? imm8? displacement)))
-     (receive (modrm sib) (effective-addr+disp mod.disp8 r/m64 r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,(opcode #x03) ,modrm ,(imm8->u8 displacement)) #f))]
+    [('addq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))))
+     ($r64-r/m64-disp8 #x03 r64 r/m64 disp8)]
     ;; SUB r/m64, imm8
     ;;   REX.W + 83 /5 ib
-    [('subq (? register64? r/m64) (? imm8? imm8))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #x83) ,(mod-r-m mod.register r/m64 (number->register64 5)) ,(imm8->u8 imm8)) #f)]
+    [('subq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 imm8)))
+     ($r/m64-imm8 #x83 5 r/m64 imm8)]
     ;; RET
     ;;   C3
     [('retq)
      (values '(#xc3) #f)]
     ;; SAR r/m64, imm8
     ;;   REX.W + C1 /7 ib
-    [('sarq (? register64? r/m64) (? imm8? imm8))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,(opcode #xc1) ,(mod-r-m mod.register r/m64 (number->register64 7)) ,(imm8->u8 imm8)) #f)]
+    [('sarq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 imm8)))
+     ($r/m64-imm8 #xc1 7 r/m64 imm8)]
     ;; MOVSXD r64, r/m32
     ;;   REX.W** + 63 /r
-    [('movslq (? register64? r64) (? register32? r/m32))
-     (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x63) ,(mod-r-m mod.register (register32->64 r/m32) r64)) #f)]
+    [('movslq (? r64? (= r64->number r64)) (? r32? (= r32->number r/m32)))
+     ($r64-r/m64 #x63 r64 r/m32)]
     ;; LEA r64,m
     ;;   REX.W + 8D /r
-    [('leaq (? register64? r64) ('& (? imm32? displacement) ('* (? register64? index-reg) 8)))
-     ;; base is omitted and disp32 => base = rbp
-     (receive (modrm sib) (effective-addr+scale8 (number->register64 4) r64 'rbp index-reg)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x8d) ,modrm ,@sib ,@(imm32->u8-list displacement)) #f))]
-    [('leaq dest-reg ('& (? register64? src-reg)))
+    [('leaq (? r64? (= r64->number r64)) ('& (? imm32? (= imm32->u8* disp32)) ('* (? r64? (= r64->number index)) 8)))
+     ($r64-r/m64-disp32-sib8 #x8d r64 4 (r64->number 'rbp) disp32 index)] ;; base is omitted and disp32 => base = rbp
+    [('leaq dest-reg ('& (? r64? src-reg)))
      (assemble1 `(leaq ,dest-reg (& ,src-reg 0)))]
     ;; (& displacement (* scale index-reg)) is disp32
-    [('leaq (? register64? dest-reg) ('& ('* (? register64? index-reg) 8)))
-     (assemble1 `(leaq ,dest-reg (& 0 (* ,index-reg 8))))]
-    [('leaq (? register64? r64) ('& (? imm32? displacement) ('* (? register64? index-reg) 4)))
-     ;; base is omitted and disp32 => base = rbp
-     (receive (modrm sib) (effective-addr+scale48 (number->register64 4) r64 'rbp index-reg)
-       (values `(,(rex-prefix #t #f (ext-reg? index-reg) #f) ,(opcode #x8d) ,modrm ,@sib ,@(imm32->u8-list displacement)) #f))]
-    [('leaq (? register64? r64) ('& (? imm8? displacement) (? register64? base-reg) ('* (? register64? index-reg) 8)))
-     (receive (modrm sib) (effective-addr+scale88 (number->register64 4) r64 base-reg index-reg)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x8d) ,modrm ,@sib ,(imm8->u8 displacement)) #f))]
-    [('leaq (? register64? r64)  ('& src-reg 0))
-     (receive (modrm sib) (effective-addr src-reg r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x8d) ,modrm ,@sib) #f))]
-    [('leaq (? register64? r64)  ('& src-reg (? imm8? displacement)))
-     (receive (modrm sib) (effective-addr+disp mod.disp8 src-reg r64)
-       (values `(,(rex-prefix #t (ext-reg? r64) #f #f) ,(opcode #x8d) ,modrm ,@sib ,(imm8->u8 displacement)) #f))]
-    [('leaq (? register64? r64) ('& src-reg (? imm32? displacement)))
-     (receive (modrm sib) (effective-addr+disp mod.disp32 src-reg r64)
-       (values `(,(rex-prefix #t #f #f (ext-reg? src-reg)) ,(opcode #x8d) ,modrm ,@sib ,@(imm32->u8-list displacement)) #f))]
+    [('leaq (? r64? r64) ('& ('* (? r64? index-reg) 8)))
+     (assemble1 `(leaq ,r64 (& 0 (* ,index-reg 8))))]
+    [('leaq (? r64? (= r64->number r64)) ('& (? imm32? (= imm32->u8* disp32)) ('* (? r64? (= r64->number index)) 4)))
+     ($r64-r/m64-disp32-sib4 #x8d r64 4 (r64->number 'rbp) disp32 index)] ;; base is omitted and disp32 => base = rbp
+    [('leaq (? r64? (= r64->number r64)) ('& (? imm8? (= imm8->u8 disp8)) (? r64? (= r64->number base)) ('* (? r64? (= r64->number index)) 8)))
+     ($64-r/m64-disp8-sib8 #x8d r64 4 base disp8 index)]
+    [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) 0))
+     ($r64-r/m64-disp0 #x8d r64 base)]
+    [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) (? imm8? (= imm8->u8 disp8))))
+     ($r64-r/m64-disp8 #x8d r64 base disp8)]
+    [('leaq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number base)) (? imm32? (= imm32->u8* disp32))))
+     ($r64-r/m64-disp32 #x8d r64 base disp32)]
     [x
      (error 'assemble "assemble error: invalid syntax" x)]))
 
@@ -428,7 +536,7 @@
 
 (define (macro-to-fixnum reg)
   `((sarq ,reg 2)                        ; reg = reg >> 2
-   (movslq ,reg ,(register64->32 reg)))) ; reg = reg32 (with sign)
+   (movslq ,reg ,(r64->32 reg)))) ; reg = reg32 (with sign)
 
 (define (macro-refer-local dest-reg fp-reg index-reg)
   `((movq ,dest-reg (& ,fp-reg (* ,index-reg 8)))))
@@ -999,7 +1107,7 @@
     (error 'gas->sassy "invalid form" gas)]
    ))
 
-(define (u8-list->c-procedure+retq lst)
+(define (u8*->c-procedure+retq lst)
   (u8-list->c-procedure (append lst (assemble '((retq))))))
 
 ;; '(movq rbx (& rsp #x38))

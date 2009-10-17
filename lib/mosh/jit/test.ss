@@ -13,8 +13,8 @@
   (include/resolve ("mosh" "jit") "jit-impl.ss")
 
   (define (test)
-    (test-true (register64? 'rdi))
-    (test-false (register64? 'rrr))
+    (test-true (r64? 'rdi))
+    (test-false (r64? 'rrr))
 
     (receive (found index) (find-with-index even? '(1 3 4 5))
        (test-eq 4 found)
@@ -23,8 +23,8 @@
     (test-eq #xe3 (mod-r-m #b11 'rbx 'rsp))
     (test-eq #x5c (effective-addr+disp mod.disp8 'rsp 'rbx))
 
-    (test-eq 4 (register64->number 'rsp))
-    (test-eq 'rdi (number->register64 (register64->number 'rdi)))
+    (test-eq 4 (r64->number 'rsp))
+    (test-eq 'rdi (number->r64 (r64->number 'rdi)))
 
     ;; c-function address
     (test-true (number? (get-c-address 'Object::isNumber)))
@@ -32,7 +32,7 @@
     ;; vm registers
     (test-equal '(& rdi 8) (vm-register 'ac))
 
-    (test-equal '(13 0 0 0) (imm32->u8-list 13))
+    (test-equal '(13 0 0 0) (imm32->u8* 13))
 
     ;; assemble1
 
@@ -227,20 +227,20 @@
 
     ;; CONSTANT instruction
     (let* ([code (assemble (CONSTANT 13))]
-           [proc (u8-list->c-procedure+retq code)])
+           [proc (u8*->c-procedure+retq code)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
     ;; REFER_LOCAL_PUSH_CONSTANT instruction
     (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 0 13))]
            [code2  (assemble (POP))]
-           [proc (u8-list->c-procedure+retq (append code1 code2))])
+           [proc (u8*->c-procedure+retq (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1234 (proc 1234)))
 
     (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 1 13))]
            [code2  (assemble (POP))]
-           [proc (u8-list->c-procedure+retq (append code1 code2))])
+           [proc (u8*->c-procedure+retq (append code1 code2))])
       (test-true (procedure? proc))
       (test-eq 1235 (proc 1234 1235)))
 
@@ -251,7 +251,7 @@
                                     (CONSTANT (vm-make-fixnum 3))
                                     `((label ,label))
                                     (POP2)))]
-           [proc (u8-list->c-procedure+retq code1)])
+           [proc (u8*->c-procedure+retq code1)])
       (test-true (procedure? proc))
       ;; ac_ is result of compare
       (test-eq #f (proc 2)))
@@ -266,7 +266,7 @@
                     (POP2)
                     (POP2)
                     (CONSTANT (vm-make-fixnum 3))))]
-           [proc (u8-list->c-procedure+retq code1)])
+           [proc (u8*->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 3 (proc)))
 
@@ -279,7 +279,7 @@
                     (CONSTANT (vm-make-fixnum 2))
                     (NUMBER_SUB_PUSH)
                     (POP)))]
-           [proc (u8-list->c-procedure+retq code1)])
+           [proc (u8*->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 8 (proc)))
 
@@ -352,10 +352,10 @@
                       ,@(restore-vm-registers)
                       ,@(CONSTANT (vm-make-fixnum 11))
                       (retq))))]
-           [proc (u8-list->c-procedure+retq code1)])
+           [proc (u8*->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 10 (proc))))
-
+    
 
     ;; gas -> sassy
     (test-equal '(movq rbx rsp) (gas->sassy "mov   %rsp,%rbx"))
