@@ -99,9 +99,6 @@
      (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
      (bitwise-and r/m-n #b111)))
 
-#;(define (mod-r-m mod r/m reg)
-  (assert (for-all r64? (list r/m reg)))
-  (mod-r-r/m mod (r64->number reg) (r64->number r/m)))
 
 (define (mod-r-m8 mod r/m reg)
   (assert (for-all r8? (list r/m reg)))
@@ -111,17 +108,6 @@
   (assert (for-all r32? (list r/m reg)))
   (mod-r-r/m mod (r32->number reg) (r32->number r/m)))
 
-#;(define (effective-addr+disp mod r/m64 r64)
-  (assert (for-all r64? (list r/m64 r64)))
-  (values
-   (mod-r-m mod r/m64 r64)
-   (cond
-    [(eq? r/m64 'rsp)
-     (list (sib sib.scale1 'rsp 'rsp))]
-    [(eq? r/m64 'r12)
-     (list (sib sib.scale1 'r12 'r12))]
-    [else
-       '()])))
 
 (define (effective-addr+dispA mod r64 r/m64)
   (values
@@ -135,14 +121,6 @@
        '()])))
 
 
-#;(define (effective-addr+scale mod r/m64 r64 scale base-reg index-reg)
-  (assert (for-all r64? (list r/m64 r64)))
-  (values
-   (mod-r-m mod r/m64 r64)
-   (if (eq? r/m64 'rsp)
-       (list (sib scale base-reg index-reg))
-       '())))
-
 (define (effective-addr+scale2 mod r/m64 r64 scale base-reg index-reg)
   (values
    (mod-r-r/m mod r64 r/m64)
@@ -150,14 +128,7 @@
        (list (sib2 scale base-reg index-reg))
        '())))
 
-
-#;(define (effective-addr r/m64 r64)
-  (assert (for-all r64? (list r/m64 r64)))
-  (values (mod-r-m mod.disp0 r/m64 r64)
-          '()))
-
 (define (effective-addr2 r64 r/m64)
-;  (assert (for-all r64? (list r/m64 r64)))
   (values (mod-r-r/m mod.disp0 r64 r/m64)
           '()))
 
