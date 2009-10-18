@@ -99,24 +99,15 @@
      (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
      (bitwise-and r/m-n #b111)))
 
-
-(define (mod-r-m8 mod r/m reg)
-  (assert (for-all r8? (list r/m reg)))
-  (mod-r-r/m mod (r8->number reg) (r8->number r/m)))
-
-(define (mod-r-m32 mod r/m reg)
-  (assert (for-all r32? (list r/m reg)))
-  (mod-r-r/m mod (r32->number reg) (r32->number r/m)))
-
-
 (define (effective-addr+dispA mod r64 r/m64)
   (values
    (mod-r-r/m mod r64 r/m64)
    (cond
-    [(eq? (number->r64 r/m64) 'rsp) ;; todo
-     (list (sib sib.scale1 'rsp 'rsp))]
-    [(eq? (number->r64 r/m64) 'r12) ;; todo
-     (list (sib sib.scale1 'r12 'r12))]
+    ;; r/m = #b*100 (rsp, r12) requires sib except mod=#x11
+    ;;   see http://www.mztn.org/lxasm64/amd05.html
+    [(and (not (= mod mod.disp0)) (memq r/m64 '(#b0100 #b1100)))
+     (let ([r64-index #b100])   ;; #b100 means "none", no index.
+       (list (sib2 sib.scale1 r64-index r/m64)))]
     [else
        '()])))
 
@@ -125,26 +116,24 @@
   (values
    (mod-r-r/m mod r64 r/m64)
    (if (eq? (number->r64 r/m64) 'rsp)
-       (list (sib2 scale base-reg index-reg))
+       (list (sib2 scale index-reg base-reg))
        '())))
+
+
 
 (define (effective-addr2 r64 r/m64)
   (values (mod-r-r/m mod.disp0 r64 r/m64)
           '()))
-
-
-
-
 
 (define (sib scaled-index base-reg src-reg)
   (+ (bitwise-arithmetic-shift-left scaled-index 6)
      (bitwise-arithmetic-shift-left (bitwise-and (r64->number src-reg) #b111) 3)
      (bitwise-and (r64->number base-reg) #b111)))
 
-(define (sib2 scaled-index base-reg src-reg)
-  (+ (bitwise-arithmetic-shift-left scaled-index 6)
-     (bitwise-arithmetic-shift-left (bitwise-and src-reg #b111) 3)
-     (bitwise-and base-reg #b111)))
+(define (sib2 scale r64-index r/m64-base)
+  (+ (bitwise-arithmetic-shift-left scale 6)
+     (bitwise-arithmetic-shift-left (bitwise-and r64-index #b111) 3)
+     (bitwise-and r/m64-base #b111)))
 
 
 
@@ -229,9 +218,9 @@
 
 ;; REX prefix
 ;;    w - operand width.  #t - 64bit
-;;    r - modrm reg register extra bit
+;;    r - modrr/m reg register extra bit
 ;;    x - sib index register extra bit
-;;    b - modrm r/m register extra bit
+;;    b - modrr/m r/m register extra bit
 (define (rex-prefix w? r? x? b?)
   (+ #b01000000
      (if w? #b1000 0)
@@ -257,23 +246,23 @@
   (let-optionals* opt
       ([disp0/8/32 '()]
        [imm32 '()])
-    (receive (modrm sib) (effective-addr+dispA mod r64 r/m64)
-      (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp0/8/32 ,@imm32) #f))))
+    (receive (modrr/m sib) (effective-addr+dispA mod r64 r/m64)
+      (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrr/m ,@sib ,@disp0/8/32 ,@imm32) #f))))
 
 ;; (movq r64 (& disp32 base (* index scale)))
 (define ($r64-r/m64-disp32-sib opcode r64 r/m64 base disp32 index scale)
-  (receive (modrm sib) (effective-addr+scale2 mod.disp0 r/m64 r64 scale base index) ;; todo arg order
-    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp32) #f)))
+  (receive (modrr/m sib) (effective-addr+scale2 mod.disp0 r/m64 r64 scale base index) ;; todo arg order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrr/m ,@sib ,@disp32) #f)))
 
 ;; (movq r64 (& r/m64 (* index 8)))
 (define ($r64-r/m64-sib8 opcode r64 r/m64 index)
-  (receive (modrm sib) (effective-addr+scale2 mod.disp0 4 r64 sib.scale8 r/m64 index)
-    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
+  (receive (modrr/m sib) (effective-addr+scale2 mod.disp0 4 r64 sib.scale8 r/m64 index)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrr/m ,@sib) #f)))
 
 ;; (movq r64 (& disp8 base (* index scale)))
 (define ($64-r/m64-disp8-sib opcode r64 r/m64 base disp8 index scale)
-  (receive (modrm sib) (effective-addr+scale2 mod.disp8 4 r64 scale base index) ; argument order
-    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp8) #f)))
+  (receive (modrr/m sib) (effective-addr+scale2 mod.disp8 4 r64 scale base index) ; argument order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrr/m ,@sib ,@disp8) #f)))
 
 ;; (push r64)
 (define ($r64 opcode r64)
