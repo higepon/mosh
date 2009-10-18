@@ -318,24 +318,13 @@
     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
 
 ;; (movq r64 (& r/m64 disp8/32)) or (movq r64 (& r/m64 0))
-(define ($r64-r/m64-disp opcode mod r64 r/m64 disp0/8/32)
-  (receive (modrm sib) (effective-addr+dispA mod r64 r/m64)
-    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp0/8/32) #f)))
-
-;; (movq (& r/m64 0) r64) ;; todo(movq (& r/m64) r64)
-(define ($r/m64-r64-disp0 opcode r64 r/m64)
-  (receive (modrm sib) (effective-addr2 r64 r/m64)
-    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm) #f)))
-
-;; (movq (& r/m64 disp8) r64)
-(define ($r/m64-disp8-r64 opcode r64 r/m64 disp8)
-  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
-    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,disp8) #f)))
-
-;; (movq (& r/m64 disp8/32) imm32)
-(define ($r/m64-disp-imm32 opcode mod.disp r64 r/m64 disp8/32 imm32)
-  (receive (modrm sib) (effective-addr+dispA mod.disp r64 r/m64)
-    (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp8/32 ,@imm32) #f)))
+;; (movq (& r/m64 disp8/32) r64) or (movq (& r/m64 0) r64)
+(define ($r64-r/m64-disp opcode mod r64 r/m64 . opt)
+  (let-optionals* opt
+      ([disp0/8/32 '()]
+       [imm32 '()])
+    (receive (modrm sib) (effective-addr+dispA mod r64 r/m64)
+      (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp0/8/32 ,@imm32) #f))))
 
 ;; (movq r64 (& disp32 base (* index 8)))
 (define ($r64-r/m64-disp32-sib8 opcode r64 r/m64 base disp32 index)
@@ -433,7 +422,7 @@
     ;; MOV r64,r/m64
     ;;   REX.W + 8B /r
     [('movq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) 0)) ;; special case for zero
-     ($r64-r/m64-disp #x8b mod.disp0 r64 r/m64 '())]
+     ($r64-r/m64-disp #x8b mod.disp0 r64 r/m64)]
     [('movq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))))
      ($r64-r/m64-disp #x8b mod.disp8 r64 r/m64 disp8)]
     [('movq (? r64? r64) ('& (? r64? r/m64)))
@@ -441,11 +430,11 @@
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq ('& (? r64? (= r64->number r/m64)) 0) (? r64? (= r64->number r64)))
-     ($r64-r/m64-disp #x89 mod.disp0 r64 r/m64 '())]
-    [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))) (? r64? (= r64->number r64)))
-     ($r/m64-disp8-r64 #x89 r64 r/m64 disp8)]
+     ($r64-r/m64-disp #x89 mod.disp0 r64 r/m64)]
+    [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? r64? (= r64->number r64)))
+     ($r64-r/m64-disp #x89 mod.disp8 r64 r/m64 disp8)]
     [('movq ('& (? r64? (= r64->number r/m64))) (? r64? (= r64->number r64)))
-     ($r/m64-r64-disp0 #x89 r64 r/m64)]
+     ($r64-r/m64-disp #x89 mod.disp0 r64 r/m64)]
     ;; MOV r/m32,r32
     ;;   89 /r
     [('movl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
@@ -469,9 +458,9 @@
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? imm32? (= imm32->u8* imm32)))
-     ($r/m64-disp-imm32 #xc7 mod.disp8 0 r/m64 disp8 imm32)]
+     ($r64-r/m64-disp #xc7 mod.disp8 0 r/m64 disp8 imm32)]
     [('movq ('& (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* disp32))) (? imm32? (= imm32->u8* imm32)))
-     ($r/m64-disp-imm32 #xc7 mod.disp32 0 r/m64 disp32 imm32)]
+     ($r64-r/m64-disp #xc7 mod.disp32 0 r/m64 disp32 imm32)]
     ;; ADD r/m64, imm8
     ;;   REX.W + 83 /0 ib Valid N.E.
     [('addq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 imm8)))
@@ -510,7 +499,7 @@
     [('leaq (? r64? (= r64->number r64)) ('& (? imm8? (= imm8->u8 disp8)) (? r64? (= r64->number base)) ('* (? r64? (= r64->number index)) 8)))
      ($64-r/m64-disp8-sib8 #x8d r64 4 base disp8 index)]
     [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) 0))
-     ($r64-r/m64-disp #x8d mod.disp0 r64 base '())]
+     ($r64-r/m64-disp #x8d mod.disp0 r64 base)]
     [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) (? imm8? (= imm8->u8* disp8))))
      ($r64-r/m64-disp #x8d mod.disp8 r64 base disp8)]
     [('leaq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number base)) (? imm32? (= imm32->u8* disp32))))
