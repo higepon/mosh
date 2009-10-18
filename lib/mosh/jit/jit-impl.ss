@@ -307,10 +307,10 @@
 (define ($r/m32-r32 opcode r32 r/m32)
   (values `(,opcode ,(mod-r-m-encode mod.register r32 r/m32)) #f))
 
-;; (cmpq (& r/m64 disp8) imm8)
-(define ($&-r/m64-disp8-imm8 opcode r64 r/m64 disp8 imm8)
-  (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
-    (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,disp8 ,imm8) #f)))
+;; ;; (cmpq (& r/m64 disp8) imm8)
+;; (define ($&-r/m64-disp8-imm8 opcode r64 r/m64 disp8 imm8)
+;;   (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
+;;     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,disp8 ,imm8) #f)))
 
 ;; (movq r64 (& r/m64 (* index 8)))
 (define ($r64-r/m64-sib8 opcode r64 r/m64 index)
@@ -399,8 +399,8 @@
      (values `(,rex.w #x3d ,@u8*) #f)]
     ;; CMP r/m64, imm8
     ;;   REX.W + 83 /7 ib
-    [('cmpq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8 disp8))) (? imm8? (= imm8->u8 imm8)))
-     ($&-r/m64-disp8-imm8 #x83 7 r/m64 disp8 imm8)]
+    [('cmpq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? imm8? (= imm8->u8* imm8)))
+     ($r64-r/m64-disp #x83 mod.disp8 7 r/m64 disp8 imm8)]
     ;; CALL r/m64
     ;;   FF /2
     [('callq (? r64? (= r64->number r/m64)))
@@ -409,8 +409,8 @@
     [('int 3) (values '(#xcc) #f)]
     ;; MOV r/m64, imm32 Valid
     ;;   REX.W + C7 /0
-    [('movq (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* u8*)))
-     ($r/m64-imm32 #xc7 0 r/m64 u8*)]
+    [('movq (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* imm32)))
+     ($r64-r/m64-disp #xc7 mod.register 0 r/m64 '() imm32)]
     ;; MOV r/m64,r64
     ;;   REX.W + 89 /r
     [('movq (? r64? (= r64->number r/m64)) (? r64? (= r64->number r64)))
