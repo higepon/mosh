@@ -94,96 +94,72 @@
 (define sib.scale4 #b10)
 (define sib.scale8 #b11)
 
-(define (mod-r-m-encode mod reg-n r/m-n)
+(define (mod-r-r/m mod reg-n r/m-n)
   (+ (bitwise-arithmetic-shift-left mod 6)
      (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
      (bitwise-and r/m-n #b111)))
 
-(define (mod-r-m mod r/m reg)
+#;(define (mod-r-m mod r/m reg)
   (assert (for-all r64? (list r/m reg)))
-  (mod-r-m-encode mod (r64->number reg) (r64->number r/m)))
+  (mod-r-r/m mod (r64->number reg) (r64->number r/m)))
 
 (define (mod-r-m8 mod r/m reg)
   (assert (for-all r8? (list r/m reg)))
-  (mod-r-m-encode mod (r8->number reg) (r8->number r/m)))
+  (mod-r-r/m mod (r8->number reg) (r8->number r/m)))
 
 (define (mod-r-m32 mod r/m reg)
   (assert (for-all r32? (list r/m reg)))
-  (mod-r-m-encode mod (r32->number reg) (r32->number r/m)))
+  (mod-r-r/m mod (r32->number reg) (r32->number r/m)))
 
-(define (effective-addr+disp mod r/m-reg reg-reg)
-  (assert (for-all r64? (list r/m-reg reg-reg)))
+#;(define (effective-addr+disp mod r/m64 r64)
+  (assert (for-all r64? (list r/m64 r64)))
   (values
-   (mod-r-m mod r/m-reg reg-reg)
+   (mod-r-m mod r/m64 r64)
    (cond
-    [(eq? r/m-reg 'rsp)
+    [(eq? r/m64 'rsp)
      (list (sib sib.scale1 'rsp 'rsp))]
-    [(eq? r/m-reg 'r12)
+    [(eq? r/m64 'r12)
      (list (sib sib.scale1 'r12 'r12))]
     [else
        '()])))
 
-(define (effective-addr+dispA mod reg-reg r/m-reg)
+(define (effective-addr+dispA mod r64 r/m64)
   (values
-   (mod-r-m-encode mod reg-reg r/m-reg)
+   (mod-r-r/m mod r64 r/m64)
    (cond
-    [(eq? (number->r64 r/m-reg) 'rsp) ;; todo
+    [(eq? (number->r64 r/m64) 'rsp) ;; todo
      (list (sib sib.scale1 'rsp 'rsp))]
-    [(eq? (number->r64 r/m-reg) 'r12) ;; todo
+    [(eq? (number->r64 r/m64) 'r12) ;; todo
      (list (sib sib.scale1 'r12 'r12))]
     [else
        '()])))
 
 
-(define (effective-addr+scale mod r/m-reg reg-reg scale base-reg index-reg)
-  (assert (for-all r64? (list r/m-reg reg-reg)))
+#;(define (effective-addr+scale mod r/m64 r64 scale base-reg index-reg)
+  (assert (for-all r64? (list r/m64 r64)))
   (values
-   (mod-r-m mod r/m-reg reg-reg)
-   (if (eq? r/m-reg 'rsp)
+   (mod-r-m mod r/m64 r64)
+   (if (eq? r/m64 'rsp)
        (list (sib scale base-reg index-reg))
        '())))
 
-(define (effective-addr+scale2 mod r/m-reg reg-reg scale base-reg index-reg)
+(define (effective-addr+scale2 mod r/m64 r64 scale base-reg index-reg)
   (values
-   (mod-r-m-encode mod reg-reg r/m-reg)
-   (if (eq? (number->r64 r/m-reg) 'rsp)
+   (mod-r-r/m mod r64 r/m64)
+   (if (eq? (number->r64 r/m64) 'rsp)
        (list (sib2 scale base-reg index-reg))
        '())))
 
 
-(define (effective-addr r/m-reg reg-reg)
-  (assert (for-all r64? (list r/m-reg reg-reg)))
-  (values (mod-r-m mod.disp0 r/m-reg reg-reg)
+#;(define (effective-addr r/m64 r64)
+  (assert (for-all r64? (list r/m64 r64)))
+  (values (mod-r-m mod.disp0 r/m64 r64)
           '()))
 
-(define (effective-addr2 reg-reg r/m-reg)
-;  (assert (for-all r64? (list r/m-reg reg-reg)))
-  (values (mod-r-m-encode mod.disp0 reg-reg r/m-reg)
+(define (effective-addr2 r64 r/m64)
+;  (assert (for-all r64? (list r/m64 r64)))
+  (values (mod-r-r/m mod.disp0 r64 r/m64)
           '()))
-
-
-;; sib = scale, index, base
-;; base[index] scale = size of base
-(define (effective-addr+scale8 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale mod.disp0 r/m-reg reg-reg sib.scale8 base-reg index-reg))
-
-(define (effective-addr+scale82 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale2 mod.disp0 r/m-reg reg-reg sib.scale8 base-reg index-reg))
-
-
-(define (effective-addr+scale88 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale mod.disp8 r/m-reg reg-reg sib.scale8 base-reg index-reg))
-
-(define (effective-addr+scale882 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale2 mod.disp8 r/m-reg reg-reg sib.scale8 base-reg index-reg))
-
-
-(define (effective-addr+scale48 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale mod.disp0 r/m-reg reg-reg sib.scale4 base-reg index-reg))
-
-(define (effective-addr+scale482 r/m-reg reg-reg base-reg index-reg)
-  (effective-addr+scale2 mod.disp0 r/m-reg reg-reg sib.scale4 base-reg index-reg))
-
 
 
 
@@ -294,28 +270,15 @@
 
 ;; (movq r/m64 imm8)
 (define ($r/m64-imm8 opcode r64 r/m64 imm8)
-  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64) ,imm8) #f))
-
-;; (movq r/m64 imm32)
-(define ($r/m64-imm32 opcode r64 r/m64 imm32)
-  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64) ,@imm32) #f))
+  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-r/m mod.register r64 r/m64) ,imm8) #f))
 
 ;; (cmpq r64 r/m64)
 (define ($r64-r/m64 opcode r64 r/m64)
-  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-m-encode mod.register r64 r/m64)) #f))
+  (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,(mod-r-r/m mod.register r64 r/m64)) #f))
 
 (define ($r/m32-r32 opcode r32 r/m32)
-  (values `(,opcode ,(mod-r-m-encode mod.register r32 r/m32)) #f))
+  (values `(,opcode ,(mod-r-r/m mod.register r32 r/m32)) #f))
 
-;; ;; (cmpq (& r/m64 disp8) imm8)
-;; (define ($&-r/m64-disp8-imm8 opcode r64 r/m64 disp8 imm8)
-;;   (receive (modrm sib) (effective-addr+dispA mod.disp8 r64 r/m64)
-;;     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,disp8 ,imm8) #f)))
-
-;; (movq r64 (& r/m64 (* index 8)))
-(define ($r64-r/m64-sib8 opcode r64 r/m64 index)
-  (receive (modrm sib) (effective-addr+scale82 4 r64 r/m64 index)
-    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
 
 ;; (movq r64 (& r/m64 disp8/32)) or (movq r64 (& r/m64 0))
 ;; (movq (& r/m64 disp8/32) r64) or (movq (& r/m64 0) r64)
@@ -326,21 +289,20 @@
     (receive (modrm sib) (effective-addr+dispA mod r64 r/m64)
       (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib ,@disp0/8/32 ,@imm32) #f))))
 
-;; (movq r64 (& disp32 base (* index 8)))
-(define ($r64-r/m64-disp32-sib8 opcode r64 r/m64 base disp32 index)
-  (receive (modrm sib) (effective-addr+scale82 r/m64 r64 base index) ;; todo arg order
+;; (movq r64 (& disp32 base (* index scale)))
+(define ($r64-r/m64-disp32-sib opcode r64 r/m64 base disp32 index scale)
+  (receive (modrm sib) (effective-addr+scale2 mod.disp0 r/m64 r64 scale base index) ;; todo arg order
     (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp32) #f)))
 
-;; (movq r64 (& disp32 base (* index 4)))
-(define ($r64-r/m64-disp32-sib4 opcode r64 r/m64 base disp32 index)
-  (receive (modrm sib) (effective-addr+scale482 r/m64 r64 base index) ;; todo arg order
-    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp32) #f)))
+;; (movq r64 (& r/m64 (* index 8)))
+(define ($r64-r/m64-sib8 opcode r64 r/m64 index)
+  (receive (modrm sib) (effective-addr+scale2 mod.disp0 4 r64 sib.scale8 r/m64 index)
+    (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) ,opcode ,modrm ,@sib) #f)))
 
-;; (movq r64 (& disp8 base (* index 8)))
-(define ($64-r/m64-disp8-sib8  opcode r64 r/m64 base disp8 index)
-  (receive (modrm sib) (effective-addr+scale882 4 r64 base index) ; argument order
-    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,disp8) #f)))
-
+;; (movq r64 (& disp8 base (* index scale)))
+(define ($64-r/m64-disp8-sib opcode r64 r/m64 base disp8 index scale)
+  (receive (modrm sib) (effective-addr+scale2 mod.disp8 4 r64 scale base index) ; argument order
+    (values `(,(rex-prefix #t (ext-reg? r64) (ext-reg? index) #f) ,opcode ,modrm ,@sib ,@disp8) #f)))
 
 ;; (push r64)
 (define ($r64 opcode r64)
@@ -348,7 +310,7 @@
 
 ;; (callq r/m64)
 (define ($r/m64 opcode r64 r/m64)
-  (values `(,opcode ,(mod-r-m-encode mod.register r64 r/m64)) #f))
+  (values `(,opcode ,(mod-r-r/m mod.register r64 r/m64)) #f))
 
 
 ;; (oprand dest src)
@@ -359,11 +321,11 @@
     ;; NEG r/m64
     ;;   REX.W + F7 /3
     [('negq (? r64? (= r64->number r/m64)))
-     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) #xf7 ,(mod-r-m-encode mod.register 3 r/m64)) #f)]
+     (values `(,(rex-prefix #t #f #f (ext-reg? r/m64)) #xf7 ,(mod-r-r/m mod.register 3 r/m64)) #f)]
     ;; CMOVC r64, r/m64
     ;;   REX.W + 0F 4C /r
     [('cmovl (? r64? (= r64->number r64)) (? r64? (= r64->number r/m64)))
-     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) #x0f #x4c ,(mod-r-m-encode mod.register r64 r/m64)) #f)]
+     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) #x0f #x4c ,(mod-r-r/m mod.register r64 r/m64)) #f)]
     ;; CDQE Valid N.E. RAX ← sign-extend of EAX.
     ;;   REX.W + 98
     [('cltq)
@@ -371,7 +333,7 @@
     ;; TEST r/m8, imm8
     ;;   F6 /0 ib
     [('testb (? r8? (= r8->number r/m8)) (? imm8? (= imm8->u8 u8)))
-     (values `(#xf6 ,(mod-r-m-encode mod.register 0 r/m8) ,u8) #f)]
+     (values `(#xf6 ,(mod-r-r/m mod.register 0 r/m8) ,u8) #f)]
     ;; LEAVE
     ;;   C9
     [('leave) (values '(#xc9) #f)]
@@ -446,7 +408,7 @@
     ;; AND r/m32, imm8
     ;;   83 /4 ib
     [('andl (? r32? (= r32->number r/m32)) (? imm8? (= imm8->u8 imm8)))
-     (values `(,#x83 ,(mod-r-m-encode mod.register 4 r/m32) ,imm8) #f)]
+     (values `(,#x83 ,(mod-r-r/m mod.register 4 r/m32) ,imm8) #f)]
     ;; SUB AL, imm8
     ;;   2C ib
     [('subb 'al (? imm8? (= imm8->u8 imm8)))
@@ -454,7 +416,7 @@
     ;; SUB r/m32, r32
     ;;   29 /r
     [('subl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
-     (values `(,#x29 ,(mod-r-m-encode mod.register r32 r/m32)) #f)]
+     (values `(,#x29 ,(mod-r-r/m mod.register r32 r/m32)) #f)]
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? imm32? (= imm32->u8* imm32)))
@@ -488,16 +450,16 @@
     ;; LEA r64,m
     ;;   REX.W + 8D /r
     [('leaq (? r64? (= r64->number r64)) ('& (? imm32? (= imm32->u8* disp32)) ('* (? r64? (= r64->number index)) 8)))
-     ($r64-r/m64-disp32-sib8 #x8d r64 4 (r64->number 'rbp) disp32 index)] ;; base is omitted and disp32 => base = rbp
+     ($r64-r/m64-disp32-sib #x8d r64 4 (r64->number 'rbp) disp32 index sib.scale8)] ;; base is omitted and disp32 => base = rbp
     [('leaq dest-reg ('& (? r64? src-reg)))
      (assemble1 `(leaq ,dest-reg (& ,src-reg 0)))]
     ;; (& displacement (* scale index-reg)) is disp32
     [('leaq (? r64? r64) ('& ('* (? r64? index-reg) 8)))
      (assemble1 `(leaq ,r64 (& 0 (* ,index-reg 8))))]
     [('leaq (? r64? (= r64->number r64)) ('& (? imm32? (= imm32->u8* disp32)) ('* (? r64? (= r64->number index)) 4)))
-     ($r64-r/m64-disp32-sib4 #x8d r64 4 (r64->number 'rbp) disp32 index)] ;; base is omitted and disp32 => base = rbp
-    [('leaq (? r64? (= r64->number r64)) ('& (? imm8? (= imm8->u8 disp8)) (? r64? (= r64->number base)) ('* (? r64? (= r64->number index)) 8)))
-     ($64-r/m64-disp8-sib8 #x8d r64 4 base disp8 index)]
+     ($r64-r/m64-disp32-sib #x8d r64 4 (r64->number 'rbp) disp32 index sib.scale4)] ;; base is omitted and disp32 => base = rbp
+    [('leaq (? r64? (= r64->number r64)) ('& (? imm8? (= imm8->u8* disp8)) (? r64? (= r64->number base)) ('* (? r64? (= r64->number index)) 8)))
+     ($64-r/m64-disp8-sib #x8d r64 4 base disp8 index sib.scale8)]
     [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) 0))
      ($r64-r/m64-disp #x8d mod.disp0 r64 base)]
     [('leaq (? r64? (= r64->number r64))  ('& (? r64? (= r64->number base)) (? imm8? (= imm8->u8* disp8))))
