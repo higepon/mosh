@@ -99,6 +99,11 @@
      (bitwise-arithmetic-shift-left (bitwise-and reg-n #b111) 3)
      (bitwise-and r/m-n #b111)))
 
+(define (sib scale r64-index r/m64-base)
+  (+ (bitwise-arithmetic-shift-left scale 6)
+     (bitwise-arithmetic-shift-left (bitwise-and r64-index #b111) 3)
+     (bitwise-and r/m64-base #b111)))
+
 (define (effective-addr+dispA mod r64 r/m64)
   (values
    (mod-r-r/m mod r64 r/m64)
@@ -107,7 +112,7 @@
     ;;   see http://www.mztn.org/lxasm64/amd05.html
     [(and (not (= mod mod.disp0)) (memq r/m64 '(#b0100 #b1100)))
      (let ([r64-index #b100])   ;; #b100 means "none", no index.
-       (list (sib2 sib.scale1 r64-index r/m64)))]
+       (list (sib sib.scale1 r64-index r/m64)))]
     [else
        '()])))
 
@@ -116,25 +121,8 @@
   (values
    (mod-r-r/m mod r64 r/m64)
    (if (eq? (number->r64 r/m64) 'rsp)
-       (list (sib2 scale index-reg base-reg))
+       (list (sib scale index-reg base-reg))
        '())))
-
-
-
-(define (effective-addr2 r64 r/m64)
-  (values (mod-r-r/m mod.disp0 r64 r/m64)
-          '()))
-
-(define (sib scaled-index base-reg src-reg)
-  (+ (bitwise-arithmetic-shift-left scaled-index 6)
-     (bitwise-arithmetic-shift-left (bitwise-and (r64->number src-reg) #b111) 3)
-     (bitwise-and (r64->number base-reg) #b111)))
-
-(define (sib2 scale r64-index r/m64-base)
-  (+ (bitwise-arithmetic-shift-left scale 6)
-     (bitwise-arithmetic-shift-left (bitwise-and r64-index #b111) 3)
-     (bitwise-and r/m64-base #b111)))
-
 
 
 ;; asm* : list of asm
