@@ -21,7 +21,6 @@
        (test-eq 2 index))
 
     (test-eq #xe3 (mod-r-r/m #b11 (r64->number 'rsp) (r64->number 'rbx)))
-    (test-eq #x5c (effective-addr+dispA mod.disp8 (r64->number 'rbx) (r64->number 'rsp)))
 
     (test-eq 4 (r64->number 'rsp))
     (test-eq 'rdi (number->r64 (r64->number 'rdi)))
