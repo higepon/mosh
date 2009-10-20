@@ -103,7 +103,8 @@ Object Arithmetic::numberToString(Object n, int radix)
         return Object::makeString(r->toString(radix));
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
-        return format(NULL, UC("~d+~di"), Pair::list2(numberToString(c->real(), radix),
+        return format(NULL, UC("~d~a~di"), Pair::list3(numberToString(c->real(), radix),
+                                                      lt(c->imag(), Object::makeFixnum(0)) ? UC("") : UC("+"),
                                                       numberToString(c->imag(), radix)));
     } else {
         MOSH_ASSERT(false);
@@ -900,6 +901,7 @@ Object Arithmetic::denominator(Object n)
     }
 }
 
+// http://www.r6rs.org/final/html/r6rs/r6rs-Z-H-14.html#node_idx_448
 bool Arithmetic::isInteger(Object n)
 {
     MOSH_ASSERT(n.isNumber());

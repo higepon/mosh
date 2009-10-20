@@ -1,3 +1,9 @@
+2009-10-20  higepon  <higepon@users.sourceforge.jp>
+
+	* NumberReader.y: Fixed a bug, #i3.0+0i should be 3.0+0.0i. (A part of Issue 105).
+
+	* Arithmetic.cpp (Arithmetic::numberToString): Fixed a bug on Complex number.
+
 2009-10-09  higepon  <higepon@users.sourceforge.jp>
 
 	* tools/psyntax-r6rs/rev10_to_10/psyntax/compat.ss: Refixed Issue 102.
