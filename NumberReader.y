@@ -134,7 +134,7 @@ static Object suffixToNumber(const ucs4string& text)
 %type <object> top_level datum  naninf
 %type <object> num2  complex2   real2  ureal2   sreal2  uinteger2
 %type <object> num8  complex8   real8  ureal8   sreal8  uinteger8
-%type <object> num10 complex10  real10  ureal10 sreal10 uinteger10 decimal10
+%type <object> num10 complex10  icomplex10 real10  ureal10 sreal10 uinteger10 decimal10
 %type <object> num16 complex16  real16 ureal16  sreal16 uinteger16
 
 %start top_level
@@ -289,7 +289,42 @@ digit16   : digit10
           | DIGIT_16 { $$ = $1; }
           ;
 
-num10     : prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
+num10     : icomplex10
+          | prefix10 complex10 { $$ = ScannerHelper::applyExactness($1, $2); }
+
+/*
+   See test/number.scm
+*/
+icomplex10 :
+          | INEXACT real10 PLUS ureal10 IMAG {
+            if (Arithmetic::isExactZero($4)) {
+              $$ = Object::makeCompnum(ScannerHelper::applyExactness(-1, $2), Object::makeFlonum(0.0));
+            } else {
+              $$ = ScannerHelper::applyExactness(-1, Object::makeCompnum($2, $4));
+            }
+          }
+          | INEXACT real10 MINUS ureal10 IMAG {
+            if (Arithmetic::isExactZero($4)) {
+              $$ = Object::makeCompnum(ScannerHelper::applyExactness(-1, $2), Object::makeFlonum(0.0));
+            } else {
+              $$ = ScannerHelper::applyExactness(-1, Arithmetic::mul(-1, Object::makeCompnum($2, $4)));
+            }
+          }
+          | INEXACT PLUS  ureal10 IMAG {
+            if (Arithmetic::isExactZero($3)) {
+              $$ = Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFlonum(0.0));
+            } else {
+              $$ = Object::makeCompnum(Object::makeFlonum(0.0), ScannerHelper::applyExactness(-1, $3));
+            }
+          }
+          | INEXACT MINUS ureal10 IMAG {
+            if (Arithmetic::isExactZero($3)) {
+              $$ = Object::makeCompnum(Object::makeFlonum(0.0), Object::makeFlonum(0.0));
+            } else {
+              $$ = Object::makeCompnum(Object::makeFlonum(0.0), ScannerHelper::applyExactness(-1, Arithmetic::mul(-1, $3)));
+            }
+          }
+          ;
 
 complex10 : real10
           | real10 AT    real10       { $$ = Arithmetic::makePolar($1, $3); }

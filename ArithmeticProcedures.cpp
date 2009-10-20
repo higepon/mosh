@@ -494,7 +494,7 @@ Object scheme::rationalPEx(VM* theVM, int argc, const Object* argv)
     DeclareProcedureName("rational?");
     checkArgumentLength(1);
     const Object obj = argv[0];
-    return Object::makeBool(obj.isFixnum() || obj.isBignum() || obj.isRatnum());
+    return Object::makeBool(obj.isRational());
 }
 
 Object scheme::bignumPEx(VM* theVM, int argc, const Object* argv)
