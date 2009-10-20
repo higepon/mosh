@@ -1,5 +1,9 @@
 2009-10-20  higepon  <higepon@users.sourceforge.jp>
 
+	* test/number.scm : Added regression tests for Issue 105 thanks to mrc.mgg.
+
+	* Arithmetic.cpp (Arithmetic::isInteger): Fixed isInteger for Complex number (A part of Issue 105).
+
 	* NumberReader.y: Fixed a bug, #i3.0+0i should be 3.0+0.0i. (A part of Issue 105).
 
 	* Arithmetic.cpp (Arithmetic::numberToString): Fixed a bug on Complex number.

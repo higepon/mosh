@@ -295,7 +295,9 @@ num10     : inexact_complex10
 /*
    See test/number.scm
 */
-inexact_complex10 :
+inexact_complex10 : INEXACT real10 {
+            $$ = ScannerHelper::applyExactness(-1, $2);
+          }
           | INEXACT real10 PLUS ureal10 IMAG {
             if (Arithmetic::isExactZero($4)) {
               $$ = Object::makeCompnum(ScannerHelper::applyExactness(-1, $2), Object::makeFlonum(0.0));

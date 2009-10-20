@@ -912,7 +912,7 @@ bool Arithmetic::isInteger(Object n)
         }
     } else if (n.isCompnum()) {
         Compnum* const c = n.toCompnum();
-        return isZero(c->imag()) && isInteger(c->real());
+        return isExactZero(c->imag()) && isInteger(c->real());
     }
     return Arithmetic::eq(denominator(n), Object::makeFixnum(1));
 }

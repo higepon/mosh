@@ -17,6 +17,7 @@
 ;; Issue 105
 ;;  http://code.google.com/p/mosh-scheme/issues/detail?id=105
 ;;  inexact prefix
+(test-equal "3.0"      (number->string #i3.0))
 (test-equal "3.0+0.0i" (number->string #i3.0+0i))
 (test-equal "3.0+0.0i" (number->string #i3+0i))
 (test-equal "3.0+0.0i" (number->string #i3.0-0i))
@@ -43,7 +44,17 @@
 (test-equal "0+2i" (number->string +2i))
 (test-equal "0" (number->string -0i))
 (test-equal "0-2i" (number->string -2i))
+;; integer?, rational?
+(test-true (integer? 3+0i))
+(test-false (integer?  #i3.0+0i))
+(test-false (rational? #i3.0+0i))
+(test-true (integer?  3.0+0i))
+(test-true (rational? 3.0+0i))
+(test-true (integer?  3.0))
+(test-true (rational? 3.0))
+(test-true (integer?  #i3.0))
+(test-true (rational? #i3.0))
+(test-true (integer-valued? 3.0+0.0i))
+(test-true (integer-valued? #i3.0+0i))
 
 (test-results)
-
-
