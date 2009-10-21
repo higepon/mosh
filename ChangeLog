@@ -1,3 +1,7 @@
+2009-10-21  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/config.ss.in: Fixed typo pointed out by tabe.fixedpoint. Issue 107.
+
 2009-10-20  higepon  <higepon@users.sourceforge.jp>
 
 	* test/number.scm : Added regression tests for Issue 105 thanks to mrc.mgg.
