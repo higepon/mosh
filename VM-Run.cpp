@@ -730,6 +730,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_GLOBAL)
         {
+            asm volatile(" \t # -- REFER_GLOBAL start");
             const Object id = fetchOperand();
             if (id.isGloc()) {
                 ac_ = id.toGloc()->value();
@@ -746,6 +747,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                     *(pc_ - 1) = val;
                 }
             }
+            asm volatile(" \t # -- REFER_GLOBAL end");
             NEXT1;
         }
         CASE(REFER_GLOBAL_PUSH)

@@ -1,3 +1,7 @@
+2009-10-20  higepon  <higepon@users.sourceforge.jp>
+
+	* CompilerProcedures.h : Added obj->pointer for assembler.
+
 2009-10-16  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/test.ss : NUMBER_SUB_PUSH works.

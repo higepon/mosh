@@ -1053,6 +1053,7 @@
     (%ffi-free-c-callback-trampoline sys)
     ;; Jit start
     (u8-list->c-procedure sys)
+    (obj->integer sys)
     (get-c-address sys)
     ;; Jit end
     (shared-errno interaction sys)

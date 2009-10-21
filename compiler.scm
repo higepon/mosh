@@ -3044,7 +3044,7 @@
     (cput! cb
            'CLOSURE
            (ref-label end-of-closure)
-           (vars-length                                              ;; length of arguments
+           vars-length                                              ;; length of arguments
            (> ($lambda.optarg iform) 0)                             ;; optional-arg?
            frees-here-length)                                       ;; number of free variables
       ;; we want to know stack size of lambda body, before emit.
@@ -3064,7 +3064,7 @@
         (code-builder-append! cb lambda-cb)
         (code-builder-put-insn-arg1! cb 'RETURN vars-length)
         (cput! cb end-of-closure)
-        0))))
+        0)))
 
 (define (pass3/$receive cb iform locals frees can-frees sets tail depth display-count)
   (let* ([vars ($receive.lvars iform)]

@@ -71,9 +71,11 @@
     (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))
     (test-equal '(#x48 #x83 #x7e #x08 #x56) (assemble1 '(cmpq (& rsi 8) #x56)))
     (test-equal '(#x48 #x3d #xff #xff #xff #x3f) (assemble1 '(cmpq rax #x3fffffff)))
+    (test-equal '(#x48 #x39 #x42 #x58) (assemble1 '(cmpq (& rdx 88) rax)))
 
     ;; test
     (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
+    (test-equal '(#xf6 #xc3 #x03) (assemble1 '(testb bl 3)))
 
     ;; andl
     (test-equal '(#x83 #xe0 #x03) (assemble1 '(andl eax 3)))
@@ -107,6 +109,7 @@
     ;; call
     (test-equal '(#xff #xd0) (assemble1 '(callq rax)))
     (test-equal '(#xff #xd2) (assemble1 '(callq rdx)))
+    (test-equal '(#xff #x50 #x18) (assemble1 '(callq (& rax 24))))
 
     ;; jmp/label
     (test-equal '(#x74 #x00) (assemble '((je a) (label a))))
@@ -169,6 +172,13 @@
            [proc (u8-list->c-procedure asm)])
       (test-true (procedure? proc))
       (test-eq 5 (proc)))
+
+    ;; obj->integer
+    (let* ([code1 (assemble
+                   `((movq rax ,(obj->integer 'hoge))))]
+           [proc (u8*->c-procedure+retq code1)])
+      (test-eq 'hoge (proc)))
+
 
     ;; N.B.
     ;;   vm-register refers rdi.
@@ -281,6 +291,16 @@
            [proc (u8*->c-procedure+retq code1)])
       (test-true (procedure? proc))
       (test-eq 8 (proc)))
+
+    ;; REFER_GLOBAL
+    (let* ([code1 (assemble
+                   (append
+                    (REFER_GLOBAL 'zero?)
+                   (list `(movq rax ,(vm-register 'ac)))
+                    ))]
+           [proc (u8*->c-procedure+retq code1)])
+      (test-true (procedure? proc))
+      (test-eq zero? (proc)))
 
 
     ;; RETURN

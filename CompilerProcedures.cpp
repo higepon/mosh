@@ -80,6 +80,13 @@ enum {
     TAG_RECEIVE       = 18
 };
 
+Object scheme::objTointegerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("obj->integer");
+    checkArgumentLength(1);
+    return Bignum::makeIntegerFromUintprt_t(argv[0].val);
+}
+
 // (u8-list->c-procedure u8-list)
 // Used for Jit compilation.
 Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)

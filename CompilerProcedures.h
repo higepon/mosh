@@ -42,6 +42,7 @@ namespace scheme {
     {
         return lvar.toVector()->ref(1);
     }
+    Object objTointegerEx(VM* theVM, int argc, const Object* argv);
     Object getCAddressEx(VM* theVM, int argc, const Object* argv);
     Object u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv);
     Object pass1FindSymbolInLvarsEx(VM* theVM, int argc, const Object* argv);
