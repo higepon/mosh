@@ -72,6 +72,7 @@
     (test-equal '(#x48 #x83 #x7e #x08 #x56) (assemble1 '(cmpq (& rsi 8) #x56)))
     (test-equal '(#x48 #x3d #xff #xff #xff #x3f) (assemble1 '(cmpq rax #x3fffffff)))
     (test-equal '(#x48 #x39 #x42 #x58) (assemble1 '(cmpq (& rdx 88) rax)))
+    (test-equal '(#x48 #x83 #xfa #x03) (assemble1 '(cmpq rdx 3)))
 
     ;; test
     (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))

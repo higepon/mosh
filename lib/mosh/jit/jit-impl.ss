@@ -35,34 +35,78 @@
 
 (define (REFER_GLOBAL id)
   (let ([not-found-case (gensym)]
-        [symbol-case (gensym)])
-    (display (number->string (obj->integer id) 16))
-  `((movq rbx ,(obj->integer id))
-    ,(DEBUGGER)
-    (testb bl 3)
-    
-    (jne ,symbol-case)
-    ,(DEBUGGER)
-;;     (label ,not-found-case)
-;; ;    ,(DEBUGGER)
-     (label ,symbol-case)
-;;     (movq rcx ,(vm-register 'namespace))
-;;     (movq rax (& rcx))
-;;     (push rdi)
-;;     (push rsi)
-;;     (push rdx)
-;;     (movq rdx ,(vm-register 'not-found))
-;;     (movq rdi rcx)
-;;     (movq rsi rbx)
-;;     (callq (& rax 24))
-;;     (pop rdx)
-;;     (pop rsi)
-;;     (pop rdi)
-;;     (cmpq ,(vm-register 'not-found) rax)
-;;     (je ,not-found-case)
-;;     (movq rdx (& rax 8))
-;;     (movq rdx (& rdx))
-;;     (movq ,(vm-register 'ac) rdx)
+        [not-raw-pointer-case (gensym)]
+        [heap-object-case (gensym)])
+    `((movq rbx ,(obj->integer id))
+      (testb bl 3)                  ;; rbx.isRawPointer?
+      (jne ,not-raw-pointer-case)   ;;
+      (movq rax  (& rbx))           ;; rax = *rbx
+      (movq rdx rax)                ;; rdx = rax
+      (andl edx 3)                  ;; rdx.isHeapObject
+      (cmpq rdx 3)                  ;;
+      (je ,not-raw-pointer-case)    ;;
+      ;; rdx.isHeapObject
+      ,(DEBUGGER)
+      (label ,heap-object-case)
+      ,(DEBUGGER)
+      (label ,not-found-case)
+      ,(DEBUGGER)
+      (label ,not-raw-pointer-case)
+      (movq rax ,(vm-register 'namespace)) ;; rax = namespace
+      (push rdi)
+      (push rsi)
+      (push rdx)
+      (movq rdx ,(vm-register 'not-found)) ;; rdx = not_found arg3
+      (movq rsi rbx)                       ;; rsi = id        arg2
+      (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
+      (movq rax (& rdi))
+;;     movq    8(%rax), %rdi  ;rdi = 
+
+;;     movq    56(%rsp), %rdx ;;VM
+;;     movq    %rbx, %rsi     ;;rbx
+;;     movq    80(%rdx), %rax ;rax = namespace
+;;     movq    88(%rdx), %rdx ;rdx = not_found
+;;     movq    8(%rax), %rdi  ;rdi = 
+;;     movq    (%rdi), %rax
+
+
+;;     movq    80(%rsp), %rsi ;; rsi = vm
+;;     movq    (%rcx), %rax   ;; rax = *namespace
+;;     movq    88(%rsi), %rdx ;; rdx = not_found arg3
+;;     movq    %rcx, %rdi     ;; rdi = namespace arg1
+;;     movq    %rbx, %rsi     ;; rsi = id        arg2
+;;     call    *24(%rax)      ;; call
+
+;      ,(DEBUGGER)
+      (callq (& rax 24))                   ;; call
+;      ,(DEBUGGER)
+      (pop rdx)
+      (pop rsi)
+      (pop rdi)
+      (cmpq ,(vm-register 'not-found) rax) ;; rax = not_found ?
+      (je ,not-found-case)
+      (movq rdx (& rax 8))                 ;; ac = gloc.value
+      (movq rdx (& rdx))
+
+      (movq ,(vm-register 'ac) rdx))))
+
+;;     movq    96(%rsp), %rcx ;; rcx = namespace
+;;     movq    80(%rsp), %rsi ;; rsi = vm
+;;     movq    (%rcx), %rax   ;; rax = *namespace
+;;     movq    88(%rsi), %rdx ;; rdx = not_found arg3
+;;     movq    %rcx, %rdi     ;; rdi = namespace arg1
+;;     movq    %rbx, %rsi     ;; rsi = id        arg2
+;;     call    *24(%rax)      ;; call
+;;     movq    80(%rsp), %rdx ;; rdx = vm
+;;     cmpq    %rax, 88(%rdx) ;; rax = not_found ?
+;;     je  .L1212 ;; error
+;;     movq    %rdx, %rbx     ;; rbx = vm
+;;     movq    8(%rax), %rdx  ;; rdx =
+;;     movq    (%rdx), %rdx
+;;     movq    %rdx, 8(%rbx)  ;; ac = gloc.value
+;;     movq    48(%rbx), %rdx ;; rdx = pc
+;;     movq    %rax, -8(%rdx) ;; *(pc - 1) = gloc
+
 
     ;; todo gloc cache
 ;    (movq (& rbx 8) rdx)
@@ -73,20 +117,19 @@
 ;;     movq    48(%rbx), %rdx ;; rdx = pc
 ;;     movq    %rax, -8(%rdx) ;; *(pc - 1) = gloc
 
-    )))
 ;; # -- REFER_GLOBAL start
 ;;     movq    80(%rsp), %rcx ;; rcx = vm
 ;;     movq    48(%rcx), %rax ;; rax = pc
 ;;     movq    (%rax), %rbx   ;; rbx = *pc
 ;;     addq    $8, %rax       ;;
 ;;     movq    %rax, 48(%rcx) ;; pc = pc+8
-;;     testb   $3, %bl        ;; rbx.isHeapObject
-;;     jne .L598              ;; rbx.isSymol case
-;;     movq    (%rbx), %rax
-;;     movq    %rax, %rdx
-;;     andl    $3, %edx
+;;     testb   $3, %bl        ;; rbx.isRawPointer?
+;;     jne .L598              ;; rbx is not RawPointer
+;;     movq    (%rbx), %rax   ;; rax = *rbx
+;;     movq    %rax, %rdx     ;; rdx = rax
+;;     andl    $3, %edx       ;; rdx = heapObject?
 ;;     cmpq    $3, %rdx
-;;     je  .L1211
+;;     je  .L1211             ;; goto heap object case
 ;; .L598:
 ;;     movq    96(%rsp), %rcx ;; rcx = namespace
 ;;     movq    80(%rsp), %rsi ;; rsi = vm
@@ -347,11 +390,13 @@
     ;; CMP RAX, imm32 REX.W + 3D id
     [('cmpq 'rax (? imm32? (= imm32->u8* u8*)))
      (values `(,rex.w #x3d ,@u8*) #f)]
-
     ;; CMP r/m64, imm8
     ;;   REX.W + 83 /7 ib
     [('cmpq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? imm8? (= imm8->u8* imm8)))
      (pack-op #t #x83 mod.disp8 7 r/m64 #f #f #f disp8 imm8)]
+    [('cmpq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* imm8)))
+     (pack-op #t #x83 mod.register 7 r/m64 #f #f #f '() imm8)]
+
     ;; CALL r/m64
     ;;   FF /2
     [('callq (? r64? (= r64->number r/m64)))
