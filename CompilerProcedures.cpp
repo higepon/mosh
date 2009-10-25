@@ -47,6 +47,7 @@
 #include "SimpleStruct.h"
 #include "ExecutableMemory.h"
 #include "Bignum.h"
+#include "CProcedure.h"
 
 using namespace scheme;
 
@@ -121,6 +122,14 @@ static inline uintptr_t getClassMemberPointer(bool (Object::*func)() const)
     return *p;
 }
 
+// todo
+static inline uintptr_t getClassMemberPointer(Object (CProcedure::*func)(VM* theVM, int argc, const Object* argv))
+{
+    uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
+    return *p;
+}
+
+
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
@@ -129,11 +138,13 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
     argumentAsSymbol(0, name);
     static const ucs4char* names[] = {UC("Object::isNumber"),
                                       UC("Object::True"),
-                                      UC("Object::False")
+                                      UC("Object::False"),
+                                      UC("CProcedure::call")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
-                                   (uintptr_t)(&Object::False)
+                                   (uintptr_t)(&Object::False),
+                                   getClassMemberPointer(&CProcedure::call),
     };
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));
     for (size_t i = 0; i < sizeof(pointers) / sizeof(uintptr_t); i++) {

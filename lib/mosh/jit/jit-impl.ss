@@ -33,6 +33,35 @@
 
 ;; r64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
 
+(define (PUSH_FRAME)
+  `(,@(PUSH)
+    ,@(FRAME)))
+
+(define (CALL n)
+  (display (obj->integer display))
+  `((push rdi)                    ;; save registers
+    (push rsi)
+    (push rdx)
+    (movq rax ,n)                 ;; argc
+    (leaq rcx (& (* rax 8)))      ;; argc * 8
+    (negq rcx)
+    (addq rcx ,(vm-register 'sp)) ;; arg4 = sp - argc
+    (movq rdx ,n)                 ;; arg3 = argc
+    (movq rsi rdi)                ;; arg2 = VM
+    (movq rax ,(vm-register 'ac))
+    (movq rdi (& rax 8))          ;; arg1 CProcedure
+    (movq rax ,(get-c-address 'CProcedure::call))
+    (callq rax)
+    (pop rdx)
+    (pop rsi)
+    (pop rdi)
+    (push rax)
+    ;; adjust VM stack
+    ,@(RETURN n)
+    (pop rax)
+    (movq ,(vm-register 'ac) rax)
+    ))
+
 (define (REFER_GLOBAL id)
   (let ([not-found-case (gensym)]
         [not-raw-pointer-case (gensym)]
@@ -46,11 +75,11 @@
       (cmpq rdx 3)                  ;;
       (je ,not-raw-pointer-case)    ;;
       ;; rdx.isHeapObject
-      ,(DEBUGGER)
+     ,@(DEBUGGER 3009)
       (label ,heap-object-case)
-      ,(DEBUGGER)
+     ,@(DEBUGGER 3010)
       (label ,not-found-case)
-      ,(DEBUGGER)
+     ,@(DEBUGGER 3011)
       (label ,not-raw-pointer-case)
       (movq rax ,(vm-register 'namespace)) ;; rax = namespace
       (push rdi)
@@ -60,26 +89,7 @@
       (movq rsi rbx)                       ;; rsi = id        arg2
       (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
       (movq rax (& rdi))
-;;     movq    8(%rax), %rdi  ;rdi = 
-
-;;     movq    56(%rsp), %rdx ;;VM
-;;     movq    %rbx, %rsi     ;;rbx
-;;     movq    80(%rdx), %rax ;rax = namespace
-;;     movq    88(%rdx), %rdx ;rdx = not_found
-;;     movq    8(%rax), %rdi  ;rdi = 
-;;     movq    (%rdi), %rax
-
-
-;;     movq    80(%rsp), %rsi ;; rsi = vm
-;;     movq    (%rcx), %rax   ;; rax = *namespace
-;;     movq    88(%rsi), %rdx ;; rdx = not_found arg3
-;;     movq    %rcx, %rdi     ;; rdi = namespace arg1
-;;     movq    %rbx, %rsi     ;; rsi = id        arg2
-;;     call    *24(%rax)      ;; call
-
-;      ,(DEBUGGER)
       (callq (& rax 24))                   ;; call
-;      ,(DEBUGGER)
       (pop rdx)
       (pop rsi)
       (pop rdi)
@@ -87,79 +97,8 @@
       (je ,not-found-case)
       (movq rdx (& rax 8))                 ;; ac = gloc.value
       (movq rdx (& rdx))
-
       (movq ,(vm-register 'ac) rdx))))
-
-;;     movq    96(%rsp), %rcx ;; rcx = namespace
-;;     movq    80(%rsp), %rsi ;; rsi = vm
-;;     movq    (%rcx), %rax   ;; rax = *namespace
-;;     movq    88(%rsi), %rdx ;; rdx = not_found arg3
-;;     movq    %rcx, %rdi     ;; rdi = namespace arg1
-;;     movq    %rbx, %rsi     ;; rsi = id        arg2
-;;     call    *24(%rax)      ;; call
-;;     movq    80(%rsp), %rdx ;; rdx = vm
-;;     cmpq    %rax, 88(%rdx) ;; rax = not_found ?
-;;     je  .L1212 ;; error
-;;     movq    %rdx, %rbx     ;; rbx = vm
-;;     movq    8(%rax), %rdx  ;; rdx =
-;;     movq    (%rdx), %rdx
-;;     movq    %rdx, 8(%rbx)  ;; ac = gloc.value
-;;     movq    48(%rbx), %rdx ;; rdx = pc
-;;     movq    %rax, -8(%rdx) ;; *(pc - 1) = gloc
-
-
     ;; todo gloc cache
-;    (movq (& rbx 8) rdx)
-;;     movq    %rdx, %rbx     ;; rbx = vm
-;;     movq    8(%rax), %rdx  ;; rdx =
-;;     movq    (%rdx), %rdx
-;;     movq    %rdx, 8(%rbx)  ;; ac = gloc.value
-;;     movq    48(%rbx), %rdx ;; rdx = pc
-;;     movq    %rax, -8(%rdx) ;; *(pc - 1) = gloc
-
-;; # -- REFER_GLOBAL start
-;;     movq    80(%rsp), %rcx ;; rcx = vm
-;;     movq    48(%rcx), %rax ;; rax = pc
-;;     movq    (%rax), %rbx   ;; rbx = *pc
-;;     addq    $8, %rax       ;;
-;;     movq    %rax, 48(%rcx) ;; pc = pc+8
-;;     testb   $3, %bl        ;; rbx.isRawPointer?
-;;     jne .L598              ;; rbx is not RawPointer
-;;     movq    (%rbx), %rax   ;; rax = *rbx
-;;     movq    %rax, %rdx     ;; rdx = rax
-;;     andl    $3, %edx       ;; rdx = heapObject?
-;;     cmpq    $3, %rdx
-;;     je  .L1211             ;; goto heap object case
-;; .L598:
-;;     movq    96(%rsp), %rcx ;; rcx = namespace
-;;     movq    80(%rsp), %rsi ;; rsi = vm
-;;     movq    (%rcx), %rax   ;; rax = *namespace
-;;     movq    88(%rsi), %rdx ;; rdx = not_found arg3
-;;     movq    %rcx, %rdi     ;; rdi = namespace arg1
-;;     movq    %rbx, %rsi     ;; rsi = id        arg2
-;;     call    *24(%rax)      ;; call
-;;     movq    80(%rsp), %rdx ;; rdx = vm
-;;     cmpq    %rax, 88(%rdx) ;; rax = not_found ?
-;;     je  .L1212 ;; error
-;;     movq    %rdx, %rbx     ;; rbx = vm
-;;     movq    8(%rax), %rdx  ;; rdx =
-;;     movq    (%rdx), %rdx
-;;     movq    %rdx, 8(%rbx)  ;; ac = gloc.value
-;;     movq    48(%rbx), %rdx ;; rdx = pc
-;;     movq    %rax, -8(%rdx) ;; *(pc - 1) = gloc
-;; .L599:
-;; # -- REFER_GLOBAL end
-
-;; .L1211:
-;;     cmpq    $135, %rax
-;;     jne .L598
-;;     movq    8(%rbx), %rax
-;;     movq    (%rax), %rax
-;;     movq    %rax, 8(%rcx)
-;;     .p2align 4,,3
-;;     .p2align 3
-;;     jmp .L599
-
 
 (define vm-register* '(ac dc cl fp sp pc _ _ _ namespace not-found))
 
@@ -449,10 +388,19 @@
     ;;   2C ib
     [('subb 'al (? imm8? (= imm8->u8* imm8)))
      (values `(,#x2c ,@imm8) #f)]
+    ;; ADD r/m32, r32
+    ;;   01 /r
+    [('addl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
+     (values `(,#x01 ,(mod-r-r/m mod.register r32 r/m32)) #f)]
     ;; SUB r/m32, r32
     ;;   29 /r
     [('subl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
      (values `(,#x29 ,(mod-r-r/m mod.register r32 r/m32)) #f)]
+    ;; SUB r/m32, r32
+    ;;   29 /r
+    [('subl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
+     (values `(,#x29 ,(mod-r-r/m mod.register r32 r/m32)) #f)]
+
     ;; MOV r/m64, imm32
     ;;   REX.W + C7 /0
     [('movq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? imm32? (= imm32->u8* imm32)))
@@ -549,6 +497,49 @@
 ;;  addq    $8, %rax
 ;;  movq    %rax, 40(%rcx)
 
+(define (NUMBER_ADD)
+  (let ([label1 (gensym)]
+        [label2 (gensym)]
+        [label3 (gensym)]
+        )
+  `((movq rax ,(vm-register 'sp)) ; rax = sp
+    (leaq rdx (& rax -8))         ; rdx = sp - 8
+    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
+    (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
+    (movl eax ebp)                ; eax = (32bit)ebp
+    (andl eax 3)                  ; eax.isFixnum
+    (subb al 1)                   ;
+    (je ,label1)
+   ,@(DEBUGGER 3020) ;; stack arg is not Fixnum
+    (label ,label2)
+   ,@(DEBUGGER 3021) ;; ac arg is not Fixnum
+    (label ,label3)
+   ,@(DEBUGGER 3022) ;; add result is Bignum
+    (label ,label1) ;; eax.isFixnum
+    (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
+    (movl eax edx)
+    (andl eax 3)
+    (subb al 1)
+    (jne ,label2)
+    ;; both are fixnum
+    (movq rax rbp)
+    (sarq rdx 2) ;; ac.toFixnum
+    (sarq rax 2) ;; arg.toFixnum
+;   ,@(DEBUGGER)
+    (addl eax edx) ;; arg + ac
+;   ,@(DEBUGGER)
+ ;  ,@(DEBUGGER)
+    (movslq r12 eax) ;; r12 = (32bit)arg1
+;   ,@(DEBUGGER)
+    (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
+    (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
+    (cmpq rax 1073741823)
+    (ja ,label3) ;; jump if rax > 1073741823 => Bignum
+    (movq ,(vm-register 'ac) rdx) ;; ac = result of addition
+    (movq rax rdx) ;; ac = result of addition
+    )
+))
+
 
 (define (NUMBER_SUB_PUSH)
   (let ([label1 (gensym)]
@@ -563,11 +554,11 @@
     (andl eax 3)                  ; eax.isFixnum
     (subb al 1)                   ;
     (je ,label1)
-    ,(DEBUGGER) ;; stack arg is not Fixnum
+   ,@(DEBUGGER 3030) ;; stack arg is not Fixnum
     (label ,label2)
-    ,(DEBUGGER) ;; ac arg is not Fixnum
+   ,@(DEBUGGER) ;; ac arg is not Fixnum
     (label ,label3)
-    ,(DEBUGGER) ;; sub result is Bignum
+   ,@(DEBUGGER 3031) ;; sub result is Bignum
     (label ,label1) ;; eax.isFixnum
     (movq rdx ,(vm-register 'ac)) ; ac.isFixnum?
     (movl eax edx)
@@ -579,9 +570,9 @@
     (sarq rdx 2) ;; ac.toFixnum
     (sarq rax 2) ;; arg.toFixnum
     (subl eax edx) ;; arg - ac
- ;   ,(DEBUGGER)
+ ;  ,@(DEBUGGER)
     (movslq r12 eax) ;; r12 = (32bit)arg1
-;    ,(DEBUGGER)
+;   ,@(DEBUGGER)
     (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
     (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
     (cmpq rax 1073741823)
@@ -639,7 +630,9 @@
     (movq rdx ,(vm-make-fixnum index))
     (movq rax ,(vm-register 'fp))
     ,@(macro-to-fixnum 'rdx)
+;    ,@(DEBUGGER)
     ,@(macro-refer-local 'rax 'rax 'rdx)
+;    ,@(DEBUGGER 3008)
     ,@(macro-push 'rcx 'rax)
     (movq ,(vm-register 'sp) rcx)
     (movq rcx ,constant)
@@ -701,7 +694,7 @@
 ;; addq $32, %rdx
 ;; movq %rdx, 40(%rsi)
 
-(define (FRAME label) ;; label is not used. pc is
+(define (FRAME) ;; label is not used. pc is
   `((movq rdx ,(vm-register 'sp))
     (movq rax ,(vm-register 'pc)) ;; push(pc)
     (movq (& rdx) rax)            ;; Other JIT instructions don't sync pc. So pc is not coreect. JIT CALL discards pc on FRAME.
@@ -763,7 +756,7 @@
 
 (define (RETURN n)
   `(;(movq rax ,(vm-register 'pc))
- ;   ,(DEBUGGER)
+ ;  ,@(DEBUGGER)
 ;    (movq rdx (& rax))
 ;    (addq rax 8)
  ;   (movq ,(vm-register 'pc) rax)
@@ -917,16 +910,20 @@
         [label2 (gensym)])
   `((movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
-    (movq rdx ,(vm-register 'sp)) ; sp = sp - 8
+    (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rdx (& rax -8))         ; rax = *sp
     (movl eax edx)                ; eax = (32bit)(rdx)
+;;                     (movq rdx 1234)
+;;                    ,@(DEBUGGER 1235)
     (andl eax 3)                  ; n.isFixnum
+;   ,@(DEBUGGER 3000)
     (subb al 1)                   ;
+
     (je ,label1)                  ;
     ;; ToDo : not Fixnum case here
-    ,(DEBUGGER)
+   ,@(DEBUGGER 3001)
     (label ,label2)                  ; ac or n is not fixnum case
-    ,(DEBUGGER)
+   ,@(DEBUGGER 3002)
     (label ,label1)
     (movq rcx ,(vm-register 'ac)) ; rcx = ac
     (movl eax ecx)                ; eax = (32bit)(rcx)
@@ -940,7 +937,7 @@
     (movq rdx ,(get-c-address 'Object::True)) ; edx = pointer to True
     (cmovl rax rdx)               ; if condition? then rax = rdx
     (movq rax (& rax))             ; rax = True or False
-;    ,(DEBUGGER)
+;   ,@(DEBUGGER)
     (movq ,(vm-register 'ac) rax)
     (cmpq ,(vm-register 'ac) 86)  ; ac.isFalse()
     (je ,label))))
@@ -1022,8 +1019,11 @@
 (define (FOREVER)
   '(#xeb #xfe))
 
-(define (DEBUGGER)
-  '(int 3))
+(define (DEBUGGER . x)
+  (if (pair? x)
+      `((movq rdx ,(car x))
+        (int 3))
+      '((int 3))))
 
 ;;    0:   48 8b 5c 24 38          mov    0x38(%rsp),%rbx
 ;;    5:   48 8b 43 30             mov    0x30(%rbx),%rax

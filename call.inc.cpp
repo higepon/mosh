@@ -42,8 +42,9 @@
                     VM_ASSERT(operand.isFixnum());
                     const int argc = operand.toFixnum();
                     pc_  = retCode;
-
+            asm volatile(" \t # -- CALL start");
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);
+            asm volatile(" \t # -- CALL end");
                 } else {
                     CProcedure* const cprocedure = ac_.toCProcedure();
                     // set pc_ before call() for pointing where to return.
