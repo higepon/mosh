@@ -141,7 +141,8 @@ inline HashTable* Object::toHashTable() const
 
 inline Object* Object::toObjectPointer() const
 {
-#ifdef DEBUG_VERSION
+//#ifdef DEBUG_VERSION
+#if 0
     MOSH_ASSERT(isObjectPointer());
     return reinterpret_cast<Object*>(reinterpret_cast<HeapObject*>(val)->obj);
 #else
@@ -151,7 +152,8 @@ inline Object* Object::toObjectPointer() const
 
 inline bool Object::isObjectPointer() const
 {
-#ifdef DEBUG_VERSION
+//#ifdef DEBUG_VERSION
+#if 0
     return isHeapObject()
         && reinterpret_cast<HeapObject*>(val)->type == HeapObject::ObjectPointer;
 #else
@@ -230,7 +232,8 @@ inline Pair* Object::toPair() const
 
 inline Object Object::makeObjectPointer(Object* p)
 {
-#ifdef DEBUG_VERSION
+//#ifdef DEBUG_VERSION
+#if 0
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::ObjectPointer,
                                                         reinterpret_cast<intptr_t>(p))));
 #else

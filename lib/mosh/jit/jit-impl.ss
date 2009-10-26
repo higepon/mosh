@@ -729,6 +729,7 @@
 ;; movq 56(%rsp), %rbx  ;; vm = rbx
 ;; movq %rax, 48(%rbx)  ;; pc = rax ; pc_ = pcObject.toObjectPointer();
 ;; movq %rcx, 40(%rbx)  ;; sp = rcx
+
 ;; *[mosh] RETURN
 ;; movq 56(%rsp), %rsi ;; ras = vm
 ;; movq 48(%rsi), %rax ;; rax = pc
@@ -755,20 +756,12 @@
 
 
 (define (RETURN n)
-  `(;(movq rax ,(vm-register 'pc))
- ;  ,@(DEBUGGER)
-;    (movq rdx (& rax))
-;    (addq rax 8)
- ;   (movq ,(vm-register 'pc) rax)
-;    (sarq rdx 2)
-;    (leaq rax (& (* rdx 8)))
-;    (negq rax)
-;    (movq rdx rax)
-    (movq rdx ,n)
+  `((movq rdx ,n)
     (leaq rdx (& (* rdx 8)))
     (negq rdx)
     (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
-    (movq rax (& rdx -8))         ; sp -
+    (movq rax (& rdx -8))         ; fp = (sp - 8)
+    ,@(DEBUGGER)
     (movq ,(vm-register 'fp) rax)
     (movq rax (& rdx -16))
     (movq ,(vm-register 'cl) rax)
@@ -777,7 +770,10 @@
     (movq rax (& rdx -32))
     (leaq rcx (& rdx -32))
     (movq ,(vm-register 'pc) rax)
-    (movq ,(vm-register 'sp) rcx)))
+    ,@(DEBUGGER 9801)
+    (movq ,(vm-register 'sp) rcx)
+;    ,@(DEBUGGER 9802)
+))
 
 ;; (define (RETURN n) ;; pc いらん
 ;;   `((movq rax ,(vm-register 'pc))

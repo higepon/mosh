@@ -406,7 +406,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             Object* const sp = sp_ - operand.toFixnum();
 
             const Object fpObject = index(sp, 0);
-            VM_ASSERT(fpObject.isObjectPointer());
+//            VM_ASSERT(fpObject.isObjectPointer());
             fp_ = fpObject.toObjectPointer();
 
             dc_ = index(sp, 1);
@@ -948,7 +948,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             Object* const sp = sp_ - operand.toFixnum();
 
             const Object fpObject = index(sp, 0);
-            VM_ASSERT(fpObject.isObjectPointer());
+//            VM_ASSERT(fpObject.isObjectPointer());
             fp_ = fpObject.toObjectPointer();
 
             cl_ = index(sp, 1);
@@ -958,7 +958,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(dc_.isProcedure());
 
             const Object pcObject = index(sp, 3);
-            VM_ASSERT(pcObject.isObjectPointer());
+//            VM_ASSERT(pcObject.isObjectPointer());
             pc_ = pcObject.toObjectPointer();
 
             sp_ = sp - 4;
