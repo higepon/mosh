@@ -38,7 +38,6 @@
     ,@(FRAME)))
 
 (define (CALL n)
-  (display (obj->integer display))
   `((push rdi)                    ;; save registers
     (push rsi)
     (push rdx)
@@ -46,6 +45,7 @@
     (leaq rcx (& (* rax 8)))      ;; argc * 8
     (negq rcx)
     (addq rcx ,(vm-register 'sp)) ;; arg4 = sp - argc
+    (movq ,(vm-register 'fp) rcx) ;; fp = sp - argc
     (movq rdx ,n)                 ;; arg3 = argc
     (movq rsi rdi)                ;; arg2 = VM
     (movq rax ,(vm-register 'ac))
@@ -57,7 +57,7 @@
     (pop rdi)
     (push rax)
     ;; adjust VM stack
-    ,@(RETURN n)
+;    ,@(RESTORE-REGISTERS n)
     (pop rax)
     (movq ,(vm-register 'ac) rax)
     ))
@@ -86,6 +86,7 @@
       (push rsi)
       (push rdx)
       (movq rdx ,(vm-register 'not-found)) ;; rdx = not_found arg3
+;      ,@(DEBUGGER)
       (movq rsi rbx)                       ;; rsi = id        arg2
       (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
       (movq rax (& rdi))
@@ -262,7 +263,7 @@
         (bitwise-and (bitwise-arithmetic-shift-right n 56) #xff)))
 
 (define (ext-reg? reg)
-  (> reg 8))
+  (>= reg 8))
 
 ;; REX prefix
 ;;    w - operand width.  #t - 64bit
@@ -551,6 +552,7 @@
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
     (movl eax ebp)                ; eax = (32bit)ebp
+;    ,@(DEBUGGER 3029)
     (andl eax 3)                  ; eax.isFixnum
     (subb al 1)                   ;
     (je ,label1)
@@ -570,9 +572,7 @@
     (sarq rdx 2) ;; ac.toFixnum
     (sarq rax 2) ;; arg.toFixnum
     (subl eax edx) ;; arg - ac
- ;  ,@(DEBUGGER)
     (movslq r12 eax) ;; r12 = (32bit)arg1
-;   ,@(DEBUGGER)
     (leaq rax (& r12 536870912)) ;; rax = r12 + max-fixnum
     (leaq rdx (& 1 (* r12 4))) ;; rdx = makeFixnum(r12)
     (cmpq rax 1073741823)
@@ -632,6 +632,7 @@
     ,@(macro-to-fixnum 'rdx)
 ;    ,@(DEBUGGER)
     ,@(macro-refer-local 'rax 'rax 'rdx)
+;    ,@(DEBUGGER 7777)
 ;    ,@(DEBUGGER 3008)
     ,@(macro-push 'rcx 'rax)
     (movq ,(vm-register 'sp) rcx)
@@ -703,6 +704,7 @@
     (movq rax ,(vm-register 'cl)) ;; push(cl_)
     (movq (& rdx 16) rax)
     (movq rax ,(vm-register 'fp)) ;; push(fp_)
+;    ,@(DEBUGGER 1111) 
     (movq (& rdx 24) rax)
     (addq rdx 32)
     (movq ,(vm-register 'sp) rdx)))
@@ -754,14 +756,14 @@
 ;; movq %rax, 48(%rbx)  ;; pc = rax ; pc_ = pcObject.toObjectPointer();
 ;; movq %rcx, 40(%rbx)  ;; sp = rcx
 
-
-(define (RETURN n)
+;; This is not VM instruction, used for tests.
+(define (RESTORE-REGISTERS n)
   `((movq rdx ,n)
     (leaq rdx (& (* rdx 8)))
     (negq rdx)
     (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
     (movq rax (& rdx -8))         ; fp = (sp - 8)
-    ,@(DEBUGGER)
+;    ,@(DEBUGGER 1112) 
     (movq ,(vm-register 'fp) rax)
     (movq rax (& rdx -16))
     (movq ,(vm-register 'cl) rax)
@@ -770,10 +772,12 @@
     (movq rax (& rdx -32))
     (leaq rcx (& rdx -32))
     (movq ,(vm-register 'pc) rax)
-    ,@(DEBUGGER 9801)
-    (movq ,(vm-register 'sp) rcx)
-;    ,@(DEBUGGER 9802)
-))
+    (movq ,(vm-register 'sp) rcx)))
+
+(define (RETURN n)
+  `(,@(RESTORE-REGISTERS n)
+    (movq rax ,(vm-register 'ac)) ;; we need this.
+    (retq)))
 
 ;; (define (RETURN n) ;; pc いらん
 ;;   `((movq rax ,(vm-register 'pc))
@@ -908,6 +912,7 @@
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rdx (& rax -8))         ; rax = *sp
+;    ,@(DEBUGGER 5002)
     (movl eax edx)                ; eax = (32bit)(rdx)
 ;;                     (movq rdx 1234)
 ;;                    ,@(DEBUGGER 1235)
@@ -928,6 +933,7 @@
     (jne ,label2)
     (sarq rdx 2)                  ; rdx.toFixnum()
     (sarq rcx 2)                   ; rcx.toFixnum()
+;    ,@(DEBUGGER 5001)
     (movq rax ,(get-c-address 'Object::False)) ; eax = pointer to False
     (cmpq rdx rcx)                ; lt condition?
     (movq rdx ,(get-c-address 'Object::True)) ; edx = pointer to True
@@ -1017,7 +1023,7 @@
 
 (define (DEBUGGER . x)
   (if (pair? x)
-      `((movq rdx ,(car x))
+      `((movq r8 ,(car x))
         (int 3))
       '((int 3))))
 

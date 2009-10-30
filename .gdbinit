@@ -36,19 +36,15 @@ set charset ASCII
 # C++
 set print demangle on
 
-# VM registers
-display/x *(((intptr_t*)$rdi) + 1)
-display/s "VM::ac"
+## stack top is "sp 1"
+define sp
+  printf "%d\n", ((intptr_t*)(*(((intptr_t*)$rdi) + 5)))[-$arg0]
+end
 
-display/x *(((intptr_t*)$rdi) + 4)
-display/s "VM::fp"
-
-display/x *(((intptr_t*)$rdi) + 5)
-display/s "VM::sp"
-
-display/x *(((intptr_t*)$rdi) + 6)
-display/s "VM::pc"
-
-display $rdx
+define hook-stop
+  printf "============ State ============= \n"
+  printf "  [%d]\n", $r8
+  printf "  ac=0x%08x    pc=0x%08x\n", *(((intptr_t*)$rdi) + 1), *(((intptr_t*)$rdi) + 6)
+  printf "  sp=0x%08x    fp=0x%08x\n", *(((intptr_t*)$rdi) + 5), *(((intptr_t*)$rdi) + 4)
+end
 run
-
