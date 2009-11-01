@@ -1,5 +1,7 @@
 2009-11-01  higepon  <higepon@users.sourceforge.jp>
 
+	* Compnum.h : Fixed expt for exact numbers. Issue 111 pointed out by Iceland.Gyrfalcon.
+
 	* lib/mosh/ffi.ss : Added size-of-float and size-of-double. Issue 108 pointed out by mrc.mgg.
 
 2009-10-21  higepon  <higepon@users.sourceforge.jp>

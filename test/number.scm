@@ -57,4 +57,9 @@
 (test-true (integer-valued? 3.0+0.0i))
 (test-true (integer-valued? #i3.0+0i))
 
+;; expt
+(test-equal +2i (expt 1+i 2))
+(test-equal -9+46i (expt 3+2i 3))
+
+
 (test-results)

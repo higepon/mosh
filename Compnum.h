@@ -54,7 +54,28 @@ public:
     // e^(z2log(z1))
     static Object expt(Object z1, Object z2)
     {
-        return Arithmetic::exp(Arithmetic::mul(z2, Arithmetic::log(z1)));
+        if (z2.isFixnum()) {
+            const intptr_t n = z2.toFixnum();
+            if (0 == n) {
+                return Object::makeFixnum(1);
+            } else if (n > 0) {
+                Object ret = z1;
+                for (intptr_t i = 0; i < n - 1; i++) {
+                    ret = Arithmetic::mul(ret, z1);
+                }
+                return ret;
+            } else {
+                bool isDiv0Error = false;
+                Object ret = Object::makeFixnum(1);
+                for (intptr_t i = 0; i < n; i++) {
+                    ret = Arithmetic::div(ret, z1, isDiv0Error);
+                }
+                MOSH_ASSERT(!isDiv0Error);
+                return ret;
+            }
+        } else {
+            return Arithmetic::exp(Arithmetic::mul(z2, Arithmetic::log(z1)));
+        }
     }
 
     static Object asin(Object z)
