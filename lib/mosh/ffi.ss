@@ -102,8 +102,8 @@
     Foreign Function Interface Library
 |#
 (library (mosh ffi)
-  (export make-c-function c-function open-shared-library find-shared-library
-          pointer->string
+  (export make-c-function c-function open-shared-library find-shared-library (rename (%ffi-lookup lookup-shared-library))
+          pointer->string pointer->c-function
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t size-of-pointer
           size-of-float size-of-double
@@ -484,22 +484,38 @@
      (find regex (guard [c (#t '())] (directory-list path))))
    (filter file-exists? '("/lib" "/usr/lib/" "/usr/local/lib"))))
 
-(define (make-c-function lib ret-type name arg-types)
-  (let ([func (%ffi-lookup lib name)]
-        [stub (hashtable-ref stub-ht ret-type #f)]
+#|
+    Function: pointer->c-function
+
+    Make foreign c-function closure from pointer.
+
+    Prototype:
+    > (pointer->c-function pointer ret-type name arg-types)
+
+    Parameters:
+
+      pointer - pointer to c-function which is lookuped by <<lookup-shared-library>>.
+      ret-type - return type of c-function. void*, char*, void, double and int are supported.
+      name - name of c-function as symbol
+      arg-types- list of argument types. void*, int, double and char* are supported.
+
+    Returns:
+
+      Foreign function closure
+|#
+(define (pointer->c-function pointer ret-type name arg-types)
+  (let ([stub (hashtable-ref stub-ht ret-type #f)]
         [checkers (map (lambda (type) (hashtable-ref checker-ht type #f)) arg-types)])
     (unless (for-all procedure? checkers)
       (assertion-violation 'c-function "invalid argument type for c-function"))
     (unless stub
       (assertion-violation 'c-function "wrong return type" ret-type))
-    (unless func
-      (assertion-violation 'c-function "c-function not found" name))
     (lambda args
       (unless (= (length arg-types) (length args))
         (assertion-violation name (format "wrong arguments number ~d required, but got ~d"
                                           (length arg-types)
                                           (length args)) args))
-      (apply stub func (map
+      (apply stub pointer (map
                         (lambda (checker arg)
                           (let ([valid-arg (checker arg)])
                             (unless valid-arg
@@ -507,6 +523,31 @@
                             valid-arg))
                         checkers
                         args)))))
+
+#|
+    Function: make-c-function
+
+    Make foreign c-function closure by lookuping a function named "name" in "lib" library.
+
+    Prototype:
+    > (make-c-function lib ret-type name arg-types)
+
+    Parameters:
+
+      lib - library
+      ret-type - return type of c-function. void*, char*, void, double and int are supported.
+      name - name of c-function as symbol
+      arg-types- list of argument types. void*, int, double and char* are supported.
+
+    Returns:
+
+      Foreign function closure
+|#
+(define (make-c-function lib ret-type name arg-types)
+  (let ([func (%ffi-lookup lib name)])
+    (unless func
+      (assertion-violation 'c-function "c-function not found" name))
+    (pointer->c-function func ret-type name arg-types)))
 
 #|
     Function: null-terminated-bytevector->string

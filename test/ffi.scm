@@ -25,6 +25,8 @@
     (define struct_ref (c-function libffitest char struct_ref void*))
     (define change_errno (c-function libffitest void change_errno))
     (define abc (c-function libffitest void abc void*))
+    (define sub-2 (pointer->c-function (lookup-shared-library libffitest 'sub) 'int 'sub '(int int)))
+    (test-equal (sub-2 3 2) 1)
 
     (test-equal (sub 3 2) 1)
     (test-equal (subf2 1.0 0.0) 1.0)
@@ -38,6 +40,7 @@
     (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) 0)) "hello")
     (test-equal (pointer->string (pointer-ref-c-pointer (return_array_of_pointer_string) size-of-pointer)) "world")
     (test-equal "Yeah hello" (append_hello "Yeah "))
+
 
    (let ([p (return_struct)])
      (test-eq -1 (struct_ref p)))

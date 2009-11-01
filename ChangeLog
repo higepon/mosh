@@ -1,3 +1,7 @@
+2009-11-02  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/ffi.ss: Added lookup-shared-library and pointer->c-function, which is requested by mrc.mgg on Issue 110.
+
 2009-11-01  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/ffi.ss : Added null-terminated-bytevector->string and null-terminated-utf8->string.

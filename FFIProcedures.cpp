@@ -869,7 +869,7 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("%ffi-lookup");
+    DeclareProcedureName("lookup-shared-library");
 
 #ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
