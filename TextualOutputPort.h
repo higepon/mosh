@@ -52,6 +52,8 @@ public:
     virtual void flush()                   = 0;
     virtual Transcoder* transcoder() const = 0;
 
+    virtual void putCharHandleSpecial(ucs4char c);
+
     // template method
     virtual void putString(String* str);
     virtual void putString(const ucs4string& s);

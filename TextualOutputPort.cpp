@@ -112,10 +112,19 @@ void TextualOutputPort::putString(String* str)
     putString(str->data());
 }
 
+void TextualOutputPort::putCharHandleSpecial(ucs4char c)
+{
+    if (0 == c) {
+        putString(UC("\\x0;"));
+    } else {
+        putChar(c);
+    }
+}
+
 void TextualOutputPort::putString(const ucs4string& s)
 {
     for (ucs4string::size_type i = 0; i < s.size(); i++) {
-        putChar(s[i]);
+        putCharHandleSpecial(s[i]);
     }
 }
 
@@ -123,7 +132,7 @@ void TextualOutputPort::putString(const char* s)
 {
     const int len = strlen(s);
     for (int i = 0; i < len; i++) {
-        putChar(s[i]);
+        putCharHandleSpecial(s[i]);
     }
 }
 
@@ -289,7 +298,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(buf);
     } else if (o.isChar()) {
         if (isHumanReadable) {
-            putChar(o.toChar());
+            putCharHandleSpecial(o.toChar());
         } else { // isHumanReadable = false
             putString(UC("#\\"));
             ucs4char c = o.toChar();
@@ -331,7 +340,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                 break;
 
             default:
-                putChar(c);
+                putCharHandleSpecial(c);
             }
         }
     } else if (o.isString()) {
@@ -385,7 +394,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                     putChar(DOUBLE_QUOTE);
                     break;
                 default:
-                    putChar(ch);
+                    putCharHandleSpecial(ch);
                 }
             }
             putChar(DOUBLE_QUOTE);

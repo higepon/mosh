@@ -1,5 +1,13 @@
 2009-11-01  higepon  <higepon@users.sourceforge.jp>
 
+	* Fixed Issue 109: "utf8->string stops conversion at first null byte" pointed out by mrc.mgg.
+
+	* Reader.y : Handled \0 terminated ucs4string.
+
+	* PortProcedures.cpp (bytevector-string): Handled \0 terminated ucs4string.
+
+	* TextualOutputPort.cpp : Fixed output of \0 charactor.
+
 	* Compnum.h : Fixed expt for exact numbers. Issue 111 pointed out by Iceland.Gyrfalcon.
 
 	* lib/mosh/ffi.ss : Added size-of-float and size-of-double. Issue 108 pointed out by mrc.mgg.

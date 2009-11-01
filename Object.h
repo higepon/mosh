@@ -121,6 +121,7 @@ class Object
 public:
     Object() {}
     Object(const ucs4char* str);
+    Object(const ucs4char* str, int length);
     Object(const ucs4string& str);
     Object(const char* str);
 

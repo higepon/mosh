@@ -87,7 +87,8 @@ datum          : lexme_datum
 
 lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                | STRING {
-                   $$ = ReaderHelper::readString($1);
+                 ucs4string s = ReaderHelper::readString($1);
+                 $$ = Object::makeString(s);
                }
                | REGEXP {
                    $$ = Object::makeRegexp($1);

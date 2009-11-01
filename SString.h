@@ -38,6 +38,7 @@ class String EXTEND_GC
 {
 public:
     String(const ucs4char* s) : data_(s) {}
+    String(const ucs4char* s, int length) : data_(ucs4string(s, length)) {}
     String(int n, ucs4char c = ' ') : data_(ucs4string(n, c)) {}
     String(const char* s)
     {
@@ -70,6 +71,10 @@ inline Object::Object(const ucs4char* str) : val(reinterpret_cast<intptr_t>(new 
 {
 }
 
+inline Object::Object(const ucs4char* str, int length) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str, length)))))
+{
+}
+
 
 inline Object::Object(const char* str) : val(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::String, reinterpret_cast<intptr_t>(new String(str)))))
 {
@@ -87,7 +92,7 @@ inline Object Object::makeString(const ucs4char* str)
 
 inline Object Object::makeString(const ucs4string& str)
 {
-    return Object(str.c_str());
+    return Object(str.data(), str.length());
 }
 
 inline Object Object::makeString(const char* str)
