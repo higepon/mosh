@@ -106,6 +106,7 @@
           pointer->string
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t size-of-pointer
+          size-of-float size-of-double
           align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
@@ -1096,6 +1097,20 @@
     size-of(size_t)
 |#
 (define size-of-size_t (os-constant 'size-of-size_t))
+
+#|
+    Constant: size-of-float
+
+    size-of(float)
+|#
+(define size-of-float (os-constant 'size-of-float))
+
+#|
+    Constant: size-of-double
+
+    size-of(double)
+|#
+(define size-of-double (os-constant 'size-of-double))
 
 #|
     Constant: align-of-bool

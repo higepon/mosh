@@ -24,6 +24,8 @@
 (define-size-of long)
 (define-size-of void*)
 (define-size-of size_t)
+(define-size-of float)
+(define-size-of double)
 (define-align-of char)
 (define-align-of bool)
 (define-align-of short)
