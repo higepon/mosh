@@ -69,6 +69,17 @@ Object scheme::u8ListToByteVector(Object list)
     return Object::makeByteVector(list);
 }
 
+Object scheme::nullTerminatedUtf8TostringEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("null-terminated-utf8->string");
+    checkArgumentLength(1);
+    Object transcoder = Object::makeTranscoder(new UTF8Codec);
+    Object args[2];
+    args[0] = argv[0];
+    args[1] = transcoder;
+    return nullTerminatedBytevectorTostringEx(theVM, 2, args);
+}
+
 Object scheme::utf8TostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("utf8->string");

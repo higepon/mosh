@@ -316,6 +316,8 @@
   string->bytevector
   string->utf8
   utf8->string
+  null-terminated-bytevector->string
+  null-terminated-utf8->string
   string->utf16
   string->utf32
   utf16->string

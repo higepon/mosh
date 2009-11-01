@@ -1,5 +1,7 @@
 2009-11-01  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/mosh/ffi.ss : Added null-terminated-bytevector->string and null-terminated-utf8->string.
+
 	* Fixed Issue 109: "utf8->string stops conversion at first null byte" pointed out by mrc.mgg.
 
 	* Reader.y : Handled \0 terminated ucs4string.

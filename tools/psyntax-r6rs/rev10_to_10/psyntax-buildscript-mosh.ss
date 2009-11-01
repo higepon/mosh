@@ -1037,6 +1037,8 @@
     (p interaction mosh)
     (%pipe interaction sys)
     (%fork interaction sys)
+    (null-terminated-bytevector->string sys interaction)
+    (null-terminated-utf8->string sys interaction)
     (%ffi-open interaction sys)
     (%ffi-lookup interaction sys)
     (%ffi-call->int interaction sys)

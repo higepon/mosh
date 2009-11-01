@@ -288,6 +288,9 @@
 ;;       (test-true (pointer? callback))
 ;;       (test-equal #x1234567887654322 (callCallback callback))))
 
+  (test-equal "ABC" (null-terminated-utf8->string '#vu8(65 66 67 0 65 66 67)))
+  (test-equal "ABC" (null-terminated-bytevector->string '#vu8(65 66 67 0 65 66 67) (native-transcoder)))
+
 
 ;
 ) ;; when

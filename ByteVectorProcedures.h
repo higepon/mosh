@@ -46,6 +46,7 @@ namespace scheme {
     Object bytevectorIeeeSingleRefEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorIeeeSingleNativeRefEx(VM* theVM, int argc, const Object* argv);
     Object utf8TostringEx(VM* theVM, int argc, const Object* argv);
+    Object nullTerminatedUtf8TostringEx(VM* theVM, int argc, const Object* argv);
     Object stringToutf8Ex(VM* theVM, int argc, const Object* argv);
     Object utf32TostringEx(VM* theVM, int argc, const Object* argv);
     Object utf16TostringEx(VM* theVM, int argc, const Object* argv);

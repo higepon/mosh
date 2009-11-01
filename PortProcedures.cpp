@@ -1355,6 +1355,33 @@ Object scheme::transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* 
     return transcoder->errorHandlingModeSymbol();
 }
 
+Object scheme::nullTerminatedBytevectorTostringEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("null-terminated-bytevector->string");
+    checkArgumentLength(2);
+
+    argumentAsByteVector(0, bytevector);
+    argumentAsTranscoder(1, transcoder);
+
+    int realLength = bytevector->length();
+    int nullTerminatedLength = 0;
+    for (int i = 0; i < realLength; i++, nullTerminatedLength++) {
+        if (bytevector->u8Ref(i) == 0) {
+            break;
+        }
+    }
+
+    BinaryInputPort* port = new ByteArrayBinaryInputPort(bytevector->data(), nullTerminatedLength);
+    TRY_WITHOUT_DSTR
+        return Object::makeString(transcoder->getString(port));
+    CATCH(ioError)
+        ioError.arg1 = Object::makeBinaryInputPort(port);
+        ioError.who = procedureName;
+        ioError.irritants = Object::cons(argv[1], ioError.irritants);
+        return callIOErrorAfter(theVM, ioError);
+    END_TRY
+}
+
 Object scheme::bytevectorTostringEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("bytevector->string");

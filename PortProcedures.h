@@ -114,6 +114,7 @@ namespace scheme {
     Object transcoderEolStyleEx(VM* theVM, int argc, const Object* argv);
     Object transcoderErrorHandlingModeEx(VM* theVM, int argc, const Object* argv);
     Object bytevectorTostringEx(VM* theVM, int argc, const Object* argv);
+    Object nullTerminatedBytevectorTostringEx(VM* theVM, int argc, const Object* argv);
     Object stringTobytevectorEx(VM* theVM, int argc, const Object* argv);
     Object eofObjectEx(VM* theVM, int argc, const Object* argv);
     Object sysOpenBytevectorOutputPortEx(VM* theVM, int argc, const Object* argv);

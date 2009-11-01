@@ -162,7 +162,9 @@
           pointer>?
           pointer<=?
           pointer>=?
-          pointer<>?)
+          pointer<>?
+          null-terminated-bytevector->string
+          null-terminated-utf8->string)
   (import (only (rnrs) display define define-syntax syntax-case lambda map let syntax exists string=? string
                        quasiquote unless assertion-violation quote = length and number? assq => cdr
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list
@@ -173,6 +175,8 @@
           (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline) (%ffi-free-c-callback-trampoline free-c-callback))
           (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
                 shared-errno
+                null-terminated-utf8->string
+                null-terminated-bytevector->string
                 pointer?
                 pointer->integer
                 integer->pointer ;; temp
@@ -503,6 +507,52 @@
                             valid-arg))
                         checkers
                         args)))))
+
+#|
+    Function: null-terminated-bytevector->string
+
+    Returns a newly allocated (unless empty) string whose character sequence is encoded by the given null(\0) terminated bytevector.
+    This is useful for converting "C" string to Scheme string.
+
+    (start code)
+    (bytevector->string '#vu8(65 66 67 0 65 66 67) (native-transcoder)) => "ABC\x0;ABC"
+    (null-terminated-bytevector->string '#vu8(65 66 67 0 65 66 67)) (native-transcoder) => "ABC"
+    (end code)
+
+    Prototype:
+    > (null-terminated-bytevector->string bv transcoder)
+
+    Parameters:
+
+      bv - null(\0) terminated bytevector.
+      transcoder - transcoder
+
+    Returns:
+      decoded string.
+|#
+
+#|
+    Function: null-terminated-utf8->string
+
+    Returns a newly allocated (unless empty) string whose character sequence is encoded by the given null(\0) terminated bytevector.
+    This is useful for converting "C" string to Scheme string.
+
+    (start code)
+    (utf8->string '#vu8(65 66 67 0 65 66 67)) => "ABC\x0;ABC"
+    (null-terminated-utf8->string '#vu8(65 66 67 0 65 66 67)) => "ABC"
+    (end code)
+
+    Prototype:
+    > (null-terminated-bytevector->string bv transcoder)
+
+    Parameters:
+
+      bv - null(\0) terminated bytevector.
+      transcoder - transcoder
+
+    Returns:
+      decoded string.
+|#
 
 #|
     Function: pointer-ref-c-uint16

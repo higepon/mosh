@@ -70,7 +70,7 @@
              [len (string-length from)]
              [to-bv (make-bytevector (+ (* len 2) 1))])
         (mysql-hex-string to-bv from len)
-        (test-true (equal? "61626364" (utf8->string to-bv))))
+        (test-true (equal? "61626364" (null-terminated-utf8->string to-bv))))
       (test-true (or (string? (mysql-info mysql)) (pointer? (mysql-info mysql))))
       (test-true (pointer? (mysql-insert-id mysql)))
 
@@ -86,7 +86,7 @@
              [len (string-length from)]
              [to-bv (make-bytevector (+ (* len 2) 1))])
         (mysql-real-escape-string mysql to-bv from len)
-        (test-true (string=? "hoge" (utf8->string to-bv))))
+        (test-true (string=? "hoge" (null-terminated-utf8->string to-bv))))
       (test-true (integer? (mysql-real-query mysql "select Host, User from user" 28)))
       (test-true (integer? (mysql-refresh mysql 0)))
       (mysql-reload mysql)
