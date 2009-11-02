@@ -1,5 +1,7 @@
 2009-11-02  higepon  <higepon@users.sourceforge.jp>
 
+	* FFIProcedures.cpp (c_callback_double): Check return value satisfies isNumber().
+
 	* lib/mosh/ffi.ss: Added lookup-shared-library and pointer->c-function, which is requested by mrc.mgg on Issue 110.
 
 2009-11-01  higepon  <higepon@users.sourceforge.jp>

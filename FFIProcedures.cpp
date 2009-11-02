@@ -191,7 +191,7 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* stack)
 extern "C" double c_callback_double(intptr_t uid, intptr_t signatures, intptr_t* stack)
 {
     Object ret = callbackScheme(uid, signatures, stack);
-    if (Arithmetic::isRealValued(ret)) {
+    if (ret.isNumber() && Arithmetic::isRealValued(ret)) {
         return Arithmetic::realToDouble(ret);
     } else {
         return 0.0;
@@ -207,6 +207,8 @@ extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr
         } else {
             return ret.toFixnum();
         }
+    } else if (ret.isPointer()) {
+        return ret.toPointer()->pointer();
     } else {
         return 0;
     }
@@ -428,7 +430,8 @@ Object callbackScheme(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t
     }
     // this reverse can be omitted for optimization
     args = Pair::reverse(args);
-    return vm->apply(closure, args);
+    const Object ret = vm->apply(closure, args);
+    return ret;
 }
 
 extern "C" float c_callback_float(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
@@ -444,7 +447,7 @@ extern "C" float c_callback_float(intptr_t uid, intptr_t signatures, intptr_t* r
 extern "C" double c_callback_double(intptr_t uid, intptr_t signatures, intptr_t* reg, intptr_t* stack)
 {
     Object ret = callbackScheme(uid, signatures, reg, stack);
-    if (Arithmetic::isRealValued(ret)) {
+    if (ret.isNumber() && Arithmetic::isRealValued(ret)) {
         return Arithmetic::realToDouble(ret);
     } else {
         return 0.0;
@@ -460,6 +463,8 @@ extern "C" intptr_t c_callback_intptr(uintptr_t uid, intptr_t signatures, intptr
         } else {
             return ret.toFixnum();
         }
+    } else if (ret.isPointer()) {
+        return ret.toPointer()->pointer();
     } else {
         return 0;
     }
@@ -727,7 +732,6 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
             : "memory"
             );
     }
-
     return ret;
 
 #else

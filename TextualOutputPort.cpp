@@ -592,7 +592,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isPointer()) {
         putString(UC("#<pointer "));
         char buf[16];
-        snprintf(buf, 16, "\\p%x;", o.toPointer()->pointer());
+        snprintf(buf, 16, "%x", o.toPointer()->pointer());
         putString(buf);
         putString(UC(">"));
     } else if (o.isContinuation()) {
