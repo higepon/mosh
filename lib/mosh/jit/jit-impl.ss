@@ -101,7 +101,7 @@
       (movq ,(vm-register 'ac) rdx))))
     ;; todo gloc cache
 
-(define vm-register* '(ac dc cl fp sp pc _ _ _ namespace not-found))
+(define vm-register* '(ac dc cl fp sp pc num-values values _ _ _ namespace not-found))
 
 ;; VM register offset depends on your architecture.
 (include/resolve ("mosh" "jit") "offset.ss")
@@ -237,7 +237,8 @@
   (and (integer? n) (<= (- (expt 2 15)) n (- (expt 2 15) 1))))
 
 (define (imm32? n)
-  (and (integer? n) (<= (- (expt 2 31)) n (- (expt 2 31) 1))))
+;  (and (integer? n) (<= (- (expt 2 31)) n (- (expt 2 31) 1))))
+  (and (integer? n) (<= 0 n (- (expt 2 32) 1))))
 
 (define (imm64? n)
   (and (integer? n) (<= (- (expt 2 63)) n (- (expt 2 63) 1))))
@@ -288,6 +289,9 @@
 (define (assemble1 code) ;; todo refactoring
   (define rex.w (rex-prefix #t #f #f #f))
   (match code
+    ;; CPUID
+    [('cpuid)
+     (values '(#x0f #xa2) #f)]
     ;; NEG r/m64
     ;;   REX.W + F7 /3
     [('negq (? r64? (= r64->number r/m64)))
@@ -412,6 +416,10 @@
     ;;   REX.W + 83 /0 ib Valid N.E.
     [('addq (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* imm8)))
      (pack-op #t #x83 mod.register 0 r/m64 #f #f #f '() imm8)]
+    ;; ADD r/m64, imm32
+    ;;   REX.W + 81 /0 ib Valid N.E.
+    [('addq (? r64? (= r64->number r/m64)) (? imm32? (= imm32->u8* imm32)))
+     (pack-op #t #x81 mod.register 0 r/m64 #f #f #f '() imm32)]
     ;; ADD r64, r/m64
     ;;   REX.W + 03 /r
     [('addq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))))
@@ -460,6 +468,9 @@
 (define (macro-to-fixnum reg)
   `((sarq ,reg 2)                        ; reg = reg >> 2
    (movslq ,reg ,(r64->32 reg)))) ; reg = reg32 (with sign)
+
+(define (macro-make-fixnum reg)
+  `((leaq ,reg (& 1 (* ,reg 4)))))
 
 (define (macro-refer-local dest-reg fp-reg index-reg)
   `((movq ,dest-reg (& ,fp-reg (* ,index-reg 8)))))

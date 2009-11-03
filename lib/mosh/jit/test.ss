@@ -12,6 +12,9 @@
 
   (include/resolve ("mosh" "jit") "jit-impl.ss")
 
+  (define (asm*->procedure asm*)
+    (u8*->c-procedure+retq (assemble asm*)))
+
   (define (test)
     (test-true (r64? 'rdi))
     (test-false (r64? 'rrr))
@@ -426,9 +429,47 @@
 ;;     ;; isObjectPointer 問題 on debug mode
 ;;     ;; stack trace
 
+
     ;; fib
     (let ()
     (let* ([code1 (let ([label (gensym)])
+;;                     (display (append
+;; ;                     (DEBUGGER 4009)
+;;                       ;; そうか！引数は レジスタに積まれるのか！
+;;                       (REFER_LOCAL_PUSH_CONSTANT 0 (vm-make-fixnum 2))
+;; ;                      (DEBUGGER 4011)
+;;                       (BRANCH_NOT_LT label)
+;; ;                      (DEBUGGER 4010)
+;;                       (CONSTANT (vm-make-fixnum 1))
+;; ;                      (DEBUGGER 4031)
+;;                       (RETURN 1)
+;; ;                      (DEBUGGER 4012)
+;;                       `((label ,label))
+;; ;                      (DEBUGGER 4013)
+;;                       (FRAME)
+;; ;                      (DEBUGGER 4014)
+;;                       (REFER_LOCAL_PUSH_CONSTANT 0 (vm-make-fixnum 2))
+;; ;                      (DEBUGGER 4015)
+;;                       (NUMBER_SUB_PUSH)
+;; ;                      (DEBUGGER 4016)
+;;                       (REFER_GLOBAL 'fib)
+;; ;                      (DEBUGGER 4017)
+;;                       (CALL 1)
+;; ;                     (DEBUGGER 4018)
+;;                       (PUSH_FRAME)
+;; ;                     (DEBUGGER 4040)
+;;                       (REFER_LOCAL_PUSH_CONSTANT 0 (vm-make-fixnum 1))
+;;  ;                    (DEBUGGER 4041)
+;;                       (NUMBER_SUB_PUSH)
+;; ;                     (DEBUGGER 4042)
+;;                       (REFER_GLOBAL 'fib)
+;;  ;                    (DEBUGGER 4043)
+;;                       (CALL 1)
+;; ;                     (DEBUGGER 4044)
+;;                       (NUMBER_ADD)
+;; ;                     (DEBUGGER 4045)
+;;                       (RETURN 1)
+;;                       ))
                     (assemble
                      (append
 ;                     (DEBUGGER 4009)
@@ -482,6 +523,59 @@
       (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
       (time (test-eq 5 (fib 30)))
 )
+
+   ;; multiple values
+   (let ([proc (u8*->c-procedure+retq
+                (assemble
+                 `((movq ,(vm-register 'ac) ,(vm-make-fixnum 1234))
+                   (movq rcx ,(vm-register 'values))
+                   (movq rax ,(vm-make-fixnum 1235))
+                   (movq (& rcx) rax)
+                   (movq rax ,(vm-make-fixnum 1236))
+                   (movq (& rcx 8) rax)
+                   (movq rax ,(vm-register 'ac))
+                   )))])
+     (receive x (proc)
+         (test-equal '(1234 1235 1236) x)))
+
+    (let* ([label (gensym)]
+           [cpuid (asm*->procedure
+                   `((movq rax (& rdx))                  ;; arg0
+                     ,@(macro-to-fixnum 'rax)
+                     (cmpq (& rdx 8) 86)                 ;; arg1 isFalse
+                     (je ,label)
+                     (addq rax #x80000000)               ;; extended?
+                     (label ,label)
+                     (cpuid)
+                     (movq r10 ,(vm-register 'values))   ;; values VM register
+                     (movq ,(vm-register 'num-values) 4) ;; number of values
+                     ,@(macro-make-fixnum 'rax)          ;; rax is result 1
+                     (movq ,(vm-register 'ac) rax)
+                     ,@(macro-make-fixnum 'rbx)          ;; rbx is result 2
+                     (movq (& r10) rbx)
+                     ,@(macro-make-fixnum 'rcx)          ;; rbx is result 2
+                     (movq (& r10 8) rcx)
+                     ,@(macro-make-fixnum 'rdx)          ;; rbx is result 2
+                     (movq (& r10 16) rdx)
+                     (movq rax ,(vm-register 'ac))))])
+      (define (u32->string u32)
+        (list->string (map integer->char
+                           (list (bitwise-and u32 #xff)
+                                 (bitwise-and (bitwise-arithmetic-shift-right u32 8) #xff)
+                                 (bitwise-and (bitwise-arithmetic-shift-right u32 16) #xff)
+                                 (bitwise-and (bitwise-arithmetic-shift-right u32 24) #xff)))))
+      (do ([i 2 (+ i 1)])
+          [(= i 5)]
+          (receive (rax rbx rcx rdx) (cpuid i #t)
+            (format #t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
+#;      (receive (rax rbx rcx rdx) (cpuid 2 #f)
+        (format #t "~a ~a ~a ~a"
+                (number->string (bitwise-and rax #xff) 16)
+                (number->string (bitwise-and rbx #xff) 16) ;; f0 =>              64-Byte prefetching
+                (number->string (bitwise-and rcx #xff) 16)
+                (number->string (bitwise-and rdx #xff)))))
+
+
 
 #;    (let* ([code1 (let ([branch-label (gensym)])
                   (assemble

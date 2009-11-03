@@ -253,6 +253,9 @@ public:
     Object* fp_; // frame pointer   register
     Object* sp_; // stack pointer   register
     Object* pc_; // program counter register
+    int numValues_;
+    Object* values_;
+
 protected:
 
     int stackSize_;
@@ -277,8 +280,6 @@ protected:
 #endif
     const bool isProfiler_;      // for profiler
     const int maxNumValues_;
-    int numValues_;
-    Object* values_;
     jmp_buf returnPoint_;
     bool isR6RSMode_;
     Ports activePorts_;
