@@ -105,9 +105,10 @@
   (export make-c-function c-function open-shared-library find-shared-library (rename (%ffi-lookup lookup-shared-library))
           pointer->string pointer->c-function
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
-          size-of-bool size-of-short size-of-int size-of-long size-of-void* size-of-size_t size-of-pointer
+          size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
+          size-of-long-long size-of-void* size-of-size_t size-of-pointer
           size-of-float size-of-double
-          align-of-bool align-of-short align-of-int align-of-long align-of-void* align-of-size_t align-of-float
+          align-of-bool align-of-short align-of-int align-of-long align-of-long-long align-of-void* align-of-size_t align-of-float
           align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
           on-darwin on-linux on-freebsd on-openbsd on-windows
           shared-errno make-c-callback c-callback free-c-callback
@@ -173,7 +174,7 @@
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline) (%ffi-free-c-callback-trampoline free-c-callback))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->char %ffi-call->double
+          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->uint %ffi-call->char %ffi-call->double
                 shared-errno
                 null-terminated-utf8->string
                 null-terminated-bytevector->string
@@ -462,6 +463,13 @@
 (define stub-ht (alist->eq-hash-table
                  `((void*  . ,%ffi-call->void*)
                    (int64_t . ,%ffi-call->int)
+                   (size_t . ,%ffi-call->uint)
+                   (short . ,%ffi-call->int)
+                   (unsigned-short . ,%ffi-call->uint)
+                   (unsigned-int . ,%ffi-call->uint)
+                   (unsigned-long . ,%ffi-call->uint)
+                   (long . ,%ffi-call->int)
+                   (long-long . ,%ffi-call->int)
                    (char*  . ,%ffi-call->char*) ;; char* may be NULL,
                    (void   . ,%ffi-call->void)
                    (double . ,%ffi-call->double)
@@ -1143,63 +1151,92 @@
 #|
     Constant: size-of-bool
 
-    size-of(bool)
+    sizeof(bool)
 |#
 (define size-of-bool (os-constant 'size-of-bool))
 
 #|
     Constant: size-of-short
 
-    size-of(short)
+    sizeof(short)
 |#
 (define size-of-short (os-constant 'size-of-short))
 
 #|
+    Constant: size-of-unsigned-short
+
+    sizeof(unsigned short)
+|#
+(define size-of-unsigned-short (os-constant 'size-of-unsigned-short))
+
+#|
     Constant: size-of-int
 
-    size-of(int)
+    sizeof(int)
 |#
 (define size-of-int (os-constant 'size-of-int))
 
 #|
+    Constant: size-of-unsigned-int
+
+    sizeof(unsigned int)
+|#
+(define size-of-unsigned-int (os-constant 'size-of-unsigned-int))
+
+#|
     Constant: size-of-long
 
-    size-of(long)
+    sizeof(long)
 |#
 (define size-of-long (os-constant 'size-of-long))
 
 #|
+    Constant: size-of-unsigned-long
+
+    sizeof(unsigned long)
+|#
+(define size-of-unsigned-long (os-constant 'size-of-unsigned-long))
+
+#|
+    Constant: size-of-long-long
+
+    sizeof(long long)
+|#
+(define size-of-long-long (os-constant 'size-of-long-long))
+
+
+#|
     Constant: size-of-void*
 
-    size-of(void*)
+    sizeof(void*)
 |#
 (define size-of-void* (os-constant 'size-of-void*))
 
 #|
     Constant: size-of-pointer
 
-    alias for size-of(void*)
+    alias for sizeof(void*)
 |#
 (define size-of-pointer (os-constant 'size-of-void*))
 
 #|
     Constant: size-of-size_t
 
-    size-of(size_t)
+    sizeof(size_t)
 |#
 (define size-of-size_t (os-constant 'size-of-size_t))
 
 #|
     Constant: size-of-float
 
-    size-of(float)
+    sizeof(float)
 |#
 (define size-of-float (os-constant 'size-of-float))
 
 #|
     Constant: size-of-double
 
-    size-of(double)
+    sizeof(double)
 |#
 (define size-of-double (os-constant 'size-of-double))
 
@@ -1238,6 +1275,15 @@
     -offset-of(x, z)
 |#
 (define align-of-long (os-constant 'align-of-long))
+
+#|
+    Constant: align-of-long-long
+
+    struct x { char y; long long z; };
+
+    -offset-of(x, z)
+|#
+(define align-of-long-long (os-constant 'align-of-long-long))
 
 #|
     Constant: align-of-void*

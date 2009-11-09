@@ -298,4 +298,64 @@
 ;
 ) ;; when
 
+
+;; Tests of callout return types.
+(when (ffi-supported?)
+(let ([undef (if #f #t)])
+  (define-syntax return-type-test
+    (lambda (x)
+      (syntax-case x ()
+        [(_ expected-value return-type lib name)
+         #'(test-equal expected-value ((c-function lib return-type name)))])))
+  (define (calc-max size-in-byte)
+    (- (expt 2 (* size-in-byte 8)) 1))
+  (define (calc-signed-max size-in-byte)
+    (- (expt 2 (- (* size-in-byte 8) 1)) 1))
+  (define (calc-signed-min size-in-byte)
+    (- (expt 2 (- (* size-in-byte 8) 1))))
+
+  (define libffitest (open-shared-library "./libffitest.so.1.0"))
+
+  ;; void
+;;   (return-type-test undef void libffitest return_void)
+
+;;   ;; char
+;;   (return-type-test -128  char libffitest return_char_min)
+;;   (return-type-test 127   char libffitest return_char_max)
+
+;;   ;; size_t
+;;   (return-type-test 0    size_t libffitest return_size_t_min)
+;;   (return-type-test (calc-max size-of-size_t) size_t libffitest return_size_t_max)
+
+  ;; short
+  (return-type-test (calc-signed-min size-of-short) short libffitest return_short_min)
+;;   (return-type-test (calc-signed-max size-of-short) short libffitest return_short_max)
+
+;;   ;; int
+;;   (return-type-test (calc-signed-min size-of-int) int libffitest return_int_min)
+;;   (return-type-test (calc-signed-max size-of-int) int libffitest return_int_max)
+
+;;   ;; long
+;;   (return-type-test (calc-signed-min size-of-long) long libffitest return_long_min)
+;;   (return-type-test (calc-signed-max size-of-long) long libffitest return_long_max)
+
+;;   ;; long long
+;;   (return-type-test (calc-signed-min size-of-long-long) long-long libffitest return_long_long_min)
+;;   (return-type-test (calc-signed-max size-of-long-long) long-long libffitest return_long_long_max)
+
+;;   ;; unsigned short
+;;   (return-type-test 0    unsigned-short libffitest return_unsigned_short_min)
+;;   (return-type-test (calc-max size-of-unsigned-short) unsigned-short libffitest return_unsigned_short_max)
+
+;;   ;; unsigned int
+;;   (return-type-test 0    unsigned-int libffitest return_unsigned_int_min)
+;;   (return-type-test (calc-max size-of-unsigned-int) unsigned-int libffitest return_unsigned_int_max)
+
+;;   ;; unsigned long
+;;   (return-type-test 0    unsigned-long libffitest return_unsigned_long_min)
+;;   (return-type-test (calc-max size-of-unsigned-long) unsigned-long libffitest return_unsigned_long_max)
+
+
+)) ;; when
+
 (test-results)

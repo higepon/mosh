@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <stdio.h>
+#include <limits.h>
 
 int return3()
 {
@@ -226,7 +227,7 @@ int64_t callCallback5(int64_t (*func) (int64_t))
   return func(v);
 }
 
-void qsort(void *base, size_t num, size_t size, 
+void qsort(void *base, size_t num, size_t size,
            int (*compare)(const void*, const void*))
 {
   int i;
@@ -235,3 +236,225 @@ void qsort(void *base, size_t num, size_t size,
   }
   compare(1, 2);
 }
+
+/* callouts return type functions */
+
+void return_void()
+{
+  return;
+}
+
+/* bool return_bool_true() */
+/* { */
+/*   return true; */
+/* } */
+
+/* bool return_bool_false() */
+/* { */
+/*   return false; */
+/* } */
+
+char return_char_min()
+{
+  return CHAR_MIN;
+}
+
+char return_char_max()
+{
+  return CHAR_MAX;
+}
+
+size_t return_size_t_min()
+{
+  return 0;
+}
+
+size_t return_size_t_max()
+{
+  return SIZE_MAX;
+}
+
+short return_short_min()
+{
+  return SHRT_MIN;
+}
+
+short return_short_max()
+{
+  return SHRT_MAX;
+}
+
+int return_int_min()
+{
+  return INT_MIN;
+}
+
+int return_int_max()
+{
+  return INT_MAX;
+}
+
+long return_long_min()
+{
+  return LONG_MIN;
+}
+
+long return_long_max()
+{
+  return LONG_MAX;
+}
+
+long long return_long_long_min()
+{
+  return LLONG_MIN;
+}
+
+long long return_long_long_max()
+{
+  return LLONG_MAX;
+}
+
+unsigned short return_unsigned_short_min()
+{
+  return 0;
+}
+
+unsigned short return_unsigned_short_max()
+{
+  return USHRT_MAX;
+}
+
+unsigned int return_unsigned_int_min()
+{
+  return 0;
+}
+
+unsigned int return_unsigned_int_max()
+{
+  return UINT_MAX;
+}
+
+unsigned long return_unsigned_long_min()
+{
+  return 0;
+}
+
+unsigned long return_unsigned_long_max()
+{
+  return ULONG_MAX;
+}
+
+unsigned long long return_unsigned_long_long_min()
+{
+  return 0;
+}
+
+unsigned long long return_unsigned_long_long_max()
+{
+  return ULLONG_MAX;
+}
+
+int8_t return_int8_t_min()
+{
+  return INT8_MIN;
+}
+
+int8_t return_int8_t_max()
+{
+  return INT8_MAX;
+}
+
+int16_t return_int16_t_min()
+{
+  return INT16_MIN;
+}
+
+int16_t return_int16_t_max()
+{
+  return INT16_MAX;
+}
+
+int32_t return_int32_t_min()
+{
+  return INT32_MIN;
+}
+
+int32_t return_int32_t_max()
+{
+  return INT32_MAX;
+}
+
+int64_t return_int64_t_min()
+{
+  return INT64_MIN;
+}
+
+int64_t return_int64_t_max()
+{
+  return INT64_MAX;
+}
+
+uint8_t return_uint8_t_min()
+{
+  return 0;
+}
+
+uint8_t return_uint8_t_max()
+{
+  return UINT8_MAX;
+}
+
+uint16_t return_uint16_t_min()
+{
+  return 0;
+}
+
+uint16_t return_uint16_t_max()
+{
+  return UINT16_MAX;
+}
+
+uint32_t return_uint32_t_min()
+{
+  return 0;
+}
+
+uint32_t return_uint32_t_max()
+{
+  return UINT32_MAX;
+}
+
+uint64_t return_uint64_t_min()
+{
+  return 0;
+}
+
+uint64_t return_uint64_t_max()
+{
+  return UINT64_MAX;
+}
+
+/* float return_float_min() */
+/* { */
+/* } */
+
+/* float return_float_max() */
+/* { */
+/* } */
+
+/* double return_double_min() */
+/* { */
+/* } */
+
+/* double return_double_max() */
+/* { */
+/* } */
+
+/* void* return_void*_min() */
+/* { */
+/* } */
+
+/* void* return_void*_max() */
+/* { */
+/* } */
+

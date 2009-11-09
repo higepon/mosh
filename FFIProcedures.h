@@ -42,6 +42,7 @@ Object internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiLookupEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiOpenEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTointEx(VM* theVM, int argc, const Object* argv);
+Object internalFfiCallTouintEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTocharEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv);
 Object internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv);

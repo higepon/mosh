@@ -1042,6 +1042,7 @@
     (%ffi-open interaction sys)
     (%ffi-lookup interaction sys)
     (%ffi-call->int interaction sys)
+    (%ffi-call->uint interaction sys)
     (%ffi-call->char interaction sys)
     (%ffi-call->void interaction sys)
     (%ffi-call->void* interaction sys)

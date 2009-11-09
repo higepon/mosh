@@ -868,7 +868,32 @@ Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
     }
     SynchronizedErrno s(theVM);
     const intptr_t ret = callStub(func, &cstack);
+    LOG1("<~a>", Bignum::makeIntegerFromSigned<intptr_t>(ret));
     return Bignum::makeIntegerFromSigned<intptr_t>(ret);
+}
+
+Object scheme::internalFfiCallTouintEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("%ffi-call->uint");
+#ifndef FFI_SUPPORTED
+    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
+    return Object::Undef;
+#endif
+
+    checkArgumentLengthAtLeast(1);
+    argumentAsPointer(0, func);
+
+    CStack cstack;
+    for (int i = 1; i < argc; i++) {
+        if (!cstack.push(argv[i])) {
+            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
+                                                                                   argv[i]));
+            return Object::Undef;
+        }
+    }
+    SynchronizedErrno s(theVM);
+    const uintptr_t ret = callStub(func, &cstack);
+    return Bignum::makeIntegerFromUnsigned<uintptr_t>(ret);
 }
 
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)

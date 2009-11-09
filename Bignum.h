@@ -546,7 +546,19 @@ public:
         mpz_t ret;
         mpz_init_set_si(ret, n >> 32);
         mpz_mul_2exp(ret, ret, 32);
-        mpz_add_ui(ret, ret, (n & 0xffffffff));
+        const int64_t val = (int64_t)(n & 0xffffffff);
+        printf("val=%lld\n", val);
+        if (val < 0) {
+            mpz_neg(ret, ret);
+        printf("[[1:%s]]\n", mpz_get_str(NULL, 10, ret));
+
+            mpz_add_ui(ret, ret, -val);
+        printf("[[2:%s]]\n", mpz_get_str(NULL, 10, ret));
+            mpz_neg(ret, ret);
+        printf("[[3:%s]]\n", mpz_get_str(NULL, 10, ret));
+        } else {
+            mpz_add_ui(ret, ret, val);
+        }
         return makeInteger(ret);
     }
 

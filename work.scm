@@ -1,20 +1,2 @@
 (import (rnrs)
-  (mosh ffi))
-
-(let* ((cb (make-c-callback 'void* '(void*)
-                (lambda x (write x)(newline) x)))
-       (co (pointer->c-function cb 'void* 'unknown '(void*))))
-  (write (co (integer->pointer 123)))
-  (newline))
-
-(let* ((cb (make-c-callback 'int '(int)
-                (lambda x (write x)(newline) x)))
-       (co (pointer->c-function cb 'int 'unknown '(int))))
-  (write (co 123))
-  (newline))
-
-(let* ((cb (make-c-callback 'double '(double)
-                (lambda x (write x)(newline) x)))
-       (co (pointer->c-function cb 'double 'unknown '(double))))
-  (write (co 123.4))
-  (newline))
+        (foreign databases sqlite sizeof))
