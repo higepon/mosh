@@ -33,6 +33,9 @@
 #define SCHEME_NUMBERSCANNER_
 
 #include "scheme.h"
+#include "Reader.h"
+#include "NumberReader.h"
+#include "NumberReader.tab.hpp"
 
 namespace scheme {
 
@@ -42,7 +45,7 @@ public:
     virtual ~NumberScanner();
 
     void fill(int n);
-    int scan();
+    int scan(YYSTYPE* yylval);
     ucs4char* currentToken() const;
 
 private:

@@ -53,7 +53,7 @@
 #include "MultiVMProcedures.h"
 
 using namespace scheme;
-extern int number_yylex();
+extern int number_yylex(YYSTYPE* yylval);
 extern int number_yyerror(const char *);
 //#define YYDEBUG 1
 // yydebug = 1
@@ -120,7 +120,7 @@ static Object suffixToNumber(const ucs4string& text)
 }
 
 %}
-
+%pure_parser
 %token END_OF_FILE PLUS MINUS SLASH DOT AT MY_NAN MY_INF IMAG
 %token RADIX_2 RADIX_8 RADIX_10 RADIX_16
 
@@ -136,7 +136,6 @@ static Object suffixToNumber(const ucs4string& text)
 %type <object> num8  complex8   real8  ureal8   sreal8  uinteger8
 %type <object> num10 complex10  inexact_complex10 real10  ureal10 sreal10 uinteger10 decimal10
 %type <object> num16 complex16  real16 ureal16  sreal16 uinteger16
-
 %start top_level
 
 %%

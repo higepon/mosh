@@ -1,5 +1,7 @@
 2009-11-13  higepon  <higepon@users.sourceforge.jp>
 
+	* NumberScanner.h : NumberScanner becomes pure parser, which means thread safe.
+
 	* Scanner.h : Scanner becomes pure parser, which means thread safe.
 
 2009-11-12  higepon  <higepon@users.sourceforge.jp>

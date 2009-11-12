@@ -40,8 +40,6 @@
 #include "NumberScanner.h"
 
 #include "Reader.h"
-#include "NumberReader.h"
-#include "NumberReader.tab.hpp"
 #include "VM.h"
 #include "MultiVMProcedures.h"
 
@@ -121,12 +119,12 @@ void NumberScanner::fill(int n)
 
 }
 
-int number_yylex()
+int number_yylex(YYSTYPE* yylval)
 {
-    return currentVM()->numberReaderContext()->port()->numberScanner()->scan();
+    return currentVM()->numberReaderContext()->port()->numberScanner()->scan(yylval);
 }
 
-int NumberScanner::scan()
+int NumberScanner::scan(YYSTYPE* yylval)
 {
 /*!re2c
     DIGIT_10        = [0-9];
@@ -153,7 +151,7 @@ int NumberScanner::scan()
             return EXACT;
         }
         <INITIAL>EXPONENT_MARKER {
-            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR  - YYTOKEN));
+            yylval->stringValue = ucs4string(YYTOKEN, (YYCURSOR  - YYTOKEN));
             YYTOKEN = YYCURSOR;
             return EXPONENT_MARKER;
         }
@@ -211,29 +209,29 @@ int NumberScanner::scan()
             return RADIX_16;
         }
         <INITIAL,IN_HEX>DIGIT_2 {
-            yylval.intValue = YYTOKEN[0] - '0';
+            yylval->intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_2;
         }
         <INITIAL,IN_HEX>DIGIT_8 {
-            yylval.intValue = YYTOKEN[0] - '0';
+            yylval->intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_8;
         }
         <INITIAL,IN_HEX>DIGIT_10 {
-            yylval.intValue = YYTOKEN[0] - '0';
+            yylval->intValue = YYTOKEN[0] - '0';
             YYTOKEN = YYCURSOR;
             return DIGIT_10;
         }
         <INITIAL,IN_HEX>DIGIT_16_1 {
             const ucs4char ch = YYTOKEN[0];
-            yylval.intValue = ch - 'A' + 10;
+            yylval->intValue = ch - 'A' + 10;
             YYTOKEN = YYCURSOR;
             return DIGIT_16;
         }
         <INITIAL,IN_HEX>DIGIT_16_2 {
             const ucs4char ch = YYTOKEN[0];
-            yylval.intValue = ch - 'a' + 10;
+            yylval->intValue = ch - 'a' + 10;
             YYTOKEN = YYCURSOR;
             return DIGIT_16;
         }
