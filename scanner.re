@@ -38,8 +38,6 @@
 #include "ScannerHelper.h"
 #include "Scanner.h"
 #include "OSCompatThread.h"
-#include "Reader.h"
-#include "Reader.tab.hpp"
 #include "VM.h"
 #include "MultiVMProcedures.h"
 
@@ -52,9 +50,6 @@
 #define YYFILL(n) fill(n)
 
 using namespace scheme;
-extern VM* theVM;
-extern TextualInputPort* parser_port();
-extern YYSTYPE yylval;
 
 Scanner::Scanner() : eofP_(false), dummy_('Z'),  // for YYDEBUG
                      buffer_(NULL),
@@ -148,12 +143,12 @@ void Scanner::fill(int n)
     limit_ = limit_ - tokenOffset + readSize;
 }
 
-int yylex()
+int yylex(YYSTYPE* yylval)
 {
-    return currentVM()->readerContext()->port()->scanner()->scan();
+    return currentVM()->readerContext()->port()->scanner()->scan(yylval);
 }
 
-int Scanner::scan()
+int Scanner::scan(YYSTYPE* yylval)
 {
 /*!re2c
   EOS                    = "\X0000";
@@ -235,98 +230,98 @@ int Scanner::scan()
     {
 /*!re2c
        "#"[tT] DELMITER {
-            yylval.boolValue = true;
+            yylval->boolValue = true;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return SCHEME_BOOLEAN;
         }
         "#"[fF] DELMITER {
-            yylval.boolValue = false;
+            yylval->boolValue = false;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return SCHEME_BOOLEAN;
         }
         "#\\space" DELMITER {
-            yylval.charValue = ' ';
+            yylval->charValue = ' ';
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\newline" DELMITER {
-            yylval.charValue = '\n';
+            yylval->charValue = '\n';
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\nul" DELMITER {
-            yylval.charValue = 0x00;
+            yylval->charValue = 0x00;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\alarm" DELMITER {
-            yylval.charValue = 0x07;
+            yylval->charValue = 0x07;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\backspace" DELMITER {
-            yylval.charValue = 0x08;
+            yylval->charValue = 0x08;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\tab" DELMITER {
-            yylval.charValue = 0x09;
+            yylval->charValue = 0x09;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\linefeed" DELMITER {
-            yylval.charValue = 0x0A;
+            yylval->charValue = 0x0A;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\vtab" DELMITER {
-            yylval.charValue = 0x0B;
+            yylval->charValue = 0x0B;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\page" DELMITER {
-            yylval.charValue = 0x0C;
+            yylval->charValue = 0x0C;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\return" DELMITER {
-            yylval.charValue = 0x0D;
+            yylval->charValue = 0x0D;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\delete" DELMITER {
-            yylval.charValue = 0x7F;
+            yylval->charValue = 0x7F;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\esc" DELMITER {
-            yylval.charValue = 0x1B;
+            yylval->charValue = 0x1B;
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\" ANY_CHARACTER DELMITER {
-            yylval.charValue = YYTOKEN[2];
+            yylval->charValue = YYTOKEN[2];
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
         "#\\x" HEX_SCALAR_VALUE DELMITER {
             YYCURSOR--;
-            yylval.charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR );
+            yylval->charValue = ScannerHelper::hexStringToUCS4Char(YYTOKEN + 3, YYCURSOR );
             YYTOKEN = YYCURSOR;
             return CHARACTER;
         }
@@ -334,44 +329,44 @@ int Scanner::scan()
         /* it causes infinite loop. */
        NUM_2  DELMITER {
            YYCURSOR--;
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+           yylval->stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
        NUM_10 DELMITER {
            YYCURSOR--;
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+           yylval->stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
        NUM_8 DELMITER {
            YYCURSOR--;
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+           yylval->stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
        NUM_16 DELMITER {
            YYCURSOR--;
-           yylval.stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+           yylval->stringValue =  ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
            YYTOKEN = YYCURSOR;
            return NUMBER;
        }
        IDENTIFIER DELMITER {
             YYCURSOR--;
-            yylval.stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
+            yylval->stringValue = ucs4string(YYTOKEN, (YYCURSOR - YYTOKEN));
             YYTOKEN = YYCURSOR;
             return IDENTIFIER;
             }
         "#/" REGEXP_ELEMENT* "/" DELMITER {
             YYCURSOR--;
-            yylval.stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 3);
+            yylval->stringValue = ucs4string(YYTOKEN + 2, (YYCURSOR - YYTOKEN) - 3);
             YYTOKEN = YYCURSOR;
             return REGEXP;
         }
         "\"" STRING_ELEMENT* "\"" DELMITER {
 
             YYCURSOR--;
-            yylval.stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
+            yylval->stringValue = ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN) - 2);
             YYTOKEN = YYCURSOR;
             return STRING;
         }

@@ -33,6 +33,8 @@
 #define SCHEME_SCANNER_
 
 #include "scheme.h"
+#include "Reader.h"
+#include "Reader.tab.hpp"
 
 namespace scheme {
 
@@ -43,7 +45,7 @@ public:
 
     void fill(int n);
     void emptyBuffer();
-    int scan();
+    int scan(YYSTYPE* yylval);
     ucs4char* currentToken() const;
 
 private:

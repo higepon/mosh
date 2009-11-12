@@ -1,3 +1,7 @@
+2009-11-13  higepon  <higepon@users.sourceforge.jp>
+
+	* Scanner.h : Scanner becomes pure parser, which means thread safe.
+
 2009-11-12  higepon  <higepon@users.sourceforge.jp>
 
 	* library.scm (make-enumeration): Added argument error check. Issue 113 pointed out by tabe.fixedpoint.

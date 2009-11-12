@@ -52,10 +52,10 @@
 #include "VM.h"
 #include "MultiVMProcedures.h"
 using namespace scheme;
-extern int yylex();
+extern int yylex(YYSTYPE *lvalp);
 extern int yyerror(const char *);
 %}
-
+%pure_parser
 %token <stringValue> IDENTIFIER
 %token <boolValue> SCHEME_BOOLEAN
 %token <stringValue> STRING
