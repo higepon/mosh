@@ -1,3 +1,7 @@
+2009-11-12  higepon  <higepon@users.sourceforge.jp>
+
+	* library.scm (make-enumeration): Added argument error check. Issue 113 pointed out by tabe.fixedpoint.
+
 2009-11-02  higepon  <higepon@users.sourceforge.jp>
 
 	* FFIProcedures.cpp (c_callback_double): Check return value satisfies isNumber().

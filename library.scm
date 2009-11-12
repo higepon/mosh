@@ -1047,7 +1047,12 @@
 
 
 (define (make-enumeration symbol-list)
-  (make-enum-set (make-enumeration-type symbol-list) symbol-list))
+  (cond
+   [(and (list? symbol-list) (for-all symbol? symbol-list))
+    (make-enum-set (make-enumeration-type symbol-list) symbol-list)]
+   [else
+    (assertion-violation 'make-enumeration "argument 1 must be a list of symbols")]))
+
 
 (define (enum-set-universe enum-set)
   (make-enum-set (enum-set-type enum-set)
