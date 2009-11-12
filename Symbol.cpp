@@ -33,9 +33,11 @@
 #include "Object.h"
 #include "Object-inl.h"
 #include "Symbol.h"
+#include "OSCompatThread.h"
 using namespace scheme;
 
 Symbols* Symbol::symbols;
+Mutex* Symbol::mutex;
 Object Symbol::QUOTE;
 Object Symbol::QUASIQUOTE;
 Object Symbol::UNQUOTE;
@@ -79,6 +81,7 @@ Object Symbol::SHIFT;
 void Symbol::initBuitinSymbols()
 {
     symbols = new Symbols;
+    mutex = new Mutex;
     QUOTE             = Symbol::intern(UC("quote"));
     QUASIQUOTE        = Symbol::intern(UC("quasiquote"));
     UNQUOTE           = Symbol::intern(UC("unquote"));
@@ -141,4 +144,34 @@ const ucs4char* Symbol::c_str()
     MOSH_ASSERT(memcmp(savedName_, name_, text.size()) == 0);
 #endif
     return name_;
+}
+
+Object Symbol::intern(const ucs4char* name)
+{
+    mutex->lock();
+    Symbols::const_iterator it = (*symbols).find(name);
+    if (it == (*symbols).end()) {
+        const Object o = Object::makeSymbol(name);
+//            symbols.insert(std::pair<const ucs4char*, Object>(name, o));
+        (*symbols)[name] = o;
+        mutex->unlock();
+        return o;
+    } else {
+        mutex->unlock();
+        return (*it).second;
+    }
+}
+bool Symbol::isInterned(Object symbol)
+{
+    MOSH_ASSERT(symbol.isSymbol());
+    return symbol == Symbol::intern(symbol.toSymbol()->c_str());
+}
+
+Object Symbol::add(const ucs4char* name)
+{
+    Object sym = Object::makeSymbol(name);
+    mutex->lock();
+    (*symbols)[name] = sym;
+    mutex->unlock();
+    return sym;
 }

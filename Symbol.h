@@ -38,6 +38,7 @@
 namespace scheme {
 
 typedef gc_map2  Symbols;
+class Mutex;
 
 class Symbol EXTEND_GC
 {
@@ -51,6 +52,7 @@ private:
     // If main thread exit earlier than sub thread.
     // main thread's exit() calls static destructor and frees symbols.
     static Symbols* symbols;
+    static Mutex* mutex;
 
 public:
     Symbol(const ucs4char* name) : name_(name)
@@ -62,27 +64,9 @@ public:
 #endif
     }
     const ucs4char* c_str();
-    static Object intern(const ucs4char* name)
-    {
-        Symbols::const_iterator it = (*symbols).find(name);
-        if (it == (*symbols).end()) {
-            const Object o = Object::makeSymbol(name);
-//            symbols.insert(std::pair<const ucs4char*, Object>(name, o));
-            (*symbols)[name] = o;
-            return o;
-        } else {
-            return (*it).second;
-        }
-    }
-    static bool isInterned(Object symbol)
-    {
-        MOSH_ASSERT(symbol.isSymbol());
-        return symbol == Symbol::intern(symbol.toSymbol()->c_str());
-    }
-    static Object add(const ucs4char* name)
-    {
-        return ((*symbols)[name] = Object::makeSymbol(name));
-    }
+    static Object intern(const ucs4char* name);
+    static bool isInterned(Object symbol);
+    static Object add(const ucs4char* name);
 
     static Object QUOTE;
     static Object QUASIQUOTE;
