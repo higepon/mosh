@@ -91,7 +91,7 @@ void showVersion()
 {
     printf("Mosh R6RS scheme interpreter, version %s (revision %s) \n", PACKAGE_VERSION, revision().ascii_c_str());
     exit(0);
-}
+} 
 
 
 void showUsage()
