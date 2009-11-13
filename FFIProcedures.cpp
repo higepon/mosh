@@ -81,12 +81,10 @@ public:
 #endif
     }
     ~SynchronizedErrno() {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         vm_->setErrno(errno);
 #if _MSC_VER
         vm_->setErrno(GetLastError());
 #endif
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
 };
 
