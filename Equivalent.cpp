@@ -47,6 +47,7 @@
 #include "Box.h"
 #include "StringProcedures.h"
 #include "Symbol.h"
+#include "FFI.h"
 
 using namespace scheme;
 
@@ -138,6 +139,12 @@ entry:
             return bv1->equal(bv2);
         } else {
             return false;
+        }
+    }
+
+    if (object1.isPointer()) {
+        if (object2.isPointer()) {
+            return object1.toPointer()->pointer() == object2.toPointer()->pointer();
         }
     }
     return eqv(object1, object2);
@@ -370,6 +377,18 @@ Object Equal::preP(Object x, Object y, Object k)
         }
     }
 
+    if (x.isPointer()) {
+        if (y.isPointer()) {
+            if (x.toPointer()->pointer() == y.toPointer()->pointer()) {
+                return k;
+            } else {
+                return Object::False;
+            }
+        } else {
+            return Object::False;
+        }
+    }
+
     if (eqv(x, y)) {
         return k;
     } else {
@@ -523,6 +542,18 @@ Object Equal::slowP(EqHashTable** pht, Object x, Object y, Object k)
             return Object::False;
         }
     }
+    if (x.isPointer()) {
+        if (y.isPointer()) {
+            if (x.toPointer()->pointer() == y.toPointer()->pointer()) {
+                return Object::True;
+            } else {
+                return Object::False;
+            }
+        } else {
+            return Object::False;
+        }
+    }
+
     if (eqv(x, y)) {
         return k;
     } else {
@@ -627,6 +658,17 @@ Object Equal::fastP(EqHashTable** pht, Object x, Object y, Object k)
             CProcedure* const cprocedure1 = x.toCProcedure();
             CProcedure* const cprocedure2 = y.toCProcedure();
             return Object::makeBool(cprocedure1->proc == cprocedure2->proc);
+        } else {
+            return Object::False;
+        }
+    }
+    if (x.isPointer()) {
+        if (y.isPointer()) {
+            if (x.toPointer()->pointer() == y.toPointer()->pointer()) {
+                return Object::True;
+            } else {
+                return Object::False;
+            }
         } else {
             return Object::False;
         }

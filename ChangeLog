@@ -1,3 +1,9 @@
+2009-11-14  higepon  <higepon@users.sourceforge.jp>
+
+	* Still failed some tests to be fixed.
+
+	* lib/mosh/ffi.ss : c-function handles many argument types.
+
 2009-11-13  higepon  <higepon@users.sourceforge.jp>
 
 	* Symbol.cpp: intern becomes thread safe.

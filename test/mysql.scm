@@ -101,6 +101,8 @@
       (test-true (integer? (mysql-warning-count mysql)))
       (mysql-close mysql)
                                         ;  (mysql-library-end)
-      '())))
+      '()))
+  #f
+  )
 
 (test-results)

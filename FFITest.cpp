@@ -133,8 +133,8 @@ TEST_F(VMErrorPortTest, loadAndlookupScheme) {
 
 TEST_F(FFITest, CStackWithFlonum) {
     CStack cstack;
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(3.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(2.0)));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(3.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(2.0), CStack::SIGNATURE_DOUBLE));
     double* p = (double*)cstack.frame();
     EXPECT_EQ(4, cstack.count());
     EXPECT_DOUBLE_EQ(3.0, p[0]);
@@ -143,10 +143,10 @@ TEST_F(FFITest, CStackWithFlonum) {
 
 TEST_F(FFITest, CStackWithFixnum) {
     CStack cstack;
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(4)));
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(-5)));
-    EXPECT_TRUE(cstack.push(Bignum::makeIntegerFromU32(0xffffffff)));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(4), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(-5), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Bignum::makeIntegerFromU32(0xffffffff), CStack::SIGNATURE_INT64));
     intptr_t* p = cstack.frame();
     EXPECT_EQ(4, cstack.count());
     EXPECT_EQ(3, p[0]);
@@ -159,8 +159,8 @@ TEST_F(FFITest, CStackWithFixnum) {
 
 TEST_F(FFITest, CStackWithString) {
     CStack cstack;
-    cstack.push(Object::makeFixnum(3));
-    cstack.push("hige");
+    cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
+    cstack.push("hige", CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.frame();
     EXPECT_EQ(2, cstack.count());
     EXPECT_EQ(3, p[0]);
@@ -173,8 +173,8 @@ TEST_F(FFITest, CStackWithByteVector) {
     ByteVector* const bv = b.toByteVector();
     bv->u8Set(0, 1);
     bv->u8Set(1, 2);
-    cstack.push(b);
-    cstack.push("hige");
+    cstack.push(b, CStack::SIGNATURE_POINTER);
+    cstack.push("hige", CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.frame();
     EXPECT_EQ(2, cstack.count());
     EXPECT_EQ(1, ((uint8_t*)(p[0]))[0]);
@@ -188,9 +188,9 @@ TEST_F(FFITest, CStackTooManyArgument) {
 
     CStack cstack;
     for (int i = 0; i < CStack::MAX_ARGC; i++) {
-        EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
+        EXPECT_TRUE(cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT));
     }
-    const bool result = cstack.push(Object::makeFixnum(3));
+    const bool result = cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
     EXPECT_FALSE(result);
     ucs4string err = cstack.getLastError();
     EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
@@ -199,10 +199,10 @@ TEST_F(FFITest, CStackTooManyArgument) {
 #elif ARCH_X86_64
 TEST_F(FFITest, CStackWithFixnum) {
     CStack cstack;
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(4)));
-    EXPECT_TRUE(cstack.push(Object::makeFixnum(-5)));
-    EXPECT_TRUE(cstack.push(Bignum::makeIntegerFromU32(0xffffffff)));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(4), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Object::makeFixnum(-5), CStack::SIGNATURE_INT));
+    EXPECT_TRUE(cstack.push(Bignum::makeIntegerFromU32(0xffffffff), CStack::SIGNATURE_INT64));
     intptr_t* p = cstack.reg();
     EXPECT_EQ(4, cstack.regCount());
     EXPECT_EQ(3, p[0]);
@@ -215,8 +215,8 @@ TEST_F(FFITest, CStackWithFixnum) {
 
 TEST_F(FFITest, CStackWithString) {
     CStack cstack;
-    cstack.push(Object::makeFixnum(3));
-    cstack.push("hige");
+    cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
+    cstack.push("hige", CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.reg();
     EXPECT_EQ(2, cstack.regCount());
     EXPECT_EQ(3, p[0]);
@@ -229,8 +229,8 @@ TEST_F(FFITest, CStackWithByteVector) {
     ByteVector* const bv = b.toByteVector();
     bv->u8Set(0, 1);
     bv->u8Set(1, 2);
-    cstack.push(b);
-    cstack.push("hige");
+    cstack.push(b, CStack::SIGNATURE_POINTER);
+    cstack.push("hige", CStack::SIGNATURE_POINTER);
     intptr_t* p = cstack.reg();
     EXPECT_EQ(2, cstack.regCount());
     EXPECT_EQ(1, ((uint8_t*)(p[0]))[0]);
@@ -244,9 +244,9 @@ TEST_F(FFITest, CStackTooManyArgument) {
 
     CStack cstack;
     for (int i = 0; i < CStack::MAX_ARGC + CStack::MAX_REG; i++) {
-        EXPECT_TRUE(cstack.push(Object::makeFixnum(3)));
+        EXPECT_TRUE(cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT));
     }
-    const bool result = cstack.push(Object::makeFixnum(3));
+    const bool result = cstack.push(Object::makeFixnum(3), CStack::SIGNATURE_INT);
     EXPECT_FALSE(result);
     ucs4string err = cstack.getLastError();
     EXPECT_STREQ("too many ffi arguments", err.ascii_c_str());
@@ -255,18 +255,18 @@ TEST_F(FFITest, CStackTooManyArgument) {
 TEST_F(FFITest, CStackWithFlonum) {
     CStack cstack;
     // use sse registers
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(1.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(2.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(3.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(4.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(5.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(6.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(7.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(8.0)));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(1.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(2.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(3.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(4.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(5.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(6.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(7.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(8.0), CStack::SIGNATURE_DOUBLE));
 
     // use stack
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(9.0)));
-    EXPECT_TRUE(cstack.push(Object::makeFlonum(10.0)));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(9.0), CStack::SIGNATURE_DOUBLE));
+    EXPECT_TRUE(cstack.push(Object::makeFlonum(10.0), CStack::SIGNATURE_DOUBLE));
 
     EXPECT_EQ(2, cstack.count());
     double* p = (double*)cstack.frame();
@@ -280,7 +280,7 @@ TEST_F(FFITest, CStackUnsupportedArgument) {
     // we assume this
     ASSERT_TRUE(sizeof(uint64_t) >= sizeof(intptr_t));
     CStack cstack;
-    const bool result = cstack.push(Object::makeEqHashTable());
+    const bool result = cstack.push(Object::makeEqHashTable(), CStack::SIGNATURE_INT);
     EXPECT_FALSE(result);
     ucs4string err = cstack.getLastError();
     EXPECT_STREQ("unsupported ffi argument", err.ascii_c_str());

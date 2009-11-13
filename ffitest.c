@@ -1,6 +1,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <stdio.h>
 #include <limits.h>
@@ -244,15 +245,15 @@ void return_void()
   return;
 }
 
-/* bool return_bool_true() */
-/* { */
-/*   return true; */
-/* } */
+bool return_bool_true()
+{
+  return true;
+}
 
-/* bool return_bool_false() */
-/* { */
-/*   return false; */
-/* } */
+bool return_bool_false()
+{
+  return false;
+}
 
 char return_char_min()
 {
@@ -434,27 +435,362 @@ uint64_t return_uint64_t_max()
   return UINT64_MAX;
 }
 
-/* float return_float_min() */
-/* { */
-/* } */
+float return_float()
+{
+  return 3.14;
+}
 
-/* float return_float_max() */
-/* { */
-/* } */
+double return_double()
+{
+  return 3.14;
+}
 
-/* double return_double_min() */
-/* { */
-/* } */
+void* return_void_star()
+{
+  return (void*)0x12345678;
+}
 
-/* double return_double_max() */
-/* { */
-/* } */
+char* return_char_star_null()
+{
+  return NULL;
+}
 
-/* void* return_void*_min() */
-/* { */
-/* } */
+char* return_char_star()
+{
+  return "higepon";
+}
 
-/* void* return_void*_max() */
-/* { */
-/* } */
 
+int return_first_int_int(int first, int second)
+{
+    return first;
+}
+int return_second_int_int(int first, int second)
+{
+    return second;
+}
+
+int return_first_int_int64_t(int first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_int_int64_t(int first, int64_t second)
+{
+    return second;
+}
+
+int return_first_int_voidstar(int first, void* second)
+{
+    return first;
+}
+void* return_second_int_voidstar(int first, void* second)
+{
+    return second;
+}
+
+int return_first_int_float(int first, float second)
+{
+    return first;
+}
+float return_second_int_float(int first, float second)
+{
+    return second;
+}
+
+int return_first_int_double(int first, double second)
+{
+    return first;
+}
+double return_second_int_double(int first, double second)
+{
+    return second;
+}
+
+int return_first_int_charstar(int first, char* second)
+{
+    return first;
+}
+char* return_second_int_charstar(int first, char* second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_int(int64_t first, int second)
+{
+    return first;
+}
+int return_second_int64_t_int(int64_t first, int second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_int64_t(int64_t first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_int64_t_int64_t(int64_t first, int64_t second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_voidstar(int64_t first, void* second)
+{
+    return first;
+}
+void* return_second_int64_t_voidstar(int64_t first, void* second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_float(int64_t first, float second)
+{
+    return first;
+}
+float return_second_int64_t_float(int64_t first, float second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_double(int64_t first, double second)
+{
+    return first;
+}
+double return_second_int64_t_double(int64_t first, double second)
+{
+    return second;
+}
+
+int64_t return_first_int64_t_charstar(int64_t first, char* second)
+{
+    return first;
+}
+char* return_second_int64_t_charstar(int64_t first, char* second)
+{
+    return second;
+}
+
+void* return_first_voidstar_int(void* first, int second)
+{
+    return first;
+}
+int return_second_voidstar_int(void* first, int second)
+{
+    return second;
+}
+
+void* return_first_voidstar_int64_t(void* first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_voidstar_int64_t(void* first, int64_t second)
+{
+    return second;
+}
+
+void* return_first_voidstar_voidstar(void* first, void* second)
+{
+    return first;
+}
+void* return_second_voidstar_voidstar(void* first, void* second)
+{
+    return second;
+}
+
+void* return_first_voidstar_float(void* first, float second)
+{
+    return first;
+}
+float return_second_voidstar_float(void* first, float second)
+{
+    return second;
+}
+
+void* return_first_voidstar_double(void* first, double second)
+{
+    return first;
+}
+double return_second_voidstar_double(void* first, double second)
+{
+    return second;
+}
+
+void* return_first_voidstar_charstar(void* first, char* second)
+{
+    return first;
+}
+char* return_second_voidstar_charstar(void* first, char* second)
+{
+    return second;
+}
+
+float return_first_float_int(float first, int second)
+{
+    return first;
+}
+int return_second_float_int(float first, int second)
+{
+    return second;
+}
+
+float return_first_float_int64_t(float first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_float_int64_t(float first, int64_t second)
+{
+    return second;
+}
+
+float return_first_float_voidstar(float first, void* second)
+{
+    return first;
+}
+void* return_second_float_voidstar(float first, void* second)
+{
+    return second;
+}
+
+float return_first_float_float(float first, float second)
+{
+    return first;
+}
+float return_second_float_float(float first, float second)
+{
+    return second;
+}
+
+float return_first_float_double(float first, double second)
+{
+    return first;
+}
+double return_second_float_double(float first, double second)
+{
+    return second;
+}
+
+float return_first_float_charstar(float first, char* second)
+{
+    return first;
+}
+char* return_second_float_charstar(float first, char* second)
+{
+    return second;
+}
+
+double return_first_double_int(double first, int second)
+{
+    return first;
+}
+int return_second_double_int(double first, int second)
+{
+    return second;
+}
+
+double return_first_double_int64_t(double first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_double_int64_t(double first, int64_t second)
+{
+    return second;
+}
+
+double return_first_double_voidstar(double first, void* second)
+{
+    return first;
+}
+void* return_second_double_voidstar(double first, void* second)
+{
+    return second;
+}
+
+double return_first_double_float(double first, float second)
+{
+    return first;
+}
+float return_second_double_float(double first, float second)
+{
+    return second;
+}
+
+double return_first_double_double(double first, double second)
+{
+    return first;
+}
+double return_second_double_double(double first, double second)
+{
+    return second;
+}
+
+double return_first_double_charstar(double first, char* second)
+{
+    return first;
+}
+char* return_second_double_charstar(double first, char* second)
+{
+    return second;
+}
+
+char* return_first_charstar_int(char* first, int second)
+{
+    return first;
+}
+int return_second_charstar_int(char* first, int second)
+{
+    return second;
+}
+
+char* return_first_charstar_int64_t(char* first, int64_t second)
+{
+    return first;
+}
+int64_t return_second_charstar_int64_t(char* first, int64_t second)
+{
+    return second;
+}
+
+char* return_first_charstar_voidstar(char* first, void* second)
+{
+    return first;
+}
+void* return_second_charstar_voidstar(char* first, void* second)
+{
+    return second;
+}
+
+char* return_first_charstar_float(char* first, float second)
+{
+    return first;
+}
+float return_second_charstar_float(char* first, float second)
+{
+    return second;
+}
+
+char* return_first_charstar_double(char* first, double second)
+{
+    return first;
+}
+double return_second_charstar_double(char* first, double second)
+{
+    return second;
+}
+
+char* return_first_charstar_charstar(char* first, char* second)
+{
+    return first;
+}
+char* return_second_charstar_charstar(char* first, char* second)
+{
+    return second;
+}
+
+int add_short_short(short a, short b)
+{
+  return a + b;
+}
+
+bool return_not(bool value)
+{
+  return !value;
+}

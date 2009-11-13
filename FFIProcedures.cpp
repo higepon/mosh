@@ -81,17 +81,19 @@ public:
 #endif
     }
     ~SynchronizedErrno() {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         vm_->setErrno(errno);
 #if _MSC_VER
         vm_->setErrno(GetLastError());
 #endif
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     }
 };
 
 static void inline memoryStoreFence()
 {
 #ifdef _MSC_VER
-	_mm_sfence();
+    _mm_sfence();
 #else
     asm volatile ("sfence" ::: "memory");
 #endif
@@ -636,7 +638,111 @@ static double callStubDouble(Pointer* func, CStack* cstack)
 #endif
 }
 
-static intptr_t callStub(Pointer* func, CStack* cstack)
+static float callStubFloat(Pointer* func, CStack* cstack)
+{
+#if defined(ARCH_IA32) && !defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    float ret;
+    asm volatile(
+        "movl    %%esp, %%edx ;"
+        "subl    %1   , %%esp ;"
+        "movl    %%esp, %%edi ;" // copy arguments to stack
+        "rep                  ;"
+        "movsb                ;"
+        "movl    %%edx, %%edi ;"
+        "call    *%%eax       ;"
+        "movl    %%edi, %%esp ;"
+        : "=t" (ret) // t: st[0]
+        : "c" (bytes), "S" (cstack->frame()), "a" (func->pointer()) // c:ecx, S:esi a:eax
+        : "edi", "edx", "memory"); // we have memory destructions.
+    return ret;
+#elif defined(ARCH_IA32) && defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    uintptr_t p = func->pointer();
+    void* s = cstack->frame();
+    float dret;
+    __asm {
+        MOV    EDX,ESP
+        MOV    ESI,s
+        MOV    ECX,bytes
+        SUB    ESP,bytes
+        MOV    EDI,ESP
+        REP    MOVSB
+        MOV    EDI,EDX
+        CALL   p
+        MOV    ESP,EDI
+        FSTP   dret
+    }
+    return dret;
+#elif defined ARCH_X86_64
+    float ret;
+    if (cstack->count() == 0) {
+        asm volatile("movq %%rsi, %%r10;"
+                     "movsd   (%%rdi), %%xmm0 ;"
+                     "movsd  8(%%rdi), %%xmm1 ;"
+                     "movsd 16(%%rdi), %%xmm2 ;"
+                     "movsd 24(%%rdi), %%xmm3 ;"
+                     "movsd 32(%%rdi), %%xmm4 ;"
+                     "movsd 40(%%rdi), %%xmm5 ;"
+                     "movsd 48(%%rdi), %%xmm6 ;"
+                     "movsd 56(%%rdi), %%xmm7 ;"
+                     "movq 0(%%r10), %%rdi ;"   // register argument 1
+                     "movq 8(%%r10), %%rsi ;"   // register argument 2
+                     "movq 16(%%r10), %%rdx ;"  // register argument 3
+                     "movq 24(%%r10), %%rcx ;"  // register argument 4
+                     "movq 32(%%r10), %%r8 ;"   // register argument 5
+                     "movq 40(%%r10), %%r9 ;"   // register argument 6
+                     "call *%%rax ;"
+                     "movq %%xmm0, %%rax ;"
+                     : "=a" (ret)
+                     : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
+                     : "memory"
+            );
+    } else {
+        const int bytes = (cstack->count()) * 8;
+        asm volatile(
+            "movq %%rsi, %%r10;" // r10 for pointing register frame
+            "movq %%rdx, %%r11;" // r11 for pointer to stack argument in frame
+            "movq %%r11, %%r12;"
+            "addq %%rcx, %%r12;"  // r12 end of stack argument in frame
+            "movsd   (%%rdi), %%xmm0 ;"
+            "movsd  8(%%rdi), %%xmm1 ;"
+            "movsd 16(%%rdi), %%xmm2 ;"
+            "movsd 24(%%rdi), %%xmm3 ;"
+            "movsd 32(%%rdi), %%xmm4 ;"
+            "movsd 40(%%rdi), %%xmm5 ;"
+            "movsd 48(%%rdi), %%xmm6 ;"
+            "movsd 56(%%rdi), %%xmm7 ;"
+            "movq 0(%%r10), %%rdi ;"   // register argument 1
+            "movq 8(%%r10), %%rsi ;"   // register argument 2
+            "movq 16(%%r10), %%rdx ;"  // register argument 3
+            "movq 24(%%r10), %%rcx ;"  // register argument 4
+            "movq 32(%%r10), %%r8 ;"   // register argument 5
+            "movq 40(%%r10), %%r9 ;"   // register argument 6
+            "movq %%rsp, %%r13;"
+            "1:   ;"
+            "cmpq %%r11, %%r12;"
+            "je 2f;"
+            "movq 0(%%r11), %%r14;"
+            "movq %%r14, 0(%%r13);"
+            "addq $8, %%r11;"
+            "addq $8, %%r13;"
+            "jmp 1b;"
+            "2:   ;"
+            "call *%%rax ;"
+            "movq %%xmm0, %%rax ;"
+            : "=a" (ret)
+            : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
+            : "memory"
+            );
+    }
+    return ret;
+#else
+    return 0.0;
+#endif
+}
+
+static intptr_t callStubIntptr_t(Pointer* func, CStack* cstack)
 {
 #if defined(ARCH_IA32) && !defined(_MSC_VER)
     const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
@@ -698,6 +804,8 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
     } else {
         const int bytes = (cstack->count()) * 8;
         asm volatile(
+            "pushq %%rbp;"
+            "movq  %%rsp, %%rbp;"
             "movq %%rsi, %%r10;" // r10 for pointing register frame
             "movq %%rdx, %%r11;" // r11 for pointer to stack argument in frame
             "movq %%r11, %%r12;"
@@ -727,6 +835,8 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
             "jmp 1b;"
             "2:   ;"
             "call *%%rax ;"
+            "popq %%rbp;"
+            "movq %%rbp, %%rsp;"
             : "=a" (ret)
             : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
             : "memory"
@@ -734,6 +844,63 @@ static intptr_t callStub(Pointer* func, CStack* cstack)
     }
     return ret;
 
+#else
+    return 0;
+#endif
+}
+
+static int64_t callStubInt64_t(Pointer* func, CStack* cstack)
+{
+#if defined(ARCH_IA32) && !defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    union {
+        int64_t s64;
+        struct {
+            uint32_t lo;
+            uint32_t hi;
+        } s32;
+    } ret;
+
+    asm volatile(
+        "movl    %%esp, %%edx ;"
+        "subl    %2   , %%esp ;"
+        "movl    %%esp, %%edi ;" // copy arguments to stack
+        "rep                  ;"
+        "movsb                ;"
+        "movl    %%edx, %%edi ;"
+        "call    *%%eax       ;"
+        "movl    %%edi, %%esp ;"
+        : "=a" (ret.s32.lo), "=d" (ret.s32.hi)
+        : "c" (bytes), "S" (cstack->frame()), "0" (func->pointer()) // c:ecx, S:esi 0:match to the 0th output
+        : "edi", "memory"); // we have memory destructions.
+    return ret.s64;
+#elif defined(ARCH_IA32) && defined(_MSC_VER)
+    const int bytes = (cstack->count() * sizeof(intptr_t) + 15) & ~15;
+    uintptr_t p = func->pointer();
+    union {
+        int64_t s64;
+        struct {
+            uint32_t lo;
+            uint32_t hi;
+        } s32;
+    } ret;
+    void* s = cstack->frame();
+    __asm {
+        MOV    ECX,bytes
+        MOV    ESI,s
+        MOV    EDX,ESP
+        SUB    ESP,bytes
+        MOV    EDI,ESP
+        REP    MOVSB
+        MOV    EDI,EDX
+        CALL   p
+        MOV    ESP,EDI
+        MOV    ret.s32.lo,EAX
+        MOV    ret.s32.hi,EDX
+    }
+    return ret.s64;
+#elif defined ARCH_X86_64
+    return callStubIntptr_t(func, cstack);
 #else
     return 0;
 #endif
@@ -750,150 +917,166 @@ Object scheme::internalFfiSupportedPEx(VM* theVM, int argc, const Object* argv)
 #endif
 }
 
-Object scheme::internalFfiCallTodoubleEx(VM* theVM, int argc, const Object* argv)
+#define FFI_RETURN_TYPE_VOID        0x0000
+#define FFI_RETURN_TYPE_BOOL        0x0001
+#define FFI_RETURN_TYPE_SHORT       0x0002
+#define FFI_RETURN_TYPE_INT         0x0003
+#define FFI_RETURN_TYPE_INTPTR      0x0004
+#define FFI_RETURN_TYPE_USHORT      0x0005
+#define FFI_RETURN_TYPE_UINT        0x0006
+#define FFI_RETURN_TYPE_UINTPTR     0x0007
+#define FFI_RETURN_TYPE_FLOAT       0x0008
+#define FFI_RETURN_TYPE_DOUBLE      0x0009
+#define FFI_RETURN_TYPE_STRING      0x000a
+#define FFI_RETURN_TYPE_SIZE_T      0x000b
+#define FFI_RETURN_TYPE_INT8_T      0x000c
+#define FFI_RETURN_TYPE_UINT8_T     0x000d
+#define FFI_RETURN_TYPE_INT16_T     0x000e
+#define FFI_RETURN_TYPE_UINT16_T    0x000f
+#define FFI_RETURN_TYPE_INT32_T     0x0010
+#define FFI_RETURN_TYPE_UINT32_T    0x0011
+#define FFI_RETURN_TYPE_INT64_T     0x0012
+#define FFI_RETURN_TYPE_UINT64_T    0x0013
+#define FFI_RETURN_TYPE_POINTER     0x0014
+
+Object scheme::internalFfiCallEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("%ffi-call->double");
+    DeclareProcedureName("ffi-call");
 #ifndef FFI_SUPPORTED
     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
     return Object::Undef;
 #endif
 
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-
+    checkArgumentLengthAtLeast(3);
+    argumentAsFixnum(0, retType);
+    argumentAsString(1, signatures);
+    argumentAsPointer(2, func);
+    MOSH_ASSERT(argc - 3 == signatures->length());
     CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
+    for (int i = 3; i < argc; i++) {
+        if (!cstack.push(argv[i], signatures->charAt(i - 3))) {
             callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
                                                                                    argv[i]));
             return Object::Undef;
         }
     }
     SynchronizedErrno s(theVM);
-    const double ret = callStubDouble(func, &cstack);
-    return Object::makeFlonum(ret);
-}
-
-Object scheme::internalFfiCallTovoidMulEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->void*");
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
-
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
+    switch(retType) {
+    case FFI_RETURN_TYPE_VOID:
+    {
+        callStubIntptr_t(func, &cstack);
+        return Object::Undef;
+    }
+    case FFI_RETURN_TYPE_BOOL:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makeBool(ret == 1);
+    }
+    case FFI_RETURN_TYPE_SHORT:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromSigned<short>(static_cast<short>(ret));
+    }
+    case FFI_RETURN_TYPE_INT:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromSigned<int>(static_cast<int>(ret));
+    }
+    case FFI_RETURN_TYPE_INTPTR:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromSigned<intptr_t>(ret);
+    }
+    case FFI_RETURN_TYPE_USHORT:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<unsigned short>(static_cast<unsigned short>(ret));
+    }
+    case FFI_RETURN_TYPE_UINT:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(static_cast<uintptr_t>(ret));
+    }
+    case FFI_RETURN_TYPE_UINTPTR:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<uintptr_t>(static_cast<uintptr_t>(ret));
+    }
+    case FFI_RETURN_TYPE_FLOAT:
+    {
+        const float ret = callStubFloat(func, &cstack);
+        return Object::makeFlonum(static_cast<double>(ret));
+    }
+    case FFI_RETURN_TYPE_DOUBLE:
+    {
+       const double ret = callStubDouble(func, &cstack);
+       return Object::makeFlonum(ret);
+    }
+    case FFI_RETURN_TYPE_STRING:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        if (ret == 0) {
+            return Object::makePointer(reinterpret_cast<void*>(0));
+        } else {
+            return Object::makeString(reinterpret_cast<char*>(ret));
         }
     }
-
-    SynchronizedErrno s(theVM);
-    const uintptr_t ret = callStub(func, &cstack);
-    return Object::makePointer((void*)ret);
-}
-
-Object scheme::internalFfiCallTovoidEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->void");
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
-
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
+    case FFI_RETURN_TYPE_SIZE_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<size_t>(static_cast<size_t>(ret));
     }
-
-    SynchronizedErrno s(theVM);
-    callStub(func, &cstack);
-    return Object::Undef;
-}
-
-Object scheme::internalFfiCallTocharEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->char");
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
-
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
+    case FFI_RETURN_TYPE_INT8_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makeFixnum(static_cast<int8_t>(ret));
     }
-    SynchronizedErrno s(theVM);
-    const char ret = callStub(func, &cstack);
-    return Bignum::makeIntegerFromSigned<char>(ret);
-}
-
-Object scheme::internalFfiCallTointEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->int");
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
-
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
+    case FFI_RETURN_TYPE_UINT8_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makeFixnum(static_cast<uint8_t>(ret));
     }
-    SynchronizedErrno s(theVM);
-    const intptr_t ret = callStub(func, &cstack);
-    LOG1("<~a>", Bignum::makeIntegerFromSigned<intptr_t>(ret));
-    return Bignum::makeIntegerFromSigned<intptr_t>(ret);
-}
-
-Object scheme::internalFfiCallTouintEx(VM* theVM, int argc, const Object* argv)
-{
-    DeclareProcedureName("%ffi-call->uint");
-#ifndef FFI_SUPPORTED
-    callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-    return Object::Undef;
-#endif
-
-    checkArgumentLengthAtLeast(1);
-    argumentAsPointer(0, func);
-
-    CStack cstack;
-    for (int i = 1; i < argc; i++) {
-        if (!cstack.push(argv[i])) {
-            callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-                                                                                   argv[i]));
-            return Object::Undef;
-        }
+    case FFI_RETURN_TYPE_INT16_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makeFixnum(static_cast<int16_t>(ret));
     }
-    SynchronizedErrno s(theVM);
-    const uintptr_t ret = callStub(func, &cstack);
-    return Bignum::makeIntegerFromUnsigned<uintptr_t>(ret);
+    case FFI_RETURN_TYPE_UINT16_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makeFixnum(static_cast<uint16_t>(ret));
+    }
+    case FFI_RETURN_TYPE_INT32_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromSigned<int32_t>(static_cast<int32_t>(ret));
+    }
+    case FFI_RETURN_TYPE_UINT32_T:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<uint32_t>(static_cast<uint32_t>(ret));
+    }
+    case FFI_RETURN_TYPE_INT64_T:
+    {
+        const int64_t ret = callStubInt64_t(func, &cstack);
+        return Bignum::makeIntegerFromSigned<int64_t>(ret);
+    }
+    case FFI_RETURN_TYPE_UINT64_T:
+    {
+        const int64_t ret = callStubInt64_t(func, &cstack);
+        return Bignum::makeIntegerFromUnsigned<uint64_t>(static_cast<uint64_t>(ret));
+    }
+    case FFI_RETURN_TYPE_POINTER:
+    {
+        const intptr_t ret = callStubIntptr_t(func, &cstack);
+        return Object::makePointer(reinterpret_cast<void*>(ret));
+    }
+    default:
+    {
+        callAssertionViolationAfter(theVM, UC("c-function"), "invalid return type", L1(argv[0]));
+        return Object::Undef;
+    }
+    }
 }
 
 Object scheme::internalFfiLookupEx(VM* theVM, int argc, const Object* argv)
@@ -939,85 +1122,6 @@ Object scheme::internalFfiOpenEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
-// Object scheme::internalFfiCallTostringOrZeroEx(VM* theVM, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("%ffi-call->string-or-zero");
-
-// #ifndef FFI_SUPPORTED
-//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-//     return Object::Undef;
-// #endif
-
-//     checkArgumentLengthAtLeast(1);
-//     argumentAsUintptr_t(0, func, "Invalid FFI function");
-
-//     CStack cstack;
-//     for (int i = 1; i < argc; i++) {
-//         if (!cstack.push(argv[i])) {
-//             callAssertionViolationAfter(theVM, procedureName, "argument error", L2(cstack.getLastError(),
-//                                                                                    argv[i]));
-//             return Object::Undef;
-//         }
-//     }
-
-//     const uintptr_t ret = callStub(func, &cstack);
-//     if (ret == 0) {
-//         return Object::makeFixnum(0);
-//     } else {
-
-//         return Object::makeString((char*)ret);
-//     }
-
-// }
-
-// Object scheme::internalFfiPointerTostringEx(VM* theVM, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("%ffi-pointer->string");
-
-// #ifndef FFI_SUPPORTED
-//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-//     return Object::Undef;
-// #endif
-
-//     checkArgumentLength(1);
-//     argumentAsUintptr_t(0, p, "pointer required");
-//     return Object::makeString((char*)p);
-// }
-
-// Object scheme::internalFfiPointerRefEx(VM* theVM, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("%ffi-pinter-ref");
-
-// #ifndef FFI_SUPPORTED
-//     callAssertionViolationAfter(theVM, procedureName, "ffi not supported on this architecture");
-//     return Object::Undef;
-// #endif
-
-//     checkArgumentLengthBetween(1, 2);
-//     argumentAsUintptr_t(0, p, "pointer required");
-//     if (argc == 1) {
-//         return Bignum::makeIntegerFromUnsigned<uintptr_t>(*(uintptr_t*)p);
-//     } else { // argc == 2
-//         argumentAsFixnum(1, index);
-//         return Bignum::makeIntegerFromUnsigned<uintptr_t>(((uintptr_t*)p)[index]);
-//     }
-// }
-
-// Object scheme::internalFfiPointerValueEx(VM* theVM, int argc, const Object* argv)
-// {
-//     DeclareProcedureName("%ffi-pointer-value");
-//     checkArgumentLength(1);
-//     const Object obj = argv[0];
-//     if (obj.isHeapObject()) {
-//         // we know it may over flow, but enough
-// //        return Object::makeFixnum(reinterpret_cast<uintptr_t>(reinterpret_cast<HeapObject*>(val)->obj));
-//         return Bignum::makeIntegerFromUintprt_t(static_cast<uintptr_t>(reinterpret_cast<HeapObject*>(obj.val)->obj));
-
-//     } else {
-//         callAssertionViolationAfter(theVM, procedureName, "not a pointer object", L1(obj));
-//         return Object::Undef;
-//     }
-// }
 
 // (pointer? obj) => boolean
 Object scheme::pointerPEx(VM* theVM, int argc, const Object* argv)
@@ -1404,6 +1508,7 @@ Object scheme::internalFfiMallocEx(VM* theVM, int argc, const Object* argv)
 #define CALLBACK_RETURN_TYPE_MASK       0x00ff
 #define CALLBACK_CALL_TYPE_STDCALL      0x0100
 #define CALLBACK_CALL_TYPE_MASK         0xff00
+
 
 Object scheme::internalFfiFreeCCallbackTrampolineEx(VM* theVM, int argc, const Object* argv)
 {

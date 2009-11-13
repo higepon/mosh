@@ -530,12 +530,7 @@
   ;; ffi
   %ffi-open
   %ffi-lookup
-  %ffi-call->char
-  %ffi-call->int
-  %ffi-call->uint
-  %ffi-call->void
-  %ffi-call->void*
-  %ffi-call->double
+  %ffi-call
   %ffi-supported?
   %ffi-malloc
   %ffi-free

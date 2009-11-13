@@ -106,10 +106,10 @@
           pointer->string pointer->c-function
           (rename (%ffi-supported? ffi-supported?) (%ffi-malloc malloc) (%ffi-free free))
           size-of-bool size-of-short size-of-unsigned-short size-of-int size-of-unsigned-int size-of-long size-of-unsigned-long
-          size-of-long-long size-of-void* size-of-size_t size-of-pointer
+          size-of-long-long size-of-void* size-of-size_t size-of-pointer size-of-unsigned-long-long
           size-of-float size-of-double
           align-of-bool align-of-short align-of-int align-of-long align-of-long-long align-of-void* align-of-size_t align-of-float
-          align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t
+          align-of-double align-of-int8_t align-of-int16_t align-of-int32_t align-of-int64_t align-of-unsigned-long-long align-of-unsigned-long
           on-darwin on-linux on-freebsd on-openbsd on-windows
           shared-errno make-c-callback c-callback free-c-callback
           make-c-callback-trampoline ;; exported for test
@@ -167,14 +167,14 @@
           null-terminated-bytevector->string
           null-terminated-utf8->string)
   (import (only (rnrs) display define define-syntax syntax-case lambda map let syntax exists string=? string
-                       quasiquote unless assertion-violation quote = length and number? assq => cdr
-                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list
+                       quasiquote unless assertion-violation quote = length and number? assq => cdr assoc
+                       for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
                        + case-lambda cons let* make-string char->integer integer->char if bytevector?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os)
           (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline) (%ffi-free-c-callback-trampoline free-c-callback))
-          (only (system) directory-list %ffi-lookup %ffi-call->void %ffi-call->void* %ffi-call->int %ffi-call->uint %ffi-call->char %ffi-call->double
+          (only (system) directory-list %ffi-lookup %ffi-call
                 shared-errno
                 null-terminated-utf8->string
                 null-terminated-bytevector->string
@@ -338,7 +338,7 @@
     Parameters:
 
       lib - library object returned by <open-shared-library>
-      ret - return type of c-function. void*, char*, void, double and int are supported.
+      ret - return type of c-function. bool, int, char, double, float, void, char*, long-long, long, unsigned-long-long, unsigned-long, unsigned-int, unsigned-short, short, size_t, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t and void* are supported.
       func - name of c-function as symbol
       arg - list of argument types. void*, int, double and char* are supported.
 
@@ -454,38 +454,6 @@
 
 |#
 
-(define (%ffi-call->char* func . args)
-  (let ([p (apply %ffi-call->void* func args)])
-    (if (pointer-null? p)
-        p
-        (pointer->string p))))
-
-(define stub-ht (alist->eq-hash-table
-                 `((void*  . ,%ffi-call->void*)
-                   (int64_t . ,%ffi-call->int)
-                   (size_t . ,%ffi-call->uint)
-                   (short . ,%ffi-call->int)
-                   (unsigned-short . ,%ffi-call->uint)
-                   (unsigned-int . ,%ffi-call->uint)
-                   (unsigned-long . ,%ffi-call->uint)
-                   (long . ,%ffi-call->int)
-                   (long-long . ,%ffi-call->int)
-                   (char*  . ,%ffi-call->char*) ;; char* may be NULL,
-                   (void   . ,%ffi-call->void)
-                   (double . ,%ffi-call->double)
-                   (char    . ,%ffi-call->char)
-                   (int    . ,%ffi-call->int))))
-
-(define checker-ht (alist->eq-hash-table
-                    `((void*  . ,(lambda (x) (and (or (pointer? x) (bytevector? x)) x)))
-                      (callback . ,(lambda (x) (and (pointer? x) x)))
-                      (int    . ,(lambda (x) (and (integer? x) x)))
-                      (double . ,(lambda (x) (cond
-                                              [(flonum? x) x]
-                                              [(fixnum? x) (inexact x)]
-                                              [else #f])))
-                      (char*  . ,(lambda (x) (and (or (pointer-null? x) (string? x) (bytevector? x)) x))))))
-
 (define (find-shared-library regex)
   (exists
    (lambda (path)
@@ -505,32 +473,42 @@
       pointer - pointer to c-function which is lookuped by <<lookup-shared-library>>.
       ret-type - return type of c-function. void*, char*, void, double and int are supported.
       name - name of c-function as symbol
-      arg-types- list of argument types. void*, int, double and char* are supported.
+      arg-types- list of argument types. bool, int, char, double, float, void, char*, long-long, long, unsigned-long-long, unsigned-long, unsigned-int, unsigned-short, short, size_t, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t and void* are supported.
 
     Returns:
 
       Foreign function closure
 |#
 (define (pointer->c-function pointer ret-type name arg-types)
-  (let ([stub (hashtable-ref stub-ht ret-type #f)]
-        [checkers (map (lambda (type) (hashtable-ref checker-ht type #f)) arg-types)])
-    (unless (for-all procedure? checkers)
-      (assertion-violation 'c-function "invalid argument type for c-function"))
-    (unless stub
+  (let ([stub-ret-type (assoc ret-type c-function-return-type-alist)]
+        [signatures (list->string (make-sigunatures arg-types))])
+    (unless stub-ret-type
       (assertion-violation 'c-function "wrong return type" ret-type))
     (lambda args
       (unless (= (length arg-types) (length args))
         (assertion-violation name (format "wrong arguments number ~d required, but got ~d"
                                           (length arg-types)
                                           (length args)) args))
-      (apply stub pointer (map
-                        (lambda (checker arg)
-                          (let ([valid-arg (checker arg)])
-                            (unless valid-arg
-                              (assertion-violation name "wrong argument " arg))
-                            valid-arg))
-                        checkers
-                        args)))))
+      (apply %ffi-call
+             (cdr stub-ret-type)  ;; return type
+             signatures           ;; signatures of arguments as string
+             pointer              ;; function address
+             args))))
+
+(define (make-sigunatures arg-types)
+  (map (lambda (arg-type)
+         (case arg-type
+           [(char short int long unsigned-short unsigned-int unsigned-long int8_t int16_t int32_t uint8_t uint16_t uint32_t size_t)
+            #\i]
+           [(int64_t uint64_t long-long unsigned-long-long)
+            #\x]
+           [(bool) #\b]
+           [(void* char* callback) #\p]
+           [(float) #\f]
+           [(double) #\d]
+           [else (assertion-violation 'make-sigunatures "invalid argument type" arg-type)]))
+       arg-types))
+
 
 #|
     Function: make-c-function
@@ -543,9 +521,9 @@
     Parameters:
 
       lib - library
-      ret-type - return type of c-function. void*, char*, void, double and int are supported.
+      ret-type - return type of c-function. bool, int, char, double, float, void, char*, long-long, long, unsigned-long-long, unsigned-long, unsigned-int, unsigned-short, short, size_t, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t and void* are supported.
       name - name of c-function as symbol
-      arg-types- list of argument types. void*, int, double and char* are supported.
+      arg-types- list of argument types. bool, int, char, double, float, void, char*, long-long, long, unsigned-long-long, unsigned-long, unsigned-int, unsigned-short, short, size_t, uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t and void* are supported.
 
     Returns:
 
@@ -1198,6 +1176,13 @@
 (define size-of-unsigned-long (os-constant 'size-of-unsigned-long))
 
 #|
+    Constant: size-of-unsigned-long-long
+
+    sizeof(unsigned long long)
+|#
+(define size-of-unsigned-long-long (os-constant 'size-of-unsigned-long-long))
+
+#|
     Constant: size-of-long-long
 
     sizeof(long long)
@@ -1284,6 +1269,24 @@
     -offset-of(x, z)
 |#
 (define align-of-long-long (os-constant 'align-of-long-long))
+
+#|
+    Constant: align-of-unsigned-long
+
+    struct x { char y; unsigned long z; };
+
+    -offset-of(x, z)
+|#
+(define align-of-unsigned-long (os-constant 'align-of-unsigned-long))
+
+#|
+    Constant: align-of-unsigned-long-long
+
+    struct x { char y; unsigned-long long z; };
+
+    -offset-of(x, z)
+|#
+(define align-of-unsigned-long-long (os-constant 'align-of-unsigned-long-long))
 
 #|
     Constant: align-of-void*
@@ -1430,6 +1433,33 @@
       (double             . #x03)    ; CALLBACK_RETURN_TYPE_DOUBLE
       (size_t             . #x00)    ; CALLBACK_RETURN_TYPE_INTPTR
       (void*              . #x00)))  ; CALLBACK_RETURN_TYPE_INTPTR
+
+  (define c-function-return-type-alist
+    '((void               . #x00)    ; FFI_RETURN_TYPE_VOID
+      (bool               . #x01)    ; FFI_RETURN_TYPE_BOOL
+      (char               . #x0c)    ; FFI_RETURN_TYPE_INT8_T
+      (short              . #x02)    ; FFI_RETURN_TYPE_SHORT
+      (int                . #x03)    ; FFI_RETURN_TYPE_INT
+      (long               . #x04)    ; FFI_RETURN_TYPE_INTPTR
+      (long-long          . #x12)    ; FFI_RETURN_TYPE_INT64_T
+      (unsigned-short     . #x05)    ; FFI_RETURN_TYPE_USHORT
+      (unsigned-int       . #x06)    ; FFI_RETURN_TYPE_UINT
+      (unsigned-long      . #x07)    ; FFI_RETURN_TYPE_UINTPTR
+      (unsigned-long-long . #x13)    ; FFI_RETURN_TYPE_UINT64_T
+      (float              . #x08)    ; FFI_RETURN_TYPE_FLOAT
+      (double             . #x09)    ; FFI_RETURN_TYPE_DOUBLE
+      (void*              . #x14)    ; FFI_RETURN_TYPE_POINTER
+      (char*              . #x0a)    ; FFI_RETURN_TYPE_STRING
+      (size_t             . #x0b)    ; FFI_RETURN_TYPE_SIZE_T
+      (int8_t             . #x0c)    ; FFI_RETURN_TYPE_INT8_T
+      (uint8_t            . #x0d)    ; FFI_RETURN_TYPE_UINT8_T
+      (int16_t            . #x0e)    ; FFI_RETURN_TYPE_INT16_T
+      (uint16_t           . #x0f)    ; FFI_RETURN_TYPE_UINT16_T
+      (int32_t            . #x10)    ; FFI_RETURN_TYPE_INT32_T
+      (uint32_t           . #x11)    ; FFI_RETURN_TYPE_UINT32_T
+      (int64_t            . #x12)    ; FFI_RETURN_TYPE_INT64_T
+      (uint64_t           . #x13)))  ; FFI_RETURN_TYPE_UINT64_T
+
 
 
 (define pointer-null

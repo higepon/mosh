@@ -87,10 +87,16 @@ public:
     {
         MAX_ARGC = 32,
         MAX_REG  = 6,
+        SIGNATURE_FLOAT   = 'f',
+        SIGNATURE_DOUBLE  = 'd',
+        SIGNATURE_INT     = 'i',
+        SIGNATURE_BOOL    = 'b',
+        SIGNATURE_INT64   = 'x',
+        SIGNATURE_POINTER = 'p',
     };
     CStack();
     ~CStack();
-    bool push(Object obj);
+    bool push(Object obj, ucs4char signature);
     intptr_t* frame();
 #ifdef ARCH_X86_64
     intptr_t* xmm() { return xmm_; }
@@ -101,8 +107,10 @@ public:
     const ucs4char* getLastError() const;
 
 private:
-    bool pushInt(intptr_t val);
+    bool pushIntptr_t(intptr_t val);
+    bool pushInt64_t(int64_t val);
     bool pushDouble(double val);
+    bool pushFloat(double val);
 
     intptr_t frame_[MAX_ARGC];
     int count_;
@@ -112,7 +120,7 @@ private:
     intptr_t reg_[6];
     int regCount_;
 #endif
-    const ucs4char* lastError_;
+    ucs4string lastError_;
 };
 
 

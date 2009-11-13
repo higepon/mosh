@@ -46,6 +46,7 @@
 #include "Flonum.h"
 #include "Arithmetic.h"
 #include "FFI.h"
+#include "StringProcedures.h"
 
 using namespace scheme;
 
@@ -98,7 +99,7 @@ CStack::CStack() : count_(0), xmmCount_(0), regCount_(0)
     memset(reg_, 0, sizeof(reg_));
 }
 
-bool CStack::pushInt(intptr_t val)
+bool CStack::pushIntptr_t(intptr_t val)
 {
     if (regCount_ < (int)(sizeof(reg_) / sizeof(intptr_t))) {
         reg_[regCount_++] = val;
@@ -110,6 +111,45 @@ bool CStack::pushInt(intptr_t val)
         lastError_ = UC("too many ffi arguments");
         return false;
     }
+}
+
+bool CStack::pushInt64_t(int64_t val)
+{
+    return pushIntptr_t(val);
+}
+
+// argument is double
+bool CStack::pushFloat(double val)
+{
+    if (xmmCount_ < (int)(sizeof(xmm_) / sizeof(intptr_t))) {
+        union {
+            int64_t value;
+            struct {
+                float low;
+                int32_t high;
+            } u32;
+        } v;
+        v.u32.low = (double)val;
+        v.u32.high = -1;
+        xmm_[xmmCount_++] = v.value;
+        return true;
+    } else if (count_ < MAX_ARGC) {
+        union {
+            int64_t value;
+            struct {
+                float low;
+                int32_t high;
+            } u32;
+        } v;
+        v.u32.low = (double)val;
+        v.u32.high = -1;
+        frame_[count_++] = v.value;
+        return true;
+    } else {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+
 }
 
 bool CStack::pushDouble(double val)
@@ -142,7 +182,7 @@ CStack::CStack() : count_(0)
     memset(frame_, 0, sizeof(frame_));
 }
 
-bool CStack::pushInt(intptr_t val)
+bool CStack::pushIntptr_t(intptr_t val)
 {
     if (count_ < MAX_ARGC) {
         frame_[count_++] = val;
@@ -152,6 +192,39 @@ bool CStack::pushInt(intptr_t val)
         return false;
     }
 }
+
+bool CStack::pushFloat(double val)
+{
+    if (count_ < MAX_ARGC) {
+        union { float f32; uintptr_t u32; } n;
+        n.f32 = (float)val;
+        frame_[count_++] = n.u32;
+        return true;
+    } else {
+        lastError_ = UC("too many ffi arguments");
+        return false;
+    }
+}
+
+bool CStack::pushInt64_t(int64_t val)
+{
+    if (MAX_ARGC - count_ < 2) {
+        lastError_ = UC("too many ffi int64_t arguments");
+        return false;
+    }
+    union {
+        int64_t value;
+        struct {
+            uint32_t low;
+            uint32_t high;
+        } u32;
+    } v;
+    v.value = val;
+    frame_[count_++] = v.u32.low;
+    frame_[count_++] = v.u32.high;
+    return true;
+}
+
 
 bool CStack::pushDouble(double val)
 {
@@ -187,29 +260,170 @@ int CStack::count() const
     return count_;
 }
 
-
-bool CStack::push(Object obj)
+bool CStack::push(Object obj, ucs4char signature)
 {
     // Fixnum -> int
     if (obj.isFixnum()) {
-        return pushInt(obj.toFixnum());
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            return pushIntptr_t(obj.toFixnum());
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            return pushInt64_t(obj.toFixnum());
+        case SIGNATURE_POINTER:
+            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
     // Flonum -> double
     } else if (obj.isFlonum()) {
-        return pushDouble(obj.toFlonum()->value());
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_FLOAT:
+            return pushFloat(obj.toFlonum()->value());
+        case SIGNATURE_DOUBLE:
+            return pushDouble(obj.toFlonum()->value());
+        case SIGNATURE_INT64:
+            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_POINTER:
+            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
     } else if (obj.isBignum()) {
-        if (Arithmetic::isNegative(obj)) {
-            return pushInt(obj.toBignum()->toIntptr_t());
-        } else {
-            return pushInt(obj.toBignum()->toUintptr_t());
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            return pushIntptr_t(obj.toBignum()->toS64());
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            return pushInt64_t(obj.toBignum()->toS64());
+        case SIGNATURE_POINTER:
+            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        default:
+            MOSH_ASSERT(false);
+            return false;
         }
     // String -> char* (utf-8 ascii only)
     } else if (obj.isString()) {
-        return pushInt((intptr_t)(obj.toString()->data().ascii_c_str()));
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_POINTER:
+            return pushIntptr_t((intptr_t)(obj.toString()->data().ascii_c_str()));
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
     // ByteVector -> char*
     } else if (obj.isByteVector()) {
-        return pushInt((intptr_t)(obj.toByteVector()->data()));
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_POINTER:
+            return pushIntptr_t((intptr_t)(obj.toByteVector()->data()));
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
     } else if (obj.isPointer()) {
-        return pushInt(obj.toPointer()->pointer());
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            lastError_ = format(NULL, UC("'bool' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT:
+            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_POINTER:
+            return pushIntptr_t(obj.toPointer()->pointer());
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
+    } else if (obj.isBoolean()) {
+        switch (signature) {
+        case SIGNATURE_BOOL:
+            return pushIntptr_t(obj.isTrue() ? 1 : 0);
+        case SIGNATURE_INT:
+            lastError_ = format(NULL, UC("'int' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_FLOAT:
+            lastError_ = format(NULL, UC("'float' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_DOUBLE:
+            lastError_ = format(NULL, UC("'double' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_INT64:
+            lastError_ = format(NULL, UC("'int64_t' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        case SIGNATURE_POINTER:
+            lastError_ = format(NULL, UC("'pointer' required but got ~a"), Pair::list1(obj)).toString()->data();
+            return false;
+        default:
+            MOSH_ASSERT(false);
+            return false;
+        }
     } else {
         lastError_ = UC("unsupported ffi argument");
         return false;
@@ -218,5 +432,5 @@ bool CStack::push(Object obj)
 
 const ucs4char* CStack::getLastError() const
 {
-    return lastError_;
+    return lastError_.c_str();
 }
