@@ -1328,7 +1328,7 @@ Object scheme::nativeTranscoderEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("native-transcoder");
     checkArgumentLength(0);
-    return Object::makeTranscoder(nativeTranscoder());
+    return Object::makeTranscoder(createNativeTranscoder());
 }
 
 Object scheme::transcoderCodecEx(VM* theVM, int argc, const Object* argv)

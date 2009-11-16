@@ -472,7 +472,7 @@ test: libffitest.so.1.0 ./mosh all-tests.scm
 	./mosh test/mosh-test.scm
 	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
-	./mosh test/input-port.scm
+	./mosh test/input-port.scm < test/input.txt
 	./mosh test/output-port.scm
 	./mosh test/shell.scm
 	./mosh test/record.scm

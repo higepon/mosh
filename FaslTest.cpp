@@ -77,7 +77,7 @@ protected:
     VM* theVM_;
     virtual void SetUp() {
         mosh_init();
-        Transcoder* transcoder = nativeTranscoder();
+        Transcoder* transcoder = createNativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/dev/null")), transcoder);

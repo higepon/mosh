@@ -1,3 +1,8 @@
+2009-11-17  higepon  <higepon@users.sourceforge.jp>
+
+	* VMFactory.cpp (VMFactory::create): Fixed miss sharing transcoders between stdin/stdout.
+	                                     Fixed issue 115  pointed out by tabe.fixedpoint.
+
 2009-11-16  higepon  <higepon@users.sourceforge.jp>
 
 	* ffi_stub_x86_64.S: Added.

@@ -123,6 +123,6 @@ bool StringTextualInputPort::setPosition(int64_t position)
 
 Transcoder* StringTextualInputPort::transcoder() const
 {
-    return nativeTranscoder();
+    return createNativeTranscoder();
 }
 

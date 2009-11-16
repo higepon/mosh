@@ -91,6 +91,7 @@ Group: R6RS  {
    File: syntax-case  (doc/text/syntax-case.tex.txt)
    }  # Group: R6RS
 
+File: fib  (hoge.pl)
 File: SRFIs  (doc/text/srfi.txt)
 
 Group: Index  {

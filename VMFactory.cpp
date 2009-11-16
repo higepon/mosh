@@ -55,11 +55,12 @@ VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
     // So we never share the standard ports.
 
     // N.B. For debug safety, we never close() the standard ports.
-    Transcoder* transcoder = nativeConsoleTranscoder();
-    Transcoder* native = nativeTranscoder();
-    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort, File::STANDARD_IN.isUTF16Console() ? transcoder : native);
-    const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort, File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
-    const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort, File::STANDARD_OUT.isUTF16Console() ? transcoder : native);
+    const Object inPort    = Object::makeTextualInputPort(new StandardInputPort,
+                                                          File::STANDARD_IN.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
+    const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort,
+                                                           File::STANDARD_OUT.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
+    const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort,
+                                                           File::STANDARD_OUT.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
 
     VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn);
     vm->registerPort(outPort);

@@ -85,7 +85,7 @@ protected:
     VM* theVM_;
     virtual void SetUp() {
         mosh_init();
-        Transcoder* transcoder = nativeTranscoder();
+        Transcoder* transcoder = createNativeTranscoder();
         const Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         const Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         errorPort_ = Object::makeStringOutputPort();

@@ -66,7 +66,7 @@ protected:
     TestingVM* theVM_;
     virtual void SetUp() {
         mosh_init();
-        Transcoder* transcoder = nativeTranscoder();
+        Transcoder* transcoder = createNativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         Object errorPort = Object::makeTextualOutputPort(new FileBinaryOutputPort(UC("/dev/null")), transcoder);
@@ -85,7 +85,7 @@ protected:
     VM* theVM_;
     virtual void SetUp() {
         mosh_init();
-        Transcoder* transcoder = nativeTranscoder();
+        Transcoder* transcoder = createNativeTranscoder();
         Object inPort    = Object::makeTextualInputPort(new StandardInputPort(), transcoder);
         Object outPort   = Object::makeTextualOutputPort(new StandardOutputPort(), transcoder);
         errorPort_ = Object::makeStringOutputPort();
@@ -151,7 +151,7 @@ TEST_F(VMTest, BinaryInputOutputPortFlush) {
 
 
 TEST_F(VMTest, TextualOutputPortFlush) {
-    Transcoder* transcoder = nativeTranscoder();
+    Transcoder* transcoder = createNativeTranscoder();
     Object outPort = Object::makeTextualOutputPort(new BlockBufferedFileBinaryOutputPort(UC("/tmp/textual-output.txt")), transcoder);
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();
@@ -160,7 +160,7 @@ TEST_F(VMTest, TextualOutputPortFlush) {
 
 
 TEST_F(VMTest, TextualInputOutputPortFlush) {
-    Transcoder* transcoder = nativeTranscoder();
+    Transcoder* transcoder = createNativeTranscoder();
     Object outPort = Object::makeTextualInputOutputPort(new BlockBufferedFileBinaryInputOutputPort(UC("/tmp/textual-input-output.txt"), 0), transcoder);
     theVM_->registerPort(outPort);
     theVM_->flushAllPorts();

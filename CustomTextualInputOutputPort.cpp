@@ -107,7 +107,7 @@ void CustomTextualInputOutputPort::unGetChar(ucs4char c)
 
 Transcoder* CustomTextualInputOutputPort::transcoder() const
 {
-    return nativeTranscoder();
+    return createNativeTranscoder();
 }
 
 bool CustomTextualInputOutputPort::hasPosition() const

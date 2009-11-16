@@ -972,7 +972,7 @@ Object scheme::readDirectory(const ucs4string& path)
 #endif
 }
 
-Transcoder* scheme::nativeConsoleTranscoder()
+Transcoder* scheme::createNativeConsoleTranscoder()
 {
 #ifdef _WIN32
     return new Transcoder(new UTF16Codec(UTF16Codec::UTF_16LE), Transcoder::nativeEolStyle(), ErrorHandlingMode(RAISE_ERROR));
@@ -982,7 +982,7 @@ Transcoder* scheme::nativeConsoleTranscoder()
 }
 
 // Default Reading/Writing encoding is UTF8.(compatible with ASCII)
-Transcoder* scheme::nativeTranscoder()
+Transcoder* scheme::createNativeTranscoder()
 {
     return new Transcoder(new UTF8Codec(), Transcoder::nativeEolStyle(), ErrorHandlingMode(RAISE_ERROR));
 }

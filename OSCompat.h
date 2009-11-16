@@ -68,8 +68,8 @@ namespace scheme {
     bool setCurrentDirectory(const ucs4string& dir);
     ucs4string getLastErrorMessage();
     ucs4string getMoshExecutablePath(bool& isErrorOccured);
-    Transcoder* nativeConsoleTranscoder();
-    Transcoder* nativeTranscoder();
+    Transcoder* createNativeConsoleTranscoder();
+    Transcoder* createNativeTranscoder();
 
 #ifdef _WIN32
     ucs4string getLastErrorMessageInternal(DWORD e);

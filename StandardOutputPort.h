@@ -39,7 +39,7 @@
 
 namespace scheme {
 
-// stdout does'n support port-position
+// stdout doesn't support port-position
 class StandardOutputPort : public LineBufferedFileBinaryOutputPort
 {
 public:

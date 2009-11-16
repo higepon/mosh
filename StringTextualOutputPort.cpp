@@ -122,5 +122,5 @@ enum OutputPort::bufferMode StringTextualOutputPort::bufferMode() const
 
 Transcoder* StringTextualOutputPort::transcoder() const
 {
-    return nativeTranscoder();
+    return createNativeTranscoder();
 }
