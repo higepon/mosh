@@ -531,7 +531,8 @@ public:
 } __attribute__((packed));
 
 #endif
-
+extern "C" intptr_t c_func_stub_intptr_x64(uintptr_t func, intptr_t* reg, intptr_t* frame, int stackArgSizeInBytes, intptr_t* xmm);
+extern "C" double c_func_stub_double_x64(uintptr_t func, intptr_t* reg, intptr_t* frame, int stackArgSizeInBytes, intptr_t* xmm);
 static double callStubDouble(Pointer* func, CStack* cstack)
 {
 #if defined(ARCH_IA32) && !defined(_MSC_VER)
@@ -569,68 +570,8 @@ static double callStubDouble(Pointer* func, CStack* cstack)
     }
     return dret;
 #elif defined ARCH_X86_64
-    double ret;
-    if (cstack->count() == 0) {
-        asm volatile("movq %%rsi, %%r10;"
-                     "movsd   (%%rdi), %%xmm0 ;"
-                     "movsd  8(%%rdi), %%xmm1 ;"
-                     "movsd 16(%%rdi), %%xmm2 ;"
-                     "movsd 24(%%rdi), %%xmm3 ;"
-                     "movsd 32(%%rdi), %%xmm4 ;"
-                     "movsd 40(%%rdi), %%xmm5 ;"
-                     "movsd 48(%%rdi), %%xmm6 ;"
-                     "movsd 56(%%rdi), %%xmm7 ;"
-                     "movq 0(%%r10), %%rdi ;"   // register argument 1
-                     "movq 8(%%r10), %%rsi ;"   // register argument 2
-                     "movq 16(%%r10), %%rdx ;"  // register argument 3
-                     "movq 24(%%r10), %%rcx ;"  // register argument 4
-                     "movq 32(%%r10), %%r8 ;"   // register argument 5
-                     "movq 40(%%r10), %%r9 ;"   // register argument 6
-                     "call *%%rax ;"
-                     "movq %%xmm0, %%rax ;"
-                     : "=a" (ret)
-                     : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
-                     : "memory"
-            );
-    } else {
-        const int bytes = (cstack->count()) * 8;
-        asm volatile(
-            "movq %%rsi, %%r10;" // r10 for pointing register frame
-            "movq %%rdx, %%r11;" // r11 for pointer to stack argument in frame
-            "movq %%r11, %%r12;"
-            "addq %%rcx, %%r12;"  // r12 end of stack argument in frame
-            "movsd   (%%rdi), %%xmm0 ;"
-            "movsd  8(%%rdi), %%xmm1 ;"
-            "movsd 16(%%rdi), %%xmm2 ;"
-            "movsd 24(%%rdi), %%xmm3 ;"
-            "movsd 32(%%rdi), %%xmm4 ;"
-            "movsd 40(%%rdi), %%xmm5 ;"
-            "movsd 48(%%rdi), %%xmm6 ;"
-            "movsd 56(%%rdi), %%xmm7 ;"
-            "movq 0(%%r10), %%rdi ;"   // register argument 1
-            "movq 8(%%r10), %%rsi ;"   // register argument 2
-            "movq 16(%%r10), %%rdx ;"  // register argument 3
-            "movq 24(%%r10), %%rcx ;"  // register argument 4
-            "movq 32(%%r10), %%r8 ;"   // register argument 5
-            "movq 40(%%r10), %%r9 ;"   // register argument 6
-            "movq %%rsp, %%r13;"
-            "1:   ;"
-            "cmpq %%r11, %%r12;"
-            "je 2f;"
-            "movq 0(%%r11), %%r14;"
-            "movq %%r14, 0(%%r13);"
-            "addq $8, %%r11;"
-            "addq $8, %%r13;"
-            "jmp 1b;"
-            "2:   ;"
-            "call *%%rax ;"
-            "movq %%xmm0, %%rax ;"
-            : "=a" (ret)
-            : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
-            : "memory"
-            );
-    }
-    return ret;
+        const int stackArgSizeInBytes = (cstack->count()) * 8;
+        return c_func_stub_double_x64(func->pointer(), cstack->reg(), cstack->frame(), stackArgSizeInBytes, cstack->xmm());
 #else
     return 0.0;
 #endif
@@ -777,71 +718,8 @@ static intptr_t callStubIntptr_t(Pointer* func, CStack* cstack)
     }
     return temp;
 #elif defined ARCH_X86_64
-    intptr_t ret = 0;
-    if (cstack->count() == 0) {
-        asm volatile("movq %%rsi, %%r10;"
-                     "movsd   (%%rdi), %%xmm0 ;"
-                     "movsd  8(%%rdi), %%xmm1 ;"
-                     "movsd 16(%%rdi), %%xmm2 ;"
-                     "movsd 24(%%rdi), %%xmm3 ;"
-                     "movsd 32(%%rdi), %%xmm4 ;"
-                     "movsd 40(%%rdi), %%xmm5 ;"
-                     "movsd 48(%%rdi), %%xmm6 ;"
-                     "movsd 56(%%rdi), %%xmm7 ;"
-                     "movq 0(%%r10), %%rdi ;"   // register argument 1
-                     "movq 8(%%r10), %%rsi ;"   // register argument 2
-                     "movq 16(%%r10), %%rdx ;"  // register argument 3
-                     "movq 24(%%r10), %%rcx ;"  // register argument 4
-                     "movq 32(%%r10), %%r8 ;"   // register argument 5
-                     "movq 40(%%r10), %%r9 ;"   // register argument 6
-                     "call *%%rax ;"
-                     : "=a" (ret)
-                     : "0" (func->pointer()), "S" (cstack->reg()), "D"(cstack->xmm())
-                     : "memory"
-            );
-    } else {
-        const int bytes = (cstack->count()) * 8;
-        asm volatile(
-            "pushq %%rbp;"
-            "movq  %%rsp, %%rbp;"
-            "movq %%rsi, %%r10;" // r10 for pointing register frame
-            "movq %%rdx, %%r11;" // r11 for pointer to stack argument in frame
-            "movq %%r11, %%r12;"
-            "addq %%rcx, %%r12;"  // r12 end of stack argument in frame
-            "movsd   (%%rdi), %%xmm0 ;"
-            "movsd  8(%%rdi), %%xmm1 ;"
-            "movsd 16(%%rdi), %%xmm2 ;"
-            "movsd 24(%%rdi), %%xmm3 ;"
-            "movsd 32(%%rdi), %%xmm4 ;"
-            "movsd 40(%%rdi), %%xmm5 ;"
-            "movsd 48(%%rdi), %%xmm6 ;"
-            "movsd 56(%%rdi), %%xmm7 ;"
-            "movq 0(%%r10), %%rdi ;"   // register argument 1
-            "movq 8(%%r10), %%rsi ;"   // register argument 2
-            "movq 16(%%r10), %%rdx ;"  // register argument 3
-            "movq 24(%%r10), %%rcx ;"  // register argument 4
-            "movq 32(%%r10), %%r8 ;"   // register argument 5
-            "movq 40(%%r10), %%r9 ;"   // register argument 6
-            "movq %%rsp, %%r13;"
-            "1:   ;"
-            "cmpq %%r11, %%r12;"
-            "je 2f;"
-            "movq 0(%%r11), %%r14;"
-            "movq %%r14, 0(%%r13);"
-            "addq $8, %%r11;"
-            "addq $8, %%r13;"
-            "jmp 1b;"
-            "2:   ;"
-            "call *%%rax ;"
-            "popq %%rbp;"
-            "movq %%rbp, %%rsp;"
-            : "=a" (ret)
-            : "c" (bytes), "0" (func->pointer()), "S" (cstack->reg()), "D" (cstack->xmm()), "d" (cstack->frame())
-            : "memory"
-            );
-    }
-    return ret;
-
+    const int stackArgSizeInBytes = (cstack->count()) * 8;
+    return c_func_stub_intptr_x64(func->pointer(), cstack->reg(), cstack->frame(), stackArgSizeInBytes, cstack->xmm());
 #else
     return 0;
 #endif

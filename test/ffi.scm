@@ -601,6 +601,8 @@
     ;; amd64: stack argument
     (test-equal 36 ((c-function libffitest int add8 int int int int int int int int) 1 2 3 4 5 6 7 8))
 
+    (test-equal 5.0 ((c-function libffitest double double10_2 double double double double double double double double double double)
+                     10.0 9.0 8.0 7.0 6.0 5.0 4.0 3.0 2.0 1.0))
 
 ))
 
