@@ -1,5 +1,7 @@
 2009-11-17  higepon  <higepon@users.sourceforge.jp>
 
+	* lib/srfi/%3a42/eager-comprehensions.sls (srfi): Added missing import.
+
 	* tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: For thread safety, prefix-inc! is executed by only main-vm.
 
 	* Added --verbose command line options, which shows library serialization messages.
