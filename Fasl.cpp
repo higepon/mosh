@@ -191,6 +191,7 @@ void FaslReader::getSymbolsAndStrings()
         uint32_t len = fetchU32();
         ucs4string text;
         text.reserve(64);
+        MOSH_ASSERT((int)uid < tableSize);
         if (tag == Fasl::TAG_ASCII_SYMBOL || tag == Fasl::TAG_ASCII_STRING || tag == Fasl::TAG_ASCII_UNINTERNED_SYMBOL || tag == Fasl::TAG_RTD) {
             for (uint32_t i = 0; i < len; i++) {
                 text += fetchU8();

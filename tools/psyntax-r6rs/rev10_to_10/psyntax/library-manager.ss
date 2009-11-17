@@ -253,11 +253,12 @@
                       [(and (library? l) (eq? label (library-id l)))
                        (f (cdr deps))]
                       [else
-                       (format (current-error-port)
+                       (when verbose?
+                         (format (current-error-port)
                           "WARNING: library ~s has an inconsistent dependency \
                            on library ~s; file ~s will be recompiled from \
                            source. l=~a label=~a (library-id l)=~a\n"
-                         name dname filename l label (library-id l))
+                         name dname filename l label (library-id l)))
                        #f]))))]))]
         [others #f])))
 

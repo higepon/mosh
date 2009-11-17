@@ -156,7 +156,8 @@ Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
     const int INITIAL_STACK_SIZE = 5000;
     const bool isProfilerON = false;
     VM* vm = factory.create(INITIAL_STACK_SIZE, isProfilerON);
-    vm->setValueString(UC("%loadpath"), Object::False);
+    vm->setValueString(UC("%loadpath"), Object::False); // todo not false
+    vm->setValueString(UC("%verbose"), Object::False);
     vm->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
     vm->setValueString(UC("%vm-import-spec"), importSpecSexp);
     vm->setValueString(UC("%vm-thunk"), thunkSexp);
@@ -170,7 +171,7 @@ Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
 // (make-condition-variable . name) => #<condition variable>
 Object scheme::makeConditionVariableEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("make-vm");
+    DeclareProcedureName("make-condition-variable");
     checkArgumentLengthBetween(0, 1);
     if (argc == 0) {
         return Object::makeConditionVariable(new ConditionVariable);

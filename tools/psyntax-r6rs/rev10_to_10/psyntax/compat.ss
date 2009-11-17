@@ -23,7 +23,7 @@
           gensym void eval-core symbol-value set-symbol-value! file-options-spec
           read-annotated annotation? annotation-expression annotation-source
           load-serialized-library serialize-library
-          annotation-stripped make-record-printer read-library-source-file scm->fasl
+          annotation-stripped make-record-printer read-library-source-file scm->fasl verbose?
           mosh-cache-dir)
   (import
     (rnrs)
@@ -131,6 +131,8 @@
 (define (fasl-load filename)
   (call-with-port (open-file-input-port filename) (symbol-value 'fasl-read!)))
 
+(define verbose? (symbol-value '%verbose))
+
 ;; (define (fasl-save filename obj)
 ;;   (call-with-port (open-output-file filename) (lambda (port) (write obj port))))
 
@@ -168,7 +170,8 @@
 ;;         #f)))
 
 (define (serialize-library filename obj)
-;  (format #t "serialize-library ~a\n..." filename)
+  (when verbose?
+    (format (current-error-port) "serialize-library ~a\n..." filename))
   (let* ([expanded2core (symbol-value 'expanded2core)]
          [compile (symbol-value 'compile-w/o-halt)]
          [code obj]
@@ -181,7 +184,8 @@
   (let ([fasl-file (scm->fasl filename)])
     (when (file-exists? fasl-file)
       (delete-file fasl-file))
-    (guard [c (#t (format (current-error-port) "Warning:serialize-library failed " filename)
+    (guard [c (#t (when verbose?
+                    (format (current-error-port) "Warning:serialize-library failed ~a\n" filename))
                   (when (file-exists? fasl-file)
                     (delete-file fasl-file))
                   #f)]

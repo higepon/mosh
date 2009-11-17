@@ -38,6 +38,8 @@ using namespace scheme;
 
 Symbols* Symbol::symbols;
 Mutex* Symbol::mutex;
+int Symbol::criticalSection;
+
 Object Symbol::QUOTE;
 Object Symbol::QUASIQUOTE;
 Object Symbol::UNQUOTE;
@@ -78,10 +80,12 @@ Object Symbol::NO_TRUNCATE;
 Object Symbol::UNINITIALIZED;
 Object Symbol::SHIFT;
 
+
 void Symbol::initBuitinSymbols()
 {
     symbols = new Symbols;
     mutex = new Mutex;
+    criticalSection = 0;
     QUOTE             = Symbol::intern(UC("quote"));
     QUASIQUOTE        = Symbol::intern(UC("quasiquote"));
     UNQUOTE           = Symbol::intern(UC("unquote"));
@@ -146,18 +150,29 @@ const ucs4char* Symbol::c_str()
     return name_;
 }
 
-Object Symbol::intern(const ucs4char* name)
+void Symbol::lock()
 {
     mutex->lock();
+//    while (__sync_val_compare_and_swap(&criticalSection, 0, 1) != 0);
+}
+
+void Symbol::unlock()
+{
+    mutex->unlock();
+//       while (__sync_val_compare_and_swap(&criticalSection, 1, 0) != 1) {
+}
+
+Object Symbol::intern(const ucs4char* name)
+{
+    lock();
     Symbols::const_iterator it = (*symbols).find(name);
     if (it == (*symbols).end()) {
         const Object o = Object::makeSymbol(name);
-//            symbols.insert(std::pair<const ucs4char*, Object>(name, o));
         (*symbols)[name] = o;
-        mutex->unlock();
+        unlock();
         return o;
     } else {
-        mutex->unlock();
+        unlock();
         return (*it).second;
     }
 }

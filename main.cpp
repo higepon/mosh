@@ -109,6 +109,7 @@ void showUsage()
             "  --help            Prints this help.\n"
             "  --disable-acc     disables auto-compile-cache.\n"
             "  --clean-acc       cleans auto-compile-cache.\n"
+            "  --verbose         Show library serialisation messages.\n"
             "  --loadpath=<path> Add library loadpath.\n\n"
             " MOSH_LOADPATH\n"
             "  You can add library loadpath by using environment variable MOSH_LOADPATH, with \':\'(use \';\' for Windows) separated paths.\n\n"
@@ -143,6 +144,7 @@ int main(int argc, char *argv[])
     bool isProfilerOn      = false;
     bool isR6RSBatchMode = true;
     bool disableAcc = false;
+    bool verbose = false;
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     ucs4char* initFile = NULL;
@@ -153,6 +155,7 @@ int main(int argc, char *argv[])
        {UC("help"), 0, 0, 'h'},
        {UC("disable-acc"), 0, 0, 'd'},
        {UC("clean-acc"), 0, 0, 'C'},
+       {UC("verbose"), 0, 0, 'a'},
        {0, 0, 0, 0}
    };
 
@@ -189,6 +192,9 @@ int main(int argc, char *argv[])
             break;
         case 'c':
             isCompileString = true;
+            break;
+        case 'a':
+            verbose = true;
             break;
         case 'C':
             cleanAcc = true;
@@ -256,6 +262,7 @@ int main(int argc, char *argv[])
         } else {
             theVM->setValueString(UC("%loadpath"), Object::makeString(loadPath));
         }
+        theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
         theVM->activateR6RSMode(isDebugExpand);

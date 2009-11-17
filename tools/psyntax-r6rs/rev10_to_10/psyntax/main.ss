@@ -346,10 +346,14 @@
     (define (prefix-inc! file)
       (unless (file-exists? file)
         (call-with-output-file file (lambda (port) (write 'd port)))) ;; a, b and c is reserved
-      (let* ([prefix (call-with-input-file file read)]
-             [next-prefix (prefix-inc prefix)])
-        (call-with-port (open-file-output-port file (file-options no-fail) 'block (native-transcoder)) (lambda (port) (write next-prefix port)))
-        prefix))
+      (let ([prefix (call-with-input-file file read)])
+        (cond
+         [(main-vm?) ;; for thread safety
+          (let ([next-prefix (prefix-inc prefix)])
+            (call-with-port (open-file-output-port file (file-options no-fail) 'block (native-transcoder))
+                            (lambda (port) (write next-prefix port)))
+            prefix)]
+         [else prefix])))
 
 
 

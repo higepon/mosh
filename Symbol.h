@@ -53,6 +53,7 @@ private:
     // main thread's exit() calls static destructor and frees symbols.
     static Symbols* symbols;
     static Mutex* mutex;
+    static int criticalSection;
 
 public:
     Symbol(const ucs4char* name) : name_(name)
@@ -67,6 +68,8 @@ public:
     static Object intern(const ucs4char* name);
     static bool isInterned(Object symbol);
     static Object add(const ucs4char* name);
+    static void lock();
+    static void unlock();
 
     static Object QUOTE;
     static Object QUASIQUOTE;

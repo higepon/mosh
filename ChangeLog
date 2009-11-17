@@ -1,5 +1,10 @@
 2009-11-17  higepon  <higepon@users.sourceforge.jp>
 
+	* tools/psyntax-r6rs/rev10_to_10/psyntax/main.ss: For thread safety, prefix-inc! is executed by only main-vm.
+
+	* Added --verbose command line options, which shows library serialization messages.
+	  This option is requested by mrc.mgg on Issue 114.
+
 	* VMFactory.cpp (VMFactory::create): Fixed miss sharing transcoders between stdin/stdout.
 	                                     Fixed issue 115  pointed out by tabe.fixedpoint.
 

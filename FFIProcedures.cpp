@@ -1145,8 +1145,8 @@ Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
     argumentAsPointer(0, pointer);
     argumentAsFixnum(1, offset);
     argumentCheckExactInteger(2, v);
-    static Object minVal = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)));
-    static Object maxVal = Arithmetic::sub(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)),
+    static const Object minVal = Arithmetic::negate(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)));
+    static const Object maxVal = Arithmetic::sub(Arithmetic::expt(Object::makeFixnum(2), Object::makeFixnum(63)),
                                            Object::makeFixnum(1));
     if (Arithmetic::lt(v, minVal) || Arithmetic::gt(v, maxVal)) {
         callAssertionViolationAfter(theVM, procedureName, "value out of range", L1(argv[2]));
