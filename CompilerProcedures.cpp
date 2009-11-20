@@ -934,21 +934,32 @@ Object pass4FixupLabel(Object vec)
     return collected.car();
 }
 
-Object scheme::disasmEx(VM* theVM, int argc, const Object* argv)
+Object scheme::instructionTosymbolEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("disasm");
+    DeclareProcedureName("instruction->symbol");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    if (obj.isInstruction()) {
+        return Symbol::intern(Instruction::toString(obj.val));
+    } else {
+        return obj;
+    }
+}
+
+Object scheme::instructionPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("closure->list");
+    checkArgumentLength(1);
+    return Object::makeBool(argv[0].isInstruction());
+}
+
+Object scheme::closureTolistEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("closure->list");
     checkArgumentLength(1);
     argumentAsClosure(0, closure);
     Object* code = theVM->disasm(closure);
-    for (int i = 0; i < closure->size + Closure::HEADER_SIZE; i++) {
-        const Object c = code[i];
-        if (c.isInstruction()) {
-            LOG1("\n~a ", Instruction::toString(c.val));
-        } else {
-            LOG1("~a ", c);
-        }
-    }
-    return Object::Undef;
+    return Pair::arrayToList(code, closure->size + Closure::HEADER_SIZE);
 }
 
 Object scheme::printStackEx(VM* theVM, int argc, const Object* argv)

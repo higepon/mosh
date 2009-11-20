@@ -152,7 +152,7 @@ inline Object* VM::disasm(Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* ret = Object::makeObjectArray(length);
-    void** table = (void**)run(NULL, NULL, true).val;
+    void** table = getDispatchTable();
     for (int i = 0; i < length; i++) {
         const Object c = code[i];
         bool isInsn = false;
@@ -176,7 +176,7 @@ inline Object* VM::getDirectThreadedCode(Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);
-    void** table = (void**)run(NULL, NULL, true).val;
+    void** table = getDispatchTable();
     for (int i = 0; i < length; i++) {
         // Direct threaded code
         // Be careful on using direct threaded code for following case.

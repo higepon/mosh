@@ -1,3 +1,11 @@
+2009-11-21  higepon  <higepon@users.sourceforge.jp>
+
+	* Rewrote disasm.
+
+	* Added closure->list, instruction->symbol and instruction?.
+
+	These are used for disasm and jit.
+
 2009-10-30  higepon  <higepon@users.sourceforge.jp>
 
 	* JIT-ted (fib n) works.

@@ -322,6 +322,7 @@
   utf32->string
   close-port
   make-instruction
+  instruction?
   make-compiler-instruction
   fasl-write
   fasl-read
@@ -474,7 +475,8 @@
   string-copy
   vector-fill!
   ungensym
-  (disasm (lambda (closure)
+  instruction->symbol
+  (closure->list (lambda (closure)
             (let ([code (vector-ref closure 0)]
                   [ht (make-hash-table)])
               (print code)

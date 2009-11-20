@@ -42,12 +42,14 @@ namespace scheme {
     {
         return lvar.toVector()->ref(1);
     }
+    Object instructionPEx(VM* theVM, int argc, const Object* argv);
     Object objTointegerEx(VM* theVM, int argc, const Object* argv);
     Object getCAddressEx(VM* theVM, int argc, const Object* argv);
     Object u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv);
     Object pass1FindSymbolInLvarsEx(VM* theVM, int argc, const Object* argv);
     Object printStackEx(VM* theVM, int argc, const Object* argv);
-    Object disasmEx(VM* theVM, int argc, const Object* argv);
+    Object closureTolistEx(VM* theVM, int argc, const Object* argv);
+    Object instructionTosymbolEx(VM* theVM, int argc, const Object* argv);
     Object labelEx(VM* theVM, int argc, const Object* argv);
     Object localRefEx(VM* theVM, int argc, const Object* argv);
     Object pass3FindFreeEx(VM* theVM, int argc, const Object* argv);

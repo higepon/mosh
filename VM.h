@@ -243,6 +243,10 @@ protected:
     void expandStack(int plusSize);
     Object compileWithoutHalt(Object sexp);
     bool mayBeStackPointer(Object* obj) const;
+    void** getDispatchTable()
+    {
+        return (void**)run(NULL, NULL, true).val;
+    }
 
 public:
     // DONT change the order or offset.

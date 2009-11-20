@@ -3956,3 +3956,12 @@
 (define (open-input-file filename)
   (open-file-input-port filename (make-file-options '()) 'block (native-transcoder)))
 
+(define (disasm closure)
+  (for-each
+   (lambda (x)
+     (cond
+      [(instruction? x)
+       (newline)
+       (display (instruction->symbol x))]
+      [else (display x)]))
+   (closure->list closure)))
