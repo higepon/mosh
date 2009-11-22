@@ -1,3 +1,7 @@
+2009-11-22  higepon  <higepon@users.sourceforge.jp>
+
+	* TextualOutputPort.cpp (TextualOutputPort::print): Added print code for Gloc.
+
 2009-11-21  higepon  <higepon@users.sourceforge.jp>
 
 	* Rewrote disasm.

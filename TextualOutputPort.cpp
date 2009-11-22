@@ -588,6 +588,8 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC(">"));
     } else if (o.isContinuation()) {
         putString(UC("#<continuation>"));
+    } else if (o.isGloc()) {
+        putString(UC("#<gloc>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

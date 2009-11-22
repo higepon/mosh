@@ -3963,5 +3963,7 @@
       [(instruction? x)
        (newline)
        (display (instruction->symbol x))]
-      [else (display x)]))
-   (closure->list closure)))
+      [else (display x)])
+     (display #\space))
+   (closure->list closure))
+  (newline))
