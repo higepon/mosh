@@ -784,6 +784,8 @@ void VM::setCurrentOutputPort(Object port)
 
 void VM::expandStack(int plusSize)
 {
+    printf("ex stack=%x plusSize=%d\n", stack_, plusSize);
+
     const int nextStackSize = stackSize_ + plusSize;
     Object* nextStack = Object::makeObjectArray(nextStackSize);
     if (NULL == nextStack) {

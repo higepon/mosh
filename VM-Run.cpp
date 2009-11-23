@@ -446,7 +446,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(MAKE_CONTINUATION)
         {
             const Object n = fetchOperand();
-//            VM_LOG1("size=~a\n", Object::makeFixnum(sp_ - stack_));
+            VM_ASSERT(sp_ >= stack_);
             ac_ = Object::makeContinuation(Object::makeStack(stack_, sp_ - stack_),
                                            n,
                                            dynamicWinders());
@@ -1002,7 +1002,6 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(diffObject.isFixnum());
             const int diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
-
             fp_ = sp_ - depth;
 
             const Object displayCount = fetchOperand();

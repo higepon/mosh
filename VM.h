@@ -49,21 +49,22 @@ typedef gc_vector<Object> Ports;
 #define L3(a, b, c) Pair::list3(a, b, c)
 #define L4(a, b, c, d) Pair::list4(a, b, c, d)
 
-#define SAVE_REGISTERS()                       \
-    const Object ac = ac_;                     \
-    const Object dc = dc_;                     \
-    const Object cl = cl_;                     \
-    Object* const pc = pc_;                    \
-    Object* const fp = fp_;                    \
-    Object* const sp = sp_;
+#define SAVE_REGISTERS()                                  \
+    const Object ac = ac_;                                \
+    const Object dc = dc_;                                \
+    const Object cl = cl_;                                \
+    Object* const pc = pc_;                               \
+    /* Since stack can be expanded, we save the offset */ \
+    intptr_t fpOffset = fp_ - stack_;                     \
+    intptr_t spOffset = sp_ - stack_;
 
 #define RESTORE_REGISTERS()       \
     ac_ = ac;                     \
     cl_ = cl;                     \
     dc_ = dc;                     \
-    fp_ = fp;                     \
+    fp_ = stack_ + fpOffset;      \
     pc_ = pc;                     \
-    sp_ = sp;
+   sp_ = stack_ + spOffset;
 
 #define FASL_GET(image) FaslReader(this, new ByteArrayBinaryInputPort(image, sizeof(image))).get()
 

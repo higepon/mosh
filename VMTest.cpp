@@ -74,6 +74,7 @@ protected:
         setCurrentVM(theVM_);
         theVM_->loadCompiler();
         theVM_->setValueString(UC("%loadpath"), Object::False);
+        theVM_->setValueString(UC("%verbose"), Object::False);
         theVM_->setValueString(UC("%disable-acc"), Object::makeBool(true));
         theVM_->setValueString(UC("%clean-acc"), Object::makeBool(false));
 
@@ -93,6 +94,7 @@ protected:
         setCurrentVM(theVM_);
         theVM_->loadCompiler();
         theVM_->setValueString(UC("%loadpath"), Object::False);
+        theVM_->setValueString(UC("%verbose"), Object::False);
     }
     Object errorPort_;
 };

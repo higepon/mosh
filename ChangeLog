@@ -1,3 +1,10 @@
+2009-11-23  higepon  <higepon@users.sourceforge.jp>
+
+	* VM.h (SAVE_REGISTERS): Fixed the bug Issue 112 pointed out by mrc.mgg.
+
+	SAVE_REGISTERS used to save sp_ and fp_, but this will be broken when stack is expanded automatically.
+	So we save the offset of them.
+
 2009-11-17  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/srfi/%3a42/eager-comprehensions.sls (srfi): Added missing import.
