@@ -42,12 +42,12 @@
    file-directory? file-symbolic-link? file-regular? file-readable?
    file-executable? file-writable? file-size-in-bytes file-stat-mtime
    file-stat-atime  file-stat-ctime
-   file->string file->list write-to-file directory-list)
+   file->string file->list file->sexp-list write-to-file directory-list)
   (import (only (system)
                 create-directory delete-directory rename-file create-symbolic-link
                 file-directory? file-symbolic-link? file-regular? file-readable?
                 file-executable? file-writable? file-size-in-bytes file-stat-mtime
-                file-stat-atime  file-stat-ctime
+                file-stat-atime  file-stat-ctime file->sexp-list
                 directory-list file->string file->list write-to-file))
 
 #|
@@ -317,10 +317,28 @@
     Function: file->list
 
     Convenience procedures to read from a file filename.
-    (read file) and returns list of S-expressions.
+    (read-line file) and returns list of lines.
 
     Prototype:
     > (file->list file)
+
+    Parameters:
+
+      file - file.
+
+    Returns:
+
+       list of lines.
+|#
+
+#|
+    Function: file->sexp-list
+
+    Convenience procedures to read from a file filename.
+    (read file) and returns list of S-expressions.
+
+    Prototype:
+    > (file->sexp-list file)
 
     Parameters:
 

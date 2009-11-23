@@ -245,6 +245,7 @@ inline const char* nth(int index) {
 
 
 #define argumentAsChar(index, variableName) castArgument(index, variableName, isChar, character, ucs4char, toChar)
+#define argumentAsInstrcution(index, variableName) castArgument(index, variableName, isInstruction, instruction, int, toInstruction)
 
 #define argumentCheckProcedure(index, variableName) checkType(index, variableName, isProcedure, procedure)
 #define argumentCheckProcedureOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isProcedure, procedure)

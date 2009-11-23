@@ -105,6 +105,13 @@
 
 ;; VM register offset depends on your architecture.
 (include/resolve ("mosh" "jit") "offset.ss")
+(include/resolve ("mosh" "jit") "instructions.ss")
+
+(define insn-dispatch-table
+  (make-vector insn-count (lambda x (error 'jit-compiler "not implemented instruction" x))))
+
+(define (register-insn-dispatch-table insn proc)
+  (vector-set! insn-dispatch-table insn proc))
 
 (define (vm-register reg)
   `(& rdi ,(* (+ (receive (_ index) (find-with-index (cut eq? <> reg) vm-register*)
@@ -634,7 +641,17 @@
 ;;  andl    $3, %eax
 ;;  cmpq    $3, %rax
 ;;  jne .L785
+(define (REFER_LOCAL_PUSH index)
+  '())
 
+(define (CLOSURE . x)
+  '())
+
+(define (ASSIGN_GLOBAL . x)
+  '())
+
+(define (REFER_GLOBAL_CALL . x)
+  '())
 
 (define (REFER_LOCAL_PUSH_CONSTANT index constant)
   `((movq rcx ,(vm-register 'sp))
@@ -1096,6 +1113,42 @@
 
 (define (u8*->c-procedure+retq lst)
   (u8-list->c-procedure (append lst (assemble '((retq))))))
+
+;; JIT compiler
+(define (closure->c-procedure closure)
+  (let loop ([code (closure->list closure)]
+             [insn-set '()]
+             [insn-set* '()])
+    (cond
+     [(null? code) (assemble (apply append (reverse insn-set*)))]
+     [(and (pair? (cdr code)) (instruction? (cadr code)))
+      (let1 insn (reverse (cons (car code) insn-set))
+        ;; insn = (instruction arg1 arg2 arg3 ...)
+        (loop (cdr code)
+              '()
+              (cons (apply (vector-ref insn-dispatch-table (instruction->integer (car insn))) (cdr insn))
+                    insn-set*)))]
+     [else
+      (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
+
+
+
+(define (make-dispatch-table)
+  (register-insn-dispatch-table $CLOSURE CLOSURE)
+  (register-insn-dispatch-table $ASSIGN_GLOBAL ASSIGN_GLOBAL)
+  (register-insn-dispatch-table $CONSTANT CONSTANT)
+  (register-insn-dispatch-table $REFER_LOCAL_PUSH REFER_LOCAL_PUSH)
+  (register-insn-dispatch-table $REFER_LOCAL_PUSH_CONSTANT REFER_LOCAL_PUSH_CONSTANT)
+  (register-insn-dispatch-table $BRANCH_NOT_LT (lambda (offset) (BRANCH_NOT_LT (gensym))))
+  (register-insn-dispatch-table $RETURN RETURN)
+  (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
+  (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
+  (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
+  (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
+  (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
+  (register-insn-dispatch-table $CALL CALL)
+  (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME))))
+
 
 ;; '(movq rbx (& rsp #x38))
 

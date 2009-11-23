@@ -2,6 +2,24 @@ Title: Core
 
 library: (mosh)
 
+Function: for-each-with-index
+
+Like for-each, except proc receives the index as the first argument. 
+
+Prototype:
+> (for-each-with-index proc lst)
+
+Parameters:
+  proc - procedure accept zero origin index as the first argument and a element of lst as the second argument.
+  lst - list
+
+Returns:
+
+  unspecified.
+
+See Also:
+
+
 Function: fasl-write
 
 Write obj to binary port with Fast Loading binary format.

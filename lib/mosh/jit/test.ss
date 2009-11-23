@@ -12,6 +12,8 @@
 
   (include/resolve ("mosh" "jit") "jit-impl.ss")
 
+  (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
+
   (define (asm*->procedure asm*)
     (u8*->c-procedure+retq (assemble asm*)))
 
@@ -617,6 +619,12 @@
     (test-equal '(movq (& rbx #x28) rcx) (gas->sassy "mov    %rcx,0x28(%rbx)"))
     (test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
     (test-equal '(leaq rdx (& rax -8)) (gas->sassy "leaq    -8(%rax), %rdx"))
+
+    ;; jit
+    (make-dispatch-table)
+    (display (closure->c-procedure fib)))
+
+)
 
 ;; movq 56(%rsp), %rbx ; rbx = vm
 ;; movq 40(%rbx), %rax ; rax = sp

@@ -74,12 +74,6 @@
                           (format (current-error-port) message path)]))
                 (string-split paths separator)))]))
 
-  (define (for-each-with-index proc lst)
-    (do ((i 1 (+ i 1)) ; start with 1
-         (lst lst (cdr lst)))
-        ((null? lst))
-      (proc i (car lst))))
-
 #;  (define (conditioon-printer e port)
     (define (ref rtd i x)
       (let ([val ((record-accessor rtd i) x)])
@@ -125,7 +119,7 @@
      (lambda (i x)
        (let ([rtd (record-rtd x)]
              [fields-alist (record->field-alist x)])
-        (format port " ~d. ~a" i (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
+        (format port " ~d. ~a" (+ i 1) (rpad (symbol->string (record-type-name rtd)) " " max-condition-len))
         (when (null? fields-alist)
           (newline port))
          (let loop ([first #t]

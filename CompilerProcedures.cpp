@@ -946,6 +946,15 @@ Object scheme::instructionTosymbolEx(VM* theVM, int argc, const Object* argv)
     }
 }
 
+Object scheme::instructionTointegerEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("instruction->integer");
+    checkArgumentLength(1);
+    const Object obj = argv[0];
+    argumentAsInstrcution(0, instruction);
+    return Object::makeFixnum(instruction);
+}
+
 Object scheme::instructionPEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("closure->list");

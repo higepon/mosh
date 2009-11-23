@@ -11,4 +11,6 @@
           (only (srfi private include) include/resolve))
 
   (include/resolve ("mosh" "jit") "jit-impl.ss")
+
+  (make-dispatch-table)
 )

@@ -190,6 +190,9 @@ libmosh_a_SOURCES += ffi_stub_x86_64.S
 endif
 
 mosh_core_libraries = \
+lib/mosh/jit.ss \
+lib/mosh/jit/jit-impl.ss \
+lib/mosh/jit/instructions.ss \
 lib/match.ss \
 lib/memcached.ss \
 lib/lambda/wiki.ss    \
@@ -408,6 +411,8 @@ CORE_LIBS =                 \
     lib/core/r5rs.scm       \
     lib/core/hashtable.scm
 
+./lib/mosh/jit/instructions.ss: ./instruction.scm
+	./mosh ./scripts/gen-insn-definitions.scm $(PWD)/$< > $@
 
 ./compiler-with-library.scm: ./library.scm ./compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@

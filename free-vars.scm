@@ -476,6 +476,7 @@
   vector-fill!
   ungensym
   instruction->symbol
+  instruction->integer
   (closure->list (lambda (closure)
             (let ([code (vector-ref closure 0)]
                   [ht (make-hash-table)])

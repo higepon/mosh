@@ -1327,6 +1327,16 @@
          [else
           (loop (read-line) (cons line ret))])))))
 
+(define (file->sexp-list file)
+  (with-input-from-file file
+    (lambda ()
+      (let loop ([line (read)]
+                 [ret '()])
+        (cond
+         [(eof-object? line) (reverse ret)]
+         [else
+          (loop (read) (cons line ret))])))))
+
 (define-macro (case-lambda . x)
   `(lambda args
      ((match-lambda
@@ -3967,3 +3977,12 @@
      (display #\space))
    (closure->list closure))
   (newline))
+
+(define (for-each-with-index proc lst)
+  (let loop ([i 0]
+             [lst lst])
+    (cond
+     [(null? lst) '()]
+     [else
+      (proc i (car lst))
+      (loop (+ i 1) (cdr lst))])))
