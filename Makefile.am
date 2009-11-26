@@ -342,14 +342,28 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # 	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
 # 	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
+
+
 # update: lib/mosh/queue.ss.mosh-fasl
 
 # when you release comment out start
 if DEVELOPER
-Reader.tab.cpp: Reader.y
+bootstrap:
+	cp ~/repos-mosh/trunk/mosh .
+	cp ~/repos-mosh/trunk/tools/psyntax-r6rs/rev10_to_10/psyntax.scm tools/psyntax-r6rs/rev10_to_10/
+	$(MAKE) Reader.tab.cpp
+	$(MAKE) Reader.tab.cpp
+	$(MAKE) NumberReader.tab.cpp
+	$(MAKE) pmatch.h
+	$(MAKE) psyntax.h
+	$(MAKE) compiler-with-library.h
+	$(MAKE) Object-accessors.h
+
+
+Reader.tab.cpp Reader.tab.hpp: Reader.y
 	bison -d $< -o $@
 
-NumberReader.tab.cpp: NumberReader.y
+NumberReader.tab.cpp NumberReader.tab.hpp: NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
 Scanner.cpp : scanner.re

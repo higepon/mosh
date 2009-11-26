@@ -1,3 +1,9 @@
+2009-11-27  higepon  <higepon@users.sourceforge.jp>
+
+	* Makefile.am (bootstrap): Added bootstrap target.
+
+	This is used by developer.
+
 2009-11-23  higepon  <higepon@users.sourceforge.jp>
 
 	* VM.h (SAVE_REGISTERS): Fixed the bug Issue 112 pointed out by mrc.mgg.
