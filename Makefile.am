@@ -307,12 +307,11 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
 src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
-src/free-vars.scm scripts src/pmatch.scm src/test-data.scm doc \
+src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
-tools/psyntax-r6rs doc/RELNOTE example lib src/cprocedures.cpp \
+tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
-src/ffitest.c bench win mosh.vcproj mosh.sln doc doc/README-WINDOWS.txt \
-doc/README.MINGW README misc
+src/ffitest.c win mosh.vcproj mosh.sln doc README misc
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h src/compiler-gauche.scm \
@@ -380,12 +379,12 @@ r6rs-test:
 
 #### Instruction.h
 src/Instruction.h: src/instruction.scm
-	gosh ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+	gosh ./misc/scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
 src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
 
 src/compiler-vm-cpp.scm: src/compiler.scm src/free-vars-decl.scm
-	gosh ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
 src/compiler-with-library.scmc: src/compiler-with-library.scm src/compiler-vm.scm
 	gosh src/vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
@@ -394,19 +393,19 @@ src/compiler-with-library.scmc: src/compiler-with-library.scm src/compiler-vm.sc
 # SUFFIXES: .scmc .h
 
 src/pmatch.h: src/pmatch.scmc
-	mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 src/psyntax.h: src/psyntax.scmc
-	mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 
 .scmc.h:
-	mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
-# 	(cd doc && mosh ../scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
-# 	(cd doc && mosh ../scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
+# 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
 src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
@@ -432,49 +431,49 @@ CORE_LIBS =                 \
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm
-	gosh ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+	gosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
 src/compiler-vm.scm: src/compiler.scm src/free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
 src/compiler-vm-outer.scm: src/compiler.scm src/free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/compiler-gauche.scm: src/compiler.scm src/free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/labels.cpp: src/instruction.scm
-	gosh ./scripts/gen-label.scm $< > $(PWD)/$@
+	gosh ./misc/scripts/gen-label.scm $< > $(PWD)/$@
 
 # DebugInstruction.h: instruction.scm
-# 	gosh ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+# 	gosh ./misc/scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
 src/Object.h: src/Object-accessors.h
 
-src/cprocedures.cpp: src/free-vars-decl.scm ./scripts/gen-cproc.scm
-	gosh ./scripts/gen-cproc.scm > $@
+src/cprocedures.cpp: src/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
+	gosh ./misc/scripts/gen-cproc.scm > $@
 
 src/all-tests.scm: ./src/test-data.scm
-	mosh -5 ./scripts/gen-test.scm $< $@
-#	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
+	mosh -5 ./misc/scripts/gen-test.scm $< $@
+#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
 src/Object-accessors.h: ./src/accessors.scm
-	./mosh ./scripts/gen-accessors.scm > $@
+	./mosh ./misc/scripts/gen-accessors.scm > $@
 
 src/OSConstants.h: src/os-constants.scm
-	./mosh ./scripts/gen-os-constants.scm > $@
+	./mosh ./misc/scripts/gen-os-constants.scm > $@
 # when you release comment out end
 endif
 
 doc:
-	./mosh scripts/gen-doc-from-r6rs.scm
+	./mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
-.PHONY: bench doc test install
+.PHONY: doc test install
 
 bench:
-#	@GOSH@ ./scripts/bench.scm > /dev/null
-	LANG=C gosh ./scripts/bench2.scm
+#	@GOSH@ ./misc/scripts/bench.scm > /dev/null
+	LANG=C gosh ./misc/scripts/bench2.scm
 
 #### test
 check: test
@@ -600,9 +599,9 @@ test_thread_LDADD = $(TEST_LDADD_)
 install-data-hook :
 	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
 	$(INSTALL) -m 666 $(top_srcdir)/misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
-	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/scripts/pre-compile-target.scm
-#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
-#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
+	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
+#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
+#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c

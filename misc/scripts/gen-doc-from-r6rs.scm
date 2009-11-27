@@ -5,7 +5,7 @@
         (srfi :26)
         (srfi :98))
 
-(include "./scripts/r6rs-symbols.dat")
+(include "./misc/scripts/r6rs-symbols.dat")
 
 (define r6rs-dir (string-append (get-environment-variable "HOME") "/Desktop/r6rs/document/"))
 (define out-dir (string-append (get-environment-variable "HOME") "/mosh/doc/text/"))
