@@ -21,20 +21,20 @@
 (define (exec-with-time command)
   (string->number ((#/([\d\.]+)\s+total/ (get-process-error-line `("zsh" "-c" ,(string-append "time ./mosh " command)))) 1)))
 
-(sys-system "uname -a")
-(sys-system "svn info")
+;(sys-system "uname -a")
+;(sys-system "svn info")
 
 (for-each
  (lambda (file)
    (format #t "~25a:  ~d\n" file (apply min (ntimes-map (lambda () (exec-with-time file)) 3))))
  '(
-   "-5 ./bench/fib.scm"
-   "-5 ./bench/tak.scm"
-   "-5 ./bench/triangl.scm"
-   "-5 ./bench/takl.scm"
-   "./bench/empty.scm"
-   "./bench/load-library.scm"
-   "./bench/clos.scm"
+   "-5 ./misc/bench/fib.scm"
+   "-5 ./misc/bench/tak.scm"
+   "-5 ./misc/bench/triangl.scm"
+   "-5 ./misc/bench/takl.scm"
+   "./misc/bench/empty.scm"
+   "./misc/bench/load-library.scm"
+   "./misc/bench/clos.scm"
 ))
 
 ;; Linux sewashi 2.6.22-15-generic #1 SMP Tue Oct 21 23:47:12 GMT 2008 i686 GNU/Linux

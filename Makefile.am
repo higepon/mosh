@@ -470,7 +470,7 @@ doc:
 	./mosh scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
-#.PHONY: bench doc test install
+.PHONY: bench doc test install
 
 bench:
 #	@GOSH@ ./scripts/bench.scm > /dev/null
