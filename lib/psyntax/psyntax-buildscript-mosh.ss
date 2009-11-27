@@ -43,8 +43,7 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander.ss"
-    ,(string-append (get-environment-variable "HOME") "/mosh/lib/mosh/condition.ss")
-;    ,(string-append (get-environment-variable "HOME") "/mosh/lib/mosh/io/conditions.ss")
+    "../mosh/condition.ss"
     "psyntax/main.ss"))
 
 
