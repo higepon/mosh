@@ -1,5 +1,11 @@
 2009-11-27  higepon  <higepon@users.sourceforge.jp>
 
+	* Cleaned up top-directory. Most files are moved to src/ directory.
+
+	We need to clean up, since github shows all files on a top directory.
+
+	* src/UTF8Codec.cpp (putChar): Fixed range of UTF8-4.
+
 	* Makefile.am (bootstrap): Added bootstrap target.
 
 	This is used by developer.

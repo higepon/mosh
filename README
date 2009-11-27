@@ -1,1 +1,5 @@
+
+build on Windows -> doc/README-WINDOWS.txt
+buind on Mingw   -> doc/README.MINGW
+
 See http://mosh.monaos.org/ .

@@ -35,7 +35,7 @@
         (format #t "{\n    struct x { char y; ~a ~a ~a z; };\n    osConstants->set(Symbol::intern(UC(\"align-of-~a-~a-~a\")), Object::makeFixnum(offsetof(x, z)));\n}\n"
                 val1 val2 val3 val1 val2 val3)]
        [else #f]))
-  (file->sexp-list "./os-constants.scm")))
+  (file->sexp-list "./src/os-constants.scm")))
 
 (main (command-line))
 

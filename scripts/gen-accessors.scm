@@ -25,6 +25,6 @@
      (format #t "    return isHeapObject()\n")
      (format #t "    && reinterpret_cast<HeapObject*>(val)->type == HeapObject::~a;\n" type)
      (format #t "}\n\n"))
-  (map second (file->sexp-list "./accessors.scm"))))
+  (map second (file->sexp-list "./src/accessors.scm"))))
 
 (main (command-line))

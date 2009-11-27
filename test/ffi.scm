@@ -39,7 +39,7 @@
 
 (when (ffi-supported?)
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
 
     (define sub (c-function libffitest int sub int int))
     (define sub3 (c-function libffitest int sub3 int int int))
@@ -215,7 +215,7 @@
      (free p))
    )
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback0 void*))
     (let ([callback (make-c-callback-trampoline #x00 "" (lambda () 10))])
       (test-true (pointer? callback))
@@ -223,7 +223,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback1 void*))
     (let ([callback (make-c-callback-trampoline #x00 "q" (lambda (i) 10))])
       (test-true (pointer? callback))
@@ -231,7 +231,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback2 void*))
     (let ([callback (make-c-callback-trampoline #x00 "qq" (lambda (i j) (- i j)))])
       (test-true (pointer? callback))
@@ -239,7 +239,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback3 void*))
     (let ([callback (make-c-callback-trampoline #x00 "dq" (lambda (i j) (- (exact (* i 10)) j)))])
       (test-true (pointer? callback))
@@ -247,7 +247,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback3 void*))
     (let ([callback (make-c-callback-trampoline #x00 (make-callback-signature 'callCallback3 'int '(double int) callCallback) (lambda (i j) (- (exact (* i 10)) j)))])
       (test-true (pointer? callback))
@@ -255,7 +255,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback3 void*))
     (let ([callback (make-c-callback 'int '(double int) (lambda (i j) (- (exact (* i 10)) j)))])
       (test-true (pointer? callback))
@@ -263,7 +263,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest int callCallback3 void*))
     (let ([callback (c-callback int (double int) (lambda (i j) (- (exact (* i 10)) j)))])
       (test-true (pointer? callback))
@@ -271,7 +271,7 @@
       (free-c-callback callback)))
 
   (let ()
-    (define libffitest (open-shared-library "./libffitest.so.1.0"))
+    (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
     (define callCallback (c-function libffitest double callCallback4 callback))
     (let ([callback (c-callback double (double double) (lambda (i j) (* i j)))])
       (test-true (pointer? callback))
@@ -279,14 +279,14 @@
       (free-c-callback callback)))
 
 ;;   (let ()
-;;     (define libffitest (open-shared-library "./libffitest.so.1.0"))
+;;     (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
 ;;     (define callCallback (c-function libffitest int64_t callCallback5 void*))
 ;;     (let ([callback (c-callback int64_t (int64_t) (lambda (i) (+ i 1)))])
 ;;       (test-true (pointer? callback))
 ;;       (test-equal #x1234567887654322 (callCallback callback))))
 
 ;;   (let ()
-;;     (define libffitest (open-shared-library "./libffitest.so.1.0"))
+;;     (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
 ;;     (define callCallback (c-function libffitest int64_t callCallback5 callback))
 ;;     (let ([callback (c-callback int64_t (int64_t) (lambda (i) (+ i 1)))])
 ;;       (test-true (pointer? callback))
@@ -307,7 +307,7 @@
       (syntax-case x ()
         [(_ expected-value return-type lib name)
          #'(test-equal expected-value ((c-function lib return-type name)))])))
-  (define libffitest (open-shared-library "./libffitest.so.1.0"))
+  (define libffitest (open-shared-library "./lib/libffitest.so.1.0"))
 
   ;; void
   (return-type-test undef void libffitest return_void)
@@ -407,7 +407,7 @@
 
 ;; Tests of callout argument
 (when (ffi-supported?)
-  (let [(libffitest (open-shared-library "./libffitest.so.1.0"))]
+  (let [(libffitest (open-shared-library "./lib/libffitest.so.1.0"))]
 
     (test-equal (calc-signed-max size-of-int)
                 ((c-function libffitest int return_first_int_int int int) (calc-signed-max size-of-int) (calc-signed-max size-of-int)))

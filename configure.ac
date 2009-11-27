@@ -6,7 +6,7 @@ AC_INIT(mosh, 0.2.0, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([VM.h])
+AC_CONFIG_SRCDIR([src/VM.h])
 AC_CONFIG_HEADER([config.h])
 
 
@@ -363,4 +363,4 @@ esac
 
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_SUBDIRS([gc-7.1 onig-5.7.0])
-AC_OUTPUT(mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
+AC_OUTPUT(src/mosh_config lib/mosh/mysql.ss lib/mosh/config.ss doc/text/Download.txt)
