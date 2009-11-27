@@ -308,7 +308,7 @@ INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONI
 EXTRA_DIST     = \
 src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
 src/free-vars.scm scripts src/pmatch.scm src/test-data.scm doc \
-tools/psyntax-r6rs/rev10_to_10/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
+lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE example lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
 src/ffitest.c bench win mosh.vcproj mosh.sln doc doc/README-WINDOWS.txt \
@@ -347,7 +347,7 @@ MAINTAINERCLEANFILES = $(GENERATED)
 if DEVELOPER
 bootstrap:
 	cp -p ~/repos-mosh/trunk/mosh .
-	cp -p ~/repos-mosh/trunk/tools/psyntax-r6rs/rev10_to_10/psyntax.scm tools/psyntax-r6rs/rev10_to_10/
+	cp -p ~/repos-mosh/trunk/tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/psyntax/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
@@ -414,7 +414,7 @@ src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
 
 # we need to replace #\null => #\nul and |...| => ...
 # It is the difference between gauche and mosh.
-src/psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./src/compiler-vm.scm
+src/psyntax.scmc: lib/psyntax/psyntax.scm ./src/compiler-vm.scm
 	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
