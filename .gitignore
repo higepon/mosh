@@ -125,4 +125,8 @@ test_port
 test_thread
 test_vm
 tools/psyntax-r6rs/rev10_to_10/psyntax.scm
-
+doc/config/Data/
+doc/html/
+gc-7.1/libatomic_ops
+lib/psyntax/psyntax.scm
+mosh-0.2.0.tar.g
