@@ -28,13 +28,7 @@ else
 bin_PROGRAMS = mosh
 endif
 
-<<<<<<< HEAD
-
-
-bin_SCRIPTS = mosh_config
-=======
 bin_SCRIPTS = src/mosh_config
->>>>>>> master
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION
@@ -354,8 +348,8 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # when you release comment out start
 if DEVELOPER
 bootstrap:
-	cp -p ~/repos-mosh/trunk/mosh .
-	cp -p ~/repos-mosh/trunk/tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/psyntax/
+	cp -p ~/repos-mosh/branches/jit/mosh .
+	cp -p ~/repos-mosh/branches/jit/tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/psyntax/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
@@ -435,7 +429,7 @@ CORE_LIBS =                 \
     lib/core/r5rs.scm       \
     lib/core/hashtable.scm
 
-./lib/mosh/jit/instructions.ss: ./instruction.scm
+./lib/mosh/jit/instructions.ss: src/instruction.scm
 	./mosh ./scripts/gen-insn-definitions.scm $(PWD)/$< > $@
 
 ./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
@@ -608,20 +602,11 @@ test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
-<<<<<<< HEAD
-	./mosh --clean-acc --disable-acc misc/empty.scm
-	./mosh -O lib/mosh/jit/offset.ss
-	$(INSTALL) -m 666 misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
-	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
-#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
-#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
-=======
 	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
 	$(INSTALL) -m 666 $(top_srcdir)/misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
->>>>>>> master
 
 # for FFI test
 lib/libffitest.so.1.0: src/ffitest.c
