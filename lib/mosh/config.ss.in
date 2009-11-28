@@ -61,7 +61,7 @@
 
   (define configurations
     `(("library-path" . ("Show core library path." ,(standard-library-path)))
-      ("mosh-cache-dir" . ("Show auto-compilation-cache direcotry path" ,(mosh-cache-dir)))
+      ("mosh-cache-dir" . ("Show auto-compilation-cache directory path" ,(mosh-cache-dir)))
       ("version"      . ("Show version." "0.1.2"))
       ("prefix"       . ("Show prefix." "@prefix@"))))
 

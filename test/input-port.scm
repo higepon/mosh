@@ -241,4 +241,15 @@
   (test-equal "abcdefghijklmnopqrstuvwxyz" (get-datum p))
   (close-port p))
 
+;; read from stdin and output to stdout
+(test-eq 16 (read))
+(display 'a)
+(test-eq 10 (read))
+(test-eq 8 (read))
+(test-eq 10 (read))
+(test-eq 5 (read))
+(test-eq 8 (read))
+(test-eq 1 (read))
+(test-eq 5 (read))
+
 (test-results)

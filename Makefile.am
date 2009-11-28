@@ -3,12 +3,11 @@ AM_CFLAGS   = @MOSH_OPTS@
 AM_CXXFLAGS = $(CFLAGS)
 
 # Boehm GC
-#BOEHM_GC_DIR = ./gc-7.1alpha3
-BOEHM_GC_DIR = ./gc-7.1
+BOEHM_GC_DIR = gc-7.1
 GC_LIB       = $(BOEHM_GC_DIR)/.libs/libgc.a
 
 # Regexp library oniguruma
-ONIG_DIR   = ./onig-5.7.0
+ONIG_DIR   = onig-5.7.0
 REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
@@ -19,14 +18,9 @@ GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
                 $(GTEST_DIR)/include/gtest/internal/*.h
 GTEST_CPPFLAGS_ = -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 
-# for FFI test
-libffitest.so.1.0: ffitest.c
-	$(CC) -Wall -fPIC -c $<
-	$(CC) -Wl @SHLIB_SO_LDFLAGS@ -o $@ ffitest.o
-
 SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 
-man_MANS = mosh.1 mosh_config.1
+man_MANS = doc/mosh.1 doc/mosh_config.1
 
 if DEVELOPER
 bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
@@ -34,9 +28,13 @@ else
 bin_PROGRAMS = mosh
 endif
 
+<<<<<<< HEAD
 
 
 bin_SCRIPTS = mosh_config
+=======
+bin_SCRIPTS = src/mosh_config
+>>>>>>> master
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION
@@ -44,149 +42,150 @@ endif
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
-mosh_SOURCES  = main.cpp
-mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I $(includedir)
+mosh_SOURCES  = src/main.cpp
+mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
 if MINGW32
 mosh_LDADD += mosh-icon.o
-mosh-icon.o : win/mosh.rc logo/mosh.ico
+mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	$(WINDRES) win/mosh.rc -o mosh-icon.o
 endif 
 
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
-HeapObject.h                                                       \
-Object-inl.h                                                       \
-Object-accessors.h                                                 \
-Pair-inl.h                                                         \
-VM-inl.h                                                           \
-psyntax.h                                                          \
-pmatch.h                                                           \
-compiler-with-library.h                                            \
-CProcedure.h                                                       \
-Instruction.h                                                      \
-Callable.h                                                         \
-GenericMap.h                                                       \
-BinaryInputPort.h                                                  \
-BinaryOutputPort.h                                                 \
-scheme.h                                                           \
-ByteVector.h                                                       \
-HashTable.h                                                        \
-Pair.h                                                             \
-LineBufferedFileBinaryOutputPort.h                                 \
-Stack.h                                                            \
-Gloc.h                         BinaryInputOutputPort.h             \
-Box.h                          Port.h                              \
-BinaryPort.h                   OutputPort.h                        \
-Codec.h                                                            \
-Transcoder.h                   Transcoder.cpp                      \
-ProcedureMacro.h                                                   \
-EqvHashTable.h                 EqvHashTable.cpp                    \
-Compnum.h                      Compnum.cpp                         \
-Fixnum.h                       Fixnum.cpp                          \
-Closure.h                      Closure.cpp                         \
-UtilityProcedures.h            UtilityProcedures.cpp               \
-ProcessProcedures.h            ProcessProcedures.cpp               \
-Reader.h                       Reader.cpp                          \
-NumberReader.h                 NumberReader.cpp                    \
-scheme.h                       scheme.cpp                          \
-Regexp.h                       Regexp.cpp                          \
-Symbol.h                       Symbol.cpp                          \
-VM.h                           VM.cpp                              \
-VM-Profiler.cpp                VM-Run.cpp                          \
-VM-Run.h                                                           \
-Scanner.h                      Scanner.cpp                         \
-NumberScanner.h                NumberScanner.cpp                   \
-ByteArrayBinaryInputPort.h     ByteArrayBinaryInputPort.cpp        \
-ByteArrayBinaryOutputPort.h    ByteArrayBinaryOutputPort.cpp       \
-ScannerHelper.h                ScannerHelper.cpp                   \
-Reader.tab.hpp                 Reader.tab.cpp                      \
-NumberReader.tab.hpp           NumberReader.tab.cpp                \
-FileBinaryInputPort.h          FileBinaryInputPort.cpp             \
-BufferedFileBinaryInputPort.h  BufferedFileBinaryInputPort.cpp     \
-FileBinaryOutputPort.h         FileBinaryOutputPort.cpp            \
-BufferedFileBinaryOutputPort.h BufferedFileBinaryOutputPort.cpp    \
-CustomBinaryInputPort.h        CustomBinaryInputPort.cpp           \
-CustomTextualInputPort.h       CustomTextualInputPort.cpp          \
-CustomTextualOutputPort.h      CustomTextualOutputPort.cpp         \
-CustomTextualInputOutputPort.h CustomTextualInputOutputPort.cpp    \
-CustomBinaryInputOutputPort.h  CustomBinaryInputOutputPort.cpp     \
-TextualOutputPort.h            TextualOutputPort.cpp               \
-TextualInputPort.cpp           TextualInputPort.h                  \
-TranscodedTextualInputPort.cpp TranscodedTextualInputPort.h        \
-TranscodedTextualOutputPort.cpp TranscodedTextualOutputPort.h      \
-StringTextualOutputPort.h      StringTextualOutputPort.cpp         \
-StringTextualInputPort.h       StringTextualInputPort.cpp          \
-Codec.cpp                      Codec.h                             \
-UTF8Codec.cpp                  UTF8Codec.h                         \
-UTF16Codec.cpp                 UTF16Codec.h                        \
-UTF32Codec.cpp                 UTF32Codec.h                        \
-EqHashTable.h                  EqHashTable.cpp                     \
-SString.h                      SString.cpp                         \
-GenericHashTable.h             GenericHashTable.cpp                \
-Object.h                       Object.cpp                          \
-RecordTypeDescriptor.h         RecordTypeDescriptor.cpp            \
-RecordConstructorDescriptor.h  RecordConstructorDescriptor.cpp     \
-Record.h                       Record.cpp                          \
-RecordProcedures.cpp           RecordProcedures.h                  \
-ConditionProcedures.cpp        ConditionProcedures.h               \
-CompilerProcedures.cpp         CompilerProcedures.h                \
-HashTableProceduures.cpp       HashTableProceduures.h              \
-RegexpProcedures.cpp           RegexpProcedures.h                  \
-StringProcedures.cpp           StringProcedures.h                  \
-PortProcedures.cpp             PortProcedures.h                    \
-ListProcedures.cpp             ListProcedures.h                    \
-ErrorProcedures.cpp            ErrorProcedures.h                   \
-ArithmeticProcedures.cpp       ArithmeticProcedures.h              \
-FlonumProcedures.cpp           FlonumProcedures.h                  \
-BitwiseProcedures.cpp          BitwiseProcedures.h                 \
-ByteVectorProcedures.cpp       ByteVectorProcedures.h              \
-SocketProcedures.cpp           SocketProcedures.h                  \
-Equivalent.h                   Equivalent.cpp                      \
-CompoundCondition.h            CompoundCondition.cpp               \
-ucs4string.h                   ucs4string.cpp                      \
-Vector.h                       Vector.cpp                          \
-Fasl.h                         Fasl.cpp                            \
-Arithmetic.h                   Arithmetic.cpp                      \
-Ratnum.h                       Ratnum.cpp                          \
-Bignum.h                       Bignum.cpp                          \
-Flonum.h                       Flonum.cpp                          \
-CodeBuilder.h                  CodeBuilder.cpp                     \
-FixnumProcedures.h             FixnumProcedures.cpp                \
-Latin1Codec.h                  Latin1Codec.cpp                     \
-FFI.h                          FFI.cpp                             \
-FFIProcedures.h                FFIProcedures.cpp                   \
-CustomBinaryOutputPort.h       CustomBinaryOutputPort.cpp          \
-FileBinaryInputOutputPort.h    FileBinaryInputOutputPort.cpp       \
-SocketBinaryInputOutputPort.h  SocketBinaryInputOutputPort.cpp     \
-TranscodedTextualInputOutputPort.h  TranscodedTextualInputOutputPort.cpp  \
-BufferedFileBinaryInputOutputPort.h  BufferedFileBinaryInputOutputPort.cpp \
-TestingFileBinaryOutputPort.h TestingFileBinaryInputPort.h \
-TestingVM.h OSConstants.h \
-getoptU.h getoptU.cpp                                                      \
-StandardOutputPort.h \
-StandardErrorPort.h \
-StandardInputPort.h \
-BlockBufferedFileBinaryOutputPort.h \
-BlockBufferedFileBinaryInputOutputPort.h \
-LineBufferedFileBinaryInputOutputPort.h \
-MultiVMProcedures.h MultiVMProcedures.cpp \
-OSCompatSocket.h OSCompatSocket.cpp \
-OSCompatThread.h OSCompatThread.cpp \
-VMFactory.cpp VMFactory.h \
-SimpleStruct.h \
-OSCompat.h OSCompat.cpp
+src/HeapObject.h                                                       \
+src/Object-inl.h                                                       \
+src/Object-accessors.h                                                 \
+src/Pair-inl.h                                                         \
+src/VM-inl.h                                                           \
+src/psyntax.h                                                          \
+src/pmatch.h                                                           \
+src/compiler-with-library.h                                            \
+src/CProcedure.h                                                       \
+src/Instruction.h                                                      \
+src/Callable.h                                                         \
+src/GenericMap.h                                                       \
+src/BinaryInputPort.h                                                  \
+src/BinaryOutputPort.h                                                 \
+src/scheme.h                                                           \
+src/ByteVector.h                                                       \
+src/HashTable.h                                                        \
+src/Pair.h                                                             \
+src/ExecutableMemory.h                                                 \
+src/LineBufferedFileBinaryOutputPort.h                                 \
+src/Stack.h                                                            \
+src/Gloc.h                         src/BinaryInputOutputPort.h         \
+src/Box.h                          src/Port.h                          \
+src/BinaryPort.h                   src/OutputPort.h                    \
+src/Codec.h                                                            \
+src/Transcoder.h                   src/Transcoder.cpp                  \
+src/ProcedureMacro.h                                                   \
+src/EqvHashTable.h                 src/EqvHashTable.cpp                \
+src/Compnum.h                      src/Compnum.cpp                     \
+src/Fixnum.h                       src/Fixnum.cpp                      \
+src/Closure.h                      src/Closure.cpp                     \
+src/UtilityProcedures.h            src/UtilityProcedures.cpp           \
+src/ProcessProcedures.h            src/ProcessProcedures.cpp           \
+src/Reader.h                       src/Reader.cpp                      \
+src/NumberReader.h                 src/NumberReader.cpp                \
+src/scheme.h                       src/scheme.cpp                      \
+src/Regexp.h                       src/Regexp.cpp                      \
+src/Symbol.h                       src/Symbol.cpp                      \
+src/VM.h                           src/VM.cpp                          \
+src/VM-Profiler.cpp                src/VM-Run.cpp                      \
+src/VM-Run.h                       src/Continuation.h                  \
+src/Scanner.h                      src/Scanner.cpp                     \
+src/NumberScanner.h                src/NumberScanner.cpp               \
+src/ByteArrayBinaryInputPort.h     src/ByteArrayBinaryInputPort.cpp    \
+src/ByteArrayBinaryOutputPort.h    src/ByteArrayBinaryOutputPort.cpp   \
+src/ScannerHelper.h                src/ScannerHelper.cpp               \
+src/Reader.tab.hpp                 src/Reader.tab.cpp                  \
+src/NumberReader.tab.hpp           src/NumberReader.tab.cpp            \
+src/FileBinaryInputPort.h          src/FileBinaryInputPort.cpp         \
+src/BufferedFileBinaryInputPort.h  src/BufferedFileBinaryInputPort.cpp \
+src/FileBinaryOutputPort.h         src/FileBinaryOutputPort.cpp        \
+src/BufferedFileBinaryOutputPort.h src/BufferedFileBinaryOutputPort.cpp\
+src/CustomBinaryInputPort.h        src/CustomBinaryInputPort.cpp       \
+src/CustomTextualInputPort.h       src/CustomTextualInputPort.cpp      \
+src/CustomTextualOutputPort.h      src/CustomTextualOutputPort.cpp     \
+src/CustomTextualInputOutputPort.h src/CustomTextualInputOutputPort.cpp\
+src/CustomBinaryInputOutputPort.h  src/CustomBinaryInputOutputPort.cpp \
+src/TextualOutputPort.h            src/TextualOutputPort.cpp           \
+src/TextualInputPort.cpp           src/TextualInputPort.h              \
+src/TranscodedTextualInputPort.cpp src/TranscodedTextualInputPort.h    \
+src/TranscodedTextualOutputPort.cpp src/TranscodedTextualOutputPort.h  \
+src/StringTextualOutputPort.h      src/StringTextualOutputPort.cpp     \
+src/StringTextualInputPort.h       src/StringTextualInputPort.cpp      \
+src/Codec.cpp                      src/Codec.h                         \
+src/UTF8Codec.cpp                  src/UTF8Codec.h                     \
+src/UTF16Codec.cpp                 src/UTF16Codec.h                    \
+src/UTF32Codec.cpp                 src/UTF32Codec.h                    \
+src/EqHashTable.h                  src/EqHashTable.cpp                 \
+src/SString.h                      src/SString.cpp                     \
+src/GenericHashTable.h             src/GenericHashTable.cpp            \
+src/Object.h                       src/Object.cpp                      \
+src/RecordTypeDescriptor.h         src/RecordTypeDescriptor.cpp        \
+src/RecordConstructorDescriptor.h  src/RecordConstructorDescriptor.cpp \
+src/Record.h                       src/Record.cpp                      \
+src/RecordProcedures.cpp           src/RecordProcedures.h              \
+src/ConditionProcedures.cpp        src/ConditionProcedures.h           \
+src/CompilerProcedures.cpp         src/CompilerProcedures.h            \
+src/HashTableProceduures.cpp       src/HashTableProceduures.h          \
+src/RegexpProcedures.cpp           src/RegexpProcedures.h              \
+src/StringProcedures.cpp           src/StringProcedures.h              \
+src/PortProcedures.cpp             src/PortProcedures.h                \
+src/ListProcedures.cpp             src/ListProcedures.h                \
+src/ErrorProcedures.cpp            src/ErrorProcedures.h               \
+src/ArithmeticProcedures.cpp       src/ArithmeticProcedures.h          \
+src/FlonumProcedures.cpp           src/FlonumProcedures.h              \
+src/BitwiseProcedures.cpp          src/BitwiseProcedures.h             \
+src/ByteVectorProcedures.cpp       src/ByteVectorProcedures.h          \
+src/SocketProcedures.cpp           src/SocketProcedures.h              \
+src/Equivalent.h                   src/Equivalent.cpp                  \
+src/CompoundCondition.h            src/CompoundCondition.cpp           \
+src/ucs4string.h                   src/ucs4string.cpp                  \
+src/Vector.h                       src/Vector.cpp                      \
+src/Fasl.h                         src/Fasl.cpp                        \
+src/Arithmetic.h                   src/Arithmetic.cpp                  \
+src/Ratnum.h                       src/Ratnum.cpp                      \
+src/Bignum.h                       src/Bignum.cpp                      \
+src/Flonum.h                       src/Flonum.cpp                      \
+src/CodeBuilder.h                  src/CodeBuilder.cpp                 \
+src/FixnumProcedures.h             src/FixnumProcedures.cpp            \
+src/Latin1Codec.h                  src/Latin1Codec.cpp                 \
+src/FFI.h                          src/FFI.cpp                         \
+src/FFIProcedures.h                src/FFIProcedures.cpp               \
+src/CustomBinaryOutputPort.h       src/CustomBinaryOutputPort.cpp      \
+src/FileBinaryInputOutputPort.h    src/FileBinaryInputOutputPort.cpp   \
+src/SocketBinaryInputOutputPort.h  src/SocketBinaryInputOutputPort.cpp \
+src/TranscodedTextualInputOutputPort.h  src/TranscodedTextualInputOutputPort.cpp   \
+src/BufferedFileBinaryInputOutputPort.h  src/BufferedFileBinaryInputOutputPort.cpp \
+src/TestingFileBinaryOutputPort.h src/TestingFileBinaryInputPort.h                 \
+src/TestingVM.h src/OSConstants.h \
+src/getoptU.h src/getoptU.cpp  \
+src/StandardOutputPort.h \
+src/StandardErrorPort.h \
+src/StandardInputPort.h \
+src/BlockBufferedFileBinaryOutputPort.h \
+src/BlockBufferedFileBinaryInputOutputPort.h \
+src/LineBufferedFileBinaryInputOutputPort.h \
+src/MultiVMProcedures.h src/MultiVMProcedures.cpp \
+src/OSCompatSocket.h src/OSCompatSocket.cpp \
+src/OSCompatThread.h src/OSCompatThread.cpp \
+src/VMFactory.cpp src/VMFactory.h \
+src/SimpleStruct.h \
+src/OSCompat.h src/OSCompat.cpp
 
 if FFI_I386
-libmosh_a_SOURCES += ffi_stub_i386.S
+libmosh_a_SOURCES += src/ffi_stub_i386.S
 endif
 
 if FFI_X86_64
-libmosh_a_SOURCES += ffi_stub_x86_64.S
+libmosh_a_SOURCES += src/ffi_stub_x86_64.S
 endif
 
 mosh_core_libraries = \
@@ -227,7 +226,6 @@ lib/clos/std-protocols/generic-invocation.ss \
 lib/srfi/private/include.sls \
 lib/srfi/private/include/compat.mosh.sls \
 lib/srfi/private/registry.sls \
-lib/srfi/private/let-opt.sls \
 lib/srfi/private/let-opt.sls \
 lib/srfi/private/platform-features.mosh.sls \
 lib/srfi/private/OS-id-features.sls \
@@ -312,25 +310,31 @@ lib/srfi/%3a99/records/syntactic.sls
 #mosh_core_fasl_libraries = $(mosh_core_libraries:.ss=.ss.fasl)
 
 datadir = @MOSH_LIB_PATH@
-data_DATA = all-tests.scm #repl.scm #tools/psyntax-r6rs/rev10_to_10/psyntax.scm
+data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
-
-PRECOMPILE_SRC   = compiler-with-library.scmc pmatch.scmc psyntax.scmc
-
-INCLUDES       = -I $(BOEHM_GC_DIR)/include -I $(ONIG_DIR)
-EXTRA_DIST     = instruction.scm vm.scm library.scm compiler.scm free-vars.scm scripts pmatch.scm test-data.scm doc repl.scm tools/psyntax-r6rs/rev10_to_10/psyntax.scm mosh.1 mosh_config.1 tools/psyntax-r6rs RELNOTE r6rs-test-suite example lib cprocedures.cpp labels.cpp all-tests.scm test call.inc.cpp ${GTEST_DIR} ffitest.c bench win mosh.vcproj mosh.sln logo r6rs-test-suite README-WINDOWS.txt README.MINGW misc
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
+EXTRA_DIST     = \
+src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
+src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
+lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
+tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
+src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
+src/ffitest.c win mosh.vcproj mosh.sln doc README misc
 
 GENERATED = \
-all-tests.scm Scanner.cpp NumberScanner.cpp psyntax.cpp  compiler-gauche.scm \
-DebugInstruction.h cprocedures.cpp      \
-labels.cpp match.cpp compiler.cpp psyntax.scmc             \
-pmatch.scmc compiler-with-library.scmc compiler-vm-cpp.scm  \
-compiler-vm.scm compiler-with-library.scm Instruction.h    \
-psyntax.h psyntax.fasl pmatch.h match.fasl                  \
-compiler-with-library.h compiler-with-library.fasl
+src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h src/compiler-gauche.scm \
+src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
+src/labels.cpp src/psyntax.scmc \
+src/pmatch.scmc src/compiler-with-library.scmc src/compiler-vm-cpp.scm \
+src/compiler-vm.scm src/compiler-with-library.scm src/Instruction.h \
+src/psyntax.h src/psyntax.scmc.fasl src/pmatch.h src/pmatch.scmc.fasl \
+src/compiler-with-library.h src/compiler-with-library.scmc.fasl \
+src/psyntax.scmc-e src/compiler-with-library.scmc-e src/pmatch.scmc-e \
+src/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
+src/Reader.tab.cpp src/Reader.tab.hpp
 
-CLEANFILES = gtest.a gtest_main.a libffitest.so.1.0
+CLEANFILES = gtest.a gtest_main.a lib/libffitest.so.1.0 src/ffitest.o
 MAINTAINERCLEANFILES = $(GENERATED)
 
 #  N.B. We don't use backend's (gensym) for following reasons.
@@ -347,20 +351,31 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # 	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
 # 	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
-# update: lib/mosh/queue.ss.mosh-fasl
-
 # when you release comment out start
 if DEVELOPER
-Reader.tab.cpp: Reader.y
+bootstrap:
+	cp -p ~/repos-mosh/trunk/mosh .
+	cp -p ~/repos-mosh/trunk/tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/psyntax/
+	$(MAKE) src/Reader.tab.cpp
+	$(MAKE) src/Instruction.h src/cprocedures.cpp
+	$(MAKE) src/NumberReader.tab.cpp
+	$(MAKE) src/pmatch.h
+	$(MAKE) src/labels.cpp
+	$(MAKE) src/psyntax.h
+	$(MAKE) src/OSConstants.h
+	$(MAKE) src/compiler-with-library.h
+	$(MAKE) src/Object-accessors.h
+
+src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
 	bison -d $< -o $@
 
-NumberReader.tab.cpp: NumberReader.y
+src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
 	bison -p "number_yy" -d $< -o $@
 
-Scanner.cpp : scanner.re
+src/Scanner.cpp : src/scanner.re
 	re2c -u $< > $@ # -d is debug option
 
-NumberScanner.cpp : NumberScanner.re
+src/NumberScanner.cpp : src/NumberScanner.re
 	re2c -cu $< > $@ # -d is debug option
 
 ## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
@@ -372,34 +387,43 @@ r6rs-test:
 	(cd r6rs-examples && ../mosh env.ss)
 
 #### Instruction.h
-Instruction.h: ./instruction.scm
-	gosh ./scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
+src/Instruction.h: src/instruction.scm
+	gosh ./misc/scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-main.cpp: psyntax.h compiler-with-library.h pmatch.h
+src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
 
-./compiler-vm-cpp.scm: ./compiler.scm free-vars-decl.scm
-	gosh ./scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+src/compiler-vm-cpp.scm: src/compiler.scm src/free-vars-decl.scm
+	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
-compiler-with-library.scmc: ./compiler-with-library.scm ./compiler-vm.scm
-	gosh ./vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+src/compiler-with-library.scmc: src/compiler-with-library.scm src/compiler-vm.scm
+	gosh src/vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $(PWD)/$@
 
-SUFFIXES: .scmc .h
+# SUFFIXES: .scmc .h
+
+src/pmatch.h: src/pmatch.scmc
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+
+src/psyntax.h: src/psyntax.scmc
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+
 
 .scmc.h:
-	mosh ./scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
-# 	(cd doc && mosh ../scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
-# 	(cd doc && mosh ../scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
+# 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-pmatch.scmc: ./pmatch.scm ./compiler-vm.scm
-	gosh ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
+	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 # we need to replace #\null => #\nul and |...| => ...
 # It is the difference between gauche and mosh.
-psyntax.scmc: tools/psyntax-r6rs/rev10_to_10/psyntax.scm ./compiler-vm.scm
-	gosh ./vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+src/psyntax.scmc: lib/psyntax/psyntax.scm ./src/compiler-vm.scm
+	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 CORE_LIBS =                 \
@@ -414,72 +438,66 @@ CORE_LIBS =                 \
 ./lib/mosh/jit/instructions.ss: ./instruction.scm
 	./mosh ./scripts/gen-insn-definitions.scm $(PWD)/$< > $@
 
-./compiler-with-library.scm: ./library.scm ./compiler-vm-cpp.scm $(CORE_LIBS)
+./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
-./free-vars-decl.scm: ./free-vars.scm
-	gosh ./scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+src/free-vars-decl.scm: src/free-vars.scm
+	gosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-./compiler-vm.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+src/compiler-vm.scm: src/compiler.scm src/free-vars-decl.scm
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-./compiler-vm-outer.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+src/compiler-vm-outer.scm: src/compiler.scm src/free-vars-decl.scm
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-./compiler-gauche.scm: ./compiler.scm free-vars-decl.scm
-	./scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+src/compiler-gauche.scm: src/compiler.scm src/free-vars-decl.scm
+	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-labels.cpp: ./instruction.scm
-	gosh ./scripts/gen-label.scm $< > $(PWD)/$@
+src/labels.cpp: src/instruction.scm
+	gosh ./misc/scripts/gen-label.scm $< > $(PWD)/$@
 
-DebugInstruction.h: instruction.scm
-	gosh ./scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
+# DebugInstruction.h: instruction.scm
+# 	gosh ./misc/scripts/gen-short-insn.scm $(PWD)/$< > $(PWD)/$@
 
-VM.cpp: cprocedures.cpp labels.cpp
+src/Object.h: src/Object-accessors.h
 
-Object.h: Object-accessors.h
+src/cprocedures.cpp: src/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
+	gosh ./misc/scripts/gen-cproc.scm > $@
 
-./cprocedures.cpp: ./free-vars-decl.scm ./scripts/gen-cproc.scm
-	gosh ./scripts/gen-cproc.scm > $@
+src/all-tests.scm: ./src/test-data.scm
+	mosh -5 ./misc/scripts/gen-test.scm $< $@
+#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
-all-tests.scm: ./test-data.scm
-	mosh -5 ./scripts/gen-test.scm $< $@
-#	echo 'run -5 scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
+src/Object-accessors.h: ./src/accessors.scm
+	./mosh ./misc/scripts/gen-accessors.scm > $@
 
-Object-accessors.h: ./accessors.scm
-	./mosh ./scripts/gen-accessors.scm > $@
-
-OSConstants.h: ./os-constants.scm
-	./mosh ./scripts/gen-os-constants.scm > $@
+src/OSConstants.h: src/os-constants.scm
+	./mosh ./misc/scripts/gen-os-constants.scm > $@
 # when you release comment out end
 endif
 
 doc:
-	./mosh scripts/gen-doc-from-r6rs.scm
+	./mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
-# 	@GOSH@ ./scripts/gen-doc.scm "manual" "doc/"
-# 	@GOSH@ ./scripts/gen-doc-index.scm "top" "doc/"
 
-
-
-.PHONY: bench doc test install
+.PHONY: doc test install
 
 bench:
-#	@GOSH@ ./scripts/bench.scm > /dev/null
-	LANG=C gosh ./scripts/bench2.scm
+#	@GOSH@ ./misc/scripts/bench.scm > /dev/null
+	LANG=C gosh ./misc/scripts/bench2.scm
 
 #### test
 check: test
 
-test: libffitest.so.1.0 ./mosh all-tests.scm
+test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
-	./mosh -5 all-tests.scm
+	./mosh -5 src/all-tests.scm
 	./mosh test/misc.scm
 	./mosh test/testing.scm
 	./mosh test/mosh-test.scm
 	./mosh test/io-error.scm
 	./mosh test/input-output-port.scm
-	./mosh test/input-port.scm
+	./mosh test/input-port.scm < test/input.txt
 	./mosh test/output-port.scm
 	./mosh test/shell.scm
 	./mosh test/record.scm
@@ -502,7 +520,7 @@ test: libffitest.so.1.0 ./mosh all-tests.scm
 	./mosh test/number.scm
 	./mosh test/cgi.scm
 	./mosh test/memcached.scm
-	(cd r6rs-test-suite && $(MAKE) $@)
+	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 
 # Builds gtest.a and gtest_main.a.
@@ -537,63 +555,75 @@ TESTS += test_object
 check_PROGRAMS += test_object
 test_object_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_object_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_object_SOURCES = ObjectTest.cpp TestingSignalHandler.cpp
+test_object_SOURCES = src/ObjectTest.cpp src/TestingSignalHandler.cpp
 test_object_LDADD = $(TEST_LDADD_)
 
 TESTS += test_vm
 check_PROGRAMS += test_vm
 test_vm_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_vm_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_vm_SOURCES = VMTest.cpp TestingVM.cpp TestingSignalHandler.cpp
+test_vm_SOURCES = src/VMTest.cpp src/TestingVM.cpp src/TestingSignalHandler.cpp
 test_vm_LDADD = $(TEST_LDADD_)
 
 TESTS += test_port
 check_PROGRAMS += test_port
 test_port_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_port_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_port_SOURCES = PortTest.cpp TestingSignalHandler.cpp
+test_port_SOURCES = src/PortTest.cpp src/TestingSignalHandler.cpp
 test_port_LDADD = $(TEST_LDADD_)
 
 TESTS += test_fasl
 check_PROGRAMS += test_fasl
 test_fasl_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_fasl_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_fasl_SOURCES = FaslTest.cpp TestingSignalHandler.cpp TestingVM.cpp
+test_fasl_SOURCES = src/FaslTest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp
 test_fasl_LDADD = $(TEST_LDADD_)
 
 TESTS += test_ffi
 check_PROGRAMS += test_ffi
-test_ffi_DEPENDENCIES = $(TEST_DEPENDENCIES_) libffitest.so.1.0
+test_ffi_DEPENDENCIES = $(TEST_DEPENDENCIES_) lib/libffitest.so.1.0
 test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_ffi_SOURCES = FFITest.cpp TestingSignalHandler.cpp TestingVM.cpp
+test_ffi_SOURCES = src/FFITest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
 TESTS += test_compat
 check_PROGRAMS += test_compat
 test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_compat_SOURCES = OSCompatTest.cpp TestingSignalHandler.cpp
+test_compat_SOURCES = src/OSCompatTest.cpp src/TestingSignalHandler.cpp
 test_compat_LDADD = $(TEST_LDADD_)
 
 TESTS += test_getopt
 check_PROGRAMS += test_getopt
 test_getopt_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_getopt_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_getopt_SOURCES = getoptUTest.cpp TestingSignalHandler.cpp
+test_getopt_SOURCES = src/getoptUTest.cpp src/TestingSignalHandler.cpp
 test_getopt_LDADD = $(TEST_LDADD_)
 
 TESTS += test_thread
 check_PROGRAMS += test_thread
 test_thread_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_thread_SOURCES = OSCompatThreadTest.cpp TestingSignalHandler.cpp
+test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :
+<<<<<<< HEAD
 	./mosh --clean-acc --disable-acc misc/empty.scm
 	./mosh -O lib/mosh/jit/offset.ss
 	$(INSTALL) -m 666 misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./mosh_config mosh-cache-dir`
 	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
 #	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./scripts/pre-compile-r6rs.scm ./scripts/pre-compile-target.scm
+=======
+	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
+	$(INSTALL) -m 666 $(top_srcdir)/misc/.mosh/prefix.txt `./mosh --clean-acc --disable-acc ./src/mosh_config mosh-cache-dir`
+	MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh $(top_srcdir)/misc/scripts/pre-compile-target.scm
+#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib ./mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
+#	MOSH_GENSYM_PREFIX=I MOSH_LOADPATH=${DESTDIR}${datadir}/lib $(DESTDIR)/@bindir@/mosh ./misc/scripts/pre-compile-r6rs.scm ./misc/scripts/pre-compile-target.scm
+>>>>>>> master
 
+# for FFI test
+lib/libffitest.so.1.0: src/ffitest.c
+	$(CC) -std=c99 -Wall -fPIC -c $< -o src/ffitest.o
+	$(CC) -Wl @SHLIB_SO_LDFLAGS@ -o $@ src/ffitest.o

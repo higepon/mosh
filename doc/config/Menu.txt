@@ -45,9 +45,6 @@ Don't Index: Files, Classes
 # --------------------------------------------------------------------------
 
 
-File: About  (no auto-title, doc/text/About.txt)
-File: Download  (doc/text/Download.txt)
-
 Group: Mosh  {
 
    File: Core  (no auto-title, doc/text/Core.txt)
@@ -65,33 +62,59 @@ Group: Mosh  {
    File: Pattern Match  (lib/match.ss)
    }  # Group: Mosh
 
-Group: R6RS  {
+Group: Doc  {
 
-   File: Naming Conventions  (doc/text/Naming.txt)
-   File: Composite library  (doc/text/Compositelibrary.txt)
-   File: Arithmetic  (doc/text/arith.tex.txt)
-   File: Base Library  (doc/text/base.tex.txt)
-   File: Bytevectors  (doc/text/bytevector.tex.txt)
-   File: Command-line access and exit values  (doc/text/programlib.tex.txt)
-   File: Condition types  (doc/text/iocond.tex.txt)
-   File: Control structures  (doc/text/control.tex.txt)
-   File: Enumerations  (doc/text/enum.tex.txt)
-   File: eval  (doc/text/eval.tex.txt)
-   File: Exceptions and conditions  (doc/text/exc.tex.txt)
-   File: File system  (doc/text/files.tex.txt)
-   File: Hashtables  (doc/text/hashtable.tex.txt)
-   File: List utilities  (doc/text/list.tex.txt)
-   File: Mutable pairs  (doc/text/setcar.tex.txt)
-   File: Mutable strings  (doc/text/stringset.tex.txt)
-   File: Port I/O  (doc/text/portio.tex.txt)
-   File: R5RS compatibility  (doc/text/r5rscompat.tex.txt)
-   File: Records  (doc/text/records.tex.txt)
-   File: Simple I/O  (doc/text/convio.tex.txt)
-   File: Sorting  (doc/text/sort.tex.txt)
-   File: syntax-case  (doc/text/syntax-case.tex.txt)
-   }  # Group: R6RS
+   File: About  (no auto-title, doc/text/About.txt)
+   File: Download  (doc/text/Download.txt)
 
-File: SRFIs  (doc/text/srfi.txt)
+   Group: R6RS  {
+
+      File: Naming Conventions  (doc/text/Naming.txt)
+      File: Composite library  (doc/text/Compositelibrary.txt)
+      }  # Group: R6RS
+
+   File: SRFIs  (doc/text/srfi.txt)
+   }  # Group: Doc
+
+Group: Mosh-0.2.0  {
+
+   Group: Doc  {
+
+      File: SearchPanel  (mosh-0.2.0/doc/html/javascript/main.js)
+
+      Group: Text  {
+
+         File: About  (mosh-0.2.0/doc/text/About.txt)
+         File: Composite library  (mosh-0.2.0/doc/text/Compositelibrary.txt)
+         File: Core  (mosh-0.2.0/doc/text/Core.txt)
+         File: Download  (mosh-0.2.0/doc/text/Download.txt)
+         File: Naming Conventions  (mosh-0.2.0/doc/text/Naming.txt)
+         File: SRFIs  (mosh-0.2.0/doc/text/srfi.txt)
+         }  # Group: Text
+
+      }  # Group: Doc
+
+   Group: Lib  {
+
+      Group: Mosh  {
+
+         File: Concurrent  (mosh-0.2.0/lib/mosh/concurrent.ss)
+         File: Configuration  (mosh-0.2.0/lib/mosh/config.ss)
+         File: Control  (mosh-0.2.0/lib/mosh/control.ss)
+         File: Database independent interface  (mosh-0.2.0/lib/mosh/dbi.ss)
+         File: File  (mosh-0.2.0/lib/mosh/file.ss)
+         File: Foreign Function Interface  (mosh-0.2.0/lib/mosh/ffi.ss)
+         File: IRC Client  (mosh-0.2.0/lib/mosh/irc/client.ss)
+         File: Pretty Printing  (mosh-0.2.0/lib/mosh/pp.ss)
+         File: Process  (mosh-0.2.0/lib/mosh/process.ss)
+         File: Socket  (mosh-0.2.0/lib/mosh/socket.ss)
+         File: Unit Testing  (mosh-0.2.0/lib/mosh/test.ss)
+         }  # Group: Mosh
+
+      File: Pattern Match  (mosh-0.2.0/lib/match.ss)
+      }  # Group: Lib
+
+   }  # Group: Mosh-0.2.0
 
 Group: Index  {
 
