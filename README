@@ -25,7 +25,7 @@
   - bison
   - autoconf/automake
 
-  % git clone git@github.com:higepon/mosh.git
+  % git clone git://github.com/higepon/mosh.git
   % cd mosh
   % autoreconf -ifv
   % ./configure --enable-developer
