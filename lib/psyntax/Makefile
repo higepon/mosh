@@ -1,4 +1,4 @@
-GIT_BRANCH_NAME=`git branch | cut -d ' ' -f 2`
+GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
 GIT_COMMIT_HEX=`git show|grep commit`
 SVN_REPOS_DIR=$(shell if [ -n "$(PSYNTAX_SVN_REPOS_DIR)" ]; then echo "$(PSYNTAX_SVN_REPOS_DIR)"; else echo "~/repos-mosh/branches"; fi)
 
