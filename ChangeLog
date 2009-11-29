@@ -1,3 +1,7 @@
+2009-11-29  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/psyntax/Makefile: Added code for saving psyntax.scm to svn.
+
 2009-11-27  higepon  <higepon@users.sourceforge.jp>
 
 	* Cleaned up top-directory. Most files are moved to src/ directory.
