@@ -1,5 +1,7 @@
 2009-11-29  higepon  <higepon@users.sourceforge.jp>
 
+	* gen-git-build.sh: Added to build git master.
+
 	* README: Added building guide.
 
 	* Makefile.am : Modified bootstrap target to fetch psyntax.scm from svn.

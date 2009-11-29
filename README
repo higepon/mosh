@@ -27,9 +27,7 @@
 
   % git clone git://github.com/higepon/mosh.git
   % cd mosh
-  % autoreconf -ifv
-  % ./configure --enable-developer
-  % make bootstrap
+  % ./gen-git-build.sh
   % make
   % make check
   % make install
