@@ -1,32 +1,6 @@
-2009-11-22  higepon  <higepon@users.sourceforge.jp>
+2009-11-29  higepon  <higepon@users.sourceforge.jp>
 
-	* scripts/gen-insn-definitions.scm: Added.
-
-	* library.scm (for-each-with-index): Added for-each-with-index to (mosh) library.
-
-	* Added instruction->integer.1TextualOutputPort.cpp (TextualOutputPort::print): Added print code for Gloc.
-
-2009-11-21  higepon  <higepon@users.sourceforge.jp>
-
-	* Rewrote disasm.
-
-	* Added closure->list, instruction->symbol and instruction?.
-
-	These are used for disasm and jit.
-
-2009-10-30  higepon  <higepon@users.sourceforge.jp>
-
-	* JIT-ted (fib n) works.
-
-2009-10-28  higepon  <higepon@users.sourceforge.jp>
-
-	* lib/mosh/jit/jit-impl.ss (ext-reg?): Fixed bug.
-
-2009-10-26  higepon  <higepon@users.sourceforge.jp>
-
-	* JIT-ted (fib 1) => 1 works.
-
-	* .gdbinit: Added for debugging JIT.
+	* lib/psyntax/Makefile: Added code for saving psyntax.scm to svn.
 
 2009-11-27  higepon  <higepon@users.sourceforge.jp>
 
@@ -46,6 +20,22 @@
 
 	SAVE_REGISTERS used to save sp_ and fp_, but this will be broken when stack is expanded automatically.
 	So we save the offset of them.
+
+2009-11-22  higepon  <higepon@users.sourceforge.jp>
+
+	* scripts/gen-insn-definitions.scm: Added.
+
+	* library.scm (for-each-with-index): Added for-each-with-index to (mosh) library.
+
+	* Added instruction->integer.1TextualOutputPort.cpp (TextualOutputPort::print): Added print code for Gloc.
+
+2009-11-21  higepon  <higepon@users.sourceforge.jp>
+
+	* Rewrote disasm.
+
+	* Added closure->list, instruction->symbol and instruction?.
+
+	These are used for disasm and jit.
 
 2009-11-17  higepon  <higepon@users.sourceforge.jp>
 
@@ -102,6 +92,20 @@
 	* Compnum.h : Fixed expt for exact numbers. Issue 111 pointed out by Iceland.Gyrfalcon.
 
 	* lib/mosh/ffi.ss : Added size-of-float and size-of-double. Issue 108 pointed out by mrc.mgg.
+
+2009-10-30  higepon  <higepon@users.sourceforge.jp>
+
+	* JIT-ted (fib n) works.
+
+2009-10-28  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/jit-impl.ss (ext-reg?): Fixed bug.
+
+2009-10-26  higepon  <higepon@users.sourceforge.jp>
+
+	* JIT-ted (fib 1) => 1 works.
+
+	* .gdbinit: Added for debugging JIT.
 
 2009-10-23  higepon  <higepon@users.sourceforge.jp>
 
