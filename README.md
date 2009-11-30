@@ -11,19 +11,15 @@ Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downl
 	% make check
 	% make install
 
-On Windows or FreeBSD platforms, see http://mosh.monaos.org/files/doc/text/Download-txt.html.
+On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
 
 # Building the cutting-edge Mosh
 Be sure to you have installed :
 
-- Mosh 0.2.0 or higher
-  - (http://code.google.com/p/mosh-scheme/downloads/list)
-- Gauche
-  - http://practical-scheme.net/gauche/ or apt-get install gauche)
-- re2c 0.13.5 or higher
-  - http://re2c.org/ or apt-get install re2c
+- [Mosh 0.2.0](http://code.google.com/p/mosh-scheme/downloads/list) or higher
+- [Gauche](http://practical-scheme.net/gauche/)
+- [re2c](http://re2c.org/) 0.13.5 or higher
 - bison
-  - apt-get install bison
 - autoconf 2.63 or higher
 - automake
 - libtool
@@ -31,6 +27,8 @@ Be sure to you have installed :
 - subversion
 
 	% git clone git://github.com/higepon/mosh.git
+
+
 	% cd mosh
 	% ./gen-git-build.sh
 	% make
