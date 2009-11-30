@@ -6,10 +6,10 @@ See detailed information on http://mosh.monaos.org.
 # Building and Installing Mosh
 Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downloads/list).
 
-	% ./configure
-	% make
-	% make check
-	% make install
+    % ./configure
+    % make
+    % make check
+    % make install
 
 On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
 
@@ -25,11 +25,9 @@ Be sure to you have installed :
 - [libtool](http://www.gnu.org/software/libtool/)
 - [subversion](http://subversion.tigris.org/)
 
-
-	% git clone git://github.com/higepon/mosh.git
-	% cd mosh
-	% ./gen-git-build.sh
-	% make
-	% make check
-	% make install
-
+    % git clone git://github.com/higepon/mosh.git
+    % cd mosh
+    % ./gen-git-build.sh
+    % make
+    % make check
+    % make install
