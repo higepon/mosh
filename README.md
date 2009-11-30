@@ -14,7 +14,7 @@ Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downl
 On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/text/Download-txt.html).
 
 # Building the cutting-edge Mosh
-Be sure to you have installed :
+## Requirements
 
 - [Mosh 0.2.0](http://code.google.com/p/mosh-scheme/downloads/list) or higher
 - [Gauche](http://practical-scheme.net/gauche/)
@@ -24,8 +24,7 @@ Be sure to you have installed :
 - [automake](http://www.gnu.org/software/automake/)
 - [libtool](http://www.gnu.org/software/libtool/)
 - [subversion](http://subversion.tigris.org/)
-
-
+## Building
 
     % git clone git://github.com/higepon/mosh.git
     % cd mosh
