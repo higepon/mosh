@@ -24,6 +24,7 @@ On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/te
 - [automake](http://www.gnu.org/software/automake/)
 - [libtool](http://www.gnu.org/software/libtool/)
 - [subversion](http://subversion.tigris.org/)
+
 ## Building
 
     % git clone git://github.com/higepon/mosh.git
