@@ -25,9 +25,11 @@ Be sure to you have installed :
 - [libtool](http://www.gnu.org/software/libtool/)
 - [subversion](http://subversion.tigris.org/)
 
+
 	% git clone git://github.com/higepon/mosh.git
 	% cd mosh
 	% ./gen-git-build.sh
 	% make
 	% make check
 	% make install
+
