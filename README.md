@@ -4,7 +4,7 @@ The current release of Mosh supports all of the features R6RS.
 See detailed information on http://mosh.monaos.org.
 
 # Building and Installing Mosh
-Get a release of Mosh from http://code.google.com/p/mosh-scheme/downloads/list.
+Get a release of Mosh from [Download](http://code.google.com/p/mosh-scheme/downloads/list).
 
 	% ./configure
 	% make
@@ -17,7 +17,7 @@ On Windows or FreeBSD platforms, see http://mosh.monaos.org/files/doc/text/Downl
 Be sure to you have installed :
 
 - Mosh 0.2.0 or higher
-  - http://code.google.com/p/mosh-scheme/downloads/list)
+  - (http://code.google.com/p/mosh-scheme/downloads/list)
 - Gauche
   - http://practical-scheme.net/gauche/ or apt-get install gauche)
 - re2c 0.13.5 or higher
@@ -36,4 +36,3 @@ Be sure to you have installed :
 	% make
 	% make check
 	% make install
-
