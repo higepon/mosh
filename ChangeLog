@@ -1,5 +1,7 @@
 2009-11-30  higepon  <higepon@users.sourceforge.jp>
 
+	* Fixed missing canonicalize of Ratnum, Issue 116 pointed out by mrc.mgg.
+
 	* README.md: Wrote on markdown format for github.
 
 	* src/UTF16Codec.cpp : Fixed utf16->string and string->utf16.

@@ -435,14 +435,18 @@ Object Object::makeCompoundCondition(Object conditions)
 
 Object Object::makeRatnum(int numerator, int denominator)
 {
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<intptr_t>(new Ratnum(numerator, denominator)))));
+    return Object::makeRatnum(new Ratnum(numerator, denominator));
 }
 
 Object Object::makeRatnum(Ratnum* r)
 {
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
-                                                        reinterpret_cast<intptr_t>(r))));
+    Object denominator = r->denominator();
+    if (denominator.isFixnum() && denominator.toFixnum() == 1) {
+        return r->numerator();
+    } else {
+        return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Ratnum,
+                                                                reinterpret_cast<intptr_t>(r))));
+    }
 }
 
 Object Object::makeCompnum(Object real, Object imag)
