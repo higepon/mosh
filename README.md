@@ -19,16 +19,13 @@ Be sure to you have installed :
 - [Mosh 0.2.0](http://code.google.com/p/mosh-scheme/downloads/list) or higher
 - [Gauche](http://practical-scheme.net/gauche/)
 - [re2c](http://re2c.org/) 0.13.5 or higher
-- bison
-- autoconf 2.63 or higher
-- automake
-- libtool
-   - apt-get install libtool
-- subversion
+- [bison](http://www.gnu.org/software/bison/)
+- [autoconf](http://www.gnu.org/software/autoconf/) 2.63 or higher
+- [automake](http://www.gnu.org/software/automake/)
+- [libtool](http://www.gnu.org/software/libtool/)
+- [subversion](http://subversion.tigris.org/)
 
 	% git clone git://github.com/higepon/mosh.git
-
-
 	% cd mosh
 	% ./gen-git-build.sh
 	% make
