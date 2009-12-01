@@ -1,3 +1,7 @@
+2009-12-01  higepon  <higepon@users.sourceforge.jp>
+
+	* configure.ac: Added AM_INIT_AUTOMAKE(foreign). Removed README, AUTHORS and NEWS.
+
 2009-11-30  higepon  <higepon@users.sourceforge.jp>
 
 	* Fixed missing canonicalize of Ratnum, Issue 116 pointed out by mrc.mgg.
