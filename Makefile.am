@@ -347,9 +347,11 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 # when you release comment out start
 if DEVELOPER
+GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
+
 bootstrap:
-	cp -p ~/repos-mosh/branches/jit/mosh .
-	cp -p ~/repos-mosh/branches/jit/tools/psyntax-r6rs/rev10_to_10/psyntax.scm lib/psyntax/
+	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
+	cp -p lib/psyntax/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm lib/psyntax/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
@@ -463,15 +465,15 @@ src/all-tests.scm: ./src/test-data.scm
 #	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
 
 src/Object-accessors.h: ./src/accessors.scm
-	./mosh ./misc/scripts/gen-accessors.scm > $@
+	mosh ./misc/scripts/gen-accessors.scm > $@
 
 src/OSConstants.h: src/os-constants.scm
-	./mosh ./misc/scripts/gen-os-constants.scm > $@
+	mosh ./misc/scripts/gen-os-constants.scm > $@
 # when you release comment out end
 endif
 
 doc:
-	./mosh misc/scripts/gen-doc-from-r6rs.scm
+	mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
 .PHONY: doc test install

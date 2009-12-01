@@ -1114,6 +1114,40 @@
 (define (u8*->c-procedure+retq lst)
   (u8-list->c-procedure (append lst (assemble '((retq))))))
 
+;; Instruction is just a serialized list
+;; We convert the list to a list of instruction packet.
+;; (CONST 3 PUSH FRAME 3) => (((CONST 3) . 0) ((PUSH) . 2) ((FRAME 3). 3))
+(define (pack-instruction lst)
+  (let loop ([lst lst]
+             [accum '()]
+             [packed '()])
+    (cond
+     [(null? lst)
+      (let1 packed (reverse (cons (reverse accum) packed))
+        (map-accum
+         (lambda (x seed) (values (cons x seed) (+ seed (length x))))
+         0
+         packed))]
+     [(instruction? (car lst))
+      (loop (cdr lst)
+            (cons (car lst) '())
+            (if (null? accum) packed (cons (reverse accum) packed)))]
+     [else
+      (loop (cdr lst)
+            (cons (car lst) accum)
+            packed)])))
+
+(define (map-accum proc seed lst)
+  (let loop ([lst lst]
+             [accum '()]
+             [seed seed])
+    (cond
+     [(null? lst) (values (reverse accum) seed)]
+     [else
+      (let-values (([a s] (proc (car lst) seed)))
+        (loop (cdr lst) (cons a accum) s))])))
+
+;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (closure->c-procedure closure)
   (let loop ([code (closure->list closure)]
@@ -1131,7 +1165,32 @@
      [else
       (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
 
+(define (collect-labels lst)
+  (let loop ([i 0]
+             [lst lst]
+             [ret '()])
+    (cond
+     [(null? lst) (list-sort (lambda (x y) (> (cdr x) (cdr y))) ret)]
+     [else
+      (match (caar lst)
+        [((or 'BRANCH_NOT_LT 'BT) x)
+         (loop (+ i (length (caar lst))) (cdr lst) (cons (cons (gensym) (+ x i 1)) ret))]
+        [else
+         (loop (+ i (length (caar lst))) (cdr lst) ret)])])))
 
+(define (insert-labels lst labels)
+  (let loop ([labels labels]
+             [lst lst]
+             [ret '()])
+    (cond
+     [(null? lst)
+      (unless (null? labels)
+        (error 'insert-labels "there are unresolved labels" labels))
+        (reverse ret)]
+     [(and (not (null? labels)) (= (cdar labels) (cdar lst)))
+      (loop (cdr labels) (cdr lst) (append (list (car lst) (car labels)) ret))]
+     [else
+      (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
   (register-insn-dispatch-table $CLOSURE CLOSURE)

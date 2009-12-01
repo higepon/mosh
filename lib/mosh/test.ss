@@ -410,7 +410,6 @@
       [(_ expr)
        #'(test-cmp 'expr eq? (lambda () expr) '())])))
 
-
 (define-syntax with-color
   (lambda (x)
     (syntax-case x ()
@@ -444,7 +443,7 @@
         [('unexpected expr exception)
          (format out "\n  ERROR : ~s\n~a\n" expr (exception->string exception))]
         [('compare-error expr expected actual)
-         (format out "  ~s : expected ~a, actual ~a\n" expr expected actual)]
+         (format out "  ~s : expected ~s, actual ~s\n" expr expected actual)]
         [('failure message)
          (format out "  FAILURE : ~a\n" message)]
         [('error-not-raised expr pred)

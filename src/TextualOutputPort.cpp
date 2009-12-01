@@ -112,10 +112,24 @@ void TextualOutputPort::putString(String* str)
     putString(str->data());
 }
 
-void TextualOutputPort::putCharHandleSpecial(ucs4char c)
+void TextualOutputPort::putCharHandleSpecial(ucs4char c, bool inString)
 {
-    if (0 == c) {
-        putString(UC("\\x0;"));
+    const int ASCII_SPC = 32;
+    const int ASCII_DEL = 127;
+    if (c < ASCII_SPC ||
+        c == ASCII_DEL ||
+        c == 0x80 ||
+        c == 0xff ||
+        c == 0xD7FF ||
+        c == 0xE000 ||
+        c == 0x10FFFF) { // todo
+        char buf[32];
+        if (inString) {
+            snprintf(buf, sizeof(buf), "\\x%X;", c);
+        } else {
+            snprintf(buf, sizeof(buf), "x%X;", c);
+        }
+        putString(ucs4string::from_c_str(buf));
     } else {
         putChar(c);
     }
@@ -124,7 +138,7 @@ void TextualOutputPort::putCharHandleSpecial(ucs4char c)
 void TextualOutputPort::putString(const ucs4string& s)
 {
     for (ucs4string::size_type i = 0; i < s.size(); i++) {
-        putCharHandleSpecial(s[i]);
+        putChar(s[i]);
     }
 }
 
@@ -132,7 +146,7 @@ void TextualOutputPort::putString(const char* s)
 {
     const int len = strlen(s);
     for (int i = 0; i < len; i++) {
-        putCharHandleSpecial(s[i]);
+        putCharHandleSpecial(s[i], true);
     }
 }
 
@@ -298,7 +312,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(buf);
     } else if (o.isChar()) {
         if (isHumanReadable) {
-            putCharHandleSpecial(o.toChar());
+            putCharHandleSpecial(o.toChar(), false);
         } else { // isHumanReadable = false
             putString(UC("#\\"));
             ucs4char c = o.toChar();
@@ -340,7 +354,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                 break;
 
             default:
-                putCharHandleSpecial(c);
+                putCharHandleSpecial(c, false);
             }
         }
     } else if (o.isString()) {
@@ -394,7 +408,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                     putChar(DOUBLE_QUOTE);
                     break;
                 default:
-                    putCharHandleSpecial(ch);
+                    putCharHandleSpecial(ch, true);
                 }
             }
             putChar(DOUBLE_QUOTE);

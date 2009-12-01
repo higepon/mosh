@@ -52,7 +52,7 @@ public:
     virtual void flush()                   = 0;
     virtual Transcoder* transcoder() const = 0;
 
-    virtual void putCharHandleSpecial(ucs4char c);
+    virtual void putCharHandleSpecial(ucs4char c, bool inString);
 
     // template method
     virtual void putString(String* str);

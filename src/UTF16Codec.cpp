@@ -90,14 +90,17 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         put2byte(buf, ch, isLittleEndian_);
         return 2;
     } else {
-        const int u = (ch >> 16);
-        const int w = u - 1;
-        const int part1 = (ch >> 10) & 0x63;
-        const int part2 = u & 1023;
-        const uint16_t val1 = (54 << 10) | (w << 6) | part1;
-        const uint16_t val2 = (55 << 10) | part2;
-        put2byte(buf + 0, val1, isLittleEndian_);
-        put2byte(buf + 2, val2, isLittleEndian_);
+        // http://unicode.org/faq/utf_bom.html#utf16-3
+        const uint16_t HI_SURROGATE_START = 0xD800;
+        uint16_t X = (uint16_t)ch;
+        ucs4char U = (ch >> 16) & ((1 << 5) - 1);
+        uint16_t W = (uint16_t) U - 1;
+        uint16_t HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
+        const uint16_t LO_SURROGATE_START = 0xDC00;
+        X = (uint16_t)ch;
+        uint16_t LoSurrogate = (uint16_t) (LO_SURROGATE_START | X & ((1 << 10) - 1));
+        put2byte(buf + 0, HiSurrogate, isLittleEndian_);
+        put2byte(buf + 2, LoSurrogate, isLittleEndian_);
         return 4;
     }
 }
@@ -153,10 +156,14 @@ retry:
         decodeError();
     }
     const uint16_t val2 = isLittleEndian_ ? ((d << 8) | c) : ((c << 8) | d);
-    const int u = ((val1 >> 6) & 0x0D) + 1;
-    const int part1 = val1 & 63;
-    const int part2 = val2 & 1023;
-    return (u << 16) | (part1 << 10) | part2;
+    // http://unicode.org/faq/utf_bom.html#utf16-3
+    uint16_t hi = val1;
+    uint16_t lo = val2;
+    ucs4char X = (hi & ((1 << 6) -1)) << 10 | lo & ((1 << 10) -1);
+    ucs4char W = (hi >> 6) & ((1 << 5) - 1);
+    ucs4char U = W + 1;
+    ucs4char C = U << 16 | X;
+    return C;
 }
 
 int UTF16Codec::checkBOM(ByteVector* bytevector)

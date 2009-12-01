@@ -620,6 +620,50 @@
     (test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
     (test-equal '(leaq rdx (& rax -8)) (gas->sassy "leaq    -8(%rax), %rdx"))
 
+
+(display (insert-labels '(((CLOSURE 36 1 #f 0 11 (#f bC1@fib bC3@n)) . 0)
+  ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 7)
+  ((BRANCH_NOT_LT 5) . 10)
+  ((CONSTANT 1) . 12)
+  ((RETURN 1) . 14)
+  ((FRAME 8) . 16)
+  ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 18)) '((hoge . 16))))
+(newline)
+(test-equal 16 (cdar
+ (collect-labels
+  '(((CLOSURE 36 1 #f 0 11 (#f bC1@fib bC3@n)) . 0)
+  ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 7)
+  ((BRANCH_NOT_LT 5) . 10)
+  ((CONSTANT 1) . 12)
+  ((RETURN 1) . 14)
+  ((FRAME 8) . 16)
+  ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 18)))))
+
+
+(test-equal '(
+              ((CLOSURE 36 1 #f 0 11 (#f bC1@fib bC3@n)) . 0)
+              ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 7)
+              ((BRANCH_NOT_LT 5) . 10)
+              ((CONSTANT 1) . 12)
+              ((RETURN 1) . 14)
+              ((FRAME 8) . 16)
+              ((REFER_LOCAL_PUSH_CONSTANT 0 2) . 18))
+            (pack-instruction
+             '(CLOSURE 36 1 #f 0 11 (#f bC1@fib bC3@n)
+              REFER_LOCAL_PUSH_CONSTANT 0 2
+              BRANCH_NOT_LT 5
+              CONSTANT 1
+              RETURN 1
+              FRAME 8
+              REFER_LOCAL_PUSH_CONSTANT 0 2)))
+
+(test-equal '((((a) . 0) ((b c) . 1) ((d e f) . 3)) 6)
+            (let-values (([accum seed] (map-accum
+                                        (lambda (x seed) (values (cons x seed) (+ seed (length x))))
+                                        0
+                                        '((a) (b c) (d e f)))))
+              (list accum seed)))
+
     ;; jit
     (make-dispatch-table)
     (display (closure->c-procedure fib)))
