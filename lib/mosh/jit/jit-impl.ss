@@ -1150,20 +1150,36 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (closure->c-procedure closure)
-  (let loop ([code (closure->list closure)]
-             [insn-set '()]
-             [insn-set* '()])
-    (cond
-     [(null? code) (assemble (apply append (reverse insn-set*)))]
-     [(and (pair? (cdr code)) (instruction? (cadr code)))
-      (let1 insn (reverse (cons (car code) insn-set))
-        ;; insn = (instruction arg1 arg2 arg3 ...)
-        (loop (cdr code)
-              '()
-              (cons (apply (vector-ref insn-dispatch-table (instruction->integer (car insn))) (cdr insn))
-                    insn-set*)))]
-     [else
-      (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
+  (let* ([insn* (pack-instruction (closure->list closure))]
+        [label* (collect-labels insn*)])
+    (let1 insn* (insert-labels insn* label*)
+      (let1 asm* (map (lambda (insn)
+             (match (car insn)
+               [('label . x) `((label . ,x))]
+               [else
+                (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
+                       (cdar insn))]))
+                      insn*)
+                (display insn*)
+        (display asm*)
+        (assemble (apply append asm*))
+      ))))
+
+
+;;   (let loop ([code (closure->list closure)]
+;;              [insn-set '()]
+;;              [insn-set* '()])
+;;     (cond
+;;      [(null? code) (assemble (apply append (reverse insn-set*)))]
+;;      [(and (pair? (cdr code)) (instruction? (cadr code)))
+;;       (let1 insn (reverse (cons (car code) insn-set))
+;;         ;; insn = (instruction arg1 arg2 arg3 ...)
+;;         (loop (cdr code)
+;;               '()
+;;               (cons (apply (vector-ref insn-dispatch-table (instruction->integer (car insn))) (cdr insn))
+;;                     insn-set*)))]
+;;      [else
+;;       (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
 
 (define (collect-labels lst)
   (let loop ([i 0]
@@ -1172,11 +1188,13 @@
     (cond
      [(null? lst) (list-sort (lambda (x y) (> (cdr x) (cdr y))) ret)]
      [else
-      (match (caar lst)
-        [((or 'BRANCH_NOT_LT 'BT) x)
-         (loop (+ i (length (caar lst))) (cdr lst) (cons (cons (gensym) (+ x i 1)) ret))]
-        [else
-         (loop (+ i (length (caar lst))) (cdr lst) ret)])])))
+      (let1 insn (caar lst)
+        (if (eq? (instruction->symbol (car insn)) 'BRANCH_NOT_LT)
+            (let ([label `(label ,(gensym))]
+                  [offset (cadr insn)])
+              (set-car! (cdr insn) `(label ,(gensym))) ;; ugly
+              (loop (+ i (length (caar lst))) (cdr lst) (cons `((label ,(gensym)) . ,(+ offset i 1)) ret)))
+            (loop (+ i (length (caar lst))) (cdr lst) ret)))])))
 
 (define (insert-labels lst labels)
   (let loop ([labels labels]
@@ -1198,7 +1216,11 @@
   (register-insn-dispatch-table $CONSTANT CONSTANT)
   (register-insn-dispatch-table $REFER_LOCAL_PUSH REFER_LOCAL_PUSH)
   (register-insn-dispatch-table $REFER_LOCAL_PUSH_CONSTANT REFER_LOCAL_PUSH_CONSTANT)
-  (register-insn-dispatch-table $BRANCH_NOT_LT (lambda (offset) (BRANCH_NOT_LT (gensym))))
+  (register-insn-dispatch-table $BRANCH_NOT_LT (lambda (label)
+                                                 (match label
+                                                   [('label dst)
+                                                    (BRANCH_NOT_LT dst)]
+                                                   [else (error 'BRANCH_NOT_LT "label expeced")])))
   (register-insn-dispatch-table $RETURN RETURN)
   (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)

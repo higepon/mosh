@@ -7,6 +7,7 @@
           (srfi :26)
           (system)
           (mosh)
+          (rnrs mutable-pairs)
           (only (srfi :1) append-map drop-right)
           (only (srfi private include) include/resolve))
 
