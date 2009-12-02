@@ -1,3 +1,7 @@
+2009-12-03  higepon  <higepon@users.sourceforge.jp>
+
+	* misc/scripts/gen-free-vars-decl.scm: .mjt rewrote for Mosh.
+
 2009-12-01  higepon  <higepon@users.sourceforge.jp>
 
 	* configure.ac: Added AM_INIT_AUTOMAKE(foreign). Removed README, AUTHORS and NEWS.

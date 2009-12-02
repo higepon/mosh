@@ -433,7 +433,7 @@ CORE_LIBS =                 \
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm
-	gosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
 src/compiler-vm.scm: src/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
