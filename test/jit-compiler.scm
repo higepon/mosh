@@ -288,6 +288,6 @@
     (receive (rax rbx rcx rdx) (cpuid i #t)
       (format #;#t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
 
-(compile fib)
+(display ((compile fib) 3))
 
 (test-results)

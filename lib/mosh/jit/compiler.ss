@@ -802,7 +802,7 @@
 ;; JIT compiler
 (define (compile closure)
   (let* ([insn* (pack-instruction (closure->list closure))]
-        [label* (collect-labels insn*)])
+        [label* (collect-labels! insn*)])
     (let1 insn* (insert-labels insn* label*)
       (let1 asm* (map (lambda (insn)
              (match (car insn)
@@ -811,11 +811,7 @@
                 (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                        (cdar insn))]))
                       insn*)
-                (display insn*)
-        (display asm*)
-        (assemble (apply append asm*))
-      ))))
-
+        (u8-list->c-procedure (assemble (apply append asm*)))))))
 
 ;;   (let loop ([code (closure->list closure)]
 ;;              [insn-set '()]
@@ -832,7 +828,9 @@
 ;;      [else
 ;;       (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
 
-(define (collect-labels lst)
+;; N.B.
+;;   this procedure will set-car! to the lst.
+(define (collect-labels! lst)
   (let loop ([i 0]
              [lst lst]
              [ret '()])
@@ -843,8 +841,8 @@
         (if (eq? (instruction->symbol (car insn)) 'BRANCH_NOT_LT)
             (let ([label `(label ,(gensym))]
                   [offset (cadr insn)])
-              (set-car! (cdr insn) `(label ,(gensym))) ;; ugly
-              (loop (+ i (length (caar lst))) (cdr lst) (cons `((label ,(gensym)) . ,(+ offset i 1)) ret)))
+              (set-car! (cdr insn) label) ;; ugly
+              (loop (+ i (length (caar lst))) (cdr lst) (cons `(,label . ,(+ offset i 1)) ret)))
             (loop (+ i (length (caar lst))) (cdr lst) ret)))])))
 
 (define (insert-labels lst labels)
