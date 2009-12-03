@@ -197,7 +197,9 @@ void Transcoder::putChar(BinaryOutputPort* port, ucs4char c)
 
 void Transcoder::unGetChar(ucs4char c)
 {
-    if (EOF == c) return;
+    if (EOF == c) {
+        return;
+    }
     buffer_ += c;
     if (c == EolStyle(LF)) {
         lineNo_--;
@@ -237,7 +239,7 @@ ucs4char Transcoder::getChar(BinaryInputPort* port)
     case EolStyle(NEL):
     case EolStyle(LS):
     {
-            lineNo_++;
+        lineNo_++;
         return EolStyle(LF);
     }
     case EolStyle(CR):

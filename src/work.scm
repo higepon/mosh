@@ -1,2 +1,10 @@
+;;;!mosh
+
 (import (rnrs))
-(display "\x0;\x1;\x80;\xFF;\xD7FF;\xE000;\x10FFFF;")
+(define b 2)
++-3
+(define a 3)
+;;; end of file
+;; Local Variables:
+;; coding: utf-8-unix
+;; End:

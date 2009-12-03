@@ -1,5 +1,6 @@
 2009-12-03  higepon  <higepon@users.sourceforge.jp>
 
+	* src/scanner.re (Scanner::currentToken): Fixed a buffer over flow bug. Issue 119 pointed out by mrc.mgg.
 
 	* lib/psyntax/psyntax/main.ss (lambda): Changed a behavior of default current-exception-handler. Issue 117 pointed out by mrc.mgg.
 

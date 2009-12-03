@@ -46,7 +46,7 @@ public:
     void fill(int n);
     void emptyBuffer();
     int scan(YYSTYPE* yylval);
-    ucs4char* currentToken() const;
+    ucs4string currentToken() const;
 
 private:
 
