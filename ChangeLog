@@ -1,5 +1,8 @@
 2009-12-03  higepon  <higepon@users.sourceforge.jp>
 
+
+	* lib/psyntax/psyntax/main.ss (lambda): Changed a behavior of default current-exception-handler. Issue 117 pointed out by mrc.mgg.
+
 	* misc/scripts/gen-free-vars-decl.scm: .mjt rewrote for Mosh.
 
 2009-12-01  higepon  <higepon@users.sourceforge.jp>
