@@ -85,7 +85,6 @@ Object scheme::objTointegerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("obj->integer");
     checkArgumentLength(1);
-    printf("val=%x\n", argv[0].val);
     return Bignum::makeIntegerFromUintprt_t(argv[0].val);
 }
 

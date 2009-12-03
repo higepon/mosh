@@ -516,6 +516,9 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/number.scm
 	./mosh test/cgi.scm
 	./mosh test/memcached.scm
+	./mosh test/jit-assembler.scm
+	./mosh test/jit-compiler.scm
+	./mosh test/jit-util.scm
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 

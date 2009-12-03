@@ -1,3 +1,7 @@
+2009-12-03  higepon  <higepon@users.sourceforge.jp>
+
+	* Broke build dependencies on JIT library.
+
 2009-11-30  higepon  <higepon@users.sourceforge.jp>
 
 	* Fixed missing canonicalize of Ratnum, Issue 116 pointed out by mrc.mgg.
