@@ -130,3 +130,5 @@ doc/html/
 gc-7.1/libatomic_ops
 lib/psyntax/psyntax.scm
 mosh-0.2.0.tar.g
+lib/psyntax/psyntax.jit/
+test_jit_stack

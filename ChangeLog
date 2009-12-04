@@ -1,3 +1,7 @@
+2009-12-04  higepon  <higepon@users.sourceforge.jp>
+
+	* Added JitStack which is base of showing stack trace of Jited procedure.
+
 2009-12-03  higepon  <higepon@users.sourceforge.jp>
 
 	* Broke build dependencies on JIT library.

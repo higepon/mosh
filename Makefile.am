@@ -23,7 +23,7 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 man_MANS = doc/mosh.1 doc/mosh_config.1
 
 if DEVELOPER
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
+bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread test_jit_stack
 else
 bin_PROGRAMS = mosh
 endif
@@ -51,6 +51,7 @@ endif
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
+src/JitStack.h                                                         \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -184,7 +185,9 @@ endif
 
 mosh_core_libraries = \
 lib/mosh/jit.ss \
-lib/mosh/jit/jit-impl.ss \
+lib/mosh/jit/compiler.ss \
+lib/mosh/jit/vm.ss \
+lib/mosh/jit/assembler.ss \
 lib/mosh/jit/instructions.ss \
 lib/match.ss \
 lib/memcached.ss \
@@ -605,6 +608,14 @@ test_thread_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
 test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp
 test_thread_LDADD = $(TEST_LDADD_)
+
+TESTS += test_jit_stack
+check_PROGRAMS += test_jit_stack
+test_jit_stack_DEPENDENCIES = $(TEST_DEPENDENCIES_)
+test_jit_stack_CXXFLAGS = $(TEST_CXXFLAGS_)
+test_jit_stack_SOURCES = src/JitStackTest.cpp src/TestingSignalHandler.cpp
+test_jit_stack_LDADD = $(TEST_LDADD_)
+
 
 install-data-hook :
 	./mosh --clean-acc --disable-acc $(top_srcdir)/misc/empty.scm
