@@ -27,6 +27,7 @@ On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/te
 
 ### auto tools
 Following autotools version works.
+
 - libtool 2.2.6b, autoconf 2.65 and automake 1.11.
 - libtool 2.2.6a, autoconf 2.63 and automake 1.10.
 
