@@ -42,6 +42,7 @@
 #include "OSCompat.h"
 #include <gmp.h>
 #include "OSCompatThread.h"
+#include "ErrorProcedures.h"
 
 using namespace scheme;
 
@@ -105,6 +106,34 @@ BOOL WINAPI handler(DWORD ctrlChar)
 #define srandom srand
 #endif
 
+extern void jitStackShowTrace();
+
+static void signal_handler(int signo)
+{
+    printf("signal=%d\n", signo);
+    jitStackShowTrace();
+    exit(-1);
+}
+
+static void setSignalHandler()
+{
+    struct sigaction act;
+    act.sa_handler = &signal_handler; // set signal_handler
+    act.sa_flags = SA_RESTART;        // restart system call after signal handler
+    if (sigaction(SIGSEGV, &act, NULL) != 0) {
+        fprintf(stderr, "setSignalHandler sigaction failed\n");
+        exit(-1);
+    }
+   if (sigaction(SIGBUS, &act, NULL) != 0) {
+        fprintf(stderr, "setSignalHandler sigaction failed\n");
+        exit(-1);
+    }
+   if (sigaction(SIGILL, &act, NULL) != 0) {
+        fprintf(stderr, "setSignalHandler sigaction failed\n");
+        exit(-1);
+    }
+}
+
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.
@@ -134,6 +163,8 @@ void mosh_init()
 #endif
     initOSConstants();
 
+    // For Jit compiler, we handle SIGSEGV.
+    setSignalHandler();
 //     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
 //     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
 //         // 'A', 'B' and 'C' are reserved for psyntax expansion

@@ -35,6 +35,7 @@
 #include "scheme.h"
 #include <setjmp.h>
 #include "Instruction.h"
+#include "JitStack.h"
 #include "EqHashTable.h"
 
 #ifdef _MSC_VER
@@ -220,6 +221,11 @@ public:
         return callBackTrampolines_->ref(Object::makeFixnum(uid), Object::False);
     }
 
+    JitStack* jitStack()
+    {
+        return &jitStack_;
+    }
+
 protected:
     virtual int exit(int status)
     {
@@ -336,6 +342,7 @@ protected:
     Object dynamicWinders_;
     EqHashTable* callBackTrampolines_;
     uintptr_t callBackTrampolinesUid_;
+    JitStack jitStack_;
 };
 
 } // namespace scheme

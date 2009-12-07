@@ -50,8 +50,9 @@ public:
 
     ucs4string getTrace()
     {
+        const int MAX_TRACE = 10;
         ucs4string trace;
-        while (!stack_.empty()) {
+        for (int i = 0; i < MAX_TRACE && !stack_.empty(); i++) {
             gc_vector<int>::iterator it = stack_.end();
             it--;
             trace += ucs4string(Instruction::toString(Object::makeInstruction(*it).val));

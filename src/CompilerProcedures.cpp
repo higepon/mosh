@@ -48,6 +48,7 @@
 #include "ExecutableMemory.h"
 #include "Bignum.h"
 #include "CProcedure.h"
+#include "MultiVMProcedures.h"
 
 using namespace scheme;
 
@@ -115,6 +116,19 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
     return Object::makeCProcedure(((Object (*)(VM* vm, int, const Object*))address));
 }
 
+void jitStackPush(intptr_t instructionNo)
+{
+    JitStack* jitStack = currentVM()->jitStack();
+    jitStack->push(instructionNo);
+}
+
+void jitStackShowTrace()
+{
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    JitStack* jitStack = currentVM()->jitStack();
+    fprintf(stderr, jitStack->getTrace().ascii_c_str());
+}
+
 static inline uintptr_t getClassMemberPointer(bool (Object::*func)() const)
 {
     uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
@@ -128,7 +142,6 @@ static inline uintptr_t getClassMemberPointer(Object (CProcedure::*func)(VM* the
     return *p;
 }
 
-
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
@@ -138,13 +151,18 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
     static const ucs4char* names[] = {UC("Object::isNumber"),
                                       UC("Object::True"),
                                       UC("Object::False"),
-                                      UC("CProcedure::call")
+                                      UC("CProcedure::call"),
+                                      UC("jitStackPush"),
+                                      UC("jitStackShowTrace")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
                                    (uintptr_t)(&Object::False),
                                    getClassMemberPointer(&CProcedure::call),
+                                   (uintptr_t)jitStackPush,
+                                   (uintptr_t)jitStackShowTrace
     };
+
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));
     for (size_t i = 0; i < sizeof(pointers) / sizeof(uintptr_t); i++) {
         if (ucs4string(names[i]) == ucs4string(name->c_str())) {

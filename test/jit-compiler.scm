@@ -26,8 +26,9 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (import (rnrs)
-        (mosh test)
         (mosh)
+        (mosh control)
+        (mosh test)
         (srfi :8)
         (mosh jit vm)
         (mosh jit assembler)
@@ -288,6 +289,16 @@
     (receive (rax rbx rcx rdx) (cpuid i #t)
       (format #;#t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
 
-(display ((compile for-each) 3))
+;(display ((compile for-each) 3))
+
+(display (get-c-address 'jitStackPush))
+
+(let1 test (asm*->procedure
+            `((movq rdi 1)
+              (movq rax ,(get-c-address 'jitStackPush))
+              (callq rax)
+              (movq rax ,(get-c-address 'jitStackShowTrace))
+              (movq rax 13)))
+  (test))
 
 (test-results)

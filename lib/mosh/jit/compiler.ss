@@ -84,12 +84,24 @@
 
 ;; r64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
 
+(define (trace-push! insn)
+  `((push rdi)
+    (push rax)
+    (movq rdi ,insn)
+    (movq rax ,(get-c-address 'jitStackPush))
+    (callq rax)
+    (pop rax)
+    (pop rdi)))
+
+
 (define (PUSH_FRAME)
-  `(,@(PUSH)
+  `(,@(trace-push! $PUSH_FRAME)
+    ,@(PUSH)
     ,@(FRAME)))
 
 (define (CALL n)
-  `((push rdi)                    ;; save registers
+  `(,@(trace-push! $CALL)
+    (push rdi)                    ;; save registers
     (push rsi)
     (push rdx)
     (movq rax ,n)                 ;; argc
@@ -117,7 +129,8 @@
   (let ([not-found-case (gensym)]
         [not-raw-pointer-case (gensym)]
         [heap-object-case (gensym)])
-    `((movq rbx ,(obj->integer id))
+    `(,@(trace-push! $REFER_GLOBAL)
+      (movq rbx ,(obj->integer id))
       (testb bl 3)                  ;; rbx.isRawPointer?
       (jne ,not-raw-pointer-case)   ;;
       (movq rax  (& rbx))           ;; rax = *rbx
@@ -209,7 +222,8 @@
         [label2 (gensym)]
         [label3 (gensym)]
         )
-  `((movq rax ,(vm-register 'sp)) ; rax = sp
+  `(,@(trace-push! $NUMBER_ADD)
+    (movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
@@ -253,7 +267,8 @@
         [label2 (gensym)]
         [label3 (gensym)]
         )
-  `((movq rax ,(vm-register 'sp)) ; rax = sp
+  `(,@(trace-push! $NUMBER_SUB_PUSH)
+    (movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
@@ -330,19 +345,20 @@
 ;;  cmpq    $3, %rax
 ;;  jne .L785
 (define (REFER_LOCAL_PUSH index)
-  '())
+  `(,@(trace-push! $REFER_LOCAL_PUSH)))
 
 (define (CLOSURE . x)
-  '())
+  `(,@(trace-push! $CLOSURE)))
 
 (define (ASSIGN_GLOBAL . x)
-  '())
+  `(,@(trace-push! $ASSIGN_GLOBAL)))
 
 (define (REFER_GLOBAL_CALL . x)
-  '())
+  `(,@(trace-push! $REFER_GLOBAL_CALL)))
 
 (define (REFER_LOCAL_PUSH_CONSTANT index constant)
-  `((movq rcx ,(vm-register 'sp))
+  `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
+    (movq rcx ,(vm-register 'sp))
     (movq rdx ,(vm-make-fixnum index))
     (movq rax ,(vm-register 'fp))
     ,@(macro-to-fixnum 'rdx)
@@ -412,7 +428,8 @@
 ;; movq %rdx, 40(%rsi)
 
 (define (FRAME) ;; label is not used. pc is
-  `((movq rdx ,(vm-register 'sp))
+  `(,@(trace-push! $FRAME)
+    (movq rdx ,(vm-register 'sp))
     (movq rax ,(vm-register 'pc)) ;; push(pc)
     (movq (& rdx) rax)            ;; Other JIT instructions don't sync pc. So pc is not coreect. JIT CALL discards pc on FRAME.
     (movq rax ,(vm-register 'dc)) ;; push(dc_)
@@ -491,7 +508,8 @@
     (movq ,(vm-register 'sp) rcx)))
 
 (define (RETURN n)
-  `(,@(RESTORE_REGISTERS n)
+  `(,@(trace-push! $RETURN)
+    ,@(RESTORE_REGISTERS n)
     (movq rax ,(vm-register 'ac)) ;; we need this.
     (retq)))
 
@@ -624,7 +642,8 @@
 (define (BRANCH_NOT_LT label)
   (let ([label1 (gensym)]
         [label2 (gensym)])
-  `((movq rax ,(vm-register 'sp)) ; rax = sp
+  `(,@(trace-push! $BRANCH_NOT_LT)
+    (movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
     (movq rdx (& rax -8))         ; rax = *sp
@@ -684,7 +703,8 @@
 
 
 (define (CONSTANT val)
-  `((movq ,(vm-register 'ac) ,val)
+  `(,@(trace-push! $CONSTANT)
+    (movq ,(vm-register 'ac) ,val)
     (movq rax ,(vm-register 'ac))))
 
 
