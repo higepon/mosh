@@ -480,6 +480,6 @@ comment:
 
 ucs4string Scanner::currentToken() const
 {
-    MOSH_ASSERT(limit_ > token_);
+    MOSH_ASSERT(limit_ >= token_);
     return ucs4string(token_, limit_ - token_);
 }
