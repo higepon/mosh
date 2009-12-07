@@ -110,28 +110,40 @@ extern void jitStackShowTrace();
 
 static void signal_handler(int signo)
 {
+    static char msg[] = "Oh no, a segfault!\n";
+    write(2, msg, strlen(msg));
+
     printf("signal=%d\n", signo);
     jitStackShowTrace();
-    exit(-1);
+    signal(SIGSEGV, SIG_DFL);
 }
 
+static void
+handler(int sig, siginfo_t *si, void *unused)
+{
+    printf("Got SIGSEGV at address: 0x%lx\n",
+            (long) si->si_addr);
+    exit(EXIT_FAILURE);
+}
 static void setSignalHandler()
 {
-    struct sigaction act;
-    act.sa_handler = &signal_handler; // set signal_handler
-    act.sa_flags = SA_RESTART;        // restart system call after signal handler
-    if (sigaction(SIGSEGV, &act, NULL) != 0) {
+    struct sigaction sa;
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_sigaction = handler;
+    if (sigaction(SIGSEGV, &sa, NULL) != 0) {
         fprintf(stderr, "setSignalHandler sigaction failed\n");
         exit(-1);
     }
-   if (sigaction(SIGBUS, &act, NULL) != 0) {
-        fprintf(stderr, "setSignalHandler sigaction failed\n");
-        exit(-1);
-    }
-   if (sigaction(SIGILL, &act, NULL) != 0) {
-        fprintf(stderr, "setSignalHandler sigaction failed\n");
-        exit(-1);
-    }
+    printf("self=%x\n", pthread_self());
+//    if (sigaction(SIGBUS, &act, NULL) != 0) {
+//         fprintf(stderr, "setSignalHandler sigaction failed\n");
+//         exit(-1);
+//     }
+//    if (sigaction(SIGILL, &act, NULL) != 0) {
+//         fprintf(stderr, "setSignalHandler sigaction failed\n");
+//         exit(-1);
+//     }
 }
 
 void mosh_init()

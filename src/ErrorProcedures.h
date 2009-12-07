@@ -64,7 +64,7 @@ typedef struct IOError
     };
 } IOError;
 
-extern jmp_buf ioErrorJmpBuf;
+extern sigjmp_buf ioErrorJmpBuf;
 extern IOError ioError;
 #ifdef DEBUG_VERSION
 extern bool isErrorBufInitialized;
@@ -72,10 +72,10 @@ extern bool isErrorBufInitialized;
 
 
 #ifdef DEBUG_VERSION
-#define TRY_WITHOUT_DSTR isErrorBufInitialized = true; if (setjmp(ioErrorJmpBuf) == 0) {
+#define TRY_WITHOUT_DSTR isErrorBufInitialized = true; if (sigsetjmp(ioErrorJmpBuf, 1) == 0) {
 #define CATCH(x) isErrorBufInitialized = false; } else { isErrorBufInitialized = false;
 #else
-#define TRY_WITHOUT_DSTR if (setjmp(ioErrorJmpBuf) == 0) {
+#define TRY_WITHOUT_DSTR if (sigsetjmp(ioErrorJmpBuf, 1) == 0) {
 #define CATCH(x) } else {
 #endif
 

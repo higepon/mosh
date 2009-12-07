@@ -85,9 +85,9 @@
 #include "Reader.h"
 #include "NumberReader.h"
 
-#define TRY_VM  jmp_buf org;                     \
+#define TRY_VM  sigjmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \
-                if (setjmp(returnPoint_) == 0)   \
+                if (sigsetjmp(returnPoint_, 1) == 0)  \
 
 #define CATCH_VM copyJmpBuf(returnPoint_, org); \
                  } else {
@@ -711,6 +711,7 @@ void VM::throwException(Object exception)
     textualOutputPort->format(this, UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
     errorObj_ = getOutputStringEx(this, 1, &stringOutputPort);
 
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     longjmp(returnPoint_, -1);
 }
 

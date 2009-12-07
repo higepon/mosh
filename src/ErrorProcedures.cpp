@@ -145,6 +145,7 @@ Object scheme::throwIOError2(int type, Object message, Object irritants /* = Obj
 {
     ioError = IOError(type, message, irritants);
     MOSH_ASSERT(isErrorBufInitialized);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     longjmp(ioErrorJmpBuf, -1);
     return Object::Undef;
 }
