@@ -711,8 +711,7 @@ void VM::throwException(Object exception)
     textualOutputPort->format(this, UC("~a\n Stack trace:\n~a\n"), Pair::list2(exception, stackTrace));
     errorObj_ = getOutputStringEx(this, 1, &stringOutputPort);
 
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-    longjmp(returnPoint_, -1);
+    siglongjmp(returnPoint_, -1);
 }
 
 void VM::showStack(int count, const char* file, int line)

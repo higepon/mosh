@@ -28,6 +28,7 @@
 (library (mosh jit compiler)
   (export
    compile
+   disasm
    u8-list->c-procedure
    ;; exported for test
    macro-to-fixnum macro-make-fixnum
@@ -93,6 +94,11 @@
     (pop rax)
     (pop rdi)))
 
+(define (trace-reset!)
+  `((push rax)
+    (movq rax ,(get-c-address 'jitStackReset))
+    (callq rax)
+    (pop rax)))
 
 (define (PUSH_FRAME)
   `(,@(trace-push! $PUSH_FRAME)
@@ -825,13 +831,13 @@
         [label* (collect-labels! insn*)])
     (let1 insn* (insert-labels insn* label*)
       (let1 asm* (map (lambda (insn)
-             (match (car insn)
-               [('label . x) `((label . ,x))]
-               [else
-                (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
-                       (cdar insn))]))
+                        (match (car insn)
+                          [('label . x) `((label . ,x))]
+                          [else
+                           (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
+                                  (cdar insn))]))
                       insn*)
-        (u8-list->c-procedure (assemble (apply append asm*)))))))
+        (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*))))))))
 
 ;;   (let loop ([code (closure->list closure)]
 ;;              [insn-set '()]

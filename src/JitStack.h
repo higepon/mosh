@@ -48,9 +48,14 @@ public:
         stack_.push_back(instruction);
     }
 
+    void reset()
+    {
+        stack_.clear();
+    }
+
     ucs4string getTrace()
     {
-        const int MAX_TRACE = 10;
+        const int MAX_TRACE = 15;
         ucs4string trace;
         for (int i = 0; i < MAX_TRACE && !stack_.empty(); i++) {
             gc_vector<int>::iterator it = stack_.end();
@@ -58,6 +63,15 @@ public:
             trace += ucs4string(Instruction::toString(Object::makeInstruction(*it).val));
             trace += UC("\n");
             stack_.pop_back();
+        }
+        int restCount;
+        for (restCount = 0; !stack_.empty(); restCount++) {
+            stack_.pop_back();
+        }
+        if (restCount > 0) {
+            char buf[64];
+            snprintf(buf, sizeof(buf), "%d stacks are truncated\n", restCount);
+            trace += ucs4string::from_c_str(buf);
         }
         return trace;
     }

@@ -108,46 +108,35 @@ BOOL WINAPI handler(DWORD ctrlChar)
 
 extern void jitStackShowTrace();
 
-static void signal_handler(int signo)
+static void signal_handler(int sig, siginfo_t *si, void *unused)
 {
-    static char msg[] = "Oh no, a segfault!\n";
+    static char msg[] = "*** signal comes!\n";
     write(2, msg, strlen(msg));
-
-    printf("signal=%d\n", signo);
     jitStackShowTrace();
-    signal(SIGSEGV, SIG_DFL);
+    signal(sig, SIG_DFL);
 }
 
-static void
-handler(int sig, siginfo_t *si, void *unused)
-{
-    printf("Got SIGSEGV at address: 0x%lx\n",
-            (long) si->si_addr);
-    exit(EXIT_FAILURE);
-}
 static void setSignalHandler()
 {
     struct sigaction sa;
     sa.sa_flags = SA_SIGINFO;
     sigemptyset(&sa.sa_mask);
-    sa.sa_sigaction = handler;
-    if (sigaction(SIGSEGV, &sa, NULL) != 0) {
+    sa.sa_sigaction = signal_handler;
+    if (sigaction(SIGSEGV, &sa, NULL) != 0 ||
+        sigaction(SIGTRAP, &sa, NULL) != 0 ||
+        sigaction(SIGBUS, &sa, NULL) != 0 ||
+        sigaction(SIGILL, &sa, NULL) != 0) {
         fprintf(stderr, "setSignalHandler sigaction failed\n");
         exit(-1);
     }
-    printf("self=%x\n", pthread_self());
-//    if (sigaction(SIGBUS, &act, NULL) != 0) {
-//         fprintf(stderr, "setSignalHandler sigaction failed\n");
-//         exit(-1);
-//     }
-//    if (sigaction(SIGILL, &act, NULL) != 0) {
-//         fprintf(stderr, "setSignalHandler sigaction failed\n");
-//         exit(-1);
-//     }
 }
 
 void mosh_init()
 {
+    // For Jit compiler, we handle SIGSEGV and etc.
+    // Some SIGSEGV can't be handled with this. Why? Boehm GC?
+    setSignalHandler();
+
     // MOSH_GENSYM_PREFIX and equal? need this.
     srandom(time(NULL));
 #ifdef USE_BOEHM_GC
@@ -175,8 +164,6 @@ void mosh_init()
 #endif
     initOSConstants();
 
-    // For Jit compiler, we handle SIGSEGV.
-    setSignalHandler();
 //     // psyntax pre-compilation requires MOSH_GENSYM_PREFIX
 //     if (NULL == getEnv(UC("MOSH_GENSYM_PREFIX"))) {
 //         // 'A', 'B' and 'C' are reserved for psyntax expansion

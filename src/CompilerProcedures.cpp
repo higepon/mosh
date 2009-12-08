@@ -122,9 +122,15 @@ void jitStackPush(intptr_t instructionNo)
     jitStack->push(instructionNo);
 }
 
+void jitStackReset()
+{
+    JitStack* jitStack = currentVM()->jitStack();
+    jitStack->reset();
+}
+
+
 void jitStackShowTrace()
 {
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     JitStack* jitStack = currentVM()->jitStack();
     fprintf(stderr, jitStack->getTrace().ascii_c_str());
 }
@@ -153,14 +159,16 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                       UC("Object::False"),
                                       UC("CProcedure::call"),
                                       UC("jitStackPush"),
-                                      UC("jitStackShowTrace")
+                                      UC("jitStackShowTrace"),
+                                      UC("jitStackReset")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
                                    (uintptr_t)(&Object::False),
                                    getClassMemberPointer(&CProcedure::call),
                                    (uintptr_t)jitStackPush,
-                                   (uintptr_t)jitStackShowTrace
+                                   (uintptr_t)jitStackShowTrace,
+                                   (uintptr_t)jitStackReset
     };
 
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));
