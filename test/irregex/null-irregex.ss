@@ -1,0 +1,3 @@
+(import (rnrs) (irregex))
+
+'ok

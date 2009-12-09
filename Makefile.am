@@ -184,6 +184,7 @@ endif
 
 mosh_core_libraries = \
 lib/match.ss \
+lib/irregex.ss \
 lib/memcached.ss \
 lib/lambda/wiki.ss    \
 lib/mosh/queue.ss    \
@@ -511,6 +512,7 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/number.scm
 	./mosh test/cgi.scm
 	./mosh test/memcached.scm
+	$(MAKE) -C test/irregex
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 
