@@ -107,6 +107,7 @@
 
 ;; pop
 (test-equal '(#x58) (assemble1 '(pop rax)))
+(test-equal '(#x41 #x59) (assemble1 '(pop r9)))
 
 ;; leaq
 (test-equal '(#x48 #x8d #x38) (assemble1 '(leaq rdi (& rax))))

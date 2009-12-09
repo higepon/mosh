@@ -1,3 +1,9 @@
+2009-12-09  higepon  <higepon@users.sourceforge.jp>
+
+	* lib/mosh/jit/compiler.ss (call0): Added safe call system, which save/restore argument registers.
+
+	* lib/mosh/jit/assembler.ss ($r64): Fixed the bug of assemble (pop r9).
+
 2009-12-04  higepon  <higepon@users.sourceforge.jp>
 
 	* Added JitStack which is base of showing stack trace of Jited procedure. 

@@ -85,19 +85,44 @@
 
 ;; r64->number of r8-r15 over 2^3, so rex.prefix is used for one more bit
 
-(define (trace-push! insn)
+;; save argument registers
+(define (call-prologue)
   `((push rdi)
-    (push rax)
-    (movq rdi ,insn)
-    (movq rax ,(get-c-address 'jitStackPush))
-    (callq rax)
-    (pop rax)
+    (push rsi)
+    (push rdx)
+    (push rcx)
+    (push r8)
+    (push r9)))
+
+(define (call-epilogue)
+  `((pop r9)
+    (pop r8)
+    (pop rcx)
+    (pop rdx)
+    (pop rsi)
     (pop rdi)))
 
-(define (trace-reset!)
-  `((push rax)
-    (movq rax ,(get-c-address 'jitStackReset))
+(define (call0 c-func)
+  `(,@(call-prologue)
+    (movq rax ,c-func)
     (callq rax)
+    ,@(call-epilogue)))
+
+(define (call1 c-func arg1)
+  `(,@(call-prologue)
+    (movq rdi ,arg1)
+    (movq rax ,c-func)
+    (callq rax)
+    ,@(call-epilogue)))
+
+(define (trace-push! insn)
+  `((push rax) ;; we discard the return value
+    ,@(call1 (get-c-address 'jitStackPush) insn)
+    (pop rax)))
+
+(define (trace-reset!)
+  `((push rax) ;; we discard the return value
+    ,@(call0 (get-c-address 'jitStackReset))
     (pop rax)))
 
 (define (PUSH_FRAME)
@@ -173,7 +198,13 @@
 
 
 (define insn-dispatch-table
-  (make-vector insn-count (lambda x (error 'jit-compiler "not implemented instruction" x))))
+  (let1 table (make-vector insn-count)
+    (do ([i 0 (+ i 1)])
+        ((= i insn-count))
+      (vector-set! table i (lambda x (error 'jit:compiler "not implemented instruction" (instruction->symbol (make-instruction i))))))
+    table))
+
+
 
 (define (register-insn-dispatch-table insn proc)
   (vector-set! insn-dispatch-table insn proc))
@@ -434,7 +465,8 @@
 ;; movq %rdx, 40(%rsi)
 
 (define (FRAME) ;; label is not used. pc is
-  `(,@(trace-push! $FRAME)
+  `(
+    ,@(trace-push! $FRAME)
     (movq rdx ,(vm-register 'sp))
     (movq rax ,(vm-register 'pc)) ;; push(pc)
     (movq (& rdx) rax)            ;; Other JIT instructions don't sync pc. So pc is not coreect. JIT CALL discards pc on FRAME.
@@ -443,7 +475,6 @@
     (movq rax ,(vm-register 'cl)) ;; push(cl_)
     (movq (& rdx 16) rax)
     (movq rax ,(vm-register 'fp)) ;; push(fp_)
-;    ,@(DEBUGGER 1111) 
     (movq (& rdx 24) rax)
     (addq rdx 32)
     (movq ,(vm-register 'sp) rdx)))
@@ -502,7 +533,7 @@
     (negq rdx)
     (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
     (movq rax (& rdx -8))         ; fp = (sp - 8)
-;    ,@(DEBUGGER 1112) 
+;    ,@(DEBUGGER 1112)
     (movq ,(vm-register 'fp) rax)
     (movq rax (& rdx -16))
     (movq ,(vm-register 'cl) rax)
@@ -830,7 +861,9 @@
   (let* ([insn* (pack-instruction (closure->list closure))]
         [label* (collect-labels! insn*)])
     (let1 insn* (insert-labels insn* label*)
+    (display insn*)
       (let1 asm* (map (lambda (insn)
+                           (display (instruction->integer (caar insn)))
                         (match (car insn)
                           [('label . x) `((label . ,x))]
                           [else
@@ -904,6 +937,7 @@
   (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
   (register-insn-dispatch-table $CALL CALL)
   (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME))))
+  (register-insn-dispatch-table $PUSH PUSH)
 
     (make-dispatch-table)
 

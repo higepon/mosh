@@ -210,7 +210,9 @@
 
 ;; (push r64)
 (define ($r64 opcode r64)
-  (values `(,(+ opcode r64)) #f))
+  (if (ext-reg? r64)
+      (values `(,(rex-prefix #f #f #f #t) ,(+ opcode (- r64 8))) #f)
+      (values `(,(+ opcode r64)) #f)))
 
 
 ;; (oprand dest src)

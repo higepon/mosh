@@ -110,16 +110,45 @@ extern void jitStackShowTrace();
 
 static void signal_handler(int sig, siginfo_t *si, void *unused)
 {
-    static char msg[] = "*** signal comes!\n";
-    write(2, msg, strlen(msg));
+    printf("\n**** ");
+    switch(sig) {
+    case SIGSEGV:
+        printf("SIGSEGV");
+        break;
+    case SIGILL:
+        printf("SIGILL");
+        break;
+    case SIGTRAP:
+        printf("SIGTRAP");
+        break;
+    case SIGBUS:
+        printf("SIGBUS");
+        break;
+    default:
+        printf("unknown signal %d", sig);
+    }
+    printf("\n");
     jitStackShowTrace();
     signal(sig, SIG_DFL);
 }
 
 static void setSignalHandler()
 {
+    stack_t ss;
+    ss.ss_sp = GC_malloc(SIGSTKSZ);
+    if (ss.ss_sp == NULL) {
+        fprintf(stderr, "setSignalHandler malloc failed\n");
+        exit(-1);
+    }
+    ss.ss_size = SIGSTKSZ;
+    ss.ss_flags = 0;
+    if (sigaltstack(&ss, NULL) == -1) {
+        fprintf(stderr, "setSignalHandler sigaltstack failed\n");
+        exit(-1);
+    }
+
     struct sigaction sa;
-    sa.sa_flags = SA_SIGINFO;
+    sa.sa_flags = SA_SIGINFO | SA_ONSTACK;
     sigemptyset(&sa.sa_mask);
     sa.sa_sigaction = signal_handler;
     if (sigaction(SIGSEGV, &sa, NULL) != 0 ||
@@ -173,4 +202,3 @@ void mosh_init()
 //         setEnv(UC("MOSH_GENSYM_PREFIX"), &prefix);
 //     }
 }
-
