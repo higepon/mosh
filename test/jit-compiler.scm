@@ -293,6 +293,8 @@
 (test-equal 3 ((compile (lambda () 3))))
 
 (let1 a (lambda () 3)
-  (test-equal 3 (a)))
+  (do ([i 0 (+ i 1)])
+      [(= i 20)]
+    (test-equal 3 (a))))
 
 (test-results)

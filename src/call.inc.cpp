@@ -58,12 +58,11 @@
                     ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 }
             } else if (ac_.isClosure()) {
-                const Closure* const c = ac_.toClosure();
-                if (!c->jitCompiled.isFalse()) {
+                Closure* const c = ac_.toClosure();
+                if (c->isJitCompiled()) {
                     printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     COUNT_CALL(ac_);
-                    VM_ASSERT(c->jitCompiled.isCProcedure());
-                    CProcedure* const cprocedure = c->jitCompiled.toCProcedure();
+                    CProcedure* const cprocedure = c->toCProcedure();
                     pc_  = cprocedure->returnCode;
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     pc_[1] = operand;
@@ -72,48 +71,71 @@
                     cl_ = ac_;
                     ac_ = cprocedure->call(this, argc, sp_ - argc);
                 } else {
-                if (c->maxStack + sp_ >= stackEnd_) {
+                    if (c->maxStack + sp_ >= stackEnd_) {
 //                    printf("CALL: stack expansion\n");
-                    expandStack(stackSize_ / 10);
-                }
-                COUNT_CALL(ac_);
-                VM_ASSERT(operand.isFixnum());
-                const int argLength = operand.toFixnum();
-                const int requiredLength = c->argLength;
-                dc_ = ac_;
-                cl_ = ac_;
-                pc_ = c->pc;
-                if (c->isOptionalArg) {
-                    const int extraLength = argLength - requiredLength;
-                    if (-1 == extraLength) {
-                        Object* const sp = unShiftArgs(sp_, 1);
-                        indexSet(sp, 0, Object::Nil);
-                        sp_ = sp;
-                        fp_ = sp - requiredLength;
-                    } else if (extraLength >= 0) {
-                        indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
-                        Object* const sp = sp_ - extraLength;
-                        fp_ = sp - requiredLength;
-                        sp_ = sp;
+                        expandStack(stackSize_ / 10);
+                    }
+
+                    // ugly, refactoring todo
+                    COUNT_CALL(ac_);
+                    c->incrementCalledCount();
+                    const int CALL_COUNT_JIT_THRESHOLD = 10;
+                    if (c->getCalledCount() > CALL_COUNT_JIT_THRESHOLD &&
+                        !c->isJitError() &&
+                        !c->isNowJitCompiling()) {
+                        // prevent recursive jit compilation on compiler.
+                        c->setNowJitCompiling();
+
+                        if (c->size == 4) {
+                            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                            if (!getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile"))).isFalse()) {
+                                Object jitCompiled = callClosureByName(Symbol::intern(UC("jit-compile")), ac_);
+                                if (jitCompiled.isFalse()) {
+                                    c->setJitCompiledError();
+                                } else {
+                                    c->setJitCompiledCProcedure(jitCompiled);
+                                }
+                            }
+                        }
+
+                    }
+                    VM_ASSERT(operand.isFixnum());
+                    const int argLength = operand.toFixnum();
+                    const int requiredLength = c->argLength;
+                    dc_ = ac_;
+                    cl_ = ac_;
+                    pc_ = c->pc;
+                    if (c->isOptionalArg) {
+                        const int extraLength = argLength - requiredLength;
+                        if (-1 == extraLength) {
+                            Object* const sp = unShiftArgs(sp_, 1);
+                            indexSet(sp, 0, Object::Nil);
+                            sp_ = sp;
+                            fp_ = sp - requiredLength;
+                        } else if (extraLength >= 0) {
+                            indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
+                            Object* const sp = sp_ - extraLength;
+                            fp_ = sp - requiredLength;
+                            sp_ = sp;
+                        } else {
+                            callWrongNumberOfArgumentsViolationAfter(this,
+                                                                     ac_.toClosure()->sourceInfoString(this),
+                                                                     requiredLength - 1,
+                                                                     operand.toFixnum());
+                        }
+                    } else if (requiredLength == argLength) {
+                        fp_ = sp_ - argLength;
                     } else {
+                        Object args = Object::Nil;
+                        for (int i = 0; i < operand.toFixnum(); i++) {
+                            args = Object::cons(index(sp_, i), args);
+                        }
                         callWrongNumberOfArgumentsViolationAfter(this,
                                                                  ac_.toClosure()->sourceInfoString(this),
-                                                                 requiredLength - 1,
-                                                                 operand.toFixnum());
+                                                                 requiredLength,
+                                                                 operand.toFixnum(),
+                                                                 args);
                     }
-                } else if (requiredLength == argLength) {
-                    fp_ = sp_ - argLength;
-                } else {
-                    Object args = Object::Nil;
-                    for (int i = 0; i < operand.toFixnum(); i++) {
-                        args = Object::cons(index(sp_, i), args);
-                    }
-                    callWrongNumberOfArgumentsViolationAfter(this,
-                                                             ac_.toClosure()->sourceInfoString(this),
-                                                             requiredLength,
-                                                             operand.toFixnum(),
-                                                             args);
-                }
                 }
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);

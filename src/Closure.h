@@ -46,7 +46,8 @@ public:
         ,maxStack(maxStack)
         ,sourceInfo(sourceInfo)
         ,prev(Object::False)
-        ,jitCompiled(Object::False)
+        ,jitState_(Object::False)
+        ,calledCount_(0)
     {
         freeVariables = Object::makeObjectArray(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
@@ -72,6 +73,61 @@ public:
 
     Object sourceInfoString(VM* theVM);
 
+
+    // jitState:
+    //    False      -> is not jit compiled yet
+    //    CProcedure -> successfully jit compiled
+    //    True       -> is just now beeing compiled
+    //    Undef      -> jit compile error
+    bool isJitCompiled() const
+    {
+        return jitState_.isCProcedure();
+    }
+
+    void setNowJitCompiling()
+    {
+        MOSH_ASSERT(jitState_.isFalse());
+        jitState_ = Object::True;
+    }
+
+    bool isNowJitCompiling() const
+    {
+        return jitState_.isTrue();
+    }
+
+    CProcedure* toCProcedure()
+    {
+        MOSH_ASSERT(isJitCompiled());
+        return jitState_.toCProcedure();
+    }
+
+    void setJitCompiledCProcedure(Object cproc)
+    {
+        MOSH_ASSERT(cproc.isCProcedure());
+        jitState_ = cproc;
+    }
+
+    void setJitCompiledError()
+    {
+        jitState_ = Object::Undef;
+    }
+
+    void incrementCalledCount()
+    {
+        calledCount_++;
+    }
+
+    int getCalledCount() const
+    {
+        return calledCount_;
+    }
+
+    bool isJitError() const
+    {
+        return jitState_.isUndef();
+    }
+
+
 public:
     Object* pc;
     const int size;
@@ -82,7 +138,9 @@ public:
     const int maxStack;
     Object sourceInfo;
     Object prev;
-    Object jitCompiled;
+private:
+    Object jitState_;
+    int calledCount_;
 };
 
 inline Object Object::makeClosure(Object* pc,
