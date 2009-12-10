@@ -741,7 +741,7 @@
 
 (define (CONSTANT val)
   `(,@(trace-push! $CONSTANT)
-    (movq ,(vm-register 'ac) ,val)
+    (movq ,(vm-register 'ac) ,(obj->integer val))
     (movq rax ,(vm-register 'ac))))
 
 
@@ -858,34 +858,18 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-  (let* ([insn* (pack-instruction (closure->list closure))]
-        [label* (collect-labels! insn*)])
-    (let1 insn* (insert-labels insn* label*)
-    (display insn*)
-      (let1 asm* (map (lambda (insn)
-                           (display (instruction->integer (caar insn)))
-                        (match (car insn)
-                          [('label . x) `((label . ,x))]
-                          [else
-                           (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
-                                  (cdar insn))]))
-                      insn*)
-        (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*))))))))
-
-;;   (let loop ([code (closure->list closure)]
-;;              [insn-set '()]
-;;              [insn-set* '()])
-;;     (cond
-;;      [(null? code) (assemble (apply append (reverse insn-set*)))]
-;;      [(and (pair? (cdr code)) (instruction? (cadr code)))
-;;       (let1 insn (reverse (cons (car code) insn-set))
-;;         ;; insn = (instruction arg1 arg2 arg3 ...)
-;;         (loop (cdr code)
-;;               '()
-;;               (cons (apply (vector-ref insn-dispatch-table (instruction->integer (car insn))) (cdr insn))
-;;                     insn-set*)))]
-;;      [else
-;;       (loop (cdr code) (cons (car code) insn-set) insn-set*)])))
+  (guard (c [#t #f]) ;; JIT compile error returns #f to VM.
+         (let* ([insn* (pack-instruction (closure->list closure))]
+                [label* (collect-labels! insn*)])
+           (let1 insn* (insert-labels insn* label*)
+             (let1 asm* (map (lambda (insn)
+                               (match (car insn)
+                                 [('label . x) `((label . ,x))]
+                                 [else
+                                  (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
+                                         (cdar insn))]))
+                             insn*)
+               (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*)))))))))
 
 ;; N.B.
 ;;   this procedure will set-car! to the lst.
@@ -940,6 +924,10 @@
   (register-insn-dispatch-table $PUSH PUSH)
 
     (make-dispatch-table)
+
+;; Export jit compiler to VM.
+(set-symbol-value! 'jit-compile compile)
+
 
 
 ;; '(movq rbx (& rsp #x38))

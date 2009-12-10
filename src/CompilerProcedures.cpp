@@ -982,7 +982,7 @@ Object scheme::instructionTointegerEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::instructionPEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("closure->list");
+    DeclareProcedureName("instruction?");
     checkArgumentLength(1);
     return Object::makeBool(argv[0].isInstruction());
 }
@@ -993,7 +993,7 @@ Object scheme::closureTolistEx(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsClosure(0, closure);
     Object* code = theVM->disasm(closure);
-    return Pair::arrayToList(code, closure->size + Closure::HEADER_SIZE);
+    return Pair::arrayToList(code, closure->size);
 }
 
 Object scheme::printStackEx(VM* theVM, int argc, const Object* argv)

@@ -145,7 +145,7 @@ inline Object VM::referFree(int n)
 
 inline Object* VM::disasm(Closure* closure)
 {
-    return disasm(closure->pc - Closure::HEADER_SIZE, closure->size + Closure::HEADER_SIZE);
+    return disasm(closure->pc, closure->size);
 }
 
 inline Object* VM::disasm(Object* code, int length)

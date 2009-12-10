@@ -59,6 +59,19 @@
                 }
             } else if (ac_.isClosure()) {
                 const Closure* const c = ac_.toClosure();
+                if (!c->jitCompiled.isFalse()) {
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                    COUNT_CALL(ac_);
+                    VM_ASSERT(c->jitCompiled.isCProcedure());
+                    CProcedure* const cprocedure = c->jitCompiled.toCProcedure();
+                    pc_  = cprocedure->returnCode;
+                    pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
+                    pc_[1] = operand;
+                    VM_ASSERT(operand.isFixnum());
+                    const int argc = operand.toFixnum();
+                    cl_ = ac_;
+                    ac_ = cprocedure->call(this, argc, sp_ - argc);
+                } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
 //                    printf("CALL: stack expansion\n");
                     expandStack(stackSize_ / 10);
@@ -100,6 +113,7 @@
                                                              requiredLength,
                                                              operand.toFixnum(),
                                                              args);
+                }
                 }
             } else if (ac_.isCallable()) {
                 COUNT_CALL(ac_);

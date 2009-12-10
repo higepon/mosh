@@ -295,8 +295,15 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(maxStackObject.isFixnum());
             const int maxStack         =maxStackObject.toFixnum();
 
-//            LOG1("(CLOSURE) source=~a\n", sourceInfo);
-            ac_ = Object::makeClosure(pc_, skipSize, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
+            ac_ = Object::makeClosure(pc_, skipSize - 6, argLength, isOptionalArg, (sp_ - freeVariablesNum), freeVariablesNum, maxStack, sourceInfo);
+            if (ac_.toClosure()->size == 4) {
+                if (!getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile"))).isFalse()) {
+                    Object jitCompiled = callClosureByName(Symbol::intern(UC("jit-compile")), ac_);
+                    if (!jitCompiled.isFalse()) {
+                        ac_.toClosure()->jitCompiled = jitCompiled;
+                    }
+                }
+            }
             sp_ -= freeVariablesNum;
             pc_ += skipSize - 6;
             NEXT1;

@@ -37,10 +37,6 @@ namespace scheme {
 class Closure EXTEND_GC
 {
 public:
-    enum {
-        HEADER_SIZE = 9,
-    };
-
     Closure(Object* pc, int size, int argLength, bool isOptionalArg, const Object* freeVars, int freeVariablesNum, int maxStack, Object sourceInfo)
         : pc(pc)
         ,size(size)
@@ -50,6 +46,7 @@ public:
         ,maxStack(maxStack)
         ,sourceInfo(sourceInfo)
         ,prev(Object::False)
+        ,jitCompiled(Object::False)
     {
         freeVariables = Object::makeObjectArray(freeVariablesNum);
         for (int i = 0; i < freeVariablesNum; i++) {
@@ -85,6 +82,7 @@ public:
     const int maxStack;
     Object sourceInfo;
     Object prev;
+    Object jitCompiled;
 };
 
 inline Object Object::makeClosure(Object* pc,

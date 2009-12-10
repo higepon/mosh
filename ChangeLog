@@ -1,3 +1,9 @@
+2009-12-10  higepon  <higepon@users.sourceforge.jp>
+
+	* test/jit-compiler.scm: Jit compiler works for (lambda () 3).
+
+	* src/CompilerProcedures.cpp (closureTolistEx): Fixed disasm.
+
 2009-12-09  higepon  <higepon@users.sourceforge.jp>
 
 	* lib/mosh/jit/compiler.ss (call0): Added safe call system, which save/restore argument registers.

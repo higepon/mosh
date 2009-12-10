@@ -289,22 +289,10 @@
 ;;     (receive (rax rbx rcx rdx) (cpuid i #t)
 ;;       (format #;#t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
 
-;;  ;   (disasm fib)
 
-(disasm (lambda () 3))
-(display "disasm end\n")
-;(test-equal 3 ((compile (lambda () 3))))
-(display ((compile (lambda () 3))))
-;(display ((compile fib) 3))
+(test-equal 3 ((compile (lambda () 3))))
 
-(display (get-c-address 'jitStackPush))
-
-#;(let1 test (asm*->procedure
-            `((movq rdi 1)
-              (movq rax ,(get-c-address 'jitStackPush))
-              (callq rax)
-              (movq rax ,(get-c-address 'jitStackShowTrace))
-              (movq rax 13)))
-  (test))
+(let1 a (lambda () 3)
+  (test-equal 3 (a)))
 
 (test-results)
