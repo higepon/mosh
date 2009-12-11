@@ -288,13 +288,13 @@
 ;;       [(= i 5)]
 ;;     (receive (rax rbx rcx rdx) (cpuid i #t)
 ;;       (format #;#t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
+(define (a) 3)
 
 
 (test-equal 3 ((compile (lambda () 3))))
 
-(let1 a (lambda () 3)
   (do ([i 0 (+ i 1)])
       [(= i 20)]
-    (test-equal 3 (a))))
+    (test-equal 3 (a)))
 
 (test-results)

@@ -925,3 +925,43 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
     generativeRtds_[uid] = rtd;
 }
 
+void VM::tryJitCompile(Object closure)
+{
+    const int CALL_COUNT_JIT_THRESHOLD = 10;
+
+    MOSH_ASSERT(closure.isClosure());
+    Closure* c = closure.toClosure();
+
+    c->incrementCalledCount();
+
+    if (c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD ||
+        c->isJitError() ||
+        c->isNowJitCompiling()) {
+        return;
+    }
+
+    // temporary
+    if (c->size != 4) {
+        return;
+    }
+
+
+    // prevent recursive jit compilation on compiler.
+    c->setNowJitCompiling();
+
+    Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
+    if (compiler.isFalse()) {
+        return;
+    } else {
+
+        Object compiled = callClosure1(compiler, closure);
+        if (compiled.isFalse()) {
+            LOG1("jit compile error ~a\n", closure);
+            c->setJitCompiledError();
+        } else {
+            LOG1("jit compile~a\n", closure);
+            c->setJitCompiledCProcedure(compiled);
+        }
+        return;
+    }
+}

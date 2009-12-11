@@ -60,7 +60,6 @@
             } else if (ac_.isClosure()) {
                 Closure* const c = ac_.toClosure();
                 if (c->isJitCompiled()) {
-                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     COUNT_CALL(ac_);
                     CProcedure* const cprocedure = c->toCProcedure();
                     pc_  = cprocedure->returnCode;
@@ -72,33 +71,13 @@
                     ac_ = cprocedure->call(this, argc, sp_ - argc);
                 } else {
                     if (c->maxStack + sp_ >= stackEnd_) {
-//                    printf("CALL: stack expansion\n");
                         expandStack(stackSize_ / 10);
                     }
 
-                    // ugly, refactoring todo
                     COUNT_CALL(ac_);
-                    c->incrementCalledCount();
-                    const int CALL_COUNT_JIT_THRESHOLD = 10;
-                    if (c->getCalledCount() > CALL_COUNT_JIT_THRESHOLD &&
-                        !c->isJitError() &&
-                        !c->isNowJitCompiling()) {
-                        // prevent recursive jit compilation on compiler.
-                        c->setNowJitCompiling();
 
-                        if (c->size == 4) {
-                            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                            if (!getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile"))).isFalse()) {
-                                Object jitCompiled = callClosureByName(Symbol::intern(UC("jit-compile")), ac_);
-                                if (jitCompiled.isFalse()) {
-                                    c->setJitCompiledError();
-                                } else {
-                                    c->setJitCompiledCProcedure(jitCompiled);
-                                }
-                            }
-                        }
+                    tryJitCompile(ac_);
 
-                    }
                     VM_ASSERT(operand.isFixnum());
                     const int argLength = operand.toFixnum();
                     const int requiredLength = c->argLength;

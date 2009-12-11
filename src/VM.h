@@ -226,6 +226,8 @@ public:
         return &jitStack_;
     }
 
+    void tryJitCompile(Object closure);
+
 protected:
     virtual int exit(int status)
     {
