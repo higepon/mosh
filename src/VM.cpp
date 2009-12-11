@@ -951,6 +951,7 @@ void VM::tryJitCompile(Object closure)
 
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
+        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-spec"))));
         return;
     } else {
 

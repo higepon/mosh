@@ -372,6 +372,8 @@
                                                                     (make-message-condition "returned from non-continuable exception")
                                                                     (make-irritants-condition (list c)))))
 
+  (set-symbol-value! 'invoke-library-by-spec invoke-library-by-spec)
+
 
                                         ;  (library-path (get-library-paths))
                                         ;  (library-path '("." "/tmp/")
