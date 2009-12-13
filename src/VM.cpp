@@ -554,6 +554,7 @@ Object VM::apply(Object proc, Object args)
     Object* const direct = getDirectThreadedCode(applyCodeForApply_, applyCodeForApplyLength_);
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
+
     return ret;
 }
 
