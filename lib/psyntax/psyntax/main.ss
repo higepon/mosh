@@ -366,13 +366,15 @@
   (set-symbol-value! 'trace-printer trace-printer)
   (set-symbol-value! 'compile-r6rs-top-level 'compile-r6rs-top-level)
 
+  ;; exported for Jit compiler
+  (set-symbol-value! 'invoke-library-by-name invoke-library-by-name)
+
   (set-symbol-value! 'create-non-continuable-violation (lambda (c)
                                                          (condition (make-non-continuable-violation)
                                                                     (make-who-condition 'raise)
                                                                     (make-message-condition "returned from non-continuable exception")
                                                                     (make-irritants-condition (list c)))))
 
-  (set-symbol-value! 'invoke-library-by-spec invoke-library-by-spec)
 
 
                                         ;  (library-path (get-library-paths))
@@ -434,10 +436,13 @@
 ;    (with-exception-handler
 (current-exception-handler
  (lambda (c)
-   (if (condition? c)
-       (condition-printer c (current-error-port))
-       (format (current-error-port) "\n Non-condition object:\n     ~a\n" c))))
-                                        ;     (lambda ()
+   (cond
+    [(condition? c)
+     (condition-printer c (current-error-port))]
+    [else
+     (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)])
+   c)) ;; always returns the condition
+
 (cond
  ;; mulitple vm
  [(guard [c (#t #f)] (symbol-value '%vm-import-spec))

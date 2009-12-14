@@ -123,6 +123,11 @@ public:
     void collectProfile();
     void setThread(Thread* thread);
     Thread* thread();
+    void debugPrintState()
+    {
+        printf("sp=%x", sp_);
+        printf("fp=%x", fp_);
+    }
 
     Object values(int num, const Object* v);
     Object values2(Object obj1, Object obj2);

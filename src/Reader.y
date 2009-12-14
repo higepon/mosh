@@ -170,17 +170,22 @@ int yyerror(char const *str)
 {
     TextualInputPort* const port = currentVM()->readerContext()->port();
     const Object prevError = port->error();
+    ucs4string currentToken = port->scanner()->currentToken();
+    if (currentToken.empty()) {
+        currentToken = UC("<end of file>");
+    }
     if (prevError.isNil()) {
+        port->setError(format(NULL, UC("~a near [~a] at ~a:~d. "),
+                              Pair::list4(str,
+                                          Object::makeString(currentToken),
+                                          port->toString(),
+                                          Object::makeFixnum(port->getLineNo()))));
+
+    } else {
         port->setError(format(NULL, UC("~a: ~a near [~a] at ~a:~d. "),
                               Pair::list5(prevError,
                                           str,
-                                          Object::makeString(port->scanner()->currentToken()),
-                                          port->toString(),
-                                          Object::makeFixnum(port->getLineNo()))));
-    } else {
-        port->setError(format(NULL, UC("~a near [~a] at ~a:~d. "),
-                              Pair::list4(str,
-                                          Object::makeString(port->scanner()->currentToken()),
+                                          Object::makeString(currentToken),
                                           port->toString(),
                                           Object::makeFixnum(port->getLineNo()))));
     }

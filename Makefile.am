@@ -190,6 +190,7 @@ lib/mosh/jit/vm.ss \
 lib/mosh/jit/assembler.ss \
 lib/mosh/jit/instructions.ss \
 lib/match.ss \
+lib/irregex.ss \
 lib/memcached.ss \
 lib/lambda/wiki.ss    \
 lib/mosh/queue.ss    \
@@ -441,7 +442,7 @@ CORE_LIBS =                 \
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm
-	gosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
+	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
 src/compiler-vm.scm: src/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
@@ -522,6 +523,7 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/jit-assembler.scm
 	./mosh test/jit-compiler.scm
 	./mosh test/jit-util.scm
+	$(MAKE) -C test/irregex
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 
@@ -628,3 +630,7 @@ install-data-hook :
 lib/libffitest.so.1.0: src/ffitest.c
 	$(CC) -std=c99 -Wall -fPIC -c $< -o src/ffitest.o
 	$(CC) -Wl @SHLIB_SO_LDFLAGS@ -o $@ src/ffitest.o
+
+# for flymake
+check-syntax:
+	LANG=C $(CXX) -o nul $(mosh_CXXFLAGS) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H $(INCLUDES) -S ${CHK_SOURCES}

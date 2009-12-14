@@ -20,7 +20,7 @@
 
 (library (psyntax library-manager)
   (export imported-label->binding library-subst installed-libraries
-          invoke-library-by-spec ;; export for mosh
+          invoke-library-by-name ;; export for mosh
     visit-library library-name library-version library-exists?
     find-library-by-name install-library library-spec invoke-library
     current-library-expander
@@ -414,6 +414,11 @@
 
   (define (invoke-library-by-spec spec)
     (invoke-library (find-library-by-spec/die spec)))
+
+  ;; for Mosh.
+  (define (invoke-library-by-name name)
+    (invoke-library (find-library-by-name name)))
+
 
   (define installed-libraries
     (case-lambda

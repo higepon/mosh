@@ -554,6 +554,7 @@ Object VM::apply(Object proc, Object args)
     Object* const direct = getDirectThreadedCode(applyCodeForApply_, applyCodeForApplyLength_);
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
+
     return ret;
 }
 
@@ -951,7 +952,11 @@ void VM::tryJitCompile(Object closure)
 
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
-        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-spec"))));
+//        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))));
+        const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
+        printf("<<HIGE>>");
+//        callClosure1(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))), importSpec);
+//        LOG1("<compiler ~a>", compiler);
         return;
     } else {
 
