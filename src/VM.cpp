@@ -950,13 +950,17 @@ void VM::tryJitCompile(Object closure)
     // prevent recursive jit compilation on compiler.
     c->setNowJitCompiling();
 
+    static bool loading = false;
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
+        if (!loading) {
+        loading = true;
 //        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))));
         const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
         printf("<<HIGE>>");
-//        callClosure1(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))), importSpec);
-//        LOG1("<compiler ~a>", compiler);
+        callClosure1(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))), importSpec);
+        LOG1("<compiler ~a>", compiler);
+        }
         return;
     } else {
 
