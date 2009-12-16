@@ -24,12 +24,12 @@
 
 #!r6rs
 (library (srfi private include)
-  (export 
+  (export
     include/resolve)
-  (import 
+  (import
 (only (rnrs) define-syntax lambda define syntax-case for-all and string? positive? string-length syntax->datum syntax let if null? error quote file-exists? cdr string-append car apply map with-exception-handler raise condition make-error make-who-condition make-message-condition make-irritants-condition list condition? call-with-input-file eof-object? datum->syntax quasiquote cons read _ ... unquote reverse)
     (for (srfi private include compat) expand))
-  
+
   (define-syntax include/resolve
     (lambda (stx)
       (define (include/lexical-context ctxt filename)
@@ -52,10 +52,10 @@
                       (loop (cons x a))))))))))
       (syntax-case stx ()
         [(ctxt (lib-path* ...) file-path)
-         (for-all (lambda (s) (and (string? s) (positive? (string-length s)))) 
+         (for-all (lambda (s) (and (string? s) (positive? (string-length s))))
                   (syntax->datum #'(lib-path* ... file-path)))
-         (let ([p (apply string-append 
-                         (map (lambda (ps) (string-append "/" ps)) 
+         (let ([p (apply string-append
+                         (map (lambda (ps) (string-append "/" ps))
                               (syntax->datum #'(lib-path* ... file-path))))]
                [sp (search-paths)])
            (let loop ([search sp])

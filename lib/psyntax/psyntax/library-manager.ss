@@ -28,8 +28,9 @@
     serialize-all current-precompiled-library-loader)
   (import (except (rnrs) library equal?)
           (psyntax compat) (rnrs r5rs)
+          (only (system) create-mosh-cache-dir)
           (rename (except (mosh) library-path make-parameter parameterize) (fast-equal? equal?)) ;; ignore circular list
-          
+
           )
 
   (define (make-collection)
@@ -417,7 +418,8 @@
 
   ;; for Mosh.
   (define (invoke-library-by-name name)
-    (invoke-library (find-library-by-name name)))
+    (parameterize ([mosh-cache-dir (create-mosh-cache-dir)])
+      (invoke-library (find-library-by-name name))))
 
 
   (define installed-libraries

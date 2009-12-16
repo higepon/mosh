@@ -125,8 +125,8 @@ public:
     Thread* thread();
     void debugPrintState()
     {
-        printf("sp=%x", sp_);
-        printf("fp=%x", fp_);
+        printf("sp=%lx", (uintptr_t)sp_);
+        printf("fp=%lx", (uintptr_t)fp_);
     }
 
     Object values(int num, const Object* v);

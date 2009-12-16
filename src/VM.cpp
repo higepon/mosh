@@ -84,6 +84,7 @@
 #include "Scanner.h"
 #include "Reader.h"
 #include "NumberReader.h"
+#include "Time.h"
 
 #define TRY_VM  sigjmp_buf org;                     \
                 copyJmpBuf(org, returnPoint_);   \
@@ -956,15 +957,23 @@ void VM::tryJitCompile(Object closure)
         if (!loading) {
         loading = true;
 //        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))));
+
+        Time t1 = Time::now();
         const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
-        printf("<<HIGE>>");
+//        printf("<<HIGE>>");
+//        LOG1("cache=~a", callClosure0(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("mosh-cache-dir")))));
         callClosure1(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))), importSpec);
-        LOG1("<compiler ~a>", compiler);
+        Time t2 = Time::now();
+//        printf("load time %ld", Time::diffMsec(t2, t1));
+//        LOG1("<compiler ~a>", compiler);
         }
         return;
     } else {
-
+        Time t1 = Time::now();
         Object compiled = callClosure1(compiler, closure);
+        Time t2 = Time::now();
+        printf("compile time %ld\n", Time::diffUsec(t2, t1));
+
         if (compiled.isFalse()) {
             LOG1("jit compile error ~a\n", closure);
             c->setJitCompiledError();
