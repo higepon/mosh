@@ -30,46 +30,66 @@
   (import (rnrs)
           (mosh))
 
+
 (define (gas->sassy gas)
   (cond
-   ;; mov %rsp,%rbx
-   [(#/([^\s]+)\s+%([^\s]+),%([^\s]+)/ gas) =>
+   ;; movl $.LC0, %edi
+   [(#/\s*([^\s]+)\s+\$(\.\w+),\s*%([^\s]+)/ gas) =>
     (lambda (m)
-      `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3)) ,(string->symbol (m 2))))]
-   ;; mov 0x30(%rbx),%rdx
-   [(#/([^\s]+)\s+0x([\d]+)\(%([^\s]+)\),%([^\s]+)/ gas) =>
+      `(,(m 1) ,(m 3) (label ,(m 2))))]
+   ;; call exit
+   [(#/^\s*call\s+(\w+)$/ gas) =>
     (lambda (m)
-      `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 4))
-        (& ,(string->symbol (m 3)) , (string->number (m 2) 16))))]
-   ;; leaq  -8(%rax), %rdx
-   [(#/([^\s]+)\s+(-?[\d]+)\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
+      `("call" ,(m 1)))]
+   ;; addq $8, %rax
+   [(#/\s*([^\s]+)\s+\$(\d+),\s*%([^\s]+)/ gas) =>
     (lambda (m)
-      `(,(string->symbol (m 1)) ,(string->symbol (m 4))
-        (& ,(string->symbol (m 3)) , (string->number (m 2) 16))))]
-   ;; mov (%rbx),%rdx
-   [(#/([^\s]+)\s+\(%([^\s]+)\),%([^\s]+)/ gas) =>
+      `(,(m 1) ,(m 3) ,(m 2)))]
+   ;; movq %rdx, (%rcx)
+   [(#/\s*([^\s]+)\s+%([^\s]+),\s*\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
-      `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3))
-        (& ,(string->symbol (m 2)))))]
-   ;; mov    %rcx,0x28(%rbx)
-   [(#/([^\s]+)\s+%([^\s]+),0x(\d+)\(%([^\s]+)\)/ gas) =>
+      `(,(m 1) (& ,(m 3)) ,(m 2)))]
+   ;; movl $2, 56(%rdi)
+   [(#/\s*([^\s]+)\s+\$(\d+),\s*(\d+)\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
-      `(,(string->symbol (string-append (m 1) "q"))
-        (& ,(string->symbol (m 4)) ,(string->number (m 3) 16))
-        ,(string->symbol (m 2))
-        ))]
-   ;; add    $0x8,%rcx
-   [(#/([^\s]+)\s+\$0x(\d+),%([^\s]+)/ gas) =>
+      `(,(m 1) (& ,(m 4) ,(m 3)) ,(m 2)))]
+   ;; cmpq %rax, 104(%rbx)
+   [(#/\s*([^\s]+)\s+%([^\s]+),\s*(\d+)\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
-      `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3))
-        ,(string->number (m 2) 16)))]
-   [(#/\s+\.file|section|text|align|weak|type|loc|cfi/ gas) '()]
-   [(#/\.(.+):/ gas) =>
-     (lambda (m)
-     `(label ,(string->symbol (m 1))))]
-   [(#/(.+):/ gas) =>
-     (lambda (m)
-     `(label ,(string->symbol (m 1))))]
+      `(,(m 1) (& ,(m 4) ,(m 3)) ,(m 2)))]
+   ;; call *24(%rax)
+   [(#/\s*([^\s]+)\s+\*(\d+)\(%([^\s]+)\)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) (& ,(m 3) ,(m 2))))]
+   ;; rep
+   [(#/\s*(rep|ret)/ gas) =>
+    (lambda (m)
+      `(,(m 1)))]
+   ;; setbe %al
+   [(#/^\s*([^\s]+)\s+%([^\s]+)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) ,(m 2)))]
+   ;; label
+   [(#/\s*([^:]+):/ gas) =>
+    (lambda (m)
+      `(label ,(m 1)))]
+   ;; jb .L5
+   [(#/^\s*(jb|je|jne|jmp|jle)\s+([^%\*]+)/ gas) =>
+    (lambda (m)
+      `(,(m 1) (label ,(m 2))))]
+   ;; jmp *%r11
+   [(#/\s*jmp\s*\*%(.*)/ gas) =>
+    (lambda (m)
+      `("jmp" ,(m 1)))]
+   ;; movq (%rdi), %rax
+   [(#/\s*([^\s]+)\s*\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
+    (lambda (m)
+      `(,(m 1) ,(m 3) (& ,(m 2))))]
+   ;; addq %rsi, %rdi
+   [(#/\s*([^\s]+)\s*%([^\s]+),\s*%([^\s]+)/ gas) =>
+    (lambda (m)
+      `(,(m 1) ,(m 3) ,(m 2)))]
+   [(#/\s+\.file|section|text|align|weak|type|loc|cfi|size|globl|string|byte|\.uleb128/ gas) '()]
    [else
     (error 'gas->sassy "invalid form" gas)]
    ))

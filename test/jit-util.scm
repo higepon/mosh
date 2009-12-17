@@ -31,22 +31,45 @@
         (mosh jit util))
 
 ;; gas -> sassy
-(test-equal '(movq rbx rsp) (gas->sassy "mov   %rsp,%rbx"))
-(test-equal '(movq rdx (& rbx #x30)) (gas->sassy "mov    0x30(%rbx),%rdx"))
-(test-equal '(addq rcx #x8) (gas->sassy "add    $0x8,%rcx"))
-(test-equal '(movq (& rbx #x28) rcx) (gas->sassy "mov    %rcx,0x28(%rbx)"))
-(test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
-(test-equal '(leaq rdx (& rax -8)) (gas->sassy "leaq    -8(%rax), %rdx"))
 (test-equal '() (gas->sassy "\t.file\t\"VM.cpp\""))
 (test-equal '() (gas->sassy "\t.section\t.debug_abbrev,\"\",@progbits"))
-(test-equal '(label Ldebug_abbrev0) (gas->sassy ".Ldebug_abbrev0:"))
 (test-equal '() (gas->sassy "\t.text"))
 (test-equal '() (gas->sassy "\t.align 2"))
 (test-equal '() (gas->sassy "\t.weak\t_ZN10gc_cleanup7cleanupEPvS0_"))
 (test-equal '() (gas->sassy "\t.type\t_ZN10gc_cleanup7cleanupEPvS0_, @function"))
-(test-equal '(label _ZN10gc_cleanup7cleanupEPvS0_) (gas->sassy "_ZN10gc_cleanup7cleanupEPvS0_:"))
 (test-equal '() (gas->sassy "\t.loc 1 339 0"))
-(test-equal '(addq rdi rsi) (gas->sassy "\taddq\t%rsi, %rdi"))
+(test-equal '("addq" "rdi" "rsi") (gas->sassy "\taddq\t%rsi, %rdi"))
+(test-equal '("movq" "rax" (& "rdi")) (gas->sassy "\tmovq\t(%rdi), %rax"))
+(test-equal '("jmp" "r11") (gas->sassy "\tjmp\t*%r11"))
+(test-equal '() (gas->sassy "\t.size\t_ZN10gc_cleanup7cleanupEPvS0_, .-_ZN10gc_cleanup7cleanupEPvS0_"))
+(test-equal '() (gas->sassy ".globl _ZNK6scheme2VM17mayBeStackPointerEPNS_6ObjectE"))
+(test-equal '("jb" (label ".L5")) (gas->sassy "\tjb\t.L5"))
+(test-equal '(label ".Ldebug_abbrev0") (gas->sassy ".Ldebug_abbrev0:"))
+(test-equal '("setbe" "al") (gas->sassy "\tsetbe\t%al"))
+(test-equal '("rep") (gas->sassy "\trep"))
+(test-equal '("ret") (gas->sassy "\tret"))
+(test-equal '("call" (& "rax" "24")) (gas->sassy "\tcall\t*24(%rax)"))
+(test-equal '("cmpq" (& "rbx" "104") "rax") (gas->sassy "\tcmpq\t%rax, 104(%rbx)"))
+(test-equal '("je" (label ".L11")) (gas->sassy "\tje\t.L11"))
+(test-equal '("movl" (& "rdi" "56") "2") (gas->sassy "\tmovl\t$2, 56(%rdi)"))
+(test-equal '("movq" (& "rcx") "rdx") (gas->sassy "\tmovq\t%rdx, (%rcx)"))
+(test-equal '("jne" (label ".L37")) (gas->sassy "\tjne\t.L37"))
+(test-equal '("jmp" (label ".L30")) (gas->sassy "\tjmp\t.L30"))
+(test-equal '("addq" "rax" "8") (gas->sassy "\taddq\t$8, %rax"))
+(test-equal '("jle" (label ".L33")) (gas->sassy "\tjle\t.L33"))
+(test-equal '("call" "exit") (gas->sassy "\tcall\texit"))
+(test-equal '() (gas->sassy "\t.string\t\"<\""))
+(test-equal '("movl" "edi" (label ".LC0")) (gas->sassy "\tmovl\t$.LC0, %edi"))
+(test-equal '() (gas->sassy "\t.byte\t0xff"))
+(test-equal '() (gas->sassy "\t.uleb128 .LLSDACSE3083-.LLSDACSB3083"))
+
+;; todo
+(test-equal '("movq" (& "rdi") "_ZTV10gc_cleanup+24") (gas->sassy "\tmovq\t$_ZTV10gc_cleanup+24, (%rdi)"))
+
+
+
+(test-results)
+
 (call-with-input-file "/home/taro/Dropbox/VM.S"
   (lambda (p)
     (do ([line (get-line p) (get-line p)])
@@ -57,4 +80,4 @@
                  (raise c)])
                 (gas->sassy line)))))
 
-(test-results)
+
