@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
     } else if (showOffset) {
-        printf("(define vm-register-offset %d)", (uintptr_t)(&(theVM->ac_)) - (uintptr_t)theVM);
+        printf("(define vm-register-offset %d)", (int)((uintptr_t)(&(theVM->ac_)) - (uintptr_t)theVM));
     } else if (isR6RSBatchMode) {
         if (NULL == loadPath) {
             theVM->setValueString(UC("%loadpath"), Object::False);

@@ -27,6 +27,7 @@
 ;
 (library (mosh jit compiler)
   (export
+   (rename (jit-compiled? compiled?))
    compile
    disasm
    u8-list->c-procedure

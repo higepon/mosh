@@ -350,6 +350,7 @@ protected:
     EqHashTable* callBackTrampolines_;
     uintptr_t callBackTrampolinesUid_;
     JitStack jitStack_;
+    bool isJitLibraryLoading_;
 };
 
 } // namespace scheme

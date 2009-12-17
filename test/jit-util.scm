@@ -26,6 +26,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (import (rnrs)
+        (mosh)
         (mosh test)
         (mosh jit util))
 
@@ -36,5 +37,24 @@
 (test-equal '(movq (& rbx #x28) rcx) (gas->sassy "mov    %rcx,0x28(%rbx)"))
 (test-equal '(movq rcx (& rdx)) (gas->sassy "mov    (%rdx),%rcx"))
 (test-equal '(leaq rdx (& rax -8)) (gas->sassy "leaq    -8(%rax), %rdx"))
+(test-equal '() (gas->sassy "\t.file\t\"VM.cpp\""))
+(test-equal '() (gas->sassy "\t.section\t.debug_abbrev,\"\",@progbits"))
+(test-equal '(label Ldebug_abbrev0) (gas->sassy ".Ldebug_abbrev0:"))
+(test-equal '() (gas->sassy "\t.text"))
+(test-equal '() (gas->sassy "\t.align 2"))
+(test-equal '() (gas->sassy "\t.weak\t_ZN10gc_cleanup7cleanupEPvS0_"))
+(test-equal '() (gas->sassy "\t.type\t_ZN10gc_cleanup7cleanupEPvS0_, @function"))
+(test-equal '(label _ZN10gc_cleanup7cleanupEPvS0_) (gas->sassy "_ZN10gc_cleanup7cleanupEPvS0_:"))
+(test-equal '() (gas->sassy "\t.loc 1 339 0"))
+(test-equal '(addq rdi rsi) (gas->sassy "\taddq\t%rsi, %rdi"))
+(call-with-input-file "/home/taro/Dropbox/VM.S"
+  (lambda (p)
+    (do ([line (get-line p) (get-line p)])
+        [(eof-object? line)]
+      (guard (c [#t
+                 (format #t "(test-equal '() (gas->sassy ~s))" line)
+                 (newline)
+                 (raise c)])
+                (gas->sassy line)))))
 
 (test-results)

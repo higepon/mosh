@@ -121,7 +121,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     errno_(0),
     dynamicWinders_(Object::Nil),
     callBackTrampolines_(new EqHashTable),
-    callBackTrampolinesUid_(0)
+    callBackTrampolinesUid_(0),
+    isJitLibraryLoading_(false)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -951,34 +952,27 @@ void VM::tryJitCompile(Object closure)
     // prevent recursive jit compilation on compiler.
     c->setNowJitCompiling();
 
-    static bool loading = false;
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
-        if (!loading) {
-        loading = true;
-//        LOG1("<invoke ~a>", getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))));
+        // prevent recursive loading.
+        if (!isJitLibraryLoading_) {
+            isJitLibraryLoading_ = true;
 
-        Time t1 = Time::now();
-        const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
-//        printf("<<HIGE>>");
-//        LOG1("cache=~a", callClosure0(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("mosh-cache-dir")))));
-        callClosure1(getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name"))), importSpec);
-        Time t2 = Time::now();
-//        printf("load time %ld", Time::diffMsec(t2, t1));
-//        LOG1("<compiler ~a>", compiler);
+            const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
+            const Object invokeLibrary = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name")));
+            MOSH_ASSERT(!invokeLibrary.isFalse());
+            callClosure1(invokeLibrary, importSpec);
         }
         return;
     } else {
         Time t1 = Time::now();
         Object compiled = callClosure1(compiler, closure);
         Time t2 = Time::now();
-        printf("compile time %ld\n", Time::diffUsec(t2, t1));
-
         if (compiled.isFalse()) {
-            LOG1("jit compile error ~a\n", closure);
+            LOG2("jit compile error ~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
             c->setJitCompiledError();
         } else {
-            LOG1("jit compile~a\n", closure);
+            LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
             c->setJitCompiledCProcedure(compiled);
         }
         return;

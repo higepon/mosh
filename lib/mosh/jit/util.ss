@@ -63,6 +63,13 @@
     (lambda (m)
       `(,(string->symbol (string-append (m 1) "q")) ,(string->symbol (m 3))
         ,(string->number (m 2) 16)))]
+   [(#/\s+\.file|section|text|align|weak|type|loc|cfi/ gas) '()]
+   [(#/\.(.+):/ gas) =>
+     (lambda (m)
+     `(label ,(string->symbol (m 1))))]
+   [(#/(.+):/ gas) =>
+     (lambda (m)
+     `(label ,(string->symbol (m 1))))]
    [else
     (error 'gas->sassy "invalid form" gas)]
    ))

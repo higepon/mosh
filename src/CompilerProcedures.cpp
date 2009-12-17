@@ -82,6 +82,20 @@ enum {
     TAG_RECEIVE       = 18
 };
 
+
+Object scheme::jitCompiledPEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("jit-compiled?");
+    checkArgumentLength(1);
+    argumentCheckProcedure(0, proc);
+    if (proc.isClosure() && proc.toClosure()->isJitCompiled()) {
+        return Object::True;
+    } else {
+        return Object::False;
+    }
+}
+
+
 Object scheme::objTointegerEx(VM* theVM, int argc, const Object* argv)
 {
     DeclareProcedureName("obj->integer");
