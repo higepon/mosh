@@ -26,19 +26,41 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (mosh jit util)
-  (export gas->sassy)
+  (export gas->sassy gas->jit-asm)
   (import (rnrs)
           (mosh))
+
+(define (gas->jit-asm line)
+  #f
+)
 
 
 (define (gas->sassy gas)
   (cond
+   [(#/\s*#/ gas)
+    '()]
    ;; movl $.LC0, %edi
    [(#/\s*([^\s]+)\s+\$(\.\w+),\s*%([^\s]+)/ gas) =>
     (lambda (m)
       `(,(m 1) ,(m 3) (label ,(m 2))))]
+   ;; movl $_ZN10gc_cleanup7cleanupEPvS0_, %esi
+   [(#/\s*([^\s]+)\s+\$([^\s]+),\s*%([^\s]+)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) ,(m 3) ,(m 2)))]
+   ;; movq $_ZTV10gc_cleanup+24, (%rdi)
+   [(#/\s*([^\s]+)\s+\$([^\s]+),\s*\(%([^\s]+)\)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) (& ,(m 3)) ,(m 2)))]
+   ;; setne 16(%rbx)
+   [(#/^\s*([^\s]+)\s+(\d+)\(%([^\s]+)\)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) (& ,(m 3) ,(m 2))))]
+   ;; movq $.L161, 144(%rdi)
+   [(#/\s*([^\s]+)\s+\$([^\s]+),\s*(-?\d+)\(%([^\s]+)\)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) (& ,(m 4) ,(m 3)) ,(m 2)))]
    ;; call exit
-   [(#/^\s*call\s+(\w+)$/ gas) =>
+   [(#/^\s*call\s+([\.\w]+)$/ gas) =>
     (lambda (m)
       `("call" ,(m 1)))]
    ;; addq $8, %rax
@@ -50,19 +72,27 @@
     (lambda (m)
       `(,(m 1) (& ,(m 3)) ,(m 2)))]
    ;; movl $2, 56(%rdi)
-   [(#/\s*([^\s]+)\s+\$(\d+),\s*(\d+)\(%([^\s]+)\)$/ gas) =>
+   [(#/\s*([^\s]+)\s+\$(\d+),\s*(\w+)\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
       `(,(m 1) (& ,(m 4) ,(m 3)) ,(m 2)))]
    ;; cmpq %rax, 104(%rbx)
-   [(#/\s*([^\s]+)\s+%([^\s]+),\s*(\d+)\(%([^\s]+)\)$/ gas) =>
+   [(#/\s*([^\s]+)\s+%([^\s]+),\s*([\-\+\w]+)\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
       `(,(m 1) (& ,(m 4) ,(m 3)) ,(m 2)))]
    ;; call *24(%rax)
    [(#/\s*([^\s]+)\s+\*(\d+)\(%([^\s]+)\)$/ gas) =>
     (lambda (m)
       `(,(m 1) (& ,(m 3) ,(m 2))))]
+   ;; call *(%rax)
+   [(#/\s*([^\s]+)\s+\*\(%([^\s]+)\)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) (& ,(m 2))))]
+   ;; call *%rax
+   [(#/\s*([^\s]+)\s+\*%([^\s]+)$/ gas) =>
+    (lambda (m)
+      `(,(m 1) ,(m 2)))]
    ;; rep
-   [(#/\s*(rep|ret)/ gas) =>
+   [(#/\s*(rep|ret|cltq)/ gas) =>
     (lambda (m)
       `(,(m 1)))]
    ;; setbe %al
@@ -74,7 +104,7 @@
     (lambda (m)
       `(label ,(m 1)))]
    ;; jb .L5
-   [(#/^\s*(jb|je|jne|jmp|jle)\s+([^%\*]+)/ gas) =>
+   [(#/^\s*(jl|jns|js|ja|jge|jb|jbe|je|jg|jae|jne|jmp|jle)\s+([^%\*]+)/ gas) =>
     (lambda (m)
       `(,(m 1) (label ,(m 2))))]
    ;; jmp *%r11
@@ -89,7 +119,7 @@
    [(#/\s*([^\s]+)\s*%([^\s]+),\s*%([^\s]+)/ gas) =>
     (lambda (m)
       `(,(m 1) ,(m 3) ,(m 2)))]
-   [(#/\s+\.file|section|text|align|weak|type|loc|cfi|size|globl|string|byte|\.uleb128/ gas) '()]
+   [(#/\s+\.quad|data|long|zero|comm|value|sleb|ascii|file|section|text|align|weak|type|loc|cfi|size|globl|string|byte|\.uleb128/ gas) '()]
    [else
     (error 'gas->sassy "invalid form" gas)]
    ))

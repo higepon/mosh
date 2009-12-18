@@ -62,22 +62,80 @@
 (test-equal '("movl" "edi" (label ".LC0")) (gas->sassy "\tmovl\t$.LC0, %edi"))
 (test-equal '() (gas->sassy "\t.byte\t0xff"))
 (test-equal '() (gas->sassy "\t.uleb128 .LLSDACSE3083-.LLSDACSB3083"))
+(test-equal '("cltq") (gas->sassy "\tcltq"))
+(test-equal '("ja" (label ".L106")) (gas->sassy "\tja\t.L106"))
+(test-equal '("movl" "esi" "_ZN10gc_cleanup7cleanupEPvS0_") (gas->sassy "\tmovl\t$_ZN10gc_cleanup7cleanupEPvS0_, %esi"))
+(test-equal '("jg" (label ".L134")) (gas->sassy "\tjg\t.L134"))
+(test-equal '("movq" (& "rsp" "-32") "rbx") (gas->sassy "\tmovq\t%rbx, -32(%rsp)"))
+(test-equal '("call" "T.1760") (gas->sassy "\tcall\tT.1760"))
+(test-equal '("jl" (label ".L630")) (gas->sassy "\tjl\t.L630"))
+(test-equal '("js" (label ".L630")) (gas->sassy "\tjs\t.L630"))
+(test-equal '("call" "r14") (gas->sassy "\tcall\t*%r14"))
+(test-equal '() (gas->sassy "\t.quad\t0"))
+(test-equal '() (gas->sassy "\t.long\t0"))
+(test-equal '() (gas->sassy "\t.zero\t32"))
+(test-equal '() (gas->sassy "\t.comm\t_ZGVZN6scheme2VM7compileENS_6ObjectEE4proc,8,8"))
+(test-equal '() (gas->sassy "\t.value\t0x1"))
+(test-equal '() (gas->sassy "\t.sleb128 16"))
+(test-equal '() (gas->sassy "\t.ascii\t\"shta\""))
+(test-equal '("call" (& "rax")) (gas->sassy "\tcall\t*(%rax)"))
+(test-equal '("movq" (& "rdi" "144") ".L161") (gas->sassy "\tmovq\t$.L161, 144(%rdi)"))
+(test-equal '() (gas->sassy "#APP"))
+(test-equal '("setne" (& "rbx" "16")) (gas->sassy "\tsetne\t16(%rbx)"))
+(test-equal '("movq" (& "rip" "_ZN6scheme7ioErrorE+8") "rax") (gas->sassy "\tmovq\t%rax, _ZN6scheme7ioErrorE+8(%rip)"))
+(test-equal '() (gas->sassy "\t.data"))
 
 ;; todo
 (test-equal '("movq" (& "rdi") "_ZTV10gc_cleanup+24") (gas->sassy "\tmovq\t$_ZTV10gc_cleanup+24, (%rdi)"))
+(test-equal '("cmpb" (& "rip" "_ZGVZN6scheme2VM7compileENS_6ObjectEE4proc") "0") (gas->sassy "\tcmpb\t$0, _ZGVZN6scheme2VM7compileENS_6ObjectEE4proc(%rip)"))
+(test-equal '("movq" (& "rip" "_ZZN6scheme2VM7compileENS_6ObjectEE4proc") "rax") (gas->sassy "\tmovq\t%rax, _ZZN6scheme2VM7compileENS_6ObjectEE4proc(%rip)"))
+
+(test-equal '() (gas->jit-asm "movq	88(%rsp), %rbx"))
+
+(test-equal '((movq ,(vm-register 'ac) ,(obj->integer val))
+              (movq rax ,(vm-register 'ac)))
+"	 	 # -- CONSTANT start
+# 0 \"\" 2
+#NO_APP
+.LBB10901:
+.LBB10902:
+	.loc 5 50 0
+	movq	88(%rsp), %rbx
+.LVL362:
+	movq	48(%rbx), %rax
+.LBE10902:
+	movq	(%rax), %rdx
+.LBB10903:
+	leaq	8(%rax), %rcx
+.LVL363:
+	movq	%rcx, 48(%rbx)
+	.loc 18 311 0
+	movq	%rdx, 8(%rbx)
+.LBE10903:
+.LBE10901:
+	.loc 18 312 0
+#APP
+# 312 
+	 	 # -- CONSTANT end")
 
 
 
 (test-results)
 
-(call-with-input-file "/home/taro/Dropbox/VM.S"
-  (lambda (p)
-    (do ([line (get-line p) (get-line p)])
-        [(eof-object? line)]
-      (guard (c [#t
-                 (format #t "(test-equal '() (gas->sassy ~s))" line)
-                 (newline)
-                 (raise c)])
-                (gas->sassy line)))))
+;; Following code was used for debug.
+;; (call-with-input-file "/home/taro/Dropbox/VM-Run.S"
+;;   (lambda (p)
+;;     (do ([line (get-line p) (get-line p)]
+;;          [i 0 (+ i 1)])
+;;         [(eof-object? line)]
+;;       (guard (c [#t
+;;                  (format #t "line:~d" i)
+;;                  (newline)
+;;                  (format #t "(test-equal '() (gas->sassy ~s))" line)
+;;                  (newline)
+;;                  (raise c)])
+;;              (display i)
+;;              (newline)
+;;                 (gas->sassy line)))))
 
 
