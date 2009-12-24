@@ -29,6 +29,7 @@
         (mosh)
         (mosh test)
         (mosh file)
+        (only (srfi :8) receive)
         (only (srfi :1) append-map)
         (mosh jit util))
 
@@ -86,66 +87,111 @@
 (test-equal '(setne (& rbx 16)) (gas->sassy "\tsetne\t16(%rbx)"))
 (test-equal '(movq (& rip "_ZN6scheme7ioErrorE+8") rax) (gas->sassy "\tmovq\t%rax, _ZN6scheme7ioErrorE+8(%rip)"))
 (test-equal '() (gas->sassy "\t.data"))
+(test-equal '(movq rbx (& rsp 88)) (gas->sassy "	movq	88(%rsp), %rbx"))
 
 ;; todo
 (test-equal '(movq (& rdi) "_ZTV10gc_cleanup+24") (gas->sassy "\tmovq\t$_ZTV10gc_cleanup+24, (%rdi)"))
 (test-equal '(cmpb (& rip "_ZGVZN6scheme2VM7compileENS_6ObjectEE4proc") 0) (gas->sassy "\tcmpb\t$0, _ZGVZN6scheme2VM7compileENS_6ObjectEE4proc(%rip)"))
 (test-equal '(movq (& rip "_ZZN6scheme2VM7compileENS_6ObjectEE4proc") rax) (gas->sassy "\tmovq\t%rax, _ZZN6scheme2VM7compileENS_6ObjectEE4proc(%rip)"))
 
-(test-equal ";; VM->pc++\n
-;; (movq rbx (& rsp 88))\n
-;; (movq rax (& rbx 48))\n
-;; (movq rdx (& rax))\n
-;; (leaq rcx (& rax 8))\n
-;; (movq (& 48 rbx) rcx)\n"
+(test-equal ";; VM->pc++
+;;   rbx <- VM* | (movq rbx (& rsp 88))
+;;   rax <- pc_ | (movq rax (& rbx 48))
+;;   rdx <- *pc_ | (movq rdx (& rax))
+;;   rcx <- pc_ + 8 | (leaq rcx (& rax 8))
+;;   pc_ <- rcx | (movq (& 48 rbx) rcx)"
             (asm*->jit-asm*
              '(
              (movq rbx (& rsp 88))
+             (label a)
              (movq rax (& rbx 48))
+             (label b)
              (movq rdx (& rax))
+             (label c)
              (leaq rcx (& rax 8))
-             (movq (& 48 rbx) rcx))))
+             (label d)
+             (movq (& rbx 48) rcx))))
 
 
-;(test-equal '() (gas->jit-asm "movq 88(%rsp), %rbx"))
-
-#;(test-equal '((movq ,(vm-register 'ac) ,(obj->integer val))
-              (movq rax ,(vm-register 'ac)))
-"        # -- CONSTANT start
-# 0 \"\" 2
-#NO_APP
-.LBB10901:
-.LBB10902:
-    .loc 5 50 0
-    movq    88(%rsp), %rbx
-.LVL362:
-    movq    48(%rbx), %rax
-.LBE10902:
-    movq    (%rax), %rdx
-.LBB10903:
-    leaq    8(%rax), %rcx
-.LVL363:
-    movq    %rcx, 48(%rbx)
-    .loc 18 311 0
-    movq    %rdx, 8(%rbx)
-.LBE10903:
-.LBE10901:
-    .loc 18 312 0
-#APP
-# 312
-         # -- CONSTANT end")
-
+;; use jit-helper for VM-Run.S
+(define (jit-helper gas-lines)
+  (let loop ([asm* (remp null? (map gas->sassy gas-lines))])
+    (cond
+     [(null? asm*) '()]
+     [else
+      (receive (jit-asm* more) (asm*->jit-asm* asm*)
+        (cond
+         [jit-asm*
+          (display jit-asm*)
+          (newline)
+          (loop more)]
+         [else
+          (display (car asm*))
+          (newline)
+          (loop (cdr asm*))]))])))
 
 
 (test-results)
 
-(let ([lst (remp null? (map gas->sassy (file->list "/home/taro/Dropbox/VM-Run.tmp")))])
-  (write lst)
-(let loop ([lst lst])
-  (cond
-   [(null? lst) '()]
-   [(display (asm*->jit-asm* lst))
-    (loop (cdr lst))])))
+(jit-helper (string-split "# 310 \"src/VM-Run.cpp\" 1
+	 	 # -- CONSTANT start
+# 0 \"\" 2
+#NO_APP
+.LBB10901:
+.LBB10902:
+	.loc 5 50 0
+	movq	88(%rsp), %rbx
+.LVL362:
+	movq	48(%rbx), %rax
+.LBE10902:
+	movq	(%rax), %rdx
+.LBB10903:
+	leaq	8(%rax), %rcx
+.LVL363:
+	movq	%rcx, 48(%rbx)
+	.loc 18 311 0
+	movq	%rdx, 8(%rbx)
+.LBE10903:
+.LBE10901:
+	.loc 18 312 0
+#APP
+# 312 \"src/VM-Run.cpp\" 1" #\newline))
+;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
+;; 	 	 # -- CONSTANT start
+;; # 0 \"\" 2
+;; #NO_APP
+;; .LBB10901:
+;; .LBB10902:
+;; 	.loc 5 50 0
+;; 	movq	88(%rsp), %rbx
+;; .LVL362:
+;; 	movq	48(%rbx), %rax
+;; .LBE10902:
+;; 	movq	(%rax), %rdx
+;; .LBB10903:
+;; 	leaq	8(%rax), %rcx
+;; .LVL363:
+;; 	movq	%rcx, 48(%rbx)
+;; 	.loc 18 311 0
+;; 	movq	%rdx, 8(%rbx)
+;; .LBE10903:
+;; .LBE10901:
+;; 	.loc 18 312 0
+;; #APP
+;; # 312 \"src/VM-Run.cpp\" 1" #\newline)))])
+;; (let loop ([lst lst])
+;;   (cond
+;;    [(null? lst) '()]
+;;    [(display (asm*->jit-asm* lst))
+;;     (loop (cdr lst))])))
+
+
+;; (let ([lst (remp null? (map gas->sassy (file->list "/home/taro/Dropbox/VM-Run.S")))])
+;; (let loop ([lst lst])
+;;   (cond
+;;    [(null? lst) '()]
+;;    [(display (asm*->jit-asm* lst))
+;;     (loop (cdr lst))])))
 
 ;; Following code was used for debug.
 ;; (call-with-input-file "/home/taro/Dropbox/VM-Run.S"

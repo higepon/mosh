@@ -31,23 +31,68 @@
           (match)
           (mosh))
 
+
+;; ((label ".LBB10906") (testb bpl 3) (label ".LBE10906") (label ".LBE10905") (movq (& rsi 8) rbp) (label ".LBB10904") (label ".LBB10907") (jne (label ".L224")) (movq rax (& rbp)) (andl eax 3) (cmpq rax 3) (je (label ".L224")) (label ".LBE10907") (label ".LBE10904") (movq rax (& rbp 8)) (movq (& rsi 8) rax) (jmp (label ".L870")) (label ".LVL361") (label ".L234") (label ".LBB10901") (label ".LBB10902") 
+
+;; (movq rbx (& rsp 88))
+;; (label ".LVL362")
+;; (movq rax (& rbx 48))
+;; (label ".LBE10902")
+;; (movq rdx (& rax))
+;; (label ".LBB10903")
+;; (leaq rcx (& rax 8))
+;; (label ".LVL363")
+;; (movq (& rbx 48) rcx) (movq (& rbx 8) rdx) (label ".LBE10903") (label ".LBE10901"))
+
 (define (asm*->jit-asm* asm*)
   (match asm*
     [(('movq reg1 ('& 'rsp 88))
+      ('label _a)
       ('movq reg2 ('& reg1 48))
-      ('movq 'rdx ('& reg2))
-      ('leaq 'rcx ('& 'rax 8))
-      ('movq ('& 48 reg1) rcx))
-(format
-";; VM->pc++\n
-;; (movq ~a (& rsp 88))\n
-;; (movq ~a (& ~a 48))\n
-;; (movq rdx (& ~a))\n
-;; (leaq rcx (& rax 8))\n
-;; (movq (& 48 ~a) rcx)\n" reg1 reg2  reg1 reg2 reg1)]
-   [(('movq reg1 ('& 'rsp 88)))
-(format ";; reg1 <- VM")]
-    [else ""]))
+      ('label _b)
+      ('movq reg3 ('& reg2))
+       ('label _c)
+      ('leaq reg4 ('& 'rax 8))
+      ('label _d)
+      ('movq ('& reg1 48) reg4)
+      . more)
+     (values 
+     (format
+";; VM->pc++
+;;   ~a <- VM* | (movq ~a (& rsp 88))
+;;   ~a <- pc_ | (movq ~a (& ~a 48))
+;;   ~a <- *pc_ | (movq ~a (& ~a))
+;;   rcx <- pc_ + 8 | (leaq rcx (& rax 8))
+;;   pc_ <- ~a | (movq (& 48 ~a) ~a)" reg1 reg1 reg2 reg2  reg1 reg3 reg3 reg2 reg4 reg1 reg4)
+     more)]
+    [(('movq reg1 ('& 'rsp 88))
+      ('label _a)
+      ('movq reg2 ('& reg1 48))
+      ('label _b)
+      ('movq reg3 ('& reg2))
+      . more)
+     (values
+     (format
+";; ~a <- VM* | (movq ~a (& rsp 88))
+;; ~a <- pc_ | (movq ~a (& ~a 48))
+;; ~a <- *pc_ | (movq ~a (& ~a))" reg1 reg1 reg2 reg2  reg1 reg3 reg3 reg2)
+     more)]
+    [(('movq reg1 ('& 'rsp 88))
+      ('label _a)
+      ('movq reg2 ('& reg1 48))
+      . more)
+     (values
+     (format
+";; ~a <- VM* | (movq ~a (& rsp 88))
+;; ~a <- pc_ | (movq ~a (& ~a 48))" reg1 reg1 reg2 reg2  reg1)
+     more)]
+    [(('movq reg1 ('& 'rsp 88))
+      . more)
+     (values
+     (format
+";; ~a <- VM* | (movq ~a (& rsp 88))" reg1 reg1)
+     more)]
+    [else (values #f #f)]))
 
 
 (define (gas->sassy gas)
@@ -152,13 +197,17 @@
     (lambda (m)
       `(,(s (m 1)) (label ,(m 2))))]
    ;; jmp *%r11
-   [(#/\s*jmp\s*\*%(.*)/ gas) =>
+   [(#/^\s*jmp\s*\*%(.*)/ gas) =>
     (lambda (m)
       `(jmp ,(s (m 1))))]
    ;; movq (%rdi), %rax
-   [(#/\s*([^\s]+)\s*\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
+   [(#/^\s*([^\s]+)\s*\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
     (lambda (m)
       `(,(s (m 1)) ,(s (m 3)) (& ,(s (m 2)))))]
+   ;; movq 88(%rdi), %rax
+   [(#/\s*([^\s]+)\s*(\d+)\(%([^\s]+)\),\s*%([^\s]+)/ gas) =>
+    (lambda (m)
+      `(,(s (m 1)) ,(s (m 4)) (& ,(s (m 3)) ,(s (m 2)))))]
    ;; addq %rsi, %rdi
    [(#/\s*([^\s]+)\s*%([^\s]+),\s*%([^\s]+)/ gas) =>
     (lambda (m)
