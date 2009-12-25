@@ -52,6 +52,12 @@
   (test-true (procedure? proc))
   (test-eq 3 (proc)))
 
+;; REFER_LOCAL instruction
+(let* ([code1 (assemble (REFER_LOCAL 0))]
+       [proc (u8*->c-procedure+retq code1)])
+  (test-true (procedure? proc))
+  (test-eq 1235 (proc 1235)))
+
 ;; REFER_LOCAL_PUSH_CONSTANT instruction
 (let* ([code1 (assemble (REFER_LOCAL_PUSH_CONSTANT 0 13))]
        [code2  (assemble (POP))]

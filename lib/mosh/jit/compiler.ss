@@ -33,6 +33,7 @@
    u8-list->c-procedure
    ;; exported for test
    macro-to-fixnum macro-make-fixnum
+   REFER_LOCAL
    REFER_LOCAL_PUSH_CONSTANT
    BRANCH_NOT_LT
    CONSTANT FRAME
@@ -374,6 +375,33 @@
 ;;  movq    %rdx, (%rax)   ;; *sp = ac
 ;;  addq    $8, %rax       ;; rax = rax + 8
 ;;  movq    %rax, 40(%rcx) ;; sp = sp + 8
+
+
+;; REFER_LOCAL
+;; (movq rbx (& rsp 88))
+;; (label .LVL593)
+;; (movq rax ,(vm-register 'pc))
+;; (label .LBE10050)
+;; (movq rdx (& rax))
+;; (label .LBB10051)
+;; (leaq rcx (& rax 8))
+;; (label .LVL594)
+;; (movq ,(vm-register 'pc) rcx)
+;; (movq rcx ,(vm-register 'fp))
+;; (sarq rdx 2)
+;; (movslq edx,%rdx)
+;; (movq rdx (& rcx,%rdx,8))
+;; (movq ,(vm-register 'ac) rdx)
+(define (REFER_LOCAL index)
+  `(,@(trace-push! $REFER_LOCAL)
+    (movq rcx ,(vm-register 'fp))
+    (movq rdx ,(obj->integer index))
+    ,@(macro-to-fixnum 'rdx)
+    ,@(macro-refer-local 'rcx 'rcx 'rdx)
+    (movq ,(vm-register 'ac) rcx)
+    (movq rax ,(vm-register 'ac))))
+
+
 
 
 

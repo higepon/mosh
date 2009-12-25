@@ -136,29 +136,31 @@
 (define (print-vm-asm* asm-text)
   (for-each print (asm*->vm-asm* (string-split asm-text #\newline))))
 
-(print-vm-asm* "# 310 \"src/VM-Run.cpp\" 1
-	 	 # -- CONSTANT start
-# 0 \"\" 2
+(print-vm-asm* "# 0 \"\" 2
 #NO_APP
-.LBB10901:
-.LBB10902:
+.LBB10049:
+.LBB10050:
 	.loc 5 50 0
 	movq	88(%rsp), %rbx
-.LVL362:
+.LVL593:
 	movq	48(%rbx), %rax
-.LBE10902:
+.LBE10050:
 	movq	(%rax), %rdx
-.LBB10903:
+.LBB10051:
 	leaq	8(%rax), %rcx
-.LVL363:
+.LVL594:
 	movq	%rcx, 48(%rbx)
-	.loc 18 311 0
+	.loc 18 800 0
+	movq	32(%rbx), %rcx
+	sarq	$2, %rdx
+	movslq	%edx,%rdx
+	movq	(%rcx,%rdx,8), %rdx
 	movq	%rdx, 8(%rbx)
-.LBE10903:
-.LBE10901:
-	.loc 18 312 0
+.LBE10051:
+.LBE10049:
+	.loc 18 801 0
 #APP
-# 312 \"src/VM-Run.cpp\" 1")
+# 801 \"src/VM-Run.cpp\"")
 
 #;(print-vm-asm* "	 	 # -- REFER_GLOBAL start
 # 0 \"\" 2

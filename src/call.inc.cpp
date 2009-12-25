@@ -76,7 +76,7 @@
 
                     COUNT_CALL(ac_);
 
-                    tryJitCompile(ac_);
+//                    tryJitCompile(ac_);
 
                     VM_ASSERT(operand.isFixnum());
                     const int argLength = operand.toFixnum();

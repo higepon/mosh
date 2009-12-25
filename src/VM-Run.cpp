@@ -794,9 +794,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_LOCAL)
         {
+            asm volatile("# -- REFER_LOCAL start");
             operand = fetchOperand();
             VM_ASSERT(operand.isFixnum());
             ac_ = referLocal(operand.toFixnum());
+            asm volatile("# -- REFER_LOCAL end");
             NEXT1;
         }
         CASE(REFER_LOCAL_CALL)
