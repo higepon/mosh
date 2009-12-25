@@ -28,9 +28,12 @@
 (import (rnrs)
         (mosh)
         (mosh test)
+        (mosh control)
+        (match)
         (mosh file)
         (only (srfi :8) receive)
         (only (srfi :1) append-map)
+        (mosh jit vm)
         (mosh jit util))
 
 ;; gas -> sassy
@@ -129,6 +132,121 @@
           (display (car asm*))
           (newline)
           (loop (cdr asm*))]))])))
+
+(define (print-vm-asm* asm-text)
+  (for-each print (asm*->vm-asm* (string-split asm-text #\newline))))
+
+(print-vm-asm* "# 310 \"src/VM-Run.cpp\" 1
+	 	 # -- CONSTANT start
+# 0 \"\" 2
+#NO_APP
+.LBB10901:
+.LBB10902:
+	.loc 5 50 0
+	movq	88(%rsp), %rbx
+.LVL362:
+	movq	48(%rbx), %rax
+.LBE10902:
+	movq	(%rax), %rdx
+.LBB10903:
+	leaq	8(%rax), %rcx
+.LVL363:
+	movq	%rcx, 48(%rbx)
+	.loc 18 311 0
+	movq	%rdx, 8(%rbx)
+.LBE10903:
+.LBE10901:
+	.loc 18 312 0
+#APP
+# 312 \"src/VM-Run.cpp\" 1")
+
+#;(print-vm-asm* "	 	 # -- REFER_GLOBAL start
+# 0 \"\" 2
+#NO_APP
+.LBB9989:
+.LBB9990:
+	.loc 5 50 0
+	movq	88(%rsp), %rbx
+.LVL580:
+	movq	88(%rsp), %rsi
+	movq	48(%rbx), %rax
+.LBE9990:
+	movq	(%rax), %rbx
+.LBB9991:
+	addq	$8, %rax
+	movq	%rax, 48(%rsi)
+.LBE9991:
+.LBE9989:
+.LBB9992:
+.LBB9993:
+.LBB9994:
+.LBB9995:
+	.loc 6 225 0
+	testb	$3, %bl
+	jne	.L488
+	movq	(%rbx), %rax
+	movq	%rax, %rdx
+	andl	$3, %edx
+	cmpq	$3, %rdx
+	je	.L1115
+.L488:
+.LBE9995:
+.LBE9994:
+.LBE9993:
+.LBE9992:
+.LBB9997:
+	.loc 18 737 0
+	movq	96(%rsp), %rdx
+	movq	88(%rsp), %rcx
+.LVL581:
+	movq	%rbx, %rsi
+	movq	96(%rsp), %rdi
+	movq	(%rdx), %rax
+	movq	104(%rcx), %rdx
+	call	*24(%rax)
+.LVL582:
+	.loc 18 738 0
+	movq	88(%rsp), %rsi
+	cmpq	104(%rsi), %rax
+.LVL583:
+	je	.L1116
+	.loc 18 745 0
+	movq	8(%rax), %rdx
+	movq	(%rdx), %rdx
+	movq	%rdx, 8(%rsi)
+	.loc 18 746 0
+	movq	48(%rsi), %rdx
+	movq	%rax, -8(%rdx)
+.LVL584:
+.L489:
+.LBE9997:
+	.loc 18 749 0
+#APP
+# 749 \"src/VM-Run.cpp\" 1
+	 	 # -- REFER_GLOBAL end")
+
+
+(test-equal '(movq rax (vm-register 'ac)) (asm->vm-asm 'rbx '(movq rax (& rbx 8))))
+(test-equal '(movq rax (vm-register 'dc)) (asm->vm-asm 'rbx '(movq rax (& rbx 16))))
+(test-equal '(movq rax (vm-register 'cl)) (asm->vm-asm 'rbx '(movq rax (& rbx 24))))
+(test-equal '(movq rax (vm-register 'fp)) (asm->vm-asm 'rbx '(movq rax (& rbx 32))))
+(test-equal '(movq rax (vm-register 'sp)) (asm->vm-asm 'rbx '(movq rax (& rbx 40))))
+(test-equal '(movq rax (vm-register 'pc)) (asm->vm-asm 'rbx '(movq rax (& rbx 48))))
+(test-equal '(movq rax (vm-register 'num-values)) (asm->vm-asm 'rbx '(movq rax (& rbx 56))))
+(test-equal '(movq rax (vm-register 'values)) (asm->vm-asm 'rbx '(movq rax (& rbx 64))))
+
+(test-equal '(movq rax (vm-register 'ac)) (asm->vm-asm 'rbx '(movq rax (& rbx 8))))
+(test-equal '(movq rax (vm-register 'dc)) (asm->vm-asm 'rbx '(movq rax (& rbx 16))))
+(test-equal '(movq rax (vm-register 'cl)) (asm->vm-asm 'rbx '(movq rax (& rbx 24))))
+(test-equal '(movq rax (vm-register 'fp)) (asm->vm-asm 'rbx '(movq rax (& rbx 32))))
+(test-equal '(movq rax (vm-register 'sp)) (asm->vm-asm 'rbx '(movq rax (& rbx 40))))
+(test-equal '(movq rax (vm-register 'pc)) (asm->vm-asm 'rbx '(movq rax (& rbx 48))))
+(test-equal '(movq rax (vm-register 'num-values)) (asm->vm-asm 'rbx '(movq rax (& rbx 56))))
+(test-equal '(movq rax (vm-register 'values)) (asm->vm-asm 'rbx '(movq rax (& rbx 64))))
+
+(test-equal '((movq rbx (& rsp 88)) rbx) (receive x (asm->vm-asm #f '(movq rbx (& rsp 88)))
+              x))
+
 
 
 (test-results)

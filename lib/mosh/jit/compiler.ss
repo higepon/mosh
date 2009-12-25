@@ -740,6 +740,17 @@
 ;;       # -- BRANCH_NOT_LT end
 
 
+;; CONSTANT
+;; (movq rbx (& rsp 88))
+;; (label .LVL362)
+;; (movq rax (vm-register 'pc))
+;; (label .LBE10902)
+;; (movq rdx (& rax))
+;; (label .LBB10903)
+;; (leaq rcx (& rax 8))
+;; (label .LVL363)
+;; (movq (vm-register 'pc) rcx)
+;; (movq (vm-register 'ac) rdx)
 (define (CONSTANT val)
   `(,@(trace-push! $CONSTANT)
     (movq ,(vm-register 'ac) ,(obj->integer val))

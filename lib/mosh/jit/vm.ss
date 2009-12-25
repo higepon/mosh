@@ -27,11 +27,13 @@
 ;
 (library (mosh jit vm)
   (export vm-register vm-make-fixnum get-c-address
-          obj->integer)
+          obj->integer asm->vm-asm asm*->vm-asm*)
   (import (rnrs)
           (mosh)
+          (match)
           (srfi :8)
           (srfi :26)
+          (mosh jit util)
           (system)
           (only (srfi private include) include/resolve))
 
@@ -57,4 +59,38 @@
       (values (car lst) i)]
      [else
       (loop (+ i 1) (cdr lst))])))
+
+
+(define (asm->vm-asm vm* asm)
+  (match asm
+    ;; reg <- vm-reg
+    [('movq dest ('& (? (lambda (x) (eq? vm* x))) (= (lambda (x) (list-ref vm-register* (- (/ x 8) 1))) vm-reg)))
+     (values `(movq ,dest (vm-register ',vm-reg)) vm*)]
+    ;; vm-reg <- reg
+    [('movq ('& (? (lambda (x) (eq? vm* x))) (= (lambda (x) (list-ref vm-register* (- (/ x 8) 1))) vm-reg)) dest)
+     (values `(movq (vm-register ',vm-reg) ,dest) vm*)]
+    ;; reg <- vm*
+    ;;   identify change vm* reg.
+    [('movq reg ('& 'rsp 88))
+     (values asm reg)]
+    [else
+     (values asm vm*)]))
+
+(define (map-accum proc seed lst)
+  (let loop ([lst lst]
+             [accum '()]
+             [seed seed])
+    (cond
+     [(null? lst) (values (reverse accum) seed)]
+     [else
+      (let-values (([a s] (proc (car lst) seed)))
+        (loop (cdr lst) (cons a accum) s))])))
+
+(define asm*->vm-asm*
+  (case-lambda
+   [(line*)
+    (asm*->vm-asm* #f line*)]
+   [(vm* line*)
+    (map-accum (lambda (asm current-vm*) (asm->vm-asm current-vm* asm)) vm* (remp null? (map gas->sassy line*)))]))
+
 )
