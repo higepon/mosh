@@ -422,16 +422,11 @@
 (define (REFER_GLOBAL_CALL . x)
   `(,@(trace-push! $REFER_GLOBAL_CALL)))
 
+;; REFER_LOCAL + PUSH + CONSTANT
 (define (REFER_LOCAL_PUSH_CONSTANT index constant)
   `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
+    ,@(REFER_LOCAL index)
     (movq rcx ,(vm-register 'sp))
-    (movq rdx ,(vm-make-fixnum index))
-    (movq rax ,(vm-register 'fp))
-    ,@(macro-to-fixnum 'rdx)
-;    ,@(DEBUGGER)
-    ,@(macro-refer-local 'rax 'rax 'rdx)
-;    ,@(DEBUGGER 7777)
-;    ,@(DEBUGGER 3008)
     ,@(macro-push 'rcx 'rax)
     (movq ,(vm-register 'sp) rcx)
     (movq rcx ,constant)
@@ -947,6 +942,7 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
+  (register-insn-dispatch-table $REFER_LOCAL REFER_LOCAL)
   (register-insn-dispatch-table $CLOSURE CLOSURE)
   (register-insn-dispatch-table $ASSIGN_GLOBAL ASSIGN_GLOBAL)
   (register-insn-dispatch-table $CONSTANT CONSTANT)
