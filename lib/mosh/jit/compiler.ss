@@ -401,14 +401,18 @@
     (movq ,(vm-register 'ac) rcx)
     (movq rax ,(vm-register 'ac))))
 
-
 ;; REFER_LOCAL + PUSH
 (define (REFER_LOCAL_PUSH index)
   `(,@(trace-push! $REFER_LOCAL_PUSH)
     ,@(REFER_LOCAL index)
-    (movq rcx ,(vm-register 'sp))
-    ,@(macro-push 'rcx 'rax)
-    (movq ,(vm-register 'sp) rcx)))
+    ,@(PUSH)))
+
+;; REFER_LOCAL_PUSH + CONSTANT
+(define (REFER_LOCAL_PUSH_CONSTANT index constant-value)
+  `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
+    ,@(REFER_LOCAL_PUSH index)
+    ,@(CONSTANT constant-value)))
+
 
 (define (CLOSURE . x)
   `(,@(trace-push! $CLOSURE)))
@@ -418,12 +422,6 @@
 
 (define (REFER_GLOBAL_CALL . x)
   `(,@(trace-push! $REFER_GLOBAL_CALL)))
-
-;; REFER_LOCAL_PUSH + CONSTANT
-(define (REFER_LOCAL_PUSH_CONSTANT index constant-value)
-  `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
-    ,@(REFER_LOCAL_PUSH index)
-    ,@(CONSTANT constant-value)))
 
 
 
