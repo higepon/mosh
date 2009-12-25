@@ -404,14 +404,13 @@
 
 
 
-
-;;  .LVL1232:
-;;  movq    %rcx, %rax    ;; rax =
-;;  andl    $3, %eax
-;;  cmpq    $3, %rax
-;;  jne .L785
+;; REFER_LOCAL + PUSH
 (define (REFER_LOCAL_PUSH index)
-  `(,@(trace-push! $REFER_LOCAL_PUSH)))
+  `(,@(trace-push! $REFER_LOCAL_PUSH)
+    ,@(REFER_LOCAL index)
+    (movq rcx ,(vm-register 'sp))
+    ,@(macro-push 'rcx 'rax)
+    (movq ,(vm-register 'sp) rcx)))
 
 (define (CLOSURE . x)
   `(,@(trace-push! $CLOSURE)))
@@ -425,10 +424,7 @@
 ;; REFER_LOCAL + PUSH + CONSTANT
 (define (REFER_LOCAL_PUSH_CONSTANT index constant)
   `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
-    ,@(REFER_LOCAL index)
-    (movq rcx ,(vm-register 'sp))
-    ,@(macro-push 'rcx 'rax)
-    (movq ,(vm-register 'sp) rcx)
+    ,@(REFER_LOCAL_PUSH index)
     (movq rcx ,constant)
     (movq ,(vm-register 'ac) rcx)))
 
