@@ -867,10 +867,14 @@
       (let-values (([a s] (proc (car lst) seed)))
         (loop (cdr lst) (cons a accum) s))])))
 
+
+
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-  (guard (c [#t #f]) ;; JIT compile error returns #f to VM.
+  (guard (c [#t
+             (format #t "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
+             #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
            (let1 insn* (insert-labels insn* label*)
