@@ -525,16 +525,16 @@ bool File::isReadable(const ucs4string& path)
     return wrapped_access(path, R_OK);
 }
 
-static bool endsWith(const ucs4string& str, const ucs4string& key)
-{
-    size_t keylen = key.length();
-    size_t slen = str.length();
-    if(keylen <= slen) {
-        return std::equal(str.begin() + str.size() - key.size(), str.end(), key.begin());
-    } else {
-        return false;
-    }
-}
+// static bool endsWith(const ucs4string& str, const ucs4string& key)
+// {
+//     size_t keylen = key.length();
+//     size_t slen = str.length();
+//     if(keylen <= slen) {
+//         return std::equal(str.begin() + str.size() - key.size(), str.end(), key.begin());
+//     } else {
+//         return false;
+//     }
+// }
 
 bool File::isRegular(const ucs4string& path)
 {

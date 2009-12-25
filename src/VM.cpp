@@ -102,6 +102,7 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     dc_(Object::Nil),
     cl_(Object::Nil),
     pc_(NULL),
+    numValues_(0),
     stackSize_(stackSize),
     currentOutputPort_(outPort),
     currentErrorPort_(errorPort),
@@ -112,7 +113,6 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
 #endif
     isProfiler_(isProfiler),
     maxNumValues_(256),
-    numValues_(0),
     isR6RSMode_(false),
     name_(UC("")),
     thread_(NULL),
@@ -787,7 +787,7 @@ void VM::setCurrentOutputPort(Object port)
 
 void VM::expandStack(int plusSize)
 {
-    printf("ex stack=%x plusSize=%d\n", stack_, plusSize);
+    fprintf(stderr, "Stack Expand stack=%p plusSize=%d\n", stack_, plusSize);
 
     const int nextStackSize = stackSize_ + plusSize;
     Object* nextStack = Object::makeObjectArray(nextStackSize);

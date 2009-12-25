@@ -112,7 +112,7 @@ Object StringTextualInputPort::position() const
 
 bool StringTextualInputPort::setPosition(int64_t position)
 {
-    if (position >= buffer_.size()) {
+    if ((size_t)position >= buffer_.size()) {
         return false;
     } else {
         MOSH_ASSERT(isInSize_t(position));

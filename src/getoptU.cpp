@@ -245,7 +245,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
             ++optindU;
         if (opterrU && *optstring != ':') {
             fprintf(stderr,
-                    "%s: illegal option -- %c %d\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(optoptU).ascii_c_str(), __LINE__);
+                    "%s: illegal option -- %s %d\n", ucs4string(argv[0]).ascii_c_str(), ucs4string(optoptU).ascii_c_str(), __LINE__);
         }
         return BADCH;
     }
@@ -267,7 +267,7 @@ int scheme::getopt_longU(int argc, ucs4char *const argv[],
                 return BADARG;
             if (opterrU)
                 fprintf(stderr,
-                        "%s: option requires an argument -- %c\n",
+                        "%s: option requires an argument -- %s\n",
                         ucs4string(argv[0]).ascii_c_str(), ucs4string(optoptU).ascii_c_str());
             return BADCH;
         }

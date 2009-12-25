@@ -342,7 +342,7 @@ TEST_F(FaslTest, MultibyteString) {
     const Object x = Object::makeString(ch);
     ASSERT_TRUE(x.isString());
     ucs4string str = x.toString()->data();
-    EXPECT_EQ(1, str.size());
+    EXPECT_EQ((size_t)1, str.size());
     ASSERT_FALSE(str.is_ascii());
     const Object restored = StoreAndRestore(x);
     Equal e;

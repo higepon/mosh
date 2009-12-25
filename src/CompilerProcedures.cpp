@@ -146,7 +146,7 @@ void jitStackReset()
 void jitStackShowTrace()
 {
     JitStack* jitStack = currentVM()->jitStack();
-    fprintf(stderr, jitStack->getTrace().ascii_c_str());
+    fprintf(stderr, "%s", jitStack->getTrace().ascii_c_str());
 }
 
 static inline uintptr_t getClassMemberPointer(bool (Object::*func)() const)

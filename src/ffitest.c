@@ -235,7 +235,7 @@ void qsort(void *base, size_t num, size_t size,
   for (i = 0; i < num; i++) {
     printf("[%d]=%d\n", i, ((uint8_t*)base)[i]);
   }
-  compare(1, 2);
+  compare((void*)1, (void*)2);
 }
 
 /* callouts return type functions */

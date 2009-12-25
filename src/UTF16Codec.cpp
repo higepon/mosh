@@ -98,7 +98,7 @@ int UTF16Codec::putChar(uint8_t* buf, ucs4char ch, enum ErrorHandlingMode mode)
         uint16_t HiSurrogate = HI_SURROGATE_START | (W << 6) | X >> 10;
         const uint16_t LO_SURROGATE_START = 0xDC00;
         X = (uint16_t)ch;
-        uint16_t LoSurrogate = (uint16_t) (LO_SURROGATE_START | X & ((1 << 10) - 1));
+        uint16_t LoSurrogate = (uint16_t) (LO_SURROGATE_START | (X & ((1 << 10) - 1)));
         put2byte(buf + 0, HiSurrogate, isLittleEndian_);
         put2byte(buf + 2, LoSurrogate, isLittleEndian_);
         return 4;
@@ -159,7 +159,7 @@ retry:
     // http://unicode.org/faq/utf_bom.html#utf16-3
     uint16_t hi = val1;
     uint16_t lo = val2;
-    ucs4char X = (hi & ((1 << 6) -1)) << 10 | lo & ((1 << 10) -1);
+    ucs4char X = ((hi & ((1 << 6) -1)) << 10) | (lo & ((1 << 10) -1));
     ucs4char W = (hi >> 6) & ((1 << 5) - 1);
     ucs4char U = W + 1;
     ucs4char C = U << 16 | X;
