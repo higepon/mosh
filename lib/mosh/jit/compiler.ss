@@ -402,8 +402,6 @@
     (movq rax ,(vm-register 'ac))))
 
 
-
-
 ;; REFER_LOCAL + PUSH
 (define (REFER_LOCAL_PUSH index)
   `(,@(trace-push! $REFER_LOCAL_PUSH)
@@ -421,12 +419,13 @@
 (define (REFER_GLOBAL_CALL . x)
   `(,@(trace-push! $REFER_GLOBAL_CALL)))
 
-;; REFER_LOCAL + PUSH + CONSTANT
-(define (REFER_LOCAL_PUSH_CONSTANT index constant)
+;; REFER_LOCAL_PUSH + CONSTANT
+(define (REFER_LOCAL_PUSH_CONSTANT index constant-value)
   `(,@(trace-push! $REFER_LOCAL_PUSH_CONSTANT)
     ,@(REFER_LOCAL_PUSH index)
-    (movq rcx ,constant)
-    (movq ,(vm-register 'ac) rcx)))
+    ,@(CONSTANT constant-value)))
+
+
 
 ;; *[mosh] RETURN
 ;; movq 56(%rsp), %rsi ;; ras = vm
