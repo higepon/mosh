@@ -413,7 +413,6 @@
     ,@(REFER_LOCAL_PUSH index)
     ,@(CONSTANT constant-value)))
 
-
 (define (CLOSURE . x)
   `(,@(trace-push! $CLOSURE)))
 

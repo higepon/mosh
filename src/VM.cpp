@@ -960,8 +960,11 @@ void VM::tryJitCompile(Object closure)
 
             const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
             const Object invokeLibrary = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name")));
-            MOSH_ASSERT(!invokeLibrary.isFalse());
-            callClosure1(invokeLibrary, importSpec);
+            if (invokeLibrary.isFalse()) {
+                isJitLibraryLoading_ = false;
+            } else {
+                callClosure1(invokeLibrary, importSpec);
+            }
         }
         return;
     } else {
