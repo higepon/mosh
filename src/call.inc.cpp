@@ -32,7 +32,8 @@
             if (ac_.isCProcedure()) {
                 COUNT_CALL(ac_);
                 cl_ = ac_;
-                if (ac_.toCProcedure()->proc == applyEx || ac_.toCProcedure()->proc == evalEx) {
+                if (ac_.toCProcedure()->proc == applyEx ||
+                    ac_.toCProcedure()->proc == evalEx) {
                     // don't share retCode with others.
                     // because apply's arguments length is not constant.
                     Object* const retCode = Object::makeObjectArray(2);
@@ -44,15 +45,25 @@
                     pc_  = retCode;
 
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);
+                } else if (ac_.toCProcedure()->proc == internalFfiCallEx) {
+                    // ffi-call may be called recursively by ffi-callback.
+                    Object* const retCode = Object::makeObjectArray(2);
+                    retCode[0] = Object::makeRaw(INSTRUCTION(RETURN));
+                    retCode[1] = operand;
+
+                    VM_ASSERT(operand.isFixnum());
+                    const int argc = operand.toFixnum();
+                    pc_  = retCode;
+                    ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 } else {
                     CProcedure* const cprocedure = ac_.toCProcedure();
                     // set pc_ before call() for pointing where to return.
+                    // we can't "goto return_entry;", since pc_ will be overwritten by cprocedure on error.
                     pc_  = cprocedure->returnCode;
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
                     pc_[1] = operand;
                     VM_ASSERT(operand.isFixnum());
                     const int argc = operand.toFixnum();
-//                    LOG1("~a\n", getClosureName(ac_));
                     cl_ = ac_;
                     ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
                 }
