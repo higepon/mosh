@@ -1152,15 +1152,21 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object obj = pop();
             if (obj.isVector()) {
-                MOSH_ASSERT(ac_.isFixnum());
-                const int index = ac_.toFixnum();
-                Vector* const v = obj.toVector();
-                if (v->isValidIndex(index)) {
-                    ac_ = v->ref(index);
+                if (ac_.isFixnum()) {
+                    const int index = ac_.toFixnum();
+                    Vector* const v = obj.toVector();
+                    if (v->isValidIndex(index)) {
+                        ac_ = v->ref(index);
+                    } else {
+                        callAssertionViolationAfter(this,
+                                                    "vector-ref",
+                                                    "index out of range",
+                                                    L1(ac_));
+                    }
                 } else {
                     callAssertionViolationAfter(this,
                                                 "vector-ref",
-                                                "index out of range",
+                                                "index exact integer required but got ",
                                                 L1(ac_));
                 }
             } else {
