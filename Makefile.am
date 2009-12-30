@@ -614,4 +614,4 @@ lib/libffitest.so.1.0: src/ffitest.c
 
 # for flymake
 check-syntax:
-	$(CXX) -o nul $(mosh_CXXFLAGS) $(INCLUDES) -S ${CHK_SOURCES}
+	$(CXX) -o nul $(mosh_CXXFLAGS) $(INCLUDES) $(DEFAULT_INCLUDES) -DHAVE_CONFIG_H -S ${CHK_SOURCES}
