@@ -30,9 +30,6 @@ endif
 
 bin_SCRIPTS = src/mosh_config
 
-if DEVELOPER
-DEBUG_FLAGS=-DDEBUG_VERSION
-endif
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
@@ -41,6 +38,18 @@ mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_L
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+
+if DEVELOPER
+GIT_BRANCH=$(shell git branch|grep '*'|cut -d' ' -f2)
+GIT_COMMIT_REVISION=$(shell git show|grep 'commit'|cut -d ' ' -f2)
+GIT_COMMIT_DATE=$(shell git show|grep 'Date'|cut -d ' ' -f4-9)
+mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+endif
+
+if DEVELOPER
+DEBUG_FLAGS=-DDEBUG_VERSION
+endif
+
 
 if MINGW32
 mosh_LDADD += mosh-icon.o
