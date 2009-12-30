@@ -40,9 +40,9 @@ mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
 if DEVELOPER
-GIT_BRANCH=$(shell git branch|grep '*'|cut -d' ' -f2)
-GIT_COMMIT_REVISION=$(shell git show|grep 'commit'|cut -d ' ' -f2)
-GIT_COMMIT_DATE=$(shell git show|grep 'Date'|cut -d ' ' -f4-9)
+GIT_BRANCH=$(shell git branch|grep -m1 '*'|cut -d' ' -f2)
+GIT_COMMIT_REVISION=$(shell git show|grep -m1 'commit'|cut -d ' ' -f2)
+GIT_COMMIT_DATE=$(shell git show|grep -m1 'Date'|cut -d ' ' -f4-9)
 mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 endif
 
