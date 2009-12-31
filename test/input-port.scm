@@ -252,4 +252,6 @@
 (test-eq 1 (read))
 (test-eq 5 (read))
 
+(test-error i/o-read-error? (call-with-port (open-string-input-port "(;") read))
+
 (test-results)
