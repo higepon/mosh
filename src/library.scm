@@ -876,6 +876,8 @@
              (cons #f (converter init))))
         (letrec ((parameter
                   (lambda new-val
+                    (unless (null? new-val)
+                    (format (current-error-port) "parameter new-val =~a\n" new-val))
                     (let ((cell (dynamic-lookup parameter global-cell)))
                       (cond ((null? new-val)
                              (cdr cell))
@@ -900,11 +902,13 @@
             (dynamic-env-local-get))
            (new-cells
             (map (lambda (parameter value)
+                   (format (current-error-port) "parameter=~a src=~a\n" parameter (source-info parameter))
                    (cons parameter (parameter value #f)))
                  parameters
                  values))
            (new-local
             (append new-cells old-local)))
+      (format (current-error-port) "new-cells=~a\n" new-cells)
       (dynamic-wind
           (lambda () (dynamic-env-local-set! new-local))
           body

@@ -887,11 +887,11 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-  (format #t "closure=~a:~a" (source-info closure) (current-exception-handler))
+  (format #t "closure=~a:~a\n" (source-info closure) (current-exception-handler))
   (guard (c [#t
              (format #t "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]) ;; JIT compile error returns #f to VM.
-         (format #t "2closure=~a:~a" (source-info closure) (source-info (if (pair? (current-exception-handler)) (cdr (current-exception-handler)) (current-exception-handler))))
+         (format #t "2closure=~a:~a\n" (source-info closure) (current-exception-handler))
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
 ;           (disasm closure)
