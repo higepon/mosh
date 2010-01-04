@@ -184,7 +184,7 @@
   (let ([fasl-file (scm->fasl filename)])
     (when (file-exists? fasl-file)
       (delete-file fasl-file))
-    (guard [c (#t (when verbose?
+    (guard [c1 (#t (when verbose?
                     (format (current-error-port) "Warning:serialize-library failed ~a\n" filename))
                   (when (file-exists? fasl-file)
                     (delete-file fasl-file))

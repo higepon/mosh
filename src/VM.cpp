@@ -944,7 +944,7 @@ void VM::tryJitCompile(Object closure)
     }
 
     // temporary
-    if (c->size != 4) {
+    if (c->size > 10) {
         return;
     }
 

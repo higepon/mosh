@@ -288,7 +288,7 @@
              ;; clean auto compile cache
              (when (symbol-value '%clean-acc)
                (for-each
-                (lambda (file) (guard (c (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
+                (lambda (file) (guard (c2 (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
                 (directory-list (mosh-cache-dir))))
              (let ([compiled (compile-r6rs-top-level x*)])
                (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
@@ -433,19 +433,19 @@
 
 ; use less stack, don't use let here. (Initial stack usage, causes poor performance of call/cc
 ; for performance reason
-;    (with-exception-handler
-(current-exception-handler
+    (with-exception-handler
+;(current-exception-handler
  (lambda (c)
    (cond
     [(condition? c)
      (condition-printer c (current-error-port))]
     [else
      (format (current-error-port) "\n Non-condition object:\n     ~a\n" c)])
-   c)) ;; always returns the condition
-
+   c) ;; always returns the condition
+(lambda ()
 (cond
  ;; mulitple vm
- [(guard [c (#t #f)] (symbol-value '%vm-import-spec))
+ [(guard [c3 (#t #f)] (symbol-value '%vm-import-spec))
   (load-r6rs-top-level-sexp (symbol-value '%vm-import-spec) (symbol-value '%vm-thunk))]
  ;; REPL
  [(null? (command-line))
@@ -474,11 +474,11 @@
   ;; clean auto compile cache
   (when (symbol-value '%clean-acc)
     (for-each
-     (lambda (file) (guard (c (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
+     (lambda (file) (guard (c4 (#t #t)) (delete-file (string-append (mosh-cache-dir) "/" file))))
      (directory-list (mosh-cache-dir))))
   (let ([compiled (compile-r6rs-top-level x*)])
     (when (and (mosh-cache-dir) (not (symbol-value '%disable-acc)))
       (serialize-all serialize-library compile-core-expr))
-    (compiled))])
+    (compiled))]))
 
-  )
+  ))
