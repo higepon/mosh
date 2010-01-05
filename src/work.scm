@@ -1,8 +1,3 @@
-(import (rnrs)
-        (mosh jit))
+(import (rnrs))
 
-;; (define (a) 3)
-;; ;(display compile)
-;;   (do ([i 0 (+ i 1)])
-;;       [(= i 200000)]
-;;     (a))
+(display (map (lambda (x y) (+ x y)) '(1 2 3) '(1 2 3)))

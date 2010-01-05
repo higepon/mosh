@@ -115,6 +115,7 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
     ExecutableMemory* mem = new ExecutableMemory(length);
     if (!mem->allocate()) {
         callAssertionViolationAfter(theVM, procedureName, "Memory allocation error");
+        fprintf(stderr, "hige***********");
         return Object::Undef;
     }
     uint8_t* address = mem->address();
@@ -122,6 +123,7 @@ Object scheme::u8ListTocProcedureEx(VM* theVM, int argc, const Object* argv)
     for (Object obj = u8List; !obj.isNil(); obj = obj.cdr()) {
         if (!obj.car().isFixnum()) {
             callAssertionViolationAfter(theVM, procedureName, "u8 list required", L1(u8List));
+        fprintf(stderr, "hage***************");
             return Object::Undef;
         }
         address[i++] = obj.car().toFixnum();

@@ -903,6 +903,7 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
+               (format (current-error-port) "here we are ******")
                (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*)))))))))
 
 ;; N.B.

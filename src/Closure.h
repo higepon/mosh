@@ -101,11 +101,7 @@ public:
         return jitState_.toCProcedure();
     }
 
-    void setJitCompiledCProcedure(Object cproc)
-    {
-        MOSH_ASSERT(cproc.isCProcedure());
-        jitState_ = cproc;
-    }
+    void setJitCompiledCProcedure(Object cproc);
 
     void setJitCompiledError()
     {

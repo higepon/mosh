@@ -60,3 +60,11 @@ Object Closure::sourceInfoString(VM* theVM)
     }
 }
 
+void Closure::setJitCompiledCProcedure(Object cproc)
+{
+    if (!cproc.isCProcedure()) {
+        LOG1("cproc=~a", cproc);
+    }
+    MOSH_ASSERT(cproc.isCProcedure());
+    jitState_ = cproc;
+}
