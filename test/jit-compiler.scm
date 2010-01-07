@@ -309,16 +309,9 @@
 ;; REFER_FREE
 (let* ([val fib]
        [proc (compile (lambda () val))])
-    (test-equal fib (proc)))
+  (test-true (compiled? proc))
+  (test-equal fib (proc)))
 
 
-(define (a) 3)
-(test-false (compiled? a))
-
-(do ([i 0 (+ i 1)])
-    [(= i 20)]
-  (test-equal 3 (a)))
-
-(test-true (compiled? a))
 
 (test-results)

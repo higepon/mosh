@@ -150,6 +150,7 @@
     } \
 
 #define argumentCheckList(index, variableName) checkType(index, variableName, isList, list)
+#define argumentCheckCProcedure(index, variableName) checkType(index, variableName, isCProcedure, cprocedure)
 #define argumentAsSymbol(index, variableName) castArgument(index, variableName, isSymbol, symbol, Symbol*, toSymbol)
 #define argumentAsVM(index, variableName) castArgument(index, variableName, isVM, vm, VM*, toVM)
 #define argumentAsMutex(index, variableName) castArgument(index, variableName, isMutex, mutex, Mutex*, toMutex)

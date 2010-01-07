@@ -125,6 +125,7 @@ public:
 
 
 public:
+    // N.B. don't edit or add member variables, JIT compiler refers directly them.
     Object* pc;
     const int size;
     const int argLength;

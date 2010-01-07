@@ -683,4 +683,5 @@
   get-c-address
   obj->integer
   jit-compiled?
+  set-jit-compiled!
   )

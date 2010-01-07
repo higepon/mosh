@@ -380,7 +380,6 @@
 ;; REFER_FREE
 ;; ;; rdx <- VM* | (movq rdx (& rsp 88))
 ;; ;; rbx <- VM* | (movq rbx (& rsp 88))
-;; (label .LVL449)
 ;; (movq rax (& rdx 48))
 ;; (leaq rcx (& rax 8))
 ;; (movq rdx (& rax))
@@ -393,9 +392,15 @@
 ;; (movq rdx (& rcx,%rdx,8))
 ;; (movq (& rbx 8) rdx)
 (define (REFER_FREE index)
-  `()
-)
-
+  `(,@(trace-push! $REFER_FREE)
+    (movq rdx ,(obj->integer index))
+    (movq rcx ,(vm-register 'dc))
+    ,@(macro-to-fixnum 'rdx)
+    (movq rcx (& rcx 8))
+    (movq rcx (& rcx 24))
+    (movq rdx (& rcx (* rdx 8)))
+    (movq ,(vm-register 'ac) rdx)
+    (movq rax rdx)))
 
 ;; REFER_LOCAL
 ;; (movq rbx (& rsp 88))
@@ -919,7 +924,9 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*)))))))))
+               (let1 compiled (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*))))
+                 (set-jit-compiled! closure compiled)
+                 closure))))))
 
 ;; N.B.
 ;;   this procedure will set-car! to the lst.
@@ -996,5 +1003,4 @@
 ;; (0) make constant op directory
 ;; (1) make constant op through assemble
 ;; (1) vm->reg offset support
-
 )

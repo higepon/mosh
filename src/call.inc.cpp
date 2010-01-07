@@ -53,8 +53,6 @@
                     pc_[1] = operand;
                     VM_ASSERT(operand.isFixnum());
                     const int argc = operand.toFixnum();
-                    // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
-                    fp_ = sp_ - argc;
 //                    LOG1("~a\n", getClosureName(ac_));
                     cl_ = ac_;
                     ac_ = ac_.toCProcedure()->call(this, argc, sp_ - argc);
@@ -72,6 +70,7 @@
                     // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
                     fp_ = sp_ - argc;
                     cl_ = ac_;
+                    dc_ = ac_;
                     ac_ = cprocedure->call(this, argc, sp_ - argc);
                 } else {
                     if (c->maxStack + sp_ >= stackEnd_) {

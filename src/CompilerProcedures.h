@@ -42,6 +42,7 @@ namespace scheme {
     {
         return lvar.toVector()->ref(1);
     }
+    Object setJitCompiledDEx(VM* theVM, int argc, const Object* argv);
     Object jitCompiledPEx(VM* theVM, int argc, const Object* argv);
     Object instructionPEx(VM* theVM, int argc, const Object* argv);
     Object instructionTointegerEx(VM* theVM, int argc, const Object* argv);

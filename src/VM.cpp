@@ -977,7 +977,6 @@ void VM::tryJitCompile(Object closure)
         } else {
             LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
             VM_ASSERT(compiled.isCProcedure());
-            c->setJitCompiledCProcedure(compiled);
         }
         return;
     }

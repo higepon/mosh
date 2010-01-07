@@ -67,7 +67,7 @@
 (test-equal '(#x48 #x89 #x4b #x30) (assemble1 '(movq (& rbx #x30) rcx)))
 (test-equal '(#x48 #x89 #x53 #x08) (assemble1 '(movq (& rbx #x08) rdx)))
 (test-equal '(#x48 #xc7 #xc2 #x01 0 0 0) (assemble1 '(movq rdx 1)))
-
+(test-equal '(#x48 #x8b #x14 #xd1) (assemble1 '(movq rdx (& rcx (* rdx 8)))))
 ;; negq
 (test-equal '(#x48 #xf7 #xd8) (assemble1 '(negq rax)))
 

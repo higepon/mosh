@@ -1056,6 +1056,7 @@
     (u8-list->c-procedure sys)
     (obj->integer sys)
     (jit-compiled? sys)
+    (set-jit-compiled! sys)
     (get-c-address sys)
     ;; Jit end
     (shared-errno interaction sys)

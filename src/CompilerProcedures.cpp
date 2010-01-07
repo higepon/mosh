@@ -82,6 +82,15 @@ enum {
     TAG_RECEIVE       = 18
 };
 
+Object scheme::setJitCompiledDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("set-jit-compiled!");
+    checkArgumentLength(2);
+    argumentAsClosure(0, closure);
+    argumentCheckCProcedure(1, cprocedure);
+    closure->setJitCompiledCProcedure(cprocedure);
+    return Object::Undef;
+}
 
 Object scheme::jitCompiledPEx(VM* theVM, int argc, const Object* argv)
 {
