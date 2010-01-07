@@ -710,9 +710,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(REFER_FREE)
         {
+            asm volatile(" \t # -- REFER_FREE start");
             operand = fetchOperand();
             VM_ASSERT(operand.isFixnum());
             ac_ = referFree(operand);
+            asm volatile(" \t # -- REFER_FREE end");
             NEXT1;
         }
         CASE(REFER_FREE_PUSH)

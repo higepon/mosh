@@ -253,29 +253,39 @@
 
 (test-results)
 
-(jit-helper (string-split "# 310 \"src/VM-Run.cpp\" 1
-	 	 # -- CONSTANT start
+(jit-helper (string-split
+"# 713 \"src/VM-Run.cpp\" 1
+	 	 # -- REFER_FREE start
 # 0 \"\" 2
 #NO_APP
-.LBB10901:
-.LBB10902:
+.LBB10595:
+.LBB10596:
 	.loc 5 50 0
+	movq	88(%rsp), %rdx
 	movq	88(%rsp), %rbx
-.LVL362:
-	movq	48(%rbx), %rax
-.LBE10902:
-	movq	(%rax), %rdx
-.LBB10903:
+.LVL449:
+	movq	48(%rdx), %rax
 	leaq	8(%rax), %rcx
-.LVL363:
+.LVL450:
+.LBE10596:
+	movq	(%rax), %rdx
+.LBB10597:
 	movq	%rcx, 48(%rbx)
-	.loc 18 311 0
+	.loc 18 716 0
+	movq	16(%rbx), %rcx
+	sarq	$2, %rdx
+	movslq	%edx,%rdx
+	movq	8(%rcx), %rcx
+	movq	24(%rcx), %rcx
+	movq	(%rcx,%rdx,8), %rdx
 	movq	%rdx, 8(%rbx)
-.LBE10903:
-.LBE10901:
-	.loc 18 312 0
+.LBE10597:
+.LBE10595:
+	.loc 18 717 0
 #APP
-# 312 \"src/VM-Run.cpp\" 1" #\newline))
+# 717 \"src/VM-Run.cpp\" 1
+	 	 # -- REFER_FREE end"
+ #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start
 ;; # 0 \"\" 2

@@ -80,7 +80,7 @@
                                 `((label ,label))))]
        [proc (u8*->c-procedure+retq code1)])
   (test-true (procedure? proc))
-  ;; ac_ is result of compare
+  ;;  ac_ is result of compare
   (test-eq #f (proc 2)))
 
 ;; FRAME
@@ -171,7 +171,7 @@
                     (movq (& rdx) rax)
                     (addq rdx 8)
                     (movq ,(vm-register 'sp) rdx))
-                  (RESTORE_REGISTERS 1) ;; pseud RETURN
+                  (RESTORE_REGISTERS 1) ;; pseudo RETURN
                   `(
                     ;; check restored fp
                     (movq rax ,(vm-register 'fp))
@@ -217,51 +217,51 @@
 ;;       (test-true (procedure? proc))
 ;;       (test-eq 1235 (proc 1234)))
 
-;; ;;     ;; PUSH_FRAME
-;; ;;     (let* ([code1 (assemble
-;; ;;                    (append
-;; ;;                     (PUSH_FRAME)
-;; ;;                     (RESTORE_REGISTERS 0)
-;; ;;                     (POP)
-;; ;;                     (FRAME)
-;; ;;                     (CONSTANT (vm-make-fixnum 1))
-;; ;;                     (PUSH)
-;; ;;                     (REFER_LOCAL_PUSH_CONSTANT 0 (obj->integer +)) ;; we know + is cprocedure
-;; ;;                     (CALL 2)
-;; ;;                     ))]
-;; ;;            [proc (u8*->c-procedure+retq code1)])
-;; ;;       (test-true (procedure? proc))
-;; ;;       (test-eq 1235 (proc 1234)))
+;;     ;; PUSH_FRAME
+;;     (let* ([code1 (assemble
+;;                    (append
+;;                     (PUSH_FRAME)
+;;                     (RESTORE_REGISTERS 0)
+;;                     (POP)
+;;                     (FRAME)
+;;                     (CONSTANT (vm-make-fixnum 1))
+;;                     (PUSH)
+;;                     (REFER_LOCAL_PUSH_CONSTANT 0 (obj->integer +)) ;; we know + is cprocedure
+;;                     (CALL 2)
+;;                     ))]
+;;            [proc (u8*->c-procedure+retq code1)])
+;;       (test-true (procedure? proc))
+;;       (test-eq 1235 (proc 1234)))
 
 ;; fib
-#;(let ()
-  (let* ([code1 (let ([label (gensym)])
-                  (assemble
-                   (append
-                    (REFER_LOCAL_PUSH_CONSTANT 0 2)
-                    (BRANCH_NOT_LT label)
-                    (CONSTANT (vm-make-fixnum 1))
-                    (RETURN 1)
-                    `((label ,label))
-                    (FRAME)
-                    (REFER_LOCAL_PUSH_CONSTANT 0 2)
-                    (NUMBER_SUB_PUSH)
-                    (REFER_GLOBAL 'fib)
-                    (CALL 1)
-                    (PUSH_FRAME)
-                    (REFER_LOCAL_PUSH_CONSTANT 0 1)
-                    (NUMBER_SUB_PUSH)
-                    (REFER_GLOBAL 'fib)
-                    (CALL 1)
-                    (NUMBER_ADD)
-                    (RETURN 1)
-                    )))]
-         [proc (u8*->c-procedure+retq code1)])
-    (test-true (procedure? proc))
-    (set-symbol-value! 'fib proc)
-    (test-eq 2 (proc 2))
-    (test-eq 3 (proc 3))
-    (test-eq 1346269 (proc 30))))
+;; (let ()
+;;   (let* ([code1 (let ([label (gensym)])
+;;                   (assemble
+;;                    (append
+;;                     (REFER_LOCAL_PUSH_CONSTANT 0 2)
+;;                     (BRANCH_NOT_LT label)
+;;                     (CONSTANT (vm-make-fixnum 1))
+;;                     (RETURN 1)
+;;                     `((label ,label))
+;;                     (FRAME)
+;;                     (REFER_LOCAL_PUSH_CONSTANT 0 2)
+;;                     (NUMBER_SUB_PUSH)
+;;                     (REFER_GLOBAL 'fib)
+;;                     (CALL 1)
+;;                     (PUSH_FRAME)
+;;                     (REFER_LOCAL_PUSH_CONSTANT 0 1)
+;;                     (NUMBER_SUB_PUSH)
+;;                     (REFER_GLOBAL 'fib)
+;;                     (CALL 1)
+;;                     (NUMBER_ADD)
+;;                     (RETURN 1)
+;;                     )))]
+;;          [proc (u8*->c-procedure+retq code1)])
+;;     (test-true (procedure? proc))
+;;     (set-symbol-value! 'fib proc)
+;;     (test-eq 2 (proc 2))
+;;     (test-eq 3 (proc 3))
+;;     (test-eq 1346269 (proc 30))))
 
 ;; CPUID
 (let* ([label (gensym)]
@@ -293,7 +293,24 @@
   (do ([i 2 (+ i 1)])
       [(= i 5)]
     (receive (rax rbx rcx rdx) (cpuid i #t)
-      (format #;#t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
+      (format #t "~a~a~a~a" (u32->string rax) (u32->string rbx) (u32->string rcx) (u32->string rdx)))))
+
+;; REFER_LOCAL
+(let ([proc (compile (lambda (x) x))])
+  (test-equal 1 (proc 1))
+  (test-equal '(1 2 3 4) (map proc '(1 2 3 4))))
+
+;; REFER_LOCAL
+(let ([proc (compile (lambda (x y) x y))])
+  (let ([val (proc 2 3)])
+    (test-equal 3 val)
+    (test-equal 2 (proc 1 2))))
+
+;; REFER_FREE
+(let* ([val fib]
+       [proc (compile (lambda () val))])
+    (test-equal fib (proc)))
+
 
 (define (a) 3)
 (test-false (compiled? a))

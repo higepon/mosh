@@ -377,15 +377,31 @@
 ;;  movq    %rax, 40(%rcx) ;; sp = sp + 8
 
 
+;; REFER_FREE
+;; ;; rdx <- VM* | (movq rdx (& rsp 88))
+;; ;; rbx <- VM* | (movq rbx (& rsp 88))
+;; (label .LVL449)
+;; (movq rax (& rdx 48))
+;; (leaq rcx (& rax 8))
+;; (movq rdx (& rax))
+;; (movq (& rbx 48) rcx)
+;; (movq rcx (& rbx 16))
+;; (sarq rdx 2)
+;; (movslq edx,%rdx)
+;; (movq rcx (& rcx 8))
+;; (movq rcx (& rcx 24))
+;; (movq rdx (& rcx,%rdx,8))
+;; (movq (& rbx 8) rdx)
+(define (REFER_FREE index)
+  `()
+)
+
+
 ;; REFER_LOCAL
 ;; (movq rbx (& rsp 88))
-;; (label .LVL593)
 ;; (movq rax ,(vm-register 'pc))
-;; (label .LBE10050)
 ;; (movq rdx (& rax))
-;; (label .LBB10051)
 ;; (leaq rcx (& rax 8))
-;; (label .LVL594)
 ;; (movq ,(vm-register 'pc) rcx)
 ;; (movq rcx ,(vm-register 'fp))
 ;; (sarq rdx 2)
@@ -887,11 +903,11 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-  (format #t "closure=~a:~a\n" (source-info closure) (current-exception-handler))
+;  (format #t "closure=~a:~a\n" (source-info closure) (current-exception-handler))
   (guard (c [#t
              (format #t "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]) ;; JIT compile error returns #f to VM.
-         (format #t "2closure=~a:~a\n" (source-info closure) (current-exception-handler))
+;         (format #t "2closure=~a:~a\n" (source-info closure) (current-exception-handler))
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
 ;           (disasm closure)
@@ -903,7 +919,6 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (format (current-error-port) "here we are ******")
                (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*)))))))))
 
 ;; N.B.
@@ -938,6 +953,8 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
+  #f
+  (register-insn-dispatch-table $REFER_FREE REFER_FREE)
   (register-insn-dispatch-table $REFER_LOCAL REFER_LOCAL)
   (register-insn-dispatch-table $CLOSURE CLOSURE)
   (register-insn-dispatch-table $ASSIGN_GLOBAL ASSIGN_GLOBAL)
@@ -950,16 +967,17 @@
                                                     (BRANCH_NOT_LT dst)]
                                                    [else (error 'BRANCH_NOT_LT "label expeced")])))
   (register-insn-dispatch-table $RETURN RETURN)
-  (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
+ (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
-  (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
+;  (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
   (register-insn-dispatch-table $CALL CALL)
-  (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME))))
+  (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME)))
   (register-insn-dispatch-table $PUSH PUSH)
+)
 
-    (make-dispatch-table)
+(make-dispatch-table)
 
 ;; Export jit compiler to VM.
 (set-symbol-value! 'jit-compile compile)
