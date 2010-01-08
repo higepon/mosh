@@ -122,7 +122,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     dynamicWinders_(Object::Nil),
     callBackTrampolines_(new EqHashTable),
     callBackTrampolinesUid_(0),
-    isJitLibraryLoading_(false)
+    isJitLibraryLoading_(false),
+    isJitCompiling_(false)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -931,11 +932,6 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
 void VM::tryJitCompile(Object closure)
 {
     const int CALL_COUNT_JIT_THRESHOLD = 10;
-    static bool nowCompiling = false;
-    if (nowCompiling) {
-        return;
-    }
-    nowCompiling = true;
 
     MOSH_ASSERT(closure.isClosure());
     Closure* c = closure.toClosure();
@@ -943,20 +939,25 @@ void VM::tryJitCompile(Object closure)
     c->incrementCalledCount();
 
     if (c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD ||
-        c->isJitError() ||
-        c->isNowJitCompiling()) {
-    nowCompiling = false;
+        c->isJitError() || c->isNowJitCompiling()) {
+        isJitCompiling_ = false;
         return;
     }
+
+    if (isJitCompiling_) {
+        return;
+    }
+    isJitCompiling_ = true;
+
 
     // temporary
     if (c->size > 10) {
-    nowCompiling = false;
+        isJitCompiling_ = false;
         return;
     }
 
+    VM_LOG1("jitState_=~a\n", c->jitState_);
 
-    // prevent recursive jit compilation on compiler.
     c->setNowJitCompiling();
 
     VM_LOG2("now compiling ~a ~a", c->sourceInfo, closure);
@@ -975,7 +976,7 @@ void VM::tryJitCompile(Object closure)
                 callClosure1(invokeLibrary, importSpec);
             }
         }
-    nowCompiling = false;
+        isJitCompiling_ = false;
         return;
     } else {
         Time t1 = Time::now();
@@ -987,7 +988,7 @@ void VM::tryJitCompile(Object closure)
         } else {
             LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
         }
-        nowCompiling = false;
+        isJitCompiling_ = false;
         return;
     }
 }

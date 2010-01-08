@@ -34,6 +34,7 @@
 
 namespace scheme {
 
+
 class Closure EXTEND_GC
 {
 public:
@@ -86,7 +87,7 @@ public:
 
     void setNowJitCompiling()
     {
-        MOSH_ASSERT(jitState_.isFalse());
+//        MOSH_ASSERT(jitState_.isFalse());
         jitState_ = Object::True;
     }
 
@@ -135,7 +136,6 @@ public:
     const int maxStack;
     Object sourceInfo;
     Object prev;
-private:
     Object jitState_;
     int calledCount_;
 };

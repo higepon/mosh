@@ -986,8 +986,8 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
-  (register-insn-dispatch-table $EQ EQ)
-  (register-insn-dispatch-table $REFER_FREE REFER_FREE)
+;  (register-insn-dispatch-table $EQ EQ)
+;  (register-insn-dispatch-table $REFER_FREE REFER_FREE)
   (register-insn-dispatch-table $REFER_LOCAL REFER_LOCAL)
   (register-insn-dispatch-table $CLOSURE CLOSURE)
   (register-insn-dispatch-table $ASSIGN_GLOBAL ASSIGN_GLOBAL)

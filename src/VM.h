@@ -351,6 +351,7 @@ protected:
     uintptr_t callBackTrampolinesUid_;
     JitStack jitStack_;
     bool isJitLibraryLoading_;
+    bool isJitCompiling_;
 };
 
 } // namespace scheme
