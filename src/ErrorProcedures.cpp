@@ -318,6 +318,11 @@ Object scheme::errorEx(VM* theVM, int argc, const Object* argv)
     for (int i = argc - 1; i >= 2; i--) {
         irritants = Object::cons(argv[i], irritants);
     }
+
+//     LOG1("message=~a\n", message);
+//     LOG1("who=~a\n", who);
+//     LOG1("who=~a\n", irritants);
+
     callErrorAfter(theVM, who, message, irritants);
     return Object::Undef;
 }

@@ -312,6 +312,12 @@
   (test-true (compiled? proc))
   (test-equal fib (proc)))
 
+;; EQ
+(let* ([proc (compile (lambda (x y) (eq? x y)))])
+  (test-true (compiled? proc))
+  (test-true (proc 10 10))
+  (test-false (proc 10 1)))
+
 
 
 (test-results)

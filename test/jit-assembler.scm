@@ -76,6 +76,7 @@
 
 ;; conditinal move
 (test-equal '(#x48 #x0f #x4c #xc2) (assemble1 '(cmovl rax rdx)))
+(test-equal '(#x48 #x0f #x44 #xc2)  (assemble1 '(cmove rax rdx)))
 
 ;; cmp
 (test-equal '(#x48 #x39 #xc3) (assemble1 '(cmpq rbx rax)))

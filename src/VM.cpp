@@ -931,6 +931,11 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
 void VM::tryJitCompile(Object closure)
 {
     const int CALL_COUNT_JIT_THRESHOLD = 10;
+    static bool nowCompiling = false;
+    if (nowCompiling) {
+        return;
+    }
+    nowCompiling = true;
 
     MOSH_ASSERT(closure.isClosure());
     Closure* c = closure.toClosure();
@@ -940,17 +945,21 @@ void VM::tryJitCompile(Object closure)
     if (c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD ||
         c->isJitError() ||
         c->isNowJitCompiling()) {
+    nowCompiling = false;
         return;
     }
 
     // temporary
     if (c->size > 10) {
+    nowCompiling = false;
         return;
     }
 
 
     // prevent recursive jit compilation on compiler.
     c->setNowJitCompiling();
+
+    VM_LOG2("now compiling ~a ~a", c->sourceInfo, closure);
 
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
@@ -966,6 +975,7 @@ void VM::tryJitCompile(Object closure)
                 callClosure1(invokeLibrary, importSpec);
             }
         }
+    nowCompiling = false;
         return;
     } else {
         Time t1 = Time::now();
@@ -976,8 +986,8 @@ void VM::tryJitCompile(Object closure)
             c->setJitCompiledError();
         } else {
             LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
-            VM_ASSERT(compiled.isCProcedure());
         }
+        nowCompiling = false;
         return;
     }
 }

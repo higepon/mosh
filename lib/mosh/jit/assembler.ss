@@ -231,6 +231,10 @@
     ;;   REX.W + 0F 4C /r
     [('cmovl (? r64? (= r64->number r64)) (? r64? (= r64->number r/m64)))
      (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) #x0f #x4c ,(mod-r-r/m mod.register r64 r/m64)) #f)]
+    ;; CMOVE r64, r/m64
+    ;;   REX.W + 0F 44 /r
+    [('cmove (? r64? (= r64->number r64)) (? r64? (= r64->number r/m64)))
+     (values `(,(rex-prefix #t (ext-reg? r64) #f (ext-reg? r/m64)) #x0f #x44 ,(mod-r-r/m mod.register r64 r/m64)) #f)]
     ;; CDQE Valid N.E. RAX ← sign-extend of EAX.
     ;;   REX.W + 98
     [('cltq)

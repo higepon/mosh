@@ -42,9 +42,7 @@
                     VM_ASSERT(operand.isFixnum());
                     const int argc = operand.toFixnum();
                     pc_  = retCode;
-            asm volatile(" \t # -- CALL start");
                     ac_.toCProcedure()->call(this, argc, sp_ - argc);
-            asm volatile(" \t # -- CALL end");
                 } else {
                     CProcedure* const cprocedure = ac_.toCProcedure();
                     // set pc_ before call() for pointing where to return.
@@ -59,8 +57,11 @@
                 }
             } else if (ac_.isClosure()) {
                 Closure* const c = ac_.toClosure();
+                COUNT_CALL(ac_);
+                dc_ = ac_;
+                cl_ = ac_;
                 if (c->isJitCompiled()) {
-                    COUNT_CALL(ac_);
+//                    VM_LOG1("called ~a\n", c->sourceInfo);
                     CProcedure* const cprocedure = c->toCProcedure();
                     pc_  = cprocedure->returnCode;
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));
@@ -69,23 +70,16 @@
                     const int argc = operand.toFixnum();
                     // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
                     fp_ = sp_ - argc;
-                    cl_ = ac_;
-                    dc_ = ac_;
                     ac_ = cprocedure->call(this, argc, sp_ - argc);
                 } else {
                     if (c->maxStack + sp_ >= stackEnd_) {
                         expandStack(stackSize_ / 10);
                     }
-
-                    COUNT_CALL(ac_);
-
-//                    tryJitCompile(ac_);
+                    tryJitCompile(ac_);
 
                     VM_ASSERT(operand.isFixnum());
                     const int argLength = operand.toFixnum();
                     const int requiredLength = c->argLength;
-                    dc_ = ac_;
-                    cl_ = ac_;
                     pc_ = c->pc;
                     if (c->isOptionalArg) {
                         const int extraLength = argLength - requiredLength;

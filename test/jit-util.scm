@@ -254,37 +254,47 @@
 (test-results)
 
 (jit-helper (string-split
-"# 713 \"src/VM-Run.cpp\" 1
-	 	 # -- REFER_FREE start
+"	 	 # -- EQ start
 # 0 \"\" 2
 #NO_APP
-.LBB10595:
-.LBB10596:
-	.loc 5 50 0
-	movq	88(%rsp), %rdx
-	movq	88(%rsp), %rbx
-.LVL449:
-	movq	48(%rdx), %rax
-	leaq	8(%rax), %rcx
-.LVL450:
-.LBE10596:
-	movq	(%rax), %rdx
-.LBB10597:
-	movq	%rcx, 48(%rbx)
-	.loc 18 716 0
-	movq	16(%rbx), %rcx
-	sarq	$2, %rdx
-	movslq	%edx,%rdx
-	movq	8(%rcx), %rcx
-	movq	24(%rcx), %rcx
-	movq	(%rcx,%rdx,8), %rdx
-	movq	%rdx, 8(%rbx)
-.LBE10597:
-.LBE10595:
-	.loc 18 717 0
+.LBB11597:
+.LBB11598:
+	.loc 5 128 0
+	movq	88(%rsp), %rax
+	movq	88(%rsp), %rcx
+.LVL248:
+	movq	40(%rax), %rdx
+.LBE11598:
+.LBE11597:
+.LBB11594:
+.LBB11595:
+	.loc 6 220 0
+	movq	8(%rcx), %rbx
+.LVL249:
+.LBE11595:
+.LBE11594:
+.LBB11593:
+.LBB11599:
+	.loc 5 128 0
+	leaq	-8(%rdx), %rax
+	movq	%rax, 40(%rcx)
+.LBE11599:
+.LBE11593:
+.LBB11592:
+.LBB11596:
+	.loc 6 220 0
+	cmpq	%rbx, -8(%rdx)
+	movl	$86, %eax
+	movl	$70, %edx
+	cmove	%rdx, %rax
+	.loc 18 364 0
+	movq	%rax, 8(%rcx)
+.LBE11596:
+.LBE11592:
+	.loc 18 365 0
 #APP
-# 717 \"src/VM-Run.cpp\" 1
-	 	 # -- REFER_FREE end"
+# 365 \"src/VM-Run.cpp\" 1
+	 	 # -- EQ end"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start

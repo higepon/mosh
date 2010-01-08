@@ -217,7 +217,7 @@ inline Object Object::makeVector(int n, Object o)
 
 inline Object Object::makeBool(bool a)
 {
-    return a ? Object::True : Object::False;
+    return a ? Object::makeConst(CONST_TRUE) : Object::makeConst(CONST_FALSE);
 }
 
 inline bool Object::isHeapObject() const

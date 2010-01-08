@@ -376,6 +376,32 @@
 ;;  addq    $8, %rax       ;; rax = rax + 8
 ;;  movq    %rax, 40(%rcx) ;; sp = sp + 8
 
+(define TRUE (obj->integer #t))
+(define FALSE (obj->integer #f))
+
+;; EQ
+;; ;; rax <- VM* | (movq rax (& rsp 88))
+;; ;; rcx <- VM* | (movq rcx (& rsp 88))
+;; (movq rdx (& rax 40))
+;; (movq rbx (& rcx 8))
+;; (leaq rax (& rdx -8))
+;; (movq (& rcx 40) rax)
+;; (cmpq (& rdx -8) rbx)
+;; (movl eax 86)
+;; (movl edx 70)
+;; (cmove rax rdx)
+;; (movq (& rcx 8) rax)
+(define (EQ)
+  `(,@(trace-push! $EQ)
+    (movq rdx ,(vm-register 'sp))
+    (movq rbx ,(vm-register 'ac))
+    (leaq rax (& rdx -8))
+    (movq ,(vm-register 'sp) rax)
+    (cmpq (& rdx -8) rbx)
+    (movl eax ,FALSE)
+    (movl edx ,TRUE)
+    (cmove rax rdx)
+    (movq ,(vm-register 'ac) rax)))
 
 ;; REFER_FREE
 ;; ;; rdx <- VM* | (movq rdx (& rsp 88))
@@ -960,7 +986,7 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
-  #f
+  (register-insn-dispatch-table $EQ EQ)
   (register-insn-dispatch-table $REFER_FREE REFER_FREE)
   (register-insn-dispatch-table $REFER_LOCAL REFER_LOCAL)
   (register-insn-dispatch-table $CLOSURE CLOSURE)
@@ -990,7 +1016,7 @@
 (set-symbol-value! 'jit-compile compile)
 
 
-
+;(assemble (EQ))
 ;; '(movq rbx (& rsp #x38))
 
 ;; )

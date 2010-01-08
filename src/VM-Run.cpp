@@ -66,7 +66,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         CASE(CALL)
         {
             operand = fetchOperand();
-            #include "call.inc.cpp"
+            #include "VM-call.cpp"
             NEXT;
         }
         CASE(APPLY)
@@ -360,7 +360,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(EQ)
         {
+            asm volatile(" \t # -- EQ start");
             ac_ = Object::makeBool(pop().eq(ac_));
+            asm volatile(" \t # -- EQ end");
             NEXT1;
         }
         CASE(EQV)
@@ -726,7 +728,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             ac_ = referFree(fetchOperand());
             operand = fetchOperand();
-            #include "call.inc.cpp"
+            #include "VM-call.cpp"
             NEXT;
         }
         CASE(REFER_GLOBAL)
@@ -791,7 +793,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 }
             }
             operand = fetchOperand();
-            #include "call.inc.cpp"
+            #include "VM-call.cpp"
             NEXT;
         }
         CASE(REFER_LOCAL)
@@ -809,7 +811,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(operand.isFixnum());
             ac_ = referLocal(operand.toFixnum());
             operand = fetchOperand();
-            #include "call.inc.cpp"
+            #include "VM-call.cpp"
             NEXT;
         }
         // LOCAL_CALL is lighter than CALL
@@ -1045,7 +1047,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const int diff  = diffObject.toFixnum();
             sp_ = shiftArgsToBottom(sp_, depth, diff);
             operand = fetchOperand();
-            #include "call.inc.cpp"
+            #include "VM-call.cpp"
             NEXT;
         }
         CASE(SYMBOL_P)
