@@ -155,7 +155,8 @@ Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
     VMFactory factory;
     const int INITIAL_STACK_SIZE = 5000;
     const bool isProfilerON = false;
-    VM* vm = factory.create(INITIAL_STACK_SIZE, isProfilerON);
+    const bool enableJit = false; // todo
+    VM* vm = factory.create(INITIAL_STACK_SIZE, isProfilerON, enableJit);
     vm->setValueString(UC("%loadpath"), Object::False); // todo not false
     vm->setValueString(UC("%verbose"), Object::False);
     vm->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));

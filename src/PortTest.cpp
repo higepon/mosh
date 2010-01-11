@@ -74,7 +74,7 @@ protected:
     virtual void SetUp() {
         mosh_init();
         VMFactory factory;
-        theVM_ = factory.create(1000, false);
+        theVM_ = factory.create(1000, false, false);
         setCurrentVM(theVM_);
     }
 };

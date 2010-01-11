@@ -48,7 +48,7 @@
 
 using namespace scheme;
 
-VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
+VM* VMFactory::create(int initialStackSize, bool isProfilerOn, bool enableJit)
 {
     // At first, we shared the standard ports between VMs.
     // But it causes inconsistent buffering state on Buffered port.
@@ -62,7 +62,7 @@ VM* VMFactory::create(int initialStackSize, bool isProfilerOn)
     const Object errorPort = Object::makeTextualOutputPort(new StandardErrorPort,
                                                            File::STANDARD_OUT.isUTF16Console() ? createNativeConsoleTranscoder() : createNativeTranscoder());
 
-    VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn);
+    VM* vm = new VM(initialStackSize, outPort, errorPort, inPort, isProfilerOn, enableJit);
     vm->registerPort(outPort);
     vm->loadCompiler();
     return vm;

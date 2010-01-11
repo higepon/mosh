@@ -163,6 +163,7 @@ int main(int argc, char *argv[])
     bool cleanAcc = false;
     bool isDebugExpand   = false; // show the result of psyntax expansion.
     bool showOffset = false;
+    bool enableJit = false;
     ucs4char* initFile = NULL;
     ucs4char* loadPath = NULL;
 
@@ -171,6 +172,7 @@ int main(int argc, char *argv[])
        {UC("help"), 0, 0, 'h'},
        {UC("disable-acc"), 0, 0, 'd'},
        {UC("clean-acc"), 0, 0, 'C'},
+       {UC("enable-jit"), 0, 0, 'J'},
        {UC("verbose"), 0, 0, 'a'},
        {0, 0, 0, 0}
    };
@@ -181,6 +183,9 @@ int main(int argc, char *argv[])
         switch (opt) {
         case 'h':
             showUsage();
+            break;
+        case 'J':
+            enableJit = true;
             break;
         case 'O':
             showOffset = true;
@@ -253,7 +258,7 @@ int main(int argc, char *argv[])
     // N.B.
     // We store the VM instance in thread specific storage.
     // Used for storing yylex and re2c which has only global interfaces.
-    theVM = factory.create(INITIAL_STACK_SIZE, isProfilerOn);
+    theVM = factory.create(INITIAL_STACK_SIZE, isProfilerOn, enableJit);
 
     if (!setCurrentVM(theVM)) {
         fprintf(stderr, "fatal vm specific failure\n");

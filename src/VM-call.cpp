@@ -75,7 +75,10 @@
                     if (c->maxStack + sp_ >= stackEnd_) {
                         expandStack(stackSize_ / 10);
                     }
-                    tryJitCompile(ac_);
+
+                    if (enableJit_) {
+                        tryJitCompile(ac_);
+                    }
 
                     VM_ASSERT(operand.isFixnum());
                     const int argLength = operand.toFixnum();

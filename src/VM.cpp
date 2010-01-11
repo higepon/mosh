@@ -97,7 +97,7 @@ using namespace scheme;
 
 #include "cprocedures.cpp"
 
-VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler) :
+VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler, bool enableJit) :
     ac_(Object::Nil),
     dc_(Object::Nil),
     cl_(Object::Nil),
@@ -123,7 +123,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     callBackTrampolines_(new EqHashTable),
     callBackTrampolinesUid_(0),
     isJitLibraryLoading_(false),
-    isJitCompiling_(false)
+    isJitCompiling_(false),
+    enableJit_(enableJit)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);

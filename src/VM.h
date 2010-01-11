@@ -89,7 +89,7 @@ class NumberReaderContext;
 class VM EXTEND_GC
 {
 public:
-    VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false);
+    VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false, bool enableJit = false);
     virtual ~VM();
 
     bool isMainThread() const
@@ -352,6 +352,7 @@ protected:
     JitStack jitStack_;
     bool isJitLibraryLoading_;
     bool isJitCompiling_;
+    bool enableJit_;
 };
 
 } // namespace scheme

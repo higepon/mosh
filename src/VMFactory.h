@@ -41,7 +41,7 @@ class VMFactory EXTEND_GC
 public:
     VMFactory() {}
     ~VMFactory() {}
-    VM* create(int initialStackSize, bool isProfilerOn);
+    VM* create(int initialStackSize, bool isProfilerOn, bool enableJit);
 };
 
 }; // namespace scheme
