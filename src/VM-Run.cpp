@@ -54,6 +54,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
     Object operand = Object::Undef;
 
     // shourt cut pointers
+    // This is refered by JIT
     EqHashTable* const nameSpace = nameSpace_.toEqHashTable();
     pc_ = code;
     for (;;) {

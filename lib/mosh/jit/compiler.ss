@@ -158,46 +158,101 @@
     (movq ,(vm-register 'ac) rax)
     ))
 
+(define (macro-is-raw-pointer reg not-case-label)
+  `((testb ,(r64->8 reg)  3)
+    (jne ,not-case-label)))
+
+;; Discards rax, rdx
+(define (macro-is-heap-object reg is-heap-object-case)
+  (let ([not-case-label (gensym)])
+    `(,@(macro-is-raw-pointer reg not-case-label)
+      (movq rax (& ,reg))
+      (movq rdx rax)
+      (andl edx 3)
+      (cmpq rdx 3)
+      (je ,is-heap-object-case)
+      (label ,not-case-label))))
+
+(define (macro-is-gloc reg is-not-gloc-case)
+  (let ([is-heap-object-case (gensym)])
+    `(,@(macro-is-heap-object reg is-heap-object-case)
+      (jmp ,is-not-gloc-case)
+      (label ,is-heap-object-case)
+      (cmpq rax 135) ;; rax = type, rax isGloc()?
+      (jne ,is-not-gloc-case))))
+
+
+
+;; ;; rbx <- VM* | (movq rbx (& rsp 88))
+;; ;; rsi <- VM* | (movq rsi (& rsp 88))
+;; (movq rax (& rbx 48))
+;; (movq rbx (& rax))
+;; (addq rax 8)
+;; (movq (& rsi 48) rax)
+;; (testb bl 3)
+;; (jne (label .L488))
+;; (movq rax (& rbx))
+;; (movq rdx rax)
+;; (andl edx 3)
+;; (cmpq rdx 3)
+;; (je (label .L1108))
+;; (label .L488)
+;; (movq rdx (& rsp 96))
+;; ;; rcx <- VM* | (movq rcx (& rsp 88))
+;; (movq rsi rbx)
+;; (movq rdi (& rsp 96))
+;; (movq rax (& rdx))
+;; (movq rdx (& rcx 104))
+;; (call (& rax 24))
+;; ;; rsi <- VM* | (movq rsi (& rsp 88))
+;; (cmpq (& rsi 104) rax)
+;; (je (label .L1109))
+;; (movq rdx (& rax 8))
+;; (movq rdx (& rdx))
+;; (movq (& rsi 8) rdx)
+;; (movq rdx (& rsi 48))
+;; (movq (& rdx -8) rax)
+;; ;; END
+;; (label .L1108)
+;; (cmpq rax 135)
+;; (jne (label .L488))
+;; (movq rax (& rbx 8))
+;; (movq rax (& rax))
+;; (movq (& rsi 8) rax)
+;; (jmp (label .L489))
 (define (REFER_GLOBAL id)
   (let ([not-found-case (gensym)]
-        [not-raw-pointer-case (gensym)]
-        [heap-object-case (gensym)])
+        [is-not-gloc-case (gensym)]
+        [get-gloc-value (gensym)])
     `(,@(trace-push! $REFER_GLOBAL)
-      (movq rbx ,(obj->integer id))
-      (testb bl 3)                  ;; rbx.isRawPointer?
-      (jne ,not-raw-pointer-case)   ;;
-      (movq rax  (& rbx))           ;; rax = *rbx
-      (movq rdx rax)                ;; rdx = rax
-      (andl edx 3)                  ;; rdx.isHeapObject
-      (cmpq rdx 3)                  ;;
-      (je ,not-raw-pointer-case)    ;;
-      ;; rdx.isHeapObject
-     ,@(DEBUGGER 3009)
-      (label ,heap-object-case)
-     ,@(DEBUGGER 3010)
-      (label ,not-found-case)
-     ,@(DEBUGGER 3011)
-      (label ,not-raw-pointer-case)
-      (movq rax ,(vm-register 'namespace)) ;; rax = namespace
-      (push rdi)
-      (push rsi)
-      (push rdx)
-      (movq rdx ,(vm-register 'not-found)) ;; rdx = not_found arg3
-;      ,@(DEBUGGER)
-      (movq rsi rbx)                       ;; rsi = id        arg2
-      (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
-      (movq rax (& rdi))
-      (callq (& rax 24))                   ;; call
-      (pop rdx)
-      (pop rsi)
-      (pop rdi)
-      (cmpq ,(vm-register 'not-found) rax) ;; rax = not_found ?
-      (je ,not-found-case)
-      (movq rdx (& rax 8))                 ;; ac = gloc.value
-      (movq rdx (& rdx))
-      (movq ,(vm-register 'ac) rdx))))
-    ;; todo gloc cache
-
+       (movq rbx ,(obj->integer id))
+       ,@(macro-is-gloc 'rbx is-not-gloc-case)
+       ;; obj(rbx) is gloc
+       (movq rax rbx)
+       (jmp ,get-gloc-value)
+       ;; END
+       (label ,not-found-case)
+       ,@(DEBUGGER 3199)
+       (label ,is-not-gloc-case)
+       ;; save arguments
+       (push rdi)
+       (push rsi)
+       (push rdx)
+       (movq rax ,(vm-register 'namespace)) ;; rax = namespace
+       (movq rdx ,(vm-register 'not-found)) ;; arg3 not_found
+       (movq rsi rbx)                       ;; arg2 id
+       (movq rdi (& rax 8))                 ;; rdi = namespace.toEqHashTable
+       (movq rax (& rdi))                   ;; rax EqHashTable::ref
+       (callq (& rax 24))
+       (pop rdx)
+       (pop rsi)
+       (pop rdi)
+       (cmpq ,(vm-register 'not-found) rax)
+       (je ,not-found-case)
+       (label ,get-gloc-value)
+       (movq rdx (& rax 8))   ;; rdx = gloc.value()
+       (movq rdx (& rdx))
+       (movq ,(vm-register 'ac) rdx))))
 
 (define insn-dispatch-table
   (let1 table (make-vector insn-count)

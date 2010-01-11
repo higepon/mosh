@@ -26,7 +26,7 @@
 ;   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;
 (library (mosh jit assembler)
-  (export assemble assemble1 r64->32
+  (export assemble assemble1 r64->32 r64->8
           ;; exported for test
           r64? mod-r-r/m r64->number number->r64)
   (import (rnrs)
@@ -68,6 +68,10 @@
 
 (define (r64->32 reg)
   (number->r32 (r64->number reg)))
+
+(define (r64->8 reg)
+  (number->r8 (r64->number reg)))
+
 
 (define (find-with-index pred lst)
   (let loop ([i 0]

@@ -132,6 +132,13 @@
   (test-true (procedure? proc))
   (test-eq zero? (proc)))
 
+;; REFER_GLOBAL
+(let ([orig-proc (lambda () zero?)])
+  (test-equal zero? (orig-proc)) ;; Force a reference to zero? become gloc.
+  (let ([proc (compile orig-proc)])
+    (test-true (compiled? proc))
+    (test-equal zero? (proc))))
+
 ;; RETURN
 (let ([ERROR (gensym)])
   (define (save-vm-registers)

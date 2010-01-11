@@ -254,47 +254,17 @@
 (test-results)
 
 (jit-helper (string-split
-"	 	 # -- EQ start
-# 0 \"\" 2
-#NO_APP
-.LBB11597:
-.LBB11598:
-	.loc 5 128 0
-	movq	88(%rsp), %rax
-	movq	88(%rsp), %rcx
-.LVL248:
-	movq	40(%rax), %rdx
-.LBE11598:
-.LBE11597:
-.LBB11594:
-.LBB11595:
-	.loc 6 220 0
-	movq	8(%rcx), %rbx
-.LVL249:
-.LBE11595:
-.LBE11594:
-.LBB11593:
-.LBB11599:
-	.loc 5 128 0
-	leaq	-8(%rdx), %rax
-	movq	%rax, 40(%rcx)
-.LBE11599:
-.LBE11593:
-.LBB11592:
-.LBB11596:
-	.loc 6 220 0
-	cmpq	%rbx, -8(%rdx)
-	movl	$86, %eax
-	movl	$70, %edx
-	cmove	%rdx, %rax
-	.loc 18 364 0
-	movq	%rax, 8(%rcx)
-.LBE11596:
-.LBE11592:
-	.loc 18 365 0
-#APP
-# 365 \"src/VM-Run.cpp\" 1
-	 	 # -- EQ end"
+".L1108:
+	.loc 19 359 0
+	cmpq	$135, %rax
+	.p2align 4,,5
+	.p2align 3
+	jne	.L488
+	.loc 18 739 0
+	movq	8(%rbx), %rax
+	movq	(%rax), %rax
+	movq	%rax, 8(%rsi)
+	jmp	.L489"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start
