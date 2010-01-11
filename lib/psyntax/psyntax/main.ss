@@ -366,9 +366,6 @@
   (set-symbol-value! 'trace-printer trace-printer)
   (set-symbol-value! 'compile-r6rs-top-level 'compile-r6rs-top-level)
 
-  ;; exported for Jit compiler
-  (set-symbol-value! 'invoke-library-by-name invoke-library-by-name)
-
   (set-symbol-value! 'create-non-continuable-violation (lambda (c)
                                                          (condition (make-non-continuable-violation)
                                                                     (make-who-condition 'raise)
@@ -430,6 +427,13 @@
       (library-extensions
           (prefix ".mosh"
             (library-extensions))))
+
+  ;; exported for Jit compiler
+  ;; N.B.
+  ;;   After this is defined with set-symbol-value!, VM may call invoke-library-by-name soon.
+  ;;   So this should be defined, after library-path is set.
+  (set-symbol-value! 'invoke-library-by-name invoke-library-by-name)
+
 
 ; use less stack, don't use let here. (Initial stack usage, causes poor performance of call/cc
 ; for performance reason

@@ -61,7 +61,7 @@
                 dc_ = ac_;
                 cl_ = ac_;
                 if (c->isJitCompiled()) {
-//                    VM_LOG1("called ~a\n", c->sourceInfo);
+                    VM_LOG1("called ~a\n", c->sourceInfo);
                     CProcedure* const cprocedure = c->toCProcedure();
                     pc_  = cprocedure->returnCode;
                     pc_[0] = Object::makeRaw(INSTRUCTION(RETURN));

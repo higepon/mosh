@@ -87,7 +87,7 @@ public:
 
     void setNowJitCompiling()
     {
-//        MOSH_ASSERT(jitState_.isFalse());
+        MOSH_ASSERT(jitState_.isFalse());
         jitState_ = Object::True;
     }
 

@@ -938,13 +938,20 @@ void VM::tryJitCompile(Object closure)
 
     c->incrementCalledCount();
 
+    if (isJitLibraryLoading_) {
+        return;
+    }
+
     if (c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD ||
-        c->isJitError() || c->isNowJitCompiling()) {
+        c->isJitError() // || c->isNowJitCompiling()
+        ) {
+        printf("%s %s:%d %d %d %d\n", __func__, __FILE__, __LINE__, c->isJitError(), c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD, isJitLibraryLoading_);fflush(stdout);// debug
         isJitCompiling_ = false;
         return;
     }
 
     if (isJitCompiling_) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         return;
     }
     isJitCompiling_ = true;
@@ -952,33 +959,41 @@ void VM::tryJitCompile(Object closure)
 
     // temporary
     if (c->size > 10) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         isJitCompiling_ = false;
         return;
     }
 
     VM_LOG1("jitState_=~a\n", c->jitState_);
 
-    c->setNowJitCompiling();
+//    c->setNowJitCompiling();
 
     VM_LOG2("now compiling ~a ~a", c->sourceInfo, closure);
 
     Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
     if (compiler.isFalse()) {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         // prevent recursive loading.
         if (!isJitLibraryLoading_) {
+            printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
             isJitLibraryLoading_ = true;
 
             const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
             const Object invokeLibrary = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name")));
             if (invokeLibrary.isFalse()) {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 isJitLibraryLoading_ = false;
             } else {
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                 callClosure1(invokeLibrary, importSpec);
+                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                isJitLibraryLoading_ = false;
             }
         }
         isJitCompiling_ = false;
         return;
     } else {
+        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
         Time t1 = Time::now();
         Object compiled = callClosure1(compiler, closure);
         Time t2 = Time::now();
