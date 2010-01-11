@@ -124,7 +124,8 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     callBackTrampolinesUid_(0),
     isJitLibraryLoading_(false),
     isJitCompiling_(false),
-    enableJit_(enableJit)
+    enableJit_(enableJit),
+    jitCompiler_(Object::False)
 {
     stack_ = Object::makeObjectArray(stackSize);
     values_ = Object::makeObjectArray(maxNumValues_);
@@ -930,70 +931,51 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
     generativeRtds_[uid] = rtd;
 }
 
+void VM::tryInvokeJitLibrary()
+{
+    const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
+    const Object invokeLibrary = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name")));
+    if (invokeLibrary.isClosure()) {
+        callClosure1(invokeLibrary, importSpec);
+        jitCompiler_ = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
+        VM_ASSERT(jitCompiler_.isClosure());
+    }
+}
+
 void VM::tryJitCompile(Object closure)
 {
     const int CALL_COUNT_JIT_THRESHOLD = 10;
+    const int MAX_CLOSURE_SIZE = 10;
 
     MOSH_ASSERT(closure.isClosure());
     Closure* c = closure.toClosure();
 
     c->incrementCalledCount();
 
-    if (isJitCompiling_ || isJitLibraryLoading_) {
+    bool dontJitCompile =
+        isJitCompiling_                                || // Other jit compilation runs
+        isJitLibraryLoading_                           || // Invoking (mosh jit compiler)
+        c->isJitError()                                || // This closure once compiled and causes error.
+        c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD || // Check closure size
+        c->size > MAX_CLOSURE_SIZE;
+
+    if (dontJitCompile) {
         return;
     }
 
-    if (c->getCalledCount() < CALL_COUNT_JIT_THRESHOLD ||
-        c->isJitError() // || c->isNowJitCompiling()
-        ) {
-        isJitCompiling_ = false;
-        return;
-    }
-
-    if (isJitCompiling_) {
-        return;
-    }
     isJitCompiling_ = true;
 
-
-    // temporary
-    if (c->size > 10) {
-        isJitCompiling_ = false;
-        return;
-    }
-
-//    VM_LOG1("jitState_=~a\n", c->jitState_);
-
-//    c->setNowJitCompiling();
-
-    VM_LOG2("now compiling ~a ~a", c->sourceInfo, closure);
-
-    Object compiler = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("jit-compile")));
-    if (compiler.isFalse()) {
-        // prevent recursive loading.
-        if (!isJitLibraryLoading_) {
-  
-            isJitLibraryLoading_ = true;
-
-            const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
-            const Object invokeLibrary = getTopLevelGlobalValueOrFalse(Symbol::intern(UC("invoke-library-by-name")));
-            if (invokeLibrary.isFalse()) {
-  
-                isJitLibraryLoading_ = false;
-            } else {
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                callClosure1(invokeLibrary, importSpec);
-                printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                isJitLibraryLoading_ = false;
-            }
-        }
+    // (mosh jit compiler) should be invoked.
+    if (jitCompiler_.isFalse()) {
+        isJitLibraryLoading_ = true;
+        tryInvokeJitLibrary();
+        isJitLibraryLoading_ = false;
         isJitCompiling_ = false;
         return;
     } else {
-        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        VM_LOG2("now compiling ~a ~a\n", c->sourceInfo, closure);
         Time t1 = Time::now();
-        Object compiled = callClosure1(compiler, closure);
-      printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        Object compiled = callClosure1(jitCompiler_, closure);
         Time t2 = Time::now();
         if (compiled.isFalse()) {
             LOG2("jit compile error ~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));

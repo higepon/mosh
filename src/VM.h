@@ -232,6 +232,7 @@ public:
     }
 
     void tryJitCompile(Object closure);
+    void tryInvokeJitLibrary();
 
 protected:
     virtual int exit(int status)
@@ -353,6 +354,7 @@ protected:
     bool isJitLibraryLoading_;
     bool isJitCompiling_;
     bool enableJit_;
+    Object jitCompiler_;
 };
 
 } // namespace scheme
