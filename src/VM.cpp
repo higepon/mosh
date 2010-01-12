@@ -945,7 +945,7 @@ void VM::tryInvokeJitLibrary()
 void VM::tryJitCompile(Object closure)
 {
     const int CALL_COUNT_JIT_THRESHOLD = 10;
-    const int MAX_CLOSURE_SIZE = 10;
+    const int MAX_CLOSURE_SIZE = 50;
 
     MOSH_ASSERT(closure.isClosure());
     Closure* c = closure.toClosure();
@@ -978,7 +978,7 @@ void VM::tryJitCompile(Object closure)
         Object compiled = callClosure1(jitCompiler_, closure);
         Time t2 = Time::now();
         if (compiled.isFalse()) {
-            LOG2("jit compile error ~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
+            LOG2("jit compile error ~a ~d usec\n", c->sourceInfo, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
             c->setJitCompiledError();
         } else {
             LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));

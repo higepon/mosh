@@ -37,6 +37,8 @@
 (define (u8*->c-procedure+retq lst)
   (u8-list->c-procedure (append lst (assemble '((retq))))))
 
+(define dummy #f)
+(define (return-1) 1)
 (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
 
 (define (asm*->procedure asm*)
@@ -325,6 +327,29 @@
   (test-true (proc 10 10))
   (test-false (proc 10 1)))
 
+;; ASSIGN_GLOBAL
+(let ([proc-orig (lambda () (set! dummy fib))])
+  (proc-orig) ;; force id become gloc
+  (set! dummy #f)
+  (let ([proc (compile proc-orig)])
+    (test-true (compiled? proc))
+    (test-false dummy)
+    (test-equal (if #f #f) (proc))
+    (test-true (procedure? dummy))))
 
+;; PAIR_P
+(let ([proc (compile (lambda (x) (pair? x)))])
+    (test-true (compiled? proc))
+    (test-false (proc 3))
+    (test-true (proc (cons 1 2))))
+
+;; REFER_GLOBAL_CALL
+;; pending: CALL for closure is not implemented.
+#;(let ([proc-orig (lambda () (return-1))])
+  (proc-orig) ;; force id become gloc
+  (disasm proc-orig)
+  (let ([proc (compile proc-orig)])
+    (test-true (compiled? proc))
+    (test-equal 1 (proc))))
 
 (test-results)

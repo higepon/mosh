@@ -116,7 +116,7 @@
 #ifdef USE_DIRECT_THREADED_CODE
 #define SWITCH(val) goto *val;
 
-#define CASE(insn)  LABEL_##insn : //asm volatile("# -- " #insn " start");
+#define CASE(insn)  LABEL_##insn : asm volatile("# -- " #insn " start");
 #define NEXT                         \
 {                                    \
     asm volatile(" \t # -- next start");   \

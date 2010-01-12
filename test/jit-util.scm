@@ -254,17 +254,12 @@
 (test-results)
 
 (jit-helper (string-split
-".L1108:
-	.loc 19 359 0
-	cmpq	$135, %rax
-	.p2align 4,,5
-	.p2align 3
-	jne	.L488
-	.loc 18 739 0
-	movq	8(%rbx), %rax
-	movq	(%rax), %rax
-	movq	%rax, 8(%rsi)
-	jmp	.L489"
+".L426:
+.LBB8824:
+.LBB9927:
+	.loc 21 61 0
+	movl	$86, %eax
+	jmp	.L427"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start
