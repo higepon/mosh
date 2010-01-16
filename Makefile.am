@@ -23,9 +23,14 @@ SUBDIRS = $(BOEHM_GC_DIR) $(ONIG_DIR) .
 man_MANS = doc/mosh.1 doc/mosh_config.1
 
 if DEVELOPER
-bin_PROGRAMS = mosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
+bin_PROGRAMS = mosh nmosh test_port test_fasl test_ffi test_object test_vm test_compat test_getopt test_thread
 else
-bin_PROGRAMS = mosh
+bin_PROGRAMS = mosh nmosh
+endif
+
+# FIXME! use extra_PROGRAMS
+if MINGW32
+bin_PROGRAMS = nmosh
 endif
 
 bin_SCRIPTS = src/mosh_config
@@ -39,22 +44,36 @@ mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ 
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
+nmosh_SOURCES = src/main.cpp src/nmosh_image.cpp src/nmosh_version.h
+
+nmosh_OPTS     = -D WITH_NMOSH_DEFAULTS -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
+nmosh_CFLAGS   = $(nmosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated 
+nmosh_CXXFLAGS = $(nmosh_CFLAGS)
+nmosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+
+
 if DEVELOPER
 GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
-GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
+GIT_IS_DIRTY=$(shell git diff --quiet HEAD && echo "dirty")
 GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
 GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|cut -d ' ' -f4)
 GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
 mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+else
+GIT_BRANCH=UNKNOWN
+GIT_COMMIT_REVISION=UNKNOWN
+GIT_COMMIT_DATE=UNKNOWN
 endif
+
+mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+nmosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION
 endif
 
-
 if MINGW32
-mosh_LDADD += mosh-icon.o
+nmosh_LDADD += mosh-icon.o
 mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	$(WINDRES) win/mosh.rc -o mosh-icon.o
 endif 
@@ -228,6 +247,7 @@ lib/clos/std-protocols/class-initialization.ss  lib/clos/std-protocols/print-obj
 lib/clos/std-protocols/generic-invocation.ss \
 lib/srfi/private/include.sls \
 lib/srfi/private/include/compat.mosh.sls \
+lib/srfi/private/include/compat.nmosh.sls \
 lib/srfi/private/registry.sls \
 lib/srfi/private/let-opt.sls \
 lib/srfi/private/platform-features.mosh.sls \
@@ -335,7 +355,8 @@ src/psyntax.h src/psyntax.scmc.fasl src/pmatch.h src/pmatch.scmc.fasl \
 src/compiler-with-library.h src/compiler-with-library.scmc.fasl \
 src/psyntax.scmc-e src/compiler-with-library.scmc-e src/pmatch.scmc-e \
 src/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
-src/Reader.tab.cpp src/Reader.tab.hpp
+src/Reader.tab.cpp src/Reader.tab.hpp \
+src/nmosh_image.cpp
 
 CLEANFILES = gtest.a gtest_main.a lib/libffitest.so.1.0 src/ffitest.o
 MAINTAINERCLEANFILES = $(GENERATED)
@@ -354,12 +375,15 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # 	(find . -name "*.sls.mosh-fasl" | xargs rm) ; true
 # 	MOSH_GENSYM_PREFIX=L ./mosh scripts/pre-compile-r6rs.scm scripts/pre-compile-target.scm
 
+# update: lib/mosh/queue.ss.mosh-fasl
+
 # when you release comment out start
 if DEVELOPER
 GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
 
 bootstrap:
-	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
+	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME) || \
+svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
 	cp -p lib/psyntax/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm lib/psyntax/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
@@ -523,9 +547,42 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/number.scm
 	./mosh test/cgi.scm
 	./mosh test/memcached.scm
-	$(MAKE) -C test/irregex
+	(MOSH_TARGET=mosh $(MAKE) -C test/irregex)
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
+ntest: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
+	./nmosh --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
+	./nmosh -5 src/all-tests.scm
+	./nmosh test/misc.scm
+	./nmosh test/testing.scm
+	./nmosh test/mosh-test.scm
+	./nmosh test/io-error.scm
+	./nmosh test/input-output-port.scm
+	./nmosh test/input-port.scm < test/input.txt
+	./nmosh test/output-port.scm
+	-./nmosh test/shell.scm
+	./nmosh test/record.scm
+	./nmosh test/condition.scm
+	./nmosh test/exception.scm
+	./nmosh test/unicode.scm
+	./nmosh test/srfi8.scm
+	./nmosh test/srfi19.scm
+	./nmosh test/ffi.scm
+	./nmosh test/mysql.scm
+	./nmosh test/clos.scm
+	./nmosh test/dbi.scm
+	./nmosh test/srfi-misc.scm
+	./nmosh test/lists.scm
+	./nmosh test/socket.scm
+	./nmosh test/match.scm
+	./nmosh test/print.scm
+	./nmosh test/concurrent.scm
+	./nmosh test/concurrent-crash.scm
+	./nmosh test/number.scm
+	./nmosh test/cgi.scm
+	./nmosh test/memcached.scm
+	(MOSH_TARGET=nmosh $(MAKE) -C test/irregex)
+	(cd test/r6rs-test-suite && $(MAKE) $@)
 
 # Builds gtest.a and gtest_main.a.
 

@@ -1,0 +1,5 @@
+(define %loadpath #f)
+(define %true-command-line (command-line))
+(define (command-line)
+  (cdr %true-command-line))
+(define %verbose #t)

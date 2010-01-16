@@ -1,8 +1,8 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ(2.63)
-AC_INIT(mosh, 0.2.0, higepon@users.sourceforge.jp)
+AC_PREREQ(2.62)
+AC_INIT(mosh, 0.2.2, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE(foreign)
@@ -176,6 +176,9 @@ case "$target_os" in
   *mingw*)
     AC_DEFINE([MOSH_HOST_OS], ["win32"], [define operating-system])
     ;;
+  *cygwin*)
+    AC_DEFINE([MOSH_HOST_OS], ["cygwin"], [define operating-system])
+    ;;
   *)
     AC_DEFINE([MOSH_HOST_OS], ["unknown"], [define operating-system])
     ;;
@@ -259,9 +262,14 @@ i[[3456]]86|pentium)
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc" #forcing WinXP & Gcc > 4.2
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc > 4.2
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
+       *cygwin*)
+         MOSH_OPTS="$MOSH_INTEL_OPTS -mtune=generic -fwide-exec-charset=ucs-4le"
+         MOSH_LDADD_ARCH="-ldl -lpthread"
+	 ;;
+
         *)
           MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer -march=$host_cpu" # -mfpmath=sse -msse3 -march=$host_cpu
           ;;
@@ -350,7 +358,7 @@ AC_CHECK_FUNCS([gettimeofday memmove memset strtol])
 # Check system type
 # todo: added another system type
 case "$target_in" in
-    cygwin* | mingw* | amigados* | msdos* | rdos*)
+    *cygwin* | *mingw* | amigados* | msdos* | rdos*)
         AC_DEFINE(LINE_FEED_CODE_CRLF, 1, system line feed code is CRLF)
         ;;
     mac*)

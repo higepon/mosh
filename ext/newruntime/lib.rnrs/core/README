@@ -1,0 +1,32 @@
+
+This directory contains R6RS derived forms by Andre van Tonder
+File had splitted into signle library files for debugging purpose.
+
+following is original "standard-libraries.scm" file header.
+
+;;;=====================================================================
+;;;
+;;; Derived forms:
+;;;
+;;;   Copyright (c) 2006 Andre van Tonder
+;;;
+;;;   Copyright statement at http://srfi.schemers.org/srfi-process.html
+;;;
+;;;=====================================================================  
+
+;;;=====================================================================
+;;;
+;;; This file builds r6rs up using a sequence of libraries.
+;;; It constitutes a nontrivial example, tutorial and test
+;;; of the library system.  
+;;;
+;;; It is meant to be expanded by expander.scm and compiled 
+;;; together with the latter before using in a production system.
+;;;
+;;; Various of the standard macros were copied from
+;;; SRFI-93 reference implementation.
+;;;
+;;; An explicit renaming library is included for easier 
+;;; porting of legacy macros in some implementations.
+;;;
+;;;=====================================================================

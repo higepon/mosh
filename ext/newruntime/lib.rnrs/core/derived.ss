@@ -1,0 +1,73 @@
+(library (core derived)
+  (export let* cond case else =>)   
+  (import (for (core primitives)       expand run)
+          (for (core let)              expand run)
+          (for (core with-syntax)      expand)
+          (for (core syntax-rules)     expand)
+          (for (primitives for-all null? memv car cdr) expand run))
+  
+  (define-syntax let*
+    (lambda (x)
+      (syntax-case x ()
+        ((_ () e1 e2 ...)
+         (syntax (let () e1 e2 ...)))
+        ((_ ((x v) ...) e1 e2 ...)
+         (for-all identifier? (syntax (x ...)))
+         (let f ((bindings (syntax ((x v) ...))))
+           (syntax-case bindings ()
+             (((x v))        (syntax (let ((x v)) e1 e2 ...)))
+             (((x v) . rest) (with-syntax ((body (f (syntax rest))))
+                               (syntax (let ((x v)) body))))))))))
+  
+  (define-syntax cond
+    (lambda (x)
+      (syntax-case x ()
+        ((_ c1 c2 ...)
+         (let f ((c1  (syntax c1))
+                 (c2* (syntax (c2 ...))))
+           (syntax-case c2* ()
+             (()
+              (syntax-case c1 (else =>)
+                ((else e1 e2 ...) (syntax (begin e1 e2 ...)))
+                ((e0)             (syntax (let ((t e0)) (if t t))))
+                ((e0 => e1)       (syntax (let ((t e0)) (if t (e1 t)))))
+                ((e0 e1 e2 ...)   (syntax (if e0 (begin e1 e2 ...))))
+                (_                (syntax-violation 'cond "Invalid expression" x))))
+             ((c2 c3 ...)
+              (with-syntax ((rest (f (syntax c2)
+                                     (syntax (c3 ...)))))
+                (syntax-case c1 (else =>)
+                  ((e0)           (syntax (let ((t e0)) (if t t rest))))
+                  ((e0 => e1)     (syntax (let ((t e0)) (if t (e1 t) rest))))
+                  ((e0 e1 e2 ...) (syntax (if e0 (begin e1 e2 ...) rest)))
+                  (_              (syntax-violation 'cond "Invalid expression" x)))))))))))
+  
+  (define-syntax case
+    (lambda (x)
+      (syntax-case x ()
+        ((_ e c1 c2 ...)
+         (with-syntax ((body
+                        (let f ((c1 (syntax c1))
+                                (cmore (syntax (c2 ...))))
+                          (if (null? cmore)
+                              (syntax-case c1 (else)
+                                ((else e1 e2 ...)    (syntax (begin e1 e2 ...)))
+                                (((k ...) e1 e2 ...) (syntax (if (memv t '(k ...))
+                                                                 (begin e1 e2 ...)))))
+                              (with-syntax ((rest (f (car cmore) (cdr cmore))))
+                                (syntax-case c1 ()
+                                  (((k ...) e1 e2 ...)
+                                   (syntax (if (memv t '(k ...))
+                                               (begin e1 e2 ...)
+                                               rest)))))))))
+           (syntax (let ((t e)) body)))))))
+  
+  (define-syntax =>
+    (lambda (x)
+      (syntax-violation '=> "Invalid expression" x)))
+  
+  (define-syntax else
+    (lambda (x)
+      (syntax-violation 'else "Invalid expression" x)))
+  
+  ) ; derived

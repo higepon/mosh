@@ -1,0 +1,15 @@
+*.exp
+*.exp-e
+*.gexp
+r6rs.scm
+r6rs.ss
+system.scm
+boot.scm
+bootvec.scm
+boot5.scm
+repl.scm
+cache/
+nmosh_version.h
+nmosh_version_git.h
+nmosh_image.cpp
+_timestamp
