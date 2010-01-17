@@ -581,6 +581,7 @@ ntest: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./nmosh test/number.scm
 	./nmosh test/cgi.scm
 	./nmosh test/memcached.scm
+	./nmosh test/nmosh.scm # nmosh only
 	(MOSH_TARGET=nmosh $(MAKE) -C test/irregex)
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 
