@@ -322,12 +322,12 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object id = fetchOperand();
 //            LOG1("define ~a\n", id);
-            const Object found = nameSpace->ref(id, notFound_);
-            if (found == notFound_) {
+//            const Object found = nameSpace->ref(id, notFound_);
+//            if (found == notFound_) {
                 nameSpace->set(id, Object::makeGloc(ac_));
-            } else {
-                callErrorAfter(this, "define", "defined twice", L1(id));
-            }
+//            } else {
+//                callErrorAfter(this, "define", "defined twice", L1(id));
+//            }
             NEXT;
         }
         CASE(DISPLAY)

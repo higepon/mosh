@@ -55,6 +55,10 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
+#ifdef WITH_NMOSH_DEFAULTS
+#include "nmosh_version.h"
+#endif
+
 bool debug_on;
 using namespace scheme;
 
@@ -74,6 +78,9 @@ Object argsToList(int argc, int optind, ucs4char** argvU)
 void showVersion()
 {
     printf("Mosh R6RS scheme interpreter, version %s (revision %s %s %s) \n", PACKAGE_VERSION, GIT_BRANCH, GIT_COMMIT_DATE, GIT_COMMIT_REVISION);
+#ifdef WITH_NMOSH_DEFAULTS
+    printf("nmosh expander/runtime built from :\n%s\n",NMOSH_COMMIT_DATA);
+#endif
     exit(0);
 }
 
@@ -249,7 +256,13 @@ int main(int argc, char *argv[])
         theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
+#ifdef WITH_NMOSH_DEFAULTS
+	extern const uint8_t* nmosh_image_ptr;
+	extern const unsigned int nmosh_image_size;
+        theVM->activateR6RSModeWithImage(nmosh_image_ptr,nmosh_image_size);
+#else
         theVM->activateR6RSMode(isDebugExpand);
+#endif
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());

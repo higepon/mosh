@@ -67,6 +67,7 @@ typedef gc_vector<Object> Ports;
    sp_ = stack_ + spOffset;
 
 #define FASL_GET(image) FaslReader(this, new ByteArrayBinaryInputPort(image, sizeof(image))).get()
+#define FASL_GET_WITH_SIZE(image,size) FaslReader(this, new ByteArrayBinaryInputPort(image, size)).get()
 
 #ifdef DEBUG_VERSION
 #define VM_ASSERT(condition) { if (!(condition)) { \
@@ -101,7 +102,7 @@ public:
         ucs4string ret = UC("#<vm ");
         ret += name_;
         char buf[32];
-        snprintf(buf, sizeof(buf), " %lx", (uintptr_t)this);
+        snprintf(buf, sizeof(buf), " %lx", (unsigned long int)(uintptr_t)this);
         ret += ucs4string::from_c_str(buf);
         ret += UC(">");
         return ret;
@@ -169,6 +170,7 @@ public:
     Object getTopLevelGlobalValueOrFalse(Object id);
     bool isR6RSMode() const;
     Object activateR6RSMode(bool isDebugExpand);
+    Object activateR6RSModeWithImage(const uint8_t*,const unsigned int);
     Object* disasm(Object* code, int length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER
