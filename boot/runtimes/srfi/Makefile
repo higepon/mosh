@@ -125,12 +125,12 @@ nmosh_image.cpp: build.ss
 	touch _timestamp
 
 inject-nmosh: $(RNRS_FILES) $(REPL_FILES) $(SYS_FILES) nmosh_image.cpp 
-	cp nmosh_image.cpp ../../src
+	cp nmosh_image.cpp ../../../src
 	$(MAKE) nmosh_version.h #seq
-	cp nmosh_version.h ../../src
+	cp nmosh_version.h ../../../src
 
 test: all 
-	../../mosh -5 boot5.scm tests/r6rs/run.sps
+	../../../mosh -5 boot5.scm tests/r6rs/run.sps
 
 clean:
 	rm -f nmosh_version.h nmosh_version_git.h
