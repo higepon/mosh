@@ -343,6 +343,19 @@
     (test-false (proc 3))
     (test-true (proc (cons 1 2))))
 
+;; CONSTANT_PUSH
+(let ([proc (compile (lambda (x) (eq? 1 x)))])
+  (test-true (compiled? proc))
+  (test-false (proc 2))
+  (test-true (proc 1)))
+
+;; REFER_LOCAL_BRANCH_NOT_NULL
+(let ([proc (compile (lambda(x) (if (null? x) #t #f)))])
+  (test-true (compiled? proc))
+  (test-false (proc 1))
+  (test-true (proc '())))
+
+
 ;; REFER_GLOBAL_CALL
 ;; pending: CALL for closure is not implemented.
 #;(let ([proc-orig (lambda () (return-1))])
