@@ -382,9 +382,9 @@ if DEVELOPER
 GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
 
 bootstrap:
-	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME) || \
-svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
-	cp -p lib/psyntax/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm lib/psyntax/
+	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
+svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
+	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
@@ -451,7 +451,7 @@ src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
 
 # we need to replace #\null => #\nul and |...| => ...
 # It is the difference between gauche and mosh.
-src/psyntax.scmc: lib/psyntax/psyntax.scm ./src/compiler-vm.scm
+src/psyntax.scmc: boot/runtimes/psyntax-mosh/psyntax.scm ./src/compiler-vm.scm
 	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
