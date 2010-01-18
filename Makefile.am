@@ -390,7 +390,8 @@ svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot
 	$(MAKE) src/NumberReader.tab.cpp
 	$(MAKE) src/pmatch.h
 	$(MAKE) src/labels.cpp
-	$(MAKE) src/psyntax.h
+	$(MAKE) -C boot/runtimes/psyntax-mosh
+	$(MAKE) -C boot/runtimes/psyntax-mosh inject-mosh
 	$(MAKE) src/OSConstants.h
 	$(MAKE) src/compiler-with-library.h
 	$(MAKE) src/Object-accessors.h
@@ -445,15 +446,15 @@ src/psyntax.h: src/psyntax.scmc
 # 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
-	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+# src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
+# 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-# we need to replace #\null => #\nul and |...| => ...
-# It is the difference between gauche and mosh.
-src/psyntax.scmc: boot/runtimes/psyntax-mosh/psyntax.scm ./src/compiler-vm.scm
-	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+# # we need to replace #\null => #\nul and |...| => ...
+# # It is the difference between gauche and mosh.
+# src/psyntax.scmc: boot/runtimes/psyntax-mosh/psyntax.scm ./src/compiler-vm.scm
+# 	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 CORE_LIBS =                 \
     lib/core/fixnum.scm     \

@@ -43,7 +43,7 @@
     "psyntax/library-manager.ss"
     "psyntax/builders.ss"
     "psyntax/expander.ss"
-    "../mosh/condition.ss"
+    "../../../lib/mosh/condition.ss"
     "psyntax/main.ss"))
 
 
