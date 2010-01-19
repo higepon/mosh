@@ -210,13 +210,14 @@
 ;; (movq (& rcx 48) rax)
 ;; (label .L889)
 ;; (label .LBE9204)
-(define (REFER_LOCAL_BRANCH_NOT_NULL index label)
+(define (REFER_LOCAL_BRANCH_NOT_NULL index not-null-case)
   `(,@(trace-push! $REFER_LOCAL_BRANCH_NOT_NULL)
     ,@(REFER_LOCAL index)
     (movq rdx ,(vm-register 'ac))
-    (cmpq rdx 6)
-    ))
-
+    (cmpq rdx ,(obj->integer '()))
+    (movq ,(vm-register 'ac) ,(obj->integer #f))
+    (jne ,not-null-case)
+    (movq ,(vm-register 'ac) ,(obj->integer #t))))
 
 
 ;; ;; rsi <- VM* | (movq rsi (& rsp 88))
@@ -1130,14 +1131,11 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-;  (format #t "closure=~a:~a\n" (source-info closure) (current-exception-handler))
   (guard (c [#t
              (format #t "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]) ;; JIT compile error returns #f to VM.
-;         (format #t "2closure=~a:~a\n" (source-info closure) (current-exception-handler))
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
-;           (disasm closure)
            (let1 insn* (insert-labels insn* label*)
              (let1 asm* (map (lambda (insn)
                                (match (car insn)
@@ -1160,14 +1158,22 @@
      [(null? lst) (list-sort (lambda (x y) (> (cdr x) (cdr y))) ret)]
      [else
       (let1 insn (caar lst)
-        (if (eq? (instruction->symbol (car insn)) 'BRANCH_NOT_LT)
-            (let ([label `(label ,(gensym))]
-                  [offset (cadr insn)])
-              (set-car! (cdr insn) label) ;; ugly
-              (loop (+ i (length (caar lst))) (cdr lst) (cons `(,label . ,(+ offset i 1)) ret)))
-            (loop (+ i (length (caar lst))) (cdr lst) ret)))])))
+        (case (instruction->symbol (car insn))
+          [(BRANCH_NOT_LT)
+           (let ([label `(label ,(gensym))]
+                 [offset (cadr insn)])
+             (set-car! (cdr insn) label) ;; ugly
+             (loop (+ i (length (caar lst))) (cdr lst) (cons `(,label . ,(+ offset i 1)) ret)))]
+          [(REFER_LOCAL_BRANCH_NOT_NULL)
+           (let ([label `(label ,(gensym))]
+                 [offset (caddr insn)])
+             (set-car! (cddr insn) label) ;; ugly
+             (loop (+ i (length (caar lst))) (cdr lst) (cons `(,label . ,(+ offset i 2)) ret)))]
+          [else
+            (loop (+ i (length (caar lst))) (cdr lst) ret)]))])))
 
 (define (insert-labels lst labels)
+  (format #t "insert-labels lst=~a labels=~a" lst labels)
   (let loop ([labels labels]
              [lst lst]
              [ret '()])
@@ -1198,6 +1204,13 @@
                                                    [('label dst)
                                                     (BRANCH_NOT_LT dst)]
                                                    [else (error 'BRANCH_NOT_LT "label expeced")])))
+  (register-insn-dispatch-table $REFER_LOCAL_BRANCH_NOT_NULL
+                                (lambda (index label)
+                                  (match label
+                                    [('label dst)
+                                     (REFER_LOCAL_BRANCH_NOT_NULL index dst)]
+                                    [else (error 'REFER_LOCAL_BRANCH_NOT_NULL "label expeced")])))
+
   (register-insn-dispatch-table $RETURN RETURN)
  (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)

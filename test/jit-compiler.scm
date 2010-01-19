@@ -351,7 +351,9 @@
 
 ;; REFER_LOCAL_BRANCH_NOT_NULL
 (let ([proc (compile (lambda(x) (if (null? x) #t #f)))])
+  (disasm (lambda(x) (if (null? x) #t #f)))
   (test-true (compiled? proc))
+  (display (proc 1))
   (test-false (proc 1))
   (test-true (proc '())))
 
