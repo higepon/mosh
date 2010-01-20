@@ -32,7 +32,7 @@
 #include "scheme.h"
 #include "ucs4string.h"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_MSC_VER)
 #include <map>
 #include <list>
 #include <vector>
