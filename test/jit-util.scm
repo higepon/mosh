@@ -254,33 +254,30 @@
 (test-results)
 
 (jit-helper (string-split
-"	# -- REFER_LOCAL_BRANCH_NOT_NULL start
+"	# -- BRANCH_NOT_EQ start
 # 0 \"\" 2
-#NO_APP
-	.loc 5 50 0
-	movq	88(%rsp), %rsi
-	movq	48(%rsi), %rax
-	movq	(%rax), %rdx
-	leaq	8(%rax), %rcx
-	movq	%rcx, 48(%rsi)
-	.loc 6 220 0
-	movq	32(%rsi), %rcx
-	sarq	$2, %rdx
-	movslq	%edx,%rdx
-	cmpq	$6, (%rcx,%rdx,8)
-	je	.L1134
-	.loc 18 850 0
+	.loc 5 128 0
+	movq	88(%rsp), %rdx
 	movq	88(%rsp), %rcx
+	movq	40(%rdx), %rax
+	leaq	-8(%rax), %rdx
+	movq	%rdx, 40(%rcx)
+	.loc 6 220 0
+	movq	-8(%rax), %rbx
+	cmpq	%rbx, 8(%rcx)
+	je	.L1084
+	.loc 18 1079 0
+	movq	88(%rsp), %rcx
+	.loc 5 50 0
+	movq	48(%rcx), %rdx
+	.loc 18 1079 0
 	movq	$86, 8(%rcx)
-	.loc 5 55 0
-	movq	8(%rax), %rdx
-	sarq	$2, %rdx
-	subl	$1, %edx
-	movslq	%edx,%rdx
-	leaq	16(%rax,%rdx,8), %rax
-	movq	%rax, 48(%rcx)
-.L889:
-.LBE9204:"
+	movq	(%rdx), %rax
+	sarq	$2, %rax
+	subl	$1, %eax
+	cltq
+	leaq	8(%rdx,%rax,8), %rax
+	movq	%rax, 48(%rcx)"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start

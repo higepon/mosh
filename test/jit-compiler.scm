@@ -40,6 +40,7 @@
 (define dummy #f)
 (define (return-1) 1)
 (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
+(define one 1)
 
 (define (asm*->procedure asm*)
   (u8*->c-procedure+retq (assemble asm*)))
@@ -351,11 +352,30 @@
 
 ;; REFER_LOCAL_BRANCH_NOT_NULL
 (let ([proc (compile (lambda(x) (if (null? x) #t #f)))])
-  (disasm (lambda(x) (if (null? x) #t #f)))
   (test-true (compiled? proc))
-  (display (proc 1))
   (test-false (proc 1))
   (test-true (proc '())))
+
+;; BRANCH_NOT_EQ
+(let ([proc (compile (lambda(x) (if (eq? x 3) #t #f)))])
+  (test-true (compiled? proc))
+  (test-false (proc 1))
+  (test-true (proc 3)))
+
+;; REFER_GLOBAL_PUSH
+(let ([proc (compile (lambda (x) (+ one x)))])
+    (test-true (compiled? proc))
+    (test-equal 4 (proc 3)))
+
+
+
+;; ;; BRANCH_NOT_EQV
+;; (let ([proc (compile (lambda(x) (if (eqv? x "hige") #t #f)))])
+;;   (disasm (lambda(x) (if (eqv? x "hige") #t #f)))
+;;   (test-true (compiled? proc))
+;;   (test-false (proc "hage"))
+;;   (test-true (proc "hige")))
+
 
 
 ;; REFER_GLOBAL_CALL

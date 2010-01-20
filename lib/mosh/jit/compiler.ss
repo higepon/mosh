@@ -219,6 +219,35 @@
     (jne ,not-null-case)
     (movq ,(vm-register 'ac) ,(obj->integer #t))))
 
+;; ;; rdx <- VM* | (movq rdx (& rsp 88))
+;; ;; rcx <- VM* | (movq rcx (& rsp 88))
+;; (movq rax (& rdx 40))
+;; (leaq rdx (& rax -8))
+;; (movq (& rcx 40) rdx)
+;; (movq rbx (& rax -8))
+;; (cmpq (& rcx 8) rbx)
+;; (je (label .L1084))
+;; ;; rcx <- VM* | (movq rcx (& rsp 88))
+;; (movq rdx (& rcx 48))
+;; (movq (& rcx 8) 86)
+;; (movq rax (& rdx))
+;; (sarq rax 2)
+;; (subl eax 1)
+;; (cltq)
+;; (leaq rax (& rdx,%rax,8 8))
+;; (movq (& rcx 48) rax)
+
+;; todo : pop-to-reg
+(define (BRANCH_NOT_EQ not-eq-case)
+  `(,@(trace-push! $BRANCH_NOT_EQ)
+    (movq rax ,(vm-register 'sp))
+    (leaq rdx (& rax -8))
+    (movq ,(vm-register 'sp) rdx)
+    (movq rbx (& rax -8)) ;; rbx = pop()
+    (cmpq ,(vm-register 'ac) rbx)
+    (movq ,(vm-register 'ac) ,(obj->integer #f))
+    (jne ,not-eq-case)
+    (movq ,(vm-register 'ac) ,(obj->integer #t))))
 
 ;; ;; rsi <- VM* | (movq rsi (& rsp 88))
 ;; (movq rax (& rsi 48))
@@ -394,6 +423,11 @@
        (movq rdx (& rax 8))   ;; rdx = gloc.value()
        (movq rdx (& rdx))
        (movq ,(vm-register 'ac) rdx))))
+
+(define (REFER_GLOBAL_PUSH id)
+  `(,@(trace-push! $REFER_GLOBAL_PUSH)
+    ,@(REFER_GLOBAL id)
+    ,@(PUSH)))
 
 (define insn-dispatch-table
   (let1 table (make-vector insn-count)
@@ -1159,7 +1193,7 @@
      [else
       (let1 insn (caar lst)
         (case (instruction->symbol (car insn))
-          [(BRANCH_NOT_LT)
+          [(BRANCH_NOT_LT BRANCH_NOT_EQ)
            (let ([label `(label ,(gensym))]
                  [offset (cadr insn)])
              (set-car! (cdr insn) label) ;; ugly
@@ -1188,7 +1222,13 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
+  (register-insn-dispatch-table $REFER_GLOBAL_PUSH REFER_GLOBAL_PUSH)
   (register-insn-dispatch-table $PAIR_P PAIR_P)
+(register-insn-dispatch-table $BRANCH_NOT_EQ (lambda (label)
+                                                 (match label
+                                                   [('label dst)
+                                                    (BRANCH_NOT_EQ dst)]
+                                                   [else (error 'BRANCH_NOT_EQ "label expeced")])))
   (register-insn-dispatch-table $CONSTANT_PUSH CONSTANT_PUSH)
   (register-insn-dispatch-table $UNDEF UNDEF)
   (register-insn-dispatch-table $EQ EQ)
