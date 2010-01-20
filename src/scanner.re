@@ -417,10 +417,12 @@ int Scanner::scan(YYSTYPE* yylval)
             continue;
         }
         [\]\)] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return RIGHT_PAREN;
         }
         [\(\[] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return LEFT_PAREN;
         }

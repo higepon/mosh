@@ -87,7 +87,7 @@
                      (lambda () 'ok))])
            (test-false  (port-has-port-position? p))
            (test-false  (port-has-set-port-position!? p))
-           (close-port p))))])
+           (close-port p)))]))
 
 
 (define (with-all-buffer-mode file proc)

@@ -350,7 +350,7 @@
   (lambda (x)
     (syntax-case x ()
       [(_ lib ret func arg ...)
-       #'(make-c-function lib 'ret 'func '(arg ...)))]))
+       #'(make-c-function lib 'ret 'func '(arg ...))])))
 
 #|
     Function: make-c-callback

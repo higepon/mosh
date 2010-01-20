@@ -76,7 +76,7 @@
                  [_ #'(string-split
                        (spawn->string (any->string (syntax->datum #'command)) '())
                                     #\newline)]
-                 )))]))))
+                 ))))])))
 
 (define-syntax cd
   (lambda (x)
