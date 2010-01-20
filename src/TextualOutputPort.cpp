@@ -402,7 +402,10 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
                     putChar(ESCAPSE);
                     putChar('r');
                     break;
-
+                case '\f':
+                    putChar(ESCAPSE);
+                    putChar('f');
+                    break;
                 case DOUBLE_QUOTE:
                     putChar(ESCAPSE);
                     putChar(DOUBLE_QUOTE);
