@@ -169,15 +169,39 @@ ucs4string ReaderHelper::readString(const ucs4string& s)
                 }
                 break;
             }
-            case '\n':
-                ++it;
-                for (; *it == ' '; ++it) {
-                }
-                --it;
-                break;
             default:
-                ret += ch;
-                ret += ch2;
+                /* \<intraline whitespace>*<line ending>
+                   <intraline whitespace>*
+                   NB: Lexical syntax has already checked by the scanner. */
+                for (;;) {
+                    switch (*it) {
+                    /* <line ending> */
+                    case '\r':
+                    case '\n':
+                    case 0x0085: // next line
+                    case 0x2028: // line separator
+                    /* <intraline whitespace> */
+                    case '\t':
+                    /* <Unicode Zs> */
+                    case 0x0020:
+                    case 0x00a0:
+                    case 0x1680:
+                    case 0x180e:
+                    case 0x2000: case 0x2001: case 0x2002: case 0x2003:
+                    case 0x2004: case 0x2005: case 0x2006: case 0x2007:
+                    case 0x2008: case 0x2009: case 0x200a:
+                    case 0x202f:
+                    case 0x205f:
+                    case 0x3000:
+                        ++it;
+                        continue;
+                        break;  /* NOTREACHED */
+                    default:
+                        ;       // do nothing
+                    }
+                    --it;
+                    break;
+                }
                 break;
             }
         } else {
