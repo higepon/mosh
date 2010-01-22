@@ -773,6 +773,7 @@
 
 ;; (define (call/cc x) (%call/cc x))
 (define (call-with-current-continuation proc) (call/cc proc));; (define call-with-current-continuation call/cc)
+(define call/cc call-with-current-continuation)
 
 (define dynamic-wind
   (lambda (in body out)
