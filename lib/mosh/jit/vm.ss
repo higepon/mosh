@@ -40,7 +40,7 @@
 ;; VM register offset depends on your architecture.
 (include/resolve ("mosh" "jit") "offset.ss")
 
-(define vm-register* '(ac dc cl fp sp pc num-values values _ _ _ namespace not-found))
+(define vm-register* '(ac #;8 dc #;16 cl #;24 fp #;32 sp #; 40 pc num-values values _ _ _ namespace not-found))
 
 (define (vm-register reg)
   `(& rdi ,(* (+ (receive (_ index) (find-with-index (cut eq? <> reg) vm-register*)

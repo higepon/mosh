@@ -88,6 +88,7 @@
 ;; test
 (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
 (test-equal '(#xf6 #xc3 #x03) (assemble1 '(testb bl 3)))
+(test-equal '(#x40 #xf6 #xc5 #x03 (assemble1 '(testb bpl 3))))
 
 ;; andl
 (test-equal '(#x83 #xe0 #x03) (assemble1 '(andl eax 3)))

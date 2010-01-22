@@ -185,7 +185,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                       UC("CProcedure::call"),
                                       UC("jitStackPush"),
                                       UC("jitStackShowTrace"),
-                                      UC("jitStackReset")
+                                      UC("jitStackReset"),
+                                      UC("GC_malloc")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
@@ -193,7 +194,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                    getClassMemberPointer(&CProcedure::call),
                                    (uintptr_t)jitStackPush,
                                    (uintptr_t)jitStackShowTrace,
-                                   (uintptr_t)jitStackReset
+                                   (uintptr_t)jitStackReset,
+                                   (uintptr_t)GC_malloc,
     };
 
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));

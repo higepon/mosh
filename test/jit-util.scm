@@ -254,30 +254,36 @@
 (test-results)
 
 (jit-helper (string-split
-"	# -- BRANCH_NOT_EQ start
+"	# -- CAR start
 # 0 \"\" 2
-	.loc 5 128 0
-	movq	88(%rsp), %rdx
-	movq	88(%rsp), %rcx
-	movq	40(%rdx), %rax
-	leaq	-8(%rax), %rdx
-	movq	%rdx, 40(%rcx)
-	.loc 6 220 0
-	movq	-8(%rax), %rbx
-	cmpq	%rbx, 8(%rcx)
-	je	.L1084
-	.loc 18 1079 0
-	movq	88(%rsp), %rcx
-	.loc 5 50 0
-	movq	48(%rcx), %rdx
-	.loc 18 1079 0
-	movq	$86, 8(%rcx)
-	movq	(%rdx), %rax
-	sarq	$2, %rax
-	subl	$1, %eax
-	cltq
-	leaq	8(%rdx,%rax,8), %rax
-	movq	%rax, 48(%rcx)"
+#NO_APP
+.LBB11627:
+.LBB11628:
+.LBB11629:
+.LBB11630:
+	.loc 6 166 0
+	movq	88(%rsp), %rsi
+	movq	8(%rsi), %rbp
+.LVL235:
+.LBE11630:
+.LBE11629:
+	.loc 21 61 0
+	testb	$3, %bpl
+	jne	.L217
+	movq	(%rbp), %rax
+	movq	%rax, %rdx
+	andl	$3, %edx
+	cmpq	$3, %rdx
+	je	.L217
+.LBE11628:
+.LBE11627:
+	.loc 18 211 0
+	movq	%rax, 8(%rsi)
+	jmp	.L854
+.LVL236:
+.L218:
+	.loc 18 217 0
+#APP"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start

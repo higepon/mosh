@@ -367,6 +367,17 @@
     (test-true (compiled? proc))
     (test-equal 4 (proc 3)))
 
+;; CONS
+(let ([proc (compile (lambda (x y) (cons x y)))])
+  (test-equal '(1 . 2) (proc 1 2)))
+
+;; CAR
+(let ([proc (compile (lambda (x) (car x)))])
+  (test-equal 1 (proc '(1 2)))
+#;  (test-error assertion-violation? (proc 1)))
+
+
+
 
 
 ;; ;; BRANCH_NOT_EQV
