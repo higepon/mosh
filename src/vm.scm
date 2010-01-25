@@ -1629,7 +1629,7 @@
   (apply compile-file file '() for-vm-cpp?))
 
 (define base-library "./boot/base-library.scm")
-
+(define match-library "./boot/match.scm")
 
 (define (main args)
   (set! *command-line-args* (cdr args))
@@ -1640,12 +1640,12 @@
     (load-file base-library)
 
 ;    (load-file "./hage.scm")
-    (load-file "./src/pmatch.scm")
+    (load-file match-library)
     (vm-test)
     (set! optimize? (not optimize?))
     (vm-init '())
     (load-file base-library)
-    (load-file "./src/pmatch.scm")
+    (load-file match-library)
 
     (vm-test)
     (test-end)
@@ -1657,19 +1657,19 @@
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-with-macro"))
     (load-file base-library)
-    (load-file "./src/pmatch.scm")
+    (load-file match-library)
     (write (compile-file-with-macro (third args) #t))]
    ;;  compile a file
    [(and (= (length args) 3) (string=? (second args) "compile-file-without-macro"))
     (load-file base-library)
-    (load-file "./src/pmatch.scm")
+    (load-file match-library)
     (write (compile-file-without-macro (third args) #t))]
    ;;  execute script
    [else
     (vm-init (cdr args))
 ;    (load-file "./instruction.scm")
     (load-file base-library)
-    (load-file "./src/pmatch.scm")
+    (load-file match-library)
     (load-file (second args))
     (dump-vm-debug-info)]
    )

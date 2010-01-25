@@ -87,7 +87,7 @@ src/Object-accessors.h                                                 \
 src/Pair-inl.h                                                         \
 src/VM-inl.h                                                           \
 src/psyntax.h                                                          \
-src/pmatch.h                                                           \
+src/match.h                                                           \
 src/compiler-with-library.h                                            \
 src/CProcedure.h                                                       \
 src/Instruction.h                                                      \
@@ -339,7 +339,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
 src/instruction.scm src/vm.scm boot/base-library.scm boot/compiler.scm \
-boot/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
+boot/free-vars.scm misc/scripts src/match.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
@@ -349,11 +349,11 @@ GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h boot/compiler-gauche.scm \
 src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
 src/labels.cpp src/psyntax.scmc \
-src/pmatch.scmc boot/compiler-with-library.scmc boot/compiler-vm-cpp.scm \
+boot/match.scmc boot/compiler-with-library.scmc boot/compiler-vm-cpp.scm \
 boot/compiler-vm.scm boot/compiler-with-library.scm src/Instruction.h \
-src/psyntax.h src/psyntax.scmc.fasl src/pmatch.h src/pmatch.scmc.fasl \
+src/psyntax.h src/psyntax.scmc.fasl src/match.h boot/match.scmc.fasl \
 src/compiler-with-library.h boot/compiler-with-library.scmc.fasl \
-src/psyntax.scmc-e boot/compiler-with-library.scmc-e src/pmatch.scmc-e \
+src/psyntax.scmc-e boot/compiler-with-library.scmc-e boot/match.scmc-e \
 boot/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
@@ -388,7 +388,7 @@ svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
-	$(MAKE) src/pmatch.h
+	$(MAKE) src/match.h
 	$(MAKE) src/labels.cpp
 	$(MAKE) -C boot/runtimes/psyntax-mosh
 	$(MAKE) -C boot/runtimes/psyntax-mosh inject-mosh
@@ -420,7 +420,7 @@ r6rs-test:
 src/Instruction.h: src/instruction.scm
 	gosh ./misc/scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
+src/main.cpp: src/psyntax.h src/compiler-with-library.h src/match.h
 
 boot/compiler-vm-cpp.scm: boot/compiler.scm boot/free-vars-decl.scm
 	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
@@ -431,7 +431,7 @@ boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm
 
 # SUFFIXES: .scmc .h
 
-src/pmatch.h: src/pmatch.scmc
+src/match.h: boot/match.scmc
 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
@@ -449,7 +449,7 @@ src/compiler-with-library.h: boot/compiler-with-library.scmc
 # 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-src/pmatch.scmc: src/pmatch.scm boot/compiler-vm.scm
+boot/match.scmc: boot/match.scm boot/compiler-vm.scm
 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
