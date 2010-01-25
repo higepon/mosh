@@ -338,7 +338,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
-src/instruction.scm src/vm.scm boot/base-library.scm src/compiler.scm \
+src/instruction.scm src/vm.scm boot/base-library.scm boot/compiler.scm \
 src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
@@ -422,7 +422,7 @@ src/Instruction.h: src/instruction.scm
 
 src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
 
-src/compiler-vm-cpp.scm: src/compiler.scm src/free-vars-decl.scm
+src/compiler-vm-cpp.scm: boot/compiler.scm src/free-vars-decl.scm
 	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
 src/compiler-with-library.scmc: src/compiler-with-library.scm src/compiler-vm.scm
@@ -472,13 +472,13 @@ CORE_LIBS =                 \
 src/free-vars-decl.scm: src/free-vars.scm
 	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-src/compiler-vm.scm: src/compiler.scm src/free-vars-decl.scm
+src/compiler-vm.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-src/compiler-vm-outer.scm: src/compiler.scm src/free-vars-decl.scm
+src/compiler-vm-outer.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-src/compiler-gauche.scm: src/compiler.scm src/free-vars-decl.scm
+src/compiler-gauche.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/labels.cpp: src/instruction.scm

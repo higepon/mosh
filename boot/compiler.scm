@@ -1,7 +1,7 @@
 ;; Optimization memo
 ;; 1. Do NOT use internal define. Because cost of closure creation is very high.
 ;;    Use global define or inline macro instead.
-;; 2. Do NOT use fold or find, they alse create closure.
+;; 2. Do NOT use fold or find, they also create closure.
 ;; 3. (length ...) may be slow, so call only when necessary.
 
 (cond-expand
