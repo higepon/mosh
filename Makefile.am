@@ -346,14 +346,14 @@ src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
 src/ffitest.c win mosh.vcproj mosh.sln doc README misc
 
 GENERATED = \
-src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h src/compiler-gauche.scm \
+src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h boot/compiler-gauche.scm \
 src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
 src/labels.cpp src/psyntax.scmc \
-src/pmatch.scmc src/compiler-with-library.scmc src/compiler-vm-cpp.scm \
-src/compiler-vm.scm src/compiler-with-library.scm src/Instruction.h \
+src/pmatch.scmc boot/compiler-with-library.scmc boot/compiler-vm-cpp.scm \
+boot/compiler-vm.scm boot/compiler-with-library.scm src/Instruction.h \
 src/psyntax.h src/psyntax.scmc.fasl src/pmatch.h src/pmatch.scmc.fasl \
-src/compiler-with-library.h src/compiler-with-library.scmc.fasl \
-src/psyntax.scmc-e src/compiler-with-library.scmc-e src/pmatch.scmc-e \
+src/compiler-with-library.h boot/compiler-with-library.scmc.fasl \
+src/psyntax.scmc-e boot/compiler-with-library.scmc-e src/pmatch.scmc-e \
 src/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
@@ -422,10 +422,10 @@ src/Instruction.h: src/instruction.scm
 
 src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
 
-src/compiler-vm-cpp.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm-cpp.scm: boot/compiler.scm src/free-vars-decl.scm
 	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
-src/compiler-with-library.scmc: src/compiler-with-library.scm src/compiler-vm.scm
+boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm.scm
 	gosh src/vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $(PWD)/$@
 
@@ -439,6 +439,9 @@ src/pmatch.h: src/pmatch.scmc
 # 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 # 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
+src/compiler-with-library.h: boot/compiler-with-library.scmc
+	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 .scmc.h:
 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
@@ -446,7 +449,7 @@ src/pmatch.h: src/pmatch.scmc
 # 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
+src/pmatch.scmc: src/pmatch.scm boot/compiler-vm.scm
 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
@@ -466,19 +469,19 @@ CORE_LIBS =                 \
     lib/core/hashtable.scm
 
 
-./src/compiler-with-library.scm: ./boot/base-library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
+./boot/compiler-with-library.scm: ./boot/base-library.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: boot/free-vars.scm
 	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-src/compiler-vm.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-src/compiler-vm-outer.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm-outer.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-src/compiler-gauche.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-gauche.scm: boot/compiler.scm src/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/labels.cpp: src/instruction.scm

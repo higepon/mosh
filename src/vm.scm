@@ -66,7 +66,7 @@
 
 (load "./src/free-vars-decl.scm")
 
-(load "./src/compiler-vm.scm")
+(load "./boot/compiler-vm.scm")
 (define *free-vars* '())
 (define (load-free-vars)
   (match (car (file->sexp-list "./boot/free-vars.scm"))

@@ -17,7 +17,7 @@ psyntax.h: psyntax.scmc
 	mosh $(ROOT_DIR)/misc/scripts/scmc2fasl.scm $(shell pwd)/$< $(shell pwd)/$<.fasl
 	mosh $(ROOT_DIR)/misc/scripts/binary2c.scm $(shell pwd)/$<.fasl $(shell pwd)/$@
 
-psyntax.scmc: psyntax.scm $(ROOT_DIR)/src/compiler-vm.scm
+psyntax.scmc: psyntax.scm $(ROOT_DIR)/boot/compiler-vm.scm
 	(cd $(ROOT_DIR)/ && gosh src/vm.scm compile-file-without-macro $(shell pwd)/$< > $(shell pwd)/$@)
 # we need to replace #\null => #\nul and |...| => ...
 # It is the difference between gauche and mosh.
