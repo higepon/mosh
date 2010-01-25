@@ -233,6 +233,7 @@ public:
 
     void tryJitCompile(Object closure);
     void tryInvokeJitLibrary();
+    void raiseNotPairErrorForJit(int);
 
 protected:
     virtual int exit(int status)

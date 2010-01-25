@@ -43,7 +43,7 @@
 (define r64* '(rax rcx rdx rbx rsp rbp rsi rdi r8  r9  r10 r11 r12 r13 r14 r15))
 (define r32* '(eax ecx edx ebx esp ebp esi edi))
 
-(define r8* '(al  cl  dl bl  ah  ch  dh  bh))
+(define r8* '(al cl dl bl ah ch dh bh spl bpl sil dil))
 (define (r64? obj) (memq obj r64*))
 (define (r32? obj) (memq obj r32*))
 (define (r8? obj) (memq obj r8*))
@@ -69,9 +69,10 @@
 (define (r64->32 reg)
   (number->r32 (r64->number reg)))
 
-(define (r64->8 reg)
-  (number->r8 (r64->number reg)))
-
+(define (r64->8 reg high?)
+  (number->r8 (if high?
+                  (+ 4 (r64->number reg))
+                  (r64->number reg))))
 
 (define (find-with-index pred lst)
   (let loop ([i 0]

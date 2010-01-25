@@ -987,3 +987,10 @@ void VM::tryJitCompile(Object closure)
         return;
     }
 }
+
+void VM::raiseNotPairErrorForJit(int op)
+{
+    const char* operation[2] = {"car", "cdr"};
+    VM_ASSERT(op < (int)sizeof(operation));
+    callAssertionViolationAfter(this, operation[op], "pair required", Pair::list1(ac_));
+}

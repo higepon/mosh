@@ -374,10 +374,38 @@
 ;; CAR
 (let ([proc (compile (lambda (x) (car x)))])
   (test-equal 1 (proc '(1 2)))
-#;  (test-error assertion-violation? (proc 1)))
+  (test-error assertion-violation? (proc 1)))
 
+;; CDR
+(let ([proc (compile (lambda (x) (cdr x)))])
+  (test-equal 2 (proc '(1 . 2)))
+  (test-error assertion-violation? (proc 1)))
 
+;; CAR_PUSH
+(let ([proc (compile (lambda (x) (+ (car x) 1)))])
+  (test-equal 3 (proc '(2 1)))
+  (test-error assertion-violation? (proc 1)))
 
+;; CDR_PUSH
+(let ([proc (compile (lambda (x) (+ (cdr x) 1)))])
+  (test-equal 2 (proc '(2 . 1)))
+  (test-error assertion-violation? (proc 1)))
+
+;; CADR
+(let ([proc (compile (lambda (x) (cadr x)))])
+  (test-equal 2 (proc '(1 2)))
+  (test-error assertion-violation? (proc 1))
+  (test-error assertion-violation? (proc (1))))
+
+;; NULL_P
+(let ([proc (compile (lambda (x) (null? x)))])
+  (test-equal #f (proc '(1 . 2)))
+  (test-equal #t (proc '())))
+
+;; SYMBOL_P
+(let ([proc (compile (lambda (x) (symbol? x)))])
+  (test-equal #f (proc '(1 . 2)))
+  (test-equal #t (proc 'a)))
 
 
 ;; ;; BRANCH_NOT_EQV
