@@ -1,6 +1,6 @@
-; library.scm - main library
+; base-library.scm - main library
 ;
-;   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+;   Copyright (c) 2008-2010  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
 ;
 ;   Redistribution and use in source and binary forms, with or without
 ;   modification, are permitted provided that the following conditions

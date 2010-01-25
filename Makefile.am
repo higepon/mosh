@@ -338,7 +338,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
-src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
+src/instruction.scm src/vm.scm boot/base-library.scm src/compiler.scm \
 src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
@@ -435,9 +435,9 @@ src/pmatch.h: src/pmatch.scmc
 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
-src/psyntax.h: src/psyntax.scmc
-	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# src/psyntax.h: src/psyntax.scmc
+# 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 
 .scmc.h:
@@ -446,9 +446,9 @@ src/psyntax.h: src/psyntax.scmc
 # 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-# src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
-# 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-# 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+src/pmatch.scmc: src/pmatch.scm src/compiler-vm.scm
+	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 # # we need to replace #\null => #\nul and |...| => ...
 # # It is the difference between gauche and mosh.
@@ -466,7 +466,7 @@ CORE_LIBS =                 \
     lib/core/hashtable.scm
 
 
-./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
+./src/compiler-with-library.scm: ./boot/base-library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm
