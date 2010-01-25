@@ -64,7 +64,7 @@
   (set! vm-instances (make-hash-table 'eq?))
   (set! vm-name-space (make-hash-table 'eq?)))
 
-(load "./src/free-vars-decl.scm")
+(load "./boot/free-vars-decl.scm")
 
 (load "./boot/compiler-vm.scm")
 (define *free-vars* '())

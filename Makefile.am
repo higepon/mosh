@@ -354,7 +354,7 @@ boot/compiler-vm.scm boot/compiler-with-library.scm src/Instruction.h \
 src/psyntax.h src/psyntax.scmc.fasl src/pmatch.h src/pmatch.scmc.fasl \
 src/compiler-with-library.h boot/compiler-with-library.scmc.fasl \
 src/psyntax.scmc-e boot/compiler-with-library.scmc-e src/pmatch.scmc-e \
-src/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
+boot/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
 
@@ -422,7 +422,7 @@ src/Instruction.h: src/instruction.scm
 
 src/main.cpp: src/psyntax.h src/compiler-with-library.h src/pmatch.h
 
-boot/compiler-vm-cpp.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm-cpp.scm: boot/compiler.scm boot/free-vars-decl.scm
 	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
 boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm.scm
@@ -472,16 +472,16 @@ CORE_LIBS =                 \
 ./boot/compiler-with-library.scm: ./boot/base-library.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
-src/free-vars-decl.scm: boot/free-vars.scm
+boot/free-vars-decl.scm: boot/free-vars.scm
 	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-boot/compiler-vm.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm.scm: boot/compiler.scm boot/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-boot/compiler-vm-outer.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-vm-outer.scm: boot/compiler.scm boot/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-boot/compiler-gauche.scm: boot/compiler.scm src/free-vars-decl.scm
+boot/compiler-gauche.scm: boot/compiler.scm boot/free-vars-decl.scm
 	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/labels.cpp: src/instruction.scm
@@ -492,7 +492,7 @@ src/labels.cpp: src/instruction.scm
 
 src/Object.h: src/Object-accessors.h
 
-src/cprocedures.cpp: src/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
+src/cprocedures.cpp: boot/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
 	gosh ./misc/scripts/gen-cproc.scm > $@
 
 src/all-tests.scm: ./src/test-data.scm
