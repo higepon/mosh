@@ -405,7 +405,15 @@
 ;; SYMBOL_P
 (let ([proc (compile (lambda (x) (symbol? x)))])
   (test-equal #f (proc '(1 . 2)))
+  (test-equal #f (proc '#(1 2)))
   (test-equal #t (proc 'a)))
+
+;; VECTOR_REF
+(let ([proc (compile (lambda (x) (vector-ref x 0)))])
+  (test-equal 1 (proc '#(1 2)))
+  (test-error assertion-violation? (proc 3))
+  (test-equal 1 (proc '#())))
+
 
 
 ;; ;; BRANCH_NOT_EQV

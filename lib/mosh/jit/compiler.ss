@@ -179,14 +179,22 @@
     (leaq rax (& rax -8))
     (movq ,(vm-register 'sp) rax)))
 
-
-(define (macro-is-gloc reg is-not-gloc-case)
+(define (macro-is-obj type reg is-not-case-label)
   (let ([is-heap-object-case (gensym)])
     `(,@(macro-is-heap-object reg is-heap-object-case)
-      (jmp ,is-not-gloc-case)
+      (jmp ,is-not-case-label)
       (label ,is-heap-object-case)
-      (cmpq rax 135) ;; rax = type, rax isGloc()?
-      (jne ,is-not-gloc-case))))
+      (cmpq rax ,type)
+      (jne ,is-not-case-label))))
+
+(define (macro-is-gloc reg is-not-case)
+  (macro-is-obj 135 reg is-not-case))
+
+(define (macro-is-symbol reg is-not-case)
+  (macro-is-obj 11 reg is-not-case))
+
+(define (macro-is-vector reg is-not-case)
+  (macro-is-obj 3 reg is-not-case))
 
 (define (UNDEF)
   `(,@(trace-push! $CONSTANT_PUSH)
@@ -196,6 +204,76 @@
   `(,@(trace-push! $CONSTANT_PUSH)
     ,@(CONSTANT x)
     ,@(PUSH)))
+
+;; ;; rbx <- VM* | (movq rbx (& rsp 88))
+;; (movq rax (& rbx 40))
+;; (leaq rdx (& rax -8))
+;; (movq (& rbx 40) rdx)
+;; (movq rbp (& rax -8))
+;; (testb bpl 3)
+;; (jne (label .L744))
+;; (movq rax (& rbp))
+;; (movq rdx rax)
+;; (andl edx 3)
+;; (cmpq rdx 3)
+;; (je (label .L1126))
+;; (label .L744)
+;; (_ZN6scheme6Object5FalseE( r12 rip))
+;; (_ZN6scheme6Object3NilE( r13 rip))
+;; (movl edi 24)
+;; (call GC_malloc)
+;; (leaq rdi (& rsp 608))
+;; (movq (& rax) rbp)
+;; (movl esi (label .LC44))
+;; (movq (& rax 8) r13)
+;; (movq (& rax 16) r12)
+;; (call _ZN6scheme6ObjectC1EPKc)
+;; (leaq rdi (& rsp 624))
+;; (movl esi (label .LC45))
+;; (call _ZN6scheme6ObjectC1EPKc)
+;; (movq rdx (& rsp 608))
+;; (movq rsi (& rsp 624))
+;; (movq rcx rbx)
+;; ;; rdi <- VM* | (movq rdi (& rsp 88))
+;; (call _ZN6scheme27callAssertionViolationAfterEPNS_2VMENS_6ObjectES2_S2_)
+;; (label .L916)
+;; ;; rsi <- VM* | (movq rsi (& rsp 88))
+;; (movq rax (& rsi 48))
+;; (movl (& rsi 56) 1)
+;; (movq rdx (& rax))
+;; (addq rax 8)
+;; (movq (& rsi 48) rax)
+;; (jmp (label .L1002))
+;; (label .L390)
+;;
+;; END
+;;
+;; (label .L1126)
+;; (cmpq rax 3)
+;; (jne (label .L744))
+;; (movq r12 (& rbx 8)) r12 <- ac
+;; (movq rdx (& rbp 8)) rdx <- pop()->toVector()
+;; (movq rax r12)
+;; (shrq rax 2)  rax = rax / 2 / 2
+;; (testl eax eax) (and eax eax)
+;; (js (label .L745)) ;; jump if sign (=1)
+;; (cmpl eax (& rdx))
+;; (jge (label .L745))
+;; (movq rdx (& rdx 8))
+;; (cltq)
+;; (movq rax (& rdx,%rax,8))
+;; (movq (& rbx 8) rax)
+;; (jmp (label .L916))
+(define (VECTOR_REF)
+  (let ([is-not-vector-case (gensym)])
+  `(,@(trace-push! $VECTOR_REF)
+    ,@(macro-pop-to-reg 'rax)
+    ,@(macro-is-vector 'rax is-not-vector-case)
+
+
+    (label ,is-not-vector-case)
+    ,@(DEBUGGER 10001)
+)))
 
 ;; ;; rbx <- VM* | (movq rbx (& rsp 88))
 ;; (movq rax (& rbx 8))
@@ -218,19 +296,14 @@
 ;; (movq (& rsi 48) rax)
 ;; (jmp (label .L1002))
 (define (SYMBOL_P)
-  (let ([is-heap-object-case (gensym)]
-        [not-symbol-case (gensym)]
+  (let ([is-not-symbol-case (gensym)]
         [done (gensym)])
     `((movq rax ,(vm-register 'ac))
-      ,@(macro-is-heap-object 'rax is-heap-object-case)
-      (jmp not-symbol-case)
-      (label ,is-heap-object-case)
-      (cmpq rax 3) ;; rax = type, rax isSymbol()?
-      (jne ,not-symbol-case)
-      (movq ,(vm-register 'ac) (obj->integer #t))
-      (jmp done)
-      (label ,not-symbol-case)
-      (movq ,(vm-register 'ac) (obj->integer #f))
+      ,@(macro-is-symbol 'rax is-not-symbol-case)
+      (movq ,(vm-register 'ac) ,(obj->integer #t))
+      (jmp ,done)
+      (label ,is-not-symbol-case)
+      (movq ,(vm-register 'ac) ,(obj->integer #f))
       (label ,done))))
 
 
@@ -1443,6 +1516,7 @@
   (register-insn-dispatch-table $CAR_PUSH CAR_PUSH)
   (register-insn-dispatch-table $CDR_PUSH CDR_PUSH)
   (register-insn-dispatch-table $NULL_P NULL_P)
+  (register-insn-dispatch-table $SYMBOL_P SYMBOL_P)
 )
 
 (make-dispatch-table)
