@@ -346,11 +346,10 @@ src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
 src/ffitest.c win mosh.vcproj mosh.sln doc README misc
 
 GENERATED = \
-src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h boot/compiler-gauche.scm \
+src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
 src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
-src/labels.cpp src/psyntax.scmc src/Instruction.h \
-src/psyntax.h src/psyntax.scmc.fasl src/match.h \
-src/psyntax.scmc-e \
+src/labels.cpp  src/Instruction.h \
+src/psyntax.h  src/match.h \
 src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
@@ -387,8 +386,6 @@ svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot
 	$(MAKE) src/NumberReader.tab.cpp
 	$(MAKE) src/labels.cpp
 	$(MAKE) -C boot
-	$(MAKE) -C boot/runtimes/psyntax-mosh
-	$(MAKE) -C boot/runtimes/psyntax-mosh inject-mosh
 	$(MAKE) src/OSConstants.h
 	$(MAKE) src/Object-accessors.h
 
