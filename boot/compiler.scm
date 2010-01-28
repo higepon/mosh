@@ -8,7 +8,7 @@
  [gauche
   (use srfi-1)
   (use util.match)
-  (load "./src/free-vars-decl.scm")
+  (load "free-vars-decl.scm")
   (define dd display)
   (define pp print)
   (define open-string-input-port open-input-string)
@@ -56,7 +56,7 @@
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
-  (include "./src/free-vars-decl.scm")
+  (include "free-vars-decl.scm")
   (define find10 find)
   (define syntax-error error)
   (define (command-line) *command-line-args*)]
@@ -64,7 +64,7 @@
  (define df format)
  (define dd display)
  (define pp print)
- (include "./src/free-vars-decl.scm")
+ (include "free-vars-decl.scm")
  (define-macro (make-list-with-src-slot lst) lst)
  (define (command-line) *command-line-args*)
  (define (get-command-line) *command-line-args*) ;; required for psyntax
