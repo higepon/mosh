@@ -1,13 +1,13 @@
 SRC_DIR=../src
 SCRIPTS_DIR=../misc/scripts
 CORE_LIBS =                 \
-    ../lib/core/fixnum.scm     \
-    ../lib/core/flonum.scm     \
-    ../lib/core/bitwise.scm    \
-    ../lib/core/bytevector.scm \
-    ../lib/core/base.scm       \
-    ../lib/core/r5rs.scm       \
-    ../lib/core/hashtable.scm
+    lib/fixnum.scm     \
+    lib/flonum.scm     \
+    lib/bitwise.scm    \
+    lib/bytevector.scm \
+    lib/base.scm       \
+    lib/r5rs.scm       \
+    lib/hashtable.scm
 
 all: $(SRC_DIR)/match.h $(SRC_DIR)/compiler-with-library.h
 
