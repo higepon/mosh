@@ -459,6 +459,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(VECTOR)
         {
+            // TODO: Move to Vector class.
             const Object numObject = fetchOperand();
             MOSH_ASSERT(numObject.isFixnum());
             const int num = numObject.toFixnum();
@@ -1174,16 +1175,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 if (v->isValidIndex(index)) {
                     ac_ = v->ref(index);
                 } else {
-                    callAssertionViolationAfter(this,
-                                                "vector-ref",
-                                                "index out of range",
-                                                L1(ac_));
+                    raiseVectorInvalidIndexError(0);
                 }
             } else {
-                callAssertionViolationAfter(this,
-                                            "vector-ref",
-                                            "vector required",
-                                            L1(obj));
+                raiseVectorRequiredError(0, obj);
             }
             NEXT1;
         }

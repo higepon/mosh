@@ -117,6 +117,23 @@
     (callq rax)
     ,@(call-epilogue)))
 
+(define (call2 c-func arg1 arg2)
+  `(,@(call-prologue)
+    (movq rdi ,arg1)
+    (movq rsi ,arg2)
+    (movq rax ,c-func)
+    (callq rax)
+    ,@(call-epilogue)))
+
+(define (call3 c-func arg1 arg2 arg3)
+  `(,@(call-prologue)
+    (movq rdi ,arg1)
+    (movq rsi ,arg2)
+    (movq rdx ,arg3)
+    (movq rax ,c-func)
+    (callq rax)
+    ,@(call-epilogue)))
+
 (define (trace-push! insn)
   `((push rax) ;; we discard the return value
     ,@(call1 (get-c-address 'jitStackPush) insn)
@@ -196,6 +213,7 @@
 (define (macro-is-vector reg is-not-case)
   (macro-is-obj 3 reg is-not-case))
 
+
 (define (UNDEF)
   `(,@(trace-push! $CONSTANT_PUSH)
     (movq ,(vm-register 'ac) ,(obj->integer (if #f #f)))))
@@ -265,14 +283,38 @@
 ;; (movq (& rbx 8) rax)
 ;; (jmp (label .L916))
 (define (VECTOR_REF)
-  (let ([is-not-vector-case (gensym)])
+  (let ([is-not-vector-case (gensym)]
+        [out-of-range-case (gensym)]
+        [done-case (gensym)])
   `(,@(trace-push! $VECTOR_REF)
-    ,@(macro-pop-to-reg 'rax)
-    ,@(macro-is-vector 'rax is-not-vector-case)
-
-
+    ,@(macro-pop-to-reg 'rbx)
+    ,@(macro-is-vector 'rbx is-not-vector-case)
+    (movq rcx ,(vm-register 'ac))
+    (movq rdx (& rbx 8)) ;; rdx = rax.toVector()
+    ,@(macro-to-fixnum 'rcx)
+    (testl ecx ecx)
+    (js ,out-of-range-case)
+    (cmpq rcx (& rdx)) ;; index < size
+    (jge ,out-of-range-case)
+    (movq rdx (& rdx 8)) ;; rdx = &data[0]
+    (movq rax rcx)
+    (cltq)
+    (movq rax (& rdx (* rax 8)))
+    (movq ,(vm-register 'ac) rax)
+    (jmp ,done-case)
+    ,@(DEBUGGER 9999)
+    (label ,out-of-range-case)
+    ;; rdi = VM*
+    ;; op  = 0
+    ,@(call2 (get-c-address 'VM::raiseVectorInvalidIndexError) 'rdi 0)
+    (retq)
     (label ,is-not-vector-case)
-    ,@(DEBUGGER 10001)
+    ;; rdi = VM*
+    ;; op  = 0
+    ;; obj = rbx
+    ,@(call3 (get-c-address 'VM::raiseVectorRequiredError) 'rdi 0 'rbx)
+    (retq)
+    (label ,done-case)
 )))
 
 ;; ;; rbx <- VM* | (movq rbx (& rsp 88))
@@ -1471,6 +1513,7 @@
       (loop labels (cdr lst) (cons (car lst) ret))])))
 
 (define (make-dispatch-table)
+  (register-insn-dispatch-table $VECTOR_REF VECTOR_REF)
   (register-insn-dispatch-table $CONS CONS)
   (register-insn-dispatch-table $CAR CAR)
   (register-insn-dispatch-table $CDR CDR)

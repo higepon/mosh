@@ -84,11 +84,13 @@
 (test-equal '(#x48 #x3d #xff #xff #xff #x3f) (assemble1 '(cmpq rax #x3fffffff)))
 (test-equal '(#x48 #x39 #x42 #x58) (assemble1 '(cmpq (& rdx 88) rax)))
 (test-equal '(#x48 #x83 #xfa #x03) (assemble1 '(cmpq rdx 3)))
+(test-equal '(#x48 #x3b #x0a) (assemble1 '(cmpq rcx (& rdx))))
 
 ;; test
+(test-equal '(#x85 #xdb) (assemble1 '(testl ebx ebx)))
+(test-equal '(#x85 #xd9) (assemble1 '(testl ecx ebx)))
 (test-equal '(#xf6 #xc2 #x03) (assemble1 '(testb dl 3)))
 (test-equal '(#xf6 #xc3 #x03) (assemble1 '(testb bl 3)))
-(test-equal '(#x40 #xf6 #xc5 #x03 (assemble1 '(testb bpl 3))))
 
 ;; andl
 (test-equal '(#x83 #xe0 #x03) (assemble1 '(andl eax 3)))

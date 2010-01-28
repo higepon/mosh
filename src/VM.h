@@ -233,7 +233,9 @@ public:
 
     void tryJitCompile(Object closure);
     void tryInvokeJitLibrary();
-    void raiseNotPairErrorForJit(int);
+    void raiseNotPairErrorForJit(int op);
+    void raiseVectorRequiredError(int op, Object obj);
+    void raiseVectorInvalidIndexError(int op);
 
 protected:
     virtual int exit(int status)

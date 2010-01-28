@@ -991,6 +991,26 @@ void VM::tryJitCompile(Object closure)
 void VM::raiseNotPairErrorForJit(int op)
 {
     const char* operation[2] = {"car", "cdr"};
-    VM_ASSERT(op < (int)sizeof(operation));
+    VM_ASSERT(op < (int)(sizeof(operation) / sizeof(const char*)));
     callAssertionViolationAfter(this, operation[op], "pair required", Pair::list1(ac_));
+}
+
+void VM::raiseVectorRequiredError(int op, Object obj)
+{
+    const char* operations[1] = {"vector-ref"};
+    VM_ASSERT(op < (int)(sizeof(operations) / sizeof(const char*)));
+    callAssertionViolationAfter(this,
+                                operations[op],
+                                "vector required",
+                                L1(obj));
+}
+
+void VM::raiseVectorInvalidIndexError(int op)
+{
+    const char* operations[1] = {"vector-ref"};
+    VM_ASSERT(op < (int)(sizeof(operations) / sizeof(const char*)));
+    callAssertionViolationAfter(this,
+                                operations[op],
+                                "index out of range",
+                                L1(ac_));
 }

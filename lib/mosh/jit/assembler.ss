@@ -248,6 +248,10 @@
     ;;   F6 /0 ib
     [('testb (? r8? (= r8->number r/m8)) (? imm8? (= imm8->u8* imm8)))
      (pack-op #f #xf6 mod.register 0 r/m8 #f #f #f '() imm8)]
+    ;; TEST r/m32, r32
+    ;;   85 /r
+    [('testl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
+     (values `(#x85 ,(mod-r-r/m mod.register r32 r/m32)) #f)]
     ;; LEAVE
     ;;   C9
     [('leave) (values '(#xc9) #f)]
@@ -265,12 +269,18 @@
      (values `(#xeb #x00) label)]
     [('jne (? symbol? label))
      (values `(#x75 #x00) label)]
+    [('js (? symbol? label))
+     (values `(#x78 #x00) label)]
+    [('jge (? symbol? label))
+     (values `(#x7d #x00) label)]
     ;; CMP r/m64,r64
     ;;   REX.W + 39 /r
     [('cmpq (? r64? (= r64->number r/m64)) (? r64? (= r64->number r64)))
      (pack-op #t #x39 mod.register r64 r/m64 #f #f #f '() '())]
     [('cmpq ('& (? r64? (= r64->number r/m64)) (? imm8? (= imm8->u8* disp8))) (? r64? (= r64->number r64)))
      (pack-op #t #x39 mod.disp8 r64 r/m64 #f #f #f disp8 '())]
+    [('cmpq (? r64? (= r64->number r64)) ('& (? r64? (= r64->number r/m64))))
+     (pack-op #t #x3b mod.disp0 r64 r/m64 #f #f #f '() '())]
     ;; CMP RAX, imm32 REX.W + 3D id
     [('cmpq 'rax (? imm32? (= imm32->u8* u8*)))
      (values `(,rex.w #x3d ,@u8*) #f)]

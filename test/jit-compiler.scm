@@ -412,7 +412,7 @@
 (let ([proc (compile (lambda (x) (vector-ref x 0)))])
   (test-equal 1 (proc '#(1 2)))
   (test-error assertion-violation? (proc 3))
-  (test-equal 1 (proc '#())))
+  (test-error assertion-violation? (proc '#())))
 
 
 
