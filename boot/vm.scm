@@ -64,12 +64,12 @@
   (set! vm-instances (make-hash-table 'eq?))
   (set! vm-name-space (make-hash-table 'eq?)))
 
-(load "./boot/free-vars-decl.scm")
+(load "./free-vars-decl.scm")
 
-(load "./boot/compiler-vm.scm")
+(load "./compiler-vm.scm")
 (define *free-vars* '())
 (define (load-free-vars)
-  (match (car (file->sexp-list "./boot/free-vars.scm"))
+  (match (car (file->sexp-list "./free-vars.scm"))
     [('define-free-vars . variables)
      (set! *free-vars*
            (map
@@ -1492,7 +1492,7 @@
 ;;                (loop (read) (append ret (compile-partial obj)))])))))
 
 (define (fetch-instructions)
-  (with-input-from-file "./src/instruction.scm"
+  (with-input-from-file "../src/instruction.scm"
     (lambda ()
       (let loop ([obj (read)])
         (cond
@@ -1628,8 +1628,8 @@
 (define (compile-file-without-macro file . for-vm-cpp?)
   (apply compile-file file '() for-vm-cpp?))
 
-(define base-library "./boot/base-library.scm")
-(define match-library "./boot/match.scm")
+(define base-library "./base-library.scm")
+(define match-library "./match.scm")
 
 (define (main args)
   (set! *command-line-args* (cdr args))
