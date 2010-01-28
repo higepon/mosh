@@ -5,7 +5,7 @@ CORE_LIBS =                 \
     lib/flonum.scm     \
     lib/bitwise.scm    \
     lib/bytevector.scm \
-    lib/base.scm       \
+    lib/misc.scm       \
     lib/r5rs.scm       \
     lib/hashtable.scm
 
