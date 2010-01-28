@@ -351,7 +351,7 @@ src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accesso
 src/labels.cpp src/psyntax.scmc src/Instruction.h \
 src/psyntax.h src/psyntax.scmc.fasl src/match.h \
 src/psyntax.scmc-e boot/compiler-with-library.scmc-e \
-boot/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
+src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
 
@@ -419,12 +419,12 @@ src/Instruction.h: src/instruction.scm
 
 src/main.cpp: src/psyntax.h src/compiler-with-library.h src/match.h
 
-boot/compiler-vm-cpp.scm: boot/compiler.scm boot/free-vars-decl.scm
-	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
+# boot/compiler-vm-cpp.scm: boot/compiler.scm boot/free-vars-decl.scm
+# 	gosh ./misc/scripts/gen-compiler.scm $(PWD)/$< "mosh" > $(PWD)/$@
 
-boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm.scm
-	gosh src/vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
-	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $(PWD)/$@
+# boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm.scm
+# 	gosh src/vm.scm compile-file-with-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $(PWD)/$@
 
 # SUFFIXES: .scmc .h
 
@@ -469,8 +469,6 @@ boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm
 # ./boot/compiler-with-library.scm: ./boot/lib/base.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
 # 	cat $^ > $(PWD)/$@
 
-boot/free-vars-decl.scm: boot/free-vars.scm
-	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
 # boot/compiler-vm.scm: boot/compiler.scm boot/free-vars-decl.scm
 # 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@

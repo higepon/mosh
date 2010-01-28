@@ -46,6 +46,9 @@ compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
 compiler-with-library.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
 
+free-vars-decl.scm: free-vars.scm
+	mosh $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
+
 clean:
-	$(RM) *.scmc *.scmc.fasl match.h compiler-with-library.h compiler-with-library.scm compiler-vm-cpp.scm compiler-vm.scm
+	$(RM) *.scmc *.scmc.fasl match.h compiler-with-library.h compiler-with-library.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm
 
