@@ -261,8 +261,8 @@ VM::~VM() {}
 void VM::loadCompiler()
 {
 #   include "match.h"
-#   include "compiler-with-library.h"
-    const Object libCompiler = FASL_GET(compiler_with_library_image);
+#   include "baselib.h"
+    const Object libCompiler = FASL_GET(baselib_image);
 #ifdef ENABLE_PROFILER
     if (isProfiler_) {
         initProfiler();

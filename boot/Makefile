@@ -9,14 +9,14 @@ CORE_LIBS =                 \
     lib/r5rs.scm       \
     lib/hashtable.scm
 
-TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/compiler-with-library.h
+TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h
 
 all: $(TARGET)
 
 $(SRC_DIR)/match.h: match.h
 	cp $< $@
 
-$(SRC_DIR)/compiler-with-library.h: compiler-with-library.h
+$(SRC_DIR)/baselib.h: baselib.h
 	cp $< $@
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
@@ -34,16 +34,16 @@ match.scmc: lib/match.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
-compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
+baselib.scmc: baselib.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
-compiler-with-library.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
+baselib.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm
 	mosh $(SCRIPTS_DIR)/gen-free-vars-decl.scm $< > $@
 
 clean:
-	$(RM) *.scmc *.scmc.fasl match.h compiler-with-library.h compiler-with-library.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm
+	$(RM) *.scmc *.scmc.fasl match.h baselib.h baselib.scm compiler-vm-cpp.scm compiler-vm.scm free-vars-decl.scm
 
