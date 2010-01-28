@@ -386,6 +386,7 @@ svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
 	$(MAKE) src/labels.cpp
+	$(MAKE) -C boot
 	$(MAKE) -C boot/runtimes/psyntax-mosh
 	$(MAKE) -C boot/runtimes/psyntax-mosh inject-mosh
 	$(MAKE) src/OSConstants.h
