@@ -25,12 +25,9 @@ compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
 compiler-vm.scm: compiler.scm free-vars-decl.scm
 	gosh -A $(SCRIPTS_DIR) $(SCRIPTS_DIR)/gen-compiler.scm $< "vm?" > $@
 
-match.h: match.scmc
-	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $(PWD)/$<.fasl
-	mosh $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
-
-compiler-with-library.h: compiler-with-library.scmc
-	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $(PWD)/$<.fasl
+.SUFFIXES: .scmc .h
+.scmc.h:
+	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
 	mosh $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
 
 match.scmc: lib/match.scm compiler-vm.scm
@@ -40,8 +37,6 @@ match.scmc: lib/match.scm compiler-vm.scm
 compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
-
-compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
 
 compiler-with-library.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
