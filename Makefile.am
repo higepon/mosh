@@ -338,7 +338,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
-src/instruction.scm src/vm.scm boot/base-library.scm boot/compiler.scm \
+src/instruction.scm src/vm.scm boot/lib/base.scm boot/compiler.scm \
 boot/free-vars.scm misc/scripts src/match.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
@@ -469,7 +469,7 @@ CORE_LIBS =                 \
     lib/core/hashtable.scm
 
 
-./boot/compiler-with-library.scm: ./boot/base-library.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
+./boot/compiler-with-library.scm: ./boot/lib/base.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $(PWD)/$@
 
 boot/free-vars-decl.scm: boot/free-vars.scm

@@ -1628,8 +1628,8 @@
 (define (compile-file-without-macro file . for-vm-cpp?)
   (apply compile-file file '() for-vm-cpp?))
 
-(define base-library "./base-library.scm")
-(define match-library "./match.scm")
+(define base-library "lib/base.scm")
+(define match-library "match.scm")
 
 (define (main args)
   (set! *command-line-args* (cdr args))

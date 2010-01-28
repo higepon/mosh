@@ -32,16 +32,16 @@ compiler-with-library.h: compiler-with-library.scmc
 	mosh $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
 
 match.scmc: match.scm compiler-vm.scm
-	gosh vm.scm compile-file-without-macro $< > $@
+	gosh -A lib vm.scm compile-file-without-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $@
 
 compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
-	gosh vm.scm compile-file-with-macro $< > $@
+	gosh -A lib vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
 compiler-with-library.scmc: compiler-with-library.scm compiler-vm.scm
 
-compiler-with-library.scm: base-library.scm compiler-vm-cpp.scm $(CORE_LIBS)
+compiler-with-library.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
 	cat $^ > $@
 
 
