@@ -1629,7 +1629,7 @@
   (apply compile-file file '() for-vm-cpp?))
 
 (define base-library "lib/base.scm")
-(define match-library "match.scm")
+(define match-library "lib/match.scm")
 
 (define (main args)
   (set! *command-line-args* (cdr args))

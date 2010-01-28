@@ -339,7 +339,7 @@ nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
 EXTRA_DIST     = \
 src/instruction.scm src/vm.scm boot/lib/base.scm boot/compiler.scm \
-boot/free-vars.scm misc/scripts src/match.scm src/test-data.scm doc \
+boot/free-vars.scm misc/scripts boot/lib/match.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
 tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
@@ -348,12 +348,9 @@ src/ffitest.c win mosh.vcproj mosh.sln doc README misc
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h boot/compiler-gauche.scm \
 src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
-src/labels.cpp src/psyntax.scmc \
-boot/match.scmc boot/compiler-with-library.scmc boot/compiler-vm-cpp.scm \
-boot/compiler-vm.scm boot/compiler-with-library.scm src/Instruction.h \
-src/psyntax.h src/psyntax.scmc.fasl src/match.h boot/match.scmc.fasl \
-src/compiler-with-library.h boot/compiler-with-library.scmc.fasl \
-src/psyntax.scmc-e boot/compiler-with-library.scmc-e boot/match.scmc-e \
+src/labels.cpp src/psyntax.scmc src/Instruction.h \
+src/psyntax.h src/psyntax.scmc.fasl src/match.h \
+src/psyntax.scmc-e boot/compiler-with-library.scmc-e \
 boot/free-vars-decl.scm src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
@@ -431,27 +428,27 @@ boot/compiler-with-library.scmc: boot/compiler-with-library.scm boot/compiler-vm
 
 # SUFFIXES: .scmc .h
 
-src/match.h: boot/match.scmc
-	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# src/match.h: boot/match.scmc
+# 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
 # src/psyntax.h: src/psyntax.scmc
 # 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
 # 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
-src/compiler-with-library.h: boot/compiler-with-library.scmc
-	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# src/compiler-with-library.h: boot/compiler-with-library.scmc
+# 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 
-.scmc.h:
-	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
-	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
+# .scmc.h:
+# 	mosh ./misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl
+# 	mosh ./misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@
 # 	(cd doc && mosh ../misc/scripts/scmc2fasl.scm $(PWD)/$< $(PWD)/$<.fasl)
 # 	(cd doc && mosh ../misc/scripts/binary2c.scm $(PWD)/$<.fasl $(PWD)/$@)
 
-boot/match.scmc: boot/match.scm boot/compiler-vm.scm
-	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
-	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
+# boot/match.scmc: boot/match.scm boot/compiler-vm.scm
+# 	gosh ./src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
+# 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
 # # we need to replace #\null => #\nul and |...| => ...
 # # It is the difference between gauche and mosh.
@@ -459,30 +456,30 @@ boot/match.scmc: boot/match.scm boot/compiler-vm.scm
 # 	gosh src/vm.scm compile-file-without-macro $(PWD)/$< > $(PWD)/$@
 # 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g" $(PWD)/$@
 
-CORE_LIBS =                 \
-    lib/core/fixnum.scm     \
-    lib/core/flonum.scm     \
-    lib/core/bitwise.scm    \
-    lib/core/bytevector.scm \
-    lib/core/base.scm       \
-    lib/core/r5rs.scm       \
-    lib/core/hashtable.scm
+# CORE_LIBS =                 \
+#     lib/core/fixnum.scm     \
+#     lib/core/flonum.scm     \
+#     lib/core/bitwise.scm    \
+#     lib/core/bytevector.scm \
+#     lib/core/base.scm       \
+#     lib/core/r5rs.scm       \
+#     lib/core/hashtable.scm
 
 
-./boot/compiler-with-library.scm: ./boot/lib/base.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
-	cat $^ > $(PWD)/$@
+# ./boot/compiler-with-library.scm: ./boot/lib/base.scm ./boot/compiler-vm-cpp.scm $(CORE_LIBS)
+# 	cat $^ > $(PWD)/$@
 
 boot/free-vars-decl.scm: boot/free-vars.scm
 	mosh ./misc/scripts/gen-free-vars-decl.scm $(PWD)/$< > $(PWD)/$@
 
-boot/compiler-vm.scm: boot/compiler.scm boot/free-vars-decl.scm
-	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
+# boot/compiler-vm.scm: boot/compiler.scm boot/free-vars-decl.scm
+# 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm?" > $(PWD)/$@
 
-boot/compiler-vm-outer.scm: boot/compiler.scm boot/free-vars-decl.scm
-	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# boot/compiler-vm-outer.scm: boot/compiler.scm boot/free-vars-decl.scm
+# 	./misc/scripts/gen-compiler.scm $(PWD)/$< "vm-outer?" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
-boot/compiler-gauche.scm: boot/compiler.scm boot/free-vars-decl.scm
-	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
+# boot/compiler-gauche.scm: boot/compiler.scm boot/free-vars-decl.scm
+# 	./misc/scripts/gen-compiler.scm $(PWD)/$< "gauche" > $(PWD)/$@  || (rm -f $(PWD)/$@ && false)
 
 src/labels.cpp: src/instruction.scm
 	gosh ./misc/scripts/gen-label.scm $< > $(PWD)/$@
