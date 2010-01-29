@@ -734,29 +734,26 @@ bool VM::isR6RSMode() const
 
 Object VM::activateR6RSMode(bool isDebugExpand)
 {
-#   include "psyntax.h"
+#ifdef WITH_NMOSH_DEFAULTS
+    extern const uint8_t* nmosh_image_ptr;
+    extern const unsigned int nmosh_image_size;
+    const uint8_t* image = nmosh_image_ptr;
+    uinsigned int image_size = nmosh_image_size;
+    theVM->activateR6RSModeWithImage(nmosh_image_ptr,nmosh_image_size, isDebugExpand);
+#else
+    extern const uint8_t psyntax_mosh_image[];
+    extern const unsigned int psyntax_mosh_image_size;
+    const uint8_t* image = psyntax_mosh_image;
+    unsigned int image_size = psyntax_mosh_image_size;
+#endif
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
-    const Object libPsyntax = FASL_GET(psyntax_image);
-    TRY_VM {
-        return evaluateCodeVector(libPsyntax);
-    CATCH_VM
-        // call default error handler
-        defaultExceptionHandler(errorObj_);
-        this->exit(-1);
-    }
-    return Object::Undef;
-}
-
-Object VM::activateR6RSModeWithImage(const uint8_t *image, const unsigned int size)
-{
-    isR6RSMode_ = true;
-    const Object code = FASL_GET_WITH_SIZE(image,size);
+    const Object code = FASL_GET_WITH_SIZE(image, image_size);
     TRY_VM {
         return evaluateCodeVector(code);
-    CATCH_VM
-        // call default error handler
-        defaultExceptionHandler(errorObj_);
+        CATCH_VM
+            // call default error handler
+            defaultExceptionHandler(errorObj_);
         this->exit(-1);
     }
     return Object::Undef;

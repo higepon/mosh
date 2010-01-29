@@ -9,7 +9,7 @@ CORE_LIBS =                 \
     lib/r5rs.scm       \
     lib/hashtable.scm
 
-TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax-mosh-image.h
+TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp
 
 all: $(TARGET)
 
@@ -19,7 +19,7 @@ $(SRC_DIR)/match.h: match.h
 $(SRC_DIR)/baselib.h: baselib.h
 	cp $< $@
 
-$(SRC_DIR)/psyntax-mosh-image.h: psyntax-mosh-image.h
+$(SRC_DIR)/psyntax_mosh_image.cpp: psyntax_mosh_image.cpp
 	cp $< $@
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
@@ -32,6 +32,10 @@ compiler-vm.scm: compiler.scm free-vars-decl.scm
 .scmc.h:
 	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
 	mosh $(SCRIPTS_DIR)/binary2c.scm $<.fasl $@
+
+psyntax_mosh_image.cpp: psyntax-mosh-image.scmc
+	mosh $(SCRIPTS_DIR)/scmc2fasl.scm $< $<.fasl
+	mosh $(SCRIPTS_DIR)/binary2cpp.scm $<.fasl $@
 
 psyntax-mosh-image.scmc: runtimes/psyntax-mosh/psyntax.scm compiler-vm.scm
 	gosh vm.scm compile-file-without-macro $< > $@

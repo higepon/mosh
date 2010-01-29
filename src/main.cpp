@@ -256,13 +256,7 @@ int main(int argc, char *argv[])
         theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
-#ifdef WITH_NMOSH_DEFAULTS
-	extern const uint8_t* nmosh_image_ptr;
-	extern const unsigned int nmosh_image_size;
-        theVM->activateR6RSModeWithImage(nmosh_image_ptr,nmosh_image_size);
-#else
         theVM->activateR6RSMode(isDebugExpand);
-#endif
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());

@@ -170,7 +170,6 @@ public:
     Object getTopLevelGlobalValueOrFalse(Object id);
     bool isR6RSMode() const;
     Object activateR6RSMode(bool isDebugExpand);
-    Object activateR6RSModeWithImage(const uint8_t*,const unsigned int);
     Object* disasm(Object* code, int length);
     Object* disasm(Closure* closure);
 #ifdef ENABLE_PROFILER

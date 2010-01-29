@@ -38,7 +38,7 @@ bin_SCRIPTS = src/mosh_config
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
-mosh_SOURCES  = src/main.cpp
+mosh_SOURCES  = src/main.cpp src/psyntax_mosh_image.cpp
 mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_LIB_PATH@\"" -I src -I $(includedir)
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
@@ -86,7 +86,6 @@ src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
 src/Pair-inl.h                                                         \
 src/VM-inl.h                                                           \
-src/psyntax.h                                                          \
 src/match.h                                                            \
 src/baselib.h                                                          \
 src/CProcedure.h                                                       \
@@ -349,7 +348,7 @@ GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp  \
 src/DebugInstruction.h src/cprocedures.cpp  src/OSConstants.h src/Object-accessors.h \
 src/labels.cpp  src/Instruction.h \
-src/psyntax.h  src/match.h \
+src/match.h \
 src/NumberReader.tab.cpp src/NumberReader.tab.hpp \
 src/Reader.tab.cpp src/Reader.tab.hpp \
 src/nmosh_image.cpp
@@ -381,11 +380,11 @@ bootstrap:
 	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
 svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
 	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/
+	$(MAKE) -C boot
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
 	$(MAKE) src/NumberReader.tab.cpp
 	$(MAKE) src/labels.cpp
-	$(MAKE) -C boot
 	$(MAKE) src/OSConstants.h
 	$(MAKE) src/Object-accessors.h
 
@@ -413,7 +412,7 @@ r6rs-test:
 src/Instruction.h: src/instruction.scm
 	gosh ./misc/scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
 
-src/main.cpp: src/psyntax.h src/baselib.h src/match.h
+src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
 
 src/labels.cpp: src/instruction.scm
 	gosh ./misc/scripts/gen-label.scm $< > $(PWD)/$@
