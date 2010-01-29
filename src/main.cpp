@@ -64,8 +64,6 @@ using namespace scheme;
 
 static VM* theVM;
 
-
-
 Object argsToList(int argc, int optind, ucs4char** argvU)
 {
     Object p = Object::Nil;
@@ -82,6 +80,19 @@ void showVersion()
     printf("nmosh expander/runtime built from :\n%s\n",NMOSH_COMMIT_DATA);
 #endif
     exit(0);
+}
+
+Object activateR6RSMode(VM* theVM, bool isDebugExpand)
+{
+#ifdef WITH_NMOSH_DEFAULTS
+    extern const uint8_t* nmosh_image_ptr;
+    extern const unsigned int nmosh_image_size;
+    return theVM->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, isDebugExpand);
+#else
+    extern const uint8_t* psyntax_mosh_image_ptr;
+    extern unsigned int psyntax_mosh_image_size;
+    return theVM->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, isDebugExpand);
+#endif
 }
 
 void showUsage()
@@ -256,7 +267,7 @@ int main(int argc, char *argv[])
         theVM->setValueString(UC("%verbose"), Object::makeBool(verbose));
         theVM->setValueString(UC("%disable-acc"), Object::makeBool(disableAcc));
         theVM->setValueString(UC("%clean-acc"), Object::makeBool(cleanAcc));
-        theVM->activateR6RSMode(isDebugExpand);
+        activateR6RSMode(theVM, isDebugExpand);
     } else if (optindU < argc) {
         theVM->setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
         theVM->loadFileWithGuard(Object::makeString(argvU[optindU]).toString()->data());

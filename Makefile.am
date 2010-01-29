@@ -548,56 +548,56 @@ TESTS += test_object
 check_PROGRAMS += test_object
 test_object_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_object_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_object_SOURCES = src/ObjectTest.cpp src/TestingSignalHandler.cpp
+test_object_SOURCES = src/ObjectTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_object_LDADD = $(TEST_LDADD_)
 
 TESTS += test_vm
 check_PROGRAMS += test_vm
 test_vm_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_vm_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_vm_SOURCES = src/VMTest.cpp src/TestingVM.cpp src/TestingSignalHandler.cpp
+test_vm_SOURCES = src/VMTest.cpp src/TestingVM.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_vm_LDADD = $(TEST_LDADD_)
 
 TESTS += test_port
 check_PROGRAMS += test_port
 test_port_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_port_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_port_SOURCES = src/PortTest.cpp src/TestingSignalHandler.cpp
+test_port_SOURCES = src/PortTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_port_LDADD = $(TEST_LDADD_)
 
 TESTS += test_fasl
 check_PROGRAMS += test_fasl
 test_fasl_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_fasl_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_fasl_SOURCES = src/FaslTest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp
+test_fasl_SOURCES = src/FaslTest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp src/psyntax_mosh_image.cpp
 test_fasl_LDADD = $(TEST_LDADD_)
 
 TESTS += test_ffi
 check_PROGRAMS += test_ffi
 test_ffi_DEPENDENCIES = $(TEST_DEPENDENCIES_) lib/libffitest.so.1.0
 test_ffi_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_ffi_SOURCES = src/FFITest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp
+test_ffi_SOURCES = src/FFITest.cpp src/TestingSignalHandler.cpp src/TestingVM.cpp src/psyntax_mosh_image.cpp
 test_ffi_LDADD = $(TEST_LDADD_)
 
 TESTS += test_compat
 check_PROGRAMS += test_compat
 test_compat_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_compat_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_compat_SOURCES = src/OSCompatTest.cpp src/TestingSignalHandler.cpp
+test_compat_SOURCES = src/OSCompatTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_compat_LDADD = $(TEST_LDADD_)
 
 TESTS += test_getopt
 check_PROGRAMS += test_getopt
 test_getopt_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_getopt_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_getopt_SOURCES = src/getoptUTest.cpp src/TestingSignalHandler.cpp
+test_getopt_SOURCES = src/getoptUTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_getopt_LDADD = $(TEST_LDADD_)
 
 TESTS += test_thread
 check_PROGRAMS += test_thread
 test_thread_DEPENDENCIES = $(TEST_DEPENDENCIES_)
 test_thread_CXXFLAGS = $(TEST_CXXFLAGS_)
-test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp
+test_thread_SOURCES = src/OSCompatThreadTest.cpp src/TestingSignalHandler.cpp src/psyntax_mosh_image.cpp
 test_thread_LDADD = $(TEST_LDADD_)
 
 install-data-hook :

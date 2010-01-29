@@ -121,7 +121,9 @@ TEST_F(VMTest, StackTrace1) {
 
 TEST_F(VMTest, StackTrace2) {
     theVM_->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
-    theVM_->activateR6RSMode(false);
+    extern const uint8_t* psyntax_mosh_image_ptr;
+    extern unsigned int psyntax_mosh_image_size;
+    theVM_->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, false);
     EXPECT_STREQ("     error in raise: returned from non-continuable exception\n"
                  "\n"
                  " Stack trace:\n"

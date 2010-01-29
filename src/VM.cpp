@@ -732,20 +732,8 @@ bool VM::isR6RSMode() const
     return isR6RSMode_;
 }
 
-Object VM::activateR6RSMode(bool isDebugExpand)
+Object VM::activateR6RSMode(const uint8_t* image, unsigned int image_size, bool isDebugExpand)
 {
-#ifdef WITH_NMOSH_DEFAULTS
-    extern const uint8_t* nmosh_image_ptr;
-    extern const unsigned int nmosh_image_size;
-    const uint8_t* image = nmosh_image_ptr;
-    uinsigned int image_size = nmosh_image_size;
-    theVM->activateR6RSModeWithImage(nmosh_image_ptr,nmosh_image_size, isDebugExpand);
-#else
-    extern const uint8_t psyntax_mosh_image[];
-    extern const unsigned int psyntax_mosh_image_size;
-    const uint8_t* image = psyntax_mosh_image;
-    unsigned int image_size = psyntax_mosh_image_size;
-#endif
     isR6RSMode_ = true;
     setValueString(UC("debug-expand"), Object::makeBool(isDebugExpand));
     const Object code = FASL_GET_WITH_SIZE(image, image_size);

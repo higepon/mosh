@@ -14,7 +14,7 @@
   (call-with-port (open-file-output-port (caddr args) (file-options no-fail) (buffer-mode none) (native-transcoder))
     (lambda (out)
       (display "#include <stdint.h>\n" out)
-      (format out "const uint8_t ~a[] = {" (filename->arrayname (cadr args)))
+      (format out "static const uint8_t ~a[] = {" (filename->arrayname (cadr args)))
       (call-with-port (open-file-input-port (cadr args) (file-options) (buffer-mode none))
         (lambda (port)
           (let loop ([b (get-u8 port)]
@@ -28,7 +28,8 @@
               (format out "0x~a," (number->string b 16))
               (loop (get-u8 port) (+ i 1))]))))
       (display "\n};\n" out)
-      (format out "const unsigned int ~a_size = sizeof(~a);\n" (filename->arrayname (cadr args)) (filename->arrayname (cadr args)))))
+      (format out "extern \"C\" const uint8_t* ~a_ptr = ~a;\n" (filename->arrayname (cadr args)) (filename->arrayname (cadr args)))
+      (format out "extern \"C\" const unsigned int ~a_size = sizeof(~a);\n" (filename->arrayname (cadr args)) (filename->arrayname (cadr args)))))
   0)
 
 (main (command-line))

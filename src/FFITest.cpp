@@ -71,6 +71,7 @@
 
 using namespace scheme;
 
+
 #if defined(ARCH_IA32) || defined(ARCH_X86_64)
 
 class FFITest : public testing::Test {
