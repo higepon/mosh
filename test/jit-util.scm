@@ -254,23 +254,25 @@
 (test-results)
 
 (jit-helper (string-split
-".L1126:
-	cmpq	$3, %rax
-	jne	.L744
-	movq	8(%rbx), %r12
-	movq	8(%rbp), %rdx
-	movq	%r12, %rax
-	shrq	$2, %rax
-	testl	%eax, %eax
-	js	.L745
-	cmpl	(%rdx), %eax
-	jge	.L745
-	.loc 18 1175 0
-	movq	8(%rdx), %rdx
-	cltq
-	movq	(%rdx,%rax,8), %rax
-	movq	%rax, 8(%rbx)
-	jmp	.L916"
+"	# -- INDIRECT start
+	.loc 18 401 0
+#NO_APP
+	movq	88(%rsp), %rdx
+	movq	8(%rdx), %rax
+	movq	8(%rax), %rax
+	movq	(%rax), %rax
+	.loc 18 402 0
+	movl	$1, 56(%rdx)
+	.loc 18 401 0
+	movq	%rax, 8(%rdx)
+	.loc 18 402 0
+	movq	48(%rdx), %rax
+	movq	88(%rsp), %rcx
+.LVL313:
+	movq	(%rax), %rdx
+	addq	$8, %rax
+	movq	%rax, 48(%rcx)
+	jmp	.L1002"
  #\newline))
 ;; (let ([lst (remp null? (map gas->sassy (string-split "# 310 \"src/VM-Run.cpp\" 1
 ;; 	 	 # -- CONSTANT start

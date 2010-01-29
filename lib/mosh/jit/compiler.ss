@@ -213,6 +213,25 @@
 (define (macro-is-vector reg is-not-case)
   (macro-is-obj 3 reg is-not-case))
 
+;; ;; rdx <- VM* | (movq rdx (& rsp 88))
+;; (movq rax (& rdx 8))
+;; (movq rax (& rax 8))
+;; (movq rax (& rax))
+;; (movl (& rdx 56) 1)
+;; (movq (& rdx 8) rax)
+;; (movq rax (& rdx 48))
+;; ;; rcx <- VM* | (movq rcx (& rsp 88))
+;; (label .LVL313)
+;; (movq rdx (& rax))
+;; (addq rax 8)
+;; (movq (& rcx 48) rax)
+;; (jmp (label .L1002))
+(define (INDIRECT)
+  `(,@(trace-push! $INDIRECT)
+    (movq rax ,(vm-register 'ac))
+    (movq rax (& rax 8))
+    (movq rax (& rax))
+    (movq ,(vm-register 'ac) rax)))
 
 (define (UNDEF)
   `(,@(trace-push! $CONSTANT_PUSH)
@@ -222,6 +241,11 @@
   `(,@(trace-push! $CONSTANT_PUSH)
     ,@(CONSTANT x)
     ,@(PUSH)))
+
+(define (PUSH_CONSTANT x)
+  `(,@(trace-push! $PUSH_CONSTANT)
+    ,@(PUSH)
+    ,@(CONSTANT x)))
 
 ;; ;; rbx <- VM* | (movq rbx (& rsp 88))
 ;; (movq rax (& rbx 40))
@@ -949,6 +973,11 @@
     (movq ,(vm-register 'ac) rdx)
     (movq rax rdx)))
 
+(define (REFER_FREE_PUSH index)
+  `(,@(trace-push! $REFER_FREE_PUSH)
+    ,@(REFER_FREE index)
+    ,@(PUSH)))
+
 ;; REFER_LOCAL
 ;; (movq rbx (& rsp 88))
 ;; (movq rax ,(vm-register 'pc))
@@ -1548,6 +1577,7 @@
                                     [else (error 'REFER_LOCAL_BRANCH_NOT_NULL "label expeced")])))
 
   (register-insn-dispatch-table $RETURN RETURN)
+  (register-insn-dispatch-table $PUSH_CONSTANT PUSH_CONSTANT)
  (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
@@ -1560,6 +1590,8 @@
   (register-insn-dispatch-table $CDR_PUSH CDR_PUSH)
   (register-insn-dispatch-table $NULL_P NULL_P)
   (register-insn-dispatch-table $SYMBOL_P SYMBOL_P)
+  (register-insn-dispatch-table $INDIRECT INDIRECT)
+  (register-insn-dispatch-table $REFER_FREE_PUSH REFER_FREE_PUSH)
 )
 
 (make-dispatch-table)

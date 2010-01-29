@@ -414,6 +414,16 @@
   (test-error assertion-violation? (proc 3))
   (test-error assertion-violation? (proc '#())))
 
+;; REFER_FREE_PUSH
+(let* ([val fib]
+       [proc (compile (lambda () (eq? val 1)))])
+  (test-false (proc)))
+
+;; INDIRECT
+(let ([a 0])
+  (set! a 1)
+  (let ([proc (compile (lambda () a))])
+    (test-equal 1 (proc))))
 
 
 ;; ;; BRANCH_NOT_EQV
