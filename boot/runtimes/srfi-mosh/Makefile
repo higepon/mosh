@@ -1,4 +1,4 @@
-all: boot.scm boot5.scm nmosh_version.h
+all: boot.scm boot5.scm
 
 .PHONY: clean test cleancache
 .SUFFIXES: .gexp .exp .ss .scm
@@ -94,11 +94,6 @@ r6rs.gexp: r6rs.scm
 repl.scm: $(REPL_FILES) system.exp
 	cat $(REPL_FILES) | mosh tools/conv.ss > $@
 
-nmosh_version.h: _timestamp git-version.mk nmosh_version_dummy.h
-	cp nmosh_version_dummy.h nmosh_version.h
-	-$(MAKE) -f git-version.mk
-	-cp nmosh_version_git.h nmosh_version.h
-
 expander.exp: expander.scm r6rs.exp system.exp
 	gosh bootstrap.gauche/expand-base.scm
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" expander.exp
@@ -124,16 +119,10 @@ nmosh_image.cpp: build.ss
 	nmosh build.ss
 	touch _timestamp
 
-# inject-nmosh: $(RNRS_FILES) $(REPL_FILES) $(SYS_FILES) nmosh_image.cpp 
-# 	cp nmosh_image.cpp ../../../src
-# 	$(MAKE) nmosh_version.h #seq
-# 	cp nmosh_version.h ../../../src
-
 test: all 
 	../../../mosh -5 boot5.scm tests/r6rs/run.sps
 
 clean:
-	rm -f nmosh_version.h nmosh_version_git.h
 	rm -f *.exp
 	rm -f *.exp-e
 	rm -f *.gexp
