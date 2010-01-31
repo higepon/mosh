@@ -119,6 +119,14 @@ nmosh_image.cpp: build.ss
 	nmosh build.ss
 	touch _timestamp
 
+GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
+GIT_COMMIT_HEX=`git show|grep commit`
+SVN_REPOS_DIR=$(shell if [ -n "$(PSYNTAX_SVN_REPOS_DIR)" ]; then echo "$(PSYNTAX_SVN_REPOS_DIR)"; else echo "~/repos-mosh/branches"; fi)
+
+commit:
+	cp nmosh_image.cpp $(SVN_REPOS_DIR)/nmosh.master/
+	svn ci -m "See http://github.com/higepon/mosh $(GIT_COMMIT_HEX)" $(SVN_REPOS_DIR)/nmosh.master/
+
 test: all 
 	../../../mosh -5 boot5.scm tests/r6rs/run.sps
 

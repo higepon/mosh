@@ -375,11 +375,16 @@ MAINTAINERCLEANFILES = $(GENERATED)
 # when you release comment out start
 if DEVELOPER
 GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
+SVN_REPOS="http://mosh-scheme.googlecode.com/svn/branches"
+
 
 bootstrap:
-	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
-svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
-	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/
+	svn checkout $(SVN_REPOS)/psyntax.$(GIT_BRANCH_NAME)/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
+    svn checkout $(SVN_REPOS)/psyntax.master/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
+	svn checkout $(SVN_REPOS)/nmosh.$(GIT_BRANCH_NAME)/ boot/runtimes/sfri-mosh/nmosh.$(GIT_BRANCH_NAME) || \
+    svn checkout $(SVN_REPOS)/nmosh.master/ boot/runtimes/srfi-mosh/nmosh.$(GIT_BRANCH_NAME)
+	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/ || \
+    cp -p boot/runtimes/srfi-mosh/nmosh.$(GIT_BRANCH_NAME)/nmosh_image.cpp boot/runtimes/srfi-mosh/
 	$(MAKE) -C boot
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
