@@ -186,6 +186,8 @@
 (define ex:expand-file-to-cache      #f) ;MOSH 
 (define ex:expand-sequence           #f) ;NMOSH
 (define ex:expand-sequence-r5rs      #f) ;NMOSH
+(define ex:expand-sequence/debug     #f) ;NMOSH
+(define ex:expand-sequence-r5rs/debug #f) ;NMOSH
 (define ex:generate-guid             #f) ;NMOSH
 (define ex:repl                      #f)
 (define ex:expand-r5rs-file          #f)
@@ -1980,10 +1982,6 @@
                 exp))
 
     (define (syntax-violation who message form . maybe-subform)
-#|
-      (newline)
-      (display "Syntax violation: ")
-|#
       (let ((who (if who
                      who
                      (cond ((identifier? form)
@@ -1999,30 +1997,6 @@
                            (else (assertion-violation 'syntax-violation
                                                       "Invalid subform in syntax violation"
                                                       maybe-subform)))))
-#|
-        (display who)
-        (newline)
-        (newline)
-        (display message)
-        (newline)
-        (newline)
-        (if subform
-            (begin (display "Subform: ")
-                   (pretty-print (syntax-debug subform) (current-error-port)) ;MOSH pretty-print
-                   (newline)))
-        (display "Form: ")
-        (pretty-print (syntax-debug form) (current-error-port))
-        (newline)
-        (display "Trace: ")
-        (newline)
-        (newline)
-        (for-each (lambda (exp)
-                    (display "  ")
-                    (pretty-print (syntax-debug exp) (current-error-port))
-                    (newline))
-                  *trace*)
-|#
-        ;(error 'syntax-violation "Integrate with host error handling here")
 	(raise-syntax-violation (syntax-debug form)
 				(if subform (syntax-debug subform) #f)
 				who
@@ -2344,7 +2318,6 @@
 					   (if *DBG?* (ca-write-debug-file filename dbgfile r *DBG-SYMS*))
 					   r))))))))
 
-    ;NMOSH: debug
     (define (expand-sequence l)
       (with-toplevel-parameters
 	(lambda () ;thunk
@@ -2365,6 +2338,21 @@
 			     (expand-toplevel-sequence l)))))))
 
 
+    (define (expand-sequence/debug l)
+      (fluid-let
+	((*DBG?* #t)
+	 (*DBG-SYMS* '()))
+	(let* ((r (expand-sequence l))
+	       (d *DBG-SYMS*))
+	  (cons r d))))
+
+    (define (expand-sequence-r5rs/debug l env)
+      (fluid-let
+	((*DBG?* #t)
+	 (*DBG-SYMS* '()))
+	(let* ((r (expand-sequence-r5rs l env))
+	       (d *DBG-SYMS*))
+	  (cons r d))))
 
     ;; This approximates the common r5rs behaviour of
     ;; expanding a toplevel file but treating unbound identifiers
@@ -2566,6 +2554,8 @@
     (set! ex:expand-file-to-cache      expand-file-to-cache) ; MOSH
     (set! ex:expand-sequence           expand-sequence)
     (set! ex:expand-sequence-r5rs      expand-sequence-r5rs)
+    (set! ex:expand-sequence/debug     expand-sequence/debug)
+    (set! ex:expand-sequence-r5rs/debug expand-sequence-r5rs/debug)
     (set! ex:generate-guid             generate-guid)
     (set! ex:repl                      repl)
     (set! ex:expand-r5rs-file          expand-r5rs-file)

@@ -13,3 +13,4 @@ nmosh_version.h
 nmosh_version_git.h
 nmosh_image.cpp
 _timestamp
+*.nmosh-dbg

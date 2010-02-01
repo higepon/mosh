@@ -59,6 +59,14 @@ pmatch.h
 psyntax.h
 psyntax.scm
 cprocedures.cpp
+
+# mosh bootstrap
+boot/baselib.h
+boot/baselib.scm
+boot/free-vars-decl.scm
+boot/match.h
+boot/psyntax_mosh_image.cpp
+boot/runtimes/psyntax-mosh/psyntax.*/*
  
 # mosh(re2c)
 *.tab.cpp
@@ -111,6 +119,10 @@ lib/psyntax/psyntax.master/
 src/OSConstants.h
 src/Object-accessors.h
 src/free-vars-decl.scm
+src/baselib.h
+src/match.h
+src/nmosh_image.cpp
+src/psyntax_mosh_image.cpp
 test/test.txt.temp
 test/utf16.txt.temp
 test_compat

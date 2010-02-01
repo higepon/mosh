@@ -13,7 +13,7 @@
 
 
 (define (make-identifier/debug name colors transformer-envs displacement maybe-library debug)
-  (vector '*IDENTIFIER* name colors transformer-envs displacement maybe-library debug))
+  (vector id-symbol name colors transformer-envs displacement maybe-library debug))
 
 (define (make-identifier name colors transformer-envs displacement maybe-library)
   (make-identifier/debug name colors transformer-envs displacement maybe-library #f))
@@ -21,7 +21,7 @@
 (define (identifier? x) 
   (and (true-vector? x) 
        (not (= (vector-length x) 0)) 
-       (eq? '*IDENTIFIER* (vector-ref x 0))))
+       (eq? id-symbol (vector-ref x 0))))
 (define (id-name x) (vector-ref x 1))
 (define (id-colors x) (vector-ref x 2))
 (define (id-transformer-envs x) (vector-ref x 3))
@@ -36,9 +36,6 @@
 (define ex:unspecified (if #f #f))
 
 (define (ex:make-library name envs exports imports builds visiter invoker build)
-  ;(display (list 'I-M: name build))(newline)
-  ;(display (list 'IMPORTS imports))(newline)
-  ;(display (list 'BUILDS builds))(newline)
   (list name envs exports imports builds visiter invoker build #f #f))
 
 (define (ex:library-name     lib) (car lib))

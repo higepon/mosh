@@ -63,10 +63,12 @@
 
 ; FIXME FIXME FIXME! : we use vectors for records..
 
+(define id-symbol (string->symbol (string-append "*IDENTIFIER*" (ex:unique-token))))
+
 (define true-vector? vector?)
 (define (hooked-vector? x)
   (and
     (vector? x)
     (not (= (vector-length x) 0))
-    (not (eq? '*IDENTIFIER* (vector-ref x 0)))))
+    (not (eq? id-symbol (vector-ref x 0)))))
 

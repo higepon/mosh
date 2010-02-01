@@ -2,7 +2,10 @@
 (define (PCK . obj)
   (if %verbose
     (begin 
-      (display obj ERRPORT)
+      (display "-> " ERRPORT)
+      (for-each (lambda (e)
+		  (display e ERRPORT))
+		obj)
       (newline ERRPORT))))
 
 ;;------------------------------------------------
@@ -112,7 +115,7 @@
       (if (pair? rest)
 	(itr (cons "/" (cons (car rest) cur)) (cdr rest))
 	(reverse (cdr cur)))) ;drop last "/"
-    (PCK 'COMPOSING: l)
+    ;(PCK 'COMPOSING: l)
     (itr (list "/") l))
 
   (apply string-append (insert-slash (fold-dotdot (omit-dot (omit-zerolen l))))))
@@ -151,13 +154,18 @@
 
 (define nm:parachute #f) 
 
-(define (ca-load fn recompile? name)
+(define dbg-files '())
+(define (dbg-addfile fn cfn dfn)
+  (set! dbg-files (cons (list fn dfn) dbg-files)))
+
+(define (ca-load/cache fn recompile? name)
   (define (reload)
     (PCK 'CACHE: 'RECOMPILE!!!)
     (set! nm:parachute #f)
     (ca-load fn #t name))
   (let* ((cfn (ca-filename->cachename fn))
-	 (dfn (string-append cfn ".dbg.scm")))
+	 (dfn (string-append cfn ".nmosh-dbg")))
+    (dbg-addfile fn cfn dfn)
     (cond
       ((file-exists? cfn)
        (cond ((and (not recompile?) (file-newer? cfn fn))
@@ -165,7 +173,7 @@
 	      ; try loading
 	      (if (eq? 'nm:failure
 		       (call/cc (lambda (k) ; FIXME: i assume a call/cc is much faster than an I/O
-				  (set! nm:parachute k)
+				  (unless nm:parachute (set! nm:parachute k))
 				  (eval-compiled! (ca-readobj cfn)))))
 		(reload)
 		(set! nm:parachute #f))
@@ -180,6 +188,13 @@
 	(PCK 'LOADING..)
 	(ca-load fn #f name)))))
 
+(define (ca-load fn recompile? name)
+  (cond
+    (%disable-acc 
+      (PCK 'loading fn "(ACC disabled)")
+      (ex:load fn))
+    (else (ca-load/cache fn recompile? name))))
+
 (define (ca-prepare-cache-dir)
   (unless (file-exists? (nmosh-cache-dir))
     (create-directory (nmosh-cache-dir))))
@@ -192,13 +207,10 @@
   (ca-prepare-cache-dir)
   (when (file-exists? fn)
     (delete-file fn))
-  (with-output-to-file fn
-    (lambda ()
-      (write (cons '*SOURCEFILE* sourcefile))
-      (newline)
-      (write (cons '*SOURCE* src))
-      (newline)
-      (write (cons '*DBG* syms)))))
+  (ca-writeobj fn (list 
+	       (cons 'DBG-FILENAME sourcefile)
+	       (cons 'DBG-SOURCE src)
+	       (cons 'DBG-SYMS syms))))
 
 (define (make-prefix-list)
   (define (append-prefix-x l str)
@@ -223,12 +235,12 @@
   (define (append-prefix l)
     (append
       (append-prefix-execpath l)
-      (append-prefix-stdlibpath l)
       (if %loadpath (append-prefix-l l (pathsep %loadpath)) '())
       (if (get-environment-variable "MOSH_LOADPATH")
 	(append-prefix-l l (get-environment-variable "MOSH_LOADPATH")) 
 	'())
       (append-prefix-curpath l)
+      (append-prefix-stdlibpath l)
       l ;fallback
       ))
   (append-prefix (list "" "lib/")))
@@ -291,7 +303,7 @@
 	 (cfn (make-absolute-path fn)))
     (if fn
       (begin
-	(PCK 'PATH fn '=> cfn)
+	;(PCK 'PATH fn '=> cfn)
 	cfn)
       #f))
   )

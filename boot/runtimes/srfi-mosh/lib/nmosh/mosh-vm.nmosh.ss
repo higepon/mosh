@@ -3,6 +3,7 @@
 		 compile-to-codevector
 		 compile-to-codevector/toplevel
 		 obj->fasl
+		 fasl->obj
 		 write-cobj)
 
 	 (import (only (mosh) format) 
@@ -36,6 +37,9 @@
   (receive (port bv-proc) (open-bytevector-output-port)
     (fasl-write! obj port)
     (bv-proc)))
+
+(define (fasl->obj fasl)
+  (call-with-port (open-bytevector-input-port fasl) fasl-read))
 
 (define (read-all fn)
   (define (reader p)

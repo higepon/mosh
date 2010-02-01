@@ -21,12 +21,14 @@
 (define ex:guid-prefix "&")
 (define ex:free-prefix "~")
 
+(define id-symbol (string->symbol (string-append "*ID*" (ex:unique-token))))
+
 (define true-vector? vector?)
 (define (hooked-vector? x)
   (and
-    (vector? x)
+    (true-vector? x)
     (if (= (vector-length x) 0)
       #t
-      (not (eq? '*IDENTIFIER* (vector-ref x 0))))))
+      (not (eq? id-symbol (vector-ref x 0))))))
 (define (debug-source-info x)
   (source-info x))

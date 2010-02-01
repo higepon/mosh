@@ -1,5 +1,6 @@
 (library (nmosh condition-printer)
 	 (export condition-printer 
+		 debug-format
 		 with-condition-printer with-condition-printer/raise)
 	 (import (rnrs) (nmosh conditions)
 		 (only (mosh) format)

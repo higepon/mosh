@@ -119,30 +119,5 @@
         ((_ expression)
          (if (not expression)
              (assertion-violation #f "assertion failed" 'expression)))))
-
-#|
-    ;;MOSH test
-    (define (andfold proc l)
-      (let ((a (car l))
-	    (b (cdr l)))
-	(if (null? b)
-	  #t
-	  (if (proc a (car b))
-	    (andfold proc b)
-	    #f))))
-    (define (cmap l)
-      (map char->integer l))
-    (define (char>? . l)
-      (andfold > (cmap l)))
-    (define (char>=? . l)
-      (andfold >= (cmap l)))
-    (define (char<? . l)
-      (andfold < (cmap l)))
-    (define (char<=? . l)
-      (andfold <= (cmap l)))
-|#
-
-      
-  
   ) ;; rnrs base
 

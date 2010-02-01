@@ -79,26 +79,6 @@
 
 ;MOSH
 
-(define-syntax define-aux-keywords
-  (syntax-rules ()
-    ((_ key)
-     (define-syntax key (lambda (e) 
-			  (syntax-violation 'key "Invalid expression" e))))
-    ((_ key0 key1 ...)
-     (begin 
-       (define-aux-keywords key0)
-       (define-aux-keywords key1 ...)))))
-
-(define-aux-keywords 
-  fields 
-  mutable 
-  immutable 
-  parent 
-  protocol 
-  sealed 
-  opaque 
-  nongenerative 
-  parent-rtd)
 
   (define-syntax define-record-type
     (syntax-rules ()
@@ -424,6 +404,16 @@
   (define (record-constructor-descriptor rtd)
     (preferred-cd rtd))
 
-  ) ; rnrs records syntactic
+(define-syntax fields (lambda (e) (syntax-violation 'fields "Invalid expression" e)))
+(define-syntax mutable (lambda (e) (syntax-violation 'mutable "Invalid expression" e)))
+(define-syntax immutable (lambda (e) (syntax-violation 'immutable "Invalid expression" e)))
+(define-syntax parent (lambda (e) (syntax-violation 'parent "Invalid expression" e)))
+(define-syntax protocol (lambda (e) (syntax-violation 'protocol "Invalid expression" e)))
+(define-syntax sealed (lambda (e) (syntax-violation 'sealed "Invalid expression" e)))
+(define-syntax opaque (lambda (e) (syntax-violation 'opaque "Invalid expression" e)))
+(define-syntax nongenerative (lambda (e) (syntax-violation 'nongenerative "Invalid expression" e)))
+(define-syntax parent-rtd (lambda (e) (syntax-violation 'parent-rtd "Invalid expression" e)))
+
+) ; rnrs records syntactic
 
 
