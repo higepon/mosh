@@ -416,6 +416,11 @@
 (let ([proc (compile (lambda () (fib 1)))])
   (test-equal 1 (proc)))
 
+(let ([proc (compile (lambda () (symbol? (fib 1))))])
+  (test-equal #f (proc)))
+
+
+
 
 ;; ;; BRANCH_NOT_EQV
 ;; (let ([proc (compile (lambda(x) (if (eqv? x "hige") #t #f)))])
