@@ -236,6 +236,7 @@ public:
     void raiseNotPairErrorForJit(int op);
     void raiseVectorRequiredError(int op, Object obj);
     void raiseVectorInvalidIndexError(int op);
+    void callOp(Object operand) __attribute__ ((always_inline));
 
 protected:
     virtual int exit(int status)

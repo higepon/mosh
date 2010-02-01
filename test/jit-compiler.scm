@@ -214,19 +214,6 @@
     (test-true (procedure? proc))
     (test-eq 10 (proc))))
 
-;;     ;; CALL
-;;     (let* ([code1 (assemble
-;;                    (append
-;;                     (FRAME)
-;;                     (CONSTANT (vm-make-fixnum 1))
-;;                     (PUSH)
-;;                     (REFER_LOCAL_PUSH_CONSTANT 0 (obj->integer +)) ;; we know + is cprocedure
-;;                     (CALL 2)
-;;                     ))]
-;;            [proc (u8*->c-procedure+retq code1)])
-;;       (test-true (procedure? proc))
-;;       (test-eq 1235 (proc 1234)))
-
 ;;     ;; PUSH_FRAME
 ;;     (let* ([code1 (assemble
 ;;                    (append
@@ -424,6 +411,10 @@
   (set! a 1)
   (let ([proc (compile (lambda () a))])
     (test-equal 1 (proc))))
+
+;; REFER_GLOBAL_CALL
+(let ([proc (compile (lambda () (fib 1)))])
+  (test-equal 1 (proc)))
 
 
 ;; ;; BRANCH_NOT_EQV

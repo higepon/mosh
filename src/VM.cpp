@@ -1014,3 +1014,4 @@ void VM::raiseVectorInvalidIndexError(int op)
                                 "index out of range",
                                 L1(ac_));
 }
+

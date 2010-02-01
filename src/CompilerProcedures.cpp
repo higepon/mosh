@@ -49,6 +49,7 @@
 #include "Bignum.h"
 #include "CProcedure.h"
 #include "MultiVMProcedures.h"
+#include "VM-Run.h"
 
 using namespace scheme;
 
@@ -186,6 +187,12 @@ static inline uintptr_t getClassMemberPointer(void (VM::*func)(int, Object))
     return *p;
 }
 
+static inline uintptr_t getClassMemberPointer(void (VM::*func)(Object))
+{
+    uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
+    return *p;
+}
+
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
@@ -202,7 +209,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                       UC("GC_malloc"),
                                       UC("VM::raiseNotPairErrorForJit"),
                                       UC("VM::raiseVectorRequiredError"),
-                                      UC("VM::raiseVectorInvalidIndexError")
+                                      UC("VM::raiseVectorInvalidIndexError"),
+                                      UC("VM::callOp")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
@@ -214,7 +222,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                    (uintptr_t)GC_malloc,
                                    getClassMemberPointer(&VM::raiseNotPairErrorForJit),
                                    getClassMemberPointer(&VM::raiseVectorRequiredError),
-                                   getClassMemberPointer(&VM::raiseVectorInvalidIndexError)
+                                   getClassMemberPointer(&VM::raiseVectorInvalidIndexError),
+                                   getClassMemberPointer(&VM::callOp)
     };
 
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));

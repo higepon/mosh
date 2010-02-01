@@ -151,29 +151,30 @@
 
 (define (CALL n)
   `(,@(trace-push! $CALL)
-    (push rdi)                    ;; save registers
-    (push rsi)
-    (push rdx)
-    (movq rax ,n)                 ;; argc
-    (leaq rcx (& (* rax 8)))      ;; argc * 8
-    (negq rcx)
-    (addq rcx ,(vm-register 'sp)) ;; arg4 = sp - argc
-    (movq ,(vm-register 'fp) rcx) ;; fp = sp - argc
-    (movq rdx ,n)                 ;; arg3 = argc
-    (movq rsi rdi)                ;; arg2 = VM
-    (movq rax ,(vm-register 'ac))
-    (movq rdi (& rax 8))          ;; arg1 CProcedure
-    (movq rax ,(get-c-address 'CProcedure::call))
-    (callq rax)
-    (pop rdx)
-    (pop rsi)
-    (pop rdi)
-    (push rax)
-    ;; adjust VM stack
-;    ,@(RESTORE-REGISTERS n)
-    (pop rax)
-    (movq ,(vm-register 'ac) rax)
-    ))
+    ,@(call2 (get-c-address 'VM::callOp) 'rdi n)))
+;;     (push rdi)                    ;; save registers
+;;     (push rsi)
+;;     (push rdx)
+;;     (movq rax ,n)                 ;; argc
+;;     (leaq rcx (& (* rax 8)))      ;; argc * 8
+;;     (negq rcx)
+;;     (addq rcx ,(vm-register 'sp)) ;; arg4 = sp - argc
+;;     (movq ,(vm-register 'fp) rcx) ;; fp = sp - argc
+;;     (movq rdx ,n)                 ;; arg3 = argc
+;;     (movq rsi rdi)                ;; arg2 = VM
+;;     (movq rax ,(vm-register 'ac))
+;;     (movq rdi (& rax 8))          ;; arg1 CProcedure
+;;     (movq rax ,(get-c-address 'CProcedure::call))
+;;     (callq rax)
+;;     (pop rdx)
+;;     (pop rsi)
+;;     (pop rdi)
+;;     (push rax)
+;;     ;; adjust VM stack
+;; ;    ,@(RESTORE-REGISTERS n)
+;;     (pop rax)
+;;     (movq ,(vm-register 'ac) rax)
+;;    ))
 
 (define (macro-is-raw-pointer reg not-case-label)
   `((testb ,(r64->8 reg #f)  3)
@@ -1582,7 +1583,7 @@
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
-;  (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
+  (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
   (register-insn-dispatch-table $CALL CALL)
   (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME)))
   (register-insn-dispatch-table $PUSH PUSH)
