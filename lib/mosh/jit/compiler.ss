@@ -121,6 +121,7 @@
   `(,@(call-prologue)
     (movq rdi ,arg1)
     (movq rsi ,arg2)
+    ,@(DEBUGGER 2003)
     (movq rax ,c-func)
     (callq rax)
     ,@(call-epilogue)))
@@ -151,7 +152,7 @@
 
 (define (CALL n)
   `(,@(trace-push! $CALL)
-    ,@(call2 (get-c-address 'VM::callOp) 'rdi n)))
+    ,@(call2 (get-c-address 'VM::callOp) 'rdi (obj->integer n))))
 ;;     (push rdi)                    ;; save registers
 ;;     (push rsi)
 ;;     (push rdx)
@@ -365,7 +366,8 @@
 (define (SYMBOL_P)
   (let ([is-not-symbol-case (gensym)]
         [done (gensym)])
-    `((movq rax ,(vm-register 'ac))
+    `(,@(trace-push! $SYMBOL_P)
+      (movq rax ,(vm-register 'ac))
       ,@(macro-is-symbol 'rax is-not-symbol-case)
       (movq ,(vm-register 'ac) ,(obj->integer #t))
       (jmp ,done)
