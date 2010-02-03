@@ -210,7 +210,7 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                       UC("VM::raiseNotPairErrorForJit"),
                                       UC("VM::raiseVectorRequiredError"),
                                       UC("VM::raiseVectorInvalidIndexError"),
-                                      UC("VM::callOp")
+                                      UC("VM::call")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
@@ -223,7 +223,7 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                    getClassMemberPointer(&VM::raiseNotPairErrorForJit),
                                    getClassMemberPointer(&VM::raiseVectorRequiredError),
                                    getClassMemberPointer(&VM::raiseVectorInvalidIndexError),
-                                   getClassMemberPointer(&VM::callOp)
+                                   getClassMemberPointer(&VM::call)
     };
 
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));

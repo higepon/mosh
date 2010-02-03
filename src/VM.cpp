@@ -257,8 +257,15 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     applyCodeForCallClosureByName_[8] = Object::makeFixnum(1);
     applyCodeForCallClosureByName_[9] = Object::makeRaw(Instruction::HALT);
 
-    int callCodeLength_ = 3;
+    callCodeLength_ = 3;
     callCode_ = Object::makeObjectArray(callCodeLength_);
+
+    callCodeJitLength_ = 3;
+    callCodeJit_ = Object::makeObjectArray(callCodeJitLength_);
+    callCodeJit_[0] = Object::makeRaw(Instruction::CALL);
+    callCodeJit_[1] = Object::makeFixnum(0);
+    callCodeJit_[2] = Object::makeRaw(Instruction::HALT);
+
 }
 
 VM::~VM() {}
@@ -562,6 +569,19 @@ Object VM::apply(Object proc, Object args)
 
     return ret;
 }
+
+// Called from JIT compiler.
+// ToDo:We can optimize for cprocedure case.
+void VM::call(Object n)
+{
+    VM_LOG1("n=<~a>", n);
+    callCodeJit_[1] = n;
+    SAVE_REGISTERS();
+    Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
+    run(direct, NULL);
+    RESTORE_REGISTERS();
+}
+
 
 Object VM::vmapply(Object proc, Object args)
 {

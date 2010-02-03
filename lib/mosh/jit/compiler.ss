@@ -121,7 +121,7 @@
   `(,@(call-prologue)
     (movq rdi ,arg1)
     (movq rsi ,arg2)
-    ,@(DEBUGGER 2003)
+;    ,@(DEBUGGER 2003)
     (movq rax ,c-func)
     (callq rax)
     ,@(call-epilogue)))
@@ -152,7 +152,7 @@
 
 (define (CALL n)
   `(,@(trace-push! $CALL)
-    ,@(call2 (get-c-address 'VM::callOp) 'rdi (obj->integer n))))
+    ,@(call2 (get-c-address 'VM::call) 'rdi (obj->integer n))))
 ;;     (push rdi)                    ;; save registers
 ;;     (push rsi)
 ;;     (push rdx)
@@ -1019,6 +1019,7 @@
 
 ;; pending: CALL for closure is not implemented.
 (define (REFER_GLOBAL_CALL id n)
+  (display n)
   `(,@(trace-push! $REFER_GLOBAL_CALL)
     ,@(REFER_GLOBAL id)
     ,@(CALL n)))

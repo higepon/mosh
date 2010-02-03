@@ -412,12 +412,11 @@
 ;;   (let ([proc (compile (lambda () a))])
 ;;     (test-equal 1 (proc))))
 
-;; ;; REFER_GLOBAL_CALL
+;; REFER_GLOBAL_CALL
 ;; (let ([proc (compile (lambda () (fib 1)))])
 ;;   (test-equal 1 (proc)))
 
 (let ([proc (compile (lambda () (return-1)))])
-  (disasm (lambda () (return-1)))
   (test-equal 1 (proc)))
 
 

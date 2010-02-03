@@ -236,7 +236,8 @@ public:
     void raiseNotPairErrorForJit(int op);
     void raiseVectorRequiredError(int op, Object obj);
     void raiseVectorInvalidIndexError(int op);
-    void callOp(Object operand);// __attribute__ ((always_inline));
+    void callOp(Object operand);
+    void call(Object n);
 
 protected:
     virtual int exit(int status)
@@ -344,6 +345,10 @@ protected:
 
     Object* callCode_;
     int callCodeLength_;
+
+    Object* callCodeJit_;
+    int callCodeJitLength_;
+
     ReaderContext* readerContext_;
     NumberReaderContext* numberReaderContext_;
 #if _MSC_VER
