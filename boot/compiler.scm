@@ -1893,6 +1893,7 @@
       (cond
        [(= $DEFINE t)        (sum-items (+ cnt 1) ($define.val iform))]
        [(= $LOCAL-REF t)     (+ cnt 1)]
+       [(= $UNDEF t)         cnt]
        [(= $GLOBAL-REF t)    (+ cnt 1)]
        [(= $CONST t)         (+ cnt 1)]
        [(= $LOCAL-ASSIGN t)  (sum-items (+ cnt 1) ($local-assign.val iform))]
