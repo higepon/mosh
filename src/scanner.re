@@ -171,7 +171,7 @@ int Scanner::scan(YYSTYPE* yylval)
   INTRA_LINE_WHITE_SPACE = "\t" | UNICODE_ZS;
   INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
   /* We use "INTRA_LINE_WHITE_SPACE *" instead of "INTRA_LINE_WHITE_SPACE" defined in R6RS */
-  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
+  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE *) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_2                = [0-1];
   DIGIT_8                = [0-7];
@@ -417,10 +417,12 @@ int Scanner::scan(YYSTYPE* yylval)
             continue;
         }
         [\]\)] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return RIGHT_PAREN;
         }
         [\(\[] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return LEFT_PAREN;
         }

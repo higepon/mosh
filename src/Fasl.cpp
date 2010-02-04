@@ -212,7 +212,7 @@ void FaslReader::getSymbolsAndStrings()
             break;
         case Fasl::TAG_STRING:
         case Fasl::TAG_ASCII_STRING:
-            symbolsAndStringsArray_[uid] = text;
+            symbolsAndStringsArray_[uid] = Object::makeString(text);
             break;
         case Fasl::TAG_RTD:
         {
