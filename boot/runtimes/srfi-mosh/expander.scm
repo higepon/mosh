@@ -1079,6 +1079,43 @@
                                    (bound-identifier=? x (car s)))
                                  (cdr s))))))
 
+    (define (let-process-bindings bind)
+      (define (step x)
+	(if (pair? x)
+	  (let ((name (car x))
+		(code (cadr x)))
+	    (list name (expand code)))
+	  x))
+      (map step bind))
+
+    (define (let-binding-names bind)
+      (map car bind))
+
+    (define (let-compose-bindings bind)
+      (define (step h)
+	(let ((name (car h))
+	      (code (cadr h)))
+	  (list (binding-name (binding name)) code)))
+      (map step bind))
+
+    (define (expand-mosh-base-let exp) ; MOSH:
+      (match exp
+        ((- (? list? bindings) body ___)
+	 (let ((pbind (let-process-bindings bindings)))
+	   (fluid-let ((*usage-env*
+			 (env-extend (map (lambda (formal)
+					    (make-local-mapping 'variable formal #f))
+					  (let-binding-names bindings))
+				     *usage-env*)))
+		      (let ((expanded-bindings (let-compose-bindings pbind)))
+			(scan-sequence 'lambda
+				       make-local-mapping
+				       body
+				       (lambda (forms no-syntax-definitions bound-variables)
+					 `(let ,expanded-bindings
+					    ,@(emit-body forms 'define))))))))))
+
+
     ;;=========================================================================
     ;;
     ;; Bodies and sequences:
@@ -2549,6 +2586,33 @@
               (...           . ,invalid-form))))
        (ex:make-library
         '(core primitive-macros)
+        ;; envs
+        (lambda () '())
+        ;; exports
+        (map (lambda (mapping)
+               (cons (car mapping) (make-binding 'macro (car mapping) '(0) #f '())))
+             primitive-macro-mapping)
+        ;; imported-libraries
+        '()
+        ;; builds
+        '()
+        ;; visit
+        (lambda ()
+          (for-each (lambda (mapping)
+                      (register-macro! (car mapping) (make-expander (cdr mapping))))
+                    primitive-macro-mapping)
+          (values))
+        ;; invoke
+        (lambda () (values))
+        ;; build
+        'system)))
+
+    ; MOSH: mosh compiler lib.
+    (ex:register-library!
+     (let ((primitive-macro-mapping
+            `((mosh-base-let . ,expand-mosh-base-let))))
+       (ex:make-library
+        '(core nmosh primitive-macros)
         ;; envs
         (lambda () '())
         ;; exports

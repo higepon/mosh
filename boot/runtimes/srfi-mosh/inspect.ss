@@ -8,8 +8,7 @@
 
 (let ((d (readit)))
   (define (nstep e)
-    (when (eq? 'DBG-SYMS (car e))
-       (pp (cdr e))))
+    (pp e))
   (define (step e)
     (for-each nstep e))
   (for-each step d))

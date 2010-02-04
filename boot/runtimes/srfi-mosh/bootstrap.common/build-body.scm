@@ -30,6 +30,7 @@
 (define (output p)
   (display "load & expanding runtime..")(newline)
   (let ((outfile (layout-build layout)))
+    (dumpdbg)
     ;(dumpsrc outfile)
     (display "compile...")(newline)
     (let ((vec (compile-to-codevector/toplevel outfile)))
@@ -62,6 +63,13 @@
 		    (lambda (p) (for-each (lambda (e) (pp e p)) l))))))
   (display "done.")(newline))
 
+(define (dumpdbg)
+  (when (file-exists? "nmosh.nmosh-dbg")
+    (delete-file "nmosh.nmosh-dbg"))
+  (display "writing debug symbol(FASL)..")(newline)
+  (call-with-port (open-file-output-port "nmosh.nmosh-dbg")
+		  (lambda (p)
+		    (put-bytevector p (obj->fasl *SYMS*)))))
 (define (dumpvec v)
   (when (file-exists? "bootvec.scm")
     (delete-file "bootvec.scm"))
@@ -83,4 +91,3 @@
 (call-with-port (open-file-output-port "nmosh.nmosh-dbg")
 		(lambda (p)
 		  (put-bytevector p (obj->fasl *SYMS*))))
-  
