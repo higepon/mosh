@@ -9,7 +9,7 @@ CORE_LIBS =                 \
     lib/r5rs.scm       \
     lib/hashtable.scm
 
-TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp
+TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp
 
 all: $(TARGET)
 
@@ -20,6 +20,9 @@ $(SRC_DIR)/baselib.h: baselib.h
 	cp $< $@
 
 $(SRC_DIR)/psyntax_mosh_image.cpp: psyntax_mosh_image.cpp
+	cp $< $@
+
+$(SRC_DIR)/nmosh_image.cpp: runtimes/srfi-mosh/nmosh.nmosh/nmosh_image.cpp
 	cp $< $@
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
