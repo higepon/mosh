@@ -237,7 +237,7 @@ public:
     void raiseVectorRequiredError(int op, Object obj);
     void raiseVectorInvalidIndexError(int op);
     void callOp(Object operand);
-    void call(Object n);
+    Object call(Object n);
 
 protected:
     virtual int exit(int status)

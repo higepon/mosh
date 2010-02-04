@@ -47,4 +47,4 @@ define hook-stop
   printf "  ac=0x%08x    pc=0x%08x\n", *(((intptr_t*)$rdi) + 1), *(((intptr_t*)$rdi) + 6)
   printf "  sp=0x%08x    fp=0x%08x\n", *(((intptr_t*)$rdi) + 5), *(((intptr_t*)$rdi) + 4)
 end
-run
+#run

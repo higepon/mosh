@@ -152,7 +152,9 @@
 
 (define (CALL n)
   `(,@(trace-push! $CALL)
-    ,@(call2 (get-c-address 'VM::call) 'rdi (obj->integer n))))
+    ,@(call2 (get-c-address 'VM::call) 'rdi (obj->integer n))
+    ,@(DEBUGGER 99)
+    (movq ,(vm-register 'ac) rax)))
 ;;     (push rdi)                    ;; save registers
 ;;     (push rsi)
 ;;     (push rdx)
@@ -1164,8 +1166,10 @@
 
 (define (RETURN n)
   `(,@(trace-push! $RETURN)
+    ,@(DEBUGGER 9990)
     ,@(RESTORE_REGISTERS n)
     (movq rax ,(vm-register 'ac)) ;; we need this.
+    ,@(DEBUGGER 9991)
     (retq)))
 
 ;; (define (RETURN n) ;; pc いらん

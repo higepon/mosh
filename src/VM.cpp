@@ -572,14 +572,14 @@ Object VM::apply(Object proc, Object args)
 
 // Called from JIT compiler.
 // ToDo:We can optimize for cprocedure case.
-void VM::call(Object n)
+Object VM::call(Object n)
 {
-    VM_LOG1("n=<~a>", n);
     callCodeJit_[1] = n;
     SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
-    run(direct, NULL);
+    const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
+    return ret;
 }
 
 

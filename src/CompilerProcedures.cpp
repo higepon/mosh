@@ -193,6 +193,12 @@ static inline uintptr_t getClassMemberPointer(void (VM::*func)(Object))
     return *p;
 }
 
+static inline uintptr_t getClassMemberPointer(Object (VM::*func)(Object))
+{
+    uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
+    return *p;
+}
+
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
