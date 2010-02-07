@@ -41,6 +41,7 @@ mosh_config
 /Makefile
 /doc/text/Download.txt
 /mosh
+/nmosh
 /lib/mosh/config.ss
 /lib/mosh/mysql.ss
 Instruction.h
@@ -65,6 +66,8 @@ boot/baselib.h
 boot/baselib.scm
 boot/free-vars-decl.scm
 boot/match.h
+boot/*.scmc
+boot/*.scmc-e
 boot/psyntax_mosh_image.cpp
 boot/runtimes/psyntax-mosh/psyntax.*/*
  
@@ -114,6 +117,9 @@ onig-5.7.0/testp
 # core files
 *.core
 *.stackdump
+
+# OS specific
+.DS_Store
 
 lib/psyntax/psyntax.master/
 src/OSConstants.h

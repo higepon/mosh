@@ -11,7 +11,7 @@ ONIG_DIR   = onig-5.7.0
 REGEXP_LIB = $(ONIG_DIR)/.libs/libonig.a
 
 # for GTEST
-GTEST_DIR     = gtest-1.2.1
+GTEST_DIR     = $(top_srcdir)/gtest-1.2.1
 USER_DIR      = .
 TESTS         = # used later
 GTEST_HEADERS_ = $(GTEST_DIR)/include/gtest/*.h \
@@ -75,7 +75,9 @@ endif
 if MINGW32
 nmosh_LDADD += mosh-icon.o
 mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
-	$(WINDRES) win/mosh.rc -o mosh-icon.o
+	-mkdir -p $(top_builddir)/misc/logo
+	-cp -p $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
+	$(WINDRES) $< -o mosh-icon.o
 endif 
 
 noinst_LIBRARIES   = libmosh.a
@@ -452,74 +454,22 @@ bench:
 #### test
 check: test
 
-test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
-	./mosh --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
-	./mosh -5 src/all-tests.scm
-	./mosh test/misc.scm
-	./mosh test/testing.scm
-	./mosh test/mosh-test.scm
-	./mosh test/io-error.scm
-	./mosh test/input-output-port.scm
-	./mosh test/input-port.scm < test/input.txt
-	./mosh test/output-port.scm
-	./mosh test/shell.scm
-	./mosh test/record.scm
-	./mosh test/condition.scm
-	./mosh test/exception.scm
-	./mosh test/unicode.scm
-	./mosh test/srfi8.scm
-	./mosh test/srfi19.scm
-	./mosh test/ffi.scm
-	./mosh test/mysql.scm
-	./mosh test/clos.scm
-	./mosh test/dbi.scm
-	./mosh test/srfi-misc.scm
-	./mosh test/lists.scm
-	./mosh test/socket.scm
-	./mosh test/match.scm
-	./mosh test/print.scm
-	./mosh test/concurrent.scm
-	./mosh test/concurrent-crash.scm
-	./mosh test/number.scm
-	./mosh test/cgi.scm
-	./mosh test/memcached.scm
-	(MOSH_TARGET=mosh $(MAKE) -C test/irregex)
-	(cd test/r6rs-test-suite && $(MAKE) $@)
+#FIXME: use macro
+MOSHBIN = $(abs_builddir)/mosh
+NMOSHBIN = $(abs_builddir)/nmosh
 
-ntest: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
-	./nmosh --loadpath=".:./test/mylib" test/use-foo.scm # test : separated loadpath
-	./nmosh -5 src/all-tests.scm
-	./nmosh test/misc.scm
-	./nmosh test/testing.scm
-	./nmosh test/mosh-test.scm
-	./nmosh test/io-error.scm
-	./nmosh test/input-output-port.scm
-	./nmosh test/input-port.scm < test/input.txt
-	./nmosh test/output-port.scm
-	-./nmosh test/shell.scm
-	./nmosh test/record.scm
-	./nmosh test/condition.scm
-	./nmosh test/exception.scm
-	./nmosh test/unicode.scm
-	./nmosh test/srfi8.scm
-	./nmosh test/srfi19.scm
-	./nmosh test/ffi.scm
-	./nmosh test/mysql.scm
-	./nmosh test/clos.scm
-	./nmosh test/dbi.scm
-	./nmosh test/srfi-misc.scm
-	./nmosh test/lists.scm
-	./nmosh test/socket.scm
-	./nmosh test/match.scm
-	./nmosh test/print.scm
-	./nmosh test/concurrent.scm
-	./nmosh test/concurrent-crash.scm
-	./nmosh test/number.scm
-	./nmosh test/cgi.scm
-	./nmosh test/memcached.scm
-	./nmosh test/nmosh.scm # nmosh only
-	(MOSH_TARGET=nmosh $(MAKE) -C test/irregex)
-	(cd test/r6rs-test-suite && $(MAKE) $@)
+test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-mosh)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
+
+ntest: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-nmosh)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
+
 
 # Builds gtest.a and gtest_main.a.
 

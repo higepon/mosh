@@ -262,7 +262,7 @@ i[[3456]]86|pentium)
          MOSH_LDADD_ARCH="-lpthread"
          ;;
        *mingw*)
-         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc > 4.2
+         MOSH_OPTS="$MOSH_GENERIC_OPTS -mtune=generic -DMOSH_MINGW32 -D_UNICODE -DUNICODE -DWINVER=0x501 -D_WIN32_WINNT=0x501 -static-libgcc -static-libstdc++  -fwide-exec-charset=ucs-4le" #forcing WinXP & Gcc >= 4.5
          MOSH_LDADD_ARCH="-lshlwapi -lshell32 -lws2_32"
          ;;
        *cygwin*)
@@ -280,15 +280,25 @@ i[[3456]]86|pentium)
         AM_CONDITIONAL(FFI_I386, true)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-x86?64*)
-        arch=x86_64
-        MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
-        AC_MSG_RESULT([x86_64])
-        AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
-        AM_CONDITIONAL(FFI_I386, false)
-        AM_CONDITIONAL(FFI_X86_64, true)
-        ;;
-*)
+	x86?64*) 
+	arch=x86_64
+        case "$target_os" in
+		*darwin*)
+		AC_MSG_RESULT([x86_64])
+		MOSH_OPTS="-O3"
+		AM_CONDITIONAL(FFI_I386, false)
+		AM_CONDITIONAL(FFI_X86_64, false)
+		;;
+		*)
+		MOSH_OPTS="-O3 -momit-leaf-frame-pointer -fomit-frame-pointer"
+		AC_MSG_RESULT([x86_64])
+		AC_DEFINE([ARCH_X86_64], 1, [Define for the AMD x86-64 architecture.])
+		AM_CONDITIONAL(FFI_I386, false)
+		AM_CONDITIONAL(FFI_X86_64, true)
+		;;
+	esac
+	;;
+	*)
         AC_MSG_RESULT([$host_cpu])
         MOSH_OPTS="-O3"
         AC_MSG_WARN([architecture $host_cpu is not supported, but may work other than FFI])
@@ -296,7 +306,7 @@ x86?64*)
         AM_CONDITIONAL(FFI_I386, false)
         AM_CONDITIONAL(FFI_X86_64, false)
         ;;
-esac
+	esac
 
 AC_MSG_CHECKING([whether to enable MinGW support])
 case "$host_os" in
