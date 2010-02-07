@@ -3,3 +3,5 @@
 (define (command-line)
   (cdr %true-command-line))
 (define %verbose #t)
+
+(load "boot.scm")

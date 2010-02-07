@@ -593,6 +593,81 @@ Object VM::compile(Object code)
     return compiled;
 }
 
+Object VM::getStackTraceObj()
+{
+    //const int MAX_DEPTH = 20;
+    const int FP_OFFSET_IN_FRAME = 1;
+    const int CLOSURE_OFFSET_IN_FRAME = 2;
+
+    Object r = Object::Nil;
+    Object cur = Object::Nil;
+    Object* fp = fp_;
+    Object* cl = &cl_;
+    for (int i = 0;;) {
+        if (cl->isClosure()) {
+            Object src = cl->toClosure()->sourceInfo;
+            if (src.isPair()) {
+                const Object procedure = src.cdr();
+                const Object location  = src.car();
+		r = L3(Symbol::intern(UC("*proc*")),procedure,location);
+            }else{
+		r = L1(Symbol::intern(UC("*unknown-proc*")));
+	    }
+	    i++;
+        } else if (cl->isCProcedure()) {
+	    r = L2(Symbol::intern(UC("*cproc*")),getClosureName(*cl));
+            i++;
+        } else if (cl->isRegMatch()) {
+	    r = L2(Symbol::intern(UC("*reg-match*")),*cl);
+            i++;
+        } else if (cl->isRegexp()) {
+	    r = L2(Symbol::intern(UC("*regexp*")),*cl);
+            i++;
+        } else {
+            MOSH_ASSERT(false);
+        }
+	cur = Object::cons(Object::cons(Object::makeFixnum(i),r),cur);
+#if 0
+        if (i > MAX_DEPTH) {
+            port->display(this, UC("      ... (more stack dump truncated)\n"));
+            break;
+        }
+#endif
+
+        VM_ASSERT(!(*cl).isObjectPointer());
+        VM_ASSERT((*cl).isClosure() || (*cl).isCProcedure() );
+        if (fp > stack_) {
+            cl = fp - CLOSURE_OFFSET_IN_FRAME;
+
+            // N.B. We must check whether cl is Object pointer or not.
+            // If so, we can't touch them. (touching may cause crash)
+            if (mayBeStackPointer(cl)) {
+                break;
+            }
+            if (!((*cl).isClosure()) && !((*cl).isCProcedure())) {
+                break;
+            }
+            // next fp is Object pointer, so 4byte aligned.
+            // if it is not Object pointer, may be tail call
+            Object* nextFp = fp - FP_OFFSET_IN_FRAME;
+            if (!(nextFp->isRawPointer())) {
+                break;
+            }
+
+            if (!mayBeStackPointer(nextFp)) {
+//                getOutputPort().toTextualOutputPort()->format(UC("[[[[~a]]]]"), *nextFp);
+                break;
+            }
+
+            VM_ASSERT(nextFp->isObjectPointer());
+            fp = nextFp->toObjectPointer();
+        } else {
+            break;
+        }
+    }
+    return cur;
+}
+
 Object VM::getStackTrace()
 {
     const int MAX_DEPTH = 20;

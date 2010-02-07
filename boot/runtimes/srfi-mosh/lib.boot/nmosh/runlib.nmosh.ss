@@ -1,10 +1,16 @@
 (library (nmosh runlib)
-	(export runlib)
+	(export runlib runlib/fallback)
 	(import 
-	  (only (rnrs base) define quasiquote unquote unquote-splicing)
+	  (rnrs)
 	  (primitives ex:run-r6rs-sequence))
 
-(define (runlib lib top)
-  (ex:run-r6rs-sequence `((import ,@lib) (,top))))
+(define (runlib/fallback k lib top . params)
+  (guard
+    (e
+      (#t (k e)))
+    (apply runlib (cons lib (cons top params)))))
+
+(define (runlib lib top . params)
+  (ex:run-r6rs-sequence `((import ,@lib) (,top ,@params))))
 
 )

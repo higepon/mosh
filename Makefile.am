@@ -381,10 +381,7 @@ SVN_REPOS="http://mosh-scheme.googlecode.com/svn/branches"
 bootstrap:
 	svn checkout $(SVN_REPOS)/psyntax.$(GIT_BRANCH_NAME)/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME) || \
     svn checkout $(SVN_REPOS)/psyntax.master/ boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)
-	svn checkout $(SVN_REPOS)/nmosh.$(GIT_BRANCH_NAME)/ boot/runtimes/sfri-mosh/nmosh.$(GIT_BRANCH_NAME) || \
-    svn checkout $(SVN_REPOS)/nmosh.master/ boot/runtimes/srfi-mosh/nmosh.$(GIT_BRANCH_NAME)
-	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/ || \
-    cp -p boot/runtimes/srfi-mosh/nmosh.$(GIT_BRANCH_NAME)/nmosh_image.cpp boot/runtimes/srfi-mosh/
+	cp -p boot/runtimes/psyntax-mosh/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm boot/runtimes/psyntax-mosh/ 
 	$(MAKE) -C boot
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
@@ -392,6 +389,9 @@ bootstrap:
 	$(MAKE) src/labels.cpp
 	$(MAKE) src/OSConstants.h
 	$(MAKE) src/Object-accessors.h
+	$(MAKE) src/Scanner.cpp
+	$(MAKE) src/NumberScanner.cpp
+	$(MAKE) src/all-tests.scm
 
 src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
 	bison -d $< -o $@

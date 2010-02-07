@@ -160,6 +160,7 @@ public:
     Object currentErrorPort() const;
     Object currentInputPort() const;
     Object getStackTrace();
+    Object getStackTraceObj();
     void setCurrentOutputPort(Object port);
     void setCurrentInputPort(Object port);
 

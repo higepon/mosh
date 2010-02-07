@@ -55,10 +55,22 @@
 #include "Closure.h"
 #include "VM-inl.h"
 
+#ifdef WITH_NMOSH_DEFAULTS
+#include "ProcedureMacro.h"
+#endif
+
 bool debug_on;
 using namespace scheme;
 
 static VM* theVM;
+
+#ifdef WITH_NMOSH_DEFAULTS
+Object
+internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
+	DeclareProcedureName("%get-stack-trace-obj");
+	return theVM->getStackTraceObj();
+}
+#endif
 
 Object argsToList(int argc, int optind, ucs4char** argvU)
 {
@@ -237,6 +249,9 @@ int main(int argc, char *argv[])
     }
 
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
+#ifdef WITH_NMOSH_DEFAULTS
+    theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
+#endif
 
     if (isTestOption) {
         theVM->loadFileWithGuard(UC("all-tests.scm"));
