@@ -320,14 +320,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(DEFINE_GLOBAL)
         {
+            // Once multiple define was forbidden.
+            // But allowed to use on nmosh.
             const Object id = fetchOperand();
-//            LOG1("define ~a\n", id);
-            const Object found = nameSpace->ref(id, notFound_);
-            if (found == notFound_) {
-                nameSpace->set(id, Object::makeGloc(ac_));
-            } else {
-                callErrorAfter(this, "define", "defined twice", L1(id));
-            }
+            nameSpace->set(id, Object::makeGloc(ac_));
             NEXT;
         }
         CASE(DISPLAY)
