@@ -1170,6 +1170,13 @@
     ,@(RESTORE_REGISTERS n)
     (movq rax ,(vm-register 'ac)) ;; we need this.
     ,@(DEBUGGER 9991)
+    (movq rsp rbp)
+    (pop rbp)
+    (pop r15)
+    (pop r14)
+    (pop r13)
+    (pop r12)
+    (pop rbx)
     (retq)))
 
 ;; (define (RETURN n) ;; pc いらん
@@ -1506,7 +1513,10 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (let1 compiled (u8-list->c-procedure (assemble (apply append (cons (trace-reset!) asm*))))
+               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15) 
+                                                                (push rbp)
+                                                                (movq rbp rsp)
+                                                                ,@(apply append (cons (trace-reset!) asm*)))))
                  (set-jit-compiled! closure compiled)
                  closure))))))
 

@@ -187,7 +187,9 @@ namespace scheme {
                 const int argc = operand.toFixnum();
                 // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
                 fp_ = sp_ - argc;
+                fprintf(stderr, "<1:pc=%x sp=%x\n>", pc_, sp_);
                 ac_ = cprocedure->call(this, argc, sp_ - argc);
+                fprintf(stderr, "<1:pc=%x sp=%x\n>", pc_, sp_);
             } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
                     expandStack(stackSize_ / 10);
