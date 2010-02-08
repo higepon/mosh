@@ -77,7 +77,7 @@ void showVersion()
     printf("Mosh R6RS scheme interpreter, version %s (revision %s %s %s) \n", PACKAGE_VERSION, GIT_BRANCH, GIT_COMMIT_DATE, GIT_COMMIT_REVISION);
 #else
     printf("Mosh R6RS scheme interpreter, version %s\n", PACKAGE_VERSION);
-#end
+#endif
     exit(0);
 }
 
