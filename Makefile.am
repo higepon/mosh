@@ -39,12 +39,15 @@ mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ 
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
 
+if DEVELOPER
 GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
 GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
 GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
 GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|cut -d ' ' -f4)
 GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
 mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+else
+endif
 
 if DEVELOPER
 DEBUG_FLAGS=-DDEBUG_VERSION
