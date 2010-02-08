@@ -76,46 +76,6 @@ Group: Doc  {
    File: SRFIs  (doc/text/srfi.txt)
    }  # Group: Doc
 
-Group: Mosh-0.2.0  {
-
-   Group: Doc  {
-
-      File: SearchPanel  (mosh-0.2.0/doc/html/javascript/main.js)
-
-      Group: Text  {
-
-         File: About  (mosh-0.2.0/doc/text/About.txt)
-         File: Composite library  (mosh-0.2.0/doc/text/Compositelibrary.txt)
-         File: Core  (mosh-0.2.0/doc/text/Core.txt)
-         File: Download  (mosh-0.2.0/doc/text/Download.txt)
-         File: Naming Conventions  (mosh-0.2.0/doc/text/Naming.txt)
-         File: SRFIs  (mosh-0.2.0/doc/text/srfi.txt)
-         }  # Group: Text
-
-      }  # Group: Doc
-
-   Group: Lib  {
-
-      Group: Mosh  {
-
-         File: Concurrent  (mosh-0.2.0/lib/mosh/concurrent.ss)
-         File: Configuration  (mosh-0.2.0/lib/mosh/config.ss)
-         File: Control  (mosh-0.2.0/lib/mosh/control.ss)
-         File: Database independent interface  (mosh-0.2.0/lib/mosh/dbi.ss)
-         File: File  (mosh-0.2.0/lib/mosh/file.ss)
-         File: Foreign Function Interface  (mosh-0.2.0/lib/mosh/ffi.ss)
-         File: IRC Client  (mosh-0.2.0/lib/mosh/irc/client.ss)
-         File: Pretty Printing  (mosh-0.2.0/lib/mosh/pp.ss)
-         File: Process  (mosh-0.2.0/lib/mosh/process.ss)
-         File: Socket  (mosh-0.2.0/lib/mosh/socket.ss)
-         File: Unit Testing  (mosh-0.2.0/lib/mosh/test.ss)
-         }  # Group: Mosh
-
-      File: Pattern Match  (mosh-0.2.0/lib/match.ss)
-      }  # Group: Lib
-
-   }  # Group: Mosh-0.2.0
-
 Group: Index  {
 
    Index: Everything
