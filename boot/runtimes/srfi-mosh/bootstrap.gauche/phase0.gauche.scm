@@ -8,11 +8,7 @@
 (define (read-all fn)
   (call-with-input-file fn read-all/port))
 
-(define expander-src (apply append (map read-all '("compat-mosh-run.scm"
-						   "runtime.scm"
-						   "runtime-cache.scm"
-						   "mosh-utils5.scm"
-						   "expander.scm"))))
+(define expander-src (read-all "expander.scm"))
 
 (load "./bootstrap.common/alexpander.scm")
 

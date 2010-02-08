@@ -1,3 +1,10 @@
+
+;MOSH: ERROR
+
+(define (ERROR . e)
+  (error "err from alexpander" e))
+
+
 ;; alexpander.scm: a macro expander for scheme.
 ;; $Id: alexpander.scm,v 1.65 2007/11/05 02:50:34 al Exp $
 
@@ -193,7 +200,7 @@
 ;; => 1
 
 ;; It's also legal for internal syntax definitions to be mutually
-;; recursive transformers, but it is an error for the expansion of a
+;; recursive transformers, but it is an ERROR for the expansion of a
 ;; syntax definition's initializer to require the result of another
 ;; initializer:
 
@@ -210,7 +217,7 @@
 ;;        (syntax-rules () (pattern template)))))
 ;;   (define-syntax m (simple-transformer (m x) (- x)))
 ;;   (m 1))
-;; => error ("Premature use of keyword bound by an internal define-syntax")
+;; => ERROR ("Premature use of keyword bound by an internal define-syntax")
 
 ;; (let ()
 ;;   (define-syntax simple-transformer
@@ -258,7 +265,7 @@
 ;;     (begin
 ;;       (define x 2)
 ;;       (f)))
-;;   => 2, in alexpander and in Chez scheme, but an error in r5rs.
+;;   => 2, in alexpander and in Chez scheme, but an ERROR in r5rs.
 
 
 ;; Syntax-rules ellipsis
@@ -739,7 +746,7 @@
 
 (define (lookup2 sid env store)
   (or (lookup-location (lookup-sid sid env) store)
-      (error (string-append "Premature use of keyword bound by letrec-syntax"
+      (ERROR (string-append "Premature use of keyword bound by letrec-syntax"
 			    " (or an internal define-syntax): ")
 	     sid)))
 
@@ -801,9 +808,9 @@
   (let* ((dotted? (not (list? formals)))
 	 (flattened (if dotted? (flatten-dotted formals) formals)))
     (define (check x)
-      (or (sid? x) (error "Non-identifier: " x " in lambda formals: " formals))
+      (or (sid? x) (ERROR "Non-identifier: " x " in lambda formals: " formals))
       (if (member x (cdr (member x flattened)))
-	  (error "Duplicate variable: " x " in lambda formals: " formals)))
+	  (ERROR "Duplicate variable: " x " in lambda formals: " formals)))
     (begin
       (for-each check flattened)
       (let loop ((formals flattened) (rvars '())
@@ -817,16 +824,31 @@
 		   (vars (if dotted? (dot-flattened vars) vars)))
 	      (list vars (expand-expr expr id-n env store loc-n))))))))
 
+;MOSH: rewrote not to use MACRO do
+
 (define (check-syntax-bindings bindings)
-  (or (list? bindings) (error "Non-list syntax bindings list: " bindings))
+  (define (itr bs)
+    (if (pair? bs)
+      (let ((dup (assoc (caar bs) (cdr bs))))
+	(if dup 
+	  (ERROR "Duplicate bindings for a keyword: " (car bs) " and: " dup)
+	  (itr (cdr bs))))))
+  (or (list? bindings) (ERROR "Non-list syntax bindings list: " bindings))
   (for-each (lambda (b) (or (and (list2? b) (sid? (car b)))
-			    (error "Malformed syntax binding: " b)))
+			    (ERROR "Malformed syntax binding: " b)))
 	    bindings)
-  (do ((bs bindings (cdr bs)))
-      ((null? bs))
-    (let ((dup (assoc (caar bs) (cdr bs))))
-      (if dup (error "Duplicate bindings for a keyword: "
-		     (car bs) " and: " dup)))))
+  (itr bindings))
+
+;(define (check-syntax-bindings bindings)
+;  (or (list? bindings) (ERROR "Non-list syntax bindings list: " bindings))
+;  (for-each (lambda (b) (or (and (list2? b) (sid? (car b)))
+;			    (ERROR "Malformed syntax binding: " b)))
+;	    bindings)
+;  (do ((bs bindings (cdr bs)))
+;      ((null? bs))
+;    (let ((dup (assoc (caar bs) (cdr bs))))
+;      (if dup (ERROR "Duplicate bindings for a keyword: "
+;		     (car bs) " and: " dup)))))
 
 ;; returns (k store loc-n)
 (define (expand-syntax-bindings bindings id-n syntax-env ienv store loc-n k)
@@ -850,11 +872,11 @@
 ;;
 ;; If sexp is an expression, returns (ek output).
 ;;
-;; If sexp is a syntax, returns (sk syntax error-sexp store loc-n).
-;;   The error-sexp is just for use in error messages if the syntax is
+;; If sexp is a syntax, returns (sk syntax ERROR-sexp store loc-n).
+;;   The ERROR-sexp is just for use in ERROR messages if the syntax is
 ;;   subsequently misused.  It is the sid that was bound to the
 ;;   syntax, unless the syntax is an anonymous transformer, as in
-;;   ((syntax-rules () ((_ x) 'x)) foo), in which case the error-sexp
+;;   ((syntax-rules () ((_ x) 'x)) foo), in which case the ERROR-sexp
 ;;   will be the entire syntax-rules form.
 ;;
 ;; If sexp is a definition, returns (dk builtin sexp id-n env store
@@ -862,27 +884,34 @@
 ;;
 ;; If sexp is a begin, returns (bk sexp id-n env store loc-n).
 ;;
-;; The car of the sexp passed to dk or bk is just for error reporting:
+;; The car of the sexp passed to dk or bk is just for ERROR reporting:
 ;; it is the sid that was bound to begin, define, or define-syntax.
 ;;
-;; Expand-any signals an error if a malformed e, s, d, or b is
-;; encountered.  It also signals an error if ek, sk, dk, or bk is #f
+;; Expand-any signals an ERROR if a malformed e, s, d, or b is
+;; encountered.  It also signals an ERROR if ek, sk, dk, or bk is #f
 ;; and the corresponding thing is encountered; however, if a begin is
 ;; encountered and bk is #f, the begin is expanded as an expression
 ;; and passed to ek.
 ;;
 ;; lsd? == Let-Syntax around Definitions is okay.  If lsd? is #f and a
 ;; let-syntax is encountered, it is assumed to start an expression or
-;; syntax, so if ek and sk are #f an error will be signalled.  lsd? is
+;; syntax, so if ek and sk are #f an ERROR will be signalled.  lsd? is
 ;; only true at top-level.  (Let-syntax around internal definitions is
 ;; just too semantically bizarre.)
+(define GET-K-seq 0)
 (define (expand-any sexp id-n env store loc-n lsd? ek sk dk bk)
   (define (get-k k sexp name)
-    (or k (error (string-append name " used in bad context: ")
+    (set! GET-K-seq (+ 1 GET-K-seq))
+    ;(for-each (lambda (e) (display (list 'STORE (car e) (cdr e)))(newline)) store)
+    ;(display (list 'GET-K GET-K-seq sexp name k))(newline)
+    (or k (ERROR (string-append name " used in bad context: ")
 		 sexp)))
-  (define (get-ek sexp) (get-k ek sexp "Expression"))
+  (define (get-ek sexp) 
+   ;(display (list 'GET-EK GET-K-seq sexp))(newline)
+    (get-k ek sexp "Expression"))
   (define (get-sk sexp) (get-k sk sexp "Syntax"))
-  (define (get-dk sexp) (get-k dk sexp "Definition"))
+  (define (get-dk sexp) 
+    (get-k dk sexp "Definition"))
   (define (get-bk sexp) (get-k bk sexp "Begin"))
   (let again ((sexp sexp) (id-n id-n) (store store) (loc-n loc-n))
     (define (expand-subexpr sexp) (expand-expr sexp id-n env store loc-n))
@@ -890,12 +919,13 @@
       (let* ((tail (cdr sexp)) (sexp (cons head tail)))
 	(if (transformer? syntax)
 	    (apply-transformer syntax sexp id-n env
-	      (lambda (sexp id-n) (again sexp id-n store loc-n)))
+	      (lambda (sexp id-n) 
+		(again sexp id-n store loc-n)))
 	    (let ((builtin (builtin-name syntax)) (len (length tail)))
 	      (define (handle-macro-block)
 		(or ek sk lsd?
-		    (error "Macro block used in bad context: " sexp))
-		(or (>= len 2) (error "Malformed macro block: " sexp))
+		    (ERROR "Macro block used in bad context: " sexp))
+		(or (>= len 2) (ERROR "Malformed macro block: " sexp))
 		(let ((bindings (car tail)) (body (cdr tail)))
 		  (check-syntax-bindings bindings)
 		  (let loop ((bs bindings) (loc-n loc-n) (ienv env))
@@ -910,7 +940,7 @@
 					 (and lsd? dk) (and lsd? bk))))))))
 	      (define (handle-expr-builtin)
 		(define (expr-assert test)
-		  (or test (error "Malformed " builtin " expression: " sexp)))
+		  (or test (ERROR "Malformed " builtin " expression: " sexp)))
 		(cons builtin
 		      (case builtin
 			((lambda)
@@ -924,7 +954,7 @@
 			 (expr-assert (and (= len 2) (sid? (car tail))))
 			 (let ((var (lookup2 (car tail) env store)))
 			   (or (var? var)
-			       (error "Attempt to set a keyword: " sexp))
+			       (ERROR "Attempt to set a keyword: " sexp))
 			   (list var (expand-subexpr (cadr tail)))))
 			((if)
 			 (expr-assert (<= 2 len 3))
@@ -935,18 +965,18 @@
 	      (case builtin
 		((let-syntax) (handle-macro-block))
 		((syntax-rules)
-		 (if (< len 1) (error "Empty syntax-rules form: " sexp))
+		 (if (< len 1) (ERROR "Empty syntax-rules form: " sexp))
 		 (let ((syn (compile-syntax-rules sexp env)))
 		   ((get-sk sexp) syn sexp store loc-n)))
 		((begin)
 		 (or ek (get-bk sexp))
 		 (cond (bk (bk sexp id-n env store loc-n))
-		       ((null? tail) (error "Empty begin expression: " sexp))
+		       ((null? tail) (ERROR "Empty begin expression: " sexp))
 		       (else (ek (make-begin (map expand-subexpr tail))))))
 		((define define-syntax)
 		 (or (and (= 2 len) (sid? (car tail)))
 		     (and (= 1 len) (eq? builtin 'define))
-		     (error "Malformed definition: " sexp))
+		     (ERROR "Malformed definition: " sexp))
 		 ((get-dk sexp) builtin sexp id-n env store loc-n))
 		(else (get-ek sexp) (ek (handle-expr-builtin))))))))
     (define (handle-combination output)
@@ -958,6 +988,7 @@
     ;;(pretty-print `(expand-any/again ,sexp))
     (cond ((sid? sexp)
 	   (let ((val (lookup2 sexp env store)))
+	     ;(display (list 'SID (lookup-sid sexp env) val))(newline)
 	     (if (syntax? val)
 		 ((get-sk sexp) val sexp store loc-n)
 		 ((get-ek sexp) (if (code? val) (code-output val) val)))))
@@ -966,7 +997,7 @@
 	     (and ek handle-combination) handle-syntax-use #f #f))
 	  ((or (number? sexp) (boolean? sexp) (string? sexp) (char? sexp))
 	   ((get-ek sexp) sexp))
-	  (else (error (cond ((pair? sexp) "Improper list: ")
+	  (else (ERROR (cond ((pair? sexp) "Improper list: ")
 			     ((null? sexp) "Empty list: ")
 			     ((vector? sexp) "Vector: ")
 			     (else "Non-S-Expression: "))
@@ -977,7 +1008,7 @@
 (define (expand-val sexp id-n env store loc-n k)
   (expand-any sexp id-n env store loc-n #f
     (lambda (output) (k (make-code output) store loc-n))
-    (lambda (syn error-sexp store loc-n) (k syn store loc-n))
+    (lambda (syn ERROR-sexp store loc-n) (k syn store loc-n))
     #f #f))
 
 (define (expand-expr sexp id-n env store loc-n)
@@ -994,7 +1025,7 @@
   (define (expand-def sexp vds sds exprs id-n env store loc-n k dek)
     (define (dk builtin sexp id-n env store loc-n)
       (or ek (eq? builtin 'define-syntax)
-	  (error "Non-syntax definition in a syntax body: " sexp))
+	  (ERROR "Non-syntax definition in a syntax body: " sexp))
       (if (list2? sexp) ;; A (define <expression>) form.
 	  (k vds sds (cons (cadr sexp) exprs) id-n env store loc-n)
           (let* ((sid (cadr sexp))
@@ -1002,7 +1033,7 @@
 		 (env (extend-env env id loc-n)))
 	    (define (check def)
 	      (if (eqv? id (sid-id (cadr def)))
-		  (error "Duplicate internal definitions: "
+		  (ERROR "Duplicate internal definitions: "
 			 def " and: " sexp)))
 	    (begin
 	      (for-each check sds)
@@ -1103,7 +1134,7 @@
 
 ;; Compile-syntax-rules:
 ;; This doesn't actually compile, it just does verification.
-;; Detects all possible errors:
+;; Detects all possible ERRORs:
 ;;   pattern literals list is not a list of identifiers
 ;;   ellipsis in literals list
 ;;   rule is not a two-element list
@@ -1126,16 +1157,16 @@
 
   (define (check-lit lit)
     (or (sid? lit)
-	(error "Non-id: " lit " in literals list of: " synrules))
+	(ERROR "Non-id: " lit " in literals list of: " synrules))
     (if (ellipsis? lit)
-	(error "Ellipsis " lit " in literals list of: " synrules)))
+	(ERROR "Ellipsis " lit " in literals list of: " synrules)))
 
   (let* ((rest (if ellipsis-id (cddr synrules) (cdr synrules)))
 	 (pat-literal-sids (car rest))
 	 (rules (cdr rest))
 	 (pat-literals
 	  (begin (or (list? pat-literal-sids)
-		     (error "Pattern literals list is not a list: "
+		     (ERROR "Pattern literals list is not a list: "
 			    pat-literal-sids))
 		 (for-each check-lit pat-literal-sids)
 		 (map sid-id pat-literal-sids))))
@@ -1145,15 +1176,15 @@
 
     (define (check-ellipses pat/tmpl in-template?)
       (define (bad-ellipsis x reason)
-	(error (string-append reason ": ")
+	(ERROR (string-append reason ": ")
 	       x
 	       (if in-template? " in template: " " in pattern: ")
 	       pat/tmpl))
 
-      (define (multi-ellipsis-error x)
+      (define (multi-ellipsis-ERROR x)
 	(bad-ellipsis x "List or vector pattern with multiple ellipses"))
 
-      (define (ellipsis/tail-error x)
+      (define (ellipsis/tail-ERROR x)
 	(bad-ellipsis x "Improper list pattern with an ellipsis"))
 
       (define (ellipsis-follows x thing)
@@ -1178,10 +1209,10 @@
 			   ((ellipsis-pair? (cddr x))
 			    (ellipsis-follows (cdr x) "an ellipsis"))
 			   (in-template? (check (cddr x)))
-			   (else (or (list? x) (ellipsis/tail-error x))
+			   (else (or (list? x) (ellipsis/tail-ERROR x))
 				 (for-each (lambda (y)
 					     (if (ellipsis? y)
-						 (multi-ellipsis-error x))
+						 (multi-ellipsis-ERROR x))
 					     (check y))
 				  (cddr x))))
 			
@@ -1199,7 +1230,7 @@
 	       (let ((id (sid-id x)))
 		 (cond ((memv id pat-literals) l)
 		       ((assv id l)
-			(error "Duplicate pattern var: " x
+			(ERROR "Duplicate pattern var: " x
 			       " in pattern: " pat))
 		       (else (acons id depth l)))))
 	      ((vector? x) (collect (svector->list x) depth l))
@@ -1211,10 +1242,10 @@
 
     ;; Checks var depths.
     (define (check-var-depths tmpl pat-env)
-      (define (depth-error x)
-	(error "Pattern var used at bad depth: " x " in template: " tmpl))
-      (define (close-error x)
-	(error "Template ellipsis closes no variables: " x
+      (define (depth-ERROR x)
+	(ERROR "Pattern var used at bad depth: " x " in template: " tmpl))
+      (define (close-ERROR x)
+	(ERROR "Template ellipsis closes no variables: " x
 	       " in template: " tmpl))
       ;; collect returns #t if any vars occurred at DEPTH
       (let collect ((x tmpl) (depth 0))
@@ -1224,7 +1255,7 @@
 		      (let* ((pat-depth (cdr p))
 			     (same-depth? (= depth pat-depth)))
 			(if (and (positive? pat-depth) (not same-depth?))
-			    (depth-error x))
+			    (depth-ERROR x))
 			same-depth?))))
 	      ((vector? x) (collect (svector->list x) depth))
 	      ((pair? x)
@@ -1233,17 +1264,17 @@
 					    (if ellip? (+ 1 depth) depth)))
 		      (cdr-closed? (collect ((if ellip? cddr cdr) x)
 					    depth)))
-		 (and ellip? (not car-closed?) (close-error x))
+		 (and ellip? (not car-closed?) (close-ERROR x))
 		 (or car-closed? cdr-closed?)))
 	      (else #f))))
 
 			 
     ;; Checks rule and returns a list of the template literal ids.
     (define (check-rule rule)
-      (or (list2? rule) (error "Malformed syntax rule: " rule))
+      (or (list2? rule) (ERROR "Malformed syntax rule: " rule))
       (let ((pat (car rule)) (tmpl (cadr rule)))
 	(or (and (pair? pat) (sid? (car pat)))
-	    (error "Malformed pattern: " pat))
+	    (ERROR "Malformed pattern: " pat))
 	(check-ellipses pat #f)
 	(check-ellipses tmpl #t)
 	(let ((pat-env (make-pat-env pat)))
@@ -1321,8 +1352,8 @@
 	      (else l))))
     
     
-    (define (matches? pat)
-      (let match ((pat pat) (sexp (cdr sexp)))
+    (define (MATCHes? pat)
+      (let MATCH ((pat pat) (sexp (cdr sexp)))
 	(cond ((sid? pat)
 	       (or (not (pat-literal? (sid-id pat)))
 		   (and (sid? sexp)
@@ -1330,20 +1361,24 @@
 			      (lookup-sid sexp env)))))
 	      ((svector? pat)
 	       (and (svector? sexp)
-		    (match (svector->list pat) (svector->list sexp))))
-	      ((not (pair? pat)) (equal? pat sexp))
+		    (MATCH (svector->list pat) (svector->list sexp))))
+	      ((not (pair? pat)) 
+	       (equal? pat sexp))
 	      ((ellipsis-pair? (cdr pat))
 	       (let skip ((p (cddr pat)) (s sexp))
 		 (if (pair? p)
 		     (and (pair? s) (skip (cdr p) (cdr s)))
-		     (let match-cars ((sexp sexp) (s s))
+		     (let MATCH-cars ((sexp sexp) (s s))
 		       (if (pair? s)
-			   (and (match (car pat) (car sexp))
-				(match-cars (cdr sexp) (cdr s)))
-			   (match (cddr pat) sexp))))))
-	      (else (and (pair? sexp)
-			 (match (car pat) (car sexp))
-			 (match (cdr pat) (cdr sexp)))))))
+			   (and (MATCH (car pat) (car sexp))
+				(MATCH-cars (cdr sexp) (cdr s)))
+			   (MATCH (cddr pat) sexp))))))
+	      (else 
+		(and (pair? sexp)
+		     ;MOSH: XXXX
+		     ;(MATCH (car pat) (car sexp))
+		     (let ((r (MATCH (car pat) (car sexp)))) r)
+		     (MATCH (cdr pat) (cdr sexp)))))))
 
     ;; Returns an alist binding pattern variables to parts of the input.
     ;; An ellipsis variable is bound to a list (or a list of lists, etc.).
@@ -1357,11 +1392,11 @@
 	      ((ellipsis-pair? (cdr pat))
 	       (let* ((tail-len (length (cddr pat)))
 		      (tail (list-tail sexp (- (length sexp) tail-len)))
-		      (matches (reverse (list-tail (reverse sexp) tail-len)))
+		      (MATCHes (reverse (list-tail (reverse sexp) tail-len)))
 		      (vars (list-ids (car pat) #t not-pat-literal?)))
-		 (define (collect1 match)
-		   (map cdr (collect (car pat) match '())))
-		 (append (apply map list vars (map collect1 matches))
+		 (define (collect1 MATCH)
+		   (map cdr (collect (car pat) MATCH '())))
+		 (append (apply map list vars (map collect1 MATCHes))
 			 (collect (cddr pat) tail bindings))))
 	      (else (collect (car pat) (car sexp)
 			     (collect (cdr pat) (cdr sexp) bindings))))))
@@ -1406,7 +1441,7 @@
 			    (apply = (map length val-lists)))
 			(append (apply map expand-using-vals val-lists)
 				(expand-part (cddr tmpl)))
-			(error "Unequal sequence lengths for pattern vars: "
+			(ERROR "Unequal sequence lengths for pattern vars: "
 			       vars-to-iterate " in macro call: " sexp))))
 		(cons (expand-part (car tmpl)) (expand-part (cdr tmpl)))))
 	   (else tmpl))))
@@ -1414,9 +1449,9 @@
 
     (let loop ((rules rules))
       (if (null? rules)
-	  (error "No matching rule for macro use: " sexp)
+	  (ERROR "No MATCHing rule for macro use: " sexp)
 	  (let* ((rule (car rules)) (pat (cdar rule)) (tmpl (cadr rule)))
-	    (if (matches? pat)
+	    (if (MATCHes? pat)
 		(expand-template pat tmpl (make-bindings pat))
 		(loop (cdr rules))))))))
 
@@ -1523,7 +1558,7 @@
   ;;    other variables in the same set of bindings.  That is, even
   ;;    though converting (lambda (#(x 1) #(x 2)) 'foo) to (lambda
   ;;    (#(x) #(x)) 'foo) would not shadow any binding that is needed
-  ;;    by the body, it would still cause an error.
+  ;;    by the body, it would still cause an ERROR.
 
   (define (unrename annexpr changes)
     (define (unrename-var var)
@@ -1814,7 +1849,7 @@
 		  ((_ ,x        (depth)) (qq x  depth  make-list 'unquote))
 		  ((_ (,x  . y) (depth)) (qq-nested-unquote (,x  . y) (depth)))
 		  ((_ (,@x . y) (depth)) (qq-nested-unquote (,@x . y) (depth)))
-		  ((_ ,@x        depth)  (unquote-splicing-error ,@x))
+		  ((_ ,@x        depth)  (unquote-splicing-ERROR ,@x))
 		  ((_ (x . y)    depth)  (qq x depth qq-cdr y depth make-pair))
 		  ((_ #(x y ...) depth)  (qq (x) depth qq-cdr #(y ...) depth
 					     make-vector-splice))
@@ -1825,10 +1860,10 @@
 		  ((_ expr original-template) expr)
 		  ((_ expr next-macro . tail) (next-macro expr . tail))))
 
-	      (define-syntax unquote-splicing-error
+	      (define-syntax unquote-splicing-ERROR
 		(syntax-rules ()
 		  ((_ ,@x stack ... original-template)
-		   (unquote-splicing-error (,@x in original-template)))))
+		   (unquote-splicing-ERROR (,@x in original-template)))))
 	      
 	      (define-syntax qq-cdr
 		(tail-preserving-syntax-rules ()

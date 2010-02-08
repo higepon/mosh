@@ -8,6 +8,8 @@ p0: p0gauche
 bootstrap.exp: p1
 bootstrap0.exp: p0
 
+bootstrap:
+	mosh -5 bootstrap.vanilla-mosh/phase01.vanilla-mosh.scm
 
 boot0: p0
 	mosh -5 bootstrap.vanilla-mosh/phase1.vanilla-mosh.scm

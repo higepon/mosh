@@ -30,13 +30,19 @@
   (display 'SYNTAX-ERR!!)(newline)
   (display e)
   (exit -1))
-(load "compat-mosh-run.scm")
-(load "runtime.scm")
-(load "runtime-cache.scm")
-(load "mosh-utils5.scm")
-(load "bootstrap0.exp")
 
-(display "LOAD(bootstrap0 by Gauche)")(newline)
+(load "./bootstrap.gauche/mosh-stubs.scm")
+(load "./bootstrap.gauche/compat-gauche.scm")
+(load "./runtime.scm")
+(load "./runtime-cache.scm")
+(load "./mosh-utils5.scm")
+
+
+(display "loading alexpander")(newline)
+
+(load "./bootstrap.common/alexpander.scm")
+
+(display "LOAD DONE")(newline)
 
 (let* ((core (ex:expand-sequence core-src))
        (expander (ex:expand-sequence-r5rs expander-src (ex:environment '(rnrs base))))

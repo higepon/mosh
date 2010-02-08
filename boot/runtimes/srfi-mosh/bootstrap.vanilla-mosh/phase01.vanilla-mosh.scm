@@ -28,15 +28,52 @@
 
 (define (raise-syntax-violation . e)
   (display 'SYNTAX-ERR!!)(newline)
-  (display e)
+  (write e)
+  (newline)
   (exit -1))
+
+(define expander-prog #f)
+
+(when (file-exists? "bootstrap0.exp")
+  (delete-file "bootstrap0.exp"))
+(when (file-exists? "bootstrap1.exp")
+  (delete-file "bootstrap1.exp"))
+
+(display "loading nmosh runtime")(newline)
+
 (load "compat-mosh-run.scm")
 (load "runtime.scm")
 (load "runtime-cache.scm")
 (load "mosh-utils5.scm")
-(load "bootstrap0.exp")
 
-(display "LOAD(bootstrap0 by Gauche)")(newline)
+(set! top-level-macros '())
+(display "macro disabled.")(newline)
+
+(display "loading alexpander")(newline)
+
+(load "bootstrap.common/alexpander.scm")
+
+(display "expanding...")(newline)
+
+(set! expander-prog (expand-program expander-src))
+
+(display "dump(bootstrap0.exp)..")(newline)
+
+(call-with-output-file "bootstrap0.exp"
+		       (lambda (p)
+			 (for-each
+			   (lambda (e)
+			     (write e p)
+			     (newline p))
+			   expander-prog)))
+
+(display "LOAD (Bootstrap by Vanilla-mosh)")(newline)
+
+(for-each (lambda (e) (eval-core e))
+	  expander-prog)
+
+(display "EXPANDER READY.")(newline)
+(display "expanding nmosh expander.")(newline)
 
 (let* ((core (ex:expand-sequence core-src))
        (expander (ex:expand-sequence-r5rs expander-src (ex:environment '(rnrs base))))

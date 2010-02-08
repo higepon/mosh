@@ -21,6 +21,7 @@
 (pload "compat-mosh-run.scm")
 (pload "mosh-utils5.scm")
 (pload "runtime.scm")
+(set! id-symbol '*ID-BUILD*)
 (pload "expander.scm")
 (pload "bootstrap.common/build-expander.scm")
 (pload "layout.scm")
