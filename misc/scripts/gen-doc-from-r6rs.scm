@@ -149,6 +149,7 @@
 
 (for-each
  (lambda (file)
+   (format (current-error-port) "~a\n" (first file))
    (call-with-port (open-file-output-port (string-append out-dir (first file) ".txt")
                                           (make-file-options '(no-fail)) 'block (native-transcoder))
      (lambda (port)
@@ -159,7 +160,7 @@
          (format (current-error-port) "~a : library name not specified\n" (first file)))
      (for-each
       (lambda (prot)
-;        (format (current-error-port) "~a\n" prot)
+        (format (current-error-port) "~a\n" prot)
         (format port
 "Function: ~a
 
