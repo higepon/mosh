@@ -575,10 +575,10 @@ Object VM::apply(Object proc, Object args)
 Object VM::call(Object n)
 {
     callCodeJit_[1] = n;
-    SAVE_REGISTERS();
+//    SAVE_REGISTERS();
     Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
     const Object ret = run(direct, NULL);
-    RESTORE_REGISTERS();
+//    RESTORE_REGISTERS();
     return ret;
 }
 

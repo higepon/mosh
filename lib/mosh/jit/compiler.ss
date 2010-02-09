@@ -1166,10 +1166,10 @@
 
 (define (RETURN n)
   `(,@(trace-push! $RETURN)
-    ,@(DEBUGGER 9990)
-    ,@(RESTORE_REGISTERS n)
-    (movq rax ,(vm-register 'ac)) ;; we need this.
-    ,@(DEBUGGER 9991)
+;;     ,@(DEBUGGER 9990)
+;;     ,@(RESTORE_REGISTERS n)
+;;     (movq rax ,(vm-register 'ac)) ;; we need this.
+;;     ,@(DEBUGGER 9991)
     (movq rsp rbp)
     (pop rbp)
     (pop r15)

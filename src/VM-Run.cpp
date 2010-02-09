@@ -959,6 +959,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             fp_ = fpObject.toObjectPointer();
 
             cl_ = index(sp, 1);
+            if (!cl_.isProcedure()) {
+                VM_LOG1("cl=<~a>", cl_);
+            }
             VM_ASSERT(cl_.isProcedure());
 
             dc_ = index(sp, 2);
