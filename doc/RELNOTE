@@ -24,14 +24,14 @@ Bug fixes.
     Fixed named-let which has internal define.
     Fixed iform-count-size-upto for $UNDEF iform.
     Fixed a wrong string construction on fasl-read.
-    Fixed issue 128 : Error with sole call/cc pointed out by tabe.
+    Fixed issue 120 : -v option by mrc.mgg.
+    Fixed issue 121 : Wrong validation of arguments for vector-ref by mrc.mgg.
+    Fixed issue 122 : Unwanted output characters from time by mrc.mgg.
+    Fixed issue 123 : Bad REPL input causes assertion failure, reader does not catch missing closing by mrc.mgg.
     Fixed issue 124 : Bug on multi-line string parse patch by dico.leque.
     Fixed issue 125 : mismatchd paren and bracket patch by dico.leque.
     Fixed issue 127 : An external representation of \f pointed out by dico.leque.
-    Fixed issue 123 : Bad REPL input causes assertion failure, reader does not catch missing closing by mrc.mgg.
-    Fixed issue 121 : Wrong validation of arguments for vector-ref by mrc.mgg.
-    Fixed issue 122 : Unwanted output characters from time by mrc.mgg.
-    Fixed issue 120 : -v option by mrc.mgg.
+    Fixed issue 128 : Error with sole call/cc pointed out by tabe.
 
 New library.
     Added Alex shinn's IrRegex library (0.7.5) by okuoku.
