@@ -8,7 +8,7 @@
 (include "./misc/scripts/r6rs-symbols.dat")
 
 (define r6rs-dir (string-append (get-environment-variable "HOME") "/Desktop/r6rs/document/"))
-(define out-dir (string-append (get-environment-variable "HOME") "/mosh/doc/text/"))
+(define out-dir (string-append (get-environment-variable "HOME") "/tmp/mosh/doc/text/"))
 
 (define files '(("base.tex"
                  1
@@ -149,6 +149,7 @@
 
 (for-each
  (lambda (file)
+   (format (current-error-port) "~a\n" (first file))
    (call-with-port (open-file-output-port (string-append out-dir (first file) ".txt")
                                           (make-file-options '(no-fail)) 'block (native-transcoder))
      (lambda (port)
@@ -159,7 +160,7 @@
          (format (current-error-port) "~a : library name not specified\n" (first file)))
      (for-each
       (lambda (prot)
-;        (format (current-error-port) "~a\n" prot)
+        (format (current-error-port) "~a\n" prot)
         (format port
 "Function: ~a
 
