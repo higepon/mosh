@@ -260,11 +260,13 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     callCodeLength_ = 3;
     callCode_ = Object::makeObjectArray(callCodeLength_);
 
-    callCodeJitLength_ = 3;
+    callCodeJitLength_ = 5;
     callCodeJit_ = Object::makeObjectArray(callCodeJitLength_);
-    callCodeJit_[0] = Object::makeRaw(Instruction::CALL);
-    callCodeJit_[1] = Object::makeFixnum(0);
-    callCodeJit_[2] = Object::makeRaw(Instruction::HALT);
+    callCodeJit_[0] = Object::makeRaw(Instruction::FRAME);
+    callCodeJit_[1] = Object::makeFixnum(3);
+    callCodeJit_[2] = Object::makeRaw(Instruction::CALL);
+    callCodeJit_[3] = Object::makeFixnum(0);
+    callCodeJit_[4] = Object::makeRaw(Instruction::HALT);
 
 }
 
@@ -574,11 +576,13 @@ Object VM::apply(Object proc, Object args)
 // ToDo:We can optimize for cprocedure case.
 Object VM::call(Object n)
 {
-    callCodeJit_[1] = n;
-//    SAVE_REGISTERS();
+    callCodeJit_[3] = n;
+    SAVE_REGISTERS();
+    fprintf(stderr, "fp_=%x", fp_);
     Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
     const Object ret = run(direct, NULL);
-//    RESTORE_REGISTERS();
+    RESTORE_REGISTERS();
+    sp_ = sp_ - n.toFixnum() - 4;
     return ret;
 }
 
