@@ -321,9 +321,9 @@ EXTRA_DIST     = \
 src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
 src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
-tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
+doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
-src/ffitest.c win mosh.vcproj mosh.sln doc README misc
+src/ffitest.c win mosh.vcproj mosh.sln doc README.md misc
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h src/compiler-gauche.scm \
