@@ -91,6 +91,9 @@ public:
     VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false);
     virtual ~VM();
 
+    static void copyOptions(VM* destVM, VM* srcVM);
+
+
     bool isMainThread() const
     {
         return NULL == thread_;
@@ -167,6 +170,7 @@ public:
     void setValueString(const ucs4char* id, Object val);
     Object getTopLevelGlobalValue(Object id);
     Object getTopLevelGlobalValueOrFalse(Object id);
+    Object getTopLevelGlobalValueOrFalse(const ucs4char* id);
     bool isR6RSMode() const;
     Object activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);

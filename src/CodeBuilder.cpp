@@ -431,11 +431,11 @@ void CodeBuilder::combineInstructionsArgument1(CodePacket codePacket)
             previousCodePacket_.setInstructionImmediate(Instruction::REFER_FREE_CALL);
             previousCodePacket_.setArgument2(argument1);
             break;
-        case Instruction::SHIFT:
-            previousCodePacket_.setType(CodePacket::ARGUMENT3);
-            previousCodePacket_.setInstructionImmediate(Instruction::SHIFT_CALL);
-            previousCodePacket_.setArgument3(argument1);
-            break;
+//         case Instruction::SHIFT:
+//             previousCodePacket_.setType(CodePacket::ARGUMENT3);
+//             previousCodePacket_.setInstructionImmediate(Instruction::SHIFT_CALL);
+//             previousCodePacket_.setArgument3(argument1);
+//             break;
 
         default:
 //         if (previousCodePacket_.instructionImmediate() == Instruction::REFER_GLOBAL) {
