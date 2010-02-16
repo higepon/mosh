@@ -69,6 +69,18 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             #include "call.inc.cpp"
             NEXT;
         }
+        CASE(TAIL_CALL)
+        {
+            const Object depth = fetchOperand();
+            VM_ASSERT(depth.isFixnum());
+
+            const Object diff = fetchOperand();
+            VM_ASSERT(diff.isFixnum());
+            sp_ = shiftArgsToBottom(sp_, depth.toFixnum(), diff.toFixnum());
+            operand = depth;
+            #include "call.inc.cpp"
+            NEXT;
+        }
         CASE(APPLY)
         {
             const Object args = pop();
@@ -320,14 +332,10 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(DEFINE_GLOBAL)
         {
+            // Once multiple define was forbidden.
+            // But allowed to use on nmosh.
             const Object id = fetchOperand();
-//            LOG1("define ~a\n", id);
-//            const Object found = nameSpace->ref(id, notFound_);
-//            if (found == notFound_) {
-                nameSpace->set(id, Object::makeGloc(ac_));
-//            } else {
-//                callErrorAfter(this, "define", "defined twice", L1(id));
-//            }
+            nameSpace->set(id, Object::makeGloc(ac_));
             NEXT;
         }
         CASE(DISPLAY)
@@ -821,6 +829,29 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             fp_ = sp_ - argLength.toFixnum();
             NEXT;
         }
+        CASE(LOCAL_TAIL_CALL)
+        {
+            const Object depth = fetchOperand();
+            VM_ASSERT(depth.isFixnum());
+
+            const Object diff = fetchOperand();
+            VM_ASSERT(diff.isFixnum());
+            sp_ = shiftArgsToBottom(sp_, depth.toFixnum(), diff.toFixnum());
+
+            VM_ASSERT(ac_.isClosure());
+            const Closure* const c = ac_.toClosure();
+            if (c->maxStack + sp_ >= stackEnd_) {
+//                printf("CALL: stack expansion\n");
+                expandStack(stackSize_ / 10);
+            }
+            COUNT_CALL(ac_);
+            const Object argLength = depth;
+            dc_ = ac_;
+            cl_ = ac_;
+            pc_ = c->pc;
+            fp_ = sp_ - argLength.toFixnum();
+            NEXT;
+        }
         CASE(REFER_LOCAL_PUSH_CONSTANT)
         {
             const Object index = fetchOperand();
@@ -1012,32 +1043,14 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             VM_ASSERT(dc_.isClosure());
             NEXT;
         }
+        // (SHIFT) instruction is deprecated
         CASE(SHIFT)
         {
-            const Object depthObject = fetchOperand();
-            VM_ASSERT(depthObject.isFixnum());
-
-            const int depth = depthObject.toFixnum();
-
-            const Object diffObject = fetchOperand();
-            VM_ASSERT(diffObject.isFixnum());
-            const int diff  = diffObject.toFixnum();
-            sp_ = shiftArgsToBottom(sp_, depth, diff);
-            NEXT;
+            MOSH_FATAL(false);
         }
         CASE(SHIFT_CALL)
         {
-            const Object depthObject = fetchOperand();
-            const Object diffObject = fetchOperand();
-
-            VM_ASSERT(depthObject.isFixnum());
-            MOSH_ASSERT(diffObject.isFixnum());
-            const int depth = depthObject.toFixnum();
-            const int diff  = diffObject.toFixnum();
-            sp_ = shiftArgsToBottom(sp_, depth, diff);
-            operand = fetchOperand();
-            #include "call.inc.cpp"
-            NEXT;
+            MOSH_FATAL(false);
         }
         CASE(SYMBOL_P)
         {

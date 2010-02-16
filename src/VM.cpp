@@ -832,6 +832,11 @@ Object VM::getTopLevelGlobalValueOrFalse(Object id)
     }
 }
 
+Object VM::getTopLevelGlobalValueOrFalse(const ucs4char* id)
+{
+    return getTopLevelGlobalValueOrFalse(Symbol::intern(id));
+}
+
 Object VM::currentOutputPort() const
 {
     return currentOutputPort_;
@@ -1000,3 +1005,11 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
     generativeRtds_[uid] = rtd;
 }
 
+
+void VM::copyOptions(VM* destVM, VM* srcVM)
+{
+    const ucs4char* options[] = {UC("%loadpath"), UC("%verbose"), UC("*command-line-args*")};
+    for (size_t i = 0; i < sizeof(options) / sizeof(ucs4char*); i ++) {
+        destVM->setValueString(options[i], srcVM->getTopLevelGlobalValueOrFalse(options[i]));
+    }
+}

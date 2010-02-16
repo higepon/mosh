@@ -2586,9 +2586,9 @@
      `(begin (code-builder-put-extra1! ,cb ,a)
              (cput! ,cb ,@b))]))
 
-(define-macro (cput-shift! cb n m)
-  `(when (> ,m 0)
-    (code-builder-put-insn-arg2! ,cb 'SHIFT ,n ,m)))
+;; (define-macro (cput-shift! cb n m)
+;;   `(when (> ,m 0)
+;;     (code-builder-put-insn-arg2! ,cb 'SHIFT ,n ,m)))
 
 (define-macro (pass3/add-sets! sets new-sets)
   `(if (null? ,new-sets)
@@ -3019,11 +3019,13 @@
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth display-count)]
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth display-count)]
               [args-length (length ($call.args iform))])
-         (when tail
-           (cput-shift! cb args-length tail))
-         (if (eq? ($call.type iform) 'local)
-             (code-builder-put-insn-arg1! cb 'LOCAL_CALL args-length)
-             (code-builder-put-insn-arg1! cb 'CALL args-length))
+         (if tail
+             (if (eq? ($call.type iform) 'local)
+                 (code-builder-put-insn-arg2! cb 'LOCAL_TAIL_CALL args-length tail)
+                 (code-builder-put-insn-arg2! cb 'TAIL_CALL args-length tail))
+             (if (eq? ($call.type iform) 'local)
+                 (code-builder-put-insn-arg1! cb 'LOCAL_CALL args-length)
+                 (code-builder-put-insn-arg1! cb 'CALL args-length)))
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
@@ -3037,9 +3039,9 @@
     (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f depth display-count)
-      (when tail
-        (cput-shift! cb 1 tail))
-      (code-builder-put-insn-arg1! cb 'CALL 1)
+      (if tail
+          (code-builder-put-insn-arg2! cb 'TAIL_CALL 1 tail)
+          (code-builder-put-insn-arg1! cb 'CALL 1))
       (unless tail
         (cput! cb end-of-frame)))))
 
@@ -3346,8 +3348,8 @@
            (iter `(CAR_PUSH ,@rest))]
           [('CDR 'PUSH . rest);;done
            (iter `(CDR_PUSH ,@rest))]
-          [('SHIFT m n 'CALL o . rest)
-           (iter `(SHIFT_CALL ,m ,n ,o ,@rest))]
+;;           [('SHIFT m n 'CALL o . rest)
+;;            (iter `(SHIFT_CALL ,m ,n ,o ,@rest))]
           [('NOT 'TEST . rest)
            (iter `(NOT_TEST ,@rest))]
           [('REFER_GLOBAL lib-id 'CALL n . rest)

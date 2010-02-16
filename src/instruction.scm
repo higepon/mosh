@@ -110,3 +110,5 @@
 ;; (define-insn REFER_LOCAL_CAR 1)
 ;; (define-insn REFER_LOCAL_CDR 1)
 ;; (define-insn REFER_LOCAL_CONS 1)
+(define-insn TAIL_CALL 2)
+(define-insn LOCAL_TAIL_CALL 2)

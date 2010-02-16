@@ -29,6 +29,7 @@
 (test-error lexical-violation? (read-string "#vu8(]"))
 (test-error lexical-violation? (read-string "(]"))
 (test-error lexical-violation? (read-string "[)"))
+(test-error lexical-violation? (read-string "#|#|"))
 
 (test-equal "" (read-string "\"\\\n \""))
 (test-equal "" (read-string "\"\\ \r \""))

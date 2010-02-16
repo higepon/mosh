@@ -145,6 +145,7 @@ Object scheme::vmJoinDEx(VM* theVM, int argc, const Object* argv)
     return *ret;
 }
 
+
 // (make-vm thunk-sexp import-spec-sexp . name) => #<vm>
 Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
 {
@@ -156,9 +157,7 @@ Object scheme::makeVmEx(VM* theVM, int argc, const Object* argv)
     const int INITIAL_STACK_SIZE = 5000;
     const bool isProfilerON = false;
     VM* vm = factory.create(INITIAL_STACK_SIZE, isProfilerON);
-    vm->setValueString(UC("%loadpath"), Object::False); // todo not false
-    vm->setValueString(UC("%verbose"), Object::False);
-    vm->setValueString(UC("*command-line-args*"), Pair::list1("./test/stack-trace2.scm"));
+    VM::copyOptions(vm, theVM);
     vm->setValueString(UC("%vm-import-spec"), importSpecSexp);
     vm->setValueString(UC("%vm-thunk"), thunkSexp);
     if (argc == 3) {
