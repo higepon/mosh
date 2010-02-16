@@ -787,6 +787,11 @@ Object VM::getTopLevelGlobalValueOrFalse(Object id)
     }
 }
 
+Object VM::getTopLevelGlobalValueOrFalse(const ucs4char* id)
+{
+    return getTopLevelGlobalValueOrFalse(Symbol::intern(id));
+}
+
 Object VM::currentOutputPort() const
 {
     return currentOutputPort_;
@@ -955,6 +960,7 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
     generativeRtds_[uid] = rtd;
 }
 
+<<<<<<< HEAD
 void VM::tryInvokeJitLibrary()
 {
     const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));
@@ -1039,3 +1045,10 @@ void VM::raiseVectorInvalidIndexError(int op)
                                 L1(ac_));
 }
 
+void VM::copyOptions(VM* destVM, VM* srcVM)
+{
+    const ucs4char* options[] = {UC("%loadpath"), UC("%verbose"), UC("*command-line-args*")};
+    for (size_t i = 0; i < sizeof(options) / sizeof(ucs4char*); i ++) {
+        destVM->setValueString(options[i], srcVM->getTopLevelGlobalValueOrFalse(options[i]));
+    }
+}

@@ -92,6 +92,9 @@ public:
     VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool isProfiler = false, bool enableJit = false);
     virtual ~VM();
 
+    static void copyOptions(VM* destVM, VM* srcVM);
+
+
     bool isMainThread() const
     {
         return NULL == thread_;
@@ -125,8 +128,8 @@ public:
     Thread* thread();
     void debugPrintState()
     {
-        printf("sp=%lx", (uintptr_t)sp_);
-        printf("fp=%lx", (uintptr_t)fp_);
+        printf("sp=%p", sp_);
+        printf("fp=%p", fp_);
     }
 
     Object values(int num, const Object* v);
@@ -168,6 +171,7 @@ public:
     void setValueString(const ucs4char* id, Object val);
     Object getTopLevelGlobalValue(Object id);
     Object getTopLevelGlobalValueOrFalse(Object id);
+    Object getTopLevelGlobalValueOrFalse(const ucs4char* id);
     bool isR6RSMode() const;
     Object activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);

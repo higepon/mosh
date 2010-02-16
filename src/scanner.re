@@ -171,7 +171,7 @@ int Scanner::scan(YYSTYPE* yylval)
   INTRA_LINE_WHITE_SPACE = "\t" | UNICODE_ZS;
   INLINE_HEX_ESCAPE      = "\\x" HEX_SCALAR_VALUE ";";
   /* We use "INTRA_LINE_WHITE_SPACE *" instead of "INTRA_LINE_WHITE_SPACE" defined in R6RS */
-  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE) | INLINE_HEX_ESCAPE;
+  STRING_ELEMENT         = [^\"\\] | ('\\' [abtnvfr\"\\]) | ("\\" INTRA_LINE_WHITE_SPACE * LINE_ENDING INTRA_LINE_WHITE_SPACE *) | INLINE_HEX_ESCAPE;
   REGEXP_ELEMENT         = "\\\/" | [^/];
   DIGIT_2                = [0-1];
   DIGIT_8                = [0-7];
@@ -221,7 +221,7 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!" [a-zA-Z0-9/\_\.\-]+);
+  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
 */
 
     int comment_count = 0;
@@ -417,10 +417,12 @@ int Scanner::scan(YYSTYPE* yylval)
             continue;
         }
         [\]\)] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return RIGHT_PAREN;
         }
         [\(\[] {
+            yylval->charValue = YYTOKEN[0];
             YYTOKEN = YYCURSOR;
             return LEFT_PAREN;
         }
@@ -436,7 +438,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             continue;
         }
-        "\X0000" {
+        EOS {
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
@@ -470,6 +472,10 @@ comment:
             comment_count++;
             goto comment;
         }
+        EOS {
+            YYTOKEN = YYCURSOR;
+            return 0;
+        }
         ANY_CHARACTER
         {
             goto comment;
@@ -480,6 +486,9 @@ comment:
 
 ucs4string Scanner::currentToken() const
 {
-    MOSH_ASSERT(limit_ >= token_);
-    return ucs4string(token_, limit_ - token_);
+    if (limit_ >= token_) {
+        return ucs4string(token_, limit_ - token_);
+    } else {
+        return ucs4string(UC(""));
+    }
 }

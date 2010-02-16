@@ -555,7 +555,11 @@
        ($src (pass1/expand (let1->let sexp)) sexp)]
       [(let)
        (if (let-is-named? sexp)
-           ($src (pass1/expand (named-let->letrec sexp)) sexp)
+           (match sexp
+             [('let loop vars ('define a . b) . more)
+              ($src (pass1/expand ($src (named-let-internal-define->letrec sexp) sexp)) sexp)]
+             [else
+              ($src (pass1/expand (named-let->letrec sexp)) sexp)])
            (match sexp
              [('let vars ('define a . b) . more)
               ($src (pass1/expand ($src (let-internal-define->letrec sexp) sexp)) sexp)]
@@ -696,6 +700,18 @@
          (body (cdddr sexp))
          (lambda-body ($src `(lambda ,vars ,@body) sexp)))
     ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
+
+(define (named-let-internal-define->letrec sexp)
+  (let* ([body (cdddr sexp)]
+         [name (second sexp)]
+         [args (third sexp)]
+         [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
+         [defines (first ret)]
+         [rest (second ret)]
+         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+                         ,@rest) sexp)])
+    ($src `(let ,name ,args
+             ,letrec-body) sexp)))
 
 (define (aif->let sexp)
   `(let ((it ,(cadr sexp)))
@@ -1893,6 +1909,7 @@
       (cond
        [(= $DEFINE t)        (sum-items (+ cnt 1) ($define.val iform))]
        [(= $LOCAL-REF t)     (+ cnt 1)]
+       [(= $UNDEF t)         cnt]
        [(= $GLOBAL-REF t)    (+ cnt 1)]
        [(= $CONST t)         (+ cnt 1)]
        [(= $LOCAL-ASSIGN t)  (sum-items (+ cnt 1) ($local-assign.val iform))]
@@ -2569,9 +2586,9 @@
      `(begin (code-builder-put-extra1! ,cb ,a)
              (cput! ,cb ,@b))]))
 
-(define-macro (cput-shift! cb n m)
-  `(when (> ,m 0)
-    (code-builder-put-insn-arg2! ,cb 'SHIFT ,n ,m)))
+;; (define-macro (cput-shift! cb n m)
+;;   `(when (> ,m 0)
+;;     (code-builder-put-insn-arg2! ,cb 'SHIFT ,n ,m)))
 
 (define-macro (pass3/add-sets! sets new-sets)
   `(if (null? ,new-sets)
@@ -3002,11 +3019,13 @@
        (let* ([args-size (pass3/compile-args cb ($call.args iform) locals frees can-frees sets #f depth display-count)]
               [proc-size (pass3/rec cb ($call.proc iform) locals frees can-frees sets #f depth display-count)]
               [args-length (length ($call.args iform))])
-         (when tail
-           (cput-shift! cb args-length tail))
-         (if (eq? ($call.type iform) 'local)
-             (code-builder-put-insn-arg1! cb 'LOCAL_CALL args-length)
-             (code-builder-put-insn-arg1! cb 'CALL args-length))
+         (if tail
+             (if (eq? ($call.type iform) 'local)
+                 (code-builder-put-insn-arg2! cb 'LOCAL_TAIL_CALL args-length tail)
+                 (code-builder-put-insn-arg2! cb 'TAIL_CALL args-length tail))
+             (if (eq? ($call.type iform) 'local)
+                 (code-builder-put-insn-arg1! cb 'LOCAL_CALL args-length)
+                 (code-builder-put-insn-arg1! cb 'CALL args-length)))
          (unless tail
            (cput! cb end-of-frame))
          (+ args-size proc-size)))]))
@@ -3020,9 +3039,9 @@
     (code-builder-put-insn-arg0! cb 'PUSH)
     (begin0
       (pass3/rec cb ($call-cc.proc iform) locals frees can-frees sets #f depth display-count)
-      (when tail
-        (cput-shift! cb 1 tail))
-      (code-builder-put-insn-arg1! cb 'CALL 1)
+      (if tail
+          (code-builder-put-insn-arg2! cb 'TAIL_CALL 1 tail)
+          (code-builder-put-insn-arg1! cb 'CALL 1))
       (unless tail
         (cput! cb end-of-frame)))))
 
@@ -3329,8 +3348,8 @@
            (iter `(CAR_PUSH ,@rest))]
           [('CDR 'PUSH . rest);;done
            (iter `(CDR_PUSH ,@rest))]
-          [('SHIFT m n 'CALL o . rest)
-           (iter `(SHIFT_CALL ,m ,n ,o ,@rest))]
+;;           [('SHIFT m n 'CALL o . rest)
+;;            (iter `(SHIFT_CALL ,m ,n ,o ,@rest))]
           [('NOT 'TEST . rest)
            (iter `(NOT_TEST ,@rest))]
           [('REFER_GLOBAL lib-id 'CALL n . rest)

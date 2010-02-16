@@ -30,9 +30,6 @@ endif
 
 bin_SCRIPTS = src/mosh_config
 
-if DEVELOPER
-DEBUG_FLAGS=-DDEBUG_VERSION
-endif
 # mosh
 # -O3 causes miss compile of NumberReader.tab.cpp. (newest gcc?)
 # see http://d.hatena.ne.jp/higepon/20081114/1226645373
@@ -41,6 +38,20 @@ mosh_OPTS     = -D MONA_SCHEME -D USE_BOEHM_GC -Wall -D MOSH_LIB_PATH="\"@MOSH_L
 mosh_CFLAGS   = $(mosh_OPTS)  -g -D_FILE_OFFSET_BITS=64 -Wall -pipe @MOSH_OPTS@ $(DEBUG_FLAGS) -Wno-deprecated # temp -Wno-deprecated
 mosh_CXXFLAGS = $(mosh_CFLAGS)
 mosh_LDADD = libmosh.a $(GC_LIB) $(REGEXP_LIB) @MOSH_LDADD_ARCH@
+
+if DEVELOPER
+GIT_BRANCH=$(shell git symbolic-ref HEAD|cut -d'/' -f3)
+GIT_IS_DIRTY=$(shell git diff --quiet HEAD || echo "dirty")
+GIT_COMMIT_REVISION=$(shell git describe --always)$(GIT_IS_DIRTY)
+GIT_COMMIT_UNIXTIME=$(shell git cat-file commit HEAD|grep 'committer'|cut -d ' ' -f4)
+GIT_COMMIT_DATE=$(shell date -d "1970/01/01 09:00:00 $(GIT_COMMIT_UNIXTIME) seconds" "+%Y/%m/%d %H:%M:%S")
+mosh_CFLAGS+=-D GIT_BRANCH="\"$(GIT_BRANCH)\"" -D GIT_COMMIT_REVISION="\"$(GIT_COMMIT_REVISION)\"" -D GIT_COMMIT_DATE="\"$(GIT_COMMIT_DATE)\""
+endif
+
+if DEVELOPER
+DEBUG_FLAGS=-DDEBUG_VERSION
+endif
+
 
 if MINGW32
 mosh_LDADD += mosh-icon.o
@@ -317,9 +328,9 @@ EXTRA_DIST     = \
 src/instruction.scm src/vm.scm src/library.scm src/compiler.scm \
 src/free-vars.scm misc/scripts src/pmatch.scm src/test-data.scm doc \
 lib/psyntax/psyntax.scm doc/mosh.1 doc/mosh_config.1 \
-tools/psyntax-r6rs doc/RELNOTE lib src/cprocedures.cpp \
+doc/RELNOTE lib src/cprocedures.cpp \
 src/labels.cpp src/all-tests.scm test src/call.inc.cpp ${GTEST_DIR} \
-src/ffitest.c win mosh.vcproj mosh.sln doc README misc
+src/ffitest.c win mosh.vcproj mosh.sln doc README.md misc
 
 GENERATED = \
 src/all-tests.scm src/Scanner.cpp src/NumberScanner.cpp src/psyntax.h src/compiler-gauche.scm \

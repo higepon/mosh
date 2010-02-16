@@ -64,7 +64,8 @@ extern int yyerror(const char *);
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
 
-%token LEFT_PAREN RIGHT_PAREN END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
+%token <charValue> LEFT_PAREN RIGHT_PAREN 
+%token END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
 
@@ -115,6 +116,11 @@ compound_datum : list
                ;
 
 list           : LEFT_PAREN datum_list RIGHT_PAREN {
+                   if (!(($1 == '(' && $3 == ')') ||
+                         ($1 == '[' && $3 == ']'))) {
+                       yyerror("mismatched parentheses");
+                       YYERROR;
+                   }
                    // TODO: not to use reverse.
                    $2 = Pair::reverse($2);
                    if ($2.isPair()) {
@@ -124,16 +130,32 @@ list           : LEFT_PAREN datum_list RIGHT_PAREN {
                    $$ = $2;
                }
                | LEFT_PAREN datum_list datum DOT datum RIGHT_PAREN {
+                   if (!(($1 == '(' && $6 == ')') ||
+                         ($1 == '[' && $6 == ']'))) {
+                       yyerror("mismatched parentheses");
+                       YYERROR;
+                   }
                    $2 = Pair::reverse($2);
                    $$ = Pair::appendD2($2, Object::cons($3, $5));
                }
                | abbreviation datum { $$ = Object::cons($1, Object::cons($2, Object::Nil)); }
                ;
 
-vector         : VECTOR_START datum_list RIGHT_PAREN { $$ = Object::makeVector(Pair::reverse($2)); }
+vector         : VECTOR_START datum_list RIGHT_PAREN {
+                    if ($3 != ')') {
+                        yyerror("vector terminated by bracket");
+                        YYERROR;
+                    }
+                    $$ = Object::makeVector(Pair::reverse($2));
+               }
                ;
 
 bytevector     : BYTE_VECTOR_START datum_list RIGHT_PAREN {
+                    if ($3 != ')') {
+                        yyerror("bytevector terminated by bracket");
+                        YYERROR;
+                    }
+
                     const Object bytevector = u8ListToByteVector(Pair::reverse($2));
                     if (bytevector.isNil()) {
                         yyerror("malformed bytevector literal #vu8(...)");

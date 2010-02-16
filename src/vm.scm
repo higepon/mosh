@@ -815,6 +815,9 @@
                [(CALL)
                 (val1)
                 (apply-body a (next 1) sp)]
+               [(TAIL_CALL)
+                (val1)
+                (apply-body a (next 1) (shift-args-to-bottom stack sp (next 1) (next 2)))]
                [(LOCAL_CALL)
                 (val1)
                 (when (>= (+ sp (closure-max-stack a)) (vector-length stack))
@@ -828,6 +831,20 @@
                     stack
                     sp
                     )]
+               [(LOCAL_TAIL_CALL)
+                (val1)
+                (let1 sp (shift-args-to-bottom stack sp (next 1) (next 2))
+                  (when (>= (+ sp (closure-max-stack a)) (vector-length stack))
+                    (format #t "stack overflow expand stack\n")
+                    (expand-stack))
+                  (VM (closure-body-code a)
+                      (closure-body-pc a)
+                      a
+                      (- sp (next 1))
+                      a
+                      stack
+                      sp
+                      ))]
                [(REFER_GLOBAL_CALL)
                 (val1)
                 (apply-body (refer-global (next 1)) (next 2) sp)]
@@ -898,8 +915,8 @@
 ;;                 (return 3)]
 
                ;;---------------------------- SHIFT ------------------------------
-               [(SHIFT)
-                (VM codes (skip 2) a fp c stack (shift-args-to-bottom stack sp (next 1) (next 2)))]
+;;                [(SHIFT)
+;;                 (VM codes (skip 2) a fp c stack (shift-args-to-bottom stack sp (next 1) (next 2)))]
                ;;---------------------------- SHIFTJ -----------------------------
                ;;
                ;; SHIFT for embedded jump which appears in named let optimization.
@@ -924,9 +941,9 @@
                     (if (= i 0)
                         (VM codes (skip 3) a new-fp new-c stack new-sp)
                         (loop (- i 1) (closure-prev new-c)))))]
-               [(SHIFT_CALL)
-                (let1 sp (shift-args-to-bottom stack sp (next 1) (next 2))
-                  (apply-body a (next 3) sp))]
+;;                [(SHIFT_CALL)
+;;                 (let1 sp (shift-args-to-bottom stack sp (next 1) (next 2))
+;;                   (apply-body a (next 3) sp))]
                ;;---------------------------- MAKE_CONTINUATION ------------------
                [(MAKE_CONTINUATION)
                 (val1)
@@ -1409,7 +1426,7 @@
 
 ])
 (define (vm-test)
-  (with-input-from-file "./test-data.scm"
+  (with-input-from-file "./src/test-data.scm"
     (lambda ()
       (let loop1 ([obj (read)])
         (cond

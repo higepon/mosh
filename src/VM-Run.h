@@ -61,6 +61,7 @@
 #include "Gloc.h"
 #include "VM-inl.h"
 #include "StringProcedures.h"
+#include "FFIProcedures.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Gloc.h"
