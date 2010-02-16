@@ -221,7 +221,7 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
-  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | "\X0000")) | ("#!" [a-zA-Z0-9/\_\.\-]+);
+  COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
 */
 
     int comment_count = 0;
@@ -438,7 +438,7 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             continue;
         }
-        "\X0000" {
+        EOS {
             YYTOKEN = YYCURSOR;
             return END_OF_FILE;
         }
@@ -471,6 +471,10 @@ comment:
         "#|" {
             comment_count++;
             goto comment;
+        }
+        EOS {
+            YYTOKEN = YYCURSOR;
+            return 0;
         }
         ANY_CHARACTER
         {
