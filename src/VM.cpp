@@ -960,7 +960,6 @@ void VM::addGenerativeRtd(Object uid, Object rtd)
     generativeRtds_[uid] = rtd;
 }
 
-<<<<<<< HEAD
 void VM::tryInvokeJitLibrary()
 {
     const Object importSpec = Pair::list3(Symbol::intern(UC("mosh")), Symbol::intern(UC("jit")),  Symbol::intern(UC("compiler")));

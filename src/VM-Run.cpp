@@ -78,8 +78,7 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
             const Object diff = fetchOperand();
             VM_ASSERT(diff.isFixnum());
             sp_ = shiftArgsToBottom(sp_, depth.toFixnum(), diff.toFixnum());
-            operand = depth;
-            #include "call.inc.cpp"
+            callOp(depth);
             NEXT;
         }
         CASE(APPLY)
