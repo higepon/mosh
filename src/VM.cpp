@@ -262,9 +262,16 @@ void VM::initializeDynamicCode()
     callClosureByNameCode_->push(Object::makeFixnum(1));
     callClosureByNameCode_->push(Object::makeRaw(Instruction::HALT));
 
-    callCode_ = new Code(3);
 
     void** dispatchTable = getDispatchTable();
+
+    // callCode_ can't be nested, so we can share this.
+    callCode_ = new Code(3);
+    callCode_->push(Object::makeRaw(dispatchTable[Instruction::CALL]));
+    callCode_->push(Object::makeFixnum(0));
+    callCode_->push(Object::makeRaw(dispatchTable[Instruction::HALT]));
+
+    // haltCode_ is read only, so we can share this
     haltCode_ = new Code(1);
     haltCode_->push(Object::makeRaw(dispatchTable[Instruction::HALT]));
 }
@@ -544,6 +551,7 @@ Object VM::apply(Object proc, Object args)
 // If you want to know how this works, see lib/mosh/jit/compiler.
 Object VM::call(Object n)
 {
+    // can be nest? test todo
     callCodeJit_[1] = n;
     *(sp_ - n.toFixnum() - 4) = Object::makeObjectPointer(haltCode_->code());
     Registers r;

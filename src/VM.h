@@ -279,7 +279,6 @@ protected:
     Object currentErrorPort_;
     Object currentInputPort_;
     Object errorObj_;
-    Object returnCode_[2];
     Object outerSourceInfo_;
 #ifdef ENABLE_PROFILER
     intptr_t labelReturn_;           // for profiler

@@ -45,12 +45,6 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         return Object::makeRaw(dispatch_table);
     }
 #endif
-    returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
-    returnCode_[1] = Object::makeFixnum(0);
-    callCode_->set(0, Object::makeRaw(INSTRUCTION(CALL)));
-    callCode_->set(1, Object::makeFixnum(0));
-    callCode_->set(2, Object::makeRaw(INSTRUCTION(HALT)));
-
     Object operand = Object::Undef;
 
     // shourt cut pointers
