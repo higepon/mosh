@@ -340,21 +340,21 @@ Object makeIrritantsCondition(VM* theVM, Object irritants)
 
 Object makeCondition(VM* theVM, const ucs4char* rcdName)
 {
-    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
+    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
 }
 
 Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
 {
-    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
+    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
 Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object content1, Object content2)
 {
-    const Object rcd = theVM->getTopLevelGlobalValue(Symbol::intern(rcdName));
+    const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
     return theVM->callClosure2(rcd.toRecordConstructorDescriptor()->makeConstructor(), content1, content2);
 }
@@ -396,7 +396,7 @@ Object raiseAfter1(VM* theVM,
                               "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
     }
 
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
@@ -445,7 +445,7 @@ Object raiseAfter2(VM* theVM,
                               "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
     }
 
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
@@ -499,7 +499,7 @@ Object raiseAfter(VM* theVM,
                               "    4. &irritants: ~a\n"), Pair::list4(Object::makeString(errorName), who, message, irritants));
     }
 
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
@@ -568,7 +568,7 @@ Object raiseAfterB(VM* theVM,
                                                                       irritants));
     }
 
-    const Object raiseProcedure = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("raise")));
+    const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
 
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {

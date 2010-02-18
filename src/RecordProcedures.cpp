@@ -58,7 +58,7 @@ Object getConditionRtd(VM* theVM)
 {
     static Object conditionRtd = Object::False;
     if (conditionRtd.isFalse()) {
-        conditionRtd = theVM->getTopLevelGlobalValueOrFalse(Symbol::intern(UC("&condition-rtd")));
+        conditionRtd = theVM->getGlobalValueOrFalse(Symbol::intern(UC("&condition-rtd")));
     }
     return conditionRtd;
 }
