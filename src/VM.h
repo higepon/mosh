@@ -50,22 +50,6 @@ typedef gc_vector<Object> Ports;
 #define L3(a, b, c) Pair::list3(a, b, c)
 #define L4(a, b, c, d) Pair::list4(a, b, c, d)
 
-#define SAVE_REGISTERS()                                  \
-    const Object ac = ac_;                                \
-    const Object dc = dc_;                                \
-    const Object cl = cl_;                                \
-    Object* const pc = pc_;                               \
-    /* Since stack can be expanded, we save the offset */ \
-    intptr_t fpOffset = fp_ - stack_;                     \
-    intptr_t spOffset = sp_ - stack_;
-
-#define RESTORE_REGISTERS()       \
-    ac_ = ac;                     \
-    cl_ = cl;                     \
-    dc_ = dc;                     \
-    fp_ = stack_ + fpOffset;      \
-    pc_ = pc;                     \
-   sp_ = stack_ + spOffset;
 
 #define FASL_GET(image) FaslReader(this, new ByteArrayBinaryInputPort(image, sizeof(image))).get()
 
@@ -85,6 +69,7 @@ class TextualOutputPort;
 class Thread;
 class ReaderContext;
 class NumberReaderContext;
+class Code;
 
 class VM EXTEND_GC
 {
@@ -135,9 +120,8 @@ public:
     Object values(int num, const Object* v);
     Object values2(Object obj1, Object obj2);
     Object values3(Object obj1, Object obj2, Object obj3);
-    Object run(Object* code, jmp_buf returnPoint, bool returnTable = false);
-    Object evaluate(Object* o, int codeSize);
-    Object evaluateCodeVector(Object codeVector);
+
+
     Object compile(Object o);
     Object callClosureByName(Object procSymbol, Object o);
     Object callClosure1(Object closure, Object o);
@@ -169,9 +153,9 @@ public:
     Object idToTopLevelSymbol(Object id);
     void setValueSymbol(Object id, Object val);
     void setValueString(const ucs4char* id, Object val);
-    Object getTopLevelGlobalValue(Object id);
-    Object getTopLevelGlobalValueOrFalse(Object id);
-    Object getTopLevelGlobalValueOrFalse(const ucs4char* id);
+    Object getGlobalValue(Object id);
+    Object getGlobalValueOrFalse(Object id);
+    Object getGlobalValueOrFalse(const ucs4char* id);
     bool isR6RSMode() const;
     Object activateR6RSMode(bool isDebugExpand);
     Object* disasm(Object* code, int length);
@@ -264,13 +248,12 @@ protected:
     Object referLocal(int n) const;
     Object referFree(Object n);
     Object referFree(int n);
-    Object* getDirectThreadedCode(Object* code, int length);
     void expandStack(int plusSize);
     Object compileWithoutHalt(Object sexp);
     bool mayBeStackPointer(Object* obj) const;
     void** getDispatchTable()
     {
-        return (void**)run(NULL, NULL, true).val;
+        return (void**)runLoop(NULL, NULL, true).val;
     }
 
 public:
@@ -321,39 +304,19 @@ protected:
     Object closureForEvaluate_;
     Object closureForApply_;
 
-    Object* applyCodeForApply_;
-    int applyCodeForApplyLength_;
-
-    Object* applyCodeForCallClosure0_;
-    int applyCodeForCallClosure0Length_;
-
-    Object* applyCodeForCallClosure1_;
-    int applyCodeForCallClosure1Length_;
-
-    Object* applyCodeForCallClosure2_;
-    int applyCodeForCallClosure2Length_;
-
-    Object* applyCodeForCallClosure3_;
-    int applyCodeForCallClosure3Length_;
-
-    Object* callCodeForSetAfterTrigger0_;
-    int callCodeForSetAfterTrigger0Length_;
-
-    Object* callCodeForSetAfterTrigger1_;
-    int callCodeForSetAfterTrigger1Length_;
-
-    Object* applyCodeForApplyClosure_;
-    int applyCodeForApplyClosureLength_;
-
-    Object* applyCodeForCallClosureByName_;
-    int applyCodeForCallClosureByNameLength_;
-
-    Object* callCode_;
-    int callCodeLength_;
+    Code* applyCode_;
+    Code* callClosure0Code_;
+    Code* callClosure1Code_;
+    Code* callClosure2Code_;
+    Code* callClosure3Code_;
+    Code* trigger0Code_;
+    Code* trigger1Code_;
+    Code* applyClosureCode_;
+    Code* callClosureByNameCode_;
+    Code* callCode_;
 
     Object* callCodeJit_;
     int callCodeJitLength_;
-
     ReaderContext* readerContext_;
     NumberReaderContext* numberReaderContext_;
 #if _MSC_VER
@@ -369,6 +332,56 @@ protected:
     bool isJitCompiling_;
     bool enableJit_;
     Object jitCompiler_;
+
+private:
+    typedef struct Registers
+    {
+        Object ac;
+        Object dc;
+        Object cl;
+        Object* pc;
+        int spOffset;
+        int fpOffset;
+    } Registers;
+
+    void saveRegisters(Registers* r)
+    {
+        r->ac = ac_;
+        r->dc = dc_;
+        r->cl = cl_;
+        r->pc = pc_;
+        r->spOffset = sp_ - stack_;
+        r->fpOffset = fp_ - stack_;
+    }
+
+    void restoreRegisters(Registers* r)
+    {
+        ac_ = r->ac;
+        dc_ = r->dc;
+        cl_ = r->cl;
+        pc_ = r->pc;
+        sp_ = stack_ + r->spOffset;
+        fp_ = stack_ + r->fpOffset;
+    }
+
+    void initializeDynamicCode();
+    Object evaluateSafe(Object* code, int codeSize);
+    Object evaluateSafe(Code* code);
+    Object evaluateSafe(Vector* code);
+    Object evaluateUnsafe(Object* code, int codeSize);
+    Object evaluateUnsafe(Vector* code);
+
+    void makeCallFrame(Object* pc)
+    {
+        push(Object::makeObjectPointer(pc));
+        push(dc_);
+        push(cl_);
+        push(Object::makeObjectPointer(fp_));
+    }
+
+    Object* getDirectThreadedCode(const Object* code, int length);
+    Object runLoop(Object* code, jmp_buf returnPoint, bool returnTable = false);
+
 };
 
 } // namespace scheme

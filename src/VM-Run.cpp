@@ -33,7 +33,7 @@
 
 using namespace scheme;
 
-Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */)
+Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = false */)
 {
 #ifdef USE_DIRECT_THREADED_CODE
 #include "labels.cpp"
@@ -47,9 +47,9 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
 #endif
     returnCode_[0] = Object::makeRaw(INSTRUCTION(RETURN));
     returnCode_[1] = Object::makeFixnum(0);
-    callCode_[0] = Object::makeRaw(INSTRUCTION(CALL));
-    callCode_[1] = Object::makeFixnum(0);
-    callCode_[2] = Object::makeRaw(INSTRUCTION(HALT));
+    callCode_->set(0, Object::makeRaw(INSTRUCTION(CALL)));
+    callCode_->set(1, Object::makeFixnum(0));
+    callCode_->set(2, Object::makeRaw(INSTRUCTION(HALT)));
 
     Object operand = Object::Undef;
 
@@ -85,8 +85,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         {
             const Object args = pop();
             if (args.isNil()) {
-                callCode_[1] = Object::makeFixnum(0);
-                pc_  = callCode_;
+                callCode_->set(1, Object::makeFixnum(0));
+                pc_  = callCode_->code();
             } else {
                 if (! args.isPair()) {
                     callAssertionViolationAfter(this, "apply", "bug?", L1(ac_));
@@ -96,8 +96,8 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
                 const int shiftLen = length > 1 ? length - 1 : 0;
                 Object* const sp = sp_ + shiftLen + 1; //unShiftArgs(sp_, 0, shiftLen);////
                 pairArgsToStack(sp, 0, args);
-                callCode_[1] = Object::makeFixnum(length);
-                pc_ = callCode_;
+                callCode_->set(1, Object::makeFixnum(length));
+                pc_ = callCode_->code();
                 sp_ = sp;
             }
             NEXT;
@@ -391,16 +391,11 @@ Object VM::run(Object* code, jmp_buf returnPoint, bool returnTable /* = false */
         }
         CASE(FRAME)
         {
-            asm volatile(" \t # -- FRAME start");
         frame_entry:
             const Object n = fetchOperand();
             VM_ASSERT(n.isFixnum());
             const int skipSize = n.toFixnum();
-            push(Object::makeObjectPointer(pc_ + skipSize - 1));
-            push(dc_);
-            push(cl_);
-            push(Object::makeObjectPointer(fp_));
-            asm volatile(" \t # -- FRAME end");
+            makeCallFrame(pc_ + skipSize - 1);
             NEXT;
         }
         CASE(INDIRECT)

@@ -172,7 +172,7 @@ inline Object* VM::disasm(Object* code, int length)
 #endif
 }
 
-inline Object* VM::getDirectThreadedCode(Object* code, int length)
+inline Object* VM::getDirectThreadedCode(const Object* code, int length)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);
