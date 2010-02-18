@@ -218,7 +218,7 @@ void FaslReader::getSymbolsAndStrings()
         {
             ucs4string nameString = text;
             nameString += UC("-rtd$");
-            const Object rtd = theVM_->getTopLevelGlobalValueOrFalse(Symbol::intern(nameString.strdup()));
+            const Object rtd = theVM_->getGlobalValueOrFalse(Symbol::intern(nameString.strdup()));
             MOSH_ASSERT(!rtd.isFalse());
             symbolsAndStringsArray_[uid] = rtd;
             break;

@@ -63,6 +63,7 @@ Group: Mosh  {
    File: Concurrent  (lib/mosh/concurrent.ss)
    File: File  (lib/mosh/file.ss)
    File: Pattern Match  (lib/match.ss)
+   File: Regular Expressions  (doc/text/regexp.txt)
    }  # Group: Mosh
 
 Group: R6RS  {

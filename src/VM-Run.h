@@ -68,6 +68,7 @@
 #include "TranscodedTextualInputOutputPort.h"
 #include "SimpleStruct.h"
 #include "Continuation.h"
+#include "Code.h"
 
 #ifdef ENABLE_PROFILER
 #define COUNT_CALL(a) countCall(a)
