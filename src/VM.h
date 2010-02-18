@@ -242,6 +242,7 @@ public:
     void raiseVectorInvalidIndexError(int op);
     void callOp(Object operand);
     Object call(Object n);
+    Object tailCall(Object n, Object diff);
 
 protected:
     virtual int exit(int status)

@@ -38,9 +38,12 @@
   (u8-list->c-procedure (append lst (assemble '((retq))))))
 
 (define dummy #f)
-(define (return-1) 1)
+(define (return-1) (display 'return-1---) 1)
 (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
 (define one 1)
+(define a 0)
+(define (set-a-1)
+  (set! a 1))
 
 (define (asm*->procedure asm*)
   (u8*->c-procedure+retq (assemble asm*)))
@@ -416,6 +419,13 @@
 ;; (let ([proc (compile (lambda () (fib 1)))])
 ;;   (test-equal 1 (proc)))
 
+;; non tail-call
+(let ([proc (compile (lambda () (set-a-1) #f))])
+  (test-equal 0 a)
+  (test-equal #f (proc))
+  (test-equal 1 a))
+
+;; tail-call
 (let ([proc (compile (lambda () (return-1)))])
   (test-equal 1 (proc)))
 

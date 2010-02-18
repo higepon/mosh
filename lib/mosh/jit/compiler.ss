@@ -150,10 +150,17 @@
     ,@(PUSH)
     ,@(FRAME)))
 
+(define (TAIL_CALL n diff)
+  `(,@(trace-push! $TAIL_CALL)
+    ,@(call3 (get-c-address 'VM::tailCall) 'rdi (obj->integer n) (obj->integer diff))
+;    ,@(DEBUGGER 99)
+    (movq ,(vm-register 'ac) rax)))
+
+
 (define (CALL n)
   `(,@(trace-push! $CALL)
     ,@(call2 (get-c-address 'VM::call) 'rdi (obj->integer n))
-    ,@(DEBUGGER 99)
+;    ,@(DEBUGGER 99)
     (movq ,(vm-register 'ac) rax)))
 ;;     (push rdi)                    ;; save registers
 ;;     (push rsi)
@@ -1167,8 +1174,8 @@
 (define (RETURN n)
   `(,@(trace-push! $RETURN)
 ;;     ,@(DEBUGGER 9990)
-;;     ,@(RESTORE_REGISTERS n)
-;;     (movq rax ,(vm-register 'ac)) ;; we need this.
+     ,@(RESTORE_REGISTERS n)
+     (movq rax ,(vm-register 'ac)) ;; we need this.
 ;;     ,@(DEBUGGER 9991)
     (movq rsp rbp)
     (pop rbp)
@@ -1602,6 +1609,7 @@
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
   (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
   (register-insn-dispatch-table $CALL CALL)
+  (register-insn-dispatch-table $TAIL_CALL TAIL_CALL)
   (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME)))
   (register-insn-dispatch-table $PUSH PUSH)
   (register-insn-dispatch-table $CAR_PUSH CAR_PUSH)

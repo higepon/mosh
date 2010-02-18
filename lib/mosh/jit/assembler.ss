@@ -330,7 +330,7 @@
     ;; MOV r/m32,r32
     ;;   89 /r
     [('movl (? r32? (= r32->number r/m32)) (? r32? (= r32->number r32)))
-     (pack-op #f #x89 mod.register r32 r/m32 #f #f #f '() '()))
+     (pack-op #f #x89 mod.register r32 r/m32 #f #f #f '() '())]
     ;; MOV r32,imm32
     ;;   B8+ rd
     [('movl (? r32? (= r32->number r32)) (? imm32? (= imm32->u8* u8*)))

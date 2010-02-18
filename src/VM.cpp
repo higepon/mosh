@@ -260,13 +260,11 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     callCodeLength_ = 3;
     callCode_ = Object::makeObjectArray(callCodeLength_);
 
-    callCodeJitLength_ = 5;
+    callCodeJitLength_ = 3;
     callCodeJit_ = Object::makeObjectArray(callCodeJitLength_);
-    callCodeJit_[0] = Object::makeRaw(Instruction::FRAME);
-    callCodeJit_[1] = Object::makeFixnum(3);
-    callCodeJit_[2] = Object::makeRaw(Instruction::CALL);
-    callCodeJit_[3] = Object::makeFixnum(0);
-    callCodeJit_[4] = Object::makeRaw(Instruction::HALT);
+    callCodeJit_[0] = Object::makeRaw(Instruction::CALL);
+    callCodeJit_[1] = Object::makeFixnum(0);
+    callCodeJit_[2] = Object::makeRaw(Instruction::HALT);
 
 }
 
@@ -576,13 +574,53 @@ Object VM::apply(Object proc, Object args)
 // ToDo:We can optimize for cprocedure case.
 Object VM::call(Object n)
 {
-    callCodeJit_[3] = n;
+    Object* halt = Object::makeObjectArray(2);
+    halt[0] = Object::makeRaw(Instruction::HALT);
+    halt[1] = Object::makeRaw(Instruction::HALT);
+    Object* const haltDirect = getDirectThreadedCode(halt, 2);
+    callCodeJit_[1] = n;
     SAVE_REGISTERS();
     fprintf(stderr, "fp_=%x", fp_);
+    *(sp_ - n.toFixnum() - 4) = Object::makeObjectPointer(haltDirect);
     Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
     const Object ret = run(direct, NULL);
     RESTORE_REGISTERS();
     sp_ = sp_ - n.toFixnum() - 4;
+    return ret;
+}
+
+Object VM::tailCall(Object n, Object diff)
+{
+    MOSH_ASSERT(n.isFixnum());
+    MOSH_ASSERT(diff.isFixnum());
+    Object pc1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 4);
+    Object dc1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 3);
+    Object cl1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 2);
+    Object fp1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 1);
+    Object* halt = Object::makeObjectArray(2);
+    halt[0] = Object::makeRaw(Instruction::HALT);
+    halt[1] = Object::makeRaw(Instruction::HALT);
+    Object* const haltDirect = getDirectThreadedCode(halt, 2);
+    callCodeJit_[1] = n;
+    SAVE_REGISTERS();
+
+    for (int i = 0; i < n.toFixnum(); i ++) {
+        *(sp_ + 4 - i) = *(sp_ - i);
+    }
+    sp_ = sp_ - n.toFixnum();
+    push(Object::makeObjectPointer(haltDirect));
+    push(dc1);
+    push(cl1);
+    push(fp1);
+
+    sp_ += n.toFixnum();
+
+    // allocation が発生しないようにしよう背
+    Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
+    const Object ret = run(direct, NULL);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    RESTORE_REGISTERS();
+    sp_ = sp_ - n.toFixnum(); // -4 
     return ret;
 }
 

@@ -199,6 +199,13 @@ static inline uintptr_t getClassMemberPointer(Object (VM::*func)(Object))
     return *p;
 }
 
+static inline uintptr_t getClassMemberPointer(Object (VM::*func)(Object, Object))
+{
+    uintptr_t* p = reinterpret_cast<uintptr_t*>(&func);
+    return *p;
+}
+
+
 // (get-c-address name)
 Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
 {
@@ -216,7 +223,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                       UC("VM::raiseNotPairErrorForJit"),
                                       UC("VM::raiseVectorRequiredError"),
                                       UC("VM::raiseVectorInvalidIndexError"),
-                                      UC("VM::call")
+                                      UC("VM::call"),
+                                      UC("VM::tailCall")
     };
     static uintptr_t pointers[] = {getClassMemberPointer(&Object::isNumber),
                                    (uintptr_t)(&Object::True),
@@ -229,7 +237,8 @@ Object scheme::getCAddressEx(VM* theVM, int argc, const Object* argv)
                                    getClassMemberPointer(&VM::raiseNotPairErrorForJit),
                                    getClassMemberPointer(&VM::raiseVectorRequiredError),
                                    getClassMemberPointer(&VM::raiseVectorInvalidIndexError),
-                                   getClassMemberPointer(&VM::call)
+                                   getClassMemberPointer(&VM::call),
+                                   getClassMemberPointer(&VM::tailCall)
     };
 
     MOSH_ASSERT(sizeof(names) == sizeof(pointers));
