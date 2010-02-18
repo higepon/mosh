@@ -314,6 +314,7 @@ protected:
     Code* applyClosureCode_;
     Code* callClosureByNameCode_;
     Code* callCode_;
+    Code* haltCode_;
 
     Object* callCodeJit_;
     int callCodeJitLength_;

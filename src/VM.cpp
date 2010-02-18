@@ -263,6 +263,10 @@ void VM::initializeDynamicCode()
     callClosureByNameCode_->push(Object::makeRaw(Instruction::HALT));
 
     callCode_ = new Code(3);
+
+    void** dispatchTable = getDispatchTable();
+    haltCode_ = new Code(1);
+    haltCode_->push(Object::makeRaw(dispatchTable[Instruction::HALT]));
 }
 
 void VM::loadCompiler()
@@ -540,13 +544,8 @@ Object VM::apply(Object proc, Object args)
 // If you want to know how this works, see lib/mosh/jit/compiler.
 Object VM::call(Object n)
 {
-    Object* halt = Object::makeObjectArray(2);
-    halt[0] = Object::makeRaw(Instruction::HALT);
-    halt[1] = Object::makeRaw(Instruction::HALT);
-    Object* const haltDirect = getDirectThreadedCode(halt, 2);
     callCodeJit_[1] = n;
-    *(sp_ - n.toFixnum() - 4) = Object::makeObjectPointer(haltDirect);
-//    const Object ret = evaluateSafe(callCodeJit_, callCodeJitLength_);
+    *(sp_ - n.toFixnum() - 4) = Object::makeObjectPointer(haltCode_->code());
     Registers r;
     saveRegisters(&r);
 
@@ -565,10 +564,6 @@ Object VM::tailCall(Object n, Object diff)
     Object dc1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 3);
     Object cl1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 2);
     Object fp1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 1);
-    Object* halt = Object::makeObjectArray(2);
-    halt[0] = Object::makeRaw(Instruction::HALT);
-    halt[1] = Object::makeRaw(Instruction::HALT);
-    Object* const haltDirect = getDirectThreadedCode(halt, 2);
     callCodeJit_[1] = n;
     Registers r;
     saveRegisters(&r);
@@ -577,7 +572,7 @@ Object VM::tailCall(Object n, Object diff)
         *(sp_ + 4 - i) = *(sp_ - i);
     }
     sp_ = sp_ - n.toFixnum();
-    push(Object::makeObjectPointer(haltDirect));
+    push(Object::makeObjectPointer(haltCode_->code()));
     push(dc1);
     push(cl1);
     push(fp1);
@@ -587,7 +582,6 @@ Object VM::tailCall(Object n, Object diff)
     // allocation が発生しないようにしよう背
     Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
     const Object ret = runLoop(direct, NULL);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     restoreRegisters(&r);
     sp_ = sp_ - n.toFixnum(); // -4 
     return ret;
