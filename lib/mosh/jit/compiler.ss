@@ -150,13 +150,90 @@
     ,@(PUSH)
     ,@(FRAME)))
 
+;;
+;;  How JIT TAIL_CALL works.
+;;
+;;    JIT CALL calls VM::tailCall.
+;;    Although same as on JIT CALL, we have to insert HALT to the FRAME,
+;;    On TAIL_CALL, we have no FRAME.
+;;    So we insert dummy FRAME.
+;;
+;;   ========================================================
+;;   |  [VM]    |   [JIT]         |       [Stack]           |
+;;   |==========|=================|=========================|
+;;   | FRAME    |                 |  FRAME for JIT Proc     |
+;;   |==========|=================|=========================|
+;;   | PUSH args|                 |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |==========|=================|=========================|
+;;   | CALL     |                 |                         |
+;;   |==========|=================|=========================|
+;;   |          | JIT PUSH args   |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | JIT CALL        |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | VM::call        |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  Dummy FRAME pc <- HALT |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | VM::call RETURN |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |==========|=================|=========================|
+;;   |          | JRETURN         |                         |
+;;   |==========|=================|==========================
+;;
 (define (TAIL_CALL n diff)
   `(,@(trace-push! $TAIL_CALL)
     ,@(call3 (get-c-address 'VM::tailCall) 'rdi (obj->integer n) (obj->integer diff))
 ;    ,@(DEBUGGER 99)
     (movq ,(vm-register 'ac) rax)))
 
-
+;;
+;;  How JIT CALL works.
+;;
+;;    JIT CALL calls VM::call.
+;;    Since VM::call should be return to the caller, we adjust insert HALT to the FRAME
+;;
+;;   ========================================================
+;;   |  [VM]    |   [JIT]         |       [Stack]           |
+;;   |==========|=================|=========================|
+;;   | FRAME    |                 |  FRAME for JIT Proc     |
+;;   |==========|=================|=========================|
+;;   | PUSH args|                 |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |==========|=================|=========================|
+;;   | CALL     |                 |                         |
+;;   |==========|=================|=========================|
+;;   |          | JIT FRAME       |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  FRAME (pc_ is dirty)   |
+;;   |==========|=================|=========================|
+;;   |          | JIT PUSH args   |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  FRAME (pc_ is dirty)   |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | JIT CALL        |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  FRAME (pc_ is dirty)   |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | VM::call        |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |          |                 |  FRAME (pc <- HALT)     |
+;;   |          |                 |  Args                   |
+;;   |==========|=================|=========================|
+;;   |          | VM::call RETURN |  FRAME for JIT Proc     |
+;;   |          |                 |  Args for JIT Proc      |
+;;   |==========|=================|=========================|
+;;   |          | JRETURN         |                         |
+;;   |==========|=================|==========================
+;;
 (define (CALL n)
   `(,@(trace-push! $CALL)
     ,@(call2 (get-c-address 'VM::call) 'rdi (obj->integer n))
@@ -1520,7 +1597,7 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15) 
+               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15)
                                                                 (push rbp)
                                                                 (movq rbp rsp)
                                                                 ,@(apply append (cons (trace-reset!) asm*)))))

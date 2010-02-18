@@ -534,8 +534,10 @@ Object VM::apply(Object proc, Object args)
     return evaluateSafe(applyCode_);
 }
 
-// Called from JIT compiler.
 // ToDo:We can optimize for cprocedure case.
+
+// N.B.
+// If you want to know how this works, see lib/mosh/jit/compiler.
 Object VM::call(Object n)
 {
     Object* halt = Object::makeObjectArray(2);
