@@ -1105,9 +1105,13 @@
 
 ;; pending: CALL for closure is not implemented.
 (define (REFER_GLOBAL_CALL id n)
-  (display n)
   `(,@(trace-push! $REFER_GLOBAL_CALL)
     ,@(REFER_GLOBAL id)
+    ,@(CALL n)))
+
+(define (REFER_FREE_CALL m n)
+  `(,@(trace-push! $REFER_FREE_CALL)
+    ,@(REFER_FREE m)
     ,@(CALL n)))
 
 
@@ -1685,6 +1689,7 @@
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
   (register-insn-dispatch-table $REFER_GLOBAL_CALL REFER_GLOBAL_CALL)
+  (register-insn-dispatch-table $REFER_FREE_CALL REFER_FREE_CALL)
   (register-insn-dispatch-table $CALL CALL)
   (register-insn-dispatch-table $TAIL_CALL TAIL_CALL)
   (register-insn-dispatch-table $PUSH_FRAME (lambda (x) (PUSH_FRAME)))

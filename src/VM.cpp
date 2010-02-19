@@ -144,12 +144,6 @@ VM::VM(int stackSize, Object outPort, Object errorPort, Object inputPort, bool i
     closureForEvaluate_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 0, outerSourceInfo_);
     closureForApply_ = Object::makeClosure(NULL, 0, 0, false, cProcs_, cProcNum, 1, outerSourceInfo_);;
 
-    callCodeJitLength_ = 3;
-    callCodeJit_ = Object::makeObjectArray(callCodeJitLength_);
-    callCodeJit_[0] = Object::makeRaw(Instruction::CALL);
-    callCodeJit_[1] = Object::makeFixnum(0);
-    callCodeJit_[2] = Object::makeRaw(Instruction::HALT);
-
     initializeDynamicCode();
 }
 
@@ -262,14 +256,12 @@ void VM::initializeDynamicCode()
     callClosureByNameCode_->push(Object::makeFixnum(1));
     callClosureByNameCode_->push(Object::makeRaw(Instruction::HALT));
 
-
     void** dispatchTable = getDispatchTable();
 
-    // callCode_ can't be nested, so we can share this.
-    callCode_ = new Code(3);
+    // callCode_ can be shared, since nested call will happen after fetching operand n.
+    callCode_ = new Code(2);
     callCode_->push(Object::makeRaw(dispatchTable[Instruction::CALL]));
     callCode_->push(Object::makeFixnum(0));
-    callCode_->push(Object::makeRaw(dispatchTable[Instruction::HALT]));
 
     // haltCode_ is read only, so we can share this
     haltCode_ = new Code(1);
@@ -546,21 +538,19 @@ Object VM::apply(Object proc, Object args)
 }
 
 // ToDo:We can optimize for cprocedure case.
-
 // N.B.
 // If you want to know how this works, see lib/mosh/jit/compiler.
 Object VM::call(Object n)
 {
-    // can be nest? test todo
-    callCodeJit_[1] = n;
-    *(sp_ - n.toFixnum() - 4) = Object::makeObjectPointer(haltCode_->code());
-    Registers r;
-    saveRegisters(&r);
+    MOSH_ASSERT(n.isFixnum());
 
-    Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
-    const Object ret = runLoop(direct, NULL);
-    restoreRegisters(&r);
-    sp_ = sp_ - n.toFixnum() - 4;
+    // Insert HALT code to the FRAME
+    Object* frame = sp_ - n.toFixnum() - SIZE_OF_FRAME;
+    *(frame + 0) = Object::makeObjectPointer(haltCode_->code());
+
+    // CALL! (No need to save/restore?)
+    callCode_->set(1, n);
+    const Object ret = runLoop(callCode_->code(), NULL);
     return ret;
 }
 
@@ -568,30 +558,28 @@ Object VM::tailCall(Object n, Object diff)
 {
     MOSH_ASSERT(n.isFixnum());
     MOSH_ASSERT(diff.isFixnum());
-    Object pc1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 4);
-    Object dc1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 3);
-    Object cl1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 2);
-    Object fp1 = *(sp_ - n.toFixnum() - diff.toFixnum() - 1);
-    callCodeJit_[1] = n;
-    Registers r;
-    saveRegisters(&r);
+    Object* topFrame = sp_ - n.toFixnum() - diff.toFixnum() - SIZE_OF_FRAME;
 
+    Object dc1 = *(topFrame + 1);
+    Object cl1 = *(topFrame + 2);
+    Object fp1 = *(topFrame + 3);
+
+    // Shift args
     for (int i = 0; i < n.toFixnum(); i ++) {
-        *(sp_ + 4 - i) = *(sp_ - i);
+        *(sp_ + SIZE_OF_FRAME - i - 1) = *(sp_ - i - 1);
     }
+
+    // Make dummy frame
     sp_ = sp_ - n.toFixnum();
     push(Object::makeObjectPointer(haltCode_->code()));
     push(dc1);
     push(cl1);
     push(fp1);
 
+    fp_ += SIZE_OF_FRAME;
     sp_ += n.toFixnum();
-
-    // allocation が発生しないようにしよう背
-    Object* const direct = getDirectThreadedCode(callCodeJit_, callCodeJitLength_);
-    const Object ret = runLoop(direct, NULL);
-    restoreRegisters(&r);
-    sp_ = sp_ - n.toFixnum(); // -4 
+    callCode_->set(1, n);
+    const Object ret = runLoop(callCode_->code(), NULL);
     return ret;
 }
 

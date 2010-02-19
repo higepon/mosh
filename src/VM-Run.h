@@ -185,16 +185,12 @@ namespace scheme {
                 VM_ASSERT(operand.isFixnum());
                 const int argc = operand.toFixnum();
                 // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
-                pc_  = cprocedure->returnCode;
-                pc_[0] = Object::makeRaw(labelReturn_);
-                pc_[1] = operand;
 
+                // Not same as Cproc, JIT-compile CProc issues RETURN.
+                // So we don't use returnCode
                 fp_ = sp_ - argc;
-                fprintf(stderr, "<1:this=%x pc=%x sp=%x fp=%x\n>", this, pc_, sp_, fp_);
                 cl_ = ac_;
                 ac_ = cprocedure->call(this, argc, sp_ - argc);
-                fprintf(stderr, "<2:this=%x pc=%x sp=%x fp=%x\n>", this, pc_, sp_, fp_);
-
             } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
                     expandStack(stackSize_ / 10);

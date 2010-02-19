@@ -990,7 +990,7 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
 //            VM_ASSERT(pcObject.isObjectPointer());
             pc_ = pcObject.toObjectPointer();
 
-            sp_ = sp - 4;
+            sp_ = sp - SIZE_OF_FRAME;
             asm volatile(" \t # --  RETURN end");
             NEXT;
         }

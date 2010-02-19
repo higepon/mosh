@@ -38,12 +38,23 @@
   (u8-list->c-procedure (append lst (assemble '((retq))))))
 
 (define dummy #f)
-(define (return-1) (display 'return-1---) 1)
+(define (return-1) 1)
+(define (sub a b) (- a b))
+(define (identity x) (display 'identity-called) (display x) x)
 (define (fib n) (if (< n 2) 1 (+ (fib (- n 2)) (fib (- n 1)))))
 (define one 1)
 (define a 0)
-(define (set-a-1)
+(define b 0)
+(define (set-a-1!)
   (set! a 1))
+
+(define (set-a! v)
+  (set! a v))
+
+(define (set-a-b! av bv)
+  (set! a av)
+  (set! b bv))
+
 
 (define (asm*->procedure asm*)
   (u8*->c-procedure+retq (assemble asm*)))
@@ -415,22 +426,58 @@
 ;;   (let ([proc (compile (lambda () a))])
 ;;     (test-equal 1 (proc))))
 
-;; REFER_GLOBAL_CALL
+;; ;; REFER_GLOBAL_CALL
 ;; (let ([proc (compile (lambda () (fib 1)))])
 ;;   (test-equal 1 (proc)))
 
-;; non tail-call
-(let ([proc (compile (lambda () (set-a-1) #f))])
+;; ;; non tail-call
+(let ([proc (compile (lambda () (set-a-1!) #f))])
   (test-equal 0 a)
   (test-equal #f (proc))
   (test-equal 1 a))
+
+;; non tail-call
+(let ([proc (compile (lambda () (set-a! 1234) #f))])
+  (test-equal #f (proc))
+  (test-equal 1234 a))
+
+;; non tail-call
+(let ([proc (compile (lambda () (set-a-b! 1111 2222) #f))])
+  (test-equal #f
+              (proc))
+  (test-equal 1111 a)
+  (test-equal 2222 b))
 
 ;; tail-call
 (let ([proc (compile (lambda () (return-1)))])
   (test-equal 1 (proc)))
 
+;; tail-call
+(let ([proc (compile (lambda () (identity 1234)))])
+  (test-equal 1234 (proc)))
 
+;; tail-call
+(let ([proc (compile (lambda () (sub 1234 2)))])
+  (test-equal 1232 (proc)))
 
+;; tail-call
+(let ([proc (compile (lambda (x) (sub 1234 x)))])
+  (test-equal 1231 (proc 3)))
+
+;; tail-call
+(let ([proc (compile (lambda (x y) (sub x y)))])
+  (test-equal 1230 (proc 1234 4)))
+
+;; nested jit-call
+(let* ([proc1 (compile (lambda (x) (set-a! x) #f))]
+       [proc2 (compile (lambda (y) (proc1 3) (sub a y)))])
+  (test-equal 2 (proc2 1)))
+
+;; nested jit-call
+(let* ([proc1 (compile (lambda (x) (set-a! x) #f))]
+       [proc2 (compile (lambda (x y) (proc1 11111) (sub x y)))])
+  (test-equal 99 (proc2 100 1))
+  (test-equal 11111 a))
 
 ;; ;; BRANCH_NOT_EQV
 ;; (let ([proc (compile (lambda(x) (if (eqv? x "hige") #t #f)))])

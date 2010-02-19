@@ -315,8 +315,6 @@ protected:
     Code* callCode_;
     Code* haltCode_;
 
-    Object* callCodeJit_;
-    int callCodeJitLength_;
     ReaderContext* readerContext_;
     NumberReaderContext* numberReaderContext_;
 #if _MSC_VER
@@ -334,6 +332,10 @@ protected:
     Object jitCompiler_;
 
 private:
+    enum
+    {
+        SIZE_OF_FRAME = 4
+    };
     typedef struct Registers
     {
         Object ac;
