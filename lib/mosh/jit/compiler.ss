@@ -419,13 +419,13 @@
     ;; rdi = VM*
     ;; op  = 0
     ,@(call2 (get-c-address 'VM::raiseVectorInvalidIndexError) 'rdi 0)
-    (retq)
+    ,@(return-to-vm)
     (label ,is-not-vector-case)
     ;; rdi = VM*
     ;; op  = 0
     ;; obj = rbx
     ,@(call3 (get-c-address 'VM::raiseVectorRequiredError) 'rdi 0 'rbx)
-    (retq)
+    ,@(return-to-vm)
     (label ,done-case)
 )))
 
@@ -514,7 +514,7 @@
       (label ,error-case)
       (movq rsi 0) ;; 0 : car
       ,@(call0 (get-c-address 'VM::raiseNotPairErrorForJit)) ;; VM* is already set to rdi
-      (retq)
+      ,@(return-to-vm)
       (label ,normal-case))))
 
 (define (CAR_PUSH)
@@ -555,7 +555,7 @@
       (label ,error-case)
       (movq rsi 1) ;; 1 : cdr
       ,@(call0 (get-c-address 'VM::raiseNotPairErrorForJit)) ;; VM* is already set to rdi
-      (retq)
+      ,@(return-to-vm)
       (label ,normal-case))))
 
 (define (CDR_PUSH)
@@ -1252,13 +1252,8 @@
     (movq ,(vm-register 'pc) rax)
     (movq ,(vm-register 'sp) rcx)))
 
-(define (RETURN n)
-  `(,@(trace-push! $RETURN)
-;;     ,@(DEBUGGER 9990)
-     ,@(RESTORE_REGISTERS n)
-     (movq rax ,(vm-register 'ac)) ;; we need this.
-;;     ,@(DEBUGGER 9991)
-    (movq rsp rbp)
+(define (return-to-vm)
+  '((movq rsp rbp)
     (pop rbp)
     (pop r15)
     (pop r14)
@@ -1266,6 +1261,14 @@
     (pop r12)
     (pop rbx)
     (retq)))
+
+(define (RETURN n)
+  `(,@(trace-push! $RETURN)
+;;     ,@(DEBUGGER 9990)
+     ,@(RESTORE_REGISTERS n)
+     (movq rax ,(vm-register 'ac)) ;; we need this.
+;;     ,@(DEBUGGER 9991)
+     ,@(return-to-vm)))
 
 ;; (define (RETURN n) ;; pc いらん
 ;;   `((movq rax ,(vm-register 'pc))
