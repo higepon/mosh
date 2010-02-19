@@ -322,7 +322,7 @@
     (movq ,(vm-register 'ac) rax)))
 
 (define (UNDEF)
-  `(,@(trace-push! $CONSTANT_PUSH)
+  `(,@(trace-push! $UNDEF)
     (movq ,(vm-register 'ac) ,(obj->integer (if #f #f)))))
 
 (define (CONSTANT_PUSH x)
@@ -1253,21 +1253,22 @@
     (movq ,(vm-register 'sp) rcx)))
 
 (define (return-to-vm)
-  '((movq rsp rbp)
+  `((movq rsp rbp)
     (pop rbp)
     (pop r15)
     (pop r14)
     (pop r13)
     (pop r12)
     (pop rbx)
+    ,@(DEBUGGER 9991)
     (retq)))
 
 (define (RETURN n)
   `(,@(trace-push! $RETURN)
-;;     ,@(DEBUGGER 9990)
-     ,@(RESTORE_REGISTERS n)
+     ,@(DEBUGGER 9990)
+;     ,@(RESTORE_REGISTERS n)
      (movq rax ,(vm-register 'ac)) ;; we need this.
-;;     ,@(DEBUGGER 9991)
+;     ,@(DEBUGGER 9991)
      ,@(return-to-vm)))
 
 ;; (define (RETURN n) ;; pc いらん
@@ -1687,7 +1688,7 @@
 
   (register-insn-dispatch-table $RETURN RETURN)
   (register-insn-dispatch-table $PUSH_CONSTANT PUSH_CONSTANT)
- (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
+(register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
