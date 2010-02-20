@@ -43,7 +43,6 @@
 
 (load "compat-mosh-run.scm")
 (load "runtime.scm")
-(load "runtime-cache.scm")
 (load "mosh-utils5.scm")
 
 (set! top-level-macros '())

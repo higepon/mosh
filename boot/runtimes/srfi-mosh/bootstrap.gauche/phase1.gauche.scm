@@ -28,7 +28,6 @@
 
 (load "./bootstrap.gauche/compat-gauche.scm")
 (load "./runtime.scm")
-(load "./runtime-cache.scm")
 (load "./bootstrap.gauche/mosh-stubs.scm")
 (load "./mosh-utils5.scm")
 (load "./expander.scm")

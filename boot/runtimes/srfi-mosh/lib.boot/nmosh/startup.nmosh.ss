@@ -1,18 +1,17 @@
 (library (nmosh startup)
 	 (export startup)
 	 (import (rnrs) 
-		 (rnrs load)
 		 (nmosh runlib)
 		 (nmosh condition-printer)
 		 (nmosh minidebug)
-		 (primitives ca-load set-symbol-value!))
+		 (primitives ca-load ca-load/disable-cache set-symbol-value!))
 
 (define (startup)
+  (set-symbol-value! '%nmosh-failproc enter-debugger)
   (let ((cl (command-line)))
     (cond
       ((<= 1 (length cl))
-       ;(ca-load (car cl) #f 'STARTUP-PROGRAM))
-       (load (car cl)))
+       (ca-load/disable-cache (car cl))) ; mosh's FASL is not safe for some programs
       (else 
 	(runlib '((nrepl simple)) 'nrepl)))))
 
@@ -25,5 +24,4 @@
   (runlib/fallback fallback '((nmosh debugger)) 'debugger c trace))
 
 
-(set-symbol-value! '%nmosh-failproc enter-debugger)
 )

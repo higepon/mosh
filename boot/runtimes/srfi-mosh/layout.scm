@@ -1,5 +1,5 @@
 (define layout '( ; specs here
-  (load "compat-mosh-run.scm" "mosh-utils5.scm" "runtime.scm" "runtime-cache.scm")
+  (load "compat-mosh-run.scm" "mosh-utils5.scm" "runtime.scm")
   (r6rs 
     (core primitives) (core with-syntax) (core syntax-rules)
     (core let) (core derived) (core identifier-syntax) (core quasisyntax) (core quasiquote)

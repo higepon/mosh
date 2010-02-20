@@ -34,7 +34,6 @@
 (load "./bootstrap.gauche/mosh-stubs.scm")
 (load "./bootstrap.gauche/compat-gauche.scm")
 (load "./runtime.scm")
-(load "./runtime-cache.scm")
 (load "./mosh-utils5.scm")
 
 

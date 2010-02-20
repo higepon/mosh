@@ -31,7 +31,6 @@ test: all
 inject-nmosh:
 	nmosh build-run.ss
 	cp nmosh_image.cpp ../../../src/
-	make -C ../../../
 clean:
 	rm -f *.exp
 	rm -f *.exp-e

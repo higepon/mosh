@@ -76,7 +76,7 @@ if MINGW32
 nmosh_LDADD += mosh-icon.o
 mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	-mkdir -p $(top_builddir)/misc/logo
-	-cp -pn $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
+	-cp -p $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
 	$(WINDRES) $< -o mosh-icon.o
 endif 
 
@@ -462,11 +462,11 @@ src/NumberScanner.cpp : src/NumberScanner.re
 check: test
 
 #FIXME: use macro
-MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh"
-NMOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh"
+MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
+NMOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
 test: testB testR testL
-ntest: testB testR testL
+ntest: ntestB ntestR ntestL
 
 testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)

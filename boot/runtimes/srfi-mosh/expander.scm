@@ -183,7 +183,6 @@
 ;; System exports:
 
 (define ex:expand-file               #f)
-(define ex:expand-file-to-cache      #f) ;MOSH 
 (define ex:expand-sequence           #f) ;NMOSH
 (define ex:expand-sequence-r5rs      #f) ;NMOSH
 (define ex:expand-sequence/debug     #f) ;NMOSH
@@ -2297,27 +2296,6 @@
                      target-filename))))
 
 ;;MOSH: cache
-    (define (expand-file-to-cache filename dbgfile target name)
-      (define (fappend a b)
-	(define (itr cur rest)
-	  (if (pair? rest)
-	    (itr (cons (car rest) cur) (cdr rest))
-	    cur))
-	(itr b (reverse a)))
-
-      (define KODE `((nm:register-source ,filename (quote ,name) (quote ,(nm:dump-library-table name)))))
-      (with-toplevel-parameters
-	(lambda ()
-	  (ca-serialize target 
-			(cons 'begin 
-			      (fappend KODE 
-				       (fluid-let 
-					 ((*DBG?* (if dbgfile #t #f))
-					  (*DBG-SYMS* '()))
-					 (let ((r (expand-toplevel-sequence (normalize (read-file filename)))))
-					   (if *DBG?* (ca-write-debug-file filename dbgfile r *DBG-SYMS*))
-					   r))))))))
-
     (define (expand-sequence l)
       (with-toplevel-parameters
 	(lambda () ;thunk
@@ -2551,7 +2529,6 @@
     (set! ex:syntax-violation          syntax-violation)
     
     (set! ex:expand-file               expand-file)
-    (set! ex:expand-file-to-cache      expand-file-to-cache) ; MOSH
     (set! ex:expand-sequence           expand-sequence)
     (set! ex:expand-sequence-r5rs      expand-sequence-r5rs)
     (set! ex:expand-sequence/debug     expand-sequence/debug)

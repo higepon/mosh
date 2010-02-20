@@ -4,7 +4,8 @@
     (begin 
       (display "-> " ERRPORT)
       (for-each (lambda (e)
-		  (display e ERRPORT))
+		  (display e ERRPORT)
+		  (display " " ERRPORT))
 		obj)
       (newline ERRPORT))))
 
@@ -136,11 +137,10 @@
 
 ; FIXME: handle exceptions
 (define (ca-writeobj fn obj)
+  (when (file-exists? fn) (delete-file fn))
   (call-with-port (open-file-output-port fn) (lambda (p) (fasl-write! obj p))))
 (define (ca-readobj fn)
   (call-with-port (open-file-input-port fn) fasl-read))
-
-
 
 ; load cache or generate cache (and load them)
 (define (ca-filename->cachename fn)
@@ -148,69 +148,160 @@
     (list->string (map (lambda (e) (cond
 				     ((char=? e #\:) #\~)
 				     ((char=? e #\/) #\~)
+				     ((char=? e #\~) #\@)
 				     (else e)))
 		       (string->list str))))
-  (string-append (nmosh-cache-path) (escape fn) ".nmosh-fasl"))
-
-(define nm:parachute #f) 
+  (string-append (nmosh-cache-path) (escape fn) ".nmosh-cache"))
 
 (define dbg-files '())
-(define (dbg-addfile fn cfn dfn)
+(define (dbg-addfile fn cdn dfn)
   (set! dbg-files (cons (list fn dfn) dbg-files)))
+(define dbg-syms '())
+(define (dbg-addsyms syms)
+  (when syms (set! dbg-syms (append syms dbg-syms))))
+
+(define (ca-scandeps-begin code)
+  (fold-left (lambda (cur e)
+	       (if (not (pair? e))
+		 cur
+		 (cond
+		   ((eq? 'begin (car e))
+		    (append cur (ca-scandeps-begin (cdr e))))
+		   (else
+		     (let ((r (ca-scandeps-unit e)))
+		       (if r
+			 (cons r cur)
+			 cur))))))
+	     '()
+	     code))
+
+(define (ca-scandeps-unit code)
+  (if (not (pair? code))
+    #f
+    (case (car code)
+      ;((ex:import-libraries-for-run) (list 'IMPORT-FOR-RUN (cdr code)))
+      ((ex:register-library!) (ca-scandeps-unit (cadr code)))
+      ((ex:make-library) 
+       (let* ((p (cddddr code))
+	      (libnames (cadar p))
+	      (builds (cadadr p)))
+	 (map (lambda (name build) (cons (car name) build)) libnames builds)))
+      (else #f))))
+
+(define (ca-scandeps code)
+  (apply append (ca-scandeps-begin code)))
+
+(define (ca-makecache code compiled-code syms fn cfn dfn name)
+  (ca-prepare-cache-dir)
+  (let ((deps (ca-scandeps code)))
+    (PCK 'DEPS deps)
+    (ca-writeobj cfn (list
+		       (if compiled-code
+			 (cons 'MOSH-CODE compiled-code)
+			 (cons 'VANILLA-MOSH-CODE code))
+		       (cons 'DEPS (cons fn deps)))))
+  (when dfn
+    (ca-writeobj dfn (list
+		       (cons 'DBG-FILENAME fn)
+		       (cons 'DBG-SOURCE code)
+		       (cons 'DBG-SYMS syms)))))
+
+(define (ca-read-all fn)
+  (define (itr cur p)
+    (let ((r (read p)))
+      (if (eof-object? r)
+	(reverse cur)
+	(itr (cons r cur) p))))
+  (call-with-input-file fn (lambda (p) (itr '() p))))
+
+(define (ca-expand-for-cache fn)
+  (PCK "Reading" fn)
+  (let ((code (ca-read-all fn)))
+    (PCK "Expanding..")
+    (ex:expand-sequence/debug code)))
+
+(define (ca-need-update?-check cfn d)
+  ;; check library state
+  ;; d = list of (LIBNAME . BUILD) | FILENAME
+  (define (checkfile e)
+    (and (string? e)
+	 (file-newer? e cfn)
+	 (begin (PCK 'CACHE: "source changed" e) #t)))
+  (define (checklib e)
+    (and (pair? e)
+	 (let ((libname (car e))
+	       (build (cdr e)))
+	   (let ((lib (ex:lookup-library libname #f)))
+	     (and 
+	       (not (eq? build (ex:library-build lib)))
+	       (begin (PCK 'CACHE: "library build changed" libname build '=> (ex:library-build lib)) #t))))))
+  (or (find checkfile d) (find checklib d)))
+
+(define (ca-need-update? obj cfn) 
+  (let ((d (assq 'DEPS obj)))
+    (if d
+      (ca-need-update?-check cfn d)
+      #t)))
+
+(define (ca-runcache obj) 
+  (let ((m (assq 'MOSH-CODE obj)))
+    (when m 
+      (eval-compiled! (cdr m)))))
+
+(define (ca-load-compiled-code code syms)
+  (PCK "evaluating...")
+  (dbg-addsyms syms)
+  (eval-compiled! code))
 
 (define (ca-load/cache fn recompile? name)
-  (define (reload)
-    (PCK 'CACHE: 'RECOMPILE!!!)
-    (set! nm:parachute #f)
-    (ca-load fn #t name))
   (let* ((cfn (ca-filename->cachename fn))
-	 (dfn (string-append cfn ".nmosh-dbg")))
+	 (dfn (string-append cfn ".ndbg")))
     (dbg-addfile fn cfn dfn)
     (cond
       ((file-exists? cfn)
        (cond ((and (not recompile?) (file-newer? cfn fn))
 	      (PCK 'CACHE: 'loading.. cfn)
-	      ; try loading
-	      (if (eq? 'nm:failure
-		       (call/cc (lambda (k) ; FIXME: i assume a call/cc is much faster than an I/O
-				  (unless nm:parachute (set! nm:parachute k))
-				  (eval-compiled! (ca-readobj cfn)))))
-		(reload)
-		(set! nm:parachute #f))
-	      (PCK 'CACHE: 'done))
+	      (let ((obj (ca-readobj cfn)))
+		(cond
+		  ((ca-need-update? obj cfn)
+		   (PCK 'CACHE: 'RECOMPILE!! cfn)
+		   (ca-load/cache fn #t name))
+		  (else
+		    (PCK "Loading code..." name)
+		    (ca-runcache obj)))))
 	     (else
 	       (PCK 'CACHE: 're-cache..)
 	       (delete-file cfn)
-	       (ca-load fn #f name))))
+	       (ca-load/cache fn #t name))))
       (else
-	(PCK 'CACHE: fn '=> cfn)
-	(ex:expand-file-to-cache fn dfn cfn name)
-	(PCK 'LOADING..)
-	(ca-load fn #f name)))))
+	(PCK 'CACHE: 'loading fn)
+	(let* ((c (ca-expand-for-cache fn))
+	       (code (car c))
+	       (syms (cdr c)))
+	  (PCK 'CACHE: 'COMPILE...)
+	  (let ((compiled-code (compile-w/o-halt (cons 'begin code))))
+	    (PCK "Writing to" cfn)
+	    (ca-makecache code compiled-code syms fn cfn dfn name)
+	    (ca-load-compiled-code compiled-code syms)))))))
+
+(define (ca-load/disable-cache fn)
+  (PCK "Loading" fn "(ACC disabled)")
+  (let* ((c (ca-expand-for-cache fn))
+	 (code (car c))
+	 (syms (cdr c)))
+    (PCK "Compiling" fn "(ACC disabled)")
+    (let ((compiled-code (compile-w/o-halt (cons 'begin code))))
+      (ca-load-compiled-code compiled-code syms))))
 
 (define (ca-load fn recompile? name)
   (cond
     (%disable-acc 
-      (PCK 'loading fn "(ACC disabled)")
-      (ex:load fn))
+      (ca-load/disable-cache fn))
     (else (ca-load/cache fn recompile? name))))
 
 (define (ca-prepare-cache-dir)
   (unless (file-exists? (nmosh-cache-dir))
     (create-directory (nmosh-cache-dir))))
-
-(define (ca-serialize fn l)
-  (ca-prepare-cache-dir)
-  (ca-writeobj fn (compile-w/o-halt l)))
-
-(define (ca-write-debug-file sourcefile fn src syms)
-  (ca-prepare-cache-dir)
-  (when (file-exists? fn)
-    (delete-file fn))
-  (ca-writeobj fn (list 
-	       (cons 'DBG-FILENAME sourcefile)
-	       (cons 'DBG-SOURCE src)
-	       (cons 'DBG-SYMS syms))))
 
 (define (make-prefix-list)
   (define (append-prefix-x l str)

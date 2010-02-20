@@ -8,7 +8,6 @@
 (load "compat-mosh-run.scm")
 (load "runtime.scm")
 (load "mosh-utils5.scm")
-(load "runtime-cache.scm")
 (load "bootstrap.exp")
 (load "init5.scm")
 (ex:load "lib.boot/mosh.nmosh.ss")
