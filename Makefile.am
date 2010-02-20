@@ -426,12 +426,12 @@ generate-prebuild:
 #### Instruction.h
 
 src/Instruction.h: src/instruction.scm
-	(cd $(top_srcdir) && gosh misc/scripts/gen-insn.scm $(PWD)/$<) > $(PWD)/$@
+	(cd $(top_srcdir) && gosh misc/scripts/gen-insn.scm $<) > $@
 
 src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
 
 src/labels.cpp: src/instruction.scm
-	(cd $(top_srcdir) && gosh misc/scripts/gen-label.scm $<) > $(PWD)/$@
+	(cd $(top_srcdir) && gosh misc/scripts/gen-label.scm $<) > $@
 
 src/cprocedures.cpp: boot/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
 	(cd $(top_srcdir) && gosh misc/scripts/gen-cproc.scm) > $@
