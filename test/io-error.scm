@@ -319,7 +319,7 @@
                   (set-port-position! port -1)))
 
 ;; file-is-read-only
-(unless (string=? (host-os) "win32")
+(unless (or (string=? (host-os) "win32") (string=? (host-os) "cygwin"))
   (let ()
   (def-command chmod)
   (chmod -w "./test/read-only.txt")
