@@ -76,7 +76,7 @@ if MINGW32
 nmosh_LDADD += mosh-icon.o
 mosh-icon.o : win/mosh.rc misc/logo/mosh.ico
 	-mkdir -p $(top_builddir)/misc/logo
-	-cp -p $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
+	-cp -pn $(top_srcdir)/misc/logo/mosh.ico $(top_builddir)/misc/logo
 	$(WINDRES) $< -o mosh-icon.o
 endif 
 
@@ -213,6 +213,8 @@ if FFI_X86_64
 libmosh_a_SOURCES += src/ffi_stub_x86_64.S
 endif
 
+BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
+
 mosh_core_libraries = \
 lib/match.ss \
 lib/irregex.ss \
@@ -337,7 +339,7 @@ datadir = @MOSH_LIB_PATH@
 data_DATA = src/all-tests.scm
 nobase_data_DATA = ${mosh_core_libraries} #${mosh_core_fasl_libraries}
 
-INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR)
+INCLUDES       = -I $(top_srcdir)/$(BOEHM_GC_DIR)/include -I $(top_srcdir)/$(ONIG_DIR) -I$(top_srcdir)/src
 EXTRA_DIST     = \
 src/instruction.scm src/vm.scm boot/lib/base.scm boot/compiler.scm \
 boot/free-vars.scm misc/scripts boot/lib/match.scm src/test-data.scm doc \
@@ -395,49 +397,11 @@ bootstrap:
 	$(MAKE) src/NumberScanner.cpp
 	$(MAKE) src/all-tests.scm
 
-src/Reader.tab.cpp src/Reader.tab.hpp: src/Reader.y
-	bison -d $< -o $@
-
-src/NumberReader.tab.cpp src/NumberReader.tab.hpp: src/NumberReader.y
-	bison -p "number_yy" -d $< -o $@
-
-src/Scanner.cpp : src/scanner.re
-	re2c -u $< > $@ # -d is debug option
-
-src/NumberScanner.cpp : src/NumberScanner.re
-	re2c -cu $< > $@ # -d is debug option
-
-## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
-##      for "\" yen mark, -g causes infinite loop
-
 r6rs-test:
 	(cd r6rs-examples && ../mosh hello.ss)
 	(cd r6rs-examples && ../mosh let-syntax.ss)
 	(cd r6rs-examples && ../mosh env.ss)
 
-#### Instruction.h
-src/Instruction.h: src/instruction.scm
-	gosh ./misc/scripts/gen-insn.scm $(PWD)/$< > $(PWD)/$@
-
-src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
-
-src/labels.cpp: src/instruction.scm
-	gosh ./misc/scripts/gen-label.scm $< > $(PWD)/$@
-
-src/Object.h: src/Object-accessors.h
-
-src/cprocedures.cpp: boot/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
-	gosh ./misc/scripts/gen-cproc.scm > $@
-
-src/all-tests.scm: ./src/test-data.scm
-	mosh -5 ./misc/scripts/gen-test.scm $< $@
-#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
-
-src/Object-accessors.h: ./src/accessors.scm
-	mosh ./misc/scripts/gen-accessors.scm > $@
-
-src/OSConstants.h: src/os-constants.scm
-	mosh ./misc/scripts/gen-os-constants.scm > $@
 # when you release comment out end
 endif
 
@@ -450,6 +414,57 @@ doc:
 bench:
 #	@GOSH@ ./misc/scripts/bench.scm > /dev/null
 	LANG=C gosh ./misc/scripts/bench2.scm
+
+# generated FILES
+generate-prebuild:
+	$(MAKE) src/Instruction.h src/cprocedures.cpp
+	$(MAKE) src/labels.cpp
+	$(MAKE) src/OSConstants.h
+	$(MAKE) src/Object-accessors.h
+	$(MAKE) src/all-tests.scm
+
+#### Instruction.h
+
+src/Instruction.h: src/instruction.scm
+	(cd $(top_srcdir) && gosh misc/scripts/gen-insn.scm $(PWD)/$<) > $(PWD)/$@
+
+src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
+
+src/labels.cpp: src/instruction.scm
+	(cd $(top_srcdir) && gosh misc/scripts/gen-label.scm $<) > $(PWD)/$@
+
+src/cprocedures.cpp: boot/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
+	(cd $(top_srcdir) && gosh misc/scripts/gen-cproc.scm) > $@
+
+src/all-tests.scm: src/test-data.scm
+	(cd $(top_srcdir) && mosh -5 misc/scripts/gen-test.scm src/test-data.scm src/all-tests.scm)
+#	echo 'run -5 misc/scripts/gen-test.scm test-data.scm all-tests.scm ' | gdb ./mosh
+
+src/Object-accessors.h: src/accessors.scm
+	(cd $(top_srcdir) && mosh misc/scripts/gen-accessors.scm) > $@
+
+src/OSConstants.h: src/os-constants.scm
+	(cd $(top_srcdir) && mosh misc/scripts/gen-os-constants.scm) > $@
+
+# READER 
+src/Reader.tab.hpp: src/Reader.tab.cpp src/Reader.y
+
+src/NumberReader.tab.hpp: src/NumberReader.tab.cpp src/NumberReader.y
+
+src/Reader.tab.cpp: src/Reader.y
+	bison -d $< -o $@
+
+src/NumberReader.tab.cpp: src/NumberReader.y
+	bison -p "number_yy" -d $< -o $@
+
+src/Scanner.cpp : src/scanner.re
+	re2c -u $< > $@ # -d is debug option
+
+src/NumberScanner.cpp : src/NumberScanner.re
+	re2c -cu $< > $@ # -d is debug option
+
+## N.B. Do not use -g (optimization) option. -u causes YYCURSOR bug.
+##      for " \ " yen mark, -g causes infinite loop
 
 #### test
 check: test
