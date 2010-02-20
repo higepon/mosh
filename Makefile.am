@@ -470,8 +470,8 @@ src/NumberScanner.cpp : src/NumberScanner.re
 check: test
 
 #FIXME: use macro
-MOSHBIN = $(abs_builddir)/mosh
-NMOSHBIN = $(abs_builddir)/nmosh
+MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh"
+NMOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh"
 
 test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
