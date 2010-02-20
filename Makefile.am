@@ -409,19 +409,11 @@ doc:
 	mosh misc/scripts/gen-doc-from-r6rs.scm
 	perl ~/NaturalDocs-1.4/NaturalDocs -i . -o HTML doc/html -p doc/config -s pink -xi tools
 
-.PHONY: doc test install
+.PHONY: doc test ntest testB testR testL ntestB ntestR ntestL install
 
 bench:
 #	@GOSH@ ./misc/scripts/bench.scm > /dev/null
 	LANG=C gosh ./misc/scripts/bench2.scm
-
-# generated FILES
-generate-prebuild:
-	$(MAKE) src/Instruction.h src/cprocedures.cpp
-	$(MAKE) src/labels.cpp
-	$(MAKE) src/OSConstants.h
-	$(MAKE) src/Object-accessors.h
-	$(MAKE) src/all-tests.scm
 
 #### Instruction.h
 
@@ -473,18 +465,31 @@ check: test
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh"
 NMOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh"
 
-test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
+test: testB testR testL
+ntest: testB testR testL
+
+testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-mosh)
+
+testL:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+
+testR:
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
 
-ntest: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
+#check-am is Automake's internal target..
+testU: check-am
+
+ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-nmosh)
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
-	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
 
+ntestL:
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/irregex)
+
+ntestR:
+	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir)/test/r6rs-test-suite)
 
 # Builds gtest.a and gtest_main.a.
 
