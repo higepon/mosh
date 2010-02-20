@@ -1,7 +1,7 @@
 (library (nmosh minidebug)
 	 (export minidebug)
 	 (import (rnrs) (nmosh condition-printer) (nmosh conditions)
-		 (primitives dbg-files fasl-read))
+		 (primitives dbg-files dbg-syms fasl-read))
 
 (define libsyms '())
 
@@ -109,9 +109,17 @@
   (display "TRACE :\n" p)
   (printer (reverse trace)))
 
+(define minidebug-key #f)
+
 (define (minidebug p c trace)
-  (set! libsyms (load-symfiles))
   (condition-printer c p)
-  (fallback-trace-printer p trace)
+  (when minidebug-key
+    (display "!!! DOUBLE FAULT!\n" p)
+    (exit -1))
+  (set! minidebug-key #t)
+  (set! libsyms (append dbg-syms (load-symfiles)))
+  (if (pair? trace)
+    (fallback-trace-printer p (cdr trace))
+    (display "TRACE :\n(not avaliable)\n" p))
   (exit -1))
 )

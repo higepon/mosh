@@ -12,7 +12,7 @@
 (define condition-accessor (lambda e #f))
 (define hashtable-ref (lambda e #f))
 (define %loadpath #f)
-(define get-environment-variable (lambda e #f))
+(define get-environment-variable (lambda e ""))
 (define (host-os) "gauche")
 (define library-path #f)
 (define (raise-syntax-violation form subform who message trace) (error (list 'SYNTAX-VIOLATION form subform who message trace)))

@@ -82,10 +82,14 @@
 		 (display (list 'UNKNOWN-DATUM! e) (current-error-port)))))
 	    arg ...))))
 
+(define (safe-condition-who e) ; when who is #f... e.g.) eval (#f . #f)
+  (guard (c (#t #f))
+	 (condition-who e)))
+
 (define (syntax-trace-printer e port)
   (define (tab)
     (display "      " port))
-  (let ((who (condition-who e))
+  (let ((who (safe-condition-who e))
 	(message (condition-message e))
 	(form (syntax-violation-form e))
 	(subform (syntax-violation-subform e))

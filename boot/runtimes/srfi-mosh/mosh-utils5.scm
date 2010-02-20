@@ -38,6 +38,9 @@
 (define (nmosh-cache-path) 
   (string-append (nmosh-cache-dir) "/"))
 
+(define CACHEPATH (nmosh-cache-path))
+(define CACHEDIR (nmosh-cache-dir))
+
 (define absolute-path? 
   (if (run-win32-np?) ;FIXME: support UNC pathes
     (lambda (pl)
@@ -136,9 +139,20 @@
   (strsep str CHR-ENVPATHSEP))
 
 ; FIXME: handle exceptions
+(define tmpname-base (ex:unique-token))
+(define tmpname-counter 0)
+
+(define (gen-tmpname)
+  (set! tmpname-counter (+ 1 tmpname-counter))
+  (string-append CACHEPATH tmpname-base (number->string tmpname-counter)))
+
 (define (ca-writeobj fn obj)
   (when (file-exists? fn) (delete-file fn))
-  (call-with-port (open-file-output-port fn) (lambda (p) (fasl-write! obj p))))
+  (let ((tmpfilename (gen-tmpname)))
+    (call-with-port (open-file-output-port tmpfilename) (lambda (p) (fasl-write! obj p)))
+    (rename-file tmpfilename fn) ; MUST be on same file system
+    (PCK 'CACHE "cache-write" tmpfilename '=> fn)))
+
 (define (ca-readobj fn)
   (call-with-port (open-file-input-port fn) fasl-read))
 
@@ -151,7 +165,7 @@
 				     ((char=? e #\~) #\@)
 				     (else e)))
 		       (string->list str))))
-  (string-append (nmosh-cache-path) (escape fn) ".nmosh-cache"))
+  (string-append CACHEPATH (escape fn) ".nmosh-cache"))
 
 (define dbg-files '())
 (define (dbg-addfile fn cdn dfn)
@@ -300,8 +314,8 @@
     (else (ca-load/cache fn recompile? name))))
 
 (define (ca-prepare-cache-dir)
-  (unless (file-exists? (nmosh-cache-dir))
-    (create-directory (nmosh-cache-dir))))
+  (unless (file-exists? CACHEDIR)
+    (create-directory CACHEDIR)))
 
 (define (make-prefix-list)
   (define (append-prefix-x l str)
