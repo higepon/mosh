@@ -1043,10 +1043,31 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
         // (SHIFT) instruction is deprecated
         CASE(SHIFT)
         {
-            MOSH_FATAL(false);
+            const Object depthObject = fetchOperand();
+            VM_ASSERT(depthObject.isFixnum());
+
+            const int depth = depthObject.toFixnum();
+            const Object diffObject = fetchOperand();
+            VM_ASSERT(diffObject.isFixnum());
+            const int diff  = diffObject.toFixnum();
+            sp_ = shiftArgsToBottom(sp_, depth, diff);
+
+            NEXT;
         }
+        // (SHIFT_CALL) instruction is deprecated
         CASE(SHIFT_CALL)
         {
+            const Object depthObject = fetchOperand();
+            const Object diffObject = fetchOperand();
+
+            VM_ASSERT(depthObject.isFixnum());
+            MOSH_ASSERT(diffObject.isFixnum());
+            const int depth = depthObject.toFixnum();
+            const int diff  = diffObject.toFixnum();
+            sp_ = shiftArgsToBottom(sp_, depth, diff);
+            operand = fetchOperand();
+            #include "call.inc.cpp"
+            NEXT;
             MOSH_FATAL(false);
         }
         CASE(SYMBOL_P)
