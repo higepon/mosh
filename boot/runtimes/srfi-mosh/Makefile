@@ -1,7 +1,5 @@
 all: nmosh_image.cpp
 
-.PHONY: p0 p0gauche p1 p1gauche boot0 p0vanilla-mosh
-
 p1: p1psyntax-mosh
 p0: p0vanilla-mosh
 
@@ -10,14 +8,6 @@ p1psyntax-mosh: p0
 
 p0vanilla-mosh:
 	mosh -5 bootstrap.vanilla-mosh/phase0.vanilla-mosh.scm
-
-p1gauche:
-	gosh bootstrap.gauche/phase1.gauche.scm
-	sed -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" bootstrap.gexp > bootstrap.exp
-
-p0gauche:
-	gosh bootstrap.gauche/phase0.gauche.scm
-	sed -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" bootstrap0.gexp > bootstrap0.exp
 
 # !CONFIG! : which bootstrap strategy ? 
 #   p0 (use Phase0) 

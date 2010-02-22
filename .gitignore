@@ -176,3 +176,6 @@ GRTAGS
 GSYMS
 GTAGS
 work.scm
+
+# test
+nmosh-cache

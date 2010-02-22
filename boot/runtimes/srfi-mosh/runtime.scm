@@ -92,7 +92,6 @@
 
 (define ex:register-library! #f)
 (define ex:lookup-library    #f)
-(define nm:dump-library-table #f)
 (let ((table '()))
   (set! ex:register-library! 
         (lambda (library)
@@ -113,10 +112,6 @@
 		      (fn (ca-load fn recompile? name) ;MOSH: recompile flg
 			  (ex:lookup-library name #f))
 		      (else (assertion-violation 'lookup-library "Library not loaded" name)))))))))
-  (set! nm:dump-library-table ; MOSH: for cached library
-    (lambda (name)
-      (map (lambda (e) (cons (ex:library-name e) (ex:library-build e))) table)
-      ))
   )
 
 ;; Only instantiate part of the bootstrap library 
