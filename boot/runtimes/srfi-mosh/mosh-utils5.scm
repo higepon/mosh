@@ -29,9 +29,12 @@
     (lambda (str) str)))
 
 (define (nmosh-cache-dir) 
-  (if (run-win32-np?) 
-    (string-append (pathfilter (mosh-executable-path)) "cache") 
-    (string-append (get-environment-variable "HOME") "/.nmosh-cache")))
+  (let ((cpath (get-environment-variable "NMOSH_CACHEDIR")))
+    (if cpath
+      cpath
+      (if (run-win32-np?) 
+	(string-append (pathfilter (mosh-executable-path)) "cache") 
+	(string-append (get-environment-variable "HOME") "/.nmosh-cache")))))
 
 (define mosh-cache-dir nmosh-cache-dir)
 
@@ -189,17 +192,18 @@
 	     '()
 	     code))
 
+(define (ca-compose-libimports p)
+  (let ((libnames (cadar p))
+	(builds (cadadr p)))
+    (map (lambda (name build) (cons (car name) build)) libnames builds)))
+
 (define (ca-scandeps-unit code)
   (if (not (pair? code))
     #f
     (case (car code)
-      ;((ex:import-libraries-for-run) (list 'IMPORT-FOR-RUN (cdr code)))
+      ((ex:import-libraries-for-run) (ca-compose-libimports (cdr code)))
       ((ex:register-library!) (ca-scandeps-unit (cadr code)))
-      ((ex:make-library) 
-       (let* ((p (cddddr code))
-	      (libnames (cadar p))
-	      (builds (cadadr p)))
-	 (map (lambda (name build) (cons (car name) build)) libnames builds)))
+      ((ex:make-library) (ca-compose-libimports (cddddr code)))
       (else #f))))
 
 (define (ca-scandeps code)
@@ -212,7 +216,7 @@
     (ca-writeobj cfn (list
 		       (if compiled-code
 			 (cons 'MOSH-CODE compiled-code)
-			 (cons 'VANILLA-MOSH-CODE code))
+			 (cons 'VANILLA-MOSH-CODE code)) ;DEPRECATED
 		       (cons 'DEPS (cons fn deps)))))
   (when dfn
     (ca-writeobj dfn (list
@@ -267,8 +271,9 @@
   (dbg-addsyms syms)
   (eval-compiled! code))
 
-(define (ca-load/cache fn recompile? name)
-  (let* ((cfn (ca-filename->cachename fn))
+(define (ca-load/cache rfn recompile? name)
+  (let* ((fn (make-absolute-path rfn))
+	 (cfn (ca-filename->cachename fn))
 	 (dfn (string-append cfn ".ndbg")))
     (dbg-addfile fn cfn dfn)
     (cond

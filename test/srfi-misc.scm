@@ -172,7 +172,7 @@
 (test-equal (format #f "~a ~? ~a ~%" 3 " ~s ~s " '(2 2) 3) "3  2 2  3 
 ")
 
-(test-equal (format "~w" (let ( (c '(a b c)) ) (set-cdr! (cddr c) c) c)) "#1=(a b c . #1#)")
+(test-equal (format "~w" (let ( (c (list 'a 'b 'c)) ) (set-cdr! (cddr c) c) c)) "#1=(a b c . #1#)")
 (test-equal (format "~8,2F" 32) "   32.00")
 (test-equal (format "~8,3F" (sqrt -3.8)) "0.000+1.949i")
 (test-equal (format "~6,3F" 1/3) " 0.333")

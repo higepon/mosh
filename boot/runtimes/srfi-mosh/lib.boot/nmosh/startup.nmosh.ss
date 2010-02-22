@@ -11,7 +11,7 @@
   (let ((cl (command-line)))
     (cond
       ((<= 1 (length cl))
-       (ca-load/disable-cache (car cl))) ; mosh's FASL is not safe for some programs
+       (ca-load (car cl) #f '(nmosh PROGRAM-FROM-NMOSH-STARTUP)))
       (else 
 	(runlib '((nrepl simple)) 'nrepl)))))
 

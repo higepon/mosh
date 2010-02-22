@@ -463,7 +463,7 @@ check: test
 
 #FIXME: use macro
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
-NMOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
+NMOSHBIN ="NMOSH_CACHEDIR=$(abs_builddir)/nmosh-cache MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/nmosh $(MOSH_TESTARGS)"
 
 test: testB testR testL
 ntest: ntestB ntestR ntestL
