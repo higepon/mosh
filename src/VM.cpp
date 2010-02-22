@@ -954,7 +954,7 @@ void VM::tryInvokeJitLibrary()
 void VM::tryJitCompile(Object closure)
 {
     const int CALL_COUNT_JIT_THRESHOLD = 10;
-    const int MAX_CLOSURE_SIZE = 50;
+    const int MAX_CLOSURE_SIZE = 100;
 
     MOSH_ASSERT(closure.isClosure());
     Closure* c = closure.toClosure();

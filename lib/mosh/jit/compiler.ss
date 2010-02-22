@@ -588,10 +588,10 @@
 (define (CONS)
   `(,@(trace-push! $CONS)
     (movq rbx ,(obj->integer #f))
-    (movq rbp ,(vm-register 'ac))
+    (movq rcx ,(vm-register 'ac))
     ,@(macro-pop-to-reg 'r12)
     ,@(call1 (get-c-address 'GC_malloc) 24)
-    (movq (& rax 8) rbp)  ;; rax is allocated memory
+    (movq (& rax 8) rcx)  ;; rax is allocated memory
     (movq (& rax 16) rbx)
     (movq (& rax) r12)
     (movq ,(vm-register 'ac) rax)))
@@ -899,8 +899,8 @@
     (movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
-    (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
-    (movl eax ebp)                ; eax = (32bit)ebp
+    (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
+    (movl eax ecx)                ; eax = (32bit)ebp
     (andl eax 3)                  ; eax.isFixnum
     (subb al 1)                   ;
     (je ,label1)
@@ -916,7 +916,7 @@
     (subb al 1)
     (jne ,label2)
     ;; both are fixnum
-    (movq rax rbp)
+    (movq rax rcx)
     (sarq rdx 2) ;; ac.toFixnum
     (sarq rax 2) ;; arg.toFixnum
 ;   ,@(DEBUGGER)
@@ -944,8 +944,8 @@
     (movq rax ,(vm-register 'sp)) ; rax = sp
     (leaq rdx (& rax -8))         ; rdx = sp - 8
     (movq ,(vm-register 'sp) rdx) ; sp = sp - 8
-    (movq rbp (& rax -8))         ; rbp = *(sp - 8) == POP
-    (movl eax ebp)                ; eax = (32bit)ebp
+    (movq rcx (& rax -8))         ; rbp = *(sp - 8) == POP
+    (movl eax ecx)                ; eax = (32bit)ebp
 ;    ,@(DEBUGGER 3029)
     (andl eax 3)                  ; eax.isFixnum
     (subb al 1)                   ;
@@ -962,7 +962,7 @@
     (subb al 1)
     (jne ,label2)
     ;; both are fixnum
-    (movq rax rbp)
+    (movq rax rcx)
     (sarq rdx 2) ;; ac.toFixnum
     (sarq rax 2) ;; arg.toFixnum
     (subl eax edx) ;; arg - ac
@@ -1172,6 +1172,35 @@
 ;; addq $32, %rdx
 ;; movq %rdx, 40(%rsi)
 
+(define (LET_FRAME)
+  `(
+    ,@(trace-push! $LET_FRAME)
+    (movq rdx ,(vm-register 'sp))
+    (movq rax ,(vm-register 'dc)) ;; push(dc)
+    (movq (& rdx) rax)
+    (movq rax ,(vm-register 'fp)) ;; push(fp_)
+    (movq (& rdx 8) rax)
+    (addq rdx 16)
+    (movq ,(vm-register 'sp) rdx)))
+
+;;  movq    88(%rsp), %rbx
+;;  movq    48(%rbx), %rax
+;;  movq    (%rax), %rdx
+;;  leaq    8(%rax), %rcx
+;;  movq    %rcx, 48(%rbx)
+;;  sarq    $2, %rdx
+;;  salq    $3, %rdx
+;;  negq    %rdx
+;;  addq    40(%rbx), %rdx
+;;  movq    %rdx, 32(%rbx)
+(define (ENTER n)
+  `(,@(trace-push! $ENTER)
+    (movq rdx ,n)
+    (leaq rdx (& (* rdx 8)))
+    (negq rdx)
+    (addq rdx ,(vm-register 'sp))
+    (movq ,(vm-register 'fp) rdx)))
+
 (define (FRAME) ;; label is not used. pc is
   `(
     ,@(trace-push! $FRAME)
@@ -1254,19 +1283,31 @@
 
 (define (return-to-vm)
   `((movq rsp rbp)
+;   ,@(DEBUGGER 9991)
     (pop rbp)
     (pop r15)
     (pop r14)
     (pop r13)
     (pop r12)
     (pop rbx)
-    ,@(DEBUGGER 9991)
     (retq)))
+
+(define (LEAVE n)
+  `(,@(trace-push! $LEAVE)
+    (movq rdx ,n)
+    (leaq rdx (& (* rdx 8)))
+    (negq rdx)
+    (addq rdx ,(vm-register 'sp)) ; rdx = sp - n
+    (movq rax (& rdx -8))         ; fp = (sp - 8)
+    (movq ,(vm-register 'fp) rax)
+    (movq rax (& rdx -16))
+    (movq ,(vm-register 'dc) rax)
+    (leaq rcx (& rdx -16))
+    (movq ,(vm-register 'sp) rcx)))
 
 (define (RETURN n)
   `(,@(trace-push! $RETURN)
-     ,@(DEBUGGER 9990)
-;     ,@(RESTORE_REGISTERS n)
+     ,@(RESTORE_REGISTERS n)
      (movq rax ,(vm-register 'ac)) ;; we need this.
 ;     ,@(DEBUGGER 9991)
      ,@(return-to-vm)))
@@ -1687,8 +1728,11 @@
                                     [else (error 'REFER_LOCAL_BRANCH_NOT_NULL "label expeced")])))
 
   (register-insn-dispatch-table $RETURN RETURN)
+  (register-insn-dispatch-table $ENTER ENTER)
+  (register-insn-dispatch-table $LEAVE LEAVE)
   (register-insn-dispatch-table $PUSH_CONSTANT PUSH_CONSTANT)
 (register-insn-dispatch-table $FRAME (lambda (x) (FRAME))) ;; discard offset
+(register-insn-dispatch-table $LET_FRAME (lambda (x) (LET_FRAME))) ;; discard max stack todo
   (register-insn-dispatch-table $NUMBER_SUB_PUSH NUMBER_SUB_PUSH)
   (register-insn-dispatch-table $NUMBER_ADD NUMBER_ADD)
   (register-insn-dispatch-table $REFER_GLOBAL REFER_GLOBAL)
