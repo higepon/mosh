@@ -4,7 +4,7 @@
 (load "compat-mosh-run.scm")
 (load "runtime.scm")
 (load "mosh-utils5.scm")
-(load "bootstrap.exp")
+(load "BOOT1.exp")
 (ex:load "lib.boot/mosh.nmosh.ss")
 (ex:load "lib.boot/system.nmosh.ss")
 (ex:load "build-run.ss")

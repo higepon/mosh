@@ -1,18 +1,15 @@
 all: nmosh_image.cpp
 
-.PHONY: p0 p0gauche p1 p1gauche boot0
+.PHONY: p0 p0gauche p1 p1gauche boot0 p0vanilla-mosh
 
-p1: p1gauche
-p0: p0gauche
+p1: p1psyntax-mosh
+p0: p0vanilla-mosh
 
-bootstrap.exp: p1
-bootstrap0.exp: p0
+p1psyntax-mosh: p0
+	mosh bootstrap.psyntax-mosh/phase1.psyntax-mosh.ss
 
-bootstrap:
-	mosh -5 bootstrap.vanilla-mosh/phase01.vanilla-mosh.scm
-
-boot0: p0
-	mosh -5 bootstrap.vanilla-mosh/phase1.vanilla-mosh.scm
+p0vanilla-mosh:
+	mosh -5 bootstrap.vanilla-mosh/phase0.vanilla-mosh.scm
 
 p1gauche:
 	gosh bootstrap.gauche/phase1.gauche.scm
@@ -22,16 +19,23 @@ p0gauche:
 	gosh bootstrap.gauche/phase0.gauche.scm
 	sed -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" bootstrap0.gexp > bootstrap0.exp
 
-nmosh_image.cpp: p1
+# !CONFIG! : which bootstrap strategy ? 
+#   p0 (use Phase0) 
+#   p1 (use Phase1 - needs R5RS interpreter)
+nmosh_image.cpp: p1 
 	mosh -5 bootstrap.vanilla-mosh/phase2.scm
 
-test: all 
-	../../../mosh -5 boot5.scm tests/r6rs/run.sps
+inject-nmosh: nmosh_image.cpp
+	cp nmosh_image.cpp ../../../src/
 
-inject-nmosh:
+# private target. DO NOT USE!
+INJ:
 	nmosh build-run.ss
 	cp nmosh_image.cpp ../../../src/
+
 clean:
+	rm -f BOOT0.*
+	rm -f BOOT1.*
 	rm -f *.exp
 	rm -f *.exp-e
 	rm -f *.gexp
