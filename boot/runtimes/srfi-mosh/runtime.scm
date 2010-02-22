@@ -115,7 +115,6 @@
 
 ;; Only instantiate part of the bootstrap library 
 ;; that would be needed for invocation at runtime.
-
 (ex:register-library! 
  (let ((error (lambda () 
                 (assertion-violation 
@@ -137,3 +136,26 @@
     (lambda () (values))
     ;; build
     'system)))
+
+(ex:register-library! 
+ (let ((error (lambda () 
+                (assertion-violation 
+                 'runtime.scm
+                 "Attempt to use runtime instance of (core primitive-macros) for expansion.  Make sure expander.scm is loaded after runtime.scm."))))
+   (ex:make-library
+    '(core nmosh primitive-macros)
+    ;; envs
+    error
+    ;; exports
+    '()
+    ;; imported-libraries
+    '()
+    ;; builds
+    '()
+    ;; visiter
+    error
+    ;; invoker
+    (lambda () (values))
+    ;; build
+    'system)))
+
