@@ -213,7 +213,7 @@ if FFI_X86_64
 libmosh_a_SOURCES += src/ffi_stub_x86_64.S
 endif
 
-BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
+BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/NumberReader.tab.hpp src/Reader.tab.cpp src/NumberReader.tab.cpp src/Scanner.cpp src/NumberScanner.cpp src/cprocedures.cpp src/labels.cpp src/OSConstants.h
 
 mosh_core_libraries = \
 lib/match.ss \
@@ -459,7 +459,7 @@ src/NumberScanner.cpp : src/NumberScanner.re
 ##      for " \ " yen mark, -g causes infinite loop
 
 #### test
-check: test
+check: test ntest
 
 #FIXME: use macro
 MOSHBIN ="MOSH_LOADPATH=$(abs_top_srcdir)/lib $(abs_builddir)/mosh $(MOSH_TESTARGS)"
