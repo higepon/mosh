@@ -1161,6 +1161,16 @@ Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
     return Object::Undef;
 }
 
+#ifndef LLONG_MIN
+#warning you don't have LLONG_MIN..
+#define LLONG_MIN INTMAX_MIN
+#endif
+
+#ifndef LLONG_MAX
+#warning you don't have LLONG_MAX..
+#define LLONG_MAX INTMAX_MAX
+#endif
+
 Object scheme::pointerSetCLongLongDEx(VM* theVM, int argc, const Object* argv)
 {
     return pointerSetS<long long>(UC("pointer-set-c-long-long!"), LLONG_MIN, LLONG_MAX, theVM, argc, argv);
