@@ -1,7 +1,7 @@
 /*
- * Fasl.h - Fast loading.
+ * FaslWriter.h - 
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2010  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,65 +26,44 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Fasl.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: FaslWriter.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef SCHEME_FASL_
-#define SCHEME_FASL_
+#ifndef SCHEME_FASL_WRITER_
+#define SCHEME_FASL_WRITER_
 
 #include "scheme.h"
-#include "Vector.h"
-#include "ByteVector.h"
+#include "Fasl.h"
 
 namespace scheme {
 
-class EqHashTable;
-class BinaryInputPort;
-class BinaryOutputPort;
-
-class Fasl EXTEND_GC
+class FaslWriter EXTEND_GC
 {
 public:
-    enum {
-        TAG_LOOKUP = 1,
-        TAG_FIXNUM,
-        TAG_PAIR,
-        TAG_VECTOR,
-        TAG_BVECTOR,
-        TAG_REGEXP,
-        TAG_CHAR,
-        TAG_NIL,
-        TAG_T,
-        TAG_F,
-        TAG_SYMBOL,
-        TAG_STRING,
-        TAG_INSTRUCTION,
-        TAG_COMPILER_INSTRUCTION,
-        TAG_FLONUM,
-        TAG_SMALL_FIXNUM,
-        TAG_ASCII_STRING, /* not used */
-        TAG_ASCII_SYMBOL, /* not used */
-        TAG_MEDIUM_FIXNUM,
-        TAG_RTD,
-        TAG_RECORD,
-        TAG_EQ_HASH_TABLE,
-        TAG_BIGNUM,
-        TAG_FIXNUM_0,
-        TAG_FIXNUM_1,
-        TAG_ASCII_UNINTERNED_SYMBOL,
-        TAG_UNINTERNED_SYMBOL,
-        TAG_SIMPLE_STRUCT,
-        TAG_RATNUM,
-        TAG_COMPNUM,
-        TAG_PLIST,
-        TAG_DLIST,
-        TAG_SHORT_ASCII_SYMBOL,
-        TAG_SHORT_ASCII_UNINTERNED_SYMBOL,
-        TAG_SHORT_ASCII_STRING,
-        forbidden_comma
-    };
+    FaslWriter(BinaryOutputPort* outputPort);
+
+    void put(Object obj);
+private:
+    bool isInteresting(Object obj);
+    void scanSharedObjects(Object obj);
+    void putSharedTable();
+//    void collectSymbolsAndStrings(Object obj);
+//    void putSymbolsAndStrings();
+    void putList(Object list);
+    void emitU8(uint8_t value);
+    void emitU16(uint16_t value);
+    void emitU32(uint32_t value);
+    void emitU64(uint64_t value);
+    void emitString(const ucs4string& string);
+    void emitShortAsciiString(const ucs4string& string);
+    void putDatum(Object obj);
+
+    EqHashTable* sharedObjects_;
+    EqHashTable* writtenShared_;
+    ObjectVector sharedObjectVector_;
+    BinaryOutputPort* outputPort_;
 };
 
-} // namespace scheme
+}; // namespace scheme
 
-#endif // SCHEME_FASL_
+#endif // SCHEME_FASL_WRITER_

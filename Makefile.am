@@ -83,6 +83,7 @@ endif
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
+src/Code.h                                                             \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -174,7 +175,9 @@ src/Equivalent.h                   src/Equivalent.cpp                  \
 src/CompoundCondition.h            src/CompoundCondition.cpp           \
 src/ucs4string.h                   src/ucs4string.cpp                  \
 src/Vector.h                       src/Vector.cpp                      \
-src/Fasl.h                         src/Fasl.cpp                        \
+src/Fasl.h \
+src/FaslReader.h                   src/FaslReader.cpp                  \
+src/FaslWriter.h                   src/FaslWriter.cpp                  \
 src/Arithmetic.h                   src/Arithmetic.cpp                  \
 src/Ratnum.h                       src/Ratnum.cpp                      \
 src/Bignum.h                       src/Bignum.cpp                      \

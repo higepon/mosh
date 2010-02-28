@@ -1,7 +1,7 @@
 /*
- * Fasl.h - Fast loading.
+ * FaslReader.cpp - FASL reaader.
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2010  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,65 +26,59 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Fasl.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: FaslReader.cpp 183 2008-07-04 06:19:28Z higepon $
  */
 
-#ifndef SCHEME_FASL_
-#define SCHEME_FASL_
-
-#include "scheme.h"
-#include "Vector.h"
+#include "Object.h"
+#include "Object-inl.h"
+#include "EqHashTable.h"
+#include "Symbol.h"
+#include "Regexp.h"
+#include "SString.h"
+#include "Pair.h"
+#include "Pair-inl.h"
 #include "ByteVector.h"
+#include "BinaryInputPort.h"
+#include "BinaryOutputPort.h"
+#include "TextualOutputPort.h"
+#include "ProcedureMacro.h"
+#include "Bignum.h"
+#include "Ratnum.h"
+#include "Flonum.h"
+#include "Compnum.h"
+#include "Record.h"
+#include "RecordTypeDescriptor.h"
+#include "EqHashTable.h"
+#include "SimpleStruct.h"
+#include "FaslReader.h"
 
-namespace scheme {
 
-class EqHashTable;
-class BinaryInputPort;
-class BinaryOutputPort;
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244) // convert from uint64_t to uint8_t
+#endif
 
-class Fasl EXTEND_GC
+using namespace scheme;
+
+FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM)
 {
-public:
-    enum {
-        TAG_LOOKUP = 1,
-        TAG_FIXNUM,
-        TAG_PAIR,
-        TAG_VECTOR,
-        TAG_BVECTOR,
-        TAG_REGEXP,
-        TAG_CHAR,
-        TAG_NIL,
-        TAG_T,
-        TAG_F,
-        TAG_SYMBOL,
-        TAG_STRING,
-        TAG_INSTRUCTION,
-        TAG_COMPILER_INSTRUCTION,
-        TAG_FLONUM,
-        TAG_SMALL_FIXNUM,
-        TAG_ASCII_STRING, /* not used */
-        TAG_ASCII_SYMBOL, /* not used */
-        TAG_MEDIUM_FIXNUM,
-        TAG_RTD,
-        TAG_RECORD,
-        TAG_EQ_HASH_TABLE,
-        TAG_BIGNUM,
-        TAG_FIXNUM_0,
-        TAG_FIXNUM_1,
-        TAG_ASCII_UNINTERNED_SYMBOL,
-        TAG_UNINTERNED_SYMBOL,
-        TAG_SIMPLE_STRUCT,
-        TAG_RATNUM,
-        TAG_COMPNUM,
-        TAG_PLIST,
-        TAG_DLIST,
-        TAG_SHORT_ASCII_SYMBOL,
-        TAG_SHORT_ASCII_UNINTERNED_SYMBOL,
-        TAG_SHORT_ASCII_STRING,
-        forbidden_comma
-    };
-};
+}
 
-} // namespace scheme
+Object FaslReader::get()
+{
+    getSymbolsAndStrings();
+    return getDatum();
+}
 
-#endif // SCHEME_FASL_
+
+void FaslReader::getSymbolsAndStrings()
+{
+    const int tableSize = fetchU32();
+    sharedObjects_ = Object::makeObjectArray(tableSize);
+    for (int i = 0; i < tableSize; i++) {
+        sharedObjects_[i] = Object::Ignore; // use Ignore for marking as not initialized
+    }
+    for (int i = tableSize - 1; i >= 0; i--) {
+        sharedObjects_[i] = getDatum();
+    }
+}
