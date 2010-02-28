@@ -24,5 +24,5 @@ all:
 	$(MOSH_TARGET) tests/r6rs/run/conditions.sps
 	$(MOSH_TARGET) tests/r6rs/run/r5rs.sps
 	$(MOSH_TARGET) tests/r6rs/run/eval.sps
-	$(MOSH_TARGET) --disable-acc tests/r6rs/run/base.sps
-	$(MOSH_TARGET) --disable-acc tests/r6rs/run-via-eval.sps
+	$(MOSH_TARGET) tests/r6rs/run/base.sps
+	$(MOSH_TARGET) tests/r6rs/run-via-eval.sps
