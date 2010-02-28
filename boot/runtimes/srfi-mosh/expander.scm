@@ -674,9 +674,11 @@
 
     ;; The inverse of the above.
 
+    ;; MOSH: it can be #f when executing cached code
     (define (env-reify key-or-env)
       (if (symbol? key-or-env)
-          (cdr (assq key-or-env *env-table*))
+	(let ((r (assq key-or-env *env-table*)))
+	  (if r (cdr r) #f))
           key-or-env))
 
     ;; This makes a much smaller external representation of an
