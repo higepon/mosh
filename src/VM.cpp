@@ -75,7 +75,7 @@
 #include "ByteArrayBinaryInputPort.h"
 #include "Symbol.h"
 #include "SimpleStruct.h"
-#include "Fasl.h"
+#include "FaslReader.h"
 #include "Gloc.h"
 #include "OSCompat.h"
 #include "BinaryOutputPort.h"
