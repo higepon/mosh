@@ -1,4 +1,5 @@
 (import (rnrs)
+	(rnrs load)
         (mosh test)
 	(primitives ex:expand-sequence/debug ex:repl))
 
@@ -26,5 +27,9 @@
 			 (define a 20) ;; allows multiple definition
 			 a))
 	      #t))
+
+(test-error syntax-violation? (load "test/nmosh-test-error-export-level.ss"))
+(test-error syntax-violation? (load "test/nmosh-test-error-invalid-export.ss"))
+(test-true (begin (load "test/nmosh-test-multiple-libs.ss") #t))
 
 (test-results)
