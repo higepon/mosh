@@ -58,7 +58,8 @@
 #include "RecordProcedures.h"
 #include "StringProcedures.h"
 #include "SimpleStruct.h"
-#include "Fasl.h"
+#include "FaslReader.h"
+#include "FaslWriter.h"
 #include "ErrorProcedures.h"
 #include "Record.h"
 #include "Ratnum.h"
@@ -109,6 +110,7 @@ protected:
 
 TEST_F(FaslTest, Fixnum) {
     const Object restored = StoreAndRestore(Object::makeFixnum(123456));
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     ASSERT_TRUE(restored.isFixnum());
     EXPECT_EQ(123456, restored.toFixnum());
 }
@@ -305,6 +307,51 @@ TEST_F(FaslTest, SimpleStruct) {
     EXPECT_TRUE(restored.toSimpleStruct()->ref(0) == Object::makeFixnum(1234));
 }
 
+TEST_F(FaslTest, SimpleStruct2) {
+    Object st = Object::makeSimpleStruct(Symbol::intern(UC("struct1")), 1);
+    Object obj = Pair::list3(Symbol::intern(UC("a")), Symbol::intern(UC("a")), st);
+    SimpleStruct* pst = st.toSimpleStruct();
+    pst->set(0, Symbol::intern(UC("a")));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    LOG1("restored ~a", restored);
+    EXPECT_TRUE(restored.car().eq(restored.cdr().car()));
+    Object st2 = restored.cdr().cdr().car();
+    ASSERT_TRUE(st2.isSimpleStruct());
+    EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.car()));
+}
+
+TEST_F(FaslTest, SimpleStruct3) {
+    Object st = Object::makeSimpleStruct(Symbol::intern(UC("struct1")), 2);
+    Object obj = Pair::list3(Symbol::intern(UC("a")), Symbol::intern(UC("b")), st);
+    SimpleStruct* pst = st.toSimpleStruct();
+    pst->set(0, Symbol::intern(UC("a")));
+    pst->set(1, Symbol::intern(UC("b")));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    LOG1("restored ~a", restored);
+    Object st2 = restored.cdr().cdr().car();
+    ASSERT_TRUE(st2.isSimpleStruct());
+    EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.car()));
+    EXPECT_TRUE(st2.toSimpleStruct()->ref(1).eq(restored.cdr().car()));
+}
+
+TEST_F(FaslTest, SimpleStruct4) {
+    Object st = Object::makeSimpleStruct(Symbol::intern(UC("struct1")), 2);
+    Object obj = Pair::list3(st, Symbol::intern(UC("a")), Symbol::intern(UC("b")));
+    SimpleStruct* pst = st.toSimpleStruct();
+    pst->set(0, Symbol::intern(UC("a")));
+    pst->set(1, Symbol::intern(UC("b")));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    LOG1("restored ~a", restored);
+    Object st2 = restored.car();
+    ASSERT_TRUE(st2.isSimpleStruct());
+    EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.cdr().car()));
+    EXPECT_TRUE(st2.toSimpleStruct()->ref(1).eq(restored.cdr().cdr().car()));
+}
+
+
 TEST_F(FaslTest, SerializeBignum1) {
     const Object num = Arithmetic::expt(Object::makeFixnum(10), Object::makeFixnum(10));
     ASSERT_TRUE(num.isBignum());
@@ -358,3 +405,87 @@ TEST_F(FaslTest, SerializeBignum3) {
     EXPECT_TRUE(eqv(num, restored));
 }
 
+TEST_F(FaslTest, Pair) {
+    const Object obj = Pair::list2(Symbol::intern(UC("a")), Symbol::intern(UC("b")));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    LOG1("restored ~a", restored);
+    Equal e;
+    EXPECT_TRUE(e.equal(restored, obj));
+}
+
+TEST_F(FaslTest, DotPair) {
+    const Object obj = Object::cons(Symbol::intern(UC("a")), Symbol::intern(UC("b")));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    Equal e;
+    EXPECT_TRUE(e.equal(restored, obj));
+}
+
+
+TEST_F(FaslTest, SerializeSharedPair) {
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object obj = Object::cons(p, p);
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    ASSERT_TRUE(restored.car().isPair());
+    ASSERT_TRUE(restored.cdr().isPair());
+    EXPECT_TRUE(restored.car().eq(restored.cdr()));
+}
+
+TEST_F(FaslTest, SerializeSharedPair2) {
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object obj = Object::cons(p, Object::cons(p, p));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    ASSERT_TRUE(restored.car().isPair());
+    ASSERT_TRUE(restored.cdr().isPair());
+    EXPECT_TRUE(restored.car().eq(restored.cdr().car()));
+    EXPECT_TRUE(restored.car().eq(restored.cdr().cdr()));
+}
+
+TEST_F(FaslTest, SerializeSharedPair3) {
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object q = Pair::list1(Symbol::intern(UC("b")));
+    const Object obj = Object::cons(p, Object::cons(q, Object::cons(p, q)));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    ASSERT_TRUE(restored.car().isPair());
+    ASSERT_TRUE(restored.cdr().isPair());
+    EXPECT_TRUE(restored.car().eq(restored.cdr().cdr().car()));
+    EXPECT_TRUE(restored.cdr().car().eq(restored.cdr().cdr().cdr()));
+}
+
+TEST_F(FaslTest, SerializeSharedPair4) {
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object q = Pair::list1(Symbol::intern(UC("b")));
+    const Object r = Object::cons(p, q);
+    const Object obj = Object::cons(r, r);
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isPair());
+    ASSERT_TRUE(restored.car().isPair());
+    ASSERT_TRUE(restored.cdr().isPair());
+    EXPECT_TRUE(restored.car().eq(restored.cdr()));
+}
+
+TEST_F(FaslTest, SerializeSharedPair5) {
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object r = Pair::list2(p, p);
+    const Object obj = Object::makeVector(r);
+    EXPECT_TRUE(obj.toVector()->ref(0).eq(obj.toVector()->ref(1)));
+    const Object restored = StoreAndRestore(obj);
+    ASSERT_TRUE(restored.isVector());
+    Vector* const v = restored.toVector();
+    EXPECT_TRUE(v->ref(0).eq(v->ref(1)));
+}
+
+TEST_F(FaslTest, SerializeSharedVector1) {
+    // (#((a) (b)) . #((a) (b)))
+    const Object p = Pair::list1(Symbol::intern(UC("a")));
+    const Object q = Pair::list1(Symbol::intern(UC("b")));
+    const Object r = Pair::list2(p, q);
+    const Object obj = Object::makeVector(r);
+    const Object s = Object::cons(obj, obj);
+    const Object restored = StoreAndRestore(s);
+    EXPECT_TRUE(restored.car().eq(restored.cdr()));
+}

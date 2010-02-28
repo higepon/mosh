@@ -64,6 +64,7 @@ libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/i
 libmosh_a_SOURCES = \
 src/Time.h                                                             \
 src/JitStack.h                                                         \
+src/Code.h                                                             \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -156,7 +157,9 @@ src/Equivalent.h                   src/Equivalent.cpp                  \
 src/CompoundCondition.h            src/CompoundCondition.cpp           \
 src/ucs4string.h                   src/ucs4string.cpp                  \
 src/Vector.h                       src/Vector.cpp                      \
-src/Fasl.h                         src/Fasl.cpp                        \
+src/Fasl.h \
+src/FaslReader.h                   src/FaslReader.cpp                  \
+src/FaslWriter.h                   src/FaslWriter.cpp                  \
 src/Arithmetic.h                   src/Arithmetic.cpp                  \
 src/Ratnum.h                       src/Ratnum.cpp                      \
 src/Bignum.h                       src/Bignum.cpp                      \
@@ -366,7 +369,7 @@ if DEVELOPER
 GIT_BRANCH_NAME=`git branch | grep '*' | cut -d ' ' -f 2`
 
 bootstrap:
-	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
+	svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.$(GIT_BRANCH_NAME)/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME) || svn checkout http://mosh-scheme.googlecode.com/svn/branches/psyntax.master/ lib/psyntax/psyntax.$(GIT_BRANCH_NAME)
 	cp -p lib/psyntax/psyntax.$(GIT_BRANCH_NAME)/psyntax.scm lib/psyntax/
 	$(MAKE) src/Reader.tab.cpp
 	$(MAKE) src/Instruction.h src/cprocedures.cpp
