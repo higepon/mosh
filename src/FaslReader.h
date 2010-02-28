@@ -185,7 +185,7 @@ private:
             ucs4string text;
             text.reserve(len);
             for (uint32_t i = 0; i < len; i++) {
-                text += fetchU8();
+                text += fetchU32();
             }
             ucs4string nameString = text;
             nameString += UC("-rtd$");
