@@ -37,8 +37,8 @@
              [#\a "a" "#\\a"]
              ['#(a b c) "#(a b c)"]
              ["abc" "abc" "\"abc\""]
-             [(open-file-input-port "./mosh") "<binary-input-port ./mosh>" "<binary-input-port ./mosh>" "#[input-port]"]
-             [(open-input-file "./mosh") "<transcoded-textual-input-port <binary-input-port ./mosh>>" "<transcoded-textual-input-port <binary-input-port ./mosh>>" "#[input-port]"]
+             [(open-file-input-port "test/test.txt") "<binary-input-port test/test.txt>" "<binary-input-port test/test.txt>" "#[input-port]"]
+             [(open-input-file "test/test.txt") "<transcoded-textual-input-port <binary-input-port test/test.txt>>" "<transcoded-textual-input-port <binary-input-port test/test.txt>>" "#[input-port]"]
              [(open-string-output-port) "<string-output-port>" "<string-output-port>" "#[output-port]"]
              [(make-custom-textual-output-port
                "custom out"
