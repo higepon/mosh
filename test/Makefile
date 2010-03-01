@@ -20,7 +20,6 @@ runtest:
 	$(MOSH_TARGET) test/unicode.scm
 	$(MOSH_TARGET) test/srfi8.scm
 	$(MOSH_TARGET) test/srfi19.scm
-	$(MOSH_TARGET) test/ffi.scm
 	$(MOSH_TARGET) test/mysql.scm
 	$(MOSH_TARGET) test/clos.scm
 	$(MOSH_TARGET) test/dbi.scm
@@ -34,6 +33,9 @@ runtest:
 	$(MOSH_TARGET) test/number.scm
 	$(MOSH_TARGET) test/cgi.scm
 	$(MOSH_TARGET) test/memcached.scm
+
+runtest-ffi:
+	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
 
 runtest-mosh:
 	$(MOSH_TARGET) test/shell.scm

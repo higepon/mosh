@@ -473,6 +473,7 @@ ntest: ntestB ntestR ntestL
 
 testB: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
+	(MOSH_TARGET=$(MOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-ffi)
 	(MOSH_TARGET=$(MOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-mosh)
 
 testL:
@@ -486,6 +487,7 @@ testU: check-am
 
 ntestB: lib/libffitest.so.1.0 ./nmosh src/all-tests.scm
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest)
+	(MOSH_TARGET=$(NMOSHBIN) MOSH_BUILDDIR=$(abs_top_builddir) MOSH_SRCDIR=$(abs_top_srcdir) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-ffi)
 	(MOSH_TARGET=$(NMOSHBIN) $(MAKE) -C $(top_srcdir) -f test/Makefile runtest-nmosh)
 
 ntestL:

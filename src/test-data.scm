@@ -3301,7 +3301,10 @@
    read))
 ]
 [definition
-  (define mosh (if (string=? (host-os) "win32") ".\\mosh.exe" "./mosh"))
+  (define mosh 
+    (string-append
+      (mosh-executable-path)
+      (if (string=? (host-os) "win32") ".\\mosh.exe" "./mosh")))
 ]
 ;; with-input-from-file and current-input-port
 (#f (let ([org (current-input-port)])
