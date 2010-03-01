@@ -37,6 +37,18 @@
 #include "scheme.h"
 #include "Bignum.h"
 
+
+/* C99 isnan/isinf */
+#if !(defined(isnan)||defined(__MSC_VER))
+#warning you don't have isnan()..
+#define isnan std::isnan
+#endif
+
+#if !(defined(isinf)||defined(__MSC_VER))
+#warning you don't have isinf()..
+#define isinf std::isinf
+#endif
+
 #ifdef _MSC_VER
     #include <float.h>
     static inline int isnan(double x)
@@ -51,6 +63,8 @@
     static inline double round(double x) { if (x >= 0) { return floor(x + 0.5); } else { return ceil(x - 0.5); } }
     static inline double trunc(double x) { if (x >= 0) { return floor(x); } else { return ceil(x); } }
 #endif
+/*~C99 isnan/isinf */
+
 
 namespace scheme {
 
