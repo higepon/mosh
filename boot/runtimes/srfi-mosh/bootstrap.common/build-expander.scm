@@ -79,7 +79,7 @@
 	;	   ,@(read-symfile))
 	    '(mosh)
 	    '(system)
-	    '(primitives ca-load ca-load/disable-cache dbg-syms dbg-files symbol-value set-symbol-value! %nmosh-failproc ex:destructive-eval! ex:interaction-environment)
+	    '(primitives ca-load ca-load/disable-cache dbg-syms dbg-files symbol-value set-symbol-value! %nmosh-failproc ex:destructive-eval! ex:interaction-environment %get-nmosh-dbg-image)
 	    '(rename (primitives my-register-macro!! 
 				 my-syntax-rename 
 				 my-register-library!!
@@ -106,7 +106,6 @@
 				 my-id-maybe-library
 				 my-id-debug
 				 my-run-r6rs-sequence
-				 my-eval-str
 				 my-load
 				 my-undefined)
 		     (my-register-macro!! ex:register-macro!)
@@ -135,7 +134,6 @@
 		     (my-id-maybe-library id-maybe-library)
 		     (my-id-debug id-debug)
 		     (my-run-r6rs-sequence ex:run-r6rs-sequence)
-		     (my-eval-str nm:eval-str)
 		     (my-load ex:load)
 		     (my-undefined ex:undefined))
 	    )))

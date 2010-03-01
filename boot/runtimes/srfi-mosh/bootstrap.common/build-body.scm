@@ -36,13 +36,18 @@
       ;(dumpvec vec)
       (display "writing boot image...")(newline)
       (write-cobj 'nmosh p (obj->fasl vec))
+      (display "done.")(newline)
+      (display "writing boot image(debug symbol)...")(newline)
+      (write-cobj 'nmosh_dbg p (obj->fasl *SYMS*))
       (display "done.")(newline))))
 
 (define (build p)
   (display "#define uint8_t unsigned char\n" p)
   (output p)
   (display "const unsigned char* nmosh_image_ptr = (unsigned char*)&nmosh_image;\n" p)
-  (display "extern \"C\" const unsigned int nmosh_image_size = sizeof(nmosh_image); \n" p))
+  (display "extern \"C\" const unsigned int nmosh_image_size = sizeof(nmosh_image); \n" p)
+  (display "const unsigned char* nmosh_dbg_image_ptr = (unsigned char*)&nmosh_dbg_image;\n" p)
+  (display "extern \"C\" const unsigned int nmosh_dbg_image_size = sizeof(nmosh_dbg_image); \n" p))
 
 
 (define (dumpsrc l)
@@ -69,7 +74,6 @@
 	v)))
   (display "done.")(newline))
 
-(define nm:eval-str (lambda e #f))
 (set-symbol-value! 'my-register-library!! ex:register-library!)
 (set-symbol-value! 'my-register-macro!! ex:register-macro!)
 (set-symbol-value! 'my-syntax-rename ex:syntax-rename)
@@ -96,7 +100,6 @@
 (set-symbol-value! 'my-id-transformer-envs id-transformer-envs)
 (set-symbol-value! 'my-id-maybe-library id-maybe-library)
 (set-symbol-value! 'my-id-debug id-debug)
-(set-symbol-value! 'my-eval-str nm:eval-str)
 (set-symbol-value! 'my-load ex:load)
 (set-symbol-value! 'my-run-r6rs-sequence ex:run-r6rs-sequence)
 
@@ -109,5 +112,4 @@
 (call-with-port (open-file-output-port "nmosh.nmosh-dbg")
 		(lambda (p)
 		  (put-bytevector p (obj->fasl *SYMS*))))
-(display "done.")(newline)
   

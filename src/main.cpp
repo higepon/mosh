@@ -56,6 +56,11 @@
 #include "VM-inl.h"
 
 #ifdef WITH_NMOSH_DEFAULTS
+#include "Bignum.h"
+#include "ByteArrayBinaryInputPort.h"
+#include "BinaryInputPort.h"
+#include "SimpleStruct.h"
+#include "FaslReader.h"
 #include "ProcedureMacro.h"
 #endif
 
@@ -67,8 +72,15 @@ static VM* theVM;
 #ifdef WITH_NMOSH_DEFAULTS
 Object
 internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
-	DeclareProcedureName("%get-stack-trace-obj");
+	//DeclareProcedureName("%get-stack-trace-obj");
 	return theVM->getStackTraceObj();
+}
+Object
+internalGetNmoshDbgImage(VM* theVM,int argc,const Object* argv){
+    extern const uint8_t* nmosh_dbg_image_ptr;
+    extern unsigned int nmosh_dbg_image_size;
+    //DeclareProcedureName("%get-nmosh-dbg-image");
+    return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
 }
 #endif
 
@@ -255,6 +267,7 @@ int main(int argc, char *argv[])
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 #ifdef WITH_NMOSH_DEFAULTS
     theVM->setValueString(UC("%get-stack-trace-obj"),Object::makeCProcedure(internalGetStackTraceObj));
+    theVM->setValueString(UC("%get-nmosh-dbg-image"),Object::makeCProcedure(internalGetNmoshDbgImage));
 #endif
 
     if (isTestOption) {

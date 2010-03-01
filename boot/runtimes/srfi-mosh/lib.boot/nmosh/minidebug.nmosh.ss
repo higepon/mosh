@@ -1,9 +1,12 @@
 (library (nmosh minidebug)
 	 (export load-symbols minidebug stacktrace-printer)
 	 (import (rnrs) (nmosh condition-printer) (nmosh conditions)
-		 (primitives dbg-files dbg-syms fasl-read))
+		 (primitives dbg-files dbg-syms fasl-read %get-nmosh-dbg-image))
+
 
 (define libsyms '())
+
+(define intsyms '())
 
 (define (list-dbgfile)
   (map cadr dbg-files))
@@ -27,6 +30,19 @@
 	  r))))
   (let ((f (list-dbgfile)))
     (for-each step f))
+  syms)
+
+(define (load-intsyms)
+  (define syms '())
+  (define (addsym l)
+    (set! syms (append syms l)))
+  (define (step l)
+    (for-each
+      (lambda (e)
+	(if (eq? 'DBG-SYMS (car e))
+	  (addsym (cdr e))))
+      l))
+  (for-each step (%get-nmosh-dbg-image))
   syms)
 
 (define (fallback-trace-printer p trace)
@@ -53,15 +69,21 @@
     (display (map do-undec proc) p))
   (define (decprint proc)
     (define (step cur e)
-      (let ((r (or (assq e libsyms) (assq e dbg-syms))))
-	(if r r cur)))
+      (cond
+	((assq e libsyms) => (lambda (p) (cons 'lib p)))
+	((assq e dbg-syms) => (lambda (p) (cons 'dbg p)))
+	((assq e intsyms) => (lambda (p) (cons 'int p)))
+	(else cur)))
     (let ((dbg (fold-left step #f proc)))
       (cond
 	(dbg
-	  (display "==USRP== " p)
+	  (case (car dbg)
+	    ((lib) (display "==USRP== " p))
+	    ((dbg) (display "==DBGP== " p))
+	    ((int) (display "  nmsh   " p)))
 	  (undec proc)
 	  (display " @ " p)
-	  (display (debug-format (cdr dbg)) p))
+	  (display (debug-format (cddr dbg)) p))
 	(else
 	  (display "  usrp   " p)
 	  (undec proc)))))
@@ -118,6 +140,7 @@
     (fallback-trace-printer p (cdr trace))))
 
 (define (load-symbols)
+  (set! intsyms (load-intsyms))
   (set! libsyms (load-symfiles)))
 
 
