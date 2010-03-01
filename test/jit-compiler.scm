@@ -491,6 +491,13 @@
   (set-a! 3)
   (test-equal 3 (proc)))
 
+(let ([proc (compile (lambda ()
+                       (dynamic-wind
+                           (lambda () 1)
+                           (lambda () 2)
+                           (lambda () 3))))])
+  (test-equal 2 (proc)))
+
 ;; ;; BRANCH_NOT_EQV
 ;; (let ([proc (compile (lambda(x) (if (eqv? x "hige") #t #f)))])
 ;;   (disasm (lambda(x) (if (eqv? x "hige") #t #f)))
