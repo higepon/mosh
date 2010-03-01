@@ -186,8 +186,10 @@
 (define ex:expand-sequence           #f) ;NMOSH
 (define ex:expand-sequence-r5rs      #f) ;NMOSH
 (define ex:expand-sequence/debug     #f) ;NMOSH
-(define ex:expand-sequence-r5rs/debug #f) ;NMOSH
+(define ex:expand-sequence-r5rs/debug #f);NMOSH
 (define ex:generate-guid             #f) ;NMOSH
+(define ex:interaction-environment   #f) ;NMOSH
+(define ex:destructive-eval!         #f) ;NMOSH
 (define ex:repl                      #f)
 (define ex:expand-r5rs-file          #f)
 (define ex:run-r6rs-sequence         #f)
@@ -2038,6 +2040,25 @@
                                      (env-import! eval-template imports env)
                                      env))))))
 
+    ; MOSH: interaction-environment as psyntax
+    (define (r6rs-interaction-environment)
+      (make-r6rs-environment '() *toplevel-env*))
+    ; MOSH: eval as psyntax (allows destructive update supplied env..)
+    (define (destructive-eval! exp env)
+      (define (run l)
+	(if (pair? (cdr l))
+	  (begin (eval-core (car l)) (run (cdr l)))
+	  (eval-core (car l))))
+      (with-toplevel-parameters
+	(lambda ()
+	  (fluid-let ((*usage-env* (r6rs-environment-env env)))
+		     (let ((e (expand-toplevel-sequence (list exp))))
+		       (when %verbose
+			 (display "exp: " (current-error-port))
+			 (write e (current-error-port))
+			 (newline (current-error-port)))
+		       (run e))))))
+
     (define (r6rs-eval exp env)
       (fluid-let ((*usage-env* (r6rs-environment-env env)))
         (let ((exp (datum->syntax eval-template exp))
@@ -2535,6 +2556,8 @@
     (set! ex:expand-sequence-r5rs      expand-sequence-r5rs)
     (set! ex:expand-sequence/debug     expand-sequence/debug)
     (set! ex:expand-sequence-r5rs/debug expand-sequence-r5rs/debug)
+    (set! ex:interaction-environment   r6rs-interaction-environment) ;NMOSH
+    (set! ex:destructive-eval!         destructive-eval!) ;NMOSH
     (set! ex:generate-guid             generate-guid)
     (set! ex:repl                      repl)
     (set! ex:expand-r5rs-file          expand-r5rs-file)

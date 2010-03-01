@@ -79,7 +79,7 @@
 	;	   ,@(read-symfile))
 	    '(mosh)
 	    '(system)
-	    '(primitives ca-load ca-load/disable-cache dbg-syms dbg-files symbol-value set-symbol-value! %nmosh-failproc)
+	    '(primitives ca-load ca-load/disable-cache dbg-syms dbg-files symbol-value set-symbol-value! %nmosh-failproc ex:destructive-eval! ex:interaction-environment)
 	    '(rename (primitives my-register-macro!! 
 				 my-syntax-rename 
 				 my-register-library!!

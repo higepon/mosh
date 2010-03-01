@@ -1,51 +1,59 @@
 (library (nrepl simple)
 	 (export nrepl)
 	 (import (rnrs)
-		 (only (mosh) format )
+		 (only (mosh) set-symbol-value!)
 		 (nmosh condition-printer)
-		 (primitives nm:eval-str exit)) ;;MOSH only..
+		 (nmosh minidebug)
+		 (primitives ex:destructive-eval! ex:interaction-environment exit)) ;;NMOSH only..
 
 ;-------------------------------------------------------------------------
 ; simple REPL
 ;-------------------------------------------------------------------------
-	 (define base-eval nm:eval-str)
-	 (define (display-banner)
-	   (display "nmosh top program")(newline))
 
-	 (define (display-prompt)
-	   (display "nmosh> "))
-	 
-	 (define (read-one)
-	   (display-prompt)
-	   (let ((l (get-line (current-input-port))))
-	     (when (eof-object? l) (exit))
-	     (call-with-port (open-string-input-port l) read)))
+(define init-k 'IT_S-NOT-INIT)
 
-	 (define (convstr l)
-	   (call-with-string-output-port (lambda (p) (write l p))))
+(define (display-banner)
+  (display "nmosh top program")(newline))
 
-	 (define (do-eval l)
-	   (base-eval (convstr (list l))))
+(define (display-prompt)
+  (display "nmosh> "))
 
-	 (define (eval-one)
-	   (let ((l (read-one)))
-	     (cond
-	       ((not (list? l)) (display "?form")(newline))
-	       (else
-		 (do-eval l))))) 
+(define (read-one)
+  (display-prompt)
+  (let ((l (get-line (current-input-port))))
+    (when (eof-object? l) (exit))
+    (call-with-port (open-string-input-port l) read)))
 
-	 (define (loop)
-	   (guard (e
-		    (#t ;always handle
-		     (if (condition? e)
-		       (condition-printer e (current-error-port))
-		       (display (list 'UNKNOWN-DATUM! e)))))
-		  (eval-one))
-	   (loop))
+(define (do-eval l)
+  (ex:destructive-eval! l (ex:interaction-environment)))
 
-	 (define (nrepl)
-	   (do-eval '(import (rnrs)))
-	   (display-banner)
-	   (loop))
+(define (eval-one)
+  (do-eval (read-one)))
+
+(define (loop) ; the no-guard strategy (we need this for make VM call %nmosh-failproc)
+  (display (eval-one))(newline)
+  (loop))
+
+(define (show-traces c trace)
+  (load-symbols)
+  (condition-printer c (current-error-port))
+  (stacktrace-printer trace (current-error-port))
+  (init-k))
+
+(define (init)
+  (set-symbol-value! '%nmosh-failproc show-traces))
+
+(define (startloop)
+  (call-with-current-continuation
+    (lambda (k)
+      (set! init-k k)
+      (loop)))
+  (startloop))
+
+(define (nrepl)
+  (display-banner)
+  (do-eval '(import (rnrs)))
+  (init)
+  (startloop))
 )
 

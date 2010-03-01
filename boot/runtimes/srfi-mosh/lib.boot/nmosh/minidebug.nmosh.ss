@@ -1,5 +1,5 @@
 (library (nmosh minidebug)
-	 (export minidebug)
+	 (export load-symbols minidebug stacktrace-printer)
 	 (import (rnrs) (nmosh condition-printer) (nmosh conditions)
 		 (primitives dbg-files dbg-syms fasl-read))
 
@@ -9,15 +9,17 @@
   (map cadr dbg-files))
 
 (define (get-symfile fn)
-  (call-with-port (open-file-input-port fn) fasl-read))
+  (guard
+    (c (#t #f))
+    (call-with-port (open-file-input-port fn) fasl-read)))
 
 (define (load-symfiles)
   (define syms '())
   (define (addsym l)
     (set! syms (append syms l)))
   (define (step fn)
-    (with-condition-printer
-      (let ((r (get-symfile fn)))
+    (let ((r (get-symfile fn)))
+      (when r
 	(for-each 
 	  (lambda (e)
 	    (if (eq? 'DBG-SYMS (car e))
@@ -51,7 +53,7 @@
     (display (map do-undec proc) p))
   (define (decprint proc)
     (define (step cur e)
-      (let ((r (assq e libsyms)))
+      (let ((r (or (assq e libsyms) (assq e dbg-syms))))
 	(if r r cur)))
     (let ((dbg (fold-left step #f proc)))
       (cond
@@ -111,15 +113,21 @@
 
 (define minidebug-key #f)
 
+(define (stacktrace-printer trace p)
+  (when (and (pair? trace) (pair? (cdr trace)))
+    (fallback-trace-printer p (cdr trace))))
+
+(define (load-symbols)
+  (set! libsyms (load-symfiles)))
+
+
 (define (minidebug p c trace)
   (condition-printer c p)
   (when minidebug-key
     (display "!!! DOUBLE FAULT!\n" p)
     (exit -1))
   (set! minidebug-key #t)
-  (set! libsyms (append dbg-syms (load-symfiles)))
-  (if (pair? trace)
-    (fallback-trace-printer p (cdr trace))
-    (display "TRACE :\n(not avaliable)\n" p))
+  (load-symbols)
+  (stacktrace-printer trace p)
   (exit -1))
 )
