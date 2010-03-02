@@ -1100,7 +1100,8 @@
     ,@(CONSTANT constant-value)))
 
 (define (CLOSURE . x)
-  `(,@(trace-push! $CLOSURE)))
+  `(,@(trace-push! $CLOSURE)
+    ,@(DEBUGGER 999)))
 
 
 ;; pending: CALL for closure is not implemented.
@@ -1710,7 +1711,7 @@
   (register-insn-dispatch-table $EQ EQ)
   (register-insn-dispatch-table $REFER_FREE REFER_FREE)
   (register-insn-dispatch-table $REFER_LOCAL REFER_LOCAL)
-  (register-insn-dispatch-table $CLOSURE CLOSURE)
+;  (register-insn-dispatch-table $CLOSURE CLOSURE)
   (register-insn-dispatch-table $ASSIGN_GLOBAL ASSIGN_GLOBAL)
   (register-insn-dispatch-table $CONSTANT CONSTANT)
   (register-insn-dispatch-table $REFER_LOCAL_PUSH REFER_LOCAL_PUSH)
