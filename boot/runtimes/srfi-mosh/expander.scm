@@ -2047,9 +2047,10 @@
     ; MOSH: eval as psyntax (allows destructive update supplied env..)
     (define (destructive-eval! exp env)
       (define (run l)
-	(if (pair? (cdr l))
-	  (begin (eval-core (car l)) (run (cdr l)))
-	  (eval-core (car l))))
+	(when (pair? l)
+	  (if (pair? (cdr l))
+	    (begin (eval-core (car l)) (run (cdr l)))
+	    (eval-core (car l)))))
       (with-toplevel-parameters
 	(lambda ()
 	  (fluid-let ((*usage-env* (r6rs-environment-env env)))

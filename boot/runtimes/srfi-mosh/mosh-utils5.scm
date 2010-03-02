@@ -207,7 +207,8 @@
       (else #f))))
 
 (define (ca-scandeps code)
-  (apply append (ca-scandeps-begin code)))
+  (apply append 
+	 (apply append (map (lambda (e) (ca-scandeps-begin e)) code))))
 
 (define (ca-makecache code compiled-code syms fn cfn dfn name)
   (ca-prepare-cache-dir)

@@ -4,7 +4,7 @@
 	 (srfi :98)
 	 (only (psyntax system $all) interaction-environment))
 
-(define %verbose #t)
+(define %verbose #f)
 (define %disable-acc #t)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
 

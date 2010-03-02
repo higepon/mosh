@@ -1,4 +1,4 @@
-(define %verbose #t)
+(define %verbose #f)
 (define %disable-acc #t)
 (define %loadpath "lib.rnrs:lib.boot:../../../lib")
 (load "compat-mosh-run.scm")
