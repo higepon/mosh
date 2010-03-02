@@ -491,11 +491,30 @@
   (set-a! 3)
   (test-equal 3 (proc)))
 
-(let ([proc (compile (lambda ()
+(let ([proc (compile (lambda (v1 . v2)
+                       v2))])
+  (disasm (lambda (v1 . v2)
+                       v2))
+  (test-equal '(#(c d)) (proc '#(a b) '#(c d))))
+
+#;(let ([proc (compile (lambda (proc v1 . v2)
+                       (apply for-each proc (vector->list v1)
+                              (map vector->list v2))))])
+  (proc identity '#(a b) '#(c d)))
+
+
+;; CLOSURE
+#;(let ([proc (compile (lambda ()
                        (dynamic-wind
                            (lambda () 1)
                            (lambda () 2)
-                           (lambda () 3))))])
+                           (lambda () 3))) )])
+
+  (disasm (lambda ()
+                       (dynamic-wind
+                           (lambda () 1)
+                           (lambda () 2)
+                           (lambda () 3))))
   (test-equal 2 (proc)))
 
 ;; ;; BRANCH_NOT_EQV

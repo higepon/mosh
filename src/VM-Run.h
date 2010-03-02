@@ -179,18 +179,52 @@ namespace scheme {
             COUNT_CALL(ac_);
             dc_ = ac_;
             cl_ = ac_;
+
+            VM_ASSERT(operand.isFixnum());
+            const int argLength = operand.toFixnum();
+            const int requiredLength = c->argLength;
+
+            if (c->isOptionalArg) {
+                const int extraLength = argLength - requiredLength;
+                if (-1 == extraLength) {
+                    Object* const sp = unShiftArgs(sp_, 1);
+                    indexSet(sp, 0, Object::Nil);
+                    sp_ = sp;
+                    fp_ = sp - requiredLength;
+                } else if (extraLength >= 0) {
+                    indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
+                    Object* const sp = sp_ - extraLength;
+                    fp_ = sp - requiredLength;
+                    sp_ = sp;
+                } else {
+                    callWrongNumberOfArgumentsViolationAfter(this,
+                                                             ac_.toClosure()->sourceInfoString(this),
+                                                             requiredLength - 1,
+                                                             operand.toFixnum());
+                }
+            } else if (requiredLength == argLength) {
+                fp_ = sp_ - argLength;
+            } else {
+                Object args = Object::Nil;
+                for (int i = 0; i < operand.toFixnum(); i++) {
+                    args = Object::cons(index(sp_, i), args);
+                }
+                callWrongNumberOfArgumentsViolationAfter(this,
+                                                         ac_.toClosure()->sourceInfoString(this),
+                                                         requiredLength,
+                                                         operand.toFixnum(),
+                                                         args);
+            }
+
             if (c->isJitCompiled()) {
                 VM_LOG1("called ~a\n", c->sourceInfo);
                 CProcedure* const cprocedure = c->toCProcedure();
                 VM_ASSERT(operand.isFixnum());
-                const int argc = operand.toFixnum();
                 // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
 
                 // Not same as Cproc, JIT-compile CProc issues RETURN.
                 // So we don't use returnCode
-                fp_ = sp_ - argc;
-                cl_ = ac_;
-                ac_ = cprocedure->call(this, argc, sp_ - argc);
+                ac_ = cprocedure->call(this, argLength, sp_ - argLength);
             } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
                     expandStack(stackSize_ / 10);
@@ -199,42 +233,7 @@ namespace scheme {
                 if (enableJit_) {
                     tryJitCompile(ac_);
                 }
-
-                VM_ASSERT(operand.isFixnum());
-                const int argLength = operand.toFixnum();
-                const int requiredLength = c->argLength;
                 pc_ = c->pc;
-                if (c->isOptionalArg) {
-                    const int extraLength = argLength - requiredLength;
-                    if (-1 == extraLength) {
-                        Object* const sp = unShiftArgs(sp_, 1);
-                        indexSet(sp, 0, Object::Nil);
-                        sp_ = sp;
-                        fp_ = sp - requiredLength;
-                    } else if (extraLength >= 0) {
-                        indexSet(sp_, extraLength, stackToPairArgs(sp_, extraLength + 1));
-                        Object* const sp = sp_ - extraLength;
-                        fp_ = sp - requiredLength;
-                        sp_ = sp;
-                    } else {
-                        callWrongNumberOfArgumentsViolationAfter(this,
-                                                                 ac_.toClosure()->sourceInfoString(this),
-                                                                 requiredLength - 1,
-                                                                 operand.toFixnum());
-                    }
-                } else if (requiredLength == argLength) {
-                    fp_ = sp_ - argLength;
-                } else {
-                    Object args = Object::Nil;
-                    for (int i = 0; i < operand.toFixnum(); i++) {
-                        args = Object::cons(index(sp_, i), args);
-                    }
-                    callWrongNumberOfArgumentsViolationAfter(this,
-                                                             ac_.toClosure()->sourceInfoString(this),
-                                                             requiredLength,
-                                                             operand.toFixnum(),
-                                                             args);
-                }
             }
         } else if (ac_.isCallable()) {
             COUNT_CALL(ac_);

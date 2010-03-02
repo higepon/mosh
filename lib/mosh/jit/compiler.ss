@@ -1679,7 +1679,7 @@
             (loop (+ i (length (caar lst))) (cdr lst) ret)]))])))
 
 (define (insert-labels lst labels)
-  (format #t "insert-labels lst=~a labels=~a" lst labels)
+;  (format #t "insert-labels lst=~a labels=~a" lst labels)
   (let loop ([labels labels]
              [lst lst]
              [ret '()])

@@ -982,12 +982,12 @@ void VM::tryJitCompile(Object closure)
         isJitCompiling_ = false;
         return;
     } else {
-        VM_LOG2("now compiling ~a ~a\n", c->sourceInfo, closure);
+//        VM_LOG2("now compiling ~a ~a\n", c->sourceInfo, closure);
         Time t1 = Time::now();
         Object compiled = callClosure1(jitCompiler_, closure);
         Time t2 = Time::now();
         if (compiled.isFalse()) {
-            LOG2("jit compile error ~a ~d usec\n", c->sourceInfo, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
+//            LOG2("jit compile error ~a ~d usec\n", c->sourceInfo, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
             c->setJitCompiledError();
         } else {
             LOG2("jit compile~a ~d usec\n", closure, Bignum::makeIntegerFromUintprt_t(Time::diffUsec(t2, t1)));
