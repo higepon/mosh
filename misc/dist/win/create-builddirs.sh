@@ -6,6 +6,6 @@
 CONFIG=`dirname $0`/../../../configure
 
 #FIXME: add logging fac.
-gmake -f `dirname $0`/run-configure.mk MOSHCONFIG=$CONFIG
+make -f `dirname $0`/run-configure.mk MOSHCONFIG=$CONFIG
 
 #FIXME: build
