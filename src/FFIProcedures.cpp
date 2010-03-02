@@ -1162,12 +1162,12 @@ Object scheme::pointerSetCInt64DEx(VM* theVM, int argc, const Object* argv)
 }
 
 #ifndef LLONG_MIN
-#warning you don't have LLONG_MIN..
+#warning LLONG_MIN is missing..
 #define LLONG_MIN INTMAX_MIN
 #endif
 
 #ifndef LLONG_MAX
-#warning you don't have LLONG_MAX..
+#warning LLONG_MAX is missing..
 #define LLONG_MAX INTMAX_MAX
 #endif
 

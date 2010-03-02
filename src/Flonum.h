@@ -40,12 +40,12 @@
 
 /* C99 isnan/isinf */
 #if !(defined(isnan)||defined(__MSC_VER))
-#warning you don't have isnan()..
+#warning isnan() is missing..
 #define isnan std::isnan
 #endif
 
 #if !(defined(isinf)||defined(__MSC_VER))
-#warning you don't have isinf()..
+#warning isinf() is missing..
 #define isinf std::isinf
 #endif
 
