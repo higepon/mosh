@@ -349,6 +349,7 @@
          (*syntax-reflected* #f)
 
 	 ;;MOSH
+	 (*library-install?* #t)
 	 (*DBG?* #f)
 	 (*DBG-SYMS* '())
 
@@ -1694,8 +1695,8 @@
                                                     (values))))))
 
                                         ;; Register library for any further expansion.
-                                        (if (eq? library-type 'library)
-                                            (eval-core expanded-library ))
+                                        (if (and (eq? library-type 'library) *library-install?*) ; MOSH: to cache compiled code.
+                                            (eval-core expanded-library))
 
                                         expanded-library))))))))))))
 
@@ -2339,10 +2340,11 @@
 			     (expand-toplevel-sequence l)))))))
 
 
-    (define (expand-sequence/debug l)
+    (define (expand-sequence/debug l install?)
       (fluid-let
 	((*DBG?* #t)
-	 (*DBG-SYMS* '()))
+	 (*DBG-SYMS* '())
+	 (*library-install?* install?))
 	(let* ((r (expand-sequence l))
 	       (d *DBG-SYMS*))
 	  (cons r d))))

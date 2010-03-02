@@ -9,7 +9,7 @@
       (import (rnrs))
       (define a 10)
       (define a 20) ;; DISallows multiple definition
-      (display a))))
+      (display a)) #t))
 
 (test-error syntax-violation? (case1))
 
