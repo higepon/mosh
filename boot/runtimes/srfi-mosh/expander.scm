@@ -191,6 +191,7 @@
 (define ex:interaction-environment   #f) ;NMOSH
 (define ex:current-environment       #f) ;NMOSH
 (define ex:destructive-eval!         #f) ;NMOSH
+(define ex:destructive-expand!       #f) ;NMOSH
 (define ex:repl                      #f)
 (define ex:expand-r5rs-file          #f)
 (define ex:run-r6rs-sequence         #f)
@@ -350,8 +351,11 @@
          (*syntax-reflected* #f)
 
 	 ;;MOSH
+	 ;; wheter to install current library
 	 (*library-install?* #t)
+	 ;; save debug symbol?
 	 (*DBG?* #f)
+	 ;; debug symbol table
 	 (*DBG-SYMS* '())
 
          ;;==========================================================================
@@ -677,7 +681,6 @@
                key))))
 
     ;; The inverse of the above.
-
     ;; MOSH: it can be #f when executing cached code
     (define (env-reify key-or-env)
       (if (symbol? key-or-env)
@@ -2047,6 +2050,13 @@
       (make-r6rs-environment '() *toplevel-env*))
     (define (r6rs-current-environment)
       (make-r6rs-environment '() *usage-env*))
+    ; MOSH: call expand (allows destructive update supplied env..)
+    (define (destructive-expand! exp env)
+      (with-toplevel-parameters
+	(lambda ()
+	  (fluid-let ((*usage-env* (r6rs-environment-env env)))
+		     (expand-toplevel-sequence (list exp))))))
+    
     ; MOSH: eval as psyntax (allows destructive update supplied env..)
     (define (destructive-eval! exp env)
       (define (run l)
@@ -2058,10 +2068,6 @@
 	(lambda ()
 	  (fluid-let ((*usage-env* (r6rs-environment-env env)))
 		     (let ((e (expand-toplevel-sequence (list exp))))
-		       (when %verbose
-			 (display "exp: " (current-error-port))
-			 (write e (current-error-port))
-			 (newline (current-error-port)))
 		       (run e))))))
 
     (define (r6rs-eval exp env)
@@ -2565,6 +2571,7 @@
     (set! ex:interaction-environment   r6rs-interaction-environment) ;NMOSH
     (set! ex:current-environment       r6rs-current-environment) ;NMOSH
     (set! ex:destructive-eval!         destructive-eval!) ;NMOSH
+    (set! ex:destructive-expand!       destructive-expand!) ;NMOSH
     (set! ex:generate-guid             generate-guid)
     (set! ex:repl                      repl)
     (set! ex:expand-r5rs-file          expand-r5rs-file)
