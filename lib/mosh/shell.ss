@@ -29,7 +29,7 @@
 
 (library (mosh shell)
   (export def-command $def-command cd -> $-> def-alias)
-  (import (only (rnrs) define define-syntax syntax-case ... syntax lambda let-values list
+  (import (only (rnrs) define define-syntax syntax-case ... syntax lambda let-values list display current-error-port
                        syntax->datum quote with-syntax datum->syntax string->symbol close-port
                        syntax-rules let transcoded-port make-transcoder utf-8-codec if eof-object?
                        list->string reverse cons read-char map pair? car cdr begin do = length +)
@@ -191,6 +191,6 @@
            ($pipe "internal" out in1 (cmd2 args2) (cmd3 args3) ...))]
       )))
 
-
+(display "(mosh shell) library is deprecated.\n" (current-error-port))
 
 )

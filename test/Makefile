@@ -37,9 +37,10 @@ runtest:
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)
 
+# (mosh shell) is deprecated.
 runtest-mosh:
-	$(MOSH_TARGET) test/shell.scm
+#	$(MOSH_TARGET) test/shell.scm
 
 runtest-nmosh:
-	-$(MOSH_TARGET) test/shell.scm
+#	-$(MOSH_TARGET) test/shell.scm
 	$(MOSH_TARGET) test/nmosh.scm
