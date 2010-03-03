@@ -189,6 +189,7 @@
 (define ex:expand-sequence-r5rs/debug #f);NMOSH
 (define ex:generate-guid             #f) ;NMOSH
 (define ex:interaction-environment   #f) ;NMOSH
+(define ex:current-environment       #f) ;NMOSH
 (define ex:destructive-eval!         #f) ;NMOSH
 (define ex:repl                      #f)
 (define ex:expand-r5rs-file          #f)
@@ -2044,6 +2045,8 @@
     ; MOSH: interaction-environment as psyntax
     (define (r6rs-interaction-environment)
       (make-r6rs-environment '() *toplevel-env*))
+    (define (r6rs-current-environment)
+      (make-r6rs-environment '() *usage-env*))
     ; MOSH: eval as psyntax (allows destructive update supplied env..)
     (define (destructive-eval! exp env)
       (define (run l)
@@ -2560,6 +2563,7 @@
     (set! ex:expand-sequence/debug     expand-sequence/debug)
     (set! ex:expand-sequence-r5rs/debug expand-sequence-r5rs/debug)
     (set! ex:interaction-environment   r6rs-interaction-environment) ;NMOSH
+    (set! ex:current-environment       r6rs-current-environment) ;NMOSH
     (set! ex:destructive-eval!         destructive-eval!) ;NMOSH
     (set! ex:generate-guid             generate-guid)
     (set! ex:repl                      repl)

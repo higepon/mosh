@@ -1,7 +1,7 @@
 (import (rnrs)
 	(mosh) (system)
 	(rnrs eval)
-	(primitives throw ex:destructive-eval! ex:interaction-environment))
+	(primitives throw ex:destructive-eval! ex:current-environment))
 
 (define initprog
   '((import (rnrs) 
@@ -13,7 +13,7 @@
     (define %verbose #t)
     (define %nmosh-failproc #f)))
 
-(define m (ex:interaction-environment))
+(define m (ex:current-environment))
 
 (define (read-all/port p)
   (let ((r (read p)))
