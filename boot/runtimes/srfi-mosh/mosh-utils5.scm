@@ -232,27 +232,29 @@
   (call-with-input-file fn (lambda (p) (itr '() p))))
 
 (define (ca-expand/compile-for-cache fn)
-  (define (step code cur-code cur-compiled-code cur-syms)
+  (define (step run? code cur-code cur-compiled-code cur-syms)
     (PCK "Expanding..")
     (let* ((ex (ex:expand-sequence/debug code #f))
 	   (ex-code (car ex))
 	   (ex-syms (cdr ex)))
       (PCK 'CACHE: 'COMPILE...)
       (let ((co (compile-w/o-halt (cons 'begin ex-code))))
-	(ca-load-compiled-code (list co) ex-syms)
-	(list (cons ex-code cur-code) (cons co cur-compiled-code) (append ex-syms cur-syms)))))
+	(ca-load-compiled-code (list (cons run? co)) ex-syms)
+	(list (cons ex-code cur-code) 
+	      (cons (cons run? co) cur-compiled-code) 
+	      (append ex-syms cur-syms)))))
   (define (proc code cur-code cur-compiled-code cur-syms)
     (cond 
       ((and (pair? code) (pair? (car code)) (eq? 'library (caar code)))
-       (let* ((s (step (list (car code)) cur-code cur-compiled-code cur-syms))
+       (let* ((s (step #t (list (car code)) cur-code cur-compiled-code cur-syms))
 	      (nx-code (car s))
 	      (nx-compiled-code (cadr s))
 	      (nx-syms (caddr s)))
 	 (proc (cdr code) nx-code nx-compiled-code nx-syms))) ;when library
       ((pair? code)
-       (step code cur-code cur-compiled-code cur-syms)) ; when program
+       (step #f code cur-code cur-compiled-code cur-syms)) ; when program
       (else
-	(list cur-code cur-compiled-code cur-syms))))
+	(list cur-code cur-compiled-code cur-syms)))) ; library only file
   (PCK "Reading" fn)
   (let ((code (ca-read-all fn)))
     (proc code '() '() '())))
@@ -280,15 +282,31 @@
       (ca-need-update?-check cfn d)
       #t)))
 
-(define (ca-runcache obj) 
+(define (for-each1-tail proc lst)
+  (cond
+    ((and (pair? lst) (pair? (cdr lst)))
+     (proc (car lst))
+     (for-each1-tail proc (cdr lst)))
+    ((and (pair? lst) (null? (cdr lst)))
+     (proc (car lst)))))
+    
+(define (ca-runcache obj) ; run both lib/prog
   (let ((m (assq 'MOSH-CODE obj)))
-      (for-each (lambda (e) (eval-compiled! e))
+      (for-each1-tail (lambda (e) (eval-compiled! (cdr e)))
 		(cdr m))))
 
 (define (ca-load-compiled-code code syms)
   (PCK "evaluating...")
   (dbg-addsyms syms)
-  (for-each (lambda (e) (eval-compiled! e)) code))
+  (for-each1-tail (lambda (e) 
+		    (when (car e)
+		      (eval-compiled! (cdr e)))) code))
+
+(define (ca-load-compiled-code/run code syms)
+  (PCK "evaluating(run)...")
+  (dbg-addsyms syms)
+  (for-each1-tail (lambda (e) 
+		    (eval-compiled! (cdr e))) code))
 
 (define (ca-load/cache rfn recompile? name)
   (let* ((fn (make-absolute-path rfn))
@@ -318,7 +336,11 @@
 	       (compiled-code (cadr c))
 	       (syms (caddr c)))
 	  (PCK "Writing to" cfn)
-	  (ca-makecache (reverse code) (reverse compiled-code) syms fn cfn dfn name))))))
+	  (ca-makecache (reverse code) (reverse compiled-code) syms fn cfn dfn name)
+	  (when (and (pair? compiled-code) 
+		     (pair? (car compiled-code)) 
+		     (not (caar compiled-code))) ; when this cache contains a program
+	    (ca-load-compiled-code/run (list (cons #t (cdar compiled-code))) '())))))))
 
 (define (ca-load/disable-cache fn)
   (PCK "Loading" fn "(ACC disabled)")
@@ -326,7 +348,7 @@
 	 (code (car c))
 	 (compiled-code (cadr c))
 	 (syms (caddr c)))
-    (ca-load-compiled-code compiled-code syms)))
+    (ca-load-compiled-code/run compiled-code syms)))
 
 (define (ca-load fn recompile? name)
   (cond
