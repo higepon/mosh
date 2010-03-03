@@ -308,7 +308,7 @@
         ((matcher "vector" list-code vars k arg ...)
          (matcher k
                   (lambda (x sk fk)
-                    (if (hooked-vector? x)
+                    (if (vector? x)
                         (list-code (vector->list x)
                                    sk
                                    fk)
@@ -1356,7 +1356,7 @@
                                     fk)
                     ,fk))
               (#(ps ___)
-               `(if (hooked-vector? ,input)
+               `(if (vector? ,input)
                     ,(process-match `(vector->list ,input)
                                     ps
                                     sk
@@ -2116,7 +2116,7 @@
       (cond ((null? s) '())
             ((pair? s) (cons (sexp-map/debug (update s) f (car s))
                              (sexp-map/debug (update s) f (cdr s))))
-            ((hooked-vector? s)
+            ((vector? s)
              (apply vector (sexp-map/debug (update s) f (vector->list s))))
             (else (f s dbg))))
 
@@ -2124,7 +2124,7 @@
       (cond ((null? s) '())
             ((pair? s) (cons (sexp-map f (car s))
                              (sexp-map f (cdr s))))
-            ((hooked-vector? s)
+            ((vector? s)
              (apply vector (sexp-map f (vector->list s))))
             (else (f s))))
 

@@ -41,8 +41,7 @@
    string-copy string-length string-ref string<=? string<?
    string=? string>=? string>? string? substring symbol->string symbol? tan
    truncate values vector vector->list
-   vector-fill! vector-length vector-ref vector-set! zero? ;MOSH: vector?
-   (rename (hooked-vector? vector?))
+   vector-fill! vector-length vector-ref vector-set! zero? vector?
    
    ;; R6RS additional procedures:
    
@@ -111,7 +110,7 @@
 	   angle
 
 	   ;MOSH: FIXME!
-	   hooked-vector?
+	   vector?
 	   ))
   
     (define-syntax assert

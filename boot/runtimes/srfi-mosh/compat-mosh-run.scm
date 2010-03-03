@@ -20,13 +20,6 @@
 
 (define id-symbol '*ID*)
 
-(define true-vector? vector?)
-(define (hooked-vector? x)
-  (and
-    (true-vector? x)
-    (if (= (vector-length x) 0)
-      #t
-      (not (eq? id-symbol (vector-ref x 0))))))
 (define (debug-source-info x)
   (source-info x))
 

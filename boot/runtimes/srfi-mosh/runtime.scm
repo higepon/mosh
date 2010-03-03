@@ -11,23 +11,22 @@
 
 ;; MOSH: we use vectors for this purpose.
 
-
 (define (make-identifier/debug name colors transformer-envs displacement maybe-library debug)
-  (vector id-symbol name colors transformer-envs displacement maybe-library debug))
+  (make-simple-struct id-symbol 6 (list name colors transformer-envs displacement maybe-library debug)))
 
 (define (make-identifier name colors transformer-envs displacement maybe-library)
   (make-identifier/debug name colors transformer-envs displacement maybe-library #f))
 
 (define (identifier? x) 
-  (and (true-vector? x) 
-       (not (= (vector-length x) 0)) 
-       (eq? id-symbol (vector-ref x 0))))
-(define (id-name x) (vector-ref x 1))
-(define (id-colors x) (vector-ref x 2))
-(define (id-transformer-envs x) (vector-ref x 3))
-(define (id-displacement x) (vector-ref x 4))
-(define (id-maybe-library x) (vector-ref x 5))
-(define (id-debug x) (vector-ref x 6)) ;NMOSH
+  (and (simple-struct? x)
+       (eq? id-symbol (simple-struct-name x))))
+
+(define (id-name x) (simple-struct-ref x 0))
+(define (id-colors x) (simple-struct-ref x 1))
+(define (id-transformer-envs x) (simple-struct-ref x 2))
+(define (id-displacement x) (simple-struct-ref x 3))
+(define (id-maybe-library x) (simple-struct-ref x 4))
+(define (id-debug x) (simple-struct-ref x 5)) ;NMOSH
 
 ;;------------------------------------------------
 ;; runtime library manager
