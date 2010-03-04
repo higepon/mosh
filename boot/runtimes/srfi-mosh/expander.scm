@@ -1112,16 +1112,9 @@
              forms))
 
       (let ((common-env *usage-env*))
-
-        ;; Add new frame for keeping track of bindings used
-        ;; so we can detect redefinitions violating lexical scope.
-        (add-fresh-used-frame!)
-
-        (let loop ((ws (map (lambda (e) (make-wrap common-env e))
-                            body-forms))
-                   (forms           '())
-                   (syntax-defs     '())
-                   (bound-variables '()))
+	
+	; MOSH: to avoid using named-let..
+	(define (scan-loop ws forms syntax-defs bound-variables)
           (cond
            ((null? ws)
             (check-expression-body body-type forms body-forms)
@@ -1148,7 +1141,7 @@
                             (lambda (imported-libraries imports)
                               (import-libraries-for-expand imported-libraries (map not imported-libraries) 0)
                               (env-import! (car form) imports common-env)
-                              (loop (cdr ws)
+                              (scan-loop (cdr ws)
                                     (cons (list #f #f `(ex:import-libraries-for-run
                                                         ',imported-libraries
                                                         ',(current-builds imported-libraries)
@@ -1157,12 +1150,12 @@
                                     syntax-defs
                                     bound-variables))))))
                       ((program)
-                       (loop (cdr ws)
+                       (scan-loop (cdr ws)
                              (cons (list #f #f (expand-program form)) forms)
                              syntax-defs
                              bound-variables))
                       ((library)
-                       (loop (cdr ws)
+                       (scan-loop (cdr ws)
                              (cons (list #f #f (expand-library form)) forms)
                              syntax-defs
                              bound-variables))
@@ -1172,7 +1165,7 @@
                          (lambda (id rhs)
                            (check-valid-definition id common-env body-type form forms type)
                            (env-extend! (list (make-map 'variable id #f)) common-env)
-                           (loop (cdr ws)
+                           (scan-loop (cdr ws)
                                  (cons (list (binding-name (binding id))
                                              #t
                                              (make-wrap *usage-env* rhs))
@@ -1189,14 +1182,14 @@
                              (let ((rhs (fluid-let ((*phase* (+ 1 *phase*)))
                                           (expand rhs))))
                                (register-macro! (binding-name (cdr mapping)) (make-user-macro (eval-core rhs)))
-                               (loop (cdr ws)
+                               (scan-loop (cdr ws)
                                      forms
                                      (cons (cons (binding-name (binding id)) rhs) syntax-defs)
                                      bound-variables))))))
                       ((begin)
                        (or (list? form)
                            (invalid-form form))
-                       (loop (append (map (lambda (exp)
+                       (scan-loop (append (map (lambda (exp)
                                             (make-wrap *usage-env* exp))
                                           (cdr form))
                                      (cdr ws))
@@ -1224,18 +1217,24 @@
                                          (register-macro! (binding-name (cdr mapping)) (make-user-macro macro)))
                                        usage-diff
                                        macros)
-                             (loop (append (map (lambda (form) (make-wrap extended-env form))
+                             (scan-loop (append (map (lambda (form) (make-wrap extended-env form))
                                                 body)
                                            (cdr ws))
                                    forms
                                    syntax-defs
                                    bound-variables)))))
                       (else
-                       (loop (cdr ws)
+                       (scan-loop (cdr ws)
                              (cons (list #f #t (make-wrap *usage-env* form))
                                    forms)
                              syntax-defs
-                             bound-variables))))))))))))
+                             bound-variables)))))))))) 
+
+        ;; Add new frame for keeping track of bindings used
+        ;; so we can detect redefinitions violating lexical scope.
+        (add-fresh-used-frame!)
+
+	(scan-loop (map (lambda (e) (make-wrap common-env e)) body-forms) '() '() '())))
 
     (define (emit-body body-forms define-or-set)
       (map (lambda (body-form)
