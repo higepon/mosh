@@ -42,6 +42,7 @@ namespace scheme {
 
 inline void VM::copyJmpBuf(jmp_buf dst, jmp_buf src)
 {
+    printf("size=%p", this);
     memcpy(dst, src, sizeof(jmp_buf));
 }
 

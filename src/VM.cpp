@@ -410,9 +410,12 @@ Object VM::callClosure0(Object closure)
 
 Object VM::callClosure1(Object closure, Object arg)
 {
+    VM_LOG2("now calling  ~a ~a\n", closure.isClosure() ? closure.toClosure()->sourceInfo : Object::False, closure);
     callClosure1Code_->set(3, arg);
     callClosure1Code_->set(6, closure);
-    return evaluateSafe(callClosure1Code_);
+    Object ret = evaluateSafe(callClosure1Code_);
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    return ret;
 }
 
 Object VM::callClosure2(Object closure, Object arg1, Object arg2)

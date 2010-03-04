@@ -60,6 +60,7 @@
 #include "OSCompatThread.h"
 #include "FFI.h"
 #include "SimpleStruct.h"
+#include "Callable.h"
 
 #ifdef _WIN32
     #define snprintf _snprintf
@@ -271,7 +272,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isEof()) {
         putString(UC("#<eof-object>"));
     } else if (o.isCallable()) {
-        putString(UC("callable"));
+        putString(o.toCallable()->toString());
     } else if (o.isFixnum()) {
         char buf[32];
         snprintf(buf, 32, "%ld", (long)o.toFixnum());
