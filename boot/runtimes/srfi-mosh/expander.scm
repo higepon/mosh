@@ -845,12 +845,29 @@
     (define macro-type car)
     (define macro-proc cadr)
 
+    ; MOSH: delayed macro eval
+    (define (macro-set-proc! macro proc)
+      (set-car! (cdr macro) proc))
+
     (define (make-expander proc)             (make-macro 'expander proc))
     (define (make-transformer proc)          (make-macro 'transformer proc))
     (define (make-variable-transformer proc) (make-macro 'variable-transformer proc))
 
+    (define (make-delayed-user-macro code) ; MOSH: delayed
+      (if (eq? (car code) 'lambda)
+	(letrec ((r (list 'transformer
+			  (lambda (t)
+			    (let ((proc (eval-core code)))
+			      (macro-set-proc! r proc)
+			      (proc t))))))
+	  r)
+	;; fallback (macro returning macro-code)
+	(make-user-macro (eval-core code))))
+	
+	
+
     (define (make-user-macro procedure-or-macro)
-      (if (procedure? procedure-or-macro)
+      (if (procedure? procedure-or-macro) 
           (make-transformer procedure-or-macro)
           procedure-or-macro))
 
@@ -1181,6 +1198,7 @@
                              (env-extend! (list mapping) common-env)
                              (let ((rhs (fluid-let ((*phase* (+ 1 *phase*)))
                                           (expand rhs))))
+			       ; MOSH: delay macro-procedure eval.
                                (register-macro! (binding-name (cdr mapping)) (make-user-macro (eval-core rhs)))
                                (scan-loop (cdr ws)
                                      forms
