@@ -351,6 +351,10 @@
          (*syntax-reflected* #f)
 
 	 ;;MOSH
+	 ;; generated programs (alist)
+	 (*programs* '())
+	 ;; 
+	 (*current-program* "<user program>")
 	 ;; wheter to install current library
 	 (*library-install?* #t)
 	 ;; save debug symbol?
@@ -594,6 +598,16 @@
     ;;
     ;;=========================================================================
 
+    ; MOSH: show program name instead of internal library name
+    (define (library-string l)
+      (if (pair? l)
+	(let* ((a (car l))
+	       (p (assq a *programs*)))
+	  (if p
+	    (string-append "program " (cdr p))
+	    (string-append "library (" (list->string l " ") ")")))
+	"<unknown origin>"))
+
     (define (source-level id)
       (- *phase* (id-displacement id)))
 
@@ -604,8 +618,8 @@
               (syntax-violation
                "invalid reference"
                (string-append "Attempt to use binding of [" (symbol->string (id-name id))
-                              "] in library (" (list->string (id-library id) " ")
-                              ") at invalid level " (number->string (source-level id))
+                              "] in " (library-string (id-library id))
+			      " at invalid level " (number->string (source-level id))
                               ".  Binding is only available at levels: "
                               (list->string (binding-levels binding) " "))
                id))
@@ -614,7 +628,7 @@
               (syntax-violation
                "invalid reference"
                (string-append "No binding available for [" (symbol->string (id-name id))
-                              "] in library (" (list->string (id-library id) " ") ")")
+                              "] in " (library-string (id-library id)))
 
                id))))
 
@@ -927,8 +941,8 @@
           (not (binding-mutable? binding))
           (syntax-violation
            #f
-           (string-append "Attempt to implicitly import variable that is mutable in library ("
-                          (list->string (binding-library binding) " ") ")")
+           (string-append "Attempt to implicitly import variable that is mutable in "  ;MOSH:
+                          (library-string (binding-library binding)))
            t)))
 
     ;;=========================================================================
@@ -1606,15 +1620,22 @@
     ;;
     ;;==========================================================================
 
+    ; MOSH: collect generated program id
+    (define (generate-program-guid)
+      (let ((id (generate-guid 'program)))
+	(set! *programs* (cons (cons id *current-program*) *programs*))
+	id))
+
     (define (expand-program t)
       (match t
         ((program import-clause forms ___)
-         (expand-library-or-program
-          `(,program (,(datum->syntax program (generate-guid 'program)))
-                     (,(datum->syntax program 'export))
-                     ,import-clause
-                     ,@forms)
-          'program))))
+	 (let ((id (generate-program-guid)))
+	   (expand-library-or-program
+	     `(,program (,(datum->syntax program id)) ; MOSH:
+			(,(datum->syntax program 'export))
+			,import-clause
+			,@forms)
+	     'program)))))
 
     (define (expand-library t)
       (expand-library-or-program t 'library))
