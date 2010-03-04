@@ -1098,7 +1098,7 @@
 	  (list (binding-name (binding name)) code)))
       (map step bind))
 
-    (define (expand-mosh-base-let exp) ; MOSH:
+    (define (expand-vanilla-let exp) ; MOSH:
       (match exp
         ((- (? list? bindings) body ___)
 	 (let ((pbind (let-process-bindings bindings)))
@@ -1114,6 +1114,22 @@
 				       (lambda (forms no-syntax-definitions bound-variables)
 					 `(let ,expanded-bindings
 					    ,@(emit-body forms 'define))))))))))
+
+    (define (expand-vanilla-letrec exp) ; MOSH:
+      (match exp
+        ((- (? list? bindings) body ___)
+	 (fluid-let ((*usage-env*
+		       (env-extend (map (lambda (formal)
+					  (make-local-mapping 'variable formal #f))
+					(let-binding-names bindings))
+				   *usage-env*)))
+		    (let ((expanded-bindings (let-compose-bindings (let-process-bindings bindings))))
+		      (scan-sequence 'lambda
+				     make-local-mapping
+				     body
+				     (lambda (forms no-syntax-definitions bound-variables)
+				       `(letrec ,expanded-bindings
+					  ,@(emit-body forms 'define)))))))))
 
 
     ;;=========================================================================
@@ -2610,7 +2626,8 @@
     ; MOSH: mosh compiler lib.
     (ex:register-library!
      (let ((primitive-macro-mapping
-            `((mosh-base-let . ,expand-mosh-base-let))))
+            `((vanilla-let . ,expand-vanilla-let)
+	      (vanilla-letrec . ,expand-vanilla-letrec))))
        (ex:make-library
         '(core nmosh primitive-macros)
         ;; envs
