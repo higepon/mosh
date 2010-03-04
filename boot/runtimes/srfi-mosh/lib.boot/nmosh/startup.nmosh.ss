@@ -8,6 +8,7 @@
 
 (define (startup)
   (set-symbol-value! '%nmosh-failproc enter-debugger)
+  (set-symbol-value! 'show-profile show-profile)
   (let ((cl (command-line)))
     (cond
       ((<= 1 (length cl))

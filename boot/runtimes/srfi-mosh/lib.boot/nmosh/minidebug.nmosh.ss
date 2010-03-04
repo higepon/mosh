@@ -1,7 +1,11 @@
 (library (nmosh minidebug)
-	 (export load-symbols minidebug stacktrace-printer)
-	 (import (rnrs) (nmosh condition-printer) (nmosh conditions)
-		 (primitives dbg-files dbg-syms fasl-read %get-nmosh-dbg-image))
+	 (export load-symbols minidebug stacktrace-printer show-profile)
+	 (import (rnrs) (nmosh condition-printer) (nmosh conditions) (only (mosh) format)
+		 (primitives dbg-files dbg-syms fasl-read %get-nmosh-dbg-image
+			     ; for show-profile
+			     hashtable-map lpad rpad string-chop
+			     get-closure-name summerize-samples
+			     ))
 
 
 (define libsyms '())
@@ -45,23 +49,24 @@
   (for-each step (%get-nmosh-dbg-image))
   syms)
 
+(define (ungensym sym)
+  (define (chopseqnum l) ; => symbol
+    (define (step e cur)
+      (if (char=? #\~ e)
+	'()
+	(cons e cur)))
+    (string->symbol (list->string (fold-right step '() l))))
+  (let ((l (string->list (symbol->string sym))))
+    (if (char=? #\& (car l))
+      (chopseqnum (cdr l))
+      sym)))
+
 (define (fallback-trace-printer p trace)
   (define (cprocprint h)
     (let ((proc (car h)))
       (display "  cprc   " p)
       (display proc p)))
   (define (undec proc)
-    (define (chopseqnum l) ; => symbol
-      (define (step e cur)
-	(if (char=? #\~ e)
-	  '()
-	  (cons e cur)))
-      (string->symbol (list->string (fold-right step '() l))))
-    (define (ungensym sym)
-      (let ((l (string->list (symbol->string sym))))
-	(if (char=? #\& (car l))
-	  (chopseqnum (cdr l))
-	  sym)))
     (define (do-undec sym)
       (if (symbol? sym)
 	(ungensym sym)
@@ -144,6 +149,7 @@
   (set! libsyms (load-symfiles)))
 
 
+
 (define (minidebug p c trace)
   (condition-printer c p)
   (when minidebug-key
@@ -153,4 +159,63 @@
   (load-symbols)
   (stacktrace-printer trace p)
   (exit -1))
+
+
+; show-profile from baselib.scm
+
+
+(define (cleanup-source src)
+  (let ((src (map ungensym src)))
+    (if (eq? (car src) 'lambda)
+        `(lambda ,(cdr src) ...)
+        src)))
+
+(define (show-profile result)
+  (define (search-nmosh-sym l)
+    (define (step cur e)
+      (cond
+	((assq e libsyms) => cdr)
+	((assq e dbg-syms) => cdr)
+	((assq e intsyms) => cdr)
+	(else cur)))
+    (fold-left step #f l))
+
+  (load-symbols) ; NMOSH
+  (let* ([total (car result)]
+         [calls-hash (cadr result)]
+         [sample-closures  (cddr result)]
+         [sample-table (summerize-samples calls-hash sample-closures)])
+    (display "time%        msec      calls   name                              location\n")
+    (for-each
+     (lambda (x)
+       (let* ([closure-or-src  (car x)]
+              [name     (string-chop (format "~a" 
+					     (if (procedure? closure-or-src) 
+					       (get-closure-name closure-or-src) 
+					       (cleanup-source (cdr closure-or-src)))) 
+				     25 "...)")]
+	      (nmosh-sym (search-nmosh-sym (if (procedure? closure-or-src) (list get-closure-name) closure-or-src)))
+              [location (if (procedure? closure-or-src) #f (car closure-or-src) )]
+              [file     (if (pair? location) (car location) #f)]
+              [lineno   (if (pair? location) (cadr location) #f)]
+              [count    (cadddr x)])
+         (format #t " ~a   ~a ~a   ~a    ~a\n"
+                 (lpad (caddr x) " " 3)
+                 (lpad (* (cadr x) 10) " " 10)
+                 (lpad count " " 10)
+                 (rpad name " " 30)
+		 (cond
+		   (file (format "~a:~d" file lineno))
+		   (nmosh-sym (debug-format nmosh-sym))
+		   (else ""))
+		 )))
+     (list-sort
+      (lambda (x y) (> (cadr x) (cadr y)))
+      (hashtable-map
+       (lambda (closure count*)
+         (list closure (car count*) (exact (round (/ (* 100 (car count*)) total))) (cdr count*)))
+       sample-table)))
+    (let ((seen-syms (vector->list (hashtable-keys sample-table))))
+    (format #t "  **   ~d         **   total\n" (lpad (* (* total 10)) " " 10)))))
+
 )
