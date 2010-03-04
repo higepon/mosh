@@ -16,7 +16,7 @@ On Windows or FreeBSD platforms, see [Build](http://mosh.monaos.org/files/doc/te
 # Building the cutting-edge Mosh
 ## Requirements
 
-- [Mosh 0.2.0](http://code.google.com/p/mosh-scheme/downloads/list) or higher
+- [Mosh 0.2.3](http://code.google.com/p/mosh-scheme/downloads/list) or higher
 - [Gauche](http://practical-scheme.net/gauche/)
 - [re2c](http://re2c.org/) 0.13.5 or higher
 - [bison](http://www.gnu.org/software/bison/)
