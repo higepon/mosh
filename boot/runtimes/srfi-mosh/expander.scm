@@ -546,14 +546,14 @@
 
     (define (binding id)
       (let ((name (id-name id)))
-        (let loop ((env    *usage-env*)
-                   (envs   (id-transformer-envs id))
-                   (colors (id-colors id)))
-          (or (env-lookup (cons name colors) env)
-              (and (pair? envs)
-                   (loop (env-reify (car envs))
-                         (cdr envs)
-                         (cdr colors)))))))
+	(define (binding-loop env envs colors)
+	  (let ((r (env-lookup (cons name colors) env)))
+	    (if r
+	      r
+	      (if (pair? envs)
+		(binding-loop (env-reify (car envs)) (cdr envs) (cdr colors))
+		#f))))
+	(binding-loop *usage-env* (id-transformer-envs id) (id-colors id))))
 
     ;;=========================================================================
     ;;
