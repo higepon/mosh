@@ -53,6 +53,7 @@
 (define (nrepl)
   (display-banner)
   (do-eval '(import (rnrs)))
+  (do-eval '(import (rnrs load)))
   (init)
   (startloop))
 )
