@@ -475,7 +475,6 @@ Object raiseAfter(VM* theVM,
     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
     MOSH_ASSERT(message.isString());
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     Object condition = Object::Nil;
     if (theVM->isR6RSMode()) {
         Object conditions = Object::Nil;
@@ -487,7 +486,6 @@ Object raiseAfter(VM* theVM,
 
 //         LOG1("message = ~a\n", message);
 //         LOG1("who = ~a\n", who);
-
 
         if (!who.isFalse()) {
             conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
@@ -510,13 +508,11 @@ Object raiseAfter(VM* theVM,
     }
 
     const Object raiseProcedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     // Error occured before (raise ...) is defined.
     if (raiseProcedure.isFalse()) {
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        printf("%s %s:%d %p\n", __func__, __FILE__, __LINE__, theVM);fflush(stdout);// debug
         theVM->setAfterTrigger1(raiseProcedure, condition);
     }
     return Object::Undef;

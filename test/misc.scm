@@ -15,6 +15,9 @@
   (let ([port (open-bytevector-input-port bv)])
     (fasl-read port)))
 
+(define (func a b c) c)
+
+
 (test-equal "ABC\x0;ABC" (fasl->obj (obj->fasl (utf8->string #vu8(65 66 67 0 65 66 67)))))
 
 
@@ -35,4 +38,7 @@
 (test-equal "" (read-string "\"\\ \r \""))
 (test-equal ""  (read-string "\"\\\t\r\t\""))
 
+(test-equal #f
+            (guard (c [#t #f])
+                   (func 1)))
 (test-results)

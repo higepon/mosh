@@ -201,6 +201,7 @@ namespace scheme {
                                                              ac_.toClosure()->sourceInfoString(this),
                                                              requiredLength - 1,
                                                              operand.toFixnum());
+                    return;
                 }
             } else if (requiredLength == argLength) {
                 fp_ = sp_ - argLength;
@@ -208,14 +209,6 @@ namespace scheme {
                 Object args = Object::Nil;
                 for (int i = 0; i < operand.toFixnum(); i++) {
                     args = Object::cons(index(sp_, i), args);
-                }
-                printf("%s %s:%d %d %d\n", __func__, __FILE__, __LINE__, requiredLength , argLength);fflush(stdout);// debug
-                if (requiredLength > argLength) {
-                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                    for (int i = 0; i < requiredLength - argLength; i++) {
-                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
-                        push(Object::False);
-                    }
                 }
                 callWrongNumberOfArgumentsViolationAfter(this,
                                                          ac_.toClosure()->sourceInfoString(this),
@@ -226,7 +219,7 @@ namespace scheme {
             }
 
             if (c->isJitCompiled()) {
-                VM_LOG1("calling ~a\n", c->sourceInfo);
+                //              VM_LOG1("calling ~a\n", c->sourceInfo);
                 CProcedure* const cprocedure = c->toCProcedure();
                 VM_ASSERT(operand.isFixnum());
                 // Since JIT compiled cproc refers to not argv[], but argc, we need to set up fp_.
@@ -234,7 +227,7 @@ namespace scheme {
                 // Not same as Cproc, JIT-compile CProc issues RETURN.
                 // So we don't use returnCode
                 ac_ = cprocedure->call(this, argLength, sp_ - argLength);
-                VM_LOG1("called ~a\n", c->sourceInfo);
+//                VM_LOG1("called ~a\n", c->sourceInfo);
             } else {
                 if (c->maxStack + sp_ >= stackEnd_) {
                     expandStack(stackSize_ / 10);

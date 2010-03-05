@@ -945,7 +945,6 @@
 
 (define raise
   (lambda (c)
-    (display "IN raise" (current-error-port))
     (cond ((current-exception-handler)
            => (lambda (proc)
                 (proc c)

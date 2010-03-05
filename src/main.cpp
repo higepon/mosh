@@ -125,21 +125,6 @@ int main(int argc, char *argv[])
     // call this before any allocation.
     mosh_init();
 
-//     const Object t = Object::makeFixnum(3);
-//     t.isNumber();
-//     uintptr_t a = 0x12345678;
-//     ((void (*)())a)();
-//              asm volatile(" \t # -- CONSTANT end");
-//     const Object t = Object::makeFixnum(3);
-//     t.isNumber();
-//              asm volatile(" \t # -- CONSTANT start");
-//     // normal
-//     printf("func1=%d\n", (t.*func1)());
-    
-//     void** p = reinterpret_cast<void**>(&func1);
-//     fixedint (*func2)(const Object*) = reinterpret_cast<fixedint (*)(const Object*)>(*p);
-//     printf("func2=%d %p\n", (*func2)(&t), func2);
-
     ucs4char opt;
     int optionIndex = 0;
     bool isTestOption    = false;
@@ -252,8 +237,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "fatal vm specific failure\n");
         exit(-1);
     }
-
-    printf("vm=%p", theVM);
 
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 
