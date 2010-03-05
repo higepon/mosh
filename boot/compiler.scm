@@ -1090,6 +1090,29 @@
               #f)
           ))))
 
+(define (pass1/letrec* vars vals body source-info lvars tail?)
+  (let* ([this-lvars (imap (lambda (sym) ($lvar sym ($undef) 0 0)) vars)]
+         [inits      (imap (lambda (x) (pass1/sexp->iform x (append this-lvars lvars) tail?)) vals)])
+    (for-each (lambda (lvar init)
+                ;; this name, used for error message.(etc. wrong number arguments)
+                ;; named let
+                (when (tag? init $LAMBDA)
+                  ;; set name to src-info
+                  (when (and ($lambda.src init) (pair? ($lambda.src init)) (pair? (cdr ($lambda.src init))))
+                    (set-car! (cdr ($lambda.src init)) ($lvar.sym lvar)))
+                  ($lambda.set-name! init ($lvar.sym lvar)))
+                ($lvar.set-init-val! lvar init))
+              this-lvars inits)
+    ($let 'rec
+          this-lvars
+          inits
+          ;; the inner lvar comes first.
+          (pass1/body->iform (pass1/expand body) (append this-lvars lvars) tail?)
+          tail?
+          source-info
+          #f)
+          ))
+
 (define (pass1/if test then more lvars tail?)
   ($if
    (pass1/sexp->iform (pass1/expand test) lvars #f) ;; N.B. test clause is NOT in tail-context.
@@ -1224,13 +1247,13 @@
                      body                ; body
                      (source-info sexp)  ; source-info
                      lvars tail?)]
-      ;;---------------------------- letrec ------------------------------------
-      [('letrec* var+val)
-       (pass1/letrec (imap car var+val)  ; vars
-                     (imap cadr var+val) ; vals
-                     body                ; body
-                     (source-info sexp)  ; source-info
-                     lvars tail?)]
+      ;;---------------------------- letrec* -----------------------------------
+      [('letrec* var+val . body)
+       (pass1/letrec* (imap car var+val)  ; vars
+                      (imap cadr var+val) ; vals
+                      body                ; body
+                      (source-info sexp)  ; source-info
+                      lvars tail?)]
       ;;---------------------------- set! --------------------------------------
       [('set! sym value)
        (pass1/assign sym                   ;; symbol
