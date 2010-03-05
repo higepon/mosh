@@ -26,7 +26,7 @@ $(SRC_DIR)/nmosh_image.cpp: runtimes/srfi-mosh/nmosh_image.cpp
 	cp $< $@
 
 runtimes/srfi-mosh/nmosh_image.cpp:
-	make -C runtimes/srfi-mosh # Bootstrap using Gauche and vanilla-mosh
+	make -C runtimes/srfi-mosh # Bootstrap using vanilla-mosh and psyntax-mosh
 
 compiler-vm-cpp.scm: compiler.scm free-vars-decl.scm
 	gosh -A $(SCRIPTS_DIR) $(SCRIPTS_DIR)/gen-compiler.scm $< "mosh" > $@

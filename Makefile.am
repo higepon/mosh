@@ -381,24 +381,6 @@ MAINTAINERCLEANFILES = $(GENERATED)
 
 # when you release comment out start
 if DEVELOPER
-
-bootstrap:
-	$(MAKE) -C boot
-	$(MAKE) src/Reader.tab.cpp
-	$(MAKE) src/Instruction.h src/cprocedures.cpp
-	$(MAKE) src/NumberReader.tab.cpp
-	$(MAKE) src/labels.cpp
-	$(MAKE) src/OSConstants.h
-	$(MAKE) src/Object-accessors.h
-	$(MAKE) src/Scanner.cpp
-	$(MAKE) src/NumberScanner.cpp
-	$(MAKE) src/all-tests.scm
-
-r6rs-test:
-	(cd r6rs-examples && ../mosh hello.ss)
-	(cd r6rs-examples && ../mosh let-syntax.ss)
-	(cd r6rs-examples && ../mosh env.ss)
-
 # when you release comment out end
 endif
 
