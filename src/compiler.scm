@@ -529,13 +529,13 @@
   (let1 expanded-vars (fold-right (lambda (x y) (cons (list (first x) (pass1/expand (second x))) y)) '() vars)
     `(let ,expanded-vars ,@(imap pass1/expand body))))
 
-(define (let-internal-define->letrec sexp)
+(define (let-internal-define->letrec* sexp)
   (let* ([body (cddr sexp)]
          [args (second sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(let ,args
              ,letrec-body) sexp)))
@@ -557,12 +557,12 @@
        (if (let-is-named? sexp)
            (match sexp
              [('let loop vars ('define a . b) . more)
-              ($src (pass1/expand ($src (named-let-internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (named-let-internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (pass1/expand (named-let->letrec sexp)) sexp)])
            (match sexp
              [('let vars ('define a . b) . more)
-              ($src (pass1/expand ($src (let-internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (let-internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (expand-let (second sexp) (cddr sexp)) sexp)]))]
       [(let*)
@@ -574,7 +574,7 @@
 ;;        ($src (pass1/expand (cond->if sexp)) sexp)]
       [(lambda)
        (cond [(lambda-has-define? sexp)
-              ($src (pass1/expand ($src (internal-define->letrec sexp) sexp)) sexp)]
+              ($src (pass1/expand ($src (internal-define->letrec* sexp) sexp)) sexp)]
              [else
               ($src (append! (list 'lambda (cadr sexp)) (imap pass1/expand (cddr sexp))) sexp)])]
       [(when)
@@ -622,13 +622,13 @@
           [else
            (if (null? found) (list '() lst) (list found lst))])))
 
-(define (internal-define->letrec sexp)
+(define (internal-define->letrec* sexp)
   (let* ([body (cddr sexp)]
          [args (second sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(lambda ,args
              ,letrec-body) sexp)))
@@ -701,14 +701,14 @@
          (lambda-body ($src `(lambda ,vars ,@body) sexp)))
     ($src `(letrec ((,name ,lambda-body)) (,name ,@vals)) sexp)))
 
-(define (named-let-internal-define->letrec sexp)
+(define (named-let-internal-define->letrec* sexp)
   (let* ([body (cdddr sexp)]
          [name (second sexp)]
          [args (third sexp)]
          [ret  (find-serial-from-head (lambda (s) (and (pair? s) (eq? 'define (car s)))) body)]
          [defines (first ret)]
          [rest (second ret)]
-         [letrec-body ($src `(letrec ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
+         [letrec-body ($src `(letrec* ,(map (lambda (d) (list (second d) (third d))) (map pass1/expand defines))
                          ,@rest) sexp)])
     ($src `(let ,name ,args
              ,letrec-body) sexp)))
