@@ -209,11 +209,20 @@ namespace scheme {
                 for (int i = 0; i < operand.toFixnum(); i++) {
                     args = Object::cons(index(sp_, i), args);
                 }
+                printf("%s %s:%d %d %d\n", __func__, __FILE__, __LINE__, requiredLength , argLength);fflush(stdout);// debug
+                if (requiredLength > argLength) {
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                    for (int i = 0; i < requiredLength - argLength; i++) {
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+                        push(Object::False);
+                    }
+                }
                 callWrongNumberOfArgumentsViolationAfter(this,
                                                          ac_.toClosure()->sourceInfoString(this),
                                                          requiredLength,
                                                          operand.toFixnum(),
                                                          args);
+                return;
             }
 
             if (c->isJitCompiled()) {

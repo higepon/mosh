@@ -253,6 +253,8 @@ int main(int argc, char *argv[])
         exit(-1);
     }
 
+    printf("vm=%p", theVM);
+
     theVM->setValueString(UC("*command-line-args*"), argsToList(argc, optindU, argvU));
 
     if (isTestOption) {

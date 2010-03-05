@@ -497,6 +497,10 @@
                        v2))
   (test-equal '(#(c d)) (proc '#(a b) '#(c d))))
 
+(disasm (lambda (cb iform locals frees can-frees sets tail depth display-count)
+  (display cb 'CONSTANT (display iform))
+  0))
+
 #;(let ([proc (compile (lambda (proc v1 . v2)
                        (apply for-each proc (vector->list v1)
                               (map vector->list v2))))])

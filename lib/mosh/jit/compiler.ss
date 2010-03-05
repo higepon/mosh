@@ -1634,8 +1634,12 @@
 ;; TODO: Rewrote JIT compile using insert labels.
 ;; JIT compiler
 (define (compile closure)
-  (guard (c [#t
-             (format #t "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
+  (guard (c
+          [(string=? "not implemented instruction" (condition-message (find message-condition? (simple-conditions c))))
+             (format (current-error-port) "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
+             #f]
+            [else
+             (format (current-error-port) "FATAL: ~a ~a\n" (condition-message (find message-condition? (simple-conditions c))) (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])

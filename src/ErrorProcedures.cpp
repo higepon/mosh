@@ -485,6 +485,10 @@ Object raiseAfter(VM* theVM,
 
         conditions = Object::cons(makeMessageCondition(theVM, message), conditions);
 
+//         LOG1("message = ~a\n", message);
+//         LOG1("who = ~a\n", who);
+
+
         if (!who.isFalse()) {
             conditions = Object::cons(makeWhoCondition(theVM, who), conditions);
         }

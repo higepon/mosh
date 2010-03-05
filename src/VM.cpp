@@ -414,7 +414,7 @@ Object VM::callClosure1(Object closure, Object arg)
     callClosure1Code_->set(3, arg);
     callClosure1Code_->set(6, closure);
     Object ret = evaluateSafe(callClosure1Code_);
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+    VM_LOG2("called  ~a ~a\n", closure.isClosure() ? closure.toClosure()->sourceInfo : Object::False, closure);
     return ret;
 }
 
@@ -985,7 +985,7 @@ void VM::tryJitCompile(Object closure)
         isJitCompiling_ = false;
         return;
     } else {
-//        VM_LOG2("now compiling ~a ~a\n", c->sourceInfo, closure);
+        VM_LOG2("now compiling ~a ~a\n", c->sourceInfo, closure);
         Time t1 = Time::now();
         Object compiled = callClosure1(jitCompiler_, closure);
         Time t2 = Time::now();
