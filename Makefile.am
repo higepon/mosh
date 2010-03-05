@@ -415,15 +415,15 @@ bench:
 #### Instruction.h
 
 src/Instruction.h: src/instruction.scm
-	(cd $(top_srcdir) && gosh misc/scripts/gen-insn.scm $<) > $@
+	mosh $(top_srcdir)/misc/scripts/gen-insn.scm $< $@
 
 src/main.cpp: src/psyntax_mosh_image.cpp src/baselib.h src/match.h
 
 src/labels.cpp: src/instruction.scm
-	(cd $(top_srcdir) && gosh misc/scripts/gen-label.scm $<) > $@
+	mosh $(top_srcdir)/misc/scripts/gen-label.scm $< $@
 
-src/cprocedures.cpp: boot/free-vars-decl.scm ./misc/scripts/gen-cproc.scm
-	(cd $(top_srcdir) && gosh misc/scripts/gen-cproc.scm) > $@
+src/cprocedures.cpp: boot/free-vars-decl.scm 
+	mosh $(top_srcdir)/misc/scripts/gen-cproc.scm $< $@
 
 src/all-tests.scm: src/test-data.scm
 	(cd $(top_srcdir) && mosh -5 misc/scripts/gen-test.scm src/test-data.scm src/all-tests.scm)
