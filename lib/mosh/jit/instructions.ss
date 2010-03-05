@@ -106,3 +106,5 @@
 (define $DYNAMIC_WINDERS 103)
 (define $TAIL_CALL 104)
 (define $LOCAL_TAIL_CALL 105)
+(define insn-len-vec '#(3 1 1 1 1 1 1 1 1 1 0 1 0 0 1 1 1 1 0 0 0 0 0 0 6 0 1 1 1 1 0 0 0 1 0 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 2 0 1 1 2 1 0 3 0 0 0 0 0 1 0 1 0 0 1 1 0 0 3 1 2 1 1 2 3 3 3 2 2 2 1 2 1 1 0 0 2 2 ))
+(define (insn-length insn) (vector-ref insn-len-vec (instruction->integer insn)))

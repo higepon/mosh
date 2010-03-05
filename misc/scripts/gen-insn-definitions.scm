@@ -18,6 +18,18 @@
           (format #t "(define $~a ~d)\n" insn i)]
          [x
           (error 'main "unknown insn-def" x)]))
-     insn*)))
+     insn*)
+    (format #t "(define insn-len-vec '#(")
+    (for-each-with-index
+     (lambda (i insn-def)
+       (match insn-def
+         [('define-insn insn n)
+          (format #t "~d " n)]
+         [x
+          (error 'main "unknown insn-def" x)]))
+     insn*)
+    (format #t "))\n")
+    (format #t "(define (insn-length insn) (vector-ref insn-len-vec (instruction->integer insn)))\n")))
+
 
 (main (command-line))
