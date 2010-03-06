@@ -350,17 +350,17 @@
          ;; env-table in object code
          (*syntax-reflected* #f)
 
-	 ;;MOSH
-	 ;; generated programs (alist)
-	 (*programs* '())
-	 ;; 
-	 (*current-program* "<user program>")
-	 ;; wheter to install current library
-	 (*library-install?* #t)
-	 ;; save debug symbol?
-	 (*DBG?* #f)
-	 ;; debug symbol table
-	 (*DBG-SYMS* '())
+         ;;MOSH
+         ;; generated programs (alist)
+         (*programs* '())
+         ;; 
+         (*current-program* "<user program>")
+         ;; wheter to install current library
+         (*library-install?* #t)
+         ;; save debug symbol?
+         (*DBG?* #f)
+         ;; debug symbol table
+         (*DBG-SYMS* '())
 
          ;;==========================================================================
          ;;
@@ -389,13 +389,13 @@
          ;;   <maybe-library>    : Library name if identifier was introduced by evaluation of
          ;;                        a (syntax ...) expression, otherwise #f.
          ;;                        The empty name '() is used for toplevel.
-	 ;;
-	 ;; MOSH: identifiers also have <dbg>, syntactic object source info.
-	 ;; MOSH: we use vectors for this purpose.
-	 ;; identifier constructor and accessor moved to runtime.scm
-	 ;; (these will used by syntax error pretty printer)
+         ;;
+         ;; MOSH: identifiers also have <dbg>, syntactic object source info.
+         ;; MOSH: we use vectors for this purpose.
+         ;; identifier constructor and accessor moved to runtime.scm
+         ;; (these will used by syntax error pretty printer)
 
-	 )
+         )
 
 
     
@@ -546,14 +546,14 @@
 
     (define (binding id)
       (let ((name (id-name id)))
-	(define (binding-loop env envs colors)
-	  (let ((r (env-lookup (cons name colors) env)))
-	    (if r
-	      r
-	      (if (pair? envs)
-		(binding-loop (env-reify (car envs)) (cdr envs) (cdr colors))
-		#f))))
-	(binding-loop *usage-env* (id-transformer-envs id) (id-colors id))))
+        (define (binding-loop env envs colors)
+          (let ((r (env-lookup (cons name colors) env)))
+            (if r
+              r
+              (if (pair? envs)
+                (binding-loop (env-reify (car envs)) (cdr envs) (cdr colors))
+                #f))))
+        (binding-loop *usage-env* (id-transformer-envs id) (id-colors id))))
 
     ;;=========================================================================
     ;;
@@ -568,11 +568,11 @@
       (cons (cons (id-name id)
                   (id-colors id))
             (make-binding/debug type
-				(generate-guid (id-name id))
-				(list (source-level id))
-				content
-				*current-library*
-				(id-debug id))))
+                                (generate-guid (id-name id))
+                                (list (source-level id))
+                                content
+                                *current-library*
+                                (id-debug id))))
 
     ;; Toplevel binding forms use as binding name the free name
     ;; so that source-level forward references will work in REPL.
@@ -586,10 +586,10 @@
           (cons (cons (id-name id)
                       (id-colors id))
                 (make-binding type
-			      (make-free-name (id-name id))
-			      '(0)
-			      content
-			      *current-library*))
+                              (make-free-name (id-name id))
+                              '(0)
+                              content
+                              *current-library*))
           (make-local-mapping type id content)))
 
     ;;=========================================================================
@@ -601,12 +601,12 @@
     ; MOSH: show program name instead of internal library name
     (define (library-string l)
       (if (pair? l)
-	(let* ((a (car l))
-	       (p (assq a *programs*)))
-	  (if p
-	    (string-append "program " (cdr p))
-	    (string-append "library (" (list->string l " ") ")")))
-	"<unknown origin>"))
+        (let* ((a (car l))
+               (p (assq a *programs*)))
+          (if p
+            (string-append "program " (cdr p))
+            (string-append "library (" (list->string l " ") ")")))
+        "<unknown origin>"))
 
     (define (source-level id)
       (- *phase* (id-displacement id)))
@@ -619,7 +619,7 @@
                "invalid reference"
                (string-append "Attempt to use binding of [" (symbol->string (id-name id))
                               "] in " (library-string (id-library id))
-			      " at invalid level " (number->string (source-level id))
+                              " at invalid level " (number->string (source-level id))
                               ".  Binding is only available at levels: "
                               (list->string (binding-levels binding) " "))
                id))
@@ -698,8 +698,8 @@
     ;; MOSH: it can be #f when executing cached code
     (define (env-reify key-or-env)
       (if (symbol? key-or-env)
-	(let ((r (assq key-or-env *env-table*)))
-	  (if r (cdr r) #f))
+        (let ((r (assq key-or-env *env-table*)))
+          (if r (cdr r) #f))
           key-or-env))
 
     ;; This makes a much smaller external representation of an
@@ -785,15 +785,15 @@
     (define (datum->syntax tid datum)
       (check tid identifier? 'datum->syntax)
       (sexp-map/debug #f (lambda (leaf dbg)
-			   (cond ((symbol? leaf)
-				  (make-identifier/debug leaf
-							 (id-colors tid)
-							 (id-transformer-envs tid)
-							 (id-displacement tid)
-							 (id-maybe-library tid)
-							 dbg))
-				 (else leaf)))
-		      datum))
+                           (cond ((symbol? leaf)
+                                  (make-identifier/debug leaf
+                                                         (id-colors tid)
+                                                         (id-transformer-envs tid)
+                                                         (id-displacement tid)
+                                                         (id-maybe-library tid)
+                                                         dbg))
+                                 (else leaf)))
+                      datum))
 
     (define (syntax->datum exp)
       (sexp-map (lambda (leaf)
@@ -855,16 +855,16 @@
 
     (define (make-delayed-user-macro code) ; MOSH: delayed
       (if (eq? (car code) 'lambda)
-	(letrec ((r (list 'transformer
-			  (lambda (t)
-			    (let ((proc (eval-core code)))
-			      (macro-set-proc! r proc)
-			      (proc t))))))
-	  r)
-	;; fallback (macro returning macro-code)
-	(make-user-macro (eval-core code))))
-	
-	
+        (letrec ((r (list 'transformer
+                          (lambda (t)
+                            (let ((proc (eval-core code)))
+                              (macro-set-proc! r proc)
+                              (proc t))))))
+          r)
+        ;; fallback (macro returning macro-code)
+        (make-user-macro (eval-core code))))
+        
+        
 
     (define (make-user-macro procedure-or-macro)
       (if (procedure? procedure-or-macro) 
@@ -1081,11 +1081,11 @@
 
     (define (let-process-bindings bind)
       (define (step x)
-	(if (pair? x)
-	  (let ((name (car x))
-		(code (cadr x)))
-	    (list name (expand code)))
-	  x))
+        (if (pair? x)
+          (let ((name (car x))
+                (code (cadr x)))
+            (list name (expand code)))
+          x))
       (map step bind))
 
     (define (let-binding-names bind)
@@ -1093,43 +1093,43 @@
 
     (define (let-compose-bindings bind)
       (define (step h)
-	(let ((name (car h))
-	      (code (cadr h)))
-	  (list (binding-name (binding name)) code)))
+        (let ((name (car h))
+              (code (cadr h)))
+          (list (binding-name (binding name)) code)))
       (map step bind))
 
     (define (expand-vanilla-let exp) ; MOSH:
       (match exp
         ((- (? list? bindings) body ___)
-	 (let ((pbind (let-process-bindings bindings)))
-	   (fluid-let ((*usage-env*
-			 (env-extend (map (lambda (formal)
-					    (make-local-mapping 'variable formal #f))
-					  (let-binding-names bindings))
-				     *usage-env*)))
-		      (let ((expanded-bindings (let-compose-bindings pbind)))
-			(scan-sequence 'lambda
-				       make-local-mapping
-				       body
-				       (lambda (forms no-syntax-definitions bound-variables)
-					 `(let ,expanded-bindings
-					    ,@(emit-body forms 'define))))))))))
+         (let ((pbind (let-process-bindings bindings)))
+           (fluid-let ((*usage-env*
+                         (env-extend (map (lambda (formal)
+                                            (make-local-mapping 'variable formal #f))
+                                          (let-binding-names bindings))
+                                     *usage-env*)))
+                      (let ((expanded-bindings (let-compose-bindings pbind)))
+                        (scan-sequence 'lambda
+                                       make-local-mapping
+                                       body
+                                       (lambda (forms no-syntax-definitions bound-variables)
+                                         `(let ,expanded-bindings
+                                            ,@(emit-body forms 'define))))))))))
 
     (define (expand-vanilla-letrec exp) ; MOSH:
       (match exp
         ((- (? list? bindings) body ___)
-	 (fluid-let ((*usage-env*
-		       (env-extend (map (lambda (formal)
-					  (make-local-mapping 'variable formal #f))
-					(let-binding-names bindings))
-				   *usage-env*)))
-		    (let ((expanded-bindings (let-compose-bindings (let-process-bindings bindings))))
-		      (scan-sequence 'lambda
-				     make-local-mapping
-				     body
-				     (lambda (forms no-syntax-definitions bound-variables)
-				       `(letrec ,expanded-bindings
-					  ,@(emit-body forms 'define)))))))))
+         (fluid-let ((*usage-env*
+                       (env-extend (map (lambda (formal)
+                                          (make-local-mapping 'variable formal #f))
+                                        (let-binding-names bindings))
+                                   *usage-env*)))
+                    (let ((expanded-bindings (let-compose-bindings (let-process-bindings bindings))))
+                      (scan-sequence 'lambda
+                                     make-local-mapping
+                                     body
+                                     (lambda (forms no-syntax-definitions bound-variables)
+                                       `(letrec ,expanded-bindings
+                                          ,@(emit-body forms 'define)))))))))
 
 
     ;;=========================================================================
@@ -1182,9 +1182,9 @@
              forms))
 
       (let ((common-env *usage-env*))
-	
-	; MOSH: to avoid using named-let..
-	(define (scan-loop ws forms syntax-defs bound-variables)
+        
+        ; MOSH: to avoid using named-let..
+        (define (scan-loop ws forms syntax-defs bound-variables)
           (cond
            ((null? ws)
             (check-expression-body body-type forms body-forms)
@@ -1195,8 +1195,8 @@
                (reverse syntax-defs)
                bound-variables))
            (else
-	     (call-with-values (lambda () ;; MOSH: XXX: avoid strange behavior..
-	     (set! *usage-env* (wrap-env (car ws)))
+             (call-with-values (lambda () ;; MOSH: XXX: avoid strange behavior..
+             (set! *usage-env* (wrap-env (car ws)))
               (call-with-values
                   (lambda () (head-expand (wrap-exp (car ws))))
                 (lambda (form operator-binding)
@@ -1252,7 +1252,7 @@
                              (env-extend! (list mapping) common-env)
                              (let ((rhs (fluid-let ((*phase* (+ 1 *phase*)))
                                           (expand rhs))))
-			       ; MOSH: delay macro-procedure eval.
+                               ; MOSH: delay macro-procedure eval.
                                (register-macro! (binding-name (cdr mapping)) (make-user-macro (eval-core rhs)))
                                (scan-loop (cdr ws)
                                      forms
@@ -1301,15 +1301,15 @@
                                    forms)
                              syntax-defs
                              bound-variables)))))))
-			       (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
-			       ))) )
+                               (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
+                               ))) )
 
         ;; Add new frame for keeping track of bindings used
         ;; so we can detect redefinitions violating lexical scope.
         (add-fresh-used-frame!)
 
-	(fluid-let ((*usage-env* *usage-env*))
-	  (scan-loop (map (lambda (e) (make-wrap common-env e)) body-forms) '() '() '()))))
+        (fluid-let ((*usage-env* *usage-env*))
+          (scan-loop (map (lambda (e) (make-wrap common-env e)) body-forms) '() '() '()))))
 
     (define (emit-body body-forms define-or-set)
       (map (lambda (body-form)
@@ -1534,10 +1534,10 @@
                  (else
                   (syntax-reflect id)))))
         (((syntax ...) p)
-	 (if ellipses-quoted? ;Andre's patch for Larceny r6187, bug 637
-	   `(list ,(process-template (car template) dim #t)
-		  ,(process-template p dim #t))
-	   (process-template p dim #t)))
+         (if ellipses-quoted? ;Andre's patch for Larceny r6187, bug 637
+           `(list ,(process-template (car template) dim #t)
+                  ,(process-template p dim #t))
+           (process-template p dim #t)))
         ((? (lambda (_) (not ellipses-quoted?))
             (t (syntax ...) . tail))
          (let* ((head (segment-head template)) 
@@ -1697,19 +1697,19 @@
     ; MOSH: collect generated program id
     (define (generate-program-guid)
       (let ((id (generate-guid 'program)))
-	(set! *programs* (cons (cons id *current-program*) *programs*))
-	id))
+        (set! *programs* (cons (cons id *current-program*) *programs*))
+        id))
 
     (define (expand-program t)
       (match t
         ((program import-clause forms ___)
-	 (let ((id (generate-program-guid)))
-	   (expand-library-or-program
-	     `(,program (,(datum->syntax program id)) ; MOSH:
-			(,(datum->syntax program 'export))
-			,import-clause
-			,@forms)
-	     'program)))))
+         (let ((id (generate-program-guid)))
+           (expand-library-or-program
+             `(,program (,(datum->syntax program id)) ; MOSH:
+                        (,(datum->syntax program 'export))
+                        ,import-clause
+                        ,@forms)
+             'program)))))
 
     (define (expand-library t)
       (expand-library-or-program t 'library))
@@ -2100,11 +2100,11 @@
                            (else (assertion-violation 'syntax-violation
                                                       "Invalid subform in syntax violation"
                                                       maybe-subform)))))
-	(raise-syntax-violation (syntax-debug form)
-				(if subform (syntax-debug subform) #f)
-				who
-				message
-				*trace*)))
+        (raise-syntax-violation (syntax-debug form)
+                                (if subform (syntax-debug subform) #f)
+                                who
+                                message
+                                *trace*)))
 
     ;;==========================================================================
     ;;
@@ -2148,22 +2148,22 @@
     ; MOSH: call expand (allows destructive update supplied env..)
     (define (destructive-expand! exp env)
       (with-toplevel-parameters
-	(lambda ()
-	  (fluid-let ((*usage-env* (r6rs-environment-env env)))
-		     (expand-toplevel-sequence (list exp))))))
+        (lambda ()
+          (fluid-let ((*usage-env* (r6rs-environment-env env)))
+                     (expand-toplevel-sequence (list exp))))))
     
     ; MOSH: eval as psyntax (allows destructive update supplied env..)
     (define (destructive-eval! exp env)
       (define (run l)
-	(when (pair? l)
-	  (if (pair? (cdr l))
-	    (begin (eval-core (car l)) (run (cdr l)))
-	    (eval-core (car l)))))
+        (when (pair? l)
+          (if (pair? (cdr l))
+            (begin (eval-core (car l)) (run (cdr l)))
+            (eval-core (car l)))))
       (with-toplevel-parameters
-	(lambda ()
-	  (fluid-let ((*usage-env* (r6rs-environment-env env)))
-		     (let ((e (expand-toplevel-sequence (list exp))))
-		       (run e))))))
+        (lambda ()
+          (fluid-let ((*usage-env* (r6rs-environment-env env)))
+                     (let ((e (expand-toplevel-sequence (list exp))))
+                       (run e))))))
 
     (define (r6rs-eval exp env)
       (fluid-let ((*usage-env* (r6rs-environment-env env)))
@@ -2207,7 +2207,7 @@
     ;MOD!!
     (define (sexp-map/debug dbg f s)
       (define (update x)
-	(let ((inf (debug-source-info x))) (if inf inf dbg)))
+        (let ((inf (debug-source-info x))) (if inf inf dbg)))
       (cond ((null? s) '())
             ((pair? s) (cons (sexp-map/debug (update s) f (car s))
                              (sexp-map/debug (update s) f (cdr s))))
@@ -2427,40 +2427,40 @@
 ;;MOSH: cache
     (define (expand-sequence l)
       (with-toplevel-parameters
-	(lambda () ;thunk
-	  (expand-toplevel-sequence (normalize l)))))
+        (lambda () ;thunk
+          (expand-toplevel-sequence (normalize l)))))
 
     (define (expand-sequence-r5rs l r6rs-env)
       (with-toplevel-parameters
-	(lambda () ;thunk
-	  (fluid-let ((make-free-name (lambda (symbol) symbol))
-		      (*usage-env* (r6rs-environment-env r6rs-env))
-		      (*macro-table* *macro-table*))
-		     (let ((implib (r6rs-environment-imported-libraries r6rs-env)))
-		       (import-libraries-for-expand (r6rs-environment-imported-libraries r6rs-env) (map not implib) 0)
-		       ; return
-		       (cons `(ex:import-libraries-for-run ',(r6rs-environment-imported-libraries r6rs-env)
-							   ',(current-builds implib)
-							   0)
-			     (expand-toplevel-sequence l)))))))
+        (lambda () ;thunk
+          (fluid-let ((make-free-name (lambda (symbol) symbol))
+                      (*usage-env* (r6rs-environment-env r6rs-env))
+                      (*macro-table* *macro-table*))
+                     (let ((implib (r6rs-environment-imported-libraries r6rs-env)))
+                       (import-libraries-for-expand (r6rs-environment-imported-libraries r6rs-env) (map not implib) 0)
+                       ; return
+                       (cons `(ex:import-libraries-for-run ',(r6rs-environment-imported-libraries r6rs-env)
+                                                           ',(current-builds implib)
+                                                           0)
+                             (expand-toplevel-sequence l)))))))
 
 
     (define (expand-sequence/debug l install?)
       (fluid-let
-	((*DBG?* #t)
-	 (*DBG-SYMS* '())
-	 (*library-install?* install?))
-	(let* ((r (expand-sequence l))
-	       (d *DBG-SYMS*))
-	  (cons r d))))
+        ((*DBG?* #t)
+         (*DBG-SYMS* '())
+         (*library-install?* install?))
+        (let* ((r (expand-sequence l))
+               (d *DBG-SYMS*))
+          (cons r d))))
 
     (define (expand-sequence-r5rs/debug l env)
       (fluid-let
-	((*DBG?* #t)
-	 (*DBG-SYMS* '()))
-	(let* ((r (expand-sequence-r5rs l env))
-	       (d *DBG-SYMS*))
-	  (cons r d))))
+        ((*DBG?* #t)
+         (*DBG-SYMS* '()))
+        (let* ((r (expand-sequence-r5rs l env))
+               (d *DBG-SYMS*))
+          (cons r d))))
 
     ;; This approximates the common r5rs behaviour of
     ;; expanding a toplevel file but treating unbound identifiers
@@ -2530,15 +2530,15 @@
 
     (define (write-l1 depth l p) ; MOSH: for not so..oo long line..
       (cond
-	((= depth 1000) (write l p)(newline p))
-	((and (list? l) (not (null? l)) (not (memq (car l) '(define quote set!))))
-	 (display "( " p)
-	 (newline p)
-	 (for-each (lambda (e) (write-l1 (+ depth 1) e p)) l)
-	 (display " )" p)
-	 (newline p))
-	(else (write l p)
-	      (newline p))))
+        ((= depth 1000) (write l p)(newline p))
+        ((and (list? l) (not (null? l)) (not (memq (car l) '(define quote set!))))
+         (display "( " p)
+         (newline p)
+         (for-each (lambda (e) (write-l1 (+ depth 1) e p)) l)
+         (display " )" p)
+         (newline p))
+        (else (write l p)
+              (newline p))))
 
     (define (write-file exps fn)
       (if (file-exists? fn)
@@ -2631,7 +2631,7 @@
     (ex:register-library!
      (let ((primitive-macro-mapping
             `((vanilla-let . ,expand-vanilla-let)
-	      (vanilla-letrec . ,expand-vanilla-letrec))))
+              (vanilla-letrec . ,expand-vanilla-letrec))))
        (ex:make-library
         '(core nmosh primitive-macros)
         ;; envs
