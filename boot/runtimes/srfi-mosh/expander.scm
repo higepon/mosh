@@ -1195,7 +1195,8 @@
                (reverse syntax-defs)
                bound-variables))
            (else
-            (fluid-let ((*usage-env* (wrap-env (car ws))))
+	     (call-with-values (lambda () ;; MOSH: XXX: avoid strange behavior..
+	     (set! *usage-env* (wrap-env (car ws)))
               (call-with-values
                   (lambda () (head-expand (wrap-exp (car ws))))
                 (lambda (form operator-binding)
@@ -1299,13 +1300,16 @@
                              (cons (list #f #t (make-wrap *usage-env* form))
                                    forms)
                              syntax-defs
-                             bound-variables)))))))))) 
+                             bound-variables)))))))
+			       (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
+			       ))) )
 
         ;; Add new frame for keeping track of bindings used
         ;; so we can detect redefinitions violating lexical scope.
         (add-fresh-used-frame!)
 
-	(scan-loop (map (lambda (e) (make-wrap common-env e)) body-forms) '() '() '())))
+	(fluid-let ((*usage-env* *usage-env*))
+	  (scan-loop (map (lambda (e) (make-wrap common-env e)) body-forms) '() '() '()))))
 
     (define (emit-body body-forms define-or-set)
       (map (lambda (body-form)
