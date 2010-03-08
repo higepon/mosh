@@ -396,6 +396,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
         return Object::Nil;
     case TAG_LET:
     {
+        MOSH_ASSERT(v->length() == 8);
         const Object letInits = v->ref(3);
         const Object letBody = v->ref(4);
         return Pair::append2(findSetsRecMap(theVM, lvars, letInits, labelsSeen),
@@ -403,6 +404,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_RECEIVE:
     {
+        MOSH_ASSERT(v->length() == 7);
         const Object receiveVals = v->ref(4);
         const Object receiveBody = v->ref(5);
         return Pair::append2(findSetsRec(theVM, receiveVals, lvars, labelsSeen),
@@ -410,16 +412,19 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_SEQ:
     {
+        MOSH_ASSERT(v->length() == 3);
         const Object seqBody = v->ref(1);
         return findSetsRecMap(theVM, lvars, seqBody, labelsSeen);
     }
     case TAG_LAMBDA:
     {
+        MOSH_ASSERT(v->length() == 9);
         const Object lambdaBody = v->ref(6);
         return findSetsRec(theVM, lambdaBody, lvars, labelsSeen);
     }
     case TAG_LOCAL_ASSIGN:
     {
+        MOSH_ASSERT(v->length() == 3);
         const Object localAssignLvar = v->ref(1);
         const Object localAssignVal = v->ref(2);
         if (memq(localAssignLvar, lvars).isFalse()) {
@@ -440,6 +445,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
         return Object::Nil;
     case TAG_IF:
     {
+        MOSH_ASSERT(v->length() == 4);
         const Object testF = findSetsRec(theVM, v->ref(1), lvars, labelsSeen);
         const Object thenF = findSetsRec(theVM, v->ref(2), lvars, labelsSeen);
         const Object elseF = findSetsRec(theVM, v->ref(3), lvars, labelsSeen);
@@ -447,16 +453,19 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_ASM:
     {
+        MOSH_ASSERT(v->length() == 3);
         const Object asmArgs = v->ref(2);
         return findSetsRecMap(theVM, lvars, asmArgs, labelsSeen);
     }
     case TAG_DEFINE:
     {
+        MOSH_ASSERT(v->length() == 3);
         const Object defineVal = v->ref(2);
         return findSetsRec(theVM, defineVal, lvars, labelsSeen);
     }
     case TAG_CALL:
     {
+        MOSH_ASSERT(v->length() == 7);
         const Object callArgs = v->ref(2);
         const Object callProc = v->ref(1);
         return Pair::append2(findSetsRecMap(theVM, lvars, callArgs, labelsSeen),
@@ -464,6 +473,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_CALL_CC:
     {
+        MOSH_ASSERT(v->length() == 3);
         const Object callccProc = v->ref(1);
         return findSetsRec(theVM, callccProc, lvars, labelsSeen);
     }
