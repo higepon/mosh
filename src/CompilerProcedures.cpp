@@ -412,7 +412,8 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_SEQ:
     {
-        MOSH_ASSERT(v->length() == 3);
+        // $call iform may be reused as $seq node.
+        MOSH_ASSERT(v->length() == 3 || v->length() == 7);
         const Object seqBody = v->ref(1);
         return findSetsRecMap(theVM, lvars, seqBody, labelsSeen);
     }
