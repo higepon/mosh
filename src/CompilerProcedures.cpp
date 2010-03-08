@@ -452,7 +452,7 @@ Object findSetsRec(VM* theVM, Object i, Object lvars, Object labelsSeen)
     }
     case TAG_DEFINE:
     {
-        const Object defineVal = v->ref(3);
+        const Object defineVal = v->ref(2);
         return findSetsRec(theVM, defineVal, lvars, labelsSeen);
     }
     case TAG_CALL:
