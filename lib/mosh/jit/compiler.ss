@@ -1609,8 +1609,6 @@
      [(null? lst)
       (reverse! packed)]
      [else
-      (format (current-error-port) "lst=~a" lst)
-      (newline (current-error-port))
       (assert (instruction? (car lst)))
       (let-values (([insn rest] (split-at! lst (insn-length (car lst)))))
         (loop rest
@@ -1645,6 +1643,7 @@
              #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
+           (format #t "insn=~a labels*=~a" insn* label*)
            (let1 insn* (insert-labels insn* label*)
              (let1 asm* (map (lambda (insn)
                                (match (car insn)
@@ -1694,7 +1693,7 @@
       (unless (null? labels)
         (error 'insert-labels "there are unresolved labels" labels))
         (reverse ret)]
-     [(and (not (null? labels)) (= (cdar labels) (cdar lst)))
+     [(and (not (null? labels)) (format #t "(cdar labels)=~a (cdar lst)=~a" (cdar labels) (cdar lst)) (= (cdar labels) (cdar lst)))
       (loop (cdr labels) (cdr lst) (append (list (car lst) (car labels)) ret))]
      [else
       (loop labels (cdr lst) (cons (car lst) ret))])))
