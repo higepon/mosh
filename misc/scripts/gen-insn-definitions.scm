@@ -24,7 +24,7 @@
      (lambda (i insn-def)
        (match insn-def
          [('define-insn insn n)
-          (format #t "~d " n)]
+          (format #t "~d " (+ n 1))]
          [x
           (error 'main "unknown insn-def" x)]))
      insn*)

@@ -56,6 +56,7 @@
           (mosh jit assembler)
           (mosh)
           (rnrs mutable-pairs)
+          (only (srfi :1) reverse! split-at!)
           (only (srfi private include) include/resolve))
 
 (include/resolve ("mosh" "jit") "instructions.ss")
@@ -1599,25 +1600,23 @@
 ;; Instruction is just a serialized list
 ;; We convert the list to a list of instruction packet.
 ;; (CONST 3 PUSH FRAME 3) => (((CONST 3) . 0) ((PUSH) . 2) ((FRAME 3). 3))
+
 (define (pack-instruction lst)
   (let loop ([lst lst]
-             [accum '()]
+             [offset 0]
              [packed '()])
     (cond
      [(null? lst)
-      (let1 packed (reverse (cons (reverse accum) packed))
-        (map-accum
-         (lambda (x seed) (values (cons x seed) (+ seed (length x))))
-         0
-         packed))]
-     [(instruction? (car lst))
-      (loop (cdr lst)
-            (cons (car lst) '())
-            (if (null? accum) packed (cons (reverse accum) packed)))]
+      (reverse! packed)]
      [else
-      (loop (cdr lst)
-            (cons (car lst) accum)
-            packed)])))
+      (format (current-error-port) "lst=~a" lst)
+      (newline (current-error-port))
+      (assert (instruction? (car lst)))
+      (let-values (([insn rest] (split-at! lst (insn-length (car lst)))))
+        (loop rest
+              (+ offset (insn-length (car lst)))
+              (cons `(,insn . ,offset) packed)))])))
+
 
 (define (map-accum proc seed lst)
   (let loop ([lst lst]
@@ -1639,7 +1638,10 @@
              (format (current-error-port) "not implemented ~a\n" (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]
             [else
-             (format (current-error-port) "FATAL: ~a ~a\n" (condition-message (find message-condition? (simple-conditions c))) (condition-irritants (find irritants-condition? (simple-conditions c))))
+             (format (current-error-port) "FATAL: who:~a message:~a irritants:~a\n"
+                     (condition-who (find who-condition? (simple-conditions c)))
+                     (condition-message (find message-condition? (simple-conditions c)))
+                     (condition-irritants (find irritants-condition? (simple-conditions c))))
              #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])

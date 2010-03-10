@@ -1,14 +1,7 @@
 (import (rnrs))
 
-(define (func a b c) c)
-
-(guard (c [#t #f])
-       (func 1))
-
-#;(guard (c [#t #f])
-       (map 1))
-
-
-(display "hello")
-
+(lambda (name label)
+  (begin (if (not (symbol? name))
+             (error 'make-top-rib '"BUG: not a symbol" name) (void))
+         (ai2ea4@extend-rib/nc! ai46ce@rib (make-simple-struct 'stx '5 (list name ai2e70@top-mark* '() '())) label)))
 

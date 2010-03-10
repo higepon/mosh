@@ -1,4 +1,4 @@
-MOSH=../../mosh
+MOSH=../../mosh --enable-jit
 
 test:
 	$(MOSH) tests/r6rs/run/io/ports.sps
@@ -27,4 +27,4 @@ test:
 	$(MOSH) tests/r6rs/run/r5rs.sps
 	$(MOSH) tests/r6rs/run/eval.sps
 	$(MOSH) tests/r6rs/run/base.sps
-	$(MOSH) tests/r6rs/run-via-eval.sps
+#	$(MOSH) tests/r6rs/run-via-eval.sps
