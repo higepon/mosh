@@ -1,6 +1,7 @@
 (import (rnrs)
         (mosh)
         (srfi :8)
+        (system)
         (mosh test))
 
 (define (read-string str)
@@ -41,4 +42,10 @@
 (test-equal #f
             (guard (c [#t #f])
                    (func 1)))
+
+
+(test-equal "\nCONSTANT #t \nSYMBOL_P \nRETURN 0 \n"
+            (call-with-string-output-port (lambda (p)
+                                            (disasm (lambda () (symbol? #t)) p))))
+
 (test-results)

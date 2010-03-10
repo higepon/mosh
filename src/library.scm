@@ -3976,17 +3976,18 @@
 (define (open-input-file filename)
   (open-file-input-port filename (make-file-options '()) 'block (native-transcoder)))
 
-(define (disasm closure)
+(define (disasm closure . port)
+  (let1 port (if (pair? port) (car port) (current-output-port))
   (for-each
    (lambda (x)
      (cond
       [(instruction? x)
-       (newline)
-       (display (instruction->symbol x))]
-      [else (display x)])
-     (display #\space))
+       (newline port)
+       (display (instruction->symbol x) port)]
+      [else (display x port)])
+     (display #\space port))
    (closure->list closure))
-  (newline))
+  (newline port)))
 
 (define (for-each-with-index proc lst)
   (let loop ([i 0]

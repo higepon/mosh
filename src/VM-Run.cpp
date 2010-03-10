@@ -1047,15 +1047,6 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             VM_ASSERT(dc_.isClosure());
             NEXT;
         }
-        // (SHIFT) instruction is deprecated
-        CASE(SHIFT)
-        {
-            MOSH_FATAL(false);
-        }
-        CASE(SHIFT_CALL)
-        {
-            MOSH_FATAL(false);
-        }
         CASE(SYMBOL_P)
         {
             ac_ = Object::makeBool(ac_.isSymbol());
@@ -1396,6 +1387,16 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             callAssertionViolationAfter(this, "VM", "unknown instruction, bug of VM");
             NEXT;
         }
+        // (SHIFT) instruction is deprecated
+        CASE(SHIFT)
+        {
+            MOSH_FATAL(false);
+        }
+        CASE(SHIFT_CALL)
+        {
+            MOSH_FATAL(false);
+        }
+
         } // SWITCH
     }
 }
