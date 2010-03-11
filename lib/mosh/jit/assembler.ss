@@ -148,13 +148,10 @@
                            (let1 offset (- (cdr x) addr)
                              (cond
                               [(imm8? offset)
-                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 1) (imm8->u8* offset)))
+;                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 1) (imm8->u8* offset)))
                                (append (drop-right byte* 1) (imm8->u8* offset))]
-;; offset will be moved
-;;                               [(imm32? offset)
-;;                                ;; ugly
-;;                                (format #t "<byte* ~a:~a>" byte* (append (list #x0F (+ (car byte*) #x10)) (imm32->u8* offset)))
-;;                                (append (list #x0F (+ (car byte*) #x10)) (imm32->u8* offset))]
+                              [(and (= #x0F (car byte*)) (imm32? offset))
+                               (append (drop-right byte* 4) (imm32->u8* offset))]
                               [else
                                (error 'assemble "offset out of range" offset)])))]
                         [else
@@ -273,6 +270,8 @@
      ($r64 #x58 r64)]
     [('je (? symbol? label))
      (values `(#x74 #x00) label)]
+    [('je32 (? symbol? label))
+     (values `(#x0F #x84 #x00 #x00 #x00 #x00) label)]
     [('ja (? symbol? label))
      (values `(#x77 #x00) label)]
     [('jmp (? symbol? label))

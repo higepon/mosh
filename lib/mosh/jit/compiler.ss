@@ -509,7 +509,7 @@
       (movq rdx rax)
       (andl edx 3)
       (cmpq rdx 3)
-      (je ,error-case)
+      (je32 ,error-case)
       (movq ,(vm-register 'ac) rax)
       (jmp ,normal-case)
       (label ,error-case)
