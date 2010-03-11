@@ -144,9 +144,19 @@
                        (cond
                         [(assoc label-to-fixup label*) =>
                          (lambda (x)
+                           (display x)
                            (let1 offset (- (cdr x) addr)
-                            (assert (imm8? offset))
-                           (append (drop-right byte* 1) (imm8->u8* offset))))]
+                             (cond
+                              [(imm8? offset)
+                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 1) (imm8->u8* offset)))
+                               (append (drop-right byte* 1) (imm8->u8* offset))]
+;; offset will be moved
+;;                               [(imm32? offset)
+;;                                ;; ugly
+;;                                (format #t "<byte* ~a:~a>" byte* (append (list #x0F (+ (car byte*) #x10)) (imm32->u8* offset)))
+;;                                (append (list #x0F (+ (car byte*) #x10)) (imm32->u8* offset))]
+                              [else
+                               (error 'assemble "offset out of range" offset)])))]
                         [else
                          (error 'assemble (format "BUG: label:~a not found on ~a" label-to-fixup label*))])])
                   (reverse asm*))]

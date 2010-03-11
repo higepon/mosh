@@ -1643,7 +1643,7 @@
              #f]) ;; JIT compile error returns #f to VM.
          (let* ([insn* (pack-instruction (closure->list closure))]
                 [label* (collect-labels! insn*)])
-           (format #t "insn=~a labels*=~a" insn* label*)
+ ;          (format #t "insn=~a labels*=~a" insn* label*)
            (let1 insn* (insert-labels insn* label*)
              (let1 asm* (map (lambda (insn)
                                (match (car insn)
@@ -1666,7 +1666,7 @@
              [lst lst]
              [ret '()])
     (cond
-     [(null? lst) (list-sort (lambda (x y) (> (cdr x) (cdr y))) ret)]
+     [(null? lst) (list-sort (lambda (x y) (< (cdr x) (cdr y))) ret)]
      [else
       (let1 insn (caar lst)
         (case (instruction->symbol (car insn))
@@ -1684,7 +1684,7 @@
             (loop (+ i (length (caar lst))) (cdr lst) ret)]))])))
 
 (define (insert-labels lst labels)
-;  (format #t "insert-labels lst=~a labels=~a" lst labels)
+;  (format #t "insert-labels lst=~a\n labels=~a\n" lst labels)
   (let loop ([labels labels]
              [lst lst]
              [ret '()])
@@ -1693,8 +1693,9 @@
       (unless (null? labels)
         (error 'insert-labels "there are unresolved labels" labels))
         (reverse ret)]
-     [(and (not (null? labels)) (format #t "(cdar labels)=~a (cdar lst)=~a" (cdar labels) (cdar lst)) (= (cdar labels) (cdar lst)))
-      (loop (cdr labels) (cdr lst) (append (list (car lst) (car labels)) ret))]
+     [(and (not (null? labels)) #;(format #t "(cdar labels)=~a (cdar lst)=~a\n" (cdar labels) (cdar lst)) (= (cdar labels) (cdar lst)))
+      ;; two labels may have same offset.
+      (loop (cdr labels) lst (append (list (car lst) (car labels)) ret))]
      [else
       (loop labels (cdr lst) (cons (car lst) ret))])))
 

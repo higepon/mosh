@@ -496,7 +496,8 @@
                        v2))])
   (test-equal '(#(c d)) (proc '#(a b) '#(c d))))
 
-(compile (lambda ()
+(compile (lambda (e m* s* e*) (if (and (null? m*) (null? s*) (null? e*)) e (display e m* s* e*))))
+#;(compile (lambda ()
     (let next-free ([free '()])
       (cond [(null? free)
              (display '())
