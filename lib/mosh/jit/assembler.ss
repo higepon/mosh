@@ -129,6 +129,9 @@
       (if scale (compose-reg+sib mod r64 scale index base) (compose-reg mod r64 r/m64))
     (values `(,@(if bits64? (list rex-prefix) '()) ,opcode ,modrr/m ,@sib ,@disp0/8/32 ,@imm8/32) #f)))
 
+(define (jmp-rel32? byte*)
+  (= #x0F (car byte*)))
+
 ;; asm* : list of asm
 ;; asm  : (assembled-byte* addr-of-net-instruction label-to-fixup)
 (define (assemble code*)
@@ -150,7 +153,7 @@
                               [(imm8? offset)
 ;                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 1) (imm8->u8* offset)))
                                (append (drop-right byte* 1) (imm8->u8* offset))]
-                              [(and (= #x0F (car byte*)) (imm32? offset))
+                              [(and (jmp-rel32? byte*) (imm32? offset))
                                (append (drop-right byte* 4) (imm32->u8* offset))]
                               [else
                                (error 'assemble "offset out of range" offset)])))]
