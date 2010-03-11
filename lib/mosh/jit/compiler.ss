@@ -266,7 +266,7 @@
 
 (define (macro-is-raw-pointer reg not-case-label)
   `((testb ,(r64->8 reg #f)  3)
-    (jne ,not-case-label)))
+    (jne32 ,not-case-label)))
 
 ;; Discards rax, rdx
 (define (macro-is-heap-object reg is-heap-object-case)
@@ -276,7 +276,7 @@
       (movq rdx rax)
       (andl edx 3)
       (cmpq rdx 3)
-      (je ,is-heap-object-case)
+      (je32 ,is-heap-object-case)
       (label ,not-case-label))))
 ;; Discards rax
 (define (macro-pop-to-reg reg)
@@ -288,10 +288,10 @@
 (define (macro-is-obj type reg is-not-case-label)
   (let ([is-heap-object-case (gensym)])
     `(,@(macro-is-heap-object reg is-heap-object-case)
-      (jmp ,is-not-case-label)
+      (jmp32 ,is-not-case-label)
       (label ,is-heap-object-case)
       (cmpq rax ,type)
-      (jne ,is-not-case-label))))
+      (jne32 ,is-not-case-label))))
 
 (define (macro-is-gloc reg is-not-case)
   (macro-is-obj 135 reg is-not-case))
@@ -509,7 +509,7 @@
       (movq rdx rax)
       (andl edx 3)
       (cmpq rdx 3)
-      (je32 ,error-case)
+      (je ,error-case)
       (movq ,(vm-register 'ac) rax)
       (jmp ,normal-case)
       (label ,error-case)
@@ -624,7 +624,7 @@
     (movq rdx ,(vm-register 'ac))
     (cmpq rdx ,(obj->integer '()))
     (movq ,(vm-register 'ac) ,(obj->integer #f))
-    (jne ,not-null-case)
+    (jne32 ,not-null-case)
     (movq ,(vm-register 'ac) ,(obj->integer #t))))
 
 ;; ;; rdx <- VM* | (movq rdx (& rsp 88))
@@ -1478,7 +1478,7 @@
 ;   ,@(DEBUGGER)
     (movq ,(vm-register 'ac) rax)
     (cmpq ,(vm-register 'ac) 86)  ; ac.isFalse()
-    (je ,label))))
+    (je32 ,label))))
 
 
 

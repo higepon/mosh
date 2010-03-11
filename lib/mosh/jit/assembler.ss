@@ -130,7 +130,9 @@
     (values `(,@(if bits64? (list rex-prefix) '()) ,opcode ,modrr/m ,@sib ,@disp0/8/32 ,@imm8/32) #f)))
 
 (define (jmp-rel32? byte*)
-  (= #x0F (car byte*)))
+  (or (= #x0F (car byte*)) ;; jcc family rel32
+      (= #xe9 (car byte*)  ;; jmp rel32
+         )))
 
 ;; asm* : list of asm
 ;; asm  : (assembled-byte* addr-of-net-instruction label-to-fixup)
@@ -147,14 +149,15 @@
                        (cond
                         [(assoc label-to-fixup label*) =>
                          (lambda (x)
-                           (display x)
+;                           (display x)
                            (let1 offset (- (cdr x) addr)
                              (cond
+                              [(and (jmp-rel32? byte*) (imm32? offset))
+;                               (format #t "<<<~a>>>" (append (drop-right byte* 4) (imm32->u8* offset)))
+                               (append (drop-right byte* 4) (imm32->u8* offset))]
                               [(imm8? offset)
 ;                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 1) (imm8->u8* offset)))
                                (append (drop-right byte* 1) (imm8->u8* offset))]
-                              [(and (jmp-rel32? byte*) (imm32? offset))
-                               (append (drop-right byte* 4) (imm32->u8* offset))]
                               [else
                                (error 'assemble "offset out of range" offset)])))]
                         [else
@@ -279,8 +282,12 @@
      (values `(#x77 #x00) label)]
     [('jmp (? symbol? label))
      (values `(#xeb #x00) label)]
+    [('jmp32 (? symbol? label))
+     (values `(#xe9 #x00 #x00 #x00 #x00) label)]
     [('jne (? symbol? label))
      (values `(#x75 #x00) label)]
+    [('jne32 (? symbol? label))
+     (values `(#x0F #x85 #x00 #x00 #x00 #x00) label)]
     [('js (? symbol? label))
      (values `(#x78 #x00) label)]
     [('jge (? symbol? label))
