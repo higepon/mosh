@@ -153,7 +153,7 @@
                            (let1 offset (- (cdr x) addr)
                              (cond
                               [(and (jmp-rel32? byte*) (imm32? offset))
-                               (format #t "~a<<<~a>>>" byte* (append (drop-right byte* 4) (imm32->u8* offset)))
+                               (format #t "~a:~a<<<~a>>>" offset byte* (append (drop-right byte* 4) (imm32->u8* offset)))
                                (append (drop-right byte* 4) (imm32->u8* offset))]
                               [(imm8? offset)
 ;                               (format #t "<byte* ~a:~a>" byte* (append (drop-right byte* 4) (imm8->u32* offset)))

@@ -1311,7 +1311,7 @@
   `(,@(trace-push! $RETURN)
      ,@(RESTORE_REGISTERS n)
      (movq rax ,(vm-register 'ac)) ;; we need this.
-;     ,@(DEBUGGER 9991)
+     ,@(DEBUGGER 9991)
      ,@(return-to-vm)))
 
 ;; (define (RETURN n) ;; pc いらん
@@ -1727,7 +1727,7 @@
                                                     (BRANCH_NOT_LT dst)]
                                                    [else (error 'BRANCH_NOT_LT "label expeced")])))
  (register-insn-dispatch-table $REFER_LOCAL_BRANCH_NOT_NULL
-                                (lambda (index label)
+                               (lambda (index label)
                                   (match label
                                     [('label dst)
                                      (REFER_LOCAL_BRANCH_NOT_NULL index dst)]
