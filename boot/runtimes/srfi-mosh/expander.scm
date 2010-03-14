@@ -1182,23 +1182,12 @@
              forms))
 
       (let ((common-env *usage-env*))
-        
         ; MOSH: to avoid using named-let..
         (define (scan-loop ws forms syntax-defs bound-variables)
-          (cond
-           ((null? ws)
-            (check-expression-body body-type forms body-forms)
-            ;; Add denotations used in this frame to those of parent.
-            ;; This is just for the optional reporting of shadowing errors.
-            (merge-used-with-parent-frame!)
-            (k (reverse (expand-deferred forms))
-               (reverse syntax-defs)
-               bound-variables))
-           (else
-             (call-with-values (lambda () ;; MOSH: XXX: avoid strange behavior..
+          (define (emit)
              (set! *usage-env* (wrap-env (car ws)))
               (call-with-values
-                  (lambda () (head-expand (wrap-exp (car ws))))
+                (lambda () (head-expand (wrap-exp (car ws))))
                 (lambda (form operator-binding)
                   (let ((type (and operator-binding (binding-name operator-binding))))
                     (check-expression-sequence body-type type form)
@@ -1301,8 +1290,20 @@
                                    forms)
                              syntax-defs
                              bound-variables)))))))
-                               (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
-                               ))) )
+          (cond
+           ((null? ws)
+            (check-expression-body body-type forms body-forms)
+            ;; Add denotations used in this frame to those of parent.
+            ;; This is just for the optional reporting of shadowing errors.
+            (merge-used-with-parent-frame!)
+            (k (reverse (expand-deferred forms))
+               (reverse syntax-defs)
+               bound-variables))
+           (else
+             (call-with-values 
+               emit ;; MOSH: XXX: avoid strange behavior..
+               (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
+               ))))
 
         ;; Add new frame for keeping track of bindings used
         ;; so we can detect redefinitions violating lexical scope.
