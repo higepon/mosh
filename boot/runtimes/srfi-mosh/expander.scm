@@ -1300,10 +1300,7 @@
                (reverse syntax-defs)
                bound-variables))
            (else
-             (call-with-values 
-               emit ;; MOSH: XXX: avoid strange behavior..
-               (lambda results (apply values results)) ;; MOSH: XXX: avoid strange behavior..
-               ))))
+             (emit) )))
 
         ;; Add new frame for keeping track of bindings used
         ;; so we can detect redefinitions violating lexical scope.
