@@ -43,5 +43,33 @@
   (call-with-input-file fn read-all/port))
 
 (define core-src (apply append (map read-all core-names)))
+
+(define WARN-FLG #f)
+
+(define (WARN-PSYNTAX-ONLY)
+  (unless WARN-FLG
+    (set! WARN-FLG #t)
+    (display "WARNING: USING SCHEME VERSION OF sexp-map AND sexp-map/debug\n")))
+
+(define (sexp-map/debug dbg f s)
+  (define (update x)
+    (let ((inf (debug-source-info x))) (if inf inf dbg)))
+  (WARN-PSYNTAX-ONLY)
+  (cond ((null? s) '())
+        ((pair? s) (cons (sexp-map/debug (update s) f (car s))
+                         (sexp-map/debug (update s) f (cdr s))))
+        ((vector? s)
+         (apply vector (sexp-map/debug (update s) f (vector->list s))))
+        (else (f s dbg))))
+
+(define (sexp-map f s)
+  (WARN-PSYNTAX-ONLY)
+  (cond ((null? s) '())
+        ((pair? s) (cons (sexp-map f (car s))
+                         (sexp-map f (cdr s))))
+        ((vector? s)
+         (apply vector (sexp-map f (vector->list s))))
+        (else (f s))))
+
 (define expander-src (read-all "expander.scm"))
 
