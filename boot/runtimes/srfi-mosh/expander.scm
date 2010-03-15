@@ -651,22 +651,44 @@
     (define (make-null-env) '())
     (define (make-unit-env) (env-extend '() (make-null-env)))
 
+    ;; MOSH: use hashtable
+    (define (env-extend-table! h mappings)
+      (define (step e)
+	(let* ((k (car e))
+	       (b (cdr e))
+	       (key0 (car k))
+	       (key1 (cdr k))
+	       (a (hashtable-ref h key0 '())))
+	  (hashtable-set! h key0 (cons (cons key1 b) a))))
+      (for-each step mappings))
+
+    (define (env-maketable mappings)
+      (let ((h (make-eq-hashtable 10))) ;; MOSH: FIXME ..
+	(env-extend-table! h mappings)
+	h))
+
+    (define (env-assoc key table)
+      (let* ((key0 (car key))
+	     (key1 (cdr key))
+	     (a (hashtable-ref table key0 '())))
+	(assoc key1 a)))
+
     ;; Adds a new frame containing mappings to env.
 
     (define (env-extend mappings env)
-      (cons (list mappings) env))
+      (cons (env-maketable mappings) env))
 
     ;; Destructively extends the leftmost frame in env.
 
     (define (env-extend! mappings env)
       (let ((frame (car env)))
-        (set-car! frame (append mappings (car frame)))))
+	(env-extend-table! frame mappings)))
 
     ;; Returns <object> | #f
 
     (define (env-lookup key env)
       (and (pair? env)
-           (or (let ((probe (assoc key (caar env))))
+           (or (let ((probe (env-assoc key (car env)))) ; MOSH:
                  (and probe
                       (or (cdr probe)
                           (syntax-violation
@@ -676,9 +698,9 @@
     ;; Is id already bound in leftmost frame?
 
     (define (duplicate? id env)
-      (assoc (cons (id-name id)
+      (env-assoc (cons (id-name id)
                    (id-colors id))
-             (caar env)))
+             (car env))) ; MOSH:
 
     ;; Returns a single-symbol <key> representing an
     ;; environment that can be included in object code.
@@ -705,7 +727,8 @@
     ;; This makes a much smaller external representation of an
     ;; environment table by factoring shared structure.
 
-    (define (compress env-table)
+    ;; MOSH: original compress
+    (define (plist-compress env-table)
       (let ((frame-table '())
             (count 0))
         (for-each (lambda (entry)
@@ -738,13 +761,34 @@
                                       (caar frame-entry)))))
                    frame-table))))
 
-    (define (uncompress compressed-env-table)
+    (define (compress1 table)
+      (call-with-values (lambda () (hashtable-entries table))
+			(lambda (keys entries) (cons keys entries))))
+    (define (compress tables)
+      (define (step l)
+	(cons (car l) (map compress1 (cdr l))))
+      (map step tables))
+
+    ;; MOSH: original uncompress
+    (define (plist-uncompress compressed-env-table)
       (map (lambda (env-entry)
              (cons (car env-entry)
                    (map (lambda (frame-abbrev)
                           (cdr (assv frame-abbrev (cdr compressed-env-table))))
                         (cdr env-entry))))
            (car compressed-env-table)))
+    (define (uncompress1 table)
+      (let ((a (car table))
+	    (d (cdr table)))
+	(let ((h (make-eq-hashtable)))
+	  (define (step key ent)
+	    (hashtable-set! h key ent))
+	  (for-each step (vector->list a) (vector->list d))
+	  h)))
+    (define (uncompress tables)
+      (define (step l)
+	(cons (car l) (map uncompress1 (cdr l))))
+      (map step tables))
 
     ;;=========================================================================
     ;;
