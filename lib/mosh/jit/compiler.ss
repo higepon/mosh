@@ -1652,7 +1652,7 @@
                                   (apply (vector-ref insn-dispatch-table (instruction->integer (caar insn)))
                                          (cdar insn))]))
                              insn*)
-               (let1 compiled (u8-list->c-procedure (assemble `((push rbx) (push r12) (push r13) (push r14) (push r15)
+               (let1 compiled (u8-list->c-procedure (assemble `(,@(DEBUGGER 40) (push rbx) (push r12) (push r13) (push r14) (push r15)
                                                                 (push rbp)
                                                                 (movq rbp rsp)
                                                                 ,@(apply append (cons (trace-reset!) asm*)))))

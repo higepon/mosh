@@ -42,6 +42,7 @@ define sp
 end
 
 define hook-stop
+  disassemble $pc ($pc+1)
   printf "============ State ============= \n"
   printf "  [%d]\n", $r8
   printf "  ac=0x%08x    pc=0x%08x\n", *(((intptr_t*)$rdi) + 1), *(((intptr_t*)$rdi) + 6)
