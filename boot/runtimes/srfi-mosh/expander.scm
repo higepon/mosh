@@ -2247,6 +2247,7 @@
             (else (list l))))
 
     ;MOD!!
+#|
     (define (sexp-map/debug dbg f s)
       (define (update x)
         (let ((inf (debug-source-info x))) (if inf inf dbg)))
@@ -2264,6 +2265,7 @@
             ((vector? s)
              (apply vector (sexp-map f (vector->list s))))
             (else (f s))))
+|#
 
     (define (dotted-memp proc ls)
       (cond ((null? ls) #f)

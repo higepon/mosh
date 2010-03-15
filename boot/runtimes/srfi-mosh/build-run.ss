@@ -1,14 +1,14 @@
 (import (rnrs)
 	(mosh) (system)
 	(rnrs eval)
-	(primitives throw ex:destructive-eval! ex:current-environment))
+	(primitives throw ex:destructive-eval! ex:current-environment sexp-map sexp-map/debug))
 
 (define initprog
   '((import (rnrs) 
 	    (mosh)
 	    (system)
 	    (rnrs mutable-pairs)
-	    (primitives permissive-eval) (nmosh mosh-vm))
+	    (primitives permissive-eval sexp-map sexp-map/debug) (nmosh mosh-vm))
     (define %loadpath "lib.boot:lib.rnrs:lib:../../../lib")
     (define %verbose #t)
     (define %nmosh-failproc #f)))

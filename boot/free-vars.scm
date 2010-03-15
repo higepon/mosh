@@ -674,4 +674,8 @@
 
   ;; for dynamic-wind
   current-dynamic-winders
+
+  ;; for nmosh
+  sexp-map
+  sexp-map/debug
   )

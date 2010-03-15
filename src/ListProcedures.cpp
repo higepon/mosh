@@ -1101,3 +1101,85 @@ Object scheme::listEx(VM* theVM, int argc, const Object* argv)
     }
     return obj;
 }
+
+// nmosh C procs
+const
+Object vector_map1(VM* theVM, Object f, Object o) 
+{
+    Vector* v = o.toVector();
+    const int vLength = v->length();
+    Object ret = Object::Nil;
+    for (int i = vLength - 1; i >= 0; i--) {
+        ret = Object::cons(theVM->callClosure1(f,v->ref(i)), ret);
+    }
+    return Object::makeVector(ret);
+}
+const
+Object vector_map1_debug(VM* theVM, Object f, Object o, Object dbg) 
+{
+    Vector* v = o.toVector();
+    const int vLength = v->length();
+    Object ret = Object::Nil;
+    for (int i = vLength - 1; i >= 0; i--) {
+        ret = Object::cons(theVM->callClosure2(f,v->ref(i),dbg), ret);
+    }
+    return Object::makeVector(ret);
+}
+
+const
+Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
+{
+    // preserve debug info
+    const Object newdbg = (s.isPair() && (s.sourceInfo() != Object::False)) ? s.sourceInfo() : dbg;
+    Object r;
+
+    if(s == Object::Nil) {
+        r = Object::Nil;
+    } else if (s.isPair()) {
+        r = Object::cons(sexp_map_with_debug(theVM,newdbg,f,s.car()),
+                         sexp_map_with_debug(theVM,newdbg,f,s.cdr()));
+    } else if (s.isVector()) {
+        r = vector_map1_debug(theVM,f,s,dbg);
+    } else {
+        r = theVM->callClosure2(f, s, newdbg);
+    }
+    return r;
+}
+
+Object scheme::sexpMapDebugEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("sexp-map/debug"); 
+    checkArgumentLength(3);
+    argumentCheckProcedure(1,f);
+    const Object dbg = argv[0];
+    const Object s = argv[2];
+    return sexp_map_with_debug(theVM,dbg,f,s);
+
+}
+const
+Object sexp_map(VM* theVM, Object f, Object s)
+{
+    Object r;
+
+    if(s == Object::Nil) {
+        r = Object::Nil;
+    } else if (s.isPair()) {
+        r = Object::cons(sexp_map(theVM,f,s.car()),
+                         sexp_map(theVM,f,s.cdr()));
+    } else if (s.isVector()) {
+        r = vector_map1(theVM,f,s);
+    } else {
+        r = theVM->callClosure1(f, s);
+    }
+    return r;
+}
+
+Object scheme::sexpMapEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("sexp-map"); 
+    checkArgumentLength(2);
+    argumentCheckProcedure(0,f);
+    const Object s = argv[1];
+    return sexp_map(theVM,f,s);
+
+}
