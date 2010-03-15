@@ -1103,25 +1103,28 @@ Object scheme::listEx(VM* theVM, int argc, const Object* argv)
 }
 
 // nmosh C procs
+const Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s);
+const Object sexp_map(VM* theVM, Object f, Object s);
 const
-Object vector_map1(VM* theVM, Object f, Object o) 
+Object sexp_map_for_vector_with_debug(VM* theVM, Object f, Object o, Object dbg) 
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
     Object ret = Object::Nil;
     for (int i = vLength - 1; i >= 0; i--) {
-        ret = Object::cons(theVM->callClosure1(f,v->ref(i)), ret);
+        ret = Object::cons(sexp_map_with_debug(theVM,dbg,f,v->ref(i)), ret);
     }
     return Object::makeVector(ret);
 }
+
 const
-Object vector_map1_debug(VM* theVM, Object f, Object o, Object dbg) 
+Object sexp_map_for_vector(VM* theVM, Object f, Object o) 
 {
     Vector* v = o.toVector();
     const int vLength = v->length();
     Object ret = Object::Nil;
     for (int i = vLength - 1; i >= 0; i--) {
-        ret = Object::cons(theVM->callClosure2(f,v->ref(i),dbg), ret);
+        ret = Object::cons(sexp_map(theVM,f,v->ref(i)), ret);
     }
     return Object::makeVector(ret);
 }
@@ -1130,7 +1133,8 @@ const
 Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
 {
     // preserve debug info
-    const Object newdbg = (s.isPair() && (s.sourceInfo() != Object::False)) ? s.sourceInfo() : dbg;
+    const Object si = s.isPair() ? s.sourceInfo() : Object::False;
+    const Object newdbg = (si != Object::False) ? si : dbg;
     Object r;
 
     if(s == Object::Nil) {
@@ -1139,7 +1143,7 @@ Object sexp_map_with_debug(VM* theVM, Object dbg, Object f, Object s)
         r = Object::cons(sexp_map_with_debug(theVM,newdbg,f,s.car()),
                          sexp_map_with_debug(theVM,newdbg,f,s.cdr()));
     } else if (s.isVector()) {
-        r = vector_map1_debug(theVM,f,s,dbg);
+        r = sexp_map_for_vector_with_debug(theVM,f,s,dbg);
     } else {
         r = theVM->callClosure2(f, s, newdbg);
     }
@@ -1167,7 +1171,7 @@ Object sexp_map(VM* theVM, Object f, Object s)
         r = Object::cons(sexp_map(theVM,f,s.car()),
                          sexp_map(theVM,f,s.cdr()));
     } else if (s.isVector()) {
-        r = vector_map1(theVM,f,s);
+        r = sexp_map_for_vector(theVM,f,s);
     } else {
         r = theVM->callClosure1(f, s);
     }
