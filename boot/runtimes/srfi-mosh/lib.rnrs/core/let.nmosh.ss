@@ -34,6 +34,7 @@
         ((_ ((i v) ...) e1 e2 ...)
 	 (syntax (vanilla-letrec ((i v) ...) e1 e2 ...))))))
   
+#|
   (define-syntax letrec*
     (lambda (x)
       (syntax-case x ()
@@ -41,5 +42,11 @@
          (syntax (let ()
                    (define i v) ...
                    (let () e1 e2 ...)))))))
+|#
+  (define-syntax letrec*
+    (lambda (x)
+      (syntax-case x ()
+        ((_ ((i v) ...) e1 e2 ...)
+	 (syntax (vanilla-letrec* ((i v) ...) e1 e2 ...))))))
   
   ) ; let

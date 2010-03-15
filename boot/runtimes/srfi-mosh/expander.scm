@@ -524,20 +524,21 @@
     ;; For macro bindings, it is the key for looking up the transformer
     ;; in the global macro table.
 
+    ;; MOSH: use vector for binding
     (define (make-binding/debug type name levels content library dbg)
       (if (and *DBG?* dbg) (set! *DBG-SYMS* (cons (cons name dbg) *DBG-SYMS*)))
-      (list type name levels content library))
+      (vector type name levels content library))
 
     (define (make-binding type name levels content library)
       (make-binding/debug type name levels content library #f))
 
-    (define (binding-type b)           (car b))
-    (define (binding-name b)           (cadr b))
-    (define (binding-levels b)         (caddr b))
-    (define (binding-mutable? b)       (cadddr b))
-    (define (binding-dimension b)      (cadddr b))
-    (define (binding-library b)        (car (cddddr b)))
-    (define (binding-mutable-set! b x) (set-car! (cdddr b) x))
+    (define (binding-type b)           (vector-ref b 0))
+    (define (binding-name b)           (vector-ref b 1))
+    (define (binding-levels b)         (vector-ref b 2))
+    (define (binding-mutable? b)       (vector-ref b 3))
+    (define (binding-dimension b)      (vector-ref b 3))
+    (define (binding-library b)        (vector-ref b 4))
+    (define (binding-mutable-set! b x) (vector-set! b 3 x))
 
     ;; Looks up binding first in usage environment and
     ;; then in attached transformer environments.
@@ -1173,6 +1174,22 @@
                                      body
                                      (lambda (forms no-syntax-definitions bound-variables)
                                        `(letrec ,expanded-bindings
+                                          ,@(emit-body forms 'define)))))))))
+
+    (define (expand-vanilla-letrec* exp) ; MOSH:
+      (match exp
+        ((- (? list? bindings) body ___)
+         (fluid-let ((*usage-env*
+                       (env-extend (map (lambda (formal)
+                                          (make-local-mapping 'variable formal #f))
+                                        (let-binding-names bindings))
+                                   *usage-env*)))
+                    (let ((expanded-bindings (let-compose-bindings (let-process-bindings bindings))))
+                      (scan-sequence 'lambda
+                                     make-local-mapping
+                                     body
+                                     (lambda (forms no-syntax-definitions bound-variables)
+                                       `(letrec* ,expanded-bindings
                                           ,@(emit-body forms 'define)))))))))
 
 
@@ -2675,7 +2692,9 @@
     (ex:register-library!
      (let ((primitive-macro-mapping
             `((vanilla-let . ,expand-vanilla-let)
-              (vanilla-letrec . ,expand-vanilla-letrec))))
+              (vanilla-letrec . ,expand-vanilla-letrec)
+              (vanilla-letrec* . ,expand-vanilla-letrec*)
+              )))
        (ex:make-library
         '(core nmosh primitive-macros)
         ;; envs
