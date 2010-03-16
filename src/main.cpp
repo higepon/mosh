@@ -77,11 +77,19 @@ internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
 }
 Object
 internalGetNmoshDbgImage(VM* theVM,int argc,const Object* argv){
-    extern const uint8_t* nmosh_dbg_image_ptr;
-    extern unsigned int nmosh_dbg_image_size;
     //DeclareProcedureName("%get-nmosh-dbg-image");
     return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
 }
+#endif
+
+#ifdef WITH_NMOSH_DEFAULTS
+extern "C" const uint8_t* nmosh_dbg_image_ptr;
+extern "C" unsigned int nmosh_dbg_image_size;
+extern "C" const uint8_t* nmosh_image_ptr;
+extern "C" const unsigned int nmosh_image_size;
+#else
+extern "C" const uint8_t* psyntax_mosh_image_ptr;
+extern "C" unsigned int psyntax_mosh_image_size;
 #endif
 
 Object argsToList(int argc, int optind, ucs4char** argvU)
@@ -106,12 +114,8 @@ void showVersion()
 Object activateR6RSMode(VM* theVM, bool isDebugExpand)
 {
 #ifdef WITH_NMOSH_DEFAULTS
-    extern const uint8_t* nmosh_image_ptr;
-    extern const unsigned int nmosh_image_size;
     return theVM->activateR6RSMode(nmosh_image_ptr, nmosh_image_size, isDebugExpand);
 #else
-    extern const uint8_t* psyntax_mosh_image_ptr;
-    extern unsigned int psyntax_mosh_image_size;
     return theVM->activateR6RSMode(psyntax_mosh_image_ptr, psyntax_mosh_image_size, isDebugExpand);
 #endif
 }

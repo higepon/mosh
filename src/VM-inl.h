@@ -168,7 +168,7 @@ inline Object* VM::disasm(Object* code, int length)
     }
     return ret;
 #else
-    return code;
+    return (Object *)code;
 #endif
 }
 
