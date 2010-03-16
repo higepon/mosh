@@ -2262,9 +2262,8 @@
             ((pair? l) (cons (car l)
                              (flatten (cdr l))))
             (else (list l))))
-#|
 
-    ;MOD!!
+    ;; MOSH: moved to ListProcedures.cpp
     (define (sexp-map/debug dbg f s)
       (define (update x)
         (let ((inf (debug-source-info x))) (if inf inf dbg)))
@@ -2282,7 +2281,6 @@
             ((vector? s)
              (apply vector (sexp-map f (vector->list s))))
             (else (f s))))
-|#
 
     (define (dotted-memp proc ls)
       (cond ((null? ls) #f)

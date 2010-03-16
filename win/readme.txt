@@ -1,3 +1,12 @@
+this document is now deprecated.. (oku)
+
+- precompiled library was removed
+
+1. Download MPIR and uncompress as directory "mpir"
+2. open ../mosh.sln
+3. build
+
+--
 
 requirements
 Microsoft Visual Stduio 2008 SP1

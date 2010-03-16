@@ -70,6 +70,16 @@ using namespace scheme;
 static VM* theVM;
 
 #ifdef WITH_NMOSH_DEFAULTS
+extern "C" const uint8_t* nmosh_dbg_image_ptr;
+extern "C" unsigned int nmosh_dbg_image_size;
+extern "C" const uint8_t* nmosh_image_ptr;
+extern "C" const unsigned int nmosh_image_size;
+#else
+extern "C" const uint8_t* psyntax_mosh_image_ptr;
+extern "C" unsigned int psyntax_mosh_image_size;
+#endif
+
+#ifdef WITH_NMOSH_DEFAULTS
 Object
 internalGetStackTraceObj(VM* theVM,int argc,const Object* argv){
 	//DeclareProcedureName("%get-stack-trace-obj");
@@ -80,16 +90,6 @@ internalGetNmoshDbgImage(VM* theVM,int argc,const Object* argv){
     //DeclareProcedureName("%get-nmosh-dbg-image");
     return FaslReader(theVM, new ByteArrayBinaryInputPort(nmosh_dbg_image_ptr, nmosh_dbg_image_size)).get();
 }
-#endif
-
-#ifdef WITH_NMOSH_DEFAULTS
-extern "C" const uint8_t* nmosh_dbg_image_ptr;
-extern "C" unsigned int nmosh_dbg_image_size;
-extern "C" const uint8_t* nmosh_image_ptr;
-extern "C" const unsigned int nmosh_image_size;
-#else
-extern "C" const uint8_t* psyntax_mosh_image_ptr;
-extern "C" unsigned int psyntax_mosh_image_size;
 #endif
 
 Object argsToList(int argc, int optind, ucs4char** argvU)
