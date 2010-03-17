@@ -212,7 +212,7 @@ inline Object* VM::getDirectThreadedCode(const Object* code, int length)
     }
     return direct;
 #else
-    return code;
+    return (Object *)code;
 #endif
 }
 

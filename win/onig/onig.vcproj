@@ -106,7 +106,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				AdditionalIncludeDirectories="&quot;C:\mosh\mosh\onig-5.7.0&quot;;&quot;C:\mosh\mosh\onig-5.7.0\win32&quot;"
-				PreprocessorDefinitions="/DHAVE_CONFIG_H /DNOT_RUBY /DEXPORT"
+				PreprocessorDefinitions="HAVE_CONFIG_H;NOT_RUBY;EXPORT"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"

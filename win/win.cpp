@@ -1,4 +1,4 @@
-#include "../scheme.h"
+#include "../src/scheme.h"
 // moved to ucs4string.cpp for Mingw.
 // #include <map>
 // #include <list>

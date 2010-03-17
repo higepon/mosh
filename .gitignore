@@ -179,3 +179,19 @@ work.scm
 
 # test
 nmosh-cache
+/cache
+
+# msvc things
+Debug/*
+Release/*
+/win/*/Debug/*
+/win/*/Release/*
+/win/mpir/*
+*.vcproj.*.user
+*.pdb
+*.ilk
+*.ncb
+*.exp
+*.suo
+/mosh.lib
+/moshd.lib

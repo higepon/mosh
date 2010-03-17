@@ -104,7 +104,7 @@
 #define CHECK_INTERRUPT_IN_MATCH_AT
 
 #if defined(_WIN32) && !defined(__GNUC__)
-#define vsnprintf   _vsnprintf
+//#define vsnprintf   _vsnprintf
 #endif
 
 #define st_init_table                  onig_st_init_table
