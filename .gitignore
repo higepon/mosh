@@ -193,5 +193,6 @@ Release/*
 *.ncb
 *.exp
 *.suo
+*.aps
 /mosh.lib
 /moshd.lib
