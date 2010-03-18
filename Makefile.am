@@ -221,6 +221,8 @@ BUILT_SOURCES = src/Object-accessors.h src/Instruction.h src/Reader.tab.hpp src/
 mosh_core_libraries = \
 lib/match.ss \
 lib/irregex.ss \
+lib/packrat.ss \
+lib/json.ss \
 lib/memcached.ss \
 lib/lambda/wiki.ss    \
 lib/mosh/queue.ss    \
