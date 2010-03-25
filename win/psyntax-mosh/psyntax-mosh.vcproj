@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\repos\mosh\gc-7.1\include&quot;;C:\repos\mosh\win\include;C:\repos\mosh\src;C:\repos\mosh"
+				AdditionalIncludeDirectories="&quot;..\..\gc-7.1\include&quot;;..\include;..\..\src;..\.."
 				PreprocessorDefinitions="HAVE_CONFIG_H;USE_BOEHM_GC"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -116,7 +116,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				AdditionalIncludeDirectories="&quot;C:\repos\mosh\gc-7.1\include&quot;;C:\repos\mosh\win\include;C:\repos\mosh\src;C:\repos\mosh"
+				AdditionalIncludeDirectories="&quot;..\..\gc-7.1\include&quot;;..\include;..\..\src;..\.."
 				PreprocessorDefinitions="HAVE_CONFIG_H;USE_BOEHM_GC"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"

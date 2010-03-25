@@ -24,6 +24,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nmosh", "win\nmosh\nmosh.vc
 		{D81936BB-D671-45ED-A4F5-B673924730F7} = {D81936BB-D671-45ED-A4F5-B673924730F7}
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{D3E5925D-0622-4133-A0F3-83B21EE94D22}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -70,5 +72,11 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{277CD59E-4109-4D5F-AF64-6E37FFBC442E} = {D3E5925D-0622-4133-A0F3-83B21EE94D22}
+		{8A2E028B-6E13-4E8A-B0F5-9A58C30BFB11} = {D3E5925D-0622-4133-A0F3-83B21EE94D22}
+		{D81936BB-D671-45ED-A4F5-B673924730F7} = {D3E5925D-0622-4133-A0F3-83B21EE94D22}
+		{B49639EA-4A66-4DFC-B48D-00A3D4D0F2A8} = {D3E5925D-0622-4133-A0F3-83B21EE94D22}
 	EndGlobalSection
 EndGlobal
