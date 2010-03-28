@@ -100,8 +100,7 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
             return Object::Undef;
         }
     }
-
-    // nongenerative
+    // generative
     if (uid.isFalse()) {
         rtd = Object::makeRecordTypeDescriptor(name,
                                                parent,
@@ -109,7 +108,7 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
                                                isSealed,
                                                isOpaque,
                                                fields);
-    // generative
+    // nongenerative
     } else {
         const Object found = theVM->findGenerativeRtd(uid);
         if (found.isFalse()) {
