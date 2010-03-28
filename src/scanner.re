@@ -233,7 +233,7 @@ int Scanner::scan(YYSTYPE* yylval)
        R6RS_STRICT_MODE DELMITER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
-            currentVM()->readerContext()->setIsR6RSMode();
+            currentVM()->readerContext()->setIsStrictR6RSReader();
             continue;
        }
        "#"[tT] DELMITER {

@@ -54,13 +54,13 @@ namespace scheme {
         {
             parsed_ = parsed;
         }
-        void setIsR6RSMode()
+        void setIsStrictR6RSReader()
         {
-            isR6RSMode_ = true;
+            isStrictR6RSReader_ = true;
         }
-        bool isR6RSMode() const
+        bool isStrictR6RSReader() const
         {
-            return isR6RSMode_;
+            return isStrictR6RSReader_;
         }
         Object parsed()
         {
@@ -69,7 +69,7 @@ namespace scheme {
     private:
         Object parsed_;
         TextualInputPort* port_;
-        bool isR6RSMode_;
+        bool isStrictR6RSReader_;
     };
 
     class ReaderHelper EXTEND_GC

@@ -92,7 +92,7 @@ lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                  $$ = Object::makeString(s);
                }
                | REGEXP {
-                 if (currentVM()->readerContext()->isR6RSMode()) {
+                 if (currentVM()->readerContext()->isStrictR6RSReader()) {
                    yyerror("Regexp literal is not allowed on #!r6rs mode");
                    YYERROR;
                  } else {
