@@ -1,5 +1,5 @@
 /*
- * reader.h - 
+ * reader.h -
  *
  *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
@@ -54,6 +54,14 @@ namespace scheme {
         {
             parsed_ = parsed;
         }
+        void setIsR6RSMode()
+        {
+            isR6RSMode_ = true;
+        }
+        bool isR6RSMode() const
+        {
+            return isR6RSMode_;
+        }
         Object parsed()
         {
             return parsed_;
@@ -61,6 +69,7 @@ namespace scheme {
     private:
         Object parsed_;
         TextualInputPort* port_;
+        bool isR6RSMode_;
     };
 
     class ReaderHelper EXTEND_GC

@@ -221,6 +221,7 @@ int Scanner::scan(YYSTYPE* yylval)
   SUBSEQUENT             = INITIAL | DIGIT | [\+\-\.@]; /* todo: Add Unicode category Nd, Mc and Me */
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
+  R6RS_STRICT_MODE       = "#!r6rs";
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
 */
 
@@ -229,6 +230,12 @@ int Scanner::scan(YYSTYPE* yylval)
     for(;;)
     {
 /*!re2c
+       R6RS_STRICT_MODE DELMITER {
+            YYCURSOR--;
+            YYTOKEN = YYCURSOR;
+            currentVM()->readerContext()->setIsR6RSMode();
+            continue;
+       }
        "#"[tT] DELMITER {
             yylval->boolValue = true;
             YYCURSOR--;

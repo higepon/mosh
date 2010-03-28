@@ -48,6 +48,7 @@ Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
     extern int yyparse ();
     MOSH_ASSERT(port);
     port_ = port;
+    isR6RSMode_ = false;
     for (;;) {
         const bool isParseError = yyparse() == 1;
         port->scanner()->emptyBuffer();

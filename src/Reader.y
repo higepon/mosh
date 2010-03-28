@@ -63,7 +63,6 @@ extern int yyerror(const char *);
 %token <intValue> CHARACTER_NAME
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
-
 %token <charValue> LEFT_PAREN RIGHT_PAREN 
 %token END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
@@ -78,6 +77,7 @@ extern int yyerror(const char *);
 
 top_level      : END_OF_FILE { currentVM()->readerContext()->setParsed(Object::Eof); YYACCEPT; }
                | datum { currentVM()->readerContext()->setParsed($$); YYACCEPT; }
+               ;
 
 datum          : lexme_datum
                | compound_datum
@@ -92,7 +92,12 @@ lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                  $$ = Object::makeString(s);
                }
                | REGEXP {
+                 if (currentVM()->readerContext()->isR6RSMode()) {
+                   yyerror("Regexp literal is not allowed on #!r6rs mode");
+                   YYERROR;
+                 } else {
                    $$ = Object::makeRegexp($1);
+                 }
                }
                | NUMBER {
                    bool isErrorOccured = false;
