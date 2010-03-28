@@ -1103,6 +1103,16 @@
                   ($lambda.set-name! init ($lvar.sym lvar)))
                 ($lvar.set-init-val! lvar init))
               this-lvars inits)
+    (let1 found-error
+        (let loop ([initialized* '()]
+                   [lvars this-lvars]
+                   [inits inits])
+          (cond
+           [(null? inits) #f]
+           [(and (tag? (car inits) $LOCAL-REF) (not (memq ($local-ref.lvar (car inits)) initialized*)))
+            (car inits)]
+           [else
+            (loop (cons (car lvars) initialized*) (cdr lvars) (cdr inits))]))
     ($let 'rec
           this-lvars
           inits
@@ -1110,8 +1120,12 @@
           (pass1/body->iform (pass1/expand body) (append this-lvars lvars) tail?)
           tail?
           source-info
-          #f)
-          ))
+          (if found-error (make-compile-error
+                           'letrec*
+                           "reference to uninitialized variable on letrec*"
+                           (ungensym ($lvar.sym ($local-ref.lvar found-error))))
+              #f))
+          )))
 
 (define (pass1/if test then more lvars tail?)
   ($if
