@@ -172,6 +172,7 @@
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
                        + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
           (srfi :98)
+          (only (srfi :13) string-prefix?)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os string-split)
           (only (mosh control) aif)
@@ -458,14 +459,14 @@
 
 (define library-search-path* '("/lib" "/usr/lib" "/usr/local/lib"))
 
-(define (find-shared-library regex)
+(define (find-shared-library libname-prefix)
   (let ([path* (aif (get-environment-variable "LD_LIBRARY_PATH")
                     (append (string-split it #\:) library-search-path*)
                     library-search-path*)])
     (let loop ([path* (filter file-exists? path*)])
       (cond
        [(null? path*) #f]
-       [(find regex (guard [c (#t '())] (directory-list (car path*)))) =>
+       [(find (lambda (path) (if (string-prefix? libname-prefix path) path #f)) (guard [c (#t '())] (directory-list (car path*)))) =>
         (lambda (path)
           (string-append (car path*) "/" path))]
        [else
