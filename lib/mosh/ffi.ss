@@ -170,7 +170,7 @@
                        quasiquote unless assertion-violation quote = length and number? assq => cdr assoc
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons let* make-string char->integer integer->char if bytevector?)
+                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
           (srfi :98)
           (only (rnrs mutable-strings) string-set!)
           (only (mosh) alist->eq-hash-table format os-constant host-os string-split)
@@ -456,16 +456,20 @@
 
 |#
 
-(define library-search-path* '("/lib" "/usr/lib/" "/usr/local/lib"))
+(define library-search-path* '("/lib" "/usr/lib" "/usr/local/lib"))
 
 (define (find-shared-library regex)
   (let ([path* (aif (get-environment-variable "LD_LIBRARY_PATH")
                     (append (string-split it #\:) library-search-path*)
                     library-search-path*)])
-  (exists
-   (lambda (path)
-     (find regex (guard [c (#t '())] (directory-list path))))
-   (filter file-exists? path*))))
+    (let loop ([path* (filter file-exists? path*)])
+      (cond
+       [(null? path*) #f]
+       [(find regex (guard [c (#t '())] (directory-list (car path*)))) =>
+        (lambda (path)
+          (string-append (car path*) "/" path))]
+       [else
+        (loop (cdr path*))]))))
 
 #|
     Function: pointer->c-function
