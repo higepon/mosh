@@ -177,9 +177,6 @@ public:
     void unregisterPort(Object obj);
     virtual void flushAllPorts();
 
-    Object findGenerativeRtd(Object uid);
-    void addGenerativeRtd(Object uid, Object rtd);
-
     ReaderContext* readerContext() { return readerContext_; }
     NumberReaderContext* numberReaderContext() { return numberReaderContext_; }
 
@@ -323,7 +320,6 @@ protected:
     Ports activePorts_;
     ucs4string name_;
     Thread* thread_;
-    ObjectMap generativeRtds_;
     Object* cProcs_;
 
     // on the fly instructions array.

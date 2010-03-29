@@ -864,23 +864,6 @@ Thread* VM::thread()
     return thread_;
 }
 
-Object VM::findGenerativeRtd(Object uid)
-{
-    ObjectMap::const_iterator found = generativeRtds_.find(uid);
-    if (found == generativeRtds_.end()) {
-        return Object::False;
-    } else {
-        return found->second;
-
-    }
-}
-
-void VM::addGenerativeRtd(Object uid, Object rtd)
-{
-    generativeRtds_[uid] = rtd;
-}
-
-
 void VM::copyOptions(VM* destVM, VM* srcVM)
 {
     const ucs4char* options[] = {UC("%loadpath"), UC("%verbose"), UC("*command-line-args*")};

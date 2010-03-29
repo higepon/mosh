@@ -46,12 +46,18 @@
 #include "RecordProcedures.h"
 #include "ProcedureMacro.h"
 #include "SimpleStruct.h"
-
+#include "OSCompatThread.h"
+#include "NonGenerativeRTDs.h"
 
 using namespace scheme;
 
 bool isSubTypeOfCondition(VM* theVM, Object rtd);
 static void setValueWithPostfix(VM* theVM, Object id, const ucs4char* postfix, Object values);
+
+// N.B.
+// nongenerative records are shared between multiple VMs.
+ObjectMap NonGenerativeRTDs::nonGenerativeRTDs_;
+Mutex NonGenerativeRTDs::mutex_;
 
 // return &conditon-rtd
 Object getConditionRtd(VM* theVM)
@@ -110,7 +116,7 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
                                                fields);
     // nongenerative
     } else {
-        const Object found = theVM->findGenerativeRtd(uid);
+        const Object found = NonGenerativeRTDs::lookup(uid);
         if (found.isFalse()) {
             rtd = Object::makeRecordTypeDescriptor(name,
                                                    parent,
@@ -118,11 +124,12 @@ Object scheme::makeRecordTypeDescriptorEx(VM* theVM, int argc, const Object* arg
                                                    isSealed,
                                                    isOpaque,
                                                    fields);
-            theVM->addGenerativeRtd(uid, rtd);
+            NonGenerativeRTDs::add(uid, rtd);
         } else {
-            return found;
+            rtd = found;
         }
     }
+
     // psyntax requires &xxx-rtd global defined.
     if (name == Symbol::intern(UC("&condition"))) {
         theVM->setValueString(UC("&condition-rtd"), rtd);
@@ -143,7 +150,7 @@ Object scheme::makeRecordConstructorDescriptorEx(VM* theVM, int argc, const Obje
     argumentCheckRecordConstructorDescriptorOrFalse(1, parentRcd);
     argumentCheckClosureOrFalse(2, protocol);
 
-    const Object rcd =  Object::makeRecordConstructorDescriptor(theVM, rtd, parentRcd, protocol);
+    const Object rcd = Object::makeRecordConstructorDescriptor(theVM, rtd, parentRcd, protocol);
 
     // psyntax requires &xxx-rcd global defined.
     if (isSubTypeOfCondition(theVM, rtd)) {
@@ -239,7 +246,8 @@ RecordAccessor::~RecordAccessor()
 
 ucs4string RecordAccessor::toString() const
 {
-    Object name = format(NULL, UC("#<record-accessor ~s ~dth>"), Pair::list2(rtd_.toRecordTypeDescriptor()->name(), Object::makeFixnum(index_)));
+    RecordTypeDescriptor* rtd = rtd_.toRecordTypeDescriptor();
+    Object name = format(NULL, UC("#<record-accessor ~s.~s>"), Pair::list2(rtd->name(), rtd->fieldName(index_)));
     return name.toString()->data();
 }
 
@@ -264,10 +272,11 @@ Object RecordAccessor::call(VM* theVM, int argc, const Object* argv)
     if (rtd->isA(rtd_.toRecordTypeDescriptor())) {
         return record->fieldAt(index_);
     } else {
+        Object message = format(NULL, UC("~a is not accessor for ~a"), L2(toString(), argv[0]));
         callAssertionViolationAfter(theVM,
                                     toString(),
-                                    "invalid accessor for record",
-                                    L2(rtd_.toRecordTypeDescriptor()->name(), rtd->name()));
+                                    message,
+                                    L1(argv[0]));
         return Object::Undef;
     }
 }

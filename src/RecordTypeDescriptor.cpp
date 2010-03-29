@@ -103,8 +103,6 @@ bool RecordTypeDescriptor::isFieldMutable(int index) const
 bool RecordTypeDescriptor::isA(const RecordTypeDescriptor* rtd) const
 {
     if (this == rtd) {
-    // multiple vm need this!
-//    if (name_ == rtd->name_) {
         return true;
     } else if (!parent_.isFalse()) {
         return parent_.toRecordTypeDescriptor()->isA(rtd);
@@ -142,4 +140,11 @@ Object RecordTypeDescriptor::fieldNames() const
         fieldNamesVector->set(i, fields->ref(i).cdr().car());
     }
     return fieldNames;
+}
+
+Object RecordTypeDescriptor::fieldName(int index) const
+{
+    Vector* const fields = fields_.toVector();
+    MOSH_ASSERT(index < fields->length());
+    return fields->ref(index).cdr().car();
 }

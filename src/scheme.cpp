@@ -105,6 +105,8 @@ BOOL WINAPI handler(DWORD ctrlChar)
 #define srandom srand
 #endif
 
+extern void initNonGenerativeRtd();
+
 void mosh_init()
 {
     // MOSH_GENSYM_PREFIX and equal? need this.

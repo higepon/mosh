@@ -506,7 +506,7 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh test/input-port.scm < test/input.txt
 	./mosh test/output-port.scm
 	./mosh test/shell.scm
-	./mosh test/record.scm
+	./mosh --loadpath="test/mylib" test/record.scm
 	./mosh test/condition.scm
 	./mosh test/exception.scm
 	./mosh test/unicode.scm

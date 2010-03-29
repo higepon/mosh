@@ -1,4 +1,6 @@
 (import (rnrs)
+        (prefix (one) one:)
+        (prefix (two) two:)
         (mosh test))
 
 (let ()
@@ -123,5 +125,10 @@
   (ex3-thickness-set! ex3-i1 18);   ⇒ unspecified
   (test-eqv 18 (ex3-thickness ex3-i1))
   (test-false (record? ex3-i1)))
+
+(test-error assertion-violation?
+            (let ()
+              (define o (one:make-<T> 123))
+              (display (two:<T>-a o))))
 
 (test-results)
