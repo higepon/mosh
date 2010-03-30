@@ -39,6 +39,7 @@
 #include "Pair-inl.h"
 #include "SString.h"
 #include "StringProcedures.h"
+#include "EqHashTable.h"
 #include "NumberScanner.h"
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"

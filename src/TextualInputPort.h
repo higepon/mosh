@@ -68,10 +68,14 @@ public:
     virtual Object position() const;
     virtual bool setPosition(int64_t position);
 
+    void setSharedStructureAwareMode();
+    bool isSharedStructureAwareMode() const;
+
 private:
     Object error_;
     Scanner* scanner_;
     NumberScanner* numberScanner_;
+    bool isSharedStructureAwareMode_;
 };
 
 } // namespace scheme

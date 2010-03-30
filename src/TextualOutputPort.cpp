@@ -614,6 +614,8 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC(">"));
     } else if (o.isContinuation()) {
         putString(UC("#<continuation>"));
+    } else if (o.isSharedReference()) {
+        putString(UC("#<shared reference>"));
     } else {
         putString(UC("#<unknown datum>"));
     }

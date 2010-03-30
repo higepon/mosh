@@ -36,12 +36,24 @@
 #include "SString.h"
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"
-#include "Reader.h"
 #include "EqHashTable.h"
+#include "Reader.h"
 #include "ProcedureMacro.h"
 #include "Scanner.h"
+#include "Vector.h"
+#include "SharedReference.h"
 
 using namespace scheme;
+
+void ReaderContext::addShared(int index, Object obj)
+{
+    sharedObjects_.set(Object::makeFixnum(index), obj);
+}
+
+Object ReaderContext::getShared(int index)
+{
+    return sharedObjects_.ref(Object::makeFixnum(index), Object::False);
+}
 
 Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
 {
@@ -49,6 +61,7 @@ Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
     MOSH_ASSERT(port);
     port_ = port;
     isStrictR6RSReader_ = false;
+    isSharedStructureFound_ = false;
     for (;;) {
         const bool isParseError = yyparse() == 1;
         port->scanner()->emptyBuffer();
@@ -58,8 +71,42 @@ Object ReaderContext::read(TextualInputPort* port, bool& errorOccured)
         }
         // undef means #; ignored datum
         if (!parsed_.isUndef()) {
+            if (isSharedStructureFound_) {
+                LinkShared(parsed_);
+            }
             return parsed_;
         }
+    }
+}
+
+void ReaderContext::LinkShared(Object obj)
+{
+    if (obj.isPair()) {
+        if (obj.car().isSharedReference()) {
+            int index = obj.car().toSharedReference()->index();
+            obj.car() = getShared(index);
+        } else {
+            LinkShared(obj.car());
+        }
+        if (obj.cdr().isSharedReference()) {
+            int index = obj.cdr().toSharedReference()->index();
+            obj.cdr() = getShared(index);
+        } else {
+            LinkShared(obj.cdr());
+        }
+        return;
+    }
+    if (obj.isVector()) {
+        Vector* v = obj.toVector();
+        int n = v->length();
+        for (int i = 0; i < n; i++) {
+            if (v->ref(i).isSharedReference()) {
+                v->set(i, getShared(v->ref(i).toSharedReference()->index()));
+            } else {
+                LinkShared(v->ref(i));
+            }
+        }
+        return;
     }
 }
 

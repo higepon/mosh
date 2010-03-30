@@ -172,7 +172,7 @@ inline Object* VM::disasm(Object* code, int length)
 #endif
 }
 
-inline Object* VM::getDirectThreadedCode(const Object* code, int length)
+    inline Object* VM::getDirectThreadedCode(const Object* code, int length, bool isCompiler /* = false */)
 {
 #ifdef USE_DIRECT_THREADED_CODE
     Object* direct = Object::makeObjectArray(length);
@@ -191,7 +191,7 @@ inline Object* VM::getDirectThreadedCode(const Object* code, int length)
         //          If compiler has a scheme code 'PUSH, it is pre-compiled into '(<Instruction::CONSTANT> <CompilerInstruction::PUSH>).
         if (code[i].isCompilerInstruction()) {
             direct[i] = Object::makeInstruction(code[i].toCompilerInstruction());
-        } else if (code[i].isPair()) {
+        } else if (isCompiler && code[i].isPair()) {
             // special case on compiler.scm
             // compiler.scm includes '(0 UNDEF) and UNDEF should be compiled as CompilerInstruction Object.
             for (Object p = code[i]; !p.isNil(); p = p.cdr()) {

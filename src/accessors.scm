@@ -37,3 +37,4 @@
 (define-accessor Pointer)
 (define-accessor SimpleStruct)
 (define-accessor Continuation)
+(define-accessor SharedReference)

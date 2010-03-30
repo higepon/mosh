@@ -86,6 +86,7 @@
 #include "FFI.h"
 #include "SimpleStruct.h"
 #include "Continuation.h"
+#include "SharedReference.h"
 
 using namespace scheme;
 
@@ -499,6 +500,12 @@ Object Object::makeContinuation(Object stack, Object shiftSize, Object winders)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Continuation,
                                                             reinterpret_cast<intptr_t>(new Continuation(stack, shiftSize, winders)))));
+}
+
+Object Object::makeSharedReference(int index)
+{
+    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::SharedReference,
+                                                            reinterpret_cast<intptr_t>(new SharedReference(index)))));
 }
 
 bool Object::isIntegerValued() const

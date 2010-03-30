@@ -91,6 +91,7 @@ public:
         Pointer                     = Type<40>::VALUE,
         SimpleStruct                = Type<41>::VALUE,
         Continuation                = Type<42>::VALUE,
+        SharedReference             = Type<43>::VALUE,
         forbidden_comma
     };
 };

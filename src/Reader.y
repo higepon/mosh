@@ -46,6 +46,7 @@
 #include "TextualInputPort.h"
 #include "ByteVectorProcedures.h"
 #include "Arithmetic.h"
+#include "EqHashTable.h"
 #include "Reader.h"
 #include "NumberReader.h"
 #include "Scanner.h"
@@ -61,6 +62,8 @@ extern int yyerror(const char *);
 %token <stringValue> STRING
 %token <intValue> CHARACTER
 %token <intValue> CHARACTER_NAME
+%token <intValue> DEFINING_SHARED
+%token <intValue> DEFINED_SHARED
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
 %token <charValue> LEFT_PAREN RIGHT_PAREN 
@@ -68,7 +71,7 @@ extern int yyerror(const char *);
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
 
-%type <object> datum lexme_datum top_level compound_datum list datum_list
+%type <object> datum lexme_datum top_level compound_datum list datum_list defining_datum defined_datum
 %type <object> vector bytevector abbreviation
 
 %start top_level
@@ -81,10 +84,33 @@ top_level      : END_OF_FILE { currentVM()->readerContext()->setParsed(Object::E
 
 datum          : lexme_datum
                | compound_datum
+               | defining_datum
+               | defined_datum
                | DATUM_COMMENT datum datum { $$ = $3; }
                | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
                | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
+
+defined_datum : DEFINED_SHARED {
+                 if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
+                     currentVM()->readerContext()->setIsSharedStructureFound();
+                     $$ = Object::makeSharedReference(1);
+                 } else {
+                     yyerror("#1# style is not allowed. Use #!shared.");
+                     YYERROR;
+                 }
+               };
+
+defining_datum : DEFINING_SHARED datum {
+                 if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
+                     currentVM()->readerContext()->setIsSharedStructureFound();
+                     currentVM()->readerContext()->addShared(1, $2);
+                     $$ = $2;
+                 } else {
+                     yyerror("#1= style is not allowed. Use #!shared.");
+                     YYERROR;
+                 }
+               };
 
 lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                | STRING {

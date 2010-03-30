@@ -266,11 +266,11 @@ private:
     }
 
     void initializeDynamicCode();
-    Object evaluateSafe(Object* code, int codeSize);
+    Object evaluateSafe(Object* code, int codeSize, bool isCompiler = false);
     Object evaluateSafe(Code* code);
     Object evaluateSafe(Vector* code);
-    Object evaluateUnsafe(Object* code, int codeSize);
-    Object evaluateUnsafe(Vector* code);
+    Object evaluateUnsafe(Object* code, int codeSize, bool isCompiler = false);
+    Object evaluateUnsafe(Vector* code, bool isCompiler = false);
 
     void makeCallFrame(Object* pc)
     {
@@ -280,7 +280,7 @@ private:
         push(Object::makeObjectPointer(fp_));
     }
 
-    Object* getDirectThreadedCode(const Object* code, int length);
+    Object* getDirectThreadedCode(const Object* code, int length, bool isCompiler = false);
     Object runLoop(Object* code, jmp_buf returnPoint, bool returnTable = false);
 
     Object ac_;  // accumulator     register

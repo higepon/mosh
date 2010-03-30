@@ -265,7 +265,7 @@ void VM::loadCompiler()
     }
 #endif
     TRY_VM {
-        evaluateUnsafe(libCompiler.toVector());
+        evaluateUnsafe(libCompiler.toVector(), true);
         const Object libMatch = FASL_GET(pmatch_image);
         evaluateUnsafe(libMatch.toVector());
         CATCH_VM
@@ -347,29 +347,29 @@ void VM::loadFileWithGuard(const ucs4string& file)
 }
 
 // Faster than evaluateUnsafe, used to load compiler, which won't raise error.
-Object VM::evaluateUnsafe(Object* code, int codeSize)
+Object VM::evaluateUnsafe(Object* code, int codeSize, bool isCompiler /* = false */)
 {
     closureForEvaluate_.toClosure()->pc = code;
     ac_ = closureForEvaluate_;
     dc_ = closureForEvaluate_;
     cl_ = closureForEvaluate_;
     fp_ = 0;
-    Object* const direct = getDirectThreadedCode(code, codeSize);
+    Object* const direct = getDirectThreadedCode(code, codeSize, isCompiler);
     return runLoop(direct, NULL);
 }
 
-Object VM::evaluateUnsafe(Vector* code)
+Object VM::evaluateUnsafe(Vector* code, bool isCompiler /* = false */)
 {
-    return evaluateUnsafe(code->data(), code->length());
+    return evaluateUnsafe(code->data(), code->length(), isCompiler);
 }
 
-Object VM::evaluateSafe(Object* code, int codeSize)
+Object VM::evaluateSafe(Object* code, int codeSize, bool isCompiler /* = false */)
 {
     Registers r;
     saveRegisters(&r);
     Object ret = Object::Undef;
     TRY_VM {
-        ret = evaluateUnsafe(code, codeSize);
+        ret = evaluateUnsafe(code, codeSize, isCompiler);
     CATCH_VM
         defaultExceptionHandler(errorObj_);
         this->exit(-1);
