@@ -615,7 +615,12 @@
               x)
           (let f ((x x))
             (cond
-              ((stx? x) (strip (stx-expr x) (stx-mark* x)))
+              ((stx? x)
+               ;; Mosh
+               ;; #1=(#1#) with anotation data causes infinite loop
+               (when (pair? (stx-expr x))
+                 (set-source-info! (stx-expr x) #f))
+               (strip (stx-expr x) (stx-mark* x)))
               [(annotation? x) (annotation-stripped x)]
               ((pair? x)
                (let ((a (f (car x))) (d (f (cdr x))))
