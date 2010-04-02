@@ -1,6 +1,6 @@
 #!shared
 (import (rnrs)
-;        (good_shared)
+        (good_shared)
         (mosh test))
 
 (let ([x '#1=(a . #1#)])
@@ -20,9 +20,9 @@
   (test-eq (vector-ref x 0) (vector-ref x 1))
   (test-eq (vector-ref x 1) (vector-ref x 2)))
 
-;; (let ([x '(#1=a . #1#)])
-;;   (test-eq 'a (car x))
-;;   (test-eq 'a (cdr x)))
+(let ([x '(#1=a . #1#)])
+  (test-eq 'a (car x))
+  (test-eq 'a (cdr x)))
 
 (let ([x '#1=(#1#)])
   (test-eq x (car x)))

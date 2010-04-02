@@ -224,8 +224,8 @@ int Scanner::scan(YYSTYPE* yylval)
   R6RS_STRICT_READER_MODE = "#!r6rs";
   SHARED_STRUCTURE_READER_MODE = "#!shared";
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
-  DEFINING_SHARED        = "#1=";
-  DEFINED_SHARED         = "#1#";
+  DEFINING_SHARED        = "#" DIGIT+ "=";
+  DEFINED_SHARED         = "#" DIGIT+ "#";
 */
 
     int comment_count = 0;
@@ -251,15 +251,13 @@ int Scanner::scan(YYSTYPE* yylval)
             YYTOKEN = YYCURSOR;
             return SCHEME_BOOLEAN;
         }
-        DEFINING_SHARED DELMITER {
-            YYCURSOR--;
+        DEFINING_SHARED {
             ucs4string n =  ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN - 1));
             yylval->intValue = atoi(n.ascii_c_str());
             YYTOKEN = YYCURSOR;
             return DEFINING_SHARED;
         }
-        DEFINED_SHARED DELMITER {
-            YYCURSOR--;
+        DEFINED_SHARED {
             ucs4string n =  ucs4string(YYTOKEN + 1, (YYCURSOR - YYTOKEN - 1));
             yylval->intValue = atoi(n.ascii_c_str());
             YYTOKEN = YYCURSOR;
