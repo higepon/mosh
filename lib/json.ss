@@ -1,3 +1,4 @@
+;; see http://www.call-with-current-continuation.org/eggs/json.html
 (library (json)
          (export json-read json-write)
          (import (packrat)

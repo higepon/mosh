@@ -1,4 +1,5 @@
 ;; re-packaged into R6RS library
+;; http://www.call-with-current-continuation.org/eggs/packrat.html
 
 (library (packrat)
          (export
