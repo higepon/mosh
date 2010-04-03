@@ -1,3 +1,4 @@
+#!r6rs
 (import (rnrs)
         (good_shared)
         (mosh test))

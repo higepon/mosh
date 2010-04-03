@@ -222,7 +222,6 @@ int Scanner::scan(YYSTYPE* yylval)
   PECULIAR_IDENTIFIER    = [\+\-] | "..." | ("->" (SUBSEQUENT)*) | "@"; /* "@" is not R6RS match.scm required it. */
   IDENTIFIER             = (INITIAL (SUBSEQUENT)*) | PECULIAR_IDENTIFIER;
   R6RS_STRICT_READER_MODE = "#!r6rs";
-  SHARED_STRUCTURE_READER_MODE = "#!shared";
   COMMENT                = (";"[^\n\X0000]* (LINE_ENDING | EOS)) | ("#!" [a-zA-Z0-9/\_\.\-]+);
   DEFINING_SHARED        = "#" DIGIT+ "=";
   DEFINED_SHARED         = "#" DIGIT+ "#";
@@ -236,13 +235,7 @@ int Scanner::scan(YYSTYPE* yylval)
        R6RS_STRICT_READER_MODE DELMITER {
             YYCURSOR--;
             YYTOKEN = YYCURSOR;
-            currentVM()->readerContext()->setIsStrictR6RSReader();
-            continue;
-       }
-       SHARED_STRUCTURE_READER_MODE DELMITER {
-            YYCURSOR--;
-            YYTOKEN = YYCURSOR;
-            currentVM()->readerContext()->port()->setSharedStructureAwareMode();
+            currentVM()->readerContext()->port()->setStrictR6RsReaderMode();
             continue;
        }
        "#"[tT] DELMITER {

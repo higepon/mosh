@@ -529,6 +529,9 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	! ./mosh --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
 	./mosh --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
 	./mosh --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
+	./mosh --disable-acc --loadpath=test/mylib test/shared.scm
+	! ./mosh --disable-acc --loadpath=test/mylib test/shared2.scm
+	./mosh --disable-acc --loadpath=test/mylib test/shared3.scm
 	$(MAKE) -C test/irregex
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 

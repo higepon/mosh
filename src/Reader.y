@@ -92,23 +92,23 @@ datum          : lexme_datum
                ;
 
 defined_datum : DEFINED_SHARED {
-                 if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
+                     yyerror("#1# style is not allowed on #!r6rs mode.");
+                     YYERROR;
+                 } else {
                      currentVM()->readerContext()->setIsSharedStructureFound();
                      $$ = Object::makeSharedReference($1);
-                 } else {
-                     yyerror("#1# style is not allowed. Use #!shared.");
-                     YYERROR;
                  }
                };
 
 defining_datum : DEFINING_SHARED datum {
-                 if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
+                     yyerror("#1= style is not allowed on #!r6rs mode.");
+                     YYERROR;
+                 } else {
                      currentVM()->readerContext()->setIsSharedStructureFound();
                      currentVM()->readerContext()->addShared($1, $2);
                      $$ = $2;
-                 } else {
-                     yyerror("#1= style is not allowed. Use #!shared.");
-                     YYERROR;
                  }
                };
 
@@ -118,7 +118,7 @@ lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                  $$ = Object::makeString(s);
                }
                | REGEXP {
-                 if (currentVM()->readerContext()->isStrictR6RSReader()) {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
                    yyerror("Regexp literal is not allowed on #!r6rs mode");
                    YYERROR;
                  } else {

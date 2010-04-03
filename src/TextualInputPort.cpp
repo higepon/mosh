@@ -52,7 +52,7 @@ TextualInputPort::TextualInputPort() :
     error_(Object::Nil),
     scanner_(new Scanner),
     numberScanner_(new NumberScanner),
-    isSharedStructureAwareMode_(false)
+    isStrictR6RsReaderMode_(false)
 {
 }
 
@@ -60,14 +60,14 @@ TextualInputPort::~TextualInputPort()
 {
 }
 
-void TextualInputPort::setSharedStructureAwareMode()
+void TextualInputPort::setStrictR6RsReaderMode()
 {
-    isSharedStructureAwareMode_ = true;
+    isStrictR6RsReaderMode_ = true;
 }
 
-bool TextualInputPort::isSharedStructureAwareMode() const
+bool TextualInputPort::isStrictR6RsReaderMode() const
 {
-    return isSharedStructureAwareMode_;
+    return isStrictR6RsReaderMode_;
 }
 
 Object TextualInputPort::position() const
