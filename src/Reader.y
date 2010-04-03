@@ -94,7 +94,7 @@ datum          : lexme_datum
 defined_datum : DEFINED_SHARED {
                  if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
                      currentVM()->readerContext()->setIsSharedStructureFound();
-                     $$ = Object::makeSharedReference(1);
+                     $$ = Object::makeSharedReference($1);
                  } else {
                      yyerror("#1# style is not allowed. Use #!shared.");
                      YYERROR;
@@ -104,7 +104,7 @@ defined_datum : DEFINED_SHARED {
 defining_datum : DEFINING_SHARED datum {
                  if (currentVM()->readerContext()->port()->isSharedStructureAwareMode()) {
                      currentVM()->readerContext()->setIsSharedStructureFound();
-                     currentVM()->readerContext()->addShared(1, $2);
+                     currentVM()->readerContext()->addShared($1, $2);
                      $$ = $2;
                  } else {
                      yyerror("#1= style is not allowed. Use #!shared.");
