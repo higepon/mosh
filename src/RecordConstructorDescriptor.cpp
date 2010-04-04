@@ -94,7 +94,9 @@ Object RecordConstructorDescriptor::makeRecordInitializer()
     RecordInitializer* childInitializer = NULL;
     RecordTypeDescriptor* rtd = this->rtd().toRecordTypeDescriptor();
     for (;;) {
-        childInitializer = new RecordInitializer(this, childInitializer, rtd->fieldsLength());
+        if (rtd->fieldsLength() != 0) {
+            childInitializer = new RecordInitializer(this, childInitializer, rtd->fieldsLength());
+        }
         if (rtd->parent().isFalse()) {
             break;
         } else {

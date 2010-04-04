@@ -131,4 +131,50 @@
               (define o (one:make-<T> 123))
               (display (two:<T>-a o))))
 
+(let ()
+    (define-record-type <top>)
+
+    (define-record-type <alpha>
+     (parent <top>)
+     (fields (mutable a)))
+
+    (define-record-type <beta>
+     (parent <alpha>)
+     (protocol (lambda (alpha-maker)
+                 (lambda (a b)
+                   (let ((beta-maker (alpha-maker a)))
+                     (beta-maker b)))))
+     (fields (immutable b)))
+    (let ([beta (make-<beta> 1 2)])
+      (test-eq 1 (<alpha>-a beta))
+      (test-eq 2 (<beta>-b beta))))
+
+
+(let ()
+  (define-record-type <top>)
+
+  (define-record-type <alpha>
+    (parent <top>)
+    (fields (mutable a1) (mutable a2)))
+
+  (define-record-type <beta>
+    (parent <alpha>)
+    (protocol (lambda (alpha-maker)
+                (lambda (a1 a2 b1 b2 b3)
+                  (let ((beta-maker (alpha-maker a1 a2)))
+                    (beta-maker b1 b2 b3)))))
+    (fields (immutable b1) (immutable b2) (immutable b3)))
+
+  (let ([top (make-<top>)]
+        [alpha (make-<alpha> 'A1 'A2)]
+        [beta (make-<beta> 'A1 'A2 'B1 'B2 'B3)])
+    (test-eq 'A1 (<alpha>-a1 alpha))
+    (test-eq 'A2 (<alpha>-a2 alpha))
+    (test-eq 'A1 (<alpha>-a1 beta))
+    (test-eq 'A2 (<alpha>-a2 beta))
+    (test-eq 'B1 (<beta>-b1 beta))
+    (test-eq 'B2 (<beta>-b2 beta))
+    (test-eq 'B3 (<beta>-b3 beta))))
+
+
 (test-results)
