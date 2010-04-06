@@ -51,6 +51,7 @@
 #include "EqHashTable.h"
 #include "SimpleStruct.h"
 #include "FaslReader.h"
+#include "SharedReference.h"
 
 
 #ifdef _MSC_VER
@@ -60,25 +61,71 @@
 
 using namespace scheme;
 
-FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM)
+FaslReader::FaslReader(VM* theVM, BinaryInputPort* inputPort) : inputPort_(inputPort), theVM_(theVM), sharedObjects_(new EqHashTable), isLinkNeeded_(false)
 {
 }
 
 Object FaslReader::get()
 {
-    getSymbolsAndStrings();
-    return getDatum();
+    Object obj = getDatum();
+    if (isLinkNeeded_) {
+        linkShared(obj, new EqHashTable);
+    }
+    return obj;
 }
 
-
-void FaslReader::getSymbolsAndStrings()
+Object FaslReader::getShared(int index)
 {
-    const int tableSize = fetchU32();
-    sharedObjects_ = Object::makeObjectArray(tableSize);
-    for (int i = 0; i < tableSize; i++) {
-        sharedObjects_[i] = Object::Ignore; // use Ignore for marking as not initialized
+    Object obj = sharedObjects_->ref(Object::makeFixnum(index), Object::Ignore);
+    MOSH_ASSERT(obj != Object::Ignore);
+    return obj;
+}
+
+void FaslReader::linkShared(Object obj, EqHashTable* seen)
+{
+    if (seen->ref(obj, Object::False).isTrue()) {
+        return;
     }
-    for (int i = tableSize - 1; i >= 0; i--) {
-        sharedObjects_[i] = getDatum();
+    seen->set(obj, Object::True);
+    if (obj.isPair()) {
+        if (obj.car().isSharedReference()) {
+            int index = obj.car().toSharedReference()->index();
+            obj.car() = getShared(index);
+        } else {
+            linkShared(obj.car(), seen);
+        }
+        if (obj.cdr().isSharedReference()) {
+            int index = obj.cdr().toSharedReference()->index();
+            obj.cdr() = getShared(index);
+        } else {
+            linkShared(obj.cdr(), seen);
+        }
+        return;
+    }
+    if (obj.isVector()) {
+        Vector* v = obj.toVector();
+        int n = v->length();
+        for (int i = 0; i < n; i++) {
+            if (v->ref(i).isSharedReference()) {
+                v->set(i, getShared(v->ref(i).toSharedReference()->index()));
+            } else {
+                linkShared(v->ref(i), seen);
+            }
+        }
+        return;
+    }
+    if (obj.isSimpleStruct()) {
+        SimpleStruct* const record = obj.toSimpleStruct();
+        const int length = record->fieldCount();
+        for (int i = 0; i < length; i++) {
+            Object o = record->ref(i);
+            if (o.isSharedReference()) {
+                record->set(i, getShared(o.toSharedReference()->index()));
+            } else {
+                linkShared(o, seen);
+            }
+        }
+        return;
     }
 }
+

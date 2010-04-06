@@ -62,8 +62,8 @@ using namespace scheme;
 
 FaslWriter::FaslWriter(BinaryOutputPort* outputPort) :
                                                        sharedObjects_(new EqHashTable),
-                                                       writtenShared_(new EqHashTable),
-                                                       outputPort_(outputPort)
+                                                       outputPort_(outputPort),
+                                                       uid_(0)
 {
 }
 
@@ -151,7 +151,11 @@ void FaslWriter::putList(Object obj)
     ObjectVector v;
     bool first = true;
     while (obj.isPair()) {
-        if (!first && writtenShared_->ref(obj, Object::False).isFixnum()) {
+        if (!first && sharedObjects_->ref(obj, Object::False).isTrue()) {
+            sharedObjects_->set(obj, Object::cons(Object::makeFixnum(uid_++), Object::Nil));
+            break;
+        }
+        if (!first && sharedObjects_->ref(obj, Object::False).isFixnum()) {
             break;
         } else {
             v.push_back(obj.car());
@@ -168,38 +172,38 @@ void FaslWriter::putList(Object obj)
     } else {
         emitU8(Fasl::TAG_DLIST);
         emitU32(v.size());
+        if (sharedObjects_->ref(obj, Object::False).isPair()) {
+            Object p = sharedObjects_->ref(obj, Object::False);
+            emitU8(Fasl::TAG_DEFINING_SHARED);
+            emitU32(p.car().toFixnum());
+        }
         putDatum(obj);
+        if (sharedObjects_->ref(obj, Object::False).isPair()) {
+            Object p = sharedObjects_->ref(obj, Object::False);
+        sharedObjects_->set(obj, p.car());
+
+        }
+
         for (ObjectVector::reverse_iterator it = v.rbegin(); it != v.rend(); ++it) {
             putDatum(*it);
         }
     }
 }
 
-void FaslWriter::putSharedTable()
-{
-
-    const int numEntries = (int)sharedObjectVector_.size();
-    emitU32(numEntries);
-    for (int i = numEntries - 1; i >= 0; i--) {
-        const Object obj = sharedObjectVector_[i];
-        int uid = i;
-        sharedObjects_->set(obj, Object::makeFixnum(uid));
-        putDatum(obj);
-    }
-}
-
 void FaslWriter::putDatum(Object obj)
 {
-    const bool sharedObject = sharedObjects_->ref(obj, Object::False).isFixnum();
-    if (sharedObject) {
-        Object writtenId = writtenShared_->ref(obj, Object::False);
-        if (writtenId.isFixnum()){
-            emitU8(Fasl::TAG_LOOKUP);
-            emitU32(writtenId.toFixnum());
-            return;
-        } else {
-            writtenShared_->set(obj, sharedObjects_->ref(obj, Object::False));
-        }
+    const Object sharedState = sharedObjects_->ref(obj, Object::False);
+    if (sharedState.isFixnum()) {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        emitU8(Fasl::TAG_LOOKUP);
+        emitU32(sharedState.toFixnum());
+        return;
+    } else if (sharedState.isTrue()) {
+//        printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
+        int uid = uid_++;
+        emitU8(Fasl::TAG_DEFINING_SHARED);
+        emitU32(uid);
+        sharedObjects_->set(obj, Object::makeFixnum(uid));
     }
 
     if (obj.isNil()) {
@@ -434,6 +438,5 @@ void FaslWriter::emitU64(uint64_t value)
 void FaslWriter::put(Object obj)
 {
     scanSharedObjects(obj);
-    putSharedTable();
     putDatum(obj);
 }

@@ -81,6 +81,7 @@ public:
         TAG_SHORT_ASCII_SYMBOL,
         TAG_SHORT_ASCII_UNINTERNED_SYMBOL,
         TAG_SHORT_ASCII_STRING,
+        TAG_DEFINING_SHARED,
         forbidden_comma
     };
 };

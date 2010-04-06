@@ -62,7 +62,8 @@ endif
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
-src/Code.h                                                             \
+src/Code.h  src/SharedReference.h                                      \
+src/NonGenerativeRTDs.h                                                \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -532,6 +533,9 @@ test: lib/libffitest.so.1.0 ./mosh src/all-tests.scm
 	./mosh --disable-acc --loadpath=test/mylib test/shared.scm
 	! ./mosh --disable-acc --loadpath=test/mylib test/shared2.scm
 	./mosh --disable-acc --loadpath=test/mylib test/shared3.scm
+# test twice
+	./mosh --loadpath=test/mylib test/fasl.scm
+	./mosh --loadpath=test/mylib test/fasl.scm
 	$(MAKE) -C test/irregex
 	(cd test/r6rs-test-suite && $(MAKE) $@)
 

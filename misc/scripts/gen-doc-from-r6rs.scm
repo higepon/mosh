@@ -8,7 +8,7 @@
 (include "./misc/scripts/r6rs-symbols.dat")
 
 (define r6rs-dir (string-append (get-environment-variable "HOME") "/Desktop/r6rs/document/"))
-(define out-dir (string-append (get-environment-variable "HOME") "/tmp/mosh.git/doc/text/"))
+(define out-dir (string-append (get-environment-variable "HOME") "/mosh.git/doc/text/"))
 
 (define files '(("base.tex"
                  1

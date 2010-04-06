@@ -110,7 +110,6 @@ protected:
 
 TEST_F(FaslTest, Fixnum) {
     const Object restored = StoreAndRestore(Object::makeFixnum(123456));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     ASSERT_TRUE(restored.isFixnum());
     EXPECT_EQ(123456, restored.toFixnum());
 }
