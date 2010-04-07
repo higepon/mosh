@@ -176,5 +176,15 @@
     (test-eq 'B2 (<beta>-b2 beta))
     (test-eq 'B3 (<beta>-b3 beta))))
 
+(let ()
+  (define-record-type <top>)
+  (define-record-type <alpha>
+    (parent <top>)
+    (protocol (lambda (make-<top>)
+                (lambda (a)
+                  ((make-<top>) a))))
+    (fields (immutable b)))
+  (make-<alpha> 1))
+
 
 (test-results)
