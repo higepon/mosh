@@ -619,7 +619,9 @@
                ;; Mosh
                ;; #1=(#1#) with anotation data causes infinite loop
                (when (pair? (stx-expr x))
-                 (set-source-info! (stx-expr x) #f))
+                 (set-source-info! (stx-expr x) #f)
+                 (set-source-info! (cdr (stx-expr x)) #f)
+                 (set-source-info! (car (stx-expr x)) #f))
                (strip (stx-expr x) (stx-mark* x)))
               [(annotation? x) (annotation-stripped x)]
               ((pair? x)

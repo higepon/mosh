@@ -43,6 +43,7 @@
          #9=(90 91 #7#)
          )
  )
+(test-equal b b)
 (write 'done)
 (newline))
 
