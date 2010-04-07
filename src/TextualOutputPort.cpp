@@ -256,15 +256,15 @@ bool TextualOutputPort::writeAbbreviated(Object obj)
     return false;
 }
 
-template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o, EqHashTable* seen, int sharedId)
+template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Object o, EqHashTable* seen)
 {
     Object seenState = seen->ref(o, Object::False);
     if (seenState.isTrue()) {
-        seen->set(o, Object::makeFixnum(sharedId));
+        seen->set(o, Object::makeFixnum(sharedId_));
         char buf[32];
-        snprintf(buf, 32, "#%d=", sharedId);
+        snprintf(buf, 32, "#%d=", sharedId_);
         putString(buf);
-        sharedId++;
+        sharedId_++;
     } else if (seenState.isFixnum()) {
         char buf[32];
         snprintf(buf, 32, "#%d#", (int)seenState.toFixnum());
@@ -436,25 +436,25 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         } else {
             putChar('(');
         }
-        print<isHumanReadable>(theVM, o.car(), seen, sharedId);
+        print<isHumanReadable>(theVM, o.car(), seen);
         for (Object e = o.cdr(); ; e = e.cdr()) {
             Object seenState2 = seen->ref(e, Object::False);
 
             if (e.isPair() && e.car() == Symbol::UNQUOTE) {
                 if (e.cdr().isPair() && e.cdr().cdr().isNil()) {
                     putString(". ,");
-                    print<isHumanReadable>(theVM, e.cdr().car(), seen, sharedId);
+                    print<isHumanReadable>(theVM, e.cdr().car(), seen);
                     return;
                 }
             }
             if (e.isPair() && seenState2.isFalse()) {
                 putChar(' ');
-                print<isHumanReadable>(theVM, e.car(), seen, sharedId);
+                print<isHumanReadable>(theVM, e.car(), seen);
             } else if (e.isNil()) {
                 break;
             } else {
                 putString(" . ");
-                print<isHumanReadable>(theVM, e, seen, sharedId);
+                print<isHumanReadable>(theVM, e, seen);
                 break;
             }
         }
@@ -466,7 +466,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         Vector* v = o.toVector();
         putString(UC("#("));
         for (int i = 0; i < v->length(); i++) {
-            print<isHumanReadable>(theVM, v->ref(i), seen, sharedId);
+            print<isHumanReadable>(theVM, v->ref(i), seen);
             if (i != v->length() - 1) putChar(' ');
         }
         putString(UC(")"));
@@ -511,14 +511,14 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC("#<hashtable>"));
     } else if (o.isClosure()) {
         putString(UC("#<closure "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen, sharedId);
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
         putString(UC(">"));
     } else if (o.isCProcedure()) {
 
         // Reader.y doesn't have VM instance.
         if (theVM != NULL) {
             putString(UC("#<subr "));
-            print<isHumanReadable>(theVM, theVM->getCProcedureName(o), seen, sharedId);
+            print<isHumanReadable>(theVM, theVM->getCProcedureName(o), seen);
             putString(UC(">"));
         } else {
             putString(UC("#<subr>"));
@@ -531,7 +531,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
             if (i != 0) {
                 putString(" ");
             }
-            print<isHumanReadable>(theVM, Object::makeFixnum(byteVector->u8Ref(i)), seen, sharedId);
+            print<isHumanReadable>(theVM, Object::makeFixnum(byteVector->u8Ref(i)), seen);
         }
         putString(UC(")"));
     } else if (o.isBox()) {
@@ -563,13 +563,13 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
             if (it != conditions.begin()) {
                 putString(UC(" "));
             }
-            print<isHumanReadable>(theVM, *it, seen, sharedId);
+            print<isHumanReadable>(theVM, *it, seen);
         }
         putString(UC(">"));
     } else if (o.isRecord()) {
         Record* const record = o.toRecord();
         putString(UC("#<record "));
-        print<isHumanReadable>(theVM, record->recordTypeDescriptor()->name(), seen, sharedId);
+        print<isHumanReadable>(theVM, record->recordTypeDescriptor()->name(), seen);
 //         for (int i = 0; i < record->fieldsLength(); i++) {
 //             print<isHumanReadable>(record->fieldAt(i));
 //             putString(UC(" "));
@@ -577,7 +577,7 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(UC(">"));
     } else if (o.isSimpleStruct()) {
         putString(UC("#<"));
-        print<isHumanReadable>(theVM, o.toSimpleStruct()->name(), seen, sharedId);
+        print<isHumanReadable>(theVM, o.toSimpleStruct()->name(), seen);
         putString(UC(">"));
     } else if (o.isObjectPointer()) {
         putString(UC("#<object pointer>"));
@@ -600,27 +600,27 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         const Object real = c->real();
         const Object imag = c->imag();
         if (!Arithmetic::isExactZero(real)) {
-            print<isHumanReadable>(theVM, real, seen, sharedId);
+            print<isHumanReadable>(theVM, real, seen);
         }
         if (Arithmetic::ge(imag, Object::makeFixnum(0)) &&
             !(imag.isFlonum() && (imag.toFlonum()->isNegativeZero() || (imag.toFlonum()->isInfinite())))) {
             putString(UC("+"));
         } else {
         }
-        print<isHumanReadable>(theVM, imag, seen, sharedId);
+        print<isHumanReadable>(theVM, imag, seen);
         putString(UC("i"));
     } else if (o.isCodeBuilder()) {
         putString(UC("<code-builder "));
-        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen, sharedId);
+        print<isHumanReadable>(theVM, Object::makeFixnum(o.val), seen);
         putString(UC(">"));
     } else if (o.isTranscoder()) {
         Transcoder* transcoder = o.toTranscoder();
         putString(UC("<transcoder codec="));
-        print<isHumanReadable>(theVM, transcoder->codec(), seen, sharedId);
+        print<isHumanReadable>(theVM, transcoder->codec(), seen);
         putString(UC(", eol-style="));
-        print<isHumanReadable>(theVM, transcoder->eolStyleSymbol(), seen, sharedId);
+        print<isHumanReadable>(theVM, transcoder->eolStyleSymbol(), seen);
         putString(UC(", error-handling-mode="));
-        print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol(), seen, sharedId);
+        print<isHumanReadable>(theVM, transcoder->errorHandlingModeSymbol(), seen);
         putString(UC(">"));
     } else if (o.isPointer()) {
         putString(UC("#<pointer "));
@@ -705,12 +705,14 @@ void TextualOutputPort::display(const VM* theVM, Object o)
 {
     EqHashTable seen;
     scan(o, &seen);
-    print<true>(theVM, o, &seen, 1);
+    sharedId_ = 1;
+    print<true>(theVM, o, &seen);
 }
 
 void TextualOutputPort::putDatum(const VM* theVM, Object o)
 {
     EqHashTable seen;
     scan(o, &seen);
-    print<false>(theVM, o, &seen, 1);
+    sharedId_ = 1;
+    print<false>(theVM, o, &seen);
 }
