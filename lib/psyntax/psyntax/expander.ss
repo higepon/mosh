@@ -594,6 +594,7 @@
   ;;; a top-mark, then the expr is returned.
 
   (define (strip-annotations x)
+(display "line:597\n")
     (cond
       [(pair? x)
        (cons (strip-annotations (car x))

@@ -29,6 +29,7 @@
 (let ([x '(#1=a #2=b #1# #2#)])
   (test-equal '(a b a b) x))
 
+
 (let ()
 (define b
  '#0=(#1=(10 #8# 12)

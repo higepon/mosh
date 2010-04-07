@@ -358,6 +358,7 @@
     Function: pretty-print
 
     pretty print out Scheme object to the output port.
+    N.B. this can't handle circular structure.
 
     Prototype:
     > (pretty-print obj . port)

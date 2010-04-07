@@ -71,7 +71,9 @@ public:
 
 protected:
     bool writeAbbreviated(Object obj);
-    template<bool isHumanReadable> void print(const VM* theVM, Object o);
+    void scan(Object obj, EqHashTable* seen);
+    bool isInteresting(Object obj);
+    template<bool isHumanReadable> void print(const VM* theVM, Object o, EqHashTable* seen, int sharedId);
 
     bool isErrorOccured_;
     Object errorMessage_;
