@@ -230,23 +230,23 @@
   hashtable-keys
   hashtable-equivalence-function
   hashtable-hash-function
-  (make-record-type-descriptor (lambda e 'make-record-type-descriptor-dummy))
-  (make-record-constructor-descriptor (lambda e 'make-record-constructor-descriptor-dummy))
-  record-predicate
-  (record-constructor (lambda e 'record-constructor-dummy))
-  (record-accessor (lambda e 'record-accessor-dummy))
-  record-mutator
-  record?
-  record-rtd
-  record-type-name
-  record-type-parent
-  record-type-uid
-  record-type-generative?
-  record-type-sealed?
-  record-type-opaque?
-  record-type-field-names
-  record-field-mutable?
-  record-type-descriptor?
+;;   (make-record-type-descriptor (lambda e 'make-record-type-descriptor-dummy))
+;;   (make-record-constructor-descriptor (lambda e 'make-record-constructor-descriptor-dummy))
+;;   record-predicate
+;;   (record-constructor (lambda e 'record-constructor-dummy))
+;;   (record-accessor (lambda e 'record-accessor-dummy))
+;;   record-mutator
+;;   record?
+;;   record-rtd
+;;   record-type-name
+;;   record-type-parent
+;;   record-type-uid
+;;   record-type-generative?
+;;   record-type-sealed?
+;;   record-type-opaque?
+;;   record-type-field-names
+;;   record-field-mutable?
+;;   record-type-descriptor?
   condition
   simple-conditions
   condition?

@@ -500,10 +500,10 @@ Object scheme::makeSimpleStructEx(VM* theVM, int argc, const Object* argv)
 {
         DeclareProcedureName("make-simple-struct");
         checkArgumentLength(3);
-        argumentCheckSymbol(0, name);
+//        argumentCheckSymbol(0, name);
         argumentAsFixnum(1, fieldCount);
         Object stArgs = argv[2];
-        const Object st = Object::makeSimpleStruct(name, fieldCount);
+        const Object st = Object::makeSimpleStruct(argv[0], fieldCount);
         SimpleStruct* const simpleStruct = st.toSimpleStruct();
         for (int i = 0; i < fieldCount; i++) {
             if (stArgs.isNil()) {

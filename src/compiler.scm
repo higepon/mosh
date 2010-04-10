@@ -52,7 +52,8 @@
        (pair-attribute-set! a 'source-info b)
        a]
      [else
-      a]))]
+      a]))
+  ]
  [vm-outer?
   (define dd (lambda a '()))
   (define pp (lambda a '()))
@@ -69,6 +70,510 @@
  (define (command-line) *command-line-args*)
  (define (get-command-line) *command-line-args*) ;; required for psyntax
  (define (errorf form . args) (error 'compiler (apply format form args)))
+
+
+(define (tuple id . fields)
+  (make-simple-struct id (length fields) fields))
+
+(define (tuple-ref t index)
+  (if (zero? index)
+      (simple-struct-name t)
+      (simple-struct-ref t (- index 1))))
+
+(define (tuple-set! t index obj)
+  (if (zero? index)
+      (assertion-violation 'tuple-set! "not supported")
+      (simple-struct-set! t (- index 1) obj)))
+
+(define nongenerative-record-types (make-eq-hashtable))
+
+(define make-rtd
+  (lambda (name parent uid sealed? opaque? fields)
+    (tuple 'type:record-type-descriptor name parent uid sealed? opaque? fields)))
+
+(define record-type-descriptor?
+  (lambda (obj)
+    (display (tuple-ref obj 0) (current-error-port))
+    (eq? (tuple-ref obj 0) 'type:record-type-descriptor)))
+
+(define rtd-name        (lambda (rtd) (tuple-ref rtd 1)))
+(define rtd-parent      (lambda (rtd) (tuple-ref rtd 2)))
+(define rtd-uid         (lambda (rtd) (tuple-ref rtd 3)))
+(define rtd-sealed?     (lambda (rtd) (tuple-ref rtd 4)))
+(define rtd-opaque?     (lambda (rtd) (tuple-ref rtd 5)))
+(define rtd-fields      (lambda (rtd) (tuple-ref rtd 6)))
+
+(define rtd-ancestor?
+  (lambda (parent rtd)
+    (let loop ((rtd rtd))
+      (or (eq? parent rtd)
+          (and rtd
+               (loop (rtd-parent rtd)))))))
+
+(define rtd-inherited-field-count
+  (lambda (rtd)
+    (display "line:997\n" (current-error-port))
+    (display rtd (current-error-port))
+    (let loop ((rtd (rtd-parent rtd)) (count 0))
+      (display "line:990\n" (current-error-port))
+      (cond (rtd
+             (loop (rtd-parent rtd)
+                   (+ count (length (rtd-fields rtd)))))
+            (else
+             count)))))
+
+(define rtd-total-field-count
+  (lambda (rtd)
+    (display rtd (current-error-port))
+    (display "line:1006\n" (current-error-port))
+    (display (rtd-inherited-field-count rtd) (current-error-port))
+    (display (rtd-fields rtd) (current-error-port))
+    (+ (rtd-inherited-field-count rtd) (length (rtd-fields rtd)))))
+
+(define record-type-name
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (rtd-name rtd)))
+
+(define record-type-parent
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (rtd-parent rtd)))
+
+(define record-type-uid
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (rtd-uid rtd)))
+
+(define record-type-generative?
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (not (rtd-uid rtd))))
+
+(define record-type-sealed?
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (rtd-sealed? rtd)))
+
+(define record-type-opaque?
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (rtd-opaque? rtd)))
+
+(define record-type-field-names
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (list->vector (map cdr (rtd-fields rtd)))))
+
+(define record-field-mutable?
+  (lambda (rtd k)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-type-name (wrong-type-argument-message "record-type-descriptor" rtd 1) (list rtd k)))
+    (car (list-ref (rtd-fields rtd) k))))
+
+(define make-record-type-descriptor
+  (lambda (name parent uid sealed? opaque? fields)
+    (or (symbol? name)
+        (assertion-violation 'make-record-type-descriptor
+                             (wrong-type-argument-message "symbol" name 1)
+                             (list name parent uid sealed? opaque? fields)))
+    (or (vector? fields)
+        (assertion-violation 'make-record-type-descriptor
+                             (wrong-type-argument-message "vector" fields 6)
+                             (list name parent uid sealed? opaque? fields)))
+    (and parent
+         (or (record-type-descriptor? parent)
+             (assertion-violation 'make-record-type-descriptor
+                                  (wrong-type-argument-message "record-type descriptor or #f" parent 2)
+                                  (list name parent uid sealed? opaque? fields)))
+         (and (rtd-sealed? parent)
+              (assertion-violation 'make-record-type-descriptor "attempt to extend a sealed record-type" parent)))
+    (let ((opaque? (or opaque?
+                       (and parent
+                            (rtd-opaque? parent))))
+          (fields (map (lambda (field)
+                         (cond
+                          [(and (list? field) (= 2 (length field)) (eq? (first field) 'mutable))
+                           (cons #t (second field))]
+                          [(and (list? field) (= 2 (length field)) (eq? (first field) 'immutable))
+                           (cons #f (second field))]
+                          [else
+                           (assertion-violation 'make-record-type-descriptor "malformed field specifiers" fields)]))
+
+;;                          #;(match field
+;;                            (('mutable ?name)
+;;                             (cons #t ?name))
+;;                            (('immutable ?name)
+;;                             (cons #f ?name))
+;;                            (_
+;;                             (assertion-violation 'make-record-type-descriptor "malformed field specifiers" fields))))
+                       (vector->list fields))))
+      (cond ((not uid)
+             (make-rtd name parent #f sealed? opaque? fields))
+            ((hashtable-ref nongenerative-record-types uid #f)
+             => (lambda (current)
+                  (if (and (eqv? uid (rtd-uid current))
+                           (eqv? parent (rtd-parent current))
+                           (equal? fields (rtd-fields current)))
+                      current
+                      (assertion-violation 'make-record-type-descriptor
+                                           "mismatched subsequent call for nongenerative record-type"
+                                           (list name parent uid sealed? opaque? fields)))))
+            (else
+             #;(or (on-primordial-thread?)
+                 (assertion-violation 'thread
+                                      "child thread attempt to create nongenerative record-type"
+                                      (list name parent uid sealed? opaque? fields)))
+             (let ((new (make-rtd name parent uid sealed? opaque? fields)))
+               (hashtable-set! nongenerative-record-types uid new) new))))))
+
+(define make-rcd
+  (lambda (rtd protocol custom-protocol? parent)
+    (tuple 'type:record-constructor-descriptor rtd protocol custom-protocol? parent)))
+
+(define record-constructor-descriptor?
+  (lambda (obj)
+    (eq? (tuple-ref obj 0) 'type:record-constructor-descriptor)))
+
+(define rcd-rtd              (lambda (rcd) (tuple-ref rcd 1)))
+(define rcd-protocol         (lambda (rcd) (tuple-ref rcd 2)))
+(define rcd-custom-protocol? (lambda (rcd) (tuple-ref rcd 3)))
+(define rcd-parent           (lambda (rcd) (tuple-ref rcd 4)))
+
+(define default-protocol
+  (lambda (rtd)
+    (display rtd (current-error-port))
+    (display (rtd-parent rtd)(current-error-port))
+    (display "line:1127\n" (current-error-port))
+    (let ((parent (rtd-parent rtd)))
+    (display "line:1127\n" (current-error-port))
+      (if parent
+          (let ((d (display "line:1131\n" (current-error-port)))
+                (parent-field-count (rtd-total-field-count parent)))
+    (display "line:1127\n" (current-error-port))
+            (lambda (p)
+    (display "line:1127\n" (current-error-port))
+              (lambda field-values
+                (let-values (((parent-field-values this-field-values) (split-at field-values parent-field-count)))
+                  (apply (apply p parent-field-values) this-field-values)))))
+          (begin
+            (display "line:1139\n" (current-error-port))
+          (lambda (p)
+            (lambda field-values
+              (apply p field-values))))))))
+
+(define make-record-constructor-descriptor
+  (lambda (rtd parent protocol)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'make-record-constructor-descriptor
+                             (wrong-type-argument-message "record-type-descriptor" rtd 1)
+                             (list rtd parent protocol)))
+    (and parent
+         (or (record-constructor-descriptor? parent)
+             (assertion-violation 'make-record-constructor-descriptor
+                                  (wrong-type-argument-message "record-constructor-descriptor or #f" parent 2)
+                                  (list rtd parent protocol))))
+    (and protocol
+         (or (procedure? protocol)
+             (assertion-violation 'make-record-constructor-descriptor
+                                  (wrong-type-argument-message "procedure or #f" protocol 3)
+                                  (list rtd parent protocol))))
+    (and parent
+         (or (rtd-parent rtd)
+             (assertion-violation
+              'make-record-constructor-descriptor
+              "mismatch between rtd and parent constructor descriptor"
+              rtd parent protocol)))
+    (display "<1>" (current-error-port))
+    (and parent
+         (rtd-parent rtd)
+         (or (eq? (rcd-rtd parent) (rtd-parent rtd))
+             (assertion-violation
+              'make-record-constructor-descriptor
+              "mismatch between rtd and parent constructor descriptor"
+              rtd parent protocol)))
+    (display "<2>" (current-error-port))
+    (and protocol
+         (rtd-parent rtd)
+         (or parent
+             (assertion-violation
+              'make-record-constructor-descriptor
+              "expected #f for protocol since no parent constructor descriptor is provided"
+              rtd parent protocol)))
+    (and parent
+         (rcd-custom-protocol? parent)
+         (or protocol
+             (assertion-violation
+              'make-record-constructor-descriptor
+              "expected procedure for protocol since parent constructor descriptor have custom one"
+              rtd parent protocol)))
+    (display "<3>" (current-error-port))
+    (let ((custom-protocol? (and protocol #t))
+          (protocol (or protocol (default-protocol rtd)))
+          (parent (or parent
+                      (cond ((rtd-parent rtd)
+                             => (lambda (rtd)
+                                  (make-record-constructor-descriptor rtd #f #f)))
+                            (else #f)))))
+    (display "<4>" (current-error-port))
+      (make-rcd rtd protocol custom-protocol? parent))))
+
+(define record?
+  (lambda (obj)
+    (and (record-type-descriptor? (tuple-ref obj 0))
+         (not (record-type-opaque? (tuple-ref obj 0))))))
+
+(define record-rtd
+  (lambda (rec)
+    (if (record? rec)
+        (tuple-ref rec 0)
+        (assertion-violation 'record-rtd (wrong-type-argument-message "non-opaque record" rec)))))
+
+(define make-nested-conser
+  (lambda (desc rtd argc)
+    ((rcd-protocol desc)
+     ((let loop ((desc desc))
+        (cond ((rcd-parent desc)
+               => (lambda (parent)
+                    (lambda extra-field-values
+                      (lambda protocol-args
+                        (lambda this-field-values
+                          (apply ((rcd-protocol parent)
+                                  (apply (loop parent)
+                                         (append this-field-values extra-field-values)))
+                                 protocol-args))))))
+              (else
+               (lambda extra-field-values
+                 (lambda this-field-values
+                   (let ((field-values (append this-field-values extra-field-values)))
+                     (if (= (length field-values) argc)
+                         (apply tuple rtd field-values)
+                         (assertion-violation "record constructor" "wrong number of arguments" field-values))))))))))))
+
+(define make-simple-conser
+  (lambda (desc rtd argc)
+    ((rcd-protocol desc)
+     (lambda field-values
+       (if (= (length field-values) argc)
+           (apply tuple rtd field-values)
+           (assertion-violation "record constructor" "wrong number of arguments" field-values))))))
+
+(define flat-field-offset
+  (lambda (rtd k)
+    (+ (rtd-inherited-field-count rtd) k 1)))
+
+(define make-accessor
+  (lambda (rtd k)
+    (lambda (obj)
+      (cond ((eq? rtd (tuple-ref obj 0)) (tuple-ref obj k))
+            ((rtd-ancestor? rtd (tuple-ref obj 0)) (tuple-ref obj k))
+            (else
+             (assertion-violation "record accessor" (wrong-type-argument-message (format "record of type ~a" (rtd-name rtd)) obj)))))))
+
+(define make-mutator
+  (lambda (rtd k)
+    (lambda (obj datum)
+      (cond ((eq? rtd (tuple-ref obj 0)) (tuple-set! obj k datum))
+            ((rtd-ancestor? rtd (tuple-ref obj 0)) (tuple-set! obj k datum))
+            (else
+             (assertion-violation "record mutator" (wrong-type-argument-message (format "record of type ~a" (rtd-name rtd)) (list obj datum))))))))
+
+(define make-predicate
+  (lambda (rtd)
+    (lambda (obj)
+      (or (eq? rtd (tuple-ref obj 0))
+          (rtd-ancestor? rtd (tuple-ref obj 0))))))
+
+(define record-constructor
+  (lambda (desc)
+    (or (record-constructor-descriptor? desc)
+        (assertion-violation 'record-constructor (wrong-type-argument-message "record-constructor-descriptor" desc)))
+    (let ((rtd (rcd-rtd desc)))
+      (if (rcd-parent desc)
+          (make-nested-conser desc rtd (rtd-total-field-count rtd))
+          (make-simple-conser desc rtd (length (rtd-fields rtd)))))))
+
+(define record-predicate
+  (lambda (rtd)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-predicate (wrong-type-argument-message "record-type-descriptor" rtd)))
+    (make-predicate rtd)))
+
+(define record-accessor
+  (lambda (rtd k)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-accssor (wrong-type-argument-message "record-type-descriptor" rtd) (list rtd k)))
+    (or (< -1 k (length (rtd-fields rtd)))
+        (assertion-violation 'record-accssor "field index out of range"))
+    (make-accessor rtd (flat-field-offset rtd k))))
+
+(define record-mutator
+  (lambda (rtd k)
+    (or (record-type-descriptor? rtd)
+        (assertion-violation 'record-mutator (wrong-type-argument-message "record-type-descriptor" rtd) (list rtd k)))
+    (or (< -1 k (length (rtd-fields rtd)))
+        (assertion-violation 'record-mutator "field index out of range" (list rtd k)))
+    (or (record-field-mutable? rtd k)
+        (assertion-violation 'record-mutator "specified field is immutable" (list rtd k)))
+    (make-mutator rtd (flat-field-offset rtd k))))
+
+(define make-record-type
+  (lambda (name rtd rcd)
+    (tuple 'type:record-type name rtd rcd)))
+
+(define record-type?
+  (lambda (obj)
+    (eq? (tuple-ref obj 0) 'type:record-type)))
+
+(define record-type-rtd
+  (lambda (obj)
+    (or (record-type? obj)
+        (assertion-violation 'record-type-rtd (wrong-type-argument-message "record-type" obj)))
+    (tuple-ref obj 2)))
+
+(define record-type-rcd
+  (lambda (obj)
+    (or (record-type? obj)
+        (assertion-violation 'record-type-rcd (wrong-type-argument-message "record-type" obj)))
+    (tuple-ref obj 3)))
+
+;(define-simple-struct enum-set (type members))
+(begin (define enum-set-rtd (make-record-type-descriptor 'enum-set #f #f #f #f '#((mutable type) (mutable members)))) (define enum-set-rcd (make-record-constructor-descriptor enum-set-rtd #f #f)) (define make-enum-set (record-constructor enum-set-rcd)) (define enum-set-members (record-accessor enum-set-rtd 1)) (define enum-set-type (record-accessor enum-set-rtd 0)))
+
+;; (define-simple-struct enum-type (universe indexer))
+(begin (define enum-type-rtd (make-record-type-descriptor 'enum-type #f #f #f #f '#((mutable universe) (mutable indexer)))) (define enum-type-rcd (make-record-constructor-descriptor enum-type-rtd #f #f)) (define make-enum-type (record-constructor enum-type-rcd)) (define enum-type-indexer (record-accessor enum-type-rtd 1)) (define enum-type-universe (record-accessor enum-type-rtd 0)))
+
+(define (make-enumeration-type symbol-list)
+  (let ([ht (make-eq-hashtable)])
+    (let loop ([symbol-list symbol-list]
+               [i 0])
+      (if (null? symbol-list)
+          '()
+          (begin (hashtable-set! ht (car symbol-list) i)
+                 (loop (cdr symbol-list) (+ i 1)))))
+    (make-enum-type symbol-list
+                    (lambda (symbol)
+                      (hashtable-ref ht symbol #f)))))
+
+
+(define (make-enumeration symbol-list)
+  (cond
+   [(and (list? symbol-list) (for-all symbol? symbol-list))
+    (make-enum-set (make-enumeration-type symbol-list) symbol-list)]
+   [else
+    (assertion-violation 'make-enumeration "argument 1 must be a list of symbols")]))
+
+
+(define (enum-set-universe enum-set)
+  (make-enum-set (enum-set-type enum-set)
+                 (enum-type-universe (enum-set-type enum-set))))
+
+(define (enum-set-indexer enum-set)
+  (enum-type-indexer (enum-set-type enum-set)))
+
+(define (enum-set-constructor enum-set)
+  (lambda (symbol-list)
+    (let ([universe (enum-type-universe (enum-set-type enum-set))])
+      (if (for-all (lambda (x) (memq x universe)) symbol-list)
+          (make-enum-set (enum-set-type enum-set) symbol-list)
+          (assertion-violation 'enum-set-constructor "the symbol list must all belong to the universe." universe symbol-list)))))
+
+(define (enum-set->list enum-set)
+  (let ([universe (enum-type-universe (enum-set-type enum-set))]
+        [members (enum-set-members enum-set)])
+    (let loop ([universe universe])
+      (cond
+       [(null? universe) '()]
+       [(memq (car universe) members)
+        (cons (car universe) (loop (cdr universe)))]
+       [else
+        (loop (cdr universe))]))))
+
+(define (enum-set-member? symbol enum-set)
+  (and (memq symbol (enum-set-members enum-set)) #t))
+
+(define (enum-set-subset? enum-set1 enum-set2)
+  (and
+   (let ([enum-set2-univese (enum-set->list (enum-set-universe enum-set2))])
+     (for-all
+      (lambda (symbol) (memq symbol enum-set2-univese))
+      (enum-set->list (enum-set-universe enum-set1))))
+   (for-all
+    (lambda (symbol) (enum-set-member? symbol enum-set2))
+    (enum-set-members enum-set1))))
+
+(define (enum-set=? enum-set1 enum-set2)
+  (and (enum-set-subset? enum-set1 enum-set2)
+       (enum-set-subset? enum-set2 enum-set1)))
+
+(define (enum-set-union enum-set1 enum-set2)
+  (define (union lst1 lst2)
+    (let loop ([ret lst1]
+               [lst lst2])
+      (cond
+       [(null? lst) ret]
+       [(memq (car lst) ret)
+        (loop ret (cdr lst))]
+       [else
+        (loop (cons (car lst) ret) (cdr lst))])))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (union (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-union "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-intersection enum-set1 enum-set2)
+  (define (intersection lst1 lst2)
+    (let loop ([ret '()]
+               [lst lst1])
+      (if (null? lst)
+          ret
+          (cond
+           [(memq (car lst) lst2)
+             (loop (cons (car lst) ret) (cdr lst))]
+           [else
+            (loop ret (cdr lst))]))))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (intersection (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-intersection "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-difference enum-set1 enum-set2)
+  (define (difference lst1 lst2)
+    (let loop ([ret '()]
+               [lst lst1])
+      (if (null? lst)
+          ret
+          (cond
+           [(memq (car lst) lst2)
+            (loop ret (cdr lst))]
+           [else
+            (loop (cons (car lst) ret) (cdr lst))]))))
+  (if (eq? (enum-set-type enum-set1) (enum-set-type enum-set2))
+      (make-enum-set (enum-set-type enum-set1)
+                     (difference (enum-set-members enum-set1) (enum-set-members enum-set2)))
+      (assertion-violation 'enum-set-difference "enum-set1 and enum-set2 must be enumeration sets that have the same enumeration type.")))
+
+(define (enum-set-complement enum-set)
+  (let ([members (enum-set-members enum-set)])
+    (make-enum-set (enum-set-type enum-set)
+                   (filter (lambda (symbol) (not (memq symbol members))) (enum-type-universe (enum-set-type enum-set))))))
+
+(define (enum-set-projection enum-set1 enum-set2)
+  (if (enum-set-subset? enum-set1 enum-set2)
+      enum-set1
+      (let ([universe2 (enum-type-universe (enum-set-type enum-set2))]
+            [members1 (enum-set-members enum-set1)])
+        (make-enum-set (enum-set-type enum-set2)
+                       (filter (lambda (symbol) (memq symbol universe2)) members1)))))
+
+
   ])
 
 ;; inline map
