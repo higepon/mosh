@@ -736,11 +736,12 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             } else {
                 const Object val = nameSpace->ref(id, notFound_);
                 if (val == notFound_) {
+                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     callUndefinedViolationAfter(this,
-                                                "eval",
-                                                "unbound variable",
+                                                L1(unGenSym(id)),
+                                                "unbound variable"
                                                 // R6RS mode requires demangle of symbol.
-                                                L1(unGenSym(id)));
+                                                );
                 } else {
                     ac_ = val.toGloc()->value();
                     *(pc_ - 1) = val;

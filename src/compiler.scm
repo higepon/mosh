@@ -76,14 +76,20 @@
   (make-simple-struct id (length fields) fields))
 
 (define (tuple-ref t index)
-  (if (zero? index)
-      (simple-struct-name t)
-      (simple-struct-ref t (- index 1))))
+  (and (tuple? t)
+       (if (zero? index)
+           (begin
+             (when (symbol? t)
+               (throw 'hige))
+             (simple-struct-name t))
+           (simple-struct-ref t (- index 1)))))
 
 (define (tuple-set! t index obj)
   (if (zero? index)
       (assertion-violation 'tuple-set! "not supported")
       (simple-struct-set! t (- index 1) obj)))
+
+(define tuple? simple-struct?)
 
 (define nongenerative-record-types (make-eq-hashtable))
 
@@ -95,7 +101,6 @@
 
 (define record-type-descriptor?
   (lambda (obj)
-    (display (tuple-ref obj 0) (current-error-port))
     (eq? (tuple-ref obj 0) 'type:record-type-descriptor)))
 
 (define rtd-name        (lambda (rtd) (tuple-ref rtd 1)))
@@ -569,6 +574,7 @@
 
 (define condition
   (lambda components
+    (display components)
     (tuple 'type:condition
            (apply append
                   (map (lambda (component)
@@ -599,6 +605,10 @@
           (else
            (assertion-violation 'simple-conditions (format "expected condition, but got ~a" c))))))
 
+(define any1
+  (lambda (pred lst)
+    (and (not (null? lst))
+         (or (pred (car lst)) (any1 pred (cdr lst))))))
 (define condition-predicate
   (lambda (rtd)
     (or (rtd-ancestor? (record-type-rtd &condition) rtd)
@@ -903,6 +913,20 @@
 
 (define (%assertion-violation args)
   (apply assertion-violation args))
+
+(define undefined-violation
+  (lambda (who . message)
+    (display who)
+    (display message)
+    (raise
+     (apply condition
+            (filter values
+                    (list (make-undefined-violation)
+                          (and who (make-who-condition who))
+                          (and (pair? message) (make-message-condition (car message)))))))))
+
+(define (%undefined-violation args)
+  (apply undefined-violation args))
 
   ])
 

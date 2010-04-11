@@ -239,9 +239,20 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
     return Object::Undef;
 }
 
-void scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
+Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message)
 {
-    raiseAfter(theVM, UC("&undefined-rcd"), UC("&undefined"), 0, who, message, irritants);
+//    raiseAfter(theVM, UC("&undefined-rcd"), UC("&undefined"), 0, who, message, irritants);
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%undefined-violation")));
+
+    Object condition = Object::Nil;
+    // Error occured before (raise ...) is defined.
+    if (procedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(procedure, L2(who, message));
+    }
+    return Object::Undef;
 }
 
 // we can't catch this!
