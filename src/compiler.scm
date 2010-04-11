@@ -114,10 +114,7 @@
 
 (define rtd-inherited-field-count
   (lambda (rtd)
-    (display "line:997\n" (current-error-port))
-    (display rtd (current-error-port))
     (let loop ((rtd (rtd-parent rtd)) (count 0))
-      (display "line:990\n" (current-error-port))
       (cond (rtd
              (loop (rtd-parent rtd)
                    (+ count (length (rtd-fields rtd)))))
@@ -126,10 +123,6 @@
 
 (define rtd-total-field-count
   (lambda (rtd)
-    (display rtd (current-error-port))
-    (display "line:1006\n" (current-error-port))
-    (display (rtd-inherited-field-count rtd) (current-error-port))
-    (display (rtd-fields rtd) (current-error-port))
     (+ (rtd-inherited-field-count rtd) (length (rtd-fields rtd)))))
 
 (define record-type-name
@@ -251,22 +244,14 @@
 
 (define default-protocol
   (lambda (rtd)
-    (display rtd (current-error-port))
-    (display (rtd-parent rtd)(current-error-port))
-    (display "line:1127\n" (current-error-port))
     (let ((parent (rtd-parent rtd)))
-    (display "line:1127\n" (current-error-port))
       (if parent
-          (let ((d (display "line:1131\n" (current-error-port)))
-                (parent-field-count (rtd-total-field-count parent)))
-    (display "line:1127\n" (current-error-port))
+          (let ((parent-field-count (rtd-total-field-count parent)))
             (lambda (p)
-    (display "line:1127\n" (current-error-port))
               (lambda field-values
                 (let-values (((parent-field-values this-field-values) (split-at field-values parent-field-count)))
                   (apply (apply p parent-field-values) this-field-values)))))
           (begin
-            (display "line:1139\n" (current-error-port))
           (lambda (p)
             (lambda field-values
               (apply p field-values))))))))
@@ -293,7 +278,6 @@
               'make-record-constructor-descriptor
               "mismatch between rtd and parent constructor descriptor"
               rtd parent protocol)))
-    (display "<1>" (current-error-port))
     (and parent
          (rtd-parent rtd)
          (or (eq? (rcd-rtd parent) (rtd-parent rtd))
@@ -301,7 +285,6 @@
               'make-record-constructor-descriptor
               "mismatch between rtd and parent constructor descriptor"
               rtd parent protocol)))
-    (display "<2>" (current-error-port))
     (and protocol
          (rtd-parent rtd)
          (or parent
@@ -316,7 +299,6 @@
               'make-record-constructor-descriptor
               "expected procedure for protocol since parent constructor descriptor have custom one"
               rtd parent protocol)))
-    (display "<3>" (current-error-port))
     (let ((custom-protocol? (and protocol #t))
           (protocol (or protocol (default-protocol rtd)))
           (parent (or parent
@@ -324,7 +306,6 @@
                              => (lambda (rtd)
                                   (make-record-constructor-descriptor rtd #f #f)))
                             (else #f)))))
-    (display "<4>" (current-error-port))
     (let ([rcd (make-rcd rtd protocol custom-protocol? parent)])
       (set-symbol-value! (string->symbol (string-append (symbol->string (rtd-name rtd)) "-rcd")) rcd)
       rcd))))
