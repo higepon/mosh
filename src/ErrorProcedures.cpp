@@ -277,7 +277,19 @@ void scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object me
 
 Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants)
 {
-    return raiseAfterB(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
+//    return raiseAfterB(theVM, UC("&lexical-rcd"), UC("&lexical"), 0, UC("&i/o-read-rcd"), UC("&i/o-read"), 0, who, message, irritants);
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%lexical-violation")));
+
+    Object condition = Object::Nil;
+    // Error occured before (raise ...) is defined.
+    if (procedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(procedure, L2(who, message));
+    }
+    return Object::Undef;
+
 }
 
 Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)

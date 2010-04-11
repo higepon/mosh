@@ -928,6 +928,19 @@
 (define (%undefined-violation args)
   (apply undefined-violation args))
 
+(define lexical-violation
+  (lambda (who . message)
+    (raise
+     (apply condition
+            (filter values
+                    (list (make-lexical-violation)
+                          (and who (make-who-condition who))
+                          (and (pair? message) (make-message-condition (car message)))))))))
+(define (%lexical-violation args)
+  (match args
+    [(who . message)
+     (apply lexical-violation who message)]))
+
   ])
 
 ;; inline map
