@@ -247,11 +247,11 @@
 ;;   record-type-field-names
 ;;   record-field-mutable?
 ;;   record-type-descriptor?
-  condition
-  simple-conditions
-  condition?
-  condition-accessor
-  condition-predicate
+;;   condition
+;;   simple-conditions
+;;   condition?
+;;   condition-accessor
+;;   condition-predicate
   throw
   (< <)
   (<= <=)
