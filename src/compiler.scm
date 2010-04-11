@@ -906,7 +906,22 @@
 (define make-no-nans-violation (record-constructor (record-type-rcd &no-nans)))
 (define no-nans-violation? (condition-predicate (record-type-rtd &no-nans)))
 
+(define assertion-violation
+  (lambda (who message . irritants)
+    (if (or (not who) (string? who) (symbol? who) (identifier? who))
+        (if (string? message)
+            (raise
+             (apply condition
+                    (filter values
+                            (list (make-assertion-violation)
+                                  (and who (make-who-condition who))
+                                  (make-message-condition message)
+                                  (make-irritants-condition irritants)))))
+            (assertion-violation 'assertion-violation (wrong-type-argument-message "string" message 2)))
+        (assertion-violation 'assertion-violation (wrong-type-argument-message "string, symbol, or #f" who 1)))))
 
+(define (%assertion-violation args)
+  (apply assertion-violation args))
 
   ])
 

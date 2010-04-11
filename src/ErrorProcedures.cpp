@@ -220,7 +220,22 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
     LOG1("message=~a\n", message);
     LOG1("who=~a\n", who);
     LOG1("irritants=~a\n", irritants);
-    raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
+//    raiseAfter(theVM, UC("&assertion-rcd"), UC("&assertion"), 0, who, message, irritants);
+    MOSH_ASSERT(theVM);
+    MOSH_ASSERT(irritants.isPair() || irritants.isNil());
+    MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
+    MOSH_ASSERT(message.isString());
+    Object condition = Object::Nil;
+
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%assertion-violation")));
+
+    // Error occured before (raise ...) is defined.
+    if (procedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger1(procedure, Object::cons(who, Object::cons(message, irritants)));
+    }
     return Object::Undef;
 }
 
