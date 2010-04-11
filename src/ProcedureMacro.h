@@ -218,6 +218,7 @@ inline const char* nth(int index) {
 
 #define argumentCheckString(index, variableName) checkType(index, variableName, isString, string)
 #define argumentCheckSymbol(index, variableName) checkType(index, variableName, isSymbol, symbol)
+#define argumentCheckSimpleStruct(index, variableName) checkType(index, variableName, isSimpleStruct, simplestruct)
 #define argumentCheckSymbolOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isSymbol, symbol)
 #define argumentCheckStringOrFalse(index, variableName) checkTypeOrFalse(index, variableName, isString, string)
 #define argumentCheckRecordOrCompoundConditon(index, variableName) checkTypeOr(index, variableName, isRecord, isCompoundCondition, record, compound-condition)

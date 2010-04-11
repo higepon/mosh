@@ -119,32 +119,30 @@ char* scheme::utf32toUtf8(const ucs4string& s)
     return (char*)out.toByteVector()->data();
 }
 
-static bool isExistOption(Record* fileOptions, Object option)
+static bool isExistOption(SimpleStruct* fileOptions, Object option)
 {
-    MOSH_ASSERT(fileOptions->fieldsLength() == 2);
-    Object members = fileOptions->fieldAt(1);
+    Object members = fileOptions->ref(1);
     MOSH_ASSERT(members.isList());
     return !memq(option, members).isFalse();
 }
-static bool isNoFail(Record* fileOptions)
+static bool isNoFail(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_FAIL);
 }
 
-static bool isNoCreate(Record* fileOptions)
+static bool isNoCreate(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_CREATE);
 }
 
-static bool isNoTruncate(Record* fileOptions)
+static bool isNoTruncate(SimpleStruct* fileOptions)
 {
     return isExistOption(fileOptions, Symbol::NO_TRUNCATE);
 }
 
-static bool isEmpty(Record* fileOptions)
+static bool isEmpty(SimpleStruct* fileOptions)
 {
-    MOSH_ASSERT(fileOptions->fieldsLength() == 2);
-    return fileOptions->fieldAt(1).isNil();
+    return fileOptions->ref(1).isNil();
 }
 
 Object scheme::makeCustomTextualInputOutputPortEx(VM* theVM, int argc, const Object* argv)
@@ -226,7 +224,7 @@ Object scheme::openFileInputOutputPortEx(VM* theVM, int argc, const Object* argv
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryInputOutputPort(path->data(), openFlags);
     } else {
-        argumentAsRecord(1, fileOptions);
+        argumentAsSimpleStruct(1, fileOptions);
 
         const bool emptyP = isEmpty(fileOptions);
         const bool noCreateP = isNoCreate(fileOptions);
@@ -1509,7 +1507,7 @@ Object scheme::openFileOutputPortEx(VM* theVM, int argc, const Object* argv)
         // default buffer mode is Block
         port = new BlockBufferedFileBinaryOutputPort(path->data(), openFlags);
     } else {
-        argumentAsRecord(1, fileOptions);
+        argumentAsSimpleStruct(1, fileOptions);
 
         const bool emptyP = isEmpty(fileOptions);
         const bool noCreateP = isNoCreate(fileOptions);
@@ -1604,12 +1602,15 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 2) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
+        argumentCheckSimpleStruct(1, fileOptions);
         // default buffer mode is Block
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 3) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
+
+        argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
 
         // N.B. On Mosh, buffer mode BLOCK == LINE.
@@ -1623,7 +1624,9 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         }
     } else if (argc == 4) {
         argumentAsString(0, path);
-        argumentCheckRecord(1, fileOptions);
+        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
+
+        argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
         // N.B. On Mosh, buffer mode BLOCK == LINE.
         if (bufferMode == Symbol::BLOCK || bufferMode == Symbol::LINE) {
