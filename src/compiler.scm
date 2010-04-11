@@ -89,7 +89,9 @@
 
 (define make-rtd
   (lambda (name parent uid sealed? opaque? fields)
-    (tuple 'type:record-type-descriptor name parent uid sealed? opaque? fields)))
+    (let ([rtd (tuple 'type:record-type-descriptor name parent uid sealed? opaque? fields)])
+      (set-symbol-value! (string->symbol (string-append (symbol->string name) "-rtd")) rtd)
+      rtd)))
 
 (define record-type-descriptor?
   (lambda (obj)
