@@ -941,6 +941,26 @@
     [(who . message)
      (apply lexical-violation who message)]))
 
+(define raise-i/o-decoding-error
+  (lambda (who message port)
+    (raise-misc-i/o-error make-i/o-decoding-error who message port)))
+
+(define (%raise-i/o-decoding-error args)
+  (match args
+    [(who message port)
+     (raise-i/o-decoding-error who message port)]))
+
+(define raise-misc-i/o-error
+  (lambda (constructor who message . options)
+    (raise
+     (apply condition
+            (filter values
+                    (list (apply constructor options)
+                          (and who (make-who-condition who))
+                          (make-message-condition message)
+                          (and (pair? options)
+                               (make-irritants-condition options))))))))
+
   ])
 
 ;; inline map

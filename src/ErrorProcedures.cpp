@@ -121,8 +121,18 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 {
     switch(e.type) {
     case IOError::DECODE:
-        raiseAfter1(theVM, UC("&i/o-decoding-rcd"), UC("&i/o-decoding"), e.arg1, e.who, e.message, e.irritants);
+    {
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-decoding-error")));
+        Object condition = Object::Nil;
+        // Error occured before (raise ...) is defined.
+        if (procedure.isFalse()) {
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+            theVM->throwException(condition);
+        } else {
+            theVM->setAfterTrigger1(procedure, L3(e.who, e.message, e.arg1));
+        }
         break;
+    }
     case IOError::ENCODE:
         MOSH_ASSERT(e.irritants.isPair() && Pair::length(e.irritants) == 1);
         raiseAfter2(theVM, UC("&i/o-encoding-rcd"), UC("&i/o-encoding"), e.arg1, e.irritants.car(), e.who, e.message, e.irritants);
