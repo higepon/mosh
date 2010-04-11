@@ -342,14 +342,14 @@ Object makeCondition(VM* theVM, const ucs4char* rcdName)
 {
     const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
-    return theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
+    return Object::Undef; //theVM->callClosure0(rcd.toRecordConstructorDescriptor()->makeConstructor());
 }
 
 Object makeCondition(VM* theVM, const ucs4char* rcdName, Object content)
 {
     const Object rcd = theVM->getGlobalValue(Symbol::intern(rcdName));
     MOSH_ASSERT(!rcd.isFalse());
-    return theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
+    return Object::Undef; //theVM->callClosure1(rcd.toRecordConstructorDescriptor()->makeConstructor(), content);
 }
 
 Object makeCondition2(VM* theVM, const ucs4char* rcdName, Object content1, Object content2)
