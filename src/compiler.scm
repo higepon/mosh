@@ -323,7 +323,9 @@
                                   (make-record-constructor-descriptor rtd #f #f)))
                             (else #f)))))
     (display "<4>" (current-error-port))
-      (make-rcd rtd protocol custom-protocol? parent))))
+    (let ([rcd (make-rcd rtd protocol custom-protocol? parent)])
+      (set-symbol-value! (string->symbol (string-append (symbol->string (rtd-name rtd)) "-rcd")) rcd)
+      rcd))))
 
 (define record?
   (lambda (obj)
@@ -588,7 +590,7 @@
            (apply append
                   (map (lambda (component)
                          (or (condition? component)
-                             (assertion-violation 'condition (format "expected condition, but got ~r" component) components))
+                             (assertion-violation 'condition (format "expected condition, but got ~a" component) components))
                          (simple-conditions component))
                        components)))))
 
@@ -612,12 +614,12 @@
     (cond ((simple-condition? c) (list c))
           ((compound-condition? c) (compound-condition-component c))
           (else
-           (assertion-violation 'simple-conditions (format "expected condition, but got ~r" c))))))
+           (assertion-violation 'simple-conditions (format "expected condition, but got ~a" c))))))
 
 (define condition-predicate
   (lambda (rtd)
     (or (rtd-ancestor? (record-type-rtd &condition) rtd)
-        (assertion-violation 'condition-predicate (format "expected record-type-descriptor of a subtype of &condition, but got ~r" rtd)))
+        (assertion-violation 'condition-predicate (format "expected record-type-descriptor of a subtype of &condition, but got ~a" rtd)))
     (lambda (obj)
       (cond ((simple-condition? obj)
              (rtd-ancestor? rtd (record-rtd obj)))
@@ -631,10 +633,10 @@
 
     (define wrong-type
       (lambda (rtd obj)
-        (assertion-violation "condition accessor" (format "expected condition of a subtype of ~s, but got ~r" rtd obj) rtd obj)))
+        (assertion-violation "condition accessor" (format "expected condition of a subtype of ~s, but got ~a" rtd obj) rtd obj)))
 
     (or (rtd-ancestor? (record-type-rtd &condition) rtd)
-        (assertion-violation 'condition-accessor (format "expected record-type-descriptor of a subtype of &condition, but got ~r" rtd) rtd proc))
+        (assertion-violation 'condition-accessor (format "expected record-type-descriptor of a subtype of &condition, but got ~a" rtd) rtd proc))
 
     (lambda (obj)
       (cond ((simple-condition? obj)
@@ -669,12 +671,12 @@
                                    (parents (list-parents rtd))
                                    (count (vector-length (record-type-field-names rtd))))
                                (format buf "~%    ~a" name)
-                               (and (pair? parents) (format buf " ~r" parents))
+                               (and (pair? parents) (format buf " ~a" parents))
                                (cond ((= count 1)
                                       (let ((obj ((record-accessor rtd 0) rec)))
                                         (if (string? obj)
                                             (format buf ": ~a" ((record-accessor rtd 0) rec))
-                                            (format buf ": ~r" ((record-accessor rtd 0) rec)))))
+                                            (format buf ": ~a" ((record-accessor rtd 0) rec)))))
                                      ((> count 1)
                                       (let ((lst (vector->list (record-type-field-names rtd))))
                                         (let loop ((i 0) (lst lst))
@@ -682,13 +684,13 @@
                                                (let ((obj ((record-accessor rtd i) rec)))
                                                  (if (string? obj)
                                                      (format buf "~%     ~a: ~a" (car lst) obj)
-                                                     (format buf "~%     ~a: ~r" (car lst) obj))
+                                                     (format buf "~%     ~a: ~a" (car lst) obj))
                                                  (loop (+ i 1) (cdr lst)))))))))))
                          lst))
              (format buf "~%   >")
              (format port "~a~!" (extract-accumulated-string buf))))
           (else
-           (format port "~r~!" c)))))
+           (format port "~a~!" c)))))
 
 (define &message
   (let ((rtd (make-record-type-descriptor '&message (record-type-rtd &condition) (make-condition-uid) #f #f '#((immutable message)))))
