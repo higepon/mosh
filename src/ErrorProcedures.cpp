@@ -89,14 +89,14 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
     }
     case IOError::ENCODE:
     {
-        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-encoding-error")));
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-encoding-error")));
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
             theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
             theVM->throwException(condition);
         } else {
-            theVM->setAfterTrigger1(procedure, L4(e.who, e.message, e.arg1, e.irritants));
+            theVM->setAfterTrigger4(procedure, e.who, e.message, e.arg1, e.irritants);
         }
         break;
     }
@@ -106,20 +106,20 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
 //        break;
     case IOError::READ:
     {
-        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-read-error")));
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-read-error")));
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
             theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
             theVM->throwException(condition);
         } else {
-            theVM->setAfterTrigger1(procedure, L3(e.who, e.message, e.irritants));
+            theVM->setAfterTrigger3(procedure, e.who, e.message, e.irritants);
         }
         break;
     }
     case IOError::WRITE:
     {
-        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-write-error")));
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-write-error")));
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
@@ -241,7 +241,7 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
 Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message)
 {
 //    raiseAfter(theVM, UC("&undefined-rcd"), UC("&undefined"), 0, who, message, irritants);
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%undefined-violation")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("undefined-violation")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -303,7 +303,7 @@ Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, 
 
 Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-filename-error")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-filename-error")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -311,7 +311,7 @@ Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, 
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        theVM->setAfterTrigger1(procedure, L3(who, message, filename));
+        theVM->setAfterTrigger3(procedure, who, message, filename);
     }
     return Object::Undef;
 }
@@ -333,7 +333,7 @@ Object scheme::callIoFileNotExistAfter(VM* theVM, Object filename, Object who, O
 
 Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-file-already-exists-error")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-file-already-exists-error")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -341,14 +341,14 @@ Object scheme::callIoFileAlreadyExistAfter(VM* theVM, Object filename, Object wh
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        theVM->setAfterTrigger1(procedure, L3(who, message, filename));
+        theVM->setAfterTrigger3(procedure, who, message, filename);
     }
     return Object::Undef;
 }
 
 Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-file-protection-error")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-file-protection-error")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -356,14 +356,14 @@ Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who,
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        theVM->setAfterTrigger1(procedure, L3(who, message, filename));
+        theVM->setAfterTrigger3(procedure, who, message, filename);
     }
     return Object::Undef;
 }
 
 Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%raise-i/o-file-is-read-only")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-file-is-read-only")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -371,7 +371,7 @@ Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, O
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        theVM->setAfterTrigger1(procedure, L3(who, message, filename));
+        theVM->setAfterTrigger3(procedure, who, message, filename);
     }
     return Object::Undef;
 }
@@ -379,7 +379,7 @@ Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, O
 
 Object scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irritants /* = Object::Nil */)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("%error")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("error")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
@@ -387,7 +387,7 @@ Object scheme::callErrorAfter(VM* theVM, Object who, Object message, Object irri
         theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
         theVM->throwException(condition);
     } else {
-        theVM->setAfterTrigger1(procedure, L3(who, message, irritants));
+        theVM->setAfterTrigger3(procedure, who, message, irritants);
     }
     return Object::Undef;
 }

@@ -263,6 +263,26 @@ void VM::initializeDynamicCode()
     trigger3Code_->push(Object::makeFixnum(0));
     trigger3Code_->push(Object::makeRaw(Instruction::HALT));
 
+    trigger4Code_ = new Code(19);
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger4Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger4Code_->push(Object::Undef);
+    trigger4Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger4Code_->push(Object::makeFixnum(4));
+    trigger4Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger4Code_->push(Object::makeFixnum(0));
+    trigger4Code_->push(Object::makeRaw(Instruction::HALT));
 
     applyClosureCode_ = new Code(5);
     applyClosureCode_->push(Object::makeRaw(Instruction::CALL));
@@ -544,6 +564,18 @@ Object VM::setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg
     makeCallFrame(pc_);
     pc_ = getDirectThreadedCode(trigger3Code_->code(), trigger3Code_->size());
     pc_[10] = closure;
+    pc_[7]= arg3;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
+Object VM::setAfterTrigger4(Object closure, Object arg1, Object arg2, Object arg3, Object arg4)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger4Code_->code(), trigger4Code_->size());
+    pc_[13] = closure;
+    pc_[10]= arg4;
     pc_[7]= arg3;
     pc_[4]= arg2;
     pc_[1]= arg1;

@@ -127,6 +127,7 @@ public:
     Object callClosure0(Object closure);
     Object callClosure2(Object closure, Object arg1, Object arg2);
     Object callClosure3(Object closure, Object arg1, Object arg2, Object arg3);
+    Object setAfterTrigger4(Object closure, Object arg1, Object arg2, Object arg3, Object arg4);
     Object setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3);
     Object setAfterTrigger2(Object closure, Object arg1, Object arg2);
     Object setAfterTrigger1(Object closure, Object arg1);
@@ -337,6 +338,7 @@ protected:
     Code* trigger1Code_;
     Code* trigger2Code_;
     Code* trigger3Code_;
+    Code* trigger4Code_;
 
     Code* applyClosureCode_;
     Code* callClosureByNameCode_;
