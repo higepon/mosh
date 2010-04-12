@@ -78,10 +78,7 @@
 (define (tuple-ref t index)
   (and (tuple? t)
        (if (zero? index)
-           (begin
-             (when (symbol? t)
-               (throw 'hige))
-             (simple-struct-name t))
+           (simple-struct-name t)
            (simple-struct-ref t (- index 1)))))
 
 (define (tuple-set! t index obj)
@@ -943,6 +940,17 @@
                           (and (pair? options)
                                (make-irritants-condition options))))))))
 
+(define raise-misc-i/o-error-with-port
+  (lambda (constructor who message port . options)
+    (raise
+     (apply condition
+            (filter values
+                    (list (apply constructor options)
+                          (and who (make-who-condition who))
+                          (make-message-condition message)
+                          (and port (make-i/o-port-error port))
+                          (make-irritants-condition (cons* port options))))))))
+
 (define raise-i/o-encoding-error
   (lambda (who message port char)
     (raise-misc-i/o-error make-i/o-encoding-error who message port char)))
@@ -982,6 +990,10 @@
                           (and who (make-who-condition who))
                           (make-message-condition message)
                           (and (pair? irritants) (make-irritants-condition irritants))))))))
+
+(define raise-i/o-invalid-position-error
+  (lambda (who message port position)
+    (raise-misc-i/o-error-with-port make-i/o-invalid-position-error who message port position)))
 
 (define raise-i/o-read-error
   (lambda (who message port)

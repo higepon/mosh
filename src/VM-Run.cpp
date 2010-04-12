@@ -736,7 +736,6 @@ Object VM::runLoop(Object* code, jmp_buf returnPoint, bool returnTable /* = fals
             } else {
                 const Object val = nameSpace->ref(id, notFound_);
                 if (val == notFound_) {
-                    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
                     callUndefinedViolationAfter(this,
                                                 L1(unGenSym(id)),
                                                 "unbound variable"

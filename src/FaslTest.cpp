@@ -310,7 +310,6 @@ TEST_F(FaslTest, SimpleStruct2) {
     pst->set(0, Symbol::intern(UC("a")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     EXPECT_TRUE(restored.car().eq(restored.cdr().car()));
     Object st2 = restored.cdr().cdr().car();
     ASSERT_TRUE(st2.isSimpleStruct());
@@ -325,7 +324,6 @@ TEST_F(FaslTest, SimpleStruct3) {
     pst->set(1, Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Object st2 = restored.cdr().cdr().car();
     ASSERT_TRUE(st2.isSimpleStruct());
     EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.car()));
@@ -340,7 +338,6 @@ TEST_F(FaslTest, SimpleStruct4) {
     pst->set(1, Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Object st2 = restored.car();
     ASSERT_TRUE(st2.isSimpleStruct());
     EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.cdr().car()));
@@ -405,7 +402,6 @@ TEST_F(FaslTest, Pair) {
     const Object obj = Pair::list2(Symbol::intern(UC("a")), Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Equal e;
     EXPECT_TRUE(e.equal(restored, obj));
 }

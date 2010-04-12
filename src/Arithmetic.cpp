@@ -919,9 +919,6 @@ bool Arithmetic::isInteger(Object n)
 
 bool Arithmetic::isRealValued(Object n)
 {
-    if (!n.isNumber()) {
-        LOG1("{{~a}}", n);
-    }
     MOSH_ASSERT(n.isNumber());
     if (n.isReal()) {
         return true;

@@ -53,9 +53,17 @@ IOError scheme::ioError;
 bool scheme::isErrorBufInitialized = false;
 #endif
 
-Object scheme::callIOPortErrorAfter(VM* theVM, Object port, Object who, Object message)
+Object scheme::callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port)
 {
-    MOSH_ASSERT(false);
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-read-error")));
+    Object condition = Object::Nil;
+    // Error occured before (raise ...) is defined.
+    if (procedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-read-error ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger3(procedure, who, message, port);
+    }
 }
 
 
@@ -80,7 +88,7 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
-            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-decoding-error ...) defined\n");
             theVM->throwException(condition);
         } else {
             theVM->setAfterTrigger3(procedure, e.who, e.message, e.arg1);
@@ -93,7 +101,7 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
-            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-encoding-error ...) defined\n");
             theVM->throwException(condition);
         } else {
             theVM->setAfterTrigger4(procedure, e.who, e.message, e.arg1, e.irritants);
@@ -110,7 +118,7 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
-            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-read-error ...) defined\n");
             theVM->throwException(condition);
         } else {
             theVM->setAfterTrigger3(procedure, e.who, e.message, e.irritants);
@@ -123,7 +131,7 @@ Object scheme::callIOErrorAfter(VM* theVM, IOError e)
         Object condition = Object::Nil;
         // Error occured before (raise ...) is defined.
         if (procedure.isFalse()) {
-            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-write-error ...) defined\n");
             theVM->throwException(condition);
         } else {
             theVM->setAfterTrigger3(procedure, e.who, e.message, e.irritants);
@@ -202,14 +210,22 @@ void scheme::callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Obj
                                        "    2. &who: ~a\n"
                                        "    3. &message: ~s\n"
                                        "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
     theVM->throwException(condition);
 }
 
 Object scheme::callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position)
 {
-    MOSH_ASSERT(false);
-//    raiseAfter1(theVM, UC("&i/o-invalid-position-rcd"), UC("&i/o-invalid-position"), position, who, message, irritants);
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-invalid-position-error")));
+
+    Object condition = Object::Nil;
+    // Error occured before (raise ...) is defined.
+    if (procedure.isFalse()) {
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-invalid-position-error ...) defined\n");
+        theVM->throwException(condition);
+    } else {
+        theVM->setAfterTrigger4(procedure, who, message, irritants, position);
+    }
     return Object::Undef;
 }
 
@@ -224,16 +240,49 @@ Object scheme::callAssertionViolationAfter(VM* theVM, Object who, Object message
 //     MOSH_ASSERT(irritants.isPair() || irritants.isNil());
 //     MOSH_ASSERT(who.isSymbol() || who.isString() || who.isFalse());
 //     MOSH_ASSERT(message.isString());
-    Object condition = Object::Nil;
+    if (theVM->isR6RSMode()) {
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("assertion-violation")));
+        // Error occured before (raise ...) is defined.
+        if (procedure.isFalse()) {
+            Object condition = format(theVM,
+                                  UC(
+                                      " Condition components:\n"
+                                      "    1. ~a\n"
+                                      "    2. &who: ~a\n"
+                                      "    3. &message: ~s\n"
+                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
 
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("assertion-violation")));
-
-    // Error occured before (raise ...) is defined.
-    if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
-        theVM->throwException(condition);
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
+            theVM->throwException(condition);
+        } else {
+            theVM->setAfterTrigger3(procedure, who, message, irritants);
+        }
     } else {
-        theVM->setAfterTrigger2(procedure,message, irritants);
+        const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise")));
+        // Error occured before (raise ...) is defined.
+        if (procedure.isFalse()) {
+            Object condition = format(theVM,
+                                  UC(
+                                      " Condition components:\n"
+                                      "    1. ~a\n"
+                                      "    2. &who: ~a\n"
+                                      "    3. &message: ~s\n"
+                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+
+            theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (assertion-violation ...) defined\n");
+            theVM->throwException(condition);
+        } else {
+            Object condition = format(theVM,
+                                  UC(
+                                      " Condition components:\n"
+                                      "    1. ~a\n"
+                                      "    2. &who: ~a\n"
+                                      "    3. &message: ~s\n"
+                                      "    4. &irritants: ~a\n"), Pair::list4("&assertion", who, message, irritants));
+
+            theVM->setAfterTrigger1(procedure, condition);
+        }
+
     }
     return Object::Undef;
 }
@@ -246,7 +295,7 @@ Object scheme::callUndefinedViolationAfter(VM* theVM, Object who, Object message
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (undefined-violation ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger2(procedure, who, message);
@@ -265,7 +314,7 @@ void scheme::callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Objec
                                  "    2. &who: ~a\n"
                                  "    3. &message: ~s\n"
                                  "    4. &irritants: ~a\n"), Pair::list3(who, message, irritants));
-    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+    theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (lexical ...) defined\n");
     theVM->throwException(condition);
 }
 
@@ -276,7 +325,7 @@ Object scheme::callImplementationRestrictionAfter(VM* theVM, Object who, Object 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (implementation-restriction-violation ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, irritants);
@@ -292,7 +341,7 @@ Object scheme::callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (lexical-violation ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger2(procedure, who, message);
@@ -308,7 +357,7 @@ Object scheme::callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-filename-error ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, filename);
@@ -323,7 +372,7 @@ Object scheme::callIoFileNotExistAfter(VM* theVM, Object filename, Object who, O
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-file-does-not-exist-error ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, filename);
@@ -353,7 +402,7 @@ Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who,
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-file-protection-error ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, filename);
@@ -363,12 +412,20 @@ Object scheme::callIoFileProtectionAfter(VM* theVM, Object filename, Object who,
 
 Object scheme::callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants)
 {
-    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-file-is-read-only")));
+    const Object procedure = theVM->getGlobalValueOrFalse(Symbol::intern(UC("raise-i/o-file-is-read-only-error")));
 
     Object condition = Object::Nil;
     // Error occured before (raise ...) is defined.
     if (procedure.isFalse()) {
-        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise ...) defined\n");
+        const Object condition =  format(theVM,
+                                         UC(" Condition components:\n"
+                                            "    1. &assertion\n"
+                                            "    2. &who: ~a\n"
+                                            "    3. &message: ~s\n"
+                                            "    4. &irritants: ~a\n"
+                                            "    5. file: ~a\n"), Pair::list4(who, message, irritants, filename));
+
+        theVM->currentErrorPort().toTextualOutputPort()->display(theVM, " WARNING: Error occured before (raise-i/o-file-is-read-only ...) defined\n");
         theVM->throwException(condition);
     } else {
         theVM->setAfterTrigger3(procedure, who, message, filename);

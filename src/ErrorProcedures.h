@@ -89,7 +89,7 @@ extern bool isErrorBufInitialized;
     Object callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callSocketErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
-    Object callIOPortErrorAfter(VM* theVM, Object port, Object who, Object message);
+    Object callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port);
 //    Object throwIOError(Object message);
     Object throwEx(VM* theVM, int argc, const Object* argv);
     Object callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants  = Object::Nil);

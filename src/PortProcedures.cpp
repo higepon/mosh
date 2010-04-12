@@ -1098,9 +1098,6 @@ Object scheme::getU8Ex(VM* theVM, int argc, const Object* argv)
     checkArgumentLength(1);
     argumentAsBinaryInputPort(0, binaryInputPort);
     checkPortIsOpen(binaryInputPort, argv[0]);
-    if (binaryInputPort->isClosed()) {
-        return callIOPortErrorAfter(theVM, argv[0], procedureName, "port is closed");
-    }
     const int b = binaryInputPort->getU8();
     if (EOF == b) {
         return Object::Eof;
