@@ -42,7 +42,6 @@
 #include "VM-inl.h"
 #include "CompilerProcedures.h"
 #include "HashTableProceduures.h"
-#include "RecordProcedures.h"
 #include "StringProcedures.h"
 #include "PortProcedures.h"
 #include "ConditionProcedures.h"
@@ -54,7 +53,6 @@
 #include "ProcessProcedures.h"
 #include "ByteVectorProcedures.h"
 #include "FFIProcedures.h"
-#include "Record.h"
 #include "Codec.h"
 #include "Ratnum.h"
 #include "Flonum.h"
@@ -231,6 +229,40 @@ void VM::initializeDynamicCode()
     trigger1Code_->push(Object::makeRaw(Instruction::RETURN));
     trigger1Code_->push(Object::makeFixnum(0));
     trigger1Code_->push(Object::makeRaw(Instruction::HALT));
+
+    trigger2Code_ = new Code(13);
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger2Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger2Code_->push(Object::Undef);
+    trigger2Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger2Code_->push(Object::makeFixnum(2));
+    trigger2Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger2Code_->push(Object::makeFixnum(0));
+    trigger2Code_->push(Object::makeRaw(Instruction::HALT));
+
+    trigger3Code_ = new Code(16);
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::PUSH));
+    trigger3Code_->push(Object::makeRaw(Instruction::CONSTANT));
+    trigger3Code_->push(Object::Undef);
+    trigger3Code_->push(Object::makeRaw(Instruction::CALL));
+    trigger3Code_->push(Object::makeFixnum(3));
+    trigger3Code_->push(Object::makeRaw(Instruction::RETURN));
+    trigger3Code_->push(Object::makeFixnum(0));
+    trigger3Code_->push(Object::makeRaw(Instruction::HALT));
+
 
     applyClosureCode_ = new Code(5);
     applyClosureCode_->push(Object::makeRaw(Instruction::CALL));
@@ -496,6 +528,28 @@ Object VM::setAfterTrigger1(Object closure, Object arg1)
     pc_[1]= arg1;
     return ac_;
 }
+
+Object VM::setAfterTrigger2(Object closure, Object arg1, Object arg2)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger2Code_->code(), trigger2Code_->size());
+    pc_[7] = closure;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
+Object VM::setAfterTrigger3(Object closure, Object arg1, Object arg2, Object arg3)
+{
+    makeCallFrame(pc_);
+    pc_ = getDirectThreadedCode(trigger3Code_->code(), trigger3Code_->size());
+    pc_[10] = closure;
+    pc_[7]= arg3;
+    pc_[4]= arg2;
+    pc_[1]= arg1;
+    return ac_;
+}
+
 
 void VM::applyClosure(Object closure, Object args)
 {

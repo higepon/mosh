@@ -42,16 +42,6 @@ namespace scheme {
 
     inline bool eqv(Object o1, Object o2)
     {
-        if (o1.isRecord()) {
-            if (o2.isRecord()) {
-                Record* const record1 = o1.toRecord();
-                Record* const record2 = o2.toRecord();
-                return record1->rtd() == record2->rtd();
-            } else {
-                return false;
-            }
-        }
-
         if (o1.isNumber()) {
             if (o2.isNumber()) {
                 // See Flonum.h.

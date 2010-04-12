@@ -37,8 +37,6 @@
 #include "SString.h"
 #include "ConditionProcedures.h"
 #include "ProcedureMacro.h"
-#include "Record.h"
-#include "CompoundCondition.h"
 #include "TextualOutputPort.h"
 
 using namespace scheme;
@@ -47,7 +45,7 @@ extern bool isSubTypeOfCondition(VM* theVM, Object rtd);
 
 Object scheme::conditionAccessorEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-accessor");
+    MOSH_ASSERT(false);DeclareProcedureName("condition-accessor");
     checkArgumentLength(2);
     argumentCheckRecordTypeDescriptor(0, rtd);
     argumentCheckProcedure(1, proc);
@@ -56,7 +54,7 @@ Object scheme::conditionAccessorEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::conditionPredicateEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-prediate");
+    MOSH_ASSERT(false);DeclareProcedureName("condition-prediate");
     checkArgumentLength(1);
     argumentCheckRecordTypeDescriptor(0, rtd);
     return Object::makeCallable(new ConditionPredicate(rtd));
@@ -64,7 +62,7 @@ Object scheme::conditionPredicateEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::conditionPEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition?");
+    MOSH_ASSERT(false);DeclareProcedureName("condition?");
     checkArgumentLength(1);
     const Object object = argv[0];
     if (object.isRecord()) {
@@ -79,7 +77,7 @@ Object scheme::conditionPEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::simpleConditionsEx(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("simple-conditions");
+    MOSH_ASSERT(false);DeclareProcedureName("simple-conditions");
     checkArgumentLength(1);
     const Object condition = argv[0];
     if (condition.isCompoundCondition()) {
@@ -92,6 +90,7 @@ Object scheme::simpleConditionsEx(VM* theVM, int argc, const Object* argv)
 
 Object scheme::conditionEx(VM* theVM, int argc, const Object* argv)
 {
+    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     return Object::makeCompoundCondition(argc, argv);
 }
 
@@ -105,7 +104,7 @@ ConditionPredicate::~ConditionPredicate()
 
 Object ConditionPredicate::call(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-predicate for condition");
+    MOSH_ASSERT(false);DeclareProcedureName("condition-predicate for condition");
     checkArgumentLength(1);
 
     argumentCheckRecordOrCompoundConditon(0, object);
@@ -135,7 +134,7 @@ ConditionAccessor::~ConditionAccessor()
 
 Object ConditionAccessor::call(VM* theVM, int argc, const Object* argv)
 {
-    DeclareProcedureName("condition-accessor for condition");
+    MOSH_ASSERT(false);DeclareProcedureName("condition-accessor for condition");
     checkArgumentLength(1);
 
     argumentCheckRecordOrCompoundConditon(0, object);

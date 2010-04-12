@@ -33,7 +33,6 @@
 #include "Object-inl.h"
 #include "Pair.h"
 #include "Pair-inl.h"
-#include "Record.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Equivalent.h"
@@ -51,11 +50,7 @@
 #include "Regexp.h"
 #include "UtilityProcedures.h"
 #include "Callable.h"
-#include "Record.h"
-#include "RecordTypeDescriptor.h"
-#include "RecordConstructorDescriptor.h"
 #include "OSCompat.h"
-#include "CompoundCondition.h"
 #include "FileBinaryInputPort.h"
 #include "FileBinaryOutputPort.h"
 #include "TextualOutputPort.h"
@@ -375,63 +370,6 @@ Object Object::makeCallable(Callable* callable)
 {
     return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Callable,
                                                         reinterpret_cast<intptr_t>(callable))));
-}
-
-Object Object::makeRecordTypeDescriptor(Object name,
-                                        Object parent,
-                                        Object uid,
-                                        Object isSealed,
-                                        Object isOpaque,
-                                        Object fields)
-{
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::RecordTypeDescriptor,
-                                                        reinterpret_cast<intptr_t>(new RecordTypeDescriptor(name,
-                                                                                                        parent,
-                                                                                                        uid,
-                                                                                                        isSealed,
-                                                                                                        isOpaque,
-                                                                                                        fields)))));
-}
-
-Object Object::makeRecord(Object rtd, const Object* fields, int fieldsLength)
-{
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::Record,
-                                                        reinterpret_cast<intptr_t>(new Record(rtd,
-                                                                                          fields,
-                                                                                          fieldsLength)))));
-}
-
-Object Object::makeRecordConstructorDescriptor(VM* theVM,
-                                               Object rtd,
-                                               Object parentRcd,
-                                               Object protocol)
-{
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::RecordConstructorDescriptor,
-                                                        reinterpret_cast<intptr_t>(new RecordConstructorDescriptor(theVM,
-                                                                                                               rtd,
-                                                                                                               parentRcd,
-                                                                                                               protocol)))));
-}
-
-Object Object::makeCompoundCondition(int conditionCounts, const Object* conditions)
-{
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CompoundCondition,
-                                                        reinterpret_cast<intptr_t>(new CompoundCondition(conditionCounts,
-                                                                                                     conditions)))));
-}
-
-Object Object::makeCompoundCondition(Object conditions)
-{
-    const int conditionCounts = Pair::length(conditions);
-    Object* conditionsArray = Object::makeObjectArray(conditionCounts);
-    Object p = conditions;
-    for (int i = 0; i < conditionCounts; i++) {
-        conditionsArray[i] = p.car();
-        p = p.cdr();
-    }
-    return Object(reinterpret_cast<intptr_t>(new HeapObject(HeapObject::CompoundCondition,
-                                                        reinterpret_cast<intptr_t>(new CompoundCondition(conditionCounts,
-                                                                                                     conditionsArray)))));
 }
 
 Object Object::makeRatnum(int numerator, int denominator)

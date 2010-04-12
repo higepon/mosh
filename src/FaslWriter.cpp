@@ -46,8 +46,6 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Compnum.h"
-#include "Record.h"
-#include "RecordTypeDescriptor.h"
 #include "EqHashTable.h"
 #include "SimpleStruct.h"
 #include "FaslWriter.h"
@@ -69,8 +67,8 @@ FaslWriter::FaslWriter(BinaryOutputPort* outputPort) :
 
 bool FaslWriter::isInteresting(Object obj)
 {
-    return obj.isString() || obj.isSymbol() || obj.isPair() || obj.isVector() || obj.isRecordTypeDescriptor()
-        || obj.isSimpleStruct() || obj.isEqHashTable() || obj.isRecord();
+    return obj.isString() || obj.isSymbol() || obj.isPair() || obj.isVector()
+        || obj.isSimpleStruct() || obj.isEqHashTable();
 }
 
 void FaslWriter::scanSharedObjects(Object obj)
@@ -97,11 +95,6 @@ loop:
             for (int i = 0; i < v->length(); i++) {
                 scanSharedObjects(v->ref(i));
             }
-        } else if (obj.isRecordTypeDescriptor()) {
-            RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
-            const Object name = rtd->name();
-            MOSH_ASSERT(name.isSymbol());
-            scanSharedObjects(name);
         } else if (obj.isEqHashTable()) {
             EqHashTable* const ht = obj.toEqHashTable();
             Vector* const keys = ht->keys().toVector();
@@ -118,13 +111,6 @@ loop:
             const int length = record->fieldCount();
             for (int i = 0; i < length; i++) {
                 scanSharedObjects(record->ref(i));
-            }
-        } else if (obj.isRecord()) {
-            Record* const record = obj.toRecord();
-            scanSharedObjects(record->rtd());
-            const int length = record->fieldsLength();
-            for (int i = 0; i < length; i++) {
-                scanSharedObjects(record->fieldAt(i));
             }
         }
     }
@@ -231,19 +217,6 @@ void FaslWriter::putDatum(Object obj)
         return;
     }
 
-    if (obj.isRecord()) {
-        emitU8(Fasl::TAG_RECORD);
-        Record* const record = obj.toRecord();
-        putDatum(record->rtd());
-        const int length = record->fieldsLength();
-        putDatum(Object::makeFixnum(length));
-        for (int i = 0; i < length; i++) {
-            // We don't support this pattern?
-            MOSH_ASSERT(!record->fieldAt(i).isRecord());
-            putDatum(record->fieldAt(i));
-        }
-        return;
-    }
     if (obj.isSimpleStruct()) {
         emitU8(Fasl::TAG_SIMPLE_STRUCT);
         SimpleStruct* const simpleStruct = obj.toSimpleStruct();
@@ -394,17 +367,6 @@ void FaslWriter::putDatum(Object obj)
             emitU8(Fasl::TAG_STRING);
             emitString(text);
         }
-        return;
-    }
-    if (obj.isRecordTypeDescriptor()) {
-        RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
-        MOSH_ASSERT(rtd->parent().isFalse()); // parent not supported
-        MOSH_ASSERT(rtd->name().isSymbol());
-        Symbol* const symbol = rtd->name().toSymbol();
-        ucs4string text = symbol->c_str();
-        MOSH_ASSERT(text.is_ascii());
-        emitU8(Fasl::TAG_RTD);
-        emitString(text);
         return;
     }
     MOSH_ASSERT(false);

@@ -62,10 +62,6 @@ class Transcoder;
 class Codec;
 class CodeBuilder;
 class Callable;
-class Record;
-class RecordTypeDescriptor;
-class RecordConstructorDescriptor;
-class CompoundCondition;
 class Ratnum;
 class Flonum;
 class Bignum;
@@ -277,24 +273,9 @@ public:
     static Object makeCodeBuilder();
     static Object makeGenericHashTable(VM* theVM, Object hashFunction, Object equivalenceFunction);
     static Object makeCallable(Callable* callable);
-    static Object makeRecord(Object rtd, const Object* fields, int fieldsLength);
     static Object makeRatnum(int numerator, int denominator);
     static Object makeRatnum(Ratnum* r);
     static Object makeCompnum(Object real, Object imag);
-    static Object makeRecordTypeDescriptor(Object name,
-                                           Object parent,
-                                           Object uid,
-                                           Object isSealed,
-                                           Object isOpaque,
-                                           Object fields);
-
-    static Object makeRecordConstructorDescriptor(VM* theVM,
-                                                  Object rtd,
-                                                  Object parentRcd,
-                                                  Object protocol);
-
-    static Object makeCompoundCondition(int conditionCounts, const Object* conditions);
-    static Object makeCompoundCondition(Object conditions);
 #include "Object-accessors.h"
     static const Object Nil;
     static const Object Eof;

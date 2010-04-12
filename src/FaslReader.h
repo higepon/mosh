@@ -316,21 +316,6 @@ private:
             return Object::True;
         case Fasl::TAG_F:
             return Object::False;
-        case Fasl::TAG_RECORD:
-        {
-            Object rtd = getDatum();
-            MOSH_ASSERT(rtd.isRecordTypeDescriptor());
-
-            Object length = getDatum();
-            MOSH_ASSERT(length.isFixnum());
-            const int len = length.toFixnum();
-            Object* fields = Object::makeObjectArray(len);
-            const Object record =  Object::makeRecord(rtd, fields, len);
-            for (int i = 0; i < len; i++) {
-                record.toRecord()->setFieldAt(i, getDatum());
-            }
-            return record;
-        }
         case Fasl::TAG_SIMPLE_STRUCT:
         {
             Object name = getDatum();

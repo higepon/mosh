@@ -574,7 +574,6 @@
 
 (define condition
   (lambda components
-    (display components)
     (tuple 'type:condition
            (apply append
                   (map (lambda (component)
@@ -912,12 +911,12 @@
         (assertion-violation 'assertion-violation (wrong-type-argument-message "string, symbol, or #f" who 1)))))
 
 (define (%assertion-violation args)
-  (apply assertion-violation args))
+  (match args
+    [(who message . irritants)
+     (apply assertion-violation who message irritants)]))
 
 (define undefined-violation
   (lambda (who . message)
-    (display who)
-    (display message)
     (raise
      (apply condition
             (filter values
@@ -926,7 +925,9 @@
                           (and (pair? message) (make-message-condition (car message)))))))))
 
 (define (%undefined-violation args)
-  (apply undefined-violation args))
+  (match args
+    [(who . message)
+     (apply undefined-violation who message)]))
 
 (define lexical-violation
   (lambda (who . message)
@@ -960,6 +961,124 @@
                           (make-message-condition message)
                           (and (pair? options)
                                (make-irritants-condition options))))))))
+
+(define raise-i/o-encoding-error
+  (lambda (who message port char)
+    (raise-misc-i/o-error make-i/o-encoding-error who message port char)))
+
+(define (%raise-i/o-encoding-error args)
+  (match args
+    [(who message port char)
+     (raise-i/o-encoding-error who message port char)]))
+
+(define implementation-restriction-violation
+  (lambda (who message . irritants)
+    (raise
+     (apply condition
+            (filter values
+                    (list (make-implementation-restriction-violation)
+                          (and who (make-who-condition who))
+                          (make-message-condition message)
+                          (and (pair? irritants) (make-irritants-condition irritants))))))))
+
+(define (%implementation-restriction-violation args)
+  (match args
+    [(who message . irritants)
+     (apply implementation-restriction-violation who message irritants)]))
+
+(define raise-i/o-file-already-exists-error
+  (lambda (who message filename)
+    (raise-misc-i/o-error make-i/o-file-already-exists-error who message filename)))
+
+(define (%raise-i/o-file-already-exists-error args)
+  (match args
+    [(who message filename)
+     (raise-i/o-file-already-exists-error who message filename)]))
+
+(define raise-i/o-file-does-not-exist-error
+  (lambda (who message filename)
+    (raise-misc-i/o-error make-i/o-file-does-not-exist-error who message filename)))
+
+(define (%raise-i/o-file-does-not-exist-error args)
+  (match args
+    [(who message filename)
+     (raise-i/o-file-does-not-exist-error who message filename)]))
+
+
+(define raise-i/o-file-protection-error
+  (lambda (who message filename)
+    (raise-misc-i/o-error make-i/o-file-protection-error who message filename)))
+
+(define (%raise-i/o-file-protection-error args)
+  (match args
+    [(who message filename)
+     (raise-i/o-file-protection-error who message filename)]))
+
+(define raise-i/o-file-is-read-only-error
+  (lambda (who message port)
+    (raise-misc-i/o-error-with-port make-i/o-file-is-read-only-error who message port)))
+
+(define (%raise-i/o-file-is-read-only-error args)
+  (match args
+    [(who message filename)
+     (raise-i/o-file-is-read-only-error who messag port)]))
+
+(define raise-i/o-filename-error
+  (lambda (who message filename . irritants)
+    (raise
+     (apply condition
+            (filter values
+                    (list (make-i/o-filename-error filename)
+                          (and who (make-who-condition who))
+                          (make-message-condition message)
+                          (and (pair? irritants) (make-irritants-condition irritants))))))))
+
+(define (%raise-i/o-filename-error args)
+  (match args
+    [(who message filename . irritants)
+     (apply raise-i/o-filename-error who message filename irritants)]))
+
+
+(define raise-i/o-read-error
+  (lambda (who message port)
+    (raise-misc-i/o-error-with-port make-i/o-read-error who message port)))
+
+(define (%raise-i/o-read-error args)
+  (match args
+    [(who message port)
+     (raise-i/o-read-error who message port)]))
+
+
+(define raise-i/o-write-error
+  (lambda (who message port)
+    (raise-misc-i/o-error-with-port make-i/o-write-error who message port)))
+
+(define (%raise-i/o-write-error args)
+  (match args
+    [(who message port)
+     (raise-i/o-write-error who message port)]))
+
+
+
+(define error
+  (lambda (who message . irritants)
+    (if (or (not who) (string? who) (symbol? who)) ;; (identifier? who)
+        (if (string? message)
+            (raise
+             (apply condition
+                    (filter values
+                            (list (make-error)
+                                  (and who (make-who-condition who))
+                                  (make-message-condition message)
+                                  (make-irritants-condition irritants)))))
+            (assertion-violation 'error (wrong-type-argument-message "string" message 2)))
+        (assertion-violation 'error (wrong-type-argument-message "string, symbol, or #f" who 1)))))
+
+(define (%error args)
+  (match args
+    [(who message . irritants)
+     (apply error who message irritants)]))
+
 
   ])
 

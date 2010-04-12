@@ -40,7 +40,6 @@
 #include "Symbol.h"
 #include "Regexp.h"
 #include "ByteVector.h"
-#include "Record.h"
 #include "Codec.h"
 #include "Transcoder.h"
 #include "BinaryInputPort.h"
@@ -53,7 +52,6 @@
 #include "Bignum.h"
 #include "Compnum.h"
 #include "Arithmetic.h"
-#include "CompoundCondition.h"
 #include "BinaryOutputPort.h"
 #include "BinaryInputOutputPort.h"
 #include "OSCompatSocket.h"
@@ -551,30 +549,6 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
         putString(o.toBinaryOutputPort()->toString().data());
     } else if (o.isBinaryInputOutputPort()) {
         putString(o.toBinaryInputOutputPort()->toString().data());
-    } else if (o.isRecordConstructorDescriptor()) {
-        putString(UC("#<record-constructor-descriptor>"));
-    } else if (o.isRecordTypeDescriptor()) {
-        putString(UC("#<record-type-descriptor>"));
-    } else if (o.isCompoundCondition()) {
-        putString(UC("#<compound-condition "));
-        CompoundCondition* const c = o.toCompoundCondition();
-        const ObjectVector& conditions = c->conditions();
-        for (ObjectVector::const_iterator it = conditions.begin(); it != conditions.end(); ++it) {
-            if (it != conditions.begin()) {
-                putString(UC(" "));
-            }
-            print<isHumanReadable>(theVM, *it, seen);
-        }
-        putString(UC(">"));
-    } else if (o.isRecord()) {
-        Record* const record = o.toRecord();
-        putString(UC("#<record "));
-        print<isHumanReadable>(theVM, record->recordTypeDescriptor()->name(), seen);
-//         for (int i = 0; i < record->fieldsLength(); i++) {
-//             print<isHumanReadable>(record->fieldAt(i));
-//             putString(UC(" "));
-//         }
-        putString(UC(">"));
     } else if (o.isSimpleStruct()) {
         putString(UC("#<"));
         print<isHumanReadable>(theVM, o.toSimpleStruct()->name(), seen);
@@ -645,8 +619,8 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
 bool TextualOutputPort::isInteresting(Object obj)
 {
     return // obj.isString() || obj.isSymbol() || 
-        obj.isPair() || obj.isVector() || obj.isRecordTypeDescriptor()
-        || obj.isSimpleStruct() || obj.isEqHashTable() || obj.isRecord();
+        obj.isPair() || obj.isVector()
+        || obj.isSimpleStruct() || obj.isEqHashTable();
 }
 
 void TextualOutputPort::scan(Object obj, EqHashTable* seen)
@@ -672,18 +646,12 @@ loop:
             for (int i = 0; i < v->length(); i++) {
                 scan(v->ref(i), seen);
             }
-        } else if (obj.isRecordTypeDescriptor()) {
-            RecordTypeDescriptor* const rtd = obj.toRecordTypeDescriptor();
-            const Object name = rtd->name();
-            MOSH_ASSERT(name.isSymbol());
-            scan(name, seen);
         } else if (obj.isEqHashTable()) {
             EqHashTable* const ht = obj.toEqHashTable();
             Vector* const keys = ht->keys().toVector();
             const int length = keys->length();
             for (int i = 0; i < length; i++) {
                 const Object key = keys->ref(i);
-                MOSH_ASSERT(key.isSymbol());
                 scan(key, seen);
                 scan(ht->ref(key, Object::False), seen);
             }
@@ -693,13 +661,6 @@ loop:
             const int length = record->fieldCount();
             for (int i = 0; i < length; i++) {
                 scan(record->ref(i), seen);
-            }
-        } else if (obj.isRecord()) {
-            Record* const record = obj.toRecord();
-            scan(record->rtd(), seen);
-            const int length = record->fieldsLength();
-            for (int i = 0; i < length; i++) {
-                scan(record->fieldAt(i), seen);
             }
         }
     }

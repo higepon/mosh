@@ -97,7 +97,7 @@
   (boolean? boolean?)
   (symbol->string symbol->string)
   (string-ref string-ref)
-  (error error)
+;  (error error)
 ;  (assertion-violation error)
   (get-timeofday (lambda () (receive (a b) (sys-gettimeofday) (cons a b))))
   (make-eq-hashtable (lambda a (make-hash-table 'eq?)))

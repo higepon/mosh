@@ -42,7 +42,6 @@
 #include "Pair.h"
 #include "Pair-inl.h"
 #include "SString.h"
-#include "Record.h"
 #include "Closure.h"
 #include "ByteVector.h"
 #include "PortProcedures.h"
@@ -1602,13 +1601,11 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 2) {
         argumentAsString(0, path);
-        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
         argumentCheckSimpleStruct(1, fileOptions);
         // default buffer mode is Block
         in = new BufferedFileBinaryInputPort(path->data());
     } else if (argc == 3) {
         argumentAsString(0, path);
-        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
 
         argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
@@ -1624,8 +1621,6 @@ Object scheme::openFileInputPortEx(VM* theVM, int argc, const Object* argv)
         }
     } else if (argc == 4) {
         argumentAsString(0, path);
-        LOG1("<<<~a>>>", argv[1].toSimpleStruct()->ref(1));
-
         argumentCheckSimpleStruct(1, fileOptions);
         argumentCheckSymbol(2, bufferMode);
         // N.B. On Mosh, buffer mode BLOCK == LINE.

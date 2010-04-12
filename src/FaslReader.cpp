@@ -46,8 +46,6 @@
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Compnum.h"
-#include "Record.h"
-#include "RecordTypeDescriptor.h"
 #include "EqHashTable.h"
 #include "SimpleStruct.h"
 #include "FaslReader.h"
