@@ -971,3 +971,22 @@ Object scheme::currentDynamicWindersEx(VM* theVM, int argc, const Object* argv)
         return Object::Undef;
     }
 }
+
+// rtds are shared between multiple VMs.
+static EqHashTable nongenerativeRtds;
+
+Object scheme::nongenerativeRtdSetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("nongenerative-rtd-set!");
+    checkArgumentLength(2);
+    argumentCheckSimpleStruct(1, rtd);
+    nongenerativeRtds.set(argv[0], rtd);
+    return Object::Undef;
+}
+
+Object scheme::lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("lookup-nongenerative-rtd");
+    checkArgumentLength(1);
+    return nongenerativeRtds.ref(argv[0], Object::False);
+}

@@ -552,10 +552,10 @@ template<bool isHumanReadable> void TextualOutputPort::print(const VM* theVM, Ob
     } else if (o.isSimpleStruct()) {
         putString(UC("#<"));
         print<isHumanReadable>(theVM, o.toSimpleStruct()->name(), seen);
-//         for (int i = 0; i < o.toSimpleStruct()->fieldCount(); i++) {
-//             print<isHumanReadable>(theVM, o.toSimpleStruct()->ref(i), seen);
-//             putString(UC(" "));
-//         }
+        for (int i = 0; i < o.toSimpleStruct()->fieldCount(); i++) {
+            print<isHumanReadable>(theVM, o.toSimpleStruct()->ref(i), seen);
+            putString(UC(" "));
+        }
 
         putString(UC(">"));
     } else if (o.isObjectPointer()) {

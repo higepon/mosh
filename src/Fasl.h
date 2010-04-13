@@ -66,7 +66,7 @@ public:
         TAG_ASCII_SYMBOL, /* not used */
         TAG_MEDIUM_FIXNUM,
         TAG_RTD,
-        TAG_RECORD,
+        TAG_RECORD /* not used */,
         TAG_EQ_HASH_TABLE,
         TAG_BIGNUM,
         TAG_FIXNUM_0,

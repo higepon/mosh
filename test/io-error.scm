@@ -30,7 +30,6 @@
 (import (rnrs)
         (mosh)
         (mosh process)
-        (mosh shell)
         (mosh test))
 
 ;; utf-8-codec
@@ -321,13 +320,11 @@
 ;; file-is-read-only
 (unless (string=? (host-os) "win32")
   (let ()
-  (def-command chmod)
-  (chmod -w "./test/read-only.txt")
-;  (test-error i/o-file-is-read-only-error?
-;                  (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block)
+  (test-error i/o-file-is-read-only-error?
+                  (open-file-input/output-port "./test/read-only.txt" (file-options no-fail) 'block))
 
-;  (test-error i/o-file-is-read-only-error?
-                  (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block)))
+  (test-error i/o-file-is-read-only-error?
+                  (open-file-output-port "./test/read-only.txt" (file-options no-fail) 'block))))
 
 
 ; we can't "svn add" this file, but test is OK.

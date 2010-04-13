@@ -72,10 +72,10 @@ public:
         GenericHashTable            = Type<21>::VALUE,
         EqvHashTable                = Type<22>::VALUE,
         Callable                    = Type<23>::VALUE,
-        Record                      = Type<24>::VALUE,
-        RecordTypeDescriptor        = Type<25>::VALUE,
-        RecordConstructorDescriptor = Type<26>::VALUE,
-        CompoundCondition           = Type<27>::VALUE,
+        Record                      = Type<24>::VALUE, // not used
+        RecordTypeDescriptor        = Type<25>::VALUE, // not used
+        RecordConstructorDescriptor = Type<26>::VALUE, // not used
+        CompoundCondition           = Type<27>::VALUE, // not used
         ObjectPointer               = Type<28>::VALUE, // used only debug mode
         Ratnum                      = Type<29>::VALUE,
         Flonum                      = Type<30>::VALUE,

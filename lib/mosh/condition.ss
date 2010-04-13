@@ -1,4 +1,0 @@
-(library (hige)
-         (export)
-         (import)
-)

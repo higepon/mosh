@@ -44,7 +44,6 @@
 #include "HashTableProceduures.h"
 #include "StringProcedures.h"
 #include "PortProcedures.h"
-#include "ConditionProcedures.h"
 #include "ErrorProcedures.h"
 #include "ListProcedures.h"
 #include "ArithmeticProcedures.h"

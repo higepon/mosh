@@ -665,6 +665,8 @@
   simple-struct-ref
   simple-struct-set!
   simple-struct-name
+  lookup-nongenerative-rtd
+  nongenerative-rtd-set!
   ;; for faster psyntax.
   same-marks*?
   same-marks?

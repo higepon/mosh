@@ -60,7 +60,6 @@
              [#/1/ "#/1/" "#/1/" "#[regexp]"]
              [(#/\d+/ "123") "#<reg-match>" "#<reg-match>" "#[procedure]"]
              [(utf-8-codec) "#<codec utf-8-codec>" "#<codec utf-8-codec>" "#[unknown]"]
-             [(make-error) "#<record &error>" "#<record &error>" "#[record]"]
              [1/2 "1/2"]
              [1+2i "1+2i"]
              ['() "()"]
@@ -83,8 +82,6 @@
 ;;              ['(UNSYNTAX-SPLICING a) "#,@a"]
              [(eof-object) "#<eof-object>" "#<eof-object>" "#[eof-object]"]
 ;             [1.0e99 "1e99"]
-             [(condition '()) "#<compound-condition ()>" "#<compound-condition ()>" "#[condition]"]
-             [(make-record-type-descriptor 'hoge #f #f #f #f '#(a b c)) "#<record-type-descriptor>" "#<record-type-descriptor>" "#[record-type-descriptor]"]
              [(if #f #t) "#<unspecified>" "#<unspecified>" "#[unspecified]"] ;; unspecified
 
 )

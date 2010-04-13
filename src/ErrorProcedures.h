@@ -87,20 +87,15 @@ extern bool isErrorBufInitialized;
     Object throwIOError2(int type, Object message, Object irritants = Object::Nil);
     Object callIOErrorAfter(VM* theVM, IOError e);
     Object callIOErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
-    Object callSocketErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callIOInvalidPositionAfter(VM* theVM, Object who, Object message, Object irritants, Object position);
     Object callIOReadErrorAfter(VM* theVM, Object who, Object message, Object port);
-//    Object throwIOError(Object message);
     Object throwEx(VM* theVM, int argc, const Object* argv);
-    Object callIoFileReadOnlyAfter(VM* theVM, Object filename, Object who, Object message, Object irritants  = Object::Nil);
-    Object callIoFileProtectionAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
-    Object callIoFileNotExistAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
-    Object callIoFileAlreadyExistAfter(VM* theVM, Object filname, Object who, Object message, Object irritants = Object::Nil);
-    Object callLexicalAndIOReadAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
-    Object callIoFileNameErrorAfter(VM* theVM, Object filename, Object who, Object message, Object irritants = Object::Nil);
+    Object callIoFileNotExistAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callLexicalAndIOReadAfter(VM* theVM, Object who, Object message);
+    Object callIoFileNameErrorAfter(VM* theVM, Object who, Object message, Object filename);
     Object callAssertionViolationAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callUndefinedViolationAfter(VM* theVM, Object who, Object message);
-    Object callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
+
     void callAssertionViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
     Object callImplementationRestrictionAfter(VM* theVM, Object who, Object message, Object irritants);
     void callLexicalViolationImmidiaImmediately(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
@@ -110,8 +105,10 @@ extern bool isErrorBufInitialized;
     void callWrongNumberOfArgumentsBetweenViolationAfter(VM* theVM, Object who, int startCounts, int endCounts, int gotCounts, Object irritants = Object::Nil);
     void callWrongTypeOfArgumentViolationAfter(VM* theVM, Object who, Object requiredType, Object gotValue, Object irritants = Object::Nil);
 
-
-
+    Object callIoFileAlreadyExistAfter(VM* theVM, Object who, Object message, Object filname);
+    Object callIoFileProtectionAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callIoFileReadOnlyAfter(VM* theVM, Object who, Object message, Object filename);
+    Object callErrorAfter(VM* theVM, Object who, Object message, Object irritants = Object::Nil);
 } // namespace scheme
 
 #endif // SCHEME_VIOLATION_PROCEDURES_
