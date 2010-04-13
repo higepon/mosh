@@ -436,7 +436,11 @@ CORE_LIBS =                 \
     lib/core/bytevector.scm \
     lib/core/base.scm       \
     lib/core/r5rs.scm       \
-    lib/core/hashtable.scm
+    lib/core/hashtable.scm \
+    lib/core/condition.scm \
+    lib/core/records.scm \
+    lib/core/enum.scm \
+    lib/core/exception.scm
 
 
 ./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
