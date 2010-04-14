@@ -1116,7 +1116,7 @@
                    [inits inits])
           (cond
            [(null? inits) #f]
-           [(and (tag? (car inits) $LOCAL-REF) (not (memq ($local-ref.lvar (car inits)) initialized*)))
+           [(and (tag? (car inits) $LOCAL-REF) (memq ($local-ref.lvar (car inits)) this-lvars) (not (memq ($local-ref.lvar (car inits)) initialized*)))
             (car inits)]
            [else
             (loop (cons (car lvars) initialized*) (cdr lvars) (cdr inits))]))

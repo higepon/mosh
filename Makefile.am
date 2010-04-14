@@ -436,14 +436,12 @@ CORE_LIBS =                 \
     lib/core/bytevector.scm \
     lib/core/base.scm       \
     lib/core/r5rs.scm       \
-    lib/core/hashtable.scm \
-    lib/core/condition.scm \
-    lib/core/records.scm \
-    lib/core/enum.scm \
-    lib/core/exception.scm
+    lib/core/hashtable.scm
+
+CORE_INCLUDE_LIBS = lib/core/enum.scm lib/core/condition.scm lib/core/exception.scm lib/core/records.scm
 
 
-./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS)
+./src/compiler-with-library.scm: ./src/library.scm ./src/compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
 	cat $^ > $(PWD)/$@
 
 src/free-vars-decl.scm: src/free-vars.scm

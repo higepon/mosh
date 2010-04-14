@@ -28,12 +28,12 @@
 
 ;; Originally from Ypsilon Scheme
 
-(define enum-set-rtd (make-record-type-descriptor 'enum-set #f #f #f #f '#((mutable type) (mutable members))))
+(define enum-set-rtd (make-record-type-descriptor 'enum-set #f 'enum-set-uid #f #f '#((mutable type) (mutable members))))
 (define enum-set-rcd (make-record-constructor-descriptor enum-set-rtd #f #f))
 (define make-enum-set (record-constructor enum-set-rcd))
 (define enum-set-members (record-accessor enum-set-rtd 1)) (define enum-set-type (record-accessor enum-set-rtd 0))
 
-(define enum-type-rtd (make-record-type-descriptor 'enum-type #f #f #f #f '#((mutable universe) (mutable indexer))))
+(define enum-type-rtd (make-record-type-descriptor 'enum-type #f 'enum-type-uid #f #f '#((mutable universe) (mutable indexer))))
 (define enum-type-rcd (make-record-constructor-descriptor enum-type-rtd #f #f))
 (define make-enum-type (record-constructor enum-type-rcd))
 (define enum-type-indexer (record-accessor enum-type-rtd 1))
