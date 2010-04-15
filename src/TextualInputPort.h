@@ -68,10 +68,14 @@ public:
     virtual Object position() const;
     virtual bool setPosition(int64_t position);
 
+    bool isStrictR6RsReaderMode() const;
+    void setStrictR6RsReaderMode();
+
 private:
     Object error_;
     Scanner* scanner_;
     NumberScanner* numberScanner_;
+    bool isStrictR6RsReaderMode_;
 };
 
 } // namespace scheme

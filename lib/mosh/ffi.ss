@@ -166,13 +166,16 @@
           pointer<>?
           null-terminated-bytevector->string
           null-terminated-utf8->string)
-  (import (only (rnrs) display define define-syntax syntax-case lambda map let syntax exists string=? string
+  (import (only (rnrs) append display define define-syntax syntax-case lambda map let syntax exists string=? string
                        quasiquote unless assertion-violation quote = length and number? assq => cdr assoc
                        for-each apply hashtable-ref unquote integer? string? ... or zero? filter list list->string case
                        for-all procedure? flonum? fixnum? cond else inexact guard file-exists? find > < >= <= not syntax-rules -
-                       + case-lambda cons let* make-string char->integer integer->char if bytevector?)
+                       + case-lambda cons let* make-string char->integer integer->char if bytevector? null? car string-append)
+          (srfi :98)
+          (only (srfi :13) string-prefix?)
           (only (rnrs mutable-strings) string-set!)
-          (only (mosh) alist->eq-hash-table format os-constant host-os)
+          (only (mosh) alist->eq-hash-table format os-constant host-os string-split)
+          (only (mosh control) aif)
           (rename (system) (%ffi-open open-shared-library) (%ffi-make-c-callback-trampoline make-c-callback-trampoline) (%ffi-free-c-callback-trampoline free-c-callback))
           (only (system) directory-list %ffi-lookup %ffi-call
                 shared-errno
@@ -278,7 +281,7 @@
     Returns string value at which pointer points.
 
     Prototype:
-    > (pointer->string pointer)
+   > (pointer->string pointer)
 
     Parameters:
 
@@ -454,11 +457,20 @@
 
 |#
 
-(define (find-shared-library regex)
-  (exists
-   (lambda (path)
-     (find regex (guard [c (#t '())] (directory-list path))))
-   (filter file-exists? '("/lib" "/usr/lib/" "/usr/local/lib"))))
+(define library-search-path* '("/lib" "/usr/lib" "/usr/local/lib"))
+
+(define (find-shared-library libname-prefix)
+  (let ([path* (aif (get-environment-variable "LD_LIBRARY_PATH")
+                    (append (string-split it #\:) library-search-path*)
+                    library-search-path*)])
+    (let loop ([path* (filter file-exists? path*)])
+      (cond
+       [(null? path*) #f]
+       [(find (lambda (path) (if (string-prefix? libname-prefix path) path #f)) (guard [c (#t '())] (directory-list (car path*)))) =>
+        (lambda (path)
+          (string-append (car path*) "/" path))]
+       [else
+        (loop (cdr path*))]))))
 
 #|
     Function: pointer->c-function

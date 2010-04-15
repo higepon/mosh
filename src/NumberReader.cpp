@@ -36,6 +36,7 @@
 #include "SString.h"
 #include "TextualInputPort.h"
 #include "StringTextualInputPort.h"
+#include "EqHashTable.h"
 #include "NumberReader.h"
 #include "NumberScanner.h"
 

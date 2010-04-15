@@ -45,6 +45,8 @@ public:
 
 private:
     void getSymbolsAndStrings();
+    void linkShared(Object obj, EqHashTable* seen);
+    Object getShared(int index);
 
     // profiler tells that this should be inlined
     uint32_t fetchU32()
@@ -86,8 +88,20 @@ private:
             return Object::Eof;
         case Fasl::TAG_LOOKUP: {
             const uint32_t uid = fetchU32();
-            MOSH_ASSERT(sharedObjects_[uid] != Object::Ignore);
-            return sharedObjects_[uid];
+            Object obj = sharedObjects_->ref(Object::makeFixnum(uid), Object::Ignore);
+            if (obj == Object::Ignore) {
+                isLinkNeeded_ = true;
+                return Object::makeSharedReference(uid);
+            } else {
+                return obj;
+            }
+        }
+        case Fasl::TAG_DEFINING_SHARED:
+        {
+            const uint32_t uid = fetchU32();
+            Object obj = getDatum();
+            sharedObjects_->set(Object::makeFixnum(uid), obj);
+            return obj;
         }
         case Fasl::TAG_SYMBOL:
         {
@@ -302,21 +316,6 @@ private:
             return Object::True;
         case Fasl::TAG_F:
             return Object::False;
-        case Fasl::TAG_RECORD:
-        {
-            Object rtd = getDatum();
-            MOSH_ASSERT(rtd.isRecordTypeDescriptor());
-
-            Object length = getDatum();
-            MOSH_ASSERT(length.isFixnum());
-            const int len = length.toFixnum();
-            Object* fields = Object::makeObjectArray(len);
-            const Object record =  Object::makeRecord(rtd, fields, len);
-            for (int i = 0; i < len; i++) {
-                record.toRecord()->setFieldAt(i, getDatum());
-            }
-            return record;
-        }
         case Fasl::TAG_SIMPLE_STRUCT:
         {
             Object name = getDatum();
@@ -354,9 +353,10 @@ private:
         return Object::Undef;
     }
 
-    Object* sharedObjects_;
     BinaryInputPort* inputPort_;
     VM* theVM_;
+    EqHashTable* sharedObjects_;
+    bool isLinkNeeded_;
 };
 
 

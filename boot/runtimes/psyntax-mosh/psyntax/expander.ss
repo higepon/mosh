@@ -615,7 +615,14 @@
               x)
           (let f ((x x))
             (cond
-              ((stx? x) (strip (stx-expr x) (stx-mark* x)))
+              ((stx? x)
+               ;; Mosh
+               ;; #1=(#1#) with anotation data causes infinite loop
+               (when (pair? (stx-expr x))
+                 (set-source-info! (stx-expr x) #f)
+                 (set-source-info! (cdr (stx-expr x)) #f)
+                 (set-source-info! (car (stx-expr x)) #f))
+               (strip (stx-expr x) (stx-mark* x)))
               [(annotation? x) (annotation-stripped x)]
               ((pair? x)
                (let ((a (f (car x))) (d (f (cdr x))))
@@ -3994,9 +4001,10 @@
     (define-condition-type &source-information &condition
       make-source-condition source-condition?
       (file-name source-filename)
-      (character source-character))
-    (if (pair? x)
-        (make-source-condition (car x) (cdr x))
+;      (character source-character))
+      (line source-character))
+    (if (and (pair? x) (pair? (cdr x)))
+        (make-source-condition (car x) (cadr x))
         (condition)))
 
   (define (extract-position-condition x)

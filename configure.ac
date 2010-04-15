@@ -2,12 +2,12 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.63)
-AC_INIT(mosh, 0.2.3, higepon@users.sourceforge.jp)
+AC_INIT(mosh, 0.2.4, higepon@users.sourceforge.jp)
 AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE(foreign)
 AC_CONFIG_SRCDIR([src/VM.h])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADER([src/config.h])
 
 
 AC_SUBST(MOSH_LIB_PATH, "${datadir}/mosh/$PACKAGE_VERSION")

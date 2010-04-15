@@ -35,4 +35,19 @@
 (test-equal "" (read-string "\"\\ \r \""))
 (test-equal ""  (read-string "\"\\\t\r\t\""))
 
+(test-equal 1
+  (let ()
+    (define (f a)
+      (define b a)
+      b)
+    (f 1)))
+(test-equal 1
+  (let ()
+    (define (f a)
+      (letrec* ((b a))
+               b))
+    (f 1)))
+
+
+
 (test-results)

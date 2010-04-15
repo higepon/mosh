@@ -97,8 +97,8 @@
   (boolean? boolean?)
   (symbol->string symbol->string)
   (string-ref string-ref)
-  (error error)
-  (assertion-violation error)
+;  (error error)
+;  (assertion-violation error)
   (get-timeofday (lambda () (receive (a b) (sys-gettimeofday) (cons a b))))
   (make-eq-hashtable (lambda a (make-hash-table 'eq?)))
   (make-eqv-hashtable (lambda a (make-hash-table 'eqv?)))
@@ -230,28 +230,28 @@
   hashtable-keys
   hashtable-equivalence-function
   hashtable-hash-function
-  (make-record-type-descriptor (lambda e 'make-record-type-descriptor-dummy))
-  (make-record-constructor-descriptor (lambda e 'make-record-constructor-descriptor-dummy))
-  record-predicate
-  (record-constructor (lambda e 'record-constructor-dummy))
-  (record-accessor (lambda e 'record-accessor-dummy))
-  record-mutator
-  record?
-  record-rtd
-  record-type-name
-  record-type-parent
-  record-type-uid
-  record-type-generative?
-  record-type-sealed?
-  record-type-opaque?
-  record-type-field-names
-  record-field-mutable?
-  record-type-descriptor?
-  condition
-  simple-conditions
-  condition?
-  condition-accessor
-  condition-predicate
+;;   (make-record-type-descriptor (lambda e 'make-record-type-descriptor-dummy))
+;;   (make-record-constructor-descriptor (lambda e 'make-record-constructor-descriptor-dummy))
+;;   record-predicate
+;;   (record-constructor (lambda e 'record-constructor-dummy))
+;;   (record-accessor (lambda e 'record-accessor-dummy))
+;;   record-mutator
+;;   record?
+;;   record-rtd
+;;   record-type-name
+;;   record-type-parent
+;;   record-type-uid
+;;   record-type-generative?
+;;   record-type-sealed?
+;;   record-type-opaque?
+;;   record-type-field-names
+;;   record-field-mutable?
+;;   record-type-descriptor?
+;;   condition
+;;   simple-conditions
+;;   condition?
+;;   condition-accessor
+;;   condition-predicate
   throw
   (< <)
   (<= <=)
@@ -665,6 +665,8 @@
   simple-struct-ref
   simple-struct-set!
   simple-struct-name
+  lookup-nongenerative-rtd
+  nongenerative-rtd-set!
   ;; for faster psyntax.
   same-marks*?
   same-marks?

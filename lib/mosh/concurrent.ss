@@ -34,7 +34,10 @@
 
     library: (mosh concurrent)
 
-    Multi-Process Library
+    Multi-Process Library.
+
+    N.B.
+    If you share R6RS records between multiple processs, define them as nongenerative.
 |#
 (library (mosh concurrent)
   (export ! receive spawn self join! register whereis link unlink process-exit spawn-link
@@ -43,7 +46,7 @@
                 whereis vm-start! make-vm symbol-value condition-variable-wait! vm-join! register time format ungensym)
           (only (rnrs) begin define-record-type immutable mutable protocol lambda define for-each quote exit fields _ ... define-syntax
                 syntax-case syntax integer? syntax->datum when let quasiquote unless error if let* memq remq cons cond pair? not car cadr
-                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote apply do null? +  cdr <= -
+                else letrec unquote display define-condition-type &error quasisyntax unsyntax unquote apply do null? +  cdr <= - nongenerative
                 string-append string-length symbol->string record-type-name newline write record-rtd simple-conditions max map append
                 vector->list record-type-field-names record-type-parent symbol? record-accessor reverse)
           (only (mosh queue) make-queue queue-push! queue-empty? queue-pop! queue-append!)
@@ -54,11 +57,14 @@
   make-process-error process-error?
   (error process-error))
 
+;; N.B. Since mail-box and pid are shared between VMs,
+;;      record-type should be nongenerative.
 (define-record-type mail-box
   (fields
    (immutable condition)
    (immutable mutex)
    (mutable mails))
+  (nongenerative)
   (protocol
    (lambda (c)
      (lambda ()
@@ -69,6 +75,7 @@
    (immutable vm)
    (immutable mail-box)
    (mutable links))
+  (nongenerative)
   (protocol
    (lambda (c)
      (lambda (vm)

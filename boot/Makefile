@@ -9,6 +9,9 @@ CORE_LIBS =                 \
     lib/r5rs.scm       \
     lib/hashtable.scm
 
+CORE_INCLUDE_LIBS = lib/enum.scm lib/condition.scm lib/exception.scm lib/records.scm
+
+
 TARGET=$(SRC_DIR)/match.h $(SRC_DIR)/baselib.h $(SRC_DIR)/psyntax_mosh_image.cpp $(SRC_DIR)/nmosh_image.cpp
 
 all: bootstrap $(TARGET)
@@ -55,7 +58,7 @@ baselib.scmc: baselib.scm compiler-vm.scm
 	gosh vm.scm compile-file-with-macro $< > $@
 	sed -i -e "s/#\\\\null/#\\\\nul/g;s/|\.\.\.|/\.\.\./g;s/|@|/@/g" $@
 
-baselib.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS)
+baselib.scm: lib/base.scm compiler-vm-cpp.scm $(CORE_LIBS) $(CORE_INCLUDE_LIBS)
 	cat $^ > $@
 
 free-vars-decl.scm: free-vars.scm

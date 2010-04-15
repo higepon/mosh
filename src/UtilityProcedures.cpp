@@ -63,7 +63,6 @@
 #include "ProcedureMacro.h"
 #include "PortProcedures.h"
 #include "StringProcedures.h"
-#include "Record.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Equivalent.h"
@@ -971,4 +970,23 @@ Object scheme::currentDynamicWindersEx(VM* theVM, int argc, const Object* argv)
         theVM->setDynamicWinders(argv[0]);
         return Object::Undef;
     }
+}
+
+// rtds are shared between multiple VMs.
+static EqHashTable nongenerativeRtds;
+
+Object scheme::nongenerativeRtdSetDEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("nongenerative-rtd-set!");
+    checkArgumentLength(2);
+    argumentCheckSimpleStruct(1, rtd);
+    nongenerativeRtds.set(argv[0], rtd);
+    return Object::Undef;
+}
+
+Object scheme::lookupNongenerativeRtdEx(VM* theVM, int argc, const Object* argv)
+{
+    DeclareProcedureName("lookup-nongenerative-rtd");
+    checkArgumentLength(1);
+    return nongenerativeRtds.ref(argv[0], Object::False);
 }

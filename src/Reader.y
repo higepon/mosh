@@ -46,6 +46,7 @@
 #include "TextualInputPort.h"
 #include "ByteVectorProcedures.h"
 #include "Arithmetic.h"
+#include "EqHashTable.h"
 #include "Reader.h"
 #include "NumberReader.h"
 #include "Scanner.h"
@@ -61,15 +62,16 @@ extern int yyerror(const char *);
 %token <stringValue> STRING
 %token <intValue> CHARACTER
 %token <intValue> CHARACTER_NAME
+%token <intValue> DEFINING_SHARED
+%token <intValue> DEFINED_SHARED
 %token <stringValue> REGEXP
 %token <stringValue> NUMBER NUMBER2 NUMBER8 NUMBER10 NUMBER16
-
 %token <charValue> LEFT_PAREN RIGHT_PAREN 
 %token END_OF_FILE VECTOR_START BYTE_VECTOR_START DOT DATUM_COMMENT
 %token ABBV_QUASIQUOTE ABBV_QUOTE ABBV_UNQUOTESPLICING ABBV_UNQUOTE
 %token ABBV_SYNTAX ABBV_QUASISYNTAX ABBV_UNSYNTAXSPLICING ABBV_UNSYNTAX
 
-%type <object> datum lexme_datum top_level compound_datum list datum_list
+%type <object> datum lexme_datum top_level compound_datum list datum_list defining_datum defined_datum
 %type <object> vector bytevector abbreviation
 
 %start top_level
@@ -78,13 +80,37 @@ extern int yyerror(const char *);
 
 top_level      : END_OF_FILE { currentVM()->readerContext()->setParsed(Object::Eof); YYACCEPT; }
                | datum { currentVM()->readerContext()->setParsed($$); YYACCEPT; }
+               ;
 
 datum          : lexme_datum
                | compound_datum
+               | defining_datum
+               | defined_datum
                | DATUM_COMMENT datum datum { $$ = $3; }
                | DATUM_COMMENT lexme_datum { $$ = Object::Ignore; }
                | DATUM_COMMENT compound_datum { $$ = Object::Ignore; }
                ;
+
+defined_datum : DEFINED_SHARED {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
+                     yyerror("#1# style is not allowed on #!r6rs mode.");
+                     YYERROR;
+                 } else {
+                     currentVM()->readerContext()->setIsSharedStructureFound();
+                     $$ = Object::makeSharedReference($1);
+                 }
+               };
+
+defining_datum : DEFINING_SHARED datum {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
+                     yyerror("#1= style is not allowed on #!r6rs mode.");
+                     YYERROR;
+                 } else {
+                     currentVM()->readerContext()->setIsSharedStructureFound();
+                     currentVM()->readerContext()->addShared($1, $2);
+                     $$ = $2;
+                 }
+               };
 
 lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                | STRING {
@@ -92,7 +118,12 @@ lexme_datum    : SCHEME_BOOLEAN { $$ = $1 ? Object::True : Object::False; }
                  $$ = Object::makeString(s);
                }
                | REGEXP {
+                 if (currentVM()->readerContext()->port()->isStrictR6RsReaderMode()) {
+                   yyerror("Regexp literal is not allowed on #!r6rs mode");
+                   YYERROR;
+                 } else {
                    $$ = Object::makeRegexp($1);
+                 }
                }
                | NUMBER {
                    bool isErrorOccured = false;

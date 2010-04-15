@@ -45,7 +45,6 @@
 #include "FileBinaryOutputPort.h"
 #include "Bignum.h"
 #include "Ratnum.h"
-#include "Record.h"
 #include "Flonum.h"
 #include "Symbol.h"
 #include "TestingVM.h"
@@ -55,13 +54,11 @@
 #include "Closure.h"
 #include "Gloc.h"
 #include "VM-inl.h"
-#include "RecordProcedures.h"
 #include "StringProcedures.h"
 #include "SimpleStruct.h"
 #include "FaslReader.h"
 #include "FaslWriter.h"
 #include "ErrorProcedures.h"
-#include "Record.h"
 #include "Ratnum.h"
 #include "Flonum.h"
 #include "Equivalent.h"
@@ -110,7 +107,6 @@ protected:
 
 TEST_F(FaslTest, Fixnum) {
     const Object restored = StoreAndRestore(Object::makeFixnum(123456));
-    printf("%s %s:%d\n", __func__, __FILE__, __LINE__);fflush(stdout);// debug
     ASSERT_TRUE(restored.isFixnum());
     EXPECT_EQ(123456, restored.toFixnum());
 }
@@ -157,145 +153,145 @@ TEST_F(FaslTest, EqHashTable) {
 
 
 // make RecordTypeDescriptor and write/read with Fasl
-TEST_F(FaslTest, RecordTypeDescriptor) {
-    const Object fields = Object::makeVector(2);
-    Vector* const vfields = fields.toVector();
-    vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
-    vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
-    const Object args1[] = {
-        Symbol::intern(UC("point")),
-        Object::False,
-        Object::False,
-        Object::False,
-        Object::False,
-        fields};
+// TEST_F(FaslTest, RecordTypeDescriptor) {
+//     const Object fields = Object::makeVector(2);
+//     Vector* const vfields = fields.toVector();
+//     vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
+//     vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
+//     const Object args1[] = {
+//         Symbol::intern(UC("point")),
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         fields};
 
-    const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
-    EXPECT_TRUE(rtd.isRecordTypeDescriptor());
-    // Write
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test0.dat"));
-    FaslWriter writer(out);
-    writer.put(rtd);
-    out->close();
+//     const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
+//     EXPECT_TRUE(rtd.isRecordTypeDescriptor());
+//     // Write
+//     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test0.dat"));
+//     FaslWriter writer(out);
+//     writer.put(rtd);
+//     out->close();
 
-    // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test0.dat"));
-    FaslReader reader(theVM_, in);
-    const Object restored = reader.get();
-    EXPECT_TRUE(rtd.eq(restored));
-}
+//     // Read
+//     BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test0.dat"));
+//     FaslReader reader(theVM_, in);
+//     const Object restored = reader.get();
+//     EXPECT_TRUE(rtd.eq(restored));
+// }
 
-// make Point Record and write/read with Fasl.
-TEST_F(FaslTest, Record) {
-    const Object fields = Object::makeVector(2);
-    Vector* const vfields = fields.toVector();
-    vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
-    vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
-    const Object args1[] = {
-        Symbol::intern(UC("point")),
-        Object::False,
-        Object::False,
-        Object::False,
-        Object::False,
-        fields};
+// // make Point Record and write/read with Fasl.
+// TEST_F(FaslTest, Record) {
+//     const Object fields = Object::makeVector(2);
+//     Vector* const vfields = fields.toVector();
+//     vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
+//     vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
+//     const Object args1[] = {
+//         Symbol::intern(UC("point")),
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         fields};
 
-    const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
-    EXPECT_TRUE(rtd.isRecordTypeDescriptor());
-    const Object args2[] = { rtd, Object::False, Object::False };
-    const Object rcd = makeRecordConstructorDescriptorEx(theVM_, sizeof(args2)/ sizeof(Object), args2);
-    EXPECT_TRUE(rcd.isRecordConstructorDescriptor());
-    const Object makePoint = recordConstructorEx(theVM_, 1, &rcd);
-    EXPECT_TRUE(makePoint.isCallable());
+//     const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
+//     EXPECT_TRUE(rtd.isRecordTypeDescriptor());
+//     const Object args2[] = { rtd, Object::False, Object::False };
+//     const Object rcd = makeRecordConstructorDescriptorEx(theVM_, sizeof(args2)/ sizeof(Object), args2);
+//     EXPECT_TRUE(rcd.isRecordConstructorDescriptor());
+//     const Object makePoint = recordConstructorEx(theVM_, 1, &rcd);
+//     EXPECT_TRUE(makePoint.isCallable());
 
-    // Record
-    const Object point = theVM_->callClosure2(makePoint, Object::makeFixnum(1), Object::makeFixnum(2));
-    EXPECT_TRUE(point.isRecord());
+//     // Record
+//     const Object point = theVM_->callClosure2(makePoint, Object::makeFixnum(1), Object::makeFixnum(2));
+//     EXPECT_TRUE(point.isRecord());
 
-    // Predicaete
-    const Object predicate = recordPredicateEx(theVM_, 1, &rtd);
-    EXPECT_TRUE(predicate.isCallable());
-    EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
+//     // Predicaete
+//     const Object predicate = recordPredicateEx(theVM_, 1, &rtd);
+//     EXPECT_TRUE(predicate.isCallable());
+//     EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
 
-    // Accessor
-    Object args4[] = { rtd, Object::makeFixnum(0) };
-    const Object pointX = recordAccessorEx(theVM_, sizeof(args4) / sizeof(Object), args4);
-    Object args5[] = { rtd, Object::makeFixnum(1) };
-    const Object pointY = recordAccessorEx(theVM_, sizeof(args5) / sizeof(Object), args5);
-    EXPECT_EQ(1, theVM_->callClosure1(pointX, point).toFixnum());
-    EXPECT_EQ(2, theVM_->callClosure1(pointY, point).toFixnum());
+//     // Accessor
+//     Object args4[] = { rtd, Object::makeFixnum(0) };
+//     const Object pointX = recordAccessorEx(theVM_, sizeof(args4) / sizeof(Object), args4);
+//     Object args5[] = { rtd, Object::makeFixnum(1) };
+//     const Object pointY = recordAccessorEx(theVM_, sizeof(args5) / sizeof(Object), args5);
+//     EXPECT_EQ(1, theVM_->callClosure1(pointX, point).toFixnum());
+//     EXPECT_EQ(2, theVM_->callClosure1(pointY, point).toFixnum());
 
-    // Write
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test1.dat"));
-    FaslWriter writer(out);
-    writer.put(point);
-    out->close();
+//     // Write
+//     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test1.dat"));
+//     FaslWriter writer(out);
+//     writer.put(point);
+//     out->close();
 
-    // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test1.dat"));
-    FaslReader reader(theVM_, in);
-    const Object restored = reader.get();
-    EXPECT_TRUE(eqv(point, restored));
-    EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
-    EXPECT_EQ(1, theVM_->callClosure1(pointX, point).toFixnum());
-    EXPECT_EQ(2, theVM_->callClosure1(pointY, point).toFixnum());
-}
+//     // Read
+//     BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test1.dat"));
+//     FaslReader reader(theVM_, in);
+//     const Object restored = reader.get();
+//     EXPECT_TRUE(eqv(point, restored));
+//     EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
+//     EXPECT_EQ(1, theVM_->callClosure1(pointX, point).toFixnum());
+//     EXPECT_EQ(2, theVM_->callClosure1(pointY, point).toFixnum());
+// }
 
-// make Point Record and write/read with Fasl.
-TEST_F(FaslTest, RecordWithPair) {
-    const Object fields = Object::makeVector(2);
-    Vector* const vfields = fields.toVector();
-    vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
-    vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
-    const Object args1[] = {
-        Symbol::intern(UC("point")),
-        Object::False,
-        Object::False,
-        Object::False,
-        Object::False,
-        fields};
+// // make Point Record and write/read with Fasl.
+// TEST_F(FaslTest, RecordWithPair) {
+//     const Object fields = Object::makeVector(2);
+//     Vector* const vfields = fields.toVector();
+//     vfields->set(0, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("x"))));
+//     vfields->set(1, Pair::list2(Symbol::intern(UC("mutable")), Symbol::intern(UC("y"))));
+//     const Object args1[] = {
+//         Symbol::intern(UC("point")),
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         Object::False,
+//         fields};
 
-    const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
-    EXPECT_TRUE(rtd.isRecordTypeDescriptor());
-    const Object args2[] = { rtd, Object::False, Object::False };
-    const Object rcd = makeRecordConstructorDescriptorEx(theVM_, sizeof(args2)/ sizeof(Object), args2);
-    EXPECT_TRUE(rcd.isRecordConstructorDescriptor());
-    const Object makePoint = recordConstructorEx(theVM_, 1, &rcd);
-    EXPECT_TRUE(makePoint.isCallable());
+//     const Object rtd = makeRecordTypeDescriptorEx(theVM_, sizeof(args1) / sizeof(Object), args1);
+//     EXPECT_TRUE(rtd.isRecordTypeDescriptor());
+//     const Object args2[] = { rtd, Object::False, Object::False };
+//     const Object rcd = makeRecordConstructorDescriptorEx(theVM_, sizeof(args2)/ sizeof(Object), args2);
+//     EXPECT_TRUE(rcd.isRecordConstructorDescriptor());
+//     const Object makePoint = recordConstructorEx(theVM_, 1, &rcd);
+//     EXPECT_TRUE(makePoint.isCallable());
 
-    // Record
-    const Object point = theVM_->callClosure2(makePoint, Pair::list2(Symbol::intern(UC("hage")), Object::makeFixnum(2)), Object::makeString("hoge"));
-    EXPECT_TRUE(point.isRecord());
+//     // Record
+//     const Object point = theVM_->callClosure2(makePoint, Pair::list2(Symbol::intern(UC("hage")), Object::makeFixnum(2)), Object::makeString("hoge"));
+//     EXPECT_TRUE(point.isRecord());
 
-    // Predicaete
-    const Object predicate = recordPredicateEx(theVM_, 1, &rtd);
-    EXPECT_TRUE(predicate.isCallable());
-    EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
+//     // Predicaete
+//     const Object predicate = recordPredicateEx(theVM_, 1, &rtd);
+//     EXPECT_TRUE(predicate.isCallable());
+//     EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
 
-    // Accessor
-    Object args4[] = { rtd, Object::makeFixnum(0) };
-    const Object pointX = recordAccessorEx(theVM_, sizeof(args4) / sizeof(Object), args4);
-    Object args5[] = { rtd, Object::makeFixnum(1) };
-    const Object pointY = recordAccessorEx(theVM_, sizeof(args5) / sizeof(Object), args5);
-    EXPECT_TRUE(theVM_->callClosure1(pointX, point).isPair());
-    EXPECT_TRUE(theVM_->callClosure1(pointY, point).isString());
+//     // Accessor
+//     Object args4[] = { rtd, Object::makeFixnum(0) };
+//     const Object pointX = recordAccessorEx(theVM_, sizeof(args4) / sizeof(Object), args4);
+//     Object args5[] = { rtd, Object::makeFixnum(1) };
+//     const Object pointY = recordAccessorEx(theVM_, sizeof(args5) / sizeof(Object), args5);
+//     EXPECT_TRUE(theVM_->callClosure1(pointX, point).isPair());
+//     EXPECT_TRUE(theVM_->callClosure1(pointY, point).isString());
 
-    // Write
-    BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test2.dat"));
-    FaslWriter writer(out);
-    writer.put(point);
-    out->close();
+//     // Write
+//     BinaryOutputPort* const out = new BlockBufferedFileBinaryOutputPort(UC("/tmp/fasl-test2.dat"));
+//     FaslWriter writer(out);
+//     writer.put(point);
+//     out->close();
 
-    // Read
-    BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test2.dat"));
-    FaslReader reader(theVM_, in);
-    const Object restored = reader.get();
-    EXPECT_TRUE(eqv(point, restored));
-    EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
-    const Object p = theVM_->callClosure1(pointX, point);
-    ASSERT_TRUE(p.isPair());
-    EXPECT_TRUE(p.car().eq(Symbol::intern(UC("hage"))));
-    ASSERT_TRUE(theVM_->callClosure1(pointY, point).isString());
-}
+//     // Read
+//     BinaryInputPort* const in = new FileBinaryInputPort(UC("/tmp/fasl-test2.dat"));
+//     FaslReader reader(theVM_, in);
+//     const Object restored = reader.get();
+//     EXPECT_TRUE(eqv(point, restored));
+//     EXPECT_TRUE(theVM_->callClosure1(predicate, point).isTrue());
+//     const Object p = theVM_->callClosure1(pointX, point);
+//     ASSERT_TRUE(p.isPair());
+//     EXPECT_TRUE(p.car().eq(Symbol::intern(UC("hage"))));
+//     ASSERT_TRUE(theVM_->callClosure1(pointY, point).isString());
+// }
 
 TEST_F(FaslTest, SimpleStruct) {
     Object st = Object::makeSimpleStruct(Symbol::intern(UC("struct1")), 1);
@@ -314,7 +310,6 @@ TEST_F(FaslTest, SimpleStruct2) {
     pst->set(0, Symbol::intern(UC("a")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     EXPECT_TRUE(restored.car().eq(restored.cdr().car()));
     Object st2 = restored.cdr().cdr().car();
     ASSERT_TRUE(st2.isSimpleStruct());
@@ -329,7 +324,6 @@ TEST_F(FaslTest, SimpleStruct3) {
     pst->set(1, Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Object st2 = restored.cdr().cdr().car();
     ASSERT_TRUE(st2.isSimpleStruct());
     EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.car()));
@@ -344,7 +338,6 @@ TEST_F(FaslTest, SimpleStruct4) {
     pst->set(1, Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Object st2 = restored.car();
     ASSERT_TRUE(st2.isSimpleStruct());
     EXPECT_TRUE(st2.toSimpleStruct()->ref(0).eq(restored.cdr().car()));
@@ -409,7 +402,6 @@ TEST_F(FaslTest, Pair) {
     const Object obj = Pair::list2(Symbol::intern(UC("a")), Symbol::intern(UC("b")));
     const Object restored = StoreAndRestore(obj);
     ASSERT_TRUE(restored.isPair());
-    LOG1("restored ~a", restored);
     Equal e;
     EXPECT_TRUE(e.equal(restored, obj));
 }

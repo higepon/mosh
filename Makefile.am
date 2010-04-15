@@ -83,7 +83,8 @@ endif
 noinst_LIBRARIES   = libmosh.a
 libmosh_a_CXXFLAGS = $(mosh_CFLAGS) $(mosh_OPTS) -I$(GTEST_DIR) -I$(GTEST_DIR)/include
 libmosh_a_SOURCES = \
-src/Code.h                                                             \
+src/Code.h  src/SharedReference.h                                      \
+src/NonGenerativeRTDs.h                                                \
 src/HeapObject.h                                                       \
 src/Object-inl.h                                                       \
 src/Object-accessors.h                                                 \
@@ -154,11 +155,6 @@ src/EqHashTable.h                  src/EqHashTable.cpp                 \
 src/SString.h                      src/SString.cpp                     \
 src/GenericHashTable.h             src/GenericHashTable.cpp            \
 src/Object.h                       src/Object.cpp                      \
-src/RecordTypeDescriptor.h         src/RecordTypeDescriptor.cpp        \
-src/RecordConstructorDescriptor.h  src/RecordConstructorDescriptor.cpp \
-src/Record.h                       src/Record.cpp                      \
-src/RecordProcedures.cpp           src/RecordProcedures.h              \
-src/ConditionProcedures.cpp        src/ConditionProcedures.h           \
 src/CompilerProcedures.cpp         src/CompilerProcedures.h            \
 src/HashTableProceduures.cpp       src/HashTableProceduures.h          \
 src/RegexpProcedures.cpp           src/RegexpProcedures.h              \
@@ -172,7 +168,6 @@ src/BitwiseProcedures.cpp          src/BitwiseProcedures.h             \
 src/ByteVectorProcedures.cpp       src/ByteVectorProcedures.h          \
 src/SocketProcedures.cpp           src/SocketProcedures.h              \
 src/Equivalent.h                   src/Equivalent.cpp                  \
-src/CompoundCondition.h            src/CompoundCondition.cpp           \
 src/ucs4string.h                   src/ucs4string.cpp                  \
 src/Vector.h                       src/Vector.cpp                      \
 src/Fasl.h \

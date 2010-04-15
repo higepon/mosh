@@ -36,6 +36,7 @@
 #include "Transcoder.h"
 #include "BinaryInputPort.h"
 #include "TextualInputPort.h"
+#include "EqHashTable.h"
 #include "Reader.h"
 #include "Scanner.h"
 #include "NumberScanner.h"
@@ -50,12 +51,23 @@ using namespace scheme;
 TextualInputPort::TextualInputPort() :
     error_(Object::Nil),
     scanner_(new Scanner),
-    numberScanner_(new NumberScanner)
+    numberScanner_(new NumberScanner),
+    isStrictR6RsReaderMode_(false)
 {
 }
 
 TextualInputPort::~TextualInputPort()
 {
+}
+
+void TextualInputPort::setStrictR6RsReaderMode()
+{
+    isStrictR6RsReaderMode_ = true;
+}
+
+bool TextualInputPort::isStrictR6RsReaderMode() const
+{
+    return isStrictR6RsReaderMode_;
 }
 
 Object TextualInputPort::position() const

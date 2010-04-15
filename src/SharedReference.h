@@ -1,7 +1,7 @@
 /*
- * CompoundCondition.h - 
+ * SharedReference.h - Hold shared reference when reding shared structures.
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2010  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,30 +26,29 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: CompoundCondition.h 261 2008-07-25 06:16:44Z higepon $
+ *  $Id: OSCompatSocket.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#ifndef SCHEME_COMPOUND_CONDITION_
-#define SCHEME_COMPOUND_CONDITION_
+#ifndef SCHEME_SHARED_REFERENCE_
+#define SCHEME_SHARED_REFERENCE_
 
 #include "scheme.h"
 
 namespace scheme {
 
-class CompoundCondition EXTEND_GC
-{
-public:
-    CompoundCondition(int conditionCounts, const Object* conditions);
-    ~CompoundCondition();
+    class SharedReference EXTEND_GC
+    {
+    public:
+        SharedReference(int index) : index_(index)
+        {
+        }
+        int index() const
+        {
+            return index_;
+        }
+    private:
+        const int index_;
+    };
+}; // namespace scheme
 
-    Object conditionsList() const;
-    const ObjectVector& conditions() const;
-    int conditionCounts() const;
-
-private:
-    ObjectVector conditions_;
-};
-
-} // namespace scheme
-
-#endif // SCHEME_COMPOUND_CONDITION_
+#endif // SCHEME_SIMPLE_STRUCT_

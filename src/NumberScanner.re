@@ -36,6 +36,7 @@
 #include "TextualInputPort.h"
 #include "TextualOutputPort.h"
 #include "ucs4string.h"
+#include "EqHashTable.h"
 #include "ScannerHelper.h"
 #include "NumberScanner.h"
 

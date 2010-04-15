@@ -14,7 +14,7 @@ runtest:
 	$(MOSH_TARGET) test/input-output-port.scm
 	$(MOSH_TARGET) test/input-port.scm < test/input.txt
 	$(MOSH_TARGET) test/output-port.scm
-	$(MOSH_TARGET) test/record.scm
+	$(MOSH_TARGET) --loadpath="test/mylib" test/record.scm
 	$(MOSH_TARGET) test/condition.scm
 	$(MOSH_TARGET) test/exception.scm
 	$(MOSH_TARGET) test/unicode.scm
@@ -33,6 +33,15 @@ runtest:
 	$(MOSH_TARGET) test/number.scm
 	$(MOSH_TARGET) test/cgi.scm
 	$(MOSH_TARGET) test/memcached.scm
+	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_bad_regexp.scm 2>/dev/null
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_good_regexp.scm
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/import_both_regexp.scm
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared.scm
+	! $(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared2.scm 2>/dev/null
+	$(MOSH_TARGET) --disable-acc --loadpath=test/mylib test/shared3.scm
+# test twice
+	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
+	$(MOSH_TARGET) --loadpath=test/mylib test/fasl.scm
 
 runtest-ffi:
 	(cd $(MOSH_BUILDDIR) && $(MOSH_TARGET) $(MOSH_SRCDIR)/test/ffi.scm)

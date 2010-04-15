@@ -1,7 +1,7 @@
 /*
- * Record.cpp -
+ * NonGenerativeRTDs.h - Storage for nongenerative records.
  *
- *   Copyright (c) 2008  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
+ *   Copyright (c) 2010  Higepon(Taro Minowa)  <higepon@users.sourceforge.jp>
  *
  *   Redistribution and use in source and binary forms, with or without
  *   modification, are permitted provided that the following conditions
@@ -26,55 +26,45 @@
  *   NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *   SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  $Id: Record.cpp 183 2008-07-04 06:19:28Z higepon $
+ *  $Id: RecordTypeDescriptor.h 261 2008-07-25 06:16:44Z higepon $
  */
 
-#include "Object.h"
-#include "Object-inl.h"
-#include "Record.h"
+#ifndef SCHEME_NONGENERATIVE_RTDS_
+#define SCHEME_NONGENERATIVE_RTDS_
 
-using namespace scheme;
+#include "scheme.h"
 
-Record::Record(Object rtd, const Object* fields, int fieldsLength) : rtd_(rtd), fields_(NULL), fieldsLength_(fieldsLength)
+namespace scheme {
+
+class NonGenerativeRTDs EXTEND_GC
 {
-    fields_ = Object::makeObjectArray(fieldsLength_);
-    for (int i = 0; i < fieldsLength_; i++) {
-        fields_[i] = fields[i];
+public:
+    static Object lookup(Object uid)
+    {
+        mutex_.lock();
+        ObjectMap::const_iterator found = nonGenerativeRTDs_.find(uid);
+        if (found == nonGenerativeRTDs_.end()) {
+            mutex_.unlock();
+            return Object::False;
+        } else {
+            mutex_.unlock();
+            return found->second;
+        }
     }
-}
 
-Record::~Record()
-{
-}
+    static void add(Object uid, Object rtd)
+    {
+        MOSH_ASSERT(rtd.isRecordTypeDescriptor());
+        mutex_.lock();
+        nonGenerativeRTDs_[uid] = rtd;
+        mutex_.unlock();
+    }
 
-Object Record::rtd() const
-{
-    return rtd_;
-}
+private:
+   static ObjectMap nonGenerativeRTDs_;
+   static Mutex mutex_;
+};
 
-RecordTypeDescriptor* Record::recordTypeDescriptor() const
-{
-    return rtd_.toRecordTypeDescriptor();
-}
+} // namespace scheme
 
-// caller should check index range
-Object Record::fieldAt(int index)
-{
-    return fields_[index];
-}
-
-// caller should check index range
-void Record::setFieldAt(int index, Object value)
-{
-    fields_[index] = value;
-}
-
-bool Record::isA(const RecordTypeDescriptor* rtd) const
-{
-    return recordTypeDescriptor()->isA(rtd);
-}
-
-int Record::fieldsLength() const
-{
-    return fieldsLength_;
-}
+#endif // SCHEME_NONGENERATIVE_RTDS_
